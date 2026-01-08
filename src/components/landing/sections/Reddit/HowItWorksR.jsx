@@ -84,7 +84,7 @@ export default function FeatureShowcase() {
       img: "/assets/feature-fake-text.jpg", // replace after
       reverse: true,
       to: "reddit-stories",
-      img: Redditpic1, // replace after
+   
       imgMax: 640,
     },
     {

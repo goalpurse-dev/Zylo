@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { BACKGROUND_PRESETS } from "../../lib/backgroundPresets";
 
-import Toppicks from "../../components/library/Toppicks.jsx";
+import Toppicks from "../../components/library/toppicks.jsx";
 import Plain from "../../components/library/Plain.jsx";
 import Studio from "../../components/library/Studio.jsx";
 import Soft from "../../components/library/Soft.jsx";

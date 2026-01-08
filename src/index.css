@@ -1,20 +1,12 @@
-/* -------------------------------------------------
-   CORRECT TAILWIND + IMPORT ORDER (FINAL FIX)
--------------------------------------------------- */
-@import "./styles/sidebar.css";
-@import "./styles/zylo.css";
-@import "./styles/buttons.css";
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ALL imports MUST be directly after tailwind directives */
+@import "./styles/sidebar.css";
+@import "./styles/zylo.css";
+@import "./styles/buttons.css";
 
 
-/* -------------------------------------------------
-   Everything below is your original CSS — unchanged
--------------------------------------------------- */
 
 /* Base tokens & defaults */
 :root {
