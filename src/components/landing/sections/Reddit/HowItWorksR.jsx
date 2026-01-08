@@ -1,8 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import RedditPic from "../../../../assets/landing/reddituto1.png"; // ✅ exact name + .png
-import Redditpic1 from "../../../../assets/landing/reddituto2.png"; // ✅ exact name + .png
-import Redditpic2 from "../../../../assets/landing/reddituto3.png"; // ✅ exact name + .png
+
 
 // Reusable card
 function ShowcaseCard({ title, kicker, desc, img, reverse = false, to, imgMax = 640 }) {
