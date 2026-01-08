@@ -2,10 +2,6 @@
 @import "./styles/zylo.css";
 @import "./styles/buttons.css";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 
 
 /* Base tokens & defaults */
