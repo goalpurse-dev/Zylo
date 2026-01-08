@@ -65,15 +65,15 @@ function ShowcaseCard({ title, kicker, desc, img, reverse = false, to, imgMax = 
 export default function FeatureShowcase() {
   const items = [
     {
-         title: "Pick style & background",
+         title: "Pick style & background ",
      
       desc:
        "Add a Reddit URL and we auto-fill the intro card title and author — or write your own story.",
        
       reverse: false,
       to: "/reddit-stories",
-      img: RedditPic, // replace after
-      imgMax: 640,
+   
+  
     },
     {
      
@@ -85,7 +85,7 @@ export default function FeatureShowcase() {
       reverse: true,
       to: "reddit-stories",
    
-      imgMax: 640,
+
     },
     {
     
@@ -95,8 +95,8 @@ export default function FeatureShowcase() {
       img: "/assets/feature-reddit-stories.jpg", // replace after
       reverse: false,
       to: "reddit-stories",
-      img: Redditpic2, // replace after
-      imgMax: 640,
+     
+     
     },
   ];
 
