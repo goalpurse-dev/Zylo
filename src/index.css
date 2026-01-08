@@ -1,0 +1,189 @@
+/* -------------------------------------------------
+   CORRECT TAILWIND + IMPORT ORDER (FINAL FIX)
+-------------------------------------------------- */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ALL imports MUST be directly after tailwind directives */
+@import "./styles/sidebar.css";
+@import "./styles/zylo.css";
+@import "./styles/buttons.css";
+
+/* -------------------------------------------------
+   Everything below is your original CSS — unchanged
+-------------------------------------------------- */
+
+/* Base tokens & defaults */
+:root {
+  --page-max: 1200px;
+  --blue: #007BFF;
+  --violet-1: #7A3BFF;
+  --violet-2: #9B4DFF;
+  --violet-3: #FF57B2;
+
+  color-scheme: light;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* (Everything below stays EXACTLY like you had it) */
+.tool-shell { color-scheme: dark; }
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { margin: 0; padding: 0; min-height: 100%; }
+
+html, body, #root {
+  background: transparent;
+  color: #0a0a0a;
+  overflow-x: hidden;
+}
+
+/* Links */
+a { text-decoration: none; }
+a:hover { opacity: .85; }
+a:focus-visible { outline: 2px solid #007BFF; outline-offset: 2px; }
+
+/* Layout helper */
+.page { max-width: var(--page-max); margin: 0 auto; padding: 0 1rem; }
+
+/* Brand utilities */
+.text-violet-gradient {
+  background: linear-gradient(90deg, var(--violet-1), var(--violet-2), var(--violet-3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Buttons */
+.btn-outline-blue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .6rem 1rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  background: #fff;
+  color: var(--blue);
+  border: 2px solid var(--blue);
+  transition: background .2s, transform .06s, box-shadow .2s;
+}
+.btn-outline-blue:hover { background: #F2F7FF; }
+.btn-outline-blue:active { transform: scale(.98); }
+
+/* Cursor Defaults */
+button, a, [role="button"], label, summary { cursor: pointer; }
+
+/* Light Inputs */
+.light-page input,
+.light-page textarea,
+.light-page select,
+.light-page [contenteditable="true"] {
+  color: #0a0a0a;
+  caret-color: #0a0a0a;
+  background: transparent;
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes heartbeat-move {
+  0% { transform: translateX(-40%); opacity: 0; }
+  20% { opacity: 0.9; }
+  60% { transform: translateX(120%); opacity: 0.9; }
+  100% { transform: translateX(140%); opacity: 0; }
+}
+
+@keyframes heartbeat-move-vertical {
+  0% { transform: translateY(-40%); opacity: 0; }
+  20% { opacity: 0.9; }
+  60% { transform: translateY(120%); opacity: 0.9; }
+  100% { transform: translateY(140%); opacity: 0; }
+}
+
+.heartbeat-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 35%;
+  height: 100%;
+  background: radial-gradient(circle, #fff 0%, rgba(255,255,255,0) 70%);
+  opacity: 0.85;
+  animation: heartbeat-move 2s infinite;
+}
+
+.heartbeat-line-vertical {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 35%;
+  background: radial-gradient(circle, #fff 0%, rgba(255,255,255,0) 70%);
+  opacity: 0.85;
+  animation: heartbeat-move-vertical 2s infinite;
+}
+
+.heartbeat-line-vertical.delay-200 {
+  animation-delay: 0.2s;
+}
+
+
+
+
+
+@keyframes zylo-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.scroll-loop {
+  animation: zylo-scroll 200s linear infinite;
+  display: flex;
+  width: max-content;
+}
+@keyframes zyloLine {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.industry-scroll {
+  display: flex;
+  width: max-content;
+  animation: zyloLine 150s linear infinite;
+}
+
+.industry-mask {
+  mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
+}
+
+.scroll-track {
+  display: flex;
+  gap: 20px;
+  flex-shrink: 0;
+  width: 100%; /* Makes it exactly container width */
+}
+
+.scroll-loop {
+  display: flex;
+  width: max-content;
+  animation: zylo-scroll 200s linear infinite;
+}
+
+@keyframes zylo-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}

@@ -1,0 +1,4 @@
+[functions.job-worker]
+# Let the function run even if the client didn’t attach a valid JWT.
+# We already use SERVICE_ROLE inside the function to do the DB work.
+verify_jwt = false

@@ -1,0 +1,37 @@
+:root {
+  /* -------------------------
+     BRAND COLORS
+  ------------------------- */
+  --zylo-primary: #7A3BFF;        /* Zylo logo text color */
+  --zylo-primary-light: #C9B8FF;  /* Soft purple (buttons later) */
+
+  /* -------------------------
+     BACKGROUNDS
+  ------------------------- */
+  --zylo-bg: #F7F5FA;             /* Home & main app background */
+  --zylo-card: #ECE8F2;           /* Card background */
+  --zylo-white: #FFFFFF;
+
+  /* -------------------------
+     TEXT COLORS
+  ------------------------- */
+  --zylo-text-title: #110829          ;     /* Strong title text */
+  --zylo-text-body: #4A4A55;      /* Description text */
+  --zylo-text-inverse: #FFFFFF;   /* White text */
+
+  /* -------------------------
+     PRICING SIGNAL COLORS
+  ------------------------- */
+  --zylo-green: #CEEFDC;          /* Success highlight */
+  --zylo-red: #FEE9F0;            /* Error / alert highlight */
+
+  /* -------------------------
+     FONTS
+  ------------------------- */
+  --zylo-font: "Inter", sans-serif;
+
+
+
+
+
+}

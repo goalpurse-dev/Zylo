@@ -1,0 +1,26 @@
+{
+  "identities": [
+    {
+      "id": "id_01_male_casual",
+      "label": "Casual Male A",
+      "shots": [
+        { "scene": "talker_front",     "file": "id_01_male_casual/01_talker_front_9x16.jpg" },
+        { "scene": "walking_street",   "file": "id_01_male_casual/02_walking_street_9x16.jpg" },
+        { "scene": "product_hold",     "file": "id_01_male_casual/03_product_hold_9x16.jpg" },
+        { "scene": "gamer_desk",       "file": "id_01_male_casual/04_gamer_desk_9x16.jpg" },
+        { "scene": "fullbody_studio",  "file": "id_01_male_casual/05_fullbody_studio_9x16.jpg" }
+      ]
+    },
+    {
+      "id": "id_02_female_corporate",
+      "label": "Corporate Woman A",
+      "shots": [
+        { "scene": "talker_front",     "file": "id_02_female_corporate/01_talker_front_9x16.jpg" },
+        { "scene": "walking_street",   "file": "id_02_female_corporate/02_walking_street_9x16.jpg" },
+        { "scene": "product_hold",     "file": "id_02_female_corporate/03_product_hold_9x16.jpg" },
+        { "scene": "gamer_desk",       "file": "id_02_female_corporate/04_gamer_desk_9x16.jpg" },
+        { "scene": "fullbody_studio",  "file": "id_02_female_corporate/05_fullbody_studio_9x16.jpg" }
+      ]
+    }
+  ]
+}

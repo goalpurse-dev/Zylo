@@ -1,0 +1,22 @@
+.gallery-mask {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 20%,
+    black 80%,
+    transparent
+  );
+}
+
+.carousel-img {
+  transition: transform 0.3s ease;
+}
+
+/* Shrink based on X position */
+.gallery-container:hover .carousel-img {
+  transform: scale(0.9);
+}
+
+.gallery-container .carousel-img:hover {
+  transform: scale(1.05);
+}

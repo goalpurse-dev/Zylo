@@ -1,0 +1,43 @@
+/* src/styles/sidebar.css */
+
+/* Tailwind v4: import core + reference utilities for @apply */
+@import "tailwindcss";
+@reference "tailwindcss/utilities";
+
+:root{
+  --zylo-purple:#7A3BFF;
+  --zylo-pink:#FF57B2;
+}
+
+/* Sidebar panel look */
+.zylo-sidebar-card {
+  @apply rounded-r-2xl border border-white/10 bg-[#0d1117]/85 backdrop-blur-sm shadow-xl;
+}
+
+/* Section titles (“Brand tools”) in purple gradient */
+.zylo-section-title {
+  @apply text-[11px] font-black uppercase tracking-[0.09em];
+   background: linear-gradient(90deg, var(--zylo-purple), var(--zylo-pink));
+   -webkit-background-clip: text;
+   background-clip: text;
+   color: transparent;
+ }
+
+.zylo-navitem {
+  /* thicker + slightly larger label */
+  @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] sm:text-base font-bold
+         text-white/90 transition hover:bg-white/5 hover:text-white;
+}
+.zylo-navitem-active {
+  /* even punchier when active */
+  @apply text-white font-extrabold shadow-inner;
+   background: linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+ }
+ 
+.zylo-navicon { @apply h-4 w-4 opacity-95; }
+
+/* Credit chip */
+.zylo-credit-chip {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-white text-black
+         px-3.5 py-2 text-sm font-bold shadow-sm hover:bg-gray-50 transition;
+}

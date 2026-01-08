@@ -1,0 +1,120 @@
+/* ================= Zylo Sand Theme (grey-beige) ================= */
+.zy-sand {
+  --sand-bg: #f5f2ee;           /* greyish beige canvas */
+  --sand-surface: #ffffff;      /* card white */
+  --sand-ink: #0b1220;          /* primary text */
+  --sand-muted: #6b7280;        /* secondary text */
+  --sand-border: #e7e1d8;       /* warm border on beige */
+  --sand-ring: #cfc7ff;         /* soft focus ring */
+
+  --sand-purple: #7a3bff;       /* magnetic accent */
+  --sand-indigo: #5b5ce2;
+  --sand-gradient: linear-gradient(90deg, var(--sand-purple), var(--sand-indigo));
+
+  --sand-shadow-1: 0 6px 28px rgba(12,18,24,.08);
+  --sand-shadow-2: 0 12px 44px rgba(12,18,24,.10);
+}
+
+/* Page wrapper */
+.zy-sand.sand-container {
+  background: var(--sand-bg);
+  color: var(--sand-ink);
+}
+
+/* Typography */
+.zy-sand .sand-h1 {
+  font-size: clamp(28px, 3.2vw, 36px);
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--sand-ink);
+}
+.zy-sand .sand-sub { font-size: 13.5px; color: var(--sand-muted); font-weight: 500; }
+.zy-sand .sand-strong { font-weight: 800; letter-spacing: -0.01em; }
+.zy-sand .sand-gradient-text { background: var(--sand-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* Cards (white on beige) */
+.zy-sand .sand-card {
+  background: var(--sand-surface);
+  border: 1px solid var(--sand-border);
+  border-radius: 18px;
+  box-shadow: var(--sand-shadow-1);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.zy-sand .sand-card:hover { transform: translateY(-1px); box-shadow: var(--sand-shadow-2); }
+
+/* Inputs */
+.zy-sand .sand-input,
+.zy-sand .sand-textarea,
+.zy-sand .sand-select {
+  width: 100%;
+  border: 1px solid var(--sand-border);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--sand-ink);
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+}
+.zy-sand .sand-textarea { padding: 12px 14px; }
+.zy-sand .sand-input::placeholder,
+.zy-sand .sand-textarea::placeholder { color: #9aa0ae; }
+.zy-sand .sand-input:focus,
+.zy-sand .sand-textarea:focus,
+.zy-sand .sand-select:focus {
+  box-shadow: 0 0 0 3px var(--sand-ring);
+}
+
+/* Buttons */
+.zy-sand .sand-btn-primary {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px; height: 44px; padding: 0 16px;
+  border-radius: 12px; border: 1px solid transparent;
+  background: var(--sand-gradient); color: #fff; font-weight: 800;
+  box-shadow: 0 10px 28px rgba(122,59,255,.25);
+  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+}
+.zy-sand .sand-btn-primary:hover { transform: translateY(-1px); filter: brightness(.98); }
+.zy-sand .sand-btn-soft {
+  border: 1px solid var(--sand-border); background: #fff; color: var(--sand-ink);
+  border-radius: 12px; padding: 10px 14px; font-weight: 700;
+}
+.zy-sand .sand-btn-soft:hover { background: #fafafa; }
+
+/* "Magnetic" micro-hover (use with primary) */
+.zy-sand .magnet:hover { box-shadow: 0 16px 44px rgba(122,59,255,.32); }
+
+/* Choice rows */
+.zy-sand .sand-choice {
+  border: 1px solid var(--sand-border);
+  border-radius: 14px;
+  padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start;
+  background: #fff; color: var(--sand-ink);
+  transition: background .2s ease, border-color .2s ease, transform .12s ease;
+  cursor: pointer;
+}
+.zy-sand .sand-choice:hover { background: #fcfcfc; }
+.zy-sand .sand-choice--active { border-color: var(--sand-purple); background: #f4f0ff; }
+
+/* Stepper */
+.zy-sand .sand-stepper { display: flex; align-items: center; gap: 18px; font-size: 13px; margin-bottom: 18px; }
+.zy-sand .sand-step { display: flex; align-items: center; gap: 10px; color: var(--sand-muted); font-weight: 700; }
+.zy-sand .sand-step__dot { width: 28px; height: 28px; border-radius: 999px; display: grid; place-items: center; background: #efeaff; color: var(--sand-purple); font-weight: 800; }
+.zy-sand .sand-step--active { color: var(--sand-purple); }
+.zy-sand .sand-step__bar { flex: 1; height: 3px; border-radius: 999px; background: #eae6ff; min-width: 48px; }
+.zy-sand .sand-step__bar--filled { background: var(--sand-gradient); }
+
+/* Toast */
+.zy-sand .sand-toast {
+  position: fixed; left: 50%; top: 18px; transform: translateX(-50%); z-index: 60;
+  color: #fff; font-weight: 700; border-radius: 12px; padding: 10px 14px;
+  display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 8px 28px rgba(13,16,27,.18);
+}
+.zy-sand .sand-toast--ok { background: #10b981; }
+.zy-sand .sand-toast--err { background: #ef4444; }
+
+/* ===== Temporary shim: neutralize old dark utilities inside sand pages ===== */
+.zy-sand.sand-shim .text-white { color: var(--sand-ink) !important; }
+.zy-sand.sand-shim .bg-white\/5 { background: var(--sand-surface) !important; }
+.zy-sand.sand-shim .border-white\/10 { border-color: var(--sand-border) !important; }
+.zy-sand.sand-shim .text-white\/80 { color: color-mix(in srgb, var(--sand-ink) 80%, transparent) !important; }
