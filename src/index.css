@@ -1,10 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import "./styles/sidebar.css";
 @import "./styles/zylo.css";
 @import "./styles/buttons.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 
 
