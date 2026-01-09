@@ -1,14 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import "./styles/sidebar.css";
-@import "./styles/zylo.css";
-@import "./styles/buttons.css";
-
-
-
-/* Base tokens & defaults */
+/* (Everything above stays EXACTLY like you had it) */        
 :root {
   --page-max: 1200px;
   --blue: #007BFF;
