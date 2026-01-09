@@ -1,5 +1,5 @@
 import Arrow from "./../../assets/home/arrow.png"
-import FaqItem from "../workspace/faq/FaqItem";
+import FaqItem from "../workspace/faq/faqitem";
 
 export default function Faq() {
   return (
