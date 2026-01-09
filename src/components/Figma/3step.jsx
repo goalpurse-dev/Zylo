@@ -1,7 +1,7 @@
 import Arrow from "../../assets/symbols/arrow.png"
 import Zylo from "../../assets/symbols/zylo.png"
-import Bg1 from "../../assets/icons/Bg1.png"
-import Bg2 from "../../assets/icons/Bg2.png"
+import Bg1 from "../../assets/icons/bg1.png"
+import Bg2 from "../../assets/icons/bg2.png"
  import Bg from "../../assets/symbols/bg.mp4"
 
 

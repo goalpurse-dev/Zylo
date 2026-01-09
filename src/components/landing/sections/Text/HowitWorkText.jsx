@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 
 // Reusable card
-function ShowcaseCard({ title, kicker, desc, img, reverse = false, to, imgMax = 640 }) {
+function ShowcaseCard({ title, kicker, desc,  reverse = false, to }) {
   return (
     <div
       className={`grid grid-cols-1 md:grid-cols-2 gap-8 items-center rounded-3xl bg-[#F6F7F9], "max-auto w-full 
@@ -40,13 +40,7 @@ function ShowcaseCard({ title, kicker, desc, img, reverse = false, to, imgMax = 
 <div className={`${reverse ? "md:order-1" : ""}`}>
   <div className="relative w-full rounded-2xl overflow-hidden bg-white shadow-md">
     {/* Let the image keep its natural aspect ratio */}
-    <img
-      src={img}
-      alt={title}
-      className="block w-full h-auto"
-      loading="eager"
-      decoding="async"
-    />
+    
     {/* corner glow */}
     <div
       className="pointer-events-none absolute inset-0 rounded-2xl"
@@ -78,7 +72,7 @@ export default function FeatureShowcase() {
       desc:
       "Choose your background. Clean, legible, and watch-time friendly.",
         
-      img: "/assets/feature-fake-text.jpg", // replace after
+    
       reverse: true,
        to: "/text-video",
 
