@@ -1,8 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import RedditPic from "../../../../assets/landing/reddituto1.png"; // ✅ exact name + .png
-import Redditpic1 from "../../../../assets/landing/reddituto2.png"; // ✅ exact name + .png
-import Redditpic2 from "../../../../assets/landing/reddituto3.png"; // ✅ exact name + .png
+
+
 
 // Reusable card
 function ShowcaseCard({ title, kicker, desc, img, reverse = false, to, imgMax = 640 }) {
@@ -71,8 +70,7 @@ export default function FeatureShowcase() {
        "Write your idea or topic and our AI will generate structured content instantly or generate script yourself.", 
       reverse: false,
       to: "/text-video",
-      img: RedditPic, // replace after
-      imgMax: 640,
+
     },
     {
      
@@ -83,8 +81,7 @@ export default function FeatureShowcase() {
       img: "/assets/feature-fake-text.jpg", // replace after
       reverse: true,
        to: "/text-video",
-      img: Redditpic1, // replace after
-      imgMax: 640,
+
     },
     {
     
@@ -94,8 +91,7 @@ export default function FeatureShowcase() {
      
       reverse: false,
       to: "/text-video",
-      img: Redditpic2, // replace after
-      imgMax: 640,
+
     },
   ];
 
