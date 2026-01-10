@@ -1,5 +1,5 @@
 import Arrow from "../../../assets/home/arrow.png"
-import FaqItem from "./FaqItem";
+import FaqItem from "./faqitem";
 import { Link, NavLink } from "react-router-dom";
 
 export default function Faq() {
