@@ -22,7 +22,7 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
        
         <div className="flex justify-between  gap-2 lg:gap-10">
            <div className=" ml-1 md:ml-4 lg:ml-4 flex flex-row gap-1 lg:gap-1 items-center">
-            <p className="hidden sm:flex sm:ml-4 text-[#7A3BFF] md:text-xl lg:text-2xl font-bold cursor-default ">ZyloAI</p>
+            <p className="hidden sm:flex sm:ml-4 text-[#7A3BFF] md:text-xl lg:text-2xl font-bold cursor-default ">ZyvoAI</p>
             <img src={Logo} alt="Logo" className=" h-10 lg:h-10 w-10 lg:w-10 ml-4 md:ml-2 mr-2 lg:mr-4"/>
             </div>
 
@@ -138,7 +138,7 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
     
     {/* Top row */}
     <div className="flex justify-between items-center mb-8">
-      <p className="text-[#7A3BFF] text-xl font-bold">ZyloAI</p>
+      <p className="text-[#7A3BFF] text-xl font-bold">ZyvoAI</p>
       <X className="text-[#110829] h- w-5" onClick={() => setMenuOpen(false)}></X>
     </div>
 

@@ -49,7 +49,7 @@ const formattedCredits = Intl.NumberFormat().format(credits);
             <div className="flex justify-between items-center">
 
           <div className="flex flex-row items-center py-10">
-           <p className="text-[#7A3BFF] font-bold text-[20px] px-3 pl-8 cursor-default">ZyloAI</p> 
+           <p className="text-[#7A3BFF] font-bold text-[20px] px-3 pl-8 cursor-default">ZyvoAI</p> 
            <img src={Logo} className="h-10 w-10"/>
              </div>
 
@@ -203,7 +203,7 @@ const formattedCredits = Intl.NumberFormat().format(credits);
             <div className="flex justify-between items-center">
 
           <div className="flex flex-row items-center py-10">
-           <p className="text-[#7A3BFF] font-bold text-[20px] px-3 pl-8">ZyloAI</p> 
+           <p className="text-[#7A3BFF] font-bold text-[20px] px-3 pl-8">ZyvoAI</p> 
            <img src={Logo} className="h-10 w-10"/>
              </div>
 
@@ -356,7 +356,7 @@ const formattedCredits = Intl.NumberFormat().format(credits);
             <div className="flex justify-between items-center">
 
           <div className="flex flex-row items-center py-10">
-           <p className="text-[#7A3BFF]  font-bold text-[20px] px-3 pl-8">ZyloAI</p> 
+           <p className="text-[#7A3BFF]  font-bold text-[20px] px-3 pl-8">ZyvoAI</p> 
            <img src={Logo} className="h-10 w-10"/>
              </div>
 

@@ -15,7 +15,7 @@ import { Link, NavLink } from "react-router-dom";
          <div className="bg-[#F7F5FA] w-[clump(200px,40vw,400px)] h-[430px] sm:h-[440px] md:h-[470px] lg:h-[650px] xl:h-[760px]">
 
         <div className="flex justify-center py-5">
-        <h1 className="text-[#110829] font-semibold text-[20px] md:text-[25px] lg:text-[35px] xl:text-[40px] cursor-default">Why Creators Switch to <span className="font-bold text-[#7A3BFF]">Zylo?</span></h1>
+        <h1 className="text-[#110829] font-semibold text-[20px] md:text-[25px] lg:text-[35px] xl:text-[40px] cursor-default">Why Creators Switch to <span className="font-bold text-[#7A3BFF]">Zyvo?</span></h1>
         </div>  
 
 
@@ -54,7 +54,7 @@ import { Link, NavLink } from "react-router-dom";
               
                 </div> 
 
-              <p className="text-[#4A4A55] font-semibold text-[10px] sm:text-[12px] md:text-[14px] lg:text-[16px] xl:text-[18px] px-5 cursor-default">Zylo tools use visuals optimized to go viral on Social Media</p>
+              <p className="text-[#4A4A55] font-semibold text-[10px] sm:text-[12px] md:text-[14px] lg:text-[16px] xl:text-[18px] px-5 cursor-default">Zyvo tools use visuals optimized to go viral on Social Media</p>
              
 
              </div>

@@ -31,7 +31,7 @@ export default function proof() {
       
 
         <div className="flex flex-col gap-3  mt-10 mr-4">
-        <h3 className="text-[22px] font-inter font-extrabold  cursor-default ">Zylo</h3>
+        <h3 className="text-[22px] font-inter font-extrabold  cursor-default ">Zyvo</h3>
         <p className="text-[12px] font-normal font-inter whitespace-nowrap cursor-pointer hover:underline ">Product Photos</p> 
         <p className="text-[12px] font-normal font-inter whitespace-nowrap cursor-pointer hover:underline">Own Product</p>
         <p className="text-[12px] font-normal font-inter whitespace-nowrap  cursor-pointer hover:underline">Background Library</p>
@@ -109,7 +109,7 @@ export default function proof() {
       
 
         <div className="flex flex-col gap-3  ">
-        <h3 className="text-xl font-inter font-extrabold mt-10 cursor-default ">Zylo</h3>
+        <h3 className="text-xl font-inter font-extrabold mt-10 cursor-default ">Zyvo</h3>
         <p className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline ">Product Photos</p> 
         <p className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline">Own Product</p>
         <p className="text-smn font-normal font-inter mt-2 cursor-pointer hover:underline">Background Library</p>

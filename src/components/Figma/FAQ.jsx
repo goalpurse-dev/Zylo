@@ -21,29 +21,29 @@ export default function Faq() {
 
 
         <FaqItem 
-    question="What makes Zylo different from other AI tools?"
-    answer="Zylo focuses on product-first content, giving brands polished visuals that match their exact style and industry."
+    question="What makes Zyvo different from other AI tools?"
+    answer="Zyvo focuses on product-first content, giving brands polished visuals that match their exact style and industry."
 />
         
         <FaqItem 
-    question="How fast does Zylo generate an image?"
+    question="How fast does Zyvo generate an image?"
     answer="Typically 2-6 seconds, depending on the scene complexity."
 />
 
  <FaqItem 
-    question="Can I use Zylo for TikTok, Reels, and YouTube Shorts?"
-    answer="Yes! Zylo lets you generate visuals in vertical 9:16 format perfect for TikTok, Reels, Shorts, and ads."
+    question="Can I use Zyvo for TikTok, Reels, and YouTube Shorts?"
+    answer="Yes! Zyvo lets you generate visuals in vertical 9:16 format perfect for TikTok, Reels, Shorts, and ads."
 />
 
  <FaqItem 
-    question="Do I need any editing experience to use Zylo?"
-    answer="Yes! Zylo lets you generate visuals in vertical 9:16 format perfect for TikTok, Reels, Shorts, and ads."
+    question="Do I need any editing experience to use Zyvo?"
+    answer="Yes! Zyvo lets you generate visuals in vertical 9:16 format perfect for TikTok, Reels, Shorts, and ads."
 />
 
 
  <FaqItem 
     question="Can I upload my own product photos?"
-    answer="Absolutely. Zylo allows you to upload your product and automatically place it in professional backgrounds and scenes."
+    answer="Absolutely. Zyvo allows you to upload your product and automatically place it in professional backgrounds and scenes."
 />
 
 
@@ -54,14 +54,14 @@ export default function Faq() {
 
 
  <FaqItem 
-    question="Does Zylo work for e-commerce sellers?"
+    question="Does Zyvo work for e-commerce sellers?"
     answer="Yes. It's designed to help sellers create high-converting product photos without hiring photographers."
 />
 
 
  <FaqItem 
     question="What is credit used for"
-    answer="Credits are used to generate content inside Zylo. Each time you create a new result, one or more credits are used depending on the tool. "
+    answer="Credits are used to generate content inside Zyvo. Each time you create a new result, one or more credits are used depending on the tool. "
 />
 
 

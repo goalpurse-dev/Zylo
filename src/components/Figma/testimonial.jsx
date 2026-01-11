@@ -21,7 +21,7 @@ export default function proof() {
 
          <div className="flex justify-center">
          <div className="hidden md:block w-[clamp(500px,60vw,1000px)] p-10 bg-white shadow-xl mt-10 rounded-xl ">
-          <p className="md:text-[14px] lg:text-[18px] text-center text-[#110829]  font-semibold"><span className="text-[#7A3BFF] font-extrabold">Zylo AI </span>  
+          <p className="md:text-[14px] lg:text-[18px] text-center text-[#110829]  font-semibold"><span className="text-[#7A3BFF] font-extrabold">Zyvo AI </span>  
           isn’t just another generator; <span className="text-[#7A3BFF] font-extrabold">their platform creates agency-level visuals </span> and videos at a scale no traditional workflow can match. </p>  
             </div>  
 
@@ -44,7 +44,7 @@ export default function proof() {
 
              <p className="px-3 py-2 sm:py-3 sm:text-[14px] lg:text-[13px] text-[12px] md:text-[11px] xl:text-[15px] text-[#4A4A55]" >
                 I've tested 10+ 
-                AI video tools and Zylo is the only one that does't look AI-generated. The videos look polished and natural, and every time I post one my reach goes crazy.”
+                AI video tools and Zyvo is the only one that does't look AI-generated. The videos look polished and natural, and every time I post one my reach goes crazy.”
             </p>
 
             <p className="text-[#110829] font-semibold text-[10px] sm:text-[12px] lg:text-[14px] xl:text-[16px] px-2 py-3 sm:py-5 ">4.7/5 <span>⭐⭐⭐⭐⭐</span> </p>
@@ -63,7 +63,7 @@ export default function proof() {
              <h3 className="text-[#110829] text-[25px] sm:text-[26px] md:text-[12px] lg:text-[16px] xl:text-[18px] font-bold py-2 sm:py-3  px-3 ">Mia L. — Shopify Brand Owner</h3>
 
              <p className="px-3 py-2 sm:py-3 sm:text-[14px] lg:text-[13px] text-[12px] md:text-[11px] xl:text-[15px] text-[#4A4A55]" >
-               “Zylo completely changed how fast we can test creatives. I used to wait 5-7 days for editors to deliver one video. Now I type an idea and Zylo generates a polished ad in seconds. My first Zylo-made video hit 120k views overnight and brought in 40 sales. This tool makes small brands feel like big companies.”
+               “Zyvo completely changed how fast we can test creatives. I used to wait 5-7 days for editors to deliver one video. Now I type an idea and Zyvo generates a polished ad in seconds. My first Zyvo-made video hit 120k views overnight and brought in 40 sales. This tool makes small brands feel like big companies.”
             </p>
 
             <p className="text-[#110829] font-semibold text-[10px] sm:text-[12px] lg:text-[14px] xl:text-[16px] px-3 py-4 sm:py-5 ">4.7/5 <span>⭐⭐⭐⭐⭐</span> </p>
@@ -83,7 +83,7 @@ export default function proof() {
              <h3 className="text-[#110829] text-[25px] sm:text-[26px] md:text-[12px] lg:text-[16px] xl:text-[18px] font-bold py-2 sm:py-3  px-3 "> Jordan C. — TikTok UGC Creator</h3>
 
              <p className="px-3 py-2 sm:py-3 sm:text-[14px] lg:text-[13px] text-[12px] md:text-[11px] xl:text-[15px] text-[#4A4A55]" >
-              “I've never had videos look so clean without touching CapCut. Zylo's AI automatically adds nice camera movements, correct lighting, and a super smooth flow. One of the videos I made with Zylo literally blew up and got me 2 brand deals.”
+              “I've never had videos look so clean without touching CapCut. Zyvo's AI automatically adds nice camera movements, correct lighting, and a super smooth flow. One of the videos I made with Zyvo literally blew up and got me 2 brand deals.”
             </p>
 
             <p className="text-[#110829] font-semibold text-[10px] sm:text-[12px] lg:text-[14px] xl:text-[16px] px-3 py-4 sm:py-5 ">4.7/5 <span>⭐⭐⭐⭐⭐</span> </p>
@@ -104,7 +104,7 @@ export default function proof() {
              <h3 className="text-[#110829] text-[25px] sm:text-[26px] md:text-[12px] lg:text-[16px] xl:text-[18px] font-bold py-2 sm:py-3  px-3 "> Emily W. — Digital Marketer</h3>
 
              <p className="px-3 py-2 sm:py-3 sm:text-[13px] lg:text-[13px] text-[12px] md:text-[11px] xl:text-[15px] text-[#4A4A55]" >
-               “We run paid ads for clients, and Zylo is now part of our standard workflow. Instead of paying for product shoots, we generate variations instantly. The cost savings are huge and the videos actually perform better.”
+               “We run paid ads for clients, and Zyvo is now part of our standard workflow. Instead of paying for product shoots, we generate variations instantly. The cost savings are huge and the videos actually perform better.”
             </p>
 
             <p className="text-[#110829] font-semibold text-[10px] sm:text-[12px] lg:text-[14px] xl:text-[16px] px-3 py-4 sm:py-5 ">4.7/5 <span>⭐⭐⭐⭐⭐</span> </p>
@@ -128,7 +128,7 @@ export default function proof() {
              <h3 className="text-[#110829] text-[10px] sm:text-[12px] lg:text-[16px] xl:text-[18px] font-bold py-2 sm:py-3  px-3 ">Liam P. — Dropshipping Beginner</h3>
 
              <p className="px-3 py-2 sm:py-3 sm:text-[11px] lg:text-[13px] text-[9px] xl:text-[15px] text-[#4A4A55]" >
-               “Bro, Zylo is unreal. I went from no content to full ad video in under 3 minutes. Posted it on TikTok and it got 35k views on day 1. This gave me the motivation to actually scale.”
+               “Bro, Zyvo is unreal. I went from no content to full ad video in under 3 minutes. Posted it on TikTok and it got 35k views on day 1. This gave me the motivation to actually scale.”
             </p>
 
             <p className="text-[#110829] font-semibold text-[10px] sm:text-[12px] lg:text-[14px] xl:text-[16px] px-3 py-4 sm:py-5 ">4.7/5 <span>⭐⭐⭐⭐⭐</span> </p>
@@ -149,7 +149,7 @@ export default function proof() {
              <h3 className="text-[#110829] text-[10px] sm:text-[12px] lg:text-[16px] xl:text-[18px] font-bold py-2 sm:py-3  px-3 ">Sofia R. — Small Business Owner</h3>
 
              <p className="px-3 py-2 sm:py-3 sm:text-[11px] lg:text-[13px] text-[9px] xl:text-[15px] text-[#4A4A55]" >
-               “I'm not a tech person, but Zylo is super easy to use. The product photo tool + video generator helped me refresh my whole brand without hiring anyone. Customers keep complimenting the visuals.”
+               “I'm not a tech person, but Zyvo is super easy to use. The product photo tool + video generator helped me refresh my whole brand without hiring anyone. Customers keep complimenting the visuals.”
             </p>
 
             <p className="text-[#110829] font-semibold text-[10px] sm:text-[12px] lg:text-[14px] xl:text-[16px] px-3 py-4 sm:py-5 ">4.7/5 <span>⭐⭐⭐⭐⭐</span> </p>
@@ -170,7 +170,7 @@ export default function proof() {
              <h3 className="text-[#110829] text-[10px] sm:text-[12px] lg:text-[16px] xl:text-[18px] font-bold py-2 sm:py-3  px-3 ">Ethan V. — Social Media Manager</h3>
 
              <p className="px-3 py-2 sm:py-3 sm:text-[11px] lg:text-[13px] text-[9px] xl:text-[15px] text-[#4A4A55]" >
-               “What I love most is consistency. Zylo keeps brand colours, style and lighting perfect every time. No other tool does that. Our engagement rate increased by 3x after switching to Zylo for content production.”
+               “What I love most is consistency. Zyvo keeps brand colours, style and lighting perfect every time. No other tool does that. Our engagement rate increased by 3x after switching to Zyvo for content production.”
             </p>
 
             <p className="text-[#110829] font-semibold text-[10px] sm:text-[12px] lg:text-[14px] xl:text-[16px] px-3 py-4 sm:py-5 ">4.7/5 <span>⭐⭐⭐⭐⭐</span> </p>
@@ -189,7 +189,7 @@ export default function proof() {
              <h3 className="text-[#110829] text-[10px] sm:text-[12px] lg:text-[16px] xl:text-[18px] font-bold py-2 sm:py-3  px-3 "> Ava M. — YouTube Shorts Creator</h3>
 
              <p className="px-3 py-2 sm:py-3 sm:text-[11px] lg:text-[13px] text-[9px] xl:text-[15px] text-[#4A4A55]" >
-               “Zylo's text-to-video feature is the reason my shorts finally started pulling views. The visuals look premium and the pacing is exactly what keeps viewers watching. I had one clip reach 200k views with literally zero manual editing.”
+               “Zyvo's text-to-video feature is the reason my shorts finally started pulling views. The visuals look premium and the pacing is exactly what keeps viewers watching. I had one clip reach 200k views with literally zero manual editing.”
             </p>
 
             <p className="text-[#110829] font-semibold text-[10px] sm:text-[12px] lg:text-[14px] xl:text-[16px] px-3 py-4 sm:py-5 ">4.7/5 <span>⭐⭐⭐⭐⭐</span> </p>

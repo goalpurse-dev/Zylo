@@ -57,7 +57,7 @@ export default function Hero() {
         {/* Text */}
         <h1 className="text-[#110829] font-bold text-2xl py-6 max-w-[350px] ml-16 sm:scale-110 sm:max-w-[450px] text-center">
           Turn Any Idea Into Stunning Visuals with{" "}
-          <span className="text-[#7A3BFF]">Zylo AI.</span>
+          <span className="text-[#7A3BFF]">Zyvo AI.</span>
         </h1>
 
         <p className="text-[#4A4A55] text-base max-w-[350px] mt-3 sm:scale-110 sm:max-[400px] mx-16 text-center sm:mx-24 ">
@@ -110,7 +110,7 @@ export default function Hero() {
         <div className="bg-[#ECE8F2] p-8 rounded-2xl shadow-xl scale-90 ">
           <h1 className="text-[#110829] font-bold text-3xl py-10 max-w-[450px] cursor-default">
             Turn Any Idea Into Stunning Visuals with{" "}
-            <span className="text-[#7A3BFF]">Zylo AI.</span>
+            <span className="text-[#7A3BFF]">Zyvo AI.</span>
           </h1>
 
           <p className="text-[#4A4A55] text-lg max-w-[450px] mt-5 cursor-default">
