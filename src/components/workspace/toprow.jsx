@@ -34,9 +34,11 @@ export default function TopRow({ title, onMenuClick }) {
           </button>
 
           {/* Logo */}
-          <div className="flex lg:hidden items-center gap-2">
+          <div className="flex  lg:hidden items-center gap-2">
             <p className="text-[#7A3BFF] font-bold text-[20px] md:text-[22px] cursor-default">ZyloAI</p>
+            <div className="hidden sm:flex ">
             <img src={Logo} className="h-10 w-10 md:h-12 md:w-12" />
+            </div>
           </div>
 
           <div className="lg:flex hidden  items-center gap-2 lg:px-[clamp(24px,4vw,64px)]">

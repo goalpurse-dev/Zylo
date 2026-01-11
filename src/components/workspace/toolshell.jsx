@@ -42,7 +42,7 @@ const formattedCredits = Intl.NumberFormat().format(credits);
 
     return (
         <section>
-          <div className="bg-white w-full min-h-screen md:hidden ">
+          <div className="bg-white w-full h-screen md:hidden overflow-y-auto">
             
            {/*Start */}
          
