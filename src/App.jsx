@@ -98,6 +98,8 @@ import BlogIndex from "./app/blog/BlogIndex";
 import ProductPhotosShopify from "./app/blog/ProductPhotosShopify";
 import ProductPhotosForShopify from "./app/blog/productphotos/Forshopifystores.jsx";
 
+import { Analytics } from "@vercel/analytics/react";
+
 
 
 
@@ -370,7 +372,12 @@ function AppWithRouting() {
             }
           />
         </Routes>
+
+     {/* Vercel Analytics */}
+      <Analytics />
+
       </main>
+
     </>
   );
 }
