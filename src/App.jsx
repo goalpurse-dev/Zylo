@@ -96,6 +96,8 @@ import Step31 from "./pages/workspace/myproduct/step2.jsx"
 
 import BlogIndex from "./app/blog/BlogIndex";
 import ProductPhotosShopify from "./app/blog/ProductPhotosShopify";
+import ProductPhotosForShopify from "./app/blog/productphotos/Forshopifystores.jsx";
+
 
 
 
@@ -203,10 +205,9 @@ function AppWithRouting() {
         
         <Route path="/blog" element={<BlogIndex />} />
 
-        <Route
-          path="/blog/product-photos-with-ai-for-shopify"
-          element={<ProductPhotosShopify />}
-        />
+        <Route path="/blog/product-photos-with-ai-for-shopify" element={<ProductPhotosShopify />} />
+        <Route path="/blog/product-photos-for-shopify-store" element={<ProductPhotosForShopify />} />
+          
 
 
 

@@ -4,7 +4,7 @@ import Before1 from "../../assets/blog/productphoto/before1.png";
 import After1 from "../../assets/blog/productphoto/before2.png";
 
 
-export default function ProductPhotosShopify() {
+export default function ProductPhotosForShopify() {
 
   useEffect(() => {
     document.title = "Product Photos with AI for Shopify | Zyvo";
