@@ -5,11 +5,11 @@ import X from "./../../assets/footer/x.png"
 import Youtube from "./../../assets/footer/youtube.png"
 import Reddit from "./../../assets/footer/reddit.png"
 
+import { Link, NavLink } from "react-router-dom";
 
 
 
-
-export default function proof() {
+export default function footer() {
     return (
         
         <section className="">
@@ -26,16 +26,28 @@ export default function proof() {
 
      
         
-        <div className="flex flex-row justify-center gap-[clamp(30px,18vw,200px)] ">
+        <div className="flex flex-row justify-center gap-8 sm:gap-16 md:gap-24 ">
 
       
 
         <div className="flex flex-col gap-3  mt-10 mr-4">
-        <h3 className="text-[22px] font-inter font-extrabold  cursor-default ">Zyvo</h3>
-        <p className="text-[12px] font-normal font-inter whitespace-nowrap cursor-pointer hover:underline ">Product Photos</p> 
-        <p className="text-[12px] font-normal font-inter whitespace-nowrap cursor-pointer hover:underline">Own Product</p>
-        <p className="text-[12px] font-normal font-inter whitespace-nowrap  cursor-pointer hover:underline">Background Library</p>
-        <p className="text-[12px] font-normal font-inter whitespace-nowrap cursor-pointer hover:underline">Creations</p>
+        <h3 className="text-[22px] font-inter font-extrabold  cursor-default ">Zylo</h3>
+        <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap cursor-pointer hover:underline "
+        to="productphoto"
+        >Product Photos</Link> 
+
+        <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap cursor-pointer hover:underline"
+        to="myproduct"
+        >Own Product</Link>
+
+
+        <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap  cursor-pointer hover:underline"
+        to="library"
+        >Background Library</Link>
+       
+        <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap cursor-pointer hover:underline"
+        to="creations"
+        >Creations</Link>
         
         </div>
 
@@ -44,16 +56,32 @@ export default function proof() {
           
           <div className="flex flex-col gap-1  ">
         <h3 className="text-[22px] font-inter font-extrabold mt-10 w-[110px] cursor-default ">Pricing</h3>
-        <p className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline">Plans</p> 
+        <Link className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline"
+        to="pricing"
+        >Plans</Link> 
     
          </div>
 
 
          <div className="flex flex-col gap-2  ">
         <h3 className="text-[22px] font-inter font-extrabold mt-10 cursor-default">Help </h3>
-        <p className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline whitespace-nowrap">Contact Us</p> 
-        <p className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline whitespace-nowrap">Support Center</p>
-        <p className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline whitespace-nowrap">Blog</p>
+        <Link className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline sm:whitespace-nowrap"
+        to="/contact"
+        >Contact Us</Link> 
+
+        <Link className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline sm:whitespace-nowrap"
+        to="/support"
+        >Support Center</Link>
+
+        <Link className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline sm:whitespace-nowrap"
+        to="/help/feedback"
+        >Feedback</Link>
+
+
+          <Link className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline sm:whitespace-nowrap"
+        to="/blog"
+        >Blog</Link>
+
         
         </div>
 
@@ -81,11 +109,11 @@ export default function proof() {
           </div>
          
 
-        <div className="flex flex-1 justify-center gap-4 whitespace-nowrap ml-14 ">
-           <p className=" text-[12px] cursor-pointer hover:underline text-[#868687]">Privacy Policy</p>
-           <p className=" text-[12px] cursor-pointer hover:underline text-[#868687]">Terms & Conditions</p></div>
+        <div className="flex flex-1 justify-center gap-4 sm:whitespace-nowrap ml-14 ">
+           <Link className=" text-[12px] cursor-pointer hover:underline text-[#868687]">Privacy Policy</Link>
+           <Link className=" text-[12px] cursor-pointer hover:underline text-[#868687]">Terms & Conditions</Link></div>
 
-           <div className="w-[150px]"></div>
+         
              
       </div>
 
@@ -109,26 +137,49 @@ export default function proof() {
       
 
         <div className="flex flex-col gap-3  ">
-        <h3 className="text-xl font-inter font-extrabold mt-10 cursor-default ">Zyvo</h3>
-        <p className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline ">Product Photos</p> 
-        <p className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline">Own Product</p>
-        <p className="text-smn font-normal font-inter mt-2 cursor-pointer hover:underline">Background Library</p>
-        <p className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline">Creations</p>
+        <h3 className="text-xl font-inter font-extrabold mt-10 cursor-default ">Zylo</h3>
+        <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline "
+        to="/workspace/productphoto"
+        >Product Photos</Link> 
+
+        <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
+        to="/workspace/myproduct"
+        >Own Product</Link>
+
+        <Link className="text-smn font-normal font-inter mt-2 cursor-pointer hover:underline"
+        to="/workspace/library"
+        >Background Library</Link>
+
+        <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
+        to="/workspace/creations"
+        >Creations</Link>
         
         </div>
 
           <div className="flex flex-col gap-3  ">
         <h3 className="text-xl font-inter font-extrabold mt-10 w-[110px] cursor-default ">Pricing</h3>
-        <p className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline">Plans</p> 
+        <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
+        to="/workspace/pricing"
+        >Plans</Link> 
     
          </div>
 
 
          <div className="flex flex-col gap-3 ">
         <h3 className="text-xl font-inter font-extrabold mt-10 cursor-default">Help </h3>
-        <p className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline">Contact Us</p> 
-        <p className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline">Support Center</p>
-        <p className="text-smn font-normal font-inter mt-2 cursor-pointer hover:underline">Blog</p>
+        <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
+        to="/contact"
+        >Contact Us</Link> 
+
+        <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
+        to="/support"
+        >Support Center</Link>
+        <Link className="text-smn font-normal font-inter mt-2 cursor-pointer hover:underline"
+        to="/help/feedback"
+        >Feedback</Link>
+             <Link className="text-smn font-normal font-inter mt-2 cursor-pointer hover:underline"
+        to="/blog"
+        >Blog</Link>
         
         </div>
 
@@ -155,8 +206,8 @@ export default function proof() {
          
 
         <div className="flex flex-1 justify-center gap-4">
-           <p className=" text-sm md:text-base cursor-pointer hover:underline text-[#868687]">Privacy Policy</p>
-           <p className=" text-sm md:text-base cursor-pointer hover:underline text-[#868687]">Terms & Conditions</p></div>
+           <Link className=" text-sm md:text-base cursor-pointer hover:underline text-[#868687]">Privacy Policy</Link>
+           <Link className=" text-sm md:text-base cursor-pointer hover:underline text-[#868687]">Terms & Conditions</Link></div>
 
 
            <div className="w-[150px]"></div>

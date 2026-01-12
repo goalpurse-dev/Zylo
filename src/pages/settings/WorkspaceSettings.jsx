@@ -26,6 +26,13 @@ const card =
 
 /* ===================== ROOT ===================== */
 export default function Settings() {
+
+  useEffect(() => {
+  document.title = "Manage Account And Preferences";
+}, []);
+
+
+
   const [active, setActive] = useState("account");
   const [loggingOut, setLoggingOut] = useState(false);
   const nav = useNavigate();

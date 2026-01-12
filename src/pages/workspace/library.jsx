@@ -21,6 +21,12 @@ const ROW_LIMITS = {
 };
 
 export default function Library({ onSelect, selectedId }) {
+
+  useEffect(() => {
+  document.title = "Curated Product Background Library";
+}, []);
+
+
   const [planTier, setPlanTier] = useState(null);
 
   useEffect(() => {

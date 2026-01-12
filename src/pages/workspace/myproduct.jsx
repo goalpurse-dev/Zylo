@@ -7,11 +7,17 @@ import Step2 from "../../components/myproduct/step2.jsx";
 import Step3 from "../../components/myproduct/step3.jsx";
 import Footer from "../../components/myproduct/footer.jsx";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { uploadForExternalFetch } from "../../lib/storage";
 
 export default function MyProduct() {
+
+  useEffect(() => {
+  document.title = "Your Product Creation Base ";
+}, []);
+
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [createStep, setCreateStep] = useState(2);
   const [showCta, setShowCta] = useState(true);

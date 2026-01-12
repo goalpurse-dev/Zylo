@@ -3,12 +3,15 @@ import Faq from "../../components/creations/faq.jsx";
 import Footer from "../../components/myproduct/footer.jsx";
 import Cta from "../../components/creations/cta.jsx";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 
 
 
 export default function creations() {
+    useEffect(() => {
+  document.title = "Your Generated Product Creations";
+}, []);
 
        const [showCta, setShowCta] = useState(true);
 

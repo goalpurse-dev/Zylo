@@ -1,6 +1,8 @@
 // src/pages/home/home.jsx
 
 import React from "react";
+import { useEffect } from "react";
+
 import Navbar from "../../components/Figma/navbar/navbar.jsx";
 import TopSign from "../../components/Figma/TopSign.jsx";
 import Hero from "../../components/Figma/hero.jsx";
@@ -22,6 +24,9 @@ import Pricing from "../../components/Figma/Pricing.jsx"
 
 
 export default function Home() {
+  useEffect(() => {
+  document.title = "Create product visuals that sell";
+}, []);
   return (
 
      

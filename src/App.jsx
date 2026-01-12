@@ -92,8 +92,10 @@ import Step21 from "./pages/workspace/myproduct/step1.jsx"
 import Step31 from "./pages/workspace/myproduct/step2.jsx"
 
 
+// blogs
 
-
+import BlogIndex from "./app/blog/BlogIndex";
+import ProductPhotosShopify from "./app/blog/ProductPhotosShopify";
 
 
 
@@ -123,10 +125,7 @@ export default function App() {
       <AuthProvider>
         <GenerationsProvider>
           {/* Global news bar (appears on scroll anywhere) */}
-          <NewsBar
-            message="new zylo ads with avatar 3.1 launched🎉"
-            href="/changelog"
-          />
+        
           <AppWithRouting />
         </GenerationsProvider>
       </AuthProvider>
@@ -195,210 +194,44 @@ function AppWithRouting() {
           {/* Public home */}
           <Route path="/" element={<Navigate to="/home" replace />} />
 
-          {/* ---------- Brand routes (ToolShell) ---------- */}
-          <Route
-            path="/brands"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <BrandPicker />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/brands/:id"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <BrandDashboard />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
+        
 
-          <Route
-            path="/brand"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <BrandHome />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/brand/:id"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <BrandHome />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/products/new"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <ProductCreate />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/products/:productId/edit"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <ProductCreate />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/product-photos"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <ProductPhotos />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/avatar-studio"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <AvatarStudio />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/enhancements/*"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  Enhancements
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/brand/workspace"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <BrandWorkspace />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/video-library"
-            element={
-              <ToolShell overlaySidebar>
-                <VideoLibrary />
-              </ToolShell>
-            }
-          />
-          <Route
-            path="/brand/name-assistant"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <NameAssistant />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
-
-            <Route
-            path="/text-to-voice"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <TextToVoice />
-                </ToolShell>
-              </RequireAuth>
-            }
-            />
-
-          {/* AD STEPS*/}
-
-<Route
-  path="/ad/create/step-1"
-  element={
-    <RequireAuth>
-      <ToolShell overlaySidebar>
-        <AdCreateStep1 />
-      </ToolShell>
-    </RequireAuth>
-  }
-/>
-
-<Route
-  path="/ad/create/step-2"
-  element={
-    <RequireAuth>
-      <ToolShell overlaySidebar>
-        <AdCreateStep2 />
-      </ToolShell>
-    </RequireAuth>
-  }
-/>
-
-<Route
-  path="/ad/create/step-3"
-  element={
-    <RequireAuth>
-      <ToolShell overlaySidebar>
-        <AdCreateStep3 />
-      </ToolShell>
-    </RequireAuth>
-  }
-/>
-<Route
-  path="/ad/create/step-4"
-  element={
-    <RequireAuth>
-      <ToolShell overlaySidebar>
-        <AdCreateStep4 />
-      </ToolShell>
-    </RequireAuth>
-  }
-/>
-<Route
-  path="/ad/create/step-5"
-  element={
-    <RequireAuth>
-      <ToolShell overlaySidebar>
-        <AdCreateStep5 />
-      </ToolShell>
-    </RequireAuth>
-  }
-/>
+   
 
 
-<Route
-  path="/myproduct/step1"
-  element={
-    <RequireAuth>
-        <Step21 />
-    </RequireAuth>
-  }
-/>
-<Route
-  path="/myproduct/step2"
-  element={
-    <RequireAuth>
-        <Step31 />
-    </RequireAuth>
-  }
-/>
+          {/* Blogs */}  
+        
+        <Route path="/blog" element={<BlogIndex />} />
+
+        <Route
+          path="/blog/product-photos-with-ai-for-shopify"
+          element={<ProductPhotosShopify />}
+        />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 
 
 
@@ -486,34 +319,13 @@ function AppWithRouting() {
           />
 
           {/* ---------- Misc pages ---------- */}
-          <Route path="/thumbnail" element={<ThumbnailGenerator />} />
-          <Route path="/motivation" element={<MotivationalQuote />} />
-          <Route path="/product" element={<Product />} />
-          <Route path="/text-video" element={<TextVideo />} />
-          <Route path="/cartoon-creator" element={<CartoonCreator />} />
-          <Route path="/textstory" element={<TextLanding />} />
-          <Route path="/imagestudio" element={<ImageStudio />} />
-          <Route path="/imageenhancement" element={<ImageEnhancement />} />
-          <Route path="/videostudio" element={<VideoStudio />} />
-          <Route path="/storystudio" element={<StoryStudio />} />
-          <Route path="/videoenhancement" element={<VideoEnhancement />} />
-          <Route path="/comicstudio" element={<ComicStudio />} />
+ 
+
+       
           <Route path="/contact" element={<Contact />} />
-          <Route path="/prompt-library" element={<PromptLibrary />} />
           <Route path="/admin/feedback" element={<FeedbackAnalytics />} />
 
-          {/* ---------- Tool pages (ToolShell) ---------- */}
-          <Route
-            path="/textimage"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <TextToImage />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
-
+        
           {/* Home stays in ToolShell BUT without sidebar (dead-centered content) */}
           <Route
   path="/home"
@@ -524,16 +336,6 @@ function AppWithRouting() {
   }
 />
 
-          <Route
-            path="/textvideo"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <TextToVideo />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
 
           <Route
             path="/help"
@@ -544,61 +346,12 @@ function AppWithRouting() {
             element={<Feedback />}
           />
 
-          <Route
-            path="/ad-studio"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <AdStudio />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/library"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <Library />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
+    
 
-          {/* ---------- Jobs / Dev ---------- */}
-          <Route path="/dev/jobs" element={<JobsLab />} />
-          <Route
-            path="/jobs/:id"
-            element={
-              <RequireAuth>
-                <ToolShell overlaySidebar>
-                  <JobProgress />
-                </ToolShell>
-              </RequireAuth>
-            }
-          />
 
           {/* ---------- Image hub ---------- */}
-          <Route path="/image-generator" element={<ImageGenerator />} />
-          <Route
-            path="/image"
-            element={<Navigate to="/image-generator" replace />}
-          />
+    
 
-          {/* ---------- Video generator + aliases ---------- */}
-          <Route path="/video-generator" element={<VideoGenerator />} />
-          <Route
-            path="/videogenerator"
-            element={<Navigate to="/video-generator" replace />}
-          />
-          <Route
-            path="/tools/video-generator"
-            element={<VideoGenerator />}
-          />
-          <Route
-            path="/tools"
-            element={<Navigate to="/tools/video-generator" replace />}
-          />
 
           {/* ---------- Support section ---------- */}
           <Route path="/support" element={<SupportLayout />}>

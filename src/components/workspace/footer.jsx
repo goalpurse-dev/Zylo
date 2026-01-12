@@ -57,7 +57,7 @@ export default function footer() {
           <div className="flex flex-col gap-1  ">
         <h3 className="text-[22px] font-inter font-extrabold mt-10 w-[110px] cursor-default ">Pricing</h3>
         <Link className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="/pricing"
+        to="pricing"
         >Plans</Link> 
     
          </div>
@@ -76,6 +76,10 @@ export default function footer() {
         <Link className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline sm:whitespace-nowrap"
         to="/help/feedback"
         >Feedback</Link>
+
+               <Link className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline sm:whitespace-nowrap"
+        to="/blog"
+        >Blogs</Link>
 
         
         </div>
@@ -154,7 +158,7 @@ export default function footer() {
           <div className="flex flex-col gap-3  ">
         <h3 className="text-xl font-inter font-extrabold mt-10 w-[110px] cursor-default ">Pricing</h3>
         <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="/pricing"
+        to="pricing"
         >Plans</Link> 
     
          </div>
@@ -172,6 +176,10 @@ export default function footer() {
         <Link className="text-smn font-normal font-inter mt-2 cursor-pointer hover:underline"
         to="/help/feedback"
         >Feedback</Link>
+
+           <Link className="text-smn font-normal font-inter mt-2 cursor-pointer hover:underline"
+        to="/blog"
+        >Blogs</Link>
         
         </div>
 

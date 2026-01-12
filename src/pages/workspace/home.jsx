@@ -5,11 +5,17 @@ import Tools from "../../components/workspace/tools.jsx";
 import Faq from "../../components/workspace/faq/faq.jsx";
 import Latest from "../../components/workspace/latest.jsx";
 import Proof from "../../components/workspace/proof.jsx";
-import Footer from "../../components/workspace/footer.jsx";
+import Footer from "../../components/myproduct/footer.jsx";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+
 
 export default function WorkspaceHome() {
+
+  useEffect(() => {
+  document.title = "Create Visuals Faster";
+}, []);
 
    const [showCta, setShowCta] = useState(true);
 

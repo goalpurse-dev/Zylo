@@ -331,6 +331,11 @@ function SecondaryCard({ title, price, subtitle, ctaLabel, to, children }) {
 
 /* ---------------------------------- Page ---------------------------------- */
 export default function Pricing() {
+
+  useEffect(() => {
+  document.title = "Plans Built For Growth";
+}, []);
+
   const [billing, setBilling] = useState("monthly");
   const { plan, hasSub } = useCurrentPlan();
   const [askTier, setAskTier] = useState(null); // {id, name}

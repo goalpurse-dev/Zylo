@@ -9,13 +9,18 @@ import Big from "../../components/productphoto/Big.jsx";
 import Creations from "../../components/productphoto/Creations.jsx";
 import Faq from "../../components/productphoto/faq.jsx";
 import Bg from "../../components/productphoto/Bg.jsx";
-import Footer from "../../components/productphoto/footer.jsx";
+import Footer from "../../components/myproduct/footer.jsx";
 
 import Step1 from "../../components/productphoto/steps/step1.jsx";
 import Step2 from "../../components/productphoto/steps/step2.jsx";
 import Step3 from "../../components/productphoto/steps/step3.jsx";
 
 export default function ProductPhoto() {
+
+  useEffect(() => {
+  document.title = "AI Product Photos Studio";
+}, []);
+
   const [openStep, setOpenStep] = useState(null); // 2 | 3 | null
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedBackground, setSelectedBackground] = useState(null);

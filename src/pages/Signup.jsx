@@ -1,5 +1,5 @@
 // src/pages/Signup.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import OAuthButton from "../components/auth/OAuthButton";
@@ -7,6 +7,11 @@ import { signUpWithEmailPassword, signInWithGoogle } from "../lib/auth";
 import v32 from "../assets/library/v32.mp4";
 
 export default function Signup() {
+
+  useEffect(() => {
+  document.title = "Create Your Zyvo Account";
+}, []);
+
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
