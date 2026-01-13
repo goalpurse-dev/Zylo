@@ -30,7 +30,7 @@ const [loading, setLoading] = useState(false);
         
         <Link className="text-[#110829] underline hover:text-[#7A3BFF] text-[16px]" to="/blog/product-photos-with-ai-for-shopify">Product Photos with AI for Shopify</Link>
          <Link className="text-[#110829] underline hover:text-[#7A3BFF] text-[16px]" to="/blog/product-photos-for-shopify-store">Product Photos with AI for Shopify stores</Link>
-          <Link className="text-[#110829] underline hover:text-[#7A3BFF] text-[16px]" to="/blog/product-photos-with-ai-for-shopify">Product Photos with AI for Shopify</Link>
+          <Link className="text-[#110829] underline hover:text-[#7A3BFF] text-[16px]" to="/blog/AI-product-photos-increase-conversion-rates">How AI Product Photos Increase Conversion Rates</Link>
           
         
         </div>    

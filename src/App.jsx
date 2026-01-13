@@ -97,6 +97,8 @@ import Step31 from "./pages/workspace/myproduct/step2.jsx"
 import BlogIndex from "./app/blog/BlogIndex";
 import ProductPhotosShopify from "./app/blog/ProductPhotosShopify";
 import ProductPhotosForShopify from "./app/blog/productphotos/Forshopifystores.jsx";
+import AiIncreaseRates from "./app/blog/productphotos/AIroductIncreaseRates.jsx";
+
 
 import { Analytics } from "@vercel/analytics/react";
 
@@ -209,6 +211,8 @@ function AppWithRouting() {
 
         <Route path="/blog/product-photos-with-ai-for-shopify" element={<ProductPhotosShopify />} />
         <Route path="/blog/product-photos-for-shopify-store" element={<ProductPhotosForShopify />} />
+        <Route path="/blog/AI-product-photos-increase-conversion-rates" element={<AiIncreaseRates />} />
+
           
 
 
