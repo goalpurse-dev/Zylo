@@ -88,13 +88,13 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
 )}
 
      <Link
-  to="/pricing"
+  to="/workspace/pricing"
   className="text-[#110829] font-normal text-base lg:text-xl hover:text-[#7A3BFF] transition hover:underline"
 >
   Pricing
 </Link>
       <Link className="text-[#110829] font-normal text-base lg:text-xl hover:text-[#7A3BFF] transition hover:underline cursor-pointer"
-      to="/contact"
+      to="/help"
       >Help</Link>
 
 
@@ -181,11 +181,11 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
 
 
       {/* Other links */}
-      <Link className="block bg-[#F4F1FA] rounded-xl px-4 py-4 text-[#110829]" to="/pricing">
+      <Link className="block bg-[#F4F1FA] rounded-xl px-4 py-4 text-[#110829]" to="/workspace/pricing">
         Pricing
       </Link>
 
-      <Link className="block bg-[#F4F1FA] rounded-xl px-4 py-4 text-[#110829]" to="/contact">
+      <Link className="block bg-[#F4F1FA] rounded-xl px-4 py-4 text-[#110829]" to="/help">
         Help
       </Link>
 

@@ -70,12 +70,12 @@ export default function TopRow({ title, onMenuClick }) {
           {/* Profile */}
        {!user ? (
         /* NOT SIGNED IN */
-        <button
+        <Link
           className="bg-[#C9B8FF] px-6 py-4 text-[#492399] text-[16px] rounded-md hover:opacity-90 transition"
-          onClick={() => navigate("/signup")}
+          to="/signup"
         >
           Sign Up Now
-        </button>
+        </Link>
       ) : (
         /* SIGNED IN */
         <Link className="bg-[#ECE8F2] rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center cursor-pointer"
