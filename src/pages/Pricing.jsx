@@ -8,16 +8,16 @@ import { supabase } from "../lib/supabaseClient";
 
 /** >>> YOUR REAL STRIPE PRICE IDS <<< */
 const PRICE_IDS = {
-  starter: "price_1SPRwvHtn4q5rIncXWHHI5ZB",
-  pro: "price_1SPRxxHtn4q5rInc0fWPi6yM",
-  generative: "price_1SPRyZHtn4q5rIncHLQpTnkI",
+  starter: "price_1SpZXeHtn4q5rIncDyM2BSTX",
+  pro: "price_1SpZZhHtn4q5rInc6cL8gkj3",
+  generative: "price_1SpZb3Htn4q5rIncf5sFROHv",
 };
 
 /** >>> TOP-UP STRIPE PRICE IDS <<< */
 const TOPUP_PRICE_IDS = {
-  mini: "price_1SPStqHtn4q5rIncVxLdABqO",      // €6.99
-  standard: "price_1SPSuEHtn4q5rIncHCKU1Y4A",  // €11.99
-  max: "price_1SPSuUHtn4q5rIncbNN8fGqm",       // €19.99
+  mini: "price_price_1SpZcRHtn4q5rIncaayoetIS",      // €6.99
+  standard: "price_1SpZczHtn4q5rInctZoF9rJV",  // €11.99
+  max: "price_1SpZdTHtn4q5rIncFRt80VaD",       // €19.99
 };
 
 const BLUE = "#1677FF";
