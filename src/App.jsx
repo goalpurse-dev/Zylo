@@ -98,6 +98,10 @@ import BlogIndex from "./app/blog/BlogIndex";
 import ProductPhotosShopify from "./app/blog/ProductPhotosShopify";
 import ProductPhotosForShopify from "./app/blog/productphotos/Forshopifystores.jsx";
 import AiIncreaseRates from "./app/blog/productphotos/AIroductIncreaseRates.jsx";
+import BestAiToolsEcommerce from "./app/blog/productphotos/BestAiToolsEcommerce.jsx";
+import ShopifyProductPhotoBestPractices from "./app/blog/productphotos/ShopifyProductPhotoBestPractices.jsx";
+
+
 
 
 import { Analytics } from "@vercel/analytics/react";
@@ -212,6 +216,8 @@ function AppWithRouting() {
         <Route path="/blog/product-photos-with-ai-for-shopify" element={<ProductPhotosShopify />} />
         <Route path="/blog/product-photos-for-shopify-store" element={<ProductPhotosForShopify />} />
         <Route path="/blog/AI-product-photos-increase-conversion-rates" element={<AiIncreaseRates />} />
+        <Route path="/blog/best-ai-tools-for-ecommerce" element={<BestAiToolsEcommerce />} />
+        <Route path="/blog/shopify-product-photo-best-practices" element={<ShopifyProductPhotoBestPractices />} />
 
           
 
