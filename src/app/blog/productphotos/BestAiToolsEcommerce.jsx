@@ -6,7 +6,28 @@ import Best from "../../../assets/blog/productphoto/best.png";
 import UseCase from "../../../assets/blog/productphoto/UseCase.png";
 import { Link } from "react-router-dom";
 
+import RelatedArticles from "../../../app/blog/RelatedArticles";
 
+const related = [
+  {
+    title: "Shopify Product Photo Best Practices",
+    description: "Learn how AI product photos improve Shopify conversions",
+    date: "10.01.2026",
+    slug: "/blog/shopify-product-photo-best-practices",
+  },
+  {
+    title: "AI Product Photography for Ecommerce",
+    description: "How brands replace studios with AI",
+    date: "08.01.2026",
+    slug: "/blog/ai-product-photography-ecommerce",
+  },
+  {
+    title: "How to Create Clean Product Backgrounds",
+    description: "Backgrounds that increase trust & sales",
+    date: "05.01.2026",
+    slug: "/blog/clean-product-backgrounds",
+  },
+];
 
 
 
@@ -184,8 +205,11 @@ export default function BestAiToolsEcommerce() {
 
       </div>
       
-
+   <RelatedArticles articles={related} />
+     
+      <div className="mt-10">
       <Footer />
+      </div>
     </section>
   );
 }

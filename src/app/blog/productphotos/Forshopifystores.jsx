@@ -2,6 +2,32 @@ import { useEffect } from "react";
 import Library from "../../../assets/blog/productphoto/library.png";
 import Before1 from "../../../assets/blog/productphoto/before1.png";
 import After1 from "../../../assets/blog/productphoto/before2.png";
+import Footer from "../../../components/workspace/footer.jsx";
+
+
+import RelatedArticles from "../../../app/blog/RelatedArticles";
+
+const related = [
+  {
+    title: "Shopify Product Photo Best Practices",
+    description: "Learn how AI product photos improve Shopify conversions",
+    date: "10.01.2026",
+    slug: "/blog/shopify-product-photo-best-practices",
+  },
+  {
+    title: "AI Product Photography for Ecommerce",
+    description: "How brands replace studios with AI",
+    date: "08.01.2026",
+    slug: "/blog/ai-product-photography-ecommerce",
+  },
+  {
+    title: "How to Create Clean Product Backgrounds",
+    description: "Backgrounds that increase trust & sales",
+    date: "05.01.2026",
+    slug: "/blog/clean-product-backgrounds",
+  },
+];
+
 
 export default function AIProductPhotosShopify() {
 
@@ -150,7 +176,11 @@ export default function AIProductPhotosShopify() {
 
       </div>
 
-  
+      <RelatedArticles articles={related} />
+
+      <div className="mt-10">
+      <Footer />
+      </div>  
     </section>
   );
 }

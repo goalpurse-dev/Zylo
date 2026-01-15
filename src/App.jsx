@@ -100,6 +100,9 @@ import ProductPhotosForShopify from "./app/blog/productphotos/Forshopifystores.j
 import AiIncreaseRates from "./app/blog/productphotos/AIroductIncreaseRates.jsx";
 import BestAiToolsEcommerce from "./app/blog/productphotos/BestAiToolsEcommerce.jsx";
 import ShopifyProductPhotoBestPractices from "./app/blog/productphotos/ShopifyProductPhotoBestPractices.jsx";
+import AiVsTraditional from "./app/blog/productphotos/ai-vs-traditional-product-photography.jsx";
+
+
 
 
 
@@ -221,7 +224,7 @@ function AppWithRouting() {
         <Route path="/blog/AI-product-photos-increase-conversion-rates" element={<AiIncreaseRates />} />
         <Route path="/blog/best-ai-tools-for-ecommerce" element={<BestAiToolsEcommerce />} />
         <Route path="/blog/shopify-product-photo-best-practices" element={<ShopifyProductPhotoBestPractices />} />
-
+        <Route path="/blog/ai-vs-traditional-product-photography" element={<AiVsTraditional />} />
           
 
 

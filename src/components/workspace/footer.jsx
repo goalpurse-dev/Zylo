@@ -33,20 +33,20 @@ export default function footer() {
         <div className="flex flex-col gap-3  mt-10 mr-4">
         <h3 className="text-[22px] font-inter font-extrabold  cursor-default ">Zylo</h3>
         <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap cursor-pointer hover:underline "
-        to="productphoto"
+        to="/workspace/productphoto"
         >Product Photos</Link> 
 
         <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap cursor-pointer hover:underline"
-        to="myproduct"
+        to="/workspace/myproduct"
         >Own Product</Link>
 
 
         <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap  cursor-pointer hover:underline"
-        to="library"
+        to="/workspace/library"
         >Background Library</Link>
        
         <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap cursor-pointer hover:underline"
-        to="creations"
+        to="/workspace/creations"
         >Creations</Link>
         
         </div>
@@ -57,7 +57,7 @@ export default function footer() {
           <div className="flex flex-col gap-1  ">
         <h3 className="text-[22px] font-inter font-extrabold mt-10 w-[110px] cursor-default ">Pricing</h3>
         <Link className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="pricing"
+        to="/workspace/pricing"
         >Plans</Link> 
     
          </div>
@@ -138,19 +138,19 @@ export default function footer() {
         <div className="flex flex-col gap-3  ">
         <h3 className="text-xl font-inter font-extrabold mt-10 cursor-default ">Zylo</h3>
         <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline "
-        to="productphoto"
+        to="/workspace/productphoto"
         >Product Photos</Link> 
 
         <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="myproduct"
+        to="/workspace/myproduct"
         >Own Product</Link>
 
         <Link className="text-smn font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="library"
+        to="/workspace/library"
         >Background Library</Link>
 
         <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="creations"
+        to="/workspace/creations"
         >Creations</Link>
         
         </div>
@@ -158,7 +158,7 @@ export default function footer() {
           <div className="flex flex-col gap-3  ">
         <h3 className="text-xl font-inter font-extrabold mt-10 w-[110px] cursor-default ">Pricing</h3>
         <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="pricing"
+        to="/workspace/pricing"
         >Plans</Link> 
     
          </div>

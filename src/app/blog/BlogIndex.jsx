@@ -3,6 +3,8 @@ import Footer from "../../components/workspace/footer.jsx";
 import { useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { useEffect } from "react";
+import { Calendar } from "lucide-react";
+Calendar
 
 export default function BlogIndex() {
 
@@ -21,21 +23,117 @@ const [loading, setLoading] = useState(false);
     </h1>  
     </div>
 
-    <div className="max-w-2xl mx-auto ">
+    <div className="max-w-4xl mx-auto px-10 ">
     <p className="text-[#110829] font-semibold text-[16px]">All the blogs</p>
 
 
     <div className="py-4 "> 
     <div className=" border-[#110829] border-[1px]  py-10 bg-white rounded-md px-10 flex flex-col gap-6 ">
         
-        <Link className="text-[#110829] underline hover:text-[#7A3BFF] text-[16px]" to="/blog/product-photos-with-ai-for-shopify">Product Photos with AI for Shopify</Link>
-         <Link className="text-[#110829] underline hover:text-[#7A3BFF] text-[16px]" to="/blog/product-photos-for-shopify-store">Product Photos with AI for Shopify stores</Link>
-          <Link className="text-[#110829] underline hover:text-[#7A3BFF] text-[16px]" to="/blog/AI-product-photos-increase-conversion-rates">How AI Product Photos Increase Conversion Rates</Link>
-          <Link className="text-[#110829] underline hover:text-[#7A3BFF] text-[16px]" to="/blog/best-ai-tools-for-ecommerce">Best AI Tools for Ecommerce Product Photography</Link>
-          <Link className="text-[#110829] underline hover:text-[#7A3BFF] text-[16px]" to="/blog/shopify-product-photo-best-practices">Shopify Product Photo Best Practices</Link>
+        <div className="grid grid-cols-1 md:grid-cols-2  gap-4 ">
+         
+        {/* Blog Card 1 */}
+         <Link to="/blog/product-photos-with-ai-for-shopify" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Product Photos with AI for Shopify</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how product photos with ai work for shopify</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">14.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+
+             
+        {/* Blog Card 2 */}
+         <Link to="/blog/product-photos-for-shopify-store" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Product Photos with AI for Shopify stores</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how product photos with ai work for shopify</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">10.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+
+
+               {/* Blog Card 3 */}
+         <Link to="/blog/AI-product-photos-increase-conversion-rates" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">How AI Product Photos Increase Conversion Rates</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how product photos with ai work for shopify</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">10.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+
+                    {/* Blog Card 4 */}
+         <Link to="/blog/best-ai-tools-for-ecommerce" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Best AI Tools for Ecommerce Product Photography</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how product photos with ai work for shopify</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">10.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+
+          
+                    {/* Blog Card 5 */}
+         <Link to="/blog/shopify-product-photo-best-practices" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Shopify Product Photo Best Practices</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how product photos with ai work for shopify</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">10.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+
+                    
+                    {/* Blog Card 6 */}
+         <Link to="/blog/ai-vs-traditional-product-photography" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">AI vs Traditional Product Photography</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how product photos with ai work for shopify</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">15.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+        
+  
+          
+        </div>
+        
+
+        
         </div>    
     </div>    
     </div>
+
+     
+      
+    
+
 
     {/* Help */}
     <div className="mt-10">

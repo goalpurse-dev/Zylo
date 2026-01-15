@@ -14,6 +14,7 @@ export default function AuthCallback() {
         // 1️⃣ Force PKCE exchange (fixes iOS Safari)
         const { error: exchangeError } =
           await supabase.auth.exchangeCodeForSession(url);
+          await supabase.auth.exchangeCodeForSession(window.location.href);
 
         if (exchangeError) {
           console.error("OAuth exchange failed:", exchangeError);

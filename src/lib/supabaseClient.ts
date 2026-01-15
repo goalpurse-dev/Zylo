@@ -12,3 +12,8 @@ export const supabase = createClient(
     },
   }
 );
+console.log("SUPABASE URL:", import.meta.env.VITE_SUPABASE_URL);
+console.log(
+  "SUPABASE ANON:",
+  import.meta.env.VITE_SUPABASE_ANON_KEY?.slice(0, 20)
+);
