@@ -24,12 +24,12 @@ export default function Signup() {
     setErr(""); setMsg(""); setLoading(true);
     try {
       const res = await signUpWithEmailPassword(email, password);
-if (res.status === "created" && res.session) {
-  navigate("/home");                   // you ARE logged in
+if (res.session) {
+  navigate("/workspace");
 } else {
-  setMsg("Account created. Check your email to confirm before logging in.");
-  // optionally: navigate("/login")
+  setMsg("Account created. Check your email to confirm your account.");
 }
+
     } catch (e2) {
       const msg = String(e2?.message || "");
       if (msg.toLowerCase().includes("already registered")) {
