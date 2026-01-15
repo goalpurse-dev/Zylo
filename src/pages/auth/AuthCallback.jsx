@@ -1,42 +1,50 @@
 // src/pages/auth/AuthCallback.jsx
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function AuthCallback() {
-  const nav = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const finishAuth = async () => {
+    const completeAuth = async () => {
       try {
-        // Supabase v2 automatically handles OAuth + PKCE
+        const url = window.location.href;
+
+        // 1️⃣ Force PKCE exchange (fixes iOS Safari)
+        const { error: exchangeError } =
+          await supabase.auth.exchangeCodeForSession(url);
+
+        if (exchangeError) {
+          console.error("OAuth exchange failed:", exchangeError);
+        }
+
+        // 2️⃣ Wait one tick so Safari can write cookies
+        await new Promise((r) => setTimeout(r, 100));
+
+        // 3️⃣ Now safely read the session
         const { data, error } = await supabase.auth.getSession();
 
-        if (error) {
-          console.error("Auth callback error:", error);
-          nav("/login", { replace: true });
+        if (error || !data?.session) {
+          console.error("Session missing after OAuth:", error);
+          navigate("/login", { replace: true });
           return;
         }
 
-        if (data?.session) {
-          // ✅ Logged in successfully
-          nav("/workspace", { replace: true });
-        } else {
-          // ❌ No session → back to login
-          nav("/login", { replace: true });
-        }
+        // ✅ SUCCESS
+        navigate("/workspace", { replace: true });
       } catch (err) {
-        console.error("Unexpected auth callback error:", err);
-        nav("/login", { replace: true });
+        console.error("Auth callback fatal error:", err);
+        navigate("/login", { replace: true });
       }
     };
 
-    finishAuth();
-  }, [nav]);
+    completeAuth();
+  }, [navigate]);
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <p className="text-black">Finishing sign in…</p>
+    <div className="min-h-screen flex items-center justify-center">
+      <p>Finishing sign in…</p>
     </div>
   );
 }

@@ -125,9 +125,7 @@ function RequireAuth({ children }) {
 function GuestOnly({ children }) {
   const { loading, user } = useAuth();
 
-  if (loading) {
-    return <div />; // IMPORTANT: block render
-  }
+  if (loading) return null; // or spinner, NOT empty div
 
   if (user) {
     return <Navigate to="/workspace" replace />;
@@ -319,9 +317,9 @@ function AppWithRouting() {
           <Route
             path="/auth/callback"
             element={
-              <GuestOnly>
+         
                 <AuthCallback />
-              </GuestOnly>
+          
             }
           />
 
