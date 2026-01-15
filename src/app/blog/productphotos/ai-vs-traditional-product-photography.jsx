@@ -40,8 +40,8 @@ export default function BlogAiVsTraditionalProductPhotography() {
   
 
   return (
-    <article className="mx-auto   text-[#110829] min-h-screen bg-[#F7F5FA]">
-        <div className="max-w-4xl mx-auto px-5">
+    <article className="mx-auto   text-[#110829] min-h-screen bg-[#F7F5FA] ">
+        <div className="max-w-4xl mx-auto px-5 py-10">
       {/* TITLE */}
       <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
         AI vs Traditional Product Photography: Which Is Better for Ecommerce?
