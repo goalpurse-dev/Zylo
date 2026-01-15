@@ -43,7 +43,7 @@ export default function AuthCallback() {
             return;
           }
           if (data?.session) {
-            nav("/", { replace: true });
+            nav("/workspace", { replace: true });
             return;
           }
         }
@@ -55,7 +55,7 @@ export default function AuthCallback() {
           return;
         }
         if (sess?.session) {
-          nav("/", { replace: true });
+          nav("/workspace", { replace: true });
           return;
         }
 

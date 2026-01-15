@@ -124,22 +124,27 @@ function RequireAuth({ children }) {
 }
 function GuestOnly({ children }) {
   const { loading, user } = useAuth();
-  if (loading) return null;
-  if (user) return <Navigate to="/workspace" replace />;
+
+  if (loading) {
+    return <div />; // IMPORTANT: block render
+  }
+
+  if (user) {
+    return <Navigate to="/workspace" replace />;
+  }
+
   return children;
 }
 
 export default function App() {
-  return (
-    <Router>
-      <AuthProvider>
-        <GenerationsProvider>
-          {/* Global news bar (appears on scroll anywhere) */}
-        
-          <AppWithRouting />
-        </GenerationsProvider>
-      </AuthProvider>
-    </Router>
+ return (
+<AuthProvider>
+  <Router>
+    <GenerationsProvider>
+      <AppWithRouting />
+    </GenerationsProvider>
+  </Router>
+</AuthProvider>
   );
 }
 
