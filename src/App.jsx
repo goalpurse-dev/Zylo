@@ -95,12 +95,18 @@ import Step31 from "./pages/workspace/myproduct/step2.jsx"
 // blogs
 
 import BlogIndex from "./app/blog/BlogIndex";
+
+{/* Product Photo Blogs */}
 import ProductPhotosShopify from "./app/blog/ProductPhotosShopify";
 import ProductPhotosForShopify from "./app/blog/productphotos/Forshopifystores.jsx";
 import AiIncreaseRates from "./app/blog/productphotos/AIroductIncreaseRates.jsx";
 import BestAiToolsEcommerce from "./app/blog/productphotos/BestAiToolsEcommerce.jsx";
 import ShopifyProductPhotoBestPractices from "./app/blog/productphotos/ShopifyProductPhotoBestPractices.jsx";
 import AiVsTraditional from "./app/blog/productphotos/ai-vs-traditional-product-photography.jsx";
+import WhyProductPhotosMatter from "./app/blog/productphotos/WhyProductPhotosMatter.jsx";
+import BestAiProductBgToUse from "./app/blog/productphotos/BestAiProductBgToUse.jsx";
+
+
 
 
 
@@ -225,7 +231,8 @@ function AppWithRouting() {
         <Route path="/blog/best-ai-tools-for-ecommerce" element={<BestAiToolsEcommerce />} />
         <Route path="/blog/shopify-product-photo-best-practices" element={<ShopifyProductPhotoBestPractices />} />
         <Route path="/blog/ai-vs-traditional-product-photography" element={<AiVsTraditional />} />
-          
+        <Route path="/blog/why-product-photos-matter-for-ecommerce-success" element={<WhyProductPhotosMatter />} />
+        <Route path="/blog/best-ai-product-backgrounds-to-use" element={<BestAiProductBgToUse />} /> 
 
 
 
