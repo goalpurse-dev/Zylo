@@ -4,7 +4,7 @@ import RelatedArticles from "../../../app/blog/RelatedArticles";
 import Footer from "../../../components/workspace/footer.jsx";
 import Wrong2 from "../../../assets/blog/productphoto/wrong2.png";
 import BeforeAfter3 from "../../../assets/blog/productphoto/beforeafter3.png";
-import RealCase from "../../../assets/blog/productphoto/RealCase.png";
+import RealCase from "../../../assets/blog/productphoto/realcase.png";
 import Good from "../../../assets/blog/productphoto/Good.png";
 
 
