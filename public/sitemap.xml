@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset
-  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <!-- HOME -->
   <url>
@@ -30,43 +29,29 @@
     <priority>0.8</priority>
   </url>
 
-    <url>
+  <url>
     <loc>https://www.tryzyvo.com/blog/best-ai-tools-for-ecommerce</loc>
     <priority>0.8</priority>
   </url>
 
-
-     <url>
+  <url>
     <loc>https://www.tryzyvo.com/blog/shopify-product-photo-best-practices</loc>
     <priority>0.8</priority>
-      </url>
+  </url>
 
-          <url>
-    <loc>https://www.tryzyvo.com/blog/shopify-product-photo-best-practices</loc>
-    <priority>0.8</priority>
-      </url>
-
-      
-          <url>
+  <url>
     <loc>https://www.tryzyvo.com/blog/ai-vs-traditional-product-photography</loc>
     <priority>0.8</priority>
-      </url>
+  </url>
 
-           <url>
+  <url>
     <loc>https://www.tryzyvo.com/blog/why-product-photos-matter-for-ecommerce-success</loc>
     <priority>0.8</priority>
-      </url>
+  </url>
 
-      
-           <url>
+  <url>
     <loc>https://www.tryzyvo.com/blog/best-ai-product-backgrounds-to-use</loc>
     <priority>0.8</priority>
-      </url>
-
-
-
-
-
   </url>
 
   <!-- PUBLIC WORKSPACE PAGES -->
