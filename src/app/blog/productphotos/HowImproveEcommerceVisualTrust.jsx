@@ -5,6 +5,29 @@ import Example3 from "../../../assets/blog/productphoto/example3.png";
 
 import { Link } from "react-router-dom";
 
+import RelatedArticles from "../../../app/blog/RelatedArticles";
+
+const related = [
+  {
+    title: "Shopify Product Photo Best Practices",
+    description: "Learn how AI product photos improve Shopify conversions",
+    date: "10.01.2026",
+    slug: "/blog/shopify-product-photo-best-practices",
+  },
+  {
+    title: "AI Product Photography for Ecommerce",
+    description: "How brands replace studios with AI",
+    date: "08.01.2026",
+    slug: "/blog/ai-product-photography-ecommerce",
+  },
+  {
+    title: "Best AI Product Backgrounds to use",
+    description: "Backgrounds that increase trust & sales",
+    date: "05.01.2026",
+    slug: "/blog/best-ai-product-backgrounds-to-use",
+  },
+];
+
 
 
 
@@ -229,6 +252,11 @@ export default function BlogImproveEcommerceVisualTrust() {
       <footer className="border-t border-black/10">
         <div className="mx-auto max-w-3xl px-6 py-10 text-sm text-black/60">
           © {new Date().getFullYear()} Zyvo • Build trust with better visuals.
+        </div>
+
+            <div className="mb-10">
+        <RelatedArticles articles={related} />
+
         </div>
       </footer>
     </article>
