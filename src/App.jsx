@@ -108,6 +108,7 @@ import BestAiProductBgToUse from "./app/blog/productphotos/BestAiProductBgToUse.
 import HowImproveEcommerceVisualTrust from "./app/blog/productphotos/HowImproveEcommerceVisualTrust.jsx";
 import ProductPhotographyMistakesEcommerce from "./app/blog/productphotos/ProductPhotographyMistakesEcommerce.jsx";
 import HowVisualBrandingImpactsOnlineSales from "./app/blog/productphotos/HowVisualBrandingImpactsOnlineSales.jsx";
+import AIBackgroundRemovalForProductPhotos from "./app/blog/productphotos/AIBackgroundRemovalForProductPhotos.jsx";
 
 
 
@@ -242,7 +243,7 @@ function AppWithRouting() {
         <Route path="/blog/how-to-improve-ecommerce-visual-trust" element={<HowImproveEcommerceVisualTrust />} />
         <Route path="/blog/product-photography-mistakes-ecommerce-brands-make" element={<ProductPhotographyMistakesEcommerce />} />
         <Route path="/blog/how-visual-branding-impacts-online-sales" element={<HowVisualBrandingImpactsOnlineSales />} />
-
+        <Route path="/blog/ai-background-removal-for-product-photos" element={<AIBackgroundRemovalForProductPhotos />} />
 
 
 
