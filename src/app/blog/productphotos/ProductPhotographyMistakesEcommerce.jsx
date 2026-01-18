@@ -16,10 +16,10 @@ const related = [
     slug: "/blog/ai-product-photography-ecommerce",
   },
   {
-    title: "How to Create Clean Product Backgrounds",
-    description: "Backgrounds that increase trust & sales",
+    title: "How to Improve Ecommerce Visual Trust",
+    description: "Tips to boost customer confidence & sales",
     date: "05.01.2026",
-    slug: "/blog/clean-product-backgrounds",
+    slug: "/blog/how-to-improve-ecommerce-visual-trust",
   },
 ];
 
