@@ -106,6 +106,9 @@ import AiVsTraditional from "./app/blog/productphotos/ai-vs-traditional-product-
 import WhyProductPhotosMatter from "./app/blog/productphotos/WhyProductPhotosMatter.jsx";
 import BestAiProductBgToUse from "./app/blog/productphotos/BestAiProductBgToUse.jsx";
 import HowImproveEcommerceVisualTrust from "./app/blog/productphotos/HowImproveEcommerceVisualTrust.jsx";
+import ProductPhotographyMistakesEcommerce from "./app/blog/productphotos/ProductPhotographyMistakesEcommerce.jsx";
+
+
 
 
 
@@ -236,7 +239,7 @@ function AppWithRouting() {
         <Route path="/blog/why-product-photos-matter-for-ecommerce-success" element={<WhyProductPhotosMatter />} />
         <Route path="/blog/best-ai-product-backgrounds-to-use" element={<BestAiProductBgToUse />} /> 
         <Route path="/blog/how-to-improve-ecommerce-visual-trust" element={<HowImproveEcommerceVisualTrust />} />
-
+        <Route path="/blog/product-photography-mistakes-ecommerce-brands-make" element={<ProductPhotographyMistakesEcommerce />} />
 
 
 

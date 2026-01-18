@@ -164,7 +164,22 @@ const [loading, setLoading] = useState(false);
             high-end — and they feel safe buying.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
-          <p className="text-[#4A4A55] text-[10px] ">16.01/2026</p>
+          <p className="text-[#4A4A55] text-[10px] ">17.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+
+                             {/* Blog Card 10*/}
+                <Link to="/blog/product-photography-mistakes-ecommerce-brands-make" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Product Photography Mistakes Ecommerce Brands Make </h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">When the visuals feel high-end, shoppers assume the product is
+            high-end — and they feel safe buying.</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">18.01/2026</p>
           </div>
           </div>
           </Link> 

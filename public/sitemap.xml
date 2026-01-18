@@ -59,6 +59,12 @@
     <priority>0.8</priority>
   </url>
 
+  
+   <url>
+    <loc>https://www.tryzyvo.com/blog/product-photography-mistakes-ecommerce-brands-make</loc>
+    <priority>0.8</priority>
+  </url>
+
   <!-- PUBLIC WORKSPACE PAGES -->
   <url>
     <loc>https://www.tryzyvo.com/workspace/productphoto</loc>
