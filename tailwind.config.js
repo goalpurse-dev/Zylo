@@ -16,10 +16,12 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        inter: ['Inter', 'sans-serif'],
-        opensans: ['Open Sans', 'sans-serif'],
+        inter: ["Inter", "sans-serif"],
+        opensans: ["Open Sans", "sans-serif"],
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require("tailwind-scrollbar"),
+  ],
 };

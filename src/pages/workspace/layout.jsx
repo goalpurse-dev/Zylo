@@ -14,6 +14,22 @@ export default function WorkspaceLayout() {
 
   // Scroll hide/show logic (LG+ only)
   useEffect(() => {
+  setShowTopRow(true);
+  lastScrollY.current = 0;
+}, [location.pathname]);
+
+useEffect(() => {
+  const onResize = () => {
+    if (window.innerWidth < 1024) {
+      setShowTopRow(true);
+      lastScrollY.current = 0;
+    }
+  };
+  window.addEventListener("resize", onResize);
+  return () => window.removeEventListener("resize", onResize);
+}, []);
+
+  useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
 
@@ -50,21 +66,23 @@ export default function WorkspaceLayout() {
     <div className="flex w-full min-h-screen bg-[#F7F5FA]">
       
       {/* Sidebar (sticky, non-scrolling) */}
-      <aside className="hidden lg:block sticky top-0 h-screen">
+      <aside className="hidden lg:block h-screen w-[260px] flex-shrink-0">
+     <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">  
         <ToolShell />
+        </div>
       </aside>
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <aside className="fixed inset-0 z-50 lg:hidden">
-          <ToolShell onClose={() => setSidebarOpen(false)} />
+          <ToolShell onClose={() => setSidebarOpen(false)} /> 
         </aside>
       )}
 
       {/* Scroll container */}
       <div
         ref={scrollRef}
-        className="flex flex-col flex-1 overflow-y-auto min-h-0"
+        className="flex flex-col flex-1 h-screen overflow-y-auto"
       >
         {/* TopRow */}
         <div

@@ -42,7 +42,8 @@ const formattedCredits = Intl.NumberFormat().format(credits);
 
     return (
         <section>
-          <div className="bg-white w-full h-screen md:hidden overflow-y-auto pb-32">
+          <div className="bg-white w-full h-screen md:hidden flex flex-col overflow-hidden ">
+
             
            {/*Start */}
          
@@ -63,10 +64,24 @@ const formattedCredits = Intl.NumberFormat().format(credits);
 
             </div> 
 
-            <div className="flex flex-col gap-8 ">
+
 
                 {/* Tools */}
-           
+
+                        <div
+  className="
+    flex-1
+    overflow-y-auto
+    overflow-x-hidden
+    pb-32
+    scrollbar-thin
+    scrollbar-thumb-gray-300
+    scrollbar-track-transparent
+      border-r border-[#ECE8F2]
+  "
+>
+      <div className="gap-4 flex flex-col">
+
    
              
  <NavLink
@@ -141,8 +156,8 @@ const formattedCredits = Intl.NumberFormat().format(credits);
   <p className="text-[#110829] px-3 text-[20px]">Creations</p>
 </NavLink>
    
+       </div>      
            
-            </div>
 
             <div>
             <div className="bg-[#ECE8F2] w-full py-[1px] mt-20">
@@ -173,10 +188,20 @@ const formattedCredits = Intl.NumberFormat().format(credits);
               <p className="text-[#110829] hover:text-[#4A4A55] px-3 text-[20px] cursor-pointer ">Help</p>  
                 </div>  
 
-                         <div className="flex flex-row items-center px-8">
-              <img src={Credit1} className="h-6 w-6 "/>
-              <Link to="/workspace/pricing" className="text-[#110829] hover:text-[#4A4A55] px-3 text-[20px] cursor-pointer">Pricing</Link>  
-                </div>
+              <NavLink
+  to="/workspace/pricing"
+  end
+  onClick={onClose}
+  className={({ isActive }) =>
+    `flex items-center px-8 py-2 rounded-lg cursor-pointer
+     ${isActive ? "bg-[#7A3BFF]/20" : ""}`
+  }
+>
+  <img src={Credit1} className="h-6 w-6" />
+  <p className="text-[#110829] px-3 text-[20px]">
+    Pricing
+  </p>
+</NavLink>
                 
                
                   <div className="flex flex-row items-center px-8">
@@ -185,7 +210,10 @@ const formattedCredits = Intl.NumberFormat().format(credits);
                 </div>
            
 
+               </div> 
+
                </div>   
+               
            
             </div> 
 
@@ -196,7 +224,9 @@ const formattedCredits = Intl.NumberFormat().format(credits);
             {/*md*/}
          
 
-            <div className="bg-white w-[250px] min-h-screen hidden md:block lg:hidden ">
+          <div className="bg-white w-[250px] h-screen hidden md:flex lg:hidden flex-col overflow-hidden">
+
+
             
            {/*Start */}
          
@@ -217,6 +247,18 @@ const formattedCredits = Intl.NumberFormat().format(credits);
             </div>
 
             </div> 
+                  <div
+  className="
+    flex-1
+    overflow-y-auto
+    overflow-x-hidden
+    scrollbar-thin
+    scrollbar-thumb-gray-300
+    scrollbar-track-transparent
+    pb-24
+      border-r border-[#ECE8F2]
+  "
+>
 
             <div className="flex flex-col gap-8 ">
 
@@ -301,8 +343,9 @@ const formattedCredits = Intl.NumberFormat().format(credits);
 
              <div className="flex flex-col gap-8 mt-10">
 
-                   <Link
+<Link
   to="/workspace/pricing"
+
   className="flex px-8 flex-row items-center gap-2 hover:opacity-80 transition"
   title="View / buy credits"
 >
@@ -322,10 +365,20 @@ const formattedCredits = Intl.NumberFormat().format(credits);
               <p className="text-[#110829] hover:text-[#4A4A55] px-3 text-[20px] cursor-pointer ">Help</p>  
                 </div>  
                 
-                         <div className="flex flex-row items-center px-8">
-              <img src={Credit1} className="h-6 w-6 "/>
-              <Link to="/workspace/pricing" className="text-[#110829] hover:text-[#4A4A55] px-3 text-[20px] cursor-pointer">Pricing</Link>  
-                </div>
+               <NavLink
+  to="/workspace/pricing"
+  end
+  onClick={onClose}
+  className={({ isActive }) =>
+    `flex items-center px-8 py-2 rounded-lg cursor-pointer
+     ${isActive ? "bg-[#7A3BFF]/20" : ""}`
+  }
+>
+  <img src={Credit1} className="h-6 w-6" />
+  <p className="text-[#110829] px-3 text-[20px]">
+    Pricing
+  </p>
+</NavLink>
                
                   <Link className="flex flex-row items-center px-8"
                   to="/settings"
@@ -339,7 +392,7 @@ const formattedCredits = Intl.NumberFormat().format(credits);
            
 
                </div>   
-           
+           </div>
             </div> 
 
 
@@ -348,7 +401,10 @@ const formattedCredits = Intl.NumberFormat().format(credits);
 
 
             
-            <div className="bg-white w-[clamp(250px,20vw,400px)] h-screen hidden md:hidden lg:block sticky top-0 self-start">
+          <div className="bg-white w-[clamp(250px,20vw,400px)] h-screen hidden md:hidden lg:flex sticky top-0 self-start  flex-col overflow-hidden">
+
+
+
 
             
            {/*Start */}
@@ -367,12 +423,26 @@ const formattedCredits = Intl.NumberFormat().format(credits);
             </div>
 
             </div> 
+                              <div
+  className="
+    flex-1
+    overflow-y-auto
+    overflow-x-hidden
+    scrollbar-thin
+    scrollbar-thumb-gray-300
+    scrollbar-track-transparent
+    pb-24
+    border-r border-[#ECE8F2]
+
+  "
+>
 
             <div className="flex flex-col gap-8 ">
+              
 
                 {/* Tools */}
            
-      
+
              
 <NavLink
   to={homePath}
@@ -453,8 +523,9 @@ const formattedCredits = Intl.NumberFormat().format(credits);
 
              <div className="flex flex-col gap-8 mt-10">
 
-       <Link
+ <Link
   to="/workspace/pricing"
+  onClick={onClose}
   className="flex px-8 flex-row items-center gap-2 hover:opacity-80 transition"
   title="View / buy credits"
 >
@@ -474,10 +545,20 @@ const formattedCredits = Intl.NumberFormat().format(credits);
               <p className="text-[#110829] hover:text-[#4A4A55] px-3 text-[20px] cursor-pointer ">Help</p>  
                 </div>  
 
-                    <div className="flex flex-row items-center px-8">
-              <img src={Credit1} className="h-6 w-6 "/>
-              <Link to="/workspace/pricing" className="text-[#110829] hover:text-[#4A4A55] px-3 text-[20px] cursor-pointer">Pricing</Link>  
-                </div>
+             <NavLink
+  to="/workspace/pricing"
+  end
+  onClick={onClose}
+  className={({ isActive }) =>
+    `flex items-center px-8 py-2 rounded-lg cursor-pointer
+     ${isActive ? "bg-[#7A3BFF]/20" : ""}`
+  }
+>
+  <img src={Credit1} className="h-6 w-6" />
+  <p className="text-[#110829] px-3 text-[20px]">
+    Pricing
+  </p>
+</NavLink>
                 
                
                   <Link className="flex flex-row items-center px-8"
@@ -489,7 +570,7 @@ const formattedCredits = Intl.NumberFormat().format(credits);
            
 
                </div>   
-           
+           </div>
             </div> 
 
 

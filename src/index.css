@@ -43,6 +43,8 @@ a:focus-visible { outline: 2px solid #007BFF; outline-offset: 2px; }
   color: transparent;
 }
 
+
+
 /* Buttons */
 .btn-outline-blue {
   display: inline-flex;
@@ -172,4 +174,11 @@ button, a, [role="button"], label, summary { cursor: pointer; }
   100% {
     transform: translateX(-50%);
   }
+}
+
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
 }
