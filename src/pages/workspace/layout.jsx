@@ -64,7 +64,7 @@ export default function WorkspaceLayout() {
       {/* Scroll container */}
       <div
         ref={scrollRef}
-        className="flex flex-col flex-1 overflow-y-auto h-screen"
+        className="flex flex-col flex-1 overflow-y-auto min-h-0"
       >
         {/* TopRow */}
         <div
