@@ -71,11 +71,12 @@ const formattedCredits = Intl.NumberFormat().format(credits);
                         <div
   className="
     flex-1
+    min-h-0
     overflow-y-auto
     overflow-x-hidden
     pb-32
     scrollbar-thin
-    scrollbar-thumb-gray-300
+    scrollbar-thumb-gray-400
     scrollbar-track-transparent
       border-r border-[#ECE8F2]
   "
@@ -250,10 +251,11 @@ const formattedCredits = Intl.NumberFormat().format(credits);
                   <div
   className="
     flex-1
+    min-h-0
     overflow-y-auto
     overflow-x-hidden
     scrollbar-thin
-    scrollbar-thumb-gray-300
+    scrollbar-thumb-gray-400
     scrollbar-track-transparent
     pb-24
       border-r border-[#ECE8F2]
@@ -426,13 +428,15 @@ const formattedCredits = Intl.NumberFormat().format(credits);
                               <div
   className="
     flex-1
+    min-h-0
     overflow-y-auto
     overflow-x-hidden
     scrollbar-thin
-    scrollbar-thumb-gray-300
+    scrollbar-thumb-gray-400
     scrollbar-track-transparent
     pb-24
     border-r border-[#ECE8F2]
+
 
   "
 >
