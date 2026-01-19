@@ -55,7 +55,7 @@ export default function TopRow({ title, onMenuClick }) {
 
         <div className="hidden lg:block">
          <Link className="text-[#110829] text-[18px] cursor-pointer hover:text-[#7A3BFF] "
-         to="/pricing"
+         to="/workspace/pricing"
          >Pricing</Link>   
         </div>
 
@@ -63,7 +63,7 @@ export default function TopRow({ title, onMenuClick }) {
           {/* Plan */}
           <div className="border border-[#7A3BFF] bg-white px-3 sm:px-7 md:px-10 py-1 md:py-3 rounded-lg  hover:bg-[#ECE8F2]">
             <Link className="text-[#7A3BFF] cursor-pointer hover:bg-gray-50"
-            to="/contact"
+            to="/support/contact"
             >Contact Us</Link>
           </div>
 
@@ -78,7 +78,7 @@ export default function TopRow({ title, onMenuClick }) {
         </Link>
       ) : (
         /* SIGNED IN */
-        <Link className="bg-[#ECE8F2] rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center cursor-pointer"
+        <Link className="bg-[#ECE8F2] rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center cursor-pointer hover:bg-black/20"
         to="/settings"
         >
           <p className="text-[#110829] text-[16px] font-semibold">

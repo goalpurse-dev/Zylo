@@ -52,7 +52,7 @@ export default function Library() {
       </div>
 
       {/* Product Photos */}
-      <div className="mt-20 px-6 lg:px-10 xl:px-12">
+      <div className="mt-20 px-6 lg:px-10 xl:px-12 border border-black py-8">
         <h1 className="text-[#110829] text-[20px] sm:text-[22px] font-semibold cursor-default">
           Product Photos
         </h1>

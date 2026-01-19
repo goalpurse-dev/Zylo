@@ -1,3 +1,10 @@
+import Example3 from "../../assets/blog/productphoto/example3.png";
+import Example2 from "../../assets/blog/productphoto/example2.png";
+import Example1 from "../../assets/blog/productphoto/example1.png";
+import Best from "../../assets/blog/productphoto/best.png";
+import BgExample from "../../assets/blog/productphoto/bgexample.png";
+ 
+
 export default function creations() {
     return (
         <section>
@@ -21,43 +28,52 @@ export default function creations() {
                
                 
                 <div className="py-6 px-3 flex gap-3 justify-center overflow-hidden  ">
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div>
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div>  
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div>
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div>
-
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example3}></img>  
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={BgExample}></img>  
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example3}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example1}></img>  
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Best}></img>  
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example2}></img>
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Best}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={BgExample}></img>
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={BgExample}></img>
 
                 </div>
 
                        <div className="py-6 px-3 flex gap-3 justify-center overflow-hidden  ">
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div>
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div>  
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div>
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[140px] w-[100px] bg-black rounded-lg"></div>
+   <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example3}></img>  
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={BgExample}></img>  
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example3}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example1}></img>  
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Best}></img>  
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example2}></img>
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Best}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={BgExample}></img>
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[140px] w-[100px] bg-black rounded-lg " src={BgExample}></img>
 
 
                 </div>

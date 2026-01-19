@@ -71,7 +71,7 @@ export default function Faq() {
 
         <div className="flex justify-center mt-12">
         <Link className="flex items-center rounded-md bg-[linear-gradient(90deg,#7A3BFF_0%,#492399_100%)] h-14 px-12 "
-        to="/contact"
+        to="/support"
         >More Questions?</Link>    
         </div>
 

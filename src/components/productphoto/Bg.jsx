@@ -1,3 +1,11 @@
+import Example3 from "../../assets/blog/productphoto/example3.png";
+import Example2 from "../../assets/blog/productphoto/example2.png";
+import Example1 from "../../assets/blog/productphoto/example1.png";
+import Best from "../../assets/blog/productphoto/best.png";
+import BgExample from "../../assets/blog/productphoto/bgexample.png";
+import { Link, NavLink } from "react-router-dom";
+
+
 export default function bg() {
     return (
         <section>
@@ -20,44 +28,52 @@ export default function bg() {
                    <div className="scroll-loop absolute left-0 top-0/3  -translate-y-1/2  ">
   
                 <div className="py-6 px-3 flex gap-3 justify-center overflow-hidden  ">
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>  
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img>  
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example1}></img>  
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>  
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+    
 
 
                 </div>
 
                      <div className="py-6 px-3 flex gap-3 justify-center overflow-hidden  ">
                  <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>
-
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                                 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
 
                 </div>
 
@@ -68,45 +84,51 @@ export default function bg() {
              
                 
                 <div className="py-6 px-3 flex gap-3 justify-center overflow-hidden  ">
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>
-
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+              
 
                 </div>
 
                          
                 <div className="py-6 px-3 flex gap-3 justify-center overflow-hidden  ">
                  <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg "></div>  
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div> 
-                 <div className="h-[120px] w-[100px] bg-black rounded-lg"></div>
-
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example1}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example2}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Best}></img>
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={BgExample}></img> 
+                 <img className="h-[120px] w-[100px] bg-black rounded-lg " src={Example3}></img>
 
                 </div>
 
@@ -121,7 +143,9 @@ export default function bg() {
 
 
       <div className="flex justify-center mt-12">
-       <button className="bg-white border-[#7A3BFF] border-2 text-[#7A3BFF] rounded-lg px-6 py-2">Browse All</button> 
+       <Link
+       to="/workspace/library"
+       className="bg-white border-[#7A3BFF] border-2 text-[#7A3BFF] rounded-lg px-6 py-2">Browse All</Link> 
       </div>
 
         </div>

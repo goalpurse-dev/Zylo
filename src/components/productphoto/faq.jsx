@@ -1,5 +1,7 @@
 import Arrow from "./../../assets/home/arrow.png"
 import FaqItem from "../workspace/faq/faqitem";
+import { Link, NavLink } from "react-router-dom";
+
 
 export default function Faq() {
   return (
@@ -48,11 +50,13 @@ export default function Faq() {
 
 
 
-        <div className="flex justify-center mt-12">
-        <button className="rounded-md bg-[linear-gradient(90deg,#7A3BFF_0%,#492399_100%)] h-14 px-12 ">More Questions?</button>    
+        <div className="flex justify-center mt-12 ">
+        <Link
+        to="/support/contact"
+        className="flex items-center rounded-md bg-[linear-gradient(90deg,#7A3BFF_0%,#492399_100%)] h-14 px-12  ">More Questions?</Link>    
         </div>
 
-
+    
         
 
 

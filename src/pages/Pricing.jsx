@@ -436,7 +436,7 @@ export default function Pricing() {
             price="Custom"
             subtitle="For organizations that need scale"
             ctaLabel="Contact sales"
-            to="/contact"
+            to="/support/contact"
           >
             SSO & roles, unlimited workspaces, custom model options, SLAs and priority support.
             Flexible invoicing and procurement support.
@@ -526,7 +526,7 @@ export default function Pricing() {
             14-day money-back guarantee · Secure checkout · No hidden fees
           </div>
           <Link
-            to="/features"
+            to="/workspace"
             className="border-[#7A3BFF] text-[#7A3BFF] inline-flex items-center justify-center mt-4 h-11 px-6 rounded-xl font-semibold transition border"
         
           >
