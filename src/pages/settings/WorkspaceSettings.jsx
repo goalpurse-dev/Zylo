@@ -22,7 +22,7 @@ const tabs = [
 ];
 
 const card =
-  "rounded-2xl border border-white/10 bg-[#111] p-5 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]";
+  "rounded-2xl border border-black bg-[#ECE8F2] p-5 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]";
 
 /* ===================== ROOT ===================== */
 export default function Settings() {
@@ -53,7 +53,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0f14] text-white font-sans">
+    <div className="min-h-screen bg-[#F7F5FA]  font-sans">
       <div className="mx-auto max-w-6xl px-4 py-8 flex gap-6">
         {/* LEFT MENU (desktop) */}
         <aside className="hidden md:block w-[240px] shrink-0">
@@ -65,11 +65,11 @@ export default function Settings() {
                   key={id}
                   onClick={() => setActive(id)}
                   className={[
-                    "w-full flex items-center gap-2 rounded-xl px-3 py-2 text-[15px] font-bold",
-                    "border border-white/10 transition",
+                    "w-full flex items-center gap-2 rounded-xl px-3 py-2 text-[15px]  ",
+                    "border border-black/30 transition ",
                     isActive
-                      ? "bg-white/10 text-white"
-                      : "bg-transparent text-white/90 hover:bg-white/5",
+                      ? "bg-[#7A3BFF] text-white"
+                      : "bg-transparent text-[#110829] hover:bg-black/5",
                   ].join(" ")}
                 >
                   <Icon className="h-4 w-4 opacity-95" />
@@ -82,7 +82,7 @@ export default function Settings() {
             <button
               onClick={handleLogout}
               disabled={loggingOut}
-              className="mt-2 w-full flex items-center gap-2 rounded-xl px-3 py-2 text-sm border border-red-900/40 bg-red-900/30 text-red-200 hover:bg-red-900/40 disabled:opacity-60"
+              className="mt-2 w-full flex items-center gap-2 rounded-xl px-3 py-2 text-sm border border-red-900 bg-red-600/30 text-red-500 hover:bg-red-900/40 disabled:opacity-60"
             >
               <LogOut className="h-4 w-4" />
               {loggingOut ? "Logging out…" : "Log out"}
@@ -101,11 +101,11 @@ export default function Settings() {
                   key={id}
                   onClick={() => setActive(id)}
                   className={[
-                    "flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-[14px] font-extrabold",
-                    "border border-white/10 transition",
+                    "flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-[14px] ",
+                    "border border-black/30 transition",
                     isActive
-                      ? "bg-white/10"
-                      : "bg-transparent text-white/90 hover:bg-white/5",
+                      ? "bg-[#7A3BFF] text-white"
+                      : "bg-transparent text-[#110829] hover:bg-black/5",
                   ].join(" ")}
                 >
                   <Icon className="h-4 w-4 opacity-95" />
@@ -209,48 +209,39 @@ function AccountPanel() {
     <div className="grid gap-4">
       <div className={card}>
         <div className="mb-4">
-          <h2 className="text-lg font-black tracking-tight">Account</h2>
-          <p className="text-xs text-white/60">Manage your profile and login details.</p>
+          <h2 className="text-lg font-bold tracking-tight text-[#110829]">Account</h2>
+          <p className="text-xs text-[#4A4A55]">Manage your profile and login details.</p>
         </div>
 
-        {/* avatar */}
-        <div className="mb-6 flex flex-col items-center">
-          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-white/5 text-xs text-white/60">
-            IMG
-          </div>
-          <button className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/15">
-            <UploadCloud className="h-4 w-4" />
-            Upload avatar
-          </button>
-        </div>
+       
 
         {/* display name */}
-        <label className="mb-1 block text-[11px] font-semibold tracking-wide text-white/60">Display name</label>
+        <label className="mb-1 block text-[11px] font-semibold tracking-wide text-[#4A4A55]">Display name</label>
         <input
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
-          className="mb-4 w-full rounded-xl border border-white/10 bg-[#0b0f14] px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/30"
+          className="mb-4 w-full rounded-xl border border-black/30 text-[#110829] bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/30"
         />
 
         {/* email (read-only) */}
-        <label className="mb-1 block text-[11px] font-semibold tracking-wide text-white/60">Email</label>
+        <label className="mb-1 block text-[11px] font-semibold tracking-wide text-[#4A4A55]">Email</label>
         <input
           value={email}
           readOnly
-          className="mb-4 w-full cursor-not-allowed rounded-xl border border-white/10 bg-[#0b0f14] px-3 py-2 text-sm text-white/80"
+          className="mb-4 w-full cursor-not-allowed rounded-xl border border-black/30 bg-white px-3 py-2 text-sm text-[#110829]/80"
         />
 
         <div className="flex flex-wrap items-center gap-2 mb-6">
           <button
             onClick={handleSaveName}
             disabled={savingName}
-            className="rounded-xl bg-gradient-to-r from-[#7A3BFF] via-[#9B4DFF] to-[#FF57B2] px-4 py-2 text-sm font-extrabold text-white hover:opacity-95 disabled:opacity-60"
+            className="rounded-xl bg-[#7A3BFF] px-4 py-2 text-sm font-bold text-white hover:opacity-95 disabled:opacity-60"
           >
             {savingName ? "Saving…" : "Save changes"}
           </button>
           <button
             onClick={() => { setNameErr(""); setNameMsg(""); }}
-            className="rounded-xl border border-white/10 bg-white/10 px-3 py-1.5 text-sm font-bold text-white hover:bg-white/15"
+            className="rounded-lg border border-black/60 bg-white px-3 py-1.5 text-sm  text-[#110829]/80 hover:bg-white/15"
           >
             Reset
           </button>
@@ -259,8 +250,8 @@ function AccountPanel() {
         {nameMsg && <div className="mb-4 text-xs text-green-400">{nameMsg}</div>}
 
         {/* change password */}
-        <div className="mt-2 rounded-xl border border-white/10 bg-[#0b0f14] p-3">
-          <div className="mb-2 text-sm font-extrabold">Change password</div>
+        <div className="mt-2 rounded-xl border border-black/30 bg-[#F7F5FA]  p-3">
+          <div className="mb-2 text-sm font-bold text-[#110829]">Change password</div>
           <form onSubmit={handleChangePassword} className="space-y-2">
             <input
               type="password"
@@ -269,7 +260,7 @@ function AccountPanel() {
               onChange={(e) => setPw1(e.target.value)}
               minLength={6}
               required
-              className="w-full rounded-lg border border-white/10 bg-[#0b0f14] px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/30"
+              className="w-full rounded-lg border border-black/30 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/30"
             />
             <input
               type="password"
@@ -278,13 +269,13 @@ function AccountPanel() {
               onChange={(e) => setPw2(e.target.value)}
               minLength={6}
               required
-              className="w-full rounded-lg border border-white/10 bg-[#0b0f14] px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/30"
+              className="w-full rounded-lg border border-black/30 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/30"
             />
             <div className="flex items-center gap-2">
               <button
                 type="submit"
                 disabled={savingPw}
-                className="rounded-xl bg-gradient-to-r from-[#7A3BFF] via-[#9B4DFF] to-[#FF57B2] px-4 py-2 text-sm font-extrabold text-white hover:opacity-95 disabled:opacity-60"
+                className="rounded-xl bg-[#7A3BFF] px-4 py-2 text-sm font-bold text-white hover:opacity-95 disabled:opacity-60"
               >
                 {savingPw ? "Updating…" : "Update password"}
               </button>
@@ -297,10 +288,10 @@ function AccountPanel() {
 
       {/* Danger zone moved here */}
       <div className={card}>
-        <div className="mb-2 text-sm font-extrabold text-red-400">Danger zone</div>
+        <div className="mb-2 text-sm font-extrabold text-red-500">Danger zone</div>
         <button
           onClick={handleDeleteAccount}
-          className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-extrabold text-red-300 hover:bg-red-500/15"
+          className="rounded-xl border border-red-500 bg-red-200 px-4 py-2 text-sm font-extrabold text-red-500 hover:bg-red-500/15"
         >
           Delete account
         </button>
@@ -318,10 +309,10 @@ function NotificationsPanel() {
   });
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 ">
       {/* Email notifications */}
       <div className={card}>
-        <div className="mb-3 text-sm font-extrabold">Email</div>
+        <div className="mb-3 text-sm font-bold text-[#110829]">Email</div>
         <ToggleRow
           label="Product updates"
           value={email.product}
@@ -346,7 +337,7 @@ function NotificationsPanel() {
 
       {/* Push notifications */}
       <div className={card}>
-        <div className="mb-3 text-sm font-extrabold">Push</div>
+        <div className="mb-3 text-sm font-bold text-[#110829]">Push</div>
         <EmptyRow text="Coming soon." />
       </div>
     </div>
@@ -356,27 +347,27 @@ function NotificationsPanel() {
 function PrivacyPanel() {
   const link =
     "inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-extrabold " +
-    "text-blue-300/95 hover:text-white bg-blue-500/10 hover:bg-blue-500/15 " +
+    "text-blue-400/95 hover:text-white bg-blue-500/20 hover:bg-blue-500/15 " +
     "ring-1 ring-inset ring-blue-400/25 transition";
 
   return (
     <div className="grid gap-4">
       <div className={card}>
-        <div className="mb-2 text-sm font-extrabold">Privacy</div>
-        <p className="mb-3 text-sm text-white/70">
+        <div className="mb-2 text-sm font-bold text-[#110829]">Privacy</div>
+        <p className="mb-3 text-sm text-[#4A4A55]">
           Learn how we handle your data, retention, and user controls.
         </p>
-        <a href="/blog/privacy" className={link}>
+        <a href="/blog" className={link}>
           Read our Privacy practices →
         </a>
       </div>
 
       <div className={card}>
-        <div className="mb-2 text-sm font-extrabold">Security</div>
-        <p className="mb-3 text-sm text-white/70">
+        <div className="mb-2 text-sm font-bold text-[#110829]">Security</div>
+        <p className="mb-3 text-sm text-[#4A4A55]">
           Overview of our security model, storage, and operational safeguards.
         </p>
-        <a href="/blog/security" className={link}>
+        <a href="/blog" className={link}>
           Read our Security overview →
         </a>
       </div>
@@ -390,20 +381,18 @@ function AboutPanel() {
       <div className={card}>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <div className="text-[11px] uppercase text-white/60">App</div>
-            <div className="text-lg font-black tracking-tight">ZyloAI Studio</div>
-            <div className="text-sm text-white/60">Version 1.0.0</div>
+            <div className="text-[11px] uppercase text-[#110829]">App</div>
+            <div className="text-lg font-black tracking-tight text-[#110829]">ZyloAI Studio</div>
+            <div className="text-sm text-[#4A4A55]">Version 1.0.0</div>
           </div>
           <div className="grid gap-2">
-            <Badge>Beat-synced edits</Badge>
-            <Badge>Brand Kit ready</Badge>
-            <Badge>No watermark on paid</Badge>
+         
           </div>
         </div>
       </div>
 
       <div className={card}>
-        <div className="text-sm">© {new Date().getFullYear()} ZyloAI. All rights reserved.</div>
+        <div className="text-sm text-[#4A4A55]">© {new Date().getFullYear()} ZyloAI. All rights reserved.</div>
       </div>
     </div>
   );
@@ -413,13 +402,13 @@ function AboutPanel() {
 
 function ToggleRow({ label, value, onChange }) {
   return (
-    <div className="mb-2 flex items-center justify-between rounded-xl bg-white/5 p-3 ring-1 ring-white/10">
-      <div className="text-sm font-bold">{label}</div>
+    <div className="mb-2 flex items-center justify-between rounded-xl bg-white border-black/30 border p-3 ring-1 ring-white/10">
+      <div className="text-sm  text-[#4A4A55] ">{label}</div>
       <button
         onClick={() => onChange(!value)}
         className={[
           "relative h-6 w-11 rounded-full transition",
-          value ? "bg-blue-600" : "bg-white/15",
+          value ? "bg-[#7A3BFF]" : "bg-black/15",
         ].join(" ")}
         aria-pressed={value}
       >
@@ -444,7 +433,7 @@ function Badge({ children }) {
 
 function EmptyRow({ text }) {
   return (
-    <div className="rounded-xl bg-white/5 p-4 text-sm text-white/70 ring-1 ring-white/10">
+    <div className="rounded-xl bg-white/5 p-4 text-sm text-[#4A4A55] ring-1 ring-white/10">
       {text}
     </div>
   );

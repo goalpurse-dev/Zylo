@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 
-const card = "rounded-2xl border border-white/10 bg-[#111] p-5 text-white";
+const card = "rounded-2xl border border-black/30 bg-[#ECE8F2] p-5 text-white";
 const FUNCTION_PORTAL = "create-portal-session";  // your existing function
 const FUNCTION_SUMMARY = "billing-summary";       // your summary function
 
@@ -125,11 +125,11 @@ export default function Billing() {
       <div className={card}>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="text-[11px] uppercase text-white/60">Current plan</div>
-            <div className="text-lg font-extrabold">
+            <div className="text-[11px] uppercase text-[#110829]">Current plan</div>
+            <div className="text-lg text-[#110829] font-bold">
               {summary?.plan?.nickname || "—"}
             </div>
-            <div className="text-sm text-white/60">{planLabel}</div>
+            <div className="text-sm text-[#110829]">{planLabel}</div>
             {planStatusBadge}
           </div>
 
@@ -137,21 +137,21 @@ export default function Billing() {
             <button
               onClick={() => openPortal("change_plan")}
               disabled={loading}
-              className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15 disabled:opacity-60"
+              className="rounded-full border border-black/30 bg-white px-4 py-2 text-sm font-semibold text-[#110829] hover:bg-gray-50 disabled:opacity-60"
             >
               {loading ? "Opening…" : "Change plan"}
             </button>
             <button
               onClick={() => openPortal("update")}
               disabled={loading}
-              className="rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white hover:opacity-95 disabled:opacity-60"
+              className="rounded-full bg-[#7A3BFF] px-4 py-2 text-sm font-semibold text-white hover:opacity-95 disabled:opacity-60"
             >
               {loading ? "Opening…" : "Update payment"}
             </button>
             <button
               onClick={loadSummary}
               disabled={refreshing}
-              className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15 disabled:opacity-60"
+              className="rounded-full border border-black/30 bg-white px-4 py-2 text-sm font-semibold text-[#110829] hover:bg-gray-50 disabled:opacity-60"
               title="Refresh from Stripe"
             >
               {refreshing ? "Refreshing…" : "Refresh"}
@@ -162,9 +162,9 @@ export default function Billing() {
 
       {/* Payment method */}
       <div className={card}>
-        <div className="mb-3 text-sm font-semibold">Payment method</div>
-        <div className="flex items-center justify-between rounded-lg bg-white/5 p-3">
-          <div className="text-sm">
+        <div className="mb-3 text-sm font-semibold text-[#110829]">Payment method</div>
+        <div className="flex items-center justify-between rounded-lg bg-[#F7F5FA] p-3">
+          <div className="text-sm text-[#110829]">
             {pm
               ? `${pm.brand || "Card"} •••• ${pm.last4 || "••••"} — exp ${pm.exp || "••/••"}`
               : "—"}
@@ -172,7 +172,7 @@ export default function Billing() {
           <button
             onClick={() => openPortal("update")}
             disabled={loading}
-            className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-sm hover:bg-white/15 disabled:opacity-60"
+            className="rounded-lg border border-black/30 text-[#110829] bg-white px-5 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-60"
           >
             {loading ? "Opening…" : "Edit"}
           </button>
@@ -181,15 +181,15 @@ export default function Billing() {
 
       {/* Invoices */}
       <div className={card}>
-        <div className="mb-3 text-sm font-semibold">Invoices</div>
+        <div className="mb-3 text-sm font-semibold text-[#110829]">Invoices</div>
 
         {invoices.length === 0 ? (
-          <div className="flex items-center justify-between rounded-lg bg-white/5 p-4 text-sm text-white/60 ring-1 ring-white/10">
+          <div className="flex items-center justify-between rounded-lg bg-[#F7F5FA] p-4 text-sm text-[#110829] ring-1 ring-white/10">
             <span>View and download your invoices in the billing portal.</span>
             <button
               onClick={() => openPortal("invoices")}
               disabled={loading}
-              className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white hover:bg-white/15 disabled:opacity-60"
+              className="rounded-full border border-black/30 bg-white px-3 py-1.5 text-sm font-semibold text-[#110829] hover:bg-gray-50 disabled:opacity-60"
             >
               {loading ? "Opening…" : "See invoices"}
             </button>
@@ -208,7 +208,7 @@ export default function Billing() {
                   {new Date(inv.created * 1000).toLocaleDateString()} — $
                   {(inv.amount_paid / 100).toFixed(2)} ({inv.status})
                 </span>
-                <span className="text-white/60">Open</span>
+                <span className="text-white">Open</span>
               </a>
             ))}
           </div>
