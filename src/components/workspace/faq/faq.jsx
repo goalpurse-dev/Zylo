@@ -5,7 +5,7 @@ import { Link, NavLink } from "react-router-dom";
 export default function Faq() {
   return (
     <section className="pb-40">
-    <div className="sm:scale-105 md:scale-110 xl:scale-125">
+    <div className="">
 
     <div className=" flex justify-center ">
 

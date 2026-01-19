@@ -12,7 +12,7 @@ export default function FaqItem({ question, answer }) {
     >
       {/* Top Row */}
       <div className="flex justify-between items-center">
-        <p className="text-[#110829] text-[12px] font-semibold whitespace-nowrap">
+        <p className="text-[#110829] text-[12px] md:text-[14px] lg:text-[16px] font-semibold whitespace-nowrap">
           {question}
         </p>
 
@@ -28,7 +28,7 @@ export default function FaqItem({ question, answer }) {
         className={`overflow-hidden transition-all duration-300 
                    ${open ? "max-h-[200px] mt-4" : "max-h-0"}`}
       >
-        <p className="text-[#4A4A55] text-[12px] leading-relaxed">
+        <p className="text-[#4A4A55] text-[12px] md:text-[14px] lg:text-[15px] leading-relaxed">
           {answer}
         </p>
       </div>

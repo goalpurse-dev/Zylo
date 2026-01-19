@@ -11,7 +11,7 @@ import Skincare from "../../assets/proof/skincare.png"
 
 export default function proof() {
     return (
-          <section className="w-full overflow-hidden py-8">
+          <section className="w-full overflow-x-hidden py-8">
       <div className="relative h-[56px]">
         <div className="scroll-loop absolute left-0 top-1/2 -translate-y-1/2
                        ">
