@@ -30,7 +30,7 @@ export default function Home() {
   return (
 
      
-    <div className="w-full min-h-screen h-full bg-[#F7F5FA]">
+   <div className="w-full min-h-screen bg-[#F7F5FA]">
       {/* Navbar */}
        
        <div className=""> 
@@ -50,7 +50,7 @@ export default function Home() {
   <Proof/>
 </div>
 
-<div className="mt-10 ">
+<div className="mt-10 hidden">
  <Video/> 
 </div>
 

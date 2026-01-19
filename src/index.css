@@ -180,5 +180,5 @@ button, a, [role="button"], label, summary { cursor: pointer; }
 html,
 body {
   height: 100%;
-  overflow: hidden;
+ 
 }

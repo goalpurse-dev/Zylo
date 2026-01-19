@@ -7,7 +7,7 @@ export default function FaqItem({ question, answer }) {
   return (
     <div
       onClick={() => setOpen(!open)}
-      className="bg-[#ECE8F2] rounded-md w-full max-w-[350px] lg:max-w-[700px] mx-auto
+      className="bg-[#ECE8F2] rounded-md w-full max-w-[450px] lg:max-w-[700px] mx-auto
                  px-6 py-8 cursor-pointer transition-all duration-200 "
     >
       {/* Top Row */}
