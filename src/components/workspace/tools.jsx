@@ -38,7 +38,7 @@ export default function Tools() {
     <section className="w-full overflow-x-hidden">
       
       {/* Header */}
-      <div className="px-6 sm:px-10 py-10">
+      <div className="px-6 sm:px-10 py-10 flex justify-center">
         <h1 className="text-[#110829] font-bold text-[25px]">Tools</h1>
       </div>
 
