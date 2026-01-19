@@ -109,6 +109,7 @@ import HowImproveEcommerceVisualTrust from "./app/blog/productphotos/HowImproveE
 import ProductPhotographyMistakesEcommerce from "./app/blog/productphotos/ProductPhotographyMistakesEcommerce.jsx";
 import HowVisualBrandingImpactsOnlineSales from "./app/blog/productphotos/HowVisualBrandingImpactsOnlineSales.jsx";
 import AIBackgroundRemovalForProductPhotos from "./app/blog/productphotos/AIBackgroundRemovalForProductPhotos.jsx";
+import ScaleEcommerceContent from "./app/blog/productphotos/ScaleEcommerceContent.jsx";
 
 
 
@@ -244,7 +245,7 @@ function AppWithRouting() {
         <Route path="/blog/product-photography-mistakes-ecommerce-brands-make" element={<ProductPhotographyMistakesEcommerce />} />
         <Route path="/blog/how-visual-branding-impacts-online-sales" element={<HowVisualBrandingImpactsOnlineSales />} />
         <Route path="/blog/ai-background-removal-for-product-photos" element={<AIBackgroundRemovalForProductPhotos />} />
-
+        <Route path="/blog/how-to-scale-ecommerce-content-creation-with-ai" element={<ScaleEcommerceContent />} />
 
 
 
