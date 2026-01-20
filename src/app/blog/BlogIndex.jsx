@@ -43,7 +43,7 @@ const [loading, setLoading] = useState(false);
           <p className="text-[#4A4A55] text-[12px] ">Learn how product photos with ai work for shopify</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
-          <p className="text-[#4A4A55] text-[10px] ">14.01/2026</p>
+          <p className="text-[#4A4A55] text-[10px] ">9.01/2026</p>
           </div>
           </div>
           </Link> 
@@ -55,7 +55,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">Product Photos with AI for Shopify stores</h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">Learn how product photos with ai work for shopify</p>
+          <p className="text-[#4A4A55] text-[12px] ">Create clean, professional Shopify product photos instantly using AI.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">10.01/2026</p>
@@ -70,7 +70,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">How AI Product Photos Increase Conversion Rates</h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">Learn how product photos with ai work for shopify</p>
+          <p className="text-[#4A4A55] text-[12px] ">See how better visuals boost clicks, trust, and sales.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">10.01/2026</p>
@@ -84,7 +84,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">Best AI Tools for Ecommerce Product Photography</h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">Learn how product photos with ai work for shopify</p>
+          <p className="text-[#4A4A55] text-[12px] ">Top AI tools to create high-quality ecommerce product images fast.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">10.01/2026</p>
@@ -99,7 +99,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">Shopify Product Photo Best Practices</h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">Learn how product photos with ai work for shopify</p>
+          <p className="text-[#4A4A55] text-[12px] ">Proven product image guidelines for higher Shopify conversions.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">10.01/2026</p>
@@ -114,7 +114,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">AI vs Traditional Product Photography</h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">Learn how product photos with ai work for shopify</p>
+          <p className="text-[#4A4A55] text-[12px] ">Compare AI and traditional photoshoots for ecommerce brands.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">15.01/2026</p>
@@ -129,8 +129,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">Why Product Images Matter More Than Ads </h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">When the visuals feel high-end, shoppers assume the product is
-            high-end — and they feel safe buying.</p>
+          <p className="text-[#4A4A55] text-[12px] ">How strong visuals influence buying decisions more than ads.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">16.01/2026</p>
@@ -145,8 +144,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">Best AI Product Backgrounds to use </h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">When the visuals feel high-end, shoppers assume the product is
-            high-end — and they feel safe buying.</p>
+          <p className="text-[#4A4A55] text-[12px] ">High-converting background styles for modern product photos.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">16.01/2026</p>
@@ -160,8 +158,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">How to Improve Ecommerce Visual Trust </h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">When the visuals feel high-end, shoppers assume the product is
-            high-end — and they feel safe buying.</p>
+          <p className="text-[#4A4A55] text-[12px] ">Build trust and credibility with better product imagery.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">17.01/2026</p>
@@ -175,8 +172,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">Product Photography Mistakes Ecommerce Brands Make </h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">When the visuals feel high-end, shoppers assume the product is
-            high-end — and they feel safe buying.</p>
+          <p className="text-[#4A4A55] text-[12px] ">Common product photo mistakes that hurt sales and engagement.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">18.01/2026</p>
@@ -190,8 +186,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">How Visual Branding Impacts Online Sales </h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">When the visuals feel high-end, shoppers assume the product is
-            high-end — and they feel safe buying.</p>
+          <p className="text-[#4A4A55] text-[12px] ">Why consistent visuals increase brand recognition and sales.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">18.01/2026</p>
@@ -205,8 +200,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">AI Background Removal for Product Photos </h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">When the visuals feel high-end, shoppers assume the product is
-            high-end — and they feel safe buying.</p>
+          <p className="text-[#4A4A55] text-[12px] ">Remove backgrounds instantly for clean, professional product images.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">18.01/2026</p>
@@ -220,8 +214,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">How to Scale Ecommerce Content Without Photoshoots</h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">When the visuals feel high-end, shoppers assume the product is
-            high-end — and they feel safe buying.</p>
+          <p className="text-[#4A4A55] text-[12px] ">Create and scale product visuals without costly photoshoots.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">19.01/2026</p>
@@ -235,8 +228,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">High-Converting Product Images for Shopify</h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">When the visuals feel high-end, shoppers assume the product is
-            high-end — and they feel safe buying.</p>
+          <p className="text-[#4A4A55] text-[12px] ">Product image strategies that increase Shopify conversions.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">20.01/2026</p>
@@ -250,8 +242,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">AI Product Photography for Small Businesses</h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">When the visuals feel high-end, shoppers assume the product is
-            high-end — and they feel safe buying.</p>
+          <p className="text-[#4A4A55] text-[12px] ">Affordable AI product photos for growing small brands.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">20.01/2026</p>
@@ -265,8 +256,7 @@ const [loading, setLoading] = useState(false);
          <div className="gap-2 flex flex-col">
           <h1 className="text-black">How Better Images Reduce Bounce Rate</h1>
 
-          <p className="text-[#4A4A55] text-[12px] ">When the visuals feel high-end, shoppers assume the product is
-            high-end — and they feel safe buying.</p>
+          <p className="text-[#4A4A55] text-[12px] ">Use better visuals to keep visitors engaged longer.</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">20.01/2026</p>
