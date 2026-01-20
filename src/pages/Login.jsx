@@ -6,7 +6,8 @@ import OAuthButton from "../components/auth/OAuthButton";
 import { signInWithEmailPassword, signInWithGoogle } from "../lib/auth";
 
 // Use your actual asset import (matches your pattern)
-import v32 from "../assets/library/v32.mp4";
+ import v32 from "../assets/symbols/bg.mp4"
+
 
 export default function Login() {
 
@@ -85,7 +86,7 @@ export default function Login() {
 
                 {/* Forgot password */}
                 <div className="text-right -mt-2">
-                  <Link to="/auth/forgot" className="text-sm text-[#007BFF] hover:underline">
+                  <Link to="/auth/forgot" className="text-sm text-[#7A3BFF] hover:underline">
                     Forgot password?
                   </Link>
                 </div>
@@ -93,7 +94,7 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-12 rounded-full bg-[#007BFF] text-white text-[15px] font-semibold hover:opacity-95 disabled:opacity-60"
+                  className="w-full h-12 rounded-full bg-[#7A3BFF] text-white text-[15px] font-semibold hover:opacity-95 disabled:opacity-60"
                 >
                   {loading ? "Signing in..." : "Log in"}
                 </button>
@@ -104,7 +105,7 @@ export default function Login() {
               {/* Create account */}
               <div className="mt-3 text-sm text-black/70">
                 No account?{" "}
-                <Link to="/signup" className="text-[#007BFF] hover:underline">
+                <Link to="/signup" className="text-[#7A3BFF] hover:underline">
                   Create one
                 </Link>
               </div>

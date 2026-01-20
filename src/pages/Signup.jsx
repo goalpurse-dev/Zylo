@@ -4,7 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import OAuthButton from "../components/auth/OAuthButton";
 import { signUpWithEmailPassword, signInWithGoogle } from "../lib/auth";
-import v32 from "../assets/library/v32.mp4";
+
+ import v32 from "../assets/symbols/bg.mp4"
+
 
 export default function Signup() {
 
@@ -82,7 +84,7 @@ if (res.status === "created" && res.session) {
                 />
                 <button
                   type="submit" disabled={loading}
-                  className="w-full h-12 rounded-full bg-[#007BFF] text-white text-[15px] font-semibold hover:opacity-95 disabled:opacity-60"
+                  className="w-full h-12 rounded-full bg-[#7A3BFF] text-white text-[15px] font-semibold hover:opacity-95 disabled:opacity-60"
                 >
                   {loading ? "Creating..." : "Continue"}
                 </button>
@@ -93,7 +95,7 @@ if (res.status === "created" && res.session) {
 
               <div className="mt-3 text-sm text-black/70">
                 Already have an account?{" "}
-                <Link to="/login" className="text-[#007BFF] hover:underline">Log in</Link>
+                <Link to="/login" className="text-[#7A3BFF] hover:underline">Log in</Link>
               </div>
 
               <div className="my-6 flex items-center gap-4">
@@ -110,8 +112,8 @@ if (res.status === "created" && res.session) {
 
               <div className="mt-3 text-xs text-black/50">
                 By continuing, you agree to our{" "}
-                <Link to="/terms" className="underline">Terms</Link> and{" "}
-                <Link to="/privacy" className="underline">Privacy Policy</Link>.
+                <Link to="/support" className="underline">Terms</Link> and{" "}
+                <Link to="/support" className="underline">Privacy Policy</Link>.
               </div>
             </div>
 
