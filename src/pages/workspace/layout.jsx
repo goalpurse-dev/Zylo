@@ -74,7 +74,7 @@ useEffect(() => {
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <aside className="fixed inset-0 z-50 lg:hidden">
+        <aside className="fixed inset-0 z-50  bg-black/10 backdrop-blur-sm lg:hidden">
           <ToolShell onClose={() => setSidebarOpen(false)} /> 
         </aside>
       )}

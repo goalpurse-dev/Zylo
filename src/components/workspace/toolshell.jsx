@@ -184,10 +184,12 @@ const formattedCredits = Intl.NumberFormat().format(credits);
   </p>
 </Link>
 
-              <div className="flex flex-row items-center px-8 ">
+              <Link className="flex flex-row items-center px-8 "
+              to="/support"
+              >
               <img src={Help} className="h-6 w-6 "/>
               <p className="text-[#110829] hover:text-[#4A4A55] px-3 text-[20px] cursor-pointer ">Help</p>  
-                </div>  
+                </Link>  
 
               <NavLink
   to="/workspace/pricing"
@@ -362,10 +364,12 @@ const formattedCredits = Intl.NumberFormat().format(credits);
   </p>
 </Link>
 
-              <div className="flex flex-row items-center px-8 ">
+              <Link className="flex flex-row items-center px-8 "
+              to="/support"
+              >
               <img src={Help} className="h-6 w-6 "/>
               <p className="text-[#110829] hover:text-[#4A4A55] px-3 text-[20px] cursor-pointer ">Help</p>  
-                </div>  
+                </Link>  
                 
                <NavLink
   to="/workspace/pricing"
@@ -403,7 +407,7 @@ const formattedCredits = Intl.NumberFormat().format(credits);
 
 
             
-          <div className="bg-white w-[clamp(250px,20vw,400px)] h-screen hidden md:hidden lg:flex sticky top-0 self-start  flex-col overflow-hidden">
+          <div className="bg-white w-[260px] h-screen hidden md:hidden lg:flex sticky top-0 self-start  flex-col overflow-hidden">
 
 
 
@@ -544,10 +548,12 @@ const formattedCredits = Intl.NumberFormat().format(credits);
   </p>
 </Link>
 
-              <div className="flex flex-row items-center px-8 ">
+              <Link className="flex flex-row items-center px-8 "
+              to="/support"
+              >
               <img src={Help} className="h-6 w-6 "/>
               <p className="text-[#110829] hover:text-[#4A4A55] px-3 text-[20px] cursor-pointer ">Help</p>  
-                </div>  
+                </Link>  
 
              <NavLink
   to="/workspace/pricing"

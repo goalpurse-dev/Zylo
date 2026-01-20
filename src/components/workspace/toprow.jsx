@@ -34,7 +34,7 @@ export default function TopRow({ title, onMenuClick }) {
           </button>
 
           {/* Logo */}
-          <div className="flex  lg:hidden items-center gap-2">
+          <div className="sm:flex hidden lg:hidden items-center gap-2">
             <p className="text-[#7A3BFF] font-bold text-[20px] md:text-[22px] cursor-default">ZyvoAI</p>
             <div className="hidden sm:flex ">
             <img src={Logo} className="h-10 w-10 md:h-12 md:w-12" />
@@ -61,8 +61,8 @@ export default function TopRow({ title, onMenuClick }) {
 
      
           {/* Plan */}
-          <div className="border border-[#7A3BFF] bg-white px-3 sm:px-7 md:px-10 py-1 md:py-3 rounded-lg  hover:bg-[#ECE8F2]">
-            <Link className="text-[#7A3BFF] cursor-pointer hover:bg-gray-50"
+          <div className="border border-[#7A3BFF] bg-white px-3 sm:px-7 md:px-10 py-4  rounded-lg  hover:bg-[#ECE8F2]">
+            <Link className="text-[#7A3BFF] text-[16px] cursor-pointer hover:bg-gray-50"
             to="/support/contact"
             >Contact Us</Link>
           </div>
