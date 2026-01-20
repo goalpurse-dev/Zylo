@@ -110,6 +110,10 @@ import ProductPhotographyMistakesEcommerce from "./app/blog/productphotos/Produc
 import HowVisualBrandingImpactsOnlineSales from "./app/blog/productphotos/HowVisualBrandingImpactsOnlineSales.jsx";
 import AIBackgroundRemovalForProductPhotos from "./app/blog/productphotos/AIBackgroundRemovalForProductPhotos.jsx";
 import ScaleEcommerceContent from "./app/blog/productphotos/ScaleEcommerceContent.jsx";
+import ConvertingProductImagesForShopify from "./app/blog/productphotos/ConvertingProductImagesForShopify.jsx";
+import AIProductPhotoForSmallBusiness from "./app/blog/productphotos/AIProductPhotoForSmallBusiness.jsx";
+import HowBetterImagesReduceBounceRate from "./app/blog/productphotos/HowBetterImagesReduceBounceRate.jsx";
+
 
 
 
@@ -246,9 +250,9 @@ function AppWithRouting() {
         <Route path="/blog/how-visual-branding-impacts-online-sales" element={<HowVisualBrandingImpactsOnlineSales />} />
         <Route path="/blog/ai-background-removal-for-product-photos" element={<AIBackgroundRemovalForProductPhotos />} />
         <Route path="/blog/how-to-scale-ecommerce-content-creation-with-ai" element={<ScaleEcommerceContent />} />
-
-
-
+        <Route path="/blog/converting-product-images-for-shopify-stores" element={<ConvertingProductImagesForShopify />} />
+        <Route path="/blog/ai-product-photography-for-small-businesses" element={<AIProductPhotoForSmallBusiness />} />
+        <Route path="/blog/how-better-images-reduce-bounce-rate" element={<HowBetterImagesReduceBounceRate />} />
 
 
 

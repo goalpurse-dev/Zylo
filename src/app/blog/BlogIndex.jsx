@@ -228,6 +228,52 @@ const [loading, setLoading] = useState(false);
           </div>
           </div>
           </Link> 
+
+                                      {/* Blog Card 14*/}
+                <Link to="/blog/converting-product-images-for-shopify-stores" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">High-Converting Product Images for Shopify</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">When the visuals feel high-end, shoppers assume the product is
+            high-end — and they feel safe buying.</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">20.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+
+                                             {/* Blog Card 15*/}
+                <Link to="/blog/ai-product-photography-for-small-businesses" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">AI Product Photography for Small Businesses</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">When the visuals feel high-end, shoppers assume the product is
+            high-end — and they feel safe buying.</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">20.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+
+                                                    {/* Blog Card 16*/}
+                <Link to="/blog/how-better-images-reduce-bounce-rate" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">How Better Images Reduce Bounce Rate</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">When the visuals feel high-end, shoppers assume the product is
+            high-end — and they feel safe buying.</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">20.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+        
         
         
         
