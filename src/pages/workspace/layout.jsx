@@ -3,31 +3,21 @@ import { useEffect, useRef, useState } from "react";
 
 import ToolShell from "../../components/workspace/toolshell.jsx";
 import TopRow from "../../components/workspace/toprow.jsx";
+import ToolsPanel from "../../components/workspace/ToolsPanel.jsx";
 
 export default function WorkspaceLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const [activePanel, setActivePanel] = useState(null);
 
   const scrollRef = useRef(null);
   const lastScrollY = useRef(0);
   const [showTopRow, setShowTopRow] = useState(true);
 
-  // Scroll hide/show logic (LG+ only)
   useEffect(() => {
-  setShowTopRow(true);
-  lastScrollY.current = 0;
-}, [location.pathname]);
-
-useEffect(() => {
-  const onResize = () => {
-    if (window.innerWidth < 1024) {
-      setShowTopRow(true);
-      lastScrollY.current = 0;
-    }
-  };
-  window.addEventListener("resize", onResize);
-  return () => window.removeEventListener("resize", onResize);
-}, []);
+    setShowTopRow(true);
+    lastScrollY.current = 0;
+  }, [location.pathname]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -35,15 +25,9 @@ useEffect(() => {
 
     const onScroll = () => {
       const currentY = el.scrollTop;
-
       if (window.innerWidth >= 1024) {
-        if (currentY > lastScrollY.current && currentY > 60) {
-          setShowTopRow(false); // scrolling down
-        } else {
-          setShowTopRow(true); // scrolling up
-        }
+        setShowTopRow(!(currentY > lastScrollY.current && currentY > 60));
       }
-
       lastScrollY.current = currentY;
     };
 
@@ -64,30 +48,58 @@ useEffect(() => {
 
   return (
     <div className="flex w-full min-h-screen bg-[#F7F5FA]">
-      
-      {/* Sidebar (sticky, non-scrolling) */}
-      <aside className="hidden lg:block h-screen w-[260px] flex-shrink-0">
-     <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">  
-        <ToolShell />
-        </div>
+
+      {/* LEFT ICON BAR */}
+      <aside className="hidden lg:block h-screen w-[90px] flex-shrink-0 z-50">
+        <ToolShell
+          activePanel={activePanel}
+          setActivePanel={setActivePanel}
+        />
       </aside>
 
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <aside className="fixed inset-0 z-50  bg-black/10 backdrop-blur-sm lg:hidden">
-          <ToolShell onClose={() => setSidebarOpen(false)} /> 
-        </aside>
+      {/* MOBILE TOOL SHELL OVERLAY */}
+{sidebarOpen && (
+  <aside className="
+    fixed inset-0 z-50
+    bg-black/20 backdrop-blur-sm
+    lg:hidden
+  ">
+    <ToolShell
+      activePanel={activePanel}
+      setActivePanel={setActivePanel}
+      onClose={() => setSidebarOpen(false)}
+    />
+  </aside>
+)}
+
+      {/* 🧰 TOOLS PANEL (PUSHES CONTENT) */}
+      {activePanel === "tools" && (
+       <aside
+  className={`
+    hidden lg:block
+    h-screen
+    flex-shrink-0
+    w-[220px]
+    overflow-hidden
+    transition-all duration-300 ease-out
+    ${activePanel === "tools"
+      ? "opacity-100 translate-x-0"
+      : "opacity-0 -translate-x-6 pointer-events-none"}
+  `}
+>
+  <ToolsPanel />
+</aside>
+
       )}
 
-      {/* Scroll container */}
+      {/* MAIN CONTENT */}
       <div
         ref={scrollRef}
         className="flex flex-col flex-1 h-screen overflow-y-auto"
       >
-        {/* TopRow */}
         <div
           className={`
-            sticky top-0 lg:static z-40
+            sticky top-0 lg:static z-30
             transition-transform duration-300
             ${showTopRow ? "translate-y-0" : "-translate-y-full"}
             lg:translate-y-0
@@ -99,9 +111,9 @@ useEffect(() => {
           />
         </div>
 
-        {/* Page content */}
         <Outlet />
       </div>
+
     </div>
   );
 }
