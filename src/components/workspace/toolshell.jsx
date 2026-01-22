@@ -3,13 +3,16 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { AuthProvider, useAuth } from "../../context/AuthContext";
 import { useProfileCredits } from "../../hooks/useProfileCredits";
-
+HomeIcon
+ToolCase
 Folder
+BadgeQuestionMark
+SettingsIcon
 
 
 import Logo from "../../assets/Logo.png"
 
-import { XMarkIcon } from "@heroicons/react/24/solid";
+import { QuestionMarkCircleIcon, QueueListIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 
 import Gallery from "./../../assets/toolshell/gallery.png"
@@ -26,7 +29,7 @@ import Credit1 from "../../assets/toolshell/credit1.png"
 
 
 
-import { CreativeCommonsIcon, Folder } from "lucide-react"
+import { BadgeQuestionMark, CreativeCommonsIcon, FileQuestionMark, Folder, HomeIcon, SettingsIcon, ToolCase } from "lucide-react"
 
 
 
@@ -468,7 +471,7 @@ const formattedCredits = Intl.NumberFormat().format(credits);
     ${isHomeActive ? "bg-[#7A3BFF]/20" : ""}
   `}
 >
-  <img src={Home} className="h-6 w-6" />
+   <HomeIcon className="text-[#4A4A55] h-6 w-6"></HomeIcon>
   <p className="text-[#110829] text-[12px]">Home</p>
 </NavLink>
 
@@ -486,7 +489,7 @@ const formattedCredits = Intl.NumberFormat().format(credits);
   ${activePanel === "tools" ? "bg-[#7A3BFF]/20 scale-[1.04]" : ""}
 `}
 >
-  <img src={Add} className="h-6 w-6" />
+     <ToolCase className="text-[#4A4A55] h-6 w-6"></ToolCase>
   <p className="text-[#110829] text-[12px]">Tools</p>
 </button>
 
@@ -509,12 +512,6 @@ const formattedCredits = Intl.NumberFormat().format(credits);
 </NavLink>
 
 
-
-
-
-
-
-  
            
             </div>
 
@@ -545,7 +542,7 @@ const formattedCredits = Intl.NumberFormat().format(credits);
               <Link className="flex flex-col gap-1 items-center px-8  mt-4"
               to="/support"
               >
-              <img src={Help} className="h-6 w-6 "/>
+             <BadgeQuestionMark className="text-[#110829]"></BadgeQuestionMark>
               <p className="text-[#110829] hover:text-[#4A4A55] px-3 text-[12px] cursor-pointer ">Help</p>  
                 </Link>  
 
@@ -555,7 +552,7 @@ const formattedCredits = Intl.NumberFormat().format(credits);
                   <Link className="flex flex-col gap-1 items-center px-8 mt-4"
                   to="/settings"
                   >
-              <img src={Settings} className="h-6 w-6 "/>
+                          <SettingsIcon className="text-[#110829]"></SettingsIcon>
               <p className="text-[#110829] hover:text-[#4A4A55] px-3 text-[12px] cursor-pointer">Settings</p>  
                 </Link>
            
