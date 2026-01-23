@@ -113,6 +113,9 @@ import ScaleEcommerceContent from "./app/blog/productphotos/ScaleEcommerceConten
 import ConvertingProductImagesForShopify from "./app/blog/productphotos/ConvertingProductImagesForShopify.jsx";
 import AIProductPhotoForSmallBusiness from "./app/blog/productphotos/AIProductPhotoForSmallBusiness.jsx";
 import HowBetterImagesReduceBounceRate from "./app/blog/productphotos/HowBetterImagesReduceBounceRate.jsx";
+import EcommerceVisualConsistencyExplained from "./app/blog/productphotos/EcommerceVisualConsistencyExplained.jsx";
+import AiProductPhotosForDropshipping from "./app/blog/productphotos/AiProductPhotosForDropshipping.jsx";
+import HowVisualQualityImpactsSeo from "./app/blog/productphotos/HowVisualQualityImpactsSeo.jsx";
 
 
 
@@ -253,7 +256,10 @@ function AppWithRouting() {
         <Route path="/blog/converting-product-images-for-shopify-stores" element={<ConvertingProductImagesForShopify />} />
         <Route path="/blog/ai-product-photography-for-small-businesses" element={<AIProductPhotoForSmallBusiness />} />
         <Route path="/blog/how-better-images-reduce-bounce-rate" element={<HowBetterImagesReduceBounceRate />} />
-
+        <Route path="/blog/ecommerce-visual-consistency-explained" element={<EcommerceVisualConsistencyExplained />} />
+        <Route path="/blog/ai-productphotos-for-dropshipping" element={<AiProductPhotosForDropshipping />} />
+        <Route path="/blog/how-visual-quality-impacts-seo" element={<HowVisualQualityImpactsSeo />} />
+        
 
 
 

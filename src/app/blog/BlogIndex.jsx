@@ -263,9 +263,51 @@ const [loading, setLoading] = useState(false);
           </div>
           </div>
           </Link> 
+
+          
+
+                                                           {/* Blog Card 17*/}
+                <Link to="/blog/ecommerce-visual-consistency-explained" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Ecommerce Visual Consistency Explained</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">How to stay consistent with visuals explained.</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">22.01/2026</p>
+          </div>
+          </div>
+          </Link> 
         
-        
-        
+                                                            {/* Blog Card 18*/}
+                <Link to="/blog/ai-productphotos-for-dropshipping" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">AI Product Photos for Dropshipping Stores</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">How product photos help dropshipping stores</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">23.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+
+              
+                                                            {/* Blog Card 19*/}
+                <Link to="/blog/how-visual-quality-impacts-seo" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">How Visual Quality Impacts SEO</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how important visual quality is for SEO</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">23.01/2026</p>
+          </div>
+          </div>
+          </Link> 
         
   
           
