@@ -42,6 +42,8 @@ export default function WorkspaceLayout() {
     "/workspace/library": "Bg Library",
     "/workspace/creations": "Creations",
     "/workspace/pricing": "Pricing",
+    "/image-generator": "Image Generator",
+
   };
 
   const title = titleMap[location.pathname] || "Workspace";

@@ -308,8 +308,48 @@ const [loading, setLoading] = useState(false);
           </div>
           </div>
           </Link> 
-        
-  
+
+                                                                  {/* Blog Card 20*/}
+                <Link to="/blog/product-images-that-conver-full-guide" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Product Images That Convert: A Complete Guide</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Full guide on what kind of product images convert</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">24.01/2026</p>
+          </div>
+          </div>
+          </Link>
+                                                                  {/* Blog Card 21*/}
+                <Link to="/blog/ai-tools-every-shopify-store-owner-should-know" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">AI Tools Every Shopify Store Owner Should Know</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Every shopify store owner must know these AI tools</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">24.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+
+                                                                   {/* Blog Card 22*/}
+                <Link to="/blog/how-to-launch-products-faster-with-ai" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">How to Launch Products Faster with AI</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Complite guide on how to launch products faster with AI</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">24.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+  /blog/how-to-launch-products-faster-with-ai
           
         </div>
         

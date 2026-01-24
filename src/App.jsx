@@ -116,12 +116,17 @@ import HowBetterImagesReduceBounceRate from "./app/blog/productphotos/HowBetterI
 import EcommerceVisualConsistencyExplained from "./app/blog/productphotos/EcommerceVisualConsistencyExplained.jsx";
 import AiProductPhotosForDropshipping from "./app/blog/productphotos/AiProductPhotosForDropshipping.jsx";
 import HowVisualQualityImpactsSeo from "./app/blog/productphotos/HowVisualQualityImpactsSeo.jsx";
+import ProductImagesThatConverGuide from "./app/blog/productphotos/ProductImagesThatConvertGuide.jsx";
+import AiToolsEveryShopifyStoreOwnerKnow from "./app/blog/productphotos/Ai-Tools-Every-Shopify-Store-Owner-Know.jsx";
+import HowToLaunchProductsFasterWithAi from "./app/blog/productphotos/HowToLaunchProductsFasyerWithAi.jsx";
 
 
 
 
+{/* Viral */}
 
 
+import Image from "./pages/viral/Image.jsx"
 
 
 
@@ -259,11 +264,10 @@ function AppWithRouting() {
         <Route path="/blog/ecommerce-visual-consistency-explained" element={<EcommerceVisualConsistencyExplained />} />
         <Route path="/blog/ai-productphotos-for-dropshipping" element={<AiProductPhotosForDropshipping />} />
         <Route path="/blog/how-visual-quality-impacts-seo" element={<HowVisualQualityImpactsSeo />} />
+        <Route path="/blog/product-images-that-conver-full-guide" element={<ProductImagesThatConverGuide/>} />
+        <Route path="/blog/ai-tools-every-shopify-store-owner-should-know" element={<AiToolsEveryShopifyStoreOwnerKnow/>} />
+        <Route path="/blog/how-to-launch-products-faster-with-ai" element={<HowToLaunchProductsFasterWithAi/>} />
         
-
-
-
-
 
 
 
@@ -281,9 +285,10 @@ function AppWithRouting() {
 
 
 
-<Route path="/workspace" element={<WorkspaceLayout />}>
+<Route  element={<WorkspaceLayout />}>
   {/* 🔒 PROTECTED HOME */}
   <Route
+    path="/workspace"
     index
     element={
       <RequireAuth>
@@ -293,13 +298,15 @@ function AppWithRouting() {
   />
 
   {/* PUBLIC ROUTES */}
-  <Route path="productphoto" element={<ProductPhoto />} />
-  <Route path="library" element={<Library1 />} />
-  <Route path="creations" element={<Creations />} />
-  <Route path="myproduct" element={<Myproduct />} />
-  <Route path="step2" element={<Step2 />} />
-  <Route path="step3" element={<Step3 />} />
-  <Route path="pricing" element={<Pricing />} />
+  <Route path="/workspace/productphoto" element={<ProductPhoto />} />
+  <Route path="/workspace/library" element={<Library1 />} />
+  <Route path="/workspace/creations" element={<Creations />} />
+  <Route path="/workspace/myproduct" element={<Myproduct />} />
+  <Route path="/workspace/step2" element={<Step2 />} />
+  <Route path="/workspace/step3" element={<Step3 />} />
+  <Route path="/workspace/pricing" element={<Pricing />} />
+  <Route path="image-generator" element={<Image />} />
+
 
 </Route>
 
