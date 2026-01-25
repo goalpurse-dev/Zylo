@@ -349,7 +349,35 @@ const [loading, setLoading] = useState(false);
           </div>
           </div>
           </Link> 
-  /blog/how-to-launch-products-faster-with-ai
+                                                                  {/* Blog Card 23*/}
+                <Link to="/blog/studio-quality-product-photos" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Studio-Quality Product Photos Without a Studio
+</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Full guide on how to create studio quality product photos wihtout studio</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">25.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+                                                                        {/* Blog Card 24*/}
+                <Link to="/blog/why-clean-product-photos-build-trust" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Why Clean Product Photos Build Trust
+</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how clean product photos build trust</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">25.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+ 
           
         </div>
         

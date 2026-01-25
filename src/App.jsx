@@ -119,6 +119,8 @@ import HowVisualQualityImpactsSeo from "./app/blog/productphotos/HowVisualQualit
 import ProductImagesThatConverGuide from "./app/blog/productphotos/ProductImagesThatConvertGuide.jsx";
 import AiToolsEveryShopifyStoreOwnerKnow from "./app/blog/productphotos/Ai-Tools-Every-Shopify-Store-Owner-Know.jsx";
 import HowToLaunchProductsFasterWithAi from "./app/blog/productphotos/HowToLaunchProductsFasyerWithAi.jsx";
+import StudioQualityProductPhotos from "./app/blog/productphotos/StudioQualityProductPhotos.jsx";
+import WhyCleanProductPhotoBuildTrust from "./app/blog/productphotos/WhyCleanProductPhotosBuildTrust.jsx";
 
 
 
@@ -267,6 +269,8 @@ function AppWithRouting() {
         <Route path="/blog/product-images-that-conver-full-guide" element={<ProductImagesThatConverGuide/>} />
         <Route path="/blog/ai-tools-every-shopify-store-owner-should-know" element={<AiToolsEveryShopifyStoreOwnerKnow/>} />
         <Route path="/blog/how-to-launch-products-faster-with-ai" element={<HowToLaunchProductsFasterWithAi/>} />
+        <Route path="/blog/studio-quality-product-photos" element={<StudioQualityProductPhotos/>} />
+        <Route path="/blog/why-clean-product-photos-build-trust" element={<WhyCleanProductPhotoBuildTrust/>} />
         
 
 
