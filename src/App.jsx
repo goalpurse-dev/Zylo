@@ -121,6 +121,8 @@ import AiToolsEveryShopifyStoreOwnerKnow from "./app/blog/productphotos/Ai-Tools
 import HowToLaunchProductsFasterWithAi from "./app/blog/productphotos/HowToLaunchProductsFasyerWithAi.jsx";
 import StudioQualityProductPhotos from "./app/blog/productphotos/StudioQualityProductPhotos.jsx";
 import WhyCleanProductPhotoBuildTrust from "./app/blog/productphotos/WhyCleanProductPhotosBuildTrust.jsx";
+import VisualOptimizationForMobielEcommerce from "./app/blog/productphotos/VisualOptimizationForMobileEcommerce.jsx";
+import HowAiHelpsEcommerceBrandsScaleFaster from "./app/blog/productphotos/HowAIHelpsEcommerceBrandsScaleFaster.jsx";
 
 
 
@@ -271,6 +273,8 @@ function AppWithRouting() {
         <Route path="/blog/how-to-launch-products-faster-with-ai" element={<HowToLaunchProductsFasterWithAi/>} />
         <Route path="/blog/studio-quality-product-photos" element={<StudioQualityProductPhotos/>} />
         <Route path="/blog/why-clean-product-photos-build-trust" element={<WhyCleanProductPhotoBuildTrust/>} />
+        <Route path="/blog/visual-optimization-for-mobile-ecommerce" element={<VisualOptimizationForMobielEcommerce/>} />
+        <Route path="/blog/how-ai-helps-ecommerce-brands-scale-faster" element={<HowAiHelpsEcommerceBrandsScaleFaster/>} />
         
 
 

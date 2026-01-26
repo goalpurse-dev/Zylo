@@ -136,6 +136,16 @@
     <priority>0.8</priority>
   </url>
 
+    <url>
+    <loc>https://www.tryzyvo.com/blog/visual-optimization-for-mobile-ecommerce</loc>
+    <priority>0.8</priority>
+  </url>
+
+   <url>
+    <loc>https://www.tryzyvo.com/blog/how-ai-helps-ecommerce-brands-scale-faster</loc>
+    <priority>0.8</priority>
+  </url>
+
 
 
   <!-- PUBLIC WORKSPACE PAGES -->

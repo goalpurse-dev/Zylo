@@ -377,6 +377,35 @@ const [loading, setLoading] = useState(false);
           </div>
           </div>
           </Link> 
+
+                                                                                  {/* Blog Card 25*/}
+                <Link to="/blog/visual-optimization-for-mobile-ecommerce" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Visual Optimization for Mobile Ecommerce
+</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">How optimize visuals for mobile ecommerce</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">26.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+                                                                                           {/* Blog Card 26*/}
+                <Link to="/blog/how-ai-helps-ecommerce-brands-scale-faster" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">How AI Helps Ecommerce Brands Scale Faster
+</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how AI helps ecommerce brands to scale faster</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">26.01/2026</p>
+          </div>
+          </div>
+          </Link> 
  
           
         </div>
