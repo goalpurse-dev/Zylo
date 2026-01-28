@@ -123,7 +123,8 @@ import StudioQualityProductPhotos from "./app/blog/productphotos/StudioQualityPr
 import WhyCleanProductPhotoBuildTrust from "./app/blog/productphotos/WhyCleanProductPhotosBuildTrust.jsx";
 import VisualOptimizationForMobielEcommerce from "./app/blog/productphotos/VisualOptimizationForMobileEcommerce.jsx";
 import HowAiHelpsEcommerceBrandsScaleFaster from "./app/blog/productphotos/HowAIHelpsEcommerceBrandsScaleFaster.jsx";
-
+import ProductPhotographyTrendsForEcommerce from "./app/blog/productphotos/ProductPhotographyTrendsForEcommerce.jsx";
+import AIProductPhotosForFashionStores from "./app/blog/productphotos/AIProductPhotosForFashionStores.jsx";
 
 
 
@@ -275,6 +276,8 @@ function AppWithRouting() {
         <Route path="/blog/why-clean-product-photos-build-trust" element={<WhyCleanProductPhotoBuildTrust/>} />
         <Route path="/blog/visual-optimization-for-mobile-ecommerce" element={<VisualOptimizationForMobielEcommerce/>} />
         <Route path="/blog/how-ai-helps-ecommerce-brands-scale-faster" element={<HowAiHelpsEcommerceBrandsScaleFaster/>} />
+        <Route path="/blog/product-photography-trends-for-ecommerce" element={<ProductPhotographyTrendsForEcommerce/>} />
+        <Route path="/blog/ai-product-photos-for-fashion-stores" element={<AIProductPhotosForFashionStores/>} />
         
 
 

@@ -14,7 +14,7 @@ import {
   Tv2,
   AlertTriangle,
 } from "lucide-react";
-import { createVideoJobSimple } from "../../lib/jobs";
+
 import { uploadUserFile, publishToPublic } from "../../lib/storage";
 import { useGenerations } from "../../components/GenerationsDock";
 import TextToVideoSteps from "../../components/TextToVideoSteps";

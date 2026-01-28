@@ -1,12 +1,8 @@
 import { supabase } from "./supabaseClient";
-import {
-  TIER_TO_QUALITY,
-  creditsForImage,
-  creditsForTextToVideoFixed,
-} from "./pricing";
+
 import { uploadUserFile, publishToPublic } from "./storage";
 import { getProviderLink, type ToolKey } from "./providers";
-import { enhancePrompt } from "./promptEnhancer";
+
 import { CREATION_TYPES } from "./creations";
 
 /* ======================= Types ======================= */
@@ -31,11 +27,13 @@ export type JobStatus =
 export interface CreateJobInput {
   id?: string;
   type: JobType;
+  tool_key?: ToolKey;        // ✅ ADD THIS
   project_id?: string | null;
   prompt?: string | null;
   settings?: Record<string, any> | null;
   input?: Record<string, any> | null;
 }
+
 
 export interface JobRow {
   id: string;
@@ -66,6 +64,14 @@ export const isDone = (s?: JobStatus | null) =>
 /* ======================= UI caps ======================= */
 
 export type TierId = "zylo-v1" | "zylo-v2" | "zylo-v3" | "zylo-v4";
+
+
+export type ImageToolKey =
+  | "image:nano"
+  | "image:juggernaut"
+  | "image:hidream"
+  | "image:spark"
+  | "image:prime";
 
 export const T2V_UI_BY_TIER: Record<
   TierId,
@@ -110,9 +116,10 @@ export interface ImageInput {
 }
 
 export interface ImageSettings {
-  tier: TierId;
+  tool_key: ImageToolKey;   // ← THIS IS THE SOURCE OF TRUTH
   size: string;
-  price: number;
+  credits: number;
+  priceUSD: number;
   provider_hint?: {
     engine: "runware";
     mode: "t2i" | "upscale" | "product";
@@ -120,9 +127,9 @@ export interface ImageSettings {
     airTag: string;
     settings?: Record<string, any>;
   };
-  // tagging for library routing
   creation_type?: string | null;
 }
+
 
 export const DEFAULT_NEGATIVE_IMAGE =
   "text, letters, watermark, logo, caption, blurry, low-res, oversharpen, artifact";
@@ -146,16 +153,18 @@ export async function createJob(
   if (uerr || !userData?.user) throw new Error("Must be signed in");
 
   const insertPayload = {
-    ...(payload.id ? { id: payload.id } : {}),
-    user_id: userData.user.id,
-    type: payload.type,
-    project_id: payload.project_id ?? null,
-    prompt: payload.prompt ?? null,
-    settings: payload.settings ?? {},
-    input: payload.input ?? {},
-    status: "queued" as JobStatus,
-    progress: 0,
-  };
+  ...(payload.id ? { id: payload.id } : {}),
+  user_id: userData.user.id,
+  type: payload.type,
+  tool_key: payload.tool_key ?? null, // 🔥 REQUIRED
+  project_id: payload.project_id ?? null,
+  prompt: payload.prompt ?? null,
+  settings: payload.settings ?? {},
+  input: payload.input ?? {},
+  status: "queued" as JobStatus,
+  progress: 0,
+};
+ 
 
   const { data, error } = await supabase
     .from("jobs")
@@ -287,26 +296,27 @@ export async function simulateJob(
 /* ======================= IMAGE CREATION ======================= */
 
 export async function createImageJobSimple(params: {
-  id?: string;
   subject: string;
-  style?: string;
-  mood?: string;
-  extras?: string;
-  output_goal?: string;
-  composition?: string;
-  color_theme?: string;
-  ref_images?: string[];
-  negative?: string;
-  seed?: number | null;
-  tier?: TierId;
+  toolKey: ImageToolKey;
   size?: string;
+  style?: string;        // ✅ ADD
   project_id?: string | null;
   init_image_url?: string | null;
   initImageFile?: File | null;
   initImageUrls?: string[];
   providerHint?: ImageSettings["provider_hint"];
-}): Promise<JobRow> {
-  const tier: TierId = params.tier ?? "zylo-v2";
+})
+: Promise<JobRow> {
+
+const link = getProviderLink(params.toolKey);
+if (!link) {
+  throw new Error(`Image provider not configured for ${params.toolKey}`);
+}
+
+const credits = link.credits;
+const priceUSD = link.retailUSD;
+
+
   const size = params.size ?? "1024x1024";
 
   let initUrl = params.init_image_url ?? null;
@@ -327,36 +337,36 @@ export async function createImageJobSimple(params: {
     initUrl = pub.publicUrl;
   }
 
-  const input: ImageInput = {
-    tool: "image",
-    creation_type: CREATION_TYPES.PHOTO, // <- normal images = Photos
-    subject: (params.subject || "").trim(),
-    style: params.style?.trim() || null,
-    mood: params.mood?.trim() || null,
-    extras: params.extras?.trim() || null,
-    output_goal: params.output_goal?.trim() || "Art piece",
-    composition: params.composition?.trim() || "center",
-    color_theme: params.color_theme?.trim() || null,
-    ref_images: params.ref_images ?? [],
-    negative:
-      (params.negative && params.negative.trim()) ||
-      DEFAULT_NEGATIVE_IMAGE,
-    brand: { id: null, use_palette: false },
-    seed: params.seed ?? null,
-    init_image_url: initUrl,
-  };
+const input: ImageInput = {
+  tool: "image",
+  subject: (params.subject || "").trim(),
+  style: params.style ?? null, // ✅ STYLE LIVES HERE
+  creation_type: CREATION_TYPES.PHOTO,
+  negative: DEFAULT_NEGATIVE_IMAGE,
+  brand: { id: null, use_palette: false },
+  init_image_url: initUrl,
+};
+
 
   if (!input.subject) throw new Error("Please provide a subject.");
 
-  const quality = TIER_TO_QUALITY[tier] ?? "basic";
-  const price = creditsForImage({ quality, size });
 
-  const settings: ImageSettings = {
-    tier,
-    size,
-    price,
-    creation_type: CREATION_TYPES.PHOTO, // <- tag in settings too
-  };
+
+const settings: ImageSettings = {
+  tool_key: params.toolKey,
+  size,
+  credits,
+  priceUSD,
+  creation_type: CREATION_TYPES.PHOTO,
+  provider_hint: {
+    engine: "runware",
+    mode: "t2i",
+    edgeFn: link.edgeFn,
+    airTag: link.airTag,
+    settings: {},
+  },
+};
+
 
   if (params.providerHint) {
     settings.provider_hint = params.providerHint;
@@ -364,14 +374,15 @@ export async function createImageJobSimple(params: {
 
   const preview = buildImagePreviewPrompt(input);
 
-  return await simulateJob({
-    id: params.id,
-    type: "product-photo",
-    project_id: params.project_id ?? null,
-    prompt: preview,
-    settings,
-    input,
-  });
+return await simulateJob({
+  id: params.id,
+  type: "image",
+  tool_key: params.toolKey,   // 🔥 THIS IS REQUIRED
+  project_id: params.project_id ?? null,
+  prompt: preview,
+  settings,
+  input,
+});
 }
 
 /* ============== PRODUCT PHOTO (Runware Kontext via Edge Function) ============== */
@@ -477,247 +488,4 @@ export async function createProductPhotoJob(params: {
 
 
 
-/* ============== 3D spin GIF wrapper (uses image tool) ============== */
 
-export async function createGifJobSimple(params: {
-  subject: string;
-  aspect?: "16:9" | "9:16" | "1:1";
-  resolution?: string;
-  initImageUrls?: string[];
-  project_id?: string | null;
-  size?: string;
-}): Promise<JobRow> {
-  function deriveSize(): string {
-    if (params.size) return params.size;
-
-    const aspect = params.aspect ?? "1:1";
-    const res = (params.resolution ?? "1024").toLowerCase();
-
-    const toNum = (v: string) => {
-      const m = v.match(/\d+/);
-      return m ? parseInt(m[0], 10) : 1024;
-    };
-
-    if (aspect === "1:1") {
-      const n = toNum(res);
-      return `${n}x${n}`;
-    }
-
-    const h = toNum(res);
-
-    if (aspect === "16:9") {
-      return `${Math.round((16 / 9) * h)}x${h}`;
-    }
-
-    if (aspect === "9:16") {
-      return `${Math.round((9 / 16) * h)}x${h}`;
-    }
-
-    return "1024x1024";
-  }
-
-  const size = deriveSize();
-
-  return await createImageJobSimple({
-    subject: params.subject.trim(),
-    output_goal: "3D spin GIF",
-    extras:
-      "360-degree turntable spin, smooth rotation, clean simple background",
-    size,
-    project_id: params.project_id ?? null,
-    initImageUrls: params.initImageUrls ?? [],
-  });
-}
-
-/* ======================= VIDEO CREATION ======================= */
-
-const VIDEO_TOOLKEY_BY_TIER: Record<TierId, ToolKey> = {
-  "zylo-v1": "t2v:v2",
-  "zylo-v2": "t2v:v2",
-  "zylo-v3": "t2v:v3",
-  "zylo-v4": "t2v:v4",
-};
-
-const VALID_TIERS = ["zylo-v1", "zylo-v2", "zylo-v3", "zylo-v4"] as const;
-type AnyTier = (typeof VALID_TIERS)[number];
-
-function mapUiModelToTier(tierOrModel: string): TierId {
-  if ((VALID_TIERS as readonly string[]).includes(tierOrModel as AnyTier)) {
-    return tierOrModel as TierId;
-  }
-  switch (tierOrModel) {
-    case "veo-3.1-fast":
-      return "zylo-v4";
-    case "sora-v5":
-      return "zylo-v4";
-    default:
-      return "zylo-v4";
-  }
-}
-
-export async function createVideoJobSimple(params: {
-  id?: string;
-  tool_key?: string;
-  subject: string;
-  tier: string | TierId;
-  aspect: "16:9" | "9:16" | "1:1";
-  resolution: "720p" | "1080p";
-  durationSec: number;
-  audio?: boolean;
-  initImageUrl?: string | null;
-  project_id?: string | null;
-
-  ad?: any;
-  product?: any;
-  avatar_ref?: string | null;
-  avatar_meta?: any | null;
-}): Promise<JobRow> {
-  // must be signed in
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Must be signed in");
-
-  const tier: TierId = mapUiModelToTier(params.tier);
-
-  // ---- call your Edge Function ----
-const { data, error } = await supabase.functions.invoke("runware-video", {
-  headers: {
-    apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-    Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-  },
-  body: {
-    subject: params.subject,
-    tier,
-    aspect: params.aspect,
-    resolution: params.resolution,
-    durationSec: params.durationSec,
-    audio: params.audio ?? false,
-    initImageUrl: params.initImageUrl ?? null,
-    userId: user.id,
-  },
-});
-
-
-  if (error) {
-    console.error("runware-video invoke error:", error);
-    throw new Error(error.message || "Failed to start video job");
-  }
-
-  const payload: any = data || {};
-
-  // ---- accept ANY possible jobId key ----
-  const jobId =
-    payload.jobId ||
-    payload.job_id ||
-    payload.id;
-
-  if (!jobId) {
-    console.error("runware-video bad response (no jobId):", payload);
-    throw new Error(payload.error || "Video launch failed");
-  }
-
-  // ---- provider job id (optional) ----
-  const providerJobId =
-    payload.providerJobId ||
-    payload.provider_job_id ||
-    null;
-
-  // ---- minimal return row (real job already inserted by edge fn) ----
-  return {
-    id: jobId,
-    user_id: user.id,
-    project_id: params.project_id ?? null,
-    type: "video",
-    status: "queued",
-    progress: 0,
-    prompt: params.subject,
-    settings: {
-      tier,
-      providerJobId,
-      creation_type: CREATION_TYPES.VIDEO, // <- plain videos
-    },
-    input: {
-      subject: params.subject,
-      aspect: params.aspect,
-      resolution: params.resolution,
-      durationSec: params.durationSec,
-      audio: !!params.audio,
-      initImageUrl: params.initImageUrl ?? null,
-      creation_type: CREATION_TYPES.VIDEO,
-    },
-    error: null,
-    result_url: null,
-    output: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-}
-
-/* ============================================================
-   AD VIDEO — dedicated job creator (OPTION A)
-   Clean, isolated, does NOT touch other flows.
-   Maps your UI models → provider configs in providers.ts
-============================================================ */
-
-export async function createAdVideoJob(params: {
-  subject: string;
-  ad: any;
-  product: any;
-  avatar_meta?: any;
-  project_id?: string | null;
-}) {
-  const baseModel = params.ad?.model || "v4-pixverse-v5";
-
-  // ---------------- map UI model -> providers.ts toolKey ----------------
-  // These MUST match your providers.ts keys exactly:
-  // "ad-video:v4" → PixVerse v5 (pixverse:l95)
-  // "ad-video:v5" → Veo 3.1 Fast (google:3e9)
-  let toolKey: ToolKey = "ad-video:v4";
-
-  if (baseModel === "v5-veo-3.1-fast") {
-    toolKey = "ad-video:v5";
-  } else {
-    toolKey = "ad-video:v4";
-  }
-
-  // ---------------- get provider info ----------------
-  const link = getProviderLink(toolKey);
-  if (!link) throw new Error("Provider not configured for this ad model");
-
-  // ---------------- settings (provider_hint drives AIR tag) ----------------
-  const settings: Record<string, any> = {
-    tool_key: toolKey,
-    tier: "zylo-v4", // all ads treated as top tier
-    creation_type: CREATION_TYPES.PRODUCT_AD, // <- tag as Product Ad
-    provider_hint: {
-      engine: "runware",
-      mode: "ad-video",
-      airTag: link.airTag, // ← Pixverse or Veo
-      lipSyncAirTag: link.lipSyncAirTag, // ← pixverse:lipsync@1
-      audioMuxAirTag: link.audioMuxAirTag, // runware:muxer
-      settings: {},
-    },
-    // correct credit cost from providers.ts mapping:
-    priceUSD: link.retailUSD,
-    credits: link.credits,
-  };
-
-  // ---------------- input payload ----------------
-  const input: Record<string, any> = {
-    subject: params.subject,
-    ad: params.ad,
-    product: params.product,
-    avatar_meta: params.avatar_meta ?? null,
-    creation_type: CREATION_TYPES.PRODUCT_AD,
-  };
-
-  // ---------------- write job + run worker ----------------
-  return await simulateJob({
-    type: "video",
-    project_id: params.project_id ?? null,
-    prompt: params.subject,
-    settings,
-    input,
-  });
-}

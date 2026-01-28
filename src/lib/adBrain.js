@@ -1,7 +1,7 @@
 // src/lib/adBrain.js
 // deno-lint-ignore-file
 
-import { createAdVideoJob } from "./jobs";  // ⭐ USE THE CORRECT AD VIDEO CREATOR
+
 import { supabase } from "../lib/supabaseClient";
 
 const STEP4_KEY = "ad.create.step4";
@@ -108,25 +108,6 @@ export async function startAdGeneration(opts = {}) {
      CALL THE REAL AD VIDEO JOB CREATOR
      ⭐ THIS IS THE FIX ⭐
   --------------------------------------------------------- */
-
-  const job = await createAdVideoJob({
-    subject, // enhanced full script
-    ad: {
-      adType: payload.adType,
-      model: payload.model,     // e.g. "v4-pixverse-v5"
-      modelKey,                 // "ad-video:v4" | "ad-video:v5"
-      voiceMode: payload.voiceMode, // none | avatar | bg
-      bgVoice: bgVoiceMeta,
-      scenes,
-      creative: true,
-    },
-    product: {
-      id: payload.product_id,
-      cutout_url: payload.productCutout || null,
-    },
-    avatar_meta: avatarMeta,
-    project_id: null,
-  });
 
   return { ok: true, jobId: job.id };
 }

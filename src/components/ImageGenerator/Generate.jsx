@@ -1,8 +1,13 @@
-import { useState } from "react";
+import {  useState } from "react";
 import { useRef, useEffect } from "react";
 import { MODELS } from "../../lib/image-generator/modelsConfig";
 import { useReferenceImages } from "../../components/reference-images/useReferenceImages";
 import ReferenceImageModal from "../../components/reference-images/ReferenceImageModal";
+import { generateImageFromUI } from "../../lib/image-generator";
+import { supabase } from "../../lib/supabaseClient";
+import { IMAGE_STYLES } from "../../lib/image-generator/styles";
+
+
 
 
 import CreditLogo from "../../assets/toolshell/credit.png"
@@ -18,6 +23,7 @@ ArrowBigLeft
 ArrowBigDown
 BoxSelect
 Wand2
+
 
 
 
@@ -92,61 +98,113 @@ const AspectRatioRow = ({ label, width, height, onClick }) => (
   </button>
 );
 
-
-const ModelCard = ({ img, label, credits, active, onClick }) => (
+const ModelCard = ({
+  img,
+  label,
+  description,
+  credits,
+  traits = [],
+  active,
+  onClick,
+  compact = false,
+}) => (
   <button
     onClick={onClick}
-    className="flex flex-col gap-2 rounded-xl overflow-hidden border border-white/10 
-               hover:border-purple-500/50 transition bg-[#0B0E1A]/60"
+    className={`
+      relative w-full rounded-xl transition text-left
+      bg-[#0B0E1A]/70 border
+      ${
+        active
+          ? "border-[#7A3BFF] bg-[#7A3BFF]/10 shadow-[0_0_20px_rgba(122,59,255,0.35)]"
+          : "border-white/10 hover:bg-white/5 hover:border-[#7A3BFF]/40"
+      }
+      ${compact ? "p-3" : "p-4"}
+    `}
   >
-    {/* Image preview */}
-    <img
-      src={img}
-      className="h-20 w-full object-cover"
-      alt={label}
-    />
+    {/* ACTIVE CHECK */}
+    {active && (
+      <span className="absolute top-3 right-3 text-[#7A3BFF] font-bold">
+        ✓
+      </span>
+    )}
 
-    {/* Info */}
-    <div className="px-3 pb-3 flex flex-col gap-1 text-left">
-      <div className="text-sm text-white font-medium">
-        {label}
+    {/* HEADER */}
+    <div className="flex items-center gap-2 ">
+      {/* LOGO */}
+      <img
+        src={img}
+        alt={label}
+        className="w-10 h-10 rounded-lg object-cover  p-1 flex-shrink-0"
+      />
+       <div className="text-white font-medium leading-tight">
+          {label}
+        </div>
+        </div>
+
+      {/*  DESCRIPTION */}
+      <div className="flex l">
+       
+
+        {description && (
+          <div className="text-white/50 text-xs leading-snug mt-0.5">
+            {description}
+          </div>
+        )}
       </div>
+   
 
-      {/* Credits row */}
-    {/* Credits row */}
-<div className="flex items-center gap-1 text-xs text-white/60">
-  <div className="flex items-center justify-center bg-gray-200/80 p-[2px] rounded-lg">
-    <img src={CreditLogo} className="w-4 h-4" />
-  </div>
-  <span className="leading-none">≈ {credits} credits</span>
-</div>
+    {/* TRAITS */}
+    {traits.length > 0 && (
+      <div className="flex flex-wrap gap-2 mt-2">
+        {traits.map((t) => (
+          <span
+            key={t}
+            className="text-[11px] px-2 py-1 rounded-full bg-white/10 text-white/70"
+          >
+            {t}
+          </span>
+        ))}
+      </div>
+    )}
+
+    {/* CREDITS */}
+    <div className="flex items-center gap-1 mt-2 text-xs text-white/50">
+      <span>≈ {credits} credits</span>
     </div>
   </button>
 );
 
 
 
-export const ViralImageGenerator = () => {
+
+
+
+export default function Generate({ prompt, setPrompt, onJobCreated }) {
+
+
     
 const [settingsOpen, setSettingsOpen] = useState(false);
 const [activeMenu, setActiveMenu] = useState(null); 
 
 const panelRef = useRef(null);
-const [selectedModelKey, setSelectedModelKey] = useState("nanoBanana");
+ const [selectedModelKey, setSelectedModelKey] = useState("image:nano");
 const [selectedSize, setSelectedSize] = useState("1:1");
 
 const selectedModel = MODELS[selectedModelKey];
-
+  const textareaRef = useRef(null);
 const [openSize, setOpenSize] = useState(false);
 const [openStyle, setOpenStyle] = useState(false);
 const [openModel, setOpenModel] = useState(false);
 const controlsRef = useRef(null);
+const [isGenerating, setIsGenerating] = useState(false);
+
 
 const maxRefImages = selectedModel.maxReferenceImages;
 const [openReferenceModal, setOpenReferenceModal] = useState(false);
-const [selectedStyle, setSelectedStyle] = useState(
-  MODELS[selectedModelKey].supportedStyles[0]
-);
+const STYLE_KEYS = Object.keys(IMAGE_STYLES);
+
+
+const [selectedStyle, setSelectedStyle] = useState(STYLE_KEYS[0]);
 
 const {
   images,
@@ -167,19 +225,39 @@ const handleUpload = (e) => {
   });
 };
 
-useEffect(() => {
-  const model = MODELS[selectedModelKey];
+const handleGenerate = async () => {
+  if (!prompt.trim()) return;
 
-  // fix size
-  if (!model.supportedSizes.includes(selectedSize)) {
-    setSelectedSize(model.supportedSizes[0]);
-  }
+  try {
+    setIsGenerating(true);
 
-  // fix style
-  if (!model.supportedStyles.includes(selectedStyle)) {
-    setSelectedStyle(model.supportedStyles[0]);
+    const job = await generateImageFromUI({
+      modelKey: selectedModelKey,
+      prompt: prompt.trim(),
+      style: selectedStyle,
+      size: selectedSize,
+      refImages: selected.map((x) => x.url),
+    });
+
+    // ✅ optimistic UI slot
+    onJobCreated?.(job);
+
+  } catch (err) {
+    console.error("Generate failed:", err);
+  } finally {
+    setIsGenerating(false);
   }
-}, [selectedModelKey]);
+};
+
+  useEffect(() => {
+    if (!textareaRef.current) return;
+    textareaRef.current.style.height = "auto";
+    textareaRef.current.style.height =
+      textareaRef.current.scrollHeight + "px";
+  }, [prompt]);
+
+   
+
 
 useEffect(() => {
   const handleClickOutside = (e) => {
@@ -248,22 +326,26 @@ useEffect(() => {
 </button>
       </div>
      
-    <div className="w-full rounded-2xl bg-[#110829]/50 backdrop-blur-xl border border-white/10 shadow-lg">
-  <textarea
-    placeholder="Describe the image you want to generate…"
-    rows={1}
-    className="
-      w-full resize-none bg-transparent
-      px-4 py-3
-      text-white text-[15px]
-      placeholder:text-white/40
-      focus:outline-none
-      focus:ring-0
-      rounded-2xl
-      p-1
-    "
-  />
-</div>
+ <div className="w-full rounded-2xl bg-[#110829]/50 backdrop-blur-xl border border-white/10 shadow-lg">
+ <textarea
+  ref={textareaRef}
+  value={prompt}
+  onChange={(e) => setPrompt(e.target.value)}
+  placeholder="Describe the image you want to generate…"
+  rows={1}
+  className="
+
+  w-full resize-none bg-transparent overflow-y-auto 
+    px-4 py-3
+    text-white text-[15px]
+    placeholder:text-white/40
+    focus:outline-none
+    focus:ring-0
+    rounded-2xl
+   max-h-[8rem]
+  "
+/>
+    </div>
 
       </div>
 
@@ -350,55 +432,48 @@ useEffect(() => {
     {/* SUB MENUS */}
 {activeMenu === "model" && (
   <SubMenu title="Model" onBack={() => setActiveMenu(null)}>
-    <div className="flex flex-col gap-3 p-3">
+    <div
+      className="
+        flex flex-col gap-3 p-3
+        max-h-[260px]      
+        overflow-y-auto
+        pr-1
+        scrollbar-thin
+        scrollbar-thumb-white/20
+        scrollbar-track-transparent
+      "
+    >
       {Object.entries(MODELS).map(([key, model]) => {
         const isActive = key === selectedModelKey;
 
         return (
-          <button
+          <ModelCard
             key={key}
+            img={model.img}
+            label={model.label}
+            description={model.description}
+            credits={model.credits}
+            traits={model.traits}
+            active={isActive}
+            compact
             onClick={() => {
               setSelectedModelKey(key);
 
-              if (!model.supportedSizes.includes(selectedSize)) {
-                setSelectedSize(model.supportedSizes[0]);
-              }
-              if (!model.supportedStyles.includes(selectedStyle)) {
-                setSelectedStyle(model.supportedStyles[0]);
-              }
+             if (!model.supportedSizes.includes(selectedSize)) {
+  setSelectedSize(model.supportedSizes[0]);
+}
+             
 
               setActiveMenu(null);
             }}
-            className={`
-              flex items-center gap-3 rounded-xl p-3 transition
-              ${isActive
-                ? "border-2 border-[#7A3BFF] bg-[#7A3BFF]/10"
-                : "border border-white/10 hover:bg-white/5"}
-            `}
-          >
-            <img
-              src={model.img}
-              className="w-10 h-10 rounded-lg object-cover"
-            />
-
-            <div className="flex-1 text-left">
-              <div className="text-white font-medium">
-                {model.label}
-              </div>
-              <div className="text-white/50 text-xs">
-                ≈ {model.credits} credits
-              </div>
-            </div>
-
-            {isActive && (
-              <span className="text-[#7A3BFF] font-bold">✓</span>
-            )}
-          </button>
+          />
         );
       })}
     </div>
   </SubMenu>
 )}
+
+
 
 
 
@@ -427,17 +502,27 @@ useEffect(() => {
   </SubMenu>
 )}
 
- {activeMenu === "style" && (
+{activeMenu === "style" && (
   <SubMenu title="Style" onBack={() => setActiveMenu(null)}>
-    <div className="grid grid-cols-2 gap-3 p-3">
-      {selectedModel.supportedStyles.map((style) => (
+    <div
+      className="
+        grid grid-cols-2 gap-3 p-3
+        max-h-[290px]
+        overflow-y-auto
+        pr-1
+        scrollbar-thin
+        scrollbar-thumb-white/20
+        scrollbar-track-transparent
+      "
+    >
+      {Object.entries(IMAGE_STYLES).map(([key, style]) => (
         <StyleCard
-          key={style}
-          label={style}
-          img={`/styles/${style.toLowerCase()}.jpg`}
-          active={style === selectedStyle}
+          key={key}
+          label={style.label}
+          img={style.img}
+          active={key === selectedStyle}
           onClick={() => {
-            setSelectedStyle(style);
+            setSelectedStyle(key);
             setActiveMenu(null);
           }}
         />
@@ -492,60 +577,55 @@ useEffect(() => {
 {/* Model */}
 
 {openModel && (
-  <div className="absolute top-full mt-2 w-[320px] rounded-xl bg-[#110829]/95 border border-white/10 shadow-2xl backdrop-blur-xl p-3 space-y-2 z-50">
-    {Object.entries(MODELS).map(([key, model]) => {
-      const isActive = key === selectedModelKey;
+  <div
+    className="
+      absolute top-full mt-2 w-[320px]
+      rounded-xl bg-[#110829]/95
+      border border-white/10
+      shadow-2xl backdrop-blur-xl
+      z-50
+    "
+  >
+    <div
+      className="
+        flex flex-col gap-2 p-3
+        max-h-[260px]        /* ≈ 3 compact cards */
+        overflow-y-auto
+        pr-1
+        scrollbar-thin
+        scrollbar-thumb-white/20
+        scrollbar-track-transparent
+      "
+    >
+      {Object.entries(MODELS).map(([key, model]) => {
+        const isActive = key === selectedModelKey;
 
-      return (
-        <button
-          key={key}
-          onClick={() => {
-            setSelectedModelKey(key);
+        return (
+          <ModelCard
+            key={key}
+            img={model.img}
+            label={model.label}
+            description={model.description}
+            credits={model.credits}
+            traits={model.traits}
+            active={isActive}
+            compact
+            onClick={() => {
+              setSelectedModelKey(key);
 
-            if (!model.supportedSizes.includes(selectedSize)) {
-              setSelectedSize(model.supportedSizes[0]);
-            }
-            if (!model.supportedStyles.includes(selectedStyle)) {
-              setSelectedStyle(model.supportedStyles[0]);
-            }
+             if (!model.supportedSizes.includes(selectedSize)) {
+  setSelectedSize(model.supportedSizes[0]);
+}
+            
 
-            setOpenModel(false);
-          }}
-          className={`
-            w-full rounded-xl p-3 transition text-left
-            ${isActive
-              ? "border-2 border-[#7A3BFF] bg-[#7A3BFF]/10 shadow-[0_0_25px_rgba(122,59,255,0.35)]"
-              : "border border-white/10 hover:bg-white/5"}
-          `}
-        >
-          <div className="flex gap-3 items-center">
-            <img
-              src={model.img}
-              className="w-10 h-10 rounded-lg object-cover"
-            />
-
-            <div className="flex-1">
-              <div className="text-white font-medium">
-                {model.label}
-              </div>
-              <div className="text-white/50 text-xs">
-                {model.description}
-              </div>
-              <div className="text-white/50 text-xs mt-1">
-                ≈ {model.credits} credits
-              </div>
-            </div>
-
-            {isActive && (
-              <span className="text-[#7A3BFF] font-bold text-lg">✓</span>
-            )}
-          </div>
-        </button>
-      );
-    })}
+              setOpenModel(false);
+            }}
+          />
+        );
+      })}
+    </div>
   </div>
 )}
-
 
      {/* Style */}
 <button
@@ -561,19 +641,39 @@ useEffect(() => {
 </button>
 
 {openStyle && (
-  <div className="absolute top-full mt-2 w-[300px] rounded-xl bg-[#110829]/95 border border-white/10 shadow-2xl backdrop-blur-xl p-3 grid grid-cols-2 gap-3 z-50">
-    {selectedModel.supportedStyles.map((style) => (
-      <StyleCard
-        key={style}
-        label={style}
-        img={`/styles/${style.toLowerCase()}.jpg`}
-        active={style === selectedStyle}
-        onClick={() => {
-          setSelectedStyle(style);
-          setOpenStyle(false);
-        }}
-      />
-    ))}
+  <div
+    className="
+      absolute top-full mt-2 w-[450px]
+      rounded-xl bg-[#110829]/95
+      border border-white/10
+      shadow-2xl backdrop-blur-xl
+      z-50
+    "
+  >
+    <div
+      className="
+        grid grid-cols-3 gap-3 p-3
+        max-h-[290px]
+        overflow-y-auto
+        pr-1
+        scrollbar-thin
+        scrollbar-thumb-white/20
+        scrollbar-track-transparent
+      "
+    >
+      {Object.entries(IMAGE_STYLES).map(([key, style]) => (
+        <StyleCard
+          key={key}
+          label={style.label}
+          img={style.img}
+          active={key === selectedStyle}
+          onClick={() => {
+            setSelectedStyle(key);
+            setOpenStyle(false);
+          }}
+        />
+      ))}
+    </div>
   </div>
 )}
 
@@ -598,9 +698,22 @@ useEffect(() => {
     
     </div>
 
-    <button className="ml-1 py-2 px-6 bg-gradient-to-r from-[#7A3BFF] to-[#492399] rounded-xl shadow-md border-[#282C40]/30 border-[1px]">
-      Generate
-    </button>
+   <button
+   onClick={handleGenerate}
+  disabled={!prompt.trim() || isGenerating}
+  className={`
+    ml-1 py-2 px-6 rounded-xl shadow-md border border-[#282C40]/30
+    transition
+    ${
+      !prompt.trim() || isGenerating
+        ? "bg-gray-500/40 text-white/40 cursor-not-allowed"
+        : "bg-gradient-to-r from-[#7A3BFF] to-[#492399] hover:opacity-90"
+    }
+  `}
+>
+  {isGenerating ? "Generating…" : "Generate"}
+</button>
+
 
   </div>
 </div>
@@ -631,6 +744,6 @@ useEffect(() => {
   );
 };
 
-export default ViralImageGenerator;
+
 
 
