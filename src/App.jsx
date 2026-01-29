@@ -125,6 +125,8 @@ import VisualOptimizationForMobielEcommerce from "./app/blog/productphotos/Visua
 import HowAiHelpsEcommerceBrandsScaleFaster from "./app/blog/productphotos/HowAIHelpsEcommerceBrandsScaleFaster.jsx";
 import ProductPhotographyTrendsForEcommerce from "./app/blog/productphotos/ProductPhotographyTrendsForEcommerce.jsx";
 import AIProductPhotosForFashionStores from "./app/blog/productphotos/AIProductPhotosForFashionStores.jsx";
+import AIProductPhotosForBeatyAndSkincare from "./app/blog/productphotos/AIProductPhotosForBeautyAndSkincare.jsx";
+import HowVisualBrandingSeperatesWinnersFromLosers from "./app/blog/productphotos/HowVisualBrandingSeparatesWinnersFromLosers.jsx";
 
 
 
@@ -278,6 +280,8 @@ function AppWithRouting() {
         <Route path="/blog/how-ai-helps-ecommerce-brands-scale-faster" element={<HowAiHelpsEcommerceBrandsScaleFaster/>} />
         <Route path="/blog/product-photography-trends-for-ecommerce" element={<ProductPhotographyTrendsForEcommerce/>} />
         <Route path="/blog/ai-product-photos-for-fashion-stores" element={<AIProductPhotosForFashionStores/>} />
+        <Route path="/blog/ai-product-photos-for-beaty-and-skincare" element={<AIProductPhotosForBeatyAndSkincare/>} />
+        <Route path="/blog/how-visual-branding-seperates-winners-from-losers" element={<HowVisualBrandingSeperatesWinnersFromLosers/>} />
         
 
 

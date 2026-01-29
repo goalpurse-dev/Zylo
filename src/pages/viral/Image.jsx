@@ -1,54 +1,76 @@
 import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
+import { watchJob } from "../../lib/jobs";
 
 import Generate from "../../components/ImageGenerator/Generate.jsx";
 import Inspiration from "../../components/ImageGenerator/Inspiration.jsx";
 import Result from "../../components/ImageGenerator/Result.jsx";
 
+/* ===============================
+   HEARTBEAT CONFIG
+================================ */
+const HEARTBEAT_MAX = 95;
+const HEARTBEAT_INTERVAL = 800;
+
+/**
+ * Progress curve:
+ * 0–70   : fast
+ * 70–90  : medium
+ * 90–95  : slow
+ */
+function getHeartbeatStep(p) {
+  if (p < 70) return 3;
+  if (p < 90) return 1.2;
+  if (p < 95) return 0.3;
+  return 0;
+}
+
+/* 🔒 Force numeric always */
+const toNum = (v, fallback = 0) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+};
+
 export default function Image() {
   const [prompt, setPrompt] = useState("");
   const [results, setResults] = useState([]);
-  const [userId, setUserId] = useState(null);
 
   const inspirationRef = useRef(null);
+  const watchersRef = useRef({});
 
   /* ===============================
-     LOAD EXISTING RESULTS
-     =============================== */
-  const loadResults = async (uid) => {
-    const { data, error } = await supabase
-      .from("jobs")
-      .select(
-        "id, prompt, input, settings, result_url, created_at, status, progress"
-      )
-      .eq("user_id", uid)
-      .eq("type", "image")
-      .eq("settings->>creation_type", "photo")
-      .order("created_at", { ascending: false })
-      .limit(40);
-
-    if (!error) setResults(data ?? []);
-  };
-
-  /* ===============================
-     UPSERT JOB INTO STATE
-     =============================== */
+     UPSERT JOB (MONOTONIC)
+     Backend can ONLY jump forward
+  =============================== */
   const upsertJob = (row) => {
     if (!row?.id) return;
 
     setResults((prev) => {
-      const idx = prev.findIndex((x) => x.id === row.id);
+      const idx = prev.findIndex((j) => j.id === row.id);
 
-      // new job (or optimistic placeholder)
+      // New job
       if (idx === -1) {
-        return [row, ...prev].slice(0, 40);
+        return [
+          {
+            ...row,
+            progress: toNum(row.progress, 0),
+          },
+          ...prev,
+        ].slice(0, 40);
       }
 
-      // merge update
       const next = [...prev];
-      next[idx] = { ...next[idx], ...row };
+      const prevJob = next[idx];
 
-      // keep newest first
+      const backendProgress = toNum(row.progress, 0);
+      const uiProgress = toNum(prevJob.progress, 0);
+
+      next[idx] = {
+        ...prevJob,
+        ...row,
+        progress: Math.max(uiProgress, backendProgress), // 🔒 NEVER BACK
+      };
+
       next.sort(
         (a, b) =>
           new Date(b.created_at).getTime() -
@@ -60,15 +82,119 @@ export default function Image() {
   };
 
   /* ===============================
-     OPTIMISTIC INSERT
-     =============================== */
-  const addOptimisticJob = (jobRow) => {
-    upsertJob(jobRow);
+     OPTIMISTIC INSERT + WATCH
+  =============================== */
+  const addOptimisticJob = (job) => {
+    if (!job?.id) return;
+
+    upsertJob({ ...job, progress: 0 });
+
+    watchersRef.current[job.id] = watchJob(job.id, (updated) => {
+      upsertJob(updated);
+
+      if (
+        updated.status === "succeeded" ||
+        updated.status === "failed" ||
+        updated.status === "canceled"
+      ) {
+        watchersRef.current[job.id]?.();
+        delete watchersRef.current[job.id];
+      }
+    });
   };
 
   /* ===============================
-     SEND PROMPT FROM RESULTS
-     =============================== */
+     LOAD EXISTING CREATIONS
+  =============================== */
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      const uid = data?.user?.id;
+      if (!uid) return;
+
+      const { data: jobs } = await supabase
+        .from("jobs")
+        .select(
+          "id, prompt, input, settings, result_url, created_at, status, progress"
+        )
+        .eq("user_id", uid)
+        .eq("type", "image")
+        .eq("settings->>creation_type", "photo")
+        .order("created_at", { ascending: false })
+        .limit(40);
+
+      setResults(
+        (jobs ?? []).map((j) => ({
+          ...j,
+          progress: toNum(j.progress, 0),
+        }))
+      );
+    })();
+  }, []);
+
+  /* ===============================
+     RE-ATTACH WATCHERS
+  =============================== */
+  useEffect(() => {
+    results.forEach((job) => {
+      if (
+        ["queued", "running", "processing"].includes(job.status) &&
+        !watchersRef.current[job.id]
+      ) {
+        watchersRef.current[job.id] = watchJob(job.id, upsertJob);
+      }
+    });
+  }, [results]);
+
+  /* ===============================
+     HEARTBEAT (ABSOLUTE DOMINANCE)
+     This CANNOT get stuck
+  =============================== */
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setResults((prev) =>
+        prev.map((job) => {
+          // Stop immediately if finished
+          if (job.result_url || job.status === "succeeded") return job;
+
+          if (!["queued", "running", "processing"].includes(job.status)) {
+            return job;
+          }
+
+          const p = toNum(job.progress, 0);
+          if (p >= HEARTBEAT_MAX) return job;
+
+          const step = getHeartbeatStep(p);
+
+          return {
+            ...job,
+            progress: Math.min(p + step, HEARTBEAT_MAX),
+            _uiTick: Date.now(),
+          };
+        })
+      );
+    }, HEARTBEAT_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  /* ===============================
+     CLEANUP WATCHERS
+  =============================== */
+  useEffect(() => {
+    return () => {
+      Object.values(watchersRef.current).forEach((unsub) => {
+        try {
+          unsub();
+        } catch {}
+      });
+      watchersRef.current = {};
+    };
+  }, []);
+
+  /* ===============================
+     SEND PROMPT FROM RESULT
+  =============================== */
   const sendPromptToGenerator = (p) => {
     setPrompt(p);
     inspirationRef.current?.scrollIntoView({
@@ -78,94 +204,8 @@ export default function Image() {
   };
 
   /* ===============================
-     PAGE META
-     =============================== */
-useEffect(() => {
-  let channel;
-
-  (async () => {
-    const { data } = await supabase.auth.getUser();
-    const uid = data?.user?.id;
-    if (!uid) return;
-
-    // initial load
-    const { data: jobs } = await supabase
-      .from("jobs")
-      .select("*")
-      .eq("user_id", uid)
-      .eq("type", "image")
-      .order("created_at", { ascending: false })
-      .limit(40);
-
-    setResults(jobs ?? []);
-
-    // 🔴 REALTIME
-    channel = supabase
-      .channel(`jobs-progress-${uid}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "jobs",
-          filter: `user_id=eq.${uid}`,
-        },
-        (payload) => {
-          const updated = payload.new;
-          if (updated.type !== "image") return;
-
-          // ✅ force React repaint
-         setResults((prev) =>
-  prev.map((job) =>
-    job.id === updated.id
-      ? {
-          ...job,
-          ...updated,
-          _rt: Date.now(), // 👈 force React diff
-        }
-      : job
-  )
-);;
-        }
-      )
-      .subscribe();
-  })();
-
-  return () => {
-    if (channel) supabase.removeChannel(channel);
-  };
-}, []);
-
-/* ===============================
-   LOCAL PROGRESS HEARTBEAT
-   =============================== */
-useEffect(() => {
-  const interval = setInterval(() => {
-    setResults((prev) =>
-      prev.map((job) => {
-        if (
-          job.status === "running" &&
-          typeof job.progress === "number" &&
-          job.progress < 95
-        ) {
-          return {
-            ...job,
-            progress: Math.min(job.progress + 1, 95),
-            _tick: Date.now(),
-          };
-        }
-        return job;
-      })
-    );
-  }, 1200); // smooth, matches backend polling
-
-  return () => clearInterval(interval);
-}, []);
-
-
-  /* ===============================
      RENDER
-     =============================== */
+  =============================== */
   return (
     <div className="w-full min-h-screen bg-[#F7F5FA]">
       <Generate

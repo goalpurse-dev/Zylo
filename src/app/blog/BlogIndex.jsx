@@ -417,7 +417,7 @@ const [loading, setLoading] = useState(false);
           <p className="text-[#4A4A55] text-[12px] ">Learn what kind of trends help ecommerce brands to scale faster</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
-          <p className="text-[#4A4A55] text-[10px] ">29.01/2026</p>
+          <p className="text-[#4A4A55] text-[10px] ">28.01/2026</p>
           </div>
           </div>
           </Link> 
@@ -432,10 +432,40 @@ const [loading, setLoading] = useState(false);
           <p className="text-[#4A4A55] text-[12px] ">Learn how AI product photos help fashion stores to grow faster</p>
           <div className="flex">
             <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">28.01/2026</p>
+          </div>
+          </div>
+          </Link> 
+
+               {/* Blog Card 29*/}
+                <Link to="/blog/ai-product-photos-for-beaty-and-skincare" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">AI Product Photos for Beauty & Skincare Brands
+</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how AI product photos work for Beaty & Skincare brands</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
           <p className="text-[#4A4A55] text-[10px] ">29.01/2026</p>
           </div>
           </div>
           </Link> 
+
+                         {/* Blog Card 30*/}
+                <Link to="/blog/how-visual-branding-seperates-winners-from-losers" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">How Visual Branding Separates Winners from Losers
+</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how visuals seperates winners from losers.</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">29.01/2026</p>
+          </div>
+          </div>
+          </Link>
  
           
         </div>

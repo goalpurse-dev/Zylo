@@ -99,19 +99,20 @@ export default function WorkspaceLayout() {
         ref={scrollRef}
         className="flex flex-col flex-1 h-screen overflow-y-auto"
       >
-        <div
-          className={`
-            sticky top-0 lg:static z-30
-            transition-transform duration-300
-            ${showTopRow ? "translate-y-0" : "-translate-y-full"}
-            lg:translate-y-0
-          `}
-        >
-          <TopRow
-            onMenuClick={() => setSidebarOpen(true)}
-            title={title}
-          />
-        </div>
+         <div
+    className={`
+      sticky top-0 z-50
+      transition-transform duration-300
+      ${showTopRow ? "translate-y-0" : "-translate-y-full"}
+      lg:translate-y-0
+    `}
+  >
+    <TopRow
+      onMenuClick={() => setSidebarOpen(true)}
+      title={title}
+    />
+  </div>
+
 
         <Outlet />
       </div>
