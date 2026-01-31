@@ -11,6 +11,7 @@ import Lego from "../../assets/thumbs/lego.jpg";
 import Lowpoly from "../../assets/thumbs/lowpoly.jpg";
 import Noir from "../../assets/thumbs/noir.jpg";
 import Cartoon from "../../assets/thumbs/3dcartoon.png";
+import Minimal from "../../assets/thumbs/minimal.png";
 
 
 
@@ -30,7 +31,7 @@ export const IMAGE_STYLES = {
   Minimal: {
     label: "Minimal",
     promptHint: "minimalistic composition, clean lines, modern aesthetic",
-    img: DynamicImg,
+    img: Minimal,
   },
 
    Cartoon: {

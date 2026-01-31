@@ -163,6 +163,7 @@ export async function createJob(
   input: payload.input ?? {},
   status: "queued" as JobStatus,
   progress: 0,
+    charge_credits: (payload.settings as any)?.credits ?? null, // ✅ ADD THIS
 };
  
 
@@ -299,91 +300,93 @@ export async function createImageJobSimple(params: {
   subject: string;
   toolKey: ImageToolKey;
   size?: string;
-  style?: string;        // ✅ ADD
+  style?: string;
   project_id?: string | null;
   init_image_url?: string | null;
   initImageFile?: File | null;
   initImageUrls?: string[];
   providerHint?: ImageSettings["provider_hint"];
-})
-: Promise<JobRow> {
+}): Promise<JobRow> {
+  const link = getProviderLink(params.toolKey);
+  if (!link) throw new Error(`Image provider not configured for ${params.toolKey}`);
 
-const link = getProviderLink(params.toolKey);
-if (!link) {
-  throw new Error(`Image provider not configured for ${params.toolKey}`);
-}
+  const credits = link.credits;
+  const priceUSD = link.retailUSD;
 
-const credits = link.credits;
-const priceUSD = link.retailUSD;
+  // ✅ must be signed in
+  const { data: userData, error: uerr } = await supabase.auth.getUser();
+  if (uerr || !userData?.user) throw new Error("Must be signed in");
+  const uid = userData.user.id;
 
+  // ✅ 1) ATOMIC credit deduction (same as product-photo)
+  const { error: creditErr } = await supabase.rpc("deduct_credits", {
+    uid,
+    amount: credits,
+  });
+
+  if (creditErr) {
+    if (creditErr.message?.includes("INSUFFICIENT_CREDITS")) {
+      throw new Error("INSUFFICIENT_CREDITS");
+    }
+    throw creditErr;
+  }
 
   const size = params.size ?? "1024x1024";
 
   let initUrl = params.init_image_url ?? null;
 
-  if (
-    !initUrl &&
-    Array.isArray(params.initImageUrls) &&
-    params.initImageUrls.length
-  ) {
+  if (!initUrl && Array.isArray(params.initImageUrls) && params.initImageUrls.length) {
     initUrl = params.initImageUrls[0];
   }
 
   if (!initUrl && params.initImageFile) {
-    const up = await uploadUserFile(params.initImageFile, {
-      prefix: "ti-init",
-    });
+    const up = await uploadUserFile(params.initImageFile, { prefix: "ti-init" });
     const pub = await publishToPublic(up.path);
     initUrl = pub.publicUrl;
   }
 
-const input: ImageInput = {
-  tool: "image",
-  subject: (params.subject || "").trim(),
-  style: params.style ?? null, // ✅ STYLE LIVES HERE
-  creation_type: CREATION_TYPES.PHOTO,
-  negative: DEFAULT_NEGATIVE_IMAGE,
-  brand: { id: null, use_palette: false },
-  init_image_url: initUrl,
-};
-
+  const input: ImageInput = {
+    tool: "image",
+    subject: (params.subject || "").trim(),
+    style: params.style ?? null,
+    creation_type: CREATION_TYPES.PHOTO,
+    negative: DEFAULT_NEGATIVE_IMAGE,
+    brand: { id: null, use_palette: false },
+    init_image_url: initUrl,
+  };
 
   if (!input.subject) throw new Error("Please provide a subject.");
 
+  const settings: ImageSettings = {
+    tool_key: params.toolKey,
+    size,
+    credits,      // ✅ stored on job
+    priceUSD,     // ✅ stored on job
+    creation_type: CREATION_TYPES.PHOTO,
+    provider_hint: {
+      engine: "runware",
+      mode: "t2i",
+      edgeFn: link.edgeFn,
+      airTag: link.airTag,
+      settings: {},
+    },
+  };
 
-
-const settings: ImageSettings = {
-  tool_key: params.toolKey,
-  size,
-  credits,
-  priceUSD,
-  creation_type: CREATION_TYPES.PHOTO,
-  provider_hint: {
-    engine: "runware",
-    mode: "t2i",
-    edgeFn: link.edgeFn,
-    airTag: link.airTag,
-    settings: {},
-  },
-};
-
-
-  if (params.providerHint) {
-    settings.provider_hint = params.providerHint;
-  }
+  if (params.providerHint) settings.provider_hint = params.providerHint;
 
   const preview = buildImagePreviewPrompt(input);
 
-return await simulateJob({
-  id: params.id,
-  type: "image",
-  tool_key: params.toolKey,   // 🔥 THIS IS REQUIRED
-  project_id: params.project_id ?? null,
-  prompt: preview,
-  settings,
-  input,
-});
+  // ✅ 2) create job + trigger worker
+  return await simulateJob({
+    type: "image",
+    tool_key: params.toolKey,
+    project_id: params.project_id ?? null,
+    prompt: preview,
+    settings,
+    input,
+  });
 }
+
 
 /* ============== PRODUCT PHOTO (Runware Kontext via Edge Function) ============== */
 

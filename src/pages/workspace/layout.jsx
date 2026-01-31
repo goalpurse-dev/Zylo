@@ -108,7 +108,8 @@ export default function WorkspaceLayout() {
     `}
   >
     <TopRow
-      onMenuClick={() => setSidebarOpen(true)}
+     onMenuClick={() => setSidebarOpen(prev => !prev)}
+ 
       title={title}
     />
   </div>

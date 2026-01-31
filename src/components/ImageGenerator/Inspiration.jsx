@@ -9,6 +9,14 @@ import i5 from "../../assets/inspiration/5.png";
 import i6 from "../../assets/inspiration/6.png";
 import i7 from "../../assets/inspiration/7.png";
 import i8 from "../../assets/inspiration/8.png";
+import i9 from "../../assets/inspiration/9.png";
+import i10 from "../../assets/inspiration/10.png";
+import i11 from "../../assets/inspiration/11.png";
+import i12 from "../../assets/inspiration/12.png";
+import i13 from "../../assets/inspiration/13.png";
+import i14 from "../../assets/inspiration/14.png";
+import i15 from "../../assets/inspiration/15.png";
+import i16 from "../../assets/inspiration/16.png";
 
 
 import BeforeAfter3 from "../../assets/blog/productphoto/beforeafter3.png";
@@ -54,6 +62,43 @@ const createdImages = [
   {
     src: i8,
     prompt: "Create a breathtaking ultra-realistic cinematic scene of a gigantic nuclear facility on the moon, dramatic lighting, astronauts in foreground, cinematic lighting, dramatic composition, ultra-realistic"
+  },
+    {
+    src: i9,
+    prompt: "Create image of coolest car ever, cinematic lighting, dramatic composition, ultra-realistic"
+  },
+
+    {
+    src: i10,
+    prompt: "create image of card, anime illustration style, expressive features, clean linework, clean composition, sharp focus, high detail"
+  },
+
+    {
+    src: i11,
+    prompt: "create me image of minecraft villager which is a elf, Disney-inspired animation style, soft shading, friendly proportions, clean composition, sharp focus, high detail"
+  },
+
+    {
+    src: i12,
+    prompt: "create me image of cool guy with great car, comic book style, bold outlines, high contrast colors, clean composition, sharp focus, high detail"
+  },
+
+   {
+    src: i13,
+    prompt: "create image of robot, cinematic lighting, dramatic composition, ultra-realistic, clean composition, sharp focus, high detail"
+  },
+    {
+    src: i14,
+    prompt: "Create image of girls dream barbie house, dynamic motion, energetic composition, sharp focus, clean composition, sharp focus, high detail"
+  },
+    {
+    src: i15,
+    prompt: "create me image of old jaguar, cinematic lighting, dramatic composition, ultra-realistic, clean composition, sharp focus, high detail"
+  },
+
+    {
+    src: i16,
+    prompt: "create me image of movie indiano jones scene, cinematic lighting, dramatic composition, ultra-realistic, clean composition, sharp focus, high detail"
   },
 
 

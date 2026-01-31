@@ -127,6 +127,8 @@ import ProductPhotographyTrendsForEcommerce from "./app/blog/productphotos/Produ
 import AIProductPhotosForFashionStores from "./app/blog/productphotos/AIProductPhotosForFashionStores.jsx";
 import AIProductPhotosForBeatyAndSkincare from "./app/blog/productphotos/AIProductPhotosForBeautyAndSkincare.jsx";
 import HowVisualBrandingSeperatesWinnersFromLosers from "./app/blog/productphotos/HowVisualBrandingSeparatesWinnersFromLosers.jsx";
+import ViralAiImagesTiktok from "./app/blog/imagegenerator/ViralAiImagesTikTok.jsx";
+import CreatorsBlowingUpWithAi from "./app/blog/imagegenerator/CreatorsBlowingUpWithAI.jsx";
 
 
 
@@ -282,6 +284,8 @@ function AppWithRouting() {
         <Route path="/blog/ai-product-photos-for-fashion-stores" element={<AIProductPhotosForFashionStores/>} />
         <Route path="/blog/ai-product-photos-for-beaty-and-skincare" element={<AIProductPhotosForBeatyAndSkincare/>} />
         <Route path="/blog/how-visual-branding-seperates-winners-from-losers" element={<HowVisualBrandingSeperatesWinnersFromLosers/>} />
+        <Route path="/blog/viral-ai-images-tiktok" element={<ViralAiImagesTiktok/>} />
+        <Route path="/blog/creators-blowingup-with-ai" element={<CreatorsBlowingUpWithAi/>} />
         
 
 
