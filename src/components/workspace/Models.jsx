@@ -1,5 +1,17 @@
 import { useEffect } from "react";
 import Nanobanana1 from "../../assets/models/nanobanana.png"
+import Nanobanana2 from "../../assets/models/nanobanana2.png"
+
+import Juggernaut from "../../assets/models/juggernaut.png"
+import Juggernaut2 from "../../assets/models/juggernaut2.png"
+
+import HiDream from "../../assets/models/hidream.png"
+import HiDream2 from "../../assets/models/hidream2.png"
+
+import Zyvo from "../../assets/models/zyvo.png"
+import Zyvo2 from "../../assets/models/zyvo2.png"
+
+import { Link, NavLink } from "react-router-dom";
 
 /* ============================
    REUSABLE MODEL CARD
@@ -64,9 +76,11 @@ function ModelCard({
   </p>
 
   {/* BUTTON */}
-  <button
+  <Link
+  to="/image-generator"
     className="
       absolute left-4 right-4 bottom-4
+      text-center
       bg-gradient-to-r from-[#7A3BFF] to-[#492399]
       text-white text-sm py-2 rounded-md font-medium
       opacity-0 translate-y-2
@@ -75,7 +89,7 @@ function ModelCard({
     "
   >
     {buttonText}
-  </button>
+  </Link>
 </div>
 
 
@@ -104,7 +118,7 @@ export default function Model() {
 
         <ModelCard
           image={Nanobanana1}
-          hoverImage="/models/nano-banana-hover.png"
+          hoverImage={Nanobanana2}
           badge="Nano Banana Pro"
           title="Nano Banana Pro × OpenArt"
           description="4K generations on the best image model yet"
@@ -112,30 +126,30 @@ export default function Model() {
         />
 
         <ModelCard
-          image="/models/openart.png"
-          hoverImage="/models/openart-hover.png"
-          badge="OpenArt"
-          title="OpenArt XL"
+          image={Juggernaut}
+          hoverImage={Juggernaut2}
+          badge="Juggernaut"
+          title="Juggernaut Pro Flux by RunDiffusion"
           description="Ultra-detailed creative image generation"
-          buttonText="Use OpenArt"
+          buttonText="Use Juggernaut"
         />
 
         <ModelCard
-          image="/models/vision.png"
-          hoverImage="/models/vision-hover.png"
-          badge="Vision"
-          title="Vision Ultra"
-          description="Photorealistic AI with cinematic lighting"
-          buttonText="Use Vision"
+          image={Zyvo}
+          hoverImage={Zyvo2}
+          badge="Zyvo"
+          title="Zyvo.01"
+          description="Zyvo's first image generation model"
+          buttonText="Use Zyvo"
         />
 
         <ModelCard
-          image="/models/fantasy.png"
-          hoverImage="/models/fantasy-hover.png"
-          badge="Fantasy"
-          title="Fantasy World Builder"
+          image={HiDream}
+          hoverImage={HiDream2}
+          badge="HiDream"
+          title="HiDream-i1 Fast"
           description="Stylized worlds and characters in seconds"
-          buttonText="Use Fantasy"
+          buttonText="Use HiDream-i1"
         />
 
       </div>
