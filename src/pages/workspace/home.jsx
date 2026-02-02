@@ -5,6 +5,7 @@ import Tools from "../../components/workspace/tools.jsx";
 import Faq from "../../components/workspace/faq/faq.jsx";
 import Latest from "../../components/workspace/latest.jsx";
 import Proof from "../../components/workspace/proof.jsx";
+import Models from "../../components/workspace/Models.jsx";
 import Footer from "../../components/myproduct/footer.jsx";
 
 import { useState, useEffect } from "react";
@@ -36,6 +37,10 @@ export default function WorkspaceHome() {
       </div>
 
       <Tools />
+
+      <div className="mt-5">
+      <Models/>
+      </div>
 
       <div className="mt-2">
         <Proof />

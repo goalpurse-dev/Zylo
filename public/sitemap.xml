@@ -13,6 +13,11 @@
     <priority>0.9</priority>
   </url>
 
+    <url>
+    <loc>https://www.tryzyvo.com/image-generator</loc>
+    <priority>0.9</priority>
+  </url>
+
   <!-- BLOG POSTS -->
   <url>
     <loc>https://www.tryzyvo.com/blog/product-photos-with-ai-for-shopify</loc>
@@ -165,6 +170,28 @@
     <loc>https://www.tryzyvo.com/blog/how-visual-branding-seperates-winners-from-losers</loc>
     <priority>0.8</priority>
   </url>
+
+   <url>
+    <loc>https://www.tryzyvo.com/blog/viral-ai-images-tiktok</loc>
+    <priority>0.8</priority>
+  </url>
+
+   <url>
+    <loc>https://www.tryzyvo.com/blog/creators-blowingup-with-ai</loc>
+    <priority>0.8</priority>
+  </url>
+
+    <url>
+    <loc>https://www.tryzyvo.com/blog/i-test-viral-prompts</loc>
+    <priority>0.8</priority>
+  </url>
+
+   <url>
+    <loc>https://www.tryzyvo.com/blog/all-image-styles-everyone-obsessed-with</loc>
+    <priority>0.8</priority>
+  </url>
+
+
 
 
 
