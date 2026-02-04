@@ -18,10 +18,15 @@ export async function generateImageFromUI(params: {
     style: params.style,
   });
 
-  return createImageJobSimple({
-    subject: finalPrompt,
-    toolKey, // ✅ correct
-    size: params.size,
-    initImageUrls: params.refImages ?? [],
-  });
+ return createImageJobSimple({
+  subject: finalPrompt,
+  toolKey,
+  size: params.size,
+  initImageUrls: params.refImages ?? [],
+  providerHint: {
+    settings: {
+      quality: "high",
+    },
+  },
+});
 }

@@ -10,6 +10,10 @@ export type ToolKey =
   | "image:juggernaut"
   | "image:hidream"
   | "image:openai"
+  | "image:flux.base"
+  | "image:flux.max"
+
+
 
   /* ---------- PRODUCT PHOTOS (DO NOT TOUCH) ---------- */
   | "product-photo"
@@ -93,6 +97,33 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     retailUSD: 0.04,
     credits: 2,
     margin: m(0.0042, 0.04),
+  },
+
+    "image:flux.base": {
+    provider: "runware",
+    generator: "Flux Base by RunDiffusion",
+    airTag: "runware:400@4",
+    secret: "RUNWARE_API_KEY",
+    edgeFn: "/functions/v1/runware-image",
+
+    costUSD: 0.0006,
+    retailUSD: 0.02,
+    credits: 1,
+    margin: m(0.0006, 0.02),
+  },
+
+  
+    "image:flux.max": {
+    provider: "runware",
+    generator: "FLUX.2 [Max]",
+    airTag: "bfl:7@1",
+    secret: "RUNWARE_API_KEY",
+    edgeFn: "/functions/v1/runware-image",
+
+    costUSD: 0.07,
+    retailUSD: 0.14,
+    credits: 7,
+    margin: m(0.07, 0.14),
   },
 
    "image:hidream": {

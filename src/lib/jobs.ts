@@ -71,7 +71,9 @@ export type ImageToolKey =
   | "image:juggernaut"
   | "image:hidream"
   | "image:spark"
-  | "image:prime";
+  | "image:prime"
+  | "image:openai"
+  | "image:flux.base";
 
 export const T2V_UI_BY_TIER: Record<
   TierId,
@@ -363,13 +365,14 @@ export async function createImageJobSimple(params: {
     credits,      // ✅ stored on job
     priceUSD,     // ✅ stored on job
     creation_type: CREATION_TYPES.PHOTO,
-    provider_hint: {
-      engine: "runware",
-      mode: "t2i",
-      edgeFn: link.edgeFn,
-      airTag: link.airTag,
-      settings: {},
-    },
+   provider_hint: {
+  engine: "runware",
+  mode: "t2i",
+  edgeFn: link.edgeFn,
+  airTag: link.airTag,
+  settings: params.providerHint?.settings ?? {},
+},
+
   };
 
   if (params.providerHint) settings.provider_hint = params.providerHint;

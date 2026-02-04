@@ -536,7 +536,40 @@ const [loading, setLoading] = useState(false);
           </div>
           </div>
           </Link>
+
+                                                                 {/* Blog Card 35*/}
+
+                <Link to="/blog/scroll-stopping-images-no-design-skills" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">How to Create Scroll-Stopping Images With AI (No Design Skills)
+
+</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how to create scroll-stopping images with AI without any design skills</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">04.02/2026</p>
+          </div>
+          </div>
+          </Link>
  
+                                                                  {/* Blog Card 36*/}
+
+                <Link to="/blog/why-ai-images-outperform-real-photos" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Why AI Images Outperform Real Photos
+
+</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn why AI images outperform real photos in terms of quality, consistency, and creative control</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">04.02/2026</p>
+          </div>
+          </div>
+          </Link>
  
           
         </div>

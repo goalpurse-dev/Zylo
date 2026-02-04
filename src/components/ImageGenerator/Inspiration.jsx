@@ -17,6 +17,11 @@ import i13 from "../../assets/inspiration/13.png";
 import i14 from "../../assets/inspiration/14.png";
 import i15 from "../../assets/inspiration/15.png";
 import i16 from "../../assets/inspiration/16.png";
+import i17 from "../../assets/inspiration/17.png";
+import i18 from "../../assets/inspiration/18.png";
+import i19 from "../../assets/inspiration/19.png";
+import i20 from "../../assets/inspiration/20.png";
+import i21 from "../../assets/inspiration/21.png";
 
 
 import BeforeAfter3 from "../../assets/blog/productphoto/beforeafter3.png";
@@ -101,6 +106,28 @@ const createdImages = [
     prompt: "create me image of movie indiano jones scene, cinematic lighting, dramatic composition, ultra-realistic, clean composition, sharp focus, high detail"
   },
 
+  {
+    src: i17,
+    prompt: "create me image of happy girl in snow little cold, realistic style, high detail, photorealistic rendering, clean composition, sharp focus, high detail"
+  },
+  {
+    src: i18,
+    prompt: "create me image of yacht, pixel art style, retro 8-bit aesthetic, low resolution, clean composition, sharp focus, high detail"
+  },
+  {
+    src: i19,
+    prompt: "create me image of car, pixel art style, retro 8-bit aesthetic, low resolution, clean composition, sharp focus, high detail "
+  },
+
+    {
+    src: i20,
+    prompt: "create me image of car, clean composition, sharp focus, high detail "
+  },
+
+    {
+    src: i21,
+    prompt: "Create image of clean house interior, realistic style, high detail, photorealistic rendering, clean composition, sharp focus, high detail "
+  },
 
   
   

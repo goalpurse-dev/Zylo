@@ -81,6 +81,10 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { jobId, airTag, prompt, imageUrl, settings } = body;
 
+    const providerSettings =
+  settings?.provider_hint?.settings ?? {};
+
+
     if (!jobId || !airTag || !prompt) {
       return new Response(JSON.stringify({ ok: false, error: "Missing required fields" }), {
         status: 400,
@@ -98,7 +102,10 @@ Deno.serve(async (req) => {
     /* ---------- create runware task ---------- */
     const taskUUID = crypto.randomUUID();
 
-   const task = {
+   const openaiQuality =
+  settings?.provider_hint?.settings?.quality ?? "high";
+
+const task = {
   taskType: "imageInference",
   taskUUID,
   model: airTag,
@@ -106,21 +113,23 @@ Deno.serve(async (req) => {
   width: settings?.width ?? 1024,
   height: settings?.height ?? 1024,
   numberResults: 1,
-  outputType: "URL",
+  outputType: ["URL"],
   outputFormat: "PNG",
 
-  // ✅ FORCE HIGH QUALITY FOR OPENAI MODELS
-  providerSettings:
-    airTag === "openai:4@1"
-      ? {
+  ...(airTag.startsWith("openai:")
+    ? {
+        providerSettings: {
           openai: {
-            quality: "high",
+            quality: openaiQuality,
           },
-        }
-      : undefined,
+        },
+      }
+    : {}),
 
   ...(imageUrl ? { inputImages: [imageUrl] } : {}),
 };
+
+
 
     const createRes = await fetch(TASKS_URL, {
       method: "POST",
@@ -182,7 +191,7 @@ Deno.serve(async (req) => {
 
       const url = extractImageUrl(pollJson);
 
-      progress = Math.min(95, progress + 2);
+      progress = Math.min(95, Math.round(progress + 2));
       await sb.rpc("bump_job_progress", { p_id: jobId, p_progress: progress });
 
       if (url) {

@@ -46,7 +46,11 @@ function ResultCard({ item }) {
   const [visible, setVisible] = useState(true);
 
   const isDone = item.status === "succeeded" && !!item.result_url;
-  const progress = Math.min(99, Number(item.progress ?? 0));
+  const progress = Math.min(
+  99,
+  Math.floor(Number(item.progress ?? 0))
+);
+
 
   const createdAt = item.created_at
     ? new Date(item.created_at).getTime()
@@ -144,7 +148,8 @@ function ResultCard({ item }) {
       {!isDone && !isFailed && (
         <div className="absolute inset-x-0 bottom-0 p-3">
           <p className="text-white/70 text-xs mb-2">
-            Generating… {progress}%
+           Generating… {progress}%
+
           </p>
           <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
             <div
