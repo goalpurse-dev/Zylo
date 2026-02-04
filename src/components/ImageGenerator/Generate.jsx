@@ -129,7 +129,7 @@ const ModelCard = ({
     )}
 
     {/* HEADER */}
-    <div className="flex items-center gap-2 ">
+    <div className="flex items-center gap-2  ">
       {/* LOGO */}
       <img
         src={img}
@@ -142,7 +142,7 @@ const ModelCard = ({
         </div>
 
       {/*  DESCRIPTION */}
-      <div className="flex l">
+     
        
 
         {description && (
@@ -150,8 +150,7 @@ const ModelCard = ({
             {description}
           </div>
         )}
-      </div>
-   
+    
 
     {/* TRAITS */}
     {traits.length > 0 && (
@@ -405,7 +404,7 @@ useEffect(() => {
 {settingsOpen && (
   <div 
     ref={panelRef}
-   className="  absolute top-12 left-1/2 -translate-x-1/2 z-80 w-[250px] sm:w-[300px] max-w-[320px] rounded-xl bg-[#0B0E1A]/95 backdrop-blur-xl border border-[#7A3BFF] shadow-[0_0_25px_rgba(122,59,255,0.25),0_0_60px_rgba(122,59,255,0.15)]">
+   className="  absolute top-12 left-1/2 -translate-x-1/2 z-80 w-[300px] sm:w-[350px] max-w-[320px] rounded-xl bg-[#0B0E1A]/95 backdrop-blur-xl border border-[#7A3BFF] shadow-[0_0_25px_rgba(122,59,255,0.25),0_0_60px_rgba(122,59,255,0.15)]">
     {activeMenu === null && (
       <div className="flex flex-col">
        <MenuItem
@@ -577,26 +576,29 @@ useEffect(() => {
 {/* Model */}
 
 {openModel && (
-  <div
-    className="
-      absolute top-full mt-2 w-[320px]
-      rounded-xl bg-[#110829]/95
-      border border-white/10
-      shadow-2xl backdrop-blur-xl
-      z-50
-    "
-  >
-    <div
-      className="
-        flex flex-col gap-2 p-3
-        max-h-[260px]        /* ≈ 3 compact cards */
-        overflow-y-auto
-        pr-1
-        scrollbar-thin
-        scrollbar-thumb-white/20
-        scrollbar-track-transparent
-      "
-    >
+ <div
+  className="
+   absolute top-full mt-2
+right-1/2 translate-x-1/2
+    w-[600px] max-w-[90vw]
+    rounded-xl bg-[#110829]/95
+    border border-white/10
+    shadow-2xl backdrop-blur-xl
+    z-50
+  "
+>
+   <div
+  className="
+    grid grid-cols-2 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 
+    gap-3 p-3
+    max-h-[320px]
+    overflow-y-auto
+    pr-1
+    scrollbar-thin
+    scrollbar-thumb-white/20
+    scrollbar-track-transparent
+  "
+>
       {Object.entries(MODELS).map(([key, model]) => {
         const isActive = key === selectedModelKey;
 

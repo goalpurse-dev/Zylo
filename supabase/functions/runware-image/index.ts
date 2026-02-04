@@ -98,18 +98,29 @@ Deno.serve(async (req) => {
     /* ---------- create runware task ---------- */
     const taskUUID = crypto.randomUUID();
 
-    const task = {
-      taskType: "imageInference",
-      taskUUID,
-      model: airTag,
-      positivePrompt: prompt,
-      width: settings?.width ?? 1024,
-      height: settings?.height ?? 1024,
-      numberResults: 1,
-      outputType: "URL",
-      outputFormat: "PNG",
-      ...(imageUrl ? { inputImages: [imageUrl] } : {}),
-    };
+   const task = {
+  taskType: "imageInference",
+  taskUUID,
+  model: airTag,
+  positivePrompt: prompt,
+  width: settings?.width ?? 1024,
+  height: settings?.height ?? 1024,
+  numberResults: 1,
+  outputType: "URL",
+  outputFormat: "PNG",
+
+  // ✅ FORCE HIGH QUALITY FOR OPENAI MODELS
+  providerSettings:
+    airTag === "openai:4@1"
+      ? {
+          openai: {
+            quality: "high",
+          },
+        }
+      : undefined,
+
+  ...(imageUrl ? { inputImages: [imageUrl] } : {}),
+};
 
     const createRes = await fetch(TASKS_URL, {
       method: "POST",

@@ -6,6 +6,7 @@ import Faq from "../../components/workspace/faq/faq.jsx";
 import Latest from "../../components/workspace/latest.jsx";
 import Proof from "../../components/workspace/proof.jsx";
 import Models from "../../components/workspace/Models.jsx";
+import Popular from "../../components/workspace/Popular.jsx";
 import Footer from "../../components/myproduct/footer.jsx";
 
 import { useState, useEffect } from "react";
@@ -30,7 +31,12 @@ export default function WorkspaceHome() {
   <Cta onClose={() => setShowCta(false)} />
 )}
 
-      <Soon />
+
+      <div className="mt-4">
+      <Popular />
+      </div>
+
+   
 
       <div className="hidden md:block">
         <Middle />
@@ -45,6 +51,10 @@ export default function WorkspaceHome() {
       <div className="mt-2">
         <Proof />
       </div>
+
+      <div className="mt-10">
+        <Soon />
+        </div>
 
       <div className="mt-10">
         <Latest />

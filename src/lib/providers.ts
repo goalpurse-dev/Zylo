@@ -9,6 +9,7 @@ export type ToolKey =
   | "image:prime"
   | "image:juggernaut"
   | "image:hidream"
+  | "image:openai"
 
   /* ---------- PRODUCT PHOTOS (DO NOT TOUCH) ---------- */
   | "product-photo"
@@ -65,6 +66,20 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     retailUSD: 0.08,
     credits: 4,
     margin: m(0.039, 0.08),
+  },
+
+  "image:openai": {
+    provider: "runware",
+    generator: "GPT Image 1.5",
+    airTag: "openai:4@1",
+    secret: "RUNWARE_API_KEY",
+    edgeFn: "/functions/v1/runware-image",
+
+   /* On the highest quality */
+    costUSD: 0.133,
+    retailUSD: 0.20,
+    credits: 10,
+    margin: m(0.133, 0.20),
   },
 
     "image:juggernaut": {

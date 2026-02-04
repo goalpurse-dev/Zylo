@@ -12,6 +12,11 @@ import Lowpoly from "../../assets/thumbs/lowpoly.jpg";
 import Noir from "../../assets/thumbs/noir.jpg";
 import Cartoon from "../../assets/thumbs/3dcartoon.png";
 import Minimal from "../../assets/thumbs/minimal.png";
+import Minecraft from "../../assets/thumbs/minecraft.png";
+import Ghibli from "../../assets/thumbs/ghibli.png";
+import Cyberpunk from "../../assets/thumbs/cyberpunk.png";
+import Pixelart from "../../assets/thumbs/pixelart.png";
+import Realistic from "../../assets/thumbs/realistic.png";
 
 
 
@@ -28,17 +33,25 @@ export const IMAGE_STYLES = {
     img: Dynamic,
   },
 
-  Minimal: {
-    label: "Minimal",
-    promptHint: "minimalistic composition, clean lines, modern aesthetic",
-    img: Minimal,
-  },
-
    Cartoon: {
     label: "3D Cartoon",
     promptHint: "smooth 3D cartoon style, soft lighting, rounded shapes",
     img: Cartoon,
   },
+
+    Minecraft: {
+    label: "Minecraft",
+    promptHint: "Minecraft-style blocky, pixelated, low-poly aesthetic",
+    img: Minecraft,
+  },
+
+  
+   Realistic: {
+    label: "Realistic",
+    promptHint: "realistic style, high detail, photorealistic rendering",
+    img: Realistic,
+  },
+
 
   Anime: {
     label: "Anime",
@@ -64,10 +77,22 @@ export const IMAGE_STYLES = {
     img: Disney,
   },
 
+    Ghibli: {
+    label: "Ghibli",
+    promptHint: "Studio Ghibli-style animation, soft shading, whimsical aesthetic",
+    img: Ghibli,
+  },
+
   Lego: {
     label: "Lego",
     promptHint: "LEGO-style build, plastic bricks, toy-like proportions",
     img: Lego,
+  },
+
+   Cyberpunk: {
+    label: "Cyberpunk",
+    promptHint: "cyberpunk aesthetic, neon lighting, futuristic elements",
+    img: Cyberpunk,
   },
 
   Lowpoly: {
@@ -75,6 +100,13 @@ export const IMAGE_STYLES = {
     promptHint: "low-poly 3D style, simple geometry, flat shading",
     img: Lowpoly,
   },
+
+   PixelArt: {
+    label: "Pixel Art",
+    promptHint: "pixel art style, retro 8-bit aesthetic, low resolution",
+    img: Pixelart,
+  },
+
 
   Noir: {
     label: "Noir",

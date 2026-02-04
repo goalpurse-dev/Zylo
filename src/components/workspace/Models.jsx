@@ -81,7 +81,7 @@ function ModelCard({
     className="
       absolute left-4 right-4 bottom-4
       text-center
-      bg-gradient-to-r from-[#7A3BFF] to-[#492399]
+      bg-gradient-to-r from-[#7A3BFF] to-[#7A3BFF]/60
       text-white text-sm py-2 rounded-md font-medium
       opacity-0 translate-y-2
       transition-all duration-300

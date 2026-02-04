@@ -2,6 +2,7 @@
 import NanoBanana from "../../assets/logos/google.png";
 import HiDream from "../../assets/logos/hidream.png";
 import Juggernaut from "../../assets/logos/juggernaut.png";
+import OpenAI from "../../assets/logos/gpt.png";
 
 
 
@@ -36,6 +37,24 @@ export const MODELS = {
     traits: ["Very fast", "Clean realism", "Low cost", "Concept generation"],
     supportedSizes: ["1:1", "16:9", "9:16", "21:9", "2:3"],
     maxReferenceImages: 0,
+  },
+
+  
+  "image:openai": {
+    label: "OpenAI Image",
+    description: "High-quality general-purpose image generation.",
+    img: OpenAI,
+    credits: 4, // TEMP – fixed price
+    traits: ["Highest quality", "Best", "General purpose"],
+    supportedSizes: ["1:1", "3:2", "2:3"],
+    maxReferenceImages: 0,
+
+    // 🔥 NEW (provider-specific)
+    providerSettings: {
+      openai: {
+        quality: "high", // locked for now
+      },
+    },
   },
 };
 
