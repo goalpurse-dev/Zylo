@@ -137,10 +137,10 @@ export default function Model() {
         <ModelCard
           image={Zyvo}
           hoverImage={Zyvo2}
-          badge="Zyvo"
-          title="Zyvo.01"
-          description="Zyvo's first image generation model"
-          buttonText="Use Zyvo"
+          badge="OpenAI"
+          title="OpenAI Image 1.5"
+          description="Super advanced image generation from OpenAI"
+          buttonText="Use OpenAI"
         />
 
         <ModelCard

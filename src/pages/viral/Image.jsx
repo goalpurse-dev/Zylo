@@ -38,6 +38,8 @@ export default function Image() {
 
   const inspirationRef = useRef(null);
   const watchersRef = useRef({});
+  const shouldAutoScrollRef = useRef(false);
+
 
   /* ===============================
      UPSERT JOB (MONOTONIC)
@@ -87,7 +89,8 @@ export default function Image() {
   =============================== */
   const addOptimisticJob = (job) => {
     if (!job?.id) return;
-
+    
+    shouldAutoScrollRef.current = true;
     upsertJob({ ...job, progress: 0 });
 
     watchersRef.current[job.id] = watchJob(job.id, (updated) => {
@@ -176,6 +179,9 @@ export default function Image() {
       );
     }, HEARTBEAT_INTERVAL);
 
+   
+
+
     return () => clearInterval(interval);
   }, []);
 
@@ -210,18 +216,19 @@ export default function Image() {
   return (
     <div className="w-full min-h-screen bg-[#F7F5FA]">
       <Generate
-        prompt={prompt}
-        setPrompt={setPrompt}
-        onJobCreated={addOptimisticJob}
-      />
+  prompt={prompt}
+  setPrompt={setPrompt}
+  onJobCreated={addOptimisticJob}
+/>
 
       {results.length > 0 && (
         <div className="mt-10">
-          <Result
-            results={results}
-            onCopyPrompt={(p) => navigator.clipboard.writeText(p)}
-            onRegenerate={(p) => sendPromptToGenerator(p)}
-          />
+        <Result
+  results={results}
+  shouldAutoScrollRef={shouldAutoScrollRef}
+  onCopyPrompt={(p) => navigator.clipboard.writeText(p)}
+  onRegenerate={(p) => sendPromptToGenerator(p)}
+/>
         </div>
       )}
 

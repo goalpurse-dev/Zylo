@@ -230,16 +230,22 @@ const handleGenerate = async () => {
   try {
     setIsGenerating(true);
 
-    const job = await generateImageFromUI({
-      modelKey: selectedModelKey,
-      prompt: prompt.trim(),
-      style: selectedStyle,
-      size: selectedSize,
-      refImages: selected.map((x) => x.url),
-    });
+const job = await generateImageFromUI({
+  modelKey: selectedModelKey,
+  prompt: prompt.trim(),
+  style: selectedStyle,
+  size: selectedSize,
+  refImages: selected.map((x) => x.url),
+});
 
-    // ✅ optimistic UI slot
-    onJobCreated?.(job);
+// 👇 ADD THIS
+job.settings = {
+  ...(job.settings ?? {}),
+  size: selectedSize,
+  creation_type: "photo",
+};
+
+onJobCreated?.(job);
 
   } catch (err) {
     console.error("Generate failed:", err);

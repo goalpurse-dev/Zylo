@@ -57,6 +57,7 @@ function extractImageUrl(obj: any): string | null {
   );
 }
 
+
 /* ===================== MAIN ===================== */
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -69,6 +70,8 @@ Deno.serve(async (req) => {
       },
     });
   }
+
+  
 
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
@@ -207,9 +210,21 @@ const task = {
         });
       }
 
-      if (pollJson?.status === "failed") {
-        throw new Error(`Runware task failed: ${JSON.stringify(pollJson).slice(0, 800)}`);
-      }
+     if (pollJson?.status === "failed") {
+  await sb.rpc("finish_job_fail", {
+    p_id: jobId,
+    p_error: JSON.stringify(pollJson),
+  });
+
+  return new Response(
+    JSON.stringify({
+      ok: false,
+      error: "Image generation failed",
+      details: pollJson,
+    }),
+    { status: 200 } // 👈 IMPORTANT
+  );
+}
     }
 
     // Log helpful debug into the job row so you can see it in Supabase table

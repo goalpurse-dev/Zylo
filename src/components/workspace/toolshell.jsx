@@ -165,7 +165,7 @@ function toggleSection(name) {
 
 
 {openSection === "productphoto" && (
-  <div className="ml-12  flex flex-col gap-1">
+  <div className="ml-12  flex flex-col gap-3">
 
  <NavLink
   to="/workspace/productphoto"

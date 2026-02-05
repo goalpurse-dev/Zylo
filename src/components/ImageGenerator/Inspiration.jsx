@@ -22,6 +22,8 @@ import i18 from "../../assets/inspiration/18.png";
 import i19 from "../../assets/inspiration/19.png";
 import i20 from "../../assets/inspiration/20.png";
 import i21 from "../../assets/inspiration/21.png";
+import i22 from "../../assets/inspiration/22.png";
+import i23 from "../../assets/inspiration/23.png";
 
 
 import BeforeAfter3 from "../../assets/blog/productphoto/beforeafter3.png";
@@ -129,6 +131,16 @@ const createdImages = [
     prompt: "Create image of clean house interior, realistic style, high detail, photorealistic rendering, clean composition, sharp focus, high detail "
   },
 
+    {
+    src: i22,
+    prompt: "create image of women, cinematic lighting, dramatic composition, ultra-realistic, clean composition, sharp focus, high detail "
+  },
+
+    {
+    src: i23,
+    prompt: "create me image of women in snow, cinematic lighting, dramatic composition, ultra-realistic, clean composition, sharp focus, high detail "
+  },
+
   
   
 ];
@@ -144,12 +156,23 @@ export const Inspiration = ({ setPrompt }) => {
 
       <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
         {createdImages.map((item, i) => (
-          <MasonryImage
-            key={i}
-            src={item.src}
-            prompt={item.prompt}
-            onUse={(p) => setPrompt(p)}
-          />
+        <MasonryImage
+  key={i}
+  src={item.src}
+  prompt={item.prompt}
+  onUse={(p) => {
+    setPrompt(p);
+
+    // 🔥 FORCE SCROLL TO TOP (works everywhere)
+    const workspaceScroller = document.getElementById("workspace-scroll");
+
+    if (workspaceScroller) {
+      workspaceScroller.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }}
+/>
         ))}
       </div>
     </section>

@@ -97,6 +97,8 @@ export default function WorkspaceLayout() {
       {/* MAIN CONTENT */}
       <div
         ref={scrollRef}
+        data-workspace-scroll
+         id="workspace-scroll"
         className="flex flex-col flex-1 h-screen overflow-y-auto"
       >
          <div

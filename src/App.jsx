@@ -133,7 +133,12 @@ import ITestViralPromts from "./app/blog/imagegenerator/ITestViralAIPrompts.jsx"
 import AllImageStylesEveryoneObsessedWith from "./app/blog/imagegenerator/AIImageStylesEveryoneObsessedWith.jsx";
 import ScrollStoppingIMagesNoDesign from "./app/blog/imagegenerator/ScrollStoppingImagesNoDesign.jsx";
 import WhyAIImagesOutperformRealPhotos from "./app/blog/imagegenerator/WhyAIImagesOutperformRealPhotos.jsx";
+import TheSecretPromptsBehindViralAIImages from "./app/blog/imagegenerator/TheSecretPromptsBehindViralAIImages.jsx";
+import TurnAnyIdeaIntoViralImage from "./app/blog/imagegenerator/TurnAnyIdeaIntoViralImage.jsx";
 
+
+
+import ScrollToTop from "./components/ScrollToTop";
 
 
 {/* Viral */}
@@ -180,6 +185,8 @@ export default function App() {
  return (
 <AuthProvider>
   <Router>
+   <ScrollToTop /> {/* 🔥 THIS LINE */}
+
     <GenerationsProvider>
       <AppWithRouting />
     </GenerationsProvider>
@@ -294,8 +301,8 @@ function AppWithRouting() {
         <Route path="/blog/all-image-styles-everyone-obsessed-with" element={<AllImageStylesEveryoneObsessedWith/>} />
         <Route path="/blog/scroll-stopping-images-no-design-skills" element={<ScrollStoppingIMagesNoDesign/>} />
         <Route path="/blog/why-ai-images-outperform-real-photos" element={<WhyAIImagesOutperformRealPhotos/>} />  
-
-
+        <Route path="/blog/the-secret-prompts-behind-viral-ai-images" element={<TheSecretPromptsBehindViralAIImages/>} />
+        <Route path="/blog/how-to-turn-any-idea-into-a-viral-image-using-ai" element={<TurnAnyIdeaIntoViralImage/>} />
 
 
 

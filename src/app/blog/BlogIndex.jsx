@@ -570,6 +570,42 @@ const [loading, setLoading] = useState(false);
           </div>
           </div>
           </Link>
+
+           
+                                                                  {/* Blog Card 37*/}
+
+                <Link to="/blog/the-secret-prompts-behind-viral-ai-images" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">The Secret Prompts Behind Viral AI Images
+
+</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn the secret prompts that make AI images go viral</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">05.02/2026</p>
+          </div>
+          </div>
+          </Link>
+
+                                                                  {/* Blog Card 38*/}
+
+                <Link to="/blog/how-to-turn-any-idea-into-a-viral-image-using-ai" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">How to Turn Any Idea Into a Viral Image Using AI
+
+</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how to turn any idea into a viral image using AI</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">05.02/2026</p>
+          </div>
+          </div>
+          </Link>
+ 
  
           
         </div>

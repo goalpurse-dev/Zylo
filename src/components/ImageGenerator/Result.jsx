@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DownloadIcon } from "lucide-react";
 import { CREATION_TYPES } from "../../lib/creations";
+
 
 /* =============================== CONFIG =============================== */
 
@@ -44,6 +45,7 @@ function getAspectStyle(item) {
 
 function ResultCard({ item }) {
   const [visible, setVisible] = useState(true);
+ 
 
   const isDone = item.status === "succeeded" && !!item.result_url;
   const progress = Math.min(
@@ -73,52 +75,70 @@ function ResultCard({ item }) {
 
   return (
     <div className="relative rounded-xl overflow-hidden bg-black group transition-opacity duration-500">
-      <div className="w-full relative" style={getAspectStyle(item)}>
-        {/* DONE */}
-        {isDone && (
-          <img
-            src={item.result_url}
-            alt=""
-            className="w-full h-full object-cover block"
-          />
-        )}
+     <div className="relative w-full bg-black overflow-hidden rounded-xl">
+  {/* ASPECT RATIO SPACER */}
+  <div
+    className="w-full"
+    style={{
+      paddingTop: (() => {
+        const size =
+          item?.settings?.size ||
+          item?.input?.size ||
+          "1:1";
 
-        {/* FAILED */}
-        {isFailed && (
-          <div className="w-full min-h-[220px] flex items-center justify-center bg-black">
-            <p className="text-white/70 text-sm font-medium tracking-wide">
-              Failed
-            </p>
-          </div>
-        )}
+        if (size === "16:9") return "56.25%";
+        if (size === "9:16") return "177.78%";
+        return "100%"; // 1:1
+      })(),
+    }}
+  />
 
-        {/* LOADING */}
-        {!isDone && !isFailed && (
-          <div className="w-full min-h-[220px] flex items-center justify-center bg-black">
-            <svg className="w-14 h-14" viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r="45"
-                fill="none"
-                stroke="rgba(255,255,255,0.25)"
-                strokeWidth="6"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r="45"
-                fill="none"
-                stroke="#7A3BFF"
-                strokeWidth="6"
-                strokeDasharray="28 260"
-                strokeLinecap="round"
-                className="origin-center animate-spin"
-              />
-            </svg>
-          </div>
-        )}
+  {/* ABSOLUTE CONTENT */}
+  <div className="absolute inset-0">
+    {/* DONE */}
+    {isDone && (
+      <img
+        src={item.result_url}
+        className="w-full h-full object-cover"
+      />
+    )}
+
+    {/* FAILED */}
+    {isFailed && (
+      <div className="w-full h-full flex items-center justify-center bg-black">
+        <p className="text-white/70 text-sm font-medium">Failed</p>
       </div>
+    )}
+
+    {/* LOADING */}
+    {!isDone && !isFailed && (
+      <div className="w-full h-full flex items-center justify-center">
+        <svg className="w-14 h-14" viewBox="0 0 100 100">
+          <circle
+            cx="50"
+            cy="50"
+            r="45"
+            fill="none"
+            stroke="rgba(255,255,255,0.25)"
+            strokeWidth="6"
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r="45"
+            fill="none"
+            stroke="#7A3BFF"
+            strokeWidth="6"
+            strokeDasharray="28 260"
+            strokeLinecap="round"
+            className="origin-center animate-spin"
+          />
+        </svg>
+      </div>
+    )}
+  </div>
+</div>
+
 
       {/* HOVER PROMPT */}
       {isDone && (
@@ -165,20 +185,51 @@ function ResultCard({ item }) {
 
 /* =============================== MAIN =============================== */
 
-export default function Result({ results }) {
-  if (!Array.isArray(results) || results.length === 0) return null;
+export default function Result({ results, shouldAutoScrollRef }) {
+  const latestRef = useRef(null);
 
-  // ✅ ONLY IMAGE PHOTO CREATIONS
+  // ✅ ALWAYS compute hooks first
   const photoResults = useMemo(
     () =>
-      results.filter(
-        (r) =>
-          r?.settings?.creation_type === CREATION_TYPES.PHOTO &&
-          !isExpired(r)
-      ),
-    [results],
+      Array.isArray(results)
+        ? results.filter(
+            (r) =>
+              r?.settings?.creation_type === CREATION_TYPES.PHOTO &&
+              !isExpired(r)
+          )
+        : [],
+    [results]
   );
 
+ useEffect(() => {
+  if (!shouldAutoScrollRef?.current) return;
+  if (!latestRef.current) return;
+  if (photoResults.length === 0) return;
+
+  latestRef.current.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
+
+  // 👇 small extra nudge down
+  setTimeout(() => {
+    const scroller =
+      document.querySelector("[data-workspace-scroll]") || window;
+
+    const OFFSET = 40; // ← tweak this (20–80 feels good)
+
+    if (scroller === window) {
+      window.scrollBy({ top: OFFSET, behavior: "smooth" });
+    } else {
+      scroller.scrollBy({ top: OFFSET, behavior: "smooth" });
+    }
+  }, 60);
+
+  shouldAutoScrollRef.current = false;
+}, [photoResults.length]);
+
+  // ✅ EARLY RETURNS AFTER hooks
+  if (!Array.isArray(results) || results.length === 0) return null;
   if (photoResults.length === 0) return null;
 
   return (
@@ -187,17 +238,20 @@ export default function Result({ results }) {
         Your Creations
       </h1>
 
-      <div className="
-        grid
-        grid-cols-2
-        md:grid-cols-3
-        lg:grid-cols-4
-        gap-4
-      ">
-        {photoResults.map((item) => (
-          <ResultCard key={item.id} item={item} />
-        ))}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {photoResults.map((item, i) => {
+          const isLatest = i === photoResults.length - 1;
+
+          return (
+            <div key={item.id} ref={isLatest ? latestRef : null}>
+              <ResultCard item={item} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
+
+
+
