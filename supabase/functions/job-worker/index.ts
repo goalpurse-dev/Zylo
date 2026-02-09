@@ -52,6 +52,9 @@ Deno.serve(async (req) => {
       auth: { persistSession: false },
     });
 
+
+
+
     /* ---------- pick job ---------- */
 
     let jobId = body.jobId;
@@ -77,14 +80,19 @@ Deno.serve(async (req) => {
     // claim job (if claim fails because another worker claimed it, we still continue to fetch/verify)
     await sbAdmin.rpc("claim_job", { p_id: jobId });
 
-    const { data: job, error: jobErr } = await sbAdmin
-      .from("jobs")
-      .select("id,user_id,type,input,settings,tool_key,status,progress")
-      .eq("id", jobId)
-      .single();
+const { data: job, error: jobErr } = await sbAdmin
+  .from("jobs")
+  .select("id,user_id,type,input,settings,tool_key,status,progress")
+  .eq("id", jobId)
+  .single();
 
-    if (jobErr) return fail(req, `Job load error: ${jobErr.message}`, 500);
-    if (!job) return fail(req, "Job not found", 404);
+if (jobErr) return fail(req, `Job load error: ${jobErr.message}`, 500);
+if (!job) return fail(req, "Job not found", 404);
+
+const referenceImages =
+  job.input?.ref_images ??
+  (job.input?.init_image_url ? [job.input.init_image_url] : []);
+
 
     if (job.type !== "image") {
       return fail(req, "Unsupported job type", 400);
@@ -102,25 +110,27 @@ Deno.serve(async (req) => {
     });
 
     // 🔥 hand off to runware-image (ASYNC)
-    const handoffRes = await fetch(`${SUPABASE_URL}${provider.edgeFn}`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        apikey: ANON_KEY,
-        authorization: `Bearer ${ANON_KEY}`,
-      },
-      body: JSON.stringify({
-        jobId,
-        userId: job.user_id,
-        airTag: provider.airTag,
-        prompt: job.input?.subject,
-        imageUrl: job.input?.init_image_url || null,
-        settings: job.settings, // keep as-is; runware-image handles width/height defaults
-      }),
-    }).catch((e) => {
-      console.error("handoff fetch error:", e);
-      return null;
-    });
+ // 🔥 hand off to runware-image (ASYNC)
+const EDGE_FN_URL = `${SUPABASE_URL}/functions/v1/runware-image`;
+
+const handoffRes = await fetch(EDGE_FN_URL, {
+  method: "POST",
+  headers: {
+    "content-type": "application/json",
+    authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+  },
+  body: JSON.stringify({
+    jobId,
+    airTag: provider.airTag,
+    prompt: job.input?.subject,
+    referenceImages,
+    settings: job.settings,
+  }),
+});
+
+
+
+
     
 
     // IMPORTANT: job-worker exits here (async architecture)

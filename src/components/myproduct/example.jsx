@@ -14,11 +14,11 @@ export default function Example() {
 
         <div>
             <div className="flex justify-center" >
-             <h1 className="text-[#110829] font-semibold text-[16px] md:text-[18px] xl:text-[20px] text-center py-5 cursor-default">Difference between bad and a good photo of product</h1>   
+             <h1 className="text-[#F4F6FB] font-semibold text-[16px] md:text-[18px] xl:text-[20px] text-center py-5 cursor-default">Difference between bad and a good photo of product</h1>   
             </div>
 
 
-        <div className="bg-white py-2 w-full shadow-lg rounded-xl max-w-xl xl:max-w-3xl mx-auto mt-4">
+        <div className="bg-[#141622] border border-[#1F2230] py-2 w-full shadow-lg rounded-xl max-w-xl xl:max-w-3xl mx-auto mt-4">
 
        <div className="flex justify-center gap-1 ">
 
@@ -34,7 +34,7 @@ export default function Example() {
         </div>
 
         <div className="flex items-center">
-        <ArrowRight className="w-10 h-10 text-[#110829]"></ArrowRight>    
+        <ArrowRight className="w-10 h-10 text-[#F4F6FB]"></ArrowRight>    
         </div>
        
          <div className="flex flex-col items-center  h-full  gap-2 py-6 ">

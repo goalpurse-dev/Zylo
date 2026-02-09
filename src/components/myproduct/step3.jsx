@@ -46,18 +46,18 @@ export default function Step3({
     <section>
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-[#110829] font-semibold text-[16px]">
+        <h2 className="text-[#F4F6FB] font-semibold text-[16px]">
           Step 2
         </h2>
 
         <X
-          className="h-5 w-5 text-[#4A4A55] cursor-pointer hover:text-[#110829]"
+          className="h-5 w-5 text-[#4A4A55] cursor-pointer hover:text-[#F4F6FB]"
           onClick={onClose}
         />
       </div>
 
       {/* Title */}
-      <h1 className="text-[#110829] text-[16px] mt-10">
+      <h1 className="text-[#F4F6FB] text-[16px] mt-10">
         Upload picture of the front of your product
       </h1>
 
@@ -65,7 +65,7 @@ export default function Step3({
       <div className="mt-4">
         <div
           onClick={() => inputRef.current?.click()}
-          className="bg-[#F7F5FA] h-[180px] border-2 border-dashed border-[#ECE8F2]
+          className="bg-[#141622] h-[180px]  border border-[#2A2F45]
                      rounded-lg flex items-center justify-center cursor-pointer
                      overflow-hidden"
         >
@@ -79,7 +79,7 @@ export default function Step3({
             <div className="bg-white border border-dashed border-[#7A3BFF]/50 px-6 py-2 rounded-md">
               <div className="flex items-center gap-2">
                 <Download className="h-4 w-4 text-[#4A4A55]" />
-                <p className="text-[#110829] text-sm">Upload</p>
+                <p className="text-[#B7BBC6] text-sm">Upload</p>
               </div>
             </div>
           )}
@@ -96,7 +96,7 @@ export default function Step3({
 
       {/* Tips */}
 <div className="hidden sm:block">
-  <h3 className="text-[#110829] text-[16px] mt-10">
+  <h3 className="text-[#F4F6FB] text-[16px] mt-10">
     Tips for good picture
   </h3>
 
@@ -109,9 +109,9 @@ export default function Step3({
     ].map((text, i) => (
       <div
         key={i}
-        className="border border-[#110829] rounded-lg py-2 w-[200px]"
+        className="border border-[#2A2F45] rounded-lg py-2 w-[200px]"
       >
-        <p className="text-[#110829] text-center text-[14px]">
+        <p className="text-[#B7BBC6] text-center text-[14px]">
           {text}
         </p>
       </div>
@@ -121,7 +121,7 @@ export default function Step3({
 
 
       {/* Divider */}
-      <div className="bg-[#ECE8F2] h-[2px] mt-10" />
+      <div className="bg-[#1F2230] h-[2px] mt-10" />
 
       {/* Footer */}
       <div className="flex justify-between mt-10">
@@ -144,9 +144,9 @@ export default function Step3({
         <button
           onClick={() => onCreate(file)}
           disabled={!canSubmit}
-          className={`py-1 px-8 rounded-r-md border ${
+          className={`py-1 px-8 rounded-r-md  ${
             canSubmit
-              ? "border-[#7A3BFF] text-[#110829]"
+              ? "bg-[#7A3BFF] text-[#F4F6FB] "
               : "border-gray-300 text-gray-400 cursor-not-allowed"
           }`}
         >

@@ -8,7 +8,9 @@ import { CREATION_TYPES } from "../../lib/creations";
 const STUCK_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 const STUCK_PROGRESS_MAX = 10;
 const FAILED_HIDE_DELAY = 5000; // 5 seconds
-const MAX_RUNTIME_MS = 5 * 60 * 1000; // 5 minutes
+const MAX_RUNTIME_MS = 5 * 60 * 1000; // hard limit
+const MAX_RUNNING_TIME_MS = 60 * 1000; // UI fail after 1 min
+
 
 /* =============================== HELPERS =============================== */
 
@@ -58,11 +60,14 @@ function ResultCard({ item }) {
     ? new Date(item.created_at).getTime()
     : 0;
 
-  const isFailed =
-    !isDone &&
-    progress <= STUCK_PROGRESS_MAX &&
-    createdAt > 0 &&
-    Date.now() - createdAt > STUCK_TIMEOUT_MS;
+ const runtimeMs =
+  createdAt > 0 ? Date.now() - createdAt : 0;
+
+const isFailed =
+  !isDone &&
+  item.status === "running" &&
+  runtimeMs > MAX_RUNTIME_MS;
+
 
   /* auto-hide failed card */
   useEffect(() => {
@@ -104,11 +109,17 @@ function ResultCard({ item }) {
     )}
 
     {/* FAILED */}
-    {isFailed && (
-      <div className="w-full h-full flex items-center justify-center bg-black">
-        <p className="text-white/70 text-sm font-medium">Failed</p>
-      </div>
-    )}
+ {isFailed && (
+  <div className="w-full h-full flex flex-col items-center justify-center bg-black gap-1">
+    <p className="text-white/80 text-sm font-medium">
+      Generation failed
+    </p>
+    <p className="text-white/40 text-xs">
+      Try again
+    </p>
+  </div>
+)}
+
 
     {/* LOADING */}
     {!isDone && !isFailed && (
@@ -187,6 +198,7 @@ function ResultCard({ item }) {
 
 export default function Result({ results, shouldAutoScrollRef }) {
   const latestRef = useRef(null);
+ 
 
   // ✅ ALWAYS compute hooks first
   const photoResults = useMemo(
@@ -233,9 +245,9 @@ export default function Result({ results, shouldAutoScrollRef }) {
   if (photoResults.length === 0) return null;
 
   return (
-    <div className="w-full bg-[#ECE8F2] p-4">
-      <h1 className="text-[#110829] font-semibold text-[20px] mb-4">
-        Your Creations
+    <div className="w-full bg-[#12141A] p-4">
+      <h1 className="text-[#F4F6FB] font-semibold text-[20px] mb-4">
+       Recent Creations
       </h1>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

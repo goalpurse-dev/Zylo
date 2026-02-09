@@ -41,51 +41,83 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
 </Link>
 
 {open && (
-  <div className="absolute top-full mt-3 w-[280px] bg-white rounded-xl shadow-lg border border-[#7A3BFF]/30 p-2   z-20">
-    <p className="text-[#7A3BFF] font-semibold mb-2">Tools</p>
+  <div className="
+    absolute top-full mt-3
+    w-[320px]
+    bg-white
+    rounded-xl
+    shadow-lg
+    border border-[#7A3BFF]/20
+    p-4
+    z-20
+  ">
+    <p className="text-[#7A3BFF] font-semibold mb-3">
+      Tools
+    </p>
 
+    <div className="grid grid-cols-1 gap-4">
 
-    <div className="border-[#7A3BFF] border-[2px] p-2 rounded-lg">
-    
-    
-    <ul className="space-y-2 text-[#4A4A55] text-[14px]">
-      <li>
-      <Link className="hover:text-[#7A3BFF] cursor-pointer hover:underline"
-      to="/workspace/productphoto"
-      >
-        Product Photos
-      </Link>
-      </li>
-     
-     <li>
-      <Link className="hover:text-[#7A3BFF] cursor-pointer hover:underline"
-      to="/workspace/myproduct"
-      >
-        My Product
-      </Link>
-        </li>
+      {/* IMAGE */}
+      <div>
+        <p className="text-[12px] font-semibold text-[#110829] uppercase mb-1">
+          Image
+        </p>
+        <Link
+          to="/image-generator"
+          className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
+        >
+          Create image
+        </Link>
+      </div>
 
-        <li>
-      <Link className="hover:text-[#7A3BFF] cursor-pointer hover:underline"
-      to="/workspace/library"
-      >
-      
-        Background Library
-      </Link>
-        </li>
+      {/* PRODUCT PHOTOS */}
+      <div>
+        <p className="text-[12px] font-semibold text-[#110829] uppercase mb-1">
+          Product photos
+        </p>
 
-      <li>
-      <Link className="hover:text-[#7A3BFF] cursor-pointer hover:underline"
-      to="/workspace/creations"
-      >
-        Creations
-      </Link>
-        </li>
-    </ul>
+        <div className="space-y-1">
+          <Link
+            to="/workspace/productphoto"
+            className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
+          >
+            Create
+          </Link>
+
+          <Link
+            to="/workspace/myproduct"
+            className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
+          >
+            My products
+          </Link>
+
+          <Link
+            to="/workspace/library"
+            className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
+          >
+            Background library
+          </Link>
+        </div>
+      </div>
+
+      {/* OTHER */}
+      <div>
+        <p className="text-[12px] font-semibold text-[#110829] uppercase mb-1">
+          Other
+        </p>
+
+        <Link
+          to="/workspace/creations"
+          className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
+        >
+          Creations
+        </Link>
+      </div>
+
+    </div>
   </div>
-  </div>
-
 )}
+
 
      <Link
   to="/workspace/pricing"
@@ -162,6 +194,15 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
 
   {featuresOpen && (
     <div className="px-4 pb-4 space-y-3 ">
+
+        <Link
+        to="/image-generator"
+        className="block bg-white rounded-lg px-4 py-3 shadow text-[#110829] hover:border-[#7A3BFF] border-[1px]"
+      >
+        Image Generator
+      </Link>
+
+
       <Link
         to="/workspace/myproduct"
         className="block bg-white rounded-lg px-4 py-3 shadow text-[#110829] hover:border-[#7A3BFF] border-[1px]"

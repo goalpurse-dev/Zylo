@@ -7,28 +7,32 @@ import Background from "../../assets/tools/background.png"
 import Background1 from "../../assets/tools/background1.png"
 import Blog from "../../assets/tools/blog.png"
 import Blog1 from "../../assets/tools/blog2.png"
+import { Link, NavLink } from "react-router-dom";
 
-
-function PopularCard({ title, image, hoverImage }) {
+function PopularCard({ title, image, hoverImage, to }) {
   return (
-    <div
-      className="
-        group
-        relative
-        rounded-xl
-        overflow-hidden
-        aspect-[16/9]
-        md:aspect-[1/1]
-        flex
-        items-center
-        justify-center
-        md:items-start
-        md:justify-start
-        cursor-pointer
-        max-w-[350px] max-h-[350px] ¨
-        shadow-lg
-      "
-    >
+    <Link
+  to={to}
+  className="
+    group
+    relative
+    w-full
+    rounded-xl
+    overflow-hidden
+    aspect-[16/9]
+    md:aspect-[1/1]
+    flex
+    items-center
+    justify-center
+    md:items-start
+    md:justify-start
+    cursor-pointer
+    max-w-[350px]
+    shadow-lg
+    justify-self-center
+  "
+
+>
       {/* DEFAULT IMAGE */}
       <img
         src={image}
@@ -53,41 +57,40 @@ function PopularCard({ title, image, hoverImage }) {
           group-hover:opacity-100
         "
       />
-<div
-  className=" block md:hidden
-    absolute  bottom-0 left-0 right-0
-    p-10 md:p-5
-    bg-gradient-to-t from-black/50 via-black/30 to-transparent
-    transition-all duration-300
-    group-hover:pb-1
-  "
-></div>
 
-<div
-  className=" hidden md:block
-    absolute  top-0 left-0 right-0
-    p-10 md:p-5
-    bg-gradient-to-b from-black/50 via-black/20 to-transparent
-    transition-all duration-300
-    group-hover:pb-1
-  "
-></div>
+      {/* MOBILE GRADIENT */}
+      <div
+        className="
+          block md:hidden
+          absolute bottom-0 left-0 right-0
+          p-10
+          bg-gradient-to-t from-black/50 via-black/30 to-transparent
+        "
+      />
+
+      {/* DESKTOP GRADIENT */}
+      <div
+        className="
+          hidden md:block
+          absolute top-0 left-0 right-0
+          p-5
+          bg-gradient-to-b from-black/50 via-black/20 to-transparent
+        "
+      />
+
       {/* TITLE */}
       <p
         className="
           absolute
           left-1/2 -translate-x-1/2
-
           bottom-[6%]
           text-[clamp(12px,3vw,20px)]
           whitespace-nowrap
-          backdrop-blur-sm p-1 
-
+          backdrop-blur-sm p-1
           md:left-4 md:translate-x-0
           md:top-1 md:bottom-auto
           md:text-[16px]
-        md:backdrop-blur-sm md:p-1
-          text-white 
+          text-white
           font-semibold
           pointer-events-none
         "
@@ -96,68 +99,71 @@ function PopularCard({ title, image, hoverImage }) {
       </p>
 
       {/* BUTTON (md+) */}
-      <button
+      <div
         className="
           hidden md:flex
           absolute bottom-4 left-6 right-6
           mx-auto max-w-[300px]
-
           items-center justify-center
           backdrop-blur-md
           bg-gradient-to-r from-[#7A3BFF] to-[#7A3BFF]/60
-
           text-white font-semibold
-          text-sm md:text-[15px] lg:text-[16px] xl:text-[17px]
+          text-sm md:text-[15px] lg:text-[16px]
           py-2 md:py-2.5 lg:py-3
           rounded-md
-
           transition-all duration-200
-          hover:opacity-90
+          group-hover:opacity-90
         "
       >
         Try now
-      </button>
-      <div/>
-      <div/>
-
-    </div>
+      </div>
+    </Link>
   );
 }
+
 
 export default function Popular() {
   useEffect(() => {}, []);
 
   return (
-    <section className="w-full px-4">
+    <section className="w-full text-center px-4">
       <h1 className="font-semibold text-[#110829] text-[26px]">
         Popular 
       </h1>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-4 max-w-[1500px] ">
-        <PopularCard
-          title="Image Generator"
-          image={Image}
-          hoverImage={Image1}
-        />
 
-        <PopularCard
-          title="Product Photos"
-          image={Productphoto}
-          hoverImage={Productphoto1}
-        />
+    <div className="mx-auto max-w-[1500px] mt-4">
+      <div className="grid grid-cols-2 md:grid-cols-4  gap-6 mt-4  mx-auto">
+  <PopularCard
+    title="Image Generator"
+    image={Image}
+    hoverImage={Image1}
+    to="/image-generator"
+  />
 
-        <PopularCard
-          title="Background Library"
-          image={Background}
-          hoverImage={Background1}
-        />
+  <PopularCard
+    title="Product Photos"
+    image={Productphoto}
+    hoverImage={Productphoto1}
+    to="/workspace/productphoto"
+  />
 
-        <PopularCard
-          title="Blogs"
-          image={Blog}
-          hoverImage={Blog1}
-        />
-      </div>
+  <PopularCard
+    title="Background Library"
+    image={Background}
+    hoverImage={Background1}
+    to="/workspace/library"
+  />
+
+  <PopularCard
+    title="Blogs"
+    image={Blog}
+    hoverImage={Blog1}
+    to="/blog"
+  />
+</div>
+    </div>
+
     </section>
   );
 }

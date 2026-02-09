@@ -112,7 +112,7 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     margin: m(0.0006, 0.02),
   },
 
-  
+
     "image:flux.max": {
     provider: "runware",
     generator: "FLUX.2 [Max]",

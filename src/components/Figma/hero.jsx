@@ -2,11 +2,20 @@ import Google from "./../../assets/google.png";
 import Product1 from "../../assets/product/product1.jpg";
 import Product2 from "../../assets/product/product2.jpg";
 import Product6 from "../../assets/product/product6.jpg";
+import Image from "../../assets/tools/image-gen.png"
+import Image1 from "../../assets/tools/image-gen1.png"
+import Productphoto from "../../assets/tools/productphoto.png"
+import Productphoto1 from "../../assets/tools/productphoto1.png"
+import Background from "../../assets/tools/background.png"
+import Background1 from "../../assets/tools/background1.png"
 import Logo from "../../assets/Logo.png"
  import Bg from "../../assets/symbols/bg.mp4"
 
+ArrowRightIcon
+
 import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
+import { ArrowRightIcon } from "lucide-react";
 
 export default function Hero() {
   const [scrollY, setScrollY] = useState(0);
@@ -30,8 +39,8 @@ export default function Hero() {
          {/* Images */}
        
           <img
-            src={Product2}
-            className="absolute top-[-5px] flex left-[90px]  w-[220px] rounded-xl   z-20 hover:scale-105
+            src={Image}
+            className="absolute  top-[-5px] flex left-[90px]  w-[220px] rounded-xl   z-20 hover:scale-105
              hover:brightness-90 transition"
           />
 
@@ -42,9 +51,9 @@ export default function Hero() {
           />
 
           <img
-            src={Product1}
+            src={Productphoto}
            
-            className="absolute top-0 right-0 w-[220px] rounded-xl  z-10 rotate-3 brightness-50 mx-10 hover:scale-105 hover:rotate-6 "
+            className="absolute aspect-[1/1] object-cover top-0 right-0 w-[220px] rounded-xl  z-10 rotate-3 brightness-50 mx-10 hover:scale-105 hover:rotate-6 "
           />
       
 
@@ -79,21 +88,40 @@ export default function Hero() {
         {/* Buttons */}
         <div className="flex flex-col gap-6 mt-10 justify-center " >
           
-          <Link className="shadow-lg  text-[#110829] text-base rounded-lg bg-white w-[250px] mx-28 sm:mx-36 px-4 py-4  flex flex-row items-center hover:bg-gray-100 transition"
+          <Link className="shadow-lg  text-[#110829] text-base rounded-lg bg-white w-[320px] mx-28 sm:mx-36 px-4 py-4  flex flex-row items-center hover:bg-gray-100 transition"
           to="/signup"
           >
             Start Free With Google
             <img src={Google} className="inline-block h-8 w-10 ml-2" />
           </Link>
 
-          <Link className="shadow-lg bg-[linear-gradient(90deg,#7A3BFF_0%,#492399_100%)] w-[250px] mx-28 sm:mx-36 text-white whitespace-nowrap text-base rounded-lg px-8 py-4 flex flex-row items-center"
-          to="/workspace/productphoto"
-          >
+         <Link
+  to="/workspace/productphoto"
+  className="
+    w-full
+    max-w-[320px]
+    mx-auto
 
-            Start Generating Now
-            <img src={Logo} className="h-10 w-10 ml-2 object-cover"/>
-            
-          </Link>
+    shadow-lg
+    bg-[linear-gradient(90deg,#7A3BFF_0%,#492399_100%)]
+    text-white
+    rounded-lg
+
+    px-6 py-4
+    text-base
+    font-semibold
+    whitespace-nowrap
+
+    flex items-center justify-center gap-2
+
+    transition-all duration-300
+    hover:shadow-xl
+  "
+>
+  Try for free
+  <img src={Logo} className="h-8 w-8" />
+</Link>
+
         </div>
 
       </div>     
@@ -121,6 +149,7 @@ export default function Hero() {
 
           {/* Testimonial */}
           <div className="flex mt-24 gap-1 ml-3 ">
+            
             <div className="rounded-full px-3 bg-white"></div>
             <div className="rounded-full px-3 bg-white"></div>
             <div className="rounded-full px-3 bg-white mr-3"></div>
@@ -139,12 +168,35 @@ export default function Hero() {
               <img src={Google} className="inline-block h-8 w-10 ml-2" />
             </Link>
 
-            <Link className=" shadow-lg bg-[linear-gradient(90deg,#7A3BFF_0%,#492399_100%)] text-white rounded-lg p-5 px-8 whitespace-nowrap flex flex-row items-center cursor-pointer"
-            to="/workspace/productphoto"
-            >
-              Start Generating Now
-              <img src={Logo} className="h-8 w-8 ml-2"/>
-            </Link>
+<Link
+  to="/workspace/productphoto"
+  className="
+    group
+    shadow-lg
+    bg-[linear-gradient(90deg,#7A3BFF_0%,#492399_100%)]
+    text-white
+    rounded-lg
+
+    px-10 py-5
+    text-base font-semibold
+    whitespace-nowrap
+
+    flex items-center gap-2
+    cursor-pointer
+
+    transition-all duration-300 ease-out
+    hover:scale-[1.05]
+    hover:shadow-xl
+  "
+>
+  <span>Try for free</span>
+
+  <img src={Logo} className="h-8 w-8" />
+
+
+</Link>
+
+
           </div>
         </div>
 
@@ -153,20 +205,20 @@ export default function Hero() {
 
           <div style={{ transform: `translateY(${scrollY * 0.12}px)` }}>
             <img
-              src={Product6}
-              className="absolute top-5 right-[50px]  w-[320px] rounded-xl shadow-xl z-10 rotate-2 brightness-75"
+              src={Productphoto}
+              className="absolute aspect-[1/1] object-cover top-5 right-[50px]  w-[320px] rounded-xl shadow-xl z-10 rotate-2 brightness-90"
             />
           </div>
 
           <img
-            src={Product2}
-            className="absolute top-0 left-[-20px] w-[340px] rounded-xl shadow-xl z-20"
+            src={Image1}
+            className="absolute top-0 brightness-95 left-[-20px] w-[340px] rounded-xl shadow-xl z-20"
           />
 
           <div style={{ transform: `translateY(${scrollY * 0.12}px)` }}>
             <img
-              src={Product1}
-              className="absolute top-5 left-[-120px] w-[320px] rounded-xl shadow-xl -rotate-2 brightness-75"
+              src={Productphoto1}
+              className="absolute aspect-[1/1] object-cover top-5 left-[-120px] w-[320px] rounded-xl shadow-xl -rotate-2 brightness-90"
             />
           </div>
         </div>

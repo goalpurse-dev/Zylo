@@ -44,14 +44,14 @@ export default function Step1({ onNext }) {
 
   return (
     <section className="px-10 w-full">
-      <div className="bg-white mt-4 w-full min-h-[420px] text-black rounded-lg flex flex-col">
+      <div className="bg-[#141622] mt-4 w-full min-h-[420px] text-black border-[#1F2230] border rounded-lg flex flex-col">
 
         {/* TOP */}
         <div className="flex-1 py-6">
 
           {/* Step indicator */}
           <div className="flex justify-center">
-            <div className="bg-[#ECE8F2] w-[240px] h-[35px] rounded-lg flex items-center gap-3 px-3">
+            <div className="bg-[#1A1D2B] border border-[#2A2F45] w-[240px] h-[35px] rounded-lg flex items-center gap-3 px-3">
               <StepCircle active>1</StepCircle>
               <StepLine />
               <StepLine />
@@ -64,7 +64,7 @@ export default function Step1({ onNext }) {
 
           {/* Title */}
           <div className="flex justify-center mt-10">
-            <h1 className="text-[#110829] font-semibold text-[18px]">
+            <h1 className="text-[#F4F6FB] font-semibold text-[18px]">
               Select Your Product
             </h1>
           </div>
@@ -72,9 +72,9 @@ export default function Step1({ onNext }) {
           {/* Products */}
           <div className="flex justify-center mt-10">
             {loading ? (
-              <p className="text-[#4A4A55]">Loading products…</p>
+              <p className="text-[#B7BBC6]">Loading products…</p>
             ) : products.length === 0 ? (
-              <p className="text-[#4A4A55]">
+              <p className="text-[#B7BBC6]">
                 No product created yet.
               </p>
             ) : (
@@ -89,7 +89,7 @@ export default function Step1({ onNext }) {
         src: p.image_url,
       })
     }
-    className={`group w-[160px] rounded-lg shadow-lg overflow-hidden border-2 transition bg-white
+    className={`group w-[160px] rounded-lg shadow-lg overflow-hidden border-2 transition bg-[#1F2230] 
       ${
         selected?.id === p.id
           ? "border-[#7A3BFF]"
@@ -103,12 +103,12 @@ export default function Step1({ onNext }) {
         className="w-full h-[180px] object-cover"
       />
     ) : (
-      <div className="w-full h-[130px] bg-gray-200 flex items-center justify-center text-xs">
+      <div className="w-full h-[130px] bg-[#B7BBC6] flex items-center justify-center text-xs">
         No image
       </div>
     )}
 
-    <div className="p-2 text-sm font-semibold text-[#110829] truncate">
+    <div className="p-2 text-sm font-semibold text-[#F4F6FB] truncate">
       {p.title || "Untitled product"}
     </div>
   </button>
@@ -132,8 +132,8 @@ export default function Step1({ onNext }) {
             className={`py-1 px-8 border-2 rounded-tr-lg rounded-br-lg shadow-lg transition
               ${
                 canContinue
-                  ? "bg-white border-[#7A3BFF] "
-                  : "bg-[#ECE8F2] border-[#ECE8F2] text-[#4A4A55] cursor-not-allowed"
+                  ? "bg-[#1A1D2B] border-[#2A2F45] hover:bg-[#20243A] text-[#E6E8EE] "
+                  : "bg-[#ECE8F2] border-[#ECE8F2] text-[#7A7F8C] cursor-not-allowed"
               }`}
           >
             Next
@@ -150,7 +150,7 @@ function StepCircle({ children, active }) {
   return (
     <div
       className={`rounded-full h-6 w-6 flex items-center justify-center
-        ${active ? "bg-purple-300" : "bg-white"}`}
+        ${active ? "bg-purple-400" : "bg-[#B7BBC6]"}`}
     >
       <p className="text-[#110829] text-sm">{children}</p>
     </div>
@@ -158,5 +158,5 @@ function StepCircle({ children, active }) {
 }
 
 function StepLine() {
-  return <div className="bg-white h-[8px] w-[20px] rounded-lg" />;
+  return <div className="bg-[#B7BBC6] h-[8px] w-[20px] rounded-lg" />;
 }

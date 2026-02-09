@@ -15,7 +15,7 @@ export default function Stone({ items = [], onSelect, selectedId }) {
   return (
     <section className="px-10 w-full overflow-x-hidden">
       <div className="mt-10 flex justify-center items-center">
-        <h2 className="text-[#110829] font-semibold text-[16px]">Stone</h2>
+        <h2 className="text-[#F4F6FB] font-semibold text-[16px]">Stone</h2>
       </div>
 
       {/* Mobile arrows */}

@@ -24,6 +24,7 @@ import i20 from "../../assets/inspiration/20.png";
 import i21 from "../../assets/inspiration/21.png";
 import i22 from "../../assets/inspiration/22.png";
 import i23 from "../../assets/inspiration/23.png";
+import i24 from "../../assets/inspiration/24.png";
 
 
 import BeforeAfter3 from "../../assets/blog/productphoto/beforeafter3.png";
@@ -141,6 +142,11 @@ const createdImages = [
     prompt: "create me image of women in snow, cinematic lighting, dramatic composition, ultra-realistic, clean composition, sharp focus, high detail "
   },
 
+   {
+    src: i24,
+    prompt: "create image of dog, cinematic lighting, dramatic composition, ultra-realistic, clean composition, sharp focus, high detail "
+  },
+
   
   
 ];
@@ -150,7 +156,7 @@ const createdImages = [
 export const Inspiration = ({ setPrompt }) => {
   return (
     <section className="w-full px-2">
-      <h1 className="text-[#110829] font-bold text-[26px] mb-4">
+      <h1 className="text-[#F4F6FB] font-bold text-[26px] mb-4">
         Created with <span className="text-[#7A3BFF]">Zyvo</span>
       </h1>
 

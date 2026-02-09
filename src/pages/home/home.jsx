@@ -17,7 +17,8 @@ import Final from "../../components/Figma/Final.jsx"
 import Mid from "../../components/Figma/mid.jsx"
 import Steps from "../../components/Figma/3step.jsx"
 import Pricing from "../../components/Figma/Pricing.jsx"
-
+import Models from "../../components/workspace/Models.jsx"
+import Popular from "../../components/Figma/Popular.jsx"
 
 
 
@@ -50,19 +51,25 @@ export default function Home() {
   <Proof/>
 </div>
 
-<div className="mt-10 hidden">
- <Video/> 
-</div>
-
-
 <div className="mt-10">
-  <Steps/>
+    <Popular/>
 </div>
 
 
 <div className="mt-24">
 <Gallery />
 </div>
+
+<div className="">
+  <Steps/>
+</div>
+
+
+<div className="mt-10">
+    <Models/>
+</div>
+
+
 
 <div className="mt-12 md:mt-20 ">
   <ProductPhoto />

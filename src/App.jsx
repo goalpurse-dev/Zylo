@@ -320,7 +320,7 @@ function AppWithRouting() {
 <Route  element={<WorkspaceLayout />}>
   {/* 🔒 PROTECTED HOME */}
   <Route
-    path="/workspace"
+    path="/workspace/home"
     index
     element={
       <RequireAuth>
@@ -337,7 +337,7 @@ function AppWithRouting() {
   <Route path="/workspace/step2" element={<Step2 />} />
   <Route path="/workspace/step3" element={<Step3 />} />
   <Route path="/workspace/pricing" element={<Pricing />} />
-  <Route path="image-generator" element={<Image />} />
+  <Route path="/workspace/image-generator" element={<Image />} />
 
 
 </Route>

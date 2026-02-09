@@ -93,11 +93,11 @@ export default function Step3({
   }
 
   return (
-    <div className="flex justify-center py-6 px-4 md:px-8 xl:px-16">
-      <div className="bg-white mt-4 h-[750px] xl:h-[800px] 2xl:h-[850px] w-full text-black rounded-lg">
+    <div className="flex justify-center py-6 px-4 md:px-8 xl:px-16 ">
+      <div className="bg-[#12141A] mt-4 h-[750px] xl:h-[800px] 2xl:h-[850px] w-full text-[#F4F6FB] rounded-lg">
         {/* Step indicator */}
         <div className="flex justify-center py-6">
-          <div className="bg-[#ECE8F2] w-[240px] h-[35px] rounded-lg flex items-center gap-3 px-3">
+          <div className="bg-[#1A1D2B] border border-[#2A2F45] w-[240px] h-[35px] rounded-lg flex items-center gap-3 px-3">
             <StepCircle active>1</StepCircle>
             <StepLine />
             <StepLine />
@@ -110,27 +110,27 @@ export default function Step3({
 
         {/* Header */}
         <div className="flex justify-center mt-3">
-          <h1 className="text-[#110829] font-semibold text-[18px] md:text-[20px] lg:text-[22px] xl:text-[24px]">
+          <h1 className="text-[#F4F6FB] font-semibold text-[18px] md:text-[20px] lg:text-[22px] xl:text-[24px]">
             Review
           </h1>
         </div>
 
         {/* Review card */}
         <div className="flex justify-center mt-6">
-          <div className="bg-[#ECE8F2] w-[240px] min-h-[400px] xl:min-h-[550px] md:w-[280px] lg:w-[320px] xl:w-[500px] 2xl:w-[550px] rounded-lg">
+          <div className="bg-[#141622] border border-[#2A2F45] w-[240px] min-h-[400px] xl:min-h-[550px] md:w-[280px] lg:w-[320px] xl:w-[500px] 2xl:w-[550px] rounded-lg">
             {/* Product */}
             <div className="flex justify-between items-center gap-4 px-6 py-4">
-              <h1 className="text-[#110829] font-semibold">Product:</h1>
+              <h1 className="text-[#F4F6FB] font-semibold">Product:</h1>
               <button
                 onClick={onChangeProduct}
-                className="px-3 py-1 text-[10px] bg-white border border-[#4A4A55] rounded-sm shadow-lg"
+                className="px-3 py-1 text-[10px] bg-[#1A1D2B] border border-[#2A2F45] rounded-sm shadow-lg"
               >
                 Change
               </button>
             </div>
 
             <div className="flex justify-center px-6">
-              <div className="bg-white w-full h-[120px] rounded-lg flex items-center justify-center overflow-hidden">
+              <div className="bg-[#1A1D2B] w-full h-[120px] rounded-lg flex items-center justify-center overflow-hidden">
                 {productUrl ? (
                   <img
                     src={productUrl}
@@ -138,24 +138,24 @@ export default function Step3({
                     className="h-full object-contain"
                   />
                 ) : (
-                  <p className="text-gray-400 text-sm">No product selected</p>
+                  <p className="text-[#B7BBC6] text-sm">No product selected</p>
                 )}
               </div>
             </div>
 
             {/* Background */}
             <div className="flex justify-between gap-4 px-6 mt-10">
-              <p className="text-[#110829] font-semibold">Background:</p>
+              <p className="text-[#F4F6FB] font-semibold">Background:</p>
               <button
                 onClick={onChangeBackground}
-                className="px-3 py-1 text-[10px] bg-white border border-[#4A4A55] rounded-sm shadow-lg"
+                className="px-3 py-1 text-[10px] bg-[#1A1D2B] border border-[#2A2F45] rounded-sm shadow-lg"
               >
                 Change
               </button>
             </div>
 
             <div className="flex justify-center px-6 py-4">
-              <div className="bg-white w-full h-[200px] xl:h-[240px] 2xl:h-[280px] rounded-lg overflow-hidden">
+              <div className="bg-[#1A1D2B] w-full h-[200px] xl:h-[240px] 2xl:h-[280px] rounded-lg overflow-hidden">
                 <div className="flex justify-center items-center h-full">
                   {backgroundUrl ? (
                     <img
@@ -164,7 +164,7 @@ export default function Step3({
                       className="w-[140px] 2xl:w-[200px] h-[200px] 2xl:h-[250px] object-cover max-h-full rounded-md shadow-lg"
                     />
                   ) : (
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-[#B7BBC6] text-sm">
                       No background selected
                     </p>
                   )}
@@ -178,7 +178,7 @@ export default function Step3({
         <div className="flex justify-between md:px-5 lg:px-20 py-10 mt-20 xl:mt-10">
           <button
             onClick={onBack}
-            className="py-1 px-8 bg-white border-gray-300 border-2 rounded-lg shadow-lg"
+            className="py-1 px-8 bg-[#1A1D2B] border-[#2A2F45] border-2 rounded-lg shadow-lg"
           >
             Back
           </button>
@@ -187,10 +187,10 @@ export default function Step3({
             <button
               onClick={handleGenerate}
               disabled={!productUrl || !backgroundUrl || creating}
-              className={`py-1 px-6 border-2 rounded-lg shadow-lg flex items-center gap-2
+              className={`py-1 px-6  rounded-lg shadow-lg font-semibold flex items-center gap-2
                 ${
                   productUrl && backgroundUrl && !creating
-                    ? "border-[#7A3BFF] text-[#7A3BFF]"
+                    ? "bg-[#7A3BFF] text-white"
                     : "border-gray-300 text-gray-400 cursor-not-allowed"
                 }`}
             >
@@ -202,8 +202,10 @@ export default function Step3({
 
               {creating ? "Generating..." : "Generate"}
 
-              <p className="text-black pl-3">12</p>
+              <p className="text-[#F4F6FB] pl-3">12</p>
+              <div className="bg-white p-1  rounded-lg">
               <img src={Credit} className="h-5 w-5" />
+              </div>
             </button>
           </div>
         </div>
@@ -217,7 +219,7 @@ function StepCircle({ children, active }) {
   return (
     <div
       className={`rounded-full h-6 w-6 flex items-center justify-center
-        ${active ? "bg-purple-300" : "bg-white"}`}
+        ${active ? "bg-purple-400" : "bg-[#B7BBC6]"}`}
     >
       <p className="text-[#110829] text-sm">{children}</p>
     </div>
@@ -225,5 +227,5 @@ function StepCircle({ children, active }) {
 }
 
 function StepLine() {
-  return <div className="bg-purple-200 h-[8px] w-[20px] rounded-lg" />;
+  return <div className="bg-[#B7BBC6] h-[8px] w-[20px] rounded-lg" />;
 }

@@ -304,8 +304,15 @@ useEffect(() => {
     {/* Bg image */}
 
     <div className="relative w-full h-[500px] md:h-[600px] ">
+      {/* Bottom blend into page bg */}
+<div className="
+  absolute bottom-0 left-0 right-0
+  h-40
+  bg-[linear-gradient(to_bottom,rgba(18,20,26,0)_0%,#12141A_100%)]
+  z-30
+" />
     <img src={Bg} className="absolute inset-0 w-full h-full object-cover z-10 "></img> 
-    <div className="absolute inset-0 bg-black/40 z-20"></div>  
+    <div className="absolute inset-0 bg-[#12141A]/60 z-20"></div>  
     
      {/* Content */}
      
@@ -315,7 +322,7 @@ useEffect(() => {
   </div>
 
 <div className="relative z-40 w-full flex justify-center mt-10">
-  <div className="w-full max-w-[900px] mx-4 sm:mx-6 md:mx-8 py-2 bg-[#ECE8F2]/30 backdrop-blur-xl rounded-2xl shadow-lg">
+  <div className="w-full max-w-[900px] mx-4 sm:mx-6 md:mx-8 py-2 bg-[#ECE8F2]/20 backdrop-blur-xl rounded-2xl shadow-lg">
     
     {/* INNER CONTENT WRAPPER */}
     <div className="h-full p-4 flex flex-col  gap-4">
@@ -325,13 +332,13 @@ useEffect(() => {
       <div className="flex justify-center items-center">
      <button
   onClick={() => setOpenReferenceModal(true)}
-  className="bg-[#110829]/80 hover:bg-[#110829]/60 p-2 rounded-full border-[#282C40] border-[1px] shadow-lg"
+  className="bg-[#1A1D2B] hover:bg-[#1A1D2B]/80 p-2 rounded-full border-[#282C40] border-[1px] shadow-lg"
 >
   <ImagePlusIcon className="h-5 w-5 text-white" />
 </button>
       </div>
      
- <div className="w-full rounded-2xl bg-[#110829]/50 backdrop-blur-xl border border-white/10 shadow-lg">
+ <div className="w-full rounded-2xl bg-[#1A1D2B]/20 backdrop-blur-xl border border-white/10 shadow-lg">
  <textarea
   ref={textareaRef}
   value={prompt}
@@ -384,7 +391,7 @@ useEffect(() => {
   {/* LEFT: Image / Video */}
   <div className="flex items-center gap-2">
     <div className="bg-gradient-to-r from-[#7A3BFF] to-[#492399] rounded-xl p-[1px]">
-      <div className="bg-[#110829]/80  border border-[#282C40] rounded-xl px-5 py-2 flex items-center gap-2">
+      <div className="bg-[#1A1D2B]  rounded-xl px-5 py-2 flex items-center gap-2">
         <Image className="h-4 w-4" />
         <p>Image</p>
       </div>
@@ -400,7 +407,7 @@ useEffect(() => {
   <div className="relative md:hidden">
     <button
   onClick={() => setSettingsOpen(prev => !prev)}
-  className="bg-[#110829] p-2 rounded-xl border border-[#282C40] shadow-lg flex md:hidden"
+  className="bg-[#1A1D2B] p-2 rounded-xl border border-[#282C40] shadow-lg flex md:hidden"
 >
   <Settings className="w-5 h-5" />
 </button>
@@ -410,7 +417,7 @@ useEffect(() => {
 {settingsOpen && (
   <div 
     ref={panelRef}
-   className="  absolute top-12 left-1/2 -translate-x-1/2 z-80 w-[300px] sm:w-[350px] max-w-[320px] rounded-xl bg-[#0B0E1A]/95 backdrop-blur-xl border border-[#7A3BFF] shadow-[0_0_25px_rgba(122,59,255,0.25),0_0_60px_rgba(122,59,255,0.15)]">
+   className="  absolute top-12 left-1/2 -translate-x-1/2 z-80 w-[300px] sm:w-[350px] max-w-[320px] rounded-xl bg-[#1A1D2B] backdrop-blur-xl border border-[#7A3BFF] shadow-[0_0_25px_rgba(122,59,255,0.25),0_0_60px_rgba(122,59,255,0.15)]">
     {activeMenu === null && (
       <div className="flex flex-col">
        <MenuItem
@@ -439,8 +446,8 @@ useEffect(() => {
   <SubMenu title="Model" onBack={() => setActiveMenu(null)}>
     <div
       className="
-        flex flex-col gap-3 p-3
-        max-h-[260px]      
+        flex flex-col  gap-3 p-3
+        max-h-[280px]      
         overflow-y-auto
         pr-1
         scrollbar-thin
@@ -553,15 +560,15 @@ useEffect(() => {
     setOpenStyle(false);
     setOpenModel(false);
   }}
-  className="flex items-center gap-2 bg-[#110829]/90 px-3 py-2 rounded-xl border border-[#7A3BFF]/60 shadow-lg hover:bg-[#110829]/70"
+  className="flex items-center gap-2 bg-[#1A1D2B] px-3 py-2 rounded-xl border border-[#2A2F45] shadow-lg hover:bg-[#1A1D2B]/80"
 >
   <BoxSelect className="w-5 h-5 text-white" />
-  <span className="text-white text-[16px]">{selectedSize}</span>
+  <span className="text-[#E6E8EE] text-[16px]">{selectedSize}</span>
 </button>
 
 
   {openSize && (
-  <div className="absolute top-full mt-2 w-40 rounded-xl bg-[#110829]/95 border border-white/10 shadow-2xl backdrop-blur-xl overflow-hidden">
+  <div className="absolute top-full mt-2 w-40 rounded-xl bg-[#1A1D2B] border border-white/10 shadow-2xl backdrop-blur-xl overflow-hidden">
     {selectedModel.supportedSizes.map((size) => (
       <button
         key={size}
@@ -569,7 +576,7 @@ useEffect(() => {
           setSelectedSize(size);
           setOpenSize(false);
         }}
-        className={`w-full px-4 py-2 text-left text-sm text-white hover:bg-white/5 flex items-center justify-between
+        className={`w-full px-4 py-2 text-left text-sm text-[#E6E8EE] hover:bg-white/5 flex items-center justify-between
           ${size === selectedSize ? "bg-white/5" : ""}`}
       >
         {size}
@@ -587,7 +594,7 @@ useEffect(() => {
    absolute top-full mt-2
 right-1/2 translate-x-1/2
     w-[600px] max-w-[90vw]
-    rounded-xl bg-[#110829]/95
+    rounded-xl bg-[#1A1D2B]
     border border-white/10
     shadow-2xl backdrop-blur-xl
     z-50
@@ -642,17 +649,17 @@ right-1/2 translate-x-1/2
     setOpenSize(false);
     setOpenModel(false);
   }}
-  className="flex items-center gap-2 bg-[#110829]/80 p-2 rounded-xl border border-[#7A3BFF]/60 shadow-lg hover:bg-[#110829]/60"
+  className="flex items-center gap-2 bg-[#1A1D2B] p-2 rounded-xl border border-[#2A2F45] shadow-lg hover:bg-[#1A1D2B]/80"
 >
   <Wand2 className="w-4 h-4 text-white" />
-  <p className="text-white text-[16px]">{selectedStyle}</p>
+  <p className="text-[#E6E8EE] text-[16px]">{selectedStyle}</p>
 </button>
 
 {openStyle && (
   <div
     className="
       absolute top-full mt-2 w-[450px]
-      rounded-xl bg-[#110829]/95
+      rounded-xl bg-[#1A1D2B]
       border border-white/10
       shadow-2xl backdrop-blur-xl
       z-50
@@ -694,11 +701,11 @@ right-1/2 translate-x-1/2
     setOpenSize(false);
     setOpenStyle(false);
   }}
-  className="bg-[#110829]/80 p-2 rounded-xl border-[#7A3BFF]/60 border shadow-lg hover:bg-[#110829]/60"
+  className="bg-[#1A1D2B] p-2 rounded-xl border border-[#2A2F45] shadow-lg hover:bg-[#1A1D2B]/80"
 >
-  <p className="text-[12px] text-white/60">
+  <p className="text-[12px] text-white/60 ">
     Model:
-    <span className="text-[16px] text-white ml-1">
+    <span className="text-[16px] text-[#E6E8EE] ml-1">
       {selectedModel.label}
     </span>
   </p>

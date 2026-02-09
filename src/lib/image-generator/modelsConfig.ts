@@ -50,10 +50,10 @@ export const MODELS = {
     description:
       "Best Flux, super-quality image generation with clean composition.",
     img: Juggernaut,
-    credits: 1,
+    credits: 7,
     traits: ["Fast", "Super quality", "Clean composition", "Advanced thinking"],
     supportedSizes: ["1:1", "16:9", "9:16", "21:9", "2:3"],
-    maxReferenceImages: 0,
+    maxReferenceImages: 8,
   },
 
     "image:flux.base": {
@@ -64,7 +64,7 @@ export const MODELS = {
     credits: 1,
     traits: ["Fast", "Medium quality", "Clean composition", "Concept generation"],
     supportedSizes: ["1:1", "16:9", "9:16", "21:9", "2:3"],
-    maxReferenceImages: 0,
+    maxReferenceImages: 4,
   },
 
   "image:hidream": {

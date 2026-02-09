@@ -17,6 +17,7 @@ import Ghibli from "../../assets/thumbs/ghibli.png";
 import Cyberpunk from "../../assets/thumbs/cyberpunk.png";
 import Pixelart from "../../assets/thumbs/pixelart.png";
 import Realistic from "../../assets/thumbs/realistic.png";
+import Vintage from "../../assets/thumbs/vintage.png";
 
 
 
@@ -25,19 +26,39 @@ export const IMAGE_STYLES = {
     label: "Cinematic",
     promptHint: "cinematic lighting, dramatic composition, ultra-realistic",
     img: Cinematic,
+    imageStrength: 0.55, // 🔥 more freedom
   },
 
   Dynamic: {
     label: "Dynamic",
     promptHint: "dynamic motion, energetic composition, sharp focus",
     img: Dynamic,
+    imageStrength: 0.55, // 🔥 more freedom
   },
 
    Cartoon: {
     label: "3D Cartoon",
     promptHint: "smooth 3D cartoon style, soft lighting, rounded shapes",
     img: Cartoon,
+    imageStrength: 0.65, // 🔥 more freedom
   },
+
+   VintagePortrait: {
+    label: "Vintage Portrait",
+    promptHint: `
+analog film portrait, vintage editorial photography,
+soft directional lighting, gentle shadows,
+natural skin texture, subtle imperfections,
+fine film grain, scanned photo texture,
+low contrast blacks, smooth tonal range,
+monochrome or warm sepia tones,
+shallow depth of field, classic portrait composition,
+timeless aesthetic, emotional expression,
+shot on vintage film camera, archival quality
+    `,
+    img: Vintage,
+  },
+
 
     Minecraft: {
     label: "Minecraft",
@@ -65,6 +86,7 @@ export const IMAGE_STYLES = {
     img: Clay,
   },
 
+
   Comic: {
     label: "Comic",
     promptHint: "comic book style, bold outlines, high contrast colors",
@@ -86,7 +108,7 @@ export const IMAGE_STYLES = {
   Lego: {
     label: "Lego",
     promptHint: "LEGO-style build, plastic bricks, toy-like proportions",
-    img: Lego,
+    img: Lego
   },
 
    Cyberpunk: {

@@ -24,10 +24,10 @@ function HorizontalRow({ title, items, getImageUrl, onItemClick }) {
   };
 
   return (
-    <div className="mt-20 px-6 lg:px-10 xl:px-12">
+    <div className="mt-4 px-6 lg:px-10 xl:px-12">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-[#110829] text-[20px] sm:text-[22px] font-semibold">
+        <h1 className="text-[#F4F6FB] text-[20px] sm:text-[22px] font-semibold">
           {title}
         </h1>
 
@@ -83,13 +83,13 @@ function HorizontalRow({ title, items, getImageUrl, onItemClick }) {
 
             <div
               className="
-                bg-[#ECE8F2] border border-[#4A4A55]/20
+                bg-[#141622] border border-[#1F2230]
                 flex items-center justify-center
                 h-[40px] md:h-[45px]
                 w-[140px] md:w-[160px] lg:w-[180px]
               "
             >
-              <p className="text-[#4A4A55] text-[12px]">
+              <p className="text-[#B7BBC6] text-[12px]">
                 {new Date(item.created_at).toLocaleDateString()}
               </p>
             </div>
@@ -165,11 +165,11 @@ export default function Library() {
   return (
     <section>
       {/* Page Header */}
-      <div className="flex flex-col gap-4 items-center mt-20 px-5 md:px-8">
-        <h1 className="text-[#110829] font-semibold text-[22px]">
+      <div className="flex flex-col gap-4 items-center mt-10 px-5 md:px-8">
+        <h1 className="text-[#F4F6FB] font-semibold text-[22px]">
           Your Creations
         </h1>
-        <p className="text-[#4A4A55] text-[14px] text-center">
+        <p className="text-[#B7BBC6] text-[14px] text-center">
           Max 20 per tool. Oldest are removed automatically.
         </p>
       </div>

@@ -214,7 +214,7 @@ export default function Image() {
      RENDER
   =============================== */
   return (
-    <div className="w-full min-h-screen bg-[#F7F5FA]">
+    <div className="w-full min-h-screen bg-[#12141A]">
       <Generate
   prompt={prompt}
   setPrompt={setPrompt}

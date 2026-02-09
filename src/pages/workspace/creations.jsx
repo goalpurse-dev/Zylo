@@ -1,7 +1,7 @@
 import Step1 from "../../components/creations/library.jsx";
 import Faq from "../../components/creations/faq.jsx";
 import Footer from "../../components/myproduct/footer.jsx";
-import Cta from "../../components/creations/cta.jsx";
+
 
 import { useState, useEffect } from "react";
 
@@ -18,9 +18,7 @@ export default function creations() {
     return (
         <section>
 
-            {showCta && (
-             <Cta onClose={() => setShowCta(false)} />
-           )}
+         
      
 
 

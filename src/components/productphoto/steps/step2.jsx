@@ -47,10 +47,10 @@ export default function Step2({ onNext, onBack }) {
 
   return (
     <div className="flex justify-center py-6">
-      <div className="bg-white mt-4 w-full max-w-6xl text-black rounded-lg">
+      <div className="bg-[#141622] mt-4 w-full max-w-6xl  rounded-lg">
 
-        <div className="flex justify-center">
-          <div className="bg-[#ECE8F2] w-[240px] h-[35px] rounded-lg flex items-center gap-3 px-3">
+        <div className="flex justify-center mt-2">
+          <div className="bg-[#1A1D2B] border border-[#2A2F45]  w-[240px] h-[35px] rounded-lg flex items-center gap-3 px-3">
             <StepCircle active>1</StepCircle>
             <StepLine />
             <StepLine />
@@ -63,7 +63,7 @@ export default function Step2({ onNext, onBack }) {
 
         {/* Header */}
         <div className="flex justify-center py-6">
-          <h1 className="text-[#110829] font-semibold text-[18px]">
+          <h1 className="text-[#F4F6FB] font-semibold text-[18px]">
             Choose Background
           </h1>
         </div>
@@ -76,7 +76,7 @@ export default function Step2({ onNext, onBack }) {
               <button
                 onClick={() => scrollRow(rowIndex, -1)}
                 className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10
-                           bg-white shadow-md rounded-full p-2"
+                           bg-[#B7BBC6] shadow-md rounded-full p-2"
               >
                 <ArrowLeft className="w-4 h-4 text-[#110829]" />
               </button>
@@ -116,7 +116,7 @@ export default function Step2({ onNext, onBack }) {
               <button
                 onClick={() => scrollRow(rowIndex, 1)}
                 className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10
-                           bg-white shadow-md rounded-full p-2"
+                           bg-[#B7BBC6] shadow-md rounded-full p-2"
               >
                 <ArrowRight className="w-4 h-4 text-[#110829]" />
               </button>
@@ -131,8 +131,8 @@ export default function Step2({ onNext, onBack }) {
               setSelectedBg(null);
               setShowLibrary(true);
             }}
-            className="bg-white border-[#7A3BFF] border-2 rounded-xl
-                       px-6 py-2 text-[#7A3BFF] font-semibold shadow-lg"
+            className="bg-[#7A3BFF] rounded-xl
+                       px-6 py-2 text-white font-semibold shadow-lg"
           >
             Check All
           </button>
@@ -142,7 +142,7 @@ export default function Step2({ onNext, onBack }) {
         <div className="flex justify-between px-5 lg:px-20 py-10">
           <button
             onClick={onBack}
-            className="py-1 px-8 bg-white border-gray-300 border-2 rounded-lg shadow-lg"
+            className="py-1 px-8 bg-[#1A1D2B] border-[#2A2F45] border-2 rounded-lg shadow-lg"
           >
             Back
           </button>
@@ -150,11 +150,11 @@ export default function Step2({ onNext, onBack }) {
           <button
             disabled={!selectedBg}
             onClick={() => onNext(selectedBg)}
-            className={`py-1 px-8 border-2 rounded-lg shadow-lg
+            className={`py-1 px-8 rounded-lg shadow-lg
               ${
                 selectedBg
-                  ? "border-[#7A3BFF] text-[#7A3BFF]"
-                  : "border-gray-300 text-gray-400 cursor-not-allowed"
+                  ? " bg-[#7A3BFF] text-white"
+                  : "border-gray-300 text-[#7A7F8C] cursor-not-allowed"
               }`}
           >
             Next
@@ -165,11 +165,11 @@ export default function Step2({ onNext, onBack }) {
       {/* 🔲 BACKGROUND LIBRARY MODAL */}
       {showLibrary && (
         <div className="fixed inset-0 z-50 bg-black/40 flex justify-center items-center px-4">
-          <div className="relative bg-white w-full max-w-6xl h-[90vh]
+          <div className="relative bg-[#141622] w-full max-w-6xl h-[90vh]
                           rounded-xl overflow-hidden flex flex-col">
 
             <div className="relative px-6 py-4 border-b flex-shrink-0">
-              <h2 className="text-[#110829] font-semibold text-center">
+              <h2 className="text-[#F4F6FB] font-semibold text-center">
                 Background Library
               </h2>
 
@@ -181,7 +181,7 @@ export default function Step2({ onNext, onBack }) {
                 }}
                 className="absolute top-4 right-4"
               >
-                <X className="text-black" />
+                <X className="text-[#F4F6FB]" />
               </button>
             </div>
 
@@ -196,9 +196,9 @@ export default function Step2({ onNext, onBack }) {
             </div>
 
             {selectedBg && selectedBg.source === "library" && (
-              <div className="border-t bg-white px-6 py-4
+              <div className="border-t bg-[#1A1D2B] px-6 py-4
                               flex justify-between items-center">
-                <p className="text-sm text-[#110829] font-medium">
+                <p className="text-sm text-[#F4F6FB] font-medium">
                   Selected background
                 </p>
                 <button
@@ -220,11 +220,12 @@ export default function Step2({ onNext, onBack }) {
   );
 }
 
+
 function StepCircle({ children, active }) {
   return (
     <div
       className={`rounded-full h-6 w-6 flex items-center justify-center
-        ${active ? "bg-purple-300" : "bg-white"}`}
+        ${active ? "bg-purple-400" : "bg-[#B7BBC6]"}`}
     >
       <p className="text-[#110829] text-sm">{children}</p>
     </div>
@@ -232,5 +233,5 @@ function StepCircle({ children, active }) {
 }
 
 function StepLine() {
-  return <div className="bg-white h-[8px] w-[20px] rounded-lg" />;
+  return <div className="bg-[#B7BBC6] h-[8px] w-[20px] rounded-lg" />;
 }

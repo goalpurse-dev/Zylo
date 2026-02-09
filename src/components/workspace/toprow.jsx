@@ -20,72 +20,53 @@ export default function TopRow({ title, onMenuClick }) {
 
 
   return (
-    <section className="bg-white ">
-      <div className="flex items-center justify-between px-6 py-3 md:py-4">
+    <section className="bg-[#12141A] ">
+      <div className="flex lg:hidden items-center justify-between px-6 py-3 md:py-4">
 
         {/* LEFT SIDE */}
         <div className="flex items-center gap-6 sm:gap-10 md:gap-12 ">
           
           {/* Hamburger (mobile only) */}
           <button onClick={onMenuClick} className="lg:hidden flex flex-col gap-[3px] cursor-pointer">
-            <div className="bg-[#492399]  w-5 h-[2px] md:h-[3px] rounded-lg" />
-            <div className="bg-[#492399]  w-5 h-[2px] md:h-[3px] rounded-lg" />
-            <div className="bg-[#492399]  w-5 h-[2px] md:h-[3px] rounded-lg" />
+            <div className="bg-white/40  w-5 h-[2px] md:h-[3px] rounded-lg" />
+            <div className="bg-white/40  w-5 h-[2px] md:h-[3px] rounded-lg" />
+            <div className="bg-white/40 w-5 h-[2px] md:h-[3px] rounded-lg" />
           </button>
 
           {/* Logo */}
-          <div className="sm:flex hidden lg:hidden items-center gap-2">
+          <div className="flex  items-center gap-2">
             <p className="text-[#7A3BFF] font-bold text-[20px] md:text-[22px] cursor-default">ZyvoAI</p>
             <div className="hidden sm:flex ">
-            <img src={Logo} className="h-10 w-10 md:h-12 md:w-12" />
+         
             </div>
           </div>
 
-          <div className="lg:flex hidden  items-center gap-2 lg:px-[clamp(24px,4vw,64px)]">
-           <p className="text-[#110829] font-semibold text-[22px] 2xl:text-[26px] cursor-default ">
-            {title}
-            </p> 
-          </div>
+      
 
         </div>
 
         {/* RIGHT SIDE */}
-        <div className="flex items-center gap-4 sm:gap-10  xl:gap-[clamp(39px,15vw,40px)] xl:px-[clamp(15px,15vw,100px)]">
+        <div className="flex items-center gap-4 sm:gap-4  xl:gap-[clamp(39px,15vw,40px)] xl:px-[clamp(15px,15vw,100px)]">
 
 
-        <div className="hidden lg:block">
-         <Link className="text-[#110829] text-[18px] cursor-pointer hover:text-[#7A3BFF] "
+        <div className="block py-3">
+         <Link className="text-[#E6E8EE] bg-[#1A1D2B] border border-[#2A2F45] py-3  px-8 rounded-md text-[16px] cursor-pointer hover:bg-[#20243A] hover:text-white/90 transition"
          to="/workspace/pricing"
          >Pricing</Link>   
         </div>
 
      
           {/* Plan */}
-          <div className="border border-[#7A3BFF] bg-white px-3 sm:px-7 md:px-10 py-4  rounded-lg  hover:bg-[#ECE8F2]">
-            <Link className="text-[#7A3BFF] text-[16px] cursor-pointer hover:bg-gray-50"
+          <div className="sm:block hidden border border-[#2A2F45] bg-[#7A3BFF] px-3 sm:px-7 md:px-10 py-3  rounded-lg  hover:bg-[#8F5BFF]">
+            <Link className="text-[#FFFFFF] text-[16px] cursor-pointer"
             to="/support/contact"
             >Contact Us</Link>
           </div>
 
-          {/* Profile */}
-       {!user ? (
-        /* NOT SIGNED IN */
-        <Link
-          className="bg-[#C9B8FF] px-6 py-4 text-[#492399] text-[16px] rounded-md hover:opacity-90 transition"
-          to="/signup"
-        >
-          Sign Up Now
-        </Link>
-      ) : (
-        /* SIGNED IN */
-        <Link className="bg-[#ECE8F2] rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center cursor-pointer hover:bg-black/20"
-        to="/settings"
-        >
-          <p className="text-[#110829] text-[16px] font-semibold">
-            {initials}
-          </p>
-        </Link>
-      )}
+        
+
+
+
 
         </div>
 

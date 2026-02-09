@@ -10,7 +10,7 @@ export default function Faq() {
 
     <div className=" flex justify-center ">
 
-     <h1 className="text-[30px] text-[#110829]  font-bold">FAQ</h1>  
+     <h1 className="text-[30px] text-[#F4F6FB]  font-bold">FAQ</h1>  
 
     </div>
 

@@ -1,224 +1,170 @@
-import Logo from "./../../assets/Logo.png"
-import Instagram from "./../../assets/footer/instagram.png"
-import Pinterest from "./../../assets/footer/pinterest.png"
-import X from "./../../assets/footer/x.png"
-import Youtube from "./../../assets/footer/youtube.png"
-import Reddit from "./../../assets/footer/reddit.png"
+import Logo from "./../../assets/Logo.png";
+import Instagram from "./../../assets/footer/instagram.png";
+import Pinterest from "./../../assets/footer/pinterest.png";
+import X from "./../../assets/footer/x.png";
+import Youtube from "./../../assets/footer/youtube.png";
+import Reddit from "./../../assets/footer/reddit.png";
 
-import { Link, NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
+
+export default function Footer() {
+  return (
+    <section className="bg-[#12141A] w-full">
+
+      <div className="w-full h-24 bg-[linear-gradient(to_bottom,rgba(14,16,22,0)_0%,#0E1016_100%)]" />
 
 
-
-export default function footer() {
-    return (
-        
-        <section className="">
-       
-       {/*Mobile*/}
-       
-       
+      {/* MOBILE */}
       <div className="block sm:hidden">
 
-    <div className="bg-[linear-gradient(to_bottom,rgba(236,232,242,0)_20%,#110829_100%)] w-full h-32 mx-auto"></div>
-                   
-        
-     <div className="bg-[#110829] w-full h-[370px] p-2 ">
+        <div className="w-full h-[370px] p-2 bg-[#0E1016]">
 
-     
-        
-        <div className="flex flex-row justify-center gap-8 sm:gap-16 md:gap-24 ">
+          <div className="flex flex-row justify-center gap-8">
 
-      
+            {/* Zylo */}
+            <div className="flex flex-col gap-3 mt-10 mr-4">
+              <h3 className="text-[22px] font-extrabold cursor-default">Tools</h3>
 
-        <div className="flex flex-col gap-3  mt-10 mr-4">
-        <h3 className="text-[22px] font-inter font-extrabold  cursor-default ">Zylo</h3>
-        <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap cursor-pointer hover:underline "
-        to="productphoto"
-        >Product Photos</Link> 
+              <Link to="/workspace/image-generator" className="text-[12px] hover:underline">
+                Image Generator
+              </Link>
+              <Link to="/workspace/productphoto" className="text-[12px] hover:underline">
+                Product Photos
+              </Link>
+              <Link to="/workspace/myproduct" className="text-[12px] hover:underline">
+                Own Product
+              </Link>
+              <Link to="/workspace/library" className="text-[12px] hover:underline">
+                Background Library
+              </Link>
+              <Link to="/workspace/creations" className="text-[12px] hover:underline">
+                Creations
+              </Link>
+            </div>
 
-        <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap cursor-pointer hover:underline"
-        to="myproduct"
-        >Own Product</Link>
+            {/* Pricing + Help */}
+            <div className="flex flex-col">
 
+              <div className="flex flex-col">
+                <h3 className="text-[22px] font-extrabold mt-10 cursor-default">
+                  Pricing
+                </h3>
+                <Link to="/workspace/pricing" className="text-[12px] mt-2 hover:underline">
+                  Plans
+                </Link>
+              </div>
 
-        <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap  cursor-pointer hover:underline"
-        to="library"
-        >Background Library</Link>
-       
-        <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap cursor-pointer hover:underline"
-        to="creations"
-        >Creations</Link>
-        
-        </div>
+              <div className="flex flex-col mt-10">
+                <h3 className="text-[22px] font-extrabold cursor-default">Help</h3>
 
-          
-          <div className="flex flex-col ">
-          
-          <div className="flex flex-col gap-1  ">
-        <h3 className="text-[22px] font-inter font-extrabold mt-10 w-[110px] cursor-default ">Pricing</h3>
-        <Link className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="pricing"
-        >Plans</Link> 
-    
-         </div>
+                <Link to="/contact" className="text-[12px] mt-2 hover:underline">
+                  Contact Us
+                </Link>
+                <Link to="/support" className="text-[12px] mt-2 hover:underline">
+                  Support Center
+                </Link>
+                <Link to="/help/feedback" className="text-[12px] mt-2 hover:underline">
+                  Feedback
+                </Link>
+                <Link to="/blog" className="text-[12px] mt-2 hover:underline">
+                  Blog
+                </Link>
+              </div>
 
-
-         <div className="flex flex-col gap-2  ">
-        <h3 className="text-[22px] font-inter font-extrabold mt-10 cursor-default">Help </h3>
-        <Link className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline sm:whitespace-nowrap"
-        to="/contact"
-        >Contact Us</Link> 
-
-        <Link className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline sm:whitespace-nowrap"
-        to="/support"
-        >Support Center</Link>
-
-        <Link className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline sm:whitespace-nowrap"
-        to="/help/feedback"
-        >Feedback</Link>
-
-
-          <Link className="text-[12px] font-normal font-inter mt-2 cursor-pointer hover:underline sm:whitespace-nowrap"
-        to="/blog"
-        >Blog</Link>
-
-        
-        </div>
-
-        </div>
-
-        
-
-     </div>
-
-     </div>
-
-        <div className="bg-[#575757] h-[1px] w-full  "></div>
-
-        <div className="bg-[#110829] w-full h-[100px] flex items-center">
-
-         
-         
-         
-    <div className="flex gap-2 ml-4 w-[150px] ">
-         <img src={Instagram} className="h-3 w-3 "/>
-         <img src={X} className="h-3 w-3 "/>   
-         <img src={Youtube} className="h-3 w-3 "/>   
-         <img src={Pinterest} className="h-3 w-3 "/>
-         <img src={Reddit} className="h-3 w-3 "/>   
+            </div>
           </div>
-         
-
-        <div className="flex flex-1 justify-center gap-4 sm:whitespace-nowrap ml-14 ">
-           <Link className=" text-[12px] cursor-pointer hover:underline text-[#868687]">Privacy Policy</Link>
-           <Link className=" text-[12px] cursor-pointer hover:underline text-[#868687]">Terms & Conditions</Link></div>
-
-         
-             
-      </div>
-
-
-      </div>
-
-
-
-       {/*SM AND HIGHER*/}
-
-     <div className="sm:block hidden">
-     
-      <div className="bg-[linear-gradient(to_bottom,rgba(17,8,41,0)_20%,#110829_100%)] w-full h-20 mx-auto lg:h-28 ">   </div>
-        
-     <div className="bg-[#110829] w-full h-[370px]  lg:h-[400px] p-2 ">
-
-        
-        
-        <div className="flex flex-row justify-center gap-40 sm:gap-20 sm:mt-10 md:mt-12 lg:mt-14">
-
-      
-
-        <div className="flex flex-col gap-3  ">
-        <h3 className="text-xl font-inter font-extrabold mt-10 cursor-default ">Zylo</h3>
-        <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline "
-        to="/workspace/productphoto"
-        >Product Photos</Link> 
-
-        <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="/workspace/myproduct"
-        >Own Product</Link>
-
-        <Link className="text-smn font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="/workspace/library"
-        >Background Library</Link>
-
-        <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="/workspace/creations"
-        >Creations</Link>
-        
         </div>
 
-          <div className="flex flex-col gap-3  ">
-        <h3 className="text-xl font-inter font-extrabold mt-10 w-[110px] cursor-default ">Pricing</h3>
-        <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="/workspace/pricing"
-        >Plans</Link> 
-    
-         </div>
+        {/* Bottom bar */}
+        <div className="border-t border-white/10 bg-[#0E1016] h-[100px] flex items-center">
 
-
-         <div className="flex flex-col gap-3 ">
-        <h3 className="text-xl font-inter font-extrabold mt-10 cursor-default">Help </h3>
-        <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="/contact"
-        >Contact Us</Link> 
-
-        <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="/support"
-        >Support Center</Link>
-        <Link className="text-smn font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="/help/feedback"
-        >Feedback</Link>
-             <Link className="text-smn font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="/blog"
-        >Blog</Link>
-        
-        </div>
-
-        
-
-     </div>
-
-     </div>
-
-        <div className="bg-[#575757] h-[1px] w-full  "></div>
-
-        <div className="bg-[#110829] w-full h-[100px] flex items-center">
-
-         
-         
-         
-    <div className="flex gap-3 ml-6 w-[150px]">
-         <img src={Instagram} className="h-4 w-4 md:h-5 md:w-5"/>
-         <img src={X} className="h-4 w-4 md:h-5 md:w-5 "/>   
-         <img src={Youtube} className="h-4 w-4 md:h-5 md:w-5 "/>   
-         <img src={Pinterest} className="h-4 w-4 md:h-5 md:w-5"/>
-         <img src={Reddit} className="h-4 w-4 md:h-5 md:w-5"/>   
+          <div className="flex gap-2 ml-4 w-[150px]">
+            <img src={Instagram} className="h-3 w-3" />
+            <img src={X} className="h-3 w-3" />
+            <img src={Youtube} className="h-3 w-3" />
+            <img src={Pinterest} className="h-3 w-3" />
+            <img src={Reddit} className="h-3 w-3" />
           </div>
-         
 
-        <div className="flex flex-1 justify-center gap-4">
-           <Link className=" text-sm md:text-base cursor-pointer hover:underline text-[#868687]">Privacy Policy</Link>
-           <Link className=" text-sm md:text-base cursor-pointer hover:underline text-[#868687]">Terms & Conditions</Link></div>
-
-
-           <div className="w-[150px]"></div>
-             
+          <div className="flex flex-1 justify-center gap-4 text-[#868687] text-[12px]">
+            <Link className="hover:underline">Privacy Policy</Link>
+            <Link className="hover:underline">Terms & Conditions</Link>
+          </div>
+        </div>
       </div>
 
+      {/* SM AND UP */}
+      <div className="hidden sm:block bg-[#0E1016]">
+
+        <div className="w-full h-[370px] lg:h-[400px] p-2">
+
+          <div className="flex justify-center gap-40 mt-14">
+
+            <div className="flex flex-col gap-3">
+              <h3 className="text-xl font-extrabold cursor-default">Tools</h3>
+
+               <Link to="/workspace/image-generator" className="hover:underline">
+                Image Generator
+              </Link>
+              <Link to="/workspace/productphoto" className="hover:underline">
+                Product Photos
+              </Link>
+              <Link to="/workspace/myproduct" className="hover:underline">
+                Own Product
+              </Link>
+              <Link to="/workspace/library" className="hover:underline">
+                Background Library
+              </Link>
+              <Link to="/workspace/creations" className="hover:underline">
+                Creations
+              </Link>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <h3 className="text-xl font-extrabold cursor-default">Pricing</h3>
+              <Link to="/workspace/pricing" className="hover:underline">
+                Plans
+              </Link>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <h3 className="text-xl font-extrabold cursor-default">Help</h3>
+
+              <Link to="/contact" className="hover:underline">
+                Contact Us
+              </Link>
+              <Link to="/support" className="hover:underline">
+                Support Center
+              </Link>
+              <Link to="/help/feedback" className="hover:underline">
+                Feedback
+              </Link>
+              <Link to="/blog" className="hover:underline">
+                Blog
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="border-t border-white/10 h-[100px] flex items-center bg-[#0E1016]">
+
+          <div className="flex gap-3 ml-6 w-[150px]">
+            <img src={Instagram} className="h-4 w-4 md:h-5 md:w-5" />
+            <img src={X} className="h-4 w-4 md:h-5 md:w-5" />
+            <img src={Youtube} className="h-4 w-4 md:h-5 md:w-5" />
+            <img src={Pinterest} className="h-4 w-4 md:h-5 md:w-5" />
+            <img src={Reddit} className="h-4 w-4 md:h-5 md:w-5" />
+          </div>
+
+          <div className="flex flex-1 justify-center gap-4 text-[#868687]">
+            <Link className="hover:underline">Privacy Policy</Link>
+            <Link className="hover:underline">Terms & Conditions</Link>
+          </div>
+
+          <div className="w-[150px]" />
+        </div>
       </div>
-
-
-        </section>
-        
-    
-    );
+    </section>
+  );
 }

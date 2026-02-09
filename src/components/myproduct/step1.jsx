@@ -67,12 +67,12 @@ export default function Step1({ onCreate, onEdit }) {
     <section className="px-10">
       {/* Header */}
       <div className="flex justify-between items-center mt-20 max-w-6xl">
-        <h1 className="text-[#110829] font-semibold">
+        <h1 className="text-[#F4F6FB] font-semibold">
           Your Products
         </h1>
 
         <div className="flex items-center">
-          <p className="text-[#4A4A55] px-4 font-semibold">
+          <p className="text-[#B7BBC6] px-4 font-semibold">
             {products.length}/{productsCap ?? "—"}
           </p>
 
@@ -81,8 +81,8 @@ export default function Step1({ onCreate, onEdit }) {
             disabled={atCap}
             className={`px-6 py-1 rounded-lg border ${
               atCap
-                ? "bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed"
-                : "bg-white text-[#7A3BFF] border-[#7A3BFF]"
+                ? "bg-[#12141A] text-[#7A7F8C] border-[#2A2F45] cursor-not-allowed"
+                : "bg-[#1A1D2B] text-[#7A3BFF] border-[#7A3BFF]"
             }`}
           >
             Add Product
@@ -92,11 +92,11 @@ export default function Step1({ onCreate, onEdit }) {
 
       {/* Content */}
       <div className="py-3">
-        <div className="bg-white border border-black py-8 max-w-6xl">
+        <div className="bg-[#141622] border border-[#1F2230] py-8 max-w-6xl">
           {fetching ? null : products.length === 0 ? (
             // Empty state
             <div className="flex flex-col items-center py-10">
-              <h2 className="text-[#110829]">
+              <h2 className="text-[#F4F6FB]">
                 No products yet
               </h2>
 
@@ -115,7 +115,7 @@ export default function Step1({ onCreate, onEdit }) {
               {products.map((p) => (
                 <div
                   key={p.id}
-                  className="group relative w-[140px] h-[180px] rounded-lg overflow-hidden border bg-white"
+                  className="group relative w-[140px] h-[180px] rounded-lg overflow-hidden shadow-lg border border-[#141622] bg-[#1F2230]"
                 >
                   {/* Image */}
                   {p.image_url ? (
@@ -131,7 +131,7 @@ export default function Step1({ onCreate, onEdit }) {
                   )}
 
                   {/* Title */}
-                  <div className="relative z-10 p-2 text-sm font-semibold text-[#110829] truncate">
+                  <div className="relative z-10 p-2 text-sm font-semibold text-[#F4F6FB] truncate">
                     {p.title || "Untitled"}
                   </div>
 
