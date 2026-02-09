@@ -63,7 +63,7 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
           Image
         </p>
         <Link
-          to="/image-generator"
+          to="/workspace/image-generator"
           className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
         >
           Create image
@@ -196,7 +196,7 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
     <div className="px-4 pb-4 space-y-3 ">
 
         <Link
-        to="/image-generator"
+        to="/workspace/image-generator"
         className="block bg-white rounded-lg px-4 py-3 shadow text-[#110829] hover:border-[#7A3BFF] border-[1px]"
       >
         Image Generator
