@@ -74,7 +74,7 @@ export const MODELS = {
     img: HiDream,
     credits: 1,
     traits: ["Very fast", "Clean realism", "Low cost", "Concept generation"],
-    supportedSizes: ["1:1", "21:9", "4:3", "16:9", "9:16", "21:9", "2:3"],
+    supportedSizes: ["1:1", "21:9", "4:3", "16:9", "9:16","2:3"],
     maxReferenceImages: 0,
   },
 

@@ -55,7 +55,7 @@ export default function TurnAnyIdeaIntoViralImage() {
           </p>
           <p className="text-[#4A4A55]">
             With a modern{" "}
-            <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               AI image generator
             </Link>, this process becomes repeatable, fast, and scalable.
           </p>

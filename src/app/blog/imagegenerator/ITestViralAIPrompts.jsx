@@ -150,7 +150,7 @@ export default function ITestViralAIPrompts() {
             scroll-stopping visuals in minutes.
           </p>
           <Link
-            to="/image-generator"
+            to="/workspace/image-generator"
             className="inline-block rounded-xl bg-[#7A3BFF] px-12 py-4 text-white font-semibold hover:opacity-90 transition"
           >
             Open the AI Image Generator

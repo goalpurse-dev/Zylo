@@ -124,7 +124,12 @@ const handoffRes = await fetch(EDGE_FN_URL, {
     airTag: provider.airTag,
     prompt: job.input?.subject,
     referenceImages,
-    settings: job.settings,
+ settings: {
+  ...(job.settings ?? {}),
+  width: job.input?.width,
+  height: job.input?.height,
+},
+
   }),
 });
 

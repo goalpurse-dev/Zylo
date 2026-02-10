@@ -308,7 +308,12 @@ export async function createImageJobSimple(params: {
   initImageFile?: File | null;
   initImageUrls?: string[];
   providerHint?: ImageSettings["provider_hint"];
+
+  // ✅ ADD THESE
+  width?: number;
+  height?: number;
 }): Promise<JobRow> {
+
   const link = getProviderLink(params.toolKey);
   if (!link) throw new Error(`Image provider not configured for ${params.toolKey}`);
 
@@ -335,6 +340,23 @@ export async function createImageJobSimple(params: {
 
   const size = params.size ?? "1024x1024";
 
+  // ✅ derive width/height from params or from size string
+let width = params.width;
+let height = params.height;
+
+if ((!width || !height) && size.includes("x")) {
+  const [w, h] = size.split("x").map((n) => parseInt(n, 10));
+  if (Number.isFinite(w) && Number.isFinite(h)) {
+    width = width ?? w;
+    height = height ?? h;
+  }
+}
+
+// ✅ final fallback
+width = width ?? 1024;
+height = height ?? 1024;
+
+
   let initUrl = params.init_image_url ?? null;
 
   if (!initUrl && Array.isArray(params.initImageUrls) && params.initImageUrls.length) {
@@ -346,16 +368,22 @@ export async function createImageJobSimple(params: {
     const pub = await publishToPublic(up.path);
     initUrl = pub.publicUrl;
   }
+  
 
-  const input: ImageInput = {
-    tool: "image",
-    subject: (params.subject || "").trim(),
-    style: params.style ?? null,
-    creation_type: CREATION_TYPES.PHOTO,
-    negative: DEFAULT_NEGATIVE_IMAGE,
-    brand: { id: null, use_palette: false },
-    init_image_url: initUrl,
-  };
+ const input: ImageInput = {
+  tool: "image",
+  subject: (params.subject || "").trim(),
+  style: params.style ?? null,
+  creation_type: CREATION_TYPES.PHOTO,
+  negative: DEFAULT_NEGATIVE_IMAGE,
+  brand: { id: null, use_palette: false },
+  init_image_url: initUrl,
+
+  // ✅ ADD THESE (even if ImageInput type doesn't include them, it's still stored)
+  width,
+  height,
+};
+
 
   if (!input.subject) throw new Error("Please provide a subject.");
 

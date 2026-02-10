@@ -66,7 +66,7 @@ export default function CreatorsBlowingUpWithAI() {
           </p>
           <p className="text-[#4A4A55]">
             Many creators rely on a single tool like an{" "}
-            <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               AI image generator
             </Link>{" "}
             to produce daily content at scale.
@@ -101,7 +101,7 @@ export default function CreatorsBlowingUpWithAI() {
               <p className="text-[#4A4A55]">
                 Instead of creating manually, they batch-generate visuals
                 using tools found on{" "}
-                <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+                <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
                   AI platforms
                 </Link>{" "}
                 and post consistently.
@@ -135,7 +135,7 @@ export default function CreatorsBlowingUpWithAI() {
           <p className="mt-6 text-[#4A4A55]">
             Most of them route traffic back to a single hub —
             usually an{" "}
-            <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               AI workspace
             </Link>{" "}
             where creation happens.
@@ -175,7 +175,7 @@ export default function CreatorsBlowingUpWithAI() {
           </p>
 
           <Link
-            to="/image-generator"
+            to="/workspace/image-generator"
             className="inline-block rounded-xl bg-[#7A3BFF] px-10 py-4 text-white font-semibold hover:opacity-90 transition"
           >
             Try the AI Image Generator

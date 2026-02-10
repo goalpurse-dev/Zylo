@@ -14,7 +14,7 @@
   </url>
 
     <url>
-    <loc>https://www.tryzyvo.com/image-generator</loc>
+    <loc>https://www.tryzyvo.com/workspace/image-generator</loc>
     <priority>0.9</priority>
   </url>
 
@@ -207,6 +207,15 @@
 
          <url>
     <loc>https://www.tryzyvo.com/blog/how-to-turn-any-idea-into-a-viral-image-using-ai</loc>
+    <priority>0.8</priority>
+
+    
+         <url>
+    <loc>https://www.tryzyvo.com/blog/all-ai-image-trends-you-need-to-jump-on</loc>
+    <priority>0.8</priority>
+
+             <url>
+    <loc>https://www.tryzyvo.com/blog/why-your-posts-dont-go-viral</loc>
     <priority>0.8</priority>
 
 

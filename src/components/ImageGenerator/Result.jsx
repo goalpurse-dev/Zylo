@@ -28,20 +28,26 @@ function isExpired(job) {
 }
 
 function getAspectStyle(item) {
-  const size =
-    item?.settings?.size ||
-    item?.input?.size ||
-    "";
+  const w = item?.input?.width;
+  const h = item?.input?.height;
 
-  const match = String(size).match(/(\d+)\s*[x×]\s*(\d+)/i);
-  if (!match) return {};
+  // ✅ primary source: real dimensions
+  if (Number(w) && Number(h)) {
+    return { aspectRatio: `${w} / ${h}` };
+  }
 
-  const w = Number(match[1]);
-  const h = Number(match[2]);
-  if (!w || !h) return {};
+  // ⚠️ fallback: legacy string size
+  const size = item?.settings?.size;
+  if (typeof size === "string" && size.includes("x")) {
+    const [sw, sh] = size.split("x").map(Number);
+    if (sw && sh) {
+      return { aspectRatio: `${sw} / ${sh}` };
+    }
+  }
 
-  return { aspectRatio: `${w} / ${h}` };
+  return { aspectRatio: "1 / 1" };
 }
+
 
 /* =============================== CARD =============================== */
 
@@ -82,21 +88,18 @@ const isFailed =
     <div className="relative rounded-xl overflow-hidden bg-black group transition-opacity duration-500">
      <div className="relative w-full bg-black overflow-hidden rounded-xl">
   {/* ASPECT RATIO SPACER */}
-  <div
-    className="w-full"
-    style={{
-      paddingTop: (() => {
-        const size =
-          item?.settings?.size ||
-          item?.input?.size ||
-          "1:1";
+<div
+  className="w-full"
+  style={{
+    aspectRatio: (() => {
+      const w = item?.input?.width;
+      const h = item?.input?.height;
+      if (w && h) return `${w} / ${h}`;
+      return "1 / 1";
+    })(),
+  }}
+/>
 
-        if (size === "16:9") return "56.25%";
-        if (size === "9:16") return "177.78%";
-        return "100%"; // 1:1
-      })(),
-    }}
-  />
 
   {/* ABSOLUTE CONTENT */}
   <div className="absolute inset-0">

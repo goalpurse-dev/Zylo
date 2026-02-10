@@ -157,7 +157,7 @@ useEffect(() => {
       >
         <div
           className={`
-            sticky top-0 z-30
+            sticky top-0 z-50
             transition-transform duration-300
             ${showTopRow ? "translate-y-0" : "-translate-y-full"}
             lg:translate-y-0

@@ -2,3 +2,5 @@
 export * from "./generator";
 export * from "./modelsConfig";
 export * from "./styles";
+export * from "./sizes"; // ✅ ADD THIS
+

@@ -53,7 +53,7 @@ export default function ScrollStoppingImagesNoDesign() {
           </p>
           <p className="text-[#4A4A55]">
             With the right prompts and a tool like an{" "}
-            <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               AI image generator
             </Link>, you can create high-impact visuals in minutes.
           </p>
@@ -105,7 +105,7 @@ export default function ScrollStoppingImagesNoDesign() {
             <p className="text-[#4A4A55]">
               Many creators reuse the same prompt structure and generate
               dozens of variations using{" "}
-              <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
                 AI image platforms
               </Link>.
             </p>
@@ -141,7 +141,7 @@ export default function ScrollStoppingImagesNoDesign() {
             and let AI handle the rest.
           </p>
           <Link
-            to="/image-generator"
+            to="/workspace/image-generator"
             className="inline-block rounded-xl bg-[#7A3BFF] px-12 py-4 text-white font-semibold hover:opacity-90 transition"
           >
             Try the AI Image Generator

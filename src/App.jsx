@@ -135,6 +135,8 @@ import ScrollStoppingIMagesNoDesign from "./app/blog/imagegenerator/ScrollStoppi
 import WhyAIImagesOutperformRealPhotos from "./app/blog/imagegenerator/WhyAIImagesOutperformRealPhotos.jsx";
 import TheSecretPromptsBehindViralAIImages from "./app/blog/imagegenerator/TheSecretPromptsBehindViralAIImages.jsx";
 import TurnAnyIdeaIntoViralImage from "./app/blog/imagegenerator/TurnAnyIdeaIntoViralImage.jsx";
+import AllImageTrendsYouNeedTojumpOn from "./app/blog/imagegenerator/AIImageTrendsYouNeedToJumpOn.jsx";
+import WhyYourPostsDontGoViral from "./app/blog/imagegenerator/WhyYourPostsDontGoViral.jsx";
 
 
 
@@ -175,7 +177,7 @@ function GuestOnly({ children }) {
   if (loading) return null; // or spinner, NOT empty div
 
   if (user) {
-    return <Navigate to="/workspace" replace />;
+    return <Navigate to="/workspace/home" replace />;
   }
 
   return children;
@@ -303,8 +305,8 @@ function AppWithRouting() {
         <Route path="/blog/why-ai-images-outperform-real-photos" element={<WhyAIImagesOutperformRealPhotos/>} />  
         <Route path="/blog/the-secret-prompts-behind-viral-ai-images" element={<TheSecretPromptsBehindViralAIImages/>} />
         <Route path="/blog/how-to-turn-any-idea-into-a-viral-image-using-ai" element={<TurnAnyIdeaIntoViralImage/>} />
-
-
+        <Route path="/blog/all-ai-image-trends-you-need-to-jump-on" element={<AllImageTrendsYouNeedTojumpOn/>} />
+        <Route path="/blog/why-your-posts-dont-go-viral" element={<WhyYourPostsDontGoViral/>} />
 
 
 

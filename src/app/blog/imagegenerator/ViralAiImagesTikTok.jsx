@@ -62,7 +62,7 @@ export default function ViralAiImagesTikTok() {
         <p className="text-[#4A4A55] mb-6">
           Creators are using AI to post daily without photoshoots, models,
           cameras, or editing software. Many of them rely on simple tools like
-          an <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+          an <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
             AI image generator
           </Link> to produce content in seconds.
         </p>
@@ -85,7 +85,7 @@ export default function ViralAiImagesTikTok() {
         <p className="text-[#4A4A55] mb-6">
           Most viral creators reuse the same visual style consistently.
           This builds recognition and boosts engagement over time.
-          Tools found on <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+          Tools found on <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
             AI creative platforms
           </Link> make this extremely easy.
         </p>
@@ -107,7 +107,7 @@ export default function ViralAiImagesTikTok() {
 
         <p className="text-[#4A4A55] mb-6">
           The key is volume and consistency. Many creators generate dozens of
-          images daily using tools available on <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+          images daily using tools available on <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
             AI image generation tools
           </Link>, then schedule their best ones.
         </p>
@@ -133,7 +133,7 @@ export default function ViralAiImagesTikTok() {
 
         <p className="text-[#4A4A55] mb-6">
           Most creators link their audience to a single destination —
-          often a tool or platform like <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+          often a tool or platform like <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
             this AI workspace
           </Link> — and scale from there.
         </p>
@@ -152,7 +152,7 @@ export default function ViralAiImagesTikTok() {
         </p>
 
         <Link
-          to="/image-generator"
+          to="/workspace/image-generator"
           className="inline-block rounded-xl bg-[#7A3BFF] px-8 py-4 text-white font-semibold hover:opacity-90 transition"
         >
           Start Creating Viral AI Images

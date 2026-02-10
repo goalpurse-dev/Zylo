@@ -51,7 +51,7 @@ export default function TheSecretPromptsBehindViralAIImages() {
           </p>
           <p className="text-[#4A4A55]">
             With the right structure and a modern{" "}
-            <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               AI image generator
             </Link>, even simple ideas can outperform real photos.
           </p>
@@ -100,7 +100,7 @@ export default function TheSecretPromptsBehindViralAIImages() {
               This creates relatability and scale, making viewers stop
               scrolling. It’s one of the most repeated patterns across
               successful creators using{" "}
-              <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
                 AI image platforms
               </Link>.
             </p>
@@ -193,7 +193,7 @@ export default function TheSecretPromptsBehindViralAIImages() {
             top creators rely on every day.
           </p>
           <Link
-            to="/image-generator"
+            to="/workspace/image-generator"
             className="inline-block rounded-xl bg-[#7A3BFF] px-14 py-4 text-white font-semibold hover:opacity-90 transition"
           >
             Open the AI Image Generator

@@ -238,12 +238,7 @@ const job = await generateImageFromUI({
   refImages: selected.map((x) => x.url),
 });
 
-// 👇 ADD THIS
-job.settings = {
-  ...(job.settings ?? {}),
-  size: selectedSize,
-  creation_type: "photo",
-};
+
 
 onJobCreated?.(job);
 
@@ -338,7 +333,7 @@ useEffect(() => {
 </button>
       </div>
      
- <div className="w-full rounded-2xl bg-[#1A1D2B]/20 backdrop-blur-xl border border-white/10 shadow-lg">
+ <div className="w-full rounded-2xl bg-[#1A1D2B]/40 backdrop-blur-xl border border-white/10 shadow-lg">
  <textarea
   ref={textareaRef}
   value={prompt}

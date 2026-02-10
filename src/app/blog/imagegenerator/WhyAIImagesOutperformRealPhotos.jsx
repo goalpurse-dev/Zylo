@@ -54,7 +54,7 @@ export default function WhyAIImagesOutperformRealPhotos() {
           </p>
           <p className="text-[#4A4A55]">
             Using a modern{" "}
-            <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               AI image generator
             </Link>, creators can now outperform traditional photography
             without cameras, models, or editing software.
@@ -104,7 +104,7 @@ export default function WhyAIImagesOutperformRealPhotos() {
             <p className="text-[#4A4A55]">
               Creators can batch-generate hundreds of visuals in the same
               style using{" "}
-              <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
                 AI platforms
               </Link>, feeding algorithms exactly what they want.
             </p>
@@ -182,7 +182,7 @@ export default function WhyAIImagesOutperformRealPhotos() {
           <p className="text-[#4A4A55]">
             Whether you’re building a brand, a faceless page, or a business,
             mastering AI visuals through a single{" "}
-            <Link to="/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               AI creation hub
             </Link> is becoming essential.
           </p>

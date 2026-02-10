@@ -605,6 +605,41 @@ const [loading, setLoading] = useState(false);
           </div>
           </div>
           </Link>
+
+          
+                                                                  {/* Blog Card 39*/}
+
+                <Link to="/blog/all-ai-image-trends-you-need-to-jump-on" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">All AI Image Trends You Need to Jump On
+
+</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn all the AI image trends you need to jump on in 2026</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">10.02/2026</p>
+          </div>
+          </div>
+          </Link>
+
+                                                                            {/* Blog Card 40*/}
+
+                <Link to="/blog/why-your-posts-dont-go-viral" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Why Your Posts Don't Go Viral
+
+</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn why your posts don't go viral and how to fix it</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">10.02/2026</p>
+          </div>
+          </div>
+          </Link>
  
  
           

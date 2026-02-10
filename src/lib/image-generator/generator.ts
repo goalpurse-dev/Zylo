@@ -4,6 +4,7 @@ import { buildFinalImagePrompt } from "./promptBuilder";
 import { createImageJobSimple } from "../jobs";
 import { uploadBlobRefsToPublicUrls } from "./uploadRefs"; // 👈 REQUIRED
 import { IMAGE_STYLES } from "./styles";
+import { IMAGE_SIZES } from "./sizes";
 
 
 export async function generateImageFromUI(params: {
@@ -28,16 +29,31 @@ export async function generateImageFromUI(params: {
     ? await uploadBlobRefsToPublicUrls(params.refImages)
     : [];
 
+const sizeConfig = IMAGE_SIZES[params.size] ?? IMAGE_SIZES["1:1"];
+
 return createImageJobSimple({
   subject: finalPrompt,
   toolKey,
-  size: params.size,
   initImageUrls: uploadedRefs,
+
+  // ✅ either pass width/height
+  width: sizeConfig.width,
+  height: sizeConfig.height,
+
+  // ✅ and optionally keep size string for UI/history
+  size: `${sizeConfig.width}x${sizeConfig.height}`,
+
   providerHint: {
-    settings: {
-      quality: "high",
-    },
-  },
+    engine: "runware",
+    mode: "t2i",
+    edgeFn: "runware-image", // or leave if your getProviderLink handles it
+    airTag: UI_MODEL_TO_TOOLKEY[params.modelKey] as any, // (you already have toolKey)
+    settings: { quality: "high" },
+  } as any,
 });
+
+
+
+
 
 }
