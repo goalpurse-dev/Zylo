@@ -25,10 +25,9 @@ import i21 from "../../assets/inspiration/21.png";
 import i22 from "../../assets/inspiration/22.png";
 import i23 from "../../assets/inspiration/23.png";
 import i24 from "../../assets/inspiration/24.png";
+import i25 from "../../assets/inspiration/25.png";
+import i26 from "../../assets/inspiration/26.png";
 
-
-import BeforeAfter3 from "../../assets/blog/productphoto/beforeafter3.png";
-import Same from "../../assets/blog/productphoto/same.png";
 
 import { MasonryImage } from "./../ImageGenerator/MasonryImage";
 
@@ -147,7 +146,16 @@ const createdImages = [
     prompt: "create image of dog, cinematic lighting, dramatic composition, ultra-realistic, clean composition, sharp focus, high detail "
   },
 
+    {
+    src: i25,
+    prompt: "create image of 90's gangster, realistic style, high detail, photorealistic rendering, clean composition, sharp focus, high detail "
+  },
+
   
+    {
+    src: i26,
+    prompt: "Realistic travel photo of a man seen from behind walking along the Great Wall, backpack visible, misty mountains ahead, calm and emotional mood, cinematic depth "
+  },
   
 ];
 

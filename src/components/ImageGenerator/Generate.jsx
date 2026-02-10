@@ -178,7 +178,7 @@ const ModelCard = ({
 
 
 
-export default function Generate({ prompt, setPrompt, onJobCreated }) {
+export default function Generate({ prompt, setPrompt, onJobCreated, setActiveJobId }) {
 
 
     
@@ -199,6 +199,7 @@ const [isGenerating, setIsGenerating] = useState(false);
 
 
 const maxRefImages = selectedModel.maxReferenceImages;
+const canAddImages = maxRefImages > 0;
 const [openReferenceModal, setOpenReferenceModal] = useState(false);
 const STYLE_KEYS = Object.keys(IMAGE_STYLES);
 
@@ -211,18 +212,54 @@ const {
   addImage,
   toggleSelect,
 } = useReferenceImages(maxRefImages);
-
-const handleUpload = (e) => {
+const handleUpload = async (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
 
-  const url = URL.createObjectURL(file);
+  try {
+    const { data: auth } = await supabase.auth.getUser();
+    const uid = auth?.user?.id;
+    if (!uid) return;
 
-  addImage({
-    id: crypto.randomUUID(),
-    url,
-  });
+    const ext = file.name.split(".").pop() || "png";
+    const path = `${uid}/${crypto.randomUUID()}.${ext}`;
+
+    // 1) upload to storage
+    const { error: upErr } = await supabase.storage
+      .from("reference-images")
+      .upload(path, file, { upsert: false });
+
+    if (upErr) throw upErr;
+
+    // 2) public url
+    const { data: pub } = supabase.storage
+      .from("reference-images")
+      .getPublicUrl(path);
+
+    const publicUrl = pub?.publicUrl;
+    if (!publicUrl) throw new Error("No public URL returned");
+
+    // 3) insert DB row (forever)
+    const { data: row, error: dbErr } = await supabase
+      .from("reference_images")
+      .insert({ user_id: uid, file_url: publicUrl })
+      .select("id, file_url")
+      .single();
+
+    if (dbErr) throw dbErr;
+
+    // 4) add to UI
+    addImage({
+      id: row.id,
+      url: row.file_url,
+    });
+  } catch (err) {
+    console.error("Reference upload failed:", err);
+  } finally {
+    e.target.value = ""; // allow same file again
+  }
 };
+
 
 const handleGenerate = async () => {
   if (!prompt.trim()) return;
@@ -236,11 +273,12 @@ const job = await generateImageFromUI({
   style: selectedStyle,
   size: selectedSize,
   refImages: selected.map((x) => x.url),
+  
 });
 
-
-
+setActiveJobId?.(job.id);
 onJobCreated?.(job);
+
 
   } catch (err) {
     console.error("Generate failed:", err);
@@ -255,6 +293,12 @@ onJobCreated?.(job);
     textareaRef.current.style.height =
       textareaRef.current.scrollHeight + "px";
   }, [prompt]);
+
+  useEffect(() => {
+  if (selectedModel.maxReferenceImages === 0) {
+    setOpenReferenceModal(false);
+  }
+}, [selectedModelKey]);
 
    
 
@@ -325,12 +369,25 @@ useEffect(() => {
 
       <div className="flex items-center gap-2 ">
       <div className="flex justify-center items-center">
-     <button
-  onClick={() => setOpenReferenceModal(true)}
-  className="bg-[#1A1D2B] hover:bg-[#1A1D2B]/80 p-2 rounded-full border-[#282C40] border-[1px] shadow-lg"
+
+<button
+  disabled={!canAddImages}
+  onClick={() => {
+    if (!canAddImages) return;
+    setOpenReferenceModal(true);
+  }}
+  className={`
+    p-2 rounded-full border border-[#282C40] shadow-lg transition
+    ${
+      canAddImages
+        ? "bg-[#1A1D2B] hover:bg-[#1A1D2B]/80 cursor-pointer"
+        : "bg-[#1A1D2B]/40 opacity-40 cursor-not-allowed"
+    }
+  `}
 >
   <ImagePlusIcon className="h-5 w-5 text-white" />
 </button>
+
       </div>
      
  <div className="w-full rounded-2xl bg-[#1A1D2B]/40 backdrop-blur-xl border border-white/10 shadow-lg">
@@ -738,7 +795,7 @@ right-1/2 translate-x-1/2
   </div>
      
     </div>
-    {openReferenceModal && (
+   {openReferenceModal && canAddImages && (
   <ReferenceImageModal
     open={openReferenceModal}
     onClose={() => setOpenReferenceModal(false)}
@@ -749,6 +806,7 @@ right-1/2 translate-x-1/2
     onToggle={toggleSelect}
   />
 )}
+
 
     </section>
   );

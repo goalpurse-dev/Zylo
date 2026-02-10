@@ -48,6 +48,31 @@ function getAspectStyle(item) {
   return { aspectRatio: "1 / 1" };
 }
 
+function scrollToElementWithinContainer(el, container, topOffset = 80) {
+  if (!el) return;
+
+  const c = container || window;
+
+  // scrolling inside a div
+  if (c !== window && c?.getBoundingClientRect) {
+    const cRect = c.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+
+    const delta = elRect.top - cRect.top - topOffset;
+
+    // ✅ only scroll a little (no big jumps)
+    c.scrollBy({ top: delta, behavior: "smooth" });
+    return;
+  }
+
+  // fallback: window scroll
+  const elRect = el.getBoundingClientRect();
+  const delta = elRect.top - topOffset;
+
+  window.scrollBy({ top: delta, behavior: "smooth" });
+}
+
+
 
 /* =============================== CARD =============================== */
 
@@ -199,11 +224,10 @@ const isFailed =
 
 /* =============================== MAIN =============================== */
 
-export default function Result({ results, shouldAutoScrollRef }) {
+export default function Result({ results, activeJobId }) {
   const latestRef = useRef(null);
- 
 
-  // ✅ ALWAYS compute hooks first
+  // ✅ filter valid photo jobs
   const photoResults = useMemo(
     () =>
       Array.isArray(results)
@@ -216,57 +240,60 @@ export default function Result({ results, shouldAutoScrollRef }) {
     [results]
   );
 
- useEffect(() => {
-  if (!shouldAutoScrollRef?.current) return;
-  if (!latestRef.current) return;
-  if (photoResults.length === 0) return;
+const cardRefs = useRef({});
 
-  latestRef.current.scrollIntoView({
-    behavior: "smooth",
-    block: "start",
-  });
+useEffect(() => {
+  if (!activeJobId) return;
 
-  // 👇 small extra nudge down
-  setTimeout(() => {
-    const scroller =
-      document.querySelector("[data-workspace-scroll]") || window;
+  let attempts = 0;
 
-    const OFFSET = 40; // ← tweak this (20–80 feels good)
-
-    if (scroller === window) {
-      window.scrollBy({ top: OFFSET, behavior: "smooth" });
-    } else {
-      scroller.scrollBy({ top: OFFSET, behavior: "smooth" });
+  const tryScroll = () => {
+    const el = cardRefs.current[activeJobId];
+    if (!el) {
+      if (attempts < 10) {
+        attempts++;
+        requestAnimationFrame(tryScroll);
+      }
+      return;
     }
-  }, 60);
 
-  shouldAutoScrollRef.current = false;
-}, [photoResults.length]);
+    el.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  };
 
-  // ✅ EARLY RETURNS AFTER hooks
+  requestAnimationFrame(tryScroll);
+}, [activeJobId, photoResults.length]);
+
+
+
   if (!Array.isArray(results) || results.length === 0) return null;
   if (photoResults.length === 0) return null;
 
   return (
     <div className="w-full bg-[#12141A] p-4">
       <h1 className="text-[#F4F6FB] font-semibold text-[20px] mb-4">
-       Recent Creations
+        Recent Creations
       </h1>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {photoResults.map((item, i) => {
-          const isLatest = i === photoResults.length - 1;
+        {photoResults.map((item) => (
+  <div
+    key={item.id}
+    ref={(el) => {
+      if (el) cardRefs.current[item.id] = el;
+    }}
+  >
+    <ResultCard item={item} />
+  </div>
+))}
 
-          return (
-            <div key={item.id} ref={isLatest ? latestRef : null}>
-              <ResultCard item={item} />
-            </div>
-          );
-        })}
       </div>
     </div>
   );
 }
+
 
 
 
