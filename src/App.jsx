@@ -137,8 +137,8 @@ import TheSecretPromptsBehindViralAIImages from "./app/blog/imagegenerator/TheSe
 import TurnAnyIdeaIntoViralImage from "./app/blog/imagegenerator/TurnAnyIdeaIntoViralImage.jsx";
 import AllImageTrendsYouNeedTojumpOn from "./app/blog/imagegenerator/AIImageTrendsYouNeedToJumpOn.jsx";
 import WhyYourPostsDontGoViral from "./app/blog/imagegenerator/WhyYourPostsDontGoViral.jsx";
-
-
+import BestAIImageGeneratorForSocialMedia from "./app/blog/imagegenerator/BestAIImageGeneratorForSocialMedia.jsx"; "./app/blog/imagegenerator/WhyYourPostsDontGoViral.jsx";
+import GenerateHighQualityImagesWithAI from "./app/blog/imagegenerator/GenerateHighQualityImagesWithAI.jsx";
 
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -307,8 +307,8 @@ function AppWithRouting() {
         <Route path="/blog/how-to-turn-any-idea-into-a-viral-image-using-ai" element={<TurnAnyIdeaIntoViralImage/>} />
         <Route path="/blog/all-ai-image-trends-you-need-to-jump-on" element={<AllImageTrendsYouNeedTojumpOn/>} />
         <Route path="/blog/why-your-posts-dont-go-viral" element={<WhyYourPostsDontGoViral/>} />
-
-
+        <Route path="/blog/best-ai-image-generator-for-social-media" element={<BestAIImageGeneratorForSocialMedia/>} />
+        <Route path="/blog/how-to-generate-high-quality-images-with-ai" element={<GenerateHighQualityImagesWithAI/>} />
 
 
 

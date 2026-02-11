@@ -640,6 +640,40 @@ const [loading, setLoading] = useState(false);
           </div>
           </div>
           </Link>
+
+                                                                                      {/* Blog Card 41*/}
+
+                <Link to="/blog/best-ai-image-generator-for-social-media" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Best AI Image Generator for Social Media Content
+
+</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how to choose the best AI image generator for social media content in 2026</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">11.02/2026</p>
+          </div>
+          </div>
+          </Link>
+
+                                                {/* Blog Card 42*/}
+
+                <Link to="/blog/how-to-generate-high-quality-images-with-ai" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">How to Generate High-Quality Images With AI in Seconds
+
+</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how to generate high-quality images with AI in seconds</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">11.02/2026</p>
+          </div>
+          </div>
+          </Link>
  
  
           
