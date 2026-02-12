@@ -216,13 +216,14 @@ export default function Image() {
   =============================== */
   return (
     <div className="w-full min-h-screen bg-[#12141A]">
-      <Generate
-  prompt={prompt}
-  setPrompt={setPrompt}
-  onJobCreated={addOptimisticJob}
-   setActiveJobId={setActiveJobId}
-/>
-
+<div className="pt-1 md:pt-4">
+  <Generate
+    prompt={prompt}
+    setPrompt={setPrompt}
+    onJobCreated={addOptimisticJob}
+    setActiveJobId={setActiveJobId}
+  />
+</div>
       {results.length > 0 && (
         <div className="mt-10">
         <Result

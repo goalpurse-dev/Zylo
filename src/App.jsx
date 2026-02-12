@@ -90,6 +90,7 @@ import Step2 from "./pages/workspace/step2.jsx"
 import Step3 from "./pages/workspace/step3.jsx"
 import Step21 from "./pages/workspace/myproduct/step1.jsx"
 import Step31 from "./pages/workspace/myproduct/step2.jsx"
+import ImageGenTest from "./pages/image-gen-test.jsx"
 
 
 // blogs
@@ -309,6 +310,7 @@ function AppWithRouting() {
         <Route path="/blog/why-your-posts-dont-go-viral" element={<WhyYourPostsDontGoViral/>} />
         <Route path="/blog/best-ai-image-generator-for-social-media" element={<BestAIImageGeneratorForSocialMedia/>} />
         <Route path="/blog/how-to-generate-high-quality-images-with-ai" element={<GenerateHighQualityImagesWithAI/>} />
+        <Route path="/workspace/image-gen-test" element={<ImageGenTest/>} />
 
 
 

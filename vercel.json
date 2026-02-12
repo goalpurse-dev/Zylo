@@ -1,4 +1,11 @@
 {
+  "redirects": [
+    {
+      "source": "/image-generator",
+      "destination": "/workspace/image-generator",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",

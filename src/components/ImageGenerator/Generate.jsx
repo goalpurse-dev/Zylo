@@ -1,4 +1,5 @@
 import {  useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useRef, useEffect } from "react";
 import { MODELS } from "../../lib/image-generator/modelsConfig";
 import { useReferenceImages } from "../../components/reference-images/useReferenceImages";
@@ -181,7 +182,9 @@ const ModelCard = ({
 export default function Generate({ prompt, setPrompt, onJobCreated, setActiveJobId }) {
 
 
-    
+const location = useLocation();
+const navigate = useNavigate();
+
 const [settingsOpen, setSettingsOpen] = useState(false);
 const [activeMenu, setActiveMenu] = useState(null); 
 
@@ -338,396 +341,314 @@ useEffect(() => {
 }, [settingsOpen]);
 
   return (
-    <section>
-   
-    {/* Bg image */}
+  <section>
 
-    <div className="relative w-full h-[500px] md:h-[600px] ">
-      {/* Bottom blend into page bg */}
-<div className="
-  absolute bottom-0 left-0 right-0
-  h-40
-  bg-[linear-gradient(to_bottom,rgba(18,20,26,0)_0%,#12141A_100%)]
-  z-30
-" />
-    <img src={Bg} className="absolute inset-0 w-full h-full object-cover z-10 "></img> 
-    <div className="absolute inset-0 bg-[#12141A]/60 z-20"></div>  
-    
-     {/* Content */}
+    {(openModel || openStyle || openSize) && (
+  <div
+    onClick={() => {
+      setOpenModel(false)
+      setOpenStyle(false)
+      setOpenSize(false)
+    }}
+    className="fixed inset-0 bg-black/0 backdrop-blur-sm z-40"
+  />
+)}
+
+
+    {/* Background */}
+    <div className="relative w-full ">
+
+
      
-     <div className="flex flex-col justify-center items-center h-full w-full">
-      <div className="relative z-30 font-bold text-[36px] text-white">
-   Bring Ideas to Life
+
+      {/* CONTENT */}
+      <div className="flex flex-col items-center w-full relative  pt-2 ">
+
+
+
+        <div className="w-full flex justify-center mt-4 px-4">
+          <div className="w-full max-w-[900px] bg-[#151822] border border-[#1F2230] rounded-3xl p-6 shadow-2xl space-y-6">
+
+         {/* MODE SELECTOR */}
+<div className="grid grid-cols-3 gap-3">
+  {[
+    {
+      label: "Image",
+      icon: Image,
+      base: "from-purple-500/10 via-purple-500/10",
+      active: "from-purple-500/40 via-purple-500/20",
+      path: "/workspace/image-generator",
+    },
+    {
+      label: "Video",
+      icon: Wand2,
+      base: "from-indigo-500/10 via-indigo-500/10",
+      active: "from-indigo-500/40 via-indigo-500/10",
+      path: "/workspace/video-generator",
+    },
+    {
+      label: "Product",
+      icon: BoxSelect,
+      base: "from-emerald-500/10 via-emerald-500/10",
+      active: "from-emerald-500/40 via-emerald-500/10",
+      path: "/workspace/product",
+    },
+  ].map((item) => {
+    const Icon = item.icon;
+    const isActive = location.pathname === item.path;
+
+    return (
+      <button
+        key={item.label}
+        onClick={() => navigate(item.path)}
+        className={`
+          relative overflow-hidden flex flex-col items-center justify-center
+          rounded-2xl py-3 border transition-all duration-300
+          ${
+            isActive
+              ? "border-[#7A3BFF] shadow-[0_0_14px_rgba(122,59,255,0.35)]"
+              : "border-[#232635] hover:border-white/20"
+          }
+          bg-[#141722]
+        `}
+      >
+        {/* Gradient Overlay */}
+        <div
+          className={`
+            absolute inset-0 bg-gradient-to-t 
+            ${isActive ? item.active : item.base}
+            to-transparent
+            transition-all duration-300
+          `}
+        />
+
+        <Icon className="w-5 h-5 mb-1 text-white relative z-10" />
+        <p className="text-sm text-white relative z-10">
+          {item.label}
+        </p>
+      </button>
+    );
+  })}
+</div>
+
+
+
+          {/* PROMPT */}
+<div
+  className="relative rounded-2xl p-[1px]
+             bg-gradient-to-br from-purple-500/20 to-transparent
+             hover:from-purple-500/30 transition-all duration-300"
+>
+  <div
+    className="bg-[#1A1E2A] border border-[#232635]
+               rounded-2xl p-5 transition-all duration-300
+               hover:border-purple-500/40
+               focus-within:border-purple-500/60
+               focus-within:shadow-lg
+               focus-within:shadow-purple-500/20"
+  >
+    <textarea
+      ref={textareaRef}
+      value={prompt}
+      onChange={(e) => setPrompt(e.target.value)}
+      placeholder="Describe what you want to create..."
+      rows={4}   // 🔥 taller
+      className="w-full min-h-[120px]   // 🔥 force visual height
+                 bg-transparent outline-none
+                 text-sm text-white
+                 placeholder-[#6B7280]
+                 resize-none"
+    />
   </div>
+</div>
 
-<div className="relative z-40 w-full flex justify-center mt-10">
-  <div className="w-full max-w-[900px] mx-4 sm:mx-6 md:mx-8 py-2 bg-[#ECE8F2]/20 backdrop-blur-xl rounded-2xl shadow-lg">
-    
-    {/* INNER CONTENT WRAPPER */}
-    <div className="h-full p-4 flex flex-col  gap-4">
-
-
-      <div className="flex items-center gap-2 ">
-      <div className="flex justify-center items-center">
-
+{/* IMPORT IMAGE */}
 <button
   disabled={!canAddImages}
   onClick={() => {
-    if (!canAddImages) return;
-    setOpenReferenceModal(true);
+    if (!canAddImages) return
+    setOpenReferenceModal(true)
   }}
   className={`
-    p-2 rounded-full border border-[#282C40] shadow-lg transition
+    w-full rounded-2xl border-2 border-dashed
+    border-[#2A2E3C]
+    bg-[#141722]
+    py-6
+    flex flex-col items-center justify-center
+    transition-all duration-300
     ${
       canAddImages
-        ? "bg-[#1A1D2B] hover:bg-[#1A1D2B]/80 cursor-pointer"
-        : "bg-[#1A1D2B]/40 opacity-40 cursor-not-allowed"
+        ? "hover:border-purple-500/40 hover:bg-[#171A24] cursor-pointer"
+        : "opacity-40 cursor-not-allowed"
     }
   `}
 >
-  <ImagePlusIcon className="h-5 w-5 text-white" />
+  <ImagePlusIcon className="w-6 h-6 text-[#9CA3AF] mb-2" />
+  <p className="text-sm text-[#9CA3AF]">
+    Add visual references
+  </p>
 </button>
 
-      </div>
-     
- <div className="w-full rounded-2xl bg-[#1A1D2B]/40 backdrop-blur-xl border border-white/10 shadow-lg">
- <textarea
-  ref={textareaRef}
-  value={prompt}
-  onChange={(e) => setPrompt(e.target.value)}
-  placeholder="Describe the image you want to generate…"
-  rows={1}
-  className="
 
-  w-full resize-none bg-transparent overflow-y-auto 
-    px-4 py-3
-    text-white text-[15px]
-    placeholder:text-white/40
-    focus:outline-none
-    focus:ring-0
-    rounded-2xl
-   max-h-[8rem]
-  "
-/>
-    </div>
 
-      </div>
+            {/* REFERENCE IMAGES PREVIEW */}
+            {selected.length > 0 && (
+              <div className="grid grid-cols-4 gap-3 max-w-[600px]">
+                {selected.map((img) => (
+                  <div
+                    key={img.id}
+                    className="relative rounded-lg overflow-hidden"
+                  >
+                    <img
+                      src={img.url}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      onClick={() => toggleSelect(img)}
+                      className="absolute top-1 right-1 bg-black/60 rounded-full p-1"
+                    >
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
-      {/* Images will load here */}
+            {/* SETTINGS ROW */}
+                <div
+       ref={controlsRef}
+        className="grid grid-cols-1  md:grid-cols-3 gap-3 relative"
+          >
 
-<div className="grid grid-cols-3 gap-4 md:max-w-[450px] sm:max-w-[300px]">
-  {selected.map((img) => (
-    <div
-      key={img.id}
-      className="relative shadow-lg bg-black rounded-lg overflow-hidden"
-    >
-      <img
-        src={img.url}
-        className="w-full h-full object-cover"
-      />
 
+              {/* MODEL */}
+              <button
+                onClick={() => {
+                  setOpenModel(prev => !prev)
+                  setOpenSize(false)
+                  setOpenStyle(false)
+                }}
+                className="bg-[#1A1E2A] border border-[#232635]
+                           rounded-xl px-4 py-3 text-left hover:border-white/20 transition"
+              >
+                <p className="text-xs text-white/50">Model</p>
+                <p className="text-sm text-white font-medium">
+                  {selectedModel.label}
+                </p>
+              </button>
+
+              {/* STYLE */}
+              <button
+                onClick={() => {
+                  setOpenStyle(prev => !prev)
+                  setOpenSize(false)
+                  setOpenModel(false)
+                }}
+                className="bg-[#1A1E2A] border border-[#232635]
+                           rounded-xl px-4 py-3 text-left hover:border-white/20 transition"
+              >
+                <p className="text-xs text-white/50">Style</p>
+                <p className="text-sm text-white font-medium">
+                  {selectedStyle}
+                </p>
+              </button>
+
+              {/* SIZE */}
+              <button
+                onClick={() => {
+                  setOpenSize(prev => !prev)
+                  setOpenModel(false)
+                  setOpenStyle(false)
+                }}
+                className="bg-[#1A1E2A] border border-[#232635]
+                           rounded-xl px-4 py-3 text-left hover:border-white/20 transition"
+              >
+                <p className="text-xs text-white/50">Size</p>
+                <p className="text-sm text-white font-medium">
+                  {selectedSize}
+                </p>
+              </button>
+
+              {/* EXISTING DROPDOWNS BELOW (unchanged logic) */}
+
+{openSize && (
+  <div
+    className="
+      fixed
+      z-50
+      left-1/2 -translate-x-1/2
+      bottom-28
+      w-[92%] md:w-[400px]
+      max-h-[60vh]
+      bg-[#1A1D2B]
+      border border-white/10
+      rounded-2xl
+      shadow-2xl
+      p-5
+      overflow-y-auto
+    "
+  >
+    <div className="flex justify-between items-center mb-4">
+      <h3 className="text-white font-medium">Select Size</h3>
       <button
-        onClick={() => toggleSelect(img)}
-        className="absolute top-1 right-1 bg-black/60 rounded-full p-1"
+        onClick={() => setOpenSize(false)}
+        className="text-white/60 hover:text-white"
       >
-        <X className="w-4 h-4 text-white" />
+        <X className="w-5 h-5" />
       </button>
     </div>
-  ))}
-</div>
 
-      {/*Options*/}
-      
-<div className="flex items-center gap-3 w-full">
-  
-  {/* LEFT: Image / Video */}
-  <div className="flex items-center gap-2">
-    <div className="bg-gradient-to-r from-[#7A3BFF] to-[#492399] rounded-xl p-[1px]">
-      <div className="bg-[#1A1D2B]  rounded-xl px-5 py-2 flex items-center gap-2">
-        <Image className="h-4 w-4" />
-        <p>Image</p>
-      </div>
-    </div>
-  </div>
-
-  {/* 🔥 SPACER */}
-  <div className="flex-1"></div>
-
-  {/* RIGHT: Settings + Generate */}
-  <div className="flex items-center gap-1">
-    
-  <div className="relative md:hidden">
-    <button
-  onClick={() => setSettingsOpen(prev => !prev)}
-  className="bg-[#1A1D2B] p-2 rounded-xl border border-[#282C40] shadow-lg flex md:hidden"
->
-  <Settings className="w-5 h-5" />
-</button>
-
-{/* Mobile settings opened state */}
-
-{settingsOpen && (
-  <div 
-    ref={panelRef}
-   className="  absolute top-12 left-1/2 -translate-x-1/2 z-80 w-[300px] sm:w-[350px] max-w-[320px] rounded-xl bg-[#1A1D2B] backdrop-blur-xl border border-[#7A3BFF] shadow-[0_0_25px_rgba(122,59,255,0.25),0_0_60px_rgba(122,59,255,0.15)]">
-    {activeMenu === null && (
-      <div className="flex flex-col">
-       <MenuItem
-  label="Model"
-  value={selectedModel.label}
-  onClick={() => setActiveMenu("model")}
-/>
-
-<MenuItem
-  label="Aspect Ratio"
-  value={selectedSize}
-  onClick={() => setActiveMenu("ratio")}
-/>
-
-<MenuItem
-  label="Style"
-  value={selectedStyle}
-  onClick={() => setActiveMenu("style")}
-/>
-
-      </div>
-    )}
-
-    {/* SUB MENUS */}
-{activeMenu === "model" && (
-  <SubMenu title="Model" onBack={() => setActiveMenu(null)}>
-    <div
-      className="
-        flex flex-col  gap-3 p-3
-        max-h-[280px]      
-        overflow-y-auto
-        pr-1
-        scrollbar-thin
-        scrollbar-thumb-white/20
-        scrollbar-track-transparent
-      "
-    >
-      {Object.entries(MODELS).map(([key, model]) => {
-        const isActive = key === selectedModelKey;
-
-        return (
-          <ModelCard
-            key={key}
-            img={model.img}
-            label={model.label}
-            description={model.description}
-            credits={model.credits}
-            traits={model.traits}
-            active={isActive}
-            compact
-            onClick={() => {
-              setSelectedModelKey(key);
-
-             if (!model.supportedSizes.includes(selectedSize)) {
-  setSelectedSize(model.supportedSizes[0]);
-}
-             
-
-              setActiveMenu(null);
-            }}
-          />
-        );
-      })}
-    </div>
-  </SubMenu>
-)}
-
-
-
-
-
-{activeMenu === "ratio" && (
-  <SubMenu title="Aspect Ratio" onBack={() => setActiveMenu(null)}>
-    <div className="flex flex-col">
-      {selectedModel.supportedSizes.map((size) => (
-        <button
-          key={size}
-          onClick={() => {
-            setSelectedSize(size);
-            setActiveMenu(null);
-          }}
-          className={`
-            px-4 py-3 text-left flex justify-between items-center
-            ${size === selectedSize
-              ? "bg-[#7A3BFF]/10 text-white"
-              : "text-white/80 hover:bg-white/5"}
-          `}
-        >
-          {size}
-          {size === selectedSize && <span>✓</span>}
-        </button>
-      ))}
-    </div>
-  </SubMenu>
-)}
-
-{activeMenu === "style" && (
-  <SubMenu title="Style" onBack={() => setActiveMenu(null)}>
-    <div
-      className="
-        grid grid-cols-2 gap-3 p-3
-        max-h-[290px]
-        overflow-y-auto
-        pr-1
-        scrollbar-thin
-        scrollbar-thumb-white/20
-        scrollbar-track-transparent
-      "
-    >
-      {Object.entries(IMAGE_STYLES).map(([key, style]) => (
-        <StyleCard
-          key={key}
-          label={style.label}
-          img={style.img}
-          active={key === selectedStyle}
-          onClick={() => {
-            setSelectedStyle(key);
-            setActiveMenu(null);
-          }}
-        />
-      ))}
-    </div>
-  </SubMenu>
-)}
-
-
-  </div>
-
-  
-)}
-</div>
-
-  {/* Md and higher buttons */}
-    <div ref={controlsRef} className="relative hidden md:flex gap-1">
- 
-        {/* Size */}
- <button
-  onClick={() => {
-    setOpenSize(prev => !prev);
-    setOpenStyle(false);
-    setOpenModel(false);
-  }}
-  className="flex items-center gap-2 bg-[#1A1D2B] px-3 py-2 rounded-xl border border-[#2A2F45] shadow-lg hover:bg-[#1A1D2B]/80"
->
-  <BoxSelect className="w-5 h-5 text-white" />
-  <span className="text-[#E6E8EE] text-[16px]">{selectedSize}</span>
-</button>
-
-
-  {openSize && (
-  <div className="absolute top-full mt-2 w-40 rounded-xl bg-[#1A1D2B] border border-white/10 shadow-2xl backdrop-blur-xl overflow-hidden">
     {selectedModel.supportedSizes.map((size) => (
       <button
         key={size}
         onClick={() => {
-          setSelectedSize(size);
-          setOpenSize(false);
+          setSelectedSize(size)
+          setOpenSize(false)
         }}
-        className={`w-full px-4 py-2 text-left text-sm text-[#E6E8EE] hover:bg-white/5 flex items-center justify-between
-          ${size === selectedSize ? "bg-white/5" : ""}`}
+        className={`w-full px-4 py-3 text-left rounded-lg text-sm
+          ${
+            size === selectedSize
+              ? "bg-[#7A3BFF]/20 border border-[#7A3BFF]"
+              : "hover:bg-white/5"
+          }
+        `}
       >
         {size}
-        {size === selectedSize && <span>✓</span>}
       </button>
     ))}
   </div>
 )}
 
-{/* Model */}
 
-{openModel && (
- <div
-  className="
-   absolute top-full mt-2
-right-1/2 translate-x-1/2
-    w-[600px] max-w-[90vw]
-    rounded-xl bg-[#1A1D2B]
-    border border-white/10
-    shadow-2xl backdrop-blur-xl
-    z-50
-  "
->
-   <div
-  className="
-    grid grid-cols-2 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 
-    gap-3 p-3
-    max-h-[320px]
-    overflow-y-auto
-    pr-1
-    scrollbar-thin
-    scrollbar-thumb-white/20
-    scrollbar-track-transparent
-  "
->
-      {Object.entries(MODELS).map(([key, model]) => {
-        const isActive = key === selectedModelKey;
-
-        return (
-          <ModelCard
-            key={key}
-            img={model.img}
-            label={model.label}
-            description={model.description}
-            credits={model.credits}
-            traits={model.traits}
-            active={isActive}
-            compact
-            onClick={() => {
-              setSelectedModelKey(key);
-
-             if (!model.supportedSizes.includes(selectedSize)) {
-  setSelectedSize(model.supportedSizes[0]);
-}
-            
-
-              setOpenModel(false);
-            }}
-          />
-        );
-      })}
-    </div>
-  </div>
-)}
-
-     {/* Style */}
-<button
-  onClick={() => {
-    setOpenStyle(prev => !prev);
-    setOpenSize(false);
-    setOpenModel(false);
-  }}
-  className="flex items-center gap-2 bg-[#1A1D2B] p-2 rounded-xl border border-[#2A2F45] shadow-lg hover:bg-[#1A1D2B]/80"
->
-  <Wand2 className="w-4 h-4 text-white" />
-  <p className="text-[#E6E8EE] text-[16px]">{selectedStyle}</p>
-</button>
 
 {openStyle && (
   <div
     className="
-      absolute top-full mt-2 w-[450px]
-      rounded-xl bg-[#1A1D2B]
-      border border-white/10
-      shadow-2xl backdrop-blur-xl
+      fixed
       z-50
+      left-1/2 -translate-x-1/2
+      bottom-28
+      w-[92%] md:w-[650px]
+      max-h-[75vh]
+      bg-[#1A1D2B]
+      border border-white/10
+      rounded-2xl
+      shadow-2xl
+      p-5
+      overflow-y-auto
     "
   >
-    <div
-      className="
-        grid grid-cols-3 gap-3 p-3
-        max-h-[290px]
-        overflow-y-auto
-        pr-1
-        scrollbar-thin
-        scrollbar-thumb-white/20
-        scrollbar-track-transparent
-      "
-    >
+    <div className="flex justify-between items-center mb-4">
+      <h3 className="text-white font-medium">Select Style</h3>
+      <button
+        onClick={() => setOpenStyle(false)}
+        className="text-white/60 hover:text-white"
+      >
+        <X className="w-5 h-5" />
+      </button>
+    </div>
+
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
       {Object.entries(IMAGE_STYLES).map(([key, style]) => (
         <StyleCard
           key={key}
@@ -735,8 +656,8 @@ right-1/2 translate-x-1/2
           img={style.img}
           active={key === selectedStyle}
           onClick={() => {
-            setSelectedStyle(key);
-            setOpenStyle(false);
+            setSelectedStyle(key)
+            setOpenStyle(false)
           }}
         />
       ))}
@@ -745,71 +666,99 @@ right-1/2 translate-x-1/2
 )}
 
 
-    
-      {/* Model */}
- <button
-  onClick={() => {
-    setOpenModel(prev => !prev);
-    setOpenSize(false);
-    setOpenStyle(false);
-  }}
-  className="bg-[#1A1D2B] p-2 rounded-xl border border-[#2A2F45] shadow-lg hover:bg-[#1A1D2B]/80"
->
-  <p className="text-[12px] text-white/60 ">
-    Model:
-    <span className="text-[16px] text-[#E6E8EE] ml-1">
-      {selectedModel.label}
-    </span>
-  </p>
-</button>
-    
+
+{openModel && (
+  <div
+    className="
+      fixed
+      z-50
+      left-1/2 -translate-x-1/2
+      bottom-28
+      w-[92%] md:w-[800px]
+      max-h-[75vh]
+      bg-[#1A1D2B]
+      border border-white/10
+      rounded-2xl
+      shadow-2xl
+      p-5
+      overflow-y-auto
+    "
+  >
+    {/* Header */}
+    <div className="flex justify-between items-center mb-4">
+      <h3 className="text-white font-medium">Select Model</h3>
+      <button
+        onClick={() => setOpenModel(false)}
+        className="text-white/60 hover:text-white"
+      >
+        <X className="w-5 h-5" />
+      </button>
     </div>
 
-   <button
-   onClick={handleGenerate}
-  disabled={!prompt.trim() || isGenerating}
-  className={`
-    ml-1 py-2 px-6 rounded-xl shadow-md border border-[#282C40]/30
-    transition
-    ${
-      !prompt.trim() || isGenerating
-        ? "bg-gray-500/40 text-white/40 cursor-not-allowed"
-        : "bg-gradient-to-r from-[#7A3BFF] to-[#492399] hover:opacity-90"
-    }
-  `}
->
-  {isGenerating ? "Generating…" : "Generate"}
-</button>
-
-
-  </div>
-</div>
-
-
+    {/* Models grid */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {Object.entries(MODELS).map(([key, model]) => (
+        <ModelCard
+          key={key}
+          img={model.img}
+          label={model.label}
+          description={model.description}
+          credits={model.credits}
+          traits={model.traits}
+          active={key === selectedModelKey}
+          onClick={() => {
+            setSelectedModelKey(key)
+            if (!model.supportedSizes.includes(selectedSize)) {
+              setSelectedSize(model.supportedSizes[0])
+            }
+            setOpenModel(false)
+          }}
+        />
+      ))}
     </div>
-
   </div>
-</div>
-
-
-  </div>
-     
-    </div>
-   {openReferenceModal && canAddImages && (
-  <ReferenceImageModal
-    open={openReferenceModal}
-    onClose={() => setOpenReferenceModal(false)}
-    images={images}
-    selected={selected}
-    maxSelectable={maxRefImages}
-    onUpload={handleUpload}
-    onToggle={toggleSelect}
-  />
 )}
 
 
-    </section>
-  );
+
+
+            </div>
+
+            {/* GENERATE BUTTON */}
+            <button
+              onClick={handleGenerate}
+              disabled={!prompt.trim() || isGenerating}
+              className={`w-full py-3 rounded-2xl font-medium text-white transition ${
+                !prompt.trim() || isGenerating
+                  ? "bg-gray-500/40 text-white/40 cursor-not-allowed"
+                  : "bg-gradient-to-r from-[#7A3BFF] to-[#6F3AE6] hover:scale-[1.02] shadow-lg shadow-purple-600/30"
+              }`}
+            >
+              {isGenerating ? "Generating…" : "Generate"}
+            </button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {openReferenceModal && canAddImages && (
+      <ReferenceImageModal
+        open={openReferenceModal}
+        onClose={() => setOpenReferenceModal(false)}
+        images={images}
+        selected={selected}
+        maxSelectable={maxRefImages}
+        onUpload={handleUpload}
+        onToggle={toggleSelect}
+      />
+    )}
+
+
+
+  </section>
+)
+
 };
 
 
