@@ -140,6 +140,8 @@ import AllImageTrendsYouNeedTojumpOn from "./app/blog/imagegenerator/AIImageTren
 import WhyYourPostsDontGoViral from "./app/blog/imagegenerator/WhyYourPostsDontGoViral.jsx";
 import BestAIImageGeneratorForSocialMedia from "./app/blog/imagegenerator/BestAIImageGeneratorForSocialMedia.jsx"; "./app/blog/imagegenerator/WhyYourPostsDontGoViral.jsx";
 import GenerateHighQualityImagesWithAI from "./app/blog/imagegenerator/GenerateHighQualityImagesWithAI.jsx";
+import AIImageGeneratorBeginnersGuide2026 from "./app/blog/imagegenerator/AIImageGeneratorBeginnersGuide2026.jsx";
+import CreateProfessionalImagesWithAI from "./app/blog/imagegenerator/CreateProfessionalImagesWithAI.jsx";
 
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -310,8 +312,11 @@ function AppWithRouting() {
         <Route path="/blog/why-your-posts-dont-go-viral" element={<WhyYourPostsDontGoViral/>} />
         <Route path="/blog/best-ai-image-generator-for-social-media" element={<BestAIImageGeneratorForSocialMedia/>} />
         <Route path="/blog/how-to-generate-high-quality-images-with-ai" element={<GenerateHighQualityImagesWithAI/>} />
+        <Route path="/blog/ai-image-generator-beginners-guide-2026" element={<AIImageGeneratorBeginnersGuide2026/>} />  
+        <Route path="/blog/create-professional-images-with-ai" element={<CreateProfessionalImagesWithAI/>} />
+       
         <Route path="/workspace/image-gen-test" element={<ImageGenTest/>} />
-
+                 
 
 
 
