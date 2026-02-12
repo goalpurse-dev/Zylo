@@ -74,7 +74,6 @@ export type ImageToolKey =
   | "image:prime"
   | "image:openai"
   | "image:flux.base"
-  | "image:Wan2.6-image"
   | "image:flux.max"
   | "image:nano-pro";
   

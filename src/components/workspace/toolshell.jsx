@@ -33,7 +33,13 @@ export default function ToolShell({
 
   return (
     <aside
-  className={`fixed top-0 left-0 z-50 h-screen w-[80px] bg-[#12141A] flex flex-col border-r-2 
+  className={`    fixed top-0 left-0 z-50
+    h-screen
+    w-[80px]
+    bg-[#12141A]
+    flex flex-col
+    border-r-2
+    overflow-hidden
     ${
       isCreationsRoute && activePanel !== "tools"
         ? "border-white/15"
@@ -44,7 +50,7 @@ export default function ToolShell({
 
 
       {/* LOGO */}
-      <div className="flex justify-center pt-6 mb-6 shrink-0">
+     <div className="flex justify-center pt-6 mb-6 shrink-0">
         <img src={Logo} className="h-12 w-12" />
       </div>
 
@@ -91,34 +97,67 @@ export default function ToolShell({
       </div>
 
       {/* BOTTOM */}
-      <div className="pb-6 flex flex-col gap-4 items-center">
+      {/* BOTTOM */}
+<div className="pb-6 flex flex-col gap-4 items-center">
 
-        <Link to="/workspace/pricing" className="flex flex-col items-center gap-1">
-          <div className="border border-white/20 rounded-lg h-10 w-10 flex items-center justify-center">
-            <img src={Credit} className="h-6 w-6" />
-          </div>
-          <p className="text-[#B7BBC6] text-[12px] font-semibold">
-            {formattedCredits}
-          </p>
-        </Link>
-
-        <Link to="/support" className="flex flex-col items-center gap-1">
-          <BadgeQuestionMark className="text-[#B7BBC6]" />
-          <p className="text-[#B7BBC6] text-[12px]">Help</p>
-        </Link>
-
-        {user && (
-          <Link
-            to="/settings"
-            className="bg-[#B7BBC6] rounded-full w-10 h-10 flex items-center justify-center"
-          >
-            <span className="text-[#110829] text-[14px] font-semibold">
-              {initials}
-            </span>
-          </Link>
-        )}
-
+  {/* Credits – only if logged in */}
+  {user && (
+    <Link
+      to="/workspace/pricing"
+      className="flex flex-col items-center gap-1"
+    >
+      <div className="border border-white/20 rounded-lg h-10 w-10 flex items-center justify-center hover:border-purple-500/40 transition">
+        <img src={Credit} className="h-6 w-6" />
       </div>
+      <p className="text-[#B7BBC6] text-[12px] font-semibold">
+        {formattedCredits}
+      </p>
+    </Link>
+  )}
+
+  {/* Help */}
+  <Link
+    to="/support"
+    className="flex flex-col items-center gap-1 hover:text-white transition"
+  >
+    <BadgeQuestionMark className="text-[#B7BBC6]" />
+    <p className="text-[#B7BBC6] text-[12px]">Help</p>
+  </Link>
+
+  {/* If NOT logged in → show auth buttons */}
+  {!user && (
+    <div className="flex flex-col gap-2 w-full px-3 mt-2">
+      <Link
+        to="/signup"
+        className="w-full text-center py-2 rounded-lg bg-gradient-to-r from-[#7A3BFF] to-[#6F3AE6] text-white text-[12px] font-medium hover:scale-[1.03] transition"
+      >
+        Sign Up
+      </Link>
+
+      <Link
+        to="/login"
+        className="w-full text-center py-2 rounded-lg border border-white/20 text-[#B7BBC6] text-[12px] font-medium hover:border-purple-500/40 hover:text-white transition"
+      >
+        Log In
+      </Link>
+    </div>
+  )}
+
+  {/* Profile circle – only if logged in */}
+  {user && (
+    <Link
+      to="/settings"
+      className="bg-[#B7BBC6] rounded-full w-10 h-10 flex items-center justify-center mt-2"
+    >
+      <span className="text-[#110829] text-[14px] font-semibold">
+        {initials}
+      </span>
+    </Link>
+  )}
+
+</div>
+{/* BOTTOM (always visible but scroll-safe) */}
+<div className="shrink-0 pb-6 px-2 flex flex-col gap-4 items-center"></div>
     </aside>
   );
 }

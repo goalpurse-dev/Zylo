@@ -38,16 +38,7 @@ export const MODELS = {
     },
   },
 
-    "image:Wan2.6-image": {
-    label: "Wan2.6 Image",
-    description: "High-performance diffusion model optimized for strong prompt adherence, flexible styles, and consistent high-resolution outputs.",
-    img: OpenAI,
-    credits: 3, // TEMP – fixed price
-    traits: ["Fast", "Precise", "Ideal for detailed prompts"],
-    supportedSizes: ["1:1", "9:16", "16:9", "21:9",   "3:4", "4:3",  "3:2", "2:3"],
-    maxReferenceImages: 4,
 
-  },
 
   "image:nano": {
     label: "Nano Banana",

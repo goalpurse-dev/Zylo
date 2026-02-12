@@ -11,6 +11,5 @@ export const UI_MODEL_TO_TOOLKEY: Record<UiModelKey, ToolKey> = {
   "image:openai": "image:openai",
   "image:flux.base": "image:flux.base",
   "image:flux.max": "image:flux.max",
-  "image:Wan2.6-image": "image:Wan2.6-image",
   "image:nano-pro": "image:nano-pro",
 };
