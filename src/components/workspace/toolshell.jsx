@@ -32,14 +32,13 @@ export default function ToolShell({
     : null;
 
   return (
-    <aside
-  className={`    fixed top-0 left-0 z-50
-    h-screen
-    w-[80px]
-    bg-[#12141A]
-    flex flex-col
+ <aside
+  className={`fixed top-0 left-0 z-50
+    h-[100dvh] w-[80px]
+    bg-[#12141A] flex flex-col
     border-r-2
-    overflow-hidden
+    overflow-y-auto overscroll-contain
+    pb-[calc(env(safe-area-inset-bottom)+16px)]
     ${
       isCreationsRoute && activePanel !== "tools"
         ? "border-white/15"
@@ -55,7 +54,7 @@ export default function ToolShell({
       </div>
 
       {/* TOP */}
-      <div className="flex-1 overflow-y-auto px-2">
+      <div className="flex-1  px-2">
         <div className="flex flex-col gap-2">
 
           <button
