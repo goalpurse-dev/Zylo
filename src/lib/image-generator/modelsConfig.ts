@@ -7,15 +7,19 @@ import OpenAI from "../../assets/logos/gpt.png";
 
 
 export const MODELS = {
-  "image:nano": {
-    label: "Nano Banana",
-    description: "Fast, lightweight image generation with low latency.",
+
+   "image:nano-pro": {
+    label: "Nano Banana Pro",
+    description: "Our most advanced image model — built for maximum detail, photorealism, and studio-grade output across any style..",
     img: NanoBanana,
-    credits: 4,
-    traits: ["Fast", "Low cost", "General use"],
+    credits: 15,
+    traits: ["Ultra Detail", "Max Precision", "Studio Quality"],
     supportedSizes: ["1:1", "16:9", "9:16"],
-    maxReferenceImages: 4,
+    maxReferenceImages: 8,
   },
+
+
+  
     "image:openai": {
     label: "OpenAI Image",
     description: "Best quality general-purpose image generation.",
@@ -32,6 +36,27 @@ export const MODELS = {
         quality: "high", // locked for now
       },
     },
+  },
+
+    "image:Wan2.6-image": {
+    label: "Wan2.6 Image",
+    description: "High-performance diffusion model optimized for strong prompt adherence, flexible styles, and consistent high-resolution outputs.",
+    img: OpenAI,
+    credits: 3, // TEMP – fixed price
+    traits: ["Fast", "Precise", "Ideal for detailed prompts"],
+    supportedSizes: ["1:1", "9:16", "16:9", "21:9",   "3:4", "4:3",  "3:2", "2:3"],
+    maxReferenceImages: 4,
+
+  },
+
+  "image:nano": {
+    label: "Nano Banana",
+    description: "Fast, lightweight image generation with low latency.",
+    img: NanoBanana,
+    credits: 4,
+    traits: ["Fast", "Low cost", "General use"],
+    supportedSizes: ["1:1", "16:9", "9:16"],
+    maxReferenceImages: 4,
   },
 
   "image:juggernaut": {

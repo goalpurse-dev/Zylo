@@ -73,7 +73,11 @@ export type ImageToolKey =
   | "image:spark"
   | "image:prime"
   | "image:openai"
-  | "image:flux.base";
+  | "image:flux.base"
+  | "image:Wan2.6-image"
+  | "image:flux.max"
+  | "image:nano-pro";
+  
 
 export const T2V_UI_BY_TIER: Record<
   TierId,

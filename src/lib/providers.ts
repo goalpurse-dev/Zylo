@@ -12,6 +12,8 @@ export type ToolKey =
   | "image:openai"
   | "image:flux.base"
   | "image:flux.max"
+  | "image:Wan2.6-image"
+  | "image:nano-pro"
 
 
 
@@ -84,6 +86,35 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     retailUSD: 0.20,
     credits: 10,
     margin: m(0.133, 0.20),
+  },
+
+   "image:nano-pro": {
+    provider: "runware",
+    generator: "Nano Pro",
+    airTag: "google:4@2",
+    secret: "RUNWARE_API_KEY",
+    edgeFn: "/functions/v1/runware-image",
+
+   /* On the highest quality */
+    costUSD: 0.1457,
+    retailUSD: 0.30,
+    credits: 15,
+    margin: m(0.1457, 0.30),
+  },
+
+  
+  "image:Wan2.6-image": {
+    provider: "runware",
+    generator: "Wan2.6 Image",
+    airTag: "alibaba:wan@2.6-image",
+    secret: "RUNWARE_API_KEY",
+    edgeFn: "/functions/v1/runware-image",
+
+   /* On the highest quality */
+    costUSD: 0.03,
+    retailUSD: 0.06,
+    credits: 3,
+    margin: m(0.03, 0.06),
   },
 
     "image:juggernaut": {

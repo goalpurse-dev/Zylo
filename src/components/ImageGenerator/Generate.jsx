@@ -7,6 +7,7 @@ import ReferenceImageModal from "../../components/reference-images/ReferenceImag
 import { generateImageFromUI } from "../../lib/image-generator";
 import { supabase } from "../../lib/supabaseClient";
 import { IMAGE_STYLES } from "../../lib/image-generator/styles";
+import { ChevronRight } from "lucide-react";
 
 
 
@@ -521,53 +522,127 @@ useEffect(() => {
           >
 
 
-              {/* MODEL */}
-              <button
-                onClick={() => {
-                  setOpenModel(prev => !prev)
-                  setOpenSize(false)
-                  setOpenStyle(false)
-                }}
-                className="bg-[#1A1E2A] border border-[#232635]
-                           rounded-xl px-4 py-3 text-left hover:border-white/20 transition"
-              >
-                <p className="text-xs text-white/50">Model</p>
-                <p className="text-sm text-white font-medium">
-                  {selectedModel.label}
-                </p>
-              </button>
+        <button
+  onClick={() => {
+    setOpenModel(prev => !prev)
+    setOpenSize(false)
+    setOpenStyle(false)
+  }}
+  className={`
+    group
+    relative
+    bg-[#1A1E2A]
+    border border-[#232635]
+    rounded-xl
+    px-4 py-3
+    text-left
+    transition-all duration-200
+    hover:border-purple-500/40
+    hover:shadow-md hover:shadow-purple-500/10
+    active:scale-[0.98]
+    ${openModel ? "border-purple-500 shadow-md shadow-purple-500/20" : ""}
+  `}
+>
+  <div className="flex justify-between items-center">
+    <div>
+      <p className="text-xs text-white/50">Model</p>
+      <p className="text-sm text-white font-medium">
+        {selectedModel.label}
+      </p>
+    </div>
+
+    <ChevronRight
+      className={`
+        w-4 h-4 text-white/40
+        transition-transform duration-200
+        ${openModel ? "rotate-90 text-purple-400" : "group-hover:translate-x-1"}
+      `}
+    />
+  </div>
+</button>
+
 
               {/* STYLE */}
-              <button
-                onClick={() => {
-                  setOpenStyle(prev => !prev)
-                  setOpenSize(false)
-                  setOpenModel(false)
-                }}
-                className="bg-[#1A1E2A] border border-[#232635]
-                           rounded-xl px-4 py-3 text-left hover:border-white/20 transition"
-              >
-                <p className="text-xs text-white/50">Style</p>
-                <p className="text-sm text-white font-medium">
-                  {selectedStyle}
-                </p>
-              </button>
+             <button
+  onClick={() => {
+    setOpenStyle(prev => !prev)
+    setOpenSize(false)
+    setOpenModel(false)
+  }}
+  className={`
+    group
+    relative
+    bg-[#1A1E2A]
+    border border-[#232635]
+    rounded-xl
+    px-4 py-3
+    text-left
+    transition-all duration-200
+    hover:border-purple-500/40
+    hover:shadow-md hover:shadow-purple-500/10
+    active:scale-[0.98]
+    ${openStyle ? "border-purple-500 shadow-md shadow-purple-500/20" : ""}
+  `}
+>
+  <div className="flex justify-between items-center">
+    <div>
+      <p className="text-xs text-white/50">Style</p>
+      <p className="text-sm text-white font-medium">
+        {selectedStyle}
+      </p>
+    </div>
+
+    <ChevronRight
+      className={`
+        w-4 h-4 text-white/40
+        transition-all duration-200
+        ${openStyle ? "rotate-90 text-purple-400" : "group-hover:translate-x-1"}
+      `}
+    />
+  </div>
+</button>
+
 
               {/* SIZE */}
               <button
-                onClick={() => {
-                  setOpenSize(prev => !prev)
-                  setOpenModel(false)
-                  setOpenStyle(false)
-                }}
-                className="bg-[#1A1E2A] border border-[#232635]
-                           rounded-xl px-4 py-3 text-left hover:border-white/20 transition"
-              >
-                <p className="text-xs text-white/50">Size</p>
-                <p className="text-sm text-white font-medium">
-                  {selectedSize}
-                </p>
-              </button>
+  onClick={() => {
+    setOpenSize(prev => !prev)
+    setOpenModel(false)
+    setOpenStyle(false)
+  }}
+  className={`
+    group
+    relative
+    bg-[#1A1E2A]
+    border border-[#232635]
+    rounded-xl
+    px-4 py-3
+    text-left
+    transition-all duration-200
+    hover:border-purple-500/40
+    hover:shadow-md hover:shadow-purple-500/10
+    active:scale-[0.98]
+    ${openSize ? "border-purple-500 shadow-md shadow-purple-500/20" : ""}
+  `}
+>
+  <div className="flex justify-between items-center">
+    <div>
+      <p className="text-xs text-white/50">Size</p>
+      <p className="text-sm text-white font-medium">
+        {selectedSize}
+      </p>
+    </div>
+
+    <ChevronRight
+      className={`
+        w-4 h-4 text-white/40
+        transition-all duration-200
+        ${openSize ? "rotate-90 text-purple-400" : "group-hover:translate-x-1"}
+      `}
+    />
+  </div>
+</button>
+
 
               {/* EXISTING DROPDOWNS BELOW (unchanged logic) */}
 

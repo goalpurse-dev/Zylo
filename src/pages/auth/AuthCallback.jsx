@@ -33,7 +33,7 @@ export default function AuthCallback() {
         }
 
         // ✅ SUCCESS
-        navigate("/workspace", { replace: true });
+        navigate("/workspace/home", { replace: true });
       } catch (err) {
         console.error("Auth callback fatal error:", err);
         navigate("/login", { replace: true });
