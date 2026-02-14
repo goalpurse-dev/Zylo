@@ -282,8 +282,8 @@ export default function ReferenceImageModal({
         <div className="flex-1 p-6 overflow-y-auto overscroll-contain">
           {/* IMPORT */}
           {activeTab === "import" && (
-            <div className="grid grid-cols-5 gap-4">
-              <label className="cursor-pointer rounded-xl border border-dashed border-white/20 flex flex-col items-center justify-center text-center h-[120px] md:h-[200px] text-white/60 hover:border-[#7A3BFF]">
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-4">
+              <label className="cursor-pointer rounded-xl border border-dashed border-white/20 flex flex-col items-center justify-center text-center h-[120px]  md:h-[200px] text-white/60 hover:border-[#7A3BFF]">
                 <input type="file" hidden onChange={onUpload} />
                 <span className="text-sm">Upload image</span>
               </label>

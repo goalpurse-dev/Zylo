@@ -493,27 +493,28 @@ useEffect(() => {
 
 
             {/* REFERENCE IMAGES PREVIEW */}
-            {selected.length > 0 && (
-              <div className="grid grid-cols-4 gap-3 max-w-[600px]">
-                {selected.map((img) => (
-                  <div
-                    key={img.id}
-                    className="relative rounded-lg overflow-hidden"
-                  >
-                    <img
-                      src={img.url}
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      onClick={() => toggleSelect(img)}
-                      className="absolute top-1 right-1 bg-black/60 rounded-full p-1"
-                    >
-                      <X className="w-4 h-4 text-white" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+           {selected.length > 0 && (
+  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 w-full">
+    {selected.map((img) => (
+      <div
+        key={img.id}
+        className="relative aspect-square rounded-xl overflow-hidden"
+      >
+        <img
+          src={img.url}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <button
+          onClick={() => toggleSelect(img)}
+          className="absolute top-2 right-2 bg-black/60 backdrop-blur-md rounded-full p-1"
+        >
+          <X className="w-4 h-4 text-white" />
+        </button>
+      </div>
+    ))}
+  </div>
+)}
+
 
             {/* SETTINGS ROW */}
                 <div
