@@ -1,6 +1,6 @@
 const STYLE_THUMBS = {
-  cinematic: "/images/styles/cinematic.png",
-  dynamic: "/images/styles/dynamic.png",
+  cinematic: "/images/styles/cinematic.webp",
+  dynamic: "/images/styles/dynamic.webp",
   anime: "/images/thumbs/anime.webp",
   clay: "/images/thumbs/clay.webp",
   comic: "/images/thumbs/comic.webp",

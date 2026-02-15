@@ -650,10 +650,11 @@ useEffect(() => {
 {openSize && (
   <div
     className="
-      fixed
-      z-50
-      left-1/2 -translate-x-1/2
-      bottom-28
+   fixed
+z-50
+left-1/2 -translate-x-1/2
+top-[18%] md:top-1/2
+md:-translate-y-1/2
       w-[92%] md:w-[400px]
       max-h-[60vh]
       bg-[#1A1D2B]
@@ -700,10 +701,11 @@ useEffect(() => {
 {openStyle && (
   <div
     className="
-      fixed
-      z-50
-      left-1/2 -translate-x-1/2
-      bottom-28
+     fixed
+z-50
+left-1/2 -translate-x-1/2
+top-[18%] md:top-1/2
+md:-translate-y-1/2
       w-[92%] md:w-[650px]
       max-h-[75vh]
       bg-[#1A1D2B]
@@ -746,10 +748,11 @@ useEffect(() => {
 {openModel && (
   <div
     className="
-      fixed
-      z-50
-      left-1/2 -translate-x-1/2
-      bottom-28
+    fixed
+z-50
+left-1/2 -translate-x-1/2
+top-[18%] md:top-1/2
+md:-translate-y-1/2
       w-[92%] md:w-[800px]
       max-h-[75vh]
       bg-[#1A1D2B]

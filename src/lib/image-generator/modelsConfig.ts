@@ -1,8 +1,8 @@
 const LOGOS = {
-  nano: "/images/logos/google.png",
-  hidream: "/images/logos/hidream.png",
-  juggernaut: "/images/logos/juggernaut.png",
-  openai: "/images/logos/gpt.png",
+  nano: "/images/logos/google.webp",
+  hidream: "/images/logos/hidream.webp",
+  juggernaut: "/images/logos/juggernaut.webp",
+  openai: "/images/logos/gpt.webp",
 };
 
 
