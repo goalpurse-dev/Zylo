@@ -235,7 +235,7 @@ const createdImages = [
 export const Inspiration = ({ setPrompt }) => {
   return (
     <section className="w-full px-2">
-      <h1 className="text-[#F4F6FB] font-bold text-[26px] mb-4">
+      <h1 className="text-[#F4F6FB] font-bold text-[26px] mb-4 cursor-default">
         Created with <span className="text-[#7A3BFF]">Zyvo</span>
       </h1>
 

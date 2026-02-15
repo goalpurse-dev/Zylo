@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { watchJob } from "../../lib/jobs";
-import Footer from "../../components/myproduct/footer.jsx";
+
 
 import Generate from "../../components/ImageGenerator/Generate.jsx";
 import Inspiration from "../../components/ImageGenerator/Inspiration.jsx";
@@ -236,11 +236,9 @@ export default function Image() {
         </div>
       )}
 
-      <div className="mt-10" ref={inspirationRef}>
-        <Inspiration prompt={prompt} setPrompt={setPrompt} />
-      </div>
+     
 
-           <Footer />
+    
     </div>
   );
 }

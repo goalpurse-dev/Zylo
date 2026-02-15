@@ -21,7 +21,7 @@ const TOOLS = [
     id: "background-library",
     title: "Background Library",
     description:
-      "Browse and apply premium AI-generated backgrounds instantly.",
+      "Browse and apply premium AI-generated backgrounds instantly and efficiently.",
     to: "/workspace/library",
     glow: "rgba(52,211,153,0.6)", // green
   },

@@ -40,6 +40,16 @@ export const MODELS = {
     },
   },
 
+   "image:seedream4.0": {
+    label: "Seedream 4.0",
+    description: "High-quality image generation with fast processing and low cost.",
+    img: LOGOS.nano,
+    credits: 3,
+    traits: ["Quality", "Fast processing", "Low cost"],
+    supportedSizes: ["1:1", "16:9", "9:16", "4:3","21:9"],
+    maxReferenceImages: 14,
+  },
+
 
 
   "image:nano": {

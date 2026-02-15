@@ -75,7 +75,10 @@ export type ImageToolKey =
   | "image:openai"
   | "image:flux.base"
   | "image:flux.max"
-  | "image:nano-pro";
+  | "image:nano-pro"
+  | "image:seedream4.0";
+
+
   
 
 export const T2V_UI_BY_TIER: Record<

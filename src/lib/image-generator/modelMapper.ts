@@ -12,4 +12,5 @@ export const UI_MODEL_TO_TOOLKEY: Record<UiModelKey, ToolKey> = {
   "image:flux.base": "image:flux.base",
   "image:flux.max": "image:flux.max",
   "image:nano-pro": "image:nano-pro",
+  "image:seedream4.0": "image:seedream4.0",
 };

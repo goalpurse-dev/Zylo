@@ -14,6 +14,8 @@ export type ToolKey =
   | "image:flux.max"
   | "image:Wan2.6-image"
   | "image:nano-pro"
+  | "image:seedream4.0"
+
 
 
 
@@ -86,6 +88,20 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     retailUSD: 0.20,
     credits: 10,
     margin: m(0.133, 0.20),
+  },
+
+  "image:seedream4.0": {
+    provider: "runware",
+    generator: "Seedream 4.0",
+    airTag: "bytedance:5@0",
+    secret: "RUNWARE_API_KEY",
+    edgeFn: "/functions/v1/runware-image",
+
+   /* On the highest quality */
+    costUSD: 0.03,
+    retailUSD: 0.06,
+    credits: 3,
+    margin: m(0.03, 0.06),
   },
 
    "image:nano-pro": {
