@@ -4,7 +4,7 @@ import RelatedArticles from "../../../app/blog/RelatedArticles";
 
 const related = [
   {
-    title: ">How Creators Are Blowing Up Using AI Image Generators",
+    title: "How Creators Are Blowing Up Using AI Image Generators",
     description: "Learn to make images that current creators are using to blow up",
     date: "01.02.2026",
     slug: "/blog/creators-blowingup-with-ai",
