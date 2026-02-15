@@ -22,7 +22,7 @@ const tabs = [
 ];
 
 const card =
-  "rounded-2xl border border-black bg-[#ECE8F2] p-5 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]";
+  "rounded-2xl border border-black bg-[#141622] p-5 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]";
 
 /* ===================== ROOT ===================== */
 export default function Settings() {
@@ -53,7 +53,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5FA]  font-sans">
+    <div className="min-h-screen bg-[#12141A]  font-sans">
       <div className="mx-auto max-w-6xl px-4 py-8 flex gap-6">
         {/* LEFT MENU (desktop) */}
         <aside className="hidden md:block w-[240px] shrink-0">
@@ -66,10 +66,10 @@ export default function Settings() {
                   onClick={() => setActive(id)}
                   className={[
                     "w-full flex items-center gap-2 rounded-xl px-3 py-2 text-[15px]  ",
-                    "border border-black/30 transition ",
+                    "border border-[#1F2230] transition ",
                     isActive
-                      ? "bg-[#7A3BFF] text-white"
-                      : "bg-transparent text-[#110829] hover:bg-black/5",
+                      ? "bg-[#7A3BFF] text-[#F4F6FB]"
+                      : "bg-transparent text-[#B7BBC6] hover:bg-[#1A1D2B]",
                   ].join(" ")}
                 >
                   <Icon className="h-4 w-4 opacity-95" />
@@ -82,7 +82,7 @@ export default function Settings() {
             <button
               onClick={handleLogout}
               disabled={loggingOut}
-              className="mt-2 w-full flex items-center gap-2 rounded-xl px-3 py-2 text-sm border border-red-900 bg-red-600/30 text-red-500 hover:bg-red-900/40 disabled:opacity-60"
+              className="mt-2 w-full flex items-center gap-2 rounded-xl px-3 py-2 text-sm border border-red-800 bg-red-800/30 text-red-500 hover:bg-red-900/40 disabled:opacity-60"
             >
               <LogOut className="h-4 w-4" />
               {loggingOut ? "Logging out…" : "Log out"}
@@ -102,10 +102,10 @@ export default function Settings() {
                   onClick={() => setActive(id)}
                   className={[
                     "flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-[14px] ",
-                    "border border-black/30 transition",
+                    "border border-[#1F2230] transition",
                     isActive
-                      ? "bg-[#7A3BFF] text-white"
-                      : "bg-transparent text-[#110829] hover:bg-black/5",
+                      ? "bg-[#7A3BFF] text-[#F4F6FB]"
+                      : "bg-transparent text-[#B7BBC6] hover:bg-[#1A1D2B]",
                   ].join(" ")}
                 >
                   <Icon className="h-4 w-4 opacity-95" />
@@ -209,26 +209,26 @@ function AccountPanel() {
     <div className="grid gap-4">
       <div className={card}>
         <div className="mb-4">
-          <h2 className="text-lg font-bold tracking-tight text-[#110829]">Account</h2>
-          <p className="text-xs text-[#4A4A55]">Manage your profile and login details.</p>
+          <h2 className="text-lg font-bold tracking-tight text-[#F4F6FB]">Account</h2>
+          <p className="text-xs text-[#B7BBC6]">Manage your profile and login details.</p>
         </div>
 
        
 
         {/* display name */}
-        <label className="mb-1 block text-[11px] font-semibold tracking-wide text-[#4A4A55]">Display name</label>
+        <label className="mb-1 block text-[11px] font-semibold tracking-wide text-[#B7BBC6]">Display name</label>
         <input
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
-          className="mb-4 w-full rounded-xl border border-black/30 text-[#110829] bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/30"
+          className="mb-4 w-full rounded-xl border border-[#1F2230] text-[#B7BBC6] bg-[#1A1D2B] px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/30"
         />
 
         {/* email (read-only) */}
-        <label className="mb-1 block text-[11px] font-semibold tracking-wide text-[#4A4A55]">Email</label>
+        <label className="mb-1 block text-[11px] font-semibold tracking-wide text-[#B7BBC6]">Email</label>
         <input
           value={email}
           readOnly
-          className="mb-4 w-full cursor-not-allowed rounded-xl border border-black/30 bg-white px-3 py-2 text-sm text-[#110829]/80"
+          className="mb-4 w-full cursor-not-allowed rounded-xl border border-[#1F2230] bg-[#1A1D2B] px-3 py-2 text-sm text-[#B7BBC6]/80"
         />
 
         <div className="flex flex-wrap items-center gap-2 mb-6">
@@ -241,7 +241,7 @@ function AccountPanel() {
           </button>
           <button
             onClick={() => { setNameErr(""); setNameMsg(""); }}
-            className="rounded-lg border border-black/60 bg-white px-3 py-1.5 text-sm  text-[#110829]/80 hover:bg-white/15"
+            className="rounded-lg border border-[#2A2F45] bg-[#1A1D2B] px-3 py-1.5 text-sm  text-[#E6E8EE] hover:bg-[#20243A]"
           >
             Reset
           </button>
@@ -250,8 +250,8 @@ function AccountPanel() {
         {nameMsg && <div className="mb-4 text-xs text-green-400">{nameMsg}</div>}
 
         {/* change password */}
-        <div className="mt-2 rounded-xl border border-black/30 bg-[#F7F5FA]  p-3">
-          <div className="mb-2 text-sm font-bold text-[#110829]">Change password</div>
+        <div className="mt-2 rounded-xl border border-[#1F2230] bg-[#12141A]  p-3">
+          <div className="mb-2 text-sm font-bold text-[#F4F6FB]">Change password</div>
           <form onSubmit={handleChangePassword} className="space-y-2">
             <input
               type="password"
@@ -260,7 +260,7 @@ function AccountPanel() {
               onChange={(e) => setPw1(e.target.value)}
               minLength={6}
               required
-              className="w-full rounded-lg border border-black/30 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/30"
+              className="w-full rounded-lg border border-[#1F2230] bg-[#1A1D2B] px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/30"
             />
             <input
               type="password"
@@ -269,7 +269,7 @@ function AccountPanel() {
               onChange={(e) => setPw2(e.target.value)}
               minLength={6}
               required
-              className="w-full rounded-lg border border-black/30 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/30"
+              className="w-full rounded-lg border border-[#1F2230] bg-[#1A1D2B] px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/30"
             />
             <div className="flex items-center gap-2">
               <button
@@ -291,7 +291,7 @@ function AccountPanel() {
         <div className="mb-2 text-sm font-extrabold text-red-500">Danger zone</div>
         <button
           onClick={handleDeleteAccount}
-          className="rounded-xl border border-red-500 bg-red-200 px-4 py-2 text-sm font-extrabold text-red-500 hover:bg-red-500/15"
+          className="rounded-xl border border-red-500 bg-red-400 px-4 py-2 text-sm font-extrabold text-red-800 hover:bg-red-500/15"
         >
           Delete account
         </button>
@@ -312,7 +312,7 @@ function NotificationsPanel() {
     <div className="grid gap-4 ">
       {/* Email notifications */}
       <div className={card}>
-        <div className="mb-3 text-sm font-bold text-[#110829]">Email</div>
+        <div className="mb-3 text-sm font-bold text-[#F4F6FB]">Email</div>
         <ToggleRow
           label="Product updates"
           value={email.product}
@@ -337,7 +337,7 @@ function NotificationsPanel() {
 
       {/* Push notifications */}
       <div className={card}>
-        <div className="mb-3 text-sm font-bold text-[#110829]">Push</div>
+        <div className="mb-3 text-sm font-bold text-[#F4F6FB]">Push</div>
         <EmptyRow text="Coming soon." />
       </div>
     </div>
@@ -353,8 +353,8 @@ function PrivacyPanel() {
   return (
     <div className="grid gap-4">
       <div className={card}>
-        <div className="mb-2 text-sm font-bold text-[#110829]">Privacy</div>
-        <p className="mb-3 text-sm text-[#4A4A55]">
+        <div className="mb-2 text-sm font-bold text-[#F4F6FB]">Privacy</div>
+        <p className="mb-3 text-sm text-[#B7BBC6]">
           Learn how we handle your data, retention, and user controls.
         </p>
         <a href="/blog" className={link}>
@@ -363,8 +363,8 @@ function PrivacyPanel() {
       </div>
 
       <div className={card}>
-        <div className="mb-2 text-sm font-bold text-[#110829]">Security</div>
-        <p className="mb-3 text-sm text-[#4A4A55]">
+        <div className="mb-2 text-sm font-bold text-[#F4F6FB]">Security</div>
+        <p className="mb-3 text-sm text-[#B7BBC6]">
           Overview of our security model, storage, and operational safeguards.
         </p>
         <a href="/blog" className={link}>
@@ -381,9 +381,9 @@ function AboutPanel() {
       <div className={card}>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <div className="text-[11px] uppercase text-[#110829]">App</div>
-            <div className="text-lg font-black tracking-tight text-[#110829]">ZyloAI Studio</div>
-            <div className="text-sm text-[#4A4A55]">Version 1.0.0</div>
+            <div className="text-[11px] uppercase text-[#F4F6FB]">App</div>
+            <div className="text-lg font-black tracking-tight text-[#F4F6FB]">ZyloAI Studio</div>
+            <div className="text-sm text-[#B7BBC6]">Version 1.1.0</div>
           </div>
           <div className="grid gap-2">
          
@@ -392,7 +392,7 @@ function AboutPanel() {
       </div>
 
       <div className={card}>
-        <div className="text-sm text-[#4A4A55]">© {new Date().getFullYear()} ZyloAI. All rights reserved.</div>
+        <div className="text-sm text-[#B7BBC6]">© {new Date().getFullYear()} ZyloAI. All rights reserved.</div>
       </div>
     </div>
   );
@@ -402,13 +402,13 @@ function AboutPanel() {
 
 function ToggleRow({ label, value, onChange }) {
   return (
-    <div className="mb-2 flex items-center justify-between rounded-xl bg-white border-black/30 border p-3 ring-1 ring-white/10">
-      <div className="text-sm  text-[#4A4A55] ">{label}</div>
+    <div className="mb-2 flex items-center justify-between rounded-xl bg-[#141622] border-[#1F2230] border p-3 ring-1 ring-white/10">
+      <div className="text-sm  text-[#B7BBC6] ">{label}</div>
       <button
         onClick={() => onChange(!value)}
         className={[
           "relative h-6 w-11 rounded-full transition",
-          value ? "bg-[#7A3BFF]" : "bg-black/15",
+          value ? "bg-[#7A3BFF]" : "bg-[#1F2230]",
         ].join(" ")}
         aria-pressed={value}
       >
@@ -433,7 +433,7 @@ function Badge({ children }) {
 
 function EmptyRow({ text }) {
   return (
-    <div className="rounded-xl bg-white/5 p-4 text-sm text-[#4A4A55] ring-1 ring-white/10">
+    <div className="rounded-xl bg-[#1F2230] p-4 text-sm text-[#B7BBC6] ring-1 ring-white/10">
       {text}
     </div>
   );

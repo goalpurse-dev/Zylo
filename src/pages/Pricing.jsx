@@ -252,20 +252,20 @@ function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade }) {
   }
 
   const core = (
-    <div className="rounded-2xl bg-[#ECE8F2] border border-zinc-800 p-6 flex flex-col h-full relative overflow-hidden text-[#110829]  shadow-xl">
+    <div className="rounded-2xl bg-[#141622] border border-[#1F2230] p-6 flex flex-col h-full relative overflow-hidden text-[#F4F6FB]  shadow-xl">
       {tier.popular && <CornerRibbon label="Best value" />}
 
       <div className="mb-2 font-bold text-xl">{tier.name}</div>
 
       <div className="mt-1 flex items-baseline gap-2">
         <div className="text-4xl font-bold">{priceStr}</div>
-        <div className="text-sm text-[#4A4A55] font-semibold">/month</div>
+        <div className="text-sm text-[#B7BBC6] font-semibold">/month</div>
       </div>
-      <div className="text-sm text-[#4A4A55] font-bold">{subline}</div>
+      <div className="text-sm text-[#B7BBC6] font-bold">{subline}</div>
 
-      <div className="text-sm text-[#4A4A55] font-semibold mt-2">{tier.blurb}</div>
+      <div className="text-sm text-[#B7BBC6] font-semibold mt-2">{tier.blurb}</div>
 
-      <ul className="mt-5 space-y-2 text-sm text-[#4A4A55]">
+      <ul className="mt-5 space-y-2 text-sm text-[#B7BBC6]">
         {tier.features.map((f, i) => (
           <li key={i} className="flex items-start gap-2">
             <span className="mt-[3px] text-[#7A3BFF]">
@@ -309,12 +309,12 @@ function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade }) {
 
 function SecondaryCard({ title, price, subtitle, ctaLabel, to, children }) {
   return (
-    <div className="rounded-2xl bg-[#F7F5FA] border border-black p-6 flex flex-col justify-between text-[#110829] shadow-xl">
+    <div className="rounded-2xl bg-[#1A1D2B] border border-[#2A2F45] p-6 flex flex-col justify-between text-[#E6E8EE] shadow-xl">
       <div>
         <div className="text-2xl font-semibold">{title}</div>
         <div className="mt-1 text-3xl font-bold">{price}</div>
-        {subtitle && <div className="mt-1 text-sm text-[#4A4A55] font-semibold">{subtitle}</div>}
-        <div className="mt-5 text-sm text-[#4A4A55] leading-6">{children}</div>
+        {subtitle && <div className="mt-1 text-sm text-[#B7BBC6] font-semibold">{subtitle}</div>}
+        <div className="mt-5 text-sm text-[#B7BBC6] leading-6">{children}</div>
       </div>
       <div className="mt-6">
         <Link
@@ -346,18 +346,18 @@ export default function Pricing() {
   }, [plan]);
 
   return (
-    <section className="bg-[#F7F5FA] text-white">
+    <section className="bg-[#12141A] text-white">
       <div className="max-w-6xl mx-auto px-6 sm:px-8 py-14">
         {/* Heading */}
         <div className="text-center mb-6">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#110829]">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#F4F6FB]">
             The right plan,{" "}
             <span className="text-[#7A3BFF] bg-clip-text ">
               for the right team
             </span>
           </h1>
-          <p className="text-[#4A4A55] font-semibold mt-3">Start free. Upgrade when you’re ready. Cancel anytime.</p>
-          <p className="text-[#4A4A55] mt-1 text-sm">V1 uses the best AI model available right now.</p>
+          <p className="text-[#B7BBC6] font-semibold mt-3">Start free. Upgrade when you’re ready. Cancel anytime.</p>
+          <p className="text-[#B7BBC6] mt-1 text-sm">V1 uses the best AI model available right now.</p>
 
           {/* current plan badge */}
           <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#ECE8F2]  px-3 py-2 text-sm">
@@ -376,7 +376,7 @@ export default function Pricing() {
 
         {/* Billing toggle */}
         <div className="flex items-center justify-center mb-8">
-          <div className="inline-flex rounded-full border border-zinc-800 bg-zinc-900 p-1">
+          <div className="inline-flex rounded-full border border-[#1F2230] bg-[#141622] p-1">
             <button
               onClick={() => setBilling("monthly")}
               className={`px-4 py-2 rounded-full text-sm font-semibold ${
@@ -404,9 +404,9 @@ export default function Pricing() {
         </div>
 
         {/* “All plans include” */}
-        <div className="mt-10 rounded-2xl border border-[#ECE8F2] bg-[#ECE8F2] p-5">
-          <div className=" text-center text-sm font-bold mb-4 text-[#110829] ">All plans include</div>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 text-sm text-[#4A4A55]">
+        <div className="mt-10 rounded-2xl border border-[#2A2F45] bg-[#1A1D2B] p-5">
+          <div className=" text-center text-sm font-bold mb-4 text-[#E6E8EE] ">All plans include</div>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 text-sm text-[#B7BBC6]">
             {ALL_INCLUDE.map((f) => (
               <li key={f} className="flex items-center gap-2">
                 <span className="text-[#7A3BFF]">
@@ -445,29 +445,29 @@ export default function Pricing() {
 
         {/* FAQ */}
         <div className="mt-12">
-          <h3 className="text-center text-xl font-bold mb-4 text-[#110829]">FAQs</h3>
+          <h3 className="text-center text-xl font-bold mb-4 text-[#F4F6FB]">FAQs</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-            <div className="rounded-xl border border-black p-4 bg-white">
-              <div className="font-semibold mb-1 text-[#110829]">Can I cancel anytime?</div>
-              <p className="text-[#4A4A55]">
+            <div className="rounded-xl border border-[#2A2F45] p-4 bg-[#1A1D2B]">
+              <div className="font-semibold mb-1 text-[#E6E8EE]">Can I cancel anytime?</div>
+              <p className="text-[#B7BBC6]">
                 Yes. Manage your plan in the Stripe billing portal. Your plan stays active until the end of the paid period.
               </p>
             </div>
-            <div className="rounded-xl border border-black p-4 bg-white">
-              <div className="font-semibold text-[#110829] mb-1">Do unused credits roll over?</div>
-              <p className="text-[#4A4A55]">
+            <div className="rounded-xl border border-[#2A2F45] p-4 bg-[#1A1D2B]">
+              <div className="font-semibold mb-1 text-[#E6E8EE]">Do unused credits roll over?</div>
+              <p className="text-[#B7BBC6]">
                 Your balance is additive—monthly plan credits add to your remaining balance. One-time packs never expire.
               </p>
             </div>
-            <div className="rounded-xl border border-black p-4 bg-white">
-              <div className="font-semibold text-[#110829] mb-1">How do upgrades/downgrades work?</div>
-              <p className="text-[#4A4A55]">
+            <div className="rounded-xl border border-[#2A2F45] p-4 bg-[#1A1D2B]">
+              <div className="font-semibold mb-1 text-[#E6E8EE]">How do upgrades/downgrades work?</div>
+              <p className="text-[#B7BBC6]">
                 Both upgrades and downgrades are handled in the Stripe billing portal. Upgrades are usually prorated instantly; downgrades take effect on your next renewal.
               </p>
             </div>
-            <div className="rounded-xl border border-black p-4 bg-white">
-              <div className="font-semibold text-[#110829] mb-1">Do you offer refunds?</div>
-              <p className="text-[#4A4A55]">
+            <div className="rounded-xl border border-[#2A2F45] p-4 bg-[#1A1D2B]">
+              <div className="font-semibold mb-1 text-[#E6E8EE]">Do you offer refunds?</div>
+              <p className="text-[#B7BBC6]">
                 14-day money-back guarantee. Contact support if you’re not satisfied.
               </p>
             </div>
@@ -476,17 +476,17 @@ export default function Pricing() {
 
         {/* Top-ups */}
         <div className="mt-12">
-          <h3 className="text-center text-xl font-bold text-[#110829] mb-4">Need more credits?</h3>
+          <h3 className="text-center text-xl font-bold text-[#F4F6FB] mb-4">Need more credits?</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {TOPUPS.map((p) => (
               <div
                 key={p.id}
-                className="rounded-2xl bg-white border border-zinc-800 p-6 flex flex-col justify-between"
+                className="rounded-2xl bg-[#1A1D2B] border border-[#2A2F45] p-6 flex flex-col justify-between"
               >
                 <div>
-                  <div className="text-lg font-semibold text-[#110829]">{p.title}</div>
-                  <div className="mt-1 text-3xl font-bold text-[#110829]">${p.price}</div>
-                  <div className="text-sm text-[#4A4A55]">{p.credits} credits</div>
+                  <div className="text-lg font-semibold text-[#F4F6FB]">{p.title}</div>
+                  <div className="mt-1 text-3xl font-bold text-[#F4F6FB]">${p.price}</div>
+                  <div className="text-sm text-[#B7BBC6]">{p.credits} credits</div>
                 </div>
 
                 <button
@@ -526,8 +526,8 @@ export default function Pricing() {
             14-day money-back guarantee · Secure checkout · No hidden fees
           </div>
           <Link
-            to="/workspace"
-            className="border-[#7A3BFF] text-[#7A3BFF] inline-flex items-center justify-center mt-4 h-11 px-6 rounded-xl font-semibold transition border"
+            to="/workspace/home"
+            className="border-[#2A2F45] bg-[#1A1D2B] text-[#E6E8EE] inline-flex items-center justify-center mt-4 h-11 px-6 rounded-xl font-semibold transition border"
         
           >
             See more

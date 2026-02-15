@@ -150,12 +150,14 @@ function HorizontalRow({ title, items, getUrl, selected, onToggle }) {
                 outline-none
               `}
             >
-              <img
-                src={url}
-                alt=""
-                draggable={false}
-                className="h-[120px] w-[120px] object-cover"
-              />
+             <img
+  src={url}
+  loading="lazy"
+  decoding="async"
+  draggable={false}
+  className="h-[120px] w-[120px] object-cover"
+ />
+
 
               {isSelected && (
                 <div className="absolute inset-0 bg-black/50 border-[2px] border-[#7A3BFF] flex items-center justify-center">
@@ -281,39 +283,62 @@ export default function ReferenceImageModal({
         {/* CONTENT */}
         <div className="flex-1 p-6 overflow-y-auto overscroll-contain">
           {/* IMPORT */}
-          {activeTab === "import" && (
-            <div className="grid grid-cols-4 sm:grid-cols-5 gap-4">
-              <label className="cursor-pointer rounded-xl border border-dashed border-white/20 flex flex-col items-center justify-center text-center h-[120px]  md:h-[200px] text-white/60 hover:border-[#7A3BFF]">
-                <input type="file" hidden onChange={onUpload} />
-                <span className="text-sm">Upload image</span>
-              </label>
+         {activeTab === "import" && (
+  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+    
+    {/* Upload Tile */}
+    <label className="
+      cursor-pointer
+      rounded-xl
+      border border-dashed border-white/20
+      flex items-center justify-center
+      text-center
+      aspect-square
+      text-white/60
+      hover:border-[#7A3BFF]
+    ">
+      <input type="file" hidden onChange={onUpload} />
+      <span className="text-sm">Upload image</span>
+    </label>
 
-              {images.map((img) => {
-                const isSelected = selected.includes(img);
+    {/* Imported Images */}
+    {images.map((img) => {
+      const isSelected = selected.includes(img);
 
-                return (
-                  <button
-                    key={img.id}
-                    type="button"
-                    onClick={() => onToggle(img)}
-                    className={`relative rounded-xl overflow-hidden border
-                      ${isSelected ? "border-[#7A3BFF]" : "border-white/10"}
-                    `}
-                  >
-                    <img src={img.url} className="w-full h-full object-cover" />
+      return (
+        <button
+          key={img.id}
+          type="button"
+          onClick={() => onToggle(img)}
+          className={`
+            relative
+            rounded-xl
+            overflow-hidden
+            border
+            aspect-square
+            ${isSelected ? "border-[#7A3BFF]" : "border-white/10"}
+          `}
+        >
+          <img
+            src={img.url}
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
 
-                    {isSelected && (
-                      <div className="absolute inset-0 bg-black/50 border-[2px] border-[#7A3BFF] flex items-center justify-center">
-                        <div className="rounded-full bg-gradient-to-bl from-[#7A3BFF] to-[#492399] px-4 py-2 text-white font-bold">
-                          ✓
-                        </div>
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
+          {isSelected && (
+            <div className="absolute inset-0 bg-black/50 border-[2px] border-[#7A3BFF] flex items-center justify-center">
+              <div className="rounded-full bg-gradient-to-bl from-[#7A3BFF] to-[#492399] px-4 py-2 text-white font-bold">
+                ✓
+              </div>
             </div>
           )}
+        </button>
+      );
+    })}
+  </div>
+)}
+
 
           {/* LIBRARY */}
           {activeTab === "library" && (

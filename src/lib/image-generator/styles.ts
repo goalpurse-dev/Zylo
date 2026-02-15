@@ -1,23 +1,23 @@
+const STYLE_THUMBS = {
+  cinematic: "/images/styles/cinematic.png",
+  dynamic: "/images/styles/dynamic.png",
+  anime: "/images/thumbs/anime.webp",
+  clay: "/images/thumbs/clay.webp",
+  comic: "/images/thumbs/comic.webp",
+  disney: "/images/thumbs/disney.webp",
+  lego: "/images/thumbs/lego.webp",
+  lowpoly: "/images/thumbs/lowpoly.webp",
+  noir: "/images/thumbs/noir.webp",
+  cartoon: "/images/thumbs/3dcartoon.webp",
+  minecraft: "/images/thumbs/minecraft.webp",
+  ghibli: "/images/thumbs/ghibli.webp",
+  cyberpunk: "/images/thumbs/cyberpunk.webp",
+  pixelart: "/images/thumbs/pixelart.webp",
+  realistic: "/images/thumbs/realistic.webp",
+  vintage: "/images/thumbs/vintage.webp",
+};
 
-import Dynamic from "../../assets/styles/dynamic.png";
-import DynamicImg from "../../assets/logos/hidream.png";
-import Cinematic from "../../assets/styles/cinematic.png";
 
-import Anime from "../../assets/thumbs/anime.jpg";
-import Clay from "../../assets/thumbs/clay.jpg";
-import Comic from "../../assets/thumbs/comic.png";
-import Disney from "../../assets/thumbs/disney.jpg";
-import Lego from "../../assets/thumbs/lego.jpg";
-import Lowpoly from "../../assets/thumbs/lowpoly.jpg";
-import Noir from "../../assets/thumbs/noir.jpg";
-import Cartoon from "../../assets/thumbs/3dcartoon.png";
-import Minimal from "../../assets/thumbs/minimal.png";
-import Minecraft from "../../assets/thumbs/minecraft.png";
-import Ghibli from "../../assets/thumbs/ghibli.png";
-import Cyberpunk from "../../assets/thumbs/cyberpunk.png";
-import Pixelart from "../../assets/thumbs/pixelart.png";
-import Realistic from "../../assets/thumbs/realistic.png";
-import Vintage from "../../assets/thumbs/vintage.png";
 
 
 
@@ -25,21 +25,21 @@ export const IMAGE_STYLES = {
   Cinematic: {
     label: "Cinematic",
     promptHint: "cinematic lighting, dramatic composition, ultra-realistic",
-    img: Cinematic,
+    img: STYLE_THUMBS.cinematic,
     imageStrength: 0.55, // 🔥 more freedom
   },
 
   Dynamic: {
     label: "Dynamic",
     promptHint: "dynamic motion, energetic composition, sharp focus",
-    img: Dynamic,
+    img: STYLE_THUMBS.dynamic,
     imageStrength: 0.55, // 🔥 more freedom
   },
 
    Cartoon: {
     label: "3D Cartoon",
     promptHint: "smooth 3D cartoon style, soft lighting, rounded shapes",
-    img: Cartoon,
+    img: STYLE_THUMBS.cartoon,
     imageStrength: 0.65, // 🔥 more freedom
   },
 
@@ -56,84 +56,84 @@ shallow depth of field, classic portrait composition,
 timeless aesthetic, emotional expression,
 shot on vintage film camera, archival quality
     `,
-    img: Vintage,
+    img: STYLE_THUMBS.vintage,
   },
 
 
     Minecraft: {
     label: "Minecraft",
     promptHint: "Minecraft-style blocky, pixelated, low-poly aesthetic",
-    img: Minecraft,
+    img: STYLE_THUMBS.minecraft,
   },
 
   
    Realistic: {
     label: "Realistic",
     promptHint: "realistic style, high detail, photorealistic rendering",
-    img: Realistic,
+    img: STYLE_THUMBS.realistic,
   },
 
 
   Anime: {
     label: "Anime",
     promptHint: "anime illustration style, expressive features, clean linework",
-    img: Anime,
+    img: STYLE_THUMBS.anime,
   },
 
   Clay: {
     label: "Clay",
     promptHint: "claymation style, handmade clay texture, soft studio lighting",
-    img: Clay,
+    img: STYLE_THUMBS.clay,
   },
 
 
   Comic: {
     label: "Comic",
     promptHint: "comic book style, bold outlines, high contrast colors",
-    img: Comic,
+    img: STYLE_THUMBS.comic,
   },
 
   Disney: {
     label: "Disney",
     promptHint: "Disney-inspired animation style, soft shading, friendly proportions",
-    img: Disney,
+    img: STYLE_THUMBS.disney,
   },
 
     Ghibli: {
     label: "Ghibli",
     promptHint: "Studio Ghibli-style animation, soft shading, whimsical aesthetic",
-    img: Ghibli,
+    img: STYLE_THUMBS.ghibli,
   },
 
   Lego: {
     label: "Lego",
     promptHint: "LEGO-style build, plastic bricks, toy-like proportions",
-    img: Lego
+    img: STYLE_THUMBS.lego
   },
 
    Cyberpunk: {
     label: "Cyberpunk",
     promptHint: "cyberpunk aesthetic, neon lighting, futuristic elements",
-    img: Cyberpunk,
+    img: STYLE_THUMBS.cyberpunk,
   },
 
   Lowpoly: {
     label: "Lowpoly",
     promptHint: "low-poly 3D style, simple geometry, flat shading",
-    img: Lowpoly,
+    img: STYLE_THUMBS.lowpoly,
   },
 
    PixelArt: {
     label: "Pixel Art",
     promptHint: "pixel art style, retro 8-bit aesthetic, low resolution",
-    img: Pixelart,
+    img: STYLE_THUMBS.pixelart,
   },
 
 
   Noir: {
     label: "Noir",
     promptHint: "film noir style, dramatic lighting, deep shadows, monochrome",
-    img: Noir,
+    img: STYLE_THUMBS.noir,
   },
 } as const;
 

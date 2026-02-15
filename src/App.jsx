@@ -332,9 +332,9 @@ function AppWithRouting() {
     path="/workspace/home"
     index
     element={
-      <RequireAuth>
+   
         <Workspace />
-      </RequireAuth>
+   
     }
   />
 
