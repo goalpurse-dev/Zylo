@@ -2,10 +2,7 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 
-import Etsy from "../../assets/logos/etsy.png";
-import Shopify from "../../assets/logos/shopify.png";
-import QuestionMark from "../../assets/logos/questionmark.png";
-import Tiktok from "../../assets/logos/tiktok.png";
+
 
 export default function Step2({
   onNext,
@@ -154,10 +151,11 @@ export default function Step2({
       </div>
 
       <div className="grid grid-cols-2 py-3 gap-3 max-w-[300px]">
-        {platformBtn("Shopify", Shopify)}
-        {platformBtn("Tiktok", Tiktok)}
-        {platformBtn("Etsy", Etsy)}
-        {platformBtn("Other", QuestionMark)}
+       {platformBtn("Shopify", "/images/logos/shopify.webp")}
+{platformBtn("Tiktok", "/images/logos/tiktok.webp")}
+{platformBtn("Etsy", "/images/logos/etsy.webp")}
+{platformBtn("Other", "/images/logos/questionmark.webp")}
+
       </div>
 
       {isOther && (
