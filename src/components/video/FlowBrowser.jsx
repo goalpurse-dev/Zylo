@@ -6,91 +6,14 @@ import { useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom"; // ✅ deep-linking
 
 // Showcase pictures
-import disneyThumb from "../../assets/thumbs/disney.jpg";
-import animeThumb from "../../assets/thumbs/anime.jpg";
-import clayThumb from "../../assets/thumbs/clay.jpg";
-import lowpolyThumb from "../../assets/thumbs/lowpoly.jpg";
-import neonThumb from "../../assets/thumbs/neon.jpg";
-import noirThumb from "../../assets/thumbs/noir.jpg";
-import legoThumb from "../../assets/thumbs/lego.jpg";
-import top10png from "../../assets/thumbs/top10.jpg";
-import facelessvideo from "../../assets/thumbs/facelessvideo.jpg";
-import facelessBanner from "../../assets/thumbs/facelessvideobanner.jpg";
-import top10Banner from "../../assets/thumbs/top10banner.jpg";
-import logocreator from "../../assets/thumbs/logocreator.png";
-import ugcavatar from "../../assets/thumbs/avatar.png";
-import scriptadd from "../../assets/thumbs/scriptadd.png";
-import pixarugc from "../../assets/thumbs/3dugc.png";
-import dcartoon from "../../assets/thumbs/3dcartoon.png";
-import comic from "../../assets/thumbs/comic.png";
 
 
 
 // Inside banners
-import disneyBanner from "../../assets/thumbs/disney.jpg";
+
 
 /** Order: Top picks → Create faceless videos → Create UGC ads → Image Enhancement → Video Enhancement Suite → Animated & stylized */
-const CATEGORIES = [
-  {
-    title: "Top picks",
-    items: [
-      { id: "image-to-video", title: "Image → Video", subtitle: "Animate a single image" },
-      { id: "explainer", title: "Explainer video", subtitle: "Clear, structured, educational" },
-      { id: "use-my-script", title: "Use my script", subtitle: "Paste a full script and render" },
-      { id: "animated-video", title: "Animated video", subtitle: "Stylized motion graphics" },
-    ],
-  },
-  {
-    title: "Create faceless videos",
-    items: [
-      { id: "viral-short",     title: "Viral short video",  subtitle: "Kinetic captions, b-roll, SFX", thumb: facelessvideo, banner: facelessBanner },
-      { id: "prompt-to-video", title: "Prompt to video",    subtitle: "Auto-edit with captions" },
-      { id: "top10-video",     title: "Top 10 video",       subtitle: "Listicle format", thumb: top10png, banner: top10Banner },
-      { id: "reddit-story",    title: "Reddit story video", subtitle: "Narrate posts with b-roll", redirect: "/tools/reddit-story" },
-      { id: "fake-text-story", title: "Fake text story",    subtitle: "Messaging-style stories",    redirect: "/tools/fake-text-story" },
-      { id: "ai-comic-maker",  title: "AI Comic Maker",     subtitle: "Scrollable comic / webtoon", thumb: comic},
-      { id: "cartoon-generator", title: "3D Cartoon generator", subtitle: "Anime / Pixar-ish / low-poly", thumb : dcartoon},
-    ],
-  },
-  {
-    title: "Create UGC ads",
-    items: [
-      { id: "logo-creator",  title: "Logo creator",       subtitle: "Quick brand marks", thumb: logocreator, banner: logocreator },
-      { id: "avatar-ads",    title: "Ads w/ avatar",      subtitle: "Human presenter + captions", thumb: ugcavatar, banner: ugcavatar },
-      { id: "script-to-ugc", title: "Script → UGC Ad",    subtitle: "Turn screenplay into hooks", thumb: scriptadd, banner: scriptadd },
-      { id: "ugc-3d-video",  title: "3D video for UGC Ad",subtitle: "Stylized animated ad", thumb: pixarugc, banner: pixarugc },
-    ],
-  },
-  {
-    title: "Image Enhancement",
-    items: [
-      { id: "upscale",      title: "Upscaler (HD boost)",     subtitle: "Sharper, larger images" },
-      { id: "face-retouch", title: "Retouch / Restore faces", subtitle: "Fix skin & restore details" },
-      { id: "denoise",      title: "Blur / Noise fixer",      subtitle: "Reduce grain & blur" },
-    ],
-  },
-  {
-    title: "Video Enhancement Suite",
-    items: [
-      { id: "lip-sync",     title: "AI Lip Sync",           subtitle: "Perfectly synced voices" },
-      { id: "green-screen", title: "AI Green Screen",       subtitle: "Replace backgrounds instantly" },
-      { id: "stock-video",  title: "Stock Video Generator", subtitle: "Cinematic AI b-roll" },
-      { id: "deepfake",     title: "Deepfake",              subtitle: "Meme-ready face swaps" },
-    ],
-  },
-  {
-    title: "Animated & stylized",
-    items: [
-      { id: "pixar-style",      title: "Disney/Pixar style",   subtitle: "Soft shading + cinematic", thumb: disneyThumb },
-      { id: "claymation-style", title: "Claymation style",     subtitle: "Stop-motion look", thumb: clayThumb },
-      { id: "lego-style",       title: "Lego style",           subtitle: "Plastic bricks vibe", thumb: legoThumb },
-      { id: "anime-style",      title: "Anime style",          subtitle: "High-contrast ink lines", thumb: animeThumb },
-      { id: "lowpoly-style",    title: "Low-poly style",       subtitle: "Flat facets, simple shapes", thumb: lowpolyThumb },
-      { id: "neon-glitch-style",title: "Neon/Glitch style",    subtitle: "Vaporwave & chromatic", thumb: neonThumb },
-      { id: "noir-style",       title: "Noir style",           subtitle: "Moody B/W, hard shadows", thumb: noirThumb },
-    ],
-  },
-];
+
 
 // Style cards -> preselected theme for VideoGenerator
 const STYLE_TO_THEME = {

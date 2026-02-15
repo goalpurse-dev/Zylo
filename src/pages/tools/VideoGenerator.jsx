@@ -5,13 +5,8 @@ import FlowBrowser from "../../components/video/FlowBrowser";
 import CreationOverlay from "../../components/video/CreationOverlay";
 import PostRenderSetup from "../../components/video/PostRenderSetup";
 
-import disneyThumb from "../../assets/thumbs/disney.jpg";
-import animeThumb from "../../assets/thumbs/anime.jpg";
-import clayThumb from "../../assets/thumbs/clay.jpg";
-import lowpolyThumb from "../../assets/thumbs/lowpoly.jpg";
-import neonThumb from "../../assets/thumbs/neon.jpg";
-import noirThumb from "../../assets/thumbs/noir.jpg";
-import legoThumb from "../../assets/thumbs/lego.jpg";
+
+
 import { enhancePrompt } from "../../lib/promptEnhancer"; // ADDED
 import { launchJob } from "../../lib/jobLauncher";
 
