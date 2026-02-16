@@ -341,8 +341,8 @@ useEffect(() => {
   };
 }, [settingsOpen]);
 
-  return (
-  <section>
+ return (
+  <section className="min-h-[100svh] pb-[calc(env(safe-area-inset-bottom)+24px)]">
 
     {(openModel || openStyle || openSize) && (
   <div
