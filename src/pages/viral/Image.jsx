@@ -216,6 +216,8 @@ export default function Image() {
   =============================== */
   return (
     <div className="w-full bg-[#12141A]">
+
+      
 <div
   className={`pt-1 md:pt-4 ${
     results.length === 0 ? "min-h-[100svh]" : ""
@@ -228,6 +230,8 @@ export default function Image() {
     setActiveJobId={setActiveJobId}
   />
 </div>
+
+
 
       {results.length > 0 && (
         <div className="mt-10">

@@ -144,6 +144,8 @@ import AIImageGeneratorBeginnersGuide2026 from "./app/blog/imagegenerator/AIImag
 import CreateProfessionalImagesWithAI from "./app/blog/imagegenerator/CreateProfessionalImagesWithAI.jsx";
 import AIImageGeneratorVsTraditionalDesign from "./app/blog/imagegenerator/AIImageGeneratorVsTraditionalDesign.jsx";
 import TopAIImageGeneratorFeaturesThatMatter from "./app/blog/imagegenerator/TopAIImageGeneratorFeaturesThatMatter.jsx";
+import HowtoGenerateImagesforAdsUsingAI from "./app/blog/imagegenerator/GenerateImagesForAdsUsingAI.jsx";
+import AIImageGeneratorForContentCreators from "./app/blog/imagegenerator/AIImageGeneratorForContentCreators.jsx";
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -319,6 +321,10 @@ function AppWithRouting() {
         <Route path="/blog/create-professional-images-with-ai" element={<CreateProfessionalImagesWithAI/>} />
         <Route path="/blog/ai-image-generator-vs-traditional-design" element={<AIImageGeneratorVsTraditionalDesign/>} />
         <Route path="/blog/top-ai-image-generator-features-that-matter" element={<TopAIImageGeneratorFeaturesThatMatter/>} />
+        <Route path="/blog/generate-images-for-ads-using-ai" element={<HowtoGenerateImagesforAdsUsingAI/>} />
+        <Route path="/blog/ai-image-generator-for-content-creators" element={<AIImageGeneratorForContentCreators/>} />
+
+
 
         <Route path="/workspace/image-gen-test" element={<ImageGenTest/>} />
                  
