@@ -39,19 +39,19 @@ export default function Hero() {
          {/* Images */}
        
           <img
-            src={Image}
+             src="/assets/tools/image-gen.webp"
             className="absolute  top-[-5px] flex left-[90px]  w-[220px] rounded-xl   z-20 hover:scale-105
              hover:brightness-90 transition"
           />
 
           <img
-            src={Product6}
+            src="/assets/tools/image-gen1.webp"
             
             className="absolute top-0 flex left-0 w-[220px] rounded-xl z-10  brightness-50 mx-10 -rotate-3 hover:scale-105 hover:-rotate-6"
           />
 
           <img
-            src={Productphoto}
+             src="/assets/tools/productphoto.webp"
            
             className="absolute aspect-[1/1] object-cover top-0 right-0 w-[220px] rounded-xl  z-10 rotate-3 brightness-50 mx-10 hover:scale-105 hover:rotate-6 "
           />
@@ -88,7 +88,7 @@ export default function Hero() {
         {/* Buttons */}
         <div className="flex flex-col gap-6 mt-10 justify-center " >
           
-          <Link className="shadow-lg  text-[#110829] text-base rounded-lg bg-white w-[320px] mx-28 sm:mx-36 px-4 py-4  flex flex-row items-center hover:bg-gray-100 transition"
+          <Link className="shadow-lg  text-[#110829] text-base rounded-lg bg-white w-[320px] mx-28 sm:mx-36 px-4 py-4  flex flex-row justify-center items-center hover:bg-gray-100 transition"
           to="/signup"
           >
             Start Free With Google
@@ -205,19 +205,19 @@ export default function Hero() {
 
           <div style={{ transform: `translateY(${scrollY * 0.12}px)` }}>
             <img
-              src={Productphoto}
+              src="/assets/tools/productphoto.webp"
               className="absolute aspect-[1/1] object-cover top-5 right-[50px]  w-[320px] rounded-xl shadow-xl z-10 rotate-2 brightness-90"
             />
           </div>
 
           <img
-            src={Image1}
+             src="/assets/tools/image-gen1.webp"
             className="absolute top-0 brightness-95 left-[-20px] w-[340px] rounded-xl shadow-xl z-20"
           />
 
           <div style={{ transform: `translateY(${scrollY * 0.12}px)` }}>
             <img
-              src={Productphoto1}
+               src="/assets/tools/productphoto1.webp"
               className="absolute aspect-[1/1] object-cover top-5 left-[-120px] w-[320px] rounded-xl shadow-xl -rotate-2 brightness-90"
             />
           </div>

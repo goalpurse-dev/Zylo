@@ -117,8 +117,8 @@ export default function Model() {
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-6 mt-4">
 
         <ModelCard
-          image={Nanobanana1}
-          hoverImage={Nanobanana2}
+          image="/assets/models/nanobanana.webp"
+          hoverImage="/assets/models/nanobanana2.webp"
           badge="Nano Banana Pro"
           title="Nano Banana Pro × OpenArt"
           description="4K generations on the best image model yet"
@@ -126,8 +126,8 @@ export default function Model() {
         />
 
         <ModelCard
-          image={Juggernaut}
-          hoverImage={Juggernaut2}
+          image="/assets/models/juggernaut.webp"
+          hoverImage="/assets/models/juggernaut2.webp"
           badge="Juggernaut"
           title="Juggernaut Pro Flux by RunDiffusion"
           description="Ultra-detailed creative image generation"
@@ -135,8 +135,8 @@ export default function Model() {
         />
 
         <ModelCard
-          image={Zyvo}
-          hoverImage={Zyvo2}
+          image="/assets/models/zyvo.webp"
+          hoverImage="/assets/models/zyvo2.webp"
           badge="OpenAI"
           title="OpenAI Image 1.5"
           description="Super advanced image generation from OpenAI"
@@ -144,8 +144,8 @@ export default function Model() {
         />
 
         <ModelCard
-          image={HiDream}
-          hoverImage={HiDream2}
+          image="/assets/models/hidream.webp"
+          hoverImage="/assets/models/hidream2.webp"
           badge="HiDream"
           title="HiDream-i1 Fast"
           description="Stylized worlds and characters in seconds"

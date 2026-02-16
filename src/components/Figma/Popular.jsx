@@ -136,29 +136,29 @@ export default function Popular() {
       <div className="grid grid-cols-2 md:grid-cols-4  gap-6 mt-4  mx-auto">
   <PopularCard
     title="Image Generator"
-    image={Image}
-    hoverImage={Image1}
+    image="/assets/tools/image-gen.webp"
+    hoverImage="/assets/tools/image-gen1.webp"
     to="/image-generator"
   />
 
   <PopularCard
     title="Product Photos"
-    image={Productphoto}
-    hoverImage={Productphoto1}
+    image="/assets/tools/productphoto.webp"
+    hoverImage="/assets/tools/productphoto1.webp"
     to="/workspace/productphoto"
   />
 
   <PopularCard
     title="Background Library"
-    image={Background}
-    hoverImage={Background1}
+    image="/assets/tools/background.webp"
+    hoverImage="/assets/tools/background1.webp"
     to="/workspace/library"
   />
 
   <PopularCard
     title="Blogs"
-    image={Blog}
-    hoverImage={Blog1}
+    image="/assets/tools/blog.webp"
+    hoverImage="/assets/tools/blog2.webp"
     to="/blog"
   />
 </div>

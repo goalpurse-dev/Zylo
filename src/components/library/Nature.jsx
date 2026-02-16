@@ -65,24 +65,28 @@ export default function Nature({ items = [], onSelect, selectedId }) {
                     ${bg.locked ? "cursor-not-allowed" : "cursor-pointer"}
                   `}
                 >
-                  <img
-                    src={bg.src}
-                    alt={bg.id}
-                    className={`h-full w-full object-cover transition
-                      ${bg.locked ? "grayscale brightness-75" : ""}
-                    `}
-                  />
+                  {/* ✅ WebP → PNG automatic fallback */}
+                  <picture>
+                    <source srcSet={bg.webp} type="image/webp" />
+                    <img
+                      src={bg.png}
+                      alt={bg.id}
+                      loading="lazy"
+                      className={`h-full w-full object-cover transition
+                        ${bg.locked ? "grayscale brightness-75" : ""}
+                      `}
+                    />
+                  </picture>
 
                   {/* 🔒 LOCKED OVERLAY */}
                   {bg.locked && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-white text-[11px] font-semibold bg-black/60 px-2 py-1 rounded">
-          {bg.lockReason === "starter"
-        ? "Upgrade to Starter"
-        : bg.lockReason === "pro"
-        ? "Upgrade to Pro"
-        : "Upgrade to Generative"}
-
+                        {bg.lockReason === "starter"
+                          ? "Upgrade to Starter"
+                          : bg.lockReason === "pro"
+                          ? "Upgrade to Pro"
+                          : "Upgrade to Generative"}
                       </span>
                     </div>
                   )}
