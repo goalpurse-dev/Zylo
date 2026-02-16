@@ -90,8 +90,7 @@ useEffect(() => {
   const title = titleMap[location.pathname] || "Workspace";
 
   return (
-    <div className="flex w-full min-h-[100dvh] bg-[#12141A]">
-
+    <div className="flex w-full min-h-screen bg-[#12141A]">
 
       {/* DESKTOP TOOL SHELL */}
       <aside className="hidden lg:block h-screen w-[80px] flex-shrink-0 z-50">
@@ -154,7 +153,7 @@ useEffect(() => {
       <div
         ref={scrollRef}
         id="workspace-scroll"
-        className="flex flex-col flex-1 min-h-[100dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)]"
+        className="flex flex-col flex-1 h-screen overflow-y-auto"
       >
         <div
           className={`
