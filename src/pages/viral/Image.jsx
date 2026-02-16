@@ -215,8 +215,12 @@ export default function Image() {
      RENDER
   =============================== */
   return (
-    <div className="w-full min-h-screen bg-[#12141A]">
-<div className="pt-1 md:pt-4">
+    <div className="w-full bg-[#12141A]">
+<div
+  className={`pt-1 md:pt-4 ${
+    results.length === 0 ? "min-h-[100svh]" : ""
+  }`}
+>
   <Generate
     prompt={prompt}
     setPrompt={setPrompt}
@@ -224,6 +228,7 @@ export default function Image() {
     setActiveJobId={setActiveJobId}
   />
 </div>
+
       {results.length > 0 && (
         <div className="mt-10">
         <Result

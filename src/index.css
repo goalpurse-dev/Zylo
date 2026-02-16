@@ -205,3 +205,6 @@ body,
 #root {
   background-color: #12141A; /* your real app bg */
 }
+#workspace-scroll {
+  -webkit-overflow-scrolling: touch;
+}
