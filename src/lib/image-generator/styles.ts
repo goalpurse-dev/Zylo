@@ -15,6 +15,7 @@ const STYLE_THUMBS = {
   pixelart: "/images/thumbs/pixelart.webp",
   realistic: "/images/thumbs/realistic.webp",
   vintage: "/images/thumbs/vintage.webp",
+    viralSkeleton: "/images/thumbs/viralskeleton.webp", // 👈 ADD THIS
 };
 
 
@@ -42,6 +43,27 @@ export const IMAGE_STYLES = {
     img: STYLE_THUMBS.cartoon,
     imageStrength: 0.65, // 🔥 more freedom
   },
+
+  ViralSkeleton: {
+  label: "Viral Skeleton",
+promptHint: `
+hyper-realistic human skeleton character,
+transparent skull variation allowed,
+glowing brain or glowing internal organs when relevant,
+cinematic golden hour or dramatic medical lighting,
+strong rim light outline glow,
+high contrast shadows,
+centered portrait composition,
+vertical 9:16 framing,
+ultra detailed bones texture,
+photorealistic 3D render,
+dramatic atmosphere,
+viral TikTok "what if" science style,
+8k ultra detail
+`,
+  img: STYLE_THUMBS.viralSkeleton,
+  imageStrength: 0.6
+},
 
    VintagePortrait: {
     label: "Vintage Portrait",

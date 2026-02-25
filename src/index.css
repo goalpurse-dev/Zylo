@@ -208,3 +208,142 @@ body,
 #workspace-scroll {
   -webkit-overflow-scrolling: touch;
 }
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* ===== Zyvo Scrollbar ===== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1F2230;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2a2f42;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1F2230 transparent;
+}
+
+@keyframes auraBreath {
+  0% {
+    opacity: 0.4;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-50%) scale(1.08);
+  }
+  100% {
+    opacity: 0.4;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@keyframes beamFade {
+  0% {
+    opacity: 0;
+    width: 0px;
+  }
+  100% {
+    opacity: 1;
+    width: 32px;
+  }
+}
+
+.animate-aura {
+  animation: auraBreath 2.8s ease-in-out infinite;
+}
+
+.animate-beam {
+  animation: beamFade 0.4s ease-out forwards;
+}
+/* === SaaS Border Glow System === */
+
+.glow-border {
+  position: relative;
+}
+
+.glow-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    120deg,
+    rgba(122, 59, 255, 0.35),
+    rgba(122, 59, 255, 0.15),
+    transparent
+  );
+  filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.glow-border-active::before,
+.glow-border:hover::before {
+  opacity: 1;
+}
+
+/* ===== ALIVE SAAS BORDER SYSTEM ===== */
+
+.alive-card {
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+
+.alive-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    120deg,
+    rgba(122,59,255,0.6),
+    rgba(122,59,255,0.15),
+    transparent 60%
+  );
+  opacity: 0;
+  filter: blur(8px);
+  transition: opacity 0.4s ease;
+  z-index: -1;
+}
+
+.alive-card:hover::before {
+  opacity: 1;
+}
+
+.alive-active::before {
+  opacity: 1;
+}

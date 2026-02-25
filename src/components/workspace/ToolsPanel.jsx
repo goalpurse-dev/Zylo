@@ -1,16 +1,17 @@
 import { NavLink } from "react-router-dom";
-import { Image, Box, PaintBucket, LucideImagePlus, HomeIcon } from "lucide-react";
+import { Image, Box, PaintBucket, LucideImagePlus, HomeIcon, LucideVideo  } from "lucide-react";
 HomeIcon
 const TOOLS = [
   { label: "Home", to: "/workspace/home", icon: HomeIcon },
   { label: "Image Generator", to: "/workspace/image-generator", icon: LucideImagePlus } ,
+  { label: "Video Generator", to: "/workspace/video-generator", icon: LucideVideo } ,
   { label: "Product Photos", to: "/workspace/productphoto", icon: Image },
   { label: "Own Products", to: "/workspace/myproduct", icon: Box },
   { label: "Background Library", to: "/workspace/library", icon: PaintBucket },
 ];
 
 function ToolRow({ to, label, Icon, end, onNavigate }) {
-   return (
+  return (
     <NavLink
       to={to}
       end={end}
@@ -20,30 +21,60 @@ function ToolRow({ to, label, Icon, end, onNavigate }) {
     >
       {({ isActive }) => (
         <div
-          className={`group relative flex items-center gap-3 px-2 py-2 rounded-lg
-            transition-colors duration-150 cursor-pointer
-            ${isActive ? "bg-white/10" : "hover:bg-white/5"}`}
+          className={`
+            group relative flex items-center gap-3 px-3 py-2 rounded-lg
+            cursor-pointer
+            transition-all duration-300 ease-[cubic-bezier(.16,1,.3,1)]
+            ${isActive ? "bg-white/5 translate-y-[-1px]" : "hover:bg-white/5"}
+          `}
         >
+          {/* Soft bottom glow */}
+          <div
+            className={`
+              absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-4
+              bg-white/40 blur-xl pointer-events-none
+              transition-all duration-300 ease-[cubic-bezier(.16,1,.3,1)]
+              ${isActive ? "opacity-70 scale-100" : "opacity-0 scale-95"}
+            `}
+          />
+
           {/* Active indicator */}
           <span
             className={`
               absolute left-0 top-1/2 -translate-y-1/2
               h-6 w-[3px] rounded-full bg-[#7A3BFF]
-              ${isActive ? "opacity-100" : "opacity-0 group-hover:opacity-30 "}
+              transition-all duration-300 ease-[cubic-bezier(.16,1,.3,1)]
+              ${
+                isActive
+                  ? "opacity-100 scale-y-100"
+                  : "opacity-0 scale-y-75 group-hover:opacity-30"
+              }
             `}
           />
 
           {/* Icon */}
           <Icon
-            className={`h-4 w-4 transition-colors
-              ${isActive ? "text-[#F4F6FB]" : "text-[#B7BBC6]"}
+            className={`
+              h-4 w-4
+              transition-all duration-300 ease-[cubic-bezier(.16,1,.3,1)]
+              ${
+                isActive
+                  ? "text-[#7A3BFF] drop-shadow-[0_0_6px_#7A3BFF] scale-105"
+                  : "text-[#B7BBC6] group-hover:text-white"
+              }
             `}
           />
 
           {/* Label */}
           <span
-            className={`text-[14px]
-              ${isActive ? "text-[#F4F6FB] font-semibold" : "text-[#B7BBC6]"}
+            className={`
+              text-[14px]
+              transition-all duration-300 ease-[cubic-bezier(.16,1,.3,1)]
+              ${
+                isActive
+                  ? "text-[#7A3BFF] font-semibold"
+                  : "text-[#B7BBC6] group-hover:text-white"
+              }
             `}
           >
             {label}

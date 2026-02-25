@@ -1,0 +1,236 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, Download, VideoOff } from "lucide-react";
+import { CREATION_TYPES } from "../../lib/creations";
+
+/* =============================== CONFIG =============================== */
+
+const MAX_RUNTIME_MS = 5 * 60 * 1000; // 5 minutes hard cap
+
+/* =============================== HELPERS =============================== */
+
+function isExpired(job) {
+  if (!job?.created_at) return false;
+
+  const age = Date.now() - new Date(job.created_at).getTime();
+
+  if (job.status === "failed") return true;
+  if (!job.result_url && age > MAX_RUNTIME_MS) return true;
+  if (job.status === "running" && age > MAX_RUNTIME_MS) return true;
+  if (job.status === "queued" && age > MAX_RUNTIME_MS) return true;
+
+  return false;
+}
+
+export default function Result({ results = [] }) {
+  const scrollRef = useRef(null);
+  const [activeVideo, setActiveVideo] = useState(null);
+
+  /* =============================== FILTER =============================== */
+
+  const videoResults = useMemo(() => {
+    if (!Array.isArray(results)) return [];
+
+    return results
+      .filter(
+        (r) =>
+          r?.type === "video" && // DB level safety
+          r?.settings?.creation_type === CREATION_TYPES.VIDEO &&
+          !isExpired(r)
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() -
+          new Date(a.created_at).getTime()
+      );
+  }, [results]);
+
+  /* =============================== AUTO SELECT =============================== */
+
+ useEffect(() => {
+  if (videoResults.length === 0) {
+    setActiveVideo(null);
+    return;
+  }
+
+  const newest = videoResults[0];
+
+  // If nothing selected yet → select newest
+  if (!activeVideo) {
+    setActiveVideo(newest);
+    return;
+  }
+
+  // If newest is different from current active → auto switch
+  if (newest.id !== activeVideo.id) {
+    setActiveVideo(newest);
+  }
+}, [videoResults]);
+
+  /* =============================== SCROLL =============================== */
+
+  const scroll = (dir) => {
+    if (!scrollRef.current) return;
+
+    const amount = Math.floor(scrollRef.current.clientWidth * 0.7);
+
+    scrollRef.current.scrollBy({
+      left: dir === "left" ? -amount : amount,
+      behavior: "smooth",
+    });
+  };
+
+  /* =============================== FAIL DETECTION =============================== */
+
+  const createdAt = activeVideo?.created_at
+    ? new Date(activeVideo.created_at).getTime()
+    : 0;
+
+  const runtimeMs =
+    createdAt > 0 ? Date.now() - createdAt : 0;
+
+  const isFailed =
+    activeVideo &&
+    activeVideo.status === "running" &&
+    runtimeMs > MAX_RUNTIME_MS;
+
+  /* =============================== RENDER =============================== */
+
+  return (
+    <div className="w-full min-w-0 overflow-hidden flex flex-col gap-6 pb-24 md:pb-0">
+
+      {/* ================= THUMBNAILS ================= */}
+      <div className="relative w-full min-w-0 overflow-hidden">
+
+        {/* Edge fades */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#12141A] to-transparent z-10" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#12141A] to-transparent z-10" />
+
+        {/* Left arrow */}
+        {videoResults.length > 0 && (
+          <button
+            onClick={() => scroll("left")}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/55 hover:bg-black/80 backdrop-blur-md p-2 rounded-full border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
+            type="button"
+          >
+            <ChevronLeft className="w-4 h-4 text-white" />
+          </button>
+        )}
+
+        {/* Right arrow */}
+        {videoResults.length > 0 && (
+          <button
+            onClick={() => scroll("right")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/55 hover:bg-black/80 backdrop-blur-md p-2 rounded-full border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
+            type="button"
+          >
+            <ChevronRight className="w-4 h-4 text-white" />
+          </button>
+        )}
+
+        {/* Scroll container */}
+        <div
+          ref={scrollRef}
+          className="w-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth px-[30px]"
+        >
+          <div className="flex gap-4 py-4">
+
+            {videoResults.length === 0 ? (
+              <div className="w-full text-center text-white/30 text-sm py-8" />
+            ) : (
+              videoResults.map((item) => {
+                const isActive = activeVideo?.id === item.id;
+
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setActiveVideo(item)}
+                    className={`
+                      flex-shrink-0
+                      aspect-square
+                      w-[130px] sm:w-[120px] md:w-[118px] lg:w-[128px]
+                      rounded-2xl
+                      overflow-hidden
+                      border
+                      transition-all
+                      ${
+                        isActive
+                          ? "border-[#7A3BFF] shadow-[0_0_18px_rgba(122,59,255,0.35)]"
+                          : "border-white/10 hover:border-white/30"
+                      }
+                      bg-black
+                    `}
+                  >
+                    {item.result_url && (
+                      <video
+                        src={item.result_url}
+                        className="w-full h-full object-cover"
+                        muted
+                        playsInline
+                        preload="metadata"
+                      />
+                    )}
+                  </button>
+                );
+              })
+            )}
+
+          </div>
+        </div>
+      </div>
+
+      {/* ================= BIG PLAYER ================= */}
+      <div className="w-full min-w-0 overflow-hidden">
+        <div className="w-full rounded-2xl overflow-hidden relative  flex items-center justify-center  ">
+
+          {/* FAILED STATE */}
+          {isFailed && (
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-white/80 text-sm font-medium">
+                Generation failed
+              </p>
+              <p className="text-white/40 text-xs">
+                Try again
+              </p>
+            </div>
+          )}
+
+          {/* EMPTY STATE */}
+          {!activeVideo && !isFailed && (
+            <div className="flex flex-col items-center gap-4">
+              <VideoOff className="w-16 h-16 text-white/20" />
+              <p className="text-white/40 text-sm">
+                No Videos Generated Yet
+              </p>
+            </div>
+          )}
+
+          {/* SUCCESS STATE */}
+          {activeVideo?.result_url && !isFailed && (
+            <video
+              key={activeVideo.id}
+              src={activeVideo.result_url}
+              controls
+              autoPlay
+              className="w-full h-full object-contain"
+            />
+          )}
+
+          {/* DOWNLOAD BUTTON */}
+          {activeVideo?.result_url && !isFailed && (
+            <button
+              type="button"
+              onClick={() => window.open(activeVideo.result_url, "_blank")}
+              className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 backdrop-blur-md px-3 py-2 rounded-lg text-white text-xs flex items-center gap-2 border border-white/10 transition"
+            >
+              <Download className="w-4 h-4" />
+              Download
+            </button>
+          )}
+
+        </div>
+      </div>
+
+    </div>
+  );
+}

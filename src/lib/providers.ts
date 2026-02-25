@@ -17,35 +17,39 @@ export type ToolKey =
   | "image:seedream4.0"
 
 
+    /* ---------- VIDEO ---------- */
+  | "video:klingaist"
+
 
 
   /* ---------- PRODUCT PHOTOS (DO NOT TOUCH) ---------- */
   | "product-photo"
 
 
+  
+
 export type Provider = "runware";
 
 export type ProviderLink = {
   provider: Provider;
   generator: string;
-
-  /** Runware AIR tag */
   airTag: string;
-
-  /** Used by edge functions */
   secret: "RUNWARE_API_KEY";
   edgeFn: string;
 
-  /** Pricing (single source of truth) */
-  costUSD: number;
-  retailUSD: number;
-  credits: number; // ← YES, credits belong here
-  margin: number;
+  // 🔥 VIDEO PRICING CORE
+  costPerSecondUSD?: number;
+  baseResolution?: "720p" | "1080p";
+  retailMultiplier?: number; // your markup multiplier
+  baseCreditsPerSecond?: number; // 🔥 NEW
 
-  /** Optional flags */
+  // IMAGE (keep as-is)
+  costUSD?: number;
+  retailUSD?: number;
+  credits?: number;
+  margin?: number;
+
   requiresFrame?: boolean;
-
-  /** Product-photo only */
   enhanceAirTag?: string;
 };
 
@@ -173,6 +177,27 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     credits: 1,
     margin: m(0.0038, 0.02),
   },
+
+
+    /* =======================================================
+                              VIDEO 
+     ======================================================= */
+
+ "video:klingaist": {
+  provider: "runware",
+  generator: "KlingAI Video 3.0 Standard",
+  airTag: "klingai:kling-video@3-standard",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-video",
+
+  costPerSecondUSD: 0.084,
+  baseResolution: "720p",
+
+  retailMultiplier: 2.2,
+
+  // 🔥 THIS IS WHAT UI + BACKEND USE
+  baseCreditsPerSecond: 4,
+},
 
   /* =======================================================
      PRODUCT PHOTOS (❌ DO NOT TOUCH – WORKING)

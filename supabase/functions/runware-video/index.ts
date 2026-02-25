@@ -1,12 +1,7 @@
 // supabase/functions/runware-video/index.ts
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { CREATION_TYPES } from "./_creations.ts";
-import {
-  launchRunwareVideo,
-  type RunwareLaunchArgs,
-  AIR_BY_TIER,
-} from "./runware.ts";
+import { launchRunwareVideo, pollRunware } from "./runware.ts";
 
 /* ================= CORS ================= */
 
@@ -37,6 +32,7 @@ const err = (req: Request, msg: string, status = 400) =>
 
 const SUPABASE_URL =
   Deno.env.get("SUPABASE_URL") ?? Deno.env.get("PROJECT_URL") ?? "";
+
 const SERVICE_KEY =
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
   Deno.env.get("SERVICE_ROLE_KEY") ??
@@ -50,142 +46,160 @@ Deno.serve(async (req) => {
   }
 
   try {
-    if (req.method !== "POST") return err(req, "Method not allowed", 405);
-    if (!SUPABASE_URL || !SERVICE_KEY)
+    if (req.method !== "POST") {
+      return err(req, "Method not allowed", 405);
+    }
+
+    if (!SUPABASE_URL || !SERVICE_KEY) {
       return err(req, "Missing Supabase env", 500);
+    }
 
     const body = await req.json().catch(() => ({}));
 
-    const {
-      subject,
-      tier: rawTier,
-      aspect: rawAspect,
-      resolution: rawResolution,
-      durationSec: rawDuration,
-      initImageUrl,
-      audio,
-      userId,
-    } = body ?? {};
+ const {
+  jobId,
+  prompt,
+  width,
+  height,
+  durationSec,
+  referenceImages,
+  airTag,
+} = body ?? {};
 
-    if (!userId) return err(req, "Missing userId", 400);
-    if (!subject || typeof subject !== "string") {
-      return err(req, "Missing subject", 400);
-    }
-
-    // ---------- normalise inputs ----------
-
-    type TierId = keyof typeof AIR_BY_TIER;
-
-    let tier: TierId = "zylo-v3";
-    if (rawTier === "zylo-v4") tier = "zylo-v4";
-    else if (rawTier === "zylo-v2") tier = "zylo-v2";
-    else if (rawTier === "zylo-v1") tier = "zylo-v1";
-
-    const aspect: "16:9" | "9:16" | "1:1" =
-      rawAspect === "16:9" || rawAspect === "1:1" ? rawAspect : "9:16";
-
-    const resolution: "720p" | "1080p" =
-      rawResolution === "720p" ? "720p" : "1080p";
-
-    const durationSec = Math.max(
-      1,
-      Math.round(Number(rawDuration ?? 5)),
-    );
-
-    const args: RunwareLaunchArgs = {
-      tier,
-      subject,
-      aspect,
-      resolution,
-      durationSec,
-      initImageUrl: initImageUrl ?? null,
-      audio: !!audio,
-      airTag: null, // let AIR_BY_TIER choose
-    };
-
-    console.log("[runware-video] launching with args", args);
-
-    // ---------- Launch Runware via helper ----------
-
-    const { jobId: providerJobId } = await launchRunwareVideo(args);
+    if (!jobId) return err(req, "Missing jobId");
+    if (!prompt) return err(req, "Missing prompt");
+if (!width || !height) return err(req, "Missing dimensions");
+if (!durationSec) return err(req, "Missing durationSec");
+if (!airTag) return err(req, "Missing airTag");
 
     const sb = createClient(SUPABASE_URL, SERVICE_KEY, {
       auth: { persistSession: false },
     });
 
-    // Optional: know which AIR tag we used for UI/debug
-    const airTag = AIR_BY_TIER[tier]?.air ?? null;
-
-    // ---------- Insert job row ----------
-
-    const { data: job, error: jobErr } = await sb
+    // mark job running
+    await sb
       .from("jobs")
-      .insert({
-        user_id: userId,
-        type: "video",
-        status: "queued",
-        progress: 0,
-        prompt: subject,
-        input: {
-          subject,
-          aspect,
-          resolution,
-          durationSec,
-          initImageUrl,
-          audio: !!audio,
-        },
-        settings: {
-          tier,
-          tool: "video",
-          tool_key: tier === "zylo-v4" ? "t2v:v4" : "t2v:v3",
-          creation_type: CREATION_TYPES.VIDEO,
-          provider_hint: {
-            engine: "runware",
-            mode: "t2v",
-            airTag,
-          },
-          provider_job_id: providerJobId,
-        },
-      })
-      .select()
-      .single();
+      .update({ status: "running", progress: 20 })
+      .eq("id", jobId);
 
-    if (jobErr || !job) {
-      console.error("[runware-video] job insert error:", jobErr);
-      return err(req, "Failed to insert job", 500);
-    }
+    // 🔥 Launch Runware
+const { jobId: providerJobId } = await launchRunwareVideo({
+  subject: prompt,
+  width: Number(width),
+  height: Number(height),
+  durationSec: Number(durationSec ?? 5),
+  referenceImages: Array.isArray(referenceImages) ? referenceImages : [],
+  airTag,
+});
 
-    // ---------- Trigger job-worker so it polls Runware & updates the job ----------
+    // store provider job id
+ const existingSettings = (await sb.from("jobs").select("settings").eq("id", jobId).single()).data?.settings ?? {};
 
-    try {
-      fetch(`${SUPABASE_URL}/functions/v1/job-worker`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          apikey: SERVICE_KEY,
-          authorization: `Bearer ${SERVICE_KEY}`,
-        },
-        body: JSON.stringify({ jobId: job.id }),
-      }).catch((e) => {
-        console.error("[runware-video] failed to trigger job-worker (catch):", e);
-      });
-    } catch (e) {
-      console.error("[runware-video] failed to trigger job-worker (try):", e);
-    }
+await sb.from("jobs").update({
+  settings: { ...existingSettings, provider_job_id: providerJobId },
+}).eq("id", jobId);
 
-    // ---------- Response to frontend ----------
+    // 🔥 Poll loop (simple, clean)
+    for (let i = 0; i < 120; i++) {
+      await new Promise((r) => setTimeout(r, 3000));
 
-    return ok(req, {
-      ok: true,
-      jobId: job.id,
-      providerJobId,
-    });
-  } catch (e) {
-    console.error("[runware-video] unhandled error:", e);
-    return err(
-      req,
-      e instanceof Error ? e.message : String(e),
-      500,
-    );
+      const poll = await pollRunware(providerJobId);
+
+    if (poll.status === "succeeded") {
+
+  // Load job to get billing info
+  const { data: job } = await sb
+    .from("jobs")
+    .select("user_id, charge_credits, charged")
+    .eq("id", jobId)
+    .single();
+
+  if (!job) {
+    await sb.from("jobs").update({
+      status: "failed",
+      error: "Billing error: job not found",
+    }).eq("id", jobId);
+
+    return ok(req, { ok: false });
   }
+
+  // If already charged (retry case), just mark succeeded
+  if (job.charged) {
+    await sb.from("jobs").update({
+      status: "succeeded",
+      progress: 100,
+      result_url: poll.url,
+    }).eq("id", jobId);
+
+    return ok(req, { ok: true });
+  }
+
+  // 🔥 Try to deduct credits FIRST
+  if (job.charge_credits) {
+    const { error: creditErr } = await sb.rpc("deduct_credits", {
+      uid: job.user_id,
+      amount: job.charge_credits,
+    });
+
+    if (creditErr) {
+      console.error("Credit deduction failed:", creditErr.message);
+
+      // Billing failed → mark job failed
+      await sb.from("jobs").update({
+        status: "failed",
+        error: "Billing failed",
+      }).eq("id", jobId);
+
+      return ok(req, { ok: false });
+    }
+  }
+
+  // ✅ Deduction successful → mark job succeeded + charged
+  await sb.from("jobs").update({
+    status: "succeeded",
+    progress: 100,
+    result_url: poll.url,
+    charged: true,
+  }).eq("id", jobId);
+
+  return ok(req, { ok: true });
+}
+
+      if (poll.status === "failed") {
+        await sb
+          .from("jobs")
+          .update({
+            status: "failed",
+            error: poll.error ?? "Video failed",
+          })
+          .eq("id", jobId);
+
+        return ok(req, { ok: false });
+      }
+
+      // update progress gradually
+      await sb.rpc("bump_job_progress", {
+        p_id: jobId,
+        p_progress: 20 + i,
+      });
+    }
+
+    // timeout
+    await sb
+      .from("jobs")
+      .update({
+        status: "failed",
+        error: "Timeout",
+      })
+      .eq("id", jobId);
+
+    return ok(req, { ok: false, error: "Timeout" });
+  } catch (e) {
+  console.error("[runware-video] FULL ERROR:", e);
+  return err(
+    req,
+    e instanceof Error ? e.message : String(e),
+    500,
+  );
+}
 });

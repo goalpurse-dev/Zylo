@@ -19,7 +19,9 @@ export default function WorkspaceLayout() {
   "/workspace/myproduct",
   "/workspace/library",
   "/workspace/image-generator",
+  "/workspace/video-generator",
   "/workspace/home"
+
   
 ];
 const isCreationsRoute = location.pathname.startsWith("/workspace/creations");
@@ -85,6 +87,7 @@ useEffect(() => {
     "/workspace/creations": "Creations",
     "/workspace/pricing": "Pricing",
     "/workspace/image-generator": "Image Generator",
+    "/workspace/video-generator": "Video Generator",
   };
 
   const title = titleMap[location.pathname] || "Workspace";
@@ -155,7 +158,6 @@ useEffect(() => {
         ref={scrollRef}
         id="workspace-scroll"
        className="flex flex-col flex-1 h-[100svh] overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]"
-
       >
         <div
           className={`

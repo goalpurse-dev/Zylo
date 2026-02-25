@@ -93,6 +93,7 @@ import Step31 from "./pages/workspace/myproduct/step2.jsx"
 import ImageGenTest from "./pages/image-gen-test.jsx"
 
 
+
 // blogs
 
 import BlogIndex from "./app/blog/BlogIndex";
@@ -155,6 +156,7 @@ import ScrollToTop from "./components/ScrollToTop";
 
 
 import Image from "./pages/viral/Image.jsx"
+import Video from "./pages/viral/video-generator.jsx"
 
 
 
@@ -358,6 +360,7 @@ function AppWithRouting() {
   <Route path="/workspace/step3" element={<Step3 />} />
   <Route path="/workspace/pricing" element={<Pricing />} />
   <Route path="/workspace/image-generator" element={<Image />} />
+  <Route path="/workspace/video-generator" element={<Video />} />
 
 
 </Route>

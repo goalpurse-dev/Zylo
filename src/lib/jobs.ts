@@ -425,6 +425,72 @@ height = height ?? 1024;
 }
 
 
+export async function createVideoJobSimple(params: {
+  subject: string;
+  toolKey: string;
+  width: number;
+  height: number;
+  durationSec: number;
+  initImageUrls?: string[];
+  calculatedCredits: number;
+  project_id?: string | null;
+}) {
+  const link = getProviderLink(params.toolKey);
+if (!link) throw new Error(`Video provider not configured`);
+
+const credits = params.calculatedCredits; // 🔥 temporary
+const priceUSD = link.retailUSD;
+
+const { data: userData, error: uerr } = await supabase.auth.getUser();
+if (uerr || !userData?.user) throw new Error("Must be signed in");
+const uid = userData.user.id;
+
+// 🔒 ATOMIC CREDIT DEDUCTION
+// Only check balance, do NOT deduct
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("credit_balance")
+  .eq("id", uid)
+  .single();
+
+if (!profile || profile.credit_balance < credits) {
+  throw new Error("INSUFFICIENT_CREDITS");
+}
+
+const input = {
+  tool: "video",
+  creation_type: CREATION_TYPES.VIDEO,
+  subject: params.subject.trim(),
+  width: params.width,
+  height: params.height,
+  durationSec: params.durationSec,
+  ref_images: params.initImageUrls ?? [],
+};
+
+const settings = {
+  tool_key: params.toolKey,
+  credits,
+  priceUSD,
+  creation_type: CREATION_TYPES.VIDEO,
+  provider_hint: {
+    engine: "runware",
+    mode: "t2v",
+    edgeFn: link.edgeFn,
+    airTag: link.airTag,
+  },
+};
+
+return await simulateJob({
+  type: "video",
+  tool_key: params.toolKey,
+  project_id: params.project_id ?? null,
+  prompt: params.subject,
+  settings,
+  input,
+});
+}
+
+
 /* ============== PRODUCT PHOTO (Runware Kontext via Edge Function) ============== */
 
 export async function createProductPhotoJob(params: {

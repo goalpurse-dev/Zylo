@@ -7,7 +7,8 @@ import ReferenceImageModal from "../../components/reference-images/ReferenceImag
 import { generateImageFromUI } from "../../lib/image-generator";
 import { supabase } from "../../lib/supabaseClient";
 import { IMAGE_STYLES } from "../../lib/image-generator/styles";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, VideoIcon } from "lucide-react";
+import Toast from "../../components/ImageGenerator/Toast";
 
 
 
@@ -25,7 +26,7 @@ ArrowBigLeft
 ArrowBigDown
 BoxSelect
 Wand2
-
+VideoIcon
 
 
 
@@ -69,7 +70,7 @@ const StyleCard = ({ img, label, active, onClick }) => (
         : "border border-white/10 hover:border-purple-500/50"}
     `}
   >
-    <img src={img} className="h-20 w-full object-cover" />
+    <img src={img} className="h-32 w-full object-cover" />
     <div className="text-sm text-white px-2 pb-2 text-left">
       {label}
     </div>
@@ -160,7 +161,7 @@ const ModelCard = ({
         {traits.map((t) => (
           <span
             key={t}
-            className="text-[11px] px-2 py-1 rounded-full bg-white/10 text-white/70"
+            className="text-[11px] px-3 py-1 rounded-md bg-white/10 text-white/70"
           >
             {t}
           </span>
@@ -183,6 +184,7 @@ const ModelCard = ({
 export default function Generate({ prompt, setPrompt, onJobCreated, setActiveJobId }) {
 
 
+const [toast, setToast] = useState(null);
 const location = useLocation();
 const navigate = useNavigate();
 
@@ -264,26 +266,65 @@ const handleUpload = async (e) => {
   }
 };
 
-
 const handleGenerate = async () => {
   if (!prompt.trim()) return;
+
+  // 🔥 CHECK AUTH FIRST
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData?.user;
+
+ if (!user) {
+  setToast({
+    message: "Create an account to generate images.",
+    type: "info",
+  });
+
+  setTimeout(() => {
+    navigate("/signup");
+  }, 1200);
+
+  return;
+}
+
+
+ // 🔥 CHECK CREDITS (use credit_balance)
+const { data: profile, error: profErr } = await supabase
+  .from("profiles")
+  .select("credit_balance")
+  .eq("id", user.id)
+  .single();
+
+if (profErr) {
+  console.error("Failed to fetch profile credits:", profErr);
+  setToast({ message: "Could not check credits. Try again.", type: "error" });
+  return;
+}
+
+const requiredCredits = Number(selectedModel?.credits ?? 0);
+const balance = Number(profile?.credit_balance ?? 0);
+
+if (balance < requiredCredits) {
+  setToast({
+    message: `You need ${requiredCredits} credits to generate.`,
+    type: "error",
+  });
+  return;
+}
+
 
   try {
     setIsGenerating(true);
 
-const job = await generateImageFromUI({
-  modelKey: selectedModelKey,
-  prompt: prompt.trim(),
-  style: selectedStyle,
-  size: selectedSize,
-  refImages: selected.map((x) => x.url),
-  
-});
+    const job = await generateImageFromUI({
+      modelKey: selectedModelKey,
+      prompt: prompt.trim(),
+      style: selectedStyle,
+      size: selectedSize,
+      refImages: selected.map((x) => x.url),
+    });
 
-setActiveJobId?.(job.id);
-onJobCreated?.(job);
-
-
+    setActiveJobId?.(job.id);
+    onJobCreated?.(job);
   } catch (err) {
     console.error("Generate failed:", err);
   } finally {
@@ -291,18 +332,7 @@ onJobCreated?.(job);
   }
 };
 
-  useEffect(() => {
-    if (!textareaRef.current) return;
-    textareaRef.current.style.height = "auto";
-    textareaRef.current.style.height =
-      textareaRef.current.scrollHeight + "px";
-  }, [prompt]);
 
-  useEffect(() => {
-  if (selectedModel.maxReferenceImages === 0) {
-    setOpenReferenceModal(false);
-  }
-}, [selectedModelKey]);
 
    
 
@@ -371,28 +401,28 @@ useEffect(() => {
           <div className="w-full max-w-[900px] bg-[#151822] border border-[#1F2230] rounded-3xl p-6 shadow-2xl space-y-6">
 
          {/* MODE SELECTOR */}
-<div className="grid grid-cols-3 gap-3">
+<div className="grid grid-cols-3 gap-1">
   {[
     {
-      label: "Image",
+ 
       icon: Image,
       base: "from-purple-500/10 via-purple-500/10",
       active: "from-purple-500/40 via-purple-500/20",
       path: "/workspace/image-generator",
     },
     {
-      label: "Video",
-      icon: Wand2,
+ 
+      icon: VideoIcon,
       base: "from-indigo-500/10 via-indigo-500/10",
       active: "from-indigo-500/40 via-indigo-500/10",
       path: "/workspace/video-generator",
     },
     {
-      label: "Product",
+     
       icon: BoxSelect,
       base: "from-emerald-500/10 via-emerald-500/10",
       active: "from-emerald-500/40 via-emerald-500/10",
-      path: "/workspace/product",
+      path: "/workspace/productphoto",
     },
   ].map((item) => {
     const Icon = item.icon;
@@ -404,7 +434,7 @@ useEffect(() => {
         onClick={() => navigate(item.path)}
         className={`
           relative overflow-hidden flex flex-col items-center justify-center
-          rounded-2xl py-3 border transition-all duration-300
+          rounded-2xl py-1 border transition-all duration-300
           ${
             isActive
               ? "border-[#7A3BFF] shadow-[0_0_14px_rgba(122,59,255,0.35)]"
@@ -423,7 +453,7 @@ useEffect(() => {
           `}
         />
 
-        <Icon className="w-5 h-5 mb-1 text-white relative z-10" />
+        <Icon className="w-4 h-4 mb-1 text-white relative z-10" />
         <p className="text-sm text-white relative z-10">
           {item.label}
         </p>
@@ -832,6 +862,15 @@ md:-translate-y-1/2
         onToggle={toggleSelect}
       />
     )}
+
+    {toast && (
+  <Toast
+    message={toast.message}
+    type={toast.type}
+    onClose={() => setToast(null)}
+  />
+)}
+
 
 
 
