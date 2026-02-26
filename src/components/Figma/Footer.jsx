@@ -19,9 +19,9 @@ export default function footer() {
        
       <div className="block sm:hidden">
 
-    <div className="bg-[linear-gradient(to_bottom,rgba(236,232,242,0)_20%,#110829_100%)] w-full h-32 mx-auto"></div>
+    <div className="bg-[linear-gradient(to_bottom,rgba(236,232,242,0)_0%,#110829_100%)] w-full h-10 mx-auto"></div>
                    
-        
+      
      <div className="bg-[#110829] w-full h-[370px] p-2 ">
 
      
@@ -126,7 +126,7 @@ export default function footer() {
 
      <div className="sm:block hidden">
      
-      <div className="bg-[linear-gradient(to_bottom,rgba(17,8,41,0)_20%,#110829_100%)] w-full h-20 mx-auto lg:h-28 ">   </div>
+      <div className="bg-[linear-gradient(to_bottom,rgba(17,8,41,0)_20%,#110829_100%)] w-full h-10 mx-auto  ">   </div>
         
      <div className="bg-[#110829] w-full h-[370px]  lg:h-[400px] p-2 ">
 
