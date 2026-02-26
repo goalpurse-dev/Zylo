@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 export default function ViralImageGenerator() {
   return (
-    <section className="relative w-full bg-white py-28 px-6 overflow-hidden">
+    <section className="relative w-full bg-white py-16  px-6 overflow-hidden">
 
       {/* TOP BLEND */}
 <div className="pointer-events-none absolute top-0 left-0 w-full h-40 bg-[linear-gradient(to_bottom,#F7F5FA_0%,#F7F5FA_60%,rgba(247,245,250,0)_100%)]" />
@@ -57,13 +57,13 @@ export default function ViralImageGenerator() {
         {/* RIGHT SIDE — IMAGE */}
         <div className="relative">
 
-          <div className="rounded-3xl overflow-hidden shadow-2xl shadow-black/10">
-            <img
-              src="/assets/showcase/image1.webp"
-              alt="Viral Image Generator Preview"
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-black/10 aspect-square">
+  <img
+    src="/assets/showcase/image1.webp"
+    alt="Viral Image Generator Preview"
+    className="w-full h-full object-cover"
+  />
+</div>
 
           {/* Soft purple glow */}
           <div className="absolute -z-10 top-10 left-10 w-full h-full bg-purple-200/40 blur-3xl rounded-full" />

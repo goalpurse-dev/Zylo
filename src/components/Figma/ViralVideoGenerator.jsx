@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Play } from "lucide-react";
 
 export default function ViralVideoGenerator() {
   return (
@@ -11,30 +10,8 @@ export default function ViralVideoGenerator() {
 
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-20 items-center">
 
-      {/* LEFT SIDE — VIDEO PREVIEW */}
-<div className="relative group">
-
-  {/* Video Container */}
-  <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-black/10">
-    <video
-      src="/assets/video/fire.mp4"
-      autoPlay
-      loop
-      muted
-      playsInline
-      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-    />
-  </div>
-
-  
-
-  {/* Glass highlight effect */}
-  <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none rounded-3xl" />
-
-</div>
-
-        {/* RIGHT SIDE — TEXT */}
-        <div className="text-left">
+        {/* RIGHT SIDE — TEXT (comes first on mobile) */}
+        <div className="text-left order-1 md:order-2">
 
           <p className="text-sm font-medium text-[#7A3BFF] mb-4">
             VIRAL VIDEO GENERATOR
@@ -72,6 +49,25 @@ export default function ViralVideoGenerator() {
           >
             Try Video Generator
           </Link>
+
+        </div>
+
+        {/* LEFT SIDE — VIDEO (comes second on mobile) */}
+        <div className="relative group order-2 md:order-1">
+
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-black/10 aspect-square">
+            <video
+              src="/assets/video/fire.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+          </div>
+
+          {/* Glass highlight */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none rounded-3xl" />
 
         </div>
 
