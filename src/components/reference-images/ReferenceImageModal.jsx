@@ -358,7 +358,7 @@ export default function ReferenceImageModal({
                 selected={selected}
                 onToggle={onToggle}
               />
-
+                {/* 
               <HorizontalRow
                 title="Product Photos"
                 items={libraryProducts}
@@ -366,6 +366,7 @@ export default function ReferenceImageModal({
                 selected={selected}
                 onToggle={onToggle}
               />
+              */}
             </>
           )}
         </div>

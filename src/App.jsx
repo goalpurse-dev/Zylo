@@ -157,6 +157,7 @@ import ScrollToTop from "./components/ScrollToTop";
 
 import Image from "./pages/viral/Image.jsx"
 import Video from "./pages/viral/video-generator.jsx"
+import Script from "./pages/viral/ScriptBuilder.jsx"
 
 
 
@@ -361,6 +362,7 @@ function AppWithRouting() {
   <Route path="/workspace/pricing" element={<Pricing />} />
   <Route path="/workspace/image-generator" element={<Image />} />
   <Route path="/workspace/video-generator" element={<Video />} />
+  <Route path="/workspace/viral-script" element={<Script />} />
 
 
 </Route>

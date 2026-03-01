@@ -7,7 +7,7 @@ import ReferenceImageModal from "../../components/reference-images/ReferenceImag
 import { generateImageFromUI } from "../../lib/image-generator";
 import { supabase } from "../../lib/supabaseClient";
 import { IMAGE_STYLES } from "../../lib/image-generator/styles";
-import { ChevronRight, VideoIcon } from "lucide-react";
+import { ChevronRight, Folder, VideoIcon } from "lucide-react";
 import Toast from "../../components/ImageGenerator/Toast";
 
 
@@ -27,6 +27,7 @@ ArrowBigDown
 BoxSelect
 Wand2
 VideoIcon
+Folder
 
 
 
@@ -64,7 +65,7 @@ const StyleCard = ({ img, label, active, onClick }) => (
   <button
     onClick={onClick}
       className={`
-      relative flex flex-col gap-2 rounded-xl overflow-hidden transition
+      relative flex flex-col gap-2 rounded-sm overflow-hidden transition
       ${active
         ? "border-2 border-[#7A3BFF] shadow-[0_0_25px_rgba(122,59,255,0.45)] "
         : "border border-white/10 hover:border-purple-500/50"}
@@ -86,7 +87,7 @@ const AspectRatioRow = ({ label, width, height, onClick }) => (
     {/* FIXED PREVIEW COLUMN */}
     <div className="w-[50px] flex justify-center">
       <div
-        className="border border-white/70 rounded-md"
+        className="border border-white/70 rounded-sm"
         style={{ width, height }}
       />
     </div>
@@ -114,7 +115,7 @@ const ModelCard = ({
   <button
     onClick={onClick}
     className={`
-      relative w-full rounded-xl transition text-left
+      relative w-full rounded-sm transition text-left
       bg-[#0B0E1A]/70 border
       ${
         active
@@ -137,7 +138,7 @@ const ModelCard = ({
       <img
         src={img}
         alt={label}
-        className="w-10 h-10 rounded-lg object-cover  p-1 flex-shrink-0"
+        className="w-10 h-10 rounded-sm object-cover  p-1 flex-shrink-0"
       />
        <div className="text-white font-medium leading-tight">
           {label}
@@ -161,7 +162,7 @@ const ModelCard = ({
         {traits.map((t) => (
           <span
             key={t}
-            className="text-[11px] px-3 py-1 rounded-md bg-white/10 text-white/70"
+            className="text-[11px] px-3 py-1 rounded-sm bg-white/10 text-white/70"
           >
             {t}
           </span>
@@ -398,7 +399,7 @@ useEffect(() => {
 
 
         <div className="w-full flex justify-center mt-4 px-4">
-          <div className="w-full max-w-[900px] bg-[#151822] border border-[#1F2230] rounded-3xl p-6 shadow-2xl space-y-6">
+          <div className="w-full max-w-[900px] bg-[#151822] border border-[#1F2230] rounded-sm p-6 shadow-2xl space-y-6">
 
          {/* MODE SELECTOR */}
 <div className="grid grid-cols-3 gap-1">
@@ -419,10 +420,10 @@ useEffect(() => {
     },
     {
      
-      icon: BoxSelect,
+      icon: Folder,
       base: "from-emerald-500/10 via-emerald-500/10",
       active: "from-emerald-500/40 via-emerald-500/10",
-      path: "/workspace/productphoto",
+      path: "/workspace/creations",
     },
   ].map((item) => {
     const Icon = item.icon;
@@ -434,7 +435,7 @@ useEffect(() => {
         onClick={() => navigate(item.path)}
         className={`
           relative overflow-hidden flex flex-col items-center justify-center
-          rounded-2xl py-1 border transition-all duration-300
+          rounded-sm py-1 border transition-all duration-300
           ${
             isActive
               ? "border-[#7A3BFF] shadow-[0_0_14px_rgba(122,59,255,0.35)]"
@@ -466,13 +467,13 @@ useEffect(() => {
 
           {/* PROMPT */}
 <div
-  className="relative rounded-2xl p-[1px]
+  className="relative rounded-sm p-[1px]
              bg-gradient-to-br from-purple-500/20 to-transparent
              hover:from-purple-500/30 transition-all duration-300"
 >
   <div
-    className="bg-[#1A1E2A] border border-[#232635]
-               rounded-2xl p-5 transition-all duration-300
+    className="bg-[#1A1E2A] border border-gray-800
+               rounded-sm p-5 transition-all duration-300
                hover:border-purple-500/40
                focus-within:border-purple-500/60
                focus-within:shadow-lg
@@ -501,7 +502,7 @@ useEffect(() => {
     setOpenReferenceModal(true)
   }}
   className={`
-    w-full rounded-2xl border-2 border-dashed
+    w-full rounded-sm border-2 border-dashed
     border-[#2A2E3C]
     bg-[#141722]
     py-6
@@ -528,7 +529,7 @@ useEffect(() => {
     {selected.map((img) => (
       <div
         key={img.id}
-        className="relative aspect-square rounded-xl overflow-hidden"
+        className="relative aspect-square rounded-sm overflow-hidden"
       >
         <img
           src={img.url}
@@ -564,7 +565,7 @@ useEffect(() => {
     relative
     bg-[#1A1E2A]
     border border-[#232635]
-    rounded-xl
+    rounded-sm
     px-4 py-3
     text-left
     transition-all duration-200
@@ -605,7 +606,7 @@ useEffect(() => {
     relative
     bg-[#1A1E2A]
     border border-[#232635]
-    rounded-xl
+    rounded-sm
     px-4 py-3
     text-left
     transition-all duration-200
@@ -646,7 +647,7 @@ useEffect(() => {
     relative
     bg-[#1A1E2A]
     border border-[#232635]
-    rounded-xl
+    rounded-sm
     px-4 py-3
     text-left
     transition-all duration-200
@@ -689,7 +690,7 @@ md:-translate-y-1/2
       max-h-[60vh]
       bg-[#1A1D2B]
       border border-white/10
-      rounded-2xl
+      rounded-sm
       shadow-2xl
       p-5
       overflow-y-auto
@@ -712,7 +713,7 @@ md:-translate-y-1/2
           setSelectedSize(size)
           setOpenSize(false)
         }}
-        className={`w-full px-4 py-3 text-left rounded-lg text-sm
+        className={`w-full px-4 py-3 text-left rounded-sm text-sm
           ${
             size === selectedSize
               ? "bg-[#7A3BFF]/20 border border-[#7A3BFF]"
@@ -740,7 +741,7 @@ md:-translate-y-1/2
       max-h-[75vh]
       bg-[#1A1D2B]
       border border-white/10
-      rounded-2xl
+      rounded-sm
       shadow-2xl
       p-5
       overflow-y-auto
@@ -787,7 +788,7 @@ md:-translate-y-1/2
       max-h-[75vh]
       bg-[#1A1D2B]
       border border-white/10
-      rounded-2xl
+      rounded-sm
       shadow-2xl
       p-5
       overflow-y-auto
@@ -837,7 +838,7 @@ md:-translate-y-1/2
             <button
               onClick={handleGenerate}
               disabled={!prompt.trim() || isGenerating}
-              className={`w-full py-3 rounded-2xl font-medium text-white transition ${
+              className={`w-full py-3 rounded-sm font-medium text-white transition ${
                 !prompt.trim() || isGenerating
                   ? "bg-gray-500/40 text-white/40 cursor-not-allowed"
                   : "bg-gradient-to-r from-[#7A3BFF] to-[#6F3AE6] hover:scale-[1.02] shadow-lg shadow-purple-600/30"

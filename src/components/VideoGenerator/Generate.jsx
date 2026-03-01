@@ -1,6 +1,7 @@
 import {
   BoxSelect,
   ChevronRight,
+  Folder,
   Image,
   ImagePlus,
   VideoIcon,
@@ -8,6 +9,7 @@ import {
   X,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import Toast from "../../components/ImageGenerator/Toast";
 import { VIDEO_TEMPLATES } from "../../components/video-templates/templates";
 import { useState, useRef, useEffect } from "react";
 import { RESOLUTIONS } from "../../lib/video-generator/resolutions";
@@ -22,11 +24,12 @@ import { generateVideoFromUI } from "../../lib/video-generator/generator";
 import { calculateVideoCredits } from "../../lib/video-generator/videoPricing";
 import VideoTemplate from "../../components/video-templates/VideoTemplate";
 VideoIcon
+Folder
 
 export default function Generate({  }) {
 
 
- 
+  const [toast, setToast] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const controlsRef = useRef(null);
@@ -177,24 +180,63 @@ const disableSizeSelector = isKling && hasRefs;
   try {
     setIsGenerating(true);
 
+    // 🔥 CHECK AUTH
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData?.user;
 
+    if (!user) {
+      setToast({
+        message: "Create an account to generate videos.",
+        type: "info",
+      });
 
-    const refImages = selected.map((img) => img.url);
+      setTimeout(() => {
+        navigate("/signup");
+      }, 1200);
 
-const job = await generateVideoFromUI({
-  modelKey: selectedModelKey,
-  prompt: prompt.trim(),
-  size: selectedSize,
-  duration: selectedDuration,
-  resolution: selectedResolution,
-  refImages: selected.map((img) => img.url),
-});
+      setIsGenerating(false);
+      return;
+    }
+
+    // 🔥 CHECK CREDITS
+    const { data: profile, error: profErr } = await supabase
+      .from("profiles")
+      .select("credit_balance")
+      .eq("id", user.id)
+      .single();
+
+    if (profErr) {
+      setToast({
+        message: "Could not check credits.",
+        type: "error",
+      });
+      setIsGenerating(false);
+      return;
+    }
+
+    const balance = Number(profile?.credit_balance ?? 0);
+
+    if (balance < totalCredits) {
+      setToast({
+        message: `You need ${totalCredits} credits to generate this video.`,
+        type: "error",
+      });
+      setIsGenerating(false);
+      return;
+    }
+
+    // 🔥 CREATE JOB
+    const job = await generateVideoFromUI({
+      modelKey: selectedModelKey,
+      prompt: prompt.trim(),
+      size: selectedSize,
+      duration: selectedDuration,
+      resolution: selectedResolution,
+      refImages: selected.map((img) => img.url),
+    });
 
     watchJob(job.id, (row) => {
-      if (
-        row.status === "succeeded" ||
-        row.status === "failed"
-      ) {
+      if (row.status === "succeeded" || row.status === "failed") {
         setIsGenerating(false);
       }
     });
@@ -205,14 +247,10 @@ const job = await generateVideoFromUI({
     console.error(err);
     setIsGenerating(false);
 
-    if (
-      err &&
-      err.message === "INSUFFICIENT_CREDITS"
-    ) {
-      alert("Not enough credits");
-    } else {
-      alert("Failed to create video");
-    }
+    setToast({
+      message: "Failed to create video.",
+      type: "error",
+    });
   }
 }
 
@@ -253,10 +291,10 @@ const job = await generateVideoFromUI({
     },
     {
       
-      icon: BoxSelect,
+      icon: Folder,
       base: "from-emerald-500/10 via-emerald-500/10",
       active: "from-emerald-500/40 via-emerald-500/10",
-      path: "/workspace/productphoto",
+      path: "/workspace/creations",
     },
   ].map((item) => {
     const Icon = item.icon;
@@ -268,8 +306,8 @@ const job = await generateVideoFromUI({
         onClick={() => navigate(item.path)}
    className={`
   relative overflow-hidden flex flex-col items-center justify-center
-  rounded-xl py-1
-  border border-[#2A2F45]
+  rounded-sm py-1
+  border border-gray-800
   bg-[#141722]/80 backdrop-blur-xl
   shadow-[0_8px_30px_rgba(0,0,0,0.35)]
   transition-all duration-500
@@ -304,18 +342,18 @@ const job = await generateVideoFromUI({
      <div
   className={` mt-1
     bg-[#1A1E2A]
-    border border-[#232635]
+    border border-gray-800
     backdrop-blur-xl
-    rounded-2xl 
+    rounded-sm 
     transition-all duration-300
-    shadow-[0_0_4px_rgba(122,59,255,0.35)]
+   
   `}
 >
         <div
           className="bg-[#1A1E2A] border border-[#232635] backdrop-blur-xl
-                     rounded-2xl p-5 transition-all duration-300
+                     rounded-sm p-5 transition-all duration-300
                      hover:border-purple-500/40
-                     focus-within:border-purple-500/60
+                     
                      focus-within:shadow-lg 
                      focus-within:shadow-purple-500/20"
         >
@@ -341,8 +379,8 @@ const job = await generateVideoFromUI({
     setOpenReferenceModal(true);
   }}
   className={`
-    w-full rounded-2xl border-2 border-dashed mt-1
-    border-[#2A2E3C]
+    w-full rounded-sm border-2 border-dashed mt-1
+    border-gray-800
     bg-[#141722]
     py-6
     flex flex-col items-center justify-center
@@ -364,7 +402,7 @@ const job = await generateVideoFromUI({
     {selected.map((img) => (
       <div
         key={img.id}
-        className="relative aspect-square rounded-xl overflow-hidden"
+        className="relative aspect-square rounded-sm overflow-hidden"
       >
         <img
           src={img.url}
@@ -458,8 +496,8 @@ const job = await generateVideoFromUI({
   }}
  className={`
   alive-card mt-4
-  group relative bg-[#161A26] border border-[#2A2F45] shadow-[0_0_4px_rgba(122,59,255,0.25)]
-  rounded-xl px-4 py-3 text-left
+  group relative bg-[#161A26] border border-gray-800
+  rounded-sm px-4 py-3 text-left
   transition-all duration-500
   hover:border-[#7A3BFF]/50
   hover:shadow-[0_0_20px_rgba(122,59,255,0.15)]
@@ -521,8 +559,8 @@ const job = await generateVideoFromUI({
   }}
   className={`
     alive-card
-  group relative bg-[#161A26] border border-[#2A2F45] shadow-[0_0_4px_rgba(122,59,255,0.25)]
-  rounded-xl px-4 py-3 text-left
+  group relative bg-[#161A26] border border-gray-800 shadow-[0_0_4px_rgba(122,59,255,0.25)]
+  rounded-sm px-4 py-3 text-left
   transition-all duration-500
   hover:border-[#7A3BFF]/50
   hover:shadow-[0_0_20px_rgba(122,59,255,0.15)]
@@ -573,8 +611,8 @@ const job = await generateVideoFromUI({
           }}
           className={`
               alive-card
-  group relative bg-[#161A26] border border-[#2A2F45] shadow-[0_0_4px_rgba(122,59,255,0.25)]
-  rounded-xl px-4 py-3 text-left
+  group relative bg-[#161A26] border border-gray-800 shadow-[0_0_4px_rgba(122,59,255,0.25)]
+  rounded-sm px-4 py-3 text-left
   transition-all duration-500
   hover:border-[#7A3BFF]/50
   hover:shadow-[0_0_20px_rgba(122,59,255,0.15)]
@@ -608,7 +646,7 @@ const job = await generateVideoFromUI({
       max-h-[75vh]
       bg-[#1A1D2B]
       border border-white/10
-      rounded-2xl
+      rounded-sm
       shadow-2xl
       p-5
       overflow-y-auto
@@ -712,7 +750,7 @@ const job = await generateVideoFromUI({
           key={resKey}
           onClick={() => setSelectedResolution(resKey)}
           className={`
-            px-4 py-2 rounded-lg text-sm font-medium
+            px-4 py-2 rounded-sm text-sm font-medium
             border transition-all duration-200
             ${
              isActive
@@ -733,7 +771,7 @@ const job = await generateVideoFromUI({
   onClick={handleGenerate}
   disabled={!prompt.trim() || isGenerating}
  className={`
-  w-full py-3 rounded-2xl font-medium text-white transition-all duration-300 mt-4
+  w-full py-3 rounded-sm font-medium text-white transition-all duration-300 mt-4
   ${
     !prompt.trim() || isGenerating
       ? "bg-gray-500/40 text-white/40 cursor-not-allowed"
@@ -754,8 +792,8 @@ const job = await generateVideoFromUI({
     className="
       w-full
       bg-[#10131A]
-      border border-[#1F2230]
-      rounded-xl
+      border border-gray-800
+      rounded-sm
       px-4 py-3
       flex items-center justify-center gap-2
       text-[15px] font-semibold
@@ -779,7 +817,13 @@ const job = await generateVideoFromUI({
     onToggle={toggleSelect}
   />
 )}
-
+  {toast && (
+  <Toast
+    message={toast.message}
+    type={toast.type}
+    onClose={() => setToast(null)}
+  />
+)}
 
     </div>
   );
@@ -797,7 +841,7 @@ function Modal({ title, onClose, children }) {
         max-h-[70vh]
         bg-[#1A1D2B]
         border border-white/10
-        rounded-2xl
+        rounded-sm
         shadow-2xl
         p-5
         overflow-y-auto
@@ -831,7 +875,7 @@ function VideoModelCard({
     <button
       onClick={onClick}
       className={`
-        relative w-full rounded-xl transition text-left
+        relative w-full rounded-sm transition text-left
         bg-[#0B0E1A]/70 border
         ${
           active
@@ -853,7 +897,7 @@ function VideoModelCard({
         <img
           src={logo}
           alt={label}
-          className="w-10 h-10 rounded-lg object-cover p-1"
+          className="w-10 h-10 rounded-sm object-cover p-1"
         />
         <div className="text-white font-medium leading-tight">
           {label}
@@ -938,4 +982,5 @@ function AspectPreview({ ratio }) {
       }}
     />
   );
+  
 }

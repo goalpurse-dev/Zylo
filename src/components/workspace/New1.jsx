@@ -5,33 +5,19 @@ const TOOLS = [
     id: "image-generator",
     title: "Image Generator",
     description:
-      "Generate high-quality AI images from simple prompts with full creative control.",
+      "Generate high-quality AI images from simple prompts with full control.",
     to: "/workspace/image-generator",
-    glow: "rgba(122,59,255,0.6)", // purple
+    glow: "rgba(122,59,255,0.6)",
+    preview: "/assets/previews/fenix.webp",
   },
   {
-    id: "product-photos",
-    title: "Product Photos",
+    id: "video-generator",
+    title: "Video Generator",
     description:
-      "Create studio-quality product images without expensive photoshoots.",
+      "Create viral videos without expensive costs.",
     to: "/workspace/productphoto",
-    glow: "rgba(56,189,248,0.6)", // cyan
-  },
-  {
-    id: "background-library",
-    title: "Background Library",
-    description:
-      "Browse and apply premium AI-generated backgrounds instantly and efficiently.",
-    to: "/workspace/library",
-    glow: "rgba(52,211,153,0.6)", // green
-  },
-  {
-    id: "my-product",
-    title: "My Products",
-    description:
-      "Manage your saved products and reuse them across generations.",
-    to: "/workspace/myproduct",
-    glow: "rgba(244,114,182,0.6)", // pink
+    glow: "rgba(56,189,248,0.6)",
+    preview: "/assets/previews/rome.mp4",
   },
 ];
 
@@ -75,12 +61,43 @@ export default function New1() {
                 group-hover:shadow-[0_0_60px_rgba(0,0,0,0.6)]
               "
             >
-              {/* STACK */}
-              <div className="relative h-28 mb-6">
-                <div className="absolute left-0 top-0 w-28 h-20 rounded-xl bg-white/10 rotate-[-10deg] transition-transform group-hover:-translate-x-1" />
-                <div className="absolute left-4 top-2 w-28 h-20 rounded-xl bg-white/15 rotate-[-4deg] transition-transform group-hover:translate-y-1" />
-                <div className="absolute left-8 top-4 w-28 h-20 rounded-xl bg-white/20 transition-transform group-hover:translate-x-1" />
-              </div>
+
+{/* PREVIEW IMAGE */}
+<div className="relative w-full aspect-video mb-6 overflow-hidden rounded-xl">
+
+  {/* IMAGE PREVIEW */}
+  {!tool.preview.endsWith(".mp4") && (
+    <img
+      src={tool.preview}
+      alt={tool.title}
+      className="
+        w-full h-full object-cover
+        transition-transform duration-500
+        group-hover:scale-105
+      "
+    />
+  )}
+
+  {/* VIDEO PREVIEW */}
+  {tool.preview.endsWith(".mp4") && (
+    <video
+      src={tool.preview}
+      autoPlay
+      loop
+      muted
+      playsInline
+      preload="metadata"
+      className="
+        w-full h-full object-cover
+        transition-transform duration-500
+        group-hover:scale-105
+      "
+    />
+  )}
+
+  {/* Overlay */}
+  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+</div>
 
               <h3 className="text-white text-lg font-semibold">
                 {tool.title}

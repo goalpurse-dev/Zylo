@@ -4,6 +4,7 @@ import { DURATIONS } from "./durations";
 import { RESOLUTIONS } from "./resolutions";
 import { VIDEO_SIZES } from "./sizes";
 import { createVideoJobSimple } from "../jobs";
+import { buildVideoPrompt } from "./promptBuilder";
 
 export async function generateVideoFromUI(params: {
   modelKey: keyof typeof MODELS;
@@ -48,13 +49,15 @@ export async function generateVideoFromUI(params: {
     params.duration.replace("s", "")
   );
 
+  const enhancedPrompt = buildVideoPrompt(params.prompt);
+
   return createVideoJobSimple({
-    subject: params.prompt,
+    subject: enhancedPrompt,
     toolKey,
     width,
     height,
     durationSec,
     initImageUrls: params.refImages ?? [],
-    calculatedCredits: totalCredits, // 🔥 important
+    calculatedCredits: totalCredits,
   });
 }

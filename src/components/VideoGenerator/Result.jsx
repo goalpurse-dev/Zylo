@@ -93,6 +93,8 @@ export default function Result({ results = [] }) {
     activeVideo.status === "running" &&
     runtimeMs > MAX_RUNTIME_MS;
 
+    
+
   /* =============================== RENDER =============================== */
 
   return (
@@ -161,15 +163,52 @@ export default function Result({ results = [] }) {
                       bg-black
                     `}
                   >
-                    {item.result_url && (
-                      <video
-                        src={item.result_url}
-                        className="w-full h-full object-cover"
-                        muted
-                        playsInline
-                        preload="metadata"
-                      />
-                    )}
+                   {/* SUCCESS */}
+{item.result_url && (
+  <video
+    src={item.result_url}
+    className="w-full h-full object-cover"
+    muted
+    playsInline
+    preload="metadata"
+  />
+)}
+
+{/* LOADING */}
+{!item.result_url && (
+  <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-black">
+    
+    {/* Spinner */}
+    <svg className="w-8 h-8" viewBox="0 0 100 100">
+      <circle
+        cx="50"
+        cy="50"
+        r="45"
+        fill="none"
+        stroke="rgba(255,255,255,0.2)"
+        strokeWidth="6"
+      />
+      <circle
+        cx="50"
+        cy="50"
+        r="45"
+        fill="none"
+        stroke="#7A3BFF"
+        strokeWidth="6"
+        strokeDasharray="28 260"
+        strokeLinecap="round"
+        className="origin-center animate-spin"
+      />
+    </svg>
+
+    {/* Optional Progress */}
+    {typeof item.progress === "number" && (
+      <p className="text-[10px] text-white/50">
+        {Math.floor(item.progress)}%
+      </p>
+    )}
+  </div>
+)}
                   </button>
                 );
               })
@@ -181,9 +220,19 @@ export default function Result({ results = [] }) {
 
       {/* ================= BIG PLAYER ================= */}
       <div className="w-full min-w-0 overflow-hidden">
-        <div className="w-full rounded-2xl overflow-hidden relative  flex items-center justify-center  ">
-
-          {/* FAILED STATE */}
+       <div className="
+  w-full 
+  max-w-[1100px]
+   
+  mx-auto 
+  rounded-2xl 
+  overflow-hidden 
+  relative 
+  flex 
+  items-center 
+  justify-center
+  
+">
           {isFailed && (
             <div className="flex flex-col items-center gap-4">
               <p className="text-white/80 text-sm font-medium">
@@ -197,8 +246,8 @@ export default function Result({ results = [] }) {
 
           {/* EMPTY STATE */}
           {!activeVideo && !isFailed && (
-            <div className="flex flex-col items-center gap-4">
-              <VideoOff className="w-16 h-16 text-white/20" />
+            <div className="flex flex-col items-center ">
+              <img src="/assets/logos/sadzyvo.webp" className="w-20 h-20 text-white/20" />
               <p className="text-white/40 text-sm">
                 No Videos Generated Yet
               </p>
@@ -212,7 +261,11 @@ export default function Result({ results = [] }) {
               src={activeVideo.result_url}
               controls
               autoPlay
-              className="w-full h-full object-contain"
+             className="
+  w-full 
+  max-h-[70vh] 
+  object-contain
+"
             />
           )}
 

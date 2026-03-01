@@ -20,6 +20,7 @@ export default function WorkspaceLayout() {
   "/workspace/library",
   "/workspace/image-generator",
   "/workspace/video-generator",
+  "/workspace/viral-script",
   "/workspace/home"
 
   
@@ -88,6 +89,8 @@ useEffect(() => {
     "/workspace/pricing": "Pricing",
     "/workspace/image-generator": "Image Generator",
     "/workspace/video-generator": "Video Generator",
+    "/workspace/viral-script": "Video Generator",
+
   };
 
   const title = titleMap[location.pathname] || "Workspace";

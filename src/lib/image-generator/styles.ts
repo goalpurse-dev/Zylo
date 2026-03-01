@@ -60,6 +60,7 @@ photorealistic 3D render,
 dramatic atmosphere,
 viral TikTok "what if" science style,
 8k ultra detail
+No text on the screen
 `,
   img: STYLE_THUMBS.viralSkeleton,
   imageStrength: 0.6

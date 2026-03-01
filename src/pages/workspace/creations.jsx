@@ -26,9 +26,6 @@ export default function creations() {
         <Step1/>    
         </div>
 
-       <div className="mt-32">
-        <Faq/>    
-        </div>
 
         <div className="mt-16">
         <Footer/>    

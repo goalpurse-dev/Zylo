@@ -28,15 +28,11 @@ export default function Footer() {
               <Link to="/workspace/image-generator" className="text-[12px] hover:underline">
                 Image Generator
               </Link>
-              <Link to="/workspace/productphoto" className="text-[12px] hover:underline">
-                Product Photos
+
+               <Link to="/workspace/image-generator" className="text-[12px] hover:underline">
+                Video Generator
               </Link>
-              <Link to="/workspace/myproduct" className="text-[12px] hover:underline">
-                Own Product
-              </Link>
-              <Link to="/workspace/library" className="text-[12px] hover:underline">
-                Background Library
-              </Link>
+            
               <Link to="/workspace/creations" className="text-[12px] hover:underline">
                 Creations
               </Link>
@@ -106,15 +102,10 @@ export default function Footer() {
                <Link to="/workspace/image-generator" className="hover:underline">
                 Image Generator
               </Link>
-              <Link to="/workspace/productphoto" className="hover:underline">
-                Product Photos
+               <Link to="/workspace/image-generator" className="hover:underline">
+                Video Generator
               </Link>
-              <Link to="/workspace/myproduct" className="hover:underline">
-                Own Product
-              </Link>
-              <Link to="/workspace/library" className="hover:underline">
-                Background Library
-              </Link>
+             
               <Link to="/workspace/creations" className="hover:underline">
                 Creations
               </Link>

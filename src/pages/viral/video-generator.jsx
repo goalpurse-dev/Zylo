@@ -8,39 +8,57 @@ export default function VideoGenerator() {
   const [results, setResults] = useState([]);
 
   useEffect(() => {
-async function loadVideos() {
-  const { data } = await supabase
-    .from("jobs")
-    .select(
-      "id, prompt, input, settings, result_url, created_at, status, progress, type"
-    )
-    .eq("type", "video")
-    .eq("settings->>creation_type", "video")
-    .order("created_at", { ascending: false })
-    .limit(40);
+    let interval;
 
-  if (data) {
-    console.log("LOADED VIDEOS:", data); // 🔥 TEMP LOG
-    setResults(data);
-  }
-}
+    async function loadVideos() {
+      const { data, error } = await supabase
+        .from("jobs")
+        .select(
+          "id, prompt, input, settings, result_url, created_at, status, progress, type"
+        )
+        .eq("type", "video")
+        .eq("settings->>creation_type", "video")
+        .order("created_at", { ascending: false })
+        .limit(40);
 
+      if (error) {
+        console.error("Error loading videos:", error);
+        return;
+      }
+
+      if (data) {
+        console.log("LOADED VIDEOS:", data);
+        setResults(data);
+      }
+    }
+
+    // Initial load
     loadVideos();
 
-    // optional realtime
+    // ✅ Realtime subscription
     const channel = supabase
       .channel("video-jobs")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "jobs" },
-        (payload) => {
+        {
+          event: "*",
+          schema: "public",
+          table: "jobs",
+        },
+        () => {
           loadVideos();
         }
       )
       .subscribe();
 
+    // ✅ Fallback polling (guarantees updates even if realtime misses)
+    interval = setInterval(() => {
+      loadVideos();
+    }, 5000);
+
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, []);
 

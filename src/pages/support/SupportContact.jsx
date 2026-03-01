@@ -101,9 +101,7 @@ export default function SupportContact() {
         <div className={card + " p-4"}>
           <div className="text-sm font-semibold mb-2">Social & community</div>
           <div className="flex flex-wrap gap-2">
-            <a className="rounded-full bg-white/10 px-3 py-1.5 text-xs hover:bg-white/15" href="https://discord.gg/yourInvite" target="_blank" rel="noreferrer">Discord</a>
-            <a className="rounded-full bg-white/10 px-3 py-1.5 text-xs hover:bg-white/15" href="https://twitter.com/yourHandle" target="_blank" rel="noreferrer">Twitter/X</a>
-            <a className="rounded-full bg-white/10 px-3 py-1.5 text-xs hover:bg-white/15" href="mailto:support@yourdomain.com">Email</a>
+      
           </div>
         </div>
       </aside>

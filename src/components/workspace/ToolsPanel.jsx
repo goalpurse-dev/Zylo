@@ -5,9 +5,7 @@ const TOOLS = [
   { label: "Home", to: "/workspace/home", icon: HomeIcon },
   { label: "Image Generator", to: "/workspace/image-generator", icon: LucideImagePlus } ,
   { label: "Video Generator", to: "/workspace/video-generator", icon: LucideVideo } ,
-  { label: "Product Photos", to: "/workspace/productphoto", icon: Image },
-  { label: "Own Products", to: "/workspace/myproduct", icon: Box },
-  { label: "Background Library", to: "/workspace/library", icon: PaintBucket },
+
 ];
 
 function ToolRow({ to, label, Icon, end, onNavigate }) {
