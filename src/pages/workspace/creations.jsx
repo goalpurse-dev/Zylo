@@ -8,31 +8,22 @@ import { useState, useEffect } from "react";
 
 
 
-export default function creations() {
-    useEffect(() => {
-  document.title = "Your Generated Product Creations";
-}, []);
+export default function Creations() {
+  useEffect(() => {
+    document.title = "Your Generated Product Creations";
+  }, []);
 
-       const [showCta, setShowCta] = useState(true);
+  return (
+    <div className="min-h-screen flex flex-col">
+      
+      {/* CONTENT */}
+      <div className="flex-grow">
+        <Step1 />
+      </div>
 
-    return (
-        <section>
+      {/* FOOTER */}
+      <Footer />
 
-         
-     
-
-
-        <div>
-        <Step1/>    
-        </div>
-
-
-        <div className="mt-16">
-        <Footer/>    
-        </div>
-
-        </section>
-        
-    
-    );
+    </div>
+  );
 }

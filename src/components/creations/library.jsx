@@ -15,6 +15,52 @@ import { Download, X, ChevronLeft, ChevronRight } from "lucide-react";
 function HorizontalRow({ title, items, getImageUrl, onItemClick }) {
   const rowRef = useRef(null);
 
+  const isDown = useRef(false);
+const startX = useRef(0);
+const scrollLeft = useRef(0);
+
+useEffect(() => {
+  const slider = rowRef.current;
+  if (!slider) return;
+
+  const handleMouseDown = (e) => {
+    isDown.current = true;
+    slider.classList.add("cursor-grabbing");
+    startX.current = e.pageX - slider.offsetLeft;
+    scrollLeft.current = slider.scrollLeft;
+  };
+
+  const handleMouseLeave = () => {
+    isDown.current = false;
+    slider.classList.remove("cursor-grabbing");
+  };
+
+  const handleMouseUp = () => {
+    isDown.current = false;
+    slider.classList.remove("cursor-grabbing");
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDown.current) return;
+    e.preventDefault();
+    const x = e.pageX - slider.offsetLeft;
+    const walk = (x - startX.current) * 1.5;
+    slider.scrollLeft = scrollLeft.current - walk;
+  };
+
+  slider.addEventListener("mousedown", handleMouseDown);
+  slider.addEventListener("mouseleave", handleMouseLeave);
+  slider.addEventListener("mouseup", handleMouseUp);
+  slider.addEventListener("mousemove", handleMouseMove);
+
+  return () => {
+    slider.removeEventListener("mousedown", handleMouseDown);
+    slider.removeEventListener("mouseleave", handleMouseLeave);
+    slider.removeEventListener("mouseup", handleMouseUp);
+    slider.removeEventListener("mousemove", handleMouseMove);
+  };
+}, []);
+
   const scroll = (dir) => {
     if (!rowRef.current) return;
     rowRef.current.scrollBy({
@@ -43,26 +89,46 @@ function HorizontalRow({ title, items, getImageUrl, onItemClick }) {
       </div>
 
       {/* Scroll row */}
-      <div
-        ref={rowRef}
-        className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-black/20"
-      >
+     <div
+  ref={rowRef}
+  className="
+    flex gap-4
+    overflow-x-auto
+    overflow-y-hidden
+    pb-4
+    scroll-smooth
+    snap-x snap-mandatory
+    scrollbar-thin
+    scrollbar-thumb-[#2A2F45]
+    scrollbar-track-transparent
+    hover:scrollbar-thumb-[#7A3BFF]
+    cursor-grab
+    active:cursor-grabbing
+  "
+>
         {items.map((item) => (
-          <div key={item.id} className="flex-shrink-0 group">
+         <div key={item.id} className="flex-shrink-0 group snap-start">
             <button
               onClick={() => onItemClick(item)}
               className="overflow-hidden rounded-md block relative"
             >
-              <img
-                src={getImageUrl(item)}
-                alt=""
-                className="
-                  object-cover
-                  h-[140px] md:h-[160px] lg:h-[180px]
-                  w-[140px] md:w-[160px] lg:w-[180px]
-                  hover:opacity-90 transition
-                "
-              />
+          {title === "Videos" ? (
+  <video
+    src={getImageUrl(item)}
+    className="object-cover h-[140px] md:h-[160px] lg:h-[180px] w-[140px] md:w-[160px] lg:w-[180px]"
+    muted
+    playsInline
+    preload="metadata"
+  />
+) : (
+  <img
+    src={getImageUrl(item)}
+    alt=""
+    className="object-cover h-[140px] md:h-[160px] lg:h-[180px] w-[140px] md:w-[160px] lg:w-[180px]"
+  />
+)}
+
+              
 
               {/* Prompt overlay */}
               {item.prompt && (
@@ -110,7 +176,7 @@ function HorizontalRow({ title, items, getImageUrl, onItemClick }) {
 export default function Library() {
   const { user, loading } = useAuth();
 
-  const [productPhotos, setProductPhotos] = useState([]);
+  const [videos, setVideos] = useState([]);
   const [images, setImages] = useState([]);
   const [activeItem, setActiveItem] = useState(null);
 
@@ -121,7 +187,7 @@ export default function Library() {
     if (!user || loading) return;
 
     const load = async () => {
-      /* -------- Product Photos (creations) -------- */
+      /* -------- Product Photos (creations) -------- 
       const list = await listCreationsByType(
         user.id,
         CREATION_TYPES.PRODUCT_PHOTO
@@ -136,6 +202,26 @@ export default function Library() {
       overflow.forEach((item) => deleteCreation(item).catch(() => {}));
 
       setProductPhotos(keep);
+
+      */
+
+
+      /* -------- Videos (jobs) -------- */
+const { data: videoData } = await supabase
+  .from("jobs")
+  .select("id, created_at, result_url, prompt, settings")
+  .eq("user_id", user.id)
+  .eq("status", "succeeded")
+  .not("result_url", "is", null)
+  .order("created_at", { ascending: false })
+  .limit(20);
+
+const filteredVideos =
+  (videoData ?? []).filter(
+    (r) => r?.settings?.creation_type === CREATION_TYPES.VIDEO
+  );
+
+setVideos(filteredVideos);
 
       /* -------- Images (jobs) -------- */
       const { data } = await supabase
@@ -156,7 +242,7 @@ export default function Library() {
       );
     };
 
-    load();
+    load( );
   }, [user, loading]);
 
   /* ===============================
@@ -181,12 +267,12 @@ export default function Library() {
         onItemClick={setActiveItem}
       />
 
-      <HorizontalRow
-        title="Product Photos"
-        items={productPhotos}
-        getImageUrl={(i) => i.file_url}
-        onItemClick={setActiveItem}
-      />
+     <HorizontalRow
+  title="Videos"
+  items={videos}
+  getImageUrl={(i) => i.result_url}
+  onItemClick={setActiveItem}
+/>
 
       {/* MODAL */}
       {activeItem && (
@@ -195,22 +281,31 @@ export default function Library() {
           onClick={() => setActiveItem(null)}
         >
           <div
-            className="bg-[#ECE8F2] p-7 rounded-md w-full max-w-[800px]"
+            className="bg-[#12141A] p-7 rounded-md w-full max-w-[800px]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-end">
               <button onClick={() => setActiveItem(null)}>
-                <X className="h-4 w-4 text-[#4A4A55]" />
+                <X className="h-4 w-4 text-[#B7BBC6]" />
               </button>
             </div>
 
-            <img
-              src={activeItem.result_url || activeItem.file_url}
-              className="w-full max-h-[450px] object-contain bg-black rounded-md mt-3"
-            />
+            {activeItem.settings?.creation_type === CREATION_TYPES.VIDEO ? (
+  <video
+    src={activeItem.result_url}
+    controls
+    autoPlay
+    className="w-full max-h-[450px] object-contain bg-black rounded-md mt-3"
+  />
+) : (
+  <img
+    src={activeItem.result_url}
+    className="w-full max-h-[450px] object-contain bg-black rounded-md mt-3"
+  />
+)}
 
             {activeItem.prompt && (
-              <p className="mt-4 text-[#110829] text-sm leading-relaxed">
+              <p className="mt-4 text-[#B7BBC6] text-sm leading-relaxed">
                 {activeItem.prompt}
               </p>
             )}
@@ -221,7 +316,7 @@ export default function Library() {
                 target="_blank"
                 rel="noreferrer"
               >
-                <Download className="h-4 w-4 text-[#4A4A55] hover:opacity-70" />
+                <Download className="h-4 w-4 text-[#B7BBC6] hover:opacity-70" />
               </a>
             </div>
           </div>

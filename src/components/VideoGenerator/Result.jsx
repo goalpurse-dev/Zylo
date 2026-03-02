@@ -220,18 +220,17 @@ export default function Result({ results = [] }) {
 
       {/* ================= BIG PLAYER ================= */}
       <div className="w-full min-w-0 overflow-hidden">
-       <div className="
+<div className="
   w-full 
   max-w-[1100px]
-   
   mx-auto 
   rounded-2xl 
-  overflow-hidden 
   relative 
   flex 
   items-center 
   justify-center
-  
+
+  p-6
 ">
           {isFailed && (
             <div className="flex flex-col items-center gap-4">
@@ -255,32 +254,23 @@ export default function Result({ results = [] }) {
           )}
 
           {/* SUCCESS STATE */}
-          {activeVideo?.result_url && !isFailed && (
-            <video
-              key={activeVideo.id}
-              src={activeVideo.result_url}
-              controls
-              autoPlay
-             className="
-  w-full 
-  max-h-[70vh] 
-  object-contain
-"
-            />
-          )}
+   {activeVideo?.result_url && !isFailed && (
+  <div className="relative w-full rounded-2xl overflow-hidden">
+    <video
+      key={activeVideo.id}
+      src={activeVideo.result_url}
+      controls
+      autoPlay
+      className="
+        w-full 
+        max-h-[70vh] 
+        object-contain
+      "
+    />
+  </div>
+)}
 
-          {/* DOWNLOAD BUTTON */}
-          {activeVideo?.result_url && !isFailed && (
-            <button
-              type="button"
-              onClick={() => window.open(activeVideo.result_url, "_blank")}
-              className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 backdrop-blur-md px-3 py-2 rounded-lg text-white text-xs flex items-center gap-2 border border-white/10 transition"
-            >
-              <Download className="w-4 h-4" />
-              Download
-            </button>
-          )}
-
+       
         </div>
       </div>
 
