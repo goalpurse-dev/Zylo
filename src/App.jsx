@@ -147,6 +147,8 @@ import AIImageGeneratorVsTraditionalDesign from "./app/blog/imagegenerator/AIIma
 import TopAIImageGeneratorFeaturesThatMatter from "./app/blog/imagegenerator/TopAIImageGeneratorFeaturesThatMatter.jsx";
 import HowtoGenerateImagesforAdsUsingAI from "./app/blog/imagegenerator/GenerateImagesForAdsUsingAI.jsx";
 import AIImageGeneratorForContentCreators from "./app/blog/imagegenerator/AIImageGeneratorForContentCreators.jsx";
+import HowAIImageGeneratorsWork from "./app/blog/imagegenerator/HowAIImageGeneratorsWork.jsx";
+import IsAIImageGenerationWorthItForCreators from "./app/blog/imagegenerator/IsAIImageGenerationWorthItForCreators.jsx";
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -326,6 +328,8 @@ function AppWithRouting() {
         <Route path="/blog/top-ai-image-generator-features-that-matter" element={<TopAIImageGeneratorFeaturesThatMatter/>} />
         <Route path="/blog/generate-images-for-ads-using-ai" element={<HowtoGenerateImagesforAdsUsingAI/>} />
         <Route path="/blog/ai-image-generator-for-content-creators" element={<AIImageGeneratorForContentCreators/>} />
+        <Route path="/blog/how-ai-image-generators-work" element={<HowAIImageGeneratorsWork/>} />
+        <Route path="/blog/is-ai-image-generation-worth-it-for-creators" element={<IsAIImageGenerationWorthItForCreators/>} />
 
 
 

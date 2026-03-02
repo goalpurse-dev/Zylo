@@ -767,6 +767,38 @@ const [loading, setLoading] = useState(false);
           </div>
           </div>
           </Link>
+
+          
+                  {/* Blog Card 49*/}
+
+                <Link to="/blog/how-ai-image-generators-work" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">How AI Image Generators Work (Explained Simply)</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how AI Image Generators work and take advantage of them right away</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">02.03/2026</p>
+          </div>
+          </div>
+          </Link>
+
+             
+                  {/* Blog Card 50*/}
+
+                <Link to="/blog/is-ai-image-generation-worth-it-for-creators" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Is AI Image Generation Worth It for Creators?</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how worth it Image Generation really is and what are the benefits with it.</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">02.03/2026</p>
+          </div>
+          </div>
+          </Link>
  
  
           
