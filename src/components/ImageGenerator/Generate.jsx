@@ -9,8 +9,8 @@ import { supabase } from "../../lib/supabaseClient";
 import { IMAGE_STYLES } from "../../lib/image-generator/styles";
 import { ChevronRight, Folder, VideoIcon } from "lucide-react";
 import Toast from "../../components/ImageGenerator/Toast";
-
-
+import ProgressToast from "../../components/ImageGenerator/ProgressToast";
+import LimitReachedToast from "../../components/ImageGenerator/LimitReachedToast";
 
 
 import CreditLogo from "../../assets/toolshell/credit.png"
@@ -184,14 +184,14 @@ const ModelCard = ({
 
 export default function Generate({ prompt, setPrompt, onJobCreated, setActiveJobId }) {
 
-
+const [freeRemaining, setFreeRemaining] = useState(null);
 const [toast, setToast] = useState(null);
 const location = useLocation();
 const navigate = useNavigate();
-
+const [progressToast, setProgressToast] = useState(null);
 const [settingsOpen, setSettingsOpen] = useState(false);
 const [activeMenu, setActiveMenu] = useState(null); 
-
+const [limitToastOpen, setLimitToastOpen] = useState(false);
 const panelRef = useRef(null);
  const [selectedModelKey, setSelectedModelKey] = useState("image:nano");
 const [selectedSize, setSelectedSize] = useState("1:1");
@@ -203,7 +203,7 @@ const [openStyle, setOpenStyle] = useState(false);
 const [openModel, setOpenModel] = useState(false);
 const controlsRef = useRef(null);
 const [isGenerating, setIsGenerating] = useState(false);
-
+const [planCode, setPlanCode] = useState(null);
 
 const maxRefImages = selectedModel.maxReferenceImages;
 const canAddImages = maxRefImages > 0;
@@ -270,6 +270,13 @@ const handleUpload = async (e) => {
 const handleGenerate = async () => {
   if (!prompt.trim()) return;
 
+  // 🔥 FREE LIMIT GUARD
+// 🔥 FREE LIMIT GUARD (only for free plan)
+if (planCode === "free" && freeRemaining === 0) {
+  setLimitToastOpen(true);
+  return;
+}
+
   // 🔥 CHECK AUTH FIRST
   const { data: authData } = await supabase.auth.getUser();
   const user = authData?.user;
@@ -304,12 +311,15 @@ if (profErr) {
 const requiredCredits = Number(selectedModel?.credits ?? 0);
 const balance = Number(profile?.credit_balance ?? 0);
 
-if (balance < requiredCredits) {
-  setToast({
-    message: `You need ${requiredCredits} credits to generate.`,
-    type: "error",
-  });
-  return;
+// 🔥 Skip credit check for free plan
+if (planCode !== "free") {
+  if (balance < requiredCredits) {
+    setToast({
+      message: `You need ${requiredCredits} credits to generate.`,
+      type: "error",
+    });
+    return;
+  }
 }
 
 
@@ -326,6 +336,18 @@ if (balance < requiredCredits) {
 
     setActiveJobId?.(job.id);
     onJobCreated?.(job);
+
+      // 🔥 decrement UI counter
+ if (freeRemaining !== null && freeRemaining > 0) {
+  const newRemaining = freeRemaining - 1;
+  setFreeRemaining(newRemaining);
+
+  if (newRemaining >= 0) {
+    setProgressToast(newRemaining);
+  }
+}
+
+  
   } catch (err) {
     console.error("Generate failed:", err);
   } finally {
@@ -333,10 +355,64 @@ if (balance < requiredCredits) {
   }
 };
 
+useEffect(() => {
+  const loadPlan = async () => {
+    const { data: auth } = await supabase.auth.getUser();
+    const user = auth?.user;
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("profiles")
+      .select("plan_code")
+      .eq("id", user.id)
+      .single();
+
+    const code = (data?.plan_code || "free").toLowerCase();
+    setPlanCode(code);
+
+    // 🔥 Force free users to Flux Base
+    if (code === "free") {
+      setSelectedModelKey("image:flux.base");
+    }
+  };
+
+  loadPlan();
+}, []);
 
 
-   
 
+useEffect(() => {
+  const loadFreeInfo = async (session) => {
+    if (planCode !== "free") return;
+    if (!session?.user) return;
+
+    const { data, error } = await supabase.functions.invoke(
+      "check-image-eligibility"
+    );
+
+    console.log("eligibility:", data, error);
+
+    if (!error && data) {
+      setFreeRemaining(data.remaining);
+    }
+  };
+
+  // 1️⃣ check current session
+  supabase.auth.getSession().then(({ data }) => {
+    loadFreeInfo(data.session);
+  });
+
+  // 2️⃣ listen for auth changes
+  const { data: listener } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      loadFreeInfo(session);
+    }
+  );
+
+  return () => {
+    listener.subscription.unsubscribe();
+  };
+}, [planCode]);
 
 useEffect(() => {
   const handleClickOutside = (e) => {
@@ -464,6 +540,15 @@ useEffect(() => {
 </div>
 
 
+
+{/* FREE PLAN INFO */}
+{planCode === "free" && freeRemaining !== null && (
+  <div className="mt-3 text-center text-sm font-medium text-yellow-400">
+    {freeRemaining > 0
+      ? `You have ${freeRemaining} free image generation${freeRemaining === 1 ? "" : "s"} left this week`
+      : "Free limit reached. Upgrade or wait for reset."}
+  </div>
+)}
 
           {/* PROMPT */}
 <div
@@ -807,24 +892,40 @@ md:-translate-y-1/2
 
     {/* Models grid */}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {Object.entries(MODELS).map(([key, model]) => (
-        <ModelCard
-          key={key}
-          img={model.img}
-          label={model.label}
-          description={model.description}
-          credits={model.credits}
-          traits={model.traits}
-          active={key === selectedModelKey}
-          onClick={() => {
-            setSelectedModelKey(key)
-            if (!model.supportedSizes.includes(selectedSize)) {
-              setSelectedSize(model.supportedSizes[0])
-            }
-            setOpenModel(false)
-          }}
-        />
-      ))}
+    {Object.entries(MODELS).map(([key, model]) => {
+  const isLocked =
+    planCode === "free" && key !== "image:flux.base";
+
+  return (
+    <div key={key} className="relative">
+      {isLocked && (
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-sm z-10 flex items-center justify-center">
+          <span className="text-xs text-white/70 bg-white/10 px-3 py-1 rounded-full">
+            Upgrade to unlock
+          </span>
+        </div>
+      )}
+
+      <ModelCard
+        img={model.img}
+        label={model.label}
+        description={model.description}
+        credits={model.credits}
+        traits={model.traits}
+        active={key === selectedModelKey}
+        onClick={() => {
+          if (isLocked) return; // 🔒 prevent selection
+
+          setSelectedModelKey(key);
+          if (!model.supportedSizes.includes(selectedSize)) {
+            setSelectedSize(model.supportedSizes[0]);
+          }
+          setOpenModel(false);
+        }}
+      />
+    </div>
+  );
+})}
     </div>
   </div>
 )}
@@ -872,6 +973,20 @@ md:-translate-y-1/2
   />
 )}
 
+{limitToastOpen && (
+  <LimitReachedToast
+    resetInDays={6} // later you can pass dynamic from eligibility
+    onClose={() => setLimitToastOpen(false)}
+  />
+)}
+
+{progressToast !== null && (
+  <ProgressToast
+    remaining={progressToast}
+    onClose={() => setProgressToast(null)}
+  />
+)}
+
 
 
 
@@ -879,7 +994,3 @@ md:-translate-y-1/2
 )
 
 };
-
-
-
-

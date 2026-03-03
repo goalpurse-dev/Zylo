@@ -1,6 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-
+import { supabase } from "../../lib/supabaseClient";
 import ToolShell from "../../components/workspace/toolshell.jsx";
 import TopRow from "../../components/workspace/toprow.jsx";
 import ToolsPanel from "../../components/workspace/ToolsPanel.jsx";
@@ -9,6 +9,7 @@ export default function WorkspaceLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activePanel, setActivePanel] = useState(null);
   const location = useLocation();
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const scrollRef = useRef(null);
   const lastScrollY = useRef(0);
@@ -39,6 +40,34 @@ const isCreationsRoute = location.pathname.startsWith("/workspace/creations");
   }
 };
 
+useEffect(() => {
+  const run = async () => {
+    const { data } = await supabase.auth.getUser();
+    const user = data?.user;
+    if (!user) return;
+
+    // 🔹 Get plan
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("plan_code")
+      .eq("id", user.id)
+      .single();
+
+    if ((profile?.plan_code || "free").toLowerCase() !== "free") return;
+
+    const key = `zyvo_workspace_welcome:${user.id}`;
+    if (localStorage.getItem(key)) return;
+
+    setShowWelcome(true);
+    localStorage.setItem(key, "1");
+
+    setTimeout(() => {
+      setShowWelcome(false);
+    }, 25000);
+  };
+
+  run();
+}, []);
 
   // 🔹 Auto-open tools on tool routes
 useEffect(() => {
@@ -191,6 +220,62 @@ useEffect(() => {
             title={title}
           />
         </div>
+
+ {showWelcome && (
+  <div className="fixed bottom-6 right-6 z-[9999] animate-[slideUp_0.35s_ease-out]">
+    <div
+      className="
+        relative
+        flex items-start gap-4
+        max-w-sm
+        rounded-2xl
+        border border-[#7A3BFF]/30
+        bg-[#0B0E1A]/80
+        backdrop-blur-xl
+        shadow-[0_0_40px_rgba(122,59,255,0.25)]
+        px-5 py-4
+      "
+    >
+      {/* Avatar */}
+      <div className="relative shrink-0">
+        <img
+          src="/assets/ai/robot.webp"
+          alt="Zyvo AI"
+          className="w-10 h-10 rounded-full border border-white/10"
+        />
+
+        {/* Subtle pulse glow */}
+        <div className="absolute inset-0 rounded-full bg-[#7A3BFF]/30 blur-md opacity-60 animate-pulse" />
+      </div>
+
+      {/* Text */}
+      <div className="flex-1">
+        <div className="text-white font-semibold text-sm">
+          Zyvo AI
+        </div>
+
+        <div className="text-white/70 text-sm mt-1 leading-relaxed">
+          You’ve got 3 free image creations this week. Let’s build something.
+        </div>
+      </div>
+
+      {/* Close */}
+      <button
+        onClick={() => setShowWelcome(false)}
+        className="absolute top-3 right-3 text-white/40 hover:text-white transition text-sm"
+      >
+        ✕
+      </button>
+    </div>
+
+    <style>{`
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    `}</style>
+  </div>
+)}
 
         <Outlet />
       </div>

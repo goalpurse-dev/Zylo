@@ -331,7 +331,33 @@ export async function createImageJobSimple(params: {
   if (uerr || !userData?.user) throw new Error("Must be signed in");
   const uid = userData.user.id;
 
-  // ✅ 1) ATOMIC credit deduction (same as product-photo)
+// 🔥 CHECK PLAN
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("plan_code")
+  .eq("id", uid)
+  .single();
+  
+const isFree = profile?.plan_code === "free";
+
+if (isFree) {
+  // Only allow flux.base
+  if (params.toolKey !== "image:flux.base") {
+    throw new Error("LOCKED_GENERATOR");
+  }
+
+  // Check weekly eligibility
+  const { data: eligibility, error: eligErr } =
+    await supabase.functions.invoke("check-image-eligibility");
+
+  if (eligErr) throw new Error("LIMIT_CHECK_FAILED");
+
+  if (!eligibility.allowed) {
+    throw new Error("WEEKLY_LIMIT_REACHED");
+  }
+
+} else {
+  // 💰 PRO PLAN → deduct credits
   const { error: creditErr } = await supabase.rpc("deduct_credits", {
     uid,
     amount: credits,
@@ -343,6 +369,7 @@ export async function createImageJobSimple(params: {
     }
     throw creditErr;
   }
+}
 
   const size = params.size ?? "1024x1024";
 
@@ -414,14 +441,28 @@ height = height ?? 1024;
   const preview = buildImagePreviewPrompt(input);
 
   // ✅ 2) create job + trigger worker
-  return await simulateJob({
-    type: "image",
-    tool_key: params.toolKey,
-    project_id: params.project_id ?? null,
-    prompt: preview,
-    settings,
-    input,
-  });
+// ✅ 2) create job + trigger worker
+const job = await simulateJob({
+  type: "image",
+  tool_key: params.toolKey,
+  project_id: params.project_id ?? null,
+  prompt: preview,
+  settings,
+  input,
+});
+
+// 🔥 AFTER JOB CREATED → log FREE usage
+if (isFree) {
+  const { error: insertErr } = await supabase
+    .from("image_generations")
+    .insert({ user_id: uid });
+
+  if (insertErr) {
+    console.error("Failed to log free generation:", insertErr);
+  }
+}
+
+return job;
 }
 
 
