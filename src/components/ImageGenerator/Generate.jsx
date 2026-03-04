@@ -204,6 +204,8 @@ const [openModel, setOpenModel] = useState(false);
 const controlsRef = useRef(null);
 const [isGenerating, setIsGenerating] = useState(false);
 const [planCode, setPlanCode] = useState(null);
+const [user, setUser] = useState(null);
+
 
 const maxRefImages = selectedModel.maxReferenceImages;
 const canAddImages = maxRefImages > 0;
@@ -356,21 +358,39 @@ if (planCode !== "free") {
 };
 
 useEffect(() => {
+  const modalOpen = openModel || openStyle || openSize;
+
+  if (modalOpen) {
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none"; // important for iOS
+  } else {
+    document.body.style.overflow = "";
+    document.body.style.touchAction = "";
+  }
+
+  return () => {
+    document.body.style.overflow = "";
+    document.body.style.touchAction = "";
+  };
+}, [openModel, openStyle, openSize]);
+
+useEffect(() => {
   const loadPlan = async () => {
     const { data: auth } = await supabase.auth.getUser();
-    const user = auth?.user;
-    if (!user) return;
+    const currentUser = auth?.user;
+
+    setUser(currentUser);
+    if (!currentUser) return;
 
     const { data } = await supabase
       .from("profiles")
       .select("plan_code")
-      .eq("id", user.id)
+      .eq("id", currentUser.id)
       .single();
 
     const code = (data?.plan_code || "free").toLowerCase();
     setPlanCode(code);
 
-    // 🔥 Force free users to Flux Base
     if (code === "free") {
       setSelectedModelKey("image:flux.base");
     }
@@ -542,10 +562,12 @@ useEffect(() => {
 
 
 {/* FREE PLAN INFO */}
-{planCode === "free" && freeRemaining !== null && (
+{user && planCode === "free" && freeRemaining !== null && (
   <div className="mt-3 text-center text-sm font-medium text-yellow-400">
     {freeRemaining > 0
-      ? `You have ${freeRemaining} free image generation${freeRemaining === 1 ? "" : "s"} left this week`
+      ? `You have ${freeRemaining} free image generation${
+          freeRemaining === 1 ? "" : "s"
+        } left this week`
       : "Free limit reached. Upgrade or wait for reset."}
   </div>
 )}

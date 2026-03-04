@@ -23,6 +23,7 @@ import { KEY_LINKS } from "../../lib/providers";
 import { generateVideoFromUI } from "../../lib/video-generator/generator";
 import { calculateVideoCredits } from "../../lib/video-generator/videoPricing";
 import VideoTemplate from "../../components/video-templates/VideoTemplate";
+import { createPortal } from "react-dom";
 VideoIcon
 Folder
 
@@ -152,6 +153,24 @@ const hasRefs = selected.length > 0;
 
 const disableSizeSelector = isKling && hasRefs;
 
+
+
+useEffect(() => {
+  if (isAnyModalOpen || openReferenceModal) {
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+  } else {
+    document.body.style.overflow = "";
+    document.body.style.touchAction = "";
+  }
+
+  return () => {
+    document.body.style.overflow = "";
+    document.body.style.touchAction = "";
+  };
+}, [isAnyModalOpen, openReferenceModal]);
+
+
   // Close modals on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -258,9 +277,18 @@ const disableSizeSelector = isKling && hasRefs;
     <div className="w-full flex flex-col gap-2 relative md:pb-12">
 
       {/* BLUR OVERLAY */}
-      {isAnyModalOpen && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" />
-      )}
+{isAnyModalOpen &&
+  createPortal(
+    <div
+      className="fixed inset-0 bg-black/40 backdrop-blur-lg z-[9998]"
+      onClick={() => {
+        setOpenModel(false)
+        setOpenSize(false)
+        setOpenDuration(false)
+      }}
+    />,
+    document.body
+  )}
 
       {/* Header */}
       <div>
@@ -564,7 +592,9 @@ const disableSizeSelector = isKling && hasRefs;
   transition-all duration-500
   hover:border-[#7A3BFF]/50
   hover:shadow-[0_0_20px_rgba(122,59,255,0.15)]
-    ${openSize ? "border-[#7A3BFF] shadow-[0_0_30px_rgba(122,59,255,0.35)] alive-active" : ""}
+   ${openSize && !openDuration && !openModel
+  ? "border-[#7A3BFF] shadow-[0_0_30px_rgba(122,59,255,0.35)] alive-active"
+  : ""}
     ${disableSizeSelector ? "opacity-40 cursor-not-allowed" : ""}
   `}
 >
@@ -616,7 +646,9 @@ const disableSizeSelector = isKling && hasRefs;
   transition-all duration-500
   hover:border-[#7A3BFF]/50
   hover:shadow-[0_0_20px_rgba(122,59,255,0.15)]
-            ${openDuration ? "border-[#7A3BFF] shadow-[0_0_30px_rgba(122,59,255,0.35)] alive-active" : ""}
+           ${openDuration && !openSize && !openModel
+  ? "border-[#7A3BFF] shadow-[0_0_30px_rgba(122,59,255,0.35)] alive-active"
+  : ""}
           `}
         >
           <div className="flex justify-between items-center">
@@ -634,24 +666,26 @@ const disableSizeSelector = isKling && hasRefs;
           </div>
         </button>
 
- {openModel && (
-  <div
-    className="
-      fixed
-      z-50
-      left-1/2 -translate-x-1/2
-      top-[18%] md:top-1/2
-      md:-translate-y-1/2
-      w-[92%] md:w-[800px]
-      max-h-[75vh]
-      bg-[#1A1D2B]
-      border border-white/10
-      rounded-sm
-      shadow-2xl
-      p-5
-      overflow-y-auto
-    "
-  >
+{openModel &&
+  createPortal(
+    <div
+      className="
+        fixed
+        z-[10000]
+        left-1/2 -translate-x-1/2
+        top-[18%] md:top-1/2
+        md:-translate-y-1/2
+        w-[92%] md:w-[800px]
+        max-h-[75vh]
+        bg-[#1A1D2B]
+        border border-white/10
+        rounded-sm
+        shadow-2xl
+        p-5
+        overflow-y-auto
+      "
+    >
+      
     {/* Header */}
     <div className="flex justify-between items-center mb-4">
       <h3 className="text-white font-medium">Select Model</h3>
@@ -694,8 +728,9 @@ const disableSizeSelector = isKling && hasRefs;
         />
       ))}
     </div>
-  </div>
-)}
+    </div>,
+    document.body
+  )}
 
 
 
@@ -832,10 +867,10 @@ const disableSizeSelector = isKling && hasRefs;
 /* ---------------- Modal Components ---------------- */
 
 function Modal({ title, onClose, children }) {
-  return (
+    return createPortal(
     <div
       className="
-        fixed z-50 left-1/2 -translate-x-1/2
+        fixed z-[10000] left-1/2 -translate-x-1/2
         top-[18%] md:top-1/2 md:-translate-y-1/2
         w-[92%] md:w-[450px]
         max-h-[70vh]
@@ -859,8 +894,10 @@ function Modal({ title, onClose, children }) {
       <div className="flex flex-col gap-2">
         {children}
       </div>
-    </div>
+      </div>,
+    document.body
   );
+
 }
 
 function VideoModelCard({
