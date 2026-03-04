@@ -219,7 +219,7 @@ export default function Image() {
 
       
 <div
-  className={`pt-1 md:pt-4 ${
+  className={`pt-1 md:pt-4 pb-[calc(env(safe-area-inset-bottom)+20px)] ${
     results.length === 0 ? "min-h-[100svh]" : ""
   }`}
 >
