@@ -1,6 +1,7 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "../../lib/supabaseClient";
+import { createPortal } from "react-dom";
 
 import { useAuth } from "../../context/AuthContext";
 import { useProfileCredits } from "../../hooks/useProfileCredits";
@@ -223,99 +224,95 @@ export default function ToolShell({
               </span>
             </button>
 
-            {profileOpen && (
-              <div
-                className="
-                  fixed
-                  left-[90px]
-                  bottom-[30px]
-                  w-[260px]
-                  bg-[#1A1D2B]
-                  border border-white/10
-                  rounded-2xl
-                  shadow-2xl
-                  p-3
-                  z-[9999]
-                "
-              >
-                {/* Header */}
-                <div className="pb-3 border-b border-white/10 mb-3">
-                  <p className="text-white text-sm font-medium">
-                    {user.user_metadata?.full_name || "User"}
-                  </p>
-                  <p className="text-white/40 text-xs">
-                    {user.email}
-                  </p>
-                </div>
+        {profileOpen &&
+  createPortal(
+    <div
+      className="
+        fixed
+        left-[90px]
+        bottom-[calc(env(safe-area-inset-bottom)+30px)]
+        w-[260px]
+        bg-[#1A1D2B]
+        border border-white/10
+        rounded-2xl
+        shadow-2xl
+        p-3
+        z-[9999]
+      "
+    >
+      {/* Header */}
+      <div className="pb-3 border-b border-white/10 mb-3">
+        <p className="text-white text-sm font-medium">
+          {user.user_metadata?.full_name || "User"}
+        </p>
+        <p className="text-white/40 text-xs">
+          {user.email}
+        </p>
+      </div>
 
-               {/* Menu */}
-<div className="flex flex-col gap-1 text-sm">
+      {/* Menu */}
+      <div className="flex flex-col gap-1 text-sm">
 
-  {/* Subscriptions */}
-  <button
-    onClick={() => {
-      navigate("/workspace/subscriptions");
-      setProfileOpen(false);
-    }}
-    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 text-left text-white/80"
-  >
-    <CreditCard className="w-4 h-4 text-white/60" />
-    Subscriptions
-  </button>
+        <button
+          onClick={() => {
+            navigate("/workspace/subscriptions");
+            setProfileOpen(false);
+          }}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 text-left text-white/80"
+        >
+          <CreditCard className="w-4 h-4 text-white/60" />
+          Subscriptions
+        </button>
 
-  {/* Manage Account */}
-  <button
-    onClick={() => {
-      navigate("/settings");
-      setProfileOpen(false);
-    }}
-    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 text-left text-white/80"
-  >
-    <Settings className="w-4 h-4 text-white/60" />
-    Manage Account
-  </button>
+        <button
+          onClick={() => {
+            navigate("/settings");
+            setProfileOpen(false);
+          }}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 text-left text-white/80"
+        >
+          <Settings className="w-4 h-4 text-white/60" />
+          Manage Account
+        </button>
 
-  {/* About */}
-  <button
-    onClick={() => {
-      navigate("/about");
-      setProfileOpen(false);
-    }}
-    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 text-left text-white/80"
-  >
-    <Info className="w-4 h-4 text-white/60" />
-    About
-  </button>
+        <button
+          onClick={() => {
+            navigate("/about");
+            setProfileOpen(false);
+          }}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 text-left text-white/80"
+        >
+          <Info className="w-4 h-4 text-white/60" />
+          About
+        </button>
 
-  <div className="border-t border-white/10 my-2"></div>
+        <div className="border-t border-white/10 my-2"></div>
 
-{/* Sign Out */}
-<button
-  onClick={async () => {
-    await supabase.auth.signOut();
-    navigate("/");
-  }}
-  className="
-    flex items-center gap-2
-    px-3 py-2
-    rounded-lg
-    border border-red-500/40
-    bg-red-500/10
-    text-red-400
-    hover:bg-red-500/20
-    hover:border-red-500/60
-    transition-all duration-200
-  "
->
-  <LogOut className="w-4 h-4" />
-  Log out
-</button>
+        <button
+          onClick={async () => {
+            await supabase.auth.signOut();
+            navigate("/");
+          }}
+          className="
+            flex items-center gap-2
+            px-3 py-2
+            rounded-lg
+            border border-red-500/40
+            bg-red-500/10
+            text-red-400
+            hover:bg-red-500/20
+            hover:border-red-500/60
+            transition-all duration-200
+          "
+        >
+          <LogOut className="w-4 h-4" />
+          Log out
+        </button>
 
-
-</div>
-
-              </div>
-            )}
+      </div>
+    </div>,
+    document.body
+  )}
           </div>
         )}
 

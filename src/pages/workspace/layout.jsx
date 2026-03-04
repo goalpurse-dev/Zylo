@@ -186,11 +186,11 @@ useEffect(() => {
       )}
 
       {/* MAIN CONTENT */}
-      <div
-        ref={scrollRef}
-        id="workspace-scroll"
-       className="flex flex-col flex-1 h-[100svh] overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]"
-      >
+     <div
+  ref={scrollRef}
+  id="workspace-scroll"
+  className="relative z-10 flex flex-col flex-1 h-[100svh] overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]"
+>
         <div
           className={`
             sticky top-0 z-50
