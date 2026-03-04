@@ -37,6 +37,7 @@ export default function ToolShell({
   onClose,
 }) {
   const { user } = useAuth();
+  const menuRef = useRef(null);
   const credits = useProfileCredits();
   const formattedCredits = Intl.NumberFormat().format(credits);
   const navigate = useNavigate();
@@ -47,9 +48,12 @@ export default function ToolShell({
   // Close when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
-        setProfileOpen(false);
-      }
+     if (
+  !profileRef.current?.contains(e.target) &&
+  !menuRef.current?.contains(e.target)
+) {
+  setProfileOpen(false);
+}
     };
 
     if (profileOpen) {
@@ -226,8 +230,9 @@ export default function ToolShell({
 
         {profileOpen &&
   createPortal(
-    <div
-      className="
+ <div
+  ref={menuRef}
+  className="
         fixed
         left-[90px]
         bottom-[calc(env(safe-area-inset-bottom)+30px)]
