@@ -48,19 +48,21 @@ export default function New1() {
             </div>
 
             {/* CARD */}
-            <div
-              className="
-                relative z-10
-                rounded-2xl
-                bg-[#0E1016]
-                border border-white/10
-                p-6
-                overflow-hidden
-                transition-all duration-300
-                group-hover:border-white/20
-                group-hover:shadow-[0_0_60px_rgba(0,0,0,0.6)]
-              "
-            >
+           <div
+  className="
+    relative z-10
+    rounded-2xl
+    bg-[#0E1016]
+    border border-white/10
+    p-6
+    overflow-hidden
+    transition-all duration-300
+    group-hover:border-white/20
+    group-hover:shadow-[0_0_60px_rgba(0,0,0,0.6)]
+    flex flex-col
+    h-full
+  "
+>
 
 {/* PREVIEW IMAGE */}
 <div className="relative w-full aspect-video mb-6 overflow-hidden rounded-xl">
@@ -99,12 +101,17 @@ export default function New1() {
   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
 </div>
 
-              <h3 className="text-white text-lg font-semibold">
-                {tool.title}
-              </h3>
-              <p className="text-white/60 text-sm mt-2 leading-relaxed">
-                {tool.description}
-              </p>
+             <div className="flex flex-col flex-1">
+
+  <h3 className="text-white text-lg font-semibold group-hover:text-white">
+    {tool.title}
+  </h3>
+
+  <p className="text-white/60 text-sm mt-2 leading-relaxed line-clamp-2">
+    {tool.description}
+  </p>
+
+</div>
             </div>
           </NavLink>
         ))}
