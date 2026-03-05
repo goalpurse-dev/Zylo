@@ -86,7 +86,7 @@ export default function EmailConsentModal({ user }) {
             className="text-sm"
             style={{color:"#B7BBC6"}}
           >
-            Send me viral AI prompts and new tools
+            Send me viral AI prompts and new tools 
           </span>
 
         </label>

@@ -262,7 +262,15 @@
 
     
                           <url>
-    <loc>https://www.tryzyvo.com//blog/is-ai-image-generation-worth-it-for-creators</loc>
+    <loc>https://www.tryzyvo.com/blog/is-ai-image-generation-worth-it-for-creators</loc>
+    <priority>0.8</priority>
+
+                              <url>
+    <loc>https://www.tryzyvo.com/blog/top-ai-image-styles-that-go-viral-on-social-media</loc>
+    <priority>0.8</priority>
+
+                                  <url>
+    <loc>https://www.tryzyvo.com//blog/how-to-create-minimalist-images-using-ai</loc>
     <priority>0.8</priority>
 
 

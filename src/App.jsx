@@ -149,6 +149,8 @@ import HowtoGenerateImagesforAdsUsingAI from "./app/blog/imagegenerator/Generate
 import AIImageGeneratorForContentCreators from "./app/blog/imagegenerator/AIImageGeneratorForContentCreators.jsx";
 import HowAIImageGeneratorsWork from "./app/blog/imagegenerator/HowAIImageGeneratorsWork.jsx";
 import IsAIImageGenerationWorthItForCreators from "./app/blog/imagegenerator/IsAIImageGenerationWorthItForCreators.jsx";
+import TopAIImageStylesThatGoViralOnSocialMedia from "./app/blog/imagegenerator/TopAIImageStylesThatGoViralOnSocialMedia.jsx";
+import HowToCreateMinimalistImagesUsingAI from "./app/blog/imagegenerator/HowtoCreateMinimalistImagesUsingAI.jsx";
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -358,6 +360,8 @@ return (
         <Route path="/blog/ai-image-generator-for-content-creators" element={<AIImageGeneratorForContentCreators/>} />
         <Route path="/blog/how-ai-image-generators-work" element={<HowAIImageGeneratorsWork/>} />
         <Route path="/blog/is-ai-image-generation-worth-it-for-creators" element={<IsAIImageGenerationWorthItForCreators/>} />
+        <Route path="/blog/top-ai-image-styles-that-go-viral-on-social-media" element={<TopAIImageStylesThatGoViralOnSocialMedia/>} />
+        <Route path="/blog/how-to-create-minimalist-images-using-ai" element={<HowToCreateMinimalistImagesUsingAI/>} />
 
 
 
@@ -385,12 +389,12 @@ return (
   />
 
   {/* PUBLIC ROUTES */}
-  <Route path="/workspace/productphoto" element={<ProductPhoto />} />
-  <Route path="/workspace/library" element={<Library1 />} />
+  <Route path="/workspace/productphotoo" element={<ProductPhoto />} />
+  <Route path="/workspace/libraryo" element={<Library1 />} />
   <Route path="/workspace/creations" element={<Creations />} />
-  <Route path="/workspace/myproduct" element={<Myproduct />} />
-  <Route path="/workspace/step2" element={<Step2 />} />
-  <Route path="/workspace/step3" element={<Step3 />} />
+  <Route path="/workspace/myproducto" element={<Myproduct />} />
+  <Route path="/workspace/step2o" element={<Step2 />} />
+  <Route path="/workspace/step3o" element={<Step3 />} />
   <Route path="/workspace/pricing" element={<Pricing />} />
   <Route path="/workspace/image-generator" element={<Image />} />
   <Route path="/workspace/video-generator" element={<Video />} />

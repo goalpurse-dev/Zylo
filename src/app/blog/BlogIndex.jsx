@@ -799,6 +799,36 @@ const [loading, setLoading] = useState(false);
           </div>
           </div>
           </Link>
+
+                            {/* Blog Card 51*/}
+
+                <Link to="/blog/top-ai-image-styles-that-go-viral-on-social-media" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Top AI Image Styles That Go Viral on Social Media</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn the best styles that go viral on Social Media and how to benefit from them.</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">05.03/2026</p>
+          </div>
+          </div>
+          </Link>
+
+                                  {/* Blog Card 52*/}
+
+                <Link to="/blog/how-to-create-minimalist-images-using-ai" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">How to Create Minimalist Images Using AI</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how to create the best minimalist images using ai and how to benefit from them</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">05.03/2026</p>
+          </div>
+          </div>
+          </Link>
  
  
           
