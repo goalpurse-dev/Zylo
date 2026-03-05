@@ -11,7 +11,7 @@ import { ChevronRight, Folder, VideoIcon } from "lucide-react";
 import Toast from "../../components/ImageGenerator/Toast";
 import ProgressToast from "../../components/ImageGenerator/ProgressToast";
 import LimitReachedToast from "../../components/ImageGenerator/LimitReachedToast";
-
+import GuestGenerateModal from "../../components/ImageGenerator/GuestGenerateModal";
 
 import CreditLogo from "../../assets/toolshell/credit.png"
 
@@ -205,7 +205,7 @@ const controlsRef = useRef(null);
 const [isGenerating, setIsGenerating] = useState(false);
 const [planCode, setPlanCode] = useState(null);
 const [user, setUser] = useState(null);
-
+const [guestModalOpen, setGuestModalOpen] = useState(false);
 
 const maxRefImages = selectedModel.maxReferenceImages;
 const canAddImages = maxRefImages > 0;
@@ -283,16 +283,8 @@ if (planCode === "free" && freeRemaining === 0) {
   const { data: authData } = await supabase.auth.getUser();
   const user = authData?.user;
 
- if (!user) {
-  setToast({
-    message: "Create an account to generate images.",
-    type: "info",
-  });
-
-  setTimeout(() => {
-    navigate("/signup");
-  }, 1200);
-
+if (!user) {
+  setGuestModalOpen(true);
   return;
 }
 
@@ -1010,7 +1002,11 @@ md:-translate-y-1/2
 )}
 
 
-
+<GuestGenerateModal
+  open={guestModalOpen}
+  onClose={() => setGuestModalOpen(false)}
+  onSignup={() => navigate("/signup")}
+/>
 
   </section>
 )

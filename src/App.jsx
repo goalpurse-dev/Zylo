@@ -139,7 +139,7 @@ import TheSecretPromptsBehindViralAIImages from "./app/blog/imagegenerator/TheSe
 import TurnAnyIdeaIntoViralImage from "./app/blog/imagegenerator/TurnAnyIdeaIntoViralImage.jsx";
 import AllImageTrendsYouNeedTojumpOn from "./app/blog/imagegenerator/AIImageTrendsYouNeedToJumpOn.jsx";
 import WhyYourPostsDontGoViral from "./app/blog/imagegenerator/WhyYourPostsDontGoViral.jsx";
-import BestAIImageGeneratorForSocialMedia from "./app/blog/imagegenerator/BestAIImageGeneratorForSocialMedia.jsx"; "./app/blog/imagegenerator/WhyYourPostsDontGoViral.jsx";
+import BestAIImageGeneratorForSocialMedia from "./app/blog/imagegenerator/BestAIImageGeneratorForSocialMedia.jsx";
 import GenerateHighQualityImagesWithAI from "./app/blog/imagegenerator/GenerateHighQualityImagesWithAI.jsx";
 import AIImageGeneratorBeginnersGuide2026 from "./app/blog/imagegenerator/AIImageGeneratorBeginnersGuide2026.jsx";
 import CreateProfessionalImagesWithAI from "./app/blog/imagegenerator/CreateProfessionalImagesWithAI.jsx";
@@ -152,7 +152,9 @@ import IsAIImageGenerationWorthItForCreators from "./app/blog/imagegenerator/IsA
 
 
 import ScrollToTop from "./components/ScrollToTop";
-
+import CookieConsent from "./components/CookieConsent";
+import EmailConsentModal from "./components/EmailConsentModal";
+import { supabase } from "./lib/supabaseClient";
 
 {/* Viral */}
 
@@ -212,6 +214,26 @@ export default function App() {
 
 function AppWithRouting() {
   const location = useLocation();
+  const { user } = useAuth();
+const [profile, setProfile] = React.useState(null);
+
+React.useEffect(() => {
+  if (!user) return;
+
+  const loadProfile = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("email_updates")
+      .eq("id", user.id)
+      .single();
+
+    if (!error) {
+      setProfile(data);
+    }
+  };
+
+  loadProfile();
+}, [user]);
 
   // Prefixes where the top navbar should be hidden
   const HIDE_NAV_PREFIXES = [
@@ -262,11 +284,17 @@ function AppWithRouting() {
     ? "min-h-screen bg-[#0B1117] text-white p-0"
     : "min-h-screen bg-[#0B1117] text-white";
 
-  return (
-    <>
-      {!hideNav && <Navbar />}
+return (
+ <>
+  <CookieConsent />
 
-      <main className={mainClass}>
+{user && profile && profile.email_updates === null && (
+  <EmailConsentModal user={user} />
+)}
+
+  {!hideNav && <Navbar />}
+
+    <main className={mainClass}>
         <Routes>
           {/* Public home */}
           <Route path="/" element={<Navigate to="/home" replace />} />

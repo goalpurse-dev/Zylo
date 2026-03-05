@@ -73,7 +73,7 @@ export default function ViralImageGenerator() {
       </div>
 
       {/* BOTTOM BLEND */}
-      <div className="pointer-events-none absolute bottom-0 left-0 w-full h-40 bg-[linear-gradient(to_top,#F7F5FA_0%,#F7F5FA_60%,rgba(247,245,250,0)_100%)]" />
+      <div className="pointer-events-none absolute bottom-0 left-0 w-full h-20 bg-[linear-gradient(to_top,#F7F5FA_0%,#F7F5FA_60%,rgba(247,245,250,0)_100%)]" />
 
     </section>
   );

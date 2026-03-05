@@ -17,7 +17,7 @@ export default function Navbar() {
 const [featuresOpen, setFeaturesOpen] = useState(false);
 
   return (
-    <section className="flex justify-center mx-auto bg-transparent" >
+    <section className="flex justify-center mx-auto bg-transparent " >
      <div className="bg-white py-3 md:py-4  lg:py-3 w-full  lg:mx-14 shadow-lg rounded-xl mx-6 md:mx-6 xl:max-w-7xl 2xl:max-w-[1500px] lg:max-w-[1000px]">
        
         <div className="flex justify-between  gap-2 lg:gap-10">
@@ -55,66 +55,51 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
       Tools
     </p>
 
-    <div className="grid grid-cols-1 gap-4">
+   <div className="grid grid-cols-1 gap-4">
 
-      {/* IMAGE */}
-      <div>
-        <p className="text-[12px] font-semibold text-[#110829] uppercase mb-1">
-          Image
-        </p>
-        <Link
-          to="/workspace/image-generator"
-          className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
-        >
-          Create image
-        </Link>
-      </div>
+  {/* IMAGE GENERATOR */}
+  <div>
+    <p className="text-[12px] font-semibold text-[#110829] uppercase mb-1">
+      Image
+    </p>
 
-      {/* PRODUCT PHOTOS */}
-      <div>
-        <p className="text-[12px] font-semibold text-[#110829] uppercase mb-1">
-          Product photos
-        </p>
+    <Link
+      to="/workspace/image-generator"
+      className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
+    >
+      Image Generator
+    </Link>
+  </div>
 
-        <div className="space-y-1">
-          <Link
-            to="/workspace/productphoto"
-            className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
-          >
-            Create
-          </Link>
+  {/* VIDEO GENERATOR */}
+  <div>
+    <p className="text-[12px] font-semibold text-[#110829] uppercase mb-1">
+      Video
+    </p>
 
-          <Link
-            to="/workspace/myproduct"
-            className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
-          >
-            My products
-          </Link>
+    <Link
+      to="/workspace/video-generator"
+      className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
+    >
+      Video Generator
+    </Link>
+  </div>
 
-          <Link
-            to="/workspace/library"
-            className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
-          >
-            Background library
-          </Link>
-        </div>
-      </div>
+  {/* CREATIONS */}
+  <div>
+    <p className="text-[12px] font-semibold text-[#110829] uppercase mb-1">
+      Library
+    </p>
 
-      {/* OTHER */}
-      <div>
-        <p className="text-[12px] font-semibold text-[#110829] uppercase mb-1">
-          Other
-        </p>
+    <Link
+      to="/workspace/creations"
+      className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
+    >
+      Creations
+    </Link>
+  </div>
 
-        <Link
-          to="/workspace/creations"
-          className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
-        >
-          Creations
-        </Link>
-      </div>
-
-    </div>
+</div>
   </div>
 )}
 
@@ -126,7 +111,7 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
   Pricing
 </Link>
       <Link className="text-[#110829] font-normal text-base lg:text-xl hover:text-[#7A3BFF] transition hover:underline cursor-pointer"
-      to="/help"
+      to="/support"
       >Help</Link>
 
 
@@ -192,32 +177,32 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
     />
   </button>
 
-  {featuresOpen && (
-    <div className="px-4 pb-4 space-y-3 ">
+{featuresOpen && (
+  <div className="px-4 pb-4 space-y-3 ">
 
-        <Link
-        to="/workspace/image-generator"
-        className="block bg-white rounded-lg px-4 py-3 shadow text-[#110829] hover:border-[#7A3BFF] border-[1px]"
-      >
-        Image Generator
-      </Link>
+    <Link
+      to="/workspace/image-generator"
+      className="block bg-white rounded-lg px-4 py-3 shadow text-[#110829] hover:border-[#7A3BFF] border-[1px]"
+    >
+      Image Generator
+    </Link>
 
+    <Link
+      to="/workspace/video-generator"
+      className="block bg-white rounded-lg px-4 py-3 shadow text-[#110829] hover:border-[#7A3BFF] border-[1px]"
+    >
+      Video Generator
+    </Link>
 
-      <Link
-        to="/workspace/myproduct"
-        className="block bg-white rounded-lg px-4 py-3 shadow text-[#110829] hover:border-[#7A3BFF] border-[1px]"
-      >
-        My Product
-      </Link>
+    <Link
+      to="/workspace/creations"
+      className="block bg-white rounded-lg px-4 py-3 shadow text-[#110829] hover:border-[#7A3BFF] border-[1px]"
+    >
+      Creations
+    </Link>
 
-      <Link
-        to="/workspace/productphoto"
-        className="block bg-white rounded-lg px-4 py-3 shadow text-[#110829] hover:border-[#7A3BFF] border-[1px]"
-      >
-        Product Photos
-      </Link>
-    </div>
-  )}
+  </div>
+)}
 </div>
 
 
@@ -226,7 +211,7 @@ const [featuresOpen, setFeaturesOpen] = useState(false);
         Pricing
       </Link>
 
-      <Link className="block bg-[#F4F1FA] rounded-xl px-4 py-4 text-[#110829]" to="/help">
+      <Link className="block bg-[#F4F1FA] rounded-xl px-4 py-4 text-[#110829]" to="/support">
         Help
       </Link>
 
