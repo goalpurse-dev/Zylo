@@ -22,7 +22,8 @@ export default function WorkspaceLayout() {
   "/workspace/image-generator",
   "/workspace/video-generator",
   "/workspace/viral-script",
-  "/workspace/home"
+  "/workspace/home",
+  
 
   
 ];
@@ -119,6 +120,7 @@ useEffect(() => {
     "/workspace/image-generator": "Image Generator",
     "/workspace/video-generator": "Video Generator",
     "/workspace/viral-script": "Video Generator",
+ 
 
   };
 

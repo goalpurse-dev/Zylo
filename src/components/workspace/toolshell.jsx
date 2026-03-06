@@ -132,7 +132,12 @@ export default function ToolShell({
 </button>
 
           <NavLink
-  to="/workspace/creations"
+    to="/workspace/creations"
+  onClick={() => {
+    if (window.innerWidth < 1024) {
+      onClose?.();
+    }
+  }}
   className="relative flex flex-col gap-1 items-center px-6 py-3 transition-all duration-300"
 >
   {({ isActive }) => (
@@ -177,6 +182,11 @@ export default function ToolShell({
         {user && (
           <Link
             to="/workspace/pricing"
+            onClick={() => {
+    if (window.innerWidth < 1024) {
+      onClose?.();
+    }
+  }}
             className="flex flex-col items-center gap-1"
           >
             <div className="border border-white/20 rounded-lg h-10 w-10 flex items-center justify-center hover:border-purple-500/40 transition">

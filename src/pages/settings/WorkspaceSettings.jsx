@@ -299,7 +299,6 @@ function AccountPanel() {
     </div>
   );
 }
-
 function NotificationsPanel() {
   const [email, setEmail] = useState({
     product: true,
@@ -308,26 +307,118 @@ function NotificationsPanel() {
     security: true,
   });
 
+  const [userId, setUserId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [savingMarketing, setSavingMarketing] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadSettings() {
+      try {
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw authError;
+
+        const user = authData?.user;
+        if (!user) {
+          if (mounted) setLoading(false);
+          return;
+        }
+
+        if (mounted) setUserId(user.id);
+
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("email_updates")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (profileError) throw profileError;
+
+        if (mounted) {
+          setEmail((prev) => ({
+            ...prev,
+            marketing: !!profile?.email_updates,
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to load notification settings:", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    loadSettings();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  async function updateMarketing(value) {
+    const previous = email.marketing;
+
+    setEmail((prev) => ({
+      ...prev,
+      marketing: value,
+    }));
+
+    if (!userId) return;
+
+    try {
+      setSavingMarketing(true);
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ email_updates: value })
+        .eq("id", userId);
+
+      if (error) throw error;
+    } catch (err) {
+      console.error("Failed to update marketing setting:", err);
+
+      setEmail((prev) => ({
+        ...prev,
+        marketing: previous,
+      }));
+    } finally {
+      setSavingMarketing(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="grid gap-4">
+        <div className={card}>
+          <div className="text-sm text-[#B7BBC6]">Loading notification settings...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid gap-4 ">
-      {/* Email notifications */}
+    <div className="grid gap-4">
       <div className={card}>
         <div className="mb-3 text-sm font-bold text-[#F4F6FB]">Email</div>
+
         <ToggleRow
           label="Product updates"
           value={email.product}
           onChange={(v) => setEmail((s) => ({ ...s, product: v }))}
         />
+
         <ToggleRow
           label="Mentions & replies"
           value={email.mentions}
           onChange={(v) => setEmail((s) => ({ ...s, mentions: v }))}
         />
+
         <ToggleRow
-          label="Marketing"
+          label={savingMarketing ? "Marketing (saving...)" : "Marketing"}
           value={email.marketing}
-          onChange={(v) => setEmail((s) => ({ ...s, marketing: v }))}
+          onChange={updateMarketing}
         />
+
         <ToggleRow
           label="Security alerts"
           value={email.security}
@@ -335,7 +426,6 @@ function NotificationsPanel() {
         />
       </div>
 
-      {/* Push notifications */}
       <div className={card}>
         <div className="mb-3 text-sm font-bold text-[#F4F6FB]">Push</div>
         <EmptyRow text="Coming soon." />
@@ -343,7 +433,6 @@ function NotificationsPanel() {
     </div>
   );
 }
-
 function PrivacyPanel() {
   const link =
     "inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-extrabold " +

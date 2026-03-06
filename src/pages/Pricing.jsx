@@ -62,63 +62,68 @@ const Tick = ({ className = "" }) => (
 
 /* ------------------------------- Plan data -------------------------------- */
 const TIERS = [
-  {
-    id: "starter",
-    name: "Starter",
-    monthly: 25,
-    yearlyPerMonth: 21.25,
-    blurb: "Best for getting started",
-    popular: false,
-    features: [
-      "1,200 credits / mo",
-      "AI product photo generator",
-      "≈ 100 product images / mo",
-      "30 Product Backgrounds",
-      "Watermark-free exports",
-      "2 My Products",
-      "Standard queue",
-      "Email support",
-      "30 creations/day"
-    ],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    monthly: 50,
-    yearlyPerMonth: 42.5,
-    blurb: "Grow with advanced tools",
-    popular: true,
-    features: [
-      "2,500 credits / mo",
-      "AI product photo generator",
-      "≈ 210 product photos / mo",
-      "≈ 100 Product Backgrounds",
-      "Watermark-free exports",
-      "5 My Products",
-      "Priority queue",
-      "Email support",
-      "100 creations/day"
-    ],
-  },
-  {
-    id: "generative",
-    name: "Generative",
-    monthly: 90,
-    yearlyPerMonth: 76.5,
-    blurb: "For power users & teams",
-    popular: false,
-    features: [
-      "5,000 credits / mo",
-      "AI product photo generator",
-      "≈ 420 product photos / mo",
-      "≈ All 210+ Product Backgrounds",
-      "Watermark-free exports",
-      "Unlimited My Products",
-      "Fast lane queue",
-      "Chat support",
-      "300 creations/day"
-    ],
-  },
+ {
+  id: "starter",
+  name: "Starter",
+  monthly: 25,
+  yearlyPerMonth: 21.25,
+  blurb: "Best for getting started",
+  popular: false,
+  features: [
+    "1,200 credits / mo",
+    "AI Image Generator",
+    "AI Video Generator",
+    "≈ 400 AI images / mo",
+    "≈ 60 AI videos / mo",
+    "Watermark-free exports",
+    "Private creation library",
+    "Standard generation speed",
+    "Email support",
+    "30 generations / day"
+  ],
+},
+{
+  id: "pro",
+  name: "Pro",
+  monthly: 50,
+  yearlyPerMonth: 42.5,
+  blurb: "Best for creators who generate often",
+  popular: true,
+  features: [
+    "2,500 credits / mo",
+    "AI Image Generator",
+    "AI Video Generator",
+    "≈ 830 AI images / mo",
+    "≈ 125 AI videos / mo",
+    "Watermark-free exports",
+    "Private creation library",
+    "Priority generation queue",
+    "Advanced prompt controls",
+    "Email support",
+    "100 generations / day"
+  ],
+},
+{
+  id: "generative",
+  name: "Generative",
+  monthly: 90,
+  yearlyPerMonth: 76.5,
+  blurb: "For power creators and heavy usage",
+  popular: false,
+  features: [
+    "5,000 credits / mo",
+    "AI Image Generator",
+    "AI Video Generator",
+    "≈ 1,600 AI images / mo",
+    "≈ 250 AI videos / mo",
+    "Watermark-free exports",
+    "Unlimited creation history",
+    "Fast-lane generation",
+    "Advanced prompt controls",
+    "Priority support",
+    "300 generations / day"
+  ],
+}
 ];
 
 const TOPUPS = [
