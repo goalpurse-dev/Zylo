@@ -228,7 +228,90 @@ const createdImages = [
     prompt: "Realistic travel photo of a man seen from behind walking along the Great Wall, backpack visible, misty mountains ahead, calm and emotional mood, cinematic depth "
   },
   
+
+    {
+    src:"/inspiration/image1.webp",
+          loading: "lazy",
+  decoding: "async",
+  fetchPriority: "low",
+    prompt: "create me image with this style of a man standing outside of restaurant and remove that story dont write anything, anime illustration style "
+  },
+
+    {
+    src:"/inspiration/image2.webp",
+          loading: "lazy",
+  decoding: "async",
+  fetchPriority: "low",
+    prompt: "create me image with this style of a man standing outside of restaurant and remove that story dont write anything, cinematic lighting "
+  },
+
+      {
+    src:"/inspiration/image3.webp",
+          loading: "lazy",
+  decoding: "async",
+  fetchPriority: "low",
+    prompt: "Hyper-realistic cinematic image of a modern human standing in ancient Greece during the first Olympic Games, athletes "
+  },
+
+        {
+    src:"/inspiration/image4.webp",
+          loading: "lazy",
+  decoding: "async",
+  fetchPriority: "low",
+    prompt: "Hyper-realistic cinematic image of a modern human standing among early humans witnessing the discovery of fire for the first time "
+  },
+
+         {
+    src:"/inspiration/image5.webp",
+          loading: "lazy",
+  decoding: "async",
+  fetchPriority: "low",
+    prompt: "Hyper-realistic cinematic image of a modern human standing at the base of the Tower of Babel under construction, enormous spiral "
+  },
+
+           {
+    src:"/inspiration/image6.webp",
+          loading: "lazy",
+  decoding: "async",
+  fetchPriority: "low",
+    prompt: "create image of anrgy apple, cinematic lighting, dramatic composition, ultra-realistic, clean composition, sharp focus "
+  },
+
+           {
+    src:"/inspiration/image7.webp",
+          loading: "lazy",
+  decoding: "async",
+  fetchPriority: "low",
+    prompt: "Ultra-cinematic scene of a modern human standing beside astronauts on the moon during the Apollo moon landing, Earth glowing "
+  },
+
+             {
+    src:"/inspiration/image8.webp",
+          loading: "lazy",
+  decoding: "async",
+  fetchPriority: "low",
+    prompt: "make image of cat like this speaking to daddy cat, dynamic motion, energetic composition, sharp focus, clean composition "
+  },
+
+              {
+    src:"/inspiration/image09.webp",
+          loading: "lazy",
+  decoding: "async",
+  fetchPriority: "low",
+    prompt: "make this same vibe of image of people wathcing tv, cinematic lighting, dramatic composition, ultra-realistic, clean composition"
+  },
+
+                {
+    src:"/inspiration/image10.webp",
+          loading: "lazy",
+  decoding: "async",
+  fetchPriority: "low",
+    prompt: "make this apple with cute expression and background would be a kitchen table, dynamic motion, energetic composition"
+  },
+
 ];
+
+
 
 
 

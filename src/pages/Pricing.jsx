@@ -479,51 +479,67 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* Top-ups */}
-        <div className="mt-12">
-          <h3 className="text-center text-xl font-bold text-[#F4F6FB] mb-4">Need more credits?</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TOPUPS.map((p) => (
-              <div
-                key={p.id}
-                className="rounded-2xl bg-[#1A1D2B] border border-[#2A2F45] p-6 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="text-lg font-semibold text-[#F4F6FB]">{p.title}</div>
-                  <div className="mt-1 text-3xl font-bold text-[#F4F6FB]">${p.price}</div>
-                  <div className="text-sm text-[#B7BBC6]">{p.credits} credits</div>
-                </div>
+      {/* Top-ups (only for paid plans) */}
+{plan !== "free" && (
+  <div className="mt-12">
+    <h3 className="text-center text-xl font-bold text-[#F4F6FB] mb-4">
+      Need more credits?
+    </h3>
 
-                <button
-                  onClick={async () => {
-                    const {
-                      data: { user },
-                    } = await supabase.auth.getUser();
-                    if (!user) {
-                      window.location.href = "/signup";
-                      return;
-                    }
-                    const priceId = TOPUP_PRICE_IDS[p.id];
-                    if (!priceId) {
-                      alert("Top-up price ID not configured for: " + p.id);
-                      return;
-                    }
-                    try {
-                      await startCheckout({ type: "topup", priceId });
-                    } catch (err) {
-                      console.error("Top-up checkout error", err);
-                      alert("Could not start checkout. Please try again.");
-                    }
-                  }}
-                  className="bg-[#7A3BFF] mt-6 inline-flex justify-center items-center h-11 rounded-xl font-semibold transition w-full"
-               
-                >
-                  Buy Pack
-                </button>
-              </div>
-            ))}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {TOPUPS.map((p) => (
+        <div
+          key={p.id}
+          className="rounded-2xl bg-[#1A1D2B] border border-[#2A2F45] p-6 flex flex-col justify-between"
+        >
+          <div>
+            <div className="text-lg font-semibold text-[#F4F6FB]">
+              {p.title}
+            </div>
+
+            <div className="mt-1 text-3xl font-bold text-[#F4F6FB]">
+              ${p.price}
+            </div>
+
+            <div className="text-sm text-[#B7BBC6]">
+              {p.credits} credits
+            </div>
           </div>
+
+          <button
+            onClick={async () => {
+              const {
+                data: { user },
+              } = await supabase.auth.getUser();
+
+              if (!user) {
+                window.location.href = "/signup";
+                return;
+              }
+
+              const priceId = TOPUP_PRICE_IDS[p.id];
+
+              if (!priceId) {
+                alert("Top-up price ID not configured for: " + p.id);
+                return;
+              }
+
+              try {
+                await startCheckout({ type: "topup", priceId });
+              } catch (err) {
+                console.error("Top-up checkout error", err);
+                alert("Could not start checkout. Please try again.");
+              }
+            }}
+            className="bg-[#7A3BFF] mt-6 inline-flex justify-center items-center h-11 rounded-xl font-semibold transition w-full"
+          >
+            Buy Pack
+          </button>
         </div>
+      ))}
+    </div>
+  </div>
+)}
 
         {/* Trust row */}
         <div className="mt-10 text-center">

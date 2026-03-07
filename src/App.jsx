@@ -157,7 +157,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import CookieConsent from "./components/CookieConsent";
 import EmailConsentModal from "./components/EmailConsentModal";
 import { supabase } from "./lib/supabaseClient";
-
+import NotFoundRedirect from "./components/NotFoundRedirect";
 {/* Viral */}
 
 
@@ -507,12 +507,7 @@ return (
           </Route>
 
           {/* 404 */}
-          <Route
-            path="*"
-            element={
-              <div className="p-10 text-center">Not Found</div>
-            }
-          />
+        <Route path="*" element={<NotFoundRedirect />} />
         </Routes>
 
      {/* Vercel Analytics */}

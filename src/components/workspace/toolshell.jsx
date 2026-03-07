@@ -270,7 +270,7 @@ export default function ToolShell({
 
         <button
           onClick={() => {
-            navigate("/workspace/subscriptions");
+            navigate("/workspace/pricing");
             setProfileOpen(false);
           }}
           className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 text-left text-white/80"
