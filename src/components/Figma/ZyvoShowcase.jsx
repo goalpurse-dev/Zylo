@@ -39,7 +39,7 @@ export default function ZyvoShowcase() {
                 <div className="w-[160px] md:w-[180px] aspect-[9/16] rounded-2xl overflow-hidden shadow-lg shadow-black/10">
                   <img
                     src={src}
-                    alt="Zyvo creation"
+                    alt="Zyvo create"
                     className="w-full h-full object-cover"
                   />
                 </div>

@@ -128,7 +128,7 @@ const TIERS = [
 
 const TOPUPS = [
   { id: "mini", title: "Mini", price: 6.99, credits: 300, to: "/buy/credits?pack=mini" },
-  { id: "standard", title: "Standard", price: 11.99, credits: 520, to: "/buy/credits?pack=standard" },
+  { id: "standard", title: "Standard", price: 11.99, credits: 500, to: "/buy/credits?pack=standard" },
   { id: "max", title: "Max", price: 19.99, credits: 900, to: "/buy/credits?pack=max" },
 ];
 
