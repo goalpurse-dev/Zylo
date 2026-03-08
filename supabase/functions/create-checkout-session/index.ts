@@ -24,6 +24,12 @@ const STRIPE_SECRET = Deno.env.get("STRIPE_SECRET_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
 
+const TOPUP_PACK_MAP: Record<string, string> = {
+  mini: "price_1SpZcRHtn4q5rIncaayoetIS",
+  standard: "price_1SpZczHtn4q5rInctZoF9rJV",
+  max: "price_1SpZdTHtn4q5rIncFRt80VaD",
+};
+
 /* ---------- main ---------- */
 export default {
   async fetch(req: Request) {
@@ -33,11 +39,21 @@ export default {
     try {
       if (!STRIPE_SECRET) return json(req, { error: "Stripe key missing" }, 500);
 
-      const { type, priceId, successUrl, cancelUrl, customer } = await req.json();
+      const { type, priceId, pack, successUrl, cancelUrl, customer } = await req.json();
 
-      if (!priceId || !successUrl || !cancelUrl || !type) {
-        return json(req, { error: "Missing required params" }, 400);
-      }
+     let finalPriceId = priceId;
+
+if (type === "topup") {
+  finalPriceId = TOPUP_PACK_MAP[pack];
+}
+
+if (type === "topup" && !TOPUP_PACK_MAP[pack]) {
+  return json(req, { error: "Invalid pack" }, 400);
+}
+
+if (!finalPriceId || !successUrl || !cancelUrl || !type) {
+  return json(req, { error: "Missing required params" }, 400);
+}
 
       // get current user from the Authorization header sent by your frontend
       const authHeader = req.headers.get("Authorization") || "";
@@ -67,7 +83,7 @@ export default {
         success_url: successUrl,
         cancel_url: cancelUrl,
         mode: isSubscription ? "subscription" : "payment",
-        "line_items[0][price]": priceId,
+        "line_items[0][price]": finalPriceId,
         "line_items[0][quantity]": "1",
         allow_promotion_codes: "true",
         "automatic_tax[enabled]": "true",

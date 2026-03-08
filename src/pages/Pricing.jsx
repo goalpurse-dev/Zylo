@@ -8,14 +8,14 @@ import { supabase } from "../lib/supabaseClient";
 
 /** >>> YOUR REAL STRIPE PRICE IDS <<< */
 const PRICE_IDS = {
-  starter: "price_1SpZXeHtn4q5rIncDyM2BSTX",
-  pro: "price_1SpZZhHtn4q5rInc6cL8gkj3",
-  generative: "price_1SpZb3Htn4q5rIncf5sFROHv",
+  starter: "price_1T8gM3Htn4q5rInchn8CMEcO",
+  pro: "price_1T8gMVHtn4q5rIncWwcUi9mG",
+  generative: "price_1T8gMsHtn4q5rIncW0vy8d57",
 };
 
 /** >>> TOP-UP STRIPE PRICE IDS <<< */
 const TOPUP_PRICE_IDS = {
-  mini: "price_price_1SpZcRHtn4q5rIncaayoetIS",      // €6.99
+  mini: "price_1SpZcRHtn4q5rIncaayoetIS",     // €6.99
   standard: "price_1SpZczHtn4q5rInctZoF9rJV",  // €11.99
   max: "price_1SpZdTHtn4q5rIncFRt80VaD",       // €19.99
 };
@@ -62,19 +62,19 @@ const Tick = ({ className = "" }) => (
 
 /* ------------------------------- Plan data -------------------------------- */
 const TIERS = [
- {
+{
   id: "starter",
   name: "Starter",
-  monthly: 25,
-  yearlyPerMonth: 21.25,
-  blurb: "Best for getting started",
+  monthly: 12,
+  yearlyPerMonth: 10,
+  blurb: "Perfect for creators getting started with AI",
   popular: false,
   features: [
-    "1,200 credits / mo",
+    "600 credits / month",
     "AI Image Generator",
     "AI Video Generator",
-    "≈ 400 AI images / mo",
-    "≈ 60 AI videos / mo",
+    "≈ 200 AI images / month",
+    "≈ 30 AI videos / month",
     "Watermark-free exports",
     "Private creation library",
     "Standard generation speed",
@@ -85,16 +85,16 @@ const TIERS = [
 {
   id: "pro",
   name: "Pro",
-  monthly: 50,
-  yearlyPerMonth: 42.5,
-  blurb: "Best for creators who generate often",
+  monthly: 25,
+  yearlyPerMonth: 21,
+  blurb: "Best for creators generating content regularly",
   popular: true,
   features: [
-    "2,500 credits / mo",
+    "1,200 credits / month",
     "AI Image Generator",
     "AI Video Generator",
-    "≈ 830 AI images / mo",
-    "≈ 125 AI videos / mo",
+    "≈ 400 AI images / month",
+    "≈ 60 AI videos / month",
     "Watermark-free exports",
     "Private creation library",
     "Priority generation queue",
@@ -106,16 +106,16 @@ const TIERS = [
 {
   id: "generative",
   name: "Generative",
-  monthly: 90,
-  yearlyPerMonth: 76.5,
-  blurb: "For power creators and heavy usage",
+  monthly: 50,
+  yearlyPerMonth: 42,
+  blurb: "For heavy AI creators and production workflows",
   popular: false,
   features: [
-    "5,000 credits / mo",
+    "2,500 credits / month",
     "AI Image Generator",
     "AI Video Generator",
-    "≈ 1,600 AI images / mo",
-    "≈ 250 AI videos / mo",
+    "≈ 830 AI images / month",
+    "≈ 125 AI videos / month",
     "Watermark-free exports",
     "Unlimited creation history",
     "Fast-lane generation",
@@ -525,7 +525,7 @@ export default function Pricing() {
               }
 
               try {
-                await startCheckout({ type: "topup", priceId });
+                await startCheckout({ type: "topup", pack: p.id });
               } catch (err) {
                 console.error("Top-up checkout error", err);
                 alert("Could not start checkout. Please try again.");
