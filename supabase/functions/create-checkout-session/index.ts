@@ -60,9 +60,14 @@ if (!finalPriceId || !successUrl || !cancelUrl || !type) {
       const sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
         global: { headers: { Authorization: authHeader } },
       });
-      const {
-        data: { user },
-      } = await sb.auth.getUser();
+ const {
+  data: { user },
+} = await sb.auth.getUser();
+
+/* 🔒 Prevent checkout if not logged in */
+if (!user?.id) {
+  return json(req, { error: "User must be logged in to purchase." }, 401);
+}
 
       // fetch email from profiles if missing
       let email = user?.email ?? "";

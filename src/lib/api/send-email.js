@@ -7,22 +7,28 @@ export async function sendSupportEmail() {
     const { data, error } = await resend.emails.send({
       from: "Zyvo Support <support@tryzyvo.com>",
       to: ["hillaryscott684@gmail.com"],
-      subject: "Your Zyvo Subscription Is Active",
+      subject: "Quick Update About Your Zyvo Credits",
       html: `
         <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto">
-        
-        <h2 style="color:#7A3BFF;">Welcome to Zyvo 🚀</h2>
 
-        <p>Hello,</p>
+        <h2 style="color:#7A3BFF;">Zyvo Support</h2>
+
+        <p>Hello William,</p>
 
         <p>
-        Thank you for subscribing to <strong>Zyvo</strong>.
-        Your subscription has been successfully activated.
+        Thank you for subscribing to <strong>Zyvo</strong>. We can confirm that your payment and subscription were successfully processed.
         </p>
 
         <p>
-        To access your dashboard and start generating AI images and videos,
-        please create or log in to your account using the same email address you used for payment.
+        It appears that your account may not have received the credits automatically due to a small technical issue on our side.
+        </p>
+
+        <p>
+        We are currently reviewing this and will make sure your credits are added as soon as possible.
+        </p>
+
+        <p>
+        If you haven't created your Zyvo account yet, please sign up using the same email address you used for payment:
         </p>
 
         <p style="margin:25px 0;">
@@ -35,17 +41,16 @@ export async function sendSupportEmail() {
           text-decoration:none;
           font-weight:bold;
           ">
-          Access Your Zyvo Account
+          Create / Access Your Zyvo Account
           </a>
         </p>
 
         <p>
-        Once logged in, your subscription will automatically activate.
+        Once your account is confirmed, we will ensure that your subscription and credits are correctly applied.
         </p>
 
         <p>
-        If you have any questions or need assistance, simply reply to this email
-        and our support team will be happy to help.
+        Thank you for your patience and for supporting Zyvo.
         </p>
 
         <br>

@@ -7,8 +7,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const STRIPE_PORTAL_CONFIGURATION_ID =
-  Deno.env.get("STRIPE_PORTAL_CONFIGURATION_ID") ??
-  "bpc_1SP5HjHtn4q5rIncIIBsA3c6";
+  "bpc_1Spa1lHtn4q5rIncTIFJqWHF";
 
 function cors(req: Request) {
   const origin = req.headers.get("Origin") || "*";
