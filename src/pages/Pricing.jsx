@@ -253,7 +253,12 @@ function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade }) {
     }
 
     // No subscription yet → start checkout
-    await startCheckout({ type: "subscription", priceId });
+   await startCheckout({
+  type: "subscription",
+  priceId,
+  userId: user.id,
+  email: user.email
+});
   }
 
   const core = (

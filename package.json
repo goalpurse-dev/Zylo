@@ -16,6 +16,7 @@
     "@supabase/supabase-js": "^2.56.1",
     "@vercel/analytics": "^1.6.1",
     "animate.css": "^4.1.1",
+    "dotenv": "^17.3.1",
     "framer-motion": "^12.23.12",
     "konva": "^9.3.22",
     "lucide-react": "^0.537.0",
@@ -25,6 +26,7 @@
     "react-icons": "^5.5.0",
     "react-konva": "^19.0.7",
     "react-router-dom": "^7.7.1",
+    "resend": "^6.9.3",
     "sonner": "^2.0.7",
     "zod": "^4.0.17",
     "zustand": "^5.0.7"

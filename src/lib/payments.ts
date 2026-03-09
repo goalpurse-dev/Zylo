@@ -3,14 +3,22 @@ import { supabase } from "./supabaseClient";
 type CheckoutParams = {
   type: "subscription" | "topup";
   priceId: string;
+  userId?: string;
+  email?: string;
   successUrl?: string;
   cancelUrl?: string;
 };
 
 export async function startCheckout(params: CheckoutParams) {
   const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session?.user) {
+    window.location.href = "/signup";
+    return;
+  }
+
   const token =
-    session?.access_token || localStorage.getItem("sb-access-token") || "";
+    session.access_token || localStorage.getItem("sb-access-token") || "";
 
   const res = await fetch(
     `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`,
@@ -24,6 +32,11 @@ export async function startCheckout(params: CheckoutParams) {
       body: JSON.stringify({
         type: params.type,
         priceId: params.priceId,
+
+        // 🔑 CRITICAL
+        userId: session.user.id,
+        email: session.user.email,
+
         successUrl: params.successUrl || `${location.origin}/billing/success`,
         cancelUrl: params.cancelUrl || `${location.origin}/billing/cancel`,
       }),
@@ -32,9 +45,15 @@ export async function startCheckout(params: CheckoutParams) {
 
   const raw = await res.text();
   let data: any = {};
-  try { data = raw ? JSON.parse(raw) : {}; } catch {}
+
+  try {
+    data = raw ? JSON.parse(raw) : {};
+  } catch {}
+
   if (!res.ok) throw new Error(data?.error || raw || "Failed to create session");
+
   if (!data?.url) throw new Error("No checkout URL returned");
+
   location.href = data.url;
 }
 
