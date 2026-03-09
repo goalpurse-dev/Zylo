@@ -39,7 +39,16 @@ export default {
     try {
       if (!STRIPE_SECRET) return json(req, { error: "Stripe key missing" }, 500);
 
-      const { type, priceId, pack, successUrl, cancelUrl, customer } = await req.json();
+     const {
+  type,
+  priceId,
+  pack,
+  successUrl,
+  cancelUrl,
+  customer,
+  userId: bodyUserId,
+  email: bodyEmail
+} = await req.json();
 
      let finalPriceId = priceId;
 
@@ -70,7 +79,7 @@ if (!user?.id) {
 }
 
       // fetch email from profiles if missing
-      let email = user?.email ?? "";
+      let email = user?.email ?? bodyEmail ?? "";
       if (!email && user?.id) {
         const { data: prof } = await sb
           .from("profiles")
@@ -95,7 +104,7 @@ if (!user?.id) {
       });
 
       // Attach identity & helpful metadata for webhook fulfillment
-      const userId = user?.id ?? "";
+      const userId = user?.id ?? bodyUserId ?? "";
       if (userId) {
         body.set("client_reference_id", userId);
         body.set("metadata[user_id]", userId);
