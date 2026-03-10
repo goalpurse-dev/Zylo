@@ -190,7 +190,11 @@ export default {
       if (type === "invoice.payment_succeeded") {
         const inv = event.data.object as any;
         const customerId = String(inv.customer);
-        const userId = await userIdByCustomerId(customerId);
+        let userId = await userIdByCustomerId(customerId);
+
+if (!userId) {
+  userId = inv.metadata?.user_id ?? inv.subscription_details?.metadata?.user_id ?? null;
+}
         if (!userId) return respond(req, { ok: true, reason: "no-user" });
 
         // Grant plan credits for NON-proration recurring lines only
