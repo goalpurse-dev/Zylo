@@ -46,7 +46,7 @@ export default function Result({ results = [] }) {
 
   /* =============================== AUTO SELECT =============================== */
 
- useEffect(() => {
+useEffect(() => {
   if (videoResults.length === 0) {
     setActiveVideo(null);
     return;
@@ -54,16 +54,11 @@ export default function Result({ results = [] }) {
 
   const newest = videoResults[0];
 
-  // If nothing selected yet → select newest
-  if (!activeVideo) {
+  // Only auto select on desktop
+  if (!activeVideo && window.innerWidth >= 768) {
     setActiveVideo(newest);
-    return;
   }
 
-  // If newest is different from current active → auto switch
-  if (newest.id !== activeVideo.id) {
-    setActiveVideo(newest);
-  }
 }, [videoResults]);
 
   /* =============================== SCROLL =============================== */
@@ -150,7 +145,7 @@ export default function Result({ results = [] }) {
                     className={`
                       flex-shrink-0
                       aspect-square
-                      w-[130px] sm:w-[120px] md:w-[118px] lg:w-[128px]
+                      w-[92px] sm:w-[110px] md:w-[118px] lg:w-[128px]
                       rounded-2xl
                       overflow-hidden
                       border
@@ -165,13 +160,15 @@ export default function Result({ results = [] }) {
                   >
                    {/* SUCCESS */}
 {item.result_url && (
-  <video
-    src={item.result_url}
-    className="w-full h-full object-cover"
-    muted
-    playsInline
-    preload="metadata"
-  />
+<video
+  src={item.result_url}
+  className="w-full h-full object-cover"
+  muted
+  playsInline
+  preload="auto"
+  onMouseOver={(e) => e.currentTarget.play()}
+  onMouseOut={(e) => e.currentTarget.pause()}
+/>
 )}
 
 {/* LOADING */}
