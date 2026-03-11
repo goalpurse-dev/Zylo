@@ -829,6 +829,38 @@ const [loading, setLoading] = useState(false);
           </div>
           </div>
           </Link>
+
+          
+                                  {/* Blog Card 53*/}
+
+                <Link to="/blog/how-to-create-movie-style-visuals" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Cinematic AI Images: How to Create Movie-Style Visuals</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how to create the best movie style images using ai and how to benefit from them</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">11.03/2026</p>
+          </div>
+          </div>
+          </Link>
+
+              
+                                  {/* Blog Card 54*/}
+
+                <Link to="/blog/why-3d-ai-images-perform-better" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">3D AI Images: Why They Perform Better on Social Platforms</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn why 3D AI images perform way better on social platforms.</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">11.03/2026</p>
+          </div>
+          </div>
+          </Link>
  
  
           

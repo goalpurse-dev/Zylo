@@ -270,8 +270,17 @@
     <priority>0.8</priority>
 
                                   <url>
-    <loc>https://www.tryzyvo.com//blog/how-to-create-minimalist-images-using-ai</loc>
+    <loc>https://www.tryzyvo.com/blog/how-to-create-minimalist-images-using-ai</loc>
     <priority>0.8</priority>
+
+                                   <url>
+    <loc>https://www.tryzyvo.com/blog/how-to-create-movie-style-visuals</loc>
+    <priority>0.8</priority>
+
+                                    <url>
+    <loc>https://www.tryzyvo.com/blog/why-3d-ai-images-perform-better</loc>
+    <priority>0.8</priority>
+
 
 
 

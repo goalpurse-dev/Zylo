@@ -151,6 +151,8 @@ import HowAIImageGeneratorsWork from "./app/blog/imagegenerator/HowAIImageGenera
 import IsAIImageGenerationWorthItForCreators from "./app/blog/imagegenerator/IsAIImageGenerationWorthItForCreators.jsx";
 import TopAIImageStylesThatGoViralOnSocialMedia from "./app/blog/imagegenerator/TopAIImageStylesThatGoViralOnSocialMedia.jsx";
 import HowToCreateMinimalistImagesUsingAI from "./app/blog/imagegenerator/HowtoCreateMinimalistImagesUsingAI.jsx";
+import HowToCreateMovieStyleVisuals from "./app/blog/imagegenerator/HowtoCreateMovieStyleVisuals.jsx";
+import Why3dAIImagesPerform from "./app/blog/imagegenerator/why3daiimagesperform.jsx";
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -362,6 +364,8 @@ return (
         <Route path="/blog/is-ai-image-generation-worth-it-for-creators" element={<IsAIImageGenerationWorthItForCreators/>} />
         <Route path="/blog/top-ai-image-styles-that-go-viral-on-social-media" element={<TopAIImageStylesThatGoViralOnSocialMedia/>} />
         <Route path="/blog/how-to-create-minimalist-images-using-ai" element={<HowToCreateMinimalistImagesUsingAI/>} />
+        <Route path="/blog/how-to-create-movie-style-visuals" element={<HowToCreateMovieStyleVisuals/>} />
+        <Route path="/blog/why-3d-ai-images-perform-better" element={<Why3dAIImagesPerform/>} />
 
 
 
