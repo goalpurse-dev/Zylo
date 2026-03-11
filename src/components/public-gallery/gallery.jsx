@@ -195,11 +195,14 @@ const handleLike = async (imageId) => {
 
 <button
   onClick={() => handleLike(img.id)}
- className={`text-[10px] md:text-xs px-2 py-[3px] md:px-2 md:py-1 rounded transition active:scale-90
-${likedImages.has(img.id)
-  ? "bg-purple-500 text-white"
-  : "bg-white/90 text-black hover:bg-white"}
-`}
+  className={`text-[10px] md:text-xs px-2 py-[3px] md:px-2 md:py-1 rounded-md
+  backdrop-blur-md border border-white/20 shadow-sm
+  transition active:scale-90
+  ${
+    likedImages.has(img.id)
+      ? "bg-purple-500/70 text-white"
+      : "bg-white/10 text-white hover:bg-white/20"
+  }`}
 >
   ❤️ {img.likes || 0} <span className="font-semibold">Likes</span>
 </button>
@@ -221,7 +224,11 @@ ${likedImages.has(img.id)
 
         usePrompt(img.prompt);
       }}
-      className="bg-[#7A3BFF] text-white text-[10px] md:text-xs px-2 py-[3px] md:px-2 md:py-1 rounded"
+     className="text-[10px] md:text-xs px-2 py-[3px] md:px-2 md:py-1 rounded-md
+bg-[#7A3BFF]/70 text-white
+backdrop-blur-md border border-white/20
+hover:bg-[#7A3BFF]/90
+transition"
     >
       📥 Use Prompt
     </button>
