@@ -17,7 +17,7 @@ const PRICE_IDS = {
 const TOPUP_PRICE_IDS = {
   mini: "price_1SpZcRHtn4q5rIncaayoetIS",     // €6.99
   standard: "price_1SpZczHtn4q5rInctZoF9rJV",  // €11.99
-  max: "price_1SpZdTHtn4q5rIncFRt80VaD",       // €19.99
+  max: "price_1T9tUoHtn4q5rInc3V64JXXc",       // €19.99
 };
 
 const BLUE = "#1677FF";

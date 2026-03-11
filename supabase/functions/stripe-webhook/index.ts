@@ -14,7 +14,7 @@ const PRICE_MAP: Record<string, { plan: "starter" | "pro" | "generative"; credit
 const TOPUP_PRICE_MAP: Record<string, number> = {
   "price_1SpZcRHtn4q5rIncaayoetIS": 300,
   "price_1SpZczHtn4q5rInctZoF9rJV": 500,
-  "price_1SpZdTHtn4q5rIncFRt80VaD": 900,
+  "price_1T9tUoHtn4q5rInc3V64JXXc": 900,
 };
 /* ============================================== */
 
