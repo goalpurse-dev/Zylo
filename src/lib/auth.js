@@ -4,14 +4,30 @@ import { supabase } from "./supabaseClient";
 /** Create account with email + password (friendlier errors) */
 // src/lib/auth.js
 export async function signUpWithEmailPassword(email, password) {
+
   const { data, error } = await supabase.auth.signUp({ email, password });
+
   if (error) throw error;
 
-  // session exists only if email confirmations are OFF
+  // guard: only send if user exists and is newly created
+  if (data?.user?.created_at) {
+
+    await fetch("/api/send-welcome-email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+  }
+
   if (data.session) {
     return { status: "created", user: data.user, session: data.session };
   }
+
   return { status: "pending", user: data.user, session: null };
+
 }
 /** Login with email + password */
 export async function signInWithEmailPassword(email, password) {

@@ -1,8 +1,5 @@
-import dotenv from "dotenv";
 import { Resend } from "resend";
 import { welcomeEmail } from "../src/lib/emails/welcomeEmail.js";
-
-dotenv.config({ path: ".env.local" });
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -13,12 +10,7 @@ export default async function handler(req, res) {
   }
 
   try {
-
     const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ error: "Missing email" });
-    }
 
     await resend.emails.send(
       welcomeEmail(email)
@@ -27,13 +19,8 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true });
 
   } catch (err) {
-
-    console.error("Email error:", err);
-
-    return res.status(500).json({
-      error: "Failed to send welcome email"
-    });
-
+    console.error(err);
+    return res.status(500).json({ error: "Failed to send email" });
   }
 
 }

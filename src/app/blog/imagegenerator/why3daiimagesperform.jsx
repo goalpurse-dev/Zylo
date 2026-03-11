@@ -219,7 +219,9 @@ export default function ThreeDAIImages() {
         <RelatedArticles articles={related} />
       </section>
 
+    <div className="text-white">
       <Footer />
+      </div>
 
     </div>
   );
