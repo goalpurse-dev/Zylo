@@ -177,11 +177,13 @@ const handleLike = async (imageId) => {
             className="relative mb-3 break-inside-avoid rounded-xl overflow-hidden group"
           >
 
-            <img
-              src={img.image_url}
-              className="w-full rounded-xl"
-              loading="lazy"
-            />
+           <img
+  src={img.image_url}
+  referrerPolicy="no-referrer"
+  crossOrigin="anonymous"
+  className="w-full rounded-xl"
+  loading="lazy"
+/>
 
             {/* watermark */}
             <div className="absolute top-2 left-2 text-[10px] bg-black/50 text-white px-2 py-[2px] rounded">
