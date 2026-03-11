@@ -21,7 +21,7 @@ const loadImages = async (pageIndex = 0) => {
 
   const { data } = await supabase
     .from("public_images")
-    .select("id,image_url,prompt,likes,uses,created_at")
+    .select("id,image_url,runware_url,prompt,likes,uses,created_at")
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -31,9 +31,11 @@ const loadImages = async (pageIndex = 0) => {
   return;
 }
 
-  setImages(prev =>
-    pageIndex === 0 ? data : [...prev, ...data]
-  );
+ setImages(prev =>
+  pageIndex === 0 ? data : [...prev, ...data]
+);
+
+setPage(pageIndex);
 
 };
 
@@ -64,30 +66,24 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-
-  if (!loadMoreRef.current) return;
+  const el = loadMoreRef.current;
+  if (!el) return;
 
   const observer = new IntersectionObserver(
     (entries) => {
-      const entry = entries[0];
-
-      if (entry.isIntersecting && !loadingMore && hasMore) {
-        loadNextPage();
-      }
+     if (entries[0].isIntersecting && !loadingMore && hasMore) {
+  loadNextPage();
+}
     },
     {
-      root: null,
-      rootMargin: "200px",
-      threshold: 0
+      rootMargin: "300px"
     }
   );
 
-  observer.observe(loadMoreRef.current);
+  observer.observe(el);
 
   return () => observer.disconnect();
-
-}, [loadingMore, hasMore, page]);
-
+}, []);
 const loadNextPage = async () => {
 
   if (loadingMore || !hasMore) return;
@@ -101,7 +97,7 @@ const loadNextPage = async () => {
 
   const { data } = await supabase
     .from("public_images")
-    .select("id,image_url,prompt,likes,uses,created_at")
+    .select("id,image_url,runware_url,prompt,likes,uses,created_at")
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -111,7 +107,13 @@ const loadNextPage = async () => {
     return;
   }
 
-  setImages(prev => [...prev, ...data]);
+  setImages(prev => {
+
+  const existing = new Set(prev.map(i => i.id));
+  const newImages = data.filter(i => !existing.has(i.id));
+
+  return [...prev, ...newImages];
+});
   setPage(nextPage);
 
   // if less than page size → no more pages
@@ -177,12 +179,16 @@ const handleLike = async (imageId) => {
             className="relative mb-3 break-inside-avoid rounded-xl overflow-hidden group"
           >
 
-           <img
-  src={img.image_url}
-  referrerPolicy="no-referrer"
-  crossOrigin="anonymous"
-  className="w-full rounded-xl"
+ <img
+  src={img.image_url || img.runware_url}
   loading="lazy"
+  decoding="async"
+  className="w-full rounded-xl"
+ onError={(e) => {
+  if (img.runware_url && e.currentTarget.src !== img.runware_url) {
+    e.currentTarget.src = img.runware_url;
+  }
+}}
 />
 
             {/* watermark */}

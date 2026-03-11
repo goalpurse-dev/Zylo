@@ -91,7 +91,7 @@ useEffect(() => {
     const { data, error } = await supabase
       .from("public_images")
       .select("id")
-      .eq("image_url", item.result_url)
+      .or(`runware_url.eq.${item.result_url},image_url.eq.${item.result_url}`)
       .limit(1);
 
     if (!ignore && !error && data && data.length > 0) {
@@ -111,40 +111,73 @@ const handlePublish = async () => {
 
   setPosting(true);
 
-  const { data: user } = await supabase.auth.getUser();
-  if (!user?.user) {
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData?.user;
+
+  if (!user) {
     setPosting(false);
     return;
   }
 
   const prompt = item.input?.subject ?? item.prompt;
+  const runwareUrl = item.result_url;
 
-  const { error } = await supabase
-    .from("public_images")
-    .insert({
-      user_id: user.user.id,
-      image_url: item.result_url,
-      prompt
-    });
+  try {
 
-  if (error) {
-    // duplicate image_url will trigger here
-    console.log("Duplicate image prevented");
+    // 1️⃣ download image
+    const response = await fetch(runwareUrl);
+    const blob = await response.blob();
+
+    // 2️⃣ filename
+    const fileName = `${crypto.randomUUID()}.png`;
+
+    // 3️⃣ upload to Supabase storage
+    const { error: uploadError } = await supabase.storage
+      .from("public-images")
+      .upload(fileName, blob, {
+        contentType: "image/png"
+      });
+
+    if (uploadError) {
+      console.error("UPLOAD ERROR:", uploadError);
+      setPosting(false);
+      return;
+    }
+
+    // 4️⃣ get public URL
+    const { data } = supabase.storage
+      .from("public-images")
+      .getPublicUrl(fileName);
+
+    const supabaseUrl = data.publicUrl;
+
+    // 5️⃣ insert into DB
+    const { error } = await supabase
+      .from("public_images")
+      .insert({
+        user_id: user.id,
+        image_url: supabaseUrl,
+        runware_url: runwareUrl,
+        prompt
+      });
+
+    if (error) {
+      console.error("INSERT ERROR:", error);
+      setPosting(false);
+      return;
+    }
+
     setPosted(true);
-    setPosting(false);
-    return;
+    setShowToast(true);
+
+    setTimeout(() => setShowToast(false), 3000);
+
+  } catch (err) {
+    console.error(err);
   }
 
   setPosting(false);
-  setPosted(true);
-
-  setShowToast(true);
-
-  setTimeout(() => {
-    setShowToast(false);
-  }, 3000);
 };
-
 
 
   const isDone = item.status === "succeeded" && !!item.result_url;
@@ -197,10 +230,14 @@ const isFailed =
   <div className="absolute inset-0">
     {/* DONE */}
     {isDone && (
-      <img
-        src={item.result_url}
-        className="w-full h-full object-cover"
-      />
+     <img
+  src={item.result_url}
+  referrerPolicy="no-referrer"
+  crossOrigin="anonymous"
+  className="w-full h-full object-cover"
+  loading="lazy"
+  decoding="async"
+/>
     )}
 
     {/* FAILED */}
@@ -218,7 +255,7 @@ const isFailed =
 
 {showToast && (
   <div className="
-    fixed bottom-6 left-1/2 -translate-x-1/2
+    fixed z-[9999] bottom-6 left-1/2 -translate-x-1/2
     bg-[#1a1d24] border border-white/10
     text-white text-sm px-4 py-2 rounded-lg
     shadow-lg
@@ -327,17 +364,24 @@ export default function Result({ results, activeJobId }) {
   const latestRef = useRef(null);
 
   // ✅ filter valid photo jobs
-  const photoResults = useMemo(
-    () =>
-      Array.isArray(results)
-        ? results.filter(
+const photoResults = useMemo(
+  () =>
+    Array.isArray(results)
+      ? [...results]
+          .filter(
             (r) =>
               r?.settings?.creation_type === CREATION_TYPES.PHOTO &&
               !isExpired(r)
           )
-        : [],
-    [results]
-  );
+          .sort(
+            (a, b) =>
+              new Date(b.created_at || 0).getTime() -
+              new Date(a.created_at || 0).getTime()
+          )
+          .slice(0, 30)
+      : [],
+  [results]
+);
 
 const cardRefs = useRef({});
 
