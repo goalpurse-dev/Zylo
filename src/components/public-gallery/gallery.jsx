@@ -176,14 +176,14 @@ const handleLike = async (imageId) => {
 
           <div
             key={img.id}
-            className="relative mb-3 break-inside-avoid rounded-xl overflow-hidden group"
+            className="relative mb-3 break-inside-avoid rounded-xl overflow-hidden group shadow-lg shadow-black/40"
           >
 
  <img
-  src={img.image_url || img.runware_url}
+   src={(img.image_url || img.runware_url) + "?width=600"}
   loading="lazy"
   decoding="async"
-  className="w-full rounded-xl"
+  className="w-full rounded-xl transition-transform duration-300 group-hover:scale-[1.03]"
  onError={(e) => {
   if (img.runware_url && e.currentTarget.src !== img.runware_url) {
     e.currentTarget.src = img.runware_url;
