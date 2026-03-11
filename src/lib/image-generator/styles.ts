@@ -16,6 +16,7 @@ const STYLE_THUMBS = {
   realistic: "/images/thumbs/realistic.webp",
   vintage: "/images/thumbs/vintage.webp",
     viralSkeleton: "/images/thumbs/viralskeleton.webp", // 👈 ADD THIS
+        animalXray: "/thumbs/x-raydog.webp", // 👈 ADD THIS
 };
 
 
@@ -64,6 +65,52 @@ No text on the screen
 `,
   img: STYLE_THUMBS.viralSkeleton,
   imageStrength: 0.6
+},
+
+DogSkeletonXray: {
+  label: "Dog Skeleton X-Ray",
+
+  promptHint: `
+main character animal with glowing x-ray body,
+semi-transparent animal anatomy,
+visible glowing skeleton structure inside body,
+soft white medical x-ray glow,
+realistic animal face and head,
+bones glowing through body like a medical scan,
+photorealistic animal anatomy,
+cinematic lighting,
+centered subject composition,
+vertical 9:16 framing,
+ultra detailed bones texture,
+photorealistic 3D render,
+dramatic atmosphere,
+viral TikTok science style,
+8k ultra detail
+
+IMPORTANT:
+The main character MUST match the exact body structure and pose of the reference dog.
+Do not change breed, proportions, or anatomy.
+The generated dog should look like the same dog from the reference image.
+The main character should match the reference animal's body structure.
+
+Dog standing in neutral pose.
+Full body visible.
+No stretching poses.
+No yoga poses.
+
+
+Only the MAIN animal has the glowing x-ray skeleton body.
+Other animals in the scene must look completely normal.
+
+No text on the screen
+`,
+
+  img: STYLE_THUMBS.animalXray,
+  imageStrength: 0.85,
+
+  // 🔥 reference to stabilize animal identity
+ defaultReference:
+"https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/public-reference/styles/x-raydog.webp"
 },
 
    VintagePortrait: {

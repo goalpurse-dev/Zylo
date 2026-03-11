@@ -59,7 +59,7 @@ export const MODELS = {
     credits: 4,
     traits: ["Fast", "Low cost", "General use"],
     supportedSizes: ["1:1", "16:9", "9:16"],
-    maxReferenceImages: 4,
+    maxReferenceImages: 3,
   },
 
   "image:juggernaut": {

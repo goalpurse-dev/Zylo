@@ -320,13 +320,30 @@ if (planCode !== "free") {
   try {
     setIsGenerating(true);
 
-    const job = await generateImageFromUI({
-      modelKey: selectedModelKey,
-      prompt: prompt.trim(),
-      style: selectedStyle,
-      size: selectedSize,
-      refImages: selected.map((x) => x.url),
-    });
+const style = IMAGE_STYLES[selectedStyle];
+
+// user uploaded references
+let refImagesFinal = selected.map((x) => x.url);
+
+// 🔥 auto attach hidden style reference
+if (style?.defaultReference) {
+  refImagesFinal.unshift(style.defaultReference);
+}
+const stylePrompt = IMAGE_STYLES[selectedStyle]?.promptHint ?? "";
+
+const finalPrompt = `
+${prompt.trim()}
+
+${stylePrompt}
+`;
+
+const job = await generateImageFromUI({
+  modelKey: selectedModelKey,
+  prompt: finalPrompt,
+  style: selectedStyle,
+  size: selectedSize,
+  refImages: refImagesFinal
+});
 
     setActiveJobId?.(job.id);
     onJobCreated?.(job);
