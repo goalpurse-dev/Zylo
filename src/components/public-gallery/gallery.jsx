@@ -76,7 +76,7 @@ useEffect(() => {
 }
     },
     {
-      rootMargin: "300px"
+      rootMargin: "600px"
     }
   );
 
@@ -180,10 +180,12 @@ const handleLike = async (imageId) => {
           >
 
  <img
-   src={(img.image_url || img.runware_url) + "?width=600"}
+  src={(img.image_url || img.runware_url) + "?width=600&format=webp"}
   loading="lazy"
+  fetchPriority="low"
   decoding="async"
   className="w-full rounded-xl transition-transform duration-300 group-hover:scale-[1.03]"
+  style={{ background: "#0f1117" }}
  onError={(e) => {
   if (img.runware_url && e.currentTarget.src !== img.runware_url) {
     e.currentTarget.src = img.runware_url;
