@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DownloadIcon } from "lucide-react";
 import { CREATION_TYPES } from "../../lib/creations";
-
+import { supabase } from "../../lib/supabaseClient";
 
 /* =============================== CONFIG =============================== */
 
@@ -78,7 +78,74 @@ function scrollToElementWithinContainer(el, container, topOffset = 80) {
 
 function ResultCard({ item }) {
   const [visible, setVisible] = useState(true);
+  const [posting, setPosting] = useState(false);
+const [posted, setPosted] = useState(false);
+const [showToast, setShowToast] = useState(false);
+
+useEffect(() => {
+  let ignore = false;
+
+  async function checkIfPosted() {
+    if (!item?.result_url) return;
+
+    const { data, error } = await supabase
+      .from("public_images")
+      .select("id")
+      .eq("image_url", item.result_url)
+      .limit(1);
+
+    if (!ignore && !error && data && data.length > 0) {
+      setPosted(true);
+    }
+  }
+
+  checkIfPosted();
+
+  return () => {
+    ignore = true;
+  };
+}, [item?.result_url]);
  
+const handlePublish = async () => {
+  if (posting || posted) return;
+
+  setPosting(true);
+
+  const { data: user } = await supabase.auth.getUser();
+  if (!user?.user) {
+    setPosting(false);
+    return;
+  }
+
+  const prompt = item.input?.subject ?? item.prompt;
+
+  const { error } = await supabase
+    .from("public_images")
+    .insert({
+      user_id: user.user.id,
+      image_url: item.result_url,
+      prompt
+    });
+
+  if (error) {
+    // duplicate image_url will trigger here
+    console.log("Duplicate image prevented");
+    setPosted(true);
+    setPosting(false);
+    return;
+  }
+
+  setPosting(false);
+  setPosted(true);
+
+  setShowToast(true);
+
+  setTimeout(() => {
+    setShowToast(false);
+  }, 3000);
+};
+
+
 
   const isDone = item.status === "succeeded" && !!item.result_url;
   const progress = Math.min(
@@ -149,6 +216,20 @@ const isFailed =
 )}
 
 
+{showToast && (
+  <div className="
+    fixed bottom-6 left-1/2 -translate-x-1/2
+    bg-[#1a1d24] border border-white/10
+    text-white text-sm px-4 py-2 rounded-lg
+    shadow-lg
+    animate-[fadeInUp_.3s_ease]
+  ">
+    ✅ Image posted to Zyvo Public Gallery
+  </div>
+)}
+
+
+
     {/* LOADING */}
     {!isDone && !isFailed && (
       <div className="w-full h-full flex items-center justify-center">
@@ -193,13 +274,31 @@ const isFailed =
             {item.input?.subject ?? item.prompt}
           </p>
 
-          <button
-            onClick={() => window.open(item.result_url, "_blank")}
-            className="mt-2 w-fit flex items-center gap-1 text-white/90 hover:text-white text-xs font-medium"
-          >
-            <DownloadIcon className="w-4 h-4" />
-            Download
-          </button>
+<div className="flex gap-3 mt-2">
+
+  <button
+    onClick={() => window.open(item.result_url, "_blank")}
+    className="flex items-center gap-1 text-white/90 hover:text-white text-xs font-medium"
+  >
+    <DownloadIcon className="w-4 h-4" />
+    Download
+  </button>
+
+<button
+  onClick={handlePublish}
+  disabled={posting || posted}
+  className={`text-white text-xs px-3 py-1 rounded-md transition-all duration-200
+    ${posted
+      ? "bg-green-500 cursor-default"
+      : posting
+      ? "bg-purple-400 cursor-wait"
+      : "bg-[#7A3BFF] hover:bg-[#6a32e6] active:scale-95"}
+  `}
+>
+  {posted ? "Posted ✓" : posting ? "Posting..." : "Post"}
+</button>
+
+</div>
         </div>
       )}
 

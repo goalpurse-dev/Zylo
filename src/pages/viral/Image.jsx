@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { watchJob } from "../../lib/jobs";
-
+import { useLocation } from "react-router-dom";
 
 import Generate from "../../components/ImageGenerator/Generate.jsx";
 import Inspiration from "../../components/ImageGenerator/Inspiration.jsx";
@@ -40,6 +40,14 @@ export default function Image() {
   const watchersRef = useRef({});
 
   const [activeJobId, setActiveJobId] = useState(null);
+
+const location = useLocation();
+
+useEffect(() => {
+  if (location.state?.prompt) {
+    setPrompt(location.state.prompt);
+  }
+}, []);
 
 
   /* ===============================

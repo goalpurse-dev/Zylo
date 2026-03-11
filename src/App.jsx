@@ -160,6 +160,7 @@ import CookieConsent from "./components/CookieConsent";
 import EmailConsentModal from "./components/EmailConsentModal";
 import { supabase } from "./lib/supabaseClient";
 import NotFoundRedirect from "./components/NotFoundRedirect";
+import PublicGallery from "./components/public-gallery/gallery";
 {/* Viral */}
 
 
@@ -370,7 +371,7 @@ return (
 
 
         <Route path="/workspace/image-gen-test" element={<ImageGenTest/>} />
-                 
+         <Route path="/public-gallery" element={<PublicGallery />} />           
 
 
 

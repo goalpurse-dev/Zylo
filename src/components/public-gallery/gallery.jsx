@@ -1,0 +1,250 @@
+import { useEffect, useState, useRef } from "react";
+import { supabase } from "../../lib/supabaseClient";
+import { useNavigate } from "react-router-dom";
+
+export default function PublicGallery() {
+
+  const [images, setImages] = useState([]);
+  const navigate = useNavigate();
+  const [likedImages, setLikedImages] = useState(new Set());
+  const PAGE_SIZE = 20;
+const [hasMore, setHasMore] = useState(true);
+const loadMoreRef = useRef(null);
+
+const [page, setPage] = useState(0);
+const [loadingMore, setLoadingMore] = useState(false);
+
+const loadImages = async (pageIndex = 0) => {
+
+  const from = pageIndex * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  const { data } = await supabase
+    .from("public_images")
+    .select("id,image_url,prompt,likes,uses,created_at")
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (!data || data.length === 0) {
+  setHasMore(false);
+  setLoadingMore(false);
+  return;
+}
+
+  setImages(prev =>
+    pageIndex === 0 ? data : [...prev, ...data]
+  );
+
+};
+
+useEffect(() => {
+
+  async function load() {
+
+    await loadImages(0);
+
+    const { data: user } = await supabase.auth.getUser();
+
+    if (user?.user) {
+
+      const { data: likes } = await supabase
+        .from("image_likes")
+        .select("image_id")
+        .eq("user_id", user.user.id);
+
+      const likedSet = new Set(likes?.map(l => l.image_id));
+
+      setLikedImages(likedSet);
+    }
+
+  }
+
+  load();
+
+}, []);
+
+useEffect(() => {
+
+  if (!loadMoreRef.current) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0];
+
+      if (entry.isIntersecting && !loadingMore && hasMore) {
+        loadNextPage();
+      }
+    },
+    {
+      root: null,
+      rootMargin: "200px",
+      threshold: 0
+    }
+  );
+
+  observer.observe(loadMoreRef.current);
+
+  return () => observer.disconnect();
+
+}, [loadingMore, hasMore, page]);
+
+const loadNextPage = async () => {
+
+  if (loadingMore || !hasMore) return;
+
+  setLoadingMore(true);
+
+  const nextPage = page + 1;
+
+  const from = nextPage * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  const { data } = await supabase
+    .from("public_images")
+    .select("id,image_url,prompt,likes,uses,created_at")
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (!data || data.length === 0) {
+    setHasMore(false);
+    setLoadingMore(false);
+    return;
+  }
+
+  setImages(prev => [...prev, ...data]);
+  setPage(nextPage);
+
+  // if less than page size → no more pages
+  if (data.length < PAGE_SIZE) {
+    setHasMore(false);
+  }
+
+  setLoadingMore(false);
+};
+
+
+
+const handleLike = async (imageId) => {
+
+  if (likedImages.has(imageId)) return;
+
+  const { data: user } = await supabase.auth.getUser();
+  if (!user?.user) return;
+
+  const { error } = await supabase
+    .from("image_likes")
+    .insert({
+      user_id: user.user.id,
+      image_id: imageId
+    });
+
+  if (error) return;
+
+  await supabase.rpc("increment_likes", {
+    image_id: imageId
+  });
+
+  setLikedImages(prev => new Set(prev).add(imageId));
+
+  setImages(prev =>
+    prev.map(img =>
+      img.id === imageId
+        ? { ...img, likes: (img.likes || 0) + 1 }
+        : img
+    )
+  );
+};
+
+  const usePrompt = (prompt) => {
+    navigate("/workspace/image-generator", {
+      state: { prompt }
+    });
+  };
+
+  return (
+    <section className="px-4 py-8">
+
+      <h1 className="text-3xl font-bold mb-6 text-white">
+        Zyvo <span className="text-purple-500">Community Creations</span>
+      </h1>
+
+      <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
+
+        {images.map((img) => (
+
+          <div
+            key={img.id}
+            className="relative mb-3 break-inside-avoid rounded-xl overflow-hidden group"
+          >
+
+            <img
+              src={img.image_url}
+              className="w-full rounded-xl"
+              loading="lazy"
+            />
+
+            {/* watermark */}
+            <div className="absolute top-2 left-2 text-[10px] bg-black/50 text-white px-2 py-[2px] rounded">
+              Created with Zyvo
+            </div>
+
+            {/* buttons */}
+   <div className="absolute bottom-3 left-3 flex flex-col gap-1">
+
+  <div className="flex gap-2">
+
+<button
+  onClick={() => handleLike(img.id)}
+ className={`text-[10px] md:text-xs px-2 py-[3px] md:px-2 md:py-1 rounded transition active:scale-90
+${likedImages.has(img.id)
+  ? "bg-purple-500 text-white"
+  : "bg-white/90 text-black hover:bg-white"}
+`}
+>
+  ❤️ {img.likes || 0} <span className="font-semibold">Likes</span>
+</button>
+
+    <button
+      onClick={async () => {
+
+        await supabase.rpc("increment_uses", {
+          image_id: img.id
+        });
+
+        setImages(prev =>
+          prev.map(i =>
+            i.id === img.id
+              ? { ...i, uses: (i.uses || 0) + 1 }
+              : i
+          )
+        );
+
+        usePrompt(img.prompt);
+      }}
+      className="bg-[#7A3BFF] text-white text-[10px] md:text-xs px-2 py-[3px] md:px-2 md:py-1 rounded"
+    >
+      📥 Use Prompt
+    </button>
+
+  </div>
+
+
+
+</div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+      <div ref={loadMoreRef} className="h-10 w-full" />
+
+{loadingMore && (
+  <div className="text-center text-white/60 mt-6">
+    Loading more images...
+  </div>
+)}
+    </section>
+  );
+}

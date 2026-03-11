@@ -1,6 +1,7 @@
 import Good2 from "../../assets/blog/productphoto/good.2.png";
 import Before1 from "../../assets/blog/productphoto/before1.png";
 import Before2 from "../../assets/blog/productphoto/before2.png";
+import { useNavigate } from "react-router-dom";
 import i1 from "../../assets/inspiration/1.png";
 import i2 from "../../assets/inspiration/2.png";
 import i3 from "../../assets/inspiration/3.png";
@@ -315,7 +316,9 @@ const createdImages = [
 
 
 
-export const Inspiration = ({ setPrompt }) => {
+
+export const Inspiration = ({ onSelectPrompt }) => {
+
   return (
     <section className="w-full px-2">
       <h1 className="text-[#F4F6FB] font-bold text-[26px] mb-4 cursor-default">
@@ -324,28 +327,18 @@ export const Inspiration = ({ setPrompt }) => {
 
       <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
         {createdImages.map((item, i) => (
-        <MasonryImage
-  key={i}
-  src={item.src}
-  prompt={item.prompt}
-  onUse={(p) => {
-    setPrompt(p);
-
-    // 🔥 FORCE SCROLL TO TOP (works everywhere)
-    const workspaceScroller = document.getElementById("workspace-scroll");
-
-    if (workspaceScroller) {
-      workspaceScroller.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }}
-/>
+          <MasonryImage
+            key={i}
+            src={item.src}
+            prompt={item.prompt}
+            onUse={(p) => {
+              onSelectPrompt?.(p);
+            }}
+          />
         ))}
       </div>
     </section>
   );
 };
-
 
 export default Inspiration;

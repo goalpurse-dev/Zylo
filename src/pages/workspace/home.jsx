@@ -1,6 +1,6 @@
 import Glow from "../../components/workspace/Glow.jsx";
 import New1 from "../../components/workspace/New1.jsx";
-import Inspiration from "../../components/ImageGenerator/Inspiration.jsx";
+import PublicGallery from "../../components/public-gallery/gallery.jsx";
 import Generate from "../../components/ImageGenerator/Generate.jsx";
 
 import { useState, useEffect, useRef } from "react";
@@ -34,13 +34,9 @@ export default function WorkspaceHome() {
 
 
       {/* INSPIRATION */}
-      <div className="mt-10" ref={inspirationRef}>
-        <Inspiration
-          prompt={prompt}
-          setPrompt={setPrompt}
-          onSelectPrompt={sendPromptToGenerator}
-        />
-      </div>
+      <div className="mt-10">
+  <PublicGallery />
+</div>
 
     </div>
   );
