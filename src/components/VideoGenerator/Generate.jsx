@@ -386,16 +386,16 @@ useEffect(() => {
                      focus-within:shadow-purple-500/20"
         >
           <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Describe your video scene..."
-            rows={4}
-            className="w-full min-h-[120px]
-                       bg-transparent outline-none
-                       text-sm text-white
-                       placeholder-[#6B7280]
-                       resize-none"
-          />
+  value={prompt}
+  onChange={(e) => setPrompt(e.target.value)}
+  placeholder="Describe your video scene..."
+  rows={4}
+  className="w-full min-h-[120px]
+             bg-transparent outline-none
+             text-[16px] md:text-sm text-white
+             placeholder-[#6B7280]
+             resize-none"
+/>
         </div>
       </div>
 

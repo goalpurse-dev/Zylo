@@ -366,6 +366,24 @@ const job = await generateImageFromUI({
   }
 };
 
+
+useEffect(() => {
+  const handleFocus = () => {
+    document.body.style.zoom = "1";
+  };
+
+  const textarea = textareaRef.current;
+  if (textarea) {
+    textarea.addEventListener("focus", handleFocus);
+  }
+
+  return () => {
+    if (textarea) {
+      textarea.removeEventListener("focus", handleFocus);
+    }
+  };
+}, []);
+
 useEffect(() => {
   const modalOpen = openModel || openStyle || openSize;
 
@@ -595,18 +613,17 @@ useEffect(() => {
                focus-within:shadow-lg
                focus-within:shadow-purple-500/20"
   >
-    <textarea
-      ref={textareaRef}
-      value={prompt}
-      onChange={(e) => setPrompt(e.target.value)}
-      placeholder="Describe what you want to create..."
-      rows={4}   // 🔥 taller
-      className="w-full min-h-[120px]   // 🔥 force visual height
-                 bg-transparent outline-none
-                 text-sm text-white
-                 placeholder-[#6B7280]
-                 resize-none"
-    />
+   <textarea
+  ref={textareaRef}
+  value={prompt}
+  onChange={(e) => setPrompt(e.target.value)}
+  placeholder="Describe what you want to create..."
+  rows={4}
+  className="
+
+ w-full min-h-[120px] bg-transparent outline-none text-[16px] text-white placeholder-[#6B7280] resize-none
+"
+/>
   </div>
 </div>
 
