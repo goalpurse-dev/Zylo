@@ -861,6 +861,36 @@ const [loading, setLoading] = useState(false);
           </div>
           </div>
           </Link>
+
+                                   {/* Blog Card 55*/}
+
+                <Link to="/blog/how-to-generate-aesthetic-images-with-ai" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">How to Generate Aesthetic Images With AI</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how to generate Aesthetic images using AI and use them for good</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">12.03/2026</p>
+          </div>
+          </div>
+          </Link>
+
+                                             {/* Blog Card 56*/}
+
+                <Link to="/blog/which-ai-image-style-works-best" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Anime, 3D, or Realistic? Which AI Image Style Works Best</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Use only the best AI Image styles and learn to contorl them </p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">12.03/2026</p>
+          </div>
+          </div>
+          </Link>
  
  
           
