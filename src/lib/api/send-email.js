@@ -1,4 +1,11 @@
 import { Resend } from "resend";
+import dotenv from "dotenv";
+
+dotenv.config({ path: ".env.local" });
+
+
+
+
 
 const resend = new Resend(import.meta.env.VITE_RESEND_API_KEY);
 

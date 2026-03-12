@@ -590,12 +590,37 @@ useEffect(() => {
 
 {/* FREE PLAN INFO */}
 {user && planCode === "free" && freeRemaining !== null && (
-  <div className="mt-3 text-center text-sm font-medium text-yellow-400">
-    {freeRemaining > 0
-      ? `You have ${freeRemaining} free image generation${
-          freeRemaining === 1 ? "" : "s"
-        } left this week`
-      : "Free limit reached. Upgrade or wait for reset."}
+  <div className="mt-3 flex items-center justify-center gap-3 text-sm font-medium">
+    
+    {freeRemaining > 0 ? (
+      <span className="text-yellow-400">
+        You have {freeRemaining} free image generation
+        {freeRemaining === 1 ? "" : "s"} left this week
+      </span>
+    ) : (
+      <>
+        <span className="text-yellow-400">
+          Free limit reached.
+        </span>
+
+        <button
+          onClick={() => navigate("/workspace/pricing")}
+          className="
+            px-3 py-1
+            rounded-full
+            text-xs
+            bg-[#7A3BFF]
+            hover:bg-[#6B32E0]
+            text-white
+            transition
+            shadow-[0_0_10px_rgba(122,59,255,0.6)]
+          "
+        >
+          Upgrade
+        </button>
+      </>
+    )}
+
   </div>
 )}
 
