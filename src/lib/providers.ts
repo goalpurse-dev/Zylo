@@ -196,7 +196,7 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
   retailMultiplier: 2.2,
 
   // 🔥 THIS IS WHAT UI + BACKEND USE
-  baseCreditsPerSecond: 4,
+  baseCreditsPerSecond: 8,
 },
 
   /* =======================================================
