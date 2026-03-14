@@ -50,10 +50,10 @@ export default function SupportHome() {
       <section className={card + " p-5"}>
         <div className="text-sm font-semibold mb-2">Community & socials</div>
         <div className="flex flex-wrap gap-2">
-          <a className={pill} href="https://discord.gg/yourInvite" target="_blank" rel="noreferrer">Discord</a>
-          <a className={pill} href="https://twitter.com/yourHandle" target="_blank" rel="noreferrer">Twitter/X</a>
-          <a className={pill} href="https://youtube.com/@yourChannel" target="_blank" rel="noreferrer">YouTube</a>
-          <a className={pill} href="mailto:support@yourdomain.com">Email support</a>
+          <a className={pill} target="_blank" rel="noreferrer">Discord</a>
+          <a className={pill}  target="_blank" rel="noreferrer">Twitter/X</a>
+          <a className={pill}  target="_blank" rel="noreferrer">YouTube</a>
+          <a className={pill} >Email support</a>
         </div>
       </section>
     </>

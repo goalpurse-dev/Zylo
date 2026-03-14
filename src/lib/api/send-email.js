@@ -1,71 +1,69 @@
 import { Resend } from "resend";
-import dotenv from "dotenv";
-
-dotenv.config({ path: ".env.local" });
-
-
-
-
 
 const resend = new Resend(import.meta.env.VITE_RESEND_API_KEY);
 
-export async function sendSupportEmail() {
+export async function sendStyleUpdateEmail() {
   try {
     const { data, error } = await resend.emails.send({
-      from: "Zyvo Support <support@tryzyvo.com>",
+      from: "Zyvo Updates <updates@tryzyvo.com>",
       to: ["hillaryscott684@gmail.com"],
-      subject: "Quick Update About Your Zyvo Credits",
+      subject: "🦴 New Viral Style Just Dropped in Zyvo",
       html: `
         <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto">
 
-        <h2 style="color:#7A3BFF;">Zyvo Support</h2>
+        <h2 style="color:#7A3BFF;">New Zyvo Style Drop</h2>
 
-        <p>Hello William,</p>
+        <p>Hello,</p>
 
         <p>
-        Thank you for subscribing to <strong>Zyvo</strong>. We can confirm that your payment and subscription were successfully processed.
+        We just added a <strong>new viral image style</strong> to Zyvo and it’s already one of the coolest ones yet.
         </p>
 
-        <p>
-        It appears that your account may not have received the credits automatically due to a small technical issue on our side.
-        </p>
+        <h3 style="margin-top:20px;">🦴 Dog Skeleton X-Ray</h3>
 
         <p>
-        We are currently reviewing this and will make sure your credits are added as soon as possible.
+        This style creates <strong>glowing x-ray skeleton visuals</strong> inside animals and characters.
+        It looks like a cinematic medical scan and works perfectly for:
         </p>
 
+        <ul>
+        <li>viral TikTok science videos</li>
+        <li>shorts content</li>
+        <li>unique AI visuals</li>
+        </ul>
+
         <p>
-        If you haven't created your Zyvo account yet, please sign up using the same email address you used for payment:
+        Early users are already creating some insanely cool images with it.
         </p>
 
         <p style="margin:25px 0;">
-          <a href="https://tryzyvo.com/signup"
+          <a href="https://tryzyvo.com"
           style="
           background:#7A3BFF;
           color:white;
-          padding:12px 20px;
-          border-radius:6px;
+          padding:14px 22px;
+          border-radius:8px;
           text-decoration:none;
           font-weight:bold;
+          font-size:16px;
           ">
-          Create / Access Your Zyvo Account
+          Try the Dog Skeleton X-Ray Style
           </a>
         </p>
 
         <p>
-        Once your account is confirmed, we will ensure that your subscription and credits are correctly applied.
+        If you still have free generations left, this is a great one to test.
         </p>
 
         <p>
-        Thank you for your patience and for supporting Zyvo.
+        Can't wait to see what you create.
         </p>
 
         <br>
 
         <p>
-        Best regards,<br>
-        <strong>Zyvo Support Team</strong><br>
-        support@tryzyvo.com
+        — Zyvo Updates<br>
+        updates@tryzyvo.com
         </p>
 
         </div>

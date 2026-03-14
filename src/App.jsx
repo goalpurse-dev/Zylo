@@ -34,6 +34,7 @@ import SupportLayout from "./pages/support/SupportLayout";
 import SupportHome from "./pages/support/SupportHome";
 import SupportArticle from "./pages/support/SupportArticle";
 import SupportPolicies from "./pages/support/SupportPolicies";
+import SupportPolicyArticle from "./pages/support/SupportPolicyArticle";
 import SupportContact from "./pages/support/SupportContact";
 import CreateLauncher from "./pages/CreateLauncher";
 import Signup from "./pages/Signup";
@@ -476,7 +477,7 @@ return (
  
 
        
-          <Route path="/contact" element={<Contact />} />
+     
           <Route path="/admin/feedback" element={<FeedbackAnalytics />} />
 
         
@@ -513,6 +514,7 @@ return (
             <Route path="article/:slug" element={<SupportArticle />} />
             <Route path="policies" element={<SupportPolicies />} />
             <Route path="contact" element={<SupportContact />} />
+            <Route path="policies/:slug" element={<SupportPolicyArticle />} />
           </Route>
 
           {/* 404 */}

@@ -26,9 +26,15 @@ export default function SupportPolicies() {
 
       <div className="grid gap-3 sm:grid-cols-2">
         {POLICIES.map((p) => (
-          <Link key={p.slug} to={`/support/article/policies`} className={card + " p-4 hover:bg-[#121212]"}>
+          <Link
+            key={p.slug}
+            to={`/support/policies/${p.slug}`}
+            className={card + " p-4 hover:bg-[#121212]"}
+          >
             <div className="font-semibold">{p.title}</div>
-            <div className="text-xs text-white/60 mt-1">Last updated: 2025-08-01 • v1.0</div>
+            <div className="text-xs text-white/60 mt-1">
+              Last updated: 2026-03-14 • v1.0
+            </div>
           </Link>
         ))}
       </div>

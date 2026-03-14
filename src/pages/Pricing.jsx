@@ -478,7 +478,7 @@ export default function Pricing() {
             <div className="rounded-xl border border-[#2A2F45] p-4 bg-[#1A1D2B]">
               <div className="font-semibold mb-1 text-[#E6E8EE]">Do you offer refunds?</div>
               <p className="text-[#B7BBC6]">
-                14-day money-back guarantee. Contact support if you’re not satisfied.
+                Unused credits are refundable within 7 days. Once credits are used, refunds cannot be issued due to AI generation costs.
               </p>
             </div>
           </div>
