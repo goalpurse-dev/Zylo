@@ -125,18 +125,30 @@ const handlePublish = async () => {
   try {
 
     // 1️⃣ download image
-    const response = await fetch(runwareUrl);
-    const blob = await response.blob();
+   const response = await fetch(runwareUrl);
+const originalBlob = await response.blob();
 
-    // 2️⃣ filename
-    const fileName = `${crypto.randomUUID()}.png`;
+// convert to WEBP
+const bitmap = await createImageBitmap(originalBlob);
 
-    // 3️⃣ upload to Supabase storage
-    const { error: uploadError } = await supabase.storage
-      .from("public-images")
-      .upload(fileName, blob, {
-        contentType: "image/png"
-      });
+const canvas = document.createElement("canvas");
+canvas.width = bitmap.width;
+canvas.height = bitmap.height;
+
+const ctx = canvas.getContext("2d");
+ctx.drawImage(bitmap, 0, 0);
+
+const webpBlob = await new Promise((resolve) => {
+  canvas.toBlob(resolve, "image/webp", 0.82);
+});
+
+const fileName = `${crypto.randomUUID()}.webp`;
+
+const { error: uploadError } = await supabase.storage
+  .from("public-images")
+  .upload(fileName, webpBlob, {
+    contentType: "image/webp"
+  });
 
     if (uploadError) {
       console.error("UPLOAD ERROR:", uploadError);
@@ -230,8 +242,8 @@ const isFailed =
   <div className="absolute inset-0">
     {/* DONE */}
     {isDone && (
-     <img
-  src={item.result_url}
+    <img
+  src={item.result_url + "?format=webp&width=800"}
   referrerPolicy="no-referrer"
   crossOrigin="anonymous"
   className="w-full h-full object-cover"
