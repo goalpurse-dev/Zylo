@@ -891,6 +891,37 @@ const [loading, setLoading] = useState(false);
           </div>
           </div>
           </Link>
+
+                                                  {/* Blog Card 57*/}
+
+                <Link to="/blog/how-to-create-luxury-ai-images" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">How to Create Luxury-Looking Images With AI</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how to create luxury looking images with the help of zyvo's new AI image generation </p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">14.03/2026</p>
+          </div>
+          </div>
+          </Link>
+
+                                                            {/* Blog Card 58*/}
+
+                <Link to="/blog/ai-image-generator-for-dark-visuals" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">AI Image Generator for Dark, Moody & Cinematic Visuals</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn about Zyvo's AI image generation which includes dark, moody & cinematic visuals and learn to take advance of them. </p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">14.03/2026</p>
+          </div>
+          </div>
+          </Link>
+ 
  
  
           
@@ -908,7 +939,7 @@ const [loading, setLoading] = useState(false);
 
 
     {/* Help */}
-    <div className="mt-10">
+    <div className="mt-10 mb-10">
     <div className="flex items-center flex-col max-w-2xl mx-auto ">
     <h1 className="text-[#110829] font-semibold text-[18px]">Do you have improvement suggestions for zylo?</h1> 
     <div className="bg-white border-[#110829] border-[1px] p-4 w-full mt-4 rounded-md  ">

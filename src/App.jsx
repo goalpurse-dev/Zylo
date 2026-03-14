@@ -156,6 +156,8 @@ import HowToCreateMovieStyleVisuals from "./app/blog/imagegenerator/HowtoCreateM
 import Why3dAIImagesPerform from "./app/blog/imagegenerator/why3daiimagesperform.jsx";
 import HowtoGenerateAestheticImagesWithAI from "./app/blog/imagegenerator/HowtoGenerateAestheticImagesWithAI.jsx";
 import WhichAIImageStyleWorksBest from "./app/blog/imagegenerator/whichaiimagestyleworksbest";
+import LuxuryAIImages from "./app/blog/imagegenerator/how-to-create-luxury-ai-images";
+import DarkMoodyCinematicImages from "./app/blog/imagegenerator/ai-dark-moody-cinematic-images";
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -372,6 +374,8 @@ return (
         <Route path="/blog/why-3d-ai-images-perform-better" element={<Why3dAIImagesPerform/>} />
         <Route path="/blog/how-to-generate-aesthetic-images-with-ai" element={<HowtoGenerateAestheticImagesWithAI/>} />
         <Route path="/blog/which-ai-image-style-works-best" element={<WhichAIImageStyleWorksBest/>} />
+        <Route path="/blog/how-to-create-luxury-ai-images" element={<LuxuryAIImages/>} />
+        <Route path="/blog/ai-image-generator-for-dark-visuals" element={<DarkMoodyCinematicImages/>} />
 
 
 
