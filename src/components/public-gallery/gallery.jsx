@@ -4,10 +4,12 @@ import { useNavigate } from "react-router-dom";
 
 export default function PublicGallery() {
 
+  
+
   const [images, setImages] = useState([]);
   const navigate = useNavigate();
   const [likedImages, setLikedImages] = useState(new Set());
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = 12;
 const [hasMore, setHasMore] = useState(true);
 const loadMoreRef = useRef(null);
 
@@ -38,6 +40,23 @@ const loadImages = async (pageIndex = 0) => {
 setPage(pageIndex);
 
 };
+
+useEffect(() => {
+  const handleScroll = () => {
+    if (
+      window.innerHeight + window.scrollY >=
+      document.body.offsetHeight - 1200
+    ) {
+      if (!loadingMore && hasMore) {
+        loadNextPage();
+      }
+    }
+  };
+
+  window.addEventListener("scroll", handleScroll);
+
+  return () => window.removeEventListener("scroll", handleScroll);
+}, [loadingMore, hasMore, page]);
 
 useEffect(() => {
 
@@ -71,19 +90,19 @@ useEffect(() => {
 
   const observer = new IntersectionObserver(
     (entries) => {
-     if (entries[0].isIntersecting && !loadingMore && hasMore) {
-  loadNextPage();
-}
+      if (entries[0].isIntersecting && !loadingMore && hasMore) {
+        loadNextPage();
+      }
     },
     {
-      rootMargin: "600px"
+      rootMargin: "1200px"
     }
   );
 
   observer.observe(el);
 
   return () => observer.disconnect();
-}, []);
+}, [loadingMore, hasMore, page]);
 const loadNextPage = async () => {
 
   if (loadingMore || !hasMore) return;
@@ -124,8 +143,22 @@ const loadNextPage = async () => {
   setLoadingMore(false);
 };
 
+function optimizeSupabaseImage(url, width = 500) {
+  if (!url) return url;
 
+  // only optimize Supabase storage images
+  if (url.includes("/storage/v1/object/public/")) {
+    const optimized = url.replace(
+      "/storage/v1/object/public/",
+      "/storage/v1/render/image/public/"
+    );
 
+    return `${optimized}?width=${width}&quality=60`;
+  }
+
+  // external image (runware etc)
+  return url;
+}
 const handleLike = async (imageId) => {
 
   if (likedImages.has(imageId)) return;
@@ -180,12 +213,12 @@ const handleLike = async (imageId) => {
           >
 
  <img
-  src={(img.image_url || img.runware_url) + "?width=600&format=webp"}
+  src={optimizeSupabaseImage(img.image_url || img.runware_url, 500)}
   loading="lazy"
   fetchPriority="low"
   decoding="async"
   className="w-full rounded-xl transition-transform duration-300 group-hover:scale-[1.03]"
-  style={{ background: "#0f1117" }}
+  style={{ background: "#0f1117", contentVisibility: "auto" }}
  onError={(e) => {
   if (img.runware_url && e.currentTarget.src !== img.runware_url) {
     e.currentTarget.src = img.runware_url;
@@ -255,7 +288,10 @@ transition"
 
       </div>
 
-      <div ref={loadMoreRef} className="h-10 w-full" />
+      <div
+  ref={loadMoreRef}
+  style={{ height: "1px" }}
+/>
 
 {loadingMore && (
   <div className="text-center text-white/60 mt-6">
