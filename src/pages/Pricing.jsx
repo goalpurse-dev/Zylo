@@ -549,7 +549,7 @@ export default function Pricing() {
         {/* Trust row */}
         <div className="mt-10 text-center">
           <div className="text-xs text-zinc-500">
-            14-day money-back guarantee · Secure checkout · No hidden fees
+            Secure checkout · Instant access · No hidden fees
           </div>
           <Link
             to="/workspace/home"
