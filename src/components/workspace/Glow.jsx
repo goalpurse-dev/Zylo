@@ -43,7 +43,7 @@ export default function GlowHeader() {
       {/* CONTENT */}
       <div className="relative z-10 text-center">
         <h1 className="text-white text-[28px] md:text-[40px] font-semibold">
-          What will you create?
+          Let's Generate Something Viral
         </h1>
       </div>
     </section>

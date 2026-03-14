@@ -4,7 +4,7 @@ import { CREATION_TYPES } from "../../lib/creations";
 
 /* =============================== CONFIG =============================== */
 
-const MAX_RUNTIME_MS = 5 * 60 * 1000; // 5 minutes hard cap
+const MAX_RUNTIME_MS = 20 * 60 * 1000;
 
 /* =============================== HELPERS =============================== */
 
@@ -162,12 +162,13 @@ useEffect(() => {
 {item.result_url && (
 <video
   src={item.result_url}
+  poster={item.thumbnail_url || ""}
   className="w-full h-full object-cover"
   muted
   playsInline
-  preload="auto"
-  onMouseOver={(e) => e.currentTarget.play()}
-  onMouseOut={(e) => e.currentTarget.pause()}
+  autoPlay
+  loop
+  preload="metadata"
 />
 )}
 

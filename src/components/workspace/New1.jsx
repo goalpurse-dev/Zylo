@@ -3,16 +3,16 @@ import { NavLink } from "react-router-dom";
 const TOOLS = [
   {
     id: "image-generator",
-    title: "Image Generator",
+    title: "Viral Image Generator",
     description:
-      "Generate high-quality AI images from simple prompts with full control.",
+      "Generate high-quality Viral AI images from simple prompts with full control.",
     to: "/workspace/image-generator",
     glow: "rgba(122,59,255,0.6)",
     preview: "/assets/previews/fenix.webp",
   },
   {
     id: "video-generator",
-    title: "Video Generator",
+    title: "Viral Video Generator",
     description:
       "Create viral videos without expensive costs.",
     to: "/workspace/productphoto",

@@ -24,6 +24,7 @@ import { generateVideoFromUI } from "../../lib/video-generator/generator";
 import { calculateVideoCredits } from "../../lib/video-generator/videoPricing";
 import VideoTemplate from "../../components/video-templates/VideoTemplate";
 import { createPortal } from "react-dom";
+import { useMemo } from "react";
 VideoIcon
 Folder
 
@@ -83,10 +84,13 @@ const selectedModel = MODELS[selectedModelKey];
   const [selectedDuration, setSelectedDuration] = useState("5s");
  const [selectedResolution, setSelectedResolution] = useState("720p");
 
-const totalCredits = calculateVideoCredits(
-  selectedModelKey,
-  selectedDuration,
-  selectedResolution
+const totalCredits = useMemo(() =>
+  calculateVideoCredits(
+    selectedModelKey,
+    selectedDuration,
+    selectedResolution
+  ),
+  [selectedModelKey, selectedDuration, selectedResolution]
 );
 
 const maxRefImages = selectedModel.maxReferenceImages;
@@ -254,11 +258,12 @@ useEffect(() => {
       refImages: selected.map((img) => img.url),
     });
 
-    watchJob(job.id, (row) => {
-      if (row.status === "succeeded" || row.status === "failed") {
-        setIsGenerating(false);
-      }
-    });
+   watchJob(job.id, () => {}); // still track job silently
+
+// unlock button after 2 seconds so user can queue more jobs
+setTimeout(() => {
+  setIsGenerating(false);
+}, 2000);
 
     setPrompt("");
 
@@ -737,16 +742,21 @@ useEffect(() => {
         {/* SIZE MODAL */}
         {openSize && (
           <Modal title="Select Size" onClose={() => setOpenSize(false)}>
-             {selectedModel.supportedSizes.map((size) => (
-         <SelectOption
-         key={size}
-        active={size === selectedSize}
-        onClick={() => {
-        setSelectedSize(size);
-        setOpenSize(false);
-       }}
-      >
-    {size}
+   {selectedModel.supportedSizes.map((size) => (
+  <SelectOption
+    key={`size-${size}`}
+    active={size === selectedSize}
+   onClick={() => {
+  if (!selectedModel.supportedSizes.includes(size)) return;
+
+  setSelectedSize(size);
+  setOpenSize(false);
+}}
+  >
+    <div className="flex items-center gap-3">
+      <AspectPreview ratio={size} />
+      <span>{size}</span>
+    </div>
   </SelectOption>
 ))}
           </Modal>
@@ -756,13 +766,15 @@ useEffect(() => {
         {openDuration && (
           <Modal title="Select Duration" onClose={() => setOpenDuration(false)}>
            {selectedModel.supportedDurations.map((dur) => (
-  <SelectOption
-    key={dur}
+ <SelectOption
+  key={`dur-${dur}`}
     active={dur === selectedDuration}
-    onClick={() => {
-      setSelectedDuration(dur);
-      setOpenDuration(false);
-    }}
+   onClick={() => {
+  if (!selectedModel.supportedDurations.includes(dur)) return;
+
+  setSelectedDuration(dur);
+  setOpenDuration(false);
+}}
   >
     {dur}
   </SelectOption>
@@ -801,23 +813,26 @@ useEffect(() => {
   </div>
 </div>
 
-      {/* GENERATE BUTTON */}
-    <button
+ {/* GENERATE BUTTON */}
+<button
   onClick={handleGenerate}
   disabled={!prompt.trim() || isGenerating}
- className={`
-  w-full py-3 rounded-sm font-medium text-white transition-all duration-300 mt-4
+  className={`w-full py-3 rounded-lg font-semibold text-white mt-4 transition-all duration-300
   ${
     !prompt.trim() || isGenerating
-      ? "bg-gray-500/40 text-white/40 cursor-not-allowed"
+      ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
       : `
-        bg-gradient-to-r from-[#7A3BFF] to-[#6F3AE6]
-        hover:scale-[1.02]
-        shadow-[0_0_25px_rgba(122,59,255,0.5)]
-        hover:shadow-[0_0_35px_rgba(122,59,255,0.7)]
+      bg-gradient-to-r from-purple-500 to-fuchsia-500/40
+      backdrop-blur-md
+      border border-purple-400/30
+      hover:from-purple-500/60
+      hover:to-fuchsia-500/50
+      hover:border-purple-400/50
+      hover:scale-[1.03]
+      shadow-[0_0_20px_rgba(168,85,247,0.35)]
+      hover:shadow-[0_0_30px_rgba(168,85,247,0.55)]
       `
-  }
-`}
+  }`}
 >
   {isGenerating ? "Generating…" : "Generate Video"}
 </button>
@@ -869,6 +884,7 @@ useEffect(() => {
 function Modal({ title, onClose, children }) {
     return createPortal(
     <div
+    onMouseDown={(e) => e.stopPropagation()}
       className="
         fixed z-[10000] left-1/2 -translate-x-1/2
         top-[18%] md:top-1/2 md:-translate-y-1/2

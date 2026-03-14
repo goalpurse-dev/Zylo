@@ -12,7 +12,7 @@ import Toast from "../../components/ImageGenerator/Toast";
 import ProgressToast from "../../components/ImageGenerator/ProgressToast";
 import LimitReachedToast from "../../components/ImageGenerator/LimitReachedToast";
 import GuestGenerateModal from "../../components/ImageGenerator/GuestGenerateModal";
-
+import { IMAGE_SIZES } from "../../lib/image-generator/sizes";
 import CreditLogo from "../../assets/toolshell/credit.png"
 
 import { ArrowBigDown, ArrowBigLeft, BoxSelect, Image, ImagePlusIcon, Settings, Wand, Wand2, X } from "lucide-react";
@@ -86,10 +86,15 @@ const AspectRatioRow = ({ label, width, height, onClick }) => (
   >
     {/* FIXED PREVIEW COLUMN */}
     <div className="w-[50px] flex justify-center">
-      <div
-        className="border border-white/70 rounded-sm"
-        style={{ width, height }}
-      />
+    <div
+  className="border border-white/70 rounded-sm"
+  style={{
+    width: `${width}px`,
+    height: `${height}px`,
+    maxWidth: "40px",
+    maxHeight: "40px"
+  }}
+/>
     </div>
 
     {/* TEXT COLUMN (now perfectly aligned) */}
@@ -603,21 +608,30 @@ useEffect(() => {
           Free limit reached.
         </span>
 
-        <button
-          onClick={() => navigate("/workspace/pricing")}
-          className="
-            px-3 py-1
-            rounded-full
-            text-xs
-            bg-[#7A3BFF]
-            hover:bg-[#6B32E0]
-            text-white
-            transition
-            shadow-[0_0_10px_rgba(122,59,255,0.6)]
-          "
-        >
-          Upgrade
-        </button>
+      <button
+  onClick={() => navigate("/workspace/pricing")}
+  className="
+  px-3 py-1
+  rounded-full
+  text-xs
+  font-semibold
+  text-white
+  transition-all duration-200
+
+  bg-gradient-to-r from-purple-500 to-fuchsia-500/30
+  backdrop-blur-md
+  border border-purple-400/30
+
+  hover:from-purple-500/40
+  hover:to-fuchsia-500/40
+  hover:border-purple-400/50
+  hover:scale-[1.03]
+
+
+  "
+>
+  Upgrade
+</button>
       </>
     )}
 
@@ -864,24 +878,40 @@ md:-translate-y-1/2
       </button>
     </div>
 
-    {selectedModel.supportedSizes.map((size) => (
-      <button
-        key={size}
-        onClick={() => {
-          setSelectedSize(size)
-          setOpenSize(false)
-        }}
-        className={`w-full px-4 py-3 text-left rounded-sm text-sm
-          ${
-            size === selectedSize
-              ? "bg-[#7A3BFF]/20 border border-[#7A3BFF]"
-              : "hover:bg-white/5"
-          }
-        `}
-      >
-        {size}
-      </button>
-    ))}
+  {selectedModel.supportedSizes.map((size) => {
+  const s = IMAGE_SIZES[size];
+
+  return (
+    <button
+      key={size}
+      onClick={() => {
+        setSelectedSize(size);
+        setOpenSize(false);
+      }}
+      className={`w-full px-4 py-3 text-left rounded-sm text-sm flex items-center gap-4
+        ${
+          size === selectedSize
+            ? "bg-[#7A3BFF]/20 border border-[#7A3BFF]"
+            : "hover:bg-white/5"
+        }
+      `}
+    >
+      {/* Ratio preview */}
+      <div className="w-[50px] flex justify-center">
+        <div
+          className="border border-white/70 rounded-sm"
+          style={{
+            width: `${s.previewW}px`,
+            height: `${s.previewH}px`,
+          }}
+        />
+      </div>
+
+      {/* Size label */}
+      <span>{size}</span>
+    </button>
+  );
+})}
   </div>
 )}
 
@@ -970,14 +1000,17 @@ md:-translate-y-1/2
     planCode === "free" && key !== "image:flux.base";
 
   return (
-    <div key={key} className="relative">
-      {isLocked && (
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-sm z-10 flex items-center justify-center">
-          <span className="text-xs text-white/70 bg-white/10 px-3 py-1 rounded-full">
-            Upgrade to unlock
-          </span>
-        </div>
-      )}
+ <div key={key} className="relative">
+  {isLocked && (
+    <div
+      onClick={() => navigate("/workspace/pricing")}
+      className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-sm z-10 flex items-center justify-center cursor-pointer hover:bg-black/50 transition"
+    >
+      <span className="text-xs text-white/80 bg-white/10 px-3 py-1 rounded-full border border-white/20">
+        Upgrade to unlock
+      </span>
+    </div>
+  )}
 
       <ModelCard
         img={model.img}
@@ -1009,17 +1042,27 @@ md:-translate-y-1/2
             </div>
 
             {/* GENERATE BUTTON */}
-            <button
-              onClick={handleGenerate}
-              disabled={!prompt.trim() || isGenerating}
-              className={`w-full py-3 rounded-sm font-medium text-white transition ${
-                !prompt.trim() || isGenerating
-                  ? "bg-gray-500/40 text-white/40 cursor-not-allowed"
-                  : "bg-gradient-to-r from-[#7A3BFF] to-[#6F3AE6] hover:scale-[1.02] shadow-lg shadow-purple-600/30"
-              }`}
-            >
-              {isGenerating ? "Generating…" : "Generate"}
-            </button>
+         <button
+  onClick={handleGenerate}
+  disabled={!prompt.trim() || isGenerating}
+  className={`w-full py-3 rounded-lg font-semibold text-white transition-all duration-200
+  ${
+    !prompt.trim() || isGenerating
+      ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
+      : `
+      bg-gradient-to-r from-purple-500 to-fuchsia-500/30
+      backdrop-blur-md
+      border border-purple-400/30
+      hover:from-purple-500/40
+      hover:to-fuchsia-500/40
+      hover:border-purple-400/50
+      hover:scale-[1.02]
+      shadow-[0_0_20px_rgba(168,85,247,0.35)]
+      `
+  }`}
+>
+  {isGenerating ? "Generating…" : "Generate"}
+</button>
 
           </div>
         </div>
