@@ -197,7 +197,7 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
   retailMultiplier: 2.2,
 
   // 🔥 THIS IS WHAT UI + BACKEND USE
-  baseCreditsPerSecond: 8,
+  baseCreditsPerSecond: 9,
 },
 
  "video:miniMaxFast": {
@@ -213,7 +213,7 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
   retailMultiplier: 2.2,
 
   // 🔥 THIS IS WHAT UI + BACKEND USE
-  baseCreditsPerSecond: 3,
+  baseCreditsPerSecond: 4,
 },
 
   /* =======================================================

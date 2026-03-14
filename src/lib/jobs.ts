@@ -480,7 +480,11 @@ export async function createVideoJobSimple(params: {
   const link = getProviderLink(params.toolKey);
 if (!link) throw new Error(`Video provider not configured`);
 
-const credits = params.calculatedCredits; // 🔥 temporary
+const credits = params.calculatedCredits;
+
+if (!credits || credits <= 0) {
+  throw new Error("INVALID_VIDEO_CREDIT_CALCULATION");
+}
 const priceUSD = link.retailUSD;
 
 const { data: userData, error: uerr } = await supabase.auth.getUser();
@@ -517,6 +521,8 @@ const input = {
   ref_images: params.initImageUrls ?? [],
 };
 
+
+
 const settings = {
   tool_key: params.toolKey,
   credits,
@@ -539,6 +545,7 @@ return await simulateJob({
   settings,
   input,
 });
+
 }
 
 

@@ -5,6 +5,7 @@ import { RESOLUTIONS } from "./resolutions";
 import { VIDEO_SIZES } from "./sizes";
 import { createVideoJobSimple } from "../jobs";
 import { buildVideoPrompt } from "./promptBuilder";
+import { calculateVideoCredits } from "./videoPricing";
 
 export async function generateVideoFromUI(params: {
   modelKey: keyof typeof MODELS;
@@ -20,17 +21,11 @@ export async function generateVideoFromUI(params: {
   const toolKey = UI_MODEL_TO_TOOLKEY[params.modelKey];
   if (!toolKey) throw new Error("No provider mapping");
 
-  const durationMultiplier =
-    DURATIONS[params.duration]?.multiplier ?? 1;
-
-  const resolutionMultiplier =
-    RESOLUTIONS[params.resolution]?.multiplier ?? 1;
-
-  const baseCredits = model.credits;
-
-  const totalCredits = Math.ceil(
-    baseCredits * durationMultiplier * resolutionMultiplier
-  );
+ const totalCredits = calculateVideoCredits(
+  toolKey,
+  params.duration,
+  params.resolution
+);
 
   const sizeConfig =
     VIDEO_SIZES[params.size] ?? VIDEO_SIZES["16:9"];
