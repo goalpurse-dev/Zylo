@@ -216,20 +216,13 @@ Deno.serve(async (req) => {
         }
 
         // If not charged yet, attempt to deduct
-        if (!job.charged && job.charge_credits) {
-          const okDeduct = await safeRpc(sb, "deduct_credits", {
-            uid: job.user_id,
-            amount: job.charge_credits,
-          });
+      await safeUpdateJob(sb, jobId, {
+  status: "succeeded",
+  progress: 100,
+  result_url: url,
+  charged: true,
+});
 
-          if (!okDeduct) {
-            await safeUpdateJob(sb, jobId, {
-              status: "failed",
-              error: "Billing failed",
-            });
-            return ok(req, { ok: false });
-          }
-        }
 
         // Final DB update (this is the critical state transition)
         await safeUpdateJob(sb, jobId, {

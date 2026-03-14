@@ -160,18 +160,19 @@ export async function createJob(
   const { data: userData, error: uerr } = await supabase.auth.getUser();
   if (uerr || !userData?.user) throw new Error("Must be signed in");
 
-  const insertPayload = {
+const insertPayload = {
   ...(payload.id ? { id: payload.id } : {}),
   user_id: userData.user.id,
   type: payload.type,
-  tool_key: payload.tool_key ?? null, // 🔥 REQUIRED
+  tool_key: payload.tool_key ?? null,
   project_id: payload.project_id ?? null,
   prompt: payload.prompt ?? null,
   settings: payload.settings ?? {},
   input: payload.input ?? {},
   status: "queued" as JobStatus,
   progress: 0,
-    charge_credits: (payload.settings as any)?.credits ?? null, // ✅ ADD THIS
+  charge_credits: (payload.settings as any)?.credits ?? null,
+  charged: (payload.settings as any)?.charged ?? false,
 };
  
 
@@ -519,6 +520,7 @@ const input = {
 const settings = {
   tool_key: params.toolKey,
   credits,
+  charged: true,
   priceUSD,
   creation_type: CREATION_TYPES.VIDEO,
   provider_hint: {
