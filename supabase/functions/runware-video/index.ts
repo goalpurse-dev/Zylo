@@ -272,10 +272,8 @@ Deno.serve(async (req) => {
     console.log("[runware-video] timeout", { jobId: currentJobId });
     return ok(req, { ok: false, error: "Timeout" });
   } catch (e) {
-    console.error(
-      "[runware-video] fatal error:",
-      e instanceof Error ? e.message : String(e),
-    );
+    console.error("[runware-video] FULL ERROR:", e);
+
 
     // Always try to mark the job failed to avoid "stuck running" forever
     if (currentJobId) {

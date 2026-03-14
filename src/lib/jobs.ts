@@ -494,8 +494,16 @@ const { data: profile } = await supabase
   .eq("id", uid)
   .single();
 
-if (!profile || profile.credit_balance < credits) {
-  throw new Error("INSUFFICIENT_CREDITS");
+const { error: creditErr } = await supabase.rpc("deduct_credits", {
+  uid,
+  amount: credits,
+});
+
+if (creditErr) {
+  if (creditErr.message?.includes("INSUFFICIENT_CREDITS")) {
+    throw new Error("INSUFFICIENT_CREDITS");
+  }
+  throw creditErr;
 }
 
 const input = {

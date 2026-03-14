@@ -19,6 +19,7 @@ export type ToolKey =
 
     /* ---------- VIDEO ---------- */
   | "video:klingaist"
+  | "video:miniMaxFast"
 
 
 
@@ -39,7 +40,7 @@ export type ProviderLink = {
 
   // 🔥 VIDEO PRICING CORE
   costPerSecondUSD?: number;
-  baseResolution?: "720p" | "1080p";
+  baseResolution?: "720p" | "768p" |"1080p";
   retailMultiplier?: number; // your markup multiplier
   baseCreditsPerSecond?: number; // 🔥 NEW
 
@@ -197,6 +198,22 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
 
   // 🔥 THIS IS WHAT UI + BACKEND USE
   baseCreditsPerSecond: 8,
+},
+
+ "video:miniMaxFast": {
+  provider: "runware",
+  generator: "MiniMax Hailou 2.3 Fast",
+  airTag: "minimax:4@2",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-video",
+
+  costPerSecondUSD: 0.0317,
+  baseResolution: "768p",
+
+  retailMultiplier: 2.2,
+
+  // 🔥 THIS IS WHAT UI + BACKEND USE
+  baseCreditsPerSecond: 3,
 },
 
   /* =======================================================

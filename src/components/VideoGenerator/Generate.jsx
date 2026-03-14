@@ -69,11 +69,10 @@ export default function Generate({  }) {
   
 
 
-const firstVideoModelKey = Object.keys(MODELS).find(
-  (key) =>
-    key.startsWith("video:") &&
-    KEY_LINKS[key]
-);
+const firstVideoModelKey =
+  Object.keys(MODELS).find((key) => key.startsWith("video:")) ||
+  Object.keys(MODELS)[0];
+
 
 const [selectedModelKey, setSelectedModelKey] = useState(firstVideoModelKey);
 const selectedModel = MODELS[selectedModelKey];
@@ -97,6 +96,9 @@ const maxRefImages = selectedModel.maxReferenceImages;
 const canAddImages = maxRefImages > 0;
 
 const [openReferenceModal, setOpenReferenceModal] = useState(false);
+
+const modelButtonRef = useRef(null);
+const modelModalRef = useRef(null);
 
 
 
@@ -155,6 +157,12 @@ const handleUpload = async (e) => {
    const isKling = selectedModelKey === "video:klingaist";
 const hasRefs = selected.length > 0;
 
+const imageRequiredForModel =
+  selectedModelKey === "video:miniMaxFast";
+
+const missingRequiredImage = imageRequiredForModel && !hasRefs;
+
+
 const disableSizeSelector = isKling && hasRefs;
 
 
@@ -176,24 +184,32 @@ useEffect(() => {
 
 
   // Close modals on outside click
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (!controlsRef.current) return;
-      if (!controlsRef.current.contains(e.target)) {
-        setOpenModel(false);
-        setOpenSize(false);
-        setOpenDuration(false);
-      }
-    };
+useEffect(() => {
+  const handleClickOutside = (e) => {
+    const target = e.target;
 
-    if (isAnyModalOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+    if (
+      controlsRef.current?.contains(target) ||
+      modelButtonRef.current?.contains(target) ||
+      modelModalRef.current?.contains(target)
+    ) {
+      return;
     }
 
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isAnyModalOpen]);
+    setOpenModel(false);
+    setOpenSize(false);
+    setOpenDuration(false);
+  };
+
+  if (isAnyModalOpen) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [isAnyModalOpen]);
+
 
 
 
@@ -452,6 +468,13 @@ setTimeout(() => {
   </div>
 )}
 
+
+{missingRequiredImage && (
+  <p className="text-xs text-amber-400 mt-2">
+    MiniMax Hailuo 2.3 Fast requires a reference image.
+  </p>
+)}
+
 {/* 
 
 <button
@@ -674,6 +697,8 @@ setTimeout(() => {
 {openModel &&
   createPortal(
     <div
+      ref={modelModalRef}
+  onMouseDown={(e) => e.stopPropagation()}
       className="
         fixed
         z-[10000]
@@ -704,7 +729,10 @@ setTimeout(() => {
 
     {/* Models grid */}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {Object.entries(MODELS).map(([key, model]) => (
+      {Object.entries(MODELS)
+  .filter(([key]) => key.startsWith("video:"))
+  .map(([key, model]) => (
+
         <VideoModelCard
           key={key}
           logo={model.logo}
@@ -712,24 +740,30 @@ setTimeout(() => {
           description={model.description}
           traits={model.traits}
           active={key === selectedModelKey}
-          onClick={() => {
-            setSelectedModelKey(key);
+        onClick={() => {
+  setSelectedModelKey(key);
 
-            if (!model.supportedSizes.includes(selectedSize)) {
-            setSelectedSize(model.supportedSizes[0]);
-            }
+  setSelectedSize(
+    model.supportedSizes?.includes(selectedSize)
+      ? selectedSize
+      : model.supportedSizes?.[0]
+  );
 
-            // safety reset
-            if (!model.supportedDurations.includes(selectedDuration)) {
-              setSelectedDuration(model.supportedDurations[0]);
-            }
+  setSelectedDuration(
+    model.supportedDurations?.includes(selectedDuration)
+      ? selectedDuration
+      : model.supportedDurations?.[0]
+  );
 
-            if (!model.supportedResolutions.includes(selectedResolution)) {
-              setSelectedResolution(model.supportedResolutions[0]);
-            }
+  setSelectedResolution(
+    model.supportedResolutions?.includes(selectedResolution)
+      ? selectedResolution
+      : model.supportedResolutions?.[0]
+  );
 
-            setOpenModel(false);
-          }}
+  setOpenModel(false);
+}}
+
         />
       ))}
     </div>
@@ -816,10 +850,12 @@ setTimeout(() => {
  {/* GENERATE BUTTON */}
 <button
   onClick={handleGenerate}
-  disabled={!prompt.trim() || isGenerating}
-  className={`w-full py-3 rounded-lg font-semibold text-white mt-4 transition-all duration-300
+  
+   disabled={!prompt.trim() || isGenerating || missingRequiredImage}
+
+ className={`w-full py-3 rounded-lg font-semibold text-white mt-4 transition-all duration-300
   ${
-    !prompt.trim() || isGenerating
+    !prompt.trim() || isGenerating || missingRequiredImage
       ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
       : `
       bg-gradient-to-r from-purple-500 to-fuchsia-500/40
@@ -834,7 +870,11 @@ setTimeout(() => {
       `
   }`}
 >
-  {isGenerating ? "Generating…" : "Generate Video"}
+ {isGenerating
+  ? "Generating…"
+  : missingRequiredImage
+  ? "Image needed for this model"
+  : "Generate Video"}
 </button>
 
 <div className="mt-1">
