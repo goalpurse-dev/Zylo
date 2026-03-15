@@ -39,6 +39,7 @@ export default function ToolShell({
   const { user } = useAuth();
   const menuRef = useRef(null);
   const credits = useProfileCredits();
+  const showAddCredits = user && credits <= 0;
   const formattedCredits = Intl.NumberFormat().format(credits);
   const navigate = useNavigate();
 
@@ -197,6 +198,38 @@ export default function ToolShell({
             </p>
           </Link>
         )}
+
+        {/* Add Credits (only when empty) */}
+{showAddCredits && (
+  <Link
+    to="/workspace/pricing"
+    onClick={() => {
+      if (window.innerWidth < 1024) {
+        onClose?.();
+      }
+    }}
+    className="flex flex-col items-center gap-1 group"
+  >
+    <div
+      className="
+        border border-purple-400/30
+     
+        rounded-lg
+        h-10 w-10
+        flex items-center justify-center
+        transition-all duration-300
+        group-hover:scale-[1.05]
+   shadow-[0_0_10px_rgba(168,85,247,0.35)]
+      "
+    >
+      <span className="text-purple-500 text-lg font-bold leading-none">+</span>
+    </div>
+
+    <p className="text-[#B7BBC6] text-[11px] font-medium text-center leading-tight">
+      Add<br />Credits
+    </p>
+  </Link>
+)}
 
         {/* Help */}
         <Link
