@@ -420,16 +420,13 @@ useEffect(() => {
   const modalOpen = openModel || openStyle || openSize;
 
   if (modalOpen) {
-    document.body.style.overflow = "hidden";
-    document.body.style.touchAction = "none"; // important for iOS
+    document.body.classList.add("no-scroll");
   } else {
-    document.body.style.overflow = "";
-    document.body.style.touchAction = "";
+    document.body.classList.remove("no-scroll");
   }
 
   return () => {
-    document.body.style.overflow = "";
-    document.body.style.touchAction = "";
+    document.body.classList.remove("no-scroll");
   };
 }, [openModel, openStyle, openSize]);
 
@@ -893,6 +890,7 @@ md:-translate-y-1/2
       shadow-2xl
       p-5
       overflow-y-auto
+overscroll-contain
     "
   >
     <div className="flex justify-between items-center mb-4">
@@ -960,6 +958,7 @@ md:-translate-y-1/2
       shadow-2xl
       p-5
       overflow-y-auto
+      overscroll-contain
     "
   >
     <div className="flex justify-between items-center mb-4">
@@ -1007,6 +1006,7 @@ md:-translate-y-1/2
       shadow-2xl
       p-5
       overflow-y-auto
+      overscroll-contain
     "
   >
     {/* Header */}
