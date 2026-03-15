@@ -155,9 +155,11 @@ import HowToCreateMinimalistImagesUsingAI from "./app/blog/imagegenerator/HowtoC
 import HowToCreateMovieStyleVisuals from "./app/blog/imagegenerator/HowtoCreateMovieStyleVisuals.jsx";
 import Why3dAIImagesPerform from "./app/blog/imagegenerator/why3daiimagesperform.jsx";
 import HowtoGenerateAestheticImagesWithAI from "./app/blog/imagegenerator/HowtoGenerateAestheticImagesWithAI.jsx";
-import WhichAIImageStyleWorksBest from "./app/blog/imagegenerator/whichaiimagestyleworksbest";
-import LuxuryAIImages from "./app/blog/imagegenerator/how-to-create-luxury-ai-images";
-import DarkMoodyCinematicImages from "./app/blog/imagegenerator/ai-dark-moody-cinematic-images";
+import WhichAIImageStyleWorksBest from "./app/blog/imagegenerator/whichaiimagestyleworksbest.jsx";
+import LuxuryAIImages from "./app/blog/imagegenerator/how-to-create-luxury-ai-images.jsx";
+import DarkMoodyCinematicImages from "./app/blog/imagegenerator/ai-dark-moody-cinematic-images.jsx";
+import AIProductPhotography from "./app/blog/imagegenerator/ai-product-photography-high-end.jsx";
+import VisualStylesAI from "./app/blog/imagegenerator/ai-visual-styles-most-engagement.jsx";
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -376,6 +378,8 @@ return (
         <Route path="/blog/which-ai-image-style-works-best" element={<WhichAIImageStyleWorksBest/>} />
         <Route path="/blog/how-to-create-luxury-ai-images" element={<LuxuryAIImages/>} />
         <Route path="/blog/ai-image-generator-for-dark-visuals" element={<DarkMoodyCinematicImages/>} />
+        <Route path="/blog/ai-product-photography-high-end" element={<AIProductPhotography/>} />
+        <Route path="/blog/ai-visual-styles-most-engagement" element={<VisualStylesAI/>} />
 
 
 

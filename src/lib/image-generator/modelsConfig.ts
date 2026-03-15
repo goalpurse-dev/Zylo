@@ -4,6 +4,7 @@ const LOGOS = {
   juggernaut: "/images/logos/juggernaut.webp",
   openai: "/images/logos/gpt.webp",
   seedance: "/images/logos/seedance.webp",
+  flux: "/images/logos/flux.webp",
 };
 
 
@@ -78,7 +79,7 @@ export const MODELS = {
     label: "Flux Max",
     description:
       "Best Flux, super-quality image generation with clean composition.",
-    img: LOGOS.juggernaut,
+    img: LOGOS.flux,
     credits: 7,
     traits: ["Fast", "Super quality", "Clean composition", "Advanced thinking"],
     supportedSizes: ["1:1", "16:9", "9:16", "21:9", "2:3"],
@@ -89,7 +90,7 @@ export const MODELS = {
     label: "Flux Base",
     description:
       "Fastest, medium-quality image generation with clean composition.",
-     img: LOGOS.juggernaut,
+     img: LOGOS.flux,
     credits: 1,
     traits: ["Fast", "Medium quality", "Clean composition", "Concept generation"],
     supportedSizes: ["1:1", "16:9", "9:16", "21:9", "2:3"],

@@ -922,6 +922,38 @@ const [loading, setLoading] = useState(false);
           </div>
           </Link>
  
+
+                                                             {/* Blog Card 59*/}
+
+                <Link to="/blog/ai-product-photography-high-end" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">How to Create High-End Product Images Using AI</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn how to create high end product images using ZvyoAI's AI</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">15.03/2026</p>
+          </div>
+          </div>
+          </Link>
+
+                                                                  {/* Blog Card 60*/}
+
+                <Link to="/blog/ai-visual-styles-most-engagement" className="p-4 rounded-md border-[#110829] border-[1px] hover:bg-black/5 transition-colors hover:border-[#7A3BFF]">
+         
+         <div className="gap-2 flex flex-col">
+          <h1 className="text-black">Visual Styles That Get the Most Engagement (AI Edition)</h1>
+
+          <p className="text-[#4A4A55] text-[12px] ">Learn which Visual Styles get the most engagement (secrerets revealed)</p>
+          <div className="flex">
+            <Calendar className="text-[#4A4A55] w-3 h-3 mr-1 "/>
+          <p className="text-[#4A4A55] text-[10px] ">15.03/2026</p>
+          </div>
+          </div>
+          </Link>
+
+
  
  
           
