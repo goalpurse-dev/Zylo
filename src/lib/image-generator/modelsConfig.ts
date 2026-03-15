@@ -3,6 +3,7 @@ const LOGOS = {
   hidream: "/images/logos/hidream.webp",
   juggernaut: "/images/logos/juggernaut.webp",
   openai: "/images/logos/gpt.webp",
+  seedance: "/images/logos/seedance.webp",
 };
 
 
@@ -43,7 +44,7 @@ export const MODELS = {
    "image:seedream4.0": {
     label: "Seedream 4.0",
     description: "High-quality image generation with fast processing and low cost.",
-    img: LOGOS.nano,
+    img: LOGOS.seedance,
     credits: 3,
     traits: ["Quality", "Fast processing", "Low cost"],
     supportedSizes: ["1:1", "16:9", "9:16", "4:3","21:9"],

@@ -48,6 +48,25 @@ const Option = ({ label }) => (
   </button>
 );
 
+const PRO_TRAITS = [
+  "4× faster generation",
+  "Sharper image quality",
+  "Better prompt accuracy",
+  "Ultra-realistic renders",
+  "Advanced AI model",
+  "More consistent outputs",
+  "Studio lighting realism",
+  "Higher resolution detail",
+  "Professional-grade visuals",
+  "Improved subject accuracy",
+  "Better composition",
+  "Cleaner generations",
+];
+
+const getRandomTrait = (seed) => {
+  return PRO_TRAITS[seed % PRO_TRAITS.length];
+};
+
 
 const SubMenu = ({ title, onBack, children }) => (
   <div className=" flex flex-col ">
@@ -216,7 +235,15 @@ const maxRefImages = selectedModel.maxReferenceImages;
 const canAddImages = maxRefImages > 0;
 const [openReferenceModal, setOpenReferenceModal] = useState(false);
 const STYLE_KEYS = Object.keys(IMAGE_STYLES);
+const [traitIndex, setTraitIndex] = useState(0);
 
+useEffect(() => {
+  const interval = setInterval(() => {
+    setTraitIndex((i) => i + 1);
+  }, 2000); // rotate every 2 seconds
+
+  return () => clearInterval(interval);
+}, []);
 
 const [selectedStyle, setSelectedStyle] = useState(STYLE_KEYS[0]);
 
@@ -1004,11 +1031,23 @@ md:-translate-y-1/2
   {isLocked && (
     <div
       onClick={() => navigate("/workspace/pricing")}
-      className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-sm z-10 flex items-center justify-center cursor-pointer hover:bg-black/50 transition"
+      className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-sm z-10 flex items-center justify-center cursor-pointer hover:bg-black/50 transition"
     >
-      <span className="text-xs text-white/80 bg-white/10 px-3 py-1 rounded-full border border-white/20">
-        Upgrade to unlock
-      </span>
+<div className="flex flex-col items-center gap-2 text-center">
+
+  <span className="text-[10px] uppercase tracking-wider text-purple-300 font-semibold">
+    Pro Model
+  </span>
+
+  <span className="text-xs text-white/80 bg-white/10 px-3 py-1 rounded-full border border-white/20">
+    Upgrade to unlock
+  </span>
+
+  <span className="text-[11px] text-purple-300 font-medium transition-all duration-500">
+    ⚡ {getRandomTrait(traitIndex + key.length)}
+  </span>
+
+</div>
     </div>
   )}
 
