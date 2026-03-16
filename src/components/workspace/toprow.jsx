@@ -35,7 +35,11 @@ export default function TopRow({ title, onMenuClick }) {
 
           {/* Logo */}
           <div className="flex  items-center gap-2">
-            <p className="text-[#7A3BFF] font-bold text-[20px] md:text-[22px] cursor-default">ZyvoAI</p>
+           <img
+  src="/images/logos/zyvo.webp"
+  alt="Zyvo"
+  className="h-7 w-auto opacity-90"
+/>
             <div className="hidden sm:flex ">
          
             </div>
@@ -46,25 +50,26 @@ export default function TopRow({ title, onMenuClick }) {
         </div>
 
         {/* RIGHT SIDE */}
-        <div className="flex items-center gap-4 sm:gap-4  xl:gap-[clamp(39px,15vw,40px)] xl:px-[clamp(15px,15vw,100px)]">
+        <div className="flex items-center gap-3 ml-auto sm:gap-4  xl:gap-[clamp(39px,15vw,40px)] xl:px-[clamp(15px,15vw,100px)]">
 
 
-       <div className="flex items-center gap-3 py-3">
+       <div className="flex items-center gap-2 ml-auto flex-nowrap">
 
   {/* Add Credits */}
 <Link
   to="/workspace/pricing"
   className="
-    flex items-center gap-2
-    px-4 py-3
-    rounded-lg
-    text-[15px] font-semibold
-    text-purple-300
-    bg-purple-500/10
-    border border-purple-400/20
-    hover:bg-purple-500/15
-    hover:border-purple-400/30
-    transition-all duration-200
+  flex items-center gap-2
+  h-[42px]
+  px-3
+  rounded-lg
+  text-[14px] font-semibold
+  text-purple-300
+  bg-purple-500/10
+  border border-purple-400/20
+  hover:bg-purple-500/15
+  hover:border-purple-400/30
+  transition-all duration-200
   "
 >
   <Plus className="w-4 h-4" />
@@ -72,12 +77,24 @@ export default function TopRow({ title, onMenuClick }) {
 </Link>
 
   {/* Pricing */}
-  <Link
-    className="text-[#E6E8EE] bg-[#1A1D2B] border border-[#2A2F45] py-3 px-8 rounded-md text-[16px] cursor-pointer hover:bg-[#20243A] hover:text-white/90 transition"
-    to="/workspace/pricing"
-  >
-    Pricing
-  </Link>
+<Link
+  to="/workspace/pricing"
+  className="
+  flex items-center justify-center
+  h-[42px]
+  px-4
+  rounded-lg
+  text-[14px]
+  text-[#E6E8EE]
+  bg-[#1A1D2B]
+  border border-[#2A2F45]
+  hover:bg-[#20243A]
+  hover:text-white
+  transition
+  "
+>
+  Pricing
+</Link>
 
 </div>
 

@@ -636,19 +636,15 @@ useEffect(() => {
   onClick={() => navigate("/workspace/pricing")}
   className="
   px-3 py-1
-  rounded-full
+  rounded-lg
   text-xs
   font-semibold
-  text-white
-  transition-all duration-200
-
-  bg-gradient-to-r from-purple-500 to-fuchsia-500/30
-  backdrop-blur-md
-  border border-purple-400/30
-
-  hover:from-purple-500/40
-  hover:to-fuchsia-500/40
-  hover:border-purple-400/50
+  text-purple-300
+    bg-purple-500/10
+    border border-purple-400/20
+    hover:bg-purple-500/15
+    hover:border-purple-400/30
+    transition-all duration-200
   hover:scale-[1.03]
 
 
