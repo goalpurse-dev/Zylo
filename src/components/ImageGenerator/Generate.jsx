@@ -619,43 +619,39 @@ useEffect(() => {
 
 {/* FREE PLAN INFO */}
 {user && planCode === "free" && freeRemaining !== null && (
-  <div className="mt-3 flex items-center justify-center gap-3 text-sm font-medium">
-    
-    {freeRemaining > 0 ? (
-      <span className="text-yellow-400">
-        You have {freeRemaining} free image generation
-        {freeRemaining === 1 ? "" : "s"} left this week
-      </span>
-    ) : (
-      <>
-        <span className="text-yellow-400">
-          Free limit reached.
-        </span>
+<div className="mt-3 flex items-center justify-center gap-3 text-sm font-medium">
 
-      <button
-  onClick={() => navigate("/workspace/pricing")}
-  className="
-  px-3 py-1
-  rounded-lg
-  text-xs
-  font-semibold
-  text-purple-300
-    bg-purple-500/10
-    border border-purple-400/20
-    hover:bg-purple-500/15
-    hover:border-purple-400/30
-    transition-all duration-200
-  hover:scale-[1.03]
+{freeRemaining > 0 ? (
+  <span className="text-amber-400">
+    {freeRemaining} free generation{freeRemaining === 1 ? "" : "s"} left
+  </span>
+) : (
+  <>
+    <span className="text-amber-400">
+      Free limit reached
+    </span>
 
+    <button
+      onClick={() => navigate("/workspace/pricing")}
+      className="
+      px-3 py-1
+      rounded-md
+      text-xs
+      font-semibold
+      text-purple-200
+      bg-purple-500/10
+      border border-purple-400/20
+      hover:bg-purple-500/15
+      hover:border-purple-400/30
+      transition-all duration-200
+      "
+    >
+      Unlock 580 credits
+    </button>
+  </>
+)}
 
-  "
->
-  Upgrade
-</button>
-      </>
-    )}
-
-  </div>
+</div>
 )}
 
           {/* PROMPT */}

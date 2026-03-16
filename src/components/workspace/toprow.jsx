@@ -91,11 +91,25 @@ export default function TopRow({ title, onMenuClick }) {
 
      
           {/* Plan */}
-          <div className="sm:block hidden border border-[#2A2F45] bg-[#7A3BFF] px-3 sm:px-7 md:px-10 py-3  rounded-lg  hover:bg-[#8F5BFF]">
-            <Link className="text-[#FFFFFF] text-[16px] cursor-pointer"
-            to="/support/contact"
-            >Contact Us</Link>
-          </div>
+<Link
+  to="/support/contact"
+  className="
+  hidden sm:flex
+  items-center justify-center
+  h-[42px]
+  px-4
+  rounded-lg
+  text-[14px] font-semibold
+  text-purple-200
+  bg-[#7A3BFF]/25
+  border border-purple-400/30
+  hover:bg-purple-500/20
+  hover:border-purple-400/40
+  transition-all duration-200
+  "
+>
+  Contact Us
+</Link>
 
         
 
