@@ -34,16 +34,7 @@ export default function TopRow({ title, onMenuClick }) {
           </button>
 
           {/* Logo */}
-          <div className="flex  items-center gap-2">
-           <img
-  src="/images/logos/zyvo.webp"
-  alt="Zyvo"
-  className="h-7 w-auto opacity-90"
-/>
-            <div className="hidden sm:flex ">
-         
-            </div>
-          </div>
+
 
       
 
