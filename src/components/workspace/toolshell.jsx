@@ -39,7 +39,28 @@ export default function ToolShell({
   const { user } = useAuth();
   const menuRef = useRef(null);
   const credits = useProfileCredits();
-  const showAddCredits = user && credits <= 0;
+
+  const [planCode, setPlanCode] = useState("free");
+
+  useEffect(() => {
+  const loadPlan = async () => {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("profiles")
+      .select("plan_code")
+      .eq("id", user.id)
+      .single();
+
+    setPlanCode((data?.plan_code || "free").toLowerCase());
+  };
+
+  loadPlan();
+}, [user]);
+  
+const isPaidPlan = user && planCode !== "free";
+const showCredits = user && isPaidPlan;
+const showAddCredits = user && !isPaidPlan;
   const formattedCredits = Intl.NumberFormat().format(credits);
   const navigate = useNavigate();
 
@@ -179,27 +200,27 @@ export default function ToolShell({
       {/* BOTTOM */}
       <div className="pb-6 flex flex-col gap-4 items-center">
 
-        {/* Credits */}
-        {user && (
-          <Link
-            to="/workspace/pricing"
-            onClick={() => {
-    if (window.innerWidth < 1024) {
-      onClose?.();
-    }
-  }}
-            className="flex flex-col items-center gap-1"
-          >
-            <div className="border border-white/20 rounded-lg h-10 w-10 flex items-center justify-center hover:border-purple-500/40 transition">
-              <img src={Credit} className="h-6 w-6" />
-            </div>
-            <p className="text-[#B7BBC6] text-[12px] font-semibold">
-              {formattedCredits}
-            </p>
-          </Link>
-        )}
+{/* Credits / Add Credits */}
+{showCredits && (
+  <Link
+    to="/workspace/pricing"
+    onClick={() => {
+      if (window.innerWidth < 1024) {
+        onClose?.();
+      }
+    }}
+    className="flex flex-col items-center gap-1 group"
+  >
+    <div className="border border-white/20 rounded-lg h-10 w-10 flex items-center justify-center hover:border-purple-500/40 transition">
+      <img src={Credit} className="h-6 w-6" />
+    </div>
 
-        {/* Add Credits (only when empty) */}
+    <p className="text-[#B7BBC6] text-[12px] font-semibold">
+      {formattedCredits}
+    </p>
+  </Link>
+)}
+
 {showAddCredits && (
   <Link
     to="/workspace/pricing"
@@ -213,16 +234,17 @@ export default function ToolShell({
     <div
       className="
         border border-purple-400/30
-     
         rounded-lg
         h-10 w-10
         flex items-center justify-center
         transition-all duration-300
         group-hover:scale-[1.05]
-   shadow-[0_0_10px_rgba(168,85,247,0.35)]
+        shadow-[0_0_10px_rgba(168,85,247,0.35)]
       "
     >
-      <span className="text-purple-500 text-lg font-bold leading-none">+</span>
+      <span className="text-purple-500 text-lg font-bold leading-none">
+        +
+      </span>
     </div>
 
     <p className="text-[#B7BBC6] text-[11px] font-medium text-center leading-tight">
@@ -230,6 +252,7 @@ export default function ToolShell({
     </p>
   </Link>
 )}
+
 
         {/* Help */}
         <Link

@@ -1,7 +1,7 @@
 import Logo from "../../assets/Logo.png";
 import { Link, NavLink } from "react-router-dom";
 import { AuthProvider, useAuth } from "../../context/AuthContext";
-
+import { Plus } from "lucide-react";
 
 export default function TopRow({ title, onMenuClick }) {
     const { user, loading } = useAuth();
@@ -49,11 +49,37 @@ export default function TopRow({ title, onMenuClick }) {
         <div className="flex items-center gap-4 sm:gap-4  xl:gap-[clamp(39px,15vw,40px)] xl:px-[clamp(15px,15vw,100px)]">
 
 
-        <div className="block py-3">
-         <Link className="text-[#E6E8EE] bg-[#1A1D2B] border border-[#2A2F45] py-3  px-8 rounded-md text-[16px] cursor-pointer hover:bg-[#20243A] hover:text-white/90 transition"
-         to="/workspace/pricing"
-         >Pricing</Link>   
-        </div>
+       <div className="flex items-center gap-3 py-3">
+
+  {/* Add Credits */}
+<Link
+  to="/workspace/pricing"
+  className="
+    flex items-center gap-2
+    px-4 py-3
+    rounded-lg
+    text-[15px] font-semibold
+    text-purple-300
+    bg-purple-500/10
+    border border-purple-400/20
+    hover:bg-purple-500/15
+    hover:border-purple-400/30
+    transition-all duration-200
+  "
+>
+  <Plus className="w-4 h-4" />
+  Add Credits
+</Link>
+
+  {/* Pricing */}
+  <Link
+    className="text-[#E6E8EE] bg-[#1A1D2B] border border-[#2A2F45] py-3 px-8 rounded-md text-[16px] cursor-pointer hover:bg-[#20243A] hover:text-white/90 transition"
+    to="/workspace/pricing"
+  >
+    Pricing
+  </Link>
+
+</div>
 
      
           {/* Plan */}
