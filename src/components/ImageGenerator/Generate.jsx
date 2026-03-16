@@ -551,7 +551,7 @@ useEffect(() => {
 
 
         <div className="w-full flex justify-center mt-4 px-4">
-          <div className="w-full max-w-[900px] bg-[#151822] border border-[#1F2230] rounded-sm p-6 shadow-2xl space-y-6">
+          <div className="w-full max-w-[900px] bg-[#151822] border border-[#1F2230] rounded-sm p-4 md:p-6 shadow-2xl space-y-4 md:space-y-6">
 
          {/* MODE SELECTOR */}
 <div className="grid grid-cols-3 gap-1">
@@ -681,10 +681,10 @@ useEffect(() => {
   value={prompt}
   onChange={(e) => setPrompt(e.target.value)}
   placeholder="Describe what you want to create..."
-  rows={4}
+  rows={3}
   className="
 
- w-full min-h-[120px] bg-transparent outline-none text-[16px] text-white placeholder-[#6B7280] resize-none
+ w-full min-h-[90px] md:min-h-[120px] bg-transparent outline-none text-[16px] text-white placeholder-[#6B7280] resize-none
 "
 />
   </div>
@@ -701,7 +701,7 @@ useEffect(() => {
     w-full rounded-sm border-2 border-dashed
     border-[#2A2E3C]
     bg-[#141722]
-    py-6
+    py-4 md:py-6
     flex flex-col items-center justify-center
     transition-all duration-300
     ${
@@ -711,7 +711,7 @@ useEffect(() => {
     }
   `}
 >
-  <ImagePlusIcon className="w-6 h-6 text-[#9CA3AF] mb-2" />
+  <ImagePlusIcon className="w-5 h-5 md:w-6 md:h-6 text-[#9CA3AF] mb-2" />
   <p className="text-sm text-[#9CA3AF]">
     Add visual references
   </p>
@@ -1021,7 +1021,7 @@ md:-translate-y-1/2
     </div>
 
     {/* Models grid */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3">
     {Object.entries(MODELS).map(([key, model]) => {
   const isLocked =
     planCode === "free" && key !== "image:flux.base";
@@ -1084,7 +1084,7 @@ md:-translate-y-1/2
          <button
   onClick={handleGenerate}
   disabled={!prompt.trim() || isGenerating}
-  className={`w-full py-3 rounded-lg font-semibold text-white transition-all duration-200
+  className={`w-full py-2.5 md:py-3 rounded-lg font-semibold text-white transition-all duration-200
   ${
     !prompt.trim() || isGenerating
       ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
