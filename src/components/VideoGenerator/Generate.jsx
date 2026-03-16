@@ -25,6 +25,7 @@ import { calculateVideoCredits } from "../../lib/video-generator/videoPricing";
 import VideoTemplate from "../../components/video-templates/VideoTemplate";
 import { createPortal } from "react-dom";
 import { useMemo } from "react";
+import UpgradeToast from "../../components/VideoGenerator/UpgradeToast";
 VideoIcon
 Folder
 
@@ -36,7 +37,7 @@ export default function Generate({  }) {
   const location = useLocation();
   const controlsRef = useRef(null);
   const [isGenerating, setIsGenerating] = useState(false);
-
+const [showUpgrade, setShowUpgrade] = useState(false);
 
   const [prompt, setPrompt] = useState("");
   const [openModel, setOpenModel] = useState(false);
@@ -240,7 +241,7 @@ useEffect(() => {
     // 🔥 CHECK CREDITS
     const { data: profile, error: profErr } = await supabase
       .from("profiles")
-      .select("credit_balance")
+      .select("credit_balance, plan_code")
       .eq("id", user.id)
       .single();
 
@@ -254,6 +255,15 @@ useEffect(() => {
     }
 
     const balance = Number(profile?.credit_balance ?? 0);
+
+    // ADD THIS 👇
+const plan = profile?.plan || "free";
+
+if (plan === "free") {
+  setShowUpgrade(true);
+  setIsGenerating(false);
+  return;
+}
 
     if (balance < totalCredits) {
       setToast({
@@ -912,6 +922,13 @@ setTimeout(() => {
     message={toast.message}
     type={toast.type}
     onClose={() => setToast(null)}
+  />
+)}
+
+{showUpgrade && (
+  <UpgradeToast
+    onClose={() => setShowUpgrade(false)}
+    onUpgrade={() => navigate("/pricing")}
   />
 )}
 
