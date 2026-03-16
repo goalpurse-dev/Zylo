@@ -76,7 +76,7 @@ function scrollToElementWithinContainer(el, container, topOffset = 80) {
 
 /* =============================== CARD =============================== */
 
-function ResultCard({ item, userPlan }) {
+function ResultCard({ item }) {
   const [visible, setVisible] = useState(true);
   const [posting, setPosting] = useState(false);
 const [posted, setPosted] = useState(false);
@@ -409,18 +409,30 @@ useEffect(() => {
 
   const tryScroll = () => {
     const el = cardRefs.current[activeJobId];
-    if (!el) {
-      if (attempts < 10) {
+    const container = document.getElementById("workspace-scroll");
+
+    if (!el || !container) {
+      if (attempts < 12) {
         attempts++;
         requestAnimationFrame(tryScroll);
       }
       return;
     }
 
-    el.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    });
+   const rect = el.getBoundingClientRect();
+const containerRect = container.getBoundingClientRect();
+
+const delta = rect.top - containerRect.top - 96;
+
+const maxScroll =
+  container.scrollHeight - container.clientHeight;
+
+const target = Math.min(container.scrollTop + delta, maxScroll);
+
+container.scrollTo({
+  top: target,
+  behavior: "smooth",
+});
   };
 
   requestAnimationFrame(tryScroll);
@@ -432,7 +444,7 @@ useEffect(() => {
   if (photoResults.length === 0) return null;
 
   return (
-    <div className="w-full bg-[#12141A] p-4">
+ <div className="w-full bg-[#12141A] p-4 md:pb-6 pb-24 min-h-[300px]">
       <h1 className="text-[#F4F6FB] font-semibold text-[20px] mb-4">
         Recent Creations
       </h1>
@@ -445,7 +457,7 @@ useEffect(() => {
       if (el) cardRefs.current[item.id] = el;
     }}
   >
-    <ResultCard item={item} userPlan={userPlan} />
+   <ResultCard item={item} />
   </div>
 ))}
 

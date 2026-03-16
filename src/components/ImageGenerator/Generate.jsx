@@ -1079,29 +1079,30 @@ md:-translate-y-1/2
 
 
             </div>
-
-            {/* GENERATE BUTTON */}
-         <button
-  onClick={handleGenerate}
-  disabled={!prompt.trim() || isGenerating}
-  className={`w-full py-2.5 md:py-3 rounded-lg font-semibold text-white transition-all duration-200
-  ${
-    !prompt.trim() || isGenerating
-      ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
-      : `
-      bg-gradient-to-r from-purple-500 to-fuchsia-500/30
-      backdrop-blur-md
-      border border-purple-400/30
-      hover:from-purple-500/40
-      hover:to-fuchsia-500/40
-      hover:border-purple-400/50
-      hover:scale-[1.02]
-      shadow-[0_0_20px_rgba(168,85,247,0.35)]
-      `
-  }`}
->
-  {isGenerating ? "Generating…" : "Generate"}
-</button>
+{/* GENERATE BUTTON */}
+<div className="md:static sticky bottom-3 z-20">
+  <button
+    onClick={handleGenerate}
+    disabled={!prompt.trim() || isGenerating}
+    className={`w-full py-2.5 md:py-3 rounded-lg font-semibold text-white transition-all duration-200
+    ${
+      !prompt.trim() || isGenerating
+        ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
+        : `
+        bg-gradient-to-r from-purple-500 to-fuchsia-500/30
+        backdrop-blur-md
+        border border-purple-400/30
+        hover:from-purple-500/40
+        hover:to-fuchsia-500/40
+        hover:border-purple-400/50
+        hover:scale-[1.02]
+        shadow-[0_0_20px_rgba(168,85,247,0.35)]
+        `
+    }`}
+  >
+    {isGenerating ? "Generating…" : "Generate"}
+  </button>
+</div>
 
           </div>
         </div>
