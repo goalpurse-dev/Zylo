@@ -567,7 +567,7 @@ useEffect(() => {
 }, [settingsOpen]);
 
  return (
-  <section className="pb-[120px] md:pb-[env(safe-area-inset-bottom)]">
+ <section className="pb-6 md:pb-[env(safe-area-inset-bottom)]">
 
     {(openModel || openStyle || openSize) && (
   <div
