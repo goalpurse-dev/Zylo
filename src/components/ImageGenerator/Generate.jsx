@@ -14,6 +14,8 @@ import LimitReachedToast from "../../components/ImageGenerator/LimitReachedToast
 import GuestGenerateModal from "../../components/ImageGenerator/GuestGenerateModal";
 import { IMAGE_SIZES } from "../../lib/image-generator/sizes";
 import CreditLogo from "../../assets/toolshell/credit.png"
+import ErrorToast from "../../components/ImageGenerator/ErrorToast";
+import { watchJob } from "../../lib/jobs";
 
 import { ArrowBigDown, ArrowBigLeft, BoxSelect, Image, ImagePlusIcon, Settings, Wand, Wand2, X } from "lucide-react";
 import Bg from "../../assets/ImageGenerator/bg.png"
@@ -138,8 +140,7 @@ const ModelCard = ({
 }) => (
   <button
     onClick={onClick}
-    className={`
-      relative w-full rounded-sm transition text-left
+ className={`relative w-full h-full rounded-sm transition text-left flex flex-col
       bg-[#0B0E1A]/70 border
       ${
         active
@@ -174,7 +175,7 @@ const ModelCard = ({
        
 
         {description && (
-          <div className="text-white/50 text-xs leading-snug mt-0.5">
+          <div className="text-white/50 text-xs leading-snug ">
             {description}
           </div>
         )}
@@ -210,6 +211,7 @@ export default function Generate({ prompt, setPrompt, onJobCreated, setActiveJob
 
 const [freeRemaining, setFreeRemaining] = useState(null);
 const [toast, setToast] = useState(null);
+const [errorToast, setErrorToast] = useState(null);
 const location = useLocation();
 const navigate = useNavigate();
 const [progressToast, setProgressToast] = useState(null);
@@ -221,6 +223,7 @@ const panelRef = useRef(null);
 const [selectedSize, setSelectedSize] = useState("1:1");
 
 const selectedModel = MODELS[selectedModelKey];
+const estimatedCredits = selectedModel?.credits ?? 0;
   const textareaRef = useRef(null);
 const [openSize, setOpenSize] = useState(false);
 const [openStyle, setOpenStyle] = useState(false);
@@ -370,6 +373,7 @@ ${stylePrompt}
 `;
 
 const job = await generateImageFromUI({
+
   modelKey: selectedModelKey,
   prompt: finalPrompt,
   style: selectedStyle,
@@ -377,9 +381,29 @@ const job = await generateImageFromUI({
   refImages: refImagesFinal
 });
 
+if (!job || job.ok === false || job.errors?.length) {
+  const errMsg =
+    job?.errors?.[0]?.message ||
+    job?.error ||
+    "This prompt was rejected by the image provider.";
+
+  setErrorToast(errMsg);
+
+  setIsGenerating(false);
+  return;
+}
+
     setActiveJobId?.(job.id);
     onJobCreated?.(job);
-
+watchJob(job.id, (updatedJob) => {
+  if (updatedJob.status === "failed") {
+    setErrorToast(
+      updatedJob.error ||
+      updatedJob.errors?.[0]?.message ||
+      "The AI provider rejected this prompt."
+    );
+  }
+});
       // 🔥 decrement UI counter
  if (freeRemaining !== null && freeRemaining > 0) {
   const newRemaining = freeRemaining - 1;
@@ -392,8 +416,26 @@ const job = await generateImageFromUI({
 
   
   } catch (err) {
-    console.error("Generate failed:", err);
-  } finally {
+  console.error("Generate failed:", err);
+
+  const msg = String(err?.message || err);
+
+  // Provider moderation / provider failure
+ if (
+  msg.toLowerCase().includes("invalid content") ||
+  msg.toLowerCase().includes("moderation") ||
+  msg.toLowerCase().includes("provider")
+) {
+    setErrorToast(
+      "This prompt was rejected by the image provider's safety filters. Try rewording your prompt or switching models."
+    );
+  } else {
+    setToast({
+      message: "Generation failed. Please try again.",
+      type: "error",
+    });
+  }
+} finally {
     setIsGenerating(false);
   }
 };
@@ -1013,7 +1055,7 @@ md:-translate-y-1/2
     </div>
 
     {/* Models grid */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-stretch">
     {Object.entries(MODELS).map(([key, model]) => {
   const isLocked =
     planCode === "free" && key !== "image:flux.base";
@@ -1066,10 +1108,6 @@ md:-translate-y-1/2
     </div>
   </div>
 )}
-
-
-
-
             </div>
 {/* GENERATE BUTTON */}
 <div
@@ -1077,8 +1115,8 @@ md:-translate-y-1/2
   sticky bottom-[env(safe-area-inset-bottom)]
   md:static
   z-30
-  -mx-4 px-4 pt-3
-  pb-[max(env(safe-area-inset-bottom),16px)]
+  -mx-4 px-4 pt-1
+  pb-[max(env(safe-area-inset-bottom),12px)]
   bg-gradient-to-t from-[#151822] via-[#151822]/90 to-transparent
   backdrop-blur-md
 "
@@ -1086,7 +1124,7 @@ md:-translate-y-1/2
   <button
     onClick={handleGenerate}
     disabled={!prompt.trim() || isGenerating}
-    className={`w-full py-2.5 md:py-3 rounded-lg font-semibold text-white transition-all duration-200
+    className={`w-full py-3.5 md:py-4 rounded-lg font-semibold text-white transition-all duration-200
     ${
       !prompt.trim() || isGenerating
         ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
@@ -1104,6 +1142,25 @@ md:-translate-y-1/2
   >
     {isGenerating ? "Generating…" : "Generate"}
   </button>
+
+  {/* Estimated cost */}
+  <div className="mt-2">
+    <div
+      className="
+      w-full
+      bg-[#10131A]
+      border border-gray-800
+      rounded-lg
+      px-4 py-3
+      flex items-center justify-center gap-2
+      text-[14px] font-semibold
+      text-green-400
+      "
+    >
+      <span className="text-base">◆</span>
+      <span>Estimated cost: {estimatedCredits} credits</span>
+    </div>
+  </div>
 </div>
 
           </div>
@@ -1128,6 +1185,12 @@ md:-translate-y-1/2
     message={toast.message}
     type={toast.type}
     onClose={() => setToast(null)}
+  />
+)}
+{errorToast && (
+  <ErrorToast
+    message={errorToast}
+    onClose={() => setErrorToast(null)}
   />
 )}
 

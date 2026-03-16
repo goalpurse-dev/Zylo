@@ -141,10 +141,44 @@ console.log("runware payload", JSON.stringify(task));
       body: JSON.stringify([task]),
     });
 
-    const createJson = await createRes.json();
-   if (!createRes.ok) {
-  throw new Error(
-    `Runware create failed (${createRes.status}): ${JSON.stringify(createJson)}`
+ const createJson = await createRes.json();
+
+if (!createRes.ok || createJson?.errors?.length) {
+  console.error("Runware provider error:", createJson);
+
+  const message =
+    createJson?.errors?.[0]?.message ||
+    "Image provider rejected the prompt.";
+
+  // 🔥 mark job as failed
+  await sb.rpc("finish_job_failed", {
+    p_id: jobId,
+    p_error: message,
+  });
+
+  return new Response(
+    JSON.stringify({
+      ok: false,
+      error: message,
+    }),
+    { status: 200 }
+  );
+}
+
+if (!createJson?.data || createJson.data.length === 0) {
+  console.error("Runware returned empty response:", createJson);
+
+  await sb.rpc("finish_job_failed", {
+    p_id: jobId,
+    p_error: "Provider returned empty result",
+  });
+
+  return new Response(
+    JSON.stringify({
+      ok: false,
+      error: "Image provider temporarily unavailable. Please try again later.",
+    }),
+    { status: 200 }
   );
 }
 
@@ -169,7 +203,13 @@ console.log("runware payload", JSON.stringify(task));
         headers: { Authorization: `Bearer ${RUNWARE_KEY}` },
       });
       const pollJson = await pollRes.json();
-      const url = extractImageUrl(pollJson);
+
+if (!pollJson) {
+  console.error("Runware poll returned invalid response");
+  break;
+}
+
+const url = extractImageUrl(pollJson);
 
       if (url) {
         await sb.rpc("finish_job_success", {
@@ -183,11 +223,36 @@ console.log("runware payload", JSON.stringify(task));
 
     
 
-    throw new Error("Runware timeout");
-  } catch (e) {
-    return new Response(
-      JSON.stringify({ ok: false, error: String(e) }),
-      { status: 500 }
-    );
-  }
+
+
+// ---------- Timeout ----------
+await sb.rpc("finish_job_failed", {
+  p_id: jobId,
+  p_error: "Image provider timeout",
+});
+
+return new Response(
+  JSON.stringify({
+    ok: false,
+    error: "Image provider took too long to respond. Please try another model.",
+  }),
+  { status: 200 }
+);
+
+} catch (e) {
+  console.error("runware-image failure:", e);
+
+  await sb.rpc("finish_job_failed", {
+    p_id: jobId,
+    p_error: "Image provider temporarily unavailable",
+  });
+
+  return new Response(
+    JSON.stringify({
+      ok: false,
+      error: "Image provider temporarily unavailable. Please try another model.",
+    }),
+    { status: 200 }
+  );
+}
 });
