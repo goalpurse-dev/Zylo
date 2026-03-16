@@ -525,7 +525,7 @@ useEffect(() => {
 }, [settingsOpen]);
 
  return (
-  <section className="pb-[env(safe-area-inset-bottom)]">
+  <section className="pb-[120px] md:pb-[env(safe-area-inset-bottom)]">
 
     {(openModel || openStyle || openSize) && (
   <div
@@ -1078,9 +1078,11 @@ md:-translate-y-1/2
 {/* GENERATE BUTTON */}
 <div
   className="
-  sticky bottom-0 md:static z-30
+  sticky bottom-[env(safe-area-inset-bottom)]
+  md:static
+  z-30
   -mx-4 px-4 pt-3
-  pb-[calc(env(safe-area-inset-bottom)+12px)]
+  pb-[max(env(safe-area-inset-bottom),16px)]
   bg-gradient-to-t from-[#151822] via-[#151822]/90 to-transparent
   backdrop-blur-md
 "
