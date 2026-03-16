@@ -1080,7 +1080,15 @@ md:-translate-y-1/2
 
             </div>
 {/* GENERATE BUTTON */}
-<div className="md:static sticky bottom-3 z-20">
+<div
+  className="
+  sticky bottom-0 md:static z-30
+  -mx-4 px-4 pt-3
+  pb-[calc(env(safe-area-inset-bottom)+12px)]
+  bg-gradient-to-t from-[#151822] via-[#151822]/90 to-transparent
+  backdrop-blur-md
+"
+>
   <button
     onClick={handleGenerate}
     disabled={!prompt.trim() || isGenerating}
