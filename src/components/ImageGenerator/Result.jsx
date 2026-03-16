@@ -76,11 +76,14 @@ function scrollToElementWithinContainer(el, container, topOffset = 80) {
 
 /* =============================== CARD =============================== */
 
-function ResultCard({ item }) {
+function ResultCard({ item, userPlan }) {
   const [visible, setVisible] = useState(true);
   const [posting, setPosting] = useState(false);
 const [posted, setPosted] = useState(false);
 const [showToast, setShowToast] = useState(false);
+
+
+
 
 useEffect(() => {
   let ignore = false;
@@ -192,7 +195,9 @@ const { error: uploadError } = await supabase.storage
 };
 
 
-  const isDone = item.status === "succeeded" && !!item.result_url;
+
+const isDone = item.status === "succeeded" && !!item.result_url;
+
   const progress = Math.min(
   99,
   Math.floor(Number(item.progress ?? 0))
@@ -241,16 +246,16 @@ const isFailed =
   {/* ABSOLUTE CONTENT */}
   <div className="absolute inset-0">
     {/* DONE */}
-    {isDone && (
-    <img
-  src={item.result_url + "?format=webp&width=800"}
-  referrerPolicy="no-referrer"
-  crossOrigin="anonymous"
-  className="w-full h-full object-cover"
-  loading="lazy"
-  decoding="async"
-/>
-    )}
+{isDone && (
+  <img
+    src={item.result_url + "?format=webp&width=800"}
+    referrerPolicy="no-referrer"
+    crossOrigin="anonymous"
+    className="w-full h-full object-cover"
+    loading="lazy"
+    decoding="async"
+  />
+)}
 
     {/* FAILED */}
  {isFailed && (
@@ -372,7 +377,7 @@ const isFailed =
 
 /* =============================== MAIN =============================== */
 
-export default function Result({ results, activeJobId }) {
+export default function Result({ results, activeJobId, userPlan }) {
   const latestRef = useRef(null);
 
   // ✅ filter valid photo jobs
@@ -440,7 +445,7 @@ useEffect(() => {
       if (el) cardRefs.current[item.id] = el;
     }}
   >
-    <ResultCard item={item} />
+    <ResultCard item={item} userPlan={userPlan} />
   </div>
 ))}
 

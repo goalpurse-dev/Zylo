@@ -35,6 +35,7 @@ const toNum = (v, fallback = 0) => {
 export default function Image() {
   const [prompt, setPrompt] = useState("");
   const [results, setResults] = useState([]);
+const [userPlan, setUserPlan] = useState("free");
 
   const inspirationRef = useRef(null);
   const watchersRef = useRef({});
@@ -49,6 +50,29 @@ useEffect(() => {
   }
 }, []);
 
+
+useEffect(() => {
+  async function loadPlan() {
+    const { data } = await supabase.auth.getUser();
+    const uid = data?.user?.id;
+
+    if (!uid) return;
+
+    const { data: sub } = await supabase
+      .from("subscriptions")
+      .select("plan")
+      .eq("user_id", uid)
+      .single();
+
+    if (sub?.plan) {
+      setUserPlan(sub.plan);
+    } else {
+      setUserPlan("free");
+    }
+  }
+
+  loadPlan();
+}, []);
 
   /* ===============================
      UPSERT JOB (MONOTONIC)
@@ -223,12 +247,12 @@ useEffect(() => {
      RENDER
   =============================== */
   return (
-    <div className="w-full bg-[#12141A]">
+    <div className="w-full bg-[#12141A] min-h-screen pb-[env(safe-area-inset-bottom)]">
 
       
 <div
-  className={`pt-1 md:pt-4 pb-6 ${
-    results.length === 0 ? "min-h-[100svh]" : ""
+  className={`pt-2 md:pt-4 pb-8 ${
+    results.length === 0 ? "min-h-screen" : ""
   }`}
 >
   <Generate
@@ -242,13 +266,13 @@ useEffect(() => {
 
 
       {results.length > 0 && (
-        <div className="mt-10">
-        <Result
+        <div className="mt-10 pb-20">
+ <Result
   results={results}
-
   onCopyPrompt={(p) => navigator.clipboard.writeText(p)}
   onRegenerate={(p) => sendPromptToGenerator(p)}
   activeJobId={activeJobId}
+  userPlan={userPlan}
 />
         </div>
       )}

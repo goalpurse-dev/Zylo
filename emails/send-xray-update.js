@@ -1,6 +1,5 @@
 import { Resend } from "resend";
 import dotenv from "dotenv";
-import { XrayUpdateEmail } from "./xrayUpdate.js";
 
 dotenv.config({ path: ".env.local" });
 
@@ -23,6 +22,7 @@ const emails = [
 "emanemansulaeman483@gmail.com",
 "abetefera5467@gmail.com",
 "agerry994@gmail.com",
+"upwardlift6@gmail.com",
 "zakilakid0@gmail.com",
 "pax.max1116@gmail.com",
 "abucha779@gmail.com",
@@ -44,7 +44,6 @@ const emails = [
 "salvationlastb@gmail.com",
 "twigplantar@gmail.com",
 "comedieroh@gmail.com",
-"upwardlift6@gmail.com",
 "tajculbert@gmail.com",
 "jamelsam22@gmail.com",
 "a.wikarskii@gmail.com",
@@ -59,7 +58,6 @@ const emails = [
 "daniyalmmalik@gmail.com",
 "lucianoreza30@gmail.com",
 "rizaria13@gmail.com",
-"hillaryscott684@gmail.com",
 "gurhagai@gmail.com",
 "bugabear810@gmail.com",
 "eeeeew221@gmail.com",
@@ -72,6 +70,7 @@ const emails = [
 "donica1570@bigonla.com",
 "tontoooo6767@gmail.com",
 "julio11018.e@gmail.com",
+"hillaryscott684@gmail.com",
 "officialspektorbaal@gmail.com",
 "boshkovzoran32@gmail.com",
 "szagabor110@gmail.com",
@@ -98,36 +97,157 @@ const emails = [
 "bweakfeast2243434@gmail.com",
 "zachlindell67@gmail.com",
 "jazgarskiw@gmail.com",
-"georgewheatley2011@icloud.com"
+"georgewheatley2011@icloud.com",
+"cernavcacristi2@gmail.com",
+"jinyancai@gmail.com",
+"trevontetrey9@gmail.com",
+"marineearly@gmail.com",
+"benditonfeet@gmail.com",
+"jaydensegree8@gmail.com",
+"goldenvibe6262@gmail.com",
+"lexksinurway@gmail.com",
+"xackarybermil@gmail.com",
+"johnny.poston@icloud.com",
+"naciumatias@gmail.com",
+"evgeniya.taneva@gmail.com",
+"zaclarrivee@icloud.com",
+"bosschieterisaiah@icloud.com",
+"jassimalshimmary861@gmail.com",
+"geentijd64221@gmail.com",
+"alexhid107@gmail.com",
+"zay993152@gmail.com",
+"testelovableconta@gmail.com",
+"txghffgggfdgggf@gmail.com",
+"kendrick.sargent2412@icloud.com",
+"vittorio.martin.lorenzetti@gmail.com",
+"taylenbrooks39@gmail.com",
+"dpabata@gmail.com",
+"aaronjames29712@gmail.com",
+"mekhaithomas5@gmail.com",
+"pablo42268@gmail.com",
+"ansgardejong4@gmail.com",
+"murilohenriquef2010@gmail.com",
+"murilohf2010@gmail.com",
+"jude.croninwebb@icloud.com",
+"ronniejohnv@gmail.com",
+"sniperkoladekyt@gmail.com",
+"y6884850@gmail.com",
+"dedodedo@gmail.com",
+"misaelleonardo345@gmail.com",
+"aztalimg@gmail.com",
+"kalebvlog77@gmail.com",
+"hagauwuw@gmail.com",
+"davidrahimd@gmail.com",
+"ivanngyx0911@gmail.com",
+"omar.hernandez985@icloud.com",
+"bkehren34@gmail.com",
+"a15337952@gmail.com",
+"osvaldomendoza444@gmail.com",
+"redditstories1830@gmail.com",
+"kyreekeys39@gmail.com",
+"koigzccccv@gmail.com",
+"bandiththyna@gmail.com",
+"lovemisile2022@gmail.com",
+"enriquevdecastro@gmail.com",
+"dinglerondel@gmail.com",
+"maicolpetit35@gmail.com",
+"essential110011@gmail.com",
+"issemohamedqadar@gmail.com",
+"jamaldicksonafricanman69@gmail.com",
+"ifnoifno770@gmail.com",
+"telod86913@bigonla.com",
+"vierrudaniel69@gmail.com",
+"shitshapens@gmail.com",
+"jrakhra2004@yahoo.com",
+"antoniohud@icloud.com",
+"adelmammadova13@gmail.com",
+"jakeptconnor@gmail.com",
+"nekoswaann@gmail.com",
+"micaelreis2200@gmail.com",
+"gabitzugabitu@gmail.com",
+"ganbayrudambayr@gmail.com",
+"vaneqyvo@denipl.com",
+"eimannnoel@gmail.com",
+"osmarq148@gmail.com",
+"pevak39802@bigonla.com",
+"sebastian.sitzberger@googlemail.com",
+"americanguy166@gmail.com",
+"arashekam2016@gmail.com",
+"saelzle@myyahoo.com",
+"andersonmaxx86@gmail.com",
+"eddie4liferrr@gmail.com",
+"eugeniomoli891@gmail.com",
+"martinsvolksons7@gmail.com"
 ];
+
+function emailHTML() {
+return `
+<div style="font-family:Arial,Helvetica,sans-serif;background:#0f1117;padding:40px;color:white">
+<div style="max-width:600px;margin:auto">
+
+<h2>MiniMax Hailuo 2.3 Fast is now live</h2>
+
+<p style="color:#b3b3b3">
+We just released a new video generation model inside Zyvo.
+</p>
+
+<p style="color:#b3b3b3">
+<b>MiniMax Hailuo 2.3 Fast</b> creates smoother AI videos with faster generation —
+perfect for TikTok, reels and short-form content.
+</p>
+
+<div style="margin:30px 0">
+<a href="https://tryzyvo.com/workspace/video-generator"
+style="background:#7A3BFF;color:white;padding:14px 22px;border-radius:8px;text-decoration:none;font-weight:600;">
+Try it now →
+</a>
+</div>
+
+<p style="color:#777;font-size:13px">
+— Zyvo
+</p>
+
+</div>
+</div>
+`;
+}
 
 async function sendEmails() {
 
-  for (const email of emails) {
+const BATCH_SIZE = 50;
 
-    try {
+// only take first 50 emails
+const batch = emails.slice(50, 100);
 
-      const { error } = await resend.emails.send({
-        from: "Zyvo Updates <updates@tryzyvo.com>",
-        to: email,
-        subject: "🦴 New Viral Style Just Dropped in Zyvo",
-        html: XrayUpdateEmail()
-      });
+console.log(`Sending ${batch.length} emails...`);
 
-      if (error) {
-        console.error("Failed:", email, error);
-      } else {
-        console.log("Sent to:", email);
-      }
+for (const email of batch) {
 
-    } catch (err) {
-      console.error("Error sending to:", email, err);
-    }
+try {
 
-    // small delay so Gmail doesn't flag spam
-    await new Promise(r => setTimeout(r, 800));
+const { error } = await resend.emails.send({
+from: "Zyvo Updates <updates@tryzyvo.com>",
+to: email,
+subject: "MiniMax Hailuo 2.3 Fast is now available",
+html: emailHTML()
+});
 
-  }
+if (error) {
+console.error("Failed:", email, error);
+} else {
+console.log("Sent to:", email);
+}
+
+} catch (err) {
+console.error("Error sending to:", email, err);
+}
+
+// delay between emails
+await new Promise(r => setTimeout(r, 900));
+
+}
+
+console.log("Batch finished.");
 
 }
 
