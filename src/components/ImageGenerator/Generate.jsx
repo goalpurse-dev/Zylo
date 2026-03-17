@@ -1152,62 +1152,61 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
             
 
 {/* GENERATE SECTION */}
-{/* 🔥 STICKY GENERATE SECTION */}
-<div className="sticky bottom-0 w-full z-50 will-change-transform
-transform-gpu">
+<div
+  className="
+    sticky z-50 w-full
+    bottom-[max(env(safe-area-inset-bottom),12px)]
+    will-change-transform
+    transform-gpu
+  "
+>
   <div
     className="
       pt-3
-      pb-[calc(env(safe-area-inset-bottom)+16px)]
+      pb-4
       bg-gradient-to-t from-[#0B0E1A] via-[#0B0E1A]/95 to-transparent
       backdrop-blur-md
       border-t border-white/10
     "
   >
-    <div className="max-w-[900px] mx-auto  flex flex-col gap-3">
+    <div className="max-w-[900px] mx-auto flex flex-col gap-3">
+      <button
+        onClick={handleGenerate}
+        disabled={!prompt.trim() || isGenerating}
+        className={`
+          generate-btn
+          relative w-full py-4 rounded-2xl font-semibold text-[15px]
+          transition-all duration-300 overflow-hidden
+          ${
+            !prompt.trim() || isGenerating
+              ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
+              : `
+                generate-btn-ready
+                bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]
+                border border-purple-400/30
+                hover:scale-[1.02]
+                active:scale-[0.98]
+                shadow-[0_10px_40px_rgba(122,59,255,0.35)]
+                hover:shadow-[0_0_50px_rgba(122,59,255,0.55)]
+              `
+          }
+        `}
+      >
+        <span className="relative z-10 flex items-center justify-center gap-2">
+          {isGenerating ? (
+            <>
+              <Wand2 className="w-4 h-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <Wand2 className="w-4 h-4 opacity-80" />
+              Generate
+            </>
+          )}
+        </span>
+      </button>
 
-      {/* 🚀 GENERATE BUTTON */}
-    <button
-  onClick={handleGenerate}
-  disabled={!prompt.trim() || isGenerating}
-  className={`
-    generate-btn
-    relative w-full py-4 rounded-2xl font-semibold text-[15px]
-    transition-all duration-300 overflow-hidden
-
-    ${
-      !prompt.trim() || isGenerating
-        ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
-        : `
-          generate-btn-ready
-          bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]
-          border border-purple-400/30
-
-          hover:scale-[1.02]
-          active:scale-[0.98]
-
-          shadow-[0_10px_40px_rgba(122,59,255,0.35)]
-          hover:shadow-[0_0_50px_rgba(122,59,255,0.55)]
-        `
-    }
-  `}
->
-  <span className="relative z-10 flex items-center justify-center gap-2">
-    {isGenerating ? (
-      <>
-        <Wand2 className="w-4 h-4 animate-spin" />
-        Generating...
-      </>
-    ) : (
-      <>
-        <Wand2 className="w-4 h-4 opacity-80" />
-        Generate
-      </>
-    )}
-  </span>
-</button>
-
-      {/* 💰 COST CARD (ATTACHED UNDER BUTTON) */}
       <div
         className="
           w-full rounded-xl border border-white/10
@@ -1222,7 +1221,6 @@ transform-gpu">
           {estimatedCredits} credits
         </span>
       </div>
-
     </div>
   </div>
 </div>
