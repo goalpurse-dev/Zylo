@@ -1160,14 +1160,14 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
 <div
   className="
     sticky z-50 w-full
-    bottom-[max(env(safe-area-inset-bottom),12px)]
+    bottom-0
    
   "
 >
   <div
     className="
       pt-3
-      pb-4
+      pb-[calc(env(safe-area-inset-bottom)+12px)]
       bg-gradient-to-t from-[#0B0E1A] via-[#0B0E1A]/95 to-transparent
       backdrop-blur-md
       border-t border-white/10
