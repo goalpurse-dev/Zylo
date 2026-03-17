@@ -221,8 +221,13 @@ useEffect(() => {
     setIsGenerating(true);
 
     // 🔥 CHECK AUTH
-    const { data: authData } = await supabase.auth.getUser();
-    const user = authData?.user;
+  const { data: sessionData } = await supabase.auth.getSession();
+
+const user = sessionData?.session?.user;
+
+if (!user) {
+  console.log("NO USER SESSION");
+}
 
     if (!user) {
       setToast({
