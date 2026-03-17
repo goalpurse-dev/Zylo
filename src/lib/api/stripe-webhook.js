@@ -10,12 +10,14 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// 🔥 REQUIRED FOR STRIPE ON VERCEL
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
+// 🔥 RAW BODY HELPER
 async function getRawBody(readable) {
   const chunks = [];
   for await (const chunk of readable) {
@@ -42,71 +44,124 @@ export default async function handler(req, res) {
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.error("Webhook signature error:", err.message);
+    console.error("❌ Webhook signature error:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   try {
     const obj = event.data.object;
 
-    if (event.type === "checkout.session.expired") {
-      const session = obj;
-      const email =
-        session.customer_details?.email ||
-        session.customer_email ||
-        null;
+    // ==============================
+    // 🟢 CUSTOMER CREATED (ENTRY POINT)
+    // ==============================
+    if (event.type === "customer.created") {
+      const customer = obj;
 
-      if (email) {
-        const { error } = await supabase.from("abandoned_checkouts").upsert(
+      if (!customer.email) {
+        console.log("⚠️ Customer created without email, skipping");
+        return res.status(200).json({ received: true });
+      }
+
+      const { error } = await supabase
+        .from("abandoned_checkouts")
+        .upsert(
           {
-            email,
-            stripe_session_id: session.id,
-            stripe_customer_id: session.customer || null,
-            checkout_url: session.url || null,
+            email: customer.email,
+            stripe_customer_id: customer.id,
             status: "pending",
             recovery_stage: 0,
             recovered: false,
             paid: false,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           },
           { onConflict: "email" }
-        );
+        )
+        .select();
 
-        if (error) {
-          console.error("Supabase upsert error on expired:", error);
-        } else {
-          console.log("Checkout expired:", email);
-        }
+      if (error) {
+        console.error("❌ Error inserting customer:", error);
+      } else {
+        console.log("✅ Tracked customer:", customer.email);
       }
     }
 
-    if (event.type === "checkout.session.completed") {
+    // ==============================
+    // 🔴 CHECKOUT EXPIRED (BACKUP)
+    // ==============================
+    if (event.type === "checkout.session.expired") {
       const session = obj;
+
       const email =
         session.customer_details?.email ||
         session.customer_email ||
         null;
 
-      if (email) {
-        const { error } = await supabase
-          .from("abandoned_checkouts")
-          .update({
-            paid: true,
-            recovered: true,
-            status: "converted",
-          })
-          .eq("email", email);
+      if (!email) {
+        console.log("⚠️ Expired session without email");
+        return res.status(200).json({ received: true });
+      }
 
-        if (error) {
-          console.error("Supabase update error on completed:", error);
-        } else {
-          console.log("Converted:", email);
-        }
+      const { error } = await supabase
+        .from("abandoned_checkouts")
+        .upsert(
+          {
+            email,
+            stripe_session_id: session.id,
+            stripe_customer_id: session.customer || null,
+            status: "pending",
+            recovery_stage: 0,
+            recovered: false,
+            paid: false,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "email" }
+        )
+        .select();
+
+      if (error) {
+        console.error("❌ Error on expired checkout:", error);
+      } else {
+        console.log("🟡 Checkout expired:", email);
+      }
+    }
+
+    // ==============================
+    // 🟢 PAYMENT COMPLETED
+    // ==============================
+    if (event.type === "checkout.session.completed") {
+      const session = obj;
+
+      const email =
+        session.customer_details?.email ||
+        session.customer_email ||
+        null;
+
+      if (!email) {
+        console.log("⚠️ Completed session without email");
+        return res.status(200).json({ received: true });
+      }
+
+      const { error } = await supabase
+        .from("abandoned_checkouts")
+        .update({
+          paid: true,
+          recovered: true,
+          status: "converted",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("email", email);
+
+      if (error) {
+        console.error("❌ Error updating conversion:", error);
+      } else {
+        console.log("💰 Converted:", email);
       }
     }
 
     return res.status(200).json({ received: true });
   } catch (err) {
-    console.error("Webhook error:", err);
+    console.error("❌ Webhook handler error:", err);
     return res.status(500).json({ error: "Webhook failed" });
   }
 }
