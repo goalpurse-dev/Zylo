@@ -272,7 +272,7 @@ useEffect(() => {
     // 🔥 CREDIT CHECK
     if (balance < totalCredits) {
       setToast({
-        message: `You need ${totalCredits} credits to generate this video.`,
+        message: `You need ${totalCredits} credits to generate this video`,
         type: "error",
       });
       setIsGenerating(false);
