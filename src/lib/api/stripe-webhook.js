@@ -10,14 +10,12 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// 🔥 REQUIRED FOR STRIPE ON VERCEL
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-// 🔥 RAW BODY HELPER
 async function getRawBody(readable) {
   const chunks = [];
   for await (const chunk of readable) {
@@ -49,23 +47,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const session = event.data.object;
+    const obj = event.data.object;
 
-if (!session || !session.object || session.object !== "checkout.session") {
-  return res.status(200).json({ received: true });
-}
-
-    const email =
-      session.customer_details?.email ||
-      session.customer_email ||
-      null;
-
-    // 🟢 USER STARTED CHECKOUT (IMPORTANT)
-   
-    // 🔴 USER DID NOT PAY
     if (event.type === "checkout.session.expired") {
+      const session = obj;
+      const email =
+        session.customer_details?.email ||
+        session.customer_email ||
+        null;
+
       if (email) {
-        await supabase.from("abandoned_checkouts").upsert(
+        const { error } = await supabase.from("abandoned_checkouts").upsert(
           {
             email,
             stripe_session_id: session.id,
@@ -79,14 +71,23 @@ if (!session || !session.object || session.object !== "checkout.session") {
           { onConflict: "email" }
         );
 
-        console.log("Checkout expired:", email);
+        if (error) {
+          console.error("Supabase upsert error on expired:", error);
+        } else {
+          console.log("Checkout expired:", email);
+        }
       }
     }
 
-    // 🟢 USER PAID → STOP EMAILS
     if (event.type === "checkout.session.completed") {
+      const session = obj;
+      const email =
+        session.customer_details?.email ||
+        session.customer_email ||
+        null;
+
       if (email) {
-        await supabase
+        const { error } = await supabase
           .from("abandoned_checkouts")
           .update({
             paid: true,
@@ -95,7 +96,11 @@ if (!session || !session.object || session.object !== "checkout.session") {
           })
           .eq("email", email);
 
-        console.log("Converted:", email);
+        if (error) {
+          console.error("Supabase update error on completed:", error);
+        } else {
+          console.log("Converted:", email);
+        }
       }
     }
 
