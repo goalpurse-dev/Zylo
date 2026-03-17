@@ -67,14 +67,12 @@ const TIERS = [
   name: "Starter",
   monthly: 12,
   yearlyPerMonth: 10,
-  blurb: "Perfect for creators getting started with AI",
+  blurb: "Launch faster with enough credits for consistent weekly content",
   popular: false,
   features: [
     "600 credits / month",
-    "AI Image Generator",
-    "AI Video Generator",
-    "≈ 200 AI images / month",
-    "≈ 30 AI videos / month",
+    "Up to 200 images",
+    "Generate up to 30 AI videos",
     "Watermark-free exports",
     "Private creation library",
     "Standard generation speed",
@@ -87,14 +85,12 @@ const TIERS = [
   name: "Pro",
   monthly: 25,
   yearlyPerMonth: 21,
-  blurb: "Best for creators generating content regularly",
+  blurb: "Best for serious creators scaling daily content and testing ideas fast",
   popular: true,
   features: [
     "1,200 credits / month",
-    "AI Image Generator",
-    "AI Video Generator",
-    "≈ 400 AI images / month",
-    "≈ 60 AI videos / month",
+    "Create up to 400 AI images",
+    "Generate up to 60 AI videos",
     "Watermark-free exports",
     "Private creation library",
     "Priority generation queue",
@@ -108,14 +104,12 @@ const TIERS = [
   name: "Generative",
   monthly: 50,
   yearlyPerMonth: 42,
-  blurb: "For heavy AI creators and production workflows",
+  blurb: "Built for high-output workflows, serious production, and faster iteration",
   popular: false,
   features: [
     "2,500 credits / month",
-    "AI Image Generator",
-    "AI Video Generator",
-    "≈ 830 AI images / month",
-    "≈ 125 AI videos / month",
+    "Create up to 830 AI images",
+    "Generate up to 125 AI videos",
     "Watermark-free exports",
     "Unlimited creation history",
     "Fast-lane generation",
@@ -218,18 +212,16 @@ function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade }) {
   let hint = "";
   let disabled = false;
 
-  if (tier.id === currentPlan) {
-    ctaLabel = "Current plan";
-    disabled = true;
-  } else if (curRank >= 0 && thisRank > curRank) {
-    ctaLabel = "Upgrade";
-    hint = "Manage in the billing portal";
-  } else if (curRank >= 0 && thisRank < curRank) {
-    ctaLabel = "Downgrade";
-    hint = "Takes effect next cycle (portal)";
-  } else if (currentPlan === "free") {
-    ctaLabel = "Get started";
-  }
+if (tier.id === currentPlan) {
+  ctaLabel = "Current plan";
+  disabled = true;
+} else if (curRank >= 0 && thisRank > curRank) {
+  ctaLabel = "Upgrade";
+} else if (curRank >= 0 && thisRank < curRank) {
+  ctaLabel = "Downgrade";
+} else if (currentPlan === "free") {
+  ctaLabel = "Subscribe"; // 🔥 changed
+}
 
   async function onClick() {
     const {
@@ -262,23 +254,64 @@ function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade }) {
   }
 
   const core = (
-    <div className="rounded-2xl bg-[#141622] border border-[#1F2230] p-6 flex flex-col h-full relative overflow-hidden text-[#F4F6FB]  shadow-xl">
-      {tier.popular && <CornerRibbon label="Best value" />}
+ <div
+  className={`relative overflow-hidden rounded-[22px] border p-5 md:p-6 flex flex-col h-full text-[#F4F6FB] transition ${
+    tier.popular
+      ? "border-[#7A3BFF]/70 bg-[linear-gradient(180deg,rgba(20,22,34,0.98),rgba(11,14,26,0.98))] shadow-[0_0_0_1px_rgba(122,59,255,0.12),0_20px_80px_rgba(122,59,255,0.16)]"
+      : "border-white/10 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] shadow-[0_12px_40px_rgba(0,0,0,0.22)]"
+  }`}
+>
+  <div className={`absolute inset-x-0 top-0 h-[2px] ${
+    tier.popular
+      ? "bg-gradient-to-r from-[#6D4AFF] via-[#9F5CFF] to-[#4D8DFF]"
+      : "bg-white/10"
+  }`} />
+      {tier.popular && (
+  <div className="text-xs text-[#CDAEFF] font-semibold mb-1">
+    MOST POPULAR
+  </div>
+)}
+
+
 
       <div className="mb-2 font-bold text-xl">{tier.name}</div>
 
-      <div className="mt-1 flex items-baseline gap-2">
-        <div className="text-4xl font-bold">{priceStr}</div>
-        <div className="text-sm text-[#B7BBC6] font-semibold">/month</div>
-      </div>
-      <div className="text-sm text-[#B7BBC6] font-bold">{subline}</div>
+   <div className="mt-1 flex items-baseline gap-2">
+  <div className="text-4xl font-bold">{priceStr}</div>
+  <div className="text-sm text-[#B7BBC6] font-semibold">/month</div>
+</div>
+
+<button
+  disabled={disabled}
+  onClick={onClick}
+  className={`mt-4 inline-flex h-11 w-full items-center justify-center rounded-xl font-semibold transition ${
+    disabled
+      ? "cursor-not-allowed bg-white/10 text-white/50"
+      : "bg-[linear-gradient(90deg,#7A3BFF_0%,#9F5CFF_55%,#4D8DFF_100%)] text-white shadow-[0_10px_30px_rgba(122,59,255,0.28)] hover:translate-y-[-1px]"
+  }`}
+>
+  {tier.popular && currentPlan === "free"
+  ? "Start Pro"
+  : ctaLabel}
+</button>
+
+      
+      
 
       <div className="text-sm text-[#B7BBC6] font-semibold mt-2">{tier.blurb}</div>
 
-      <ul className="mt-5 space-y-2 text-sm text-[#B7BBC6]">
+      <div className="mt-3 inline-flex w-fit items-center rounded-full border border-[#2A2F45] bg-[#1A1D2B] px-3 py-1 text-xs font-semibold text-[#DDE3F0]">
+  {tier.id === "starter" && "From only $0.40/day"}
+  {tier.id === "pro" && "From only $0.83/day"}
+  {tier.id === "generative" && "Built for daily production"}
+</div>
+
+
+
+      <ul className="mt-6 space-y-3 text-sm text-[#C7D0E0]">
         {tier.features.map((f, i) => (
-          <li key={i} className="flex items-start gap-2">
-            <span className="mt-[3px] text-[#7A3BFF]">
+          <li key={i} className="flex items-start gap-3">
+           <span className="mt-[2px] text-[#8B5CFF] shrink-0">
               <Tick className="w-4 h-4" />
             </span>
             <span>{f}</span>
@@ -286,16 +319,13 @@ function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade }) {
         ))}
       </ul>
 
-      <button
-        disabled={disabled}
-        onClick={onClick}
-        className={`mt-6 inline-flex justify-center items-center h-11 rounded-xl font-semibold transition w-full ${
-          disabled ? "bg-black/30 text-white/60 cursor-not-allowed" : "text-white"
-        }`}
-        style={!disabled ? { background: "#7A3BFF", boxShadow: "0 6px 14px rgba(22,119,255,0.3)" } : {}}
-      >
-        {ctaLabel}
-      </button>
+
+
+      {!disabled && (
+<div className="mt-3 text-center text-xs text-[#7F8AA3]">
+  Instant access • Cancel anytime
+</div>
+)}
 
       {!!hint && <div className="mt-2 text-xs text-zinc-400 text-center">{hint}</div>}
 
@@ -317,9 +347,11 @@ function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade }) {
   );
 }
 
+
+
 function SecondaryCard({ title, price, subtitle, ctaLabel, to, children }) {
   return (
-    <div className="rounded-2xl bg-[#1A1D2B] border border-[#2A2F45] p-6 flex flex-col justify-between text-[#E6E8EE] shadow-xl">
+    <div className="rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] p-6 flex flex-col justify-between text-[#E6E8EE] shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
       <div>
         <div className="text-2xl font-semibold">{title}</div>
         <div className="mt-1 text-3xl font-bold">{price}</div>
@@ -356,51 +388,92 @@ export default function Pricing() {
   }, [plan]);
 
   return (
-    <section className="bg-[#12141A] text-white">
-      <div className="max-w-6xl mx-auto px-6 sm:px-8 py-14">
+<section className="relative bg-[#090B12] text-white">
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(45,64,160,0.16),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(122,59,255,0.10),transparent_28%)]" />
+  <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.02),transparent_18%,transparent_82%,rgba(255,255,255,0.02))]" />
+
+  <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-14">
         {/* Heading */}
-        <div className="text-center mb-6">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#F4F6FB]">
-            The right plan,{" "}
-            <span className="text-[#7A3BFF] bg-clip-text ">
-              for the right team
-            </span>
-          </h1>
-          <p className="text-[#B7BBC6] font-semibold mt-3">Start free. Upgrade when you’re ready. Cancel anytime.</p>
-          <p className="text-[#B7BBC6] mt-1 text-sm">V1 uses the best AI model available right now.</p>
+{/* Header */}
+<div className="mx-auto max-w-3xl text-center mb-6 md:mb-10">
+  <div className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-medium text-[#C9D1E8] backdrop-blur-sm">
+    Trusted by 800+ creators
+  </div>
 
-          {/* current plan badge */}
-          <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#ECE8F2]  px-3 py-2 text-sm">
-            <span className="text-[#4A4A55] font-semibold">Your plan:</span>
-            <span className="font-semibold text-[#110829]">{planLabel}</span>
-            {hasSub && (
-              <button
-                onClick={() => openBillingPortal({ flow: "change_plan", returnPath: "/settings" })}
-                className="ml-2 rounded-full bg-white text-black px-3 py-1 text-xs font-semibold hover:bg-gray-100"
-              >
-                Manage / Billing portal
-              </button>
-            )}
-          </div>
+  <h1 className="mt-4 text-3xl md:text-6xl font-extrabold tracking-[-0.03em] leading-[1.05] text-white">
+    Go Viral With{" "}
+    <span className="bg-gradient-to-r from-[#9F5CFF] via-[#7A3BFF] to-[#4D8DFF] bg-clip-text text-transparent">
+      AI Content
+    </span>
+  </h1>
+
+  
+  <p className="mt-4 text-sm md:text-lg text-[#AAB3C5]">
+    Create faster, test more ideas, and scale what works.
+  </p>
+</div>
+
+
+
+    
+
+
+        <div className="hidden md:grid grid-cols-3 gap-4 mb-8 mt-4">
+ <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
+  <div className="text-sm font-semibold text-white">Move faster</div>
+  <p className="mt-1 text-sm text-[#9DA8BD]">
+    Turn ideas into publish-ready content in minutes.
+  </p>
+</div>
+
+ <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
+  <div className="text-sm font-semibold text-white">Test more ideas</div>
+  <p className="mt-1 text-sm text-[#9DA8BD]">
+    Generate more variations without slowing down.
+  </p>
+</div>
+
+<div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
+  <div className="text-sm font-semibold text-white">Scale what works</div>
+  <p className="mt-1 text-sm text-[#9DA8BD]">
+    Upgrade when you’re ready for higher output.
+  </p>
+</div>
+</div>
+
+
+{/* 🔥 MOBILE QUICK ACTION */}
+<div className="md:hidden mb-5 mt-4">
+  <div className="rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,rgba(18,20,31,0.96),rgba(10,12,20,0.96))] p-4 shadow-[0_10px_40px_rgba(0,0,0,0.22)]">
+    
+    <div className="flex items-center justify-between">
+      <div>
+        <div className="text-xs text-[#9DA8BD]">Plans start from</div>
+
+        <div className="mt-1 text-2xl font-extrabold text-white">
+          $12<span className="text-sm font-medium text-[#9DA8BD]"> /month</span>
         </div>
 
-        {/* Billing toggle */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="inline-flex rounded-full border border-[#1F2230] bg-[#141622] p-1">
-            <button
-              onClick={() => setBilling("monthly")}
-              className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                billing === "monthly" ? "bg-[#121826] text-white" : "text-zinc-300"
-              }`}
-            >
-              Monthly
-            </button>
-      
-          </div>
+        <div className="text-[11px] text-[#7F8AA3] mt-1">
+          Cancel anytime • Instant access
         </div>
+      </div>
+
+      <button
+        onClick={() => {
+          document.getElementById("pricing-section")?.scrollIntoView({ behavior: "smooth" });
+        }}
+        className="rounded-xl bg-[linear-gradient(90deg,#7A3BFF_0%,#9F5CFF_55%,#4D8DFF_100%)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(122,59,255,0.28)]"
+      >
+        View Plans
+      </button>
+    </div>
+
+  </div>
+</div>
 
         {/* Main tier grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div id="pricing-section" className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-2 md:mt-6">
           {TIERS.map((t) => (
             <PlanCard
               key={t.id}
@@ -413,10 +486,17 @@ export default function Pricing() {
           ))}
         </div>
 
+ <div className="mt-10 hidden md:block text-center text-xs text-[#7F8AA3]">
+  Current plan: <span className="text-white font-semibold">{planLabel}</span>
+</div>
+       
+
         {/* “All plans include” */}
-        <div className="mt-10 rounded-2xl border border-[#2A2F45] bg-[#1A1D2B] p-5">
-          <div className=" text-center text-sm font-bold mb-4 text-[#E6E8EE] ">All plans include</div>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 text-sm text-[#B7BBC6]">
+       <div className="relative mt-10 rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
+          <div className="mb-4 text-center text-sm font-semibold tracking-[0.08em] uppercase text-[#D7DDF0]">
+  All plans include
+</div>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 text-sm text-[#C7D0E0]">
             {ALL_INCLUDE.map((f) => (
               <li key={f} className="flex items-center gap-2">
                 <span className="text-[#7A3BFF]">
@@ -427,6 +507,10 @@ export default function Pricing() {
             ))}
           </ul>
         </div>
+
+        
+
+        
 
         {/* Secondary row: Free & Enterprise */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
@@ -457,25 +541,25 @@ export default function Pricing() {
         <div className="mt-12">
           <h3 className="text-center text-xl font-bold mb-4 text-[#F4F6FB]">FAQs</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-            <div className="rounded-xl border border-[#2A2F45] p-4 bg-[#1A1D2B]">
+            <div className="rounded-xl border border-white/10 p-4 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
               <div className="font-semibold mb-1 text-[#E6E8EE]">Can I cancel anytime?</div>
               <p className="text-[#B7BBC6]">
                 Yes. Manage your plan in the Stripe billing portal. Your plan stays active until the end of the paid period.
               </p>
             </div>
-            <div className="rounded-xl border border-[#2A2F45] p-4 bg-[#1A1D2B]">
+            <div className="rounded-xl border border-white/10 p-4 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
               <div className="font-semibold mb-1 text-[#E6E8EE]">Do unused credits roll over?</div>
               <p className="text-[#B7BBC6]">
                 Your balance is additive—monthly plan credits add to your remaining balance. One-time packs never expire.
               </p>
             </div>
-            <div className="rounded-xl border border-[#2A2F45] p-4 bg-[#1A1D2B]">
+            <div className="rounded-xl border border-white/10 p-4 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
               <div className="font-semibold mb-1 text-[#E6E8EE]">How do upgrades/downgrades work?</div>
               <p className="text-[#B7BBC6]">
                 Both upgrades and downgrades are handled in the Stripe billing portal. Upgrades are usually prorated instantly; downgrades take effect on your next renewal.
               </p>
             </div>
-            <div className="rounded-xl border border-[#2A2F45] p-4 bg-[#1A1D2B]">
+            <div className="rounded-xl border border-white/10 p-4 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
               <div className="font-semibold mb-1 text-[#E6E8EE]">Do you offer refunds?</div>
               <p className="text-[#B7BBC6]">
                 Unused credits are refundable within 7 days. Once credits are used, refunds cannot be issued due to AI generation costs.
@@ -495,7 +579,7 @@ export default function Pricing() {
       {TOPUPS.map((p) => (
         <div
           key={p.id}
-          className="rounded-2xl bg-[#1A1D2B] border border-[#2A2F45] p-6 flex flex-col justify-between"
+         className="rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] p-6 flex flex-col justify-between shadow-[0_12px_40px_rgba(0,0,0,0.22)]"
         >
           <div>
             <div className="text-lg font-semibold text-[#F4F6FB]">
@@ -559,6 +643,7 @@ export default function Pricing() {
             See more
           </Link>
         </div>
+        
       </div>
 
       {/* Downgrade modal */}
