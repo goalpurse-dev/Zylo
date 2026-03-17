@@ -14,8 +14,8 @@
   ],
   "crons": [
     {
-      "path": "/api/send-abandoned-emails",
-      "schedule": "0 * * * *"
-    }
+  "path": "/api/send-abandoned-emails",
+  "schedule": "*/10 * * * *"
+}
   ]
 }

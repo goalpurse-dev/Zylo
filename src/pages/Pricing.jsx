@@ -247,23 +247,24 @@ async function onClick() {
 
   console.log("🔥 ABOUT TO INSERT");
 
-  const { data, error } = await supabase
-    .from("abandoned_checkouts")
-    .upsert(
-      {
-        email: user.email,
-        stripe_customer_id: null,
-        status: "pending",
-        recovery_stage: 0,
-        paid: false,
-        recovered: false,
-        created_at: new Date().toISOString(),
-      },
-      { onConflict: "email" }
-    )
-    .select();
+const { data: existing } = await supabase
+  .from("abandoned_checkouts")
+  .select("*")
+  .eq("email", user.email)
+  .maybeSingle();
 
-  console.log("🔥 UPSERT RESULT:", { data, error });
+await supabase.from("abandoned_checkouts").upsert(
+  {
+    email: user.email,
+    recovery_stage: existing?.recovery_stage ?? 0,
+    created_at: existing?.created_at ?? new Date().toISOString(),
+    paid: false,
+    recovered: false,
+  },
+  { onConflict: "email" }
+);
+
+  
 
   // 👇 WAIT SO YOU CAN SEE LOGS
   await new Promise(res => setTimeout(res, 1500));
