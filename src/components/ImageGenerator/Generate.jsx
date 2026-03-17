@@ -86,7 +86,7 @@ const StyleCard = ({ img, label, active, onClick }) => (
   <button
     onClick={onClick}
       className={`
-      relative flex flex-col gap-2 rounded-sm overflow-hidden transition
+      relative flex flex-col gap-2 rounded-xl overflow-hidden transition
       ${active
         ? "border-2 border-[#7A3BFF] shadow-[0_0_25px_rgba(122,59,255,0.45)] "
         : "border border-white/10 hover:border-purple-500/50"}
@@ -108,13 +108,13 @@ const AspectRatioRow = ({ label, width, height, onClick }) => (
     {/* FIXED PREVIEW COLUMN */}
     <div className="w-[50px] flex justify-center">
     <div
-  className="border border-white/70 rounded-sm"
+  className="border border-white/70 rounded-xl"
   style={{
-    width: `${width}px`,
-    height: `${height}px`,
-    maxWidth: "40px",
-    maxHeight: "40px"
-  }}
+  width: `${s.previewW}px`,
+  height: `${s.previewH}px`,
+  maxWidth: "42px",
+  maxHeight: "42px",
+}}
 />
     </div>
 
@@ -140,7 +140,7 @@ const ModelCard = ({
 }) => (
   <button
     onClick={onClick}
- className={`relative w-full h-full rounded-sm transition text-left flex flex-col
+ className={`relative w-full h-full rounded-xl transition text-left flex flex-col
       bg-[#0B0E1A]/70 border
       ${
         active
@@ -163,7 +163,7 @@ const ModelCard = ({
       <img
         src={img}
         alt={label}
-        className="w-10 h-10 rounded-sm object-cover  p-1 flex-shrink-0"
+        className="w-10 h-10 rounded-xl object-cover  p-1 flex-shrink-0"
       />
        <div className="text-white font-medium leading-tight">
           {label}
@@ -187,7 +187,7 @@ const ModelCard = ({
         {traits.map((t) => (
           <span
             key={t}
-            className="text-[11px] px-3 py-1 rounded-sm bg-white/10 text-white/70"
+            className="text-[11px] px-3 py-1 rounded-xl bg-white/10 text-white/70"
           >
             {t}
           </span>
@@ -221,6 +221,9 @@ const [limitToastOpen, setLimitToastOpen] = useState(false);
 const panelRef = useRef(null);
  const [selectedModelKey, setSelectedModelKey] = useState("image:nano");
 const [selectedSize, setSelectedSize] = useState("1:1");
+
+
+
 
 const selectedModel = MODELS[selectedModelKey];
 const estimatedCredits = selectedModel?.credits ?? 0;
@@ -462,14 +465,14 @@ useEffect(() => {
   const modalOpen = openModel || openStyle || openSize;
 
   if (modalOpen) {
-    document.body.classList.add("no-scroll");
-  } else {
-    document.body.classList.remove("no-scroll");
-  }
+    document.body.style.overflow = "hidden";
+ } else {
+  document.body.style.overflow = "";
+}
 
-  return () => {
-    document.body.classList.remove("no-scroll");
-  };
+ return () => {
+  document.body.style.overflow = "";
+};
 }, [openModel, openStyle, openSize]);
 
 useEffect(() => {
@@ -567,7 +570,7 @@ useEffect(() => {
 }, [settingsOpen]);
 
  return (
- <section className="pb-6 md:pb-[env(safe-area-inset-bottom)]">
+ <section className="pb-6 md:pb-[env(safe-area-inset-bottom)] ">
 
     {(openModel || openStyle || openSize) && (
   <div
@@ -576,13 +579,14 @@ useEffect(() => {
       setOpenStyle(false)
       setOpenSize(false)
     }}
-    className="fixed inset-0 bg-black/0 backdrop-blur-sm z-40"
+    className="fixed inset-0 bg-black/0 backdrop-blur-sm z-[100]"
   />
 )}
 
 
     {/* Background */}
     <div className="relative w-full ">
+    
 
 
      
@@ -593,68 +597,72 @@ useEffect(() => {
 
 
         <div className="w-full flex justify-center mt-4 px-4">
-          <div className="w-full max-w-[900px] bg-[#151822] border border-[#1F2230] rounded-sm p-4 md:p-6 shadow-2xl space-y-4 md:space-y-6">
+    <div
+  className="
+  w-full max-w-[900px]
+  rounded-[22px]
+  border border-white/10
+  bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))]
+  p-5 md:p-6
+  shadow-[0_12px_40px_rgba(0,0,0,0.25)]
+  space-y-6
+"
+>
 
          {/* MODE SELECTOR */}
-<div className="grid grid-cols-3 gap-1">
-  {[
-    {
- 
-      icon: Image,
-      base: "from-purple-500/10 via-purple-500/10",
-      active: "from-purple-500/40 via-purple-500/20",
-      path: "/workspace/image-generator",
-    },
-    {
- 
-      icon: VideoIcon,
-      base: "from-indigo-500/10 via-indigo-500/10",
-      active: "from-indigo-500/40 via-indigo-500/10",
-      path: "/workspace/video-generator",
-    },
-    {
-     
-      icon: Folder,
-      base: "from-emerald-500/10 via-emerald-500/10",
-      active: "from-emerald-500/40 via-emerald-500/10",
-      path: "/workspace/creations",
-    },
-  ].map((item) => {
-    const Icon = item.icon;
-    const isActive = location.pathname === item.path;
+{/* VIRAL MODE SELECTOR */}
+<div className="relative w-full flex justify-center">
+  <div
+    className="
+    relative flex w-full max-w-[420px] p-1
+    rounded-2xl
+    border border-white/10
+    bg-[linear-gradient(180deg,rgba(18,20,31,0.95),rgba(10,12,20,0.95))]
+    shadow-[0_12px_40px_rgba(0,0,0,0.35)]
+    overflow-hidden
+  "
+  >
+    {[
+      {
+        label: "Viral Image",
+        path: "/workspace/image-generator",
+      },
+      {
+        label: "Viral Video",
+        path: "/workspace/video-generator",
+      },
+    ].map((item) => {
+      const isActive = location.pathname === item.path;
 
-    return (
-      <button
-        key={item.label}
-        onClick={() => navigate(item.path)}
-        className={`
-          relative overflow-hidden flex flex-col items-center justify-center
-          rounded-sm py-1 border transition-all duration-300
-          ${
-            isActive
-              ? "border-[#7A3BFF] shadow-[0_0_14px_rgba(122,59,255,0.35)]"
-              : "border-[#232635] hover:border-white/20"
-          }
-          bg-[#141722]
-        `}
-      >
-        {/* Gradient Overlay */}
-        <div
-          className={`
-            absolute inset-0 bg-gradient-to-t 
-            ${isActive ? item.active : item.base}
-            to-transparent
-            transition-all duration-300
-          `}
-        />
+      return (
+        <button
+          key={item.label}
+          onClick={() => navigate(item.path)}
+          className="relative flex-1 py-2.5 text-sm font-medium z-10"
+        >
+          {/* ACTIVE BACKGROUND */}
+          {isActive && (
+            <div
+              className="
+              absolute inset-0 rounded-xl
+              bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]
+              shadow-[0_0_25px_rgba(122,59,255,0.45)]
+              transition-all duration-300
+            "
+            />
+          )}
 
-        <Icon className="w-4 h-4 mb-1 text-white relative z-10" />
-        <p className="text-sm text-white relative z-10">
-          {item.label}
-        </p>
-      </button>
-    );
-  })}
+          <span
+            className={`relative z-10 ${
+              isActive ? "text-white" : "text-white/60"
+            }`}
+          >
+            {item.label}
+          </span>
+        </button>
+      );
+    })}
+  </div>
 </div>
 
 
@@ -697,32 +705,35 @@ useEffect(() => {
 )}
 
           {/* PROMPT */}
-<div
-  className="relative rounded-sm p-[1px]
-             bg-gradient-to-br from-purple-500/20 to-transparent
-             hover:from-purple-500/30 transition-all duration-300"
->
+<div className="relative">
   <div
-    className="bg-[#1A1E2A] border border-gray-800
-               rounded-sm p-5 transition-all duration-300
-               hover:border-purple-500/40
-               focus-within:border-purple-500/60
-               focus-within:shadow-lg
-               focus-within:shadow-purple-500/20"
+    className="
+    rounded-xl
+    border border-white/10
+    bg-[#0F111A]
+    px-4 py-4
+    transition
+    focus-within:border-[#7A3BFF]
+    focus-within:shadow-[0_0_0_1px_rgba(122,59,255,0.4)]
+  "
   >
-   <textarea
-  ref={textareaRef}
-  value={prompt}
-  onChange={(e) => setPrompt(e.target.value)}
-  placeholder="Describe what you want to create..."
-  rows={3}
-  className="
-
- w-full min-h-[90px] md:min-h-[120px] bg-transparent outline-none text-[16px] text-white placeholder-[#6B7280] resize-none
-"
-/>
+    <textarea
+      ref={textareaRef}
+      value={prompt}
+      onChange={(e) => setPrompt(e.target.value)}
+      placeholder="Describe the content you want to go viral..."
+      rows={4}
+      className="
+        w-full bg-transparent outline-none
+        text-[15px] text-white
+        placeholder:text-white/40
+        resize-none
+      "
+    />
   </div>
 </div>
+
+
 
 {/* IMPORT IMAGE */}
 <button
@@ -732,21 +743,24 @@ useEffect(() => {
     setOpenReferenceModal(true)
   }}
   className={`
-    w-full rounded-sm border-2 border-dashed
-    border-[#2A2E3C]
-    bg-[#141722]
-    py-4 md:py-6
-    flex flex-col items-center justify-center
-    transition-all duration-300
+    w-full rounded-xl
+    border border-white/10
+    bg-[linear-gradient(180deg,#141722,#0F111A)]
+    py-6
+
+    flex flex-col items-center justify-center gap-2
+
+    transition-all duration-200
+
     ${
       canAddImages
-        ? "hover:border-purple-500/40 hover:bg-[#171A24] cursor-pointer"
+        ? "hover:border-[#7A3BFF]/40 hover:shadow-[0_6px_20px_rgba(122,59,255,0.12)]"
         : "opacity-40 cursor-not-allowed"
     }
   `}
 >
-  <ImagePlusIcon className="w-5 h-5 md:w-6 md:h-6 text-[#9CA3AF] mb-2" />
-  <p className="text-sm text-[#9CA3AF]">
+  <ImagePlusIcon className="w-5 h-5 text-white/40" />
+  <p className="text-sm text-white/50">
     Add visual references
   </p>
 </button>
@@ -759,7 +773,7 @@ useEffect(() => {
     {selected.map((img) => (
       <div
         key={img.id}
-        className="relative aspect-square rounded-sm overflow-hidden"
+        className="relative aspect-square rounded-xl overflow-hidden border border-white/10"
       >
         <img
           src={img.url}
@@ -767,7 +781,7 @@ useEffect(() => {
         />
         <button
           onClick={() => toggleSelect(img)}
-          className="absolute top-2 right-2 bg-black/60 backdrop-blur-md rounded-full p-1"
+          className="absolute top-2 right-2 bg-black/60 backdrop-blur-md rounded-full p-1.5 border border-white/10"
         >
           <X className="w-4 h-4 text-white" />
         </button>
@@ -791,74 +805,79 @@ useEffect(() => {
     setOpenStyle(false)
   }}
   className={`
-    group
-    relative
-    bg-[#1A1E2A]
-    border border-[#232635]
-    rounded-sm
-    px-4 py-3
-    text-left
-    transition-all duration-200
-    hover:border-purple-500/40
-    hover:shadow-md hover:shadow-purple-500/10
-    active:scale-[0.98]
-    ${openModel ? "border-purple-500 shadow-md shadow-purple-500/20" : ""}
-  `}
->
-  <div className="flex justify-between items-center">
-    <div>
-      <p className="text-xs text-white/50">Model</p>
-      <p className="text-sm text-white font-medium">
-        {selectedModel.label}
-      </p>
-    </div>
+  group relative
+  rounded-xl
+  border border-white/10
+  bg-[linear-gradient(180deg,#141722,#0F111A)]
+  px-4 py-3.5
+  text-left
 
-    <ChevronRight
-      className={`
-        w-4 h-4 text-white/40
-        transition-transform duration-200
-        ${openModel ? "rotate-90 text-purple-400" : "group-hover:translate-x-1"}
-      `}
-    />
+  transition-all duration-200
+
+  hover:border-[#7A3BFF]/40
+  hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
+
+  active:scale-[0.98]
+
+  ${openModel ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)]" : ""}
+`}
+>
+ <div className="flex justify-between items-center">
+  <div className="flex flex-col">
+    <span className="text-[11px] text-white/40 tracking-wide uppercase">
+      Model
+    </span>
+    <span className="text-[14px] text-white font-medium">
+      {selectedModel.label}
+    </span>
   </div>
+
+  <ChevronRight
+    className={`
+      w-4 h-4 text-white/30
+      transition-all duration-200
+      ${openModel ? "rotate-90 text-[#7A3BFF]" : "group-hover:translate-x-1"}
+    `}
+  />
+</div>
 </button>
 
 
-              {/* STYLE */}
-             <button
+<button
   onClick={() => {
-    setOpenStyle(prev => !prev)
-    setOpenSize(false)
-    setOpenModel(false)
+    setOpenStyle((prev) => !prev);
+    setOpenSize(false);
+    setOpenModel(false);
   }}
   className={`
-    group
-    relative
-    bg-[#1A1E2A]
-    border border-[#232635]
-    rounded-sm
-    px-4 py-3
+    group relative
+    rounded-xl
+    border border-white/10
+    bg-[linear-gradient(180deg,#141722,#0F111A)]
+    px-4 py-3.5
     text-left
     transition-all duration-200
-    hover:border-purple-500/40
-    hover:shadow-md hover:shadow-purple-500/10
+    hover:border-[#7A3BFF]/40
+    hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
     active:scale-[0.98]
-    ${openStyle ? "border-purple-500 shadow-md shadow-purple-500/20" : ""}
+    ${openStyle ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)]" : ""}
   `}
 >
   <div className="flex justify-between items-center">
-    <div>
-      <p className="text-xs text-white/50">Style</p>
-      <p className="text-sm text-white font-medium">
-        {selectedStyle}
-      </p>
+    <div className="flex flex-col">
+      <span className="text-[11px] text-white/40 tracking-wide uppercase">
+        Style
+      </span>
+      <span className="text-[14px] text-white font-medium">
+        {IMAGE_STYLES[selectedStyle]?.label || selectedStyle}
+      </span>
     </div>
 
     <ChevronRight
       className={`
-        w-4 h-4 text-white/40
+        w-4 h-4 text-white/30
         transition-all duration-200
-        ${openStyle ? "rotate-90 text-purple-400" : "group-hover:translate-x-1"}
+        ${openStyle ? "rotate-90 text-[#7A3BFF]" : "group-hover:translate-x-1"}
       `}
     />
   </div>
@@ -872,37 +891,42 @@ useEffect(() => {
     setOpenModel(false)
     setOpenStyle(false)
   }}
-  className={`
-    group
-    relative
-    bg-[#1A1E2A]
-    border border-[#232635]
-    rounded-sm
-    px-4 py-3
-    text-left
-    transition-all duration-200
-    hover:border-purple-500/40
-    hover:shadow-md hover:shadow-purple-500/10
-    active:scale-[0.98]
-    ${openSize ? "border-purple-500 shadow-md shadow-purple-500/20" : ""}
-  `}
->
-  <div className="flex justify-between items-center">
-    <div>
-      <p className="text-xs text-white/50">Size</p>
-      <p className="text-sm text-white font-medium">
-        {selectedSize}
-      </p>
-    </div>
+ className={`
+  group relative
+  rounded-xl
+  border border-white/10
+  bg-[linear-gradient(180deg,#141722,#0F111A)]
+  px-4 py-3.5
+  text-left
 
-    <ChevronRight
-      className={`
-        w-4 h-4 text-white/40
-        transition-all duration-200
-        ${openSize ? "rotate-90 text-purple-400" : "group-hover:translate-x-1"}
-      `}
-    />
+  transition-all duration-200
+
+  hover:border-[#7A3BFF]/40
+  hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
+
+  active:scale-[0.98]
+
+  ${openSize ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)]" : ""}
+`}
+>
+<div className="flex justify-between items-center">
+  <div className="flex flex-col">
+    <span className="text-[11px] text-white/40 tracking-wide uppercase">
+      Size
+    </span>
+    <span className="text-[14px] text-white font-medium">
+      {selectedSize}
+    </span>
   </div>
+
+  <ChevronRight
+    className={`
+      w-4 h-4 text-white/30
+      transition-all duration-200
+      ${openSize ? "rotate-90 text-[#7A3BFF]" : "group-hover:translate-x-1"}
+    `}
+  />
+</div>
 </button>
 
 
@@ -912,16 +936,16 @@ useEffect(() => {
   <div
     className="
    fixed
-z-50
+z-[100]
 left-1/2 -translate-x-1/2
 top-[18%] md:top-1/2
 md:-translate-y-1/2
       w-[92%] md:w-[400px]
       max-h-[60vh]
-      bg-[#1A1D2B]
-      border border-white/10
-      rounded-sm
-      shadow-2xl
+      bg-[linear-gradient(180deg,rgba(20,23,34,0.98),rgba(12,15,23,0.98))]
+border border-white/10
+rounded-2xl
+shadow-[0_18px_60px_rgba(0,0,0,0.45)]
       p-5
       overflow-y-auto
 overscroll-contain
@@ -947,7 +971,7 @@ overscroll-contain
         setSelectedSize(size);
         setOpenSize(false);
       }}
-      className={`w-full px-4 py-3 text-left rounded-sm text-sm flex items-center gap-4
+      className={`w-full px-4 py-3 text-left rounded-xl text-sm flex items-center gap-4
         ${
           size === selectedSize
             ? "bg-[#7A3BFF]/20 border border-[#7A3BFF]"
@@ -958,7 +982,7 @@ overscroll-contain
       {/* Ratio preview */}
       <div className="w-[50px] flex justify-center">
         <div
-          className="border border-white/70 rounded-sm"
+          className="border border-white/70 rounded-[4px]"
           style={{
             width: `${s.previewW}px`,
             height: `${s.previewH}px`,
@@ -980,16 +1004,16 @@ overscroll-contain
   <div
     className="
      fixed
-z-50
+z-[100]
 left-1/2 -translate-x-1/2
 top-[18%] md:top-1/2
 md:-translate-y-1/2
       w-[92%] md:w-[650px]
       max-h-[75vh]
-      bg-[#1A1D2B]
-      border border-white/10
-      rounded-sm
-      shadow-2xl
+     bg-[linear-gradient(180deg,rgba(20,23,34,0.98),rgba(12,15,23,0.98))]
+border border-white/10
+rounded-2xl
+shadow-[0_18px_60px_rgba(0,0,0,0.45)]
       p-5
       overflow-y-auto
       overscroll-contain
@@ -1028,16 +1052,16 @@ md:-translate-y-1/2
   <div
     className="
     fixed
-z-50
+z-[100]
 left-1/2 -translate-x-1/2
 top-[18%] md:top-1/2
 md:-translate-y-1/2
       w-[92%] md:w-[800px]
       max-h-[75vh]
-      bg-[#1A1D2B]
-      border border-white/10
-      rounded-sm
-      shadow-2xl
+    bg-[linear-gradient(180deg,rgba(20,23,34,0.98),rgba(12,15,23,0.98))]
+border border-white/10
+rounded-2xl
+shadow-[0_18px_60px_rgba(0,0,0,0.45)]
       p-5
       overflow-y-auto
       overscroll-contain
@@ -1065,7 +1089,7 @@ md:-translate-y-1/2
   {isLocked && (
     <div
       onClick={() => navigate("/workspace/pricing")}
-      className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-sm z-10 flex items-center justify-center cursor-pointer hover:bg-black/50 transition"
+      className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl z-10 flex items-center justify-center cursor-pointer hover:bg-black/50 transition"
     >
 <div className="flex flex-col items-center gap-2 text-center">
 
@@ -1109,60 +1133,76 @@ md:-translate-y-1/2
   </div>
 )}
             </div>
-{/* GENERATE BUTTON */}
-<div
-  className="
-  sticky bottom-[env(safe-area-inset-bottom)]
-  md:static
-  z-30
-  -mx-4 px-4 pt-1
-  pb-[max(env(safe-area-inset-bottom),12px)]
-  bg-gradient-to-t from-[#151822] via-[#151822]/90 to-transparent
-  backdrop-blur-md
-"
->
-  <button
-    onClick={handleGenerate}
-    disabled={!prompt.trim() || isGenerating}
-    className={`w-full py-3.5 md:py-4 rounded-lg font-semibold text-white transition-all duration-200
-    ${
-      !prompt.trim() || isGenerating
-        ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
-        : `
-        bg-gradient-to-r from-purple-500 to-fuchsia-500/30
-        backdrop-blur-md
-        border border-purple-400/30
-        hover:from-purple-500/40
-        hover:to-fuchsia-500/40
-        hover:border-purple-400/50
-        hover:scale-[1.02]
-        shadow-[0_0_20px_rgba(168,85,247,0.35)]
-        `
-    }`}
-  >
-    {isGenerating ? "Generating…" : "Generate"}
-  </button>
 
-  {/* Estimated cost */}
-  <div className="mt-2">
-    <div
-      className="
-      w-full
-      bg-[#10131A]
-      border border-gray-800
-      rounded-lg
-      px-4 py-3
-      flex items-center justify-center gap-2
-      text-[14px] font-semibold
-      text-green-400
-      "
-    >
-      <span className="text-base">◆</span>
-      <span>Estimated cost: {estimatedCredits} credits</span>
+            
+
+{/* GENERATE SECTION */}
+{/* 🔥 STICKY GENERATE SECTION */}
+<div className="sticky bottom-0 w-full z-50">
+  <div
+    className="
+      pt-3
+      pb-[calc(env(safe-area-inset-bottom)+16px)]
+      bg-gradient-to-t from-[#0B0E1A] via-[#0B0E1A]/95 to-transparent
+      backdrop-blur-xl
+      border-t border-white/10
+    "
+  >
+    <div className="max-w-[900px] mx-auto  flex flex-col gap-3">
+
+      {/* 🚀 GENERATE BUTTON */}
+      <button
+        onClick={handleGenerate}
+        disabled={!prompt.trim() || isGenerating}
+        className={`
+          relative w-full py-4 rounded-2xl font-semibold text-[15px]
+          transition-all duration-300
+          ${
+            !prompt.trim() || isGenerating
+              ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
+              : `
+                bg-[#7A3BFF]
+                hover:bg-[#6B2EFF]
+                shadow-[0_10px_40px_rgba(122,59,255,0.35)]
+                active:scale-[0.98]
+              `
+          }
+        `}
+      >
+        <span className="flex items-center justify-center gap-2">
+          {isGenerating ? (
+            <>
+              <Wand2 className="w-4 h-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <Wand2 className="w-4 h-4 opacity-80" />
+              Generate
+            </>
+          )}
+        </span>
+      </button>
+
+      {/* 💰 COST CARD (ATTACHED UNDER BUTTON) */}
+      <div
+        className="
+          w-full rounded-xl border border-white/10
+          bg-[linear-gradient(180deg,#11141D,#0C0F17)]
+          px-4 py-3
+          flex items-center justify-between
+          text-sm
+        "
+      >
+        <span className="text-white/50">Estimated cost</span>
+        <span className="text-[#36E28F] font-medium">
+          {estimatedCredits} credits
+        </span>
+      </div>
+
     </div>
   </div>
 </div>
-
           </div>
         </div>
       </div>

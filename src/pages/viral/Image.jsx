@@ -247,7 +247,36 @@ useEffect(() => {
      RENDER
   =============================== */
   return (
-    <div className="w-full bg-[#12141A] min-h-screen pb-[env(safe-area-inset-bottom)]">
+    <div className="relative w-full bg-[#12141A] min-h-screen overflow-x-hidden pb-[env(safe-area-inset-bottom)]">
+
+{/* 🔥 SCOPED GLOW (ONLY CONTENT AREA) */}
+<div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+
+  {/* CENTER FOCUS GLOW */}
+  <div className="
+    absolute top-0 left-1/2 -translate-x-1/2
+    w-[900px] h-[500px]
+    bg-[radial-gradient(circle,rgba(122,59,255,0.18),transparent_70%)]
+    blur-[80px]
+  " />
+
+  {/* BOTTOM RIGHT ACCENT */}
+  <div className="
+    absolute bottom-0 right-0
+    w-[600px] h-[400px]
+    bg-[radial-gradient(circle,rgba(168,85,247,0.12),transparent_70%)]
+    blur-[80px]
+  " />
+
+  {/* TOP LEFT SOFT BLUE */}
+  <div className="
+    absolute top-[20%] left-[10%]
+    w-[500px] h-[300px]
+    bg-[radial-gradient(circle,rgba(59,130,246,0.10),transparent_70%)]
+    blur-[70px]
+  " />
+
+</div>
 
       
 <div
@@ -266,7 +295,7 @@ useEffect(() => {
 
 
       {results.length > 0 && (
-        <div className="mt-10 pb-20">
+        <div className="mt-10 pb-32">
  <Result
   results={results}
   onCopyPrompt={(p) => navigator.clipboard.writeText(p)}
