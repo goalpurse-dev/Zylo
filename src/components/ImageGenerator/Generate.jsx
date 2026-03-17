@@ -570,7 +570,7 @@ useEffect(() => {
 }, [settingsOpen]);
 
  return (
- <section className="pb-6 md:pb-[env(safe-area-inset-bottom)] ">
+ <section className="pb-[180px] md:pb-[env(safe-area-inset-bottom)]">
 
  <div
   onClick={() => {
@@ -813,7 +813,7 @@ useEffect(() => {
   }}
 className={`
   alive-card 
-transform-gpu
+
   group relative
   rounded-xl
   border border-white/10
@@ -860,7 +860,7 @@ transform-gpu
   }}
   className={`
   alive-card 
-transform-gpu
+
   group relative
   rounded-xl
   border border-white/10
@@ -908,7 +908,7 @@ transform-gpu
   }}
  className={`
   alive-card 
-transform-gpu
+
   group relative
   rounded-xl
   border border-white/10
@@ -953,7 +953,7 @@ transform-gpu
   <div
     className="
    fixed will-change-transform
-transform-gpu
+
 z-[100]
 left-1/2 -translate-x-1/2
 top-[18%] md:top-1/2
@@ -1022,7 +1022,7 @@ overscroll-contain
   <div
     className="
      fixed will-change-transform
-transform-gpu
+
 z-[100]
 left-1/2 -translate-x-1/2
 top-[18%] md:top-1/2
@@ -1071,7 +1071,7 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
   <div
     className="
     fixed will-change-transform
-transform-gpu
+
 z-[100]
 left-1/2 -translate-x-1/2
 top-[18%] md:top-1/2
@@ -1159,9 +1159,11 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
 {/* GENERATE SECTION */}
 <div
   className="
-    sticky z-50 w-full
-    bottom-[max(env(safe-area-inset-bottom),12px)]
-   
+    fixed
+    bottom-0 left-0 right-0
+    z-[9999]
+
+    md:sticky md:bottom-[max(env(safe-area-inset-bottom),12px)]
   "
 >
   <div
