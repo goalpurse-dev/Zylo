@@ -572,16 +572,23 @@ useEffect(() => {
  return (
  <section className="pb-6 md:pb-[env(safe-area-inset-bottom)] ">
 
-    {(openModel || openStyle || openSize) && (
-  <div
-    onClick={() => {
-      setOpenModel(false)
-      setOpenStyle(false)
-      setOpenSize(false)
-    }}
-    className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[100]"
-  />
-)}
+ <div
+  onClick={() => {
+    setOpenModel(false)
+    setOpenStyle(false)
+    setOpenSize(false)
+  }}
+  className={`
+    fixed inset-0 z-[100]
+    bg-black/40
+    transition-opacity duration-150
+    ${
+      openModel || openStyle || openSize
+        ? "opacity-100 pointer-events-auto"
+        : "opacity-0 pointer-events-none"
+    }
+  `}
+/>
 
 
     {/* Background */}
@@ -707,8 +714,7 @@ useEffect(() => {
           {/* PROMPT */}
 <div className="relative">
   <div
-    className=" will-change-transform
-transform-gpu
+    className=" 
     rounded-xl
     border border-white/10
     bg-[#0F111A]
@@ -744,8 +750,7 @@ transform-gpu
     setOpenReferenceModal(true)
   }}
   className={`
-    w-full rounded-xl will-change-transform
-transform-gpu
+    w-full rounded-xl 
     border border-white/10
     bg-[linear-gradient(180deg,#141722,#0F111A)]
     py-6
@@ -807,7 +812,7 @@ transform-gpu
     setOpenStyle(false)
   }}
 className={`
-  alive-card will-change-transform
+  alive-card 
 transform-gpu
   group relative
   rounded-xl
@@ -816,14 +821,14 @@ transform-gpu
   px-4 py-3.5
   text-left
 
-  transition-all duration-200
+  transition-all  ease-out 
 
   hover:border-[#7A3BFF]/40
   hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
 
   active:scale-[0.98]
 
-  ${openModel ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : ""}
+  ${openModel ? " duration-200 border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : "duration-100"}
 `}
 >
  <div className="flex justify-between items-center">
@@ -854,7 +859,7 @@ transform-gpu
     setOpenModel(false);
   }}
   className={`
-  alive-card will-change-transform
+  alive-card 
 transform-gpu
   group relative
   rounded-xl
@@ -863,7 +868,7 @@ transform-gpu
   px-4 py-3.5
   text-left
 
-  transition-all duration-200
+  transition-all duration-150
 
   hover:border-[#7A3BFF]/40
   hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
@@ -902,7 +907,7 @@ transform-gpu
     setOpenStyle(false)
   }}
  className={`
-  alive-card will-change-transform
+  alive-card 
 transform-gpu
   group relative
   rounded-xl
@@ -911,7 +916,7 @@ transform-gpu
   px-4 py-3.5
   text-left
 
-  transition-all duration-200
+  transition-all duration-150
 
   hover:border-[#7A3BFF]/40
   hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
@@ -934,7 +939,7 @@ transform-gpu
   <ChevronRight
     className={`
       w-4 h-4 text-white/30
-      transition-all duration-200
+      transition-all duration-150
       ${openSize ? "rotate-90 text-[#7A3BFF]" : "group-hover:translate-x-1"}
     `}
   />
@@ -1156,8 +1161,7 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
   className="
     sticky z-50 w-full
     bottom-[max(env(safe-area-inset-bottom),12px)]
-    will-change-transform
-    transform-gpu
+   
   "
 >
   <div
