@@ -8,14 +8,18 @@
   ],
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }
   ],
   "crons": [
     {
-  "path": "/api/send-abandoned-emails",
-  "schedule": "*/10 * * * *"
-}
+      "path": "/api/send-abandoned-emails",
+      "schedule": "*/10 * * * *"
+    }
   ]
 }
