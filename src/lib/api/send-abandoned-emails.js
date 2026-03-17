@@ -15,10 +15,27 @@ function emailOneHtml() {
   return `
     <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;color:#111;">
       <p>Hey,</p>
-      <p>You were really close to finishing your Zyvo setup.</p>
-      <p>We recently added new video models that make content look way more cinematic and faster to create.</p>
-      <p>You can continue here:</p>
-      <p><a href="https://tryzyvo.com/workspace/pricing">https://tryzyvo.com/workspace/pricing</a></p>
+
+      <p>You were literally one step away from unlocking Zyvo.</p>
+
+      <p>Most people never get past that point — but the ones who do start creating content 10x faster.</p>
+
+      <p>Right now you can generate:</p>
+      <ul>
+        <li>🔥 viral TikTok videos</li>
+        <li>🔥 high-end product photos</li>
+        <li>🔥 cinematic AI visuals</li>
+      </ul>
+
+      <p>You can finish your setup here:</p>
+
+      <p>
+        <a href="https://tryzyvo.com/workspace/pricing" 
+        style="background:#7A3BFF;color:white;padding:12px 18px;border-radius:8px;text-decoration:none;display:inline-block;">
+        Continue setup →
+        </a>
+      </p>
+
       <p>— Niko<br/>Zyvo</p>
     </div>
   `;
@@ -28,10 +45,24 @@ function emailTwoHtml() {
   return `
     <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;color:#111;">
       <p>Hey,</p>
-      <p>Just wanted to send a quick reminder in case you still wanted to try Zyvo.</p>
-      <p>A lot of creators are using it for short-form content, product visuals, and faster content testing.</p>
-      <p>If you want to finish setup, here’s the page:</p>
-      <p><a href="https://tryzyvo.com/workspace/pricing">https://tryzyvo.com/workspace/pricing</a></p>
+
+      <p>Quick heads up — most people who sign up never actually test the full power of Zyvo.</p>
+
+      <p>But the ones who do?</p>
+
+      <p>They start posting more, testing faster, and actually growing.</p>
+
+      <p>You already did the hardest part — you just didn’t finish.</p>
+
+      <p>
+        <a href="https://tryzyvo.com/workspace/pricing"
+        style="background:#7A3BFF;color:white;padding:12px 18px;border-radius:8px;text-decoration:none;display:inline-block;">
+        Finish setup →
+        </a>
+      </p>
+
+      <p>Don’t leave it half done.</p>
+
       <p>— Niko</p>
     </div>
   `;
@@ -41,10 +72,22 @@ function emailThreeHtml() {
   return `
     <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;color:#111;">
       <p>Hey,</p>
-      <p>This is my last reminder.</p>
-      <p>If you still want to get started with Zyvo, now’s a good time to jump in and test the new tools.</p>
-      <p>You can continue here:</p>
-      <p><a href="https://tryzyvo.com/workspace/pricing">https://tryzyvo.com/workspace/pricing</a></p>
+
+      <p>I’ll keep this short.</p>
+
+      <p>This is the last reminder about your Zyvo setup.</p>
+
+      <p>If you still want to create viral content faster, now’s your chance.</p>
+
+      <p>Otherwise I’ll stop bothering you 👍</p>
+
+      <p>
+        <a href="https://tryzyvo.com/workspace/pricing"
+        style="background:#7A3BFF;color:white;padding:12px 18px;border-radius:8px;text-decoration:none;display:inline-block;">
+        Continue →
+        </a>
+      </p>
+
       <p>— Niko</p>
     </div>
   `;
