@@ -952,7 +952,7 @@ className={`
 {openSize && (
   <div
     className="
-   fixed will-change-transform
+   fixed 
 
 z-[100]
 left-1/2 -translate-x-1/2
@@ -1021,7 +1021,7 @@ overscroll-contain
 {openStyle && (
   <div
     className="
-     fixed will-change-transform
+     fixed 
 
 z-[100]
 left-1/2 -translate-x-1/2
@@ -1070,7 +1070,7 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
 {openModel && (
   <div
     className="
-    fixed will-change-transform
+    fixed 
 
 z-[100]
 left-1/2 -translate-x-1/2
