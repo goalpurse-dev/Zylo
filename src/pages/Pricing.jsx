@@ -223,58 +223,58 @@ if (tier.id === currentPlan) {
   ctaLabel = "Subscribe"; // 🔥 changed
 }
 
-  async function onClick() {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return (window.location.href = "/signup");
+async function onClick() {
+  console.log("🔥 CLICK DETECTED");
 
-    const priceId = PRICE_IDS[tier.id];
-    if (!priceId) return alert("Price ID not configured.");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    // If user already has a subscription → use Portal for both upgrades & downgrades
-    if (hasSub) {
-      if (thisRank > curRank) {
-        // Upgrade → deep-link to plan picker
-        return openBillingPortal({ flow: "change_plan", returnPath: "/pricing" });
-      }
-      if (thisRank < curRank) {
-        // Downgrade → ask first, then deep-link to plan picker
-        return onAskDowngrade(tier);
-      }
-    }
-
-    // No subscription yet → start checkout
- // 🔥 TRACK ABANDONED CHECKOUT (CRITICAL)
-const { data: trackData, error: trackError } = await supabase
-  .from("abandoned_checkouts")
-  .upsert(
-    {
-      email: user.email,
-      stripe_customer_id: user.id,
-      status: "pending",
-      recovery_stage: 0,
-      paid: false,
-      recovered: false,
-      created_at: new Date().toISOString(),
-    },
-    { onConflict: "email" }
-  )
-  .select();
-
-console.log("abandoned_checkouts upsert:", { trackData, trackError });
-
-if (trackError) {
-  console.error("Failed to track abandoned checkout:", trackError);
-}
-
-await startCheckout({
-  type: "subscription",
-  priceId,
-  userId: user.id,
-  email: user.email,
-});
+  if (!user) {
+    console.log("❌ no user");
+    return (window.location.href = "/signup");
   }
+
+  console.log("🔥 USER:", user.email);
+
+  const priceId = PRICE_IDS[tier.id];
+  if (!priceId) return alert("Price ID not configured.");
+
+  if (hasSub) {
+    console.log("⚠️ has subscription, skipping tracking");
+    return openBillingPortal({ flow: "change_plan", returnPath: "/pricing" });
+  }
+
+  console.log("🔥 ABOUT TO INSERT");
+
+  const { data, error } = await supabase
+    .from("abandoned_checkouts")
+    .upsert(
+      {
+        email: user.email,
+        stripe_customer_id: null,
+        status: "pending",
+        recovery_stage: 0,
+        paid: false,
+        recovered: false,
+        created_at: new Date().toISOString(),
+      },
+      { onConflict: "email" }
+    )
+    .select();
+
+  console.log("🔥 UPSERT RESULT:", { data, error });
+
+  // 👇 WAIT SO YOU CAN SEE LOGS
+  await new Promise(res => setTimeout(res, 1500));
+
+  await startCheckout({
+    type: "subscription",
+    priceId,
+    userId: user.id,
+    email: user.email,
+  });
+}
 
   const core = (
  <div
