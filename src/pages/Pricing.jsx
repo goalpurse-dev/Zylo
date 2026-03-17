@@ -245,7 +245,21 @@ if (tier.id === currentPlan) {
     }
 
     // No subscription yet → start checkout
-   await startCheckout({
+ // 🔥 TRACK ABANDONED CHECKOUT (CRITICAL)
+await supabase
+  .from("abandoned_checkouts")
+  .upsert({
+    email: user.email,
+    stripe_customer_id: user.id,
+    status: "pending",
+    recovery_stage: 0,
+    paid: false,
+    created_at: new Date().toISOString()
+  })
+  .select();
+
+// 👉 THEN start checkout
+await startCheckout({
   type: "subscription",
   priceId,
   userId: user.id,

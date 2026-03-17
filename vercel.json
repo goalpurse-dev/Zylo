@@ -11,5 +11,11 @@
       "source": "/(.*)",
       "destination": "/"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/send-abandoned-emails",
+      "schedule": "0 * * * *"
+    }
   ]
 }
