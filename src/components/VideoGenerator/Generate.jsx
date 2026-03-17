@@ -257,7 +257,7 @@ useEffect(() => {
     const balance = Number(profile?.credit_balance ?? 0);
 
     // ADD THIS 👇
-const plan = profile?.plan || "free";
+const plan = profile?.plan_code || "free";
 
 if (plan === "free") {
   setShowUpgrade(true);
