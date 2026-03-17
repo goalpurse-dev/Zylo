@@ -214,20 +214,15 @@ useEffect(() => {
 
 
 
-  async function handleGenerate() {
+ async function handleGenerate() {
   if (!prompt.trim()) return;
 
   try {
     setIsGenerating(true);
 
     // 🔥 CHECK AUTH
-  const { data: sessionData } = await supabase.auth.getSession();
-
-const user = sessionData?.session?.user;
-
-if (!user) {
-  console.log("NO USER SESSION");
-}
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData?.user;
 
     if (!user) {
       setToast({
@@ -235,41 +230,46 @@ if (!user) {
         type: "info",
       });
 
-      setTimeout(() => {
-        navigate("/signup");
-      }, 1200);
-
+      setTimeout(() => navigate("/signup"), 1200);
       setIsGenerating(false);
       return;
     }
 
-    // 🔥 CHECK CREDITS
-    const { data: profile, error: profErr } = await supabase
+    // 🔥 GET PROFILE FROM SUPABASE
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("credit_balance, plan_code")
+      .select("plan_code, credit_balance")
       .eq("id", user.id)
       .single();
 
-    if (profErr) {
+    if (profileError) {
+      console.error("PROFILE ERROR:", profileError);
+    }
+
+    if (!profile) {
       setToast({
-        message: "Could not check credits.",
+        message: "User data not loaded. Try refreshing.",
         type: "error",
       });
       setIsGenerating(false);
       return;
     }
 
+    const plan = (profile?.plan_code || "free").toLowerCase();
     const balance = Number(profile?.credit_balance ?? 0);
 
-    // ADD THIS 👇
-const plan = profile?.plan_code || "free";
+    // 🔥 DEBUG
+    console.log("PLAN:", plan);
+    console.log("BALANCE:", balance);
 
-if (plan === "free") {
-  setShowUpgrade(true);
-  setIsGenerating(false);
-  return;
-}
+    // 🔥 FREE PLAN BLOCK
+    if (plan === "free") {
+      setShowUpgrade(true);
+      setIsGenerating(false);
+      return;
+    }
 
+    // 🔥 CREDIT CHECK
     if (balance < totalCredits) {
       setToast({
         message: `You need ${totalCredits} credits to generate this video.`,
@@ -289,12 +289,12 @@ if (plan === "free") {
       refImages: selected.map((img) => img.url),
     });
 
-   watchJob(job.id, () => {}); // still track job silently
+    watchJob(job.id, () => {});
 
-// unlock button after 2 seconds so user can queue more jobs
-setTimeout(() => {
-  setIsGenerating(false);
-}, 2000);
+    // unlock after short delay
+    setTimeout(() => {
+      setIsGenerating(false);
+    }, 2000);
 
     setPrompt("");
 
