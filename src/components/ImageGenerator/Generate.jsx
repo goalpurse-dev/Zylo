@@ -579,7 +579,7 @@ useEffect(() => {
       setOpenStyle(false)
       setOpenSize(false)
     }}
-    className="fixed inset-0 bg-black/0 backdrop-blur-sm z-[100]"
+    className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[100]"
   />
 )}
 
@@ -707,7 +707,8 @@ useEffect(() => {
           {/* PROMPT */}
 <div className="relative">
   <div
-    className="
+    className=" will-change-transform
+transform-gpu
     rounded-xl
     border border-white/10
     bg-[#0F111A]
@@ -743,7 +744,8 @@ useEffect(() => {
     setOpenReferenceModal(true)
   }}
   className={`
-    w-full rounded-xl
+    w-full rounded-xl will-change-transform
+transform-gpu
     border border-white/10
     bg-[linear-gradient(180deg,#141722,#0F111A)]
     py-6
@@ -805,7 +807,8 @@ useEffect(() => {
     setOpenStyle(false)
   }}
 className={`
-  alive-card
+  alive-card will-change-transform
+transform-gpu
   group relative
   rounded-xl
   border border-white/10
@@ -851,7 +854,8 @@ className={`
     setOpenModel(false);
   }}
   className={`
-  alive-card
+  alive-card will-change-transform
+transform-gpu
   group relative
   rounded-xl
   border border-white/10
@@ -898,7 +902,8 @@ className={`
     setOpenStyle(false)
   }}
  className={`
-  alive-card
+  alive-card will-change-transform
+transform-gpu
   group relative
   rounded-xl
   border border-white/10
@@ -942,7 +947,8 @@ className={`
 {openSize && (
   <div
     className="
-   fixed
+   fixed will-change-transform
+transform-gpu
 z-[100]
 left-1/2 -translate-x-1/2
 top-[18%] md:top-1/2
@@ -1010,7 +1016,8 @@ overscroll-contain
 {openStyle && (
   <div
     className="
-     fixed
+     fixed will-change-transform
+transform-gpu
 z-[100]
 left-1/2 -translate-x-1/2
 top-[18%] md:top-1/2
@@ -1058,7 +1065,8 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
 {openModel && (
   <div
     className="
-    fixed
+    fixed will-change-transform
+transform-gpu
 z-[100]
 left-1/2 -translate-x-1/2
 top-[18%] md:top-1/2
@@ -1145,13 +1153,14 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
 
 {/* GENERATE SECTION */}
 {/* 🔥 STICKY GENERATE SECTION */}
-<div className="sticky bottom-0 w-full z-50">
+<div className="sticky bottom-0 w-full z-50 will-change-transform
+transform-gpu">
   <div
     className="
       pt-3
       pb-[calc(env(safe-area-inset-bottom)+16px)]
       bg-gradient-to-t from-[#0B0E1A] via-[#0B0E1A]/95 to-transparent
-      backdrop-blur-xl
+      backdrop-blur-md
       border-t border-white/10
     "
   >
