@@ -244,6 +244,29 @@ if (tier.id === currentPlan) {
       }
     }
 
+    // No subscription yet → start checkout
+ // 🔥 TRACK ABANDONED CHECKOUT (CRITICAL)
+const { data: trackData, error: trackError } = await supabase
+  .from("abandoned_checkouts")
+  .upsert(
+    {
+      email: user.email,
+      stripe_customer_id: user.id,
+      status: "pending",
+      recovery_stage: 0,
+      paid: false,
+      recovered: false,
+      created_at: new Date().toISOString(),
+    },
+    { onConflict: "email" }
+  )
+  .select();
+
+console.log("abandoned_checkouts upsert:", { trackData, trackError });
+
+if (trackError) {
+  console.error("Failed to track abandoned checkout:", trackError);
+}
 
 await startCheckout({
   type: "subscription",

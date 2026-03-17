@@ -10,14 +10,12 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// 🔥 REQUIRED FOR STRIPE ON VERCEL
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-// 🔥 RAW BODY HELPER
 async function getRawBody(readable) {
   const chunks = [];
   for await (const chunk of readable) {
@@ -52,42 +50,7 @@ export default async function handler(req, res) {
     const obj = event.data.object;
 
     // ==============================
-    // 🟢 CUSTOMER CREATED (ENTRY POINT)
-    // ==============================
-    if (event.type === "customer.created") {
-      const customer = obj;
-
-      if (!customer.email) {
-        console.log("⚠️ Customer created without email, skipping");
-        return res.status(200).json({ received: true });
-      }
-
-      const { error } = await supabase
-        .from("abandoned_checkouts")
-        .upsert(
-          {
-            email: customer.email,
-            stripe_customer_id: customer.id,
-            status: "pending",
-            recovery_stage: 0,
-            recovered: false,
-            paid: false,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "email" }
-        )
-        .select();
-
-      if (error) {
-        console.error("❌ Error inserting customer:", error);
-      } else {
-        console.log("✅ Tracked customer:", customer.email);
-      }
-    }
-
-    // ==============================
-    // 🔴 CHECKOUT EXPIRED (BACKUP)
+    // 🔴 CHECKOUT EXPIRED
     // ==============================
     if (event.type === "checkout.session.expired") {
       const session = obj;
