@@ -804,7 +804,8 @@ useEffect(() => {
     setOpenSize(false)
     setOpenStyle(false)
   }}
-  className={`
+className={`
+  alive-card
   group relative
   rounded-xl
   border border-white/10
@@ -819,7 +820,7 @@ useEffect(() => {
 
   active:scale-[0.98]
 
-  ${openModel ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)]" : ""}
+  ${openModel ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : ""}
 `}
 >
  <div className="flex justify-between items-center">
@@ -850,18 +851,23 @@ useEffect(() => {
     setOpenModel(false);
   }}
   className={`
-    group relative
-    rounded-xl
-    border border-white/10
-    bg-[linear-gradient(180deg,#141722,#0F111A)]
-    px-4 py-3.5
-    text-left
-    transition-all duration-200
-    hover:border-[#7A3BFF]/40
-    hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
-    active:scale-[0.98]
-    ${openStyle ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)]" : ""}
-  `}
+  alive-card
+  group relative
+  rounded-xl
+  border border-white/10
+  bg-[linear-gradient(180deg,#141722,#0F111A)]
+  px-4 py-3.5
+  text-left
+
+  transition-all duration-200
+
+  hover:border-[#7A3BFF]/40
+  hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
+
+  active:scale-[0.98]
+
+  ${openStyle ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : ""}
+`}
 >
   <div className="flex justify-between items-center">
     <div className="flex flex-col">
@@ -892,6 +898,7 @@ useEffect(() => {
     setOpenStyle(false)
   }}
  className={`
+  alive-card
   group relative
   rounded-xl
   border border-white/10
@@ -906,7 +913,7 @@ useEffect(() => {
 
   active:scale-[0.98]
 
-  ${openSize ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)]" : ""}
+  ${openSize ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : ""}
 `}
 >
 <div className="flex justify-between items-center">
@@ -1151,38 +1158,45 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
     <div className="max-w-[900px] mx-auto  flex flex-col gap-3">
 
       {/* 🚀 GENERATE BUTTON */}
-      <button
-        onClick={handleGenerate}
-        disabled={!prompt.trim() || isGenerating}
-        className={`
-          relative w-full py-4 rounded-2xl font-semibold text-[15px]
-          transition-all duration-300
-          ${
-            !prompt.trim() || isGenerating
-              ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
-              : `
-                bg-[#7A3BFF]
-                hover:bg-[#6B2EFF]
-                shadow-[0_10px_40px_rgba(122,59,255,0.35)]
-                active:scale-[0.98]
-              `
-          }
-        `}
-      >
-        <span className="flex items-center justify-center gap-2">
-          {isGenerating ? (
-            <>
-              <Wand2 className="w-4 h-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Wand2 className="w-4 h-4 opacity-80" />
-              Generate
-            </>
-          )}
-        </span>
-      </button>
+    <button
+  onClick={handleGenerate}
+  disabled={!prompt.trim() || isGenerating}
+  className={`
+    generate-btn
+    relative w-full py-4 rounded-2xl font-semibold text-[15px]
+    transition-all duration-300 overflow-hidden
+
+    ${
+      !prompt.trim() || isGenerating
+        ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
+        : `
+          generate-btn-ready
+          bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]
+          border border-purple-400/30
+
+          hover:scale-[1.02]
+          active:scale-[0.98]
+
+          shadow-[0_10px_40px_rgba(122,59,255,0.35)]
+          hover:shadow-[0_0_50px_rgba(122,59,255,0.55)]
+        `
+    }
+  `}
+>
+  <span className="relative z-10 flex items-center justify-center gap-2">
+    {isGenerating ? (
+      <>
+        <Wand2 className="w-4 h-4 animate-spin" />
+        Generating...
+      </>
+    ) : (
+      <>
+        <Wand2 className="w-4 h-4 opacity-80" />
+        Generate
+      </>
+    )}
+  </span>
+</button>
 
       {/* 💰 COST CARD (ATTACHED UNDER BUTTON) */}
       <div

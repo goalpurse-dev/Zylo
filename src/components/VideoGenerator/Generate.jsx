@@ -324,7 +324,7 @@ setTimeout(() => {
       {/* Header */}
       <div>
         <h1 className="text-xl font-semibold text-white">
-          Create Video
+          Create Viral Video
         </h1>
         <p className="text-sm text-white/50">
           Turn your ideas into cinematic AI videos.
@@ -332,127 +332,111 @@ setTimeout(() => {
       </div>
 
           {/* MODE SELECTOR */}
-<div className="grid grid-cols-3 gap-2">
-  {[
-    {
-   
-      icon: Image,
-      base: "from-purple-500/10 via-purple-500/10",
-      active: "from-purple-500/40 via-purple-500/20",
-      path: "/workspace/image-generator",
-    },
-    {
-     
-      icon: VideoIcon,
-      base: "from-indigo-500/10 via-indigo-500/10",
-      active: "from-indigo-500/40 via-indigo-500/10",
-      path: "/workspace/video-generator",
-    },
-    {
-      
-      icon: Folder,
-      base: "from-emerald-500/10 via-emerald-500/10",
-      active: "from-emerald-500/40 via-emerald-500/10",
-      path: "/workspace/creations",
-    },
-  ].map((item) => {
-    const Icon = item.icon;
-    const isActive = location.pathname === item.path;
+<div className="relative w-full flex justify-center mt-2">
+  <div
+    className="
+      relative flex w-full max-w-[420px] p-1
+      rounded-2xl
+      border border-white/10
+      bg-[linear-gradient(180deg,rgba(18,20,31,0.95),rgba(10,12,20,0.95))]
+      shadow-[0_12px_40px_rgba(0,0,0,0.35)]
+      overflow-hidden
+    "
+  >
+    {[
+      {
+        label: "Viral Image",
+        path: "/workspace/image-generator",
+      },
+      {
+        label: "Viral Video",
+        path: "/workspace/video-generator",
+      },
+    ].map((item) => {
+      const isActive = location.pathname === item.path;
 
-    return (
-      <button
-        key={item.label}
-        onClick={() => navigate(item.path)}
-   className={`
-  relative overflow-hidden flex flex-col items-center justify-center
-  rounded-sm py-1
-  border border-gray-800
-  bg-[#141722]/80 backdrop-blur-xl
-  shadow-[0_8px_30px_rgba(0,0,0,0.35)]
-  transition-all duration-500
-  ${
-    isActive
-      ? "border-[#7A3BFF] shadow-[0_0_30px_rgba(122,59,255,0.35)]"
-      : "hover:border-[#7A3BFF]/40"
-  }
-`}
-      >
-        {/* Gradient Overlay */}
-        <div
-          className={`
-            absolute inset-0 bg-gradient-to-t 
-            ${isActive ? item.active : item.base}
-            to-transparent
-            transition-all duration-300
-          `}
-        />
+      return (
+        <button
+          key={item.label}
+          onClick={() => navigate(item.path)}
+          className="relative flex-1 py-2.5 text-sm font-medium z-10"
+        >
+          {isActive && (
+            <div
+              className="
+                absolute inset-0 rounded-xl
+                bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]
+                shadow-[0_0_25px_rgba(122,59,255,0.45)]
+                transition-all duration-300
+              "
+            />
+          )}
 
-        <Icon className="w-4 h-4 mb-1 text-white relative z-10" />
-        <p className="text-sm text-white relative z-10">
-          {item.label}
-        </p>
-      </button>
-    );
-  })}
+          <span
+            className={`relative z-10 ${
+              isActive ? "text-white" : "text-white/60"
+            }`}
+          >
+            {item.label}
+          </span>
+        </button>
+      );
+    })}
+  </div>
 </div>
 
       {/* PROMPT */}
       
-     <div
-  className={` mt-1
-    bg-[#1A1E2A]
-    border border-gray-800
-    backdrop-blur-xl
-    rounded-sm 
-    transition-all duration-300
-   
-  `}
->
-        <div
-          className="bg-[#1A1E2A] border border-[#232635] backdrop-blur-xl
-                     rounded-sm p-5 transition-all duration-300
-                     hover:border-purple-500/40
-                     
-                     focus-within:shadow-lg 
-                     focus-within:shadow-purple-500/20"
-        >
-          <textarea
-  value={prompt}
-  onChange={(e) => setPrompt(e.target.value)}
-  placeholder="Describe your video scene..."
-  rows={4}
-  className="w-full min-h-[120px]
-             bg-transparent outline-none
-             text-[16px] md:text-sm text-white
-             placeholder-[#6B7280]
-             resize-none"
-/>
-        </div>
-      </div>
+<div className="relative">
+  <div
+    className="
+      rounded-xl
+      border border-white/10
+      bg-[#0F111A]
+      px-4 py-6
+      transition
+      focus-within:border-[#7A3BFF]
+      focus-within:shadow-[0_0_0_1px_rgba(122,59,255,0.4)]
+    "
+  >
+    <textarea
+      value={prompt}
+      onChange={(e) => setPrompt(e.target.value)}
+      placeholder="Describe your video scene..."
+      rows={4}
+      className="
+        w-full bg-transparent outline-none
+        text-[15px] text-white
+        placeholder:text-white/40
+        resize-none
+      "
+    />
+  </div>
+</div>
 
       {/* IMPORT IMAGE */}
-    <button
+  <button
   disabled={!canAddImages}
   onClick={() => {
     if (!canAddImages) return;
     setOpenReferenceModal(true);
   }}
   className={`
-    w-full rounded-sm border-2 border-dashed mt-1
-    border-gray-800
-    bg-[#141722]
-    py-6
-    flex flex-col items-center justify-center
-    transition-all duration-300
+    w-full rounded-xl
+    border border-white/10
+    bg-[linear-gradient(180deg,#141722,#0F111A)]
+    py-7
+    flex flex-col items-center justify-center gap-2
+    transition-all duration-200
     ${
       canAddImages
-        ? "hover:border-purple-500/40 hover:bg-[#171A24] cursor-pointer"
+        ? "hover:border-[#7A3BFF]/50 hover:shadow-[0_8px_30px_rgba(122,59,255,0.15)] hover:scale-[1.01]"
         : "opacity-40 cursor-not-allowed"
     }
   `}
 >
-  <ImagePlus className="w-6 h-6 text-[#9CA3AF] mb-2" />
-  <p className="text-sm text-[#9CA3AF]">
+  <ImagePlus className="w-6 h-6 text-white/50" />
+  <p className="text-sm text-white/60 font-medium">
     Add visual references
   </p>
 </button>
@@ -461,7 +445,7 @@ setTimeout(() => {
     {selected.map((img) => (
       <div
         key={img.id}
-        className="relative aspect-square rounded-sm overflow-hidden"
+        className="relative aspect-square rounded-xl overflow-hidden"
       >
         <img
           src={img.url}
@@ -560,19 +544,20 @@ setTimeout(() => {
     setOpenSize(false);
     setOpenDuration(false);
   }}
- className={`
-  alive-card mt-4
-  group relative bg-[#161A26] border border-gray-800
-  rounded-sm px-4 py-3 text-left
-  transition-all duration-500
-  hover:border-[#7A3BFF]/50
-  hover:shadow-[0_0_20px_rgba(122,59,255,0.15)]
-  
-  ${
-    openModel
-      ? "border-[#7A3BFF] shadow-[0_0_30px_rgba(122,59,255,0.35)] alive-active"
-      : ""
-  }
+className={`
+  alive-card
+  group relative
+  rounded-xl
+  border border-white/10
+  bg-[linear-gradient(180deg,#141722,#0F111A)]
+  px-4 py-3.5
+  text-left
+  transition-all duration-200
+  hover:border-[#7A3BFF]/40
+  hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
+  active:scale-[0.98]
+
+  ${openModel ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : ""}
 `}
 >
 
@@ -623,18 +608,22 @@ setTimeout(() => {
     setOpenModel(false);
     setOpenDuration(false);
   }}
-  className={`
-    alive-card
-  group relative bg-[#161A26] border border-gray-800 shadow-[0_0_4px_rgba(122,59,255,0.25)]
-  rounded-sm px-4 py-3 text-left
-  transition-all duration-500
-  hover:border-[#7A3BFF]/50
-  hover:shadow-[0_0_20px_rgba(122,59,255,0.15)]
-   ${openSize && !openDuration && !openModel
-  ? "border-[#7A3BFF] shadow-[0_0_30px_rgba(122,59,255,0.35)] alive-active"
-  : ""}
-    ${disableSizeSelector ? "opacity-40 cursor-not-allowed" : ""}
-  `}
+className={`
+  alive-card
+  group relative
+  rounded-xl
+  border border-white/10
+  bg-[linear-gradient(180deg,#141722,#0F111A)]
+  px-4 py-3.5
+  text-left
+  transition-all duration-200
+  hover:border-[#7A3BFF]/40
+  hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
+  active:scale-[0.98]
+
+  ${openSize ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : ""}
+  ${disableSizeSelector ? "opacity-40 cursor-not-allowed" : ""}
+`}
 >
   <div className="flex flex-col gap-1">
 
@@ -677,17 +666,21 @@ setTimeout(() => {
             setOpenModel(false);
             setOpenSize(false);
           }}
-          className={`
-              alive-card
-  group relative bg-[#161A26] border border-gray-800 shadow-[0_0_4px_rgba(122,59,255,0.25)]
-  rounded-sm px-4 py-3 text-left
-  transition-all duration-500
-  hover:border-[#7A3BFF]/50
-  hover:shadow-[0_0_20px_rgba(122,59,255,0.15)]
-           ${openDuration && !openSize && !openModel
-  ? "border-[#7A3BFF] shadow-[0_0_30px_rgba(122,59,255,0.35)] alive-active"
-  : ""}
-          `}
+  className={`
+  alive-card
+  group relative
+  rounded-xl
+  border border-white/10
+  bg-[linear-gradient(180deg,#141722,#0F111A)]
+  px-4 py-3.5
+  text-left
+  transition-all duration-200
+  hover:border-[#7A3BFF]/40
+  hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
+  active:scale-[0.98]
+
+  ${openDuration ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : ""}
+`}
         >
           <div className="flex justify-between items-center">
             <div>
@@ -719,7 +712,7 @@ setTimeout(() => {
         max-h-[75vh]
         bg-[#1A1D2B]
         border border-white/10
-        rounded-sm
+        rounded-xl
         shadow-2xl
         p-5
         overflow-y-auto
@@ -841,7 +834,7 @@ setTimeout(() => {
           key={resKey}
           onClick={() => setSelectedResolution(resKey)}
           className={`
-            px-4 py-2 rounded-sm text-sm font-medium
+            px-4 py-2 rounded-xl text-sm font-medium
             border transition-all duration-200
             ${
              isActive
@@ -868,6 +861,7 @@ setTimeout(() => {
     !prompt.trim() || isGenerating || missingRequiredImage
       ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
       : `
+      generate-btn generate-btn-ready
       bg-gradient-to-r from-purple-500 to-fuchsia-500/40
       backdrop-blur-md
       border border-purple-400/30
@@ -876,7 +870,7 @@ setTimeout(() => {
       hover:border-purple-400/50
       hover:scale-[1.03]
       shadow-[0_0_20px_rgba(168,85,247,0.35)]
-      hover:shadow-[0_0_30px_rgba(168,85,247,0.55)]
+      hover:shadow-[0_0_30px_rgba(168,85,247,0.55)] 
       `
   }`}
 >
@@ -893,15 +887,15 @@ setTimeout(() => {
       w-full
       bg-[#10131A]
       border border-gray-800
-      rounded-sm
+      rounded-xl
       px-4 py-3
       flex items-center justify-center gap-2
       text-[15px] font-semibold
       text-green-400
       transition-all duration-300    "
   >
-    <span className="text-base">◆</span>
-    <span>Estimated cost: {totalCredits} credits</span>
+    <span className="text-base cursor-default">◆</span>
+    <span className="cursor-default">Estimated cost: {totalCredits} credits</span>
   </div>
 </div>
 
@@ -949,7 +943,7 @@ function Modal({ title, onClose, children }) {
         max-h-[70vh]
         bg-[#1A1D2B]
         border border-white/10
-        rounded-sm
+        rounded-xl
         shadow-2xl
         p-5
         overflow-y-auto
@@ -985,7 +979,7 @@ function VideoModelCard({
     <button
       onClick={onClick}
       className={`
-        relative w-full rounded-sm transition text-left
+        relative w-full rounded-xl transition text-left
         bg-[#0B0E1A]/70 border
         ${
           active
@@ -1007,7 +1001,7 @@ function VideoModelCard({
         <img
           src={logo}
           alt={label}
-          className="w-10 h-10 rounded-sm object-cover p-1"
+          className="w-10 h-10 rounded-xl object-cover p-1"
         />
         <div className="text-white font-medium leading-tight">
           {label}
@@ -1085,7 +1079,7 @@ function AspectPreview({ ratio }) {
 
   return (
     <div
-      className="border border-white rounded-sm opacity-70"
+      className="border border-white rounded-xl opacity-70"
       style={{
         width: `${width}px`,
         height: `${height}px`,

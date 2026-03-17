@@ -321,31 +321,75 @@ body,
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(12px);
+  transition: all 0.25s ease;
 }
 
+/* 🔥 GLOW LAYER */
 .alive-card::before {
   content: "";
   position: absolute;
   inset: -1px;
   border-radius: inherit;
+
   background: linear-gradient(
     120deg,
-    rgba(122,59,255,0.6),
-    rgba(122,59,255,0.15),
+    rgba(122,59,255,0.7),
+    rgba(122,59,255,0.25),
     transparent 60%
   );
+
   opacity: 0;
-  filter: blur(8px);
-  transition: opacity 0.4s ease;
+  filter: blur(10px);
+
+  transition: opacity 0.3s ease, transform 0.4s ease;
+  transform: scale(0.98);
+
   z-index: -1;
 }
 
+/* ✨ HOVER */
 .alive-card:hover::before {
   opacity: 1;
+  transform: scale(1.02);
 }
 
+/* ⚡ ACTIVE (OPEN STATE) */
 .alive-active::before {
   opacity: 1;
+  transform: scale(1.03);
+}
+
+/* 🔥 SUBTLE SHIMMER (THIS IS THE MAGIC) */
+.alive-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(255,255,255,0.08),
+    transparent 80%
+  );
+
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* shimmer on hover */
+.alive-card:hover::after {
+  opacity: 1;
+  animation: alive-shimmer 1.2s linear;
+}
+
+@keyframes alive-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 @keyframes fadeIn {
@@ -387,4 +431,52 @@ body,
 @keyframes shine {
   0% { transform: translateX(-50%); }
   100% { transform: translateX(50%); }
+}
+/* 🔥 GENERATE BUTTON BASE */
+.generate-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s ease;
+}
+
+/* ✨ SHINE LAYER */
+.generate-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 120%;
+  height: 100%;
+
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(255,255,255,0.35),
+    transparent 80%
+  );
+
+  transform: skewX(-20deg);
+}
+
+/* 🚀 ACTIVE (READY STATE) */
+.generate-btn-ready::after {
+  animation: generate-shine 2.5s infinite linear;
+}
+
+/* ⚡ SHINE ANIMATION */
+@keyframes generate-shine {
+  0% {
+    left: -120%;
+  }
+  100% {
+    left: 120%;
+  }
+}
+
+/* 🔥 EXTRA GLOW WHEN READY */
+.generate-btn-ready {
+  box-shadow:
+    0 0 0 1px rgba(122,59,255,0.4),
+    0 10px 40px rgba(122,59,255,0.45),
+    0 0 25px rgba(122,59,255,0.3);
 }

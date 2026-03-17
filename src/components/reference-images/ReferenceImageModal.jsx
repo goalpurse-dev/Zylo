@@ -243,11 +243,19 @@ export default function ReferenceImageModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-[900px] h-[600px] rounded-2xl bg-[#1F2230]/95 border border-[#1F2230] shadow-2xl flex flex-col">
+      <div className="w-full max-w-[900px] h-[600px] rounded-2xl bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))]
+border border-white/10
+overflow-hidden
+shadow-[0_20px_80px_rgba(0,0,0,0.55)]
+backdrop-blur-xl flex flex-col">
         {/* HEADER + TABS */}
-        <div className="px-6 py-4 border-b border-white/10 bg-[#141622]">
+      <div className="
+  px-6 pt-5 pb-4
+  bg-[linear-gradient(180deg,rgba(20,22,34,0.95),rgba(10,12,20,0.95))]
+  border-b border-white/10
+">
           <div className="flex items-center justify-between">
-            <h2 className="text-[#F4F6FB] text-lg font-semibold">
+            <h2 className="text-white text-lg font-semibold tracking-tight">
               Select Images for Guidance
             </h2>
             <button onClick={onClose} className="text-[#F4F6FB] hover:text-white">
@@ -255,7 +263,7 @@ export default function ReferenceImageModal({
             </button>
           </div>
 
-          <div className="relative flex gap-6 mt-4 text-sm font-medium">
+          <div className="relative flex gap-6 mt-5 text-sm font-medium">
             <button
               onClick={() => setActiveTab("import")}
               className={activeTab === "import" ? "text-[#F4F6FB]" : "text-white/50"}
@@ -310,24 +318,30 @@ export default function ReferenceImageModal({
           key={img.id}
           type="button"
           onClick={() => onToggle(img)}
-          className={`
-            relative
-            rounded-xl
-            overflow-hidden
-            border
-            aspect-square
-            ${isSelected ? "border-[#7A3BFF]" : "border-white/10"}
-          `}
+        className={`
+  group relative
+  rounded-xl
+  overflow-hidden
+  border
+  aspect-square
+  transition-all duration-200
+
+  ${isSelected
+    ? "border-[#7A3BFF]"
+    : "border-white/10 bg-[#0F111A] hover:border-[#7A3BFF]/40 hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]"}
+`}
         >
           <img
             src={img.url}
             loading="lazy"
             decoding="async"
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.05]"
           />
 
           {isSelected && (
-            <div className="absolute inset-0 bg-black/50 border-[2px] border-[#7A3BFF] flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm
+border-[1.5px] border-[#7A3BFF]
+shadow-[0_0_25px_rgba(122,59,255,0.45)] flex items-center justify-center">
               <div className="rounded-full bg-gradient-to-bl from-[#7A3BFF] to-[#492399] px-4 py-2 text-white font-bold">
                 ✓
               </div>
@@ -372,22 +386,56 @@ export default function ReferenceImageModal({
         </div>
 
         {/* FOOTER */}
-        <div className="px-6 py-4 border-t border-white/10 flex items-center justify-between bg-[#141622]">
+       <div className="
+  px-6 py-5
+  flex items-center justify-between
+  bg-[linear-gradient(180deg,rgba(20,22,34,0.95),rgba(10,12,20,0.95))]
+  border-t border-white/10
+">
           <span className="text-white/60 text-sm">
             {selected.length}/{maxSelectable} selected
           </span>
 
           <div className="flex gap-3">
-            <button onClick={onClose} className="px-4 py-2 rounded-xl bg-white/5 text-white">
+            <button onClick={onClose} className="
+px-4 py-2 rounded-xl
+bg-white/5
+border border-white/10
+text-white/80
+hover:bg-white/10
+transition-all
+">
               Cancel
             </button>
 
             <button
               disabled={!selected.length}
               onClick={onClose}
-              className="px-6 py-2 rounded-xl bg-gradient-to-r from-[#7A3BFF] to-[#492399] text-white disabled:opacity-40"
+className={`
+  generate-btn
+  px-6 py-2 rounded-xl font-medium
+  transition-all duration-300 overflow-hidden
+
+  ${
+    !selected.length
+      ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
+      : `
+        generate-btn-ready
+        bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]
+        border border-purple-400/30
+
+        hover:scale-[1.05]
+        active:scale-[0.97]
+
+        shadow-[0_8px_25px_rgba(122,59,255,0.35)]
+        hover:shadow-[0_0_40px_rgba(122,59,255,0.6)]
+      `
+  }
+`}
             >
-              Confirm
+            <span className="relative z-10">
+  Confirm
+</span>
             </button>
           </div>
         </div>
