@@ -16,10 +16,10 @@
       "destination": "/"
     }
   ],
-  "crons": [
-    {
-      "path": "/api/send-abandoned-emails",
-      "schedule": "*/10 * * * *"
-    }
-  ]
+ "crons": [
+  {
+    "path": "/api/send-abandoned-emails",
+    "schedule": "0 12 * * *"
+  }
+]
 }
