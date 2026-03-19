@@ -13,40 +13,22 @@ const supabase = createClient(
 
 function emailOneHtml(user) {
   return `
-    <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;color:#111;">
+    <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:20px;color:#111;">
       <p>Hey,</p>
 
-      <p>You were <b>1 step away</b> from unlocking Zyvo.</p>
+      <p>I noticed you didn’t finish your Zyvo setup.</p>
 
-      <p>Most people never finish this part — but the ones who do start creating content <b>10x faster</b>.</p>
+      <p>Was something unclear or did something break?</p>
 
-      <p>Right now you can generate:</p>
-      <ul>
-        <li>🔥 viral TikTok videos</li>
-        <li>🔥 high-end product photos</li>
-        <li>🔥 cinematic AI visuals</li>
-      </ul>
-
-      <p style="font-size:13px;color:#666;">Secure checkout powered by Stripe</p>
+      <p>If you still want to continue, you can pick it up here:</p>
 
       <p>
-        <a href="https://tryzyvo.com/workspace/pricing"
-        style="background:#7A3BFF;color:white;padding:12px 18px;border-radius:8px;text-decoration:none;display:inline-block;">
-        Continue on Zyvo →
+        <a href="https://tryzyvo.com/workspace/pricing">
+          Continue setup
         </a>
       </p>
 
-      ${
-        user.checkout_url
-          ? `<p style="margin-top:10px;">
-              <a href="${user.checkout_url}" style="font-size:12px;color:#666;">
-                Or complete instantly
-              </a>
-            </p>`
-          : ""
-      }
-
-      <p>— Niko<br/>Zyvo</p>
+      <p>— Niko</p>
     </div>
   `;
 }
@@ -134,7 +116,7 @@ async function sendStageEmail(user) {
   let html = "";
 
   if (user.recovery_stage === 0) {
-    subject = "you were 1 step away";
+    subject = "Did you finish this?"
     html = emailOneHtml(user);
   }
   else if (user.recovery_stage === 1) {
