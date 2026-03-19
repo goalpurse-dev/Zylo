@@ -13,125 +13,100 @@ const supabase = createClient(
 
 function emailOneHtml(user) {
   return `
-    <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:20px;color:#111;">
-      <p>Hey,</p>
+  <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:20px;color:#111;line-height:1.6;">
+    
+    <p>Hey,</p>
 
-      <p>I noticed you didn’t finish your Zyvo setup.</p>
+    <p>I saw you were setting up Zyvo but didn’t finish.</p>
 
-      <p>Was something unclear or did something break?</p>
+    <p>Most people quit here — but this is actually the part where things start working.</p>
 
-      <p>If you still want to continue, you can pick it up here:</p>
+    <p>You’re already in. Just finish it:</p>
 
-      <p>
-        <a href="https://tryzyvo.com/workspace/pricing">
-          Continue setup
-        </a>
-      </p>
+    <p>
+      <a href="https://tryzyvo.com/workspace/pricing">
+        https://tryzyvo.com/workspace/pricing
+      </a>
+    </p>
 
-      <p>— Niko</p>
-    </div>
+    <p>If something broke or felt confusing, just reply — I read everything.</p>
+
+    <p>— Niko</p>
+
+  </div>
   `;
 }
 
 function emailTwoHtml(user) {
   return `
-    <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;color:#111;">
-      <p>Hey,</p>
+  <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:20px;color:#111;line-height:1.6;">
+    
+    <p>Hey,</p>
 
-      <p>Quick truth:</p>
+    <p>Quick thing I’ve noticed:</p>
 
-      <p>Most people sign up… but never actually use tools like Zyvo properly.</p>
+    <p>The people who actually use Zyvo consistently are the ones who start posting more, testing faster, and growing faster.</p>
 
-      <p>The few who do?</p>
+    <p>Everyone else just signs up… and never uses it.</p>
 
-      <p><b>They post more, test faster, and grow faster.</b></p>
+    <p>You were already halfway there.</p>
 
-      <p>You already did the hard part — you just didn’t finish.</p>
+    <p>
+      <a href="https://tryzyvo.com/workspace/pricing">
+        Finish setup here
+      </a>
+    </p>
 
-      <p style="font-size:13px;color:#666;">Secure checkout powered by Stripe</p>
+    <p>— Niko</p>
 
-      <p>
-        <a href="https://tryzyvo.com/workspace/pricing"
-        style="background:#7A3BFF;color:white;padding:12px 18px;border-radius:8px;text-decoration:none;display:inline-block;">
-        Finish setup →
-        </a>
-      </p>
-
-      ${
-        user.checkout_url
-          ? `<p style="margin-top:10px;">
-              <a href="${user.checkout_url}" style="font-size:12px;color:#666;">
-                Skip and complete instantly
-              </a>
-            </p>`
-          : ""
-      }
-
-      <p>Don’t leave it half done.</p>
-
-      <p>— Niko</p>
-    </div>
+  </div>
   `;
 }
 
 function emailThreeHtml(user) {
   return `
-    <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;color:#111;">
-      <p>Hey,</p>
+  <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:20px;color:#111;line-height:1.6;">
+    
+    <p>Hey,</p>
 
-      <p>I’ll keep this short.</p>
+    <p>I’ll leave this here and won’t send anything else after this.</p>
 
-      <p>This is the last reminder about your Zyvo setup.</p>
+    <p>If you still want to use Zyvo to create content faster, now’s the moment.</p>
 
-      <p>If you still want to create content faster and test ideas quickly — now’s your chance.</p>
+    <p>
+      <a href="https://tryzyvo.com/workspace/pricing">
+        Continue your setup
+      </a>
+    </p>
 
-      <p style="font-size:13px;color:#666;">Secure checkout powered by Stripe</p>
+    <p>If not, all good 👍</p>
 
-      <p>
-        <a href="https://tryzyvo.com/workspace/pricing"
-        style="background:#7A3BFF;color:white;padding:12px 18px;border-radius:8px;text-decoration:none;display:inline-block;">
-        Continue →
-        </a>
-      </p>
+    <p>— Niko</p>
 
-      ${
-        user.checkout_url
-          ? `<p style="margin-top:10px;">
-              <a href="${user.checkout_url}" style="font-size:12px;color:#666;">
-                Complete instantly
-              </a>
-            </p>`
-          : ""
-      }
-
-      <p>If not, no worries — I won’t send anything else 👍</p>
-
-      <p>— Niko</p>
-    </div>
+  </div>
   `;
 }
-
 async function sendStageEmail(user) {
   let subject = "";
   let html = "";
 
   if (user.recovery_stage === 0) {
-    subject = "Did you finish this?"
+    subject = "quick question"
     html = emailOneHtml(user);
   }
   else if (user.recovery_stage === 1) {
-    subject = "most people miss this";
+    subject = "most people never do this"
     html = emailTwoHtml(user);
   }
   else if (user.recovery_stage === 2) {
-    subject = "last call";
+    subject = "I’ll stop after this"
     html = emailThreeHtml(user);
   }
 
   if (!html) return;
 
   const { error } = await resend.emails.send({
-    from: "Zyvo <support@tryzyvo.com>",
+    from: "Niko <niko@tryzyvo.com>",
     to: user.email,
     subject,
     html,
