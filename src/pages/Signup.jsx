@@ -21,28 +21,49 @@ export default function Signup() {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setErr(""); setMsg(""); setLoading(true);
-    try {
-      const res = await signUpWithEmailPassword(email, password);
-if (res.status === "created" && res.session) {
-  navigate("/home");                   // you ARE logged in
-} else {
-  setMsg("Account created. Check your email to confirm before logging in.");
-  // optionally: navigate("/login")
-}
-    } catch (e2) {
-      const msg = String(e2?.message || "");
-      if (msg.toLowerCase().includes("already registered")) {
-        setErr("That email is already registered. Try logging in.");
-      } else {
-        setErr(msg || "Signup failed.");
+async function handleSubmit(e) {
+  e.preventDefault();
+  setErr(""); setMsg(""); setLoading(true);
+
+  try {
+    const res = await signUpWithEmailPassword(email, password);
+
+    if (res.status === "created") {
+
+      // 🔥 SEND WELCOME EMAIL
+      try {
+        await fetch("/api/send-welcome-email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        });
+      } catch (emailErr) {
+        console.error("Welcome email failed:", emailErr);
       }
-    } finally {
-      setLoading(false);
+
+      if (res.session) {
+        navigate("/home");
+      } else {
+        setMsg("Account created. Check your email to confirm before logging in.");
+      }
+
+    } else {
+      setMsg("Account created. Check your email to confirm before logging in.");
     }
+
+  } catch (e2) {
+    const msg = String(e2?.message || "");
+    if (msg.toLowerCase().includes("already registered")) {
+      setErr("That email is already registered. Try logging in.");
+    } else {
+      setErr(msg || "Signup failed.");
+    }
+  } finally {
+    setLoading(false);
   }
+}
 
   async function handleGoogle() {
     setErr(""); setMsg("");
