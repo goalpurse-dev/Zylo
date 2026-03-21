@@ -109,11 +109,12 @@ async function sendStageEmail(user) {
   if (!html) return;
 
   const { error } = await resend.emails.send({
-    from: "Niko from Zyvo <niko@tryzyvo.com>",
-    to: user.email,
-    subject,
-    html,
-  });
+  from: "Niko from Zyvo <niko@tryzyvo.com>",
+  to: user.email,
+  subject,
+  html,
+  reply_to: "niko@tryzyvo.com",
+});
 
   if (error) {
     console.error("Resend error:", user.email, error);
@@ -158,10 +159,10 @@ const { data: users, error } = await supabase
    for (const user of users) {
 
   // 🔥 ADD THIS RIGHT HERE
-  if (!user.profiles?.email_updates) {
-    console.log("⛔ Skipping (no consent):", user.email);
-    continue;
-  }
+  if (!user.profiles || !user.profiles.email_updates) {
+  console.log("⛔ Skipping (no consent):", user.email);
+  continue;
+}
 
   const createdAt = new Date(user.created_at).getTime();
       const lastSent = user.last_email_sent_at
@@ -185,7 +186,8 @@ const { data: users, error } = await supabase
 
       if (shouldSendStage1 || shouldSendStage2 || shouldSendStage3) {
         await sendStageEmail(user);
-        await new Promise((r) => setTimeout(r, 1200));
+        const delay = 1500 + Math.random() * 1000;
+await new Promise((r) => setTimeout(r, delay));
       }
     }
 
