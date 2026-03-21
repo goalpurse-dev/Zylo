@@ -65,22 +65,40 @@ export default async function handler(req, res) {
         return res.status(200).json({ received: true });
       }
 
-      const { error } = await supabase
-        .from("abandoned_checkouts")
-        .upsert(
-          {
-            email,
-            stripe_session_id: session.id,
-            stripe_customer_id: session.customer || null,
-            status: "pending",
-            recovery_stage: 0,
-            recovered: false,
-            paid: false,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "email" }
-        )
-        .select();
+      const { data: existing } = await supabase
+  .from("abandoned_checkouts")
+  .select("id, paid")
+  .eq("email", email)
+  .maybeSingle();
+
+  if (existing?.paid) {
+  console.log("💰 Already converted, skipping:", email);
+  return res.status(200).json({ received: true });
+}
+
+if (!existing) {
+  const { error } = await supabase
+    .from("abandoned_checkouts")
+    .insert({
+      email,
+      stripe_session_id: session.id,
+      stripe_customer_id: session.customer || null,
+      status: "pending",
+      recovery_stage: 0,
+      recovered: false,
+      paid: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+
+  if (error) {
+    console.error("❌ Insert error:", error);
+  } else {
+    console.log("🟡 New abandoned checkout:", email);
+  }
+} else {
+  console.log("⚠️ Already exists → NOT resetting:", email);
+}
 
       if (error) {
         console.error("❌ Error on expired checkout:", error);

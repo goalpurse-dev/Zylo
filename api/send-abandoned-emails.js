@@ -17,19 +17,22 @@ function emailOneHtml(user) {
     
     <p>Hey,</p>
 
-    <p>I saw you were setting up Zyvo but didn’t finish.</p>
+    <p>Quick question — did something break when you were setting up Zyvo?</p>
 
-    <p>Most people quit here — but this is actually the part where things start working.</p>
+    <p>I noticed you didn’t finish, which usually means either:</p>
 
-    <p>You’re already in. Just finish it:</p>
+    <p>• something was confusing<br>
+    • or it didn’t load properly</p>
+
+    <p>If you still want to continue, you can pick it up here:</p>
 
     <p>
       <a href="https://tryzyvo.com/workspace/pricing">
-        https://tryzyvo.com/workspace/pricing
+        Continue setup
       </a>
     </p>
 
-    <p>If something broke or felt confusing, just reply — I read everything.</p>
+    <p>If anything felt off, just reply — I’ll fix it for you.</p>
 
     <p>— Niko</p>
 
@@ -43,17 +46,17 @@ function emailTwoHtml(user) {
     
     <p>Hey,</p>
 
-    <p>Quick thing I’ve noticed:</p>
+    <p>I’ve been looking at how people use Zyvo, and there’s a clear pattern:</p>
 
-    <p>The people who actually use Zyvo consistently are the ones who start posting more, testing faster, and growing faster.</p>
+    <p>The ones who actually finish setup start posting faster and getting results.</p>
 
-    <p>Everyone else just signs up… and never uses it.</p>
+    <p>The rest just sign up… and never use it.</p>
 
-    <p>You were already halfway there.</p>
+    <p>You were literally one step away.</p>
 
     <p>
       <a href="https://tryzyvo.com/workspace/pricing">
-        Finish setup here
+        Finish it here
       </a>
     </p>
 
@@ -69,17 +72,17 @@ function emailThreeHtml(user) {
     
     <p>Hey,</p>
 
-    <p>I’ll leave this here and won’t send anything else after this.</p>
+    <p>I’ll stop after this 👍</p>
 
-    <p>If you still want to use Zyvo to create content faster, now’s the moment.</p>
+    <p>If you still want to use Zyvo to create content faster, you can continue here:</p>
 
     <p>
       <a href="https://tryzyvo.com/workspace/pricing">
-        Continue your setup
+        Continue setup
       </a>
     </p>
 
-    <p>If not, all good 👍</p>
+    <p>If not, no worries at all.</p>
 
     <p>— Niko</p>
 
@@ -95,18 +98,18 @@ async function sendStageEmail(user) {
     html = emailOneHtml(user);
   }
   else if (user.recovery_stage === 1) {
-    subject = "most people never do this"
+    subject = "you were one step away"
     html = emailTwoHtml(user);
   }
   else if (user.recovery_stage === 2) {
-    subject = "I’ll stop after this"
+    subject = "should I stop?"
     html = emailThreeHtml(user);
   }
 
   if (!html) return;
 
   const { error } = await resend.emails.send({
-    from: "Niko <niko@tryzyvo.com>",
+    from: "Niko from Zyvo <niko@tryzyvo.com>",
     to: user.email,
     subject,
     html,
@@ -156,8 +159,9 @@ export default async function handler(req, res) {
         : null;
 
       const shouldSendStage1 =
-        user.recovery_stage === 0 &&
-        now - createdAt >= 30 * 60 * 1000
+  user.recovery_stage === 0 &&
+  now - createdAt >= 30 * 60 * 1000 &&
+  (!lastSent || now - lastSent >= 30 * 60 * 1000);
 
       const shouldSendStage2 =
         user.recovery_stage === 1 &&
