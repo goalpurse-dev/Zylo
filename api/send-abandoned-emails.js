@@ -138,12 +138,15 @@ async function sendStageEmail(user) {
 
 export default async function handler(req, res) {
   try {
-    const { data: users, error } = await supabase
-      .from("abandoned_checkouts")
-      .select("*")
-      .eq("paid", false)
-      .in("status", ["pending", "in_sequence"])
-      .lt("recovery_stage", 3);
+const { data: users, error } = await supabase
+  .from("abandoned_checkouts")
+  .select(`
+    *,
+    profiles (email_updates)
+  `)
+  .eq("paid", false)
+  .in("status", ["pending", "in_sequence"])
+  .lt("recovery_stage", 3);
 
     if (error) {
       console.error(error);
@@ -152,8 +155,15 @@ export default async function handler(req, res) {
 
     const now = Date.now();
 
-    for (const user of users) {
-      const createdAt = new Date(user.created_at).getTime();
+   for (const user of users) {
+
+  // 🔥 ADD THIS RIGHT HERE
+  if (!user.profiles?.email_updates) {
+    console.log("⛔ Skipping (no consent):", user.email);
+    continue;
+  }
+
+  const createdAt = new Date(user.created_at).getTime();
       const lastSent = user.last_email_sent_at
         ? new Date(user.last_email_sent_at).getTime()
         : null;
