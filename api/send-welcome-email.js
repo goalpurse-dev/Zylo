@@ -4,7 +4,6 @@ import { createClient } from "@supabase/supabase-js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// 🔥 ADMIN CLIENT (needs service role key)
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -17,29 +16,40 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email } = req.body;
+    const { email, user_id } = req.body;
 
-    // ✅ 1. CHECK IF ALREADY SENT
+    // ✅ 1. FETCH USER SAFELY
     const { data } = await supabase
       .from("profiles")
-      .select("welcome_email_sent")
-      .eq("email", email)
-      .single();
+      .select("id, welcome_email_sent")
+      .eq("id", user_id)
+      .maybeSingle();
 
-    if (data?.welcome_email_sent) {
+    if (!data) {
+      console.log("Profile not ready yet");
+      return res.status(200).json({ retry: true });
+    }
+
+    // ✅ 2. PREVENT DUPLICATES
+    if (data.welcome_email_sent) {
       return res.status(200).json({ already_sent: true });
     }
 
-    // ✅ 2. SEND EMAIL
-    await resend.emails.send(
+    // ✅ 3. SEND EMAIL + CHECK RESULT
+    const { error } = await resend.emails.send(
       welcomeEmail(email)
     );
 
-    // ✅ 3. UPDATE FLAG
+    if (error) {
+      console.error("Email failed:", error);
+      return res.status(500).json({ error: "Email failed" });
+    }
+
+    // ✅ 4. UPDATE USING ID (SAFE)
     await supabase
       .from("profiles")
       .update({ welcome_email_sent: true })
-      .eq("email", email);
+      .eq("id", user_id);
 
     return res.status(200).json({ success: true });
 

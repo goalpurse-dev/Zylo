@@ -32,13 +32,7 @@ async function handleSubmit(e) {
 
       // 🔥 SEND WELCOME EMAIL
       try {
-        await fetch("/api/send-welcome-email", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        });
+      
       } catch (emailErr) {
         console.error("Welcome email failed:", emailErr);
       }

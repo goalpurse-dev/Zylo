@@ -159,7 +159,8 @@ const handleUpload = async (e) => {
 const hasRefs = selected.length > 0;
 
 const imageRequiredForModel =
-  selectedModelKey === "video:miniMaxFast";
+  selectedModelKey === "video:miniMaxFast" ||
+  selectedModelKey === "video:RunwayGen-4Turbo";
 
 const missingRequiredImage = imageRequiredForModel && !hasRefs;
 
@@ -470,7 +471,7 @@ useEffect(() => {
 
 {missingRequiredImage && (
   <p className="text-xs text-amber-400 mt-2">
-    MiniMax Hailuo 2.3 Fast requires a reference image.
+    {selectedModel.label} requires a reference image.
   </p>
 )}
 
@@ -1084,7 +1085,7 @@ function AspectPreview({ ratio }) {
 
   return (
     <div
-      className="border border-white rounded-xl opacity-70"
+      className="border border-white rounded-sm opacity-70"
       style={{
         width: `${width}px`,
         height: `${height}px`,

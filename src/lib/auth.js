@@ -9,17 +9,22 @@ export async function signUpWithEmailPassword(email, password) {
 
   if (error) throw error;
 
-  // guard: only send if user exists and is newly created
-  if (data?.user?.created_at) {
-
-    await fetch("/api/send-welcome-email", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email }),
-    });
-
+  // ✅ ONLY SEND HERE (not in Signup.jsx)
+  if (data?.user) {
+    try {
+      await fetch("/api/send-welcome-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: data.user.email,
+          user_id: data.user.id, // 🔥 CRITICAL
+        }),
+      });
+    } catch (err) {
+      console.error("Welcome email failed:", err);
+    }
   }
 
   if (data.session) {
@@ -27,7 +32,6 @@ export async function signUpWithEmailPassword(email, password) {
   }
 
   return { status: "pending", user: data.user, session: null };
-
 }
 /** Login with email + password */
 export async function signInWithEmailPassword(email, password) {

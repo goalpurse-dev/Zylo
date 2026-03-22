@@ -64,13 +64,13 @@ async function sendWelcomeEmail(user) {
 async function main() {
   const cutoffDate = new Date("2026-03-19T23:59:59Z").toISOString();
 
-  const { data: users, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .lte("created_at", cutoffDate)
-    .eq("welcome_email_sent", false)
-    .eq("email_updates", true)
-    .limit(400); // 🔥 ONLY FIRST 400
+const { data: users, error } = await supabase
+  .from("profiles")
+  .select("*")
+  .lte("created_at", cutoffDate)
+  .eq("welcome_email_sent", false)
+  .order("created_at", { ascending: true }) // 🔥 ensures correct next batch
+  .limit(400);
 
   if (error) {
     console.error("❌ Fetch error:", error);

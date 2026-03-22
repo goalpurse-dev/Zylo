@@ -20,6 +20,7 @@ export type ToolKey =
     /* ---------- VIDEO ---------- */
   | "video:klingaist"
   | "video:miniMaxFast"
+  | "video:RunwayGen-4Turbo"
 
 
 
@@ -214,6 +215,22 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
 
   // 🔥 THIS IS WHAT UI + BACKEND USE
   baseCreditsPerSecond: 4,
+},
+
+ "video:RunwayGen-4Turbo": {
+  provider: "runware",
+  generator: "Runway Gen-4 Turbo",
+  airTag: "runway:1@1",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-video",
+
+  costPerSecondUSD: 0.05042,
+
+
+  retailMultiplier: 2.1,
+
+  // 🔥 THIS IS WHAT UI + BACKEND USE
+  baseCreditsPerSecond: 5,
 },
 
   /* =======================================================
