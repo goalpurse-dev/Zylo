@@ -82,16 +82,15 @@ export async function launchRunwareVideo(args: RunwareLaunchArgs): Promise<Runwa
 
   const refs = (args.referenceImages ?? []).filter(Boolean);
 
-  if (refs.length > 0) {
-    // Kling sample format (Runware accepts this)
-    task.inputs = {
-      frameImages: refs.map((url) => ({ image: url })),
-    };
-    // NOTE: When frameImages exist, Kling will infer size automatically.
-  } else {
-    task.width = args.width;
-    task.height = args.height;
-  }
+ if (refs.length > 0) {
+  task.inputs = {
+    frameImages: refs.map((url) => ({ image: url })),
+  };
+}
+
+// 🔥 ALWAYS SET SIZE
+task.width = args.width;
+task.height = args.height;
 
   const { res, text, json } = await postJson([task]);
 
