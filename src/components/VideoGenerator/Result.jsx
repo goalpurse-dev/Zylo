@@ -44,6 +44,44 @@ export default function Result({ results = [] }) {
       );
   }, [results]);
 
+
+const handleDownload = async (url) => {
+  try {
+    // Mobile (iPhone / Android) → open video so user can save
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      return;
+    }
+
+    // Desktop → force download
+    const res = await fetch(url);
+    const blob = await res.blob();
+
+    const blobUrl = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = `zyvo-${Date.now()}.mp4`;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    // Clean up memory
+    URL.revokeObjectURL(blobUrl);
+
+  } catch (err) {
+    console.error("Download failed:", err);
+    window.open(url, "_blank");
+  }
+};
+
   /* =============================== AUTO SELECT =============================== */
 
 useEffect(() => {
@@ -252,19 +290,39 @@ useEffect(() => {
           )}
 
           {/* SUCCESS STATE */}
-   {activeVideo?.result_url && !isFailed && (
-  <div className="relative w-full rounded-2xl overflow-hidden">
+{activeVideo?.result_url && !isFailed && (
+  <div className="relative w-full rounded-2xl overflow-hidden flex flex-col items-center gap-4">
+    
     <video
       key={activeVideo.id}
       src={activeVideo.result_url}
       controls
       autoPlay
-      className="
-        w-full 
-        max-h-[70vh] 
-        object-contain
-      "
+      playsInline
+      className="w-full max-h-[70vh] object-contain"
     />
+
+    {/* DOWNLOAD BUTTON */}
+    <button
+      onClick={() => handleDownload(activeVideo.result_url)}
+      className="
+        flex items-center gap-2
+        px-4 py-2
+        rounded-xl
+        bg-[#7A3BFF]
+        hover:bg-[#6a30e0]
+        text-white text-sm font-medium
+        transition-all
+      "
+    >
+      <Download className="w-4 h-4" />
+      Download Video
+    </button>
+
+    <p className="text-white/40 text-xs">
+  Tap and hold to save on mobile
+</p>
+
   </div>
 )}
 
