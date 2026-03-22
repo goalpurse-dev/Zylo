@@ -1,6 +1,9 @@
 // src/pages/settings/Billing.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
+import Toast from "../../components/ui/Toast";
+import { useNavigate } from "react-router-dom";
+import { CreditCard, X, RotateCcw } from "lucide-react";
 
 const card = "rounded-2xl border border-[#1F2230] bg-[#141622] p-5 text-white";
 const FUNCTION_PORTAL = "create-portal-session";  // your existing function
@@ -20,9 +23,10 @@ function formatDate(unixSeconds) {
 }
 
 export default function Billing() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(null); // "cancel" | "resume" | "portal"
   const [refreshing, setRefreshing] = useState(false);
   const [summary, setSummary] = useState(null);
+  const navigate = useNavigate();
 
   const planLabel = useMemo(() => {
     if (!summary?.plan) return "—";
@@ -66,9 +70,67 @@ export default function Billing() {
     return null;
   }, [summary]);
 
+async function cancelSubscription() {
+  if (!summary?.plan) {
+    Toast.error("No active subscription");
+    return;
+  }
+
+if (!window.confirm(
+  `Cancel your plan? You'll keep access until ${formatDate(summary.plan.current_period_end)}`
+)) return;
+
+  try {
+    setLoading("cancel");
+
+    const { error } = await supabase.functions.invoke(
+      "cancel-subscription",
+      { method: "POST" }
+    );
+
+    if (error) throw error;
+
+    Toast.success(
+      `Access continues until ${formatDate(summary.plan.current_period_end)}`
+    );
+
+    await loadSummary();
+  } catch (e) {
+    Toast.error(e.message || "Failed to cancel subscription");
+  } finally {
+    setLoading(null);
+  }
+}
+
+async function resumeSubscription() {
+  if (!summary?.plan) {
+    Toast.error("No active subscription");
+    return;
+  }
+
+  try {
+    setLoading("resume");
+
+    const { error } = await supabase.functions.invoke(
+      "resume-subscription",
+      { method: "POST" }
+    );
+
+    if (error) throw error;
+
+    Toast.success("Your subscription is active again");
+
+    await loadSummary();
+  } catch (e) {
+    Toast.error(e.message);
+  } finally {
+    setLoading(null);
+  }
+}
+
   async function openPortal(flow) {
     try {
-      setLoading(true);
+      setLoading("portal");
       const { data, error } = await supabase.functions.invoke(FUNCTION_PORTAL, {
         method: "POST",
         body: {
@@ -81,9 +143,9 @@ export default function Billing() {
       window.location.href = data.url;
     } catch (e) {
       console.error("Open portal failed:", e);
-      alert(e.message || "Failed to open billing portal.");
+    Toast.error(e.message || "Failed to open billing portal.");
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
   }
 
@@ -129,34 +191,65 @@ export default function Billing() {
             <div className="text-lg text-[#F4F6FB] font-bold">
               {summary?.plan?.nickname || "—"}
             </div>
-            <div className="text-sm text-[#B7BBC6]">{planLabel}</div>
-            {planStatusBadge}
+           <div className="text-sm text-[#B7BBC6]">{planLabel}</div>
+{planStatusBadge}
+
+{summary?.plan && (
+  <div className="text-xs text-[#B7BBC6] mt-1">
+    {summary.plan.cancel_at_period_end
+      ? `Your plan ends on ${formatDate(summary.plan.current_period_end)}`
+      : "Active • Auto-renews"}
+  </div>
+)}
           </div>
 
-          <div className="flex gap-2">
-            <button
-              onClick={() => openPortal("change_plan")}
-              disabled={loading}
-              className="rounded-full border border-[#1F2230] bg-[#141622] px-4 py-2 text-sm font-semibold text-[#B7BBC6] hover:bg-gray-50 disabled:opacity-60"
-            >
-              {loading ? "Opening…" : "Change plan"}
-            </button>
-            <button
-              onClick={() => openPortal("update")}
-              disabled={loading}
-              className="rounded-full bg-[#7A3BFF] px-4 py-2 text-sm font-semibold text-white hover:opacity-95 disabled:opacity-60"
-            >
-              {loading ? "Opening…" : "Update payment"}
-            </button>
-            <button
-              onClick={loadSummary}
-              disabled={refreshing}
-              className="rounded-full border border-[#2A2F45] bg-[#1A1D2B] px-4 py-2 text-sm font-semibold text-[#E6E8EE] hover:bg-gray-50 disabled:opacity-60"
-              title="Refresh from Stripe"
-            >
-              {refreshing ? "Refreshing…" : "Refresh"}
-            </button>
-          </div>
+<div className="flex gap-2 flex-wrap items-center justify-end">
+
+  {/* PRIMARY ACTION */}
+<button
+  onClick={() => openPortal("update")}
+  disabled={loading === "portal"}
+  className="rounded-full bg-[#7A3BFF] px-4 py-2 text-sm font-semibold text-white hover:opacity-95 hover:shadow-lg hover:shadow-purple-500/20 disabled:opacity-60"
+>
+  <span className="flex items-center gap-1">
+    <CreditCard className={`w-4 h-4 ${loading === "portal" ? "animate-spin" : ""}`} />
+    {loading === "portal" ? "Opening…" : "Update"}
+  </span>
+</button>
+
+  {/* PLAN ACTION */}
+  {!summary?.plan ? (
+<button
+  onClick={() => navigate("/workspace/pricing")}
+  className="rounded-full border border-[#1F2230] bg-[#141622] px-4 py-2 text-sm font-semibold text-[#B7BBC6] hover:bg-[#1A1D2B]"
+>
+  Get plan
+</button>
+  ) : summary.plan.cancel_at_period_end ? (
+  <button
+  onClick={resumeSubscription}
+  disabled={loading === "resume"}
+  className="rounded-full border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-400 hover:bg-green-500/20 disabled:opacity-60"
+>
+  <span className="flex items-center gap-1">
+    <RotateCcw className={`w-4 h-4 ${loading === "resume" ? "animate-spin" : ""}`} />
+    {loading === "resume" ? "Processing…" : "Resume"}
+  </span>
+</button>
+  ) : (
+ <button
+  onClick={cancelSubscription}
+  disabled={loading === "cancel"}
+  className="rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/20 disabled:opacity-60"
+>
+  <span className="flex items-center gap-1">
+    <X className={`w-4 h-4 ${loading === "cancel" ? "animate-spin" : ""}`} />
+    {loading === "cancel" ? "Processing…" : "Cancel"}
+  </span>
+</button>
+  )}
+
+</div>
         </div>
       </div>
 
@@ -169,13 +262,13 @@ export default function Billing() {
               ? `${pm.brand || "Card"} •••• ${pm.last4 || "••••"} — exp ${pm.exp || "••/••"}`
               : "—"}
           </div>
-          <button
-            onClick={() => openPortal("update")}
-            disabled={loading}
-            className="rounded-lg border border-[#1F2230] text-[#B7BBC6] bg-[#141622] px-5 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-60"
-          >
-            {loading ? "Opening…" : "Edit"}
-          </button>
+        <button
+  onClick={() => openPortal("update")}
+  disabled={loading === "portal"}
+  className="rounded-lg border border-[#1F2230] text-[#B7BBC6] bg-[#141622] px-5 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-60"
+>
+  {loading === "portal" ? "Opening…" : "Edit"}
+</button>
         </div>
       </div>
 
@@ -186,13 +279,13 @@ export default function Billing() {
         {invoices.length === 0 ? (
           <div className="flex items-center justify-between rounded-lg bg-[#1A1D2B] p-4 text-sm text-[#B7BBC6] ring-1 ring-white/10">
             <span>View and download your invoices in the billing portal.</span>
-            <button
-              onClick={() => openPortal("invoices")}
-              disabled={loading}
-              className="rounded-full border border-[#1F2230] bg-[#141622] px-3 py-1.5 text-sm font-semibold text-[#B7BBC6] hover:bg-gray-50 disabled:opacity-60"
-            >
-              {loading ? "Opening…" : "See invoices"}
-            </button>
+        <button
+  onClick={() => openPortal("invoices")}
+  disabled={loading === "portal"}
+  className="rounded-full border border-[#1F2230] bg-[#141622] px-3 py-1.5 text-sm font-semibold text-[#B7BBC6] hover:bg-gray-50 disabled:opacity-60"
+>
+  {loading === "portal" ? "Opening…" : "See invoices"}
+</button>
           </div>
         ) : (
           <div className="rounded-lg bg-white/5 p-2 ring-1 ring-white/10">
@@ -212,7 +305,11 @@ export default function Billing() {
               </a>
             ))}
           </div>
+
+          
         )}
+
+        
       </div>
     </div>
   );
