@@ -48,29 +48,38 @@ export default function Result({ results = [] }) {
 const handleDownload = async (url) => {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-  // 📱 MOBILE → just open the video directly
+  const proxyBase = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/video-proxy`;
+
   if (isMobile) {
-    window.open(url, "_blank");
+    const proxyUrl = `${proxyBase}?url=${encodeURIComponent(url)}`;
+    window.open(proxyUrl, "_blank");
     return;
   }
 
-  // 💻 DESKTOP → force download
   try {
-    const res = await fetch(url);
-    const blob = await res.blob();
+    const res = await fetch(proxyBase, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url }),
+    });
 
+    if (!res.ok) {
+      throw new Error("Proxy download failed");
+    }
+
+    const blob = await res.blob();
     const blobUrl = URL.createObjectURL(blob);
 
     const link = document.createElement("a");
     link.href = blobUrl;
     link.download = "zyvo-video.mp4";
-
     document.body.appendChild(link);
     link.click();
     link.remove();
 
     URL.revokeObjectURL(blobUrl);
-
   } catch (err) {
     console.error(err);
     window.open(url, "_blank");
