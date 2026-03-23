@@ -49,8 +49,9 @@ const handleDownload = async (url) => {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   // 📱 MOBILE → open clean video (BEST UX)
- if (isMobile) {
-  window.open("/functions/v1/video-proxy", "_blank");
+if (isMobile) {
+  const proxyUrl = `/functions/v1/video-proxy?url=${encodeURIComponent(url)}`;
+  window.open(proxyUrl, "_blank");
   return;
 }
 
@@ -321,7 +322,7 @@ useEffect(() => {
     </button>
 
  <p className="text-white/40 text-xs">
-  Tap download — saves directly to your device
+  Tap download → then press “Save video”
 </p>
 
 
