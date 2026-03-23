@@ -48,29 +48,22 @@ export default function Result({ results = [] }) {
 const handleDownload = async (url) => {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-  // 📱 MOBILE → open clean video (BEST UX)
-if (isMobile) {
-  const proxyUrl = `/functions/v1/video-proxy?url=${encodeURIComponent(url)}`;
-  window.open(proxyUrl, "_blank");
-  return;
-}
+  // 📱 MOBILE → just open the video directly
+  if (isMobile) {
+    window.open(url, "_blank");
+    return;
+  }
 
-  // 💻 DESKTOP → real download
+  // 💻 DESKTOP → force download
   try {
-    const res = await fetch("/functions/v1/video-proxy", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ url }),
-    });
-
+    const res = await fetch(url);
     const blob = await res.blob();
+
     const blobUrl = URL.createObjectURL(blob);
 
     const link = document.createElement("a");
     link.href = blobUrl;
-    link.download = `zyvo-video.mp4`;
+    link.download = "zyvo-video.mp4";
 
     document.body.appendChild(link);
     link.click();
