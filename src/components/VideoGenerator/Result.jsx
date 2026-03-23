@@ -46,6 +46,15 @@ export default function Result({ results = [] }) {
 
 
 const handleDownload = async (url) => {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  // 📱 MOBILE → open clean video (BEST UX)
+ if (isMobile) {
+  window.open("/functions/v1/video-proxy", "_blank");
+  return;
+}
+
+  // 💻 DESKTOP → real download
   try {
     const res = await fetch("/functions/v1/video-proxy", {
       method: "POST",
@@ -60,7 +69,7 @@ const handleDownload = async (url) => {
 
     const link = document.createElement("a");
     link.href = blobUrl;
-    link.download = `zyvo-${Date.now()}.mp4`;
+    link.download = `zyvo-video.mp4`;
 
     document.body.appendChild(link);
     link.click();

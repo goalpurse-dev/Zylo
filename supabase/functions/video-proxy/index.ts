@@ -6,10 +6,10 @@ export default async (req: Request) => {
   const res = await fetch(url);
   const blob = await res.arrayBuffer();
 
-  return new Response(blob, {
-    headers: {
-      "Content-Type": "video/mp4",
-      "Content-Disposition": "attachment; filename=zyvo.mp4",
-    },
-  });
+ return new Response(blob, {
+  headers: {
+    "Content-Type": "video/mp4",
+    "Cache-Control": "public, max-age=31536000",
+  },
+});
 };
