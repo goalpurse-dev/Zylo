@@ -62,22 +62,24 @@ async function sendWelcomeEmail(user) {
 }
 
 async function main() {
-  const cutoffDate = new Date("2026-03-19T23:59:59Z").toISOString();
-
-const { data: users, error } = await supabase
-  .from("profiles")
-  .select("*")
-  .lte("created_at", cutoffDate)
-  .eq("welcome_email_sent", false)
-  .order("created_at", { ascending: true }) // 🔥 ensures correct next batch
-  .limit(400);
+  const { data: users, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("welcome_email_sent", false)
+    .order("created_at", { ascending: true })
+    .limit(400);
 
   if (error) {
     console.error("❌ Fetch error:", error);
     return;
   }
 
-  console.log(`🔥 Sending to ${users.length} users (batch 1)`);
+  if (!users || users.length === 0) {
+    console.log("✅ No users left to send");
+    return;
+  }
+
+  console.log(`🔥 Sending to ${users.length} users`);
 
   let count = 0;
 
@@ -87,12 +89,11 @@ const { data: users, error } = await supabase
 
     console.log(`📤 Progress: ${count}/${users.length}`);
 
-    // 🔥 2–3 sec delay (randomized = even safer)
     const delay = 2000 + Math.random() * 1000;
     await new Promise((r) => setTimeout(r, delay));
   }
 
-  console.log("🚀 Batch 1 done (0–400)");
+  console.log("🚀 Batch done");
 }
 
 main();

@@ -47,22 +47,15 @@ export default function Result({ results = [] }) {
 
 const handleDownload = async (url) => {
   try {
-    // Mobile (iPhone / Android) → open video so user can save
-    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-      const link = document.createElement("a");
-      link.href = url;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      return;
-    }
+    const res = await fetch("/functions/v1/video-proxy", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url }),
+    });
 
-    // Desktop → force download
-    const res = await fetch(url);
     const blob = await res.blob();
-
     const blobUrl = URL.createObjectURL(blob);
 
     const link = document.createElement("a");
@@ -73,11 +66,10 @@ const handleDownload = async (url) => {
     link.click();
     link.remove();
 
-    // Clean up memory
     URL.revokeObjectURL(blobUrl);
 
   } catch (err) {
-    console.error("Download failed:", err);
+    console.error(err);
     window.open(url, "_blank");
   }
 };
@@ -319,9 +311,10 @@ useEffect(() => {
       Download Video
     </button>
 
-    <p className="text-white/40 text-xs">
-  Tap and hold to save on mobile
+ <p className="text-white/40 text-xs">
+  Tap download — saves directly to your device
 </p>
+
 
   </div>
 )}
