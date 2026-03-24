@@ -108,18 +108,34 @@ async function sendStageEmail(user) {
 
   if (!html) return;
 
-  const { error } = await resend.emails.send({
-  from: "Niko from Zyvo <niko@tryzyvo.com>",
-  to: user.email,
-  subject,
-  html,
-  reply_to: "niko@tryzyvo.com",
-});
+let sendError = null;
 
-  if (error) {
-    console.error("Resend error:", user.email, error);
-    return;
+
+
+for (let attempt = 1; attempt <= 2; attempt++) {
+  const { error } = await resend.emails.send({
+    from: "Niko from Zyvo <niko@tryzyvo.com>",
+    to: user.email,
+    subject,
+    html,
+    reply_to: "niko@tryzyvo.com",
+  });
+
+  if (!error) {
+    sendError = null;
+    break;
   }
+
+  sendError = error;
+  console.log(`⚠️ Retry ${attempt} failed for ${user.email}`);
+
+  await new Promise(r => setTimeout(r, 1500));
+}
+
+if (sendError) {
+  console.error("❌ Final fail:", user.email, sendError);
+  return;
+}
 
   const { error: updateError } = await supabase
     .from("abandoned_checkouts")
@@ -151,6 +167,8 @@ const { data: users, error } = await supabase
       return res.status(500).json({ error: "Failed to fetch users" });
     }
 
+
+    
     // 🔥 FETCH ALL PROFILES ONCE (FAST)
 const { data: profiles, error: profilesError } = await supabase
   .from("profiles")
@@ -168,7 +186,17 @@ const profileMap = new Map(
 
     const now = Date.now();
 
-   for (const user of users) {
+
+
+    for (const user of users) {
+
+  // ✅ ADD THIS HERE
+  if (!user.email) {
+    console.log("⚠️ Skipping (no email):", user.id);
+    continue;
+  }
+
+  // existing code continues...
 
   // 🔥 ADD THIS RIGHT HERE
 // 🔥 CHECK EMAIL CONSENT FROM PROFILES TABLE
@@ -181,9 +209,9 @@ if (!hasConsent) {
 }
 
   const createdAt = new Date(user.created_at).getTime();
-      const lastSent = user.last_email_sent_at
-        ? new Date(user.last_email_sent_at).getTime()
-        : null;
+    const lastSent = user.last_email_sent_at
+  ? new Date(user.last_email_sent_at).getTime()
+  : 0;
 
       const shouldSendStage1 =
   user.recovery_stage === 0 &&
