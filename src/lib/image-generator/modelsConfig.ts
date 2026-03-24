@@ -30,7 +30,7 @@ export const MODELS = {
     img: LOGOS.openai,
     credits: 10, // TEMP – fixed price
     traits: ["Highest quality", "Best", "General purpose"],
-    supportedSizes: ["1:1", "3:2", "2:3"],
+    supportedSizes: ["1:1",],
     maxReferenceImages: 6,
     defaultQuality: "high",
 
@@ -48,7 +48,7 @@ export const MODELS = {
     img: LOGOS.seedance,
     credits: 3,
     traits: ["Quality", "Fast processing", "Low cost"],
-    supportedSizes: ["1:1", "16:9", "9:16", "4:3","21:9"],
+    supportedSizes: ["1:1", "16:9", "9:16", ],
     maxReferenceImages: 14,
   },
 
@@ -71,7 +71,7 @@ export const MODELS = {
     img: LOGOS.juggernaut,
     credits: 2,
     traits: ["Cinematic lighting", "High contrast", "Photorealistic", "Cars & portraits"],
-    supportedSizes: ["1:1", "16:9", "9:16", "21:9", "2:3"],
+    supportedSizes: ["1:1", "16:9", "9:16", ],
     maxReferenceImages: 0,
   },
 
@@ -82,7 +82,7 @@ export const MODELS = {
     img: LOGOS.flux,
     credits: 7,
     traits: ["Fast", "Super quality", "Clean composition", "Advanced thinking"],
-    supportedSizes: ["1:1", "16:9", "9:16", "21:9", "2:3"],
+    supportedSizes: ["1:1", "16:9", "9:16", ],
     maxReferenceImages: 8,
   },
 
@@ -93,7 +93,7 @@ export const MODELS = {
      img: LOGOS.flux,
     credits: 1,
     traits: ["Fast", "Medium quality", "Clean composition", "Concept generation"],
-    supportedSizes: ["1:1", "16:9", "9:16", "21:9", "2:3"],
+    supportedSizes: ["1:1", "16:9", "9:16", ],
     maxReferenceImages: 4,
   },
 
@@ -104,7 +104,7 @@ export const MODELS = {
     img: LOGOS.hidream,
     credits: 1,
     traits: ["Very fast", "Clean realism", "Low cost", "Concept generation"],
-    supportedSizes: ["1:1", "21:9", "4:3", "16:9", "9:16","2:3"],
+    supportedSizes: ["1:1",  "16:9", "9:16"],
     maxReferenceImages: 0,
   },
 
