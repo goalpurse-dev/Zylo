@@ -18,7 +18,7 @@ export const MODELS = {
     img: LOGOS.nano,
     credits: 15,
     traits: ["Ultra Detail", "Max Precision", "Studio Quality"],
-    supportedSizes: ["1:1", "16:9", "9:16"],
+    supportedSizes: ["1:1-4k", "16:9-4k", "9:16-4k"],
     maxReferenceImages: 8,
   },
 

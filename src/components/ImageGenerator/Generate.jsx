@@ -222,6 +222,8 @@ const panelRef = useRef(null);
  const [selectedModelKey, setSelectedModelKey] = useState("image:nano");
 const [selectedSize, setSelectedSize] = useState("1:1");
 
+const currentSize =
+  IMAGE_SIZES[selectedSize] ?? IMAGE_SIZES["1:1"];
 
 
 
@@ -931,9 +933,9 @@ className={`
     <span className="text-[11px] text-white/40 tracking-wide uppercase">
       Size
     </span>
-    <span className="text-[14px] text-white font-medium">
-      {selectedSize}
-    </span>
+   <span className="text-[14px] text-white font-medium">
+  {currentSize.label}
+</span>
   </div>
 
   <ChevronRight
@@ -980,7 +982,7 @@ overscroll-contain
     </div>
 
   {selectedModel.supportedSizes.map((size) => {
-  const s = IMAGE_SIZES[size];
+  const s = IMAGE_SIZES[size] ?? IMAGE_SIZES["1:1"];
 
   return (
     <button
@@ -1009,7 +1011,7 @@ overscroll-contain
       </div>
 
       {/* Size label */}
-      <span>{size}</span>
+      <span>{s.label}</span>
     </button>
   );
 })}

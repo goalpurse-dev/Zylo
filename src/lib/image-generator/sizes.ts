@@ -8,19 +8,12 @@ export const IMAGE_SIZES: Record<
     previewH: number
   }
 > = {
+  // ✅ NORMAL SIZES (UNCHANGED)
   "1:1": {
     label: "1:1",
     width: 1024,
     height: 1024,
     previewW: 18,
-    previewH: 18,
-  },
-
-  "4:3": {
-    label: "4:3",
-    width: 1152,
-    height: 896,
-    previewW: 24,
     previewH: 18,
   },
 
@@ -40,27 +33,28 @@ export const IMAGE_SIZES: Record<
     previewH: 26,
   },
 
-  "21:9": {
-    label: "21:9",
-    width: 1536,
-    height: 640,
-    previewW: 28,
-    previewH: 12,
-  },
+  // 🔥🔥🔥 NANO PRO 4K SIZES
+ "1:1-4k": {
+  label: "1:1 (4K)",
+  width: 4096,
+  height: 4096,
+  previewW: 18,
+  previewH: 18,
+},
 
-  "2:3": {
-    label: "2:3",
-    width: 832,
-    height: 1216,
-    previewW: 16,
-    previewH: 24,
-  },
+"16:9-4k": {
+  label: "16:9 (4K)",
+  width: 5504,
+  height: 3072,
+  previewW: 26,
+  previewH: 14,
+},
 
-  "3:2": {
-    label: "3:2",
-    width: 1216,
-    height: 832,
-    previewW: 24,
-    previewH: 16,
-  },
+"9:16-4k": {
+  label: "9:16 (4K)",
+  width: 3072,
+  height: 5504,
+  previewW: 14,
+  previewH: 26,
+},
 };
