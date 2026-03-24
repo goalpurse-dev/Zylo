@@ -551,7 +551,7 @@ useEffect(() => {
     setOpenDuration(false);
   }}
 className={`
-  alive-card
+  md:alive-card
   group relative
   rounded-xl
   border border-white/10
@@ -615,7 +615,7 @@ className={`
     setOpenDuration(false);
   }}
 className={`
-  alive-card
+  md:alive-card
   group relative
   rounded-xl
   border border-white/10
@@ -673,7 +673,7 @@ className={`
             setOpenSize(false);
           }}
   className={`
-  alive-card
+  md:alive-card
   group relative
   rounded-xl
   border border-white/10
