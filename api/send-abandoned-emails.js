@@ -141,10 +141,7 @@ export default async function handler(req, res) {
   try {
 const { data: users, error } = await supabase
   .from("abandoned_checkouts")
-  .select(`
-    *,
-    profiles (email_updates)
-  `)
+  .select("*")
   .eq("paid", false)
   .in("status", ["pending", "in_sequence"])
   .lt("recovery_stage", 3);
@@ -154,12 +151,29 @@ const { data: users, error } = await supabase
       return res.status(500).json({ error: "Failed to fetch users" });
     }
 
+    // 🔥 FETCH ALL PROFILES ONCE (FAST)
+const { data: profiles, error: profilesError } = await supabase
+  .from("profiles")
+  .select("email, email_updates");
+
+if (profilesError) {
+  console.error("❌ Profiles fetch error:", profilesError);
+  return res.status(500).json({ error: "Failed to fetch profiles" });
+}
+
+// 🔥 CREATE FAST LOOKUP MAP
+const profileMap = new Map(
+  profiles.map(p => [p.email, p.email_updates])
+);
+
     const now = Date.now();
 
    for (const user of users) {
 
   // 🔥 ADD THIS RIGHT HERE
-  if (!user.profiles || !user.profiles.email_updates) {
+// 🔥 CHECK EMAIL CONSENT FROM PROFILES TABLE
+// ✅ FAST EMAIL CONSENT CHECK (NO DB CALL)
+if (!profileMap.get(user.email)) {
   console.log("⛔ Skipping (no consent):", user.email);
   continue;
 }
