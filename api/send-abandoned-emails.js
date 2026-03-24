@@ -173,7 +173,9 @@ const profileMap = new Map(
   // 🔥 ADD THIS RIGHT HERE
 // 🔥 CHECK EMAIL CONSENT FROM PROFILES TABLE
 // ✅ FAST EMAIL CONSENT CHECK (NO DB CALL)
-if (!profileMap.get(user.email)) {
+const hasConsent = profileMap.get(user.email);
+
+if (!hasConsent) {
   console.log("⛔ Skipping (no consent):", user.email);
   continue;
 }
