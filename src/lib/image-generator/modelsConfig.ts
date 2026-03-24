@@ -16,7 +16,7 @@ export const MODELS = {
     label: "Nano Banana Pro",
     description: "Our most advanced image model — built for maximum detail, photorealism, and studio-grade output across any style..",
     img: LOGOS.nano,
-    credits: 15,
+    credits:  25,
     traits: ["Ultra Detail", "Max Precision", "Studio Quality"],
     supportedSizes: ["1:1-4k", "16:9-4k", "9:16-4k"],
     maxReferenceImages: 8,

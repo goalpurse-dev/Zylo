@@ -120,7 +120,7 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
    /* On the highest quality */
     costUSD: 0.1457,
     retailUSD: 0.30,
-    credits: 15,
+    credits: 25,
     margin: m(0.1457, 0.30),
   },
 

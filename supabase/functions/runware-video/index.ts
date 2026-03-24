@@ -187,9 +187,25 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const status = poll?.status;
+      if (poll?.url) {
+  await safeUpdateJob(sb, jobId, {
+    status: "succeeded",
+    progress: 100,
+    result_url: poll.url,
+    charged: true,
+  });
 
-      if (status === "succeeded") {
+  console.log("[runware-video] forced success via URL", { jobId });
+  return ok(req, { ok: true });
+}
+
+      const status = String(poll?.status || "").toLowerCase();
+
+      if (
+  status === "succeeded" ||
+  status === "completed" ||
+  status === "done"
+) {
         const url = poll?.url;
         if (!url) {
           // Provider claims succeeded but no URL: treat as provider error

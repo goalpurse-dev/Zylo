@@ -7,7 +7,7 @@ type RunwareLaunchArgs = {
   height: number;
   durationSec: number;
   referenceImages?: string[] | null;
-  airTag: string; // e.g. klingai:kling-video@3-standard
+  airTag: string;
 };
 
 export type RunwareLaunchResult = { jobId: string };
@@ -63,6 +63,18 @@ function pickVideoUrl(obj: any): string | null {
   );
 }
 
+/* ================= HELPERS ================= */
+
+async function isUnder10MB(url: string) {
+  try {
+    const res = await fetch(url, { method: "HEAD" });
+    const size = Number(res.headers.get("content-length") || 0);
+    return size > 0 && size <= 10 * 1024 * 1024;
+  } catch {
+    return false;
+  }
+}
+
 /* ================= LAUNCH ================= */
 
 export async function launchRunwareVideo(args: RunwareLaunchArgs): Promise<RunwareLaunchResult> {
@@ -80,17 +92,45 @@ export async function launchRunwareVideo(args: RunwareLaunchArgs): Promise<Runwa
     includeCost: true,
   };
 
-  const refs = (args.referenceImages ?? []).filter(Boolean);
+  /* ================= FILTER REFERENCE IMAGES ================= */
 
- if (refs.length > 0) {
-  task.inputs = {
-    frameImages: refs.map((url) => ({ image: url })),
-  };
-}
+  const rawRefs = (args.referenceImages ?? []).filter(Boolean);
 
-// 🔥 ALWAYS SET SIZE
-task.width = args.width;
-task.height = args.height;
+  const safeRefs: string[] = [];
+
+  for (const url of rawRefs) {
+    if (await isUnder10MB(url)) {
+      safeRefs.push(url);
+    }
+  }
+
+  if (safeRefs.length > 0) {
+    task.inputs = {
+      frameImages: safeRefs.map((url) => ({ image: url })),
+    };
+  }
+
+  /* ================= SIZE HANDLING ================= */
+
+  const isKling = args.airTag.startsWith("klingai:");
+  const hasInputs = safeRefs.length > 0;
+
+  if (isKling) {
+    if (hasInputs) {
+      // 🔥 Kling WITH reference images
+      task.resolution = "720p"; // REQUIRED by Runware
+    } else {
+      // 🔥 Kling WITHOUT reference images
+      task.width = args.width;
+      task.height = args.height;
+    }
+  } else {
+    // other models
+    task.width = args.width;
+    task.height = args.height;
+  }
+
+  /* ================= SEND ================= */
 
   const { res, text, json } = await postJson([task]);
 
