@@ -15,6 +15,8 @@ export type ToolKey =
   | "image:Wan2.6-image"
   | "image:nano-pro"
   | "image:seedream4.0"
+  | "image:nano.2"
+
 
 
     /* ---------- VIDEO ---------- */
@@ -38,6 +40,11 @@ export type ProviderLink = {
   airTag: string;
   secret: "RUNWARE_API_KEY";
   edgeFn: string;
+
+  resolutionPricing?: Record<
+  string,
+  { credits: number; price: number }
+>;
 
   // 🔥 VIDEO PRICING CORE
   costPerSecondUSD?: number;
@@ -95,6 +102,25 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     credits: 10,
     margin: m(0.133, 0.20),
   },
+"image:nano.2": {
+  provider: "runware",
+  generator: "Nano Banana 2",
+  airTag: "google:4@3",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-image",
+
+  costUSD: 0.06923,
+  retailUSD: 0.14,
+  credits: 7,
+  margin: m(0.06923, 0.14),
+
+  // 🔥 ADD THIS
+  resolutionPricing: {
+    "1k": { credits: 5, price: 0.10 },
+    "2k": { credits: 7, price: 0.14 },
+    "4k": { credits: 10, price: 0.20 },
+  },
+},
 
   "image:seedream4.0": {
     provider: "runware",

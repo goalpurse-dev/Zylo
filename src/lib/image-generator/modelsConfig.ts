@@ -12,9 +12,64 @@ const LOGOS = {
 
 export const MODELS = {
 
+
+
+
+
+ "image:nano.2": {
+  label: "Nano Banana 2",
+  description:
+    "Next-generation image engine built for ultra-realistic detail, cinematic lighting, and flawless composition. Designed for creators who want maximum visual impact and viral-ready outputs.",
+
+  img: LOGOS.nano,
+
+  credits: 7,
+
+  traits: [
+    "4K Ultra Detail",
+    "Photoreal Precision",
+    "Cinematic Lighting",
+    "Perfect Composition",
+    "High Texture Fidelity",
+    "Pro-Level Output",
+  ],
+
+  // 🔥 IMPORTANT: keep ONLY ratios here (NOT sizes)
+  supportedSizes: ["1:1", "16:9", "9:16"],
+
+  maxReferenceImages: 8,
+
+  // 🔥 NEW: enable resolution system
+  supportsResolutions: true,
+
+  resolutions: [
+    {
+      key: "1k",
+      label: "1K",
+      description: "Fast generation",
+      scale: "small",
+      credits: 5,
+    },
+    {
+      key: "2k",
+      label: "2K",
+      description: "Balanced quality",
+      scale: "medium",
+      credits: 7,
+    },
+    {
+      key: "4k",
+      label: "4K",
+      description: "Maximum detail",
+      scale: "large",
+      credits: 10,
+    },
+  ],
+},
+
    "image:nano-pro": {
     label: "Nano Banana Pro",
-    description: "Our most advanced image model — built for maximum detail, photorealism, and studio-grade output across any style..",
+    description: "advanced image model — built for maximum detail, photorealism, and studio-grade output across any style..",
     img: LOGOS.nano,
     credits:  25,
     traits: ["Ultra Detail", "Max Precision", "Studio Quality"],

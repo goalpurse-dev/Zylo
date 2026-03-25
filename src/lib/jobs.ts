@@ -76,7 +76,8 @@ export type ImageToolKey =
   | "image:flux.base"
   | "image:flux.max"
   | "image:nano-pro"
-  | "image:seedream4.0";
+  | "image:seedream4.0"
+  | "image:nano.2";
 
 
   
@@ -127,6 +128,7 @@ export interface ImageSettings {
   tool_key: ImageToolKey;   // ← THIS IS THE SOURCE OF TRUTH
   size: string;
   credits: number;
+  
   priceUSD: number;
   provider_hint?: {
     engine: "runware";
@@ -308,6 +310,7 @@ export async function simulateJob(
 export async function createImageJobSimple(params: {
   subject: string;
   toolKey: ImageToolKey;
+  resolution?: string;
   size?: string;
   style?: string;
   project_id?: string | null;
@@ -324,8 +327,18 @@ export async function createImageJobSimple(params: {
   const link = getProviderLink(params.toolKey);
   if (!link) throw new Error(`Image provider not configured for ${params.toolKey}`);
 
-  const credits = link.credits;
-  const priceUSD = link.retailUSD;
+let credits = Number(link.credits ?? 0);
+let priceUSD = Number(link.retailUSD ?? 0);
+
+// 🔥 USE PROVIDER CONFIG
+if (link.resolutionPricing && params.resolution) {
+  const config = link.resolutionPricing[params.resolution];
+
+  if (config) {
+    credits = config.credits;
+    priceUSD = config.price;
+  }
+}
 
   // ✅ must be signed in
   const { data: userData, error: uerr } = await supabase.auth.getUser();
@@ -485,7 +498,7 @@ const credits = params.calculatedCredits;
 if (!credits || credits <= 0) {
   throw new Error("INVALID_VIDEO_CREDIT_CALCULATION");
 }
-const priceUSD = link.retailUSD;
+const priceUSD = Number(link.retailUSD ?? 0);
 
 const { data: userData, error: uerr } = await supabase.auth.getUser();
 if (uerr || !userData?.user) throw new Error("Must be signed in");

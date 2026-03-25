@@ -16,6 +16,7 @@ import { IMAGE_SIZES } from "../../lib/image-generator/sizes";
 import CreditLogo from "../../assets/toolshell/credit.png"
 import ErrorToast from "../../components/ImageGenerator/ErrorToast";
 import { watchJob } from "../../lib/jobs";
+import { NANO_RESOLUTIONS } from "../../lib/image-generator/nanoResolutions";
 
 import { ArrowBigDown, ArrowBigLeft, BoxSelect, Image, ImagePlusIcon, Settings, Wand, Wand2, X } from "lucide-react";
 import Bg from "../../assets/ImageGenerator/bg.png"
@@ -99,7 +100,7 @@ const StyleCard = ({ img, label, active, onClick }) => (
   </button>
 );
 
-const AspectRatioRow = ({ label, width, height, onClick }) => (
+const AspectRatioRow = ({ label, width, height, previewW, previewH, onClick }) => (
   <button
     onClick={onClick}
     className="flex items-center gap-4 px-4 py-3 w-full 
@@ -219,8 +220,9 @@ const [settingsOpen, setSettingsOpen] = useState(false);
 const [activeMenu, setActiveMenu] = useState(null); 
 const [limitToastOpen, setLimitToastOpen] = useState(false);
 const panelRef = useRef(null);
- const [selectedModelKey, setSelectedModelKey] = useState("image:nano");
+ const [selectedModelKey, setSelectedModelKey] = useState("image:nano.2")
 const [selectedSize, setSelectedSize] = useState("1:1");
+const [selectedResolution, setSelectedResolution] = useState("2k");
 
 const currentSize =
   IMAGE_SIZES[selectedSize] ?? IMAGE_SIZES["1:1"];
@@ -228,7 +230,9 @@ const currentSize =
 
 
 const selectedModel = MODELS[selectedModelKey];
-const estimatedCredits = selectedModel?.credits ?? 0;
+const estimatedCredits = selectedModel?.supportsResolutions
+  ? selectedModel.resolutions.find(r => r.key === selectedResolution)?.credits ?? selectedModel.credits
+  : selectedModel?.credits ?? 0;
   const textareaRef = useRef(null);
 const [openSize, setOpenSize] = useState(false);
 const [openStyle, setOpenStyle] = useState(false);
@@ -377,13 +381,31 @@ ${prompt.trim()}
 ${stylePrompt}
 `;
 
-const job = await generateImageFromUI({
+let overrideWidth = null;
+let overrideHeight = null;
 
+// 🔥 ONLY for Nano Banana 2
+if (selectedModel?.supportsResolutions) {
+  const res =
+    NANO_RESOLUTIONS[selectedSize]?.[selectedResolution];
+
+  if (res) {
+    overrideWidth = res.width;
+    overrideHeight = res.height;
+  }
+}
+
+const job = await generateImageFromUI({
   modelKey: selectedModelKey,
   prompt: finalPrompt,
   style: selectedStyle,
   size: selectedSize,
-  refImages: refImagesFinal
+  refImages: refImagesFinal,
+
+  // ✅ YOU ADD THESE HERE
+  width: overrideWidth,
+  height: overrideHeight,
+  resolution: selectedResolution, // 🔥 THIS LINE
 });
 
 if (!job || job.ok === false || job.errors?.length) {
@@ -814,7 +836,7 @@ useEffect(() => {
     setOpenStyle(false)
   }}
 className={`
-  alive-card 
+  md:alive-card 
 
   group relative
   rounded-xl
@@ -861,7 +883,7 @@ className={`
     setOpenModel(false);
   }}
   className={`
-  alive-card 
+  md:alive-card 
 
   group relative
   rounded-xl
@@ -909,7 +931,7 @@ className={`
     setOpenStyle(false)
   }}
  className={`
-  alive-card 
+  md:alive-card 
 
   group relative
   rounded-xl
@@ -947,6 +969,46 @@ className={`
   />
 </div>
 </button>
+
+{selectedModel?.supportsResolutions && (
+  <div className="mt-3 flex flex-col gap-2">
+    
+    {/* LABEL */}
+    <span className="text-[11px] text-white/40 uppercase tracking-wide">
+      Resolution
+    </span>
+
+    {/* OPTIONS */}
+    <div className="flex gap-2">
+      {selectedModel.resolutions.map((r) => {
+        const isActive = selectedResolution === r.key;
+        const isBest = r.key === "2k"; // 👈 mark 2K as best
+
+        return (
+          <button
+            key={r.key}
+            onClick={() => setSelectedResolution(r.key)}
+            className={`
+              relative px-4 py-2 rounded-xl text-sm font-medium
+              transition-all duration-200
+
+              ${
+                isActive
+                  ? "bg-gradient-to-r from-[#7A3BFF] to-[#9D4EDD] text-white shadow-[0_0_20px_rgba(122,59,255,0.45)]"
+                  : "bg-white/5 text-white/70 hover:bg-white/10"
+              }
+            `}
+          >
+            {r.label}
+
+            {/* 🔥 BEST BADGE */}
+           
+          </button>
+        );
+      })}
+    </div>
+  </div>
+)}
 
 
               {/* EXISTING DROPDOWNS BELOW (unchanged logic) */}
