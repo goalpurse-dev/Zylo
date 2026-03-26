@@ -1211,7 +1211,13 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
         
 
 {/* GENERATE SECTION */}
-<div className="sticky bottom-0 z-[10] md:relative  backdrop-blur-md ">
+<div className="
+  sticky 
+  bottom-[env(safe-area-inset-bottom)]
+  z-[10] 
+  md:relative 
+  backdrop-blur-md
+">
   <div
     className="
       pt-3
