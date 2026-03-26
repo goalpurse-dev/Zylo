@@ -248,6 +248,37 @@ const canAddImages = maxRefImages > 0;
 const [openReferenceModal, setOpenReferenceModal] = useState(false);
 const STYLE_KEYS = Object.keys(IMAGE_STYLES);
 const [traitIndex, setTraitIndex] = useState(0);
+const generateRef = useRef(null);
+const [isSticky, setIsSticky] = useState(true);
+
+useEffect(() => {
+  let ticking = false;
+
+  const handleScroll = () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        if (!generateRef.current) return;
+
+        const rect = generateRef.current.getBoundingClientRect();
+
+        if (rect.top <= window.innerHeight - 120) {
+          setIsSticky(false);
+        } else {
+          setIsSticky(true);
+        }
+
+        ticking = false;
+      });
+
+      ticking = true;
+    }
+  };
+
+  window.addEventListener("scroll", handleScroll);
+  handleScroll();
+
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
 
 useEffect(() => {
   const interval = setInterval(() => {
@@ -579,7 +610,12 @@ useEffect(() => {
 }, [settingsOpen]);
 
  return (
- <section className="pt-[70px] pb-[140px] md:pb-[160px]">
+<section
+  className={`
+    pt-[70px]
+    ${isSticky ? "pb-[140px] md:pb-[160px]" : "pb-[40px]"}
+  `}
+>
 
  <div
   onClick={() => {
@@ -1206,10 +1242,15 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
 )}
             </div>
 
-            
+    <div ref={generateRef} />        
 
 {/* GENERATE SECTION */}
-<div className="fixed bottom-0 left-0 right-0 z-[55]">
+<div
+  className={`
+    transition-all duration-300
+    ${isSticky ? "fixed bottom-0 left-0 right-0 z-[55]" : "relative"}
+  `}
+>
   <div
     className="
       pt-3
