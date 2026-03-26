@@ -1211,12 +1211,12 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
         
 
 {/* GENERATE SECTION */}
-<div className="sticky bottom-0 z-[10] md:relative bg-[#0B0E1A]/95 backdrop-blur-md shadow-[0_-10px_40px_rgba(0,0,0,0.6)]">
+<div className="sticky bottom-0 z-[10] md:relative  backdrop-blur-md ">
   <div
     className="
       pt-3
       pb-[calc(env(safe-area-inset-bottom)+12px)]
-    bg-gradient-to-t from-[#0B0E1A] via-[#0B0E1A]/95 to-transparent
+  
       border-t border-white/10
     "
   >

@@ -173,8 +173,8 @@ useEffect(() => {
           {activePanel === "tools" && (
             <aside
               className="
-                fixed top-[64px] left-[80px]
-                z-50 h-[calc(100vh-64px)]
+                fixed  left-[80px]
+                z-50 h-full
                 w-[220px] bg-[#12141A]
                 animate-[panelIn_0.25s_ease-out]
                 lg:hidden rounded-tr-lg
