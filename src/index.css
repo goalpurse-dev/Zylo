@@ -182,7 +182,7 @@ button, a, [role="button"], label, summary { cursor: pointer; }
 html,
 body {
   height: 100%;
- 
+  overscroll-behavior-y: auto; /* 🔥 allow natural scroll */
 }
 @keyframes panelIn {
   from {
@@ -227,6 +227,11 @@ body,
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+#workspace-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;  /* 🔥 KEY FIX */
 }
 /* ===== Zyvo Scrollbar ===== */
 

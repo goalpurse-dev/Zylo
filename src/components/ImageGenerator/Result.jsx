@@ -363,10 +363,7 @@ const isFailed =
         <div className="absolute inset-0 rounded-full bg-[#7A3BFF]/20 blur-xl animate-pulse" />
       </div>
 
-      {/* Text */}
-      <p className="text-white/50 text-xs mt-4 animate-pulse tracking-wide">
-        Generating your viral image...
-      </p>
+    
 
     </div>
 
@@ -490,7 +487,7 @@ const photoResults = useMemo(
               new Date(b.created_at || 0).getTime() -
               new Date(a.created_at || 0).getTime()
           )
-          .slice(0, isMobile ? 12 : 30)
+          .slice(0, isMobile ? 15 : 30)
       : [],
   [results]
 );

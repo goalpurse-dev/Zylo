@@ -194,12 +194,12 @@ useEffect(() => {
   className="relative z-10 flex flex-col flex-1 h-screen overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]"
 >
         <div
-          className={`
-            sticky top-0 z-50
-            transition-transform duration-300
-            ${showTopRow ? "translate-y-0" : "-translate-y-full"}
-            lg:translate-y-0
-          `}
+         className={`
+  sticky top-0 z-50
+  ${showTopRow ? "opacity-100" : "opacity-0 pointer-events-none"}
+  transition-opacity duration-200
+  lg:opacity-100
+`}
         >
           <TopRow
             onMenuClick={() => {
