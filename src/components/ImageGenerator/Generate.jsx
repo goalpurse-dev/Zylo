@@ -249,33 +249,7 @@ const [openReferenceModal, setOpenReferenceModal] = useState(false);
 const STYLE_KEYS = Object.keys(IMAGE_STYLES);
 const [traitIndex, setTraitIndex] = useState(0);
 const generateRef = useRef(null);
-const [isSticky, setIsSticky] = useState(true);
 
-useEffect(() => {
-  const handleScroll = () => {
-    if (!generateRef.current) return;
-
-    // 🔥 disable sticky on desktop
-    if (window.innerWidth >= 768) {
-      setIsSticky(false);
-      return;
-    }
-
-    const rect = generateRef.current.getBoundingClientRect();
-
-    // 👇 THIS is the correct trigger
-    if (rect.top <= window.innerHeight - 120) {
-      setIsSticky(false);
-    } else {
-      setIsSticky(true);
-    }
-  };
-
-  window.addEventListener("scroll", handleScroll);
-  handleScroll();
-
-  return () => window.removeEventListener("scroll", handleScroll);
-}, []);
 
 useEffect(() => {
   const interval = setInterval(() => {
@@ -607,12 +581,7 @@ useEffect(() => {
 }, [settingsOpen]);
 
  return (
-<section
-  className={`
-    pt-[70px]
-    ${isSticky ? "pb-[140px] md:pb-[160px]" : "pb-[40px]"}
-  `}
->
+<section className="pt-[70px]">
 
  <div
   onClick={() => {
@@ -1242,13 +1211,7 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
         
 
 {/* GENERATE SECTION */}
-<div
-  ref={generateRef}
-  className={`
-    transition-all duration-300
-    ${isSticky ? "fixed bottom-0 left-0 right-0 z-[55]" : "relative"}
-  `}
->
+<div className="sticky bottom-0 z-[10] md:relative bg-[#0B0E1A]/95 backdrop-blur-md shadow-[0_-10px_40px_rgba(0,0,0,0.6)]">
   <div
     className="
       pt-3

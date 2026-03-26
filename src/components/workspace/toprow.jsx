@@ -19,15 +19,13 @@ export default function TopRow({ title, onMenuClick }) {
     : null;
 
   return (
-    <section
-      className="
-        fixed top-0 left-0 right-0
-        z-[60]
-        backdrop-blur-xl
-        bg-[#12141A]/90
-        border-b border-white/5
-      "
-    >
+   <section className="
+  fixed top-0 left-0 right-0
+  z-[60]
+  backdrop-blur-xl
+  bg-[#12141A]/90
+  border-b border-white/5
+">
       <div className="flex lg:hidden items-center justify-between px-6 py-3 md:py-4">
 
         {/* LEFT SIDE */}
