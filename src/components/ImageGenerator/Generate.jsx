@@ -468,22 +468,7 @@ watchJob(job.id, (updatedJob) => {
 };
 
 
-useEffect(() => {
-  const handleFocus = () => {
-    document.body.style.zoom = "1";
-  };
 
-  const textarea = textareaRef.current;
-  if (textarea) {
-    textarea.addEventListener("focus", handleFocus);
-  }
-
-  return () => {
-    if (textarea) {
-      textarea.removeEventListener("focus", handleFocus);
-    }
-  };
-}, []);
 
 useEffect(() => {
   const modalOpen = openModel || openStyle || openSize;
@@ -748,19 +733,20 @@ useEffect(() => {
     focus-within:shadow-[0_0_0_1px_rgba(122,59,255,0.4)]
   "
   >
-    <textarea
-      ref={textareaRef}
-      value={prompt}
-      onChange={(e) => setPrompt(e.target.value)}
-      placeholder="Describe the content you want to go viral..."
-      rows={4}
-      className="
-        w-full bg-transparent outline-none
-        text-[15px] text-white
-        placeholder:text-white/40
-        resize-none
-      "
-    />
+   <textarea
+  ref={textareaRef}
+  value={prompt}
+  onChange={(e) => setPrompt(e.target.value)}
+  placeholder="Describe the content you want to go viral..."
+  rows={4}
+  style={{ fontSize: "16px" }} // ✅ THIS LINE
+  className="
+    w-full bg-transparent outline-none
+    text-white
+    placeholder:text-white/40
+    resize-none
+  "
+/>
   </div>
 </div>
 
@@ -807,9 +793,11 @@ useEffect(() => {
         className="relative aspect-square rounded-xl overflow-hidden border border-white/10"
       >
         <img
-          src={img.url}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+  src={img.url}
+  loading="lazy"
+  decoding="async"
+  className="absolute inset-0 w-full h-full object-cover"
+/>
         <button
           onClick={() => toggleSelect(img)}
           className="absolute top-2 right-2 bg-black/60 backdrop-blur-md rounded-full p-1.5 border border-white/10"
@@ -1232,8 +1220,7 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
     className="
       pt-3
       pb-[calc(env(safe-area-inset-bottom)+12px)]
-      bg-gradient-to-t from-[#0B0E1A] via-[#0B0E1A]/95 to-transparent
-      backdrop-blur-md
+    bg-gradient-to-t from-[#0B0E1A] via-[#0B0E1A]/95 to-transparent
       border-t border-white/10
     "
   >

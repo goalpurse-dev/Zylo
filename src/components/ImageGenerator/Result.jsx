@@ -81,6 +81,7 @@ function ResultCard({ item }) {
   const [posting, setPosting] = useState(false);
 const [posted, setPosted] = useState(false);
 const [showToast, setShowToast] = useState(false);
+const [postedImages, setPostedImages] = useState(new Set());
 
 
 
@@ -108,6 +109,27 @@ useEffect(() => {
     ignore = true;
   };
 }, [item?.result_url]);
+
+useEffect(() => {
+  async function loadPosted() {
+    const { data, error } = await supabase
+      .from("public_images")
+      .select("runware_url, image_url");
+
+    if (error) {
+      console.error("Failed to load posted images:", error);
+      return;
+    }
+
+    const urls = new Set(
+      (data || []).flatMap((d) => [d.runware_url, d.image_url])
+    );
+
+    setPostedImages(urls);
+  }
+
+  loadPosted();
+}, []);
  
 const handlePublish = async () => {
   if (posting || posted) return;
@@ -140,9 +162,13 @@ canvas.height = bitmap.height;
 
 const ctx = canvas.getContext("2d");
 ctx.drawImage(bitmap, 0, 0);
+bitmap.close(); // ✅ ADD THIS
 
-const webpBlob = await new Promise((resolve) => {
-  canvas.toBlob(resolve, "image/webp", 0.82);
+const webpBlob = await new Promise((resolve, reject) => {
+  canvas.toBlob((blob) => {
+    if (!blob) return reject(new Error("WEBP conversion failed"));
+    resolve(blob);
+  }, "image/webp", 0.82);
 });
 
 const fileName = `${crypto.randomUUID()}.webp`;
@@ -285,31 +311,67 @@ const isFailed =
 
 
     {/* LOADING */}
-    {!isDone && !isFailed && (
-      <div className="w-full h-full flex items-center justify-center">
-        <svg className="w-14 h-14" viewBox="0 0 100 100">
+   {/* LOADING */}
+{!isDone && !isFailed && (
+  <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
+
+    {/* 🔥 Animated background glow */}
+    <div className="absolute inset-0 bg-gradient-to-br from-[#7A3BFF]/20 via-transparent to-[#9D4EDD]/20 animate-pulse" />
+
+    {/* 🔥 Shimmer overlay */}
+    <div className="absolute inset-0">
+      <div className="w-full h-full bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.08),transparent)] animate-[shimmer_2s_linear_infinite]" />
+    </div>
+
+    {/* 🔥 Fake blurred preview (feels like image forming) */}
+    <div className="absolute inset-0 backdrop-blur-[6px] opacity-40" />
+
+    {/* 🔥 Center content */}
+    <div className="relative z-10 flex flex-col items-center">
+
+      {/* Spinner upgraded */}
+      <div className="relative">
+        <svg className="w-16 h-16" viewBox="0 0 100 100">
           <circle
             cx="50"
             cy="50"
-            r="45"
+            r="42"
             fill="none"
-            stroke="rgba(255,255,255,0.25)"
+            stroke="rgba(255,255,255,0.15)"
             strokeWidth="6"
           />
           <circle
             cx="50"
             cy="50"
-            r="45"
+            r="42"
             fill="none"
-            stroke="#7A3BFF"
+            stroke="url(#grad)"
             strokeWidth="6"
-            strokeDasharray="28 260"
+            strokeDasharray="40 220"
             strokeLinecap="round"
             className="origin-center animate-spin"
           />
+          <defs>
+            <linearGradient id="grad">
+              <stop offset="0%" stopColor="#7A3BFF" />
+              <stop offset="100%" stopColor="#C77DFF" />
+            </linearGradient>
+          </defs>
         </svg>
+
+        {/* glow pulse */}
+        <div className="absolute inset-0 rounded-full bg-[#7A3BFF]/20 blur-xl animate-pulse" />
       </div>
-    )}
+
+      {/* Text */}
+      <p className="text-white/50 text-xs mt-4 animate-pulse tracking-wide">
+        Generating your viral image...
+      </p>
+
+    </div>
+
+  </div>
+)}
   </div>
 </div>
 
@@ -331,7 +393,19 @@ const isFailed =
 <div className="flex gap-3 mt-2">
 
   <button
-    onClick={() => window.open(item.result_url, "_blank")}
+      onClick={async () => {
+    const res = await fetch(item.result_url + "?width=1200");
+    const blob = await res.blob();
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "zyvo-image.webp";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }}
     className="flex items-center gap-1 text-white/90 hover:text-white text-xs font-medium"
   >
     <DownloadIcon className="w-4 h-4" />
@@ -379,6 +453,27 @@ const isFailed =
 
 export default function Result({ results, activeJobId, userPlan }) {
   const latestRef = useRef(null);
+ const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+useEffect(() => {
+  if (!activeJobId) return;
+
+  if (!latestRef.current) return;
+
+  latestRef.current.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
+}, [activeJobId]);
+
+useEffect(() => {
+  const handleResize = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
+
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
 
   // ✅ filter valid photo jobs
 const photoResults = useMemo(
@@ -395,7 +490,7 @@ const photoResults = useMemo(
               new Date(b.created_at || 0).getTime() -
               new Date(a.created_at || 0).getTime()
           )
-          .slice(0, 30)
+          .slice(0, isMobile ? 12 : 30)
       : [],
   [results]
 );
@@ -411,32 +506,29 @@ useEffect(() => {
     const el = cardRefs.current[activeJobId];
     const container = document.getElementById("workspace-scroll");
 
-    if (!el || !container) {
-      if (attempts < 12) {
+    if (!container) return;
+
+    if (!el) {
+      if (attempts < 20) { // 🔥 more retries
         attempts++;
-        requestAnimationFrame(tryScroll);
+        setTimeout(tryScroll, 50); // 🔥 key fix
       }
       return;
     }
 
-   const rect = el.getBoundingClientRect();
-const containerRect = container.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
 
-const delta = rect.top - containerRect.top - 96;
+    const delta = rect.top - containerRect.top - 80;
 
-const maxScroll =
-  container.scrollHeight - container.clientHeight;
-
-const target = Math.min(container.scrollTop + delta, maxScroll);
-
-container.scrollTo({
-  top: target,
-  behavior: "smooth",
-});
+    container.scrollBy({
+      top: delta,
+      behavior: "smooth",
+    });
   };
 
-  requestAnimationFrame(tryScroll);
-}, [activeJobId, photoResults.length]);
+  tryScroll();
+}, [activeJobId, photoResults]);
 
 
 
@@ -444,12 +536,15 @@ container.scrollTo({
   if (photoResults.length === 0) return null;
 
   return (
- <div className="w-full bg-[#12141A] p-4 md:pb-6 pb-24 min-h-[300px]">
+<div
+  ref={latestRef}
+  className="w-full bg-[#12141A] p-4 md:pb-6 pb-24 min-h-[300px]"
+>
       <h1 className="text-[#F4F6FB] font-semibold text-[20px] mb-4">
         Recent Creations
       </h1>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {photoResults.map((item) => (
   <div
     key={item.id}

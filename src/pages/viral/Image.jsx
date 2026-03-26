@@ -39,6 +39,7 @@ const [userPlan, setUserPlan] = useState("free");
 
   const inspirationRef = useRef(null);
   const watchersRef = useRef({});
+  const [postedImages, setPostedImages] = useState(new Set());
 
   const [activeJobId, setActiveJobId] = useState(null);
 
@@ -72,6 +73,27 @@ useEffect(() => {
   }
 
   loadPlan();
+}, []);
+
+useEffect(() => {
+  async function loadPosted() {
+    const { data, error } = await supabase
+      .from("public_images")
+      .select("runware_url, image_url");
+
+    if (error) {
+      console.error("Failed to load posted images:", error);
+      return;
+    }
+
+    const urls = new Set(
+      (data || []).flatMap((d) => [d.runware_url, d.image_url])
+    );
+
+    setPostedImages(urls);
+  }
+
+  loadPosted();
 }, []);
 
   /* ===============================
@@ -189,27 +211,25 @@ useEffect(() => {
   =============================== */
   useEffect(() => {
     const interval = setInterval(() => {
-      setResults((prev) =>
-        prev.map((job) => {
-          // Stop immediately if finished
-          if (job.result_url || job.status === "succeeded") return job;
+   setResults((prev) =>
+  prev.map((job) => {
+    if (!["queued", "running", "processing"].includes(job.status)) return job;
 
-          if (!["queued", "running", "processing"].includes(job.status)) {
-            return job;
-          }
+    // ❗ ONLY update recent jobs
+    const isRecent = Date.now() - new Date(job.created_at).getTime() < 20000;
+    if (!isRecent) return job;
 
-          const p = toNum(job.progress, 0);
-          if (p >= HEARTBEAT_MAX) return job;
+    const p = toNum(job.progress, 0);
+    if (p >= HEARTBEAT_MAX) return job;
 
-          const step = getHeartbeatStep(p);
+    const step = getHeartbeatStep(p);
 
-          return {
-            ...job,
-            progress: Math.min(p + step, HEARTBEAT_MAX),
-            _uiTick: Date.now(),
-          };
-        })
-      );
+    return {
+      ...job,
+      progress: Math.min(p + step, HEARTBEAT_MAX),
+    };
+  })
+);
     }, HEARTBEAT_INTERVAL);
 
    
@@ -296,12 +316,14 @@ useEffect(() => {
 
       {results.length > 0 && (
         <div className="mt-10 pb-32">
- <Result
+<Result
+
   results={results}
   onCopyPrompt={(p) => navigator.clipboard.writeText(p)}
   onRegenerate={(p) => sendPromptToGenerator(p)}
   activeJobId={activeJobId}
   userPlan={userPlan}
+  postedImages={postedImages}
 />
         </div>
       )}
