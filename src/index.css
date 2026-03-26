@@ -233,6 +233,10 @@ body,
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;  /* 🔥 KEY FIX */
 }
+
+#workspace-scroll {
+  will-change: scroll-position;
+}
 /* ===== Zyvo Scrollbar ===== */
 
 ::-webkit-scrollbar {

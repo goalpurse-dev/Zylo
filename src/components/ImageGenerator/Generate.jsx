@@ -579,7 +579,7 @@ useEffect(() => {
 }, [settingsOpen]);
 
  return (
- <section className="pb-6 md:pb-[env(safe-area-inset-bottom)] ">
+ <section className="pt-[70px] pb-[140px] md:pb-[160px]">
 
  <div
   onClick={() => {
@@ -1209,13 +1209,7 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
             
 
 {/* GENERATE SECTION */}
-<div
-  className="
-    sticky z-50 w-full
-    bottom-0
-   
-  "
->
+<div className="fixed bottom-0 left-0 right-0 z-[55]">
   <div
     className="
       pt-3
