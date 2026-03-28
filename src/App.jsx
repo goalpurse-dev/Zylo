@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -9,157 +9,118 @@ import {
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
-import ToolShell from "./components/layout/ToolShell";
-import NewsBar from "./components/NewsBar";
+
 
 // pages…
 //import Home from "./pages/Home";
-import ThumbnailGenerator from "./pages/ThumbnailGenerator";
-import MotivationalQuote from "./pages/MotivationalQuote";
-import Pricing from "./pages/Pricing";
-import Settings from "./pages/settings/WorkspaceSettings";
-import Product from "./pages/Product";
-import TextVideo from "./pages/TextVideo";
-import CartoonCreator from "./pages/CartoonCreator";
 
-import TextLanding from "./pages/landing/TextStoriesLanding";
-import ImageStudio from "./pages/studio/ImageStudio";
-import ImageEnhancement from "./pages/studio/ImageEnhancement";
-import VideoStudio from "./pages/studio/videostudio";
-import VideoEnhancement from "./pages/studio/VideoEnhancement";
-import StoryStudio from "./pages/studio/StoryStudio";
-import ComicStudio from "./pages/studio/ComicStudio";
-import VideoGenerator from "./pages/tools/VideoGenerator";
-import SupportLayout from "./pages/support/SupportLayout";
-import SupportHome from "./pages/support/SupportHome";
-import SupportArticle from "./pages/support/SupportArticle";
-import SupportPolicies from "./pages/support/SupportPolicies";
-import SupportPolicyArticle from "./pages/support/SupportPolicyArticle";
-import SupportContact from "./pages/support/SupportContact";
-import CreateLauncher from "./pages/CreateLauncher";
-import Signup from "./pages/Signup";
-import Login from "./pages/Login";
-import Forgot from "./pages/tools/Forgot";
-import Reset from "./pages/tools/Reset";
-import Contact from "./pages/Contact";
-import ImageGenerator from "./pages/tools/ImageGenerator";
-import JobsLab from "./pages/dev/JobsLab";
-import JobProgress from "./pages/JobProgress";
-import AuthCallback from "./pages/auth/AuthCallback";
-import TextToImage from "./pages/tools/TextToImage";
-import PromptLibrary from "./pages/tools/PromptLibrary";
-import Library from "./pages/Library";
-import AdStudio from "./pages/tools/AdStudio";
-import ProductCreate from "./pages/products/ProductCreate";
-import AvatarStudio from "./pages/brands/AvatarStudio";
-import ProductPhotos from "./pages/products/ProductPhotos";
-import Enhancements from "./pages/tools/Enhancements";
+const Pricing = lazy(() => import("./pages/Pricing"));
+// 🔥 LAZY LOAD THESE
+const Settings = lazy(() => import("./pages/settings/WorkspaceSettings"));
 
-// Brand pages
-import BrandPicker from "./pages/brands/BrandPicker";
-import BrandHome from "./pages/brands/BrandHome";
-import BrandWorkspace from "./pages/brands/BrandWorkspace";
-import NameAssistant from "./pages/brands/NameAssistant";
-import TextToVideo from "./pages/tools/TextToVideo";
-import BrandDashboard from "./pages/brands/BrandDashboard";
-import VideoLibrary from "./pages/tools/VideoLibrary";
+const SupportLayout = lazy(() => import("./pages/support/SupportLayout"));
+const SupportHome = lazy(() => import("./pages/support/SupportHome"));
+const SupportArticle = lazy(() => import("./pages/support/SupportArticle"));
+const SupportPolicies = lazy(() => import("./pages/support/SupportPolicies"));
+const SupportPolicyArticle = lazy(() => import("./pages/support/SupportPolicyArticle"));
+const SupportContact = lazy(() => import("./pages/support/SupportContact"));
 
-import BillingSuccess from "./pages/billing/Success.jsx";
-import BillingCancel from "./pages/billing/Cancel.jsx";
+const Signup = lazy(() => import("./pages/Signup"));
+const Login = lazy(() => import("./pages/Login"));
+const Forgot = lazy(() => import("./pages/tools/Forgot"));
+const Reset = lazy(() => import("./pages/tools/Reset"));
 
-import HelpCenter from "./pages/help/HelpCenter";
-import Feedback from "./pages/help/Feedback";
+const AuthCallback = lazy(() => import("./pages/auth/AuthCallback"));
+
+const BillingSuccess = lazy(() => import("./pages/billing/Success.jsx"));
+const BillingCancel = lazy(() => import("./pages/billing/Cancel.jsx"));
+
+const HelpCenter = lazy(() => import("./pages/help/HelpCenter"));
+const Feedback = lazy(() => import("./pages/help/Feedback"));
+const FeedbackAnalytics = lazy(() => import("./pages/admin/FeedbackAnalytics"));
+const TextToVoice = lazy(() => import("./pages/tools/TextToVoice"));
+
+// already lazy
+const Workspace = lazy(() => import("./pages/workspace/home.jsx"));
+
+// 🔥 ALSO lazy these workspace pages (important for performance)
+const ProductPhoto = lazy(() => import("./pages/workspace/productphoto.jsx"));
+const Library1 = lazy(() => import("./pages/workspace/library.jsx"));
+const WorkspaceLayout = lazy(() => import("./pages/workspace/layout.jsx"));
+const Creations = lazy(() => import("./pages/workspace/creations.jsx"));
+const Myproduct = lazy(() => import("./pages/workspace/myproduct.jsx"));
+const Step2 = lazy(() => import("./pages/workspace/step2.jsx"));
+const Step3 = lazy(() => import("./pages/workspace/step3.jsx"));
+
+const ImageGenTest = lazy(() => import("./pages/image-gen-test.jsx"));
 import { GenerationsProvider } from "./components/GenerationsDock";
-import FeedbackAnalytics from "./pages/admin/FeedbackAnalytics";
-import TextToVoice from "./pages/tools/TextToVoice";
-
-//ads
-import AdCreateStep1 from "./pages/adstudio/AdCreateStep1";
-import AdCreateStep2 from "./pages/adstudio/AdCreateStep2";
-import AdCreateStep3 from "./pages/adstudio/AdCreateStep3";
-import AdCreateStep4 from "./pages/adstudio/AdCreateStep4";
-import AdCreateStep5 from "./pages/adstudio/AdCreateStep5";
-
-
-import Workspace from "./pages/workspace/home.jsx"
-import ProductPhoto from "./pages/workspace/productphoto.jsx"
-import Library1 from "./pages/workspace/library.jsx"
-import WorkspaceLayout from "./pages/workspace/layout.jsx"
-import Creations from "./pages/workspace/creations.jsx"
-import Myproduct from "./pages/workspace/myproduct.jsx"
-import Step2 from "./pages/workspace/step2.jsx"
-import Step3 from "./pages/workspace/step3.jsx"
-import Step21 from "./pages/workspace/myproduct/step1.jsx"
-import Step31 from "./pages/workspace/myproduct/step2.jsx"
-import ImageGenTest from "./pages/image-gen-test.jsx"
-
 
 
 // blogs
 
-import BlogIndex from "./app/blog/BlogIndex";
+const BlogIndex = lazy(() => import("./app/blog/BlogIndex"));
 
 {/* Product Photo Blogs */}
-import ProductPhotosShopify from "./app/blog/ProductPhotosShopify";
-import ProductPhotosForShopify from "./app/blog/productphotos/Forshopifystores.jsx";
-import AiIncreaseRates from "./app/blog/productphotos/AIroductIncreaseRates.jsx";
-import BestAiToolsEcommerce from "./app/blog/productphotos/BestAiToolsEcommerce.jsx";
-import ShopifyProductPhotoBestPractices from "./app/blog/productphotos/ShopifyProductPhotoBestPractices.jsx";
-import AiVsTraditional from "./app/blog/productphotos/ai-vs-traditional-product-photography.jsx";
-import WhyProductPhotosMatter from "./app/blog/productphotos/WhyProductPhotosMatter.jsx";
-import BestAiProductBgToUse from "./app/blog/productphotos/BestAiProductBgToUse.jsx";
-import HowImproveEcommerceVisualTrust from "./app/blog/productphotos/HowImproveEcommerceVisualTrust.jsx";
-import ProductPhotographyMistakesEcommerce from "./app/blog/productphotos/ProductPhotographyMistakesEcommerce.jsx";
-import HowVisualBrandingImpactsOnlineSales from "./app/blog/productphotos/HowVisualBrandingImpactsOnlineSales.jsx";
-import AIBackgroundRemovalForProductPhotos from "./app/blog/productphotos/AIBackgroundRemovalForProductPhotos.jsx";
-import ScaleEcommerceContent from "./app/blog/productphotos/ScaleEcommerceContent.jsx";
-import ConvertingProductImagesForShopify from "./app/blog/productphotos/ConvertingProductImagesForShopify.jsx";
-import AIProductPhotoForSmallBusiness from "./app/blog/productphotos/AIProductPhotoForSmallBusiness.jsx";
-import HowBetterImagesReduceBounceRate from "./app/blog/productphotos/HowBetterImagesReduceBounceRate.jsx";
-import EcommerceVisualConsistencyExplained from "./app/blog/productphotos/EcommerceVisualConsistencyExplained.jsx";
-import AiProductPhotosForDropshipping from "./app/blog/productphotos/AiProductPhotosForDropshipping.jsx";
-import HowVisualQualityImpactsSeo from "./app/blog/productphotos/HowVisualQualityImpactsSeo.jsx";
-import ProductImagesThatConverGuide from "./app/blog/productphotos/ProductImagesThatConvertGuide.jsx";
-import AiToolsEveryShopifyStoreOwnerKnow from "./app/blog/productphotos/Ai-Tools-Every-Shopify-Store-Owner-Know.jsx";
-import HowToLaunchProductsFasterWithAi from "./app/blog/productphotos/HowToLaunchProductsFasyerWithAi.jsx";
-import StudioQualityProductPhotos from "./app/blog/productphotos/StudioQualityProductPhotos.jsx";
-import WhyCleanProductPhotoBuildTrust from "./app/blog/productphotos/WhyCleanProductPhotosBuildTrust.jsx";
-import VisualOptimizationForMobielEcommerce from "./app/blog/productphotos/VisualOptimizationForMobileEcommerce.jsx";
-import HowAiHelpsEcommerceBrandsScaleFaster from "./app/blog/productphotos/HowAIHelpsEcommerceBrandsScaleFaster.jsx";
-import ProductPhotographyTrendsForEcommerce from "./app/blog/productphotos/ProductPhotographyTrendsForEcommerce.jsx";
-import AIProductPhotosForFashionStores from "./app/blog/productphotos/AIProductPhotosForFashionStores.jsx";
-import AIProductPhotosForBeatyAndSkincare from "./app/blog/productphotos/AIProductPhotosForBeautyAndSkincare.jsx";
-import HowVisualBrandingSeperatesWinnersFromLosers from "./app/blog/productphotos/HowVisualBrandingSeparatesWinnersFromLosers.jsx";
-import ViralAiImagesTiktok from "./app/blog/imagegenerator/ViralAiImagesTikTok.jsx";
-import CreatorsBlowingUpWithAi from "./app/blog/imagegenerator/CreatorsBlowingUpWithAI.jsx";
-import ITestViralPromts from "./app/blog/imagegenerator/ITestViralAIPrompts.jsx";
-import AllImageStylesEveryoneObsessedWith from "./app/blog/imagegenerator/AIImageStylesEveryoneObsessedWith.jsx";
-import ScrollStoppingIMagesNoDesign from "./app/blog/imagegenerator/ScrollStoppingImagesNoDesign.jsx";
-import WhyAIImagesOutperformRealPhotos from "./app/blog/imagegenerator/WhyAIImagesOutperformRealPhotos.jsx";
-import TheSecretPromptsBehindViralAIImages from "./app/blog/imagegenerator/TheSecretPromptsBehindViralAIImages.jsx";
-import TurnAnyIdeaIntoViralImage from "./app/blog/imagegenerator/TurnAnyIdeaIntoViralImage.jsx";
-import AllImageTrendsYouNeedTojumpOn from "./app/blog/imagegenerator/AIImageTrendsYouNeedToJumpOn.jsx";
-import WhyYourPostsDontGoViral from "./app/blog/imagegenerator/WhyYourPostsDontGoViral.jsx";
-import BestAIImageGeneratorForSocialMedia from "./app/blog/imagegenerator/BestAIImageGeneratorForSocialMedia.jsx";
-import GenerateHighQualityImagesWithAI from "./app/blog/imagegenerator/GenerateHighQualityImagesWithAI.jsx";
-import AIImageGeneratorBeginnersGuide2026 from "./app/blog/imagegenerator/AIImageGeneratorBeginnersGuide2026.jsx";
-import CreateProfessionalImagesWithAI from "./app/blog/imagegenerator/CreateProfessionalImagesWithAI.jsx";
-import AIImageGeneratorVsTraditionalDesign from "./app/blog/imagegenerator/AIImageGeneratorVsTraditionalDesign.jsx";
-import TopAIImageGeneratorFeaturesThatMatter from "./app/blog/imagegenerator/TopAIImageGeneratorFeaturesThatMatter.jsx";
-import HowtoGenerateImagesforAdsUsingAI from "./app/blog/imagegenerator/GenerateImagesForAdsUsingAI.jsx";
-import AIImageGeneratorForContentCreators from "./app/blog/imagegenerator/AIImageGeneratorForContentCreators.jsx";
-import HowAIImageGeneratorsWork from "./app/blog/imagegenerator/HowAIImageGeneratorsWork.jsx";
-import IsAIImageGenerationWorthItForCreators from "./app/blog/imagegenerator/IsAIImageGenerationWorthItForCreators.jsx";
-import TopAIImageStylesThatGoViralOnSocialMedia from "./app/blog/imagegenerator/TopAIImageStylesThatGoViralOnSocialMedia.jsx";
-import HowToCreateMinimalistImagesUsingAI from "./app/blog/imagegenerator/HowtoCreateMinimalistImagesUsingAI.jsx";
-import HowToCreateMovieStyleVisuals from "./app/blog/imagegenerator/HowtoCreateMovieStyleVisuals.jsx";
-import Why3dAIImagesPerform from "./app/blog/imagegenerator/why3daiimagesperform.jsx";
-import HowtoGenerateAestheticImagesWithAI from "./app/blog/imagegenerator/HowtoGenerateAestheticImagesWithAI.jsx";
-import WhichAIImageStyleWorksBest from "./app/blog/imagegenerator/whichaiimagestyleworksbest.jsx";
-import LuxuryAIImages from "./app/blog/imagegenerator/how-to-create-luxury-ai-images.jsx";
-import DarkMoodyCinematicImages from "./app/blog/imagegenerator/ai-dark-moody-cinematic-images.jsx";
-import AIProductPhotography from "./app/blog/imagegenerator/ai-product-photography-high-end.jsx";
-import VisualStylesAI from "./app/blog/imagegenerator/ai-visual-styles-most-engagement.jsx";
+const ProductPhotosShopify = lazy(() => import("./app/blog/ProductPhotosShopify"));
+const ProductPhotosForShopify = lazy(() => import("./app/blog/productphotos/Forshopifystores.jsx"));
+const AiIncreaseRates = lazy(() => import("./app/blog/productphotos/AIroductIncreaseRates.jsx"));
+const BestAiToolsEcommerce = lazy(() => import("./app/blog/productphotos/BestAiToolsEcommerce.jsx"));
+const ShopifyProductPhotoBestPractices = lazy(() => import("./app/blog/productphotos/ShopifyProductPhotoBestPractices.jsx"));
+const AiVsTraditional = lazy(() => import("./app/blog/productphotos/ai-vs-traditional-product-photography.jsx"));
+const WhyProductPhotosMatter = lazy(() => import("./app/blog/productphotos/WhyProductPhotosMatter.jsx"));
+const BestAiProductBgToUse = lazy(() => import("./app/blog/productphotos/BestAiProductBgToUse.jsx"));
+const HowImproveEcommerceVisualTrust = lazy(() => import("./app/blog/productphotos/HowImproveEcommerceVisualTrust.jsx"));
+const ProductPhotographyMistakesEcommerce = lazy(() => import("./app/blog/productphotos/ProductPhotographyMistakesEcommerce.jsx"));
+const HowVisualBrandingImpactsOnlineSales = lazy(() => import("./app/blog/productphotos/HowVisualBrandingImpactsOnlineSales.jsx"));
+const AIBackgroundRemovalForProductPhotos = lazy(() => import("./app/blog/productphotos/AIBackgroundRemovalForProductPhotos.jsx"));
+const ScaleEcommerceContent = lazy(() => import("./app/blog/productphotos/ScaleEcommerceContent.jsx"));
+const ConvertingProductImagesForShopify = lazy(() => import("./app/blog/productphotos/ConvertingProductImagesForShopify.jsx"));
+const AIProductPhotoForSmallBusiness = lazy(() => import("./app/blog/productphotos/AIProductPhotoForSmallBusiness.jsx"));
+const HowBetterImagesReduceBounceRate = lazy(() => import("./app/blog/productphotos/HowBetterImagesReduceBounceRate.jsx"));
+const EcommerceVisualConsistencyExplained = lazy(() => import("./app/blog/productphotos/EcommerceVisualConsistencyExplained.jsx"));
+const AiProductPhotosForDropshipping = lazy(() => import("./app/blog/productphotos/AiProductPhotosForDropshipping.jsx"));
+const HowVisualQualityImpactsSeo = lazy(() => import("./app/blog/productphotos/HowVisualQualityImpactsSeo.jsx"));
+const ProductImagesThatConverGuide = lazy(() => import("./app/blog/productphotos/ProductImagesThatConvertGuide.jsx"));
+const AiToolsEveryShopifyStoreOwnerKnow = lazy(() => import("./app/blog/productphotos/Ai-Tools-Every-Shopify-Store-Owner-Know.jsx"));
+const HowToLaunchProductsFasterWithAi = lazy(() => import("./app/blog/productphotos/HowToLaunchProductsFasyerWithAi.jsx"));
+const StudioQualityProductPhotos = lazy(() => import("./app/blog/productphotos/StudioQualityProductPhotos.jsx"));
+const WhyCleanProductPhotoBuildTrust = lazy(() => import("./app/blog/productphotos/WhyCleanProductPhotosBuildTrust.jsx"));
+const VisualOptimizationForMobielEcommerce = lazy(() => import("./app/blog/productphotos/VisualOptimizationForMobileEcommerce.jsx"));
+const HowAiHelpsEcommerceBrandsScaleFaster = lazy(() => import("./app/blog/productphotos/HowAIHelpsEcommerceBrandsScaleFaster.jsx"));
+const ProductPhotographyTrendsForEcommerce = lazy(() => import("./app/blog/productphotos/ProductPhotographyTrendsForEcommerce.jsx"));
+const AIProductPhotosForFashionStores = lazy(() => import("./app/blog/productphotos/AIProductPhotosForFashionStores.jsx"));
+const AIProductPhotosForBeatyAndSkincare = lazy(() => import("./app/blog/productphotos/AIProductPhotosForBeautyAndSkincare.jsx"));
+const HowVisualBrandingSeperatesWinnersFromLosers = lazy(() => import("./app/blog/productphotos/HowVisualBrandingSeparatesWinnersFromLosers.jsx"));
+const ViralAiImagesTiktok = lazy(() => import("./app/blog/imagegenerator/ViralAiImagesTikTok.jsx"));
+const CreatorsBlowingUpWithAi = lazy(() => import("./app/blog/imagegenerator/CreatorsBlowingUpWithAI.jsx"));
+const ITestViralPromts = lazy(() => import("./app/blog/imagegenerator/ITestViralAIPrompts.jsx"));
+const AllImageStylesEveryoneObsessedWith = lazy(() => import("./app/blog/imagegenerator/AIImageStylesEveryoneObsessedWith.jsx"));
+const ScrollStoppingIMagesNoDesign = lazy(() => import("./app/blog/imagegenerator/ScrollStoppingImagesNoDesign.jsx"));
+const WhyAIImagesOutperformRealPhotos = lazy(() => import("./app/blog/imagegenerator/WhyAIImagesOutperformRealPhotos.jsx"));
+const TheSecretPromptsBehindViralAIImages = lazy(() => import("./app/blog/imagegenerator/TheSecretPromptsBehindViralAIImages.jsx"));
+const TurnAnyIdeaIntoViralImage = lazy(() => import("./app/blog/imagegenerator/TurnAnyIdeaIntoViralImage.jsx"));
+const AllImageTrendsYouNeedTojumpOn = lazy(() => import("./app/blog/imagegenerator/AIImageTrendsYouNeedToJumpOn.jsx"));
+const WhyYourPostsDontGoViral = lazy(() => import("./app/blog/imagegenerator/WhyYourPostsDontGoViral.jsx"));
+const BestAIImageGeneratorForSocialMedia = lazy(() => import("./app/blog/imagegenerator/BestAIImageGeneratorForSocialMedia.jsx"));
+const GenerateHighQualityImagesWithAI = lazy(() => import("./app/blog/imagegenerator/GenerateHighQualityImagesWithAI.jsx"));
+const AIImageGeneratorBeginnersGuide2026 = lazy(() => import("./app/blog/imagegenerator/AIImageGeneratorBeginnersGuide2026.jsx"));
+const CreateProfessionalImagesWithAI = lazy(() => import("./app/blog/imagegenerator/CreateProfessionalImagesWithAI.jsx"));
+const AIImageGeneratorVsTraditionalDesign = lazy(() => import("./app/blog/imagegenerator/AIImageGeneratorVsTraditionalDesign.jsx"));
+const TopAIImageGeneratorFeaturesThatMatter = lazy(() => import("./app/blog/imagegenerator/TopAIImageGeneratorFeaturesThatMatter.jsx"));
+const HowtoGenerateImagesforAdsUsingAI = lazy(() => import("./app/blog/imagegenerator/GenerateImagesForAdsUsingAI.jsx"));
+const AIImageGeneratorForContentCreators = lazy(() => import("./app/blog/imagegenerator/AIImageGeneratorForContentCreators.jsx"));
+const HowAIImageGeneratorsWork = lazy(() => import("./app/blog/imagegenerator/HowAIImageGeneratorsWork.jsx"));
+const IsAIImageGenerationWorthItForCreators = lazy(() => import("./app/blog/imagegenerator/IsAIImageGenerationWorthItForCreators.jsx"));
+const TopAIImageStylesThatGoViralOnSocialMedia = lazy(() => import("./app/blog/imagegenerator/TopAIImageStylesThatGoViralOnSocialMedia.jsx"));
+const HowToCreateMinimalistImagesUsingAI = lazy(() => import("./app/blog/imagegenerator/HowtoCreateMinimalistImagesUsingAI.jsx"));
+const HowToCreateMovieStyleVisuals = lazy(() => import("./app/blog/imagegenerator/HowtoCreateMovieStyleVisuals.jsx"));
+const Why3dAIImagesPerform = lazy(() => import("./app/blog/imagegenerator/why3daiimagesperform.jsx"));
+const HowtoGenerateAestheticImagesWithAI = lazy(() => import("./app/blog/imagegenerator/HowtoGenerateAestheticImagesWithAI.jsx"));
+const WhichAIImageStyleWorksBest = lazy(() => import("./app/blog/imagegenerator/whichaiimagestyleworksbest.jsx"));
+const LuxuryAIImages = lazy(() => import("./app/blog/imagegenerator/how-to-create-luxury-ai-images.jsx"));
+const DarkMoodyCinematicImages = lazy(() => import("./app/blog/imagegenerator/ai-dark-moody-cinematic-images.jsx"));
+const AIProductPhotography = lazy(() => import("./app/blog/imagegenerator/ai-product-photography-high-end.jsx"));
+const VisualStylesAI = lazy(() => import("./app/blog/imagegenerator/ai-visual-styles-most-engagement.jsx"));
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -171,9 +132,9 @@ import PublicGallery from "./components/public-gallery/gallery";
 {/* Viral */}
 
 
-import Image from "./pages/viral/Image.jsx"
-import Video from "./pages/viral/video-generator.jsx"
-import Script from "./pages/viral/ScriptBuilder.jsx"
+const Image = lazy(() => import("./pages/viral/Image.jsx"));
+const Video = lazy(() => import("./pages/viral/video-generator.jsx"));
+const Script = lazy(() => import("./pages/viral/ScriptBuilder.jsx"));
 
 
 
@@ -307,6 +268,11 @@ return (
   {!hideNav && <Navbar />}
 
     <main className={mainClass}>
+   <Suspense fallback={
+  <div className="min-h-screen flex items-center justify-center bg-[#0B1117]">
+    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+  </div>
+}>
         <Routes>
           {/* Public home */}
           <Route path="/" element={<Navigate to="/home" replace />} />
@@ -528,6 +494,8 @@ return (
           {/* 404 */}
         <Route path="*" element={<NotFoundRedirect />} />
         </Routes>
+      
+      </Suspense>
 
      {/* Vercel Analytics */}
       <Analytics />
