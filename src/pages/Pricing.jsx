@@ -85,7 +85,7 @@ const TIERS = [
   name: "Pro",
   monthly: 25,
   yearlyPerMonth: 21,
-  blurb: "Best for serious creators scaling daily content and testing ideas fast",
+  blurb: "Most creators choose this to go viral faster",
   popular: true,
   features: [
     "1,200 credits / month",
@@ -220,9 +220,14 @@ if (tier.id === currentPlan) {
 } else if (curRank >= 0 && thisRank < curRank) {
   ctaLabel = "Downgrade";
 } else if (currentPlan === "free") {
-  ctaLabel = "Subscribe"; // 🔥 changed
+  if (tier.id === "starter") {
+    ctaLabel = "Start basic";
+  } else if (tier.id === "pro") {
+    ctaLabel = "Go Pro ";
+  } else if (tier.id === "generative") {
+    ctaLabel = "Go All-In ";
+  }
 }
-
 async function onClick() {
   console.log("🔥 CLICK DETECTED");
 
@@ -308,15 +313,15 @@ await supabase.from("abandoned_checkouts").upsert(
 <button
   disabled={disabled}
   onClick={onClick}
-  className={`mt-4 inline-flex h-11 w-full items-center justify-center rounded-xl font-semibold transition ${
-    disabled
-      ? "cursor-not-allowed bg-white/10 text-white/50"
-      : "bg-[linear-gradient(90deg,#7A3BFF_0%,#9F5CFF_55%,#4D8DFF_100%)] text-white shadow-[0_10px_30px_rgba(122,59,255,0.28)] hover:translate-y-[-1px]"
-  }`}
+className={`mt-4 inline-flex h-11 w-full items-center justify-center rounded-xl font-semibold transition  ${
+  disabled
+    ? "cursor-not-allowed bg-white/10 text-white/50"
+    : tier.id === "pro"
+      ? " hover:scale-[1.06] bg-[linear-gradient(90deg,#8B5CFF,#6D4AFF)] text-white font-semibold shadow-[0_10px_40px_rgba(139,92,255,0.35)] scale-[1.04] ring-1 ring-[#8B5CFF]/40"
+      : "bg-[linear-gradient(90deg,#7A3BFF_0%,#9F5CFF_55%,#4D8DFF_100%)] text-white shadow-[0_10px_30px_rgba(122,59,255,0.28)]"
+}`}
 >
-  {tier.popular && currentPlan === "free"
-  ? "Start Pro"
-  : ctaLabel}
+{ctaLabel}
 </button>
 
       
