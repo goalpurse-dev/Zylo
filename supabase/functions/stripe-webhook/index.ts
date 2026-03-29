@@ -5,16 +5,16 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 /* =================== CONFIG =================== */
 /** Recurring plan map (MUST match your live price IDs) */
 const PRICE_MAP: Record<string, { plan: "starter" | "pro" | "generative"; credits: number }> = {
-  "price_1T8gM3Htn4q5rInchn8CMEcO": { plan: "starter",    credits: 600 },
-  "price_1T8gMVHtn4q5rIncWwcUi9mG": { plan: "pro",        credits: 1200 },
- "price_1T8gMsHtn4q5rIncW0vy8d57": { plan: "generative", credits: 2500 },
+  "price_1TGKT6Htn4q5rIncI47V5Ein": { plan: "starter",    credits: 600 },
+  "price_1TGKSqHtn4q5rIncIf8RPa6e": { plan: "pro",        credits: 1200 },
+ "price_1TGKSSHtn4q5rIncSTurqkCN": { plan: "generative", credits: 2500 },
 };
 
 /** One-time top-up map (fallback if Price.metadata.credits is not set) */
 const TOPUP_PRICE_MAP: Record<string, number> = {
-  "price_1SpZcRHtn4q5rIncaayoetIS": 300,
+  "price_1TGKjDHtn4q5rInczlym0Dcz": 300,
   "price_1SpZczHtn4q5rInctZoF9rJV": 500,
-  "price_1T9tUoHtn4q5rInc3V64JXXc": 900,
+  "price_1TGKjxHtn4q5rIncQzzCGyrR": 900,
 };
 /* ============================================== */
 

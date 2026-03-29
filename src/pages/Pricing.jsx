@@ -8,16 +8,16 @@ import { supabase } from "../lib/supabaseClient";
 
 /** >>> YOUR REAL STRIPE PRICE IDS <<< */
 const PRICE_IDS = {
-  starter: "price_1T8gM3Htn4q5rInchn8CMEcO",
-  pro: "price_1T8gMVHtn4q5rIncWwcUi9mG",
-  generative: "price_1T8gMsHtn4q5rIncW0vy8d57",
+  starter: "price_1TGKT6Htn4q5rIncI47V5Ein",
+  pro: "price_1TGKSqHtn4q5rIncIf8RPa6e",
+  generative: "price_1TGKSSHtn4q5rIncSTurqkCN",
 };
 
 /** >>> TOP-UP STRIPE PRICE IDS <<< */
 const TOPUP_PRICE_IDS = {
-  mini: "price_1SpZcRHtn4q5rIncaayoetIS",     // €6.99
+  mini: "price_1TGKjDHtn4q5rInczlym0Dcz",     // €6.99
   standard: "price_1SpZczHtn4q5rInctZoF9rJV",  // €11.99
-  max: "price_1T9tUoHtn4q5rInc3V64JXXc",       // €19.99
+  max: "price_1TGKjxHtn4q5rIncQzzCGyrR",       // €19.99
 };
 
 const BLUE = "#1677FF";
@@ -135,6 +135,8 @@ const ALL_INCLUDE = [
 ];
 
 /* --------------------------- Helpers / hooks --------------------------- */
+
+
 function useCurrentPlan() {
   const [state, setState] = useState({ plan: "free", hasSub: false, loading: true });
 
@@ -197,13 +199,40 @@ function ConfirmModal({ open, onCancel, onConfirm, targetLabel }) {
     </div>
   );
 }
+const usdRate = 1.08;
 
+function formatPrice(eurAmount, currency) {
+  const value =
+    currency === "USD" ? eurAmount * usdRate : eurAmount;
+
+  const symbol = currency === "USD" ? "$" : "€";
+
+  return `${symbol}${Number.isInteger(value)
+    ? value.toFixed(0)
+    : value.toFixed(2)
+  }`;
+}
 /* ------------------------------- UI cards ------------------------------- */
-function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade }) {
+function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade, currency }) {
+  
   const isYearly = billing === "yearly";
-  const price = isYearly ? tier.yearlyPerMonth : tier.monthly;
-  const priceStr = `$${Number.isInteger(price) ? price.toFixed(0) : price.toFixed(2)}`;
-  const subline = isYearly ? `billed annually $${(price * 12).toFixed(2)}` : "/month";
+const eurPrice = isYearly ? tier.yearlyPerMonth : tier.monthly;
+
+// simple conversion (you can later make dynamic)
+const usdRate = 1.08;
+const displayPrice =
+  currency === "USD" ? eurPrice * usdRate : eurPrice;
+
+const symbol = currency === "USD" ? "$" : "€";
+
+const priceStr = `${symbol}${Number.isInteger(displayPrice)
+  ? displayPrice.toFixed(0)
+  : displayPrice.toFixed(2)
+}`;
+const subline =
+  isYearly
+    ? `billed annually ${formatPrice(eurPrice * 12, currency)}`
+    : "/month";
 
   const curRank = tierRank(currentPlan);
   const thisRank = tierRank(tier.id);
@@ -330,8 +359,8 @@ className={`mt-4 inline-flex h-11 w-full items-center justify-center rounded-xl 
       <div className="text-sm text-[#B7BBC6] font-semibold mt-2">{tier.blurb}</div>
 
       <div className="mt-3 inline-flex w-fit items-center rounded-full border border-[#2A2F45] bg-[#1A1D2B] px-3 py-1 text-xs font-semibold text-[#DDE3F0]">
-  {tier.id === "starter" && "From only $0.40/day"}
-  {tier.id === "pro" && "From only $0.83/day"}
+  {tier.id === "starter" && `From only ${formatPrice(0.4, currency)}/day`}
+  {tier.id === "pro" && `From only ${formatPrice(0.83, currency)}/day`}
   {tier.id === "generative" && "Built for daily production"}
 </div>
 
@@ -403,6 +432,8 @@ function SecondaryCard({ title, price, subtitle, ctaLabel, to, children }) {
 /* ---------------------------------- Page ---------------------------------- */
 export default function Pricing() {
 
+  const [currency, setCurrency] = useState("EUR");
+
   useEffect(() => {
   document.title = "Plans Built For Growth";
 }, []);
@@ -440,6 +471,24 @@ export default function Pricing() {
   <p className="mt-4 text-sm md:text-lg text-[#AAB3C5]">
     Create faster, test more ideas, and scale what works.
   </p>
+</div>
+
+<div className="flex justify-center mb-6">
+  <div className="flex bg-[#1A1D2B] border border-white/10 rounded-xl p-1">
+    {["EUR", "USD"].map((c) => (
+      <button
+        key={c}
+        onClick={() => setCurrency(c)}
+        className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition ${
+          currency === c
+            ? "bg-[linear-gradient(90deg,#7A3BFF,#9F5CFF)] text-white"
+            : "text-[#9DA8BD]"
+        }`}
+      >
+        {c}
+      </button>
+    ))}
+  </div>
 </div>
 
 
@@ -480,7 +529,7 @@ export default function Pricing() {
         <div className="text-xs text-[#9DA8BD]">Plans start from</div>
 
         <div className="mt-1 text-2xl font-extrabold text-white">
-          $12<span className="text-sm font-medium text-[#9DA8BD]"> /month</span>
+        {formatPrice(12, currency)}<span className="text-sm font-medium text-[#9DA8BD]"> /month</span>
         </div>
 
         <div className="text-[11px] text-[#7F8AA3] mt-1">
@@ -510,6 +559,7 @@ export default function Pricing() {
               billing={billing}
               currentPlan={plan}
               hasSub={hasSub}
+              currency={currency}
               onAskDowngrade={(tier) => setAskTier(tier)}
             />
           ))}
@@ -545,7 +595,7 @@ export default function Pricing() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
           <SecondaryCard
             title="Free"
-            price="$0"
+            price={formatPrice(0, currency)}
             subtitle="Try ZyloAI with weekly credits"
             ctaLabel="Try for free"
             to="/signup"
@@ -616,7 +666,7 @@ export default function Pricing() {
             </div>
 
             <div className="mt-1 text-3xl font-bold text-[#F4F6FB]">
-              ${p.price}
+              {formatPrice(p.price, currency)}
             </div>
 
             <div className="text-sm text-[#B7BBC6]">

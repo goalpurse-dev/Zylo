@@ -26,9 +26,9 @@ const SUPABASE_ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const TOPUP_PACK_MAP: Record<string, string> = {
-  mini: "price_1SpZcRHtn4q5rIncaayoetIS",
+  mini: "price_1TGKjDHtn4q5rInczlym0Dcz",
   standard: "price_1SpZczHtn4q5rInctZoF9rJV",
-  max: "price_1T9tUoHtn4q5rInc3V64JXXc",
+  max: "price_1TGKjxHtn4q5rIncQzzCGyrR",
 };
 
 async function stripePost(path: string, body: URLSearchParams) {
