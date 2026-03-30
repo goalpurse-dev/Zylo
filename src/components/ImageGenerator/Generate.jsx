@@ -98,7 +98,7 @@ const StyleCard = ({ img, label, active, onClick }) => (
       ${
         active
           ? "scale-[1.05] shadow-[0_0_60px_rgba(122,59,255,0.7)]"
-          : "hover:scale-[1.03] hover:shadow-[0_0_25px_rgba(122,59,255,0.25)]"
+          : "hover:scale-[1.03] md:hover:shadow-[0_0_25px_rgba(122,59,255,0.25)]"
       }
     `}
   >
@@ -110,7 +110,7 @@ const StyleCard = ({ img, label, active, onClick }) => (
         absolute inset-0 rounded-2xl p-[1px]
         ${
           active
-            ? " scale-[1.04] shadow-[0_0_50px_rgba(122,59,255,0.6)] bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]"
+            ? " scale-[1.04] shadow-lg bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]"
             : "bg-white/10 group-hover:bg-gradient-to-r group-hover:from-[#7A3BFF]/40 group-hover:to-[#9D4EDD]/40"
         }
       `}
@@ -122,7 +122,8 @@ const StyleCard = ({ img, label, active, onClick }) => (
         <img
           src={img}
           loading="lazy"
-          className="h-40 w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          decoding="async"
+          className="h-40 w-full object-cover transition-transform duration-500 group-hover:scale-110 will-change-transform"
         />
 
         {/* DARK OVERLAY */}
@@ -144,7 +145,7 @@ text-[10px]
 rounded-md 
 bg-gradient-to-r from-[#7A3BFF] to-[#9D4EDD]
 text-white 
-shadow-[0_4px_15px_rgba(122,59,255,0.6)]
+
 ">
   Selected
 </div>
@@ -199,7 +200,7 @@ const ModelCard = ({
       bg-[#0B0E1A]/70 border
       ${
         active
-          ? "border-[#7A3BFF] bg-[#7A3BFF]/10 shadow-[0_0_20px_rgba(122,59,255,0.35)]"
+          ? "border-[#7A3BFF] bg-[#7A3BFF]/10 "
           : "border-white/10 hover:bg-white/5 hover:border-[#7A3BFF]/40"
       }
       ${compact ? "p-3" : "p-4"}
@@ -279,7 +280,14 @@ const [selectedSize, setSelectedSize] = useState("1:1");
 const [selectedResolution, setSelectedResolution] = useState("2k");
 const modelEntries = useMemo(() => Object.entries(MODELS), []);
 
-const isMobile = window.innerWidth < 768
+const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+
+useEffect(() => {
+  const onResize = () => setIsMobile(window.innerWidth < 768)
+  window.addEventListener("resize", onResize)
+  return () => window.removeEventListener("resize", onResize)
+}, [])
+
 
 const currentSize =
   IMAGE_SIZES[selectedSize] ?? IMAGE_SIZES["1:1"];
@@ -659,8 +667,9 @@ useEffect(() => {
   }}
   className={`
     fixed inset-0 z-[100]
-  bg-black/40
-backdrop-blur-sm
+  bg-black/60 
+ 
+
     transition-opacity duration-150
     ${
       openModel || openStyle || openSize
@@ -691,7 +700,7 @@ backdrop-blur-sm
   border border-white/10
   bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))]
   p-5 md:p-6
-  shadow-[0_12px_40px_rgba(0,0,0,0.25)]
+  md:shadow-[0_12px_40px_rgba(0,0,0,0.25)]
   space-y-6
 "
 >
@@ -705,7 +714,7 @@ backdrop-blur-sm
     rounded-2xl
     border border-white/10
     bg-[linear-gradient(180deg,rgba(18,20,31,0.95),rgba(10,12,20,0.95))]
-    shadow-[0_12px_40px_rgba(0,0,0,0.35)]
+    md:shadow-[0_12px_40px_rgba(0,0,0,0.35)]
     overflow-hidden
   "
   >
@@ -733,7 +742,7 @@ backdrop-blur-sm
               className="
               absolute inset-0 rounded-xl
               bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]
-              shadow-[0_0_25px_rgba(122,59,255,0.45)]
+              md:shadow-[0_0_25px_rgba(122,59,255,0.45)]
               transition-all duration-300
             "
             />
@@ -843,7 +852,8 @@ backdrop-blur-sm
   className="absolute inset-0 w-full h-full object-cover
   transition-all duration-500 
 group-hover:scale-110 
-group-hover:brightness-110"
+group-hover:brightness-110
+will-change-transform"
 />
         <button
           onClick={() => toggleSelect(img)}
@@ -957,7 +967,7 @@ w-[92%] md:w-[420px]
 max-h-[75vh]
 
 bg-[linear-gradient(180deg,rgba(22,26,38,0.85),rgba(14,17,28,0.85))]
-backdrop-blur-2xl
+bg-[#0f111a]/95
 border border-white/10
 rounded-2xl
 shadow-[0_25px_80px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.05)]
@@ -1034,7 +1044,7 @@ w-[92%] md:w-[800px]
 max-h-[75vh]
 
 bg-[linear-gradient(180deg,rgba(22,26,38,0.85),rgba(14,17,28,0.85))]
-backdrop-blur-2xl
+bg-[#0f111a]/95
 border border-white/10
 rounded-2xl
 shadow-[0_25px_80px_rgba(0,0,0,0.6)]
@@ -1105,8 +1115,8 @@ ${openStyle
       border border-white/10
 
       bg-[linear-gradient(180deg,rgba(22,26,38,0.85),rgba(14,17,28,0.85))]
-backdrop-blur-2xl
-      shadow-[0_25px_80px_rgba(0,0,0,0.6)]
+bg-[#0f111a]/95
+    shadow-lg
 
  
 
@@ -1157,7 +1167,7 @@ backdrop-blur-2xl
 
     ${
       isActive
-        ? "bg-white/10 border border-[#7A3BFF] shadow-[0_0_25px_rgba(122,59,255,0.25)]"
+        ? "bg-white/10 border border-[#7A3BFF] "
         : isLocked
           ? "bg-white/[0.02] border border-white/[0.05]"
           : "hover:bg-white/[0.04] border border-transparent"
@@ -1175,9 +1185,7 @@ backdrop-blur-2xl
 
     bg-gradient-to-r from-[#7A3BFF] to-[#9D4EDD]
     text-white
-
-    shadow-[0_6px_20px_rgba(122,59,255,0.6)]
-
+    shadow-lg
     hover:brightness-110
     hover:scale-[1.05]
 
