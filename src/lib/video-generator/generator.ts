@@ -48,20 +48,35 @@ export async function generateVideoFromUI(params: {
 
   // 🔥 ADD THIS (Kling detection)
   const isKling = toolKey.startsWith("klingai:");
+  const isMiniMax = toolKey.startsWith("minimax:");
 
-  return createVideoJobSimple({
-    subject: enhancedPrompt,
-    toolKey,
-    width,
-    height,
+const payload: any = {
+  subject: enhancedPrompt,
+  toolKey,
+  durationSec,
+  initImageUrls: params.refImages ?? [],
+  calculatedCredits: totalCredits,
+};
 
-    // 🔥 ONLY ADD (do not remove width/height)
-    ...(isKling && {
-      resolution: `${width}x${height}`,
-    }),
-
-    durationSec,
-    initImageUrls: params.refImages ?? [],
-    calculatedCredits: totalCredits,
-  });
+// ✅ KLING
+// ✅ KLING uses width/height
+if (isKling) {
+  payload.width = width;
+  payload.height = height;
 }
+
+// ✅ MINIMAX (Hailuo)
+else if (isMiniMax) {
+  payload.resolution = params.resolution === "1080p" ? "1080p" : "720p";
+}
+
+// ✅ DEFAULT (Runway etc.)
+else {
+  payload.width = width;
+  payload.height = height;
+}
+
+return createVideoJobSimple({
+  ...payload,
+  resolution: payload.resolution, // 🔥 IMPORTANT
+});

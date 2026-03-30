@@ -483,8 +483,9 @@ return job;
 export async function createVideoJobSimple(params: {
   subject: string;
   toolKey: string;
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
+  resolution?: string; // ✅ ADD THIS
   durationSec: number;
   initImageUrls?: string[];
   calculatedCredits: number;
@@ -524,15 +525,27 @@ if (creditErr) {
   throw creditErr;
 }
 
-const input = {
+const isMiniMax = params.toolKey.startsWith("minimax:");
+
+const input: any = {
   tool: "video",
   creation_type: CREATION_TYPES.VIDEO,
   subject: params.subject.trim(),
-  width: params.width,
-  height: params.height,
   durationSec: params.durationSec,
   ref_images: params.initImageUrls ?? [],
 };
+
+// ✅ MiniMax
+if (isMiniMax) {
+  input.resolution =
+    params.resolution === "1080p" ? "1080p" : "720p";
+}
+
+// ✅ ALL OTHERS (Kling + Runway)
+else {
+  input.width = params.width;
+  input.height = params.height;
+}
 
 
 
