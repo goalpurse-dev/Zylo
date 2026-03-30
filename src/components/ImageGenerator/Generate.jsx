@@ -97,7 +97,7 @@ const StyleCard = ({ img, label, active, onClick }) => (
 
       ${
         active
-          ? "scale-[1.05] shadow-[0_0_60px_rgba(122,59,255,0.7)]"
+          ? "scale-[1.05] border-2 border-[#7A3BFF] "
           : "hover:scale-[1.03] md:hover:shadow-[0_0_25px_rgba(122,59,255,0.25)]"
       }
     `}
@@ -852,7 +852,7 @@ md:group-hover:brightness-110
 />
         <button
           onClick={() => toggleSelect(img)}
-          className="absolute top-2 right-2 bg-black/60 backdrop-blur-md rounded-full p-1.5 border border-white/10"
+          className="absolute top-2 right-2 bg-black/80 rounded-full p-1.5 border border-white/10"
         >
           <X className="w-4 h-4 text-white" />
         </button>
@@ -1042,7 +1042,7 @@ bg-[linear-gradient(180deg,rgba(22,26,38,0.85),rgba(14,17,28,0.85))]
 bg-[#0f111a]/95
 border border-white/10
 rounded-2xl
-shadow-[0_25px_80px_rgba(0,0,0,0.6)]
+md:shadow-[0_25px_80px_rgba(0,0,0,0.6)]
 
 p-5
 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-white/10
@@ -1076,7 +1076,9 @@ ${openStyle
   <div className="absolute inset-x-0 bottom-0 h-[120px] bg-gradient-to-t from-black/30 to-transparent" />
 </div>
 
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-5 md:gap-6">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-5 md:gap-6"
+  >
+      
       {Object.entries(IMAGE_STYLES).map(([key, style]) => (
         <StyleCard
           key={key}
@@ -1111,7 +1113,7 @@ ${openStyle
 
       bg-[linear-gradient(180deg,rgba(22,26,38,0.85),rgba(14,17,28,0.85))]
 bg-[#0f111a]/95
-    shadow-lg
+    md:shadow-lg
 
  
 
@@ -1180,7 +1182,7 @@ bg-[#0f111a]/95
 
     bg-gradient-to-r from-[#7A3BFF] to-[#9D4EDD]
     text-white
-    shadow-lg
+    md:shadow-lg
     hover:brightness-110
     hover:scale-[1.05]
 
