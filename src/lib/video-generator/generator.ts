@@ -78,5 +78,6 @@ else {
 
 return createVideoJobSimple({
   ...payload,
-  resolution: payload.resolution, // 🔥 IMPORTANT
+  resolution: payload.resolution,
 });
+}
