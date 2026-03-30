@@ -123,7 +123,7 @@ const StyleCard = ({ img, label, active, onClick }) => (
           src={img}
           loading="lazy"
           decoding="async"
-          className="h-40 w-full object-cover transition-transform duration-500 group-hover:scale-110 will-change-transform"
+          className="h-40 w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
 
         {/* DARK OVERLAY */}
@@ -280,13 +280,7 @@ const [selectedSize, setSelectedSize] = useState("1:1");
 const [selectedResolution, setSelectedResolution] = useState("2k");
 const modelEntries = useMemo(() => Object.entries(MODELS), []);
 
-const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
-useEffect(() => {
-  const onResize = () => setIsMobile(window.innerWidth < 768)
-  window.addEventListener("resize", onResize)
-  return () => window.removeEventListener("resize", onResize)
-}, [])
 
 
 const currentSize =
@@ -851,9 +845,10 @@ useEffect(() => {
   decoding="async"
   className="absolute inset-0 w-full h-full object-cover
   transition-all duration-500 
-group-hover:scale-110 
-group-hover:brightness-110
-will-change-transform"
+md:group-hover:scale-110
+md:group-hover:brightness-110
+
+"
 />
         <button
           onClick={() => toggleSelect(img)}
