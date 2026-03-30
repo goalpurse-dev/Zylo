@@ -20,7 +20,7 @@ export default function TopRow({ title, onMenuClick }) {
 
   return (
    <section className="
-  fixed top-0 left-0 right-0
+  w-full
   z-[60]
   backdrop-blur-xl
   bg-[#12141A]/90

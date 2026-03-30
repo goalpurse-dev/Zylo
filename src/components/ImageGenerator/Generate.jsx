@@ -677,7 +677,7 @@ useEffect(() => {
 }, [settingsOpen]);
 
  return (
-<section className="pt-[70px]">
+<section className="">
 
  <div
   onClick={() => {

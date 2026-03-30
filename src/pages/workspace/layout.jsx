@@ -195,7 +195,7 @@ useEffect(() => {
 >
         <div
          className={`
-  sticky top-0 z-50
+  sticky top-0 z-[60]
   ${showTopRow ? "opacity-100" : "opacity-0 pointer-events-none"}
   transition-opacity duration-200
   lg:opacity-100
