@@ -279,7 +279,7 @@ const panelRef = useRef(null);
 const [selectedSize, setSelectedSize] = useState("1:1");
 const [selectedResolution, setSelectedResolution] = useState("2k");
 const modelEntries = useMemo(() => Object.entries(MODELS), []);
-
+const [showAll, setShowAll] = useState(false);
 
 
 
@@ -317,8 +317,21 @@ const [openReferenceModal, setOpenReferenceModal] = useState(false);
 const STYLE_KEYS = Object.keys(IMAGE_STYLES);
 
 const generateRef = useRef(null);
+const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
+useEffect(() => {
+  const handleResize = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
 
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+const stylesToRender =
+  isMobile && !showAll
+    ? Object.entries(IMAGE_STYLES).slice(0, 6)
+    : Object.entries(IMAGE_STYLES);
 const traitRef = useRef(0)
 
 useEffect(() => {
@@ -546,14 +559,27 @@ useEffect(() => {
   const modalOpen = openModel || openStyle || openSize;
 
   if (modalOpen) {
-    document.body.style.overflow = "hidden";
- } else {
-  document.body.style.overflow = "";
-}
+    const scrollY = window.scrollY;
 
- return () => {
-  document.body.style.overflow = "";
-};
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+  } else {
+    const scrollY = document.body.style.top.replace("-", "").replace("px", "");
+
+    document.body.style.position = "";
+    document.body.style.top = "";
+
+    if (scrollY) {
+      window.scrollTo(0, parseInt(scrollY || "0") * -1);
+    }
+  }
+
+  return () => {
+    document.body.style.position = "";
+    document.body.style.top = "";
+  };
 }, [openModel, openStyle, openSize]);
 
 useEffect(() => {
@@ -952,6 +978,9 @@ md:group-hover:brightness-110
 
 {openSize && (
   <div
+  style={{
+  paddingBottom: "env(safe-area-inset-bottom)"
+}}
     className={`
 fixed z-[100]
 left-1/2 -translate-x-1/2
@@ -959,7 +988,8 @@ top-[18%] md:top-1/2
 md:-translate-y-1/2
 
 w-[92%] md:w-[420px]
-max-h-[75vh]
+max-h-[calc(100dvh-120px)]
+
 
 bg-[linear-gradient(180deg,rgba(22,26,38,0.85),rgba(14,17,28,0.85))]
 bg-[#0f111a]/95
@@ -1029,6 +1059,9 @@ ${openSize
 
 {openStyle && (
   <div
+  style={{
+  paddingBottom: "env(safe-area-inset-bottom)"
+}}
 className={`
 fixed z-[100]
 left-1/2 -translate-x-1/2
@@ -1036,7 +1069,7 @@ top-[18%] md:top-1/2
 md:-translate-y-1/2
 
 w-[92%] md:w-[800px]
-max-h-[75vh]
+max-h-[calc(100dvh-120px)]
 
 bg-[linear-gradient(180deg,rgba(22,26,38,0.85),rgba(14,17,28,0.85))]
 bg-[#0f111a]/95
@@ -1079,7 +1112,7 @@ ${openStyle
     <div className="grid grid-cols-2 md:grid-cols-3 gap-5 md:gap-6"
   >
       
-      {Object.entries(IMAGE_STYLES).map(([key, style]) => (
+      {stylesToRender.map(([key, style]) => (
         <StyleCard
           key={key}
           label={style.label}
@@ -1092,6 +1125,21 @@ ${openStyle
         />
       ))}
     </div>
+    {isMobile && !showAll && (
+  <button
+    onClick={() => setShowAll(true)}
+    className="
+w-full mt-4 py-2 
+rounded-xl
+bg-white/5 border border-white/10
+text-sm text-white/70
+hover:bg-white/10
+transition
+"
+  >
+    Show all styles
+  </button>
+)}
   </div>
 )}
 
@@ -1099,6 +1147,9 @@ ${openStyle
 
 {openModel && (
   <div
+  style={{
+  paddingBottom: "env(safe-area-inset-bottom)"
+}}
     className="
       fixed z-[100]
       left-1/2 -translate-x-1/2
@@ -1106,7 +1157,7 @@ ${openStyle
       md:-translate-y-1/2
 
       w-[92%] md:w-[700px]
-      max-h-[78vh]
+      max-h-[calc(100dvh-120px)]
 
       rounded-2xl
       border border-white/10
