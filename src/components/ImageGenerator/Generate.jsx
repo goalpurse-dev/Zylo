@@ -1,4 +1,4 @@
-import {  useState } from "react";
+import {  useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useRef, useEffect } from "react";
 import { MODELS } from "../../lib/image-generator/modelsConfig";
@@ -17,6 +17,11 @@ import CreditLogo from "../../assets/toolshell/credit.png"
 import ErrorToast from "../../components/ImageGenerator/ErrorToast";
 import { watchJob } from "../../lib/jobs";
 import { NANO_RESOLUTIONS } from "../../lib/image-generator/nanoResolutions";
+import PromptInput from "./PromptInput";
+import GenerateButton from "./GenerateButton";
+import ModelSelector from "./ModelSelector";
+import StyleSelector from "./StyleSelector";
+import SizeSelector from "./SizeSelector";
 
 import { ArrowBigDown, ArrowBigLeft, BoxSelect, Image, ImagePlusIcon, Settings, Wand, Wand2, X } from "lucide-react";
 import Bg from "../../assets/ImageGenerator/bg.png"
@@ -86,16 +91,65 @@ const SubMenu = ({ title, onBack, children }) => (
 const StyleCard = ({ img, label, active, onClick }) => (
   <button
     onClick={onClick}
-      className={`
-      relative flex flex-col gap-2 rounded-xl overflow-hidden transition
-      ${active
-        ? "border-2 border-[#7A3BFF] shadow-[0_0_25px_rgba(122,59,255,0.45)] "
-        : "border border-white/10 hover:border-purple-500/50"}
+    className={`
+     group relative rounded-2xl overflow-hidden h-[160px]
+      transition-all duration-300 ease-out
+
+      ${
+        active
+          ? "scale-[1.05] shadow-[0_0_60px_rgba(122,59,255,0.7)]"
+          : "hover:scale-[1.03] hover:shadow-[0_0_25px_rgba(122,59,255,0.25)]"
+      }
     `}
   >
-    <img src={img} className="h-32 w-full object-cover" />
-    <div className="text-sm text-white px-2 pb-2 text-left">
-      {label}
+
+    
+    {/* 🔥 GRADIENT BORDER */}
+    <div
+      className={`
+        absolute inset-0 rounded-2xl p-[1px]
+        ${
+          active
+            ? " scale-[1.04] shadow-[0_0_50px_rgba(122,59,255,0.6)] bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]"
+            : "bg-white/10 group-hover:bg-gradient-to-r group-hover:from-[#7A3BFF]/40 group-hover:to-[#9D4EDD]/40"
+        }
+      `}
+    >
+      {/* INNER CARD */}
+      <div className="relative w-full h-[160px] rounded-2xl overflow-hidden bg-[#0B0E1A]">
+        
+        {/* IMAGE */}
+        <img
+          src={img}
+          loading="lazy"
+          className="h-40 w-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+
+        {/* DARK OVERLAY */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+        {/* LABEL */}
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <div className="text-white text-sm font-medium tracking-wide">
+            {label}
+          </div>
+        </div>
+
+        {/* ACTIVE BADGE */}
+        {active && (
+         <div className="
+absolute top-2 right-2 
+px-2 py-1 
+text-[10px] 
+rounded-md 
+bg-gradient-to-r from-[#7A3BFF] to-[#9D4EDD]
+text-white 
+shadow-[0_4px_15px_rgba(122,59,255,0.6)]
+">
+  Selected
+</div>
+        )}
+      </div>
     </div>
   </button>
 );
@@ -223,10 +277,22 @@ const panelRef = useRef(null);
  const [selectedModelKey, setSelectedModelKey] = useState("image:nano.2")
 const [selectedSize, setSelectedSize] = useState("1:1");
 const [selectedResolution, setSelectedResolution] = useState("2k");
+const modelEntries = useMemo(() => Object.entries(MODELS), []);
+
+const isMobile = window.innerWidth < 768
 
 const currentSize =
   IMAGE_SIZES[selectedSize] ?? IMAGE_SIZES["1:1"];
 
+  const [localPrompt, setLocalPrompt] = useState(prompt)
+
+useEffect(() => {
+  const t = setTimeout(() => {
+    setPrompt(localPrompt)
+  }, 150)
+
+  return () => clearTimeout(t)
+}, [localPrompt])
 
 
 const selectedModel = MODELS[selectedModelKey];
@@ -247,17 +313,19 @@ const maxRefImages = selectedModel.maxReferenceImages;
 const canAddImages = maxRefImages > 0;
 const [openReferenceModal, setOpenReferenceModal] = useState(false);
 const STYLE_KEYS = Object.keys(IMAGE_STYLES);
-const [traitIndex, setTraitIndex] = useState(0);
+
 const generateRef = useRef(null);
 
 
+const traitRef = useRef(0)
+
 useEffect(() => {
   const interval = setInterval(() => {
-    setTraitIndex((i) => i + 1);
-  }, 2000); // rotate every 2 seconds
+    traitRef.current++
+  }, 2000)
 
-  return () => clearInterval(interval);
-}, []);
+  return () => clearInterval(interval)
+}, [])
 
 const [selectedStyle, setSelectedStyle] = useState(STYLE_KEYS[0]);
 
@@ -591,7 +659,8 @@ useEffect(() => {
   }}
   className={`
     fixed inset-0 z-[100]
-    bg-black/40
+  bg-black/40
+backdrop-blur-sm
     transition-opacity duration-150
     ${
       openModel || openStyle || openSize
@@ -723,34 +792,7 @@ useEffect(() => {
 )}
 
           {/* PROMPT */}
-<div className="relative">
-  <div
-    className=" 
-    rounded-xl
-    border border-white/10
-    bg-[#0F111A]
-    px-4 py-4
-    transition
-    focus-within:border-[#7A3BFF]
-    focus-within:shadow-[0_0_0_1px_rgba(122,59,255,0.4)]
-  "
-  >
-   <textarea
-  ref={textareaRef}
-  value={prompt}
-  onChange={(e) => setPrompt(e.target.value)}
-  placeholder="Describe the content you want to go viral..."
-  rows={4}
-  style={{ fontSize: "16px" }} // ✅ THIS LINE
-  className="
-    w-full bg-transparent outline-none
-    text-white
-    placeholder:text-white/40
-    resize-none
-  "
-/>
-  </div>
-</div>
+<PromptInput prompt={prompt} setPrompt={setPrompt} />
 
 
 
@@ -798,7 +840,10 @@ useEffect(() => {
   src={img.url}
   loading="lazy"
   decoding="async"
-  className="absolute inset-0 w-full h-full object-cover"
+  className="absolute inset-0 w-full h-full object-cover
+  transition-all duration-500 
+group-hover:scale-110 
+group-hover:brightness-110"
 />
         <button
           onClick={() => toggleSelect(img)}
@@ -819,146 +864,43 @@ useEffect(() => {
           >
 
 
-        <button
-  onClick={() => {
+
+
+  {/* MODEL */}
+<ModelSelector
+  selectedModel={selectedModel}
+  openModel={openModel}
+  setOpenModel={() => {
     setOpenModel(prev => !prev)
     setOpenSize(false)
     setOpenStyle(false)
   }}
-className={`
-  md:alive-card 
+/>
 
-  group relative
-  rounded-xl
-  border border-white/10
-  bg-[linear-gradient(180deg,#141722,#0F111A)]
-  px-4 py-3.5
-  text-left
-
-  transition-all  ease-out 
-
-  hover:border-[#7A3BFF]/40
-  hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
-
-  active:scale-[0.98]
-
-  ${openModel ? " duration-200 border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : "duration-100"}
-`}
->
- <div className="flex justify-between items-center">
-  <div className="flex flex-col">
-    <span className="text-[11px] text-white/40 tracking-wide uppercase">
-      Model
-    </span>
-    <span className="text-[14px] text-white font-medium">
-      {selectedModel.label}
-    </span>
-  </div>
-
-  <ChevronRight
-    className={`
-      w-4 h-4 text-white/30
-      transition-all duration-200
-      ${openModel ? "rotate-90 text-[#7A3BFF]" : "group-hover:translate-x-1"}
-    `}
-  />
-</div>
-</button>
-
-
-<button
-  onClick={() => {
-    setOpenStyle((prev) => !prev);
-    setOpenSize(false);
-    setOpenModel(false);
+  {/* STYLE */}
+ <StyleSelector
+  selectedStyle={selectedStyle}
+  styles={IMAGE_STYLES}
+  openStyle={openStyle}
+  setOpenStyle={() => {
+    setOpenStyle(prev => !prev)
+    setOpenModel(false)
+    setOpenSize(false)
   }}
-  className={`
-  md:alive-card 
+/>
 
-  group relative
-  rounded-xl
-  border border-white/10
-  bg-[linear-gradient(180deg,#141722,#0F111A)]
-  px-4 py-3.5
-  text-left
-
-  transition-all duration-150
-
-  hover:border-[#7A3BFF]/40
-  hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
-
-  active:scale-[0.98]
-
-  ${openStyle ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : ""}
-`}
->
-  <div className="flex justify-between items-center">
-    <div className="flex flex-col">
-      <span className="text-[11px] text-white/40 tracking-wide uppercase">
-        Style
-      </span>
-      <span className="text-[14px] text-white font-medium">
-        {IMAGE_STYLES[selectedStyle]?.label || selectedStyle}
-      </span>
-    </div>
-
-    <ChevronRight
-      className={`
-        w-4 h-4 text-white/30
-        transition-all duration-200
-        ${openStyle ? "rotate-90 text-[#7A3BFF]" : "group-hover:translate-x-1"}
-      `}
-    />
-  </div>
-</button>
-
-
-              {/* SIZE */}
-              <button
-  onClick={() => {
+  {/* SIZE */}
+  <SizeSelector
+  currentSize={currentSize}
+  openSize={openSize}
+  setOpenSize={() => {
     setOpenSize(prev => !prev)
     setOpenModel(false)
     setOpenStyle(false)
   }}
- className={`
-  md:alive-card 
+/>
 
-  group relative
-  rounded-xl
-  border border-white/10
-  bg-[linear-gradient(180deg,#141722,#0F111A)]
-  px-4 py-3.5
-  text-left
 
-  transition-all duration-150
-
-  hover:border-[#7A3BFF]/40
-  hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
-
-  active:scale-[0.98]
-
-  ${openSize ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : ""}
-`}
->
-<div className="flex justify-between items-center">
-  <div className="flex flex-col">
-    <span className="text-[11px] text-white/40 tracking-wide uppercase">
-      Size
-    </span>
-   <span className="text-[14px] text-white font-medium">
-  {currentSize.label}
-</span>
-  </div>
-
-  <ChevronRight
-    className={`
-      w-4 h-4 text-white/30
-      transition-all duration-150
-      ${openSize ? "rotate-90 text-[#7A3BFF]" : "group-hover:translate-x-1"}
-    `}
-  />
-</div>
-</button>
 
 {selectedModel?.supportsResolutions && (
   <div className="mt-3 flex flex-col gap-2">
@@ -1005,23 +947,31 @@ className={`
 
 {openSize && (
   <div
-    className="
-   fixed 
-
-z-[100]
+    className={`
+fixed z-[100]
 left-1/2 -translate-x-1/2
 top-[18%] md:top-1/2
 md:-translate-y-1/2
-      w-[92%] md:w-[400px]
-      max-h-[60vh]
-      bg-[linear-gradient(180deg,rgba(20,23,34,0.98),rgba(12,15,23,0.98))]
+
+w-[92%] md:w-[420px]
+max-h-[75vh]
+
+bg-[linear-gradient(180deg,rgba(22,26,38,0.85),rgba(14,17,28,0.85))]
+backdrop-blur-2xl
 border border-white/10
 rounded-2xl
-shadow-[0_18px_60px_rgba(0,0,0,0.45)]
-      p-5
-      overflow-y-auto
-overscroll-contain
-    "
+shadow-[0_25px_80px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.05)]
+
+p-5
+overflow-y-auto overscroll-contain
+ scrollbar-thin scrollbar-thumb-white/10
+
+transition-all duration-300 ease-out
+
+${openSize 
+  ? "opacity-100 scale-100 translate-y-0" 
+  : "opacity-0 scale-95 translate-y-4 pointer-events-none"}
+`}
   >
     <div className="flex justify-between items-center mb-4">
       <h3 className="text-white font-medium">Select Size</h3>
@@ -1074,26 +1024,40 @@ overscroll-contain
 
 {openStyle && (
   <div
-    className="
-     fixed 
-
-z-[100]
+className={`
+fixed z-[100]
 left-1/2 -translate-x-1/2
 top-[18%] md:top-1/2
 md:-translate-y-1/2
-      w-[92%] md:w-[650px]
-      max-h-[75vh]
-     bg-[linear-gradient(180deg,rgba(20,23,34,0.98),rgba(12,15,23,0.98))]
+
+w-[92%] md:w-[800px]
+max-h-[75vh]
+
+bg-[linear-gradient(180deg,rgba(22,26,38,0.85),rgba(14,17,28,0.85))]
+backdrop-blur-2xl
 border border-white/10
 rounded-2xl
-shadow-[0_18px_60px_rgba(0,0,0,0.45)]
-      p-5
-      overflow-y-auto
-      overscroll-contain
-    "
+shadow-[0_25px_80px_rgba(0,0,0,0.6)]
+
+p-5
+overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-white/10
+
+transition-all duration-300 ease-out
+
+${openStyle 
+  ? "opacity-100 scale-100 translate-y-0" 
+  : "opacity-0 scale-95 translate-y-4 pointer-events-none"}
+`}
   >
     <div className="flex justify-between items-center mb-4">
-      <h3 className="text-white font-medium">Select Style</h3>
+     <div className="flex flex-col">
+  <h3 className="text-white font-semibold text-lg tracking-tight">
+    Select Style
+  </h3>
+  <span className="text-xs text-white/40">
+    Choose how your image should look
+  </span>
+</div>
       <button
         onClick={() => setOpenStyle(false)}
         className="text-white/60 hover:text-white"
@@ -1102,7 +1066,12 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
       </button>
     </div>
 
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <div className="pointer-events-none absolute inset-0 rounded-2xl">
+  <div className="absolute inset-x-0 top-0 h-[120px] bg-gradient-to-b from-white/[0.04] to-transparent" />
+  <div className="absolute inset-x-0 bottom-0 h-[120px] bg-gradient-to-t from-black/30 to-transparent" />
+</div>
+
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-5 md:gap-6">
       {Object.entries(IMAGE_STYLES).map(([key, style]) => (
         <StyleCard
           key={key}
@@ -1124,85 +1093,175 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
 {openModel && (
   <div
     className="
-    fixed 
+      fixed z-[100]
+      left-1/2 -translate-x-1/2
+      top-[18%] md:top-1/2
+      md:-translate-y-1/2
 
-z-[100]
-left-1/2 -translate-x-1/2
-top-[18%] md:top-1/2
-md:-translate-y-1/2
-      w-[92%] md:w-[800px]
-      max-h-[75vh]
-    bg-[linear-gradient(180deg,rgba(20,23,34,0.98),rgba(12,15,23,0.98))]
-border border-white/10
-rounded-2xl
-shadow-[0_18px_60px_rgba(0,0,0,0.45)]
-      p-5
-      overflow-y-auto
-      overscroll-contain
+      w-[92%] md:w-[700px]
+      max-h-[78vh]
+
+      rounded-2xl
+      border border-white/10
+
+      bg-[linear-gradient(180deg,rgba(22,26,38,0.85),rgba(14,17,28,0.85))]
+backdrop-blur-2xl
+      shadow-[0_25px_80px_rgba(0,0,0,0.6)]
+
+ 
+
+      flex flex-col
+      overflow-hidden
     "
   >
-    {/* Header */}
-    <div className="flex justify-between items-center mb-4">
+
+    {/* 🔥 FIXED GRADIENT OVERLAY (NOW WORKS PERFECTLY) */}
+    <div className="pointer-events-none absolute inset-0 z-10">
+      <div className="absolute inset-x-0 top-0 h-[120px] bg-gradient-to-b from-white/[0.04] to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-[120px] bg-gradient-to-t from-black/20 to-transparent" />
+    </div>
+
+    {/* HEADER (STATIC) */}
+    <div className="flex justify-between items-center p-4 border-b border-white/10 relative z-20">
       <h3 className="text-white font-medium">Select Model</h3>
-      <button
-        onClick={() => setOpenModel(false)}
-        className="text-white/60 hover:text-white"
-      >
-        <X className="w-5 h-5" />
+      <button onClick={() => setOpenModel(false)}>
+        <X className="w-5 h-5 text-white/60 hover:text-white" />
       </button>
     </div>
 
-    {/* Models grid */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-stretch">
-    {Object.entries(MODELS).map(([key, model]) => {
-  const isLocked =
-    planCode === "free" && key !== "image:flux.base";
+    {/* 🔥 SCROLL AREA ONLY */}
+   <div className="overflow-y-auto px-3 py-3 relative z-20 scrollbar-thin scrollbar-thumb-white/10">
 
-  return (
- <div key={key} className="relative">
-  {isLocked && (
-    <div
-      onClick={() => navigate("/workspace/pricing")}
-      className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl z-10 flex items-center justify-center cursor-pointer hover:bg-black/50 transition"
-    >
-<div className="flex flex-col items-center gap-2 text-center">
+      <div className="flex flex-col gap-[2px]">
+        {modelEntries.map(([key, model]) => {
+          const isActive = key === selectedModelKey
+          const isLocked =
+            planCode === "free" && key !== "image:flux.base"
 
-  <span className="text-[10px] uppercase tracking-wider text-purple-300 font-semibold">
-    Pro Model
-  </span>
+          return (
+         <button
+  key={key}
+  onClick={() => {
+    if (isLocked) {
+      navigate("/workspace/pricing")
+      return
+    }
 
-  <span className="text-xs text-white/80 bg-white/10 px-3 py-1 rounded-full border border-white/20">
-    Upgrade to unlock
-  </span>
+    setSelectedModelKey(key)
+    setOpenModel(false)
+  }}
+  className={`
+    relative w-full flex items-center justify-between
+    px-3 py-2.5 rounded-xl
+    transition-all duration-150
 
-  <span className="text-[11px] text-purple-300 font-medium transition-all duration-500">
-    ⚡ {getRandomTrait(traitIndex + key.length)}
-  </span>
+    ${
+      isActive
+        ? "bg-white/10 border border-[#7A3BFF] shadow-[0_0_25px_rgba(122,59,255,0.25)]"
+        : isLocked
+          ? "bg-white/[0.02] border border-white/[0.05]"
+          : "hover:bg-white/[0.04] border border-transparent"
+    } 
+  `}
+>
+  {/* 🔒 LOCK OVERLAY */}
+{isLocked && (
+  <div className="absolute inset-0 rounded-xl bg-black/40  flex items-center justify-center">
+    
+   <div
+  className="
+    px-4 py-1.5 rounded-md
+    text-[11px] font-semibold
 
+    bg-gradient-to-r from-[#7A3BFF] to-[#9D4EDD]
+    text-white
+
+    shadow-[0_6px_20px_rgba(122,59,255,0.6)]
+
+    hover:brightness-110
+    hover:scale-[1.05]
+
+    transition-all duration-150
+  "
+>
+  Upgrade to unlock
 </div>
-    </div>
-  )}
 
-      <ModelCard
-        img={model.img}
-        label={model.label}
-        description={model.description}
-        credits={model.credits}
-        traits={model.traits}
-        active={key === selectedModelKey}
-        onClick={() => {
-          if (isLocked) return; // 🔒 prevent selection
+  </div>
+)}
 
-          setSelectedModelKey(key);
-          if (!model.supportedSizes.includes(selectedSize)) {
-            setSelectedSize(model.supportedSizes[0]);
-          }
-          setOpenModel(false);
-        }}
-      />
+  {/* CONTENT (DIMMED WHEN LOCKED) */}
+  <div className={`flex items-center justify-between w-full ${isLocked ? "opacity-40" : ""}`}>
+    
+    {/* LEFT SIDE */}
+    <div className="flex items-center gap-3 min-w-0">
+      
+      <div className="w-10 h-10 flex items-center justify-center rounded-md bg-white/[0.04] border border-white/10 flex-shrink-0">
+        <img
+          src={model.img}
+          className="w-10 h-10 object-contain opacity-90"
+        />
+      </div>
+
+      <div className="flex flex-col min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-white font-medium truncate">
+            {model.label}
+          </span>
+
+          {key === "image:nano.2" && (
+            <span className="text-[10px] px-2 py-[2px] rounded-md bg-purple-500/20 text-purple-300">
+              Best
+            </span>
+          )}
+
+          {key === "image:seedream4.0" && (
+            <span className="text-[10px] px-2 py-[2px] rounded-md bg-green-500/20 text-green-300">
+              New
+            </span>
+          )}
+        </div>
+
+        <span className="text-xs text-white/40 truncate">
+          {model.description}
+        </span>
+
+        {model.traits?.length > 0 && (
+          <div className="hidden md:flex gap-1 mt-1">
+            {model.traits.slice(0, 2).map((t) => (
+              <span
+                key={t}
+                className="text-[10px] px-2 py-[2px] rounded-md bg-white/[0.06] text-white/50"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
-  );
-})}
+
+  
+  </div>
+</button>
+          )
+        })}
+      </div>
+
+      {/* FOOTER */}
+      <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+        <span className="text-xs text-white/40">
+          More models coming soon...
+        </span>
+
+        <button
+          onClick={() => navigate("/workspace/pricing")}
+          className="text-xs px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 transition"
+        >
+          Unlock Pro Models
+        </button>
+      </div>
+
     </div>
   </div>
 )}
@@ -1211,76 +1270,12 @@ shadow-[0_18px_60px_rgba(0,0,0,0.45)]
         
 
 {/* GENERATE SECTION */}
-<div className="
-  sticky 
- bottom-[calc(env(safe-area-inset-bottom)+12px)]
-  z-[10] 
-  md:relative 
-  backdrop-blur-md
-">
-  <div
-    className="
-      pt-3
-      pb-[calc(env(safe-area-inset-bottom)+12px)]
-  
-      border-t border-white/10
-    "
-  >
-    <div className="max-w-[900px] mx-auto flex flex-col gap-3">
-      <button
-        onClick={handleGenerate}
-        disabled={!prompt.trim() || isGenerating}
-        className={`
-          generate-btn
-          relative w-full py-4 rounded-2xl font-semibold text-[15px]
-          transition-all duration-300 overflow-hidden
-          ${
-            !prompt.trim() || isGenerating
-              ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
-              : `
-                generate-btn-ready
-                bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]
-                border border-purple-400/30
-                hover:scale-[1.02]
-                active:scale-[0.98]
-                shadow-[0_10px_40px_rgba(122,59,255,0.35)]
-                hover:shadow-[0_0_50px_rgba(122,59,255,0.55)]
-              `
-          }
-        `}
-      >
-        <span className="relative z-10 flex items-center justify-center gap-2">
-          {isGenerating ? (
-            <>
-              <Wand2 className="w-4 h-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Wand2 className="w-4 h-4 opacity-80" />
-              Generate
-            </>
-          )}
-        </span>
-      </button>
-
-      <div
-        className="
-          w-full rounded-xl border border-white/10
-          bg-[linear-gradient(180deg,#11141D,#0C0F17)]
-          px-4 py-3
-          flex items-center justify-between
-          text-sm
-        "
-      >
-        <span className="text-white/50">Estimated cost</span>
-        <span className="text-[#36E28F] font-medium">
-          {estimatedCredits} credits
-        </span>
-      </div>
-    </div>
-  </div>
-</div>
+<GenerateButton
+  onClick={handleGenerate}
+  disabled={!prompt.trim()}
+  isGenerating={isGenerating}
+  estimatedCredits={estimatedCredits}
+/>
           </div>
         </div>
       </div>

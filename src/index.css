@@ -489,11 +489,18 @@ body,
     0 10px 40px rgba(122,59,255,0.45),
     0 0 25px rgba(122,59,255,0.3);
 }
+
+.shimmer {
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,0.25),
+    transparent
+  );
+  animation: shimmer 2.2s infinite;
+}
+
 @keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
 }
