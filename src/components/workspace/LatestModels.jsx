@@ -1,37 +1,39 @@
 import { useRef, useEffect, useState } from "react";
 
 export default function LatestModels() {
-  const scrollRef = useRef(null);
+  const mobileScrollRef = useRef(null);
+  const desktopScrollRef = useRef(null);
   const isUserInteracting = useRef(false);
   const intervalRef = useRef(null);
 
-const models = [
-  {
-    name: "Nano Banana 2",
-    desc: "Best and realistic image generation",
-    image: "/trendmodel/nanobanana.webp",
-    video: "/trendmodel/nanobanana.mp4",
-    tag: "BEST",
-    highlight: true,
-  },
-  {
-    name: "MiniMax Hailou 2.3 Fast",
-    desc: "Ultra fast video generation",
-    image: "/trendmodel/hailou.webp",
-    video: "/trendmodel/minimax.mp4",
-    tag: "FAST",
-  },
-  {
-    name: "Runway Gen-4",
-    desc: "Cinematic video generation",
-    image: "/trendmodel/runway.webp",
-    video: "/trendmodel/runway.mp4",
-    tag: "PRO",
-  },
-];
-  // 🔥 AUTO SCROLL (rail only)
+  const models = [
+    {
+      name: "Nano Banana 2",
+      desc: "Best and realistic image generation",
+      image: "/trendmodel/nanobanana.webp",
+      video: "/trendmodel/nanobanana.mp4",
+      tag: "BEST",
+      highlight: true,
+    },
+    {
+      name: "MiniMax Hailou 2.3 Fast",
+      desc: "Ultra fast video generation",
+      image: "/trendmodel/hailou.webp",
+      video: "/trendmodel/minimax.mp4",
+      tag: "FAST",
+    },
+    {
+      name: "Runway Gen-4",
+      desc: "Cinematic video generation",
+      image: "/trendmodel/runway.webp",
+      video: "/trendmodel/runway.mp4",
+      tag: "PRO",
+    },
+  ];
+
+  // 🔥 AUTO SCROLL (works for both rails)
   useEffect(() => {
-    const el = scrollRef.current;
+    const el = mobileScrollRef.current || desktopScrollRef.current;
     if (!el) return;
 
     const scrollNext = () => {
@@ -71,9 +73,9 @@ const models = [
 
       {/* HEADER */}
       <div className="flex items-center justify-between mb-5">
-         <h2 className="text-white text-[20px] md:text-[28px] font-bold tracking-tight">
-        Trending AI Models
-          </h2>
+        <h2 className="text-white text-[20px] md:text-[28px] font-bold tracking-tight">
+          Trending AI Models
+        </h2>
 
         <button className="text-white/50 hover:text-white text-sm">
           More →
@@ -83,15 +85,17 @@ const models = [
       {/* ✅ MOBILE RAIL */}
       <div className="md:hidden">
         <div
-          ref={scrollRef}
+          ref={mobileScrollRef}
           onTouchStart={() => (isUserInteracting.current = true)}
           onTouchEnd={() =>
             setTimeout(() => (isUserInteracting.current = false), 1500)
           }
           className="
             flex gap-3 px-1
-            overflow-x-auto snap-x snap-mandatory
+            overflow-x-auto overflow-y-hidden
+            snap-x snap-mandatory
             scroll-smooth
+            touch-pan-x
             [&::-webkit-scrollbar]:hidden
           "
         >
@@ -113,13 +117,15 @@ const models = [
       {/* ✅ LG + XL RAIL (2 visible) */}
       <div className="hidden lg:block 2xl:hidden">
         <div
-          ref={scrollRef}
+          ref={desktopScrollRef}
           onMouseEnter={() => (isUserInteracting.current = true)}
           onMouseLeave={() => (isUserInteracting.current = false)}
           className="
-            flex gap-4 px-1
-            overflow-x-auto snap-x snap-mandatory
+            flex gap-3 px-1
+            overflow-x-auto overflow-y-hidden
+            snap-x snap-mandatory
             scroll-smooth
+            touch-pan-x
             [&::-webkit-scrollbar]:hidden
           "
         >
@@ -140,6 +146,7 @@ const models = [
     </section>
   );
 }
+
 function ModelCard({ model, compact }) {
   const [hovered, setHovered] = useState(false);
 
@@ -160,7 +167,7 @@ function ModelCard({ model, compact }) {
       {/* MEDIA */}
       <div className="relative aspect-[16/9] overflow-hidden">
 
-        {/* IMAGE (ALWAYS visible, mobile = only this) */}
+        {/* IMAGE */}
         <img
           src={model.image}
           alt={model.name}
@@ -170,7 +177,7 @@ function ModelCard({ model, compact }) {
           }}
         />
 
-        {/* VIDEO (ONLY md and above) */}
+        {/* VIDEO */}
         <video
           src={model.video}
           autoPlay
@@ -178,11 +185,11 @@ function ModelCard({ model, compact }) {
           loop
           playsInline
           preload="metadata"
-          className={`
+          className="
             hidden md:block
             absolute inset-0 w-full h-full object-cover
             transition duration-300
-          `}
+          "
           style={{
             opacity: hovered ? 1 : 0,
           }}
@@ -199,15 +206,15 @@ function ModelCard({ model, compact }) {
 
       {/* TEXT */}
       <div className={`${compact ? "p-2" : "p-3"}`}>
-       <div className="
-  text-[18px] md:text-[20px]
-  font-bold leading-tight
-  bg-gradient-to-r from-white via-purple-100 to-purple-500
-  bg-clip-text text-transparent
-  inline-block
-">
-  {model.name}
-</div>
+        <div className="
+          text-[18px] md:text-[20px]
+          font-bold leading-tight
+          bg-gradient-to-r from-white via-purple-100 to-purple-500
+          bg-clip-text text-transparent
+          inline-block
+        ">
+          {model.name}
+        </div>
 
         <div className="text-white/40 text-xs mt-1">
           {model.desc}
