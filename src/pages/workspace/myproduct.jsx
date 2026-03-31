@@ -1,5 +1,5 @@
 import Step1 from "../../components/myproduct/step1.jsx";
-import Cta from "../../components/workspace/Cta.jsx";
+
 import Tips from "../../components/myproduct/tips.jsx";
 import Example from "../../components/myproduct/example.jsx";
 import Proof from "./../../components/workspace/proof.jsx";
@@ -174,7 +174,7 @@ setTimeout(() => setToast(null), 2500);
 
   return (
     <section>
-      {showCta && <Cta onClose={() => setShowCta(false)} />}
+  
 
       <Step1
         onCreate={() => {
