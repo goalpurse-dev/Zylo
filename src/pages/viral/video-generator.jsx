@@ -63,7 +63,7 @@ export default function VideoGenerator() {
   }, []);
 
   return (
-    <div className="w-full flex flex-col md:flex-row overflow-x-hidden">
+    <div className="w-full flex flex-col md:flex-row overflow-x-hidden bg-[#0E1117]">
       <div className="w-full md:max-w-[450px] md:min-w-[400px] md:border-r md:border-white/5">
         <div className="w-full px-6 py-6">
           <Generate />

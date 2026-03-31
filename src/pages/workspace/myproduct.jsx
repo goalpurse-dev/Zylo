@@ -219,7 +219,7 @@ setTimeout(() => setToast(null), 2500);
 
           {/* Modal */}
           <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="bg-[#12141A] w-full max-w-lg rounded-2xl shadow-xl p-8">
+            <div className="bg-[#090A0A] w-full max-w-lg rounded-2xl shadow-xl p-8">
               {createStep === 2 && (
                 <Step2
                   onNext={() => setCreateStep(3)}

@@ -535,7 +535,7 @@ useEffect(() => {
   return (
 <div
   ref={latestRef}
-  className="w-full bg-[#12141A] p-4 md:pb-6 pb-24 min-h-[300px]"
+  className="w-full bg-[#0E1117] p-4 md:pb-6 pb-24 min-h-[300px]"
 >
       <h1 className="text-[#F4F6FB] font-semibold text-[20px] mb-4">
         Recent Creations

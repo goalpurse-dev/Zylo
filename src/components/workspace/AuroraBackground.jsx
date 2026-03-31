@@ -1,6 +1,6 @@
 export default function GlowHeader() {
   return (
-    <section className="relative w-full py-24 bg-[#12141A] overflow-hidden">
+    <section className="relative w-full py-24 bg-[#090A0A] overflow-hidden">
       
       {/* GLOW LAYER */}
       <div className="pointer-events-none absolute inset-0 flex justify-center items-center">

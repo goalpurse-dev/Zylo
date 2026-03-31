@@ -197,13 +197,20 @@ const handleLike = async (imageId) => {
   };
 
   return (
-    <section className="px-4 py-8">
+ <section className="w-full max-w-7xl mx-auto px-4 md:px-6 py-8">
 
       <h1 className="text-3xl font-bold mb-6 text-white">
         Zyvo <span className="text-purple-500">Community Creations</span>
       </h1>
 
-      <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
+    <div className="
+  columns-2
+  md:columns-3
+  lg:columns-3
+  xl:columns-4
+  2xl:columns-4
+  gap-3
+">
 
         {images.map((img) => (
 

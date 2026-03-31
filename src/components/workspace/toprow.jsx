@@ -23,8 +23,8 @@ export default function TopRow({ title, onMenuClick }) {
   w-full
   z-[60]
   backdrop-blur-xl
-  bg-[#12141A]/90
-  border-b border-white/5
+  bg-[#090A0A]
+ 
 ">
       <div className="flex lg:hidden items-center justify-between px-6 py-3 md:py-4">
 

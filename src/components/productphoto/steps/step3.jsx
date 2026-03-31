@@ -94,7 +94,7 @@ export default function Step3({
 
   return (
     <div className="flex justify-center py-6 px-4 md:px-8 xl:px-16 ">
-      <div className="bg-[#12141A] mt-4 h-[750px] xl:h-[800px] 2xl:h-[850px] w-full text-[#F4F6FB] rounded-lg">
+      <div className="bg-[#05070F] mt-4 h-[750px] xl:h-[800px] 2xl:h-[850px] w-full text-[#F4F6FB] rounded-lg">
         {/* Step indicator */}
         <div className="flex justify-center py-6">
           <div className="bg-[#1A1D2B] border border-[#2A2F45] w-[240px] h-[35px] rounded-lg flex items-center gap-3 px-3">

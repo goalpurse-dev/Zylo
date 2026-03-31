@@ -53,7 +53,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-[#12141A]  font-sans">
+    <div className="min-h-screen bg-[#090A0A] font-sans">
       <div className="mx-auto max-w-6xl px-4 py-8 flex gap-6">
         {/* LEFT MENU (desktop) */}
         <aside className="hidden md:block w-[240px] shrink-0">
@@ -250,7 +250,7 @@ function AccountPanel() {
         {nameMsg && <div className="mb-4 text-xs text-green-400">{nameMsg}</div>}
 
         {/* change password */}
-        <div className="mt-2 rounded-xl border border-[#1F2230] bg-[#12141A]  p-3">
+        <div className="mt-2 rounded-xl border border-[#1F2230] bg-[#090A0A] p-3">
           <div className="mb-2 text-sm font-bold text-[#F4F6FB]">Change password</div>
           <form onSubmit={handleChangePassword} className="space-y-2">
             <input

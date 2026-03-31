@@ -267,7 +267,8 @@ useEffect(() => {
      RENDER
   =============================== */
   return (
-    <div className="relative w-full bg-[#12141A] min-h-screen overflow-x-hidden pb-[env(safe-area-inset-bottom)]">
+    <div 
+    className="relative w-full min-h-screen bg-[#0E1117] overflow-x-hidden pb-[env(safe-area-inset-bottom)]">
 
 {/* 🔥 SCOPED GLOW (ONLY CONTENT AREA) */}
 <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">

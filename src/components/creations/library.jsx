@@ -234,7 +234,7 @@ export default function Library() {
           onClick={() => setActiveItem(null)}
         >
           <div
-            className="bg-[#12141A] p-7 rounded-md w-full max-w-[800px]"
+            className="bg-[#090A0A] p-7 rounded-md w-full max-w-[800px]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-end">

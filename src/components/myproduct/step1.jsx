@@ -81,8 +81,8 @@ export default function Step1({ onCreate, onEdit }) {
             disabled={atCap}
             className={`px-6 py-1 rounded-lg border ${
               atCap
-                ? "bg-[#12141A] text-[#7A7F8C] border-[#2A2F45] cursor-not-allowed"
-                : "bg-[#1A1D2B] text-[#7A3BFF] border-[#7A3BFF]"
+                ? "bg-[#05070F] text-[#7A7F8C] border-[#2A2F45] cursor-not-allowed"
+                : "bg-[#05070F] text-[#7A3BFF] border-[#7A3BFF]"
             }`}
           >
             Add Product

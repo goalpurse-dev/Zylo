@@ -97,7 +97,7 @@ const showAddCredits = user && !isPaidPlan;
     <aside
       className={`fixed top-0 left-0 z-50
         h-[100dvh] w-[80px]
-        bg-[#12141A] flex flex-col
+        bg-[#090A0A] flex flex-col
         border-r-2
         overflow-y-auto overscroll-contain
         pb-[calc(env(safe-area-inset-bottom)+16px)]

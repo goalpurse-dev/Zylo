@@ -1,0 +1,84 @@
+import { useState, useEffect } from "react";
+import { X } from "lucide-react";
+
+export default function TopPromoBanner() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+   const dismissed = sessionStorage.getItem("promo_closed");
+    if (!dismissed) setVisible(true);
+  }, []);
+
+  const handleClose = () => {
+    sessionStorage.setItem("promo_closed", "true");
+    setVisible(false);
+  };
+
+  if (!visible) return null;
+
+  return (
+<div className="w-full bg-[#090A0A]">
+  <div
+    className="
+      relative overflow-hidden
+      bg-[#090A0A]
+    "
+  >
+    {/* 🔥 CENTER GRADIENT (controlled, not too bright) */}
+<div
+  className="
+    absolute inset-0
+    bg-[linear-gradient(90deg,#090A0A_0%,#090A0A_18%,rgba(168,85,247,0.25)_32%,rgba(168,85,247,0.45)_45%,rgba(232,121,249,0.45)_55%,rgba(168,85,247,0.45)_68%,rgba(168,85,247,0.25)_80%,#090A0A_92%,#090A0A_100%)]
+    sm:bg-[linear-gradient(90deg,#090A0A_0%,#090A0A_30%,rgba(168,85,247,0.35)_45%,rgba(232,121,249,0.35)_55%,#090A0A_70%,#090A0A_100%)]
+  "
+/>
+    {/* subtle glow */}
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.12),transparent_70%)] pointer-events-none" />
+
+    {/* ❌ CLOSE */}
+    <button
+      onClick={handleClose}
+      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition z-10"
+    >
+      ✕
+    </button>
+
+    {/* CENTER CONTENT */}
+    <div className="relative max-w-[750px] mx-auto flex items-center justify-center gap-2 sm:gap-4 px-4 pr-12 py-2.5 text-white text-sm sm:text-base">
+      
+      <span className="text-white/90 font-medium sm:block hidden whitespace-nowrap">
+        Limited Offer
+      </span>
+
+      <span className="sm:block hidden text-white/30">—</span>
+
+      <span className="text-white/90 font-semibold whitespace-nowrap">
+        Pro Plan
+      </span>
+
+      <span className="text-yellow-300 font-bold text-base sm:text-lg whitespace-nowrap">
+        40% OFF
+      </span>
+
+     
+
+     <button
+  onClick={() => (window.location.href = "/pricing")}
+  className="
+    ml-2
+    px-3.5 py-1.5
+    rounded-md
+    text-sm font-medium text-white
+    bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500
+    hover:opacity-90
+   
+    transition
+  "
+>
+  Upgrade
+</button>
+    </div>
+  </div>
+</div>
+  );
+}

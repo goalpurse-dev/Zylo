@@ -86,7 +86,7 @@ function ToolRow({ to, label, Icon, end, onNavigate }) {
 export default function ToolsPanel({ onNavigate }) {
 
   return (
-    <div className="h-full w-full bg-[#12141A] px-4 py-4 border border-white/10">
+    <div className="h-full w-full bg-[#090A0A] px-4 py-4 border border-white/10">
       <h1 className="text-[#F4F6FB] text-[12px] font-semibold mb-4">
         Create with tools
       </h1>

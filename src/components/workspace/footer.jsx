@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
-    <section className="bg-[#12141A] w-full">
+    <section className="bg-[#090A0A] w-full">
 
       <div className="w-full h-24 bg-[linear-gradient(to_bottom,rgba(14,16,22,0)_0%,#0E1016_100%)]" />
 

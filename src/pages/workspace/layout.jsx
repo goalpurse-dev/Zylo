@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import ToolShell from "../../components/workspace/toolshell.jsx";
 import TopRow from "../../components/workspace/toprow.jsx";
+import TopPromoBanner from "../../components/workspace/TopPromoBanner";
 import ToolsPanel from "../../components/workspace/ToolsPanel.jsx";
 
 export default function WorkspaceLayout() {
@@ -14,6 +15,15 @@ export default function WorkspaceLayout() {
   const scrollRef = useRef(null);
   const lastScrollY = useRef(0);
   const [showTopRow, setShowTopRow] = useState(true);
+  const isHomeRoute = location.pathname === "/workspace/home";
+  const [bannerVisible, setBannerVisible] = useState(false);
+
+  useEffect(() => {
+  if (!isHomeRoute) return;
+
+  const dismissed = localStorage.getItem("promo_closed");
+  setBannerVisible(!dismissed);
+}, [isHomeRoute]);
 
  const TOOL_ROUTES = [
   "/workspace/productphoto",
@@ -127,7 +137,7 @@ useEffect(() => {
   const title = titleMap[location.pathname] || "Workspace";
 
   return (
-    <div className="flex w-full min-h-screen bg-[#12141A]">
+    <div className="flex w-full min-h-screen bg-[#090A0A]">
 
 
       {/* DESKTOP TOOL SHELL */}
@@ -141,7 +151,7 @@ useEffect(() => {
 
       {/* DESKTOP TOOLS PANEL */}
       {activePanel === "tools" && (
-        <aside className="hidden lg:block h-screen w-[220px] flex-shrink-0 bg-[#12141A] border-r border-white/10">
+        <aside className="hidden lg:block h-screen w-[220px] flex-shrink-0 bg-[#090A0A] border-r border-white/10">
          <ToolsPanel onNavigate={closeMobilePanels} />
 
         </aside>
@@ -158,7 +168,7 @@ useEffect(() => {
             }}
           />
 
-          <aside className="fixed top-0 left-0 z-50 h-screen w-[80px] bg-[#12141A] lg:hidden">
+          <aside className="fixed top-0 left-0 z-50 h-screen w-[80px] bg-[#090A0A] lg:hidden">
             <ToolShell
               activePanel={activePanel}
               setActivePanel={setActivePanel}
@@ -175,7 +185,7 @@ useEffect(() => {
               className="
                 fixed  left-[80px]
                 z-50 h-full
-                w-[220px] bg-[#12141A]
+                w-[220px] bg-[#090A0A]
                 animate-[panelIn_0.25s_ease-out]
                 lg:hidden rounded-tr-lg
               "
@@ -193,35 +203,45 @@ useEffect(() => {
   id="workspace-scroll"
   className="relative z-10 flex flex-col flex-1 h-screen overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]"
 >
-        <div
-         className={`
-  sticky top-0 z-[60]
-  ${showTopRow ? "opacity-100" : "opacity-0 pointer-events-none"}
-  transition-opacity duration-200
-  lg:opacity-100
-`}
-        >
-          <TopRow
-            onMenuClick={() => {
-              setSidebarOpen(prev => {
-                const next = !prev;
+<div className="sticky top-0 z-[60]">
 
-                if (window.innerWidth < 1024) {
-                  if (next && isToolRoute) {
-                    setActivePanel("tools");
-                  }
+  {/* 🔹 PROMO BANNER (ONLY HOME) */}
+  {isHomeRoute && bannerVisible && (
+    <div className="w-full animate-[slideDown_0.3s_ease-out]">
+      <TopPromoBanner onClose={() => setBannerVisible(false)} />
+    </div>
+  )}
 
-                  if (next && !isToolRoute) {
-                    setActivePanel(null);
-                  }
-                }
+  {/* 🔹 TOP ROW */}
+  <div
+    className={`
+      ${showTopRow ? "opacity-100" : "opacity-0 pointer-events-none"}
+      transition-all duration-300
+      lg:opacity-100
+    `}
+  >
+    <TopRow
+      onMenuClick={() => {
+        setSidebarOpen(prev => {
+          const next = !prev;
 
-                return next;
-              });
-            }}
-            title={title}
-          />
-        </div>
+          if (window.innerWidth < 1024) {
+            if (next && isToolRoute) {
+              setActivePanel("tools");
+            }
+
+            if (next && !isToolRoute) {
+              setActivePanel(null);
+            }
+          }
+
+          return next;
+        });
+      }}
+      title={title}
+    />
+  </div>
+</div>
 
  {showWelcome && (
   <div className="fixed bottom-6 right-6 z-[9999] animate-[slideUp_0.35s_ease-out]">
