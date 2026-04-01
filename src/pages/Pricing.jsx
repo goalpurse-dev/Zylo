@@ -218,6 +218,7 @@ function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade, currency
   const isYearly = billing === "yearly";
 const eurPrice = isYearly ? tier.yearlyPerMonth : tier.monthly;
 
+
 // simple conversion (you can later make dynamic)
 const usdRate = 1.08;
 const displayPrice =
@@ -314,11 +315,19 @@ await supabase.from("abandoned_checkouts").upsert(
   const core = (
  <div
   className={`relative overflow-hidden rounded-[22px] border p-5 md:p-6 flex flex-col h-full text-[#F4F6FB] transition ${
+   
+   
     tier.popular
       ? "border-[#7A3BFF]/70 bg-[linear-gradient(180deg,rgba(20,22,34,0.98),rgba(11,14,26,0.98))] shadow-[0_0_0_1px_rgba(122,59,255,0.12),0_20px_80px_rgba(122,59,255,0.16)]"
       : "border-white/10 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] shadow-[0_12px_40px_rgba(0,0,0,0.22)]"
   }`}
 >
+{tier.id === "pro" && (
+  <div className="absolute top-4 right-4 text-[11px] font-bold px-2 py-1 rounded-md bg-[#FF4D6D]/10 text-[#FF4D6D] border border-[#FF4D6D]/20">
+    25% OFF
+  </div>
+)}
+  
   <div className={`absolute inset-x-0 top-0 h-[2px] ${
     tier.popular
       ? "bg-gradient-to-r from-[#6D4AFF] via-[#9F5CFF] to-[#4D8DFF]"
@@ -334,9 +343,21 @@ await supabase.from("abandoned_checkouts").upsert(
 
       <div className="mb-2 font-bold text-xl">{tier.name}</div>
 
-   <div className="mt-1 flex items-baseline gap-2">
-  <div className="text-4xl font-bold">{priceStr}</div>
-  <div className="text-sm text-[#B7BBC6] font-semibold">/month</div>
+<div className="mt-1 flex items-end gap-2">
+
+  {tier.id === "pro" && (
+    <div className="text-sm text-[#6B7280] line-through font-medium">
+      {formatPrice(32, currency)}
+    </div>
+  )}
+
+  <div className="text-4xl font-bold text-white leading-none">
+    {priceStr}
+  </div>
+
+  <div className="text-sm text-[#9CA3AF] mb-[4px]">
+    /month
+  </div>
 </div>
 
 <button
