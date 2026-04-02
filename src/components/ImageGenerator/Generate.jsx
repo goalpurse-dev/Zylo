@@ -1325,13 +1325,29 @@ bg-[#0f111a]/95
 
         
 
-{/* GENERATE SECTION */}
-<GenerateButton
-  onClick={handleGenerate}
-  disabled={!prompt.trim()}
-  isGenerating={isGenerating}
-  estimatedCredits={estimatedCredits}
-/>
+
+{/* GENERATE SECTION (FIXED ABOVE NAV) */}
+<div
+  className="fixed left-0 right-0 z-[90] md:static"
+  style={{
+    bottom: "calc(68px + env(safe-area-inset-bottom))"
+  }}
+>
+  {/* FULL WIDTH BACKGROUND */}
+  <div className="w-full bg-[#191B1C] border-t border-white/5 px-4 pt-3 pb-3 backdrop-blur-xl">
+    
+    {/* CENTERED BUTTON */}
+    <div className="max-w-[900px] mx-auto">
+      <GenerateButton
+        onClick={handleGenerate}
+        disabled={!prompt.trim()}
+        isGenerating={isGenerating}
+        estimatedCredits={estimatedCredits}
+      />
+    </div>
+
+  </div>
+</div>
           </div>
         </div>
       </div>

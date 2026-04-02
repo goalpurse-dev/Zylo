@@ -1,46 +1,45 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
-import { supabase } from "../../lib/supabaseClient";
-import { createPortal } from "react-dom";
-
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useProfileCredits } from "../../hooks/useProfileCredits";
-
+import { supabase } from "../../lib/supabaseClient";
 import Logo from "../../assets/Logo.png";
-import Credit from "../../assets/toolshell/credit.png";
-
-ArrowLeft
-LogOut
-
-/* Icons */
-
-Settings
-CreditCard
-Info
-
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 import {
-  ToolCase,
+  Home,
+  Image,  
+  Video,
   Folder,
-  BadgeQuestionMark,
-  Settings,
   CreditCard,
+  Settings,
   Info,
-  ArrowLeft,
   LogOut,
+  HelpCircle
 } from "lucide-react";
 
-export default function ToolShell({
-  activePanel,
-  setActivePanel,
-  isCreationsRoute,
-  onClose,
-}) {
+import Credit from "/icons/credits.png";
+
+export default function ToolShell() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const { user } = useAuth();
-  const menuRef = useRef(null);
   const credits = useProfileCredits();
 
-  const [planCode, setPlanCode] = useState("free");
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+  const menuRef = useRef(null);
+const [planCode, setPlanCode] = useState("free");
+  const formattedCredits = Intl.NumberFormat().format(credits);
+
+  const initials = user
+    ? (user.user_metadata?.full_name || user.email || "")
+        .slice(0, 2)
+        .toUpperCase()
+    : null;
+
+  const isActive = (path) => location.pathname.startsWith(path);
 
   useEffect(() => {
   const loadPlan = async () => {
@@ -57,25 +56,37 @@ export default function ToolShell({
 
   loadPlan();
 }, [user]);
-  
-const isPaidPlan = user && planCode !== "free";
-const showCredits = user && isPaidPlan;
-const showAddCredits = user && !isPaidPlan;
-  const formattedCredits = Intl.NumberFormat().format(credits);
-  const navigate = useNavigate();
 
-  const [profileOpen, setProfileOpen] = useState(false);
-  const profileRef = useRef(null);
+  const Item = ({ icon: Icon, label, path }) => {
+    const active = isActive(path);
 
-  // Close when clicking outside
+    return (
+      <button
+        onClick={() => navigate(path)}
+        className={`
+          w-full flex flex-col items-center gap-1 py-3 rounded-xl
+          transition-all duration-200
+
+          ${active
+            ? "bg-white text-black"
+            : "text-white/50 hover:text-white hover:bg-white/5"}
+        `}
+      >
+        <Icon className="w-5 h-5" />
+        <span className="text-[11px] font-medium">{label}</span>
+      </button>
+    );
+  };
+
+  // close dropdown
   useEffect(() => {
     const handleClickOutside = (e) => {
-     if (
-  !profileRef.current?.contains(e.target) &&
-  !menuRef.current?.contains(e.target)
-) {
-  setProfileOpen(false);
-}
+      if (
+        !profileRef.current?.contains(e.target) &&
+        !menuRef.current?.contains(e.target)
+      ) {
+        setProfileOpen(false);
+      }
     };
 
     if (profileOpen) {
@@ -87,309 +98,228 @@ const showAddCredits = user && !isPaidPlan;
     };
   }, [profileOpen]);
 
-  const initials = user
-    ? (user.user_metadata?.full_name || user.email || "")
-        .slice(0, 2)
-        .toUpperCase()
-    : null;
-
   return (
-    <aside
-      className={`fixed top-0 left-0 z-50
-        h-[100dvh] w-[80px]
-        bg-[#090A0A] flex flex-col
-        border-r-2
-        overflow-y-auto overscroll-contain
-        pb-[calc(env(safe-area-inset-bottom)+16px)]
-        ${
-          isCreationsRoute && activePanel !== "tools"
-            ? "border-white/15"
-            : "border-transparent"
-        }
-      `}
-    >
+    <div className="h-full flex flex-col items-center py-4 px-2 bg-[#090A0A] border-r border-white/5">
+
       {/* LOGO */}
-      <div className="flex justify-center pt-6 mb-6 shrink-0">
-        <img src={Logo} className="h-12 w-12" />
+      <div className="mb-6">
+       <img
+  src={Logo}
+  className="
+    w-10 h-10
+    object-contain
+
+    drop-shadow-[0_0_10px_rgba(122,59,255,0.6)]
+  "
+/>
       </div>
 
-      {/* TOP */}
-      <div className="flex-1 px-2">
-        <div className="flex flex-col gap-2">
-
-  <button
-  onClick={() => {
-    navigate("/workspace/home");
-    setActivePanel("tools");
-  }}
-  className="relative flex flex-col gap-1 items-center px-6 py-3 transition-all duration-300"
->
-  {/* Futuristic beam glow */}
-  {activePanel === "tools" && (
-  <>
-    {/* Animated purple aura */}
-    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-10 h-6 bg-[#7A3BFF]/40 blur-xl rounded-full pointer-events-none animate-aura" />
-
-    {/* White beam */}
-    <div className="absolute -bottom-[3px] left-1/2 -translate-x-1/2 w-8 h-[2px]  rounded-full pointer-events-none animate-beam" />
-  </>
-)}
-  <ToolCase
-    className={`h-6 w-6 transition-all duration-300 ${
-      activePanel === "tools"
-        ? "text-[#7A3BFF] drop-shadow-[0_0_10px_#7A3BFF]"
-        : "text-[#8A8F9C]"
-    }`}
-  />
-
-  <p
-    className={`text-[12px] transition-all duration-300 ${
-      activePanel === "tools"
-        ? "text-[#7A3BFF] font-semibold tracking-wide"
-        : "text-[#8A8F9C]"
-    }`}
-  >
-    Tools
-  </p>
-</button>
-
-          <NavLink
-    to="/workspace/creations"
-  onClick={() => {
-    if (window.innerWidth < 1024) {
-      onClose?.();
-    }
-  }}
-  className="relative flex flex-col gap-1 items-center px-6 py-3 transition-all duration-300"
->
-  {({ isActive }) => (
-    <>
-      {isActive && (
-        <>
-          {/* Purple aura */}
-          <div className="absolute -bottom-2 left-1/2 animate-aura -translate-x-1/2 w-10 h-6 bg-[#7A3BFF]/30 blur-xl rounded-full pointer-events-none" />
-
-          {/* Sharp white beam */}
-          <div className="absolute -bottom-[3px] left-1/2 -translate-x-1/2 w-8 h-[2px] animate-beam  rounded-full pointer-events-none" />
-        </>
-      )}
-
-      <Folder
-        className={`h-6 w-6 transition-all duration-300 ${
-          isActive
-            ? "text-[#7A3BFF] drop-shadow-[0_0_10px_#7A3BFF]"
-            : "text-[#8A8F9C]"
-        }`}
-      />
-
-      <p
-        className={`text-[12px] transition-all duration-300 ${
-          isActive
-            ? "text-[#7A3BFF] font-semibold tracking-wide"
-            : "text-[#8A8F9C]"
-        }`}
-      >
-        Creations
-      </p>
-    </>
-  )}
-</NavLink>
-        </div>
+      {/* NAV */}
+      <div className="flex flex-col items-center gap-2 w-full">
+        <Item icon={Home} label="Home" path="/workspace/home" />
+        <Item icon={Image} label="Image" path="/workspace/image-generator" />
+        <Item icon={Video} label="Video" path="/workspace/video-generator" />
+        <Item icon={Folder} label="Creations" path="/workspace/creations" />
       </div>
 
-      {/* BOTTOM */}
-      <div className="pb-6 flex flex-col gap-4 items-center">
+      {/* SPACER */}
+      <div className="flex-1" />
 
-{/* Credits / Add Credits */}
-{showCredits && (
-  <Link
-    to="/workspace/pricing"
-    onClick={() => {
-      if (window.innerWidth < 1024) {
-        onClose?.();
-      }
-    }}
-    className="flex flex-col items-center gap-1 group"
-  >
-    <div className="border border-white/20 rounded-lg h-10 w-10 flex items-center justify-center hover:border-purple-500/40 transition">
-      <img src={Credit} className="h-6 w-6" />
-    </div>
 
-    <p className="text-[#B7BBC6] text-[12px] font-semibold">
-      {formattedCredits}
-    </p>
-  </Link>
-)}
 
-{showAddCredits && (
-  <Link
-    to="/workspace/pricing"
-    onClick={() => {
-      if (window.innerWidth < 1024) {
-        onClose?.();
-      }
-    }}
-    className="flex flex-col items-center gap-1 group"
-  >
-    <div
+      {/* NOT LOGGED IN */}
+{!user && (
+  <div className="flex flex-col items-center gap-2 w-full mb-3">
+
+    <button
+      onClick={() => navigate("/login")}
       className="
-        border border-purple-400/30
-        rounded-lg
-        h-10 w-10
+        w-[90%]
+        h-[36px]
+
+        text-white/70 text-sm
+        border border-white/20
+        rounded-xl
+
         flex items-center justify-center
-        transition-all duration-300
-        group-hover:scale-[1.05]
-        shadow-[0_0_10px_rgba(168,85,247,0.35)]
+
+        hover:text-white
+        hover:border-white/40
+        transition
       "
     >
-      <span className="text-purple-500 text-lg font-bold leading-none">
-        +
-      </span>
-    </div>
+      Log in
+    </button>
 
-    <p className="text-[#B7BBC6] text-[11px] font-medium text-center leading-tight">
-      Add<br />Credits
-    </p>
-  </Link>
+    <button
+      onClick={() => navigate("/signup")}
+      className="
+        w-[90%]
+        h-[36px]
+
+        rounded-xl
+        bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF]
+
+        text-white text-sm font-semibold
+
+        flex items-center justify-center
+
+
+      "
+    >
+      Sign up
+    </button>
+
+  </div>
 )}
 
+      {/* LOGGED IN */}
+      {user && (
+        <>
+          {/* ADD CREDITS */}
+          {planCode === "free" && (
+<button
+  onClick={() => navigate("/workspace/pricing")}
+  className="
+    w-[90%]
+    mx-auto
 
-        {/* Help */}
-        <Link
-          to="/support"
-          className="flex flex-col items-center gap-1 hover:text-white transition"
-        >
-          <BadgeQuestionMark className="text-[#B7BBC6]" />
-          <p className="text-[#B7BBC6] text-[12px]">Help</p>
-        </Link>
+    flex items-center justify-center
+    px-3 py-2
 
-        {/* Auth buttons */}
-        {!user && (
-          <div className="flex flex-col gap-2 w-full px-3 mt-2">
-            <Link
-              to="/signup"
-              className="w-full text-center py-2 rounded-lg bg-gradient-to-r from-[#7A3BFF] to-[#6F3AE6] text-white text-[12px] font-medium hover:scale-[1.03] transition"
-            >
-              Sign Up
-            </Link>
+    rounded-xl
 
-            <Link
-              to="/login"
-              className="w-full text-center py-2 rounded-lg border border-white/20 text-[#B7BBC6] text-[12px] font-medium hover:border-purple-500/40 hover:text-white transition"
-            >
-              Log In
-            </Link>
-          </div>
-        )}
+    bg-[#7A3BFF]/20
+    border border-[#7A3BFF]/50
 
-        {/* PROFILE */}
-        {user && (
-          <div className="relative mt-2" ref={profileRef}>
+    text-[#C4A3FF] text-[12px] font-semibold
+
+    hover:bg-[#7A3BFF]/30
+    hover:border-[#9F5CFF]
+    hover:text-white
+
+    transition
+  "
+>
+  Upgrade
+</button>
+)}
+
+          {/* CREDITS */}
+          <button
+            onClick={() => navigate("/workspace/pricing")}
+            className="
+              mt-2 w-full flex items-center justify-center gap-1
+              px-3 py-2 rounded-xl
+              bg-[#14161C]
+              border border-white/10
+              hover:border-[#7A3BFF]/40
+              hover:bg-[#181A22]
+              transition
+            "
+          >
+            <img
+              src={Credit}
+              className="h-5 w-auto object-contain scale-125 brightness-125"
+            />
+
+            <span className="text-[#9F5CFF] text-[13px] font-semibold">
+              {formattedCredits}
+            </span>
+          </button>
+
+
+
+          {/* PROFILE */}
+          <div className="relative mt-4" ref={profileRef}>
             <button
               onClick={() => setProfileOpen((prev) => !prev)}
-              className="bg-[#B7BBC6] rounded-full w-10 h-10 flex items-center justify-center"
+              className="w-10 h-10 rounded-full bg-[#B7BBC6] flex items-center justify-center"
             >
-              <span className="text-[#110829] text-[14px] font-semibold">
+              <span className="text-[#110829] text-sm font-semibold">
                 {initials}
               </span>
             </button>
 
-        {profileOpen &&
-  createPortal(
- <div
+            {profileOpen &&
+              createPortal(
+             <div
   ref={menuRef}
   className="
-        fixed
-        left-[90px]
-        bottom-[calc(env(safe-area-inset-bottom)+30px)]
-        w-[260px]
-        bg-[#1A1D2B]
-        border border-white/10
-        rounded-2xl
-        shadow-2xl
-        p-3
-        z-[9999]
+    fixed left-[100px] bottom-6
+    w-[200px]
+
+    bg-[#171923]
+    border border-white/10
+    rounded-xl
+
+    shadow-[0_10px_30px_rgba(0,0,0,0.5)]
+
+    p-2
+    z-[9999]
+  "
+>
+  <div className="pb-2 border-b border-white/10 mb-2">
+    <p className="text-white text-[13px] font-medium">
+      {user.user_metadata?.full_name || "User"}
+    </p>
+    <p className="text-white/40 text-[11px] truncate">
+      {user.email}
+    </p>
+  </div>
+
+  <div className="flex flex-col gap-1 text-[13px]">
+
+    <button
+      onClick={() => navigate("/workspace/pricing")}
+      className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-white/80"
+    >
+      <CreditCard className="w-4 h-4 text-white/60" />
+      Subscriptions
+    </button>
+
+    <button
+      onClick={() => navigate("/settings")}
+      className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-white/80"
+    >
+      <Settings className="w-4 h-4 text-white/60" />
+      Account
+    </button>
+
+    <button
+      onClick={() => navigate("/about")}
+      className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-white/80"
+    >
+      <Info className="w-4 h-4 text-white/60" />
+      About
+    </button>
+
+    <div className="border-t border-white/10 my-1"></div>
+
+    <button
+      onClick={async () => {
+        await supabase.auth.signOut();
+        navigate("/");
+      }}
+      className="
+        flex items-center gap-2 px-2 py-2
+        rounded-lg
+        border border-red-500/30
+        bg-red-500/10
+        text-red-400
       "
     >
-      {/* Header */}
-      <div className="pb-3 border-b border-white/10 mb-3">
-        <p className="text-white text-sm font-medium">
-          {user.user_metadata?.full_name || "User"}
-        </p>
-        <p className="text-white/40 text-xs">
-          {user.email}
-        </p>
-      </div>
+      <LogOut className="w-4 h-4" />
+      Log out
+    </button>
 
-      {/* Menu */}
-      <div className="flex flex-col gap-1 text-sm">
-
-        <button
-          onClick={() => {
-            navigate("/workspace/pricing");
-            setProfileOpen(false);
-          }}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 text-left text-white/80"
-        >
-          <CreditCard className="w-4 h-4 text-white/60" />
-          Subscriptions
-        </button>
-
-        <button
-          onClick={() => {
-            navigate("/settings");
-            setProfileOpen(false);
-          }}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 text-left text-white/80"
-        >
-          <Settings className="w-4 h-4 text-white/60" />
-          Manage Account
-        </button>
-
-        <button
-          onClick={() => {
-            navigate("/about");
-            setProfileOpen(false);
-          }}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 text-left text-white/80"
-        >
-          <Info className="w-4 h-4 text-white/60" />
-          About
-        </button>
-
-        <div className="border-t border-white/10 my-2"></div>
-
-        <button
-          onClick={async () => {
-            await supabase.auth.signOut();
-            navigate("/");
-          }}
-          className="
-            flex items-center gap-2
-            px-3 py-2
-            rounded-lg
-            border border-red-500/40
-            bg-red-500/10
-            text-red-400
-            hover:bg-red-500/20
-            hover:border-red-500/60
-            transition-all duration-200
-          "
-        >
-          <LogOut className="w-4 h-4" />
-          Log out
-        </button>
-
-      </div>
-    </div>,
-    document.body
-  )}
+  </div>
+</div>,
+                document.body
+              )}
           </div>
-        )}
-
-      </div>
-
-      <div className="shrink-0 pb-6 px-2"></div>
-    </aside>
+        </>
+      )}
+    </div>
   );
 }

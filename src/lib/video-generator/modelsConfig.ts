@@ -16,7 +16,7 @@ export const MODELS = {
     supportedSizes: ["16:9", "9:16",],
     supportedDurations: ["3s", "5s"],
     supportedResolutions: ["720p"],
-    maxReferenceImages: 4,   // 🔥 ADD THIS
+    maxReferenceImages: 2,   // 🔥 ADD THIS
   },
 
    "video:miniMaxFast": {
