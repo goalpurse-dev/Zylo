@@ -30,7 +30,11 @@ export default function ProgressToast({
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] animate-[slideIn_0.35s_ease-out]">
+    <div 
+    style={{
+  bottom: "calc(140px + env(safe-area-inset-bottom))"
+}}
+    className="fixed right-4  md:right-6 z-[9999] animate-[slideInUp_0.35s_ease-out]">
       <div
         className="
           relative
