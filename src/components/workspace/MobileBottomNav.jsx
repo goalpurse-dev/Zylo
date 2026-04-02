@@ -8,7 +8,7 @@ import {
 
 
 
-export default function MobileBottomNav({ hidden }) {
+export default function MobileBottomNav({ isSelectorOpen }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -31,9 +31,7 @@ export default function MobileBottomNav({ hidden }) {
 
     transition-all duration-300
 
-    ${hidden 
-      ? "translate-y-full opacity-0 pointer-events-none" 
-      : "translate-y-0 opacity-100"}
+   ${isSelectorOpen ? "opacity-0 pointer-events-none translate-y-full" : "opacity-100"}
   `}
   style={{
     paddingBottom: "env(safe-area-inset-bottom)",

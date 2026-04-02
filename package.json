@@ -17,7 +17,7 @@
     "@vercel/analytics": "^1.6.1",
     "animate.css": "^4.1.1",
     "dotenv": "^17.3.1",
-    "framer-motion": "^12.23.12",
+    "framer-motion": "^12.38.0",
     "konva": "^9.3.22",
     "lucide-react": "^0.537.0",
     "node-fetch": "^3.3.2",

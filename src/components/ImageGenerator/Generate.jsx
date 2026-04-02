@@ -297,28 +297,38 @@ useEffect(() => {
   return () => clearTimeout(t)
 }, [localPrompt])
 
-
-const selectedModel = MODELS[selectedModelKey];
-const estimatedCredits = selectedModel?.supportsResolutions
-  ? selectedModel.resolutions.find(r => r.key === selectedResolution)?.credits ?? selectedModel.credits
-  : selectedModel?.credits ?? 0;
-  const textareaRef = useRef(null);
 const [openSize, setOpenSize] = useState(false);
 const [openStyle, setOpenStyle] = useState(false);
 const [openModel, setOpenModel] = useState(false);
 const isSelectorOpen = openModel || openStyle || openSize;
 
 useEffect(() => {
-  if (isSelectorOpen) {
-    document.body.classList.add("selector-open");
+  if (openModel || openStyle || openSize) {
+    // LOCK SCROLL (REAL MOBILE FIX)
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
   } else {
-    document.body.classList.remove("selector-open");
+    document.documentElement.style.overflow = "";
+    document.body.style.overflow = "";
+    document.body.style.touchAction = "";
   }
 
   return () => {
-    document.body.classList.remove("selector-open");
+    document.documentElement.style.overflow = "";
+    document.body.style.overflow = "";
+    document.body.style.touchAction = "";
   };
-}, [isSelectorOpen]);
+}, [openModel, openStyle, openSize]);
+
+const selectedModel = MODELS[selectedModelKey];
+const estimatedCredits = selectedModel?.supportsResolutions
+  ? selectedModel.resolutions.find(r => r.key === selectedResolution)?.credits ?? selectedModel.credits
+  : selectedModel?.credits ?? 0;
+  const textareaRef = useRef(null);
+
+
+
 const controlsRef = useRef(null);
 const [isGenerating, setIsGenerating] = useState(false);
 const [planCode, setPlanCode] = useState(null);
@@ -571,32 +581,7 @@ watchJob(job.id, (updatedJob) => {
 
 
 
-useEffect(() => {
-  const modalOpen = openModel || openStyle || openSize;
 
-  if (modalOpen) {
-    const scrollY = window.scrollY;
-
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.left = "0";
-    document.body.style.right = "0";
-  } else {
-    const scrollY = document.body.style.top.replace("-", "").replace("px", "");
-
-    document.body.style.position = "";
-    document.body.style.top = "";
-
-    if (scrollY) {
-      window.scrollTo(0, parseInt(scrollY || "0") * -1);
-    }
-  }
-
-  return () => {
-    document.body.style.position = "";
-    document.body.style.top = "";
-  };
-}, [openModel, openStyle, openSize]);
 
 useEffect(() => {
   const loadPlan = async () => {

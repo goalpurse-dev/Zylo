@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 
 const images = [
   "/assets/showcase/image5.webp",
@@ -13,8 +14,6 @@ export default function ZyvoShowcase() {
     <section className="w-full bg-[#F7F5FA] py-24 px-6 overflow-hidden">
       <div className="max-w-6xl mx-auto text-center">
 
-       
-
         <div className="flex justify-center items-end gap-6">
 
           {images.map((src, index) => {
@@ -22,8 +21,18 @@ export default function ZyvoShowcase() {
             const distance = Math.abs(index - middle);
 
             return (
-              <div
+              <motion.div
                 key={index}
+
+                // 🔥 ENTRY ANIMATION ONLY (SAFE)
+                initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{
+                  delay: index * 0.12,
+                  duration: 0.5,
+                  ease: "easeOut",
+                }}
+
                 className={`
                   relative transition-all duration-500
                   ${
@@ -43,7 +52,7 @@ export default function ZyvoShowcase() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-              </div>
+              </motion.div>
             );
           })}
 
