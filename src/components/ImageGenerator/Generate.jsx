@@ -303,22 +303,29 @@ const [openModel, setOpenModel] = useState(false);
 const isSelectorOpen = openModel || openStyle || openSize;
 
 useEffect(() => {
-  if (openModel || openStyle || openSize) {
-    // LOCK SCROLL (REAL MOBILE FIX)
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-    document.body.style.touchAction = "none";
-  } else {
-    document.documentElement.style.overflow = "";
-    document.body.style.overflow = "";
-    document.body.style.touchAction = "";
-  }
+  const isOpen = openModel || openStyle || openSize;
 
-  return () => {
-    document.documentElement.style.overflow = "";
-    document.body.style.overflow = "";
-    document.body.style.touchAction = "";
-  };
+  if (isOpen) {
+    const scrollY = window.scrollY;
+
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
+  } else {
+    const scrollY = document.body.style.top;
+
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    document.body.style.width = "";
+
+    if (scrollY) {
+      window.scrollTo(0, parseInt(scrollY || "0") * -1);
+    }
+  }
 }, [openModel, openStyle, openSize]);
 
 const selectedModel = MODELS[selectedModelKey];
@@ -1000,7 +1007,7 @@ rounded-2xl
 shadow-[0_25px_80px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.05)]
 
 p-5
-overflow-y-auto overscroll-contain
+overflow-y-auto overscroll-contain  touch-none
  scrollbar-thin scrollbar-thumb-white/10
 
 transition-all duration-300 ease-out
@@ -1081,7 +1088,7 @@ rounded-2xl
 md:shadow-[0_25px_80px_rgba(0,0,0,0.6)]
 
 p-5
-overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-white/10
+overflow-y-auto overscroll-contain touch-none scrollbar-thin scrollbar-thumb-white/10
 
 transition-all duration-300 ease-out
 
@@ -1192,7 +1199,7 @@ bg-[#0f111a]/95
     </div>
 
     {/* 🔥 SCROLL AREA ONLY */}
-   <div className="overflow-y-auto px-3 py-3 relative z-20 scrollbar-thin scrollbar-thumb-white/10">
+   <div className="overflow-y-auto overscroll-contain touch-none px-3 py-3 relative z-20 scrollbar-thin scrollbar-thumb-white/10">
 
       <div className="flex flex-col gap-[2px]">
         {modelEntries.map(([key, model]) => {
