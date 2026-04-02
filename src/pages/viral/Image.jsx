@@ -209,6 +209,8 @@ useEffect(() => {
      HEARTBEAT (ABSOLUTE DOMINANCE)
      This CANNOT get stuck
   =============================== */
+
+  /* */
   useEffect(() => {
     const interval = setInterval(() => {
    setResults((prev) =>
@@ -268,7 +270,7 @@ useEffect(() => {
   =============================== */
   return (
     <div 
-    className="relative w-full min-h-screen bg-[#0E1117] overflow-x-hidden pb-[env(safe-area-inset-bottom)]">
+    className="relative w-full min-h-[120vh] bg-[#0E1117] overflow-x-hidden pb-[env(safe-area-inset-bottom)]">
 
 {/* 🔥 SCOPED GLOW (ONLY CONTENT AREA) */}
 <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
@@ -303,11 +305,7 @@ useEffect(() => {
 <div
 className={`
   pt-2 md:pt-4
-  ${
-    results.length === 0
-      ? "pb-[calc(120px+env(safe-area-inset-bottom))]"
-      : "pb-6"
-  }
+ 
 `}
 >
   <Generate
@@ -315,6 +313,8 @@ className={`
     setPrompt={setPrompt}
     onJobCreated={addOptimisticJob}
     setActiveJobId={setActiveJobId}
+      hasResults={results.length > 0}
+
   />
 </div>
 

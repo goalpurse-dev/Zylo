@@ -263,7 +263,7 @@ const ModelCard = ({
 
 
 
-export default function Generate({ prompt, setPrompt, onJobCreated, setActiveJobId }) {
+export default function Generate({ prompt, setPrompt, onJobCreated, setActiveJobId, hasResults }) {
 
 const [freeRemaining, setFreeRemaining] = useState(null);
 const [toast, setToast] = useState(null);
@@ -340,6 +340,7 @@ const stylesToRender =
     ? Object.entries(IMAGE_STYLES).slice(0, 6)
     : Object.entries(IMAGE_STYLES);
 const traitRef = useRef(0)
+
 
 useEffect(() => {
   const interval = setInterval(() => {
@@ -694,7 +695,12 @@ useEffect(() => {
      
 
       {/* CONTENT */}
- <div className="flex flex-col items-center w-full relative pt-2">
+<div
+  className={`
+    flex flex-col items-center w-full relative pt-2
+    ${!hasResults ? "min-h-[300px]" : ""}
+  `}
+>
 
 
 
@@ -919,9 +925,9 @@ md:group-hover:brightness-110
 />
 
 
-
 {selectedModel?.supportsResolutions && (
   <div className="mt-3 flex flex-col gap-2">
+
     
     {/* LABEL */}
     <span className="text-[11px] text-white/40 uppercase tracking-wide">
@@ -957,6 +963,7 @@ md:group-hover:brightness-110
         );
       })}
     </div>
+    
   </div>
 )}
 
@@ -1313,15 +1320,16 @@ bg-[#0f111a]/95
         
 
 
+
 {/* GENERATE SECTION (FIXED ABOVE NAV) */}
 <div
-  className="fixed left-0 right-0 z-[90] pointer-events-none md:static"
+  className="fixed left-0 right-0 z-[90] md:static pointer-events-none"
   style={{
     bottom: "calc(68px + env(safe-area-inset-bottom))"
   }}
 >
   <div className="pointer-events-auto">
-    <div className="w-full bg-[#191B1C] border-t border-white/5 px-4 pt-3 pb-3 backdrop-blur-xl">
+     <div className="w-full bg-[#191B1C] border-t border-white/5 px-4 pt-3 pb-3 backdrop-blur-xl">
       <div className="max-w-[900px] mx-auto">
         <GenerateButton
           onClick={handleGenerate}
