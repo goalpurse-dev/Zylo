@@ -990,7 +990,7 @@ md:group-hover:brightness-110
   paddingBottom: "env(safe-area-inset-bottom)"
 }}
     className={`
-fixed z-[100]
+fixed z-[200]
 left-1/2 -translate-x-1/2
 top-[18%] md:top-1/2
 md:-translate-y-1/2
@@ -1072,7 +1072,7 @@ ${openSize
   paddingBottom: "env(safe-area-inset-bottom)"
 }}
 className={`
-fixed z-[100]
+fixed z-[200]
 left-1/2 -translate-x-1/2
 top-[18%] md:top-1/2
 md:-translate-y-1/2
@@ -1161,7 +1161,7 @@ transition
   paddingBottom: "env(safe-area-inset-bottom)"
 }}
     className="
-      fixed z-[100]
+      fixed z-[200]
       left-1/2 -translate-x-1/2
       top-[18%] md:top-1/2
       md:-translate-y-1/2
