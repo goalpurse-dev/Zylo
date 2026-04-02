@@ -305,7 +305,7 @@ className={`
   pt-2 md:pt-4
   ${
     results.length === 0
-      ? "pb-[60px]"
+      ? "pb-[calc(120px+env(safe-area-inset-bottom))]"
       : "pb-6"
   }
 `}
