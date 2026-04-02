@@ -210,7 +210,7 @@ const [isSelectorOpen, setIsSelectorOpen] = useState(false);
           </div>
         )}
 
-       <MobileBottomNav isSelectorOpen={isSelectorOpen} />
+       <MobileBottomNav hidden={isSelectorOpen} />
         <Outlet />
       </div>
     </div>

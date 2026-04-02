@@ -302,35 +302,7 @@ const [openStyle, setOpenStyle] = useState(false);
 const [openModel, setOpenModel] = useState(false);
 const isSelectorOpen = openModel || openStyle || openSize;
 
-useEffect(() => {
-  const isOpen = openModel || openStyle || openSize;
 
-  if (isOpen) {
-    const scrollY = window.scrollY;
-
-    document.body.dataset.scrollY = scrollY;
-
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.left = "0";
-    document.body.style.right = "0";
-    document.body.style.width = "100%";
-    document.body.style.overflow = "hidden"; // 🔥 THIS WAS MISSING
-  } else {
-    const scrollY = document.body.dataset.scrollY;
-
-    document.body.style.position = "";
-    document.body.style.top = "";
-    document.body.style.left = "";
-    document.body.style.right = "";
-    document.body.style.width = "";
-    document.body.style.overflow = "";
-
-    if (scrollY) {
-      window.scrollTo(0, parseInt(scrollY));
-    }
-  }
-}, [openModel, openStyle, openSize]);
 
 const selectedModel = MODELS[selectedModelKey];
 const estimatedCredits = selectedModel?.supportsResolutions
@@ -691,7 +663,7 @@ useEffect(() => {
  return (
 <section className="">
 
- <div
+<div
   onClick={() => {
     setOpenModel(false)
     setOpenStyle(false)
@@ -699,16 +671,18 @@ useEffect(() => {
   }}
   className={`
     fixed inset-0 z-[100]
-  bg-black/60 
- 
-
+    bg-black/60
     transition-opacity duration-150
     ${
       openModel || openStyle || openSize
-        ? "opacity-100 pointer-events-auto"
+        ? "opacity-100"
         : "opacity-0 pointer-events-none"
     }
   `}
+  style={{
+    pointerEvents: openModel || openStyle || openSize ? "auto" : "none",
+   touchAction: "auto"
+  }}
 />
 
 
@@ -720,7 +694,7 @@ useEffect(() => {
      
 
       {/* CONTENT */}
-      <div className="flex flex-col items-center w-full relative  pt-2 ">
+ <div className="flex flex-col items-center w-full relative pt-2">
 
 
 
@@ -734,6 +708,7 @@ useEffect(() => {
   p-5 md:p-6
   md:shadow-[0_12px_40px_rgba(0,0,0,0.25)]
   space-y-6
+  
 "
 >
 
@@ -1010,7 +985,7 @@ rounded-2xl
 shadow-[0_25px_80px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.05)]
 
 p-5
-overflow-y-auto overscroll-contain 
+overflow-y-scroll overscroll-contain
  scrollbar-thin scrollbar-thumb-white/10
 
 transition-all duration-300 ease-out
@@ -1090,7 +1065,7 @@ rounded-2xl
 md:shadow-[0_25px_80px_rgba(0,0,0,0.6)]
 
 p-5
-overflow-y-auto overscroll-contain  scrollbar-thin scrollbar-thumb-white/10
+overflow-y-scroll overscroll-contain   scrollbar-thin scrollbar-thumb-white/10
 
 transition-all duration-300 ease-out
 
@@ -1200,7 +1175,7 @@ bg-[#0f111a]/95
     </div>
 
     {/* 🔥 SCROLL AREA ONLY */}
-   <div className="overflow-y-auto overscroll-contain  px-3 py-3 relative z-20 scrollbar-thin scrollbar-thumb-white/10">
+   <div className="overflow-y-scroll overscroll-contain   scrollbar-thin scrollbar-thumb-white/10">
 
       <div className="flex flex-col gap-[2px]">
         {modelEntries.map(([key, model]) => {
@@ -1340,24 +1315,22 @@ bg-[#0f111a]/95
 
 {/* GENERATE SECTION (FIXED ABOVE NAV) */}
 <div
-  className="fixed left-0 right-0 z-[90] md:static"
+  className="fixed left-0 right-0 z-[90] pointer-events-none md:static"
   style={{
     bottom: "calc(68px + env(safe-area-inset-bottom))"
   }}
 >
-  {/* FULL WIDTH BACKGROUND */}
-  <div className="w-full bg-[#191B1C] border-t border-white/5 px-4 pt-3 pb-3 backdrop-blur-xl">
-    
-    {/* CENTERED BUTTON */}
-    <div className="max-w-[900px] mx-auto">
-      <GenerateButton
-        onClick={handleGenerate}
-        disabled={!prompt.trim()}
-        isGenerating={isGenerating}
-        estimatedCredits={estimatedCredits}
-      />
+  <div className="pointer-events-auto">
+    <div className="w-full bg-[#191B1C] border-t border-white/5 px-4 pt-3 pb-3 backdrop-blur-xl">
+      <div className="max-w-[900px] mx-auto">
+        <GenerateButton
+          onClick={handleGenerate}
+          disabled={!prompt.trim()}
+          isGenerating={isGenerating}
+          estimatedCredits={estimatedCredits}
+        />
+      </div>
     </div>
-
   </div>
 </div>
           </div>

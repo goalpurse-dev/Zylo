@@ -301,9 +301,14 @@ useEffect(() => {
 
       
 <div
-  className={`pt-2 md:pt-4 pb-8 ${
-    results.length === 0 ? "min-h-screen" : ""
-  }`}
+  className={`
+    pt-2 md:pt-4
+    ${
+      results.length === 0
+        ? ""
+        : "pb-6"
+    }
+  `}
 >
   <Generate
     prompt={prompt}
