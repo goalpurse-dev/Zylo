@@ -283,6 +283,7 @@ const [showAll, setShowAll] = useState(false);
 
 
 
+
 const currentSize =
   IMAGE_SIZES[selectedSize] ?? IMAGE_SIZES["1:1"];
 
@@ -305,6 +306,19 @@ const estimatedCredits = selectedModel?.supportsResolutions
 const [openSize, setOpenSize] = useState(false);
 const [openStyle, setOpenStyle] = useState(false);
 const [openModel, setOpenModel] = useState(false);
+const isSelectorOpen = openModel || openStyle || openSize;
+
+useEffect(() => {
+  if (isSelectorOpen) {
+    document.body.classList.add("selector-open");
+  } else {
+    document.body.classList.remove("selector-open");
+  }
+
+  return () => {
+    document.body.classList.remove("selector-open");
+  };
+}, [isSelectorOpen]);
 const controlsRef = useRef(null);
 const [isGenerating, setIsGenerating] = useState(false);
 const [planCode, setPlanCode] = useState(null);
@@ -990,7 +1004,8 @@ top-[18%] md:top-1/2
 md:-translate-y-1/2
 
 w-[92%] md:w-[420px]
-max-h-[calc(100dvh-120px)]
+max-h-[calc(100dvh-180px-env(safe-area-inset-bottom))]
+pb-[env(safe-area-inset-bottom)]
 
 
 bg-[linear-gradient(180deg,rgba(22,26,38,0.85),rgba(14,17,28,0.85))]
@@ -1071,7 +1086,8 @@ top-[18%] md:top-1/2
 md:-translate-y-1/2
 
 w-[92%] md:w-[800px]
-max-h-[calc(100dvh-120px)]
+max-h-[calc(100dvh-180px-env(safe-area-inset-bottom))]
+pb-[env(safe-area-inset-bottom)]
 
 bg-[linear-gradient(180deg,rgba(22,26,38,0.85),rgba(14,17,28,0.85))]
 bg-[#0f111a]/95
@@ -1159,7 +1175,8 @@ transition
       md:-translate-y-1/2
 
       w-[92%] md:w-[700px]
-      max-h-[calc(100dvh-120px)]
+     max-h-[calc(100dvh-180px-env(safe-area-inset-bottom))]
+pb-[env(safe-area-inset-bottom)]
 
       rounded-2xl
       border border-white/10

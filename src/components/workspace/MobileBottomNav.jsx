@@ -8,7 +8,7 @@ import {
 
 
 
-export default function MobileBottomNav() {
+export default function MobileBottomNav({ hidden }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -20,20 +20,26 @@ export default function MobileBottomNav() {
   ];
 
   return (
-    <div
-      className="
-        fixed bottom-0 left-0 right-0
-        z-[100]
-        lg:hidden
-        bg-[#191B1C]
-        border-t border-white/5
-        h-[70px]
-      "
-     style={{
-  paddingBottom: "env(safe-area-inset-bottom)",
-  "--bottom-nav-height": "68px"
-}}
-    >
+<div
+  className={`
+    fixed bottom-0 left-0 right-0
+    z-[100]
+    lg:hidden
+    bg-[#191B1C]
+    border-t border-white/5
+    h-[70px]
+
+    transition-all duration-300
+
+    ${hidden 
+      ? "translate-y-full opacity-0 pointer-events-none" 
+      : "translate-y-0 opacity-100"}
+  `}
+  style={{
+    paddingBottom: "env(safe-area-inset-bottom)",
+    "--bottom-nav-height": "68px"
+  }}
+>
       <div className="flex items-center justify-between px-3 py-2">
 
         {items.map((item) => {

@@ -16,6 +16,7 @@ export default function WorkspaceLayout() {
   const [showTopRow, setShowTopRow] = useState(true);
   const isHomeRoute = location.pathname === "/workspace/home";
   const [bannerVisible, setBannerVisible] = useState(false);
+const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
   useEffect(() => {
     if (!isHomeRoute) return;
@@ -209,7 +210,7 @@ export default function WorkspaceLayout() {
           </div>
         )}
 
-        <MobileBottomNav />
+       <MobileBottomNav hidden={isSelectorOpen} />
         <Outlet />
       </div>
     </div>
