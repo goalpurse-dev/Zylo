@@ -308,22 +308,26 @@ useEffect(() => {
   if (isOpen) {
     const scrollY = window.scrollY;
 
+    document.body.dataset.scrollY = scrollY;
+
     document.body.style.position = "fixed";
     document.body.style.top = `-${scrollY}px`;
     document.body.style.left = "0";
     document.body.style.right = "0";
     document.body.style.width = "100%";
+    document.body.style.overflow = "hidden"; // 🔥 THIS WAS MISSING
   } else {
-    const scrollY = document.body.style.top;
+    const scrollY = document.body.dataset.scrollY;
 
     document.body.style.position = "";
     document.body.style.top = "";
     document.body.style.left = "";
     document.body.style.right = "";
     document.body.style.width = "";
+    document.body.style.overflow = "";
 
     if (scrollY) {
-      window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      window.scrollTo(0, parseInt(scrollY));
     }
   }
 }, [openModel, openStyle, openSize]);
@@ -992,8 +996,7 @@ md:group-hover:brightness-110
     className={`
 fixed z-[200]
 left-1/2 -translate-x-1/2
-top-[18%] md:top-1/2
-md:-translate-y-1/2
+bottom-[calc(75px+env(safe-area-inset-bottom))]
 
 w-[92%] md:w-[420px]
 max-h-[calc(100dvh-180px-env(safe-area-inset-bottom))]
@@ -1007,7 +1010,7 @@ rounded-2xl
 shadow-[0_25px_80px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.05)]
 
 p-5
-overflow-y-auto overscroll-contain  touch-none
+overflow-y-auto overscroll-contain 
  scrollbar-thin scrollbar-thumb-white/10
 
 transition-all duration-300 ease-out
@@ -1074,8 +1077,7 @@ ${openSize
 className={`
 fixed z-[200]
 left-1/2 -translate-x-1/2
-top-[18%] md:top-1/2
-md:-translate-y-1/2
+bottom-[calc(75px+env(safe-area-inset-bottom))]
 
 w-[92%] md:w-[800px]
 max-h-[calc(100dvh-180px-env(safe-area-inset-bottom))]
@@ -1088,7 +1090,7 @@ rounded-2xl
 md:shadow-[0_25px_80px_rgba(0,0,0,0.6)]
 
 p-5
-overflow-y-auto overscroll-contain touch-none scrollbar-thin scrollbar-thumb-white/10
+overflow-y-auto overscroll-contain  scrollbar-thin scrollbar-thumb-white/10
 
 transition-all duration-300 ease-out
 
@@ -1163,8 +1165,7 @@ transition
     className="
       fixed z-[200]
       left-1/2 -translate-x-1/2
-      top-[18%] md:top-1/2
-      md:-translate-y-1/2
+bottom-[calc(75px+env(safe-area-inset-bottom))]
 
       w-[92%] md:w-[700px]
      max-h-[calc(100dvh-180px-env(safe-area-inset-bottom))]
@@ -1199,7 +1200,7 @@ bg-[#0f111a]/95
     </div>
 
     {/* 🔥 SCROLL AREA ONLY */}
-   <div className="overflow-y-auto overscroll-contain touch-none px-3 py-3 relative z-20 scrollbar-thin scrollbar-thumb-white/10">
+   <div className="overflow-y-auto overscroll-contain  px-3 py-3 relative z-20 scrollbar-thin scrollbar-thumb-white/10">
 
       <div className="flex flex-col gap-[2px]">
         {modelEntries.map(([key, model]) => {
