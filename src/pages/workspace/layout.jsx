@@ -12,7 +12,6 @@ export default function WorkspaceLayout() {
   const location = useLocation();
   const [showWelcome, setShowWelcome] = useState(false);
 
-  const scrollRef = useRef(null);
   const lastScrollY = useRef(0);
   const [showTopRow, setShowTopRow] = useState(true);
   const isHomeRoute = location.pathname === "/workspace/home";
@@ -80,21 +79,20 @@ export default function WorkspaceLayout() {
     lastScrollY.current = 0;
   }, [location.pathname]);
 
-  /* Hide / show top row on scroll (desktop only) */
+  /* ✅ FIXED SCROLL HANDLER (WINDOW SCROLL) */
   useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
     const onScroll = () => {
-      const currentY = el.scrollTop;
+      const currentY = window.scrollY;
+
       if (window.innerWidth >= 1024) {
         setShowTopRow(!(currentY > lastScrollY.current && currentY > 60));
       }
+
       lastScrollY.current = currentY;
     };
 
-    el.addEventListener("scroll", onScroll);
-    return () => el.removeEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const titleMap = {
@@ -144,12 +142,24 @@ export default function WorkspaceLayout() {
 
       {/* MAIN CONTENT */}
       <div
-        ref={scrollRef}
         id="workspace-scroll"
-        className="relative z-10 flex flex-col flex-1 h-screen overflow-y-auto overscroll-contain pb-[90px]"
+       className="flex flex-col flex-1 h-screen overflow-y-auto pb-[90px]"
       >
-        <div className="sticky top-0 z-[60]">
-
+        {/* ✅ FIXED HEADER (NO WRAPPER BUG) */}
+      <div
+  className={`
+    sticky top-0 z-[60]
+    w-full
+    will-change-transform
+    transition-transform duration-300
+    ${showTopRow ? "translate-y-0" : "-translate-y-full"}
+    lg:translate-y-0
+  `}
+  style={{
+    position: "sticky",
+    top: 0
+  }}
+>
           {/* PROMO */}
           {isHomeRoute && bannerVisible && (
             <div className="w-full animate-[slideDown_0.3s_ease-out]">
@@ -157,21 +167,12 @@ export default function WorkspaceLayout() {
             </div>
           )}
 
-          {/* TOP ROW */}
-          <div
-            className={`
-              ${showTopRow ? "opacity-100" : "opacity-0 pointer-events-none"}
-              transition-all duration-300
-              lg:opacity-100
-            `}
-          >
-            <TopRow
-              onMenuClick={() => {
-                setSidebarOpen(prev => !prev);
-              }}
-              title={title}
-            />
-          </div>
+          <TopRow
+            onMenuClick={() => {
+              setSidebarOpen(prev => !prev);
+            }}
+            title={title}
+          />
         </div>
 
         {/* WELCOME */}
