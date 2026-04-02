@@ -82,7 +82,7 @@ function ResultCard({ item }) {
 const [posted, setPosted] = useState(false);
 const [showToast, setShowToast] = useState(false);
 const [postedImages, setPostedImages] = useState(new Set());
-
+const [isImageLoaded, setIsImageLoaded] = useState(false);
 
 
 
@@ -273,14 +273,15 @@ const isFailed =
   <div className="absolute inset-0">
     {/* DONE */}
 {isDone && (
-  <img
-    src={item.result_url + "?format=webp&width=800"}
-    referrerPolicy="no-referrer"
-    crossOrigin="anonymous"
-    className="w-full h-full object-cover"
-    loading="lazy"
-    decoding="async"
-  />
+<img
+  src={item.result_url + "?format=webp&width=800"}
+  referrerPolicy="no-referrer"
+  crossOrigin="anonymous"
+  className="w-full h-full object-cover"
+  loading="lazy"
+  decoding="async"
+
+/>
 )}
 
     {/* FAILED */}
@@ -451,17 +452,8 @@ const isFailed =
 export default function Result({ results, activeJobId, userPlan }) {
   const latestRef = useRef(null);
  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-useEffect(() => {
-  if (!activeJobId) return;
-
-  if (!latestRef.current) return;
-
-  latestRef.current.scrollIntoView({
-    behavior: "smooth",
-    block: "start",
-  });
-}, [activeJobId]);
+const isScrollingRef = useRef(false);
+const hasScrolledRef = useRef(false);
 
 useEffect(() => {
   const handleResize = () => {
@@ -497,37 +489,44 @@ const cardRefs = useRef({});
 useEffect(() => {
   if (!activeJobId) return;
 
-  let attempts = 0;
+  hasScrolledRef.current = false;
+  let tries = 0;
 
-  const tryScroll = () => {
+  const scrollToCard = () => {
     const el = cardRefs.current[activeJobId];
     const container = document.getElementById("workspace-scroll");
 
-    if (!container) return;
-
-    if (!el) {
-      if (attempts < 20) { // 🔥 more retries
-        attempts++;
-        setTimeout(tryScroll, 50); // 🔥 key fix
+    if (!el || !container) {
+      if (tries < 40) {
+        tries++;
+        requestAnimationFrame(scrollToCard);
       }
       return;
     }
 
-    const rect = el.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
+    if (hasScrolledRef.current) return;
+    hasScrolledRef.current = true;
 
-    const delta = rect.top - containerRect.top - 80;
-
-    container.scrollBy({
-      top: delta,
+    // 1) scroll card into view inside the scroll container
+    el.scrollIntoView({
       behavior: "smooth",
+      block: "start",
+      inline: "nearest",
     });
+
+    // 2) push it a bit higher so fixed bottom UI doesn't cover it
+  const bottomUIHeight = 100; // tweak this
+
+setTimeout(() => {
+  container.scrollBy({
+    top: -(bottomUIHeight - 10),
+    behavior: "smooth",
+  });
+}, 250);
   };
 
-  tryScroll();
-}, [activeJobId, photoResults]);
-
-
+  requestAnimationFrame(scrollToCard);
+}, [activeJobId]);
 
   if (!Array.isArray(results) || results.length === 0) return null;
   if (photoResults.length === 0) return null;
@@ -535,7 +534,7 @@ useEffect(() => {
   return (
 <div
   ref={latestRef}
-  className="w-full bg-[#0E1117] p-4 md:pb-6 pb-24 min-h-[300px]"
+ className="w-full bg-[#0E1117] p-4 md:pb-6 pb-[220px] min-h-[300px]"
 >
       <h1 className="text-[#F4F6FB] font-semibold text-[20px] mb-4">
         Recent Creations
@@ -549,7 +548,10 @@ useEffect(() => {
       if (el) cardRefs.current[item.id] = el;
     }}
   >
-   <ResultCard item={item} />
+   <ResultCard
+  item={item}
+ 
+/>
   </div>
 ))}
 

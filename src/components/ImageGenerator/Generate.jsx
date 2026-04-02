@@ -504,7 +504,9 @@ if (!job || job.ok === false || job.errors?.length) {
   setIsGenerating(false);
   return;
 }
-
+    
+    
+  
     setActiveJobId?.(job.id);
     onJobCreated?.(job);
 watchJob(job.id, (updatedJob) => {
