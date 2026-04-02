@@ -301,14 +301,14 @@ useEffect(() => {
 
       
 <div
-  className={`
-    pt-2 md:pt-4
-    ${
-      results.length === 0
-        ? ""
-        : "pb-6"
-    }
-  `}
+className={`
+  pt-2 md:pt-4
+  ${
+    results.length === 0
+      ? "pb-[60px]"
+      : "pb-6"
+  }
+`}
 >
   <Generate
     prompt={prompt}
