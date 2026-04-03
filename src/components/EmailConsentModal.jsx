@@ -24,42 +24,38 @@ const handleFinish = async () => {
   try {
     setLoading(true)
 
-    // ✅ STEP 1: ALWAYS mark onboarding as completed FIRST
     const { error: profileError } = await supabase
       .from("profiles")
-     .update({
-  email_updates: data.email_updates,
-  content_type: data.content_type,
-  goal: data.goal,
-  onboarding_completed: true
-})
+      .update({
+        email_updates: data.email_updates,
+        onboarding_completed: true
+      })
       .eq("id", user.id)
 
     if (profileError) {
       console.error("PROFILE UPDATE ERROR:", profileError)
-      return false
+      // ❗ DO NOT BLOCK USER
     }
 
-    // ✅ STEP 2: TRY insert onboarding data (non-blocking)
     const { error: onboardingError } = await supabase
-  .from("user_onboarding")
-  .upsert(
-    {
-      user_id: user.id,
-      content_type: data.content_type,
-      goal: data.goal,
-      experience: data.experience,
-      email_updates: data.email_updates
-    },
-    {
-      onConflict: "user_id"
-    }
-  )
+      .from("user_onboarding")
+      .upsert(
+        {
+          user_id: user.id,
+          content_type: data.content_type,
+          goal: data.goal,
+          experience: data.experience,
+          email_updates: data.email_updates
+        },
+        { onConflict: "user_id" }
+      )
 
     if (onboardingError) {
-      console.error("ONBOARDING INSERT ERROR:", onboardingError)
-      // ❗ DO NOT return false → onboarding already completed
+      console.error("ONBOARDING ERROR:", onboardingError)
     }
+
+    // 🔥 fallback safety
+    localStorage.setItem("onboarding_completed", "true")
 
     onComplete?.()
     return true
@@ -295,18 +291,16 @@ const handleFinish = async () => {
       setLoading(true)
 
       // ✅ Save onboarding FIRST (critical)
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          email_updates: data.email_updates,
-          content_type: data.content_type,
-          goal: data.goal,
-          onboarding_completed: true
-        })
-        .eq("id", user.id)
+    const { error: profileError } = await supabase
+  .from("profiles")
+  .update({
+    email_updates: data.email_updates,
+    onboarding_completed: true
+  })
+  .eq("id", user.id)
 
-      if (error) {
-        console.error("ONBOARDING SAVE FAILED:", error)
+      if (profileError) {
+        console.error("ONBOARDING SAVE FAILED:", profileError)
         return
       }
 
