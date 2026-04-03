@@ -189,21 +189,25 @@ function AppWithRouting() {
   const location = useLocation();
   const { user } = useAuth();
 const [profile, setProfile] = React.useState(null);
+const [showOnboarding, setShowOnboarding] = React.useState(false);
 
 React.useEffect(() => {
   if (!user) return;
 
-  const loadProfile = async () => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("email_updates")
-      .eq("id", user.id)
-      .single();
+ const loadProfile = async () => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("email_updates, onboarding_completed")
+    .eq("id", user.id)
+    .single();
 
-    if (!error) {
-      setProfile(data);
-    }
-  };
+  if (!error && data) {
+    setProfile(data);
+
+    // 🔥 THIS CONTROLS MODAL
+  setShowOnboarding(!data.onboarding_completed);
+  }
+};
 
   loadProfile();
 }, [user]);
@@ -261,8 +265,19 @@ return (
  <>
   <CookieConsent />
 
-{user && profile && profile.email_updates === null && (
-  <EmailConsentModal user={user} />
+{user && profile && showOnboarding && (
+  <EmailConsentModal
+    user={user}
+    onComplete={() => {
+      setShowOnboarding(false)
+
+      // 🔥 THIS IS THE KEY FIX
+      setProfile(prev => ({
+        ...prev,
+        onboarding_completed: true
+      }))
+    }}
+  />
 )}
 
   {!hideNav && <Navbar />}
