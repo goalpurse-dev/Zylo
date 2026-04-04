@@ -971,81 +971,67 @@ md:group-hover:brightness-110
               {/* EXISTING DROPDOWNS BELOW (unchanged logic) */}
 
 {openSize && (
-  <div
-  style={{
-  paddingBottom: "env(safe-area-inset-bottom)"
-}}
-    className={`
-fixed z-[200]
-left-1/2 -translate-x-1/2
-bottom-[calc(75px+env(safe-area-inset-bottom))]
+  <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+    
+    {/* MODAL BOX */}
+    <div
+      className="
+        w-full max-w-[420px]
+        max-h-[80vh]
 
-w-[92%] md:w-[420px]
-max-h-[calc(100dvh-180px-env(safe-area-inset-bottom))]
-pb-[env(safe-area-inset-bottom)]
+        bg-[linear-gradient(180deg,rgba(22,26,38,0.95),rgba(14,17,28,0.95))]
+        border border-white/10
+        rounded-2xl
+        shadow-[0_25px_80px_rgba(0,0,0,0.6)]
 
+        p-5
+        overflow-y-auto
 
-bg-[linear-gradient(180deg,rgba(22,26,38,0.85),rgba(14,17,28,0.85))]
-bg-[#0f111a]/95
-border border-white/10
-rounded-2xl
-shadow-[0_25px_80px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.05)]
-
-p-5
-overflow-y-scroll overscroll-contain
- scrollbar-thin scrollbar-thumb-white/10
-
-transition-all duration-300 ease-out
-
-${openSize 
-  ? "opacity-100 scale-100 translate-y-0" 
-  : "opacity-0 scale-95 translate-y-4 pointer-events-none"}
-`}
-  >
-    <div className="flex justify-between items-center mb-4">
-      <h3 className="text-white font-medium">Select Size</h3>
-      <button
-        onClick={() => setOpenSize(false)}
-        className="text-white/60 hover:text-white"
-      >
-        <X className="w-5 h-5" />
-      </button>
-    </div>
-
-  {selectedModel.supportedSizes.map((size) => {
-  const s = IMAGE_SIZES[size] ?? IMAGE_SIZES["1:1"];
-
-  return (
-    <button
-      key={size}
-      onClick={() => {
-        setSelectedSize(size);
-        setOpenSize(false);
-      }}
-      className={`w-full px-4 py-3 text-left rounded-xl text-sm flex items-center gap-4
-        ${
-          size === selectedSize
-            ? "bg-[#7A3BFF]/20 border border-[#7A3BFF]"
-            : "hover:bg-white/5"
-        }
-      `}
+        transition-all duration-300
+      "
     >
-      {/* Ratio preview */}
-      <div className="w-[50px] flex justify-center">
-        <div
-          className="border border-white/70 rounded-[4px]"
-          style={{
-            width: `${s.previewW}px`,
-            height: `${s.previewH}px`,
-          }}
-        />
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-white font-medium">Select Size</h3>
+        <button onClick={() => setOpenSize(false)}>
+          <X className="w-5 h-5 text-white/60 hover:text-white" />
+        </button>
       </div>
 
-      {/* Size label */}
-      <span>{s.label}</span>
-    </button>
-  );
-})}
+      {/* OPTIONS */}
+      {selectedModel.supportedSizes.map((size) => {
+        const s = IMAGE_SIZES[size] ?? IMAGE_SIZES["1:1"];
+
+        return (
+          <button
+            key={size}
+            onClick={() => {
+              setSelectedSize(size);
+              setOpenSize(false);
+            }}
+            className={`w-full px-4 py-3 text-left rounded-xl flex items-center gap-4
+              ${
+                size === selectedSize
+                  ? "bg-[#7A3BFF]/20 border border-[#7A3BFF]"
+                  : "hover:bg-white/5"
+              }
+            `}
+          >
+            <div className="w-[50px] flex justify-center">
+              <div
+                className="border border-white/70 rounded-[4px]"
+                style={{
+                  width: `${s.previewW}px`,
+                  height: `${s.previewH}px`,
+                }}
+              />
+            </div>
+
+            <span>{s.label}</span>
+          </button>
+        );
+      })}
+    </div>
   </div>
 )}
 
