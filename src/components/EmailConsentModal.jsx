@@ -351,44 +351,27 @@ const handleFinish = async () => {
     </div>
 
     {/* 🔥 ALWAYS VISIBLE ACTIONS */}
-    <div className="flex justify-center gap-3 mt-6">
+   <div className="flex justify-center mt-6">
+  <button
+    onClick={async () => {
+      const success = await handleFinish()
+      if (success) {
+        window.location.href = "/workspace/home"
+      }
+    }}
+    className="
+      px-6 py-2.5 rounded-lg text-sm font-semibold
 
-      <button
-        onClick={async () => {
-  const success = await handleFinish()
+      bg-gradient-to-r from-[#7A3BFF] to-[#6F3AE6]
+      text-white
 
-  if (success) {
-    window.location.href = "/workspace/home"
-  }
-}}
-        className="
-          px-4 py-2 rounded-lg text-xs
-          bg-[#191B1C]
-          border border-white/10
-          text-white/70
-        "
-      >
-        Skip
-      </button>
-
-      <button
-       onClick={async () => {
-  const success = await handleFinish()
-
-  if (success) {
-    window.location.href = "/workspace/pricing"
-  }
-}}
-        className="
-          px-4 py-2 rounded-lg text-xs
-          bg-gradient-to-r from-[#7A3BFF] to-[#6F3AE6]
-          text-white
-        "
-      >
-        Explore Plans
-      </button>
-
-    </div>
+      hover:brightness-110 hover:scale-[1.02]
+      transition-all duration-200
+    "
+  >
+    Try for free
+  </button>
+</div>
   </>
 )}
 
