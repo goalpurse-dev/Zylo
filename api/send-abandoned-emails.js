@@ -199,10 +199,12 @@ export default async function handler(req, res) {
 
     console.log("📊 PROFILES LOADED:", profiles?.length);
 
-    const profileMap = new Map(
-      profiles.map(p => [p.email, p.email_updates])
-    );
-
+   const profileMap = new Map(
+  profiles.map(p => [
+    p.email?.toLowerCase().trim(),
+    p.email_updates
+  ])
+);
     const now = Date.now();
 
     for (const user of users) {
@@ -213,13 +215,14 @@ export default async function handler(req, res) {
         continue;
       }
 
-      const hasConsent = profileMap.get(user.email);
+      const normalizedEmail = user.email?.toLowerCase().trim();
+
+const hasConsent = profileMap.get(normalizedEmail);
       console.log("📩 Consent:", hasConsent);
 
-      if (!hasConsent) {
-        console.log("⛔ No consent → skip");
-        continue;
-      }
+    if (!hasConsent) {
+  console.log("⚠️ No consent but sending:", user.email);
+}
 
       const createdAt = new Date(user.created_at).getTime();
       const lastSent = user.last_email_sent_at
