@@ -95,21 +95,26 @@ function emailThreeHtml(user) {
 // ==============================
 
 async function sendStageEmail(user) {
+  console.log("📤 Preparing email:", user.email, "stage:", user.recovery_stage);
+
   let subject = "";
   let html = "";
 
   if (user.recovery_stage === 0) {
     subject = "did something break?";
-    html = emailOneHtml(user);
+    html = emailOneHtml();
   } else if (user.recovery_stage === 1) {
     subject = "you were 1 step away";
-    html = emailTwoHtml(user);
+    html = emailTwoHtml();
   } else if (user.recovery_stage === 2) {
     subject = "should I stop?";
-    html = emailThreeHtml(user);
+    html = emailThreeHtml();
   }
 
-  if (!html) return;
+  if (!html) {
+    console.log("⛔ No template");
+    return;
+  }
 
   // 🔥 DOUBLE CHECK STILL NOT PAID
   const { data: stillUser, error: fetchError } = await supabase
@@ -119,17 +124,16 @@ async function sendStageEmail(user) {
     .single();
 
   if (fetchError || stillUser?.paid) {
-    console.log("⛔ Skipping (paid or error):", user.email);
+    console.log("⛔ Skipping (already paid):", user.email);
     return;
   }
 
-  // ==============================
-  // SEND WITH RETRY
-  // ==============================
-
+  // SEND
   let sendError = null;
 
   for (let attempt = 1; attempt <= 2; attempt++) {
+    console.log(`📨 Sending attempt ${attempt} →`, user.email);
+
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
@@ -139,22 +143,20 @@ async function sendStageEmail(user) {
     });
 
     if (!error) {
+      console.log("✅ Email sent:", user.email);
       sendError = null;
       break;
     }
 
     sendError = error;
+    console.log("⚠️ Retry failed:", error);
     await new Promise(r => setTimeout(r, 1500));
   }
 
   if (sendError) {
-    console.error("❌ Email failed:", user.email, sendError);
+    console.error("❌ Final fail:", user.email, sendError);
     return;
   }
-
-  // ==============================
-  // UPDATE USER
-  // ==============================
 
   await supabase
     .from("abandoned_checkouts")
@@ -166,7 +168,7 @@ async function sendStageEmail(user) {
     })
     .eq("id", user.id);
 
-  console.log(`✅ Sent stage ${user.recovery_stage + 1} → ${user.email}`);
+  console.log(`🚀 Stage updated → ${user.email}`);
 }
 
 // ==============================
@@ -174,6 +176,8 @@ async function sendStageEmail(user) {
 // ==============================
 
 export default async function handler(req, res) {
+  console.log("🔥 EMAIL CRON TRIGGERED");
+
   try {
     const { data: users, error } = await supabase
       .from("abandoned_checkouts")
@@ -182,15 +186,18 @@ export default async function handler(req, res) {
       .in("status", ["pending", "in_sequence"])
       .lt("recovery_stage", 3);
 
+    console.log("📊 USERS FOUND:", users?.length);
+
     if (error) {
-      console.error(error);
+      console.error("❌ FETCH ERROR:", error);
       return res.status(500).json({ error: "Fetch failed" });
     }
 
-    // 🔥 LOAD CONSENT ONCE
     const { data: profiles } = await supabase
       .from("profiles")
       .select("email, email_updates");
+
+    console.log("📊 PROFILES LOADED:", profiles?.length);
 
     const profileMap = new Map(
       profiles.map(p => [p.email, p.email_updates])
@@ -199,15 +206,35 @@ export default async function handler(req, res) {
     const now = Date.now();
 
     for (const user of users) {
-      if (!user.email) continue;
+      console.log("➡️ Checking:", user.email);
+
+      if (!user.email) {
+        console.log("⚠️ No email → skip");
+        continue;
+      }
 
       const hasConsent = profileMap.get(user.email);
-      if (!hasConsent) continue;
+      console.log("📩 Consent:", hasConsent);
+
+      if (!hasConsent) {
+        console.log("⛔ No consent → skip");
+        continue;
+      }
 
       const createdAt = new Date(user.created_at).getTime();
       const lastSent = user.last_email_sent_at
         ? new Date(user.last_email_sent_at).getTime()
         : 0;
+
+      console.log(
+        "⏱️ Since created (min):",
+        ((now - createdAt) / 60000).toFixed(2)
+      );
+
+      console.log(
+        "⏱️ Since last email (min):",
+        lastSent ? ((now - lastSent) / 60000).toFixed(2) : "never"
+      );
 
       const shouldSendStage1 =
         user.recovery_stage === 0 &&
@@ -224,12 +251,17 @@ export default async function handler(req, res) {
         now - lastSent >= 24 * 60 * 60 * 1000;
 
       if (shouldSendStage1 || shouldSendStage2 || shouldSendStage3) {
+        console.log("🚀 SENDING:", user.email);
         await sendStageEmail(user);
 
         const delay = 1000 + Math.random() * 1000;
         await new Promise(r => setTimeout(r, delay));
+      } else {
+        console.log("⛔ Not ready:", user.email);
       }
     }
+
+    console.log("✅ CRON FINISHED");
 
     return res.status(200).json({ success: true });
 
