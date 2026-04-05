@@ -5,15 +5,14 @@ import { createClient } from "@supabase/supabase-js";
 dotenv.config({ path: ".env.local" });
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export const config = {
-  api: {
-    bodyParser: false,
-  },
+  api: { bodyParser: false },
 };
 
 async function getRawBody(readable) {
@@ -30,86 +29,26 @@ export default async function handler(req, res) {
   }
 
   const sig = req.headers["stripe-signature"];
-
   let event;
 
   try {
     const rawBody = await getRawBody(req);
-
     event = stripe.webhooks.constructEvent(
       rawBody,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.error("❌ Webhook signature error:", err.message);
+    console.error("❌ Signature error:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   try {
     const obj = event.data.object;
 
-    // ==============================
-    // 🔴 CHECKOUT EXPIRED
-    // ==============================
-    if (event.type === "checkout.session.expired") {
-      const session = obj;
-
-      const email =
-        session.customer_details?.email ||
-        session.customer_email ||
-        null;
-
-      if (!email) {
-        console.log("⚠️ Expired session without email");
-        return res.status(200).json({ received: true });
-      }
-
-      const { data: existing } = await supabase
-  .from("abandoned_checkouts")
-  .select("id, paid")
-  .eq("email", email)
-  .maybeSingle();
-
-  if (existing?.paid) {
-  console.log("💰 Already converted, skipping:", email);
-  return res.status(200).json({ received: true });
-}
-
-if (!existing) {
-  const { error } = await supabase
-    .from("abandoned_checkouts")
-    .insert({
-      email,
-      stripe_session_id: session.id,
-      stripe_customer_id: session.customer || null,
-      status: "pending",
-      recovery_stage: 0,
-      recovered: false,
-      paid: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
-
-  if (error) {
-    console.error("❌ Insert error:", error);
-  } else {
-    console.log("🟡 New abandoned checkout:", email);
-  }
-} else {
-  console.log("⚠️ Already exists → NOT resetting:", email);
-}
-
-      if (error) {
-        console.error("❌ Error on expired checkout:", error);
-      } else {
-        console.log("🟡 Checkout expired:", email);
-      }
-    }
-
-    // ==============================
-    // 🟢 PAYMENT COMPLETED
-    // ==============================
+    // =====================================================
+    // 🟢 PAYMENT COMPLETED (MAIN LOGIC)
+    // =====================================================
     if (event.type === "checkout.session.completed") {
       const session = obj;
 
@@ -119,30 +58,59 @@ if (!existing) {
         null;
 
       if (!email) {
-        console.log("⚠️ Completed session without email");
+        console.log("⚠️ No email on completed");
         return res.status(200).json({ received: true });
       }
 
-      const { error } = await supabase
+      // 🔥 GET MOST RECENT UNPAID CHECKOUT
+      const { data: rows, error: fetchError } = await supabase
         .from("abandoned_checkouts")
-        .update({
-          paid: true,
-          recovered: true,
-          status: "converted",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("email", email);
+        .select("id")
+        .eq("email", email)
+        .eq("paid", false)
+        .order("created_at", { ascending: false })
+        .limit(1);
 
-      if (error) {
-        console.error("❌ Error updating conversion:", error);
+      if (fetchError) {
+        console.error("❌ Fetch error:", fetchError);
+        return res.status(200).json({ received: true });
+      }
+
+      if (rows?.length) {
+        const { error: updateError } = await supabase
+          .from("abandoned_checkouts")
+          .update({
+            paid: true,
+            recovered: true,
+            status: "converted",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", rows[0].id);
+
+        if (updateError) {
+          console.error("❌ Update error:", updateError);
+        } else {
+          console.log("💰 Converted:", email);
+        }
       } else {
-        console.log("💰 Converted:", email);
+        console.log("⚠️ No matching unpaid checkout:", email);
       }
     }
 
+    // =====================================================
+    // 🔴 EXPIRED (LOG ONLY)
+    // =====================================================
+    if (event.type === "checkout.session.expired") {
+      console.log("⌛ Expired:", obj.id);
+    }
+
+    // ✅ ALWAYS RETURN 200
     return res.status(200).json({ received: true });
+
   } catch (err) {
     console.error("❌ Webhook handler error:", err);
-    return res.status(500).json({ error: "Webhook failed" });
+
+    // 🔥 NEVER RETURN 500 (prevents Stripe retry spam)
+    return res.status(200).json({ received: true });
   }
 }

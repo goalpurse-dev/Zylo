@@ -11,31 +11,34 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// ==============================
+// EMAIL TEMPLATES
+// ==============================
+
 function emailOneHtml(user) {
   return `
   <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:20px;color:#111;line-height:1.6;">
-    
     <p>Hey,</p>
 
     <p>Quick question — did something break when you were setting up Zyvo?</p>
 
-    <p>I noticed you didn’t finish, which usually means either:</p>
-
-    <p>• something was confusing<br>
-    • or it didn’t load properly</p>
-
-    <p>If you still want to continue, you can pick it up here:</p>
+    <p>Most people who stop here usually hit:</p>
 
     <p>
-      <a href="https://tryzyvo.com/workspace/pricing">
-        Continue setup
+    • something didn’t load<br>
+    • or it wasn’t clear what to do next
+    </p>
+
+    <p>
+      <a href="https://tryzyvo.com/workspace/pricing" 
+         style="display:inline-block;padding:10px 16px;background:#6C3BFF;color:white;border-radius:8px;text-decoration:none;font-weight:600;">
+         Continue setup →
       </a>
     </p>
 
-    <p>If anything felt off, just reply — I’ll fix it for you.</p>
+    <p>If anything felt off, just reply — I’ll fix it.</p>
 
     <p>— Niko</p>
-
   </div>
   `;
 }
@@ -43,25 +46,25 @@ function emailOneHtml(user) {
 function emailTwoHtml(user) {
   return `
   <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:20px;color:#111;line-height:1.6;">
-    
     <p>Hey,</p>
 
-    <p>I’ve been looking at how people use Zyvo, and there’s a clear pattern:</p>
+    <p>You were literally <b>one step away</b>.</p>
 
-    <p>The ones who actually finish setup start posting faster and getting results.</p>
-
-    <p>The rest just sign up… and never use it.</p>
-
-    <p>You were literally one step away.</p>
+    <p>This is where people either:</p>
 
     <p>
-      <a href="https://tryzyvo.com/workspace/pricing">
-        Finish it here
+    • start posting and growing<br>
+    • or never come back
+    </p>
+
+    <p>
+      <a href="https://tryzyvo.com/workspace/pricing"
+         style="display:inline-block;padding:10px 16px;background:#6C3BFF;color:white;border-radius:8px;text-decoration:none;font-weight:600;">
+         Finish setup →
       </a>
     </p>
 
     <p>— Niko</p>
-
   </div>
   `;
 }
@@ -69,175 +72,169 @@ function emailTwoHtml(user) {
 function emailThreeHtml(user) {
   return `
   <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:20px;color:#111;line-height:1.6;">
-    
     <p>Hey,</p>
 
     <p>I’ll stop after this 👍</p>
 
-    <p>If you still want to use Zyvo to create content faster, you can continue here:</p>
+    <p>If you still want to create content faster, you can continue here:</p>
 
     <p>
-      <a href="https://tryzyvo.com/workspace/pricing">
-        Continue setup
+      <a href="https://tryzyvo.com/workspace/pricing"
+         style="display:inline-block;padding:10px 16px;background:#6C3BFF;color:white;border-radius:8px;text-decoration:none;font-weight:600;">
+         Continue →
       </a>
     </p>
 
-    <p>If not, no worries at all.</p>
-
     <p>— Niko</p>
-
   </div>
   `;
 }
+
+// ==============================
+// SEND EMAIL
+// ==============================
+
 async function sendStageEmail(user) {
   let subject = "";
   let html = "";
 
   if (user.recovery_stage === 0) {
-    subject = "quick question"
+    subject = "did something break?";
     html = emailOneHtml(user);
-  }
-  else if (user.recovery_stage === 1) {
-    subject = "you were one step away"
+  } else if (user.recovery_stage === 1) {
+    subject = "you were 1 step away";
     html = emailTwoHtml(user);
-  }
-  else if (user.recovery_stage === 2) {
-    subject = "should I stop?"
+  } else if (user.recovery_stage === 2) {
+    subject = "should I stop?";
     html = emailThreeHtml(user);
   }
 
   if (!html) return;
 
-let sendError = null;
+  // 🔥 DOUBLE CHECK STILL NOT PAID
+  const { data: stillUser, error: fetchError } = await supabase
+    .from("abandoned_checkouts")
+    .select("paid")
+    .eq("id", user.id)
+    .single();
 
-
-
-for (let attempt = 1; attempt <= 2; attempt++) {
-  const { error } = await resend.emails.send({
-    from: "Niko from Zyvo <niko@tryzyvo.com>",
-    to: user.email,
-    subject,
-    html,
-    reply_to: "niko@tryzyvo.com",
-  });
-
-  if (!error) {
-    sendError = null;
-    break;
+  if (fetchError || stillUser?.paid) {
+    console.log("⛔ Skipping (paid or error):", user.email);
+    return;
   }
 
-  sendError = error;
-  console.log(`⚠️ Retry ${attempt} failed for ${user.email}`);
+  // ==============================
+  // SEND WITH RETRY
+  // ==============================
 
-  await new Promise(r => setTimeout(r, 1500));
-}
+  let sendError = null;
 
-if (sendError) {
-  console.error("❌ Final fail:", user.email, sendError);
-  return;
-}
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const { error } = await resend.emails.send({
+      from: "Niko from Zyvo <niko@tryzyvo.com>",
+      to: user.email,
+      subject,
+      html,
+      reply_to: "niko@tryzyvo.com",
+    });
 
-  const { error: updateError } = await supabase
+    if (!error) {
+      sendError = null;
+      break;
+    }
+
+    sendError = error;
+    await new Promise(r => setTimeout(r, 1500));
+  }
+
+  if (sendError) {
+    console.error("❌ Email failed:", user.email, sendError);
+    return;
+  }
+
+  // ==============================
+  // UPDATE USER
+  // ==============================
+
+  await supabase
     .from("abandoned_checkouts")
     .update({
       recovery_stage: user.recovery_stage + 1,
       last_email_sent_at: new Date().toISOString(),
       status: user.recovery_stage + 1 >= 3 ? "finished" : "in_sequence",
+      updated_at: new Date().toISOString(),
     })
     .eq("id", user.id);
 
-  if (updateError) {
-    console.error("Supabase update error:", user.email, updateError);
-  } else {
-    console.log(`Sent stage ${user.recovery_stage + 1} to ${user.email}`);
-  }
+  console.log(`✅ Sent stage ${user.recovery_stage + 1} → ${user.email}`);
 }
+
+// ==============================
+// MAIN HANDLER
+// ==============================
 
 export default async function handler(req, res) {
   try {
-const { data: users, error } = await supabase
-  .from("abandoned_checkouts")
-  .select("*")
-  .eq("paid", false)
-  .in("status", ["pending", "in_sequence"])
-  .lt("recovery_stage", 3);
+    const { data: users, error } = await supabase
+      .from("abandoned_checkouts")
+      .select("*")
+      .eq("paid", false)
+      .in("status", ["pending", "in_sequence"])
+      .lt("recovery_stage", 3);
 
     if (error) {
       console.error(error);
-      return res.status(500).json({ error: "Failed to fetch users" });
+      return res.status(500).json({ error: "Fetch failed" });
     }
 
+    // 🔥 LOAD CONSENT ONCE
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("email, email_updates");
 
-    
-    // 🔥 FETCH ALL PROFILES ONCE (FAST)
-const { data: profiles, error: profilesError } = await supabase
-  .from("profiles")
-  .select("email, email_updates");
-
-if (profilesError) {
-  console.error("❌ Profiles fetch error:", profilesError);
-  return res.status(500).json({ error: "Failed to fetch profiles" });
-}
-
-// 🔥 CREATE FAST LOOKUP MAP
-const profileMap = new Map(
-  profiles.map(p => [p.email, p.email_updates])
-);
+    const profileMap = new Map(
+      profiles.map(p => [p.email, p.email_updates])
+    );
 
     const now = Date.now();
 
-
-
     for (const user of users) {
+      if (!user.email) continue;
 
-  // ✅ ADD THIS HERE
-  if (!user.email) {
-    console.log("⚠️ Skipping (no email):", user.id);
-    continue;
-  }
+      const hasConsent = profileMap.get(user.email);
+      if (!hasConsent) continue;
 
-  // existing code continues...
-
-  // 🔥 ADD THIS RIGHT HERE
-// 🔥 CHECK EMAIL CONSENT FROM PROFILES TABLE
-// ✅ FAST EMAIL CONSENT CHECK (NO DB CALL)
-const hasConsent = profileMap.get(user.email);
-
-if (!hasConsent) {
-  console.log("⛔ Skipping (no consent):", user.email);
-  continue;
-}
-
-  const createdAt = new Date(user.created_at).getTime();
-    const lastSent = user.last_email_sent_at
-  ? new Date(user.last_email_sent_at).getTime()
-  : 0;
+      const createdAt = new Date(user.created_at).getTime();
+      const lastSent = user.last_email_sent_at
+        ? new Date(user.last_email_sent_at).getTime()
+        : 0;
 
       const shouldSendStage1 =
-  user.recovery_stage === 0 &&
-  now - createdAt >= 30 * 60 * 1000 &&
-  (!lastSent || now - lastSent >= 30 * 60 * 1000);
+        user.recovery_stage === 0 &&
+        now - createdAt >= 10 * 60 * 1000;
 
       const shouldSendStage2 =
         user.recovery_stage === 1 &&
         lastSent &&
-        now - lastSent >= 24 * 60 * 60 * 1000;
+        now - lastSent >= 6 * 60 * 60 * 1000;
 
       const shouldSendStage3 =
         user.recovery_stage === 2 &&
         lastSent &&
-        now - lastSent >= 48 * 60 * 60 * 1000;
+        now - lastSent >= 24 * 60 * 60 * 1000;
 
       if (shouldSendStage1 || shouldSendStage2 || shouldSendStage3) {
         await sendStageEmail(user);
-        const delay = 1500 + Math.random() * 1000;
-await new Promise((r) => setTimeout(r, delay));
+
+        const delay = 1000 + Math.random() * 1000;
+        await new Promise(r => setTimeout(r, delay));
       }
     }
 
     return res.status(200).json({ success: true });
+
   } catch (err) {
-    console.error("send-abandoned-emails error:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    console.error("❌ handler error:", err);
+    return res.status(500).json({ error: "Internal error" });
   }
 }

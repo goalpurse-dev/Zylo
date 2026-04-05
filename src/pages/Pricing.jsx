@@ -282,37 +282,48 @@ async function onClick() {
 
   console.log("🔥 ABOUT TO INSERT");
 
-const { data: existing } = await supabase
+// 🔥 CREATE NEW CHECKOUT TRACK ENTRY (ALWAYS NEW)
+const { error: insertError } = await supabase
   .from("abandoned_checkouts")
-  .select("*")
-  .eq("email", user.email)
-  .maybeSingle();
-
-await supabase.from("abandoned_checkouts").upsert(
+  .upsert(
   {
     email: user.email,
-    recovery_stage: existing?.recovery_stage ?? 0,
-    created_at: existing?.created_at ?? new Date().toISOString(),
-    paid: false,
+    stripe_session_id: null,
+    stripe_customer_id: null,
+    checkout_url: null,
+    status: "pending",
+    recovery_stage: 0,
     recovered: false,
+    paid: false,
+    updated_at: new Date().toISOString(),
   },
   { onConflict: "email" }
 );
 
+if (insertError) {
+  console.error("❌ Failed to track checkout:", insertError);
+} else {
+  console.log("🔥 Checkout tracking created:", user.email);
+}
+
   
 
   // 👇 WAIT SO YOU CAN SEE LOGS
-  await new Promise(res => setTimeout(res, 1500));
 
-  await startCheckout({
-    type: "subscription",
-    priceId,
-    userId: user.id,
-    email: user.email,
-  });
+
+ await startCheckout({
+  type: "subscription",
+  priceId,
+  userId: user.id,
+  email: user.email,
+ metadata: {
+  email: user.email,
+  plan: tier.id
 }
+});
+} // ✅ CLOSE FUNCTION HERE
 
-  const core = (
+const core = (
  <div
   className={`relative overflow-hidden rounded-[22px] border p-5 md:p-6 flex flex-col h-full text-[#F4F6FB] transition ${
    
