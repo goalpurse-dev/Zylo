@@ -194,7 +194,7 @@ export default async function handler(req, res) {
       const consent = profileMap.get(normalizedEmail);
 
       // ✅ ONLY skip if explicitly false
-      if (consent === false) {
+      if (consent === false && consent !== null) {
         console.log("⛔ opted out:", user.email);
         continue;
       }
@@ -204,19 +204,20 @@ export default async function handler(req, res) {
         ? new Date(user.last_email_sent_at).getTime()
         : 0;
 
-      const shouldSendStage1 =
-        user.recovery_stage === 0 &&
-        now - createdAt >= 10 * 60 * 1000;
+   
+const shouldSendStage1 =
+  user.recovery_stage === 0 &&
+  now - createdAt >= 5 * 60 * 1000; // 5 min
 
-      const shouldSendStage2 =
-        user.recovery_stage === 1 &&
-        lastSent &&
-        now - lastSent >= 60 * 60 * 1000;
+const shouldSendStage2 =
+  user.recovery_stage === 1 &&
+  lastSent &&
+  now - lastSent >= 30 * 60 * 1000; // 30 min
 
-      const shouldSendStage3 =
-        user.recovery_stage === 2 &&
-        lastSent &&
-        now - lastSent >= 24 * 60 * 60 * 1000;
+const shouldSendStage3 =
+  user.recovery_stage === 2 &&
+  lastSent &&
+  now - lastSent >= 6 * 60 * 60 * 1000; // 6h
 
       if (shouldSendStage1 || shouldSendStage2 || shouldSendStage3) {
         console.log("🚀 Sending:", user.email);
