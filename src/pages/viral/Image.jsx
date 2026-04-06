@@ -37,6 +37,7 @@ export default function Image() {
   const [results, setResults] = useState([]);
 const [userPlan, setUserPlan] = useState("free");
 
+
   const inspirationRef = useRef(null);
   const watchersRef = useRef({});
   const [postedImages, setPostedImages] = useState(new Set());
@@ -269,74 +270,59 @@ useEffect(() => {
      RENDER
   =============================== */
   return (
-    <div  
-    className="relative w-full min-h-[120vh] bg-[#0E1117] overflow-x-hidden pb-[env(safe-area-inset-bottom)]">
+  <div className="w-full h-full bg-[#090A0A] overflow-hidden">
 
-{/* 🔥 SCOPED GLOW (ONLY CONTENT AREA) */}
-<div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+    {/* 🔥 DESKTOP LAYOUT */}
+    <div className="hidden lg:flex h-full">
 
-  {/* CENTER FOCUS GLOW */}
-  <div className="
-    absolute top-0 left-1/2 -translate-x-1/2
-    w-[900px] h-[500px]
-    bg-[radial-gradient(circle,rgba(122,59,255,0.18),transparent_70%)]
-    blur-[80px]
-  " />
-
-  {/* BOTTOM RIGHT ACCENT */}
-  <div className="
-    absolute bottom-0 right-0
-    w-[600px] h-[400px]
-    bg-[radial-gradient(circle,rgba(168,85,247,0.12),transparent_70%)]
-    blur-[80px]
-  " />
-
-  {/* TOP LEFT SOFT BLUE */}
-  <div className="
-    absolute top-[20%] left-[10%]
-    w-[500px] h-[300px]
-    bg-[radial-gradient(circle,rgba(59,130,246,0.10),transparent_70%)]
-    blur-[70px]
-  " />
-
-</div>
-
-      
-<div
-className={`
-  pt-2 md:pt-4
- 
-`}
->
-  <Generate
-    prompt={prompt}
-    setPrompt={setPrompt}
-    onJobCreated={addOptimisticJob}
-    setActiveJobId={setActiveJobId}
+      {/* LEFT — GENERATE (FIXED) */}
+ <div className="w-[40%] 2xl:w-[25%] h-full bg-[#191B1C]">
+  <div className="h-full overflow-y-auto px-0 py-0">
+    <Generate
+      prompt={prompt}
+      setPrompt={setPrompt}
+      onJobCreated={addOptimisticJob}
+      setActiveJobId={setActiveJobId}
       hasResults={results.length > 0}
-
-  />
+    />
+  </div>
 </div>
 
-
-
-      {results.length > 0 && (
-        <div className="mt-10 pb-32">
-<Result
-
-  results={results}
-  onCopyPrompt={(p) => navigator.clipboard.writeText(p)}
-  onRegenerate={(p) => sendPromptToGenerator(p)}
-  activeJobId={activeJobId}
-  userPlan={userPlan}
-  postedImages={postedImages}
-/>
-        </div>
-      )}
-
-     
-
-    
+      {/* RIGHT — RESULTS (SCROLLABLE) */}
+      <div className=" w-[60%] 2xl:w-[75%]  h-full overflow-y-auto px-2 pt-2 pb-6">
+        <Result
+          results={results}
+          onCopyPrompt={(p) => navigator.clipboard.writeText(p)}
+          onRegenerate={(p) => sendPromptToGenerator(p)}
+          activeJobId={activeJobId}
+          userPlan={userPlan}
+          postedImages={postedImages}
+        />
+      </div>
     </div>
-  );
+
+    {/* 📱 MOBILE LAYOUT */}
+    <div className="lg:hidden flex flex-col px-3 py-3 space-y-3 overflow-y-auto h-full">
+
+      <Generate
+        prompt={prompt}
+        setPrompt={setPrompt}
+        onJobCreated={addOptimisticJob}
+        setActiveJobId={setActiveJobId}
+        hasResults={results.length > 0}
+      />
+
+      <Result
+        results={results}
+        onCopyPrompt={(p) => navigator.clipboard.writeText(p)}
+        onRegenerate={(p) => sendPromptToGenerator(p)}
+        activeJobId={activeJobId}
+        userPlan={userPlan}
+        postedImages={postedImages}
+      />
+
+    </div>
+
+  </div>
+);
 }

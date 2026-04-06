@@ -76,13 +76,14 @@ function scrollToElementWithinContainer(el, container, topOffset = 80) {
 
 /* =============================== CARD =============================== */
 
-function ResultCard({ item }) {
+function ResultCard({ item, onOpen }) {
   const [visible, setVisible] = useState(true);
   const [posting, setPosting] = useState(false);
 const [posted, setPosted] = useState(false);
 const [showToast, setShowToast] = useState(false);
 const [postedImages, setPostedImages] = useState(new Set());
 const [isImageLoaded, setIsImageLoaded] = useState(false);
+
 
 
 
@@ -253,7 +254,16 @@ const isFailed =
   if (!visible) return null;
 
   return (
-    <div className="relative rounded-xl overflow-hidden bg-black group transition-opacity duration-500">
+    <div className="
+  group
+  relative
+  rounded-2xl
+  overflow-hidden
+  bg-[#0B0F1A]
+  border border-white/5
+  hover:border-[#7A3BFF]/40
+  transition-all duration-300
+">
      <div className="relative w-full bg-black overflow-hidden rounded-xl">
   {/* ASPECT RATIO SPACER */}
 <div
@@ -280,6 +290,7 @@ const isFailed =
   className="w-full h-full object-cover"
   loading="lazy"
   decoding="async"
+  onClick={() => onOpen?.(item)}
 
 />
 )}
@@ -451,9 +462,15 @@ const isFailed =
 
 export default function Result({ results, activeJobId, userPlan }) {
   const latestRef = useRef(null);
- const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-const isScrollingRef = useRef(false);
+const [isMobile, setIsMobile] = useState(false);
+
+useEffect(() => {
+  setIsMobile(window.innerWidth < 768);
+}, []);
+ const [activeItem, setActiveItem] = useState(null);
+
 const hasScrolledRef = useRef(false);
+
 
 useEffect(() => {
   const handleResize = () => {
@@ -528,34 +545,142 @@ setTimeout(() => {
   requestAnimationFrame(scrollToCard);
 }, [activeJobId]);
 
-  if (!Array.isArray(results) || results.length === 0) return null;
-  if (photoResults.length === 0) return null;
+ 
 
   return (
 <div
   ref={latestRef}
- className="w-full bg-[#0E1117] p-4 md:pb-6 pb-[220px] min-h-[300px]"
+ className="
+  w-full
+  bg-[#191B1C]
+  flex flex-col
+  px-4 pt-2 pb-[calc(90px+env(safe-area-inset-bottom))] md:pb-6
+  rounded-[22px]
+"
 >
       <h1 className="text-[#F4F6FB] font-semibold text-[20px] mb-4">
         Recent Creations
       </h1>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {photoResults.map((item) => (
-  <div
-    key={item.id}
-    ref={(el) => {
-      if (el) cardRefs.current[item.id] = el;
-    }}
-  >
-   <ResultCard
-  item={item}
- 
-/>
-  </div>
-))}
+   {photoResults.length === 0 ? (
 
+  /* ================= EMPTY STATE ================= */
+<div className="flex-1 flex flex-col items-center justify-center gap-3">
+
+    <div className="relative">
+      <img
+        src="/assets/logos/sadzyvo.webp"
+        className="w-20 h-20 opacity-70"
+      />
+
+      {/* subtle glow */}
+      <div className="absolute inset-0 bg-[#7A3BFF]/20 blur-xl opacity-50" />
+    </div>
+
+    <p className="text-white/40 text-sm">
+      No Images Generated Yet
+    </p>
+
+    <p className="text-white/20 text-xs">
+      Your creations will appear here
+    </p>
+
+  </div>
+
+) : (
+
+  /* ================= GRID ================= */
+  <div
+    className="
+      grid
+      grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4
+      gap-3
+    "
+  >
+    {photoResults.map((item) => (
+      <div
+        key={item.id}
+        ref={(el) => {
+          if (el) cardRefs.current[item.id] = el;
+        }}
+      >
+        <ResultCard item={item} onOpen={setActiveItem} />
       </div>
+    ))}
+  </div>
+
+)}
+      
+      {activeItem && (
+  <div className="fixed inset-0 z-[999] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4">
+
+    {/* CLOSE */}
+    <button
+      onClick={() => setActiveItem(null)}
+      className="absolute top-6 right-6 text-white/60 hover:text-white"
+    >
+      ✕
+    </button>
+
+    {/* CONTENT */}
+    <div className="w-full max-w-[1100px] grid md:grid-cols-2 gap-6 items-center">
+
+      {/* IMAGE */}
+      <div className="rounded-2xl overflow-hidden bg-black">
+        <img
+          src={activeItem.result_url + "?width=1200"}
+          className="w-full h-auto object-contain"
+        />
+      </div>
+
+      {/* SIDE PANEL */}
+      <div className="flex flex-col gap-4">
+
+        {/* PROMPT */}
+        <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+          <p className="text-white/90 text-sm leading-relaxed">
+            {activeItem.input?.subject ?? activeItem.prompt}
+          </p>
+        </div>
+
+        {/* ACTIONS */}
+        <div className="flex gap-3">
+
+          {/* COPY */}
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(
+                activeItem.input?.subject ?? activeItem.prompt
+              )
+            }}
+            className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm"
+          >
+            Copy Prompt
+          </button>
+
+          {/* DOWNLOAD */}
+          <button
+            onClick={async () => {
+              const res = await fetch(activeItem.result_url)
+              const blob = await res.blob()
+
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement("a")
+              a.href = url
+              a.download = "zyvo-image.webp"
+              a.click()
+              URL.revokeObjectURL(url)
+            }}
+            className="px-4 py-2 rounded-lg bg-[#7A3BFF] hover:bg-[#6A32E0] text-white text-sm"
+          >
+            Download
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

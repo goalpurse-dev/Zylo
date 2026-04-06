@@ -10,38 +10,50 @@ const GenerateButton = React.memo(
         onClick={onClick}
         disabled={!isReady}
         className={`
-          relative w-full py-4 rounded-2xl font-semibold text-[15px]
+          relative w-full py-4 rounded-2xl
           flex items-center justify-center gap-3
-          transition-all duration-200
           overflow-hidden
+
+          border border-white/10
+          bg-[#16181A]
+
+          transition-all duration-200
+
           ${
             isReady
-              ? "bg-[#7A3BFF] hover:bg-[#6A32E0] text-white shadow-[0_8px_30px_rgba(122,59,255,0.35)]"
-              : "bg-[#2A0E4A] text-white/60"
+              ? "hover:border-[#7A3BFF]/40 hover:bg-[#181A22]"
+              : "opacity-50 cursor-not-allowed"
           }
         `}
       >
-        {isReady && (
-          <span className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
-            <span className="absolute top-0 left-0 w-full h-full shimmer" />
-          </span>
-        )}
+        {/* 🔥 PREMIUM GLOW (same as toggles) */}
+       {isReady && (
+  <>
+    {/* glow */}
+    <div className="absolute inset-1 rounded-xl">
+      <div className="mode-glow" />
+    </div>
 
-        <span className="relative z-10 flex items-center gap-3">
+    {/* 🔥 shine sweep */}
+    <div className="generate-shine" />
+  </>
+)}
+
+        {/* CONTENT */}
+        <span className="relative z-10 flex items-center gap-3 text-white font-semibold text-[15px]">
           {isGenerating ? (
             <span>Generating...</span>
           ) : (
             <>
               <span>Generate</span>
-              <span className="flex items-center gap-1">
+
+              <span className="flex items-center gap-1 text-white/90">
                 <img
                   src={Credit}
                   alt="credits"
                   className="h-5 w-auto object-contain scale-125 brightness-125 contrast-125"
                 />
-                <span className="font-semibold text-white">
-                  {estimatedCredits}
-                </span>
+                <span>{estimatedCredits}</span>
               </span>
             </>
           )}

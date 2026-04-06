@@ -518,3 +518,132 @@ body,
     transform: translateY(0);
   }
 }
+/* 🔥 PREMIUM ACTIVE GLOW (TOP + BOTTOM ONLY) */
+.mode-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  overflow: hidden;
+
+  /* 🔥 slightly stronger center contrast */
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0,0,0,0.35),
+    transparent 70%
+  );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.04),
+    inset 0 -12px 40px rgba(0,0,0,0.45),
+    0 0 35px rgba(168,85,247,0.18);
+}
+
+/* LEFT EDGE */
+.mode-glow::before {
+  content: "";
+  position: absolute;
+  left: -25%;
+  top: 0;
+  width: 85%;
+  height: 100%;
+
+  background: radial-gradient(
+    ellipse at left,
+    rgba(168, 85, 247, 0.65),   /* 🔥 stronger */
+    rgba(168, 85, 247, 0.3),
+    transparent 70%
+  );
+
+  filter: blur(22px);
+}
+
+/* RIGHT EDGE */
+.mode-glow::after {
+  content: "";
+  position: absolute;
+  right: -25%;
+  top: 0;
+  width: 85%;
+  height: 100%;
+
+  background: radial-gradient(
+    ellipse at right,
+    rgba(168, 85, 247, 0.6),   /* 🔥 stronger */
+    rgba(168, 85, 247, 0.25),
+    transparent 70%
+  );
+
+  filter: blur(24px);
+}
+
+
+
+.prompt-glow-border {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  pointer-events: none;
+
+  /* 🔥 INNER LIGHT (THIS IS THE KEY) */
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    inset 0 -10px 30px rgba(0,0,0,0.6),
+    inset 0 0 25px rgba(168,85,247,0.08);
+
+  background: radial-gradient(
+    ellipse at center,
+    rgba(168,85,247,0.06),
+    transparent 70%
+  );
+}
+/* 🔥 GENERATE BUTTON SHINE SWEEP */
+.generate-shine {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.generate-shine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+
+  background: linear-gradient(
+    110deg,
+    transparent,
+    rgba(255,255,255,0.15),
+    rgba(255,255,255,0.25),
+    transparent
+  );
+
+  transform: skewX(-20deg);
+  filter: blur(6px);
+
+  animation: generateShineMove 3.5s ease-in-out infinite;
+}
+
+@keyframes generateShineMove {
+  0% {
+    left: -120%;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  50% {
+    left: 120%;
+    opacity: 0.8;
+  }
+  100% {
+    left: 120%;
+    opacity: 0;
+  }
+}
+html, body, #root {
+  height: 100%;
+}

@@ -239,19 +239,19 @@ const hasConsent = profileMap.get(normalizedEmail);
         lastSent ? ((now - lastSent) / 60000).toFixed(2) : "never"
       );
 
-      const shouldSendStage1 =
-        user.recovery_stage === 0 &&
-        now - createdAt >= 10 * 60 * 1000;
+     const shouldSendStage1 =
+  user.recovery_stage === 0 &&
+  now - createdAt >= 10 * 60 * 1000; // 10 min
 
-      const shouldSendStage2 =
-        user.recovery_stage === 1 &&
-        lastSent &&
-        now - lastSent >= 6 * 60 * 60 * 1000;
+const shouldSendStage2 =
+  user.recovery_stage === 1 &&
+  lastSent &&
+  now - lastSent >= 60 * 60 * 1000; // 1 hour
 
-      const shouldSendStage3 =
-        user.recovery_stage === 2 &&
-        lastSent &&
-        now - lastSent >= 24 * 60 * 60 * 1000;
+const shouldSendStage3 =
+  user.recovery_stage === 2 &&
+  lastSent &&
+  now - lastSent >= 24 * 60 * 60 * 1000; // 24 hours
 
       if (shouldSendStage1 || shouldSendStage2 || shouldSendStage3) {
         console.log("🚀 SENDING:", user.email);

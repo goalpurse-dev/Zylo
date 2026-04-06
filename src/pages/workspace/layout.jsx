@@ -16,36 +16,16 @@ export default function WorkspaceLayout() {
   const [showTopRow, setShowTopRow] = useState(true);
   const isHomeRoute = location.pathname === "/workspace/home";
   const [bannerVisible, setBannerVisible] = useState(false);
-const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
+  /* ================= PROMO ================= */
   useEffect(() => {
     if (!isHomeRoute) return;
     const dismissed = localStorage.getItem("promo_closed");
     setBannerVisible(!dismissed);
   }, [isHomeRoute]);
 
-  const TOOL_ROUTES = [
-    "/workspace/productphoto",
-    "/workspace/myproduct",
-    "/workspace/library",
-    "/workspace/image-generator",
-    "/workspace/video-generator",
-    "/workspace/viral-script",
-    "/workspace/home",
-  ];
-
-  const isCreationsRoute = location.pathname.startsWith("/workspace/creations");
-
-  const isToolRoute = TOOL_ROUTES.some(route =>
-    location.pathname.startsWith(route)
-  );
-
-  const closeMobilePanels = () => {
-    if (window.innerWidth < 1024) {
-      setSidebarOpen(false);
-    }
-  };
-
+  /* ================= WELCOME ================= */
   useEffect(() => {
     const run = async () => {
       const { data } = await supabase.auth.getUser();
@@ -74,28 +54,42 @@ const [isSelectorOpen, setIsSelectorOpen] = useState(false);
     run();
   }, []);
 
-  /* Reset top row on route change */
+  /* ================= RESET HEADER ================= */
   useEffect(() => {
     setShowTopRow(true);
     lastScrollY.current = 0;
   }, [location.pathname]);
 
-  /* ✅ FIXED SCROLL HANDLER (WINDOW SCROLL) */
-  useEffect(() => {
-    const onScroll = () => {
-      const currentY = window.scrollY;
+  /* ================= SCROLL (FIXED) ================= */
+useEffect(() => {
+  const el = document.getElementById("workspace-scroll");
+  if (!el) return;
 
-      if (window.innerWidth >= 1024) {
-        setShowTopRow(!(currentY > lastScrollY.current && currentY > 60));
-      }
+  let ticking = false;
 
-      lastScrollY.current = currentY;
-    };
+  const onScroll = () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const currentY = el.scrollTop;
 
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+        if (window.innerWidth >= 1024) {
+          setShowTopRow(!(currentY > lastScrollY.current && currentY > 60));
+        }
 
+        lastScrollY.current = currentY;
+        ticking = false;
+      });
+
+      ticking = true;
+    }
+  };
+
+  el.addEventListener("scroll", onScroll, { passive: true });
+
+  return () => el.removeEventListener("scroll", onScroll);
+}, []);
+
+  /* ================= TITLE ================= */
   const titleMap = {
     "/workspace": "Home",
     "/workspace/productphoto": "Product Photos",
@@ -111,107 +105,81 @@ const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const title = titleMap[location.pathname] || "Workspace";
 
   return (
-    <div className="flex w-full min-h-screen bg-[#090A0A]">
+    <div className="flex w-full h-[100dvh] bg-[#090A0A] overflow-hidden">
 
-      {/* DESKTOP TOOL SHELL */}
-      <aside className="hidden lg:block h-screen w-[80px] flex-shrink-0 z-50">
-        <ToolShell
-          isCreationsRoute={location.pathname.startsWith("/workspace/creations")}
-        />
+      {/* DESKTOP SIDEBAR */}
+      <aside className="hidden lg:block h-full w-[80px] flex-shrink-0 z-50">
+        <ToolShell />
       </aside>
 
-      {/* MOBILE OVERLAY */}
+      {/* MOBILE SIDEBAR */}
       {sidebarOpen && (
         <>
           <div
             className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
-            onClick={() => {
-              setSidebarOpen(false);
-            }}
+            onClick={() => setSidebarOpen(false)}
           />
 
-          <aside className="fixed top-0 left-0 z-50 h-screen w-[80px] bg-[#090A0A] lg:hidden">
-            <ToolShell
-              isCreationsRoute={location.pathname.startsWith("/workspace/creations")}
-              onClose={() => {
-                setSidebarOpen(false);
-              }}
-            />
+          <aside className="fixed top-0 left-0 z-50 h-full w-[80px] bg-[#090A0A] lg:hidden">
+            <ToolShell onClose={() => setSidebarOpen(false)} />
           </aside>
         </>
       )}
 
-      {/* MAIN CONTENT */}
-      <div
-        id="workspace-scroll"
-       className="flex flex-col flex-1 h-screen overflow-y-auto pb-[90px]"
-      >
-        {/* ✅ FIXED HEADER (NO WRAPPER BUG) */}
-      <div
-  className={`
-    sticky top-0 z-[60]
-    w-full
-    will-change-transform
-    transition-transform duration-300
-    ${showTopRow ? "translate-y-0" : "-translate-y-full"}
-    lg:translate-y-0
-  `}
-  style={{
-    position: "sticky",
-    top: 0
-  }}
->
-          {/* PROMO */}
+      {/* MAIN */}
+      <div className="flex flex-col flex-1 h-[100dvh] overflow-hidden">
+
+        {/* HEADER */}
+        <div
+          className={`
+            sticky top-0 z-[60]
+            w-full
+            transition-transform duration-300
+            ${showTopRow ? "translate-y-0" : "-translate-y-full"}
+            lg:translate-y-0
+          `}
+        >
           {isHomeRoute && bannerVisible && (
-            <div className="w-full animate-[slideDown_0.3s_ease-out]">
-              <TopPromoBanner onClose={() => setBannerVisible(false)} />
-            </div>
+            <TopPromoBanner onClose={() => setBannerVisible(false)} />
           )}
 
           <TopRow
-            onMenuClick={() => {
-              setSidebarOpen(prev => !prev);
-            }}
+            onMenuClick={() => setSidebarOpen(prev => !prev)}
             title={title}
           />
         </div>
 
-        {/* WELCOME */}
+        {/* 🔥 SCROLL AREA (ONLY THIS SCROLLS) */}
+        <div
+          id="workspace-scroll"
+          className="flex-1 overflow-y-auto overscroll-contain"
+        >
+          <Outlet />
+        </div>
+
+        {/* WELCOME TOAST */}
         {showWelcome && (
-          <div className="fixed bottom-6 right-6 z-[9999] animate-[slideUp_0.35s_ease-out]">
-            <div className="relative flex items-start gap-4 max-w-sm rounded-2xl border border-[#7A3BFF]/30 bg-[#0B0E1A]/80 backdrop-blur-xl shadow-[0_0_40px_rgba(122,59,255,0.25)] px-5 py-4">
-
-              <div className="relative shrink-0">
-                <img
-                  src="/assets/ai/robot.webp"
-                  alt="Zyvo AI"
-                  className="w-10 h-10 rounded-full border border-white/10"
-                />
-                <div className="absolute inset-0 rounded-full bg-[#7A3BFF]/30 blur-md opacity-60 animate-pulse" />
-              </div>
-
-              <div className="flex-1">
+          <div className="fixed bottom-6 right-6 z-[9999]">
+            <div className="flex items-start gap-4 max-w-sm rounded-2xl border border-[#7A3BFF]/30 bg-[#0B0E1A]/80 backdrop-blur-xl px-5 py-4">
+              <img
+                src="/assets/ai/robot.webp"
+                className="w-10 h-10 rounded-full"
+              />
+              <div>
                 <div className="text-white font-semibold text-sm">
                   Zyvo AI
                 </div>
-
-                <div className="text-white/70 text-sm mt-1 leading-relaxed">
-                  You’ve got 3 free image creations this week. Let’s build something.
+                <div className="text-white/70 text-sm mt-1">
+                  You’ve got 3 free image creations this week.
                 </div>
               </div>
-
-              <button
-                onClick={() => setShowWelcome(false)}
-                className="absolute top-3 right-3 text-white/40 hover:text-white transition text-sm"
-              >
-                ✕
-              </button>
+              <button onClick={() => setShowWelcome(false)}>✕</button>
             </div>
           </div>
         )}
 
-       <MobileBottomNav hidden={isSelectorOpen} />
-        <Outlet />
+        {/* MOBILE NAV */}
+        <MobileBottomNav hidden={isSelectorOpen} />
       </div>
     </div>
   );

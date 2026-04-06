@@ -11,87 +11,87 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const DELAY_MS = 500;
-const RETRY_DELAY_MS = 1500;
+// 🔥 SAFE SETTINGS
+const DELAY_MS = 3000;
+const RETRY_DELAY_MS = 2000;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function hardConvertHtml(user) {
+function whatWorksHtml(user) {
   const name = user.email?.split("@")[0] || "there";
 
   return `
   <div style="font-family:Arial, sans-serif; max-width:520px; margin:auto; padding:20px; color:#111; line-height:1.6;">
     
-    <!-- preview text -->
-    <div style="display:none; max-height:0; overflow:hidden;">
-      Nano Banana 2 is on another level
+    <!-- CLEAN PREVIEW -->
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
+      what’s actually working right now
     </div>
 
     <p>Hey ${name},</p>
 
     <p>
-      not even exaggerating —
+      quick thing I’ve been noticing from people using Zyvo:
     </p>
 
     <p>
-      <strong>Nano Banana 2 is on another level.</strong>
+      the ones getting views aren’t doing anything crazy.
     </p>
 
     <p>
-      the quality jump compared to older models is obvious the moment you generate.
+      they’re just:
     </p>
 
     <p>
-      cleaner outputs.<br>
-      more “viral-looking” images.<br>
-      way more usable results instantly.
+      • testing multiple ideas<br>
+      • generating more content<br>
+      • posting consistently
     </p>
 
     <p>
-      and this is what people are already using to make content right now.
+      that’s literally it.
     </p>
 
     <p>
-      the difference isn’t talent.<br>
-      it’s just volume + better outputs.
+      the biggest mistake is trying one idea, not seeing results, and stopping.
     </p>
 
     <p>
-      most users stay on free → generate a few things → stop.
+      the people who keep generating and trying different styles eventually hit something that works.
     </p>
 
     <p>
-      the ones getting results are generating <strong>consistently</strong>.
+      and once one video works, everything changes.
     </p>
 
     <p>
-      on Pro, you can generate <strong>200+ Nano Banana 2 images</strong>.
+      if you’re using Zyvo, try this:
     </p>
 
     <p>
-      that’s enough to actually test ideas, improve, and post daily.
+      generate 5–10 variations of the same idea and compare them.
     </p>
 
     <p>
-      <a href="https://tryzyvo.com/workspace/pricing">
-        upgrade and try it →
-      </a>
+      you’ll see very quickly what stands out more.
     </p>
 
     <p>
-      once you see the difference, you’ll get it instantly.
+      curious what you’re working on btw — reply if you’re building something
     </p>
 
-    <p>— Zyvo</p>
+    <p>
+      — Zyvo
+    </p>
 
   </div>
   `;
 }
 
 async function sendEmail(user) {
-  const subject = "🍌 this is actually insane";
+  const subject = "what's actually working right now";
 
   let sendError = null;
 
@@ -100,8 +100,7 @@ async function sendEmail(user) {
       from: "Zyvo <niko@tryzyvo.com>",
       to: user.email,
       subject,
-      html: hardConvertHtml(user),
-      reply_to: "niko@tryzyvo.com",
+      html: whatWorksHtml(user),
     });
 
     if (!error) {
@@ -124,19 +123,18 @@ async function sendEmail(user) {
 
 export default async function handler(req, res) {
   try {
-    console.log("🚀 Starting hard convert email...");
+    console.log("🚀 Starting 'what works' email...");
 
     const { data: users, error } = await supabase
       .from("profiles")
-      .select("email, email_updates")
-      .eq("email_updates", true);
+      .select("email");
 
     if (error) {
       console.error("❌ Supabase error:", error);
       return res.status(500).json({ error: "Failed to fetch users" });
     }
 
-    console.log(`📊 Users: ${users.length}`);
+    console.log(`📊 Total users: ${users.length}`);
 
     let sent = 0;
     let failed = 0;
@@ -162,9 +160,11 @@ export default async function handler(req, res) {
     console.log("🎯 Done");
     console.log(`✅ Sent: ${sent}`);
     console.log(`❌ Failed: ${failed}`);
+    console.log(`⚠️ Skipped: ${skipped}`);
 
     return res.status(200).json({
       success: true,
+      total: users.length,
       sent,
       failed,
       skipped,
@@ -176,16 +176,14 @@ export default async function handler(req, res) {
   }
 }
 
-// ================= LOCAL RUN =================
-if (process.argv[1]?.includes("send-hard-convert-email.js")) {
-  console.log("🟢 Running hard convert email...");
+// LOCAL RUN
+console.log("🟢 Running 'what works' email...");
 
-  handler(
-    {},
-    {
-      status: (code) => ({
-        json: (data) => console.log("📤 Response:", code, data),
-      }),
-    }
-  );
-}
+handler(
+  {},
+  {
+    status: (code) => ({
+      json: (data) => console.log("📤 Response:", code, data),
+    }),
+  }
+);

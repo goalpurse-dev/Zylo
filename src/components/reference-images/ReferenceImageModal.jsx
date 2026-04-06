@@ -242,16 +242,17 @@ export default function ReferenceImageModal({
   }, [activeTab]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-[900px] h-[600px] rounded-2xl bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))]
-border border-white/10
+    <div className="fixed inset-0 z-50 flex items-center justify-center pb-[90px] bg-black/60 backdrop-blur-sm">
+<div className="w-full max-w-[900px] h-[600px] rounded-2xl 
+bg-[#191B1C]
+border border-white/5
 overflow-hidden
-shadow-[0_20px_80px_rgba(0,0,0,0.55)]
-backdrop-blur-xl flex flex-col">
+shadow-[0_20px_60px_rgba(0,0,0,0.6)]
+flex flex-col">
         {/* HEADER + TABS */}
       <div className="
   px-6 pt-5 pb-4
-  bg-[linear-gradient(180deg,rgba(20,22,34,0.95),rgba(10,12,20,0.95))]
+  bg-[#16181A]
   border-b border-white/10
 ">
           <div className="flex items-center justify-between">
@@ -389,7 +390,7 @@ shadow-[0_0_25px_rgba(122,59,255,0.45)] flex items-center justify-center">
        <div className="
   px-6 py-5
   flex items-center justify-between
-  bg-[linear-gradient(180deg,rgba(20,22,34,0.95),rgba(10,12,20,0.95))]
+ bg-[#16181A]
   border-t border-white/10
 ">
           <span className="text-white/60 text-sm">

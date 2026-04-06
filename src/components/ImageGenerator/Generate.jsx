@@ -22,6 +22,8 @@ import GenerateButton from "./GenerateButton";
 import ModelSelector from "./ModelSelector";
 import StyleSelector from "./StyleSelector";
 import SizeSelector from "./SizeSelector";
+import OutputSelector from "./OutputSelector";
+
 
 import { ArrowBigDown, ArrowBigLeft, BoxSelect, Image, ImagePlusIcon, Settings, Wand, Wand2, X } from "lucide-react";
 import Bg from "../../assets/ImageGenerator/bg.png"
@@ -36,6 +38,7 @@ BoxSelect
 Wand2
 VideoIcon
 Folder
+
 
 
 
@@ -75,6 +78,16 @@ const getRandomTrait = (seed) => {
   return PRO_TRAITS[seed % PRO_TRAITS.length];
 };
 
+
+const glassBtn = `
+  bg-white/[0.03]
+  border border-white/[0.06]
+  backdrop-blur-xl
+  hover:bg-white/[0.06]
+  hover:border-white/[0.12]
+  transition-all duration-200
+  rounded-xl
+`;
 
 const SubMenu = ({ title, onBack, children }) => (
   <div className=" flex flex-col ">
@@ -182,6 +195,117 @@ const AspectRatioRow = ({ label, width, height, previewW, previewH, onClick }) =
       </span>
     </div>
   </button>
+);
+
+const OutputPanel = ({
+  selectedModel,
+  selectedSize,
+  setSelectedSize,
+  selectedResolution,
+  setSelectedResolution,
+  close, // 🔥 ADD THIS
+}) => (
+  <div className="space-y-5">
+    
+    {/* ASPECT RATIO */}
+  <div>
+  <span className="text-sm text-white/70">Aspect ratio</span>
+
+  <div className="
+    mt-3
+    flex items-center
+    bg-white/5
+    border border-white/10
+    rounded-xl
+    p-1
+    w-full
+    gap-1
+  ">
+    {selectedModel.supportedSizes.map((size) => {
+      const s = IMAGE_SIZES[size];
+      const isActive = selectedSize === size;
+
+      return (
+        <button
+          key={size}
+          onClick={() => {
+  setSelectedSize(size)
+  close?.() // 🔥 CLOSE DROPDOWN
+}}
+          className={`
+            flex-1 flex flex-col items-center justify-center
+            py-2 rounded-lg text-xs font-medium
+            transition-all duration-200
+
+            ${
+              isActive
+                ? "bg-white/15 text-white shadow-inner"
+                : "text-white/50 hover:text-white hover:bg-white/5"
+            }
+          `}
+        >
+          {/* ICON */}
+          <div
+            className="border border-white/60 rounded-sm mb-1"
+            style={{
+              width: s.previewW,
+              height: s.previewH,
+              maxWidth: 22,
+              maxHeight: 22,
+            }}
+          />
+
+          {/* LABEL */}
+          {s.label}
+        </button>
+      );
+    })}
+  </div>
+</div>
+
+    {/* RESOLUTION */}
+    {selectedModel?.supportsResolutions && (
+     <div>
+  <span className="text-sm text-white/70">Resolution</span>
+
+  <div className="
+    mt-3
+    flex items-center
+    bg-white/5
+    border border-white/10
+    rounded-xl
+    p-1
+    w-full
+  ">
+    {selectedModel.resolutions.map((r) => {
+      const isActive = selectedResolution === r.key;
+
+      return (
+        <button
+          key={r.key}
+          onClick={() => {
+  setSelectedResolution(r.key)
+  close?.()
+}}
+          className={`
+            flex-1 py-2 rounded-lg text-sm font-medium
+            transition-all duration-200
+
+            ${
+              isActive
+                ? "bg-white/15 text-white shadow-inner"
+                : "text-white/50 hover:text-white hover:bg-white/5"
+            }
+          `}
+        >
+          {r.label}
+        </button>
+      );
+    })}
+  </div>
+</div>
+    )}
+  </div>
 );
 
 const ModelCard = ({
@@ -310,7 +434,7 @@ const estimatedCredits = selectedModel?.supportsResolutions
   : selectedModel?.credits ?? 0;
   const textareaRef = useRef(null);
 
-
+const isDesktop = window.innerWidth >= 768;
 
 const controlsRef = useRef(null);
 const [isGenerating, setIsGenerating] = useState(false);
@@ -631,14 +755,16 @@ useEffect(() => {
   const handleClickOutside = (e) => {
     if (!controlsRef.current) return;
 
-    if (!controlsRef.current.contains(e.target)) {
-      setOpenSize(false);
-      setOpenStyle(false);
-      setOpenModel(false);
-    }
+    if (e.target.closest("[data-selector-portal]")) return;
+    if (controlsRef.current.contains(e.target)) return;
+
+    setOpenSize(false);
+    setOpenStyle(false);
+    setOpenModel(false);
   };
 
   document.addEventListener("mousedown", handleClickOutside);
+
   return () => {
     document.removeEventListener("mousedown", handleClickOutside);
   };
@@ -653,7 +779,7 @@ useEffect(() => {
   };
 
   if (settingsOpen) {
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
   }
 
   return () => {
@@ -662,10 +788,13 @@ useEffect(() => {
 }, [settingsOpen]);
 
  return (
-<section className="">
+<section className="w-full h-screen flex flex-col bg-[#090A0A]">
 
 <div
-  onClick={() => {
+  onClick={(e) => {
+    // 🔥 DO NOT close if clicking inside dropdown
+    if (e.target.closest("[data-selector-portal]")) return;
+
     setOpenModel(false)
     setOpenStyle(false)
     setOpenSize(false)
@@ -681,14 +810,13 @@ useEffect(() => {
     }
   `}
   style={{
-    pointerEvents: openModel || openStyle || openSize ? "auto" : "none",
-   touchAction: "auto"
+    pointerEvents: openModel || openStyle || openSize  ? "auto" : "none",
   }}
 />
 
 
     {/* Background */}
-    <div className="relative w-full ">
+<div className="relative w-full flex-1 flex flex-col">
     
 
 
@@ -697,48 +825,69 @@ useEffect(() => {
       {/* CONTENT */}
 <div
   className={`
-    flex flex-col items-center w-full relative pt-2
+   flex flex-col w-full relative flex-1 pt-2
     ${!hasResults ? "min-h-[300px]" : ""}
   `}
 >
 
 
 
-        <div className="w-full flex justify-center mt-4 px-4">
+    <div className="w-full flex-1  ">
     <div
   className="
-  w-full max-w-[900px]
-  rounded-[22px]
-  border border-white/10
-  bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))]
+w-full h-full flex flex-col
+ pb-[110px] md:pb-6
+  rounded-[22px] 
+ bg-[#191B1C]
+border border-white/5
+shadow-[0_10px_40px_rgba(0,0,0,0.4)]
   p-5 md:p-6
-  md:shadow-[0_12px_40px_rgba(0,0,0,0.25)]
-  space-y-6
+
+ space-y-3 lg:space-y-2 
   
 "
 >
 
          {/* MODE SELECTOR */}
-{/* VIRAL MODE SELECTOR */}
-<div className="relative w-full flex justify-center">
+
+
+<div className="w-full">
   <div
     className="
-    relative flex w-full max-w-[420px] p-1
-    rounded-2xl
-    border border-white/10
-    bg-[linear-gradient(180deg,rgba(18,20,31,0.95),rgba(10,12,20,0.95))]
-    md:shadow-[0_12px_40px_rgba(0,0,0,0.35)]
-    overflow-hidden
-  "
+      relative flex w-full p-1
+      rounded-xl
+      bg-[#16181A]
+      border border-white/5
+      overflow-hidden
+    "
   >
+    {/* 🔥 SLIDING ACTIVE BACKGROUND */}
+    <div
+      className={`
+        absolute top-1 bottom-1 w-1/2 rounded-lg
+        transition-all duration-300
+        ${
+          location.pathname === "/workspace/image-generator"
+            ? "left-1"
+            : "left-[calc(50%-2px)]"
+        }
+        bg-[#16181A]
+        overflow-hidden
+      `}
+    >
+      <div className="mode-glow" />
+    </div>
+
     {[
       {
         label: "Viral Image",
         path: "/workspace/image-generator",
+        icon: "/icons/image.png",
       },
       {
         label: "Viral Video",
         path: "/workspace/video-generator",
+        icon: "/icons/video.png",
       },
     ].map((item) => {
       const isActive = location.pathname === item.path;
@@ -747,24 +896,38 @@ useEffect(() => {
         <button
           key={item.label}
           onClick={() => navigate(item.path)}
-          className="relative flex-1 py-2.5 text-sm font-medium z-10"
+        className="
+  relative flex-1 py-1
+  flex flex-col items-center justify-center gap-[1px] mb-1
+  z-10
+"
         >
-          {/* ACTIVE BACKGROUND */}
-          {isActive && (
-            <div
-              className="
-              absolute inset-0 rounded-xl
-              bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]
-              md:shadow-[0_0_25px_rgba(122,59,255,0.45)]
-              transition-all duration-300
-            "
-            />
-          )}
+          {/* ✅ IMAGE ICON (FIXED) */}
+          <img
+            src={item.icon}
+            alt={item.label}
+className={`
+  object-contain transition-all duration-200
 
+  ${
+    isActive
+      ? "w-8 h-8 opacity-100 scale-110 drop-shadow-[0_0_14px_rgba(168,85,247,0.9)]"
+      : "w-7 h-7 opacity-50 hover:opacity-80 hover:scale-105"
+  }
+`}
+          />
+
+          {/* TEXT */}
           <span
-            className={`relative z-10 ${
-              isActive ? "text-white" : "text-white/60"
-            }`}
+            className={`
+              text-xs font-medium
+              transition-all duration-200
+              ${
+                isActive
+                  ? "text-white"
+                  : "text-white/50"
+              }
+            `}
           >
             {item.label}
           </span>
@@ -773,6 +936,8 @@ useEffect(() => {
     })}
   </div>
 </div>
+
+
 
 
 
@@ -813,6 +978,19 @@ useEffect(() => {
 </div>
 )}
 
+{/* 🔥 MODEL SELECTOR (STANDALONE ROW) */}
+<div className="w-full">
+  <ModelSelector
+    selectedModel={selectedModel}
+    openModel={openModel}
+    setOpenModel={() => {
+      setOpenModel(prev => !prev)
+      setOpenSize(false)
+      setOpenStyle(false)
+    }}
+  />
+</div>
+
           {/* PROMPT */}
 <PromptInput prompt={prompt} setPrompt={setPrompt} />
 
@@ -826,10 +1004,12 @@ useEffect(() => {
     setOpenReferenceModal(true)
   }}
   className={`
-    w-full rounded-xl 
-    border border-white/10
-    bg-[linear-gradient(180deg,#141722,#0F111A)]
-    py-6
+    relative w-full rounded-xl overflow-hidden
+
+    border border-white/5
+    bg-[#16181A]
+
+    py-5
 
     flex flex-col items-center justify-center gap-2
 
@@ -837,15 +1017,59 @@ useEffect(() => {
 
     ${
       canAddImages
-        ? "hover:border-[#7A3BFF]/40 hover:shadow-[0_6px_20px_rgba(122,59,255,0.12)]"
+        ? "hover:border-[#7A3BFF]/40 hover:bg-[#181A22]"
         : "opacity-40 cursor-not-allowed"
     }
   `}
 >
-  <ImagePlusIcon className="w-5 h-5 text-white/40" />
-  <p className="text-sm text-white/50">
-    Add visual references
-  </p>
+
+  {/* 🔥 SAME STRUCTURE AS MODE SELECTOR */}
+  <div
+    className={`
+      absolute inset-1 rounded-lg transition-all duration-300
+
+     ${canAddImages ? "opacity-100" : "opacity-0"}
+    `}
+  >
+    <div className="mode-glow" />
+  </div>
+
+  {/* CONTENT */}
+<div className="relative z-10 flex flex-col items-center justify-center text-center ">
+<img
+  src="/icons/reference.png"
+  alt="Reference"
+  className={`
+    w-12 h-12 object-contain scale-125
+
+    transition-all duration-200
+
+    ${
+      canAddImages
+        ? "opacity-95 scale-110 drop-shadow-[0_0_20px_rgba(168,85,247,0.7)]"
+        : "opacity-40"
+    }
+  `}
+/>
+
+  <p
+  className={`
+    text-sm font-medium transition-all duration-200
+    mt-[-2px]
+
+    ${
+      selected.length > 0
+        ? "text-white"
+        : "text-white/60"
+    }
+  `}
+>
+      {selected.length > 0
+        ? `${selected.length} reference${selected.length > 1 ? "s" : ""} added`
+        : "Add visual references"}
+    </p>
+
+  </div>
 </button>
 
 
@@ -881,159 +1105,53 @@ md:group-hover:brightness-110
 )}
 
 
+<div className="w-full">
+  <StyleSelector
+    selectedStyle={selectedStyle}
+    styles={IMAGE_STYLES}
+    openStyle={openStyle}
+    setOpenStyle={() => {
+      setOpenStyle(prev => !prev)
+      setOpenModel(false)
+      setOpenSize(false)
+    }}
+  />
+</div>
+
             {/* SETTINGS ROW */}
                 <div
        ref={controlsRef}
-        className="grid grid-cols-1  md:grid-cols-3 gap-3 relative"
+        className="grid grid-cols-1   gap-3 relative"
           >
 
 
 
 
-  {/* MODEL */}
-<ModelSelector
-  selectedModel={selectedModel}
-  openModel={openModel}
-  setOpenModel={() => {
-    setOpenModel(prev => !prev)
-    setOpenSize(false)
-    setOpenStyle(false)
-  }}
-/>
 
   {/* STYLE */}
- <StyleSelector
-  selectedStyle={selectedStyle}
-  styles={IMAGE_STYLES}
-  openStyle={openStyle}
-  setOpenStyle={() => {
-    setOpenStyle(prev => !prev)
-    setOpenModel(false)
-    setOpenSize(false)
-  }}
-/>
+
 
   {/* SIZE */}
-  <SizeSelector
+<OutputSelector
   currentSize={currentSize}
-  openSize={openSize}
-  setOpenSize={() => {
-    setOpenSize(prev => !prev)
-    setOpenModel(false)
-    setOpenStyle(false)
-  }}
+  selectedResolution={selectedResolution}
+  open={openSize}
+  setOpen={setOpenSize}
+  selectedModel={selectedModel}
+>
+ <OutputPanel
+  selectedModel={selectedModel}
+  selectedSize={selectedSize}
+  setSelectedSize={setSelectedSize}
+  selectedResolution={selectedResolution}
+  setSelectedResolution={setSelectedResolution}
+  close={() => setOpenSize(false)} // 🔥 ADD THIS
 />
-
-
-{selectedModel?.supportsResolutions && (
-  <div className="mt-3 flex flex-col gap-2">
-
-    
-    {/* LABEL */}
-    <span className="text-[11px] text-white/40 uppercase tracking-wide">
-      Resolution
-    </span>
-
-    {/* OPTIONS */}
-    <div className="flex gap-2">
-      {selectedModel.resolutions.map((r) => {
-        const isActive = selectedResolution === r.key;
-        const isBest = r.key === "2k"; // 👈 mark 2K as best
-
-        return (
-          <button
-            key={r.key}
-            onClick={() => setSelectedResolution(r.key)}
-            className={`
-              relative px-4 py-2 rounded-xl text-sm font-medium
-              transition-all duration-200
-
-              ${
-                isActive
-                  ? "bg-gradient-to-r from-[#7A3BFF] to-[#9D4EDD] text-white shadow-[0_0_20px_rgba(122,59,255,0.45)]"
-                  : "bg-white/5 text-white/70 hover:bg-white/10"
-              }
-            `}
-          >
-            {r.label}
-
-            {/* 🔥 BEST BADGE */}
-           
-          </button>
-        );
-      })}
-    </div>
-    
-  </div>
-)}
+</OutputSelector>
 
 
               {/* EXISTING DROPDOWNS BELOW (unchanged logic) */}
 
-{openSize && (
-  <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-    
-    {/* MODAL BOX */}
-    <div
-      className="
-        w-full max-w-[420px]
-        max-h-[80vh]
-
-        bg-[linear-gradient(180deg,rgba(22,26,38,0.95),rgba(14,17,28,0.95))]
-        border border-white/10
-        rounded-2xl
-        shadow-[0_25px_80px_rgba(0,0,0,0.6)]
-
-        p-5
-        overflow-y-auto
-
-        transition-all duration-300
-      "
-    >
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-white font-medium">Select Size</h3>
-        <button onClick={() => setOpenSize(false)}>
-          <X className="w-5 h-5 text-white/60 hover:text-white" />
-        </button>
-      </div>
-
-      {/* OPTIONS */}
-      {selectedModel.supportedSizes.map((size) => {
-        const s = IMAGE_SIZES[size] ?? IMAGE_SIZES["1:1"];
-
-        return (
-          <button
-            key={size}
-            onClick={() => {
-              setSelectedSize(size);
-              setOpenSize(false);
-            }}
-            className={`w-full px-4 py-3 text-left rounded-xl flex items-center gap-4
-              ${
-                size === selectedSize
-                  ? "bg-[#7A3BFF]/20 border border-[#7A3BFF]"
-                  : "hover:bg-white/5"
-              }
-            `}
-          >
-            <div className="w-[50px] flex justify-center">
-              <div
-                className="border border-white/70 rounded-[4px]"
-                style={{
-                  width: `${s.previewW}px`,
-                  height: `${s.previewH}px`,
-                }}
-              />
-            </div>
-
-            <span>{s.label}</span>
-          </button>
-        );
-      })}
-    </div>
-  </div>
-)}
 
 
 
@@ -1253,18 +1371,37 @@ md:group-hover:brightness-110
         </div>
 
       {/* FOOTER */}
-      <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
-        <span className="text-xs text-white/40">
-          More models coming soon...
-        </span>
+   <div className="
+  mt-4
+  pt-4
+  pb-[calc(12px+env(safe-area-inset-bottom))]
+  px-4
 
-        <button
-          onClick={() => navigate("/workspace/pricing")}
-          className="text-xs px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 transition"
-        >
-          Unlock Pro Models
-        </button>
-      </div>
+  border-t border-white/10
+
+  flex items-center justify-between
+  gap-3
+
+  bg-gradient-to-t from-[#0f111a] to-transparent
+">
+  <span className="text-xs text-white/40">
+    More models coming soon...
+  </span>
+
+  <button
+    onClick={() => navigate("/workspace/pricing")}
+    className="
+      text-xs px-3 py-1.5 rounded-md
+      bg-white/5 border border-white/10
+      text-white/70
+
+      hover:bg-white/10
+      transition-all duration-200
+    "
+  >
+    Unlock Pro Models
+  </button>
+</div>
  </div>
     </div>
   </div>
@@ -1279,12 +1416,12 @@ md:group-hover:brightness-110
 <div
   className="fixed left-0 right-0 z-[90] md:static pointer-events-none"
   style={{
-    bottom: "calc(68px + env(safe-area-inset-bottom))"
+   bottom: "calc(70px + env(safe-area-inset-bottom))"
   }}
 >
   <div className="pointer-events-auto">
-     <div className="w-full bg-[#191B1C] border-t border-white/5 px-4 pt-3 pb-3 backdrop-blur-xl">
-      <div className="max-w-[900px] mx-auto">
+    <div className="w-full bg-[#191B1C] border-t border-white/5 md:px-0 px-4 pt-3 pb-3 backdrop-blur-xl">
+     <div className="w-full md:max-w-none md:mx-0 max-w-[900px] mx-auto">
         <GenerateButton
           onClick={handleGenerate}
           disabled={!prompt.trim()}
