@@ -554,7 +554,7 @@ setTimeout(() => {
   w-full
   bg-[#191B1C]
   flex flex-col
-  px-4 pt-2 pb-[calc(90px+env(safe-area-inset-bottom))] md:pb-6
+  px-4 pt-2  md:pb-6
   rounded-[22px]
 "
 >
@@ -681,7 +681,14 @@ setTimeout(() => {
     </div>
   </div>
 )}
+{/* REAL BOTTOM SPACER (NO LAG) */}
+<div
+  style={{
+    height: "150px", // adjust to your nav + generate height
+  }}
+/>
     </div>
+    
   );
 }
 
