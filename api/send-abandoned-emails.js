@@ -193,14 +193,33 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Fetch failed" });
     }
 
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("email, email_updates");
+    let allProfiles = [];
+let from = 0;
+const batchSize = 1000;
+
+while (true) {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("email, email_updates")
+    .range(from, from + batchSize - 1);
+
+  if (error) {
+    console.error("❌ PROFILE FETCH ERROR:", error);
+    break;
+  }
+
+  if (!data || data.length === 0) break;
+
+  allProfiles.push(...data);
+  from += batchSize;
+}
+
+console.log("📊 TOTAL PROFILES LOADED:", allProfiles.length);
 
     console.log("📊 PROFILES LOADED:", profiles?.length);
 
-   const profileMap = new Map(
-  profiles.map(p => [
+ const profileMap = new Map(
+  allProfiles.map(p => [
     p.email?.toLowerCase().trim(),
     p.email_updates
   ])
@@ -220,8 +239,9 @@ export default async function handler(req, res) {
 const hasConsent = profileMap.get(normalizedEmail);
       console.log("📩 Consent:", hasConsent);
 
-    if (!hasConsent) {
-  console.log("⚠️ No consent but sending:", user.email);
+ if (!hasConsent) {
+  console.log("⛔ No consent → skip:", user.email);
+  continue;
 }
 
       const createdAt = new Date(user.created_at).getTime();
