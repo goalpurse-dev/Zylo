@@ -15,9 +15,9 @@ const supabase = createClient(
 // EMAIL TEMPLATES
 // ==============================
 
-function emailOneHtml(user) {
+function emailOneHtml() {
   return `
-  <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:20px;color:#111;line-height:1.6;">
+  <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:20px;color:#111;">
     <p>Hey,</p>
 
     <p>Quick question — did something break when you were setting up Zyvo?</p>
@@ -31,7 +31,7 @@ function emailOneHtml(user) {
 
     <p>
       <a href="https://tryzyvo.com/workspace/pricing" 
-         style="display:inline-block;padding:10px 16px;background:#6C3BFF;color:white;border-radius:8px;text-decoration:none;font-weight:600;">
+         style="padding:10px 16px;background:#6C3BFF;color:white;border-radius:8px;text-decoration:none;font-weight:600;">
          Continue setup →
       </a>
     </p>
@@ -43,14 +43,12 @@ function emailOneHtml(user) {
   `;
 }
 
-function emailTwoHtml(user) {
+function emailTwoHtml() {
   return `
-  <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:20px;color:#111;line-height:1.6;">
+  <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:20px;color:#111;">
     <p>Hey,</p>
 
     <p>You were literally <b>one step away</b>.</p>
-
-    <p>This is where people either:</p>
 
     <p>
     • start posting and growing<br>
@@ -59,7 +57,7 @@ function emailTwoHtml(user) {
 
     <p>
       <a href="https://tryzyvo.com/workspace/pricing"
-         style="display:inline-block;padding:10px 16px;background:#6C3BFF;color:white;border-radius:8px;text-decoration:none;font-weight:600;">
+         style="padding:10px 16px;background:#6C3BFF;color:white;border-radius:8px;text-decoration:none;font-weight:600;">
          Finish setup →
       </a>
     </p>
@@ -69,18 +67,16 @@ function emailTwoHtml(user) {
   `;
 }
 
-function emailThreeHtml(user) {
+function emailThreeHtml() {
   return `
-  <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:20px;color:#111;line-height:1.6;">
+  <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:20px;color:#111;">
     <p>Hey,</p>
 
     <p>I’ll stop after this 👍</p>
 
-    <p>If you still want to create content faster, you can continue here:</p>
-
     <p>
       <a href="https://tryzyvo.com/workspace/pricing"
-         style="display:inline-block;padding:10px 16px;background:#6C3BFF;color:white;border-radius:8px;text-decoration:none;font-weight:600;">
+         style="padding:10px 16px;background:#6C3BFF;color:white;border-radius:8px;text-decoration:none;font-weight:600;">
          Continue →
       </a>
     </p>
@@ -95,8 +91,6 @@ function emailThreeHtml(user) {
 // ==============================
 
 async function sendStageEmail(user) {
-  console.log("📤 Preparing email:", user.email, "stage:", user.recovery_stage);
-
   let subject = "";
   let html = "";
 
@@ -111,50 +105,27 @@ async function sendStageEmail(user) {
     html = emailThreeHtml();
   }
 
-  if (!html) {
-    console.log("⛔ No template");
-    return;
-  }
+  if (!html) return;
 
-  // 🔥 DOUBLE CHECK STILL NOT PAID
-  const { data: stillUser, error: fetchError } = await supabase
+  // check still unpaid
+  const { data: stillUser } = await supabase
     .from("abandoned_checkouts")
     .select("paid")
     .eq("id", user.id)
     .single();
 
-  if (fetchError || stillUser?.paid) {
-    console.log("⛔ Skipping (already paid):", user.email);
-    return;
-  }
+  if (stillUser?.paid) return;
 
-  // SEND
-  let sendError = null;
+  const { error } = await resend.emails.send({
+    from: "Niko from Zyvo <niko@tryzyvo.com>",
+    to: user.email,
+    subject,
+    html,
+    reply_to: "niko@tryzyvo.com",
+  });
 
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    console.log(`📨 Sending attempt ${attempt} →`, user.email);
-
-    const { error } = await resend.emails.send({
-      from: "Niko from Zyvo <niko@tryzyvo.com>",
-      to: user.email,
-      subject,
-      html,
-      reply_to: "niko@tryzyvo.com",
-    });
-
-    if (!error) {
-      console.log("✅ Email sent:", user.email);
-      sendError = null;
-      break;
-    }
-
-    sendError = error;
-    console.log("⚠️ Retry failed:", error);
-    await new Promise(r => setTimeout(r, 1500));
-  }
-
-  if (sendError) {
-    console.error("❌ Final fail:", user.email, sendError);
+  if (error) {
+    console.error("❌ SEND ERROR:", error);
     return;
   }
 
@@ -168,7 +139,7 @@ async function sendStageEmail(user) {
     })
     .eq("id", user.id);
 
-  console.log(`🚀 Stage updated → ${user.email}`);
+  console.log("✅ Sent:", user.email);
 }
 
 // ==============================
@@ -179,112 +150,85 @@ export default async function handler(req, res) {
   console.log("🔥 EMAIL CRON TRIGGERED");
 
   try {
-    const { data: users, error } = await supabase
+    const { data: users } = await supabase
       .from("abandoned_checkouts")
       .select("*")
       .eq("paid", false)
       .in("status", ["pending", "in_sequence"])
       .lt("recovery_stage", 3);
 
-    console.log("📊 USERS FOUND:", users?.length);
+    console.log("📊 USERS:", users?.length);
 
-    if (error) {
-      console.error("❌ FETCH ERROR:", error);
-      return res.status(500).json({ error: "Fetch failed" });
+    // 🔥 LOAD ALL PROFILES (NO LIMIT)
+    let allProfiles = [];
+    let from = 0;
+    const batchSize = 1000;
+
+    while (true) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("email, email_updates")
+        .range(from, from + batchSize - 1);
+
+      if (!data || data.length === 0) break;
+
+      allProfiles.push(...data);
+      from += batchSize;
     }
 
-    let allProfiles = [];
-let from = 0;
-const batchSize = 1000;
+    console.log("📊 TOTAL PROFILES:", allProfiles.length);
 
-while (true) {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("email, email_updates")
-    .range(from, from + batchSize - 1);
+    const profileMap = new Map(
+      allProfiles.map(p => [
+        p.email?.toLowerCase().trim(),
+        p.email_updates
+      ])
+    );
 
-  if (error) {
-    console.error("❌ PROFILE FETCH ERROR:", error);
-    break;
-  }
-
-  if (!data || data.length === 0) break;
-
-  allProfiles.push(...data);
-  from += batchSize;
-}
-
-console.log("📊 TOTAL PROFILES LOADED:", allProfiles.length);
-
-    console.log("📊 PROFILES LOADED:", profiles?.length);
-
- const profileMap = new Map(
-  allProfiles.map(p => [
-    p.email?.toLowerCase().trim(),
-    p.email_updates
-  ])
-);
     const now = Date.now();
 
     for (const user of users) {
-      console.log("➡️ Checking:", user.email);
+      if (!user.email) continue;
 
-      if (!user.email) {
-        console.log("⚠️ No email → skip");
+      const normalizedEmail = user.email.toLowerCase().trim();
+      const consent = profileMap.get(normalizedEmail);
+
+      // ✅ ONLY skip if explicitly false
+      if (consent === false) {
+        console.log("⛔ opted out:", user.email);
         continue;
       }
-
-      const normalizedEmail = user.email?.toLowerCase().trim();
-
-const hasConsent = profileMap.get(normalizedEmail);
-      console.log("📩 Consent:", hasConsent);
-
- if (!hasConsent) {
-  console.log("⛔ No consent → skip:", user.email);
-  continue;
-}
 
       const createdAt = new Date(user.created_at).getTime();
       const lastSent = user.last_email_sent_at
         ? new Date(user.last_email_sent_at).getTime()
         : 0;
 
-      console.log(
-        "⏱️ Since created (min):",
-        ((now - createdAt) / 60000).toFixed(2)
-      );
+      const shouldSendStage1 =
+        user.recovery_stage === 0 &&
+        now - createdAt >= 10 * 60 * 1000;
 
-      console.log(
-        "⏱️ Since last email (min):",
-        lastSent ? ((now - lastSent) / 60000).toFixed(2) : "never"
-      );
+      const shouldSendStage2 =
+        user.recovery_stage === 1 &&
+        lastSent &&
+        now - lastSent >= 60 * 60 * 1000;
 
-     const shouldSendStage1 =
-  user.recovery_stage === 0 &&
-  now - createdAt >= 10 * 60 * 1000; // 10 min
-
-const shouldSendStage2 =
-  user.recovery_stage === 1 &&
-  lastSent &&
-  now - lastSent >= 60 * 60 * 1000; // 1 hour
-
-const shouldSendStage3 =
-  user.recovery_stage === 2 &&
-  lastSent &&
-  now - lastSent >= 24 * 60 * 60 * 1000; // 24 hours
+      const shouldSendStage3 =
+        user.recovery_stage === 2 &&
+        lastSent &&
+        now - lastSent >= 24 * 60 * 60 * 1000;
 
       if (shouldSendStage1 || shouldSendStage2 || shouldSendStage3) {
-        console.log("🚀 SENDING:", user.email);
+        console.log("🚀 Sending:", user.email);
         await sendStageEmail(user);
 
-        const delay = 1000 + Math.random() * 1000;
-        await new Promise(r => setTimeout(r, delay));
-      } else {
-        console.log("⛔ Not ready:", user.email);
+        await new Promise(r =>
+          setTimeout(r, 800 + Math.random() * 800)
+        );
       }
     }
 
-    console.log("✅ CRON FINISHED");
+    console.log("✅ CRON DONE");
 
     return res.status(200).json({ success: true });
 
