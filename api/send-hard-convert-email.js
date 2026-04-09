@@ -11,87 +11,62 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// 🔥 SAFE SETTINGS
 const DELAY_MS = 3000;
 const RETRY_DELAY_MS = 2000;
+const MAX_SEND = 300;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function whatWorksHtml(user) {
+function conversionHtml(user) {
   const name = user.email?.split("@")[0] || "there";
 
   return `
   <div style="font-family:Arial, sans-serif; max-width:520px; margin:auto; padding:20px; color:#111; line-height:1.6;">
-    
-    <!-- CLEAN PREVIEW -->
-    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
-      what’s actually working right now
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
+      this is what most people get wrong
     </div>
 
     <p>Hey ${name},</p>
 
-    <p>
-      quick thing I’ve been noticing from people using Zyvo:
-    </p>
+    <p>I’ve been watching how people use Zyvo.</p>
 
-    <p>
-      the ones getting views aren’t doing anything crazy.
-    </p>
+    <p>There’s a pattern.</p>
 
-    <p>
-      they’re just:
-    </p>
+    <p>Some users generate 5–10 images and stop.</p>
 
-    <p>
-      • testing multiple ideas<br>
-      • generating more content<br>
-      • posting consistently
-    </p>
+    <p>Others generate <strong>50+ variations</strong> and suddenly one hits.</p>
 
-    <p>
-      that’s literally it.
-    </p>
+    <p><strong>Same tool. Different results.</strong></p>
 
-    <p>
-      the biggest mistake is trying one idea, not seeing results, and stopping.
-    </p>
+    <p>The difference isn’t skill.</p>
 
-    <p>
-      the people who keep generating and trying different styles eventually hit something that works.
-    </p>
+    <p>It’s volume.</p>
 
-    <p>
-      and once one video works, everything changes.
-    </p>
+    <hr style="margin:20px 0; border:none; border-top:1px solid #eee;" />
 
-    <p>
-      if you’re using Zyvo, try this:
-    </p>
+    <p>That’s why most serious users move to Pro.</p>
 
-    <p>
-      generate 5–10 variations of the same idea and compare them.
-    </p>
+    <p>Not for features, but because they can actually test ideas properly.</p>
 
-    <p>
-      you’ll see very quickly what stands out more.
-    </p>
+    <p>Right now it’s also <strong>25% off</strong> (€32 → €24.99)</p>
 
-    <p>
-      curious what you’re working on btw — reply if you’re building something
-    </p>
+    <div style="margin:22px 0;">
+      <a href="https://tryzyvo.com/workspace/pricing">
+        see plans →
+      </a>
+    </div>
 
-    <p>
-      — Zyvo
-    </p>
+    <p>Once you start generating more, things start to click.</p>
 
+    <p>— Zyvo</p>
   </div>
   `;
 }
 
 async function sendEmail(user) {
-  const subject = "what's actually working right now";
+  const subject = "most people use this wrong";
 
   let sendError = null;
 
@@ -100,7 +75,7 @@ async function sendEmail(user) {
       from: "Zyvo <niko@tryzyvo.com>",
       to: user.email,
       subject,
-      html: whatWorksHtml(user),
+      html: conversionHtml(user),
     });
 
     if (!error) {
@@ -109,40 +84,50 @@ async function sendEmail(user) {
     }
 
     sendError = error;
-    console.error(`⚠️ Retry ${attempt} failed for ${user.email}`);
     await sleep(RETRY_DELAY_MS);
   }
 
-  if (sendError) {
-    console.error("❌ Final fail:", user.email, sendError);
-    return false;
-  }
-
+  if (sendError) return false;
   return true;
 }
 
 export default async function handler(req, res) {
   try {
-    console.log("🚀 Starting 'what works' email...");
+    console.log("🚀 Starting conversion email...");
 
-    const { data: users, error } = await supabase
-      .from("profiles")
-      .select("email");
+    let allUsers = [];
+    let from = 0;
+    const batchSize = 1000;
 
-    if (error) {
-      console.error("❌ Supabase error:", error);
-      return res.status(500).json({ error: "Failed to fetch users" });
+    while (true) {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("email, email_updates, last_email_sent_at")
+        .eq("email_updates", true)
+        .range(from, from + batchSize - 1);
+
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ error: "fetch error" });
+      }
+
+      if (!data || data.length === 0) break;
+
+      allUsers.push(...data);
+
+      if (data.length < batchSize) break;
+      from += batchSize;
     }
 
-    console.log(`📊 Total users: ${users.length}`);
-
     let sent = 0;
-    let failed = 0;
     let skipped = 0;
+    let processed = 0;
 
-    for (const user of users) {
+    for (const user of allUsers) {
+      if (processed >= MAX_SEND) break;
+      if (!user.email) continue;
 
-      if (!user.email) {
+      if (user.last_email_sent_at) {
         skipped++;
         continue;
       }
@@ -151,39 +136,36 @@ export default async function handler(req, res) {
 
       const ok = await sendEmail(user);
 
-      if (ok) sent++;
-      else failed++;
+      if (ok) {
+        sent++;
 
+        await supabase
+          .from("profiles")
+          .update({
+            last_email_sent_at: new Date().toISOString(),
+          })
+          .eq("email", user.email);
+      }
+
+      processed++;
       await sleep(DELAY_MS);
     }
 
-    console.log("🎯 Done");
     console.log(`✅ Sent: ${sent}`);
-    console.log(`❌ Failed: ${failed}`);
-    console.log(`⚠️ Skipped: ${skipped}`);
+    console.log(`⏭️ Skipped: ${skipped}`);
 
-    return res.status(200).json({
-      success: true,
-      total: users.length,
-      sent,
-      failed,
-      skipped,
-    });
-
+    return res.status(200).json({ success: true });
   } catch (err) {
-    console.error("🔥 Error:", err);
-    return res.status(500).json({ error: "Internal error" });
+    console.error(err);
+    return res.status(500).json({ error: "internal error" });
   }
 }
-
-// LOCAL RUN
-console.log("🟢 Running 'what works' email...");
 
 handler(
   {},
   {
-    status: (code) => ({
-      json: (data) => console.log("📤 Response:", code, data),
+    status: () => ({
+      json: (data) => console.log("📤", data),
     }),
   }
 );

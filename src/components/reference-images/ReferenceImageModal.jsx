@@ -242,7 +242,7 @@ export default function ReferenceImageModal({
   }, [activeTab]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center pb-[90px] bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center pb-[90px] bg-black/60 backdrop-blur-sm">
 <div className="w-full max-w-[900px] h-[600px] rounded-2xl 
 bg-[#191B1C]
 border border-white/5
