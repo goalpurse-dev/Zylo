@@ -11,7 +11,40 @@ const OutputSelector = ({
   children,
 }) => {
   const buttonRef = useRef(null);
+
   const rect = buttonRef.current?.getBoundingClientRect();
+
+ // 🔥 SAFE POSITION LOGIC
+let safeTop = 0;
+let safeLeft = 0;
+
+if (rect) {
+  const viewportHeight = window.innerHeight;
+  const viewportWidth = window.innerWidth;
+
+  const PANEL_HEIGHT = 420;
+  const PANEL_WIDTH = 420;
+  const OFFSET = 2;
+
+  // 👉 Default: stay aligned with button
+  safeTop = rect.top;
+
+  // 👉 Only move up if it would overflow bottom
+  const wouldOverflowBottom =
+    rect.top + PANEL_HEIGHT + OFFSET > viewportHeight;
+
+  if (wouldOverflowBottom) {
+    safeTop = viewportHeight - PANEL_HEIGHT - OFFSET;
+  }
+
+  // 👉 Flip to left if no space on right
+  const overflowRight =
+    rect.right + PANEL_WIDTH + 10 > viewportWidth;
+
+  safeLeft = overflowRight
+    ? rect.left - PANEL_WIDTH - 10
+    : rect.right + 10;
+}
 
   return (
     <>
@@ -20,7 +53,7 @@ const OutputSelector = ({
         <button
           ref={buttonRef}
           onClick={(e) => {
-            e.stopPropagation(); // 🔥 prevents weird bubbling
+            e.stopPropagation();
             setOpen((p) => !p);
           }}
           className="
@@ -65,7 +98,7 @@ const OutputSelector = ({
             className="hidden md:block fixed inset-0 z-[999]"
             data-selector-portal
           >
-            {/* 🔥 CLICK OUTSIDE BACKDROP */}
+            {/* CLICK OUTSIDE */}
             <div
               className="absolute inset-0"
               onClick={() => setOpen(false)}
@@ -75,8 +108,8 @@ const OutputSelector = ({
             <div
               className="absolute pointer-events-auto"
               style={{
-                top: rect.top,
-                left: rect.right + 10,
+                top: safeTop,
+                left: safeLeft,
               }}
             >
               {/* ARROW */}
@@ -95,7 +128,11 @@ const OutputSelector = ({
                   transition-all duration-200 ease-out
                   origin-left
                   animate-in fade-in zoom-in-95
+                  overflow-y-auto
                 "
+                style={{
+                  maxHeight: "min(420px, calc(100vh - 40px))",
+                }}
               >
                 {children}
               </div>

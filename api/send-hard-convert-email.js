@@ -11,6 +11,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// 🔥 SAFE SETTINGS
 const DELAY_MS = 3000;
 const RETRY_DELAY_MS = 2000;
 const MAX_SEND = 300;
@@ -19,63 +20,67 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function conversionHtml(user) {
+function attemptEmailHtml(user) {
   const name = user.email?.split("@")[0] || "there";
 
   return `
   <div style="font-family:Arial, sans-serif; max-width:520px; margin:auto; padding:20px; color:#111; line-height:1.6;">
-    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
-      this is what most people get wrong
+    
+    <div style="display:none;max-height:0;overflow:hidden;">
+      this took 6 tries to get right
     </div>
 
     <p>Hey ${name},</p>
 
-    <p>I’ve been watching how people use Zyvo.</p>
+    <p>I tested something quickly inside Zyvo.</p>
 
-    <p>There’s a pattern.</p>
+    <p>The first few generations?</p>
 
-    <p>Some users generate 5–10 images and stop.</p>
+    <p>mid.</p>
 
-    <p>Others generate <strong>50+ variations</strong> and suddenly one hits.</p>
+    <p>Then around the 5th–6th try…</p>
 
-    <p><strong>Same tool. Different results.</strong></p>
+    <p><strong>one output was actually good enough to post.</strong></p>
 
-    <p>The difference isn’t skill.</p>
+    <p>That’s when it clicked again:</p>
 
-    <p>It’s volume.</p>
+    <p><strong>this isn’t about one perfect prompt.</strong></p>
+
+    <p>It’s about generating enough variations until something hits.</p>
 
     <hr style="margin:20px 0; border:none; border-top:1px solid #eee;" />
 
-    <p>That’s why most serious users move to Pro.</p>
+    <p>The people getting views aren’t smarter.</p>
 
-    <p>Not for features, but because they can actually test ideas properly.</p>
+    <p>They just run more attempts.</p>
 
-    <p>Right now it’s also <strong>25% off</strong> (€32 → €24.99)</p>
-
-    <div style="margin:22px 0;">
-      <a href="https://tryzyvo.com/workspace/pricing">
-        see plans →
+    <p style="margin-top:20px;">
+      <a href="https://tryzyvo.com/workspace/image-generator">
+        try again here →
       </a>
-    </div>
+    </p>
 
-    <p>Once you start generating more, things start to click.</p>
+    <p style="margin-top:20px;">
+      (this is also why most serious users end up on Pro — more credits = more chances)
+    </p>
 
     <p>— Zyvo</p>
+
   </div>
   `;
 }
 
 async function sendEmail(user) {
-  const subject = "most people use this wrong";
+  const subject = "this took 6 tries";
 
   let sendError = null;
 
   for (let attempt = 1; attempt <= 2; attempt++) {
     const { error } = await resend.emails.send({
-      from: "Zyvo <niko@tryzyvo.com>",
+      from: "Zyvo <updates@tryzyvo.com>", // ✅ NEW SENDER
       to: user.email,
       subject,
-      html: conversionHtml(user),
+      html: attemptEmailHtml(user),
     });
 
     if (!error) {
@@ -93,7 +98,7 @@ async function sendEmail(user) {
 
 export default async function handler(req, res) {
   try {
-    console.log("🚀 Starting conversion email...");
+    console.log("🚀 Starting attempt email...");
 
     let allUsers = [];
     let from = 0;
@@ -102,7 +107,7 @@ export default async function handler(req, res) {
     while (true) {
       const { data, error } = await supabase
         .from("profiles")
-        .select("email, email_updates, last_email_sent_at")
+        .select("email, email_updates, last_email_type")
         .eq("email_updates", true)
         .range(from, from + batchSize - 1);
 
@@ -124,10 +129,12 @@ export default async function handler(req, res) {
     let processed = 0;
 
     for (const user of allUsers) {
+
       if (processed >= MAX_SEND) break;
       if (!user.email) continue;
 
-      if (user.last_email_sent_at) {
+      // ✅ prevent duplicates
+      if (user.last_email_type === "attempt_email") {
         skipped++;
         continue;
       }
@@ -138,16 +145,16 @@ export default async function handler(req, res) {
 
       if (ok) {
         sent++;
+        processed++;
 
         await supabase
           .from("profiles")
           .update({
-            last_email_sent_at: new Date().toISOString(),
+            last_email_type: "attempt_email"
           })
           .eq("email", user.email);
       }
 
-      processed++;
       await sleep(DELAY_MS);
     }
 
@@ -155,12 +162,14 @@ export default async function handler(req, res) {
     console.log(`⏭️ Skipped: ${skipped}`);
 
     return res.status(200).json({ success: true });
+
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "internal error" });
   }
 }
 
+// LOCAL RUN
 handler(
   {},
   {
