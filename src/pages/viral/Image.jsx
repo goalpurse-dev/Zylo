@@ -43,6 +43,13 @@ const [userPlan, setUserPlan] = useState("free");
   const [postedImages, setPostedImages] = useState(new Set());
 
   const [activeJobId, setActiveJobId] = useState(null);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+
+  useEffect(() => {
+    const onResize = () => setIsDesktop(window.innerWidth >= 1024);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
 const location = useLocation();
 
@@ -269,15 +276,7 @@ useEffect(() => {
   /* ===============================
      RENDER
   =============================== */
-  return (
-  <div className="w-full h-full bg-[#090A0A] overflow-hidden">
-
-    {/* 🔥 DESKTOP LAYOUT */}
-    <div className="hidden lg:flex h-full">
-
-      {/* LEFT — GENERATE (FIXED) */}
- <div className="w-[40%] 2xl:w-[25%] h-full bg-[#191B1C]">
-  <div className="h-full overflow-y-auto px-0 py-0">
+  const generatePanel = (
     <Generate
       prompt={prompt}
       setPrompt={setPrompt}
@@ -285,44 +284,42 @@ useEffect(() => {
       setActiveJobId={setActiveJobId}
       hasResults={results.length > 0}
     />
-  </div>
-</div>
+  );
 
-      {/* RIGHT — RESULTS (SCROLLABLE) */}
-      <div className=" w-[60%] 2xl:w-[75%]  h-full overflow-y-auto px-2 pt-2 pb-6">
-        <Result
-          results={results}
-          onCopyPrompt={(p) => navigator.clipboard.writeText(p)}
-          onRegenerate={(p) => sendPromptToGenerator(p)}
-          activeJobId={activeJobId}
-          userPlan={userPlan}
-          postedImages={postedImages}
-        />
-      </div>
+  const resultPanel = (
+    <Result
+      results={results}
+      onCopyPrompt={(p) => navigator.clipboard.writeText(p)}
+      onRegenerate={(p) => sendPromptToGenerator(p)}
+      activeJobId={activeJobId}
+      userPlan={userPlan}
+      postedImages={postedImages}
+    />
+  );
+
+  return (
+    <div className="w-full h-full bg-[#090A0A] overflow-hidden">
+
+      {isDesktop ? (
+        /* 🖥️ DESKTOP — side by side */
+        <div className="flex h-full">
+          <div className="w-[40%] 2xl:w-[25%] h-full bg-[#191B1C]">
+            <div className="h-full overflow-y-auto">
+              {generatePanel}
+            </div>
+          </div>
+          <div className="w-[60%] 2xl:w-[75%] h-full overflow-y-auto px-2 pt-2 pb-6">
+            {resultPanel}
+          </div>
+        </div>
+      ) : (
+        /* 📱 MOBILE — stacked */
+        <div className="flex flex-col px-3 py-3 space-y-3 overflow-y-auto h-full">
+          {generatePanel}
+          {resultPanel}
+        </div>
+      )}
+
     </div>
-
-    {/* 📱 MOBILE LAYOUT */}
-    <div className="lg:hidden flex flex-col px-3 py-3 space-y-3 overflow-y-auto h-full">
-
-      <Generate
-        prompt={prompt}
-        setPrompt={setPrompt}
-        onJobCreated={addOptimisticJob}
-        setActiveJobId={setActiveJobId}
-        hasResults={results.length > 0}
-      />
-
-      <Result
-        results={results}
-        onCopyPrompt={(p) => navigator.clipboard.writeText(p)}
-        onRegenerate={(p) => sendPromptToGenerator(p)}
-        activeJobId={activeJobId}
-        userPlan={userPlan}
-        postedImages={postedImages}
-      />
-
-    </div>
-
-  </div>
-);
+  );
 }

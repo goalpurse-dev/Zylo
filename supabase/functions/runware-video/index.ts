@@ -40,7 +40,9 @@ const SERVICE_KEY =
 
 /* ================= CONFIG ================= */
 
-const MAX_RUNTIME_MS = 7 * 60 * 1000;
+// 🔥 HARD WALL = 8 MINUTES
+const MAX_RUNTIME_MS = 8 * 60 * 1000;
+
 const POLL_INTERVAL_MS = 3000;
 const MAX_POLLS = Math.ceil(MAX_RUNTIME_MS / POLL_INTERVAL_MS);
 const MAX_CONSECUTIVE_POLL_ERRORS = 8;
@@ -98,7 +100,8 @@ Deno.serve(async (req) => {
 
   try {
     if (req.method !== "POST") return err(req, "Method not allowed", 405);
-    if (!SUPABASE_URL || !SERVICE_KEY) return err(req, "Missing Supabase env", 500);
+    if (!SUPABASE_URL || !SERVICE_KEY)
+      return err(req, "Missing Supabase env", 500);
 
     const body = await req.json().catch(() => ({}));
 
@@ -107,7 +110,7 @@ Deno.serve(async (req) => {
       prompt,
       width,
       height,
-      resolution, // 🔥 ADD THIS
+      resolution,
       durationSec,
       referenceImages,
       airTag,
@@ -123,18 +126,16 @@ Deno.serve(async (req) => {
     const isMiniMax = String(airTag).includes("minimax");
     const isKling = String(airTag).includes("kling");
 
-    // ✅ ONLY require width/height for non-resolution models
     if (!isMiniMax && !isKling && (!width || !height)) {
       return err(req, "Missing dimensions");
     }
 
-    // mark job running
     await safeUpdateJob(sb, jobId, {
       status: "running",
       progress: PROGRESS_MIN,
     });
 
-    /* ================= BUILD PROVIDER PAYLOAD ================= */
+    /* ================= PAYLOAD ================= */
 
     const launchPayload: any = {
       subject: String(prompt),
@@ -143,16 +144,13 @@ Deno.serve(async (req) => {
       airTag: String(airTag),
     };
 
-    // 🔥 MiniMax
-   if (isMiniMax) {
-  launchPayload.resolution =
-    resolution === "1080p" ? "1080p" : "720p";
-}
-else {
-  // ✅ Kling + Runway BOTH use width/height
-  launchPayload.width = Number(width);
-  launchPayload.height = Number(height);
-}
+    if (isMiniMax) {
+      launchPayload.resolution =
+        resolution === "1080p" ? "1080p" : "720p";
+    } else {
+      launchPayload.width = Number(width);
+      launchPayload.height = Number(height);
+    }
 
     console.log("FINAL PROVIDER PAYLOAD:", launchPayload);
 
@@ -203,6 +201,7 @@ else {
         continue;
       }
 
+      // ✅ REAL SUCCESS (ONLY TRUTH)
       if (poll?.url) {
         await safeUpdateJob(sb, jobId, {
           status: "succeeded",
@@ -216,34 +215,21 @@ else {
 
       const status = String(poll?.status || "").toLowerCase();
 
+      // 🔥 IGNORE FAKE FAILURES
+      if (status === "failed") {
+        console.log("Ignoring Runware 'failed' status — still polling");
+        continue;
+      }
+
+      // 🔥 ALSO IGNORE DONE WITHOUT URL
       if (["succeeded", "completed", "done"].includes(status)) {
         if (!poll?.url) {
-          await safeUpdateJob(sb, jobId, {
-            status: "failed",
-            error: "Missing result URL",
-          });
-          return ok(req, { ok: false });
+          console.log("Done but no URL — waiting more");
+          continue;
         }
-
-        await safeUpdateJob(sb, jobId, {
-          status: "succeeded",
-          progress: 100,
-          result_url: poll.url,
-          charged: true,
-        });
-
-        return ok(req, { ok: true });
       }
 
-      if (status === "failed") {
-        await safeUpdateJob(sb, jobId, {
-          status: "failed",
-          error: poll?.error ?? "Video failed",
-        });
-
-        return ok(req, { ok: false });
-      }
-
+      // progress update
       if (i % PROGRESS_UPDATE_EVERY_N_POLLS === 0) {
         const p = computeProgress(startMs);
         await safeRpc(sb, "bump_job_progress", {
@@ -253,9 +239,11 @@ else {
       }
     }
 
+    /* ================= FINAL FAIL (AFTER 8 MIN) ================= */
+
     await safeUpdateJob(sb, jobId, {
       status: "failed",
-      error: "Timeout",
+      error: "Final timeout after 8 minutes",
     });
 
     return ok(req, { ok: false, error: "Timeout" });

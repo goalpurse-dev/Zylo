@@ -15,6 +15,13 @@ const SERVICE_KEY =
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
   Deno.env.get("SERVICE_ROLE_KEY")!;
 
+/* ===================== CONFIG ===================== */
+
+// 🔥 HARD WALL 8 MINUTES
+const MAX_RUNTIME_MS = 8 * 60 * 1000;
+const POLL_INTERVAL_MS = 1500;
+const MAX_POLLS = Math.floor(MAX_RUNTIME_MS / POLL_INTERVAL_MS);
+
 /* ===================== HELPERS ===================== */
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -22,9 +29,6 @@ function extractImageUrl(obj: any): string | null {
   const d0 = obj?.data?.[0] ?? obj?.data ?? obj ?? {};
   return d0?.imageURL || d0?.outputs?.[0]?.imageURL || null;
 }
-
-/* ---------- Upload image to Runware ---------- */
-
 
 async function uploadImageToRunware(publicUrl: string): Promise<string> {
   const uploadTask = {
@@ -48,10 +52,11 @@ async function uploadImageToRunware(publicUrl: string): Promise<string> {
     throw new Error("Runware imageUpload failed");
   }
 
-  return json.data[0].imageURL; // im.runware.ai URL
+  return json.data[0].imageURL;
 }
 
 /* ===================== MAIN ===================== */
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -90,7 +95,7 @@ Deno.serve(async (req) => {
       p_progress: 10,
     });
 
-    /* ---------- Convert refs → Runware ---------- */
+    /* ---------- Upload refs ---------- */
     const runwareRefs: string[] = [];
     for (const url of referenceImages) {
       if (typeof url === "string" && url.startsWith("https://")) {
@@ -99,7 +104,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    /* ---------- Build inference task ---------- */
+    /* ---------- Build task ---------- */
     const task: any = {
       taskType: "imageInference",
       taskUUID: crypto.randomUUID(),
@@ -114,7 +119,6 @@ Deno.serve(async (req) => {
 
     if (runwareRefs.length > 0) {
       task.inputs = { referenceImages: runwareRefs };
-     
     }
 
     if (airTag.startsWith("openai:")) {
@@ -127,9 +131,7 @@ Deno.serve(async (req) => {
       };
     }
 
-
-console.log("runware-image body", JSON.stringify(body));
-console.log("runware payload", JSON.stringify(task));
+    console.log("runware payload", JSON.stringify(task));
 
     /* ---------- Create ---------- */
     const createRes = await fetch(TASKS_URL, {
@@ -141,51 +143,25 @@ console.log("runware payload", JSON.stringify(task));
       body: JSON.stringify([task]),
     });
 
- const createJson = await createRes.json();
+    const createJson = await createRes.json();
 
-if (!createRes.ok || createJson?.errors?.length) {
-  console.error("Runware provider error:", createJson);
+    if (!createRes.ok || createJson?.errors?.length) {
+      const message =
+        createJson?.errors?.[0]?.message ||
+        "Image provider rejected the prompt.";
 
-  const message =
-    createJson?.errors?.[0]?.message ||
-    "Image provider rejected the prompt.";
+      await sb.rpc("finish_job_failed", {
+        p_id: jobId,
+        p_error: message,
+      });
 
-  // 🔥 mark job as failed
-  await sb.rpc("finish_job_failed", {
-    p_id: jobId,
-    p_error: message,
-  });
-
-  return new Response(
-    JSON.stringify({
-      ok: false,
-      error: message,
-    }),
-    { status: 200 }
-  );
-}
-
-if (!createJson?.data || createJson.data.length === 0) {
-  console.error("Runware returned empty response:", createJson);
-
-  await sb.rpc("finish_job_failed", {
-    p_id: jobId,
-    p_error: "Provider returned empty result",
-  });
-
-  return new Response(
-    JSON.stringify({
-      ok: false,
-      error: "Image provider temporarily unavailable. Please try again later.",
-    }),
-    { status: 200 }
-  );
-}
-
+      return new Response(JSON.stringify({ ok: false, error: message }));
+    }
 
     const providerId =
       createJson?.data?.[0]?.taskUUID ?? task.taskUUID;
 
+    /* ---------- Instant success ---------- */
     const immediate = extractImageUrl(createJson);
     if (immediate) {
       await sb.rpc("finish_job_success", {
@@ -196,63 +172,81 @@ if (!createJson?.data || createJson.data.length === 0) {
       return new Response(JSON.stringify({ ok: true, url: immediate }));
     }
 
-    /* ---------- Poll ---------- */
-    for (let i = 0; i < 120; i++) {
-      await sleep(1200);
-      const pollRes = await fetch(TASK_GET(providerId), {
-        headers: { Authorization: `Bearer ${RUNWARE_KEY}` },
-      });
-      const pollJson = await pollRes.json();
+    /* ================= POLLING (FIXED) ================= */
 
-if (!pollJson) {
-  console.error("Runware poll returned invalid response");
-  break;
-}
+    const start = Date.now();
 
-const url = extractImageUrl(pollJson);
+    for (let i = 0; i < MAX_POLLS; i++) {
+      await sleep(POLL_INTERVAL_MS);
 
+      if (Date.now() - start > MAX_RUNTIME_MS) break;
+
+      let pollJson: any;
+
+      try {
+        const pollRes = await fetch(TASK_GET(providerId), {
+          headers: { Authorization: `Bearer ${RUNWARE_KEY}` },
+        });
+
+        pollJson = await pollRes.json();
+      } catch (e) {
+        console.log("Poll error — continuing...");
+        continue;
+      }
+
+      if (!pollJson) continue;
+
+      const url = extractImageUrl(pollJson);
+
+      // ✅ ONLY REAL SUCCESS
       if (url) {
         await sb.rpc("finish_job_success", {
           p_id: jobId,
           p_url: url,
           p_output: pollJson,
         });
+
         return new Response(JSON.stringify({ ok: true, url }));
+      }
+
+      const status = String(pollJson?.status || "").toLowerCase();
+
+      // 🔥 IGNORE THESE (Runware lies)
+      if (status === "failed") {
+        console.log("Ignoring fake failed status");
+        continue;
+      }
+
+      if (["completed", "done", "succeeded"].includes(status)) {
+        if (!url) {
+          console.log("Done but no URL yet — waiting");
+          continue;
+        }
       }
     }
 
-    
+    /* ================= FINAL FAIL ================= */
 
+    await sb.rpc("finish_job_failed", {
+      p_id: jobId,
+      p_error: "Final timeout after 8 minutes",
+    });
 
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        error: "Image generation took too long. Please try again.",
+      })
+    );
 
-// ---------- Timeout ----------
-await sb.rpc("finish_job_failed", {
-  p_id: jobId,
-  p_error: "Image provider timeout",
-});
+  } catch (e) {
+    console.error("runware-image failure:", e);
 
-return new Response(
-  JSON.stringify({
-    ok: false,
-    error: "Image provider took too long to respond. Please try another model.",
-  }),
-  { status: 200 }
-);
-
-} catch (e) {
-  console.error("runware-image failure:", e);
-
-  await sb.rpc("finish_job_failed", {
-    p_id: jobId,
-    p_error: "Image provider temporarily unavailable",
-  });
-
-  return new Response(
-    JSON.stringify({
-      ok: false,
-      error: "Image provider temporarily unavailable. Please try another model.",
-    }),
-    { status: 200 }
-  );
-}
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        error: "Image provider temporarily unavailable.",
+      })
+    );
+  }
 });

@@ -12,8 +12,8 @@ export type EligibilityResult = {
   reason?: string;
 };
 
-const FREE_LIMIT = 3;
-const WINDOW_DAYS = 7;
+const FREE_LIMIT = 10;
+const WINDOW_DAYS = 30;
 
 export async function getPlanCode(supabase: any, userId: string): Promise<string> {
   const { data, error } = await supabase
@@ -83,7 +83,7 @@ export async function checkWeeklyFreeEligibility(supabase: any, userId: string):
       remaining: 0,
       limit: FREE_LIMIT,
       window_days: WINDOW_DAYS,
-      reason: "Weekly limit reached",
+      reason: "Monthly limit reached",
     };
   }
 
@@ -100,7 +100,7 @@ export async function checkWeeklyFreeEligibility(supabase: any, userId: string):
     window_days: WINDOW_DAYS,
     reset_in,
     reset_at: resetAt.toISOString(),
-    reason: "Weekly free limit reached",
+    reason: "Monthly free limit reached",
   };
 }
 

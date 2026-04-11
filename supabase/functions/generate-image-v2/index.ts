@@ -40,8 +40,8 @@ Deno.serve(async (req) => {
     // 1) Weekly eligibility
     const eligibility = await checkWeeklyFreeEligibility(supabase, user.id);
     if (!eligibility.allowed) {
-      return err(req, "Weekly free limit reached", 403, {
-        code: "weekly_limit",
+      return err(req, "Monthly free limit reached", 403, {
+        code: "monthly_limit",
         ...eligibility,
       });
     }

@@ -398,6 +398,7 @@ const [progressToast, setProgressToast] = useState(null);
 const [settingsOpen, setSettingsOpen] = useState(false);
 const [activeMenu, setActiveMenu] = useState(null); 
 const [limitToastOpen, setLimitToastOpen] = useState(false);
+const [resetAt, setResetAt] = useState(null);
 const panelRef = useRef(null);
  const [selectedModelKey, setSelectedModelKey] = useState("image:nano.2")
 const [selectedSize, setSelectedSize] = useState("1:1");
@@ -731,6 +732,7 @@ useEffect(() => {
 
     if (!error && data) {
       setFreeRemaining(data.remaining);
+      if (data.reset_at) setResetAt(data.reset_at);
     }
   };
 
@@ -946,13 +948,13 @@ className={`
 <div className="mt-3 flex items-center justify-center gap-3 text-sm font-medium">
 
 {freeRemaining > 0 ? (
-  <span className="text-amber-400">
-    {freeRemaining} free generation{freeRemaining === 1 ? "" : "s"} left
+  <span className={freeRemaining <= 1 ? "text-[#E879F9]" : freeRemaining <= 3 ? "text-[#C084FC]" : "text-white/40"}>
+    {freeRemaining} / 10 free this month
   </span>
 ) : (
   <>
-    <span className="text-amber-400">
-      Free limit reached
+    <span className="text-[#E879F9]">
+      Monthly limit reached
     </span>
 
     <button
@@ -970,7 +972,7 @@ className={`
       transition-all duration-200
       "
     >
-      Unlock 580 credits
+      Upgrade
     </button>
   </>
 )}
@@ -1465,7 +1467,7 @@ md:group-hover:brightness-110
 
 {limitToastOpen && (
   <LimitReachedToast
-    resetInDays={6} // later you can pass dynamic from eligibility
+    resetAt={resetAt}
     onClose={() => setLimitToastOpen(false)}
   />
 )}
