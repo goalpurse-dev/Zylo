@@ -20,48 +20,44 @@ export default function Faq() {
         
 
 
-        <FaqItem 
-    question="What makes Zyvo different from other AI tools?"
-    answer="Zyvo focuses on product-first content, giving brands polished visuals that match their exact style and industry."
-/>
-        
-        <FaqItem 
-    question="How fast does Zyvo generate an image?"
-    answer="Typically 2-6 seconds, depending on the scene complexity."
+        <FaqItem
+    question="What can I create with Zyvo?"
+    answer="Zyvo gives you two core tools: an AI Image Generator and an AI Video Generator. Use the image generator to create scroll-stopping visuals in 20+ styles, and the video generator to produce short-form videos ready for TikTok, Reels, and YouTube Shorts — all in seconds."
 />
 
- <FaqItem 
+        <FaqItem
+    question="How many free generations do I get?"
+    answer="Every new account gets 10 free generations to try Zyvo. These reset monthly and work across both the image and video generators. No credit card required to start."
+/>
+
+        <FaqItem
+    question="What are credits and how do they work?"
+    answer="Credits are the currency used inside Zyvo. Each generation consumes credits depending on the tool and model used — some models cost more than others. You can earn credits through your free monthly allowance or by upgrading to a paid plan."
+/>
+
+        <FaqItem
+    question="Are credits refundable if I don't like the result?"
+    answer="No. Once credits are used to generate content — whether you keep the result or not — they are non-refundable. This covers the cost of running the AI models. We recommend using your free generations first to get a feel for the tool before purchasing."
+/>
+
+        <FaqItem
     question="Can I use Zyvo for TikTok, Reels, and YouTube Shorts?"
-    answer="Yes! Zyvo lets you generate visuals in vertical 9:16 format perfect for TikTok, Reels, Shorts, and ads."
+    answer="Yes, that's exactly what it's built for. Both generators produce content optimized for modern social platforms. The video generator supports short-form vertical formats so you can post directly without any editing."
 />
 
- <FaqItem 
-    question="Do I need any editing experience to use Zyvo?"
-    answer="Yes! Zyvo lets you generate visuals in vertical 9:16 format perfect for TikTok, Reels, Shorts, and ads."
+        <FaqItem
+    question="Do I need any design or editing experience?"
+    answer="None at all. Just type a prompt, pick a style, and Zyvo handles the rest. Most creators go from idea to finished post in under 60 seconds."
 />
 
-
- <FaqItem 
-    question="Can I upload my own product photos?"
-    answer="Absolutely. Zyvo allows you to upload your product and automatically place it in professional backgrounds and scenes."
+        <FaqItem
+    question="Are the images and videos I generate mine to use commercially?"
+    answer="Yes. Everything you generate on Zyvo belongs to you and is cleared for commercial use — including social media ads, branded content, and product promotions."
 />
 
-
- <FaqItem 
-    question="Are the generated images safe for commercial use?"
-    answer="Yes. All output is commercial-use friendly and belongs to you once generated."
-/>
-
-
- <FaqItem 
-    question="Does Zyvo work for e-commerce sellers?"
-    answer="Yes. It's designed to help sellers create high-converting product photos without hiring photographers."
-/>
-
-
- <FaqItem 
-    question="What is credit used for"
-    answer="Credits are used to generate content inside Zyvo. Each time you create a new result, one or more credits are used depending on the tool. "
+        <FaqItem
+    question="What's the difference between the free plan and paid plans?"
+    answer="The free plan gives you 10 generations per month with access to standard models. Paid plans unlock more credits, faster and higher-quality AI models, priority generation, and access to the full model library including premium video models like Runway Gen-4."
 />
 
 

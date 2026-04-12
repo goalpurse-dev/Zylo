@@ -1,279 +1,217 @@
+import { useState, useEffect } from "react";
+import Logo from "../../../assets/Logo.png";
+import { ChevronDown, X, Menu } from "lucide-react";
+import { Link } from "react-router-dom";
 
-import { useState } from "react";
-import Logo from "../../../assets/Logo.png"
-import Google from "../../../assets/google.png"
-import { ChevronDown, X } from "lucide-react";
+const tools = [
+  { label: "Image Generator", to: "/workspace/image-generator", desc: "20+ AI styles" },
+  { label: "Video Generator",  to: "/workspace/video-generator",  desc: "10+ video models" },
+  { label: "Creations",        to: "/workspace/creations",        desc: "Your saved work" },
+];
 
-import { Link, NavLink } from "react-router-dom";
-
-
-
-const navLink =
-  "text-[#110829] font-normal text-base lg:text-xl hover:text-[#7A3BFF] transition hover:underline";
+const GoogleIcon = () => (
+  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+  </svg>
+);
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-const [featuresOpen, setFeaturesOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [menuOpen, setMenuOpen]   = useState(false);
+  const [mobileTools, setMobileTools] = useState(false);
+
+  // close tools dropdown on outside click
+  useEffect(() => {
+    if (!toolsOpen) return;
+    const close = () => setToolsOpen(false);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [toolsOpen]);
+
+  // lock body scroll when mobile menu open
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [menuOpen]);
 
   return (
-    <section className="flex justify-center mx-auto bg-transparent " >
-     <div className="bg-white py-3 md:py-4  lg:py-3 w-full  lg:mx-14 shadow-lg rounded-xl mx-6 md:mx-6 xl:max-w-7xl 2xl:max-w-[1500px] lg:max-w-[1000px]">
-       
-        <div className="flex justify-between  gap-2 lg:gap-10">
-           <div className=" ml-1 md:ml-4 lg:ml-4 flex flex-row gap-1 lg:gap-1 items-center">
-            <p className="hidden sm:flex sm:ml-4 text-[#7A3BFF] md:text-xl lg:text-2xl font-bold cursor-default ">ZyvoAI</p>
-            <img src={Logo} alt="Logo" className=" h-10 lg:h-10 w-10 lg:w-10 ml-4 md:ml-2 mr-2 lg:mr-4"/>
+    <>
+      <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-200/80 shadow-sm">
+        <div className="max-w-7xl mx-auto px-5 lg:px-10 h-16 flex items-center justify-between gap-6">
+
+          {/* LOGO */}
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            <img src={Logo} alt="Zyvo" className="h-8 w-8" />
+            <span className="text-[#7A3BFF] font-bold text-xl tracking-tight">ZyvoAI</span>
+          </Link>
+
+          {/* DESKTOP NAV */}
+          <nav className="hidden lg:flex items-center gap-8">
+            <div className="relative">
+              <button
+                onClick={(e) => { e.stopPropagation(); setToolsOpen((o) => !o); }}
+                className="flex items-center gap-1.5 text-gray-700 font-semibold text-[15px] hover:text-[#7A3BFF] transition"
+              >
+                Tools
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${toolsOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {toolsOpen && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute top-full left-0 mt-3 w-64 bg-white rounded-2xl shadow-xl shadow-black/10 border border-gray-100 p-2 z-50"
+                >
+                  {tools.map((t) => (
+                    <Link
+                      key={t.to}
+                      to={t.to}
+                      onClick={() => setToolsOpen(false)}
+                      className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-purple-50 group transition"
+                    >
+                      <span className="text-sm font-semibold text-gray-800 group-hover:text-[#7A3BFF] transition">{t.label}</span>
+                      <span className="text-xs text-gray-400">{t.desc}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
 
-       
-       <div className="relative lg:flex lg:flex-row     gap-2 lg:gap-12 items-center mr-2 lg:mr-12 lg:ml-4 hidden ">
-      <Link
-  className="text-[#110829] font-normal text-base lg:text-xl hover:text-[#7A3BFF] transition hover:underline flex items-center gap-2 "
-  
-  onClick={() => setOpen(!open)}
-  >
-    
-  Tools
-    <ChevronDown   className={`w-4 h-4 transition-transform ${
-      open ? "rotate-180" : ""
-    }`} ></ChevronDown>
-</Link>
+            <Link to="/workspace/pricing" className="text-[15px] font-semibold text-gray-700 hover:text-[#7A3BFF] transition">Pricing</Link>
+            <Link to="/support"           className="text-[15px] font-semibold text-gray-700 hover:text-[#7A3BFF] transition">Help</Link>
+            <Link to="/login"             className="text-[15px] font-semibold text-gray-700 hover:text-[#7A3BFF] transition">Login</Link>
+          </nav>
 
-{open && (
-  <div className="
-    absolute top-full mt-3
-    w-[320px]
-    bg-white
-    rounded-xl
-    shadow-lg
-    border border-[#7A3BFF]/20
-    p-4
-    z-20
-  ">
-    <p className="text-[#7A3BFF] font-semibold mb-3">
-      Tools
-    </p>
+          {/* DESKTOP CTAs */}
+          <div className="hidden lg:flex items-center gap-3">
+            <Link
+              to="/signup"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-[15px] font-semibold text-gray-700 transition"
+            >
+              <GoogleIcon />
+              Continue with Google
+            </Link>
+            <Link
+              to="/signup"
+              className="px-5 py-2.5 rounded-xl text-white text-[15px] font-bold transition hover:opacity-90"
+              style={{
+                background: "linear-gradient(135deg, #7A3BFF, #9D6BFF)",
+                boxShadow: "0 4px 16px rgba(122,59,255,0.4)",
+              }}
+            >
+              Sign Up Free
+            </Link>
+          </div>
 
-   <div className="grid grid-cols-1 gap-4">
+          {/* MOBILE RIGHT */}
+          <div className="lg:hidden flex items-center gap-2">
+            <Link
+              to="/signup"
+              className="px-4 py-2 rounded-xl text-white text-sm font-bold"
+              style={{ background: "linear-gradient(135deg, #7A3BFF, #9D6BFF)" }}
+            >
+              Sign Up
+            </Link>
+            <button
+              onClick={() => setMenuOpen(true)}
+              className="p-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
 
-  {/* IMAGE GENERATOR */}
-  <div>
-    <p className="text-[12px] font-semibold text-[#110829] uppercase mb-1">
-      Image
-    </p>
+        </div>
+      </header>
 
-    <Link
-      to="/workspace/image-generator"
-      className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
-    >
-      Image Generator
-    </Link>
-  </div>
+      {/* MOBILE MENU — rendered outside header to guarantee full-screen */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-[100] bg-white flex flex-col">
 
-  {/* VIDEO GENERATOR */}
-  <div>
-    <p className="text-[12px] font-semibold text-[#110829] uppercase mb-1">
-      Video
-    </p>
+          {/* Top bar */}
+          <div className="flex items-center justify-between px-6 h-16 border-b border-gray-100 shrink-0">
+            <div className="flex items-center gap-2">
+              <img src={Logo} alt="Zyvo" className="h-7 w-7" />
+              <span className="text-[#7A3BFF] font-bold text-lg">ZyvoAI</span>
+            </div>
+            <button
+              onClick={() => setMenuOpen(false)}
+              className="p-2 rounded-xl hover:bg-gray-100 transition"
+            >
+              <X className="w-5 h-5 text-gray-700" />
+            </button>
+          </div>
 
-    <Link
-      to="/workspace/video-generator"
-      className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
-    >
-      Video Generator
-    </Link>
-  </div>
+          {/* Links — scrollable middle */}
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-2">
 
-  {/* CREATIONS */}
-  <div>
-    <p className="text-[12px] font-semibold text-[#110829] uppercase mb-1">
-      Library
-    </p>
+            {/* Tools accordion */}
+            <button
+              onClick={() => setMobileTools((o) => !o)}
+              className="w-full flex items-center justify-between px-4 py-4 rounded-2xl bg-gray-50 text-gray-800 font-semibold text-sm"
+            >
+              Tools
+              <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${mobileTools ? "rotate-180" : ""}`} />
+            </button>
 
-    <Link
-      to="/workspace/creations"
-      className="block text-[14px] text-[#4A4A55] hover:text-[#7A3BFF] hover:underline"
-    >
-      Creations
-    </Link>
-  </div>
+            {mobileTools && (
+              <div className="pl-2 space-y-1.5">
+                {tools.map((t) => (
+                  <Link
+                    key={t.to}
+                    to={t.to}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center justify-between px-4 py-3.5 rounded-xl bg-white border border-gray-100 hover:border-[#7A3BFF]/40 transition"
+                  >
+                    <span className="text-sm font-semibold text-gray-800">{t.label}</span>
+                    <span className="text-xs text-gray-400">{t.desc}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
 
-</div>
-  </div>
-)}
+            {[
+              { label: "Pricing", to: "/workspace/pricing" },
+              { label: "Help",    to: "/support" },
+              { label: "Login",   to: "/login" },
+            ].map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => setMenuOpen(false)}
+                className="block px-4 py-4 rounded-2xl bg-gray-50 text-sm font-semibold text-gray-800 hover:bg-gray-100 transition"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
 
+          {/* Bottom CTAs — always visible */}
+          <div className="px-6 py-6 border-t border-gray-100 space-y-3 shrink-0">
+            <Link
+              to="/signup"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center justify-center w-full py-4 rounded-2xl text-white font-bold text-sm"
+              style={{
+                background: "linear-gradient(135deg, #7A3BFF, #9D6BFF)",
+                boxShadow: "0 4px 20px rgba(122,59,255,0.35)",
+              }}
+            >
+              Sign Up Free
+            </Link>
+            <Link
+              to="/signup"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+            >
+              <GoogleIcon />
+              Continue with Google
+            </Link>
+          </div>
 
-     <Link
-  to="/workspace/pricing"
-  className="text-[#110829] font-normal text-base lg:text-xl hover:text-[#7A3BFF] transition hover:underline"
->
-  Pricing
-</Link>
-      <Link className="text-[#110829] font-normal text-base lg:text-xl hover:text-[#7A3BFF] transition hover:underline cursor-pointer"
-      to="/support"
-      >Help</Link>
-
-
-      <Link className="text-[#110829] font-normal text-base lg:text-xl hover:text-[#7A3BFF] transition hover:underline cursor-pointer"
-      to="/login"
-      >Login</Link>
-      </div> 
-
-
-
-       <div className="flex flex-row h-full gap-1 lg:gap-4 ml-1  ">
-      <Link className="
-      bg-[#C9B8FF] hover:bg-[#b8a1ff] lg:whitespace-nowrap mr-2 py-2 px-6  rounded-md text-[#492399] font-semibold transition text-sm cursor-default
-      lg:py-3  lg:px-8 lg:flex-shrink-0 flex items-center"
-     to="/signup"
-     >Sign Up Now</Link>
-
-
-      
-      <Link className=" lg:whitespace-nowrap hidden bg-white hover:bg-gray-100 py-1  px-1 md:px-4 md:items-center rounded-md text-[#110829]  border  border-gray-500  mr-12 md:mr-2 transition cursor-default
-      md:flex 
-      lg:py-3 lg:px-3 lg:flex-shrink-0 lg:mr-16 "
-      to="/signup"
-      >Start Free With  
-      <img src={Google} alt="Google" className="inline-block h-4 md:h-6  lg:h-8 w-4 md:w-8 lg:w-10 "/>
-      </Link>
-   
-<button
-  onClick={() => setMenuOpen(true)}
-  className="lg:hidden mr-3 h-12 w-10 bg-[#ECE8F2] rounded-md flex flex-col justify-center items-center gap-[3px]"
->
-  <span className="h-[2px] w-5 bg-[#110829]" />
-  <span className="h-[2px] w-5 bg-[#110829]" />
-  <span className="h-[2px] w-5 bg-[#110829]" />
-</button>
-      </div>
-
-        
-{menuOpen && (
-  <div className="fixed inset-0 z-50 bg-white px-6 py-6 lg:hidden  ">
-    
-    {/* Top row */}
-    <div className="flex justify-between items-center mb-8">
-      <p className="text-[#7A3BFF] text-xl font-bold">ZyvoAI</p>
-      <X className="text-[#110829] h- w-5" onClick={() => setMenuOpen(false)}></X>
-    </div>
-
-    {/* Menu items */}
-    <div className="space-y-4">
-      
-      {/* Features (EXPANDING CARD) */}
-<div className="w-full bg-[#F4F1FA] rounded-xl overflow-hidden transition-all">
-  
-  <button
-    onClick={() => setFeaturesOpen(!featuresOpen)}
-    className="w-full px-4 py-4 flex justify-between items-center"
-  >
-    <span className="text-[#110829]">Features</span>
-    <ChevronDown
-      className={`text-[#110829]/60 transition-transform ${
-        featuresOpen ? "rotate-180" : ""
-      }`}
-    />
-  </button>
-
-{featuresOpen && (
-  <div className="px-4 pb-4 space-y-3 ">
-
-    <Link
-      to="/workspace/image-generator"
-      className="block bg-white rounded-lg px-4 py-3 shadow text-[#110829] hover:border-[#7A3BFF] border-[1px]"
-    >
-      Image Generator
-    </Link>
-
-    <Link
-      to="/workspace/video-generator"
-      className="block bg-white rounded-lg px-4 py-3 shadow text-[#110829] hover:border-[#7A3BFF] border-[1px]"
-    >
-      Video Generator
-    </Link>
-
-    <Link
-      to="/workspace/creations"
-      className="block bg-white rounded-lg px-4 py-3 shadow text-[#110829] hover:border-[#7A3BFF] border-[1px]"
-    >
-      Creations
-    </Link>
-
-  </div>
-)}
-</div>
-
-
-      {/* Other links */}
-      <Link className="block bg-[#F4F1FA] rounded-xl px-4 py-4 text-[#110829]" to="/workspace/pricing">
-        Pricing
-      </Link>
-
-      <Link className="block bg-[#F4F1FA] rounded-xl px-4 py-4 text-[#110829]" to="/support">
-        Help
-      </Link>
-
-      <Link className="block bg-[#F4F1FA] rounded-xl px-4 py-4 text-[#110829]" to="/login">
-        Login
-      </Link>
-    </div>
-
-    <div className=" py-10">
-    <div className="bg-[#4A4A55]/40 w-full  h-[1px]"></div>  
-    </div>
-
-    {/* CTA buttons */}
- 
-
-   <div className="mt-6 flex flex-col gap-4">
-  
-  <Link
-    to="/signup"
-    className="
-      w-full bg-[#7A3BFF] hover:bg-[#6A2EFF]
-      text-white font-semibold
-      py-3 rounded-xl text-center
-      transition
-    "
-  >
-    Sign Up Now
-  </Link>
-
-<div className="flex h-full items-center">
-  <Link
-    to="/signup"
-    className="
-      w-full flex items-center justify-center gap-1
-      bg-white hover:bg-gray-100
-      border border-gray-400
-      text-[#110829] 
-      py-3 rounded-xl
-      transition
-    "
-  >
-    Start Free With
-    <img
-      src={Google}
-      alt="Google"
-      className="h-6 w-8 "
-    />
-  </Link>
-  </div>
-
-</div>
-    </div>
-
-)}
-     
-     
-      </div>  
-      
-
-
-
-     </div>
-    </section>
+        </div>
+      )}
+    </>
   );
 }

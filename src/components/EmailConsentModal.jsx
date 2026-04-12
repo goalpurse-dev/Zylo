@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { createPortal } from "react-dom"
 import { supabase } from "../lib/supabaseClient"
-import { TrendingUp, Compass, Image as ImageIcon, Check } from "lucide-react"
+import { Check } from "lucide-react"
 import { startCheckout } from "../lib/payments"
 
 /* ─── Pricing data (mirrors Pricing.jsx) ─────────────────────────── */
@@ -170,7 +170,7 @@ export default function OnboardingModal({ user, onComplete }) {
           <span className="text-white font-bold text-lg tracking-tight">Zyvo</span>
         </div>
 
-        <div className="w-full max-w-lg" key={step} style={{ animation: "fadeSlideUp 0.35s ease forwards" }}>
+        <div className={`w-full ${step === 4 ? "max-w-5xl" : "max-w-lg"}`} key={step} style={{ animation: "fadeSlideUp 0.35s ease forwards" }}>
 
           <Steps current={step} total={4} />
 
