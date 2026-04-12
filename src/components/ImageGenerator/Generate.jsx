@@ -693,65 +693,38 @@ watchJob(job.id, (updatedJob) => {
 
 
 useEffect(() => {
-  const loadPlan = async () => {
+  const init = async () => {
     const { data: auth } = await supabase.auth.getUser();
     const currentUser = auth?.user;
-
     setUser(currentUser);
     if (!currentUser) return;
 
-    const { data } = await supabase
-      .from("profiles")
-      .select("plan_code")
-      .eq("id", currentUser.id)
-      .single();
+    // Fetch plan + eligibility in parallel — saves one full network RTT
+    const [profileResult, eligResult] = await Promise.all([
+      supabase.from("profiles").select("plan_code").eq("id", currentUser.id).single(),
+      supabase.functions.invoke("check-image-eligibility"),
+    ]);
 
-    const code = (data?.plan_code || "free").toLowerCase();
+    const code = (profileResult.data?.plan_code || "free").toLowerCase();
     setPlanCode(code);
 
     if (code === "free") {
       setSelectedModelKey("image:flux.base");
+      if (!eligResult.error && eligResult.data) {
+        setFreeRemaining(eligResult.data.remaining);
+        if (eligResult.data.reset_at) setResetAt(eligResult.data.reset_at);
+      }
     }
   };
 
-  loadPlan();
-}, []);
+  init();
 
-
-
-useEffect(() => {
-  const loadFreeInfo = async (session) => {
-    if (planCode !== "free") return;
-    if (!session?.user) return;
-
-    const { data, error } = await supabase.functions.invoke(
-      "check-image-eligibility"
-    );
-
-    console.log("eligibility:", data, error);
-
-    if (!error && data) {
-      setFreeRemaining(data.remaining);
-      if (data.reset_at) setResetAt(data.reset_at);
-    }
-  };
-
-  // 1️⃣ check current session
-  supabase.auth.getSession().then(({ data }) => {
-    loadFreeInfo(data.session);
+  const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    if (session?.user) init();
   });
 
-  // 2️⃣ listen for auth changes
-  const { data: listener } = supabase.auth.onAuthStateChange(
-    (_event, session) => {
-      loadFreeInfo(session);
-    }
-  );
-
-  return () => {
-    listener.subscription.unsubscribe();
-  };
-}, [planCode]);
+  return () => listener.subscription.unsubscribe();
+}, []);
 
 useEffect(() => {
   const handleClickOutside = (e) => {

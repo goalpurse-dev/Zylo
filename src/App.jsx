@@ -126,6 +126,7 @@ const VisualStylesAI = lazy(() => import("./app/blog/imagegenerator/ai-visual-st
 import ScrollToTop from "./components/ScrollToTop";
 import CookieConsent from "./components/CookieConsent";
 import EmailConsentModal from "./components/EmailConsentModal";
+import WelcomeModal from "./components/WelcomeModal";
 import { supabase } from "./lib/supabaseClient";
 import NotFoundRedirect from "./components/NotFoundRedirect";
 import PublicGallery from "./components/public-gallery/gallery";
@@ -191,6 +192,15 @@ function AppWithRouting() {
 const [profile, setProfile] = React.useState(null);
 const [showOnboarding, setShowOnboarding] = React.useState(false);
 const [showWelcomeNotif, setShowWelcomeNotif] = React.useState(false);
+const [showWelcomeModal, setShowWelcomeModal] = React.useState(false);
+
+// Show welcome modal if flag was set before page refresh
+React.useEffect(() => {
+  if (localStorage.getItem("zyvo_show_welcome") === "1") {
+    setShowWelcomeModal(true);
+    localStorage.removeItem("zyvo_show_welcome");
+  }
+}, []);
 
 React.useEffect(() => {
   if (!user) return;
@@ -270,56 +280,18 @@ return (
   <EmailConsentModal
     user={user}
     onComplete={() => {
-      setShowOnboarding(false)
-      setProfile(prev => ({ ...prev, onboarding_completed: true }))
-      setShowWelcomeNotif(true)
-      setTimeout(() => setShowWelcomeNotif(false), 7000)
+      setShowOnboarding(false);
+      setProfile(prev => ({ ...prev, onboarding_completed: true }));
+      // Set flag in localStorage so it survives the page refresh
+      localStorage.setItem("zyvo_show_welcome", "1");
     }}
   />
 )}
 
   {!hideNav && <Navbar />}
 
-{showWelcomeNotif && (
-  <div
-    className="fixed bottom-6 right-4 md:right-6 z-[9999] w-[320px] max-w-[calc(100vw-2rem)]"
-    style={{ animation: "slideNotifUp 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards" }}
-  >
-    <div className="relative rounded-2xl border border-[#7A3BFF]/35 bg-[#0B0E1A] backdrop-blur-xl shadow-[0_8px_60px_rgba(122,59,255,0.45),0_2px_20px_rgba(0,0,0,0.8)]">
-      <div className="absolute top-0 inset-x-6 h-px bg-gradient-to-r from-transparent via-[#7A3BFF]/50 to-transparent" />
-      <div className="px-5 py-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="relative shrink-0">
-            <img
-              src="/assets/ai/robot.webp"
-              alt="Zyvo AI"
-              className="w-11 h-11 rounded-full border border-[#7A3BFF]/30 shadow-[0_0_18px_rgba(122,59,255,0.5)]"
-            />
-            <div className="absolute inset-0 rounded-full bg-[#7A3BFF]/20 blur-md animate-pulse pointer-events-none" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-white text-sm font-semibold leading-tight">Zyvo AI</div>
-            <div className="text-[#9D6BFF] text-xs font-medium mt-0.5">Welcome aboard!</div>
-          </div>
-          <button
-            onClick={() => setShowWelcomeNotif(false)}
-            className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full text-white/30 hover:text-white hover:bg-white/10 transition text-xs"
-          >
-            ✕
-          </button>
-        </div>
-        <p className="text-white/65 text-sm leading-relaxed">
-          You have <span className="text-white font-semibold">10 free generations</span> to use this month. Start creating viral content!
-        </p>
-      </div>
-    </div>
-    <style>{`
-      @keyframes slideNotifUp {
-        from { opacity: 0; transform: translateY(16px) scale(0.96); }
-        to   { opacity: 1; transform: translateY(0)   scale(1);    }
-      }
-    `}</style>
-  </div>
+{showWelcomeModal && (
+  <WelcomeModal onClose={() => setShowWelcomeModal(false)} />
 )}
 
     <main className={mainClass}>
