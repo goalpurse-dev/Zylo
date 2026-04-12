@@ -1,771 +1,756 @@
-// src/components/Pricing.jsx
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { startCheckout, openBillingPortal } from "../lib/payments";
 import { supabase } from "../lib/supabaseClient";
+import { Check, ChevronDown, Shield } from "lucide-react";
 
-
-
-/** >>> YOUR REAL STRIPE PRICE IDS <<< */
+/* ─── Stripe IDs ─────────────────────────────────────────────────────────── */
 const PRICE_IDS = {
-  starter: "price_1TGKT6Htn4q5rIncI47V5Ein",
-  pro: "price_1TGKSqHtn4q5rIncIf8RPa6e",
+  starter:    "price_1TGKT6Htn4q5rIncI47V5Ein",
+  pro:        "price_1TGKSqHtn4q5rIncIf8RPa6e",
   generative: "price_1TGKSSHtn4q5rIncSTurqkCN",
 };
-
-/** >>> TOP-UP STRIPE PRICE IDS <<< */
 const TOPUP_PRICE_IDS = {
-  mini: "price_1TGKjDHtn4q5rInczlym0Dcz",     // €6.99
-  standard: "price_1SpZczHtn4q5rInctZoF9rJV",  // €11.99
-  max: "price_1TGKjxHtn4q5rIncQzzCGyrR",       // €19.99
+  mini:     "price_1TGKjDHtn4q5rInczlym0Dcz",
+  standard: "price_1SpZczHtn4q5rInctZoF9rJV",
+  max:      "price_1TGKjxHtn4q5rIncQzzCGyrR",
 };
 
-const BLUE = "#1677FF";
-
-
-
-/* Ribbon on popular plan */
-function CornerRibbon({ label = "Best value" }) {
-  return (
-    <div className="absolute top-0 right-0 w-32 h-32 overflow-hidden pointer-events-none">
-      <div
-        className="bg-[#7A3BFF] absolute transform rotate-45 text-[11px] font-bold text-white tracking-wide text-center py-1"
-        style={{
-      
-          top: "20px",
-          right: "-40px",
-          width: "140px",
-          boxShadow: "0 3px 6px rgba(0,0,0,0.25)",
-        }}
-      >
-        {label}
-      </div>
-    </div>
-  );
-}
-
-/** Small blue tick icon */
-const Tick = ({ className = "" }) => (
-  <svg
-    viewBox="0 0 24 24"
-    className={className}
-    aria-hidden="true"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M20 6L9 17l-5-5" />
-  </svg>
-);
-
-/* ------------------------------- Plan data -------------------------------- */
+/* ─── Plan data ───────────────────────────────────────────────────────────── */
 const TIERS = [
-{
-  id: "starter",
-  name: "Starter",
-  monthly: 12,
-  yearlyPerMonth: 10,
-  blurb: "Launch faster with enough credits for consistent weekly content",
-  popular: false,
-  features: [
-    "600 credits / month",
-    "Up to 200 images",
-    "Generate up to 30 AI videos",
-    "Watermark-free exports",
-    "Private creation library",
-    "Standard generation speed",
-    "Email support",
-    "30 generations / day"
-  ],
-},
-{
-  id: "pro",
-  name: "Pro",
-  monthly: 25,
-  yearlyPerMonth: 21,
-  blurb: "Most creators choose this to go viral faster",
-  popular: true,
-  features: [
-    "1,200 credits / month",
-    "Create up to 400 AI images",
-    "Generate up to 60 AI videos",
-    "Watermark-free exports",
-    "Private creation library",
-    "Priority generation queue",
-    "Advanced prompt controls",
-    "Email support",
-    "100 generations / day"
-  ],
-},
-{
-  id: "generative",
-  name: "Generative",
-  monthly: 50,
-  yearlyPerMonth: 42,
-  blurb: "Built for high-output workflows, serious production, and faster iteration",
-  popular: false,
-  features: [
-    "2,500 credits / month",
-    "Create up to 830 AI images",
-    "Generate up to 125 AI videos",
-    "Watermark-free exports",
-    "Unlimited creation history",
-    "Fast-lane generation",
-    "Advanced prompt controls",
-    "Priority support",
-    "300 generations / day"
-  ],
-}
+  {
+    id: "starter",
+    name: "Starter",
+    monthly: 12,
+    yearlyPerMonth: 10,
+    blurb: "For creators just getting started",
+    accent: "#38BDF8",
+    glow:   "rgba(56,189,248,0.12)",
+    btnFrom: "#1E6FA8",
+    btnTo:   "#2E9EDB",
+    features: [
+      "600 credits / month",
+      "Up to 200 AI images",
+      "Up to 30 AI videos",
+      "Watermark-free exports",
+      "Private creation library",
+      "Standard generation speed",
+      "Email support",
+      "30 generations / day",
+    ],
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    monthly: 25,
+    yearlyPerMonth: 21,
+    blurb: "What 80% of viral creators use",
+    popular: true,
+    accent: "#A855F7",
+    glow:   "rgba(168,85,247,0.22)",
+    btnFrom: "#7A3BFF",
+    btnTo:   "#A855F7",
+    strikethrough: 32,
+    badge: "25% OFF",
+    features: [
+      "1,200 credits / month",
+      "Up to 400 AI images",
+      "Up to 60 AI videos",
+      "Watermark-free exports",
+      "Private creation library",
+      "Priority generation queue",
+      "Advanced prompt controls",
+      "Email support",
+      "100 generations / day",
+    ],
+  },
+  {
+    id: "generative",
+    name: "Generative",
+    monthly: 50,
+    yearlyPerMonth: 42,
+    blurb: "Built for high-output production",
+    accent: "#FB923C",
+    glow:   "rgba(251,146,60,0.12)",
+    btnFrom: "#B45309",
+    btnTo:   "#F97316",
+    features: [
+      "2,500 credits / month",
+      "Up to 830 AI images",
+      "Up to 125 AI videos",
+      "Watermark-free exports",
+      "Unlimited creation history",
+      "Fast-lane generation",
+      "Advanced prompt controls",
+      "Priority support",
+      "300 generations / day",
+    ],
+  },
 ];
 
 const TOPUPS = [
-  { id: "mini", title: "Mini", price: 6.99, credits: 300, to: "/buy/credits?pack=mini" },
-  { id: "standard", title: "Standard", price: 11.99, credits: 500, to: "/buy/credits?pack=standard" },
-  { id: "max", title: "Max", price: 19.99, credits: 900, to: "/buy/credits?pack=max" },
+  { id: "mini",     price: 6.99,  credits: 300 },
+  { id: "standard", price: 11.99, credits: 500, best: true },
+  { id: "max",      price: 19.99, credits: 900 },
 ];
 
-const ALL_INCLUDE = [
-  "Brand creation",
-  "Ad creation",
-  "Product creation",
-  "Top quality exports",
-  "Email support",
+const FAQS = [
+  { q: "Can I cancel anytime?",
+    a: "Yes. Manage your plan in the Stripe portal. It stays active until the end of your paid period — no surprise charges." },
+  { q: "Do unused credits roll over?",
+    a: "Monthly credits add to your balance — they don't reset to zero. One-time packs never expire." },
+  { q: "How do upgrades and downgrades work?",
+    a: "Both are handled securely in Stripe. Upgrades are instant (prorated). Downgrades take effect at your next renewal." },
+  { q: "Do you offer refunds?",
+    a: "Unused credits are refundable within 7 days. Once credits are spent, refunds can't be issued due to AI generation costs." },
+  { q: "What can I create with Zyvo?",
+    a: "Scroll-stopping AI images in 20+ styles, viral short-form videos, image-to-video, and more — all export-ready, no watermark." },
+  { q: "Is there a free plan?",
+    a: "Yes — sign up free and get 10 image generations every month. No card required. Upgrade anytime you want more." },
 ];
 
-/* --------------------------- Helpers / hooks --------------------------- */
+const TESTIMONIALS = [
+  { text: "Went from 0 to 40K followers in 6 weeks using Zyvo videos.", name: "Sarah M.", role: "Content creator" },
+  { text: "My ROAS doubled when I switched to AI-generated product images.", name: "Marcus T.", role: "E-commerce brand" },
+  { text: "I cancel every tool that doesn't pay for itself. Zyvo pays 10x.", name: "Priya S.", role: "Digital marketer" },
+];
 
+const RECENT_SIGNUPS = [
+  { name: "Sarah M.", action: "upgraded to Pro" },
+  { name: "Marcus T.", action: "just signed up" },
+  { name: "Lena K.", action: "upgraded to Pro" },
+  { name: "James R.", action: "upgraded to Generative" },
+  { name: "Priya S.", action: "just signed up" },
+  { name: "Tom H.", action: "upgraded to Pro" },
+];
+
+const AVATAR_GRADIENTS = [
+  ["#7A3BFF","#A855F7"],
+  ["#1E6FA8","#38BDF8"],
+  ["#A855F7","#C084FC"],
+  ["#FB923C","#F97316"],
+  ["#38BDF8","#7A3BFF"],
+  ["#7A3BFF","#C084FC"],
+];
+
+const PARTICLE_CONFIG = [
+  { x: 8,  y: 18, size: 3, dur: 7,   del: 0,   color: "#A855F7" },
+  { x: 85, y: 55, size: 2, dur: 10,  del: 2.5, color: "#38BDF8" },
+  { x: 42, y: 75, size: 2, dur: 8.5, del: 4,   color: "#A855F7" },
+  { x: 68, y: 10, size: 3, dur: 9,   del: 1,   color: "#38BDF8" },
+  { x: 22, y: 65, size: 2, dur: 11,  del: 5.5, color: "#FB923C" },
+  { x: 92, y: 35, size: 2, dur: 7.5, del: 3,   color: "#A855F7" },
+  { x: 55, y: 90, size: 2, dur: 12,  del: 7,   color: "#38BDF8" },
+  { x: 14, y: 42, size: 2, dur: 9.5, del: 1.5, color: "#A855F7" },
+];
+
+/* ─── Helpers ─────────────────────────────────────────────────────────────── */
+const USD = 1.08;
+function fmt(eur, currency) {
+  const val = currency === "USD" ? eur * USD : eur;
+  const sym = currency === "USD" ? "$" : "€";
+  return `${sym}${Number.isInteger(val) ? val.toFixed(0) : val.toFixed(2)}`;
+}
+function tierRank(id) { return TIERS.findIndex(t => t.id === id); }
 
 function useCurrentPlan() {
   const [state, setState] = useState({ plan: "free", hasSub: false, loading: true });
-
   useEffect(() => {
     (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return setState({ plan: "free", hasSub: false, loading: false });
-
       const { data } = await supabase
-        .from("profiles")
-        .select("plan_code, stripe_subscription_id")
-        .eq("id", user.id)
-        .single();
-
-      setState({
-        plan: data?.plan_code || "free",
-        hasSub: !!data?.stripe_subscription_id,
-        loading: false,
-      });
+        .from("profiles").select("plan_code, stripe_subscription_id").eq("id", user.id).single();
+      setState({ plan: data?.plan_code || "free", hasSub: !!data?.stripe_subscription_id, loading: false });
     })();
   }, []);
-
-  return state; // { plan, hasSub, loading }
+  return state;
 }
 
-function tierRank(code) {
-  return TIERS.findIndex((t) => t.id === code);
+/* ─── Live counter ────────────────────────────────────────────────────────── */
+function useLiveCounter(start) {
+  const [count, setCount] = useState(start);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCount(c => c + Math.floor(Math.random() * 4) + 1);
+    }, 1800);
+    return () => clearInterval(id);
+  }, []);
+  return count.toLocaleString();
 }
 
-/* ------------------------------ Modal inline ------------------------------ */
+/* ─── Particles ───────────────────────────────────────────────────────────── */
+function Particles() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {PARTICLE_CONFIG.map((p, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: p.size,
+            height: p.size,
+            background: p.color,
+            animation: `particleFloat ${p.dur}s ease-in-out ${p.del}s infinite`,
+            opacity: 0.15,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ─── Signup toast ────────────────────────────────────────────────────────── */
+function SignupToast() {
+  const [idx, setIdx] = useState(0);
+  const [visible, setVisible] = useState(false);
+  const [toastKey, setToastKey] = useState(0);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 8000);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (!visible) return;
+    const id = setInterval(() => {
+      setIdx(i => (i + 1) % RECENT_SIGNUPS.length);
+      setToastKey(k => k + 1);
+    }, 3500);
+    return () => clearInterval(id);
+  }, [visible]);
+
+  if (!visible) return null;
+  const s = RECENT_SIGNUPS[idx];
+  const [gradFrom, gradTo] = AVATAR_GRADIENTS[idx % AVATAR_GRADIENTS.length];
+
+  return (
+    <div
+      key={toastKey}
+      className="flex fixed bottom-[84px] md:bottom-6 left-4 md:left-5 z-50 items-center gap-3 px-4 py-3 rounded-2xl signup-toast-enter"
+      style={{
+        background: "rgba(13,15,28,0.94)",
+        backdropFilter: "blur(12px)",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06)",
+      }}
+    >
+      <div
+        className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+        style={{ background: `linear-gradient(135deg, ${gradFrom}, ${gradTo})` }}
+      >
+        {s.name[0]}
+      </div>
+      <div>
+        <div className="text-white text-xs font-semibold leading-tight">
+          {s.name}{" "}
+          <span className="text-white/40 font-normal">{s.action}</span>
+        </div>
+        <div className="text-white/25 text-[10px]">just now</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Confirm downgrade ───────────────────────────────────────────────────── */
 function ConfirmModal({ open, onCancel, onConfirm, targetLabel }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60" onClick={onCancel} />
-      <div className="relative z-[1001] w-[92%] max-w-md rounded-2xl border border-white/10 bg-[#110829] p-5 shadow-2xl">
-        <div className="text-lg font-semibold mb-1">Confirm downgrade</div>
-        <p className="text-sm text-white/80">
-          Are you sure you want to switch to <span className="font-semibold">{targetLabel}</span>?
-          This change will be scheduled and managed in Stripe’s secure billing portal. You’ll keep
-          your current plan until the end of the paid period.
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center px-4">
+      <div className="absolute inset-0 bg-black/75 backdrop-blur-md" onClick={onCancel} />
+      <div className="relative z-10 w-full max-w-sm rounded-[24px] bg-[#0D0F1C] p-6 shadow-2xl"
+        style={{ boxShadow: "0 30px 80px rgba(0,0,0,0.6)" }}>
+        <p className="text-white font-bold text-lg mb-2">Confirm downgrade</p>
+        <p className="text-white/50 text-sm leading-relaxed">
+          Switch to <span className="text-white font-semibold">{targetLabel}</span>? You keep your plan until end of billing period. Changes are managed in Stripe.
         </p>
-        <div className="mt-5 flex gap-2">
-          <button
-            onClick={onCancel}
-            className="flex-1 rounded-xl border border-white/15 bg-white/10 px-4 py-2 font-semibold hover:bg-white/15"
-          >
+        <div className="flex gap-3 mt-5">
+          <button onClick={onCancel}
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white/60 bg-white/5 hover:bg-white/10 transition">
             Cancel
           </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 rounded-xl bg-white text-black px-4 py-2 font-semibold hover:bg-gray-100"
-          >
-            Go to downgrade
+          <button onClick={onConfirm}
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-white text-black hover:bg-gray-100 transition">
+            Confirm
           </button>
         </div>
       </div>
     </div>
   );
 }
-const usdRate = 1.08;
 
-function formatPrice(eurAmount, currency) {
-  const value =
-    currency === "USD" ? eurAmount * usdRate : eurAmount;
-
-  const symbol = currency === "USD" ? "$" : "€";
-
-  return `${symbol}${Number.isInteger(value)
-    ? value.toFixed(0)
-    : value.toFixed(2)
-  }`;
+/* ─── FAQ accordion ───────────────────────────────────────────────────────── */
+function FaqItem({ q, a }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background: "#0D0F1C" }}>
+      <button onClick={() => setOpen(p => !p)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left gap-4 hover:bg-white/[0.03] transition">
+        <span className="text-sm font-semibold text-white/80">{q}</span>
+        <ChevronDown className={`w-4 h-4 text-white/30 shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div className={`overflow-hidden transition-all duration-300 ${open ? "max-h-40" : "max-h-0"}`}>
+        <p className="px-5 pb-5 text-sm text-white/40 leading-relaxed">{a}</p>
+      </div>
+    </div>
+  );
 }
-/* ------------------------------- UI cards ------------------------------- */
-function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade, currency }) {
-  
+
+/* ─── Plan card ───────────────────────────────────────────────────────────── */
+function PlanCard({ tier, billing, currentPlan, hasSub, currency, onAskDowngrade, animClass }) {
   const isYearly = billing === "yearly";
-const eurPrice = isYearly ? tier.yearlyPerMonth : tier.monthly;
-
-
-// simple conversion (you can later make dynamic)
-const usdRate = 1.08;
-const displayPrice =
-  currency === "USD" ? eurPrice * usdRate : eurPrice;
-
-const symbol = currency === "USD" ? "$" : "€";
-
-const priceStr = `${symbol}${Number.isInteger(displayPrice)
-  ? displayPrice.toFixed(0)
-  : displayPrice.toFixed(2)
-}`;
-const subline =
-  isYearly
-    ? `billed annually ${formatPrice(eurPrice * 12, currency)}`
-    : "/month";
-
+  const eurPrice = isYearly ? tier.yearlyPerMonth : tier.monthly;
+  const priceStr = fmt(eurPrice, currency);
   const curRank = tierRank(currentPlan);
   const thisRank = tierRank(tier.id);
+  const isPopular = !!tier.popular;
 
-  let ctaLabel = "Choose";
-  let hint = "";
+  let cta = "Get started";
   let disabled = false;
-
-if (tier.id === currentPlan) {
-  ctaLabel = "Current plan";
-  disabled = true;
-} else if (curRank >= 0 && thisRank > curRank) {
-  ctaLabel = "Upgrade";
-} else if (curRank >= 0 && thisRank < curRank) {
-  ctaLabel = "Downgrade";
-} else if (currentPlan === "free") {
-  if (tier.id === "starter") {
-    ctaLabel = "Start basic";
-  } else if (tier.id === "pro") {
-    ctaLabel = "Go Pro ";
-  } else if (tier.id === "generative") {
-    ctaLabel = "Go All-In ";
-  }
-}
-async function onClick() {
-  console.log("🔥 CLICK DETECTED");
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    console.log("❌ no user");
-    return (window.location.href = "/signup");
+  if (tier.id === currentPlan)                { cta = "Current plan"; disabled = true; }
+  else if (thisRank > curRank && curRank >= 0) cta = "Upgrade";
+  else if (thisRank < curRank && curRank >= 0) cta = "Downgrade";
+  else if (currentPlan === "free") {
+    if (tier.id === "starter")    cta = "Start going viral";
+    else if (tier.id === "pro")   cta = "Go Pro";
+    else                          cta = "Go all-in";
   }
 
-  console.log("🔥 USER:", user.email);
-
-  const priceId = PRICE_IDS[tier.id];
-  if (!priceId) return alert("Price ID not configured.");
-
-  if (hasSub) {
-    console.log("⚠️ has subscription, skipping tracking");
-    return openBillingPortal({ flow: "change_plan", returnPath: "/pricing" });
+  async function handleClick() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return (window.location.href = "/signup");
+    const priceId = PRICE_IDS[tier.id];
+    if (!priceId) return;
+    if (hasSub) return openBillingPortal({ flow: "change_plan", returnPath: "/pricing" });
+    if (thisRank < curRank) return onAskDowngrade(tier);
+    await supabase.from("abandoned_checkouts").upsert(
+      { email: user.email, status: "pending", recovery_stage: 0, recovered: false, paid: false, updated_at: new Date().toISOString() },
+      { onConflict: "email" }
+    );
+    await startCheckout({ type: "subscription", priceId, userId: user.id, email: user.email,
+      metadata: { email: user.email, plan: tier.id } });
   }
 
-  console.log("🔥 ABOUT TO INSERT");
+  return (
+    <div
+      className={`relative flex flex-col rounded-[24px] overflow-hidden pricing-card-hover ${isPopular ? "pro-border-pulse" : ""} ${animClass}`}
+      style={{
+        background: isPopular
+          ? "linear-gradient(160deg, #130B28 0%, #1C0A3A 40%, #0E0E20 100%)"
+          : "linear-gradient(160deg, #0B0D1A 0%, #0E1020 100%)",
+        boxShadow: isPopular ? undefined : "0 4px 24px rgba(0,0,0,0.4)",
+      }}
+    >
+      {/* Colored top bar */}
+      <div className="h-[3px] w-full" style={{ background: `linear-gradient(90deg, ${tier.accent}CC, ${tier.accent}40)` }} />
 
-// 🔥 CREATE NEW CHECKOUT TRACK ENTRY (ALWAYS NEW)
-const { error: insertError } = await supabase
-  .from("abandoned_checkouts")
-  .upsert(
-  {
-    email: user.email,
-    stripe_session_id: null,
-    stripe_customer_id: null,
-    checkout_url: null,
-    status: "pending",
-    recovery_stage: 0,
-    recovered: false,
-    paid: false,
-    updated_at: new Date().toISOString(),
-  },
-  { onConflict: "email" }
-);
-
-if (insertError) {
-  console.error("❌ Failed to track checkout:", insertError);
-} else {
-  console.log("🔥 Checkout tracking created:", user.email);
-}
-
-  
-
-  // 👇 WAIT SO YOU CAN SEE LOGS
-
-
- await startCheckout({
-  type: "subscription",
-  priceId,
-  userId: user.id,
-  email: user.email,
- metadata: {
-  email: user.email,
-  plan: tier.id
-}
-});
-} // ✅ CLOSE FUNCTION HERE
-
-const core = (
- <div
-  className={`relative overflow-hidden rounded-[22px] border p-5 md:p-6 flex flex-col h-full text-[#F4F6FB] transition ${
-   
-   
-    tier.popular
-      ? "border-[#7A3BFF]/70 bg-[linear-gradient(180deg,rgba(20,22,34,0.98),rgba(11,14,26,0.98))] shadow-[0_0_0_1px_rgba(122,59,255,0.12),0_20px_80px_rgba(122,59,255,0.16)]"
-      : "border-white/10 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] shadow-[0_12px_40px_rgba(0,0,0,0.22)]"
-  }`}
->
-{tier.id === "pro" && (
-  <div className="absolute top-4 right-4 text-[11px] font-bold px-2 py-1 rounded-md bg-[#FF4D6D]/10 text-[#FF4D6D] border border-[#FF4D6D]/20">
-    25% OFF
-  </div>
-)}
-  
-  <div className={`absolute inset-x-0 top-0 h-[2px] ${
-    tier.popular
-      ? "bg-gradient-to-r from-[#6D4AFF] via-[#9F5CFF] to-[#4D8DFF]"
-      : "bg-white/10"
-  }`} />
-      {tier.popular && (
-  <div className="text-xs text-[#CDAEFF] font-semibold mb-1">
-    MOST POPULAR
-  </div>
-)}
-
-
-
-      <div className="mb-2 font-bold text-xl">{tier.name}</div>
-
-<div className="mt-1 flex items-end gap-2">
-
-  {tier.id === "pro" && (
-    <div className="text-sm text-[#6B7280] line-through font-medium">
-      {formatPrice(32, currency)}
-    </div>
-  )}
-
-  <div className="text-4xl font-bold text-white leading-none">
-    {priceStr}
-  </div>
-
-  <div className="text-sm text-[#9CA3AF] mb-[4px]">
-    /month
-  </div>
-</div>
-
-<button
-  disabled={disabled}
-  onClick={onClick}
-className={`mt-4 inline-flex h-11 w-full items-center justify-center rounded-xl font-semibold transition  ${
-  disabled
-    ? "cursor-not-allowed bg-white/10 text-white/50"
-    : tier.id === "pro"
-      ? " hover:scale-[1.06] bg-[linear-gradient(90deg,#8B5CFF,#6D4AFF)] text-white font-semibold shadow-[0_10px_40px_rgba(139,92,255,0.35)] scale-[1.04] ring-1 ring-[#8B5CFF]/40"
-      : "bg-[linear-gradient(90deg,#7A3BFF_0%,#9F5CFF_55%,#4D8DFF_100%)] text-white shadow-[0_10px_30px_rgba(122,59,255,0.28)]"
-}`}
->
-{ctaLabel}
-</button>
-
-      
-      
-
-      <div className="text-sm text-[#B7BBC6] font-semibold mt-2">{tier.blurb}</div>
-
-      <div className="mt-3 inline-flex w-fit items-center rounded-full border border-[#2A2F45] bg-[#1A1D2B] px-3 py-1 text-xs font-semibold text-[#DDE3F0]">
-  {tier.id === "starter" && `From only ${formatPrice(0.4, currency)}/day`}
-  {tier.id === "pro" && `From only ${formatPrice(0.83, currency)}/day`}
-  {tier.id === "generative" && "Built for daily production"}
-</div>
-
-
-
-      <ul className="mt-6 space-y-3 text-sm text-[#C7D0E0]">
-        {tier.features.map((f, i) => (
-          <li key={i} className="flex items-start gap-3">
-           <span className="mt-[2px] text-[#8B5CFF] shrink-0">
-              <Tick className="w-4 h-4" />
-            </span>
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
-
-
-
-      {!disabled && (
-<div className="mt-3 text-center text-xs text-[#7F8AA3]">
-  Instant access • Cancel anytime
-</div>
-)}
-
-      {!!hint && <div className="mt-2 text-xs text-zinc-400 text-center">{hint}</div>}
-
-      {isYearly && !tier.popular && (
-        <div className="mt-3 text-xs font-semibold text-green-500">
-          Save {(1 - (tier.yearlyPerMonth / tier.monthly)) * 100 | 0}% on yearly
+      {/* Popular badge */}
+      {isPopular && (
+        <div className="absolute top-4 right-4 text-[10px] font-bold tracking-[0.1em] px-3 py-1 rounded-full"
+          style={{ background: `${tier.accent}20`, color: tier.accent, border: `1px solid ${tier.accent}40` }}>
+          MOST POPULAR
         </div>
       )}
-    </div>
-  );
 
-  if (!tier.popular) return <div className="relative">{core}</div>;
-  return (
-    <div className="relative">
-      <div className="p-[2px] rounded-2xl bg-[#7A3BFF] shadow-lg">
-        {core}
-      </div>
-    </div>
-  );
-}
+      {tier.badge && !isPopular && (
+        <div className="absolute top-4 right-4 text-[10px] font-bold px-2.5 py-1 rounded-full bg-red-500/10 text-red-400"
+          style={{ border: "1px solid rgba(239,68,68,0.3)" }}>
+          {tier.badge}
+        </div>
+      )}
 
+      <div className="flex flex-col flex-1 p-6 md:p-7">
 
+        {/* Plan name + blurb */}
+        <div className="mb-5">
+          <div className="text-base font-bold mb-0.5" style={{ color: tier.accent }}>{tier.name}</div>
+          <div className="text-white/35 text-xs">{tier.blurb}</div>
+        </div>
 
-function SecondaryCard({ title, price, subtitle, ctaLabel, to, children }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] p-6 flex flex-col justify-between text-[#E6E8EE] shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
-      <div>
-        <div className="text-2xl font-semibold">{title}</div>
-        <div className="mt-1 text-3xl font-bold">{price}</div>
-        {subtitle && <div className="mt-1 text-sm text-[#B7BBC6] font-semibold">{subtitle}</div>}
-        <div className="mt-5 text-sm text-[#B7BBC6] leading-6">{children}</div>
-      </div>
-      <div className="mt-6">
-        <Link
-          to={to}
-          className="inline-flex justify-center items-center h-11 rounded-xl px-4 font-semibold transition bg-[#7A3BFF] text-white"
-   
+        {/* Price */}
+        <div className="mb-1 flex items-end gap-2">
+          {tier.strikethrough && (
+            <span className="text-sm text-white/20 line-through mb-1.5">{fmt(tier.strikethrough, currency)}</span>
+          )}
+          <span className="text-[52px] font-extrabold leading-none tracking-tighter text-white">{priceStr}</span>
+          <span className="text-white/30 text-sm mb-2">/mo</span>
+        </div>
+
+        {isYearly && (
+          <div key={`save-${tier.id}-yearly`} className="text-xs font-semibold text-green-400 mb-1 savings-badge-pop">
+            Save {Math.round((1 - tier.yearlyPerMonth / tier.monthly) * 100)}% · {fmt(tier.yearlyPerMonth * 12, currency)}/yr
+          </div>
+        )}
+
+        <div className="text-xs text-white/20 mb-4">
+          {tier.id === "starter"    && `≈ ${fmt(0.4, currency)} per day`}
+          {tier.id === "pro"        && `≈ ${fmt(0.83, currency)} per day`}
+          {tier.id === "generative" && "Unlimited production capacity"}
+        </div>
+
+        {/* Urgency — pro only */}
+        {isPopular && (
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 blink-dot" />
+            <span className="text-[11px] font-medium" style={{ color: "rgba(248,113,113,0.85)" }}>
+              Pro plan: 23 spots left at this price
+            </span>
+          </div>
+        )}
+
+        {/* CTA button */}
+        <button
+          disabled={disabled}
+          onClick={handleClick}
+          className="w-full py-3.5 rounded-2xl font-bold text-sm mb-4 transition-all duration-200 active:scale-[0.97] btn-pulse"
+          style={disabled ? {
+            background: "rgba(255,255,255,0.04)",
+            color: "rgba(255,255,255,0.25)",
+            cursor: "default",
+          } : {
+            background: `linear-gradient(135deg, ${tier.btnFrom}, ${tier.btnTo})`,
+            color: "#fff",
+            boxShadow: `0 8px 28px ${tier.glow}`,
+          }}
         >
-          {ctaLabel}
-        </Link>
+          {cta}
+        </button>
+
+        {/* Progress bar — pro only */}
+        {isPopular && (
+          <div className="mb-5">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] text-white/30">78% of creators choose Pro</span>
+              <span className="text-[10px] font-bold" style={{ color: tier.accent }}>78%</span>
+            </div>
+            <div className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <div
+                className="h-full rounded-full"
+                style={{ width: "78%", background: `linear-gradient(90deg, ${tier.btnFrom}, ${tier.accent})` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Divider */}
+        <div className="mb-5" style={{ height: "1px", background: "rgba(255,255,255,0.05)" }} />
+
+        {/* Feature list */}
+        <ul className="space-y-3 flex-1">
+          {tier.features.map((f, i) => (
+            <li
+              key={i}
+              className="flex items-start gap-2.5 text-sm check-item"
+              style={{ animationDelay: `${0.3 + i * 0.06}s` }}
+            >
+              <Check className="w-4 h-4 mt-[1px] shrink-0" style={{ color: tier.accent + "CC" }} />
+              <span className="text-white/50">{f}</span>
+            </li>
+          ))}
+        </ul>
+
+        {!disabled && (
+          <p className="text-center text-[11px] text-white/15 mt-6">Instant access · Cancel anytime</p>
+        )}
       </div>
     </div>
   );
 }
 
-/* ---------------------------------- Page ---------------------------------- */
+/* ─── Page ────────────────────────────────────────────────────────────────── */
 export default function Pricing() {
-
+  const billing = "monthly";
   const [currency, setCurrency] = useState("EUR");
-
-  useEffect(() => {
-  document.title = "Plans Built For Growth";
-}, []);
-
-  const [billing, setBilling] = useState("monthly");
+  const [askTier, setAskTier] = useState(null);
   const { plan, hasSub } = useCurrentPlan();
-  const [askTier, setAskTier] = useState(null); // {id, name}
+  const liveCount = useLiveCounter(2000847);
+
+  useEffect(() => { document.title = "Pricing — Zyvo AI"; }, []);
 
   const planLabel = useMemo(() => {
-    const t = TIERS.find((t) => t.id === plan);
-    return t ? t.name : plan === "free" ? "Free" : "—";
+    const t = TIERS.find(t => t.id === plan);
+    return t?.name ?? (plan === "free" ? "Free" : "—");
   }, [plan]);
 
+  // Mobile order: €12 → €25 → €50
+  const mobileTiers = TIERS;
+
   return (
-<section className="relative bg-[#090B12] text-white">
-  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(45,64,160,0.16),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(122,59,255,0.10),transparent_28%)]" />
-  <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.02),transparent_18%,transparent_82%,rgba(255,255,255,0.02))]" />
+    <section className="relative min-h-screen text-white overflow-x-hidden" style={{ background: "#07080F" }}>
 
-  <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-14">
-        {/* Heading */}
-{/* Header */}
-<div className="mx-auto max-w-3xl text-center mb-6 md:mb-10">
-  <div className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-medium text-[#C9D1E8] backdrop-blur-sm">
-    Trusted by 800+ creators
-  </div>
+      {/* Particles */}
+      <Particles />
 
-  <h1 className="mt-4 text-3xl md:text-6xl font-extrabold tracking-[-0.03em] leading-[1.05] text-white">
-    Go Viral With{" "}
-    <span className="bg-gradient-to-r from-[#9F5CFF] via-[#7A3BFF] to-[#4D8DFF] bg-clip-text text-transparent">
-      AI Content
-    </span>
-  </h1>
-
-  
-  <p className="mt-4 text-sm md:text-lg text-[#AAB3C5]">
-    Create faster, test more ideas, and scale what works.
-  </p>
-</div>
-
-<div className="flex justify-center mb-6">
-  <div className="flex bg-[#1A1D2B] border border-white/10 rounded-xl p-1">
-    {["EUR", "USD"].map((c) => (
-      <button
-        key={c}
-        onClick={() => setCurrency(c)}
-        className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition ${
-          currency === c
-            ? "bg-[linear-gradient(90deg,#7A3BFF,#9F5CFF)] text-white"
-            : "text-[#9DA8BD]"
-        }`}
-      >
-        {c}
-      </button>
-    ))}
-  </div>
-</div>
-
-
-
-    
-
-
-        <div className="hidden md:grid grid-cols-3 gap-4 mb-8 mt-4">
- <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
-  <div className="text-sm font-semibold text-white">Move faster</div>
-  <p className="mt-1 text-sm text-[#9DA8BD]">
-    Turn ideas into publish-ready content in minutes.
-  </p>
-</div>
-
- <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
-  <div className="text-sm font-semibold text-white">Test more ideas</div>
-  <p className="mt-1 text-sm text-[#9DA8BD]">
-    Generate more variations without slowing down.
-  </p>
-</div>
-
-<div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
-  <div className="text-sm font-semibold text-white">Scale what works</div>
-  <p className="mt-1 text-sm text-[#9DA8BD]">
-    Upgrade when you’re ready for higher output.
-  </p>
-</div>
-</div>
-
-
-{/* 🔥 MOBILE QUICK ACTION */}
-<div className="md:hidden mb-5 mt-4">
-  <div className="rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,rgba(18,20,31,0.96),rgba(10,12,20,0.96))] p-4 shadow-[0_10px_40px_rgba(0,0,0,0.22)]">
-    
-    <div className="flex items-center justify-between">
-      <div>
-        <div className="text-xs text-[#9DA8BD]">Plans start from</div>
-
-        <div className="mt-1 text-2xl font-extrabold text-white">
-        {formatPrice(12, currency)}<span className="text-sm font-medium text-[#9DA8BD]"> /month</span>
-        </div>
-
-        <div className="text-[11px] text-[#7F8AA3] mt-1">
-          Cancel anytime • Instant access
-        </div>
+      {/* Ambient blobs */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[700px] h-[500px] rounded-full"
+          style={{ background: "radial-gradient(circle, rgba(122,59,255,0.12) 0%, transparent 70%)" }} />
+        <div className="absolute top-[40%] right-[-100px] w-[400px] h-[400px] rounded-full"
+          style={{ background: "radial-gradient(circle, rgba(251,146,60,0.06) 0%, transparent 70%)" }} />
+        <div className="absolute top-[30%] left-[-80px] w-[350px] h-[350px] rounded-full"
+          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.06) 0%, transparent 70%)" }} />
       </div>
 
-      <button
-        onClick={() => {
-          document.getElementById("pricing-section")?.scrollIntoView({ behavior: "smooth" });
-        }}
-        className="rounded-xl bg-[linear-gradient(90deg,#7A3BFF_0%,#9F5CFF_55%,#4D8DFF_100%)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(122,59,255,0.28)]"
-      >
-        View Plans
-      </button>
-    </div>
+      <div className="relative max-w-[1100px] mx-auto px-4 sm:px-6 py-10 md:py-16 pb-28 md:pb-16">
 
-  </div>
-</div>
+        {/* ── Hero ──────────────────────────────────────────────────────── */}
+        <div className="text-center mb-10 md:mb-14">
 
-        {/* Main tier grid */}
-        <div id="pricing-section" className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-2 md:mt-6">
-          {TIERS.map((t) => (
-            <PlanCard
-              key={t.id}
-              tier={t}
-              billing={billing}
-              currentPlan={plan}
-              hasSub={hasSub}
-              currency={currency}
-              onAskDowngrade={(tier) => setAskTier(tier)}
-            />
+          {/* Mobile hero */}
+          <div className="md:hidden pricing-hero">
+            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium mb-5"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-white font-semibold">{liveCount}</span>&nbsp;creations and counting
+            </div>
+            <h1 className="text-4xl font-extrabold tracking-tight mb-3">
+              Go viral.<br />
+              <span style={{ background: "linear-gradient(90deg,#A855F7,#C084FC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                Or it's free.
+              </span>
+            </h1>
+            <p className="text-white/40 text-sm mb-6 max-w-xs mx-auto">
+              Pick your plan. Start creating viral content today.
+            </p>
+          </div>
+
+          {/* Desktop hero */}
+          <div className="hidden md:block pricing-hero">
+            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium mb-6"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-white font-semibold">{liveCount}</span>&nbsp;creations and counting
+            </div>
+            <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] mb-4">
+              Go viral.{" "}
+              <span style={{ background: "linear-gradient(90deg,#A855F7,#C084FC,#38BDF8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                Or it's free.
+              </span>
+            </h1>
+            <p className="text-white/40 text-base max-w-lg mx-auto mb-8">
+              Generate images and videos that stop the scroll. Pick the plan that matches your output.
+            </p>
+          </div>
+
+          {/* Stats row — desktop only */}
+          <div className="hidden md:flex items-center justify-center gap-10 mb-8 pricing-hero-sub">
+            {[
+              { stat: liveCount, label: "AI creations made" },
+              { stat: "800+",    label: "Active creators" },
+              { stat: "4.9★",   label: "Average rating" },
+            ].map(({ stat, label }) => (
+              <div key={label} className="flex flex-col items-center">
+                <span className="text-white font-bold text-2xl">{stat}</span>
+                <span className="text-white/25 text-xs mt-0.5">{label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Currency toggle */}
+          <div className="flex items-center justify-center pricing-toggle">
+            <div className="flex items-center rounded-2xl p-1"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              {["EUR", "USD"].map(c => (
+                <button key={c} onClick={() => setCurrency(c)}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
+                  style={currency === c ? { background: "rgba(255,255,255,0.08)", color: "#fff" }
+                    : { color: "rgba(255,255,255,0.3)" }}>
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Plan cards — desktop ──────────────────────────────────────── */}
+        <div className="hidden md:grid grid-cols-3 gap-4 lg:gap-5" id="pricing-section">
+          {TIERS.map((t, i) => (
+            <PlanCard key={t.id} tier={t} billing={billing} currentPlan={plan} hasSub={hasSub}
+              currency={currency} onAskDowngrade={setAskTier}
+              animClass={`pricing-card-${i + 1}`} />
           ))}
         </div>
 
- <div className="mt-10 hidden md:block text-center text-xs text-[#7F8AA3]">
-  Current plan: <span className="text-white font-semibold">{planLabel}</span>
-</div>
-       
+        {/* ── Plan cards — mobile (Pro first) ──────────────────────────── */}
+        <div className="md:hidden flex flex-col gap-4">
+          {mobileTiers.map((t, i) => (
+            <PlanCard key={t.id} tier={t} billing={billing} currentPlan={plan} hasSub={hasSub}
+              currency={currency} onAskDowngrade={setAskTier}
+              animClass={`pricing-card-${i + 1}`} />
+          ))}
+        </div>
 
-        {/* “All plans include” */}
-       <div className="relative mt-10 rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
-          <div className="mb-4 text-center text-sm font-semibold tracking-[0.08em] uppercase text-[#D7DDF0]">
-  All plans include
-</div>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 text-sm text-[#C7D0E0]">
-            {ALL_INCLUDE.map((f) => (
-              <li key={f} className="flex items-center gap-2">
-                <span className="text-[#7A3BFF]">
-                  <Tick className="w-4 h-4" />
-                </span>
-                <span>{f}</span>
-              </li>
+        {/* ── Guarantee strip ───────────────────────────────────────────── */}
+        <div className="flex items-center justify-center mt-6 mb-3">
+          <div className="flex items-center gap-3 px-5 py-3 rounded-2xl"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
+            <Shield className="w-4 h-4 shrink-0" style={{ color: "#A855F7" }} />
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+              Not happy in 7 days?{" "}
+              <span className="text-white font-bold">Unused credits refunded.</span>{" "}
+              No questions asked.
+            </p>
+          </div>
+        </div>
+
+        {plan !== "free" && (
+          <p className="text-center text-xs mt-3 mb-2" style={{ color: "rgba(255,255,255,0.2)" }}>
+            Current plan: <span style={{ color: "rgba(255,255,255,0.4)", fontWeight: 600 }}>{planLabel}</span>
+          </p>
+        )}
+
+        {/* ── Testimonials ──────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-8 mb-10 pricing-section">
+          {TESTIMONIALS.map((t, i) => (
+            <div key={i} className="rounded-[20px] p-5 flex flex-col gap-4" style={{ background: "#0D0F1C" }}>
+              <p className="text-sm leading-relaxed flex-1" style={{ color: "rgba(255,255,255,0.55)" }}>
+                "{t.text}"
+              </p>
+              <div className="flex items-center gap-2.5">
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+                  style={{ background: `linear-gradient(135deg, ${AVATAR_GRADIENTS[i][0]}, ${AVATAR_GRADIENTS[i][1]})` }}
+                >
+                  {t.name[0]}
+                </div>
+                <div>
+                  <div className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.7)" }}>{t.name}</div>
+                  <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>{t.role}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── All plans include ─────────────────────────────────────────── */}
+        <div className="rounded-[20px] p-5 md:p-6 mb-10 pricing-section"
+          style={{ background: "#0D0F1C" }}>
+          <p className="text-center text-[11px] font-bold tracking-[0.15em] uppercase mb-4"
+            style={{ color: "rgba(255,255,255,0.2)" }}>
+            Every plan includes
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-y-3 gap-x-4">
+            {["Brand creation", "Ad creation", "Product creation", "Top quality exports", "Email support"].map(f => (
+              <div key={f} className="flex items-center gap-2 text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+                <Check className="w-3.5 h-3.5 shrink-0" style={{ color: "#A855F7" }} />
+                {f}
+              </div>
             ))}
-          </ul>
-        </div>
-
-        
-
-        
-
-        {/* Secondary row: Free & Enterprise */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
-          <SecondaryCard
-            title="Free"
-            price={formatPrice(0, currency)}
-            subtitle="Try ZyloAI with weekly credits"
-            ctaLabel="Try for free"
-            to="/signup"
-          >
-            10 minutes and 1 AI avatar per week, 4 exports per week with a small watermark.
-            Access to core tools so you can learn the workflow.
-          </SecondaryCard>
-
-          <SecondaryCard
-            title="Enterprise"
-            price="Custom"
-            subtitle="For organizations that need scale"
-            ctaLabel="Contact sales"
-            to="/support/contact"
-          >
-            SSO & roles, unlimited workspaces, custom model options, SLAs and priority support.
-            Flexible invoicing and procurement support.
-          </SecondaryCard>
-        </div>
-
-        {/* FAQ */}
-        <div className="mt-12">
-          <h3 className="text-center text-xl font-bold mb-4 text-[#F4F6FB]">FAQs</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-            <div className="rounded-xl border border-white/10 p-4 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-              <div className="font-semibold mb-1 text-[#E6E8EE]">Can I cancel anytime?</div>
-              <p className="text-[#B7BBC6]">
-                Yes. Manage your plan in the Stripe billing portal. Your plan stays active until the end of the paid period.
-              </p>
-            </div>
-            <div className="rounded-xl border border-white/10 p-4 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-              <div className="font-semibold mb-1 text-[#E6E8EE]">Do unused credits roll over?</div>
-              <p className="text-[#B7BBC6]">
-                Your balance is additive—monthly plan credits add to your remaining balance. One-time packs never expire.
-              </p>
-            </div>
-            <div className="rounded-xl border border-white/10 p-4 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-              <div className="font-semibold mb-1 text-[#E6E8EE]">How do upgrades/downgrades work?</div>
-              <p className="text-[#B7BBC6]">
-                Both upgrades and downgrades are handled in the Stripe billing portal. Upgrades are usually prorated instantly; downgrades take effect on your next renewal.
-              </p>
-            </div>
-            <div className="rounded-xl border border-white/10 p-4 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-              <div className="font-semibold mb-1 text-[#E6E8EE]">Do you offer refunds?</div>
-              <p className="text-[#B7BBC6]">
-                Unused credits are refundable within 7 days. Once credits are used, refunds cannot be issued due to AI generation costs.
-              </p>
-            </div>
           </div>
         </div>
 
-      {/* Top-ups (only for paid plans) */}
-{plan !== "free" && (
-  <div className="mt-12">
-    <h3 className="text-center text-xl font-bold text-[#F4F6FB] mb-4">
-      Need more credits?
-    </h3>
-
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {TOPUPS.map((p) => (
-        <div
-          key={p.id}
-         className="rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(18,20,31,0.98),rgba(10,12,20,0.98))] p-6 flex flex-col justify-between shadow-[0_12px_40px_rgba(0,0,0,0.22)]"
-        >
-          <div>
-            <div className="text-lg font-semibold text-[#F4F6FB]">
-              {p.title}
-            </div>
-
-            <div className="mt-1 text-3xl font-bold text-[#F4F6FB]">
-              {formatPrice(p.price, currency)}
-            </div>
-
-            <div className="text-sm text-[#B7BBC6]">
-              {p.credits} credits
+        {/* ── Credit top-ups ────────────────────────────────────────────── */}
+        {plan !== "free" && (
+          <div className="mb-12 pricing-section">
+            <h3 className="text-xl font-bold text-white text-center mb-1">Need more credits?</h3>
+            <p className="text-center text-sm mb-6" style={{ color: "rgba(255,255,255,0.3)" }}>
+              One-time packs · never expire · stack on top of your plan
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {TOPUPS.map(p => (
+                <div key={p.id} className="relative rounded-[20px] p-5 flex flex-col gap-4 pricing-card-hover"
+                  style={{
+                    background: p.best ? "linear-gradient(160deg,#130B28,#1C0A3A)" : "#0D0F1C",
+                    boxShadow: p.best ? "0 0 0 1px rgba(168,85,247,0.3), 0 16px 40px rgba(168,85,247,0.12)" : "none",
+                  }}>
+                  {p.best && (
+                    <div className="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-0.5 rounded-full"
+                      style={{ background: "rgba(168,85,247,0.15)", color: "#C084FC", border: "1px solid rgba(168,85,247,0.3)" }}>
+                      BEST VALUE
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-xs uppercase tracking-wider mb-1.5"
+                      style={{ color: "rgba(255,255,255,0.25)" }}>{p.id} pack</div>
+                    <div className="text-3xl font-extrabold text-white">{fmt(p.price, currency)}</div>
+                    <div className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>{p.credits} credits</div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      const { data: { user } } = await supabase.auth.getUser();
+                      if (!user) return (window.location.href = "/signup");
+                      const priceId = TOPUP_PRICE_IDS[p.id];
+                      if (!priceId) return;
+                      await startCheckout({ type: "topup", pack: p.id });
+                    }}
+                    className="w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-[0.97]"
+                    style={p.best ? {
+                      background: "linear-gradient(135deg,#7A3BFF,#A855F7)",
+                      color: "#fff",
+                      boxShadow: "0 6px 20px rgba(122,59,255,0.3)",
+                    } : {
+                      background: "rgba(255,255,255,0.06)",
+                      color: "rgba(255,255,255,0.7)",
+                    }}>
+                    Buy Pack
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
+        )}
 
-          <button
-            onClick={async () => {
-              const {
-                data: { user },
-              } = await supabase.auth.getUser();
-
-              if (!user) {
-                window.location.href = "/signup";
-                return;
-              }
-
-              const priceId = TOPUP_PRICE_IDS[p.id];
-
-              if (!priceId) {
-                alert("Top-up price ID not configured for: " + p.id);
-                return;
-              }
-
-              try {
-                await startCheckout({ type: "topup", pack: p.id });
-              } catch (err) {
-                console.error("Top-up checkout error", err);
-                alert("Could not start checkout. Please try again.");
-              }
-            }}
-            className="bg-[#7A3BFF] mt-6 inline-flex justify-center items-center h-11 rounded-xl font-semibold transition w-full"
-          >
-            Buy Pack
-          </button>
+        {/* ── Free + Enterprise ─────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12 pricing-section">
+          {[
+            { label: "Free", price: fmt(0, currency), sub: "10 image generations / month",
+              desc: "Try Zyvo with monthly free credits. No card required.", cta: "Try for free", to: "/signup" },
+            { label: "Enterprise", price: "Custom", sub: "For teams and organizations",
+              desc: "SSO & roles, unlimited workspaces, custom models, SLAs and priority support.", cta: "Contact sales", to: "/support/contact" },
+          ].map(item => (
+            <div key={item.label} className="rounded-[20px] p-6 flex flex-col gap-4" style={{ background: "#0D0F1C" }}>
+              <div>
+                <div className="text-xs uppercase tracking-wider mb-1.5" style={{ color: "rgba(255,255,255,0.2)" }}>{item.label}</div>
+                <div className="text-3xl font-extrabold text-white">{item.price}</div>
+                <div className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{item.sub}</div>
+              </div>
+              <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>{item.desc}</p>
+              <Link to={item.to}
+                className="inline-flex justify-center items-center py-3 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-[0.98]"
+                style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)" }}>
+                {item.cta}
+              </Link>
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
-  </div>
-)}
 
-        {/* Trust row */}
-        <div className="mt-10 text-center">
-          <div className="text-xs text-zinc-500">
-            Secure checkout · Instant access · No hidden fees
+        {/* ── FAQ ───────────────────────────────────────────────────────── */}
+        <div className="mb-14 pricing-section">
+          <h3 className="text-2xl font-bold text-white text-center mb-1">Frequently asked</h3>
+          <p className="text-center text-sm mb-6" style={{ color: "rgba(255,255,255,0.25)" }}>
+            Everything you need to know before upgrading.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {FAQS.map(f => <FaqItem key={f.q} q={f.q} a={f.a} />)}
           </div>
-          <Link
-            to="/workspace/home"
-            className="border-[#2A2F45] bg-[#1A1D2B] text-[#E6E8EE] inline-flex items-center justify-center mt-4 h-11 px-6 rounded-xl font-semibold transition border"
-        
-          >
-            See more
+        </div>
+
+        {/* ── Trust footer ──────────────────────────────────────────────── */}
+        <div className="text-center pt-6 flex flex-col items-center gap-4"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+          <div className="flex items-center gap-6 text-xs" style={{ color: "rgba(255,255,255,0.2)" }}>
+            <span>🔒 Stripe-secured</span>
+            <span>⚡ Instant access</span>
+            <span>✕ Cancel anytime</span>
+          </div>
+          <Link to="/workspace/home"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+            style={{ background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.35)" }}>
+            ← Back to workspace
           </Link>
         </div>
-        
+
       </div>
 
-      {/* Downgrade modal */}
+      {/* Cycling signup toast */}
+      <SignupToast />
+
       <ConfirmModal
         open={!!askTier}
         targetLabel={askTier?.name}
         onCancel={() => setAskTier(null)}
-        onConfirm={() => {
-          setAskTier(null);
-          openBillingPortal({ flow: "change_plan", returnPath: "/pricing" });
-        }}
+        onConfirm={() => { setAskTier(null); openBillingPortal({ flow: "change_plan", returnPath: "/pricing" }); }}
       />
     </section>
   );

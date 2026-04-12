@@ -135,14 +135,16 @@ useEffect(() => {
   /* =============================== RENDER =============================== */
 
   return (
-    <div className="w-full min-w-0 overflow-hidden flex flex-col gap-6 pb-24 md:pb-0">
+    <div className="w-full min-h-full flex flex-col gap-6 pb-6 bg-[#191B1C] rounded-[22px] p-4 md:p-6">
+
+      <h1 className="text-[#F4F6FB] font-semibold text-[20px]">Recent Creations</h1>
 
       {/* ================= THUMBNAILS ================= */}
       <div className="relative w-full min-w-0 overflow-hidden">
 
         {/* Edge fades */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#12141A] to-transparent z-10" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#12141A] to-transparent z-10" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#191B1C] to-transparent z-10" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#191B1C] to-transparent z-10" />
 
         {/* Left arrow */}
         {videoResults.length > 0 && (
@@ -285,11 +287,10 @@ useEffect(() => {
 
           {/* EMPTY STATE */}
           {!activeVideo && !isFailed && (
-            <div className="flex flex-col items-center ">
-              <img src="/assets/logos/sadzyvo.webp" className="w-20 h-20 text-white/20" />
-              <p className="text-white/40 text-sm">
-                No Videos Generated Yet
-              </p>
+            <div className="flex-1 flex flex-col items-center justify-center gap-3 select-none py-12">
+              <img src="/assets/logos/sadzyvo.webp" className="w-20 h-20 opacity-50" alt="" />
+              <p className="text-white/60 text-sm font-semibold">No generated content yet</p>
+              <p className="text-white/25 text-xs">Your creations will appear here</p>
             </div>
           )}
 

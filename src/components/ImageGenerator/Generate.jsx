@@ -812,14 +812,14 @@ useEffect(() => {
   className="
 w-full h-full flex flex-col
  pb-[110px] md:pb-6
-  rounded-[22px] 
+  rounded-[22px]
  bg-[#191B1C]
 border border-white/5
 shadow-[0_10px_40px_rgba(0,0,0,0.4)]
   p-5 md:p-6
 
- space-y-3 lg:space-y-2 
-  
+ space-y-3 lg:space-y-2
+
 "
 >
 

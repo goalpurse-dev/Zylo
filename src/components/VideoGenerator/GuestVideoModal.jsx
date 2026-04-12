@@ -1,7 +1,7 @@
-import { X, ImageIcon, Zap, Star } from "lucide-react";
+import { X, VideoIcon, Zap, Crown } from "lucide-react";
 import { createPortal } from "react-dom";
 
-export default function GuestGenerateModal({ open, onClose, onSignup }) {
+export default function GuestVideoModal({ open, onClose, onSignup }) {
   if (!open) return null;
 
   return createPortal(
@@ -36,47 +36,48 @@ export default function GuestGenerateModal({ open, onClose, onSignup }) {
             {/* Icon */}
             <div className="relative inline-flex mb-5">
               <div className="w-14 h-14 rounded-2xl bg-[#7A3BFF]/20 border border-[#7A3BFF]/30 flex items-center justify-center">
-                <ImageIcon className="w-7 h-7 text-[#C084FC]" />
+                <VideoIcon className="w-7 h-7 text-[#C084FC]" />
               </div>
               <div className="absolute -inset-1 bg-[#7A3BFF]/20 rounded-2xl blur-lg -z-10" />
             </div>
 
             {/* Headline */}
             <h2 className="text-white text-2xl font-bold leading-tight mb-1">
-              Start generating for free
+              Create viral AI videos
             </h2>
             <p className="text-white/50 text-sm mb-6">
-              Create an account and get 10 free AI image generations — no card needed.
+              Sign up for free to unlock AI video generation and start creating content that stops the scroll.
             </p>
 
-            {/* Free badge */}
-            <div className="flex items-center gap-3 bg-[#7A3BFF]/15 border border-[#7A3BFF]/30 rounded-2xl px-4 py-3 mb-6">
-              <Zap className="w-5 h-5 text-[#C084FC] shrink-0" />
-              <div>
-                <div className="text-white font-bold text-base leading-tight">10 Free Generations</div>
-                <div className="text-white/40 text-xs">resets monthly · no credit card</div>
-              </div>
-            </div>
-
-            {/* Sample images */}
-            <div className="grid grid-cols-4 gap-2 mb-6">
-              {["/assets/toast/1.webp", "/assets/toast/4.webp", "/assets/toast/5.webp", "/assets/toast/2.webp"].map((src, i) => (
-                <div key={i} className="aspect-square rounded-xl overflow-hidden border border-white/10">
-                  <img src={src} className="w-full h-full object-cover" loading="lazy" />
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-2 mb-6">
+              {[
+                { stat: "3+", label: "AI Models" },
+                { stat: "5s", label: "Avg. gen time" },
+                { stat: "4K", label: "Max quality" },
+              ].map(({ stat, label }) => (
+                <div
+                  key={label}
+                  className="flex flex-col items-center rounded-2xl bg-white/[0.04] border border-white/8 py-3 gap-0.5"
+                >
+                  <span className="text-white font-bold text-lg leading-tight">{stat}</span>
+                  <span className="text-white/40 text-[10px]">{label}</span>
                 </div>
               ))}
             </div>
 
-            {/* Perks */}
-            <div className="flex items-center justify-between text-xs text-white/50 mb-6 px-1">
+            {/* Features */}
+            <div className="space-y-2.5 mb-7">
               {[
-                { icon: Star, label: "20+ styles" },
-                { icon: Zap, label: "Instant results" },
-                { icon: ImageIcon, label: "HD quality" },
-              ].map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center gap-1.5">
-                  <Icon className="w-3.5 h-3.5 text-[#C084FC]" />
-                  <span>{label}</span>
+                { icon: VideoIcon, text: "Cinematic AI videos from text prompts" },
+                { icon: Zap, text: "Image-to-video with your own references" },
+                { icon: Crown, text: "Watermark-free exports, yours to keep" },
+              ].map(({ icon: Icon, text }) => (
+                <div key={text} className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-[#7A3BFF]/20 border border-[#7A3BFF]/30 flex items-center justify-center shrink-0">
+                    <Icon className="w-3.5 h-3.5 text-[#C084FC]" />
+                  </div>
+                  <span className="text-white/70 text-sm">{text}</span>
                 </div>
               ))}
             </div>
@@ -90,11 +91,11 @@ export default function GuestGenerateModal({ open, onClose, onSignup }) {
                 boxShadow: "0 8px 32px rgba(122,59,255,0.45)",
               }}
             >
-              Create Free Account →
+              Get Started Free →
             </button>
 
             <p className="text-white/25 text-xs text-center mt-4">
-              No credit card · Takes 30 seconds
+              Free account · No credit card needed
             </p>
           </div>
 

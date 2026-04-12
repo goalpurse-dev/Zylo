@@ -26,6 +26,7 @@ import VideoTemplate from "../../components/video-templates/VideoTemplate";
 import { createPortal } from "react-dom";
 import { useMemo } from "react";
 import UpgradeToast from "../../components/VideoGenerator/UpgradeToast";
+import GuestVideoModal from "../../components/VideoGenerator/GuestVideoModal";
 VideoIcon
 Folder
 
@@ -38,6 +39,7 @@ export default function Generate({  }) {
   const controlsRef = useRef(null);
   const [isGenerating, setIsGenerating] = useState(false);
 const [showUpgrade, setShowUpgrade] = useState(false);
+  const [guestModalOpen, setGuestModalOpen] = useState(false);
 
   const [prompt, setPrompt] = useState("");
   const [openModel, setOpenModel] = useState(false);
@@ -108,7 +110,23 @@ const {
   selected,
   addImage,
   toggleSelect,
+  setSelected,
 } = useReferenceImages(maxRefImages);
+
+// Auto-populate reference image when navigated from image generator
+useEffect(() => {
+  const refImage = location.state?.refImage;
+  if (!refImage?.url) return;
+
+  // Switch to a model that supports reference images
+  const refModel = Object.entries(MODELS).find(
+    ([, m]) => m.maxReferenceImages > 0
+  );
+  if (refModel) setSelectedModelKey(refModel[0]);
+
+  addImage({ id: String(refImage.id), url: refImage.url });
+  setSelected([{ id: String(refImage.id), url: refImage.url }]);
+}, []);
 const handleUpload = async (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
@@ -226,13 +244,8 @@ useEffect(() => {
     const user = authData?.user;
 
     if (!user) {
-      setToast({
-        message: "Create an account to generate videos.",
-        type: "info",
-      });
-
-      setTimeout(() => navigate("/signup"), 1200);
       setIsGenerating(false);
+      setGuestModalOpen(true);
       return;
     }
 
@@ -243,11 +256,7 @@ useEffect(() => {
       .eq("id", user.id)
       .single();
 
-    if (profileError) {
-      console.error("PROFILE ERROR:", profileError);
-    }
-
-    if (!profile) {
+    if (profileError || !profile) {
       setToast({
         message: "User data not loaded. Try refreshing.",
         type: "error",
@@ -258,10 +267,6 @@ useEffect(() => {
 
     const plan = (profile?.plan_code || "free").toLowerCase();
     const balance = Number(profile?.credit_balance ?? 0);
-
-    // 🔥 DEBUG
-    console.log("PLAN:", plan);
-    console.log("BALANCE:", balance);
 
     // 🔥 FREE PLAN BLOCK
     if (plan === "free") {
@@ -311,7 +316,7 @@ useEffect(() => {
 }
 
   return (
-    <div className="w-full flex flex-col gap-2 relative md:pb-12">
+    <div className="w-full md:h-full flex flex-col gap-3 relative bg-[#191B1C] border border-white/5 rounded-[22px] p-5 md:overflow-hidden">
 
       {/* BLUR OVERLAY */}
 {isAnyModalOpen &&
@@ -341,11 +346,10 @@ useEffect(() => {
 <div className="relative w-full flex justify-center mt-2">
   <div
     className="
-      relative flex w-full max-w-[420px] p-1
-      rounded-2xl
-      border border-white/10
-      bg-[linear-gradient(180deg,rgba(18,20,31,0.95),rgba(10,12,20,0.95))]
-      shadow-[0_12px_40px_rgba(0,0,0,0.35)]
+      relative flex w-full p-1
+      rounded-xl
+      border border-white/5
+      bg-[#16181A]
       overflow-hidden
     "
   >
@@ -397,12 +401,12 @@ useEffect(() => {
   <div
     className="
       rounded-xl
-      border border-white/10
-      bg-[#0F111A]
+      border border-white/5
+      bg-[#16181A]
       px-4 py-6
       transition
-      focus-within:border-[#7A3BFF]
-      focus-within:shadow-[0_0_0_1px_rgba(122,59,255,0.4)]
+      focus-within:border-[#7A3BFF]/50
+      focus-within:shadow-[0_0_0_1px_rgba(122,59,255,0.3)]
     "
   >
     <textarea
@@ -429,8 +433,8 @@ useEffect(() => {
   }}
   className={`
     w-full rounded-xl
-    border border-white/10
-    bg-[linear-gradient(180deg,#141722,#0F111A)]
+    border border-white/5
+    bg-[#16181A]
     py-7
     flex flex-col items-center justify-center gap-2
     transition-all duration-200
@@ -555,7 +559,7 @@ className={`
   group relative
   rounded-xl
   border border-white/10
-  bg-[linear-gradient(180deg,#141722,#0F111A)]
+  bg-[#16181A]
   px-4 py-3.5
   text-left
   transition-all duration-200
@@ -619,7 +623,7 @@ className={`
   group relative
   rounded-xl
   border border-white/10
-  bg-[linear-gradient(180deg,#141722,#0F111A)]
+  bg-[#16181A]
   px-4 py-3.5
   text-left
   transition-all duration-200
@@ -677,7 +681,7 @@ className={`
   group relative
   rounded-xl
   border border-white/10
-  bg-[linear-gradient(180deg,#141722,#0F111A)]
+  bg-[#16181A]
   px-4 py-3.5
   text-left
   transition-all duration-200
@@ -716,7 +720,7 @@ className={`
         md:-translate-y-1/2
         w-[92%] md:w-[800px]
         max-h-[75vh]
-        bg-[#1A1D2B]
+        bg-[#191B1C]
         border border-white/10
         rounded-xl
         shadow-2xl
@@ -932,6 +936,12 @@ className={`
   />
 )}
 
+<GuestVideoModal
+  open={guestModalOpen}
+  onClose={() => setGuestModalOpen(false)}
+  onSignup={() => navigate("/signup")}
+/>
+
     </div>
   );
 }
@@ -947,7 +957,7 @@ function Modal({ title, onClose, children }) {
         top-[18%] md:top-1/2 md:-translate-y-1/2
         w-[92%] md:w-[450px]
         max-h-[70vh]
-        bg-[#1A1D2B]
+        bg-[#191B1C]
         border border-white/10
         rounded-xl
         shadow-2xl

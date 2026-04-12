@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { DownloadIcon } from "lucide-react";
+import { DownloadIcon, VideoIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { CREATION_TYPES } from "../../lib/creations";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -77,6 +78,7 @@ function scrollToElementWithinContainer(el, container, topOffset = 80) {
 /* =============================== CARD =============================== */
 
 function ResultCard({ item, onOpen }) {
+  const navigate = useNavigate();
   const [visible, setVisible] = useState(true);
   const [posting, setPosting] = useState(false);
 const [posted, setPosted] = useState(false);
@@ -399,41 +401,52 @@ const isFailed =
             {item.input?.subject ?? item.prompt}
           </p>
 
-<div className="flex gap-3 mt-2">
+<div className="flex items-center gap-2 mt-2">
 
   <button
-      onClick={async () => {
-    const res = await fetch(item.result_url + "?width=1200");
-    const blob = await res.blob();
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "zyvo-image.webp";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }}
-    className="flex items-center gap-1 text-white/90 hover:text-white text-xs font-medium"
+    onClick={async () => {
+      const res = await fetch(item.result_url + "?width=1200");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "zyvo-image.webp";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }}
+    className="flex items-center justify-center w-7 h-7 rounded-md bg-white/15 hover:bg-white/25 text-white/90 hover:text-white transition active:scale-95"
+    title="Download"
   >
-    <DownloadIcon className="w-4 h-4" />
-    Download
+    <DownloadIcon className="w-3.5 h-3.5" />
   </button>
 
-<button
-  onClick={handlePublish}
-  disabled={posting || posted}
-  className={`text-white text-xs px-3 py-1 rounded-md transition-all duration-200
-    ${posted
-      ? "bg-green-500 cursor-default"
-      : posting
-      ? "bg-purple-400 cursor-wait"
-      : "bg-[#7A3BFF] hover:bg-[#6a32e6] active:scale-95"}
-  `}
->
-  {posted ? "Posted ✓" : posting ? "Posting..." : "Post"}
-</button>
+  <button
+    onClick={() =>
+      navigate("/workspace/video-generator", {
+        state: { refImage: { id: item.id, url: item.result_url } },
+      })
+    }
+    className="flex items-center gap-1 text-white text-xs px-3 py-1 rounded-md bg-white/15 hover:bg-white/25 transition active:scale-95"
+  >
+    <VideoIcon className="w-3.5 h-3.5" />
+    Make Video
+  </button>
+
+  <button
+    onClick={handlePublish}
+    disabled={posting || posted}
+    className={`text-white text-xs px-3 py-1 rounded-md transition-all duration-200
+      ${posted
+        ? "bg-green-500 cursor-default"
+        : posting
+        ? "bg-purple-400 cursor-wait"
+        : "bg-[#7A3BFF] hover:bg-[#6a32e6] active:scale-95"}
+    `}
+  >
+    {posted ? "Posted ✓" : posting ? "Posting..." : "Post"}
+  </button>
 
 </div>
         </div>
