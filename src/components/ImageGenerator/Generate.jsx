@@ -790,7 +790,7 @@ useEffect(() => {
 }, [settingsOpen]);
 
  return (
-<section className="w-full h-screen flex flex-col bg-[#090A0A]">
+<section className="w-full md:h-screen h-auto flex flex-col bg-[#090A0A]">
 
 <div
   onClick={(e) => {
@@ -818,7 +818,7 @@ useEffect(() => {
 
 
     {/* Background */}
-<div className="relative w-full flex-1 flex flex-col">
+<div className="relative w-full md:flex-1 flex flex-col">
     
 
 
@@ -827,8 +827,8 @@ useEffect(() => {
       {/* CONTENT */}
 <div
   className={`
-   flex flex-col w-full relative flex-1 pt-2
-    ${!hasResults ? "min-h-[300px]" : ""}
+   flex flex-col w-full relative md:flex-1 pt-2
+    ${!hasResults ? "md:min-h-[300px]" : ""}
   `}
 >
 

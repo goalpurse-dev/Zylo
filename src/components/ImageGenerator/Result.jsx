@@ -551,10 +551,10 @@ setTimeout(() => {
 <div
   ref={latestRef}
  className="
-  w-full
+  w-full md:min-h-full
   bg-[#191B1C]
   flex flex-col
-  px-4 pt-2  md:pb-6
+  px-4 pt-2 md:pb-6
   rounded-[22px]
 "
 >
@@ -565,26 +565,14 @@ setTimeout(() => {
    {photoResults.length === 0 ? (
 
   /* ================= EMPTY STATE ================= */
-<div className="flex-1 flex flex-col items-center justify-center gap-3">
-
-    <div className="relative">
-      <img
-        src="/assets/logos/sadzyvo.webp"
-        className="w-20 h-20 opacity-70"
-      />
-
-      {/* subtle glow */}
-      <div className="absolute inset-0 bg-[#7A3BFF]/20 blur-xl opacity-50" />
-    </div>
-
-    <p className="text-white/40 text-sm">
-      No Images Generated Yet
-    </p>
-
-    <p className="text-white/20 text-xs">
-      Your creations will appear here
-    </p>
-
+  <div className="flex-1 flex flex-col items-center justify-center gap-3 select-none">
+    <img
+      src="/assets/logos/sadzyvo.webp"
+      className="w-20 h-20 opacity-50"
+      alt=""
+    />
+    <p className="text-white/60 text-sm font-semibold">No generated content yet</p>
+    <p className="text-white/25 text-xs">Your creations will appear here</p>
   </div>
 
 ) : (

@@ -298,7 +298,7 @@ useEffect(() => {
   );
 
   return (
-    <div className="w-full h-full bg-[#090A0A] overflow-hidden">
+    <div className={`w-full bg-[#090A0A] ${isDesktop ? "h-full overflow-hidden" : ""}`}>
 
       {isDesktop ? (
         /* 🖥️ DESKTOP — side by side */
@@ -313,8 +313,8 @@ useEffect(() => {
           </div>
         </div>
       ) : (
-        /* 📱 MOBILE — stacked */
-        <div className="flex flex-col px-3 py-3 space-y-3 overflow-y-auto h-full">
+        /* 📱 MOBILE — stacked, let workspace-scroll handle scrolling */
+        <div className="flex flex-col px-3 pt-3 pb-[220px] space-y-3">
           {generatePanel}
           {resultPanel}
         </div>
