@@ -6,6 +6,8 @@ import ViralTemplatesSection from "../../components/workspace/ViralTemplatesSect
 import Features from "../../components/workspace/features.jsx";
 import PopularStyles from "../../components/workspace/popularstyles.jsx";
 import ViralShowcase from "../../components/workspace/ViralShowcase.jsx";
+import JumpBackIn from "../../components/workspace/JumpBackIn.jsx";
+import WhatsHot from "../../components/workspace/WhatsHot.jsx";
 import LatestModels from "../../components/workspace/LatestModels.jsx";
 
 
@@ -45,15 +47,21 @@ export default function WorkspaceHome() {
         <ViralShowcase />
       </div>
 
- <div className="">
-        <PopularStyles />
+      <JumpBackIn />
+
+      <div className="">
+        <WhatsHot />
       </div>
+
+    
 
        <div className="">
         <LatestModels />
       </div>
     
-
+  <div className="">
+        <PopularStyles />
+      </div>
 
       {/* INSPIRATION */}
       <div className="mt-10">
