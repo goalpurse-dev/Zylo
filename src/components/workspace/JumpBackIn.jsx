@@ -44,22 +44,26 @@ export default function JumpBackIn() {
   useEffect(() => {
     let cancelled = false;
 
-    (async () => {
+    async function load() {
       const { data: auth } = await supabase.auth.getSession();
       const uid = auth?.session?.user?.id;
-      if (!uid || cancelled) return;
 
-      // warm from uid-specific cache if we didn't hydrate from anon key
-      if (!items) {
-        try {
-          const raw = localStorage.getItem(CACHE_PREFIX + uid);
-          if (raw) {
-            const p = JSON.parse(raw);
-            if (Array.isArray(p) && p.length > 0 && !cancelled) setItems(p);
-          }
-        } catch {}
+      // No active session → clear anything that was shown from cache
+      if (!uid) {
+        if (!cancelled) setItems([]);
+        return;
       }
 
+      // Warm from uid-specific cache instantly
+      try {
+        const raw = localStorage.getItem(CACHE_PREFIX + uid);
+        if (raw) {
+          const p = JSON.parse(raw);
+          if (Array.isArray(p) && p.length > 0 && !cancelled) setItems(p);
+        }
+      } catch {}
+
+      // Background fetch — minimal fields for speed
       const { data } = await supabase
         .from("jobs")
         .select("id, result_url, prompt, created_at")
@@ -72,13 +76,22 @@ export default function JumpBackIn() {
       if (cancelled) return;
 
       const fresh = (data ?? []).filter((j) => j.result_url);
-      if (!cancelled) {
-        setItems(fresh.length > 0 ? fresh : []);
-        if (fresh.length > 0) writeCache(uid, fresh);
-      }
-    })();
+      setItems(fresh.length > 0 ? fresh : []);
+      if (fresh.length > 0) writeCache(uid, fresh);
+    }
 
-    return () => { cancelled = true; };
+    load();
+
+    // Clear immediately on logout so cached images never persist to the next user
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") setItems([]);
+      if (event === "SIGNED_IN") load();
+    });
+
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (!items || items.length === 0) return null;

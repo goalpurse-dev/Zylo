@@ -22,15 +22,13 @@ export default function MobileBottomNav({ isSelectorOpen }) {
   return (
 <div
   className={`
-    flex-shrink-0 w-full
+    fixed bottom-0 left-0 right-0
     z-[100]
     lg:hidden
     bg-[#191B1C]
     border-t border-white/5
-
-    transition-all duration-300
-
-   ${isSelectorOpen ? "opacity-0 pointer-events-none translate-y-full" : "opacity-100"}
+    transition-opacity duration-300
+    ${isSelectorOpen ? "opacity-0 pointer-events-none" : "opacity-100"}
   `}
   style={{
     height: "calc(70px + env(safe-area-inset-bottom))",

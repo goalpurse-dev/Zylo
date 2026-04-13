@@ -294,6 +294,14 @@ const [planCode, setPlanCode] = useState("free");
       About
     </button>
 
+    <button
+      onClick={() => navigate("/support")}
+      className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 text-white/80"
+    >
+      <HelpCircle className="w-4 h-4 text-white/60" />
+      Help
+    </button>
+
     <div className="border-t border-white/10 my-1"></div>
 
     <button

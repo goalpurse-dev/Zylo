@@ -136,9 +136,8 @@ useEffect(() => {
           className={`
             sticky top-0 z-[60]
             w-full
-            transition-transform duration-300
-            ${showTopRow ? "translate-y-0" : "-translate-y-full"}
-            lg:translate-y-0
+            lg:transition-transform lg:duration-300
+            ${showTopRow ? "lg:translate-y-0" : "lg:-translate-y-full"}
           `}
         >
           {isHomeRoute && bannerVisible && (
