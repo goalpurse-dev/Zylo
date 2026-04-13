@@ -22,20 +22,19 @@ export default function MobileBottomNav({ isSelectorOpen }) {
   return (
 <div
   className={`
-    fixed bottom-0 left-0 right-0
+    flex-shrink-0 w-full
     z-[100]
     lg:hidden
     bg-[#191B1C]
     border-t border-white/5
-    h-[70px]
 
     transition-all duration-300
 
    ${isSelectorOpen ? "opacity-0 pointer-events-none translate-y-full" : "opacity-100"}
   `}
   style={{
+    height: "calc(70px + env(safe-area-inset-bottom))",
     paddingBottom: "env(safe-area-inset-bottom)",
-    "--bottom-nav-height": "68px"
   }}
 >
       <div className="flex items-center justify-between px-3 py-2">

@@ -1391,7 +1391,7 @@ md:group-hover:brightness-110
 <div
   className="fixed left-0 right-0 z-[90] md:static pointer-events-none"
   style={{
-   bottom: "calc(70px + env(safe-area-inset-bottom))"
+    bottom: "calc(70px + env(safe-area-inset-bottom))"
   }}
 >
   <div className="pointer-events-auto">
