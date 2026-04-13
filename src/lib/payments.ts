@@ -2,7 +2,8 @@ import { supabase } from "./supabaseClient";
 
 type CheckoutParams = {
   type: "subscription" | "topup";
-  priceId: string;
+  priceId?: string;
+  pack?: string;
   userId?: string;
   email?: string;
   successUrl?: string;
@@ -32,6 +33,7 @@ export async function startCheckout(params: CheckoutParams) {
       body: JSON.stringify({
         type: params.type,
         priceId: params.priceId,
+        pack: params.pack,
 
         // 🔑 CRITICAL
         userId: session.user.id,

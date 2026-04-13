@@ -11,87 +11,50 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// 🔥 SAFE SETTINGS
-const DELAY_MS = 6000; // slower = better inbox
-const RETRY_DELAY_MS = 2000;
 const MAX_SEND = 300;
-
-// 🔥 SUBJECT ROTATION
-const SUBJECTS = [
-  "quick question",
-  "did you try this yet?",
-  "this is interesting",
-  "what do you think?",
-  "one thing I noticed"
-];
+const DELAY_MS = 3000;
+const RETRY_DELAY_MS = 1500;
+const COOLDOWN_HOURS = 72; // ⏳ only resend after 3 days
 
 function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(r => setTimeout(r, ms));
 }
 
-// 🔥 CLEAN EMAIL (NO PROMO STYLE)
-function simpleEmail(user) {
+function emailHtml(user) {
   const name = user.email?.split("@")[0] || "there";
 
   return `
-  <div style="font-family:Arial, sans-serif; max-width:500px; margin:auto; padding:16px; color:#111;">
-    
-    <div style="display:none;max-height:0;overflow:hidden;">
-      quick question about zyvo
-    </div>
-
+  <div style="font-family:Arial;max-width:520px;margin:auto;padding:20px;">
     <p>Hey ${name},</p>
 
-    <p>
-      quick question —
-    </p>
+    <p>Quick one —</p>
 
-    <p>
-      did you try Nano Banana 2 yet?
-    </p>
+    <p>You already have the tools to start getting real results with Zyvo.</p>
 
-    <p>
-      we’re seeing way better outputs compared to older models
-    </p>
+    <p>The biggest difference we see between creators who win and those who don’t:</p>
 
-    <p>
-      curious what you think:
-    </p>
+    <p><strong>they simply generate more.</strong></p>
 
-    <p>
-      <a href="https://tryzyvo.com/workspace/image-generator">
-        https://tryzyvo.com/workspace/image-generator
-      </a>
-    </p>
+    <p>More ideas → more tests → more wins.</p>
 
-    <p>
-      just reply if something didn’t work for you
-    </p>
+    <p>Right now the Pro plan is <strong>25% off</strong>.</p>
 
-    <p>
-      — Niko
-    </p>
+    <p><a href="https://tryzyvo.com/workspace/pricing">Upgrade here →</a></p>
 
+    <p>— Zyvo</p>
   </div>
   `;
 }
 
-// 🔥 PICK RANDOM SUBJECT
-function getSubject() {
-  return SUBJECTS[Math.floor(Math.random() * SUBJECTS.length)];
-}
-
 async function sendEmail(user) {
-  const subject = getSubject();
-
   let sendError = null;
 
-  for (let attempt = 1; attempt <= 2; attempt++) {
+  for (let i = 1; i <= 2; i++) {
     const { error } = await resend.emails.send({
-      from: "Niko <niko@tryzyvo.com>",
+      from: "Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject,
-      html: simpleEmail(user),
+      subject: "you’re sitting on something",
+      html: emailHtml(user),
     });
 
     if (!error) {
@@ -104,67 +67,82 @@ async function sendEmail(user) {
   }
 
   if (sendError) return false;
+
+  // 🔥 mark user as sent
+  await supabase
+    .from("profiles")
+    .update({ last_email_sent_at: new Date().toISOString() })
+    .eq("email", user.email);
+
   return true;
 }
 
 export default async function handler(req, res) {
   try {
-    console.log("🚀 Starting clean cycle email...");
+    console.log("🚀 Starting batch send...");
 
-    const { data: users, error } = await supabase
-      .from("profiles")
-      .select("email, email_updates")
-      .eq("email_updates", true)
-      .limit(1000);
+    const cutoff = new Date(
+      Date.now() - COOLDOWN_HOURS * 60 * 60 * 1000
+    ).toISOString();
 
-    if (error) {
-      console.error(error);
-      return res.status(500).json({ error: "fetch error" });
+    let allUsers = [];
+    let from = 0;
+    const batchSize = 1000;
+
+    // 🔥 FETCH WITH COOLDOWN FILTER
+    while (true) {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("email, email_updates, last_email_sent_at")
+        .eq("email_updates", true)
+        .or(`last_email_sent_at.is.null,last_email_sent_at.lt.${cutoff}`)
+        .range(from, from + batchSize - 1);
+
+      if (error) throw error;
+      if (!data || data.length === 0) break;
+
+      allUsers.push(...data);
+
+      if (data.length < batchSize) break;
+      from += batchSize;
     }
 
+    console.log(`👥 Eligible users: ${allUsers.length}`);
+
     let sent = 0;
-    let processed = 0;
+    let skipped = 0;
 
-    for (const user of users) {
-
-      if (processed >= MAX_SEND) {
-        console.log("🛑 MAX_SEND reached");
-        break;
+    for (const user of allUsers) {
+      if (sent >= MAX_SEND) break;
+      if (!user.email) {
+        skipped++;
+        continue;
       }
-
-      if (!user.email) continue;
 
       console.log(`➡️ Sending to: ${user.email}`);
-
       const ok = await sendEmail(user);
 
-      if (ok) {
-        sent++;
-        processed++;
-      }
+      if (ok) sent++;
+      else skipped++;
 
       await sleep(DELAY_MS);
     }
 
-    console.log(`✅ Sent: ${sent}`);
+    console.log(`🎯 Done — Sent ${sent}`);
 
-    return res.status(200).json({
+    return res?.status?.(200)?.json({
       success: true,
-      sent
+      sent,
+      skipped,
     });
 
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "internal error" });
+    console.error("🔥 Error:", err);
+    return res?.status?.(500)?.json({ error: "fail" });
   }
 }
 
-// LOCAL RUN
-handler(
-  {},
-  {
-    status: () => ({
-      json: (data) => console.log("📤", data),
-    }),
-  }
-);
+// 🧪 Local run
+if (process.argv[1]?.includes("send-next-batch.js")) {
+  handler({}, { status: c => ({ json: d => console.log(c, d) }) });
+}
