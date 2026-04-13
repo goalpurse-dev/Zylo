@@ -7,7 +7,7 @@ import { ArrowRight, Plus, Wand2 } from "lucide-react";
 /* ─── Config ─────────────────────────────────────────────── */
 const CACHE_PREFIX = "zyvo_jbi_";
 const UID_KEY      = "zyvo_uid";
-const LIMIT        = 7;
+const LIMIT        = 8;
 
 /* ─── Helpers ────────────────────────────────────────────── */
 function timeAgo(dateStr) {
@@ -119,7 +119,7 @@ export default function JumpBackIn() {
         {/* ── Strip ── */}
         <div className="relative">
           {/* right edge fade hint */}
-          <div className="pointer-events-none absolute right-20 top-0 bottom-0 w-10 bg-gradient-to-l from-[#0D0F14] to-transparent z-10" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[#0D0F14] to-transparent z-10" />
 
           <div className="flex gap-2.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {items.map((item, i) => (
