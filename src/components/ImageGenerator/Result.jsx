@@ -646,22 +646,11 @@ useEffect(() => {
     if (hasScrolledRef.current) return;
     hasScrolledRef.current = true;
 
-    // 1) scroll card into view inside the scroll container
-    el.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-      inline: "nearest",
-    });
-
-    // 2) push it a bit higher so fixed bottom UI doesn't cover it
-  const bottomUIHeight = 100; // tweak this
-
-setTimeout(() => {
-  container.scrollBy({
-    top: -(bottomUIHeight - 10),
-    behavior: "smooth",
-  });
-}, 250);
+    // Scroll so card sits 20px from the top of the scroll container — single scroll, no jitter
+    const containerRect = container.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const targetTop = container.scrollTop + (elRect.top - containerRect.top) - 20;
+    container.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
   };
 
   requestAnimationFrame(scrollToCard);
