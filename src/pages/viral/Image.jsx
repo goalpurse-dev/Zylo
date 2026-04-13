@@ -62,8 +62,8 @@ useEffect(() => {
 
 useEffect(() => {
   async function loadPlan() {
-    const { data } = await supabase.auth.getUser();
-    const uid = data?.user?.id;
+    const { data } = await supabase.auth.getSession();
+    const uid = data?.session?.user?.id;
 
     if (!uid) return;
 
@@ -175,8 +175,8 @@ useEffect(() => {
   =============================== */
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.auth.getUser();
-      const uid = data?.user?.id;
+      const { data } = await supabase.auth.getSession();
+      const uid = data?.session?.user?.id;
       if (!uid) return;
 
       const { data: jobs } = await supabase

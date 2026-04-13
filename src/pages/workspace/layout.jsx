@@ -74,6 +74,8 @@ useEffect(() => {
 
         if (window.innerWidth >= 1024) {
           setShowTopRow(!(currentY > lastScrollY.current && currentY > 60));
+        } else {
+          setShowTopRow(true);
         }
 
         lastScrollY.current = currentY;

@@ -488,8 +488,8 @@ const handleUpload = async (e) => {
   if (!file) return;
 
   try {
-    const { data: auth } = await supabase.auth.getUser();
-    const uid = auth?.user?.id;
+    const { data: auth } = await supabase.auth.getSession();
+    const uid = auth?.session?.user?.id;
     if (!uid) return;
 
     const ext = file.name.split(".").pop() || "png";
@@ -542,8 +542,8 @@ if (planCode === "free" && freeRemaining === 0) {
 }
 
   // 🔥 CHECK AUTH FIRST
-  const { data: authData } = await supabase.auth.getUser();
-  const user = authData?.user;
+  const { data: authData } = await supabase.auth.getSession();
+  const user = authData?.session?.user;
 
 if (!user) {
   setGuestModalOpen(true);
@@ -694,8 +694,8 @@ watchJob(job.id, (updatedJob) => {
 
 useEffect(() => {
   const init = async () => {
-    const { data: auth } = await supabase.auth.getUser();
-    const currentUser = auth?.user;
+    const { data: auth } = await supabase.auth.getSession();
+    const currentUser = auth?.session?.user;
     setUser(currentUser);
     if (!currentUser) return;
 

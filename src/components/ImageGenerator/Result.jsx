@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { DownloadIcon, VideoIcon } from "lucide-react";
+import { createPortal } from "react-dom";
+import { DownloadIcon, VideoIcon, Maximize2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CREATION_TYPES } from "../../lib/creations";
 import { supabase } from "../../lib/supabaseClient";
@@ -85,6 +86,7 @@ const [posted, setPosted] = useState(false);
 const [showToast, setShowToast] = useState(false);
 const [postedImages, setPostedImages] = useState(new Set());
 const [isImageLoaded, setIsImageLoaded] = useState(false);
+const [viewerOpen, setViewerOpen] = useState(false);
 
 
 
@@ -256,6 +258,7 @@ const isFailed =
   if (!visible) return null;
 
   return (
+    <>
     <div className="
   group
   relative
@@ -285,6 +288,7 @@ const isFailed =
   <div className="absolute inset-0">
     {/* DONE */}
 {isDone && (
+<>
 <img
   src={item.result_url + "?format=webp&width=800"}
   referrerPolicy="no-referrer"
@@ -292,9 +296,16 @@ const isFailed =
   className="w-full h-full object-cover"
   loading="lazy"
   decoding="async"
-  onClick={() => onOpen?.(item)}
-
 />
+{/* EXPAND ICON — always visible top-right */}
+<button
+  onClick={(e) => { e.stopPropagation(); setViewerOpen(true); }}
+  className="absolute top-2 right-2 z-20 w-7 h-7 flex items-center justify-center rounded-lg bg-black/50 hover:bg-black/80 backdrop-blur-sm text-white/80 hover:text-white transition active:scale-95"
+  title="Open fullscreen"
+>
+  <Maximize2 className="w-3.5 h-3.5" />
+</button>
+</>
 )}
 
     {/* FAILED */}
@@ -457,7 +468,6 @@ const isFailed =
         <div className="absolute inset-x-0 bottom-0 p-3">
           <p className="text-white/70 text-xs mb-2">
            Generating… {progress}%
-
           </p>
           <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
             <div
@@ -468,6 +478,106 @@ const isFailed =
         </div>
       )}
     </div>
+
+    {/* ===== FULLSCREEN VIEWER PORTAL ===== */}
+    {viewerOpen && isDone && createPortal(
+      <div
+        className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex flex-col"
+        onClick={(e) => { if (e.target === e.currentTarget) setViewerOpen(false); }}
+      >
+        {/* TOP BAR */}
+        <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
+          <p className="text-white/40 text-xs truncate max-w-[75%]">
+            {item.input?.subject ?? item.prompt}
+          </p>
+          <button
+            onClick={() => setViewerOpen(false)}
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* IMAGE */}
+        <div className="flex-1 flex items-center justify-center px-4 min-h-0">
+          <img
+            src={item.result_url + "?width=1200"}
+            className="max-w-full max-h-full rounded-2xl object-contain"
+            style={{ maxHeight: "calc(100dvh - 160px)" }}
+          />
+        </div>
+
+        {/* ACTIONS */}
+        <div className="flex-shrink-0 px-4 py-4 flex items-center justify-center flex-wrap gap-3">
+
+          {/* DOWNLOAD */}
+          <button
+            onClick={async () => {
+              try {
+                const res = await fetch(item.result_url + "?width=1200");
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url; a.download = "zyvo-image.webp";
+                document.body.appendChild(a); a.click(); a.remove();
+                URL.revokeObjectURL(url);
+              } catch { window.open(item.result_url, "_blank"); }
+            }}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#7A3BFF] hover:bg-[#6A32E0] text-white font-semibold text-sm transition active:scale-95 shadow-[0_0_20px_rgba(122,59,255,0.4)]"
+          >
+            <DownloadIcon className="w-4 h-4" />
+            Save Image
+          </button>
+
+          {/* MAKE VIDEO */}
+          <button
+            onClick={() => {
+              setViewerOpen(false);
+              navigate("/workspace/video-generator", {
+                state: { refImage: { id: item.id, url: item.result_url } },
+              });
+            }}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition active:scale-95"
+          >
+            <VideoIcon className="w-4 h-4" />
+            Make Video
+          </button>
+
+          {/* POST */}
+          <button
+            onClick={() => { handlePublish(); }}
+            disabled={posting || posted}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold text-sm transition active:scale-95
+              ${posted ? "bg-green-500 text-white cursor-default"
+                : posting ? "bg-purple-400 text-white cursor-wait"
+                : "bg-white/10 hover:bg-white/20 text-white"}`}
+          >
+            {posted ? "Posted ✓" : posting ? "Posting…" : "Post to Gallery"}
+          </button>
+
+          {/* COPY PROMPT */}
+          <button
+            onClick={() => navigator.clipboard.writeText(item.input?.subject ?? item.prompt)}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition active:scale-95"
+          >
+            Copy Prompt
+          </button>
+
+          {/* SHARE */}
+          {"share" in navigator && (
+            <button
+              onClick={() => navigator.share({ url: item.result_url, title: "My Zyvo image" }).catch(() => {})}
+              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition active:scale-95"
+            >
+              Share
+            </button>
+          )}
+
+        </div>
+      </div>,
+      document.body
+    )}
+    </>
   );
 }
 
@@ -480,7 +590,6 @@ const [isMobile, setIsMobile] = useState(false);
 useEffect(() => {
   setIsMobile(window.innerWidth < 768);
 }, []);
- const [activeItem, setActiveItem] = useState(null);
 
 const hasScrolledRef = useRef(false);
 
@@ -578,7 +687,7 @@ setTimeout(() => {
    {photoResults.length === 0 ? (
 
   /* ================= EMPTY STATE ================= */
-  <div className="flex-1 flex flex-col items-center justify-center gap-3 select-none">
+  <div className="flex-1 flex flex-col items-center justify-center gap-3 select-none py-16 pb-[120px] md:pb-16">
     <img
       src="/assets/logos/sadzyvo.webp"
       className="w-20 h-20 opacity-50"
@@ -605,83 +714,13 @@ setTimeout(() => {
           if (el) cardRefs.current[item.id] = el;
         }}
       >
-        <ResultCard item={item} onOpen={setActiveItem} />
+        <ResultCard item={item} />
       </div>
     ))}
   </div>
 
 )}
       
-      {activeItem && (
-  <div className="fixed inset-0 z-[999] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4">
-
-    {/* CLOSE */}
-    <button
-      onClick={() => setActiveItem(null)}
-      className="absolute top-6 right-6 text-white/60 hover:text-white"
-    >
-      ✕
-    </button>
-
-    {/* CONTENT */}
-    <div className="w-full max-w-[1100px] grid md:grid-cols-2 gap-6 items-center">
-
-      {/* IMAGE */}
-      <div className="rounded-2xl overflow-hidden bg-black">
-        <img
-          src={activeItem.result_url + "?width=1200"}
-          className="w-full h-auto object-contain"
-        />
-      </div>
-
-      {/* SIDE PANEL */}
-      <div className="flex flex-col gap-4">
-
-        {/* PROMPT */}
-        <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <p className="text-white/90 text-sm leading-relaxed">
-            {activeItem.input?.subject ?? activeItem.prompt}
-          </p>
-        </div>
-
-        {/* ACTIONS */}
-        <div className="flex gap-3">
-
-          {/* COPY */}
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(
-                activeItem.input?.subject ?? activeItem.prompt
-              )
-            }}
-            className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm"
-          >
-            Copy Prompt
-          </button>
-
-          {/* DOWNLOAD */}
-          <button
-            onClick={async () => {
-              const res = await fetch(activeItem.result_url)
-              const blob = await res.blob()
-
-              const url = URL.createObjectURL(blob)
-              const a = document.createElement("a")
-              a.href = url
-              a.download = "zyvo-image.webp"
-              a.click()
-              URL.revokeObjectURL(url)
-            }}
-            className="px-4 py-2 rounded-lg bg-[#7A3BFF] hover:bg-[#6A32E0] text-white text-sm"
-          >
-            Download
-          </button>
-
-        </div>
-      </div>
-    </div>
-  </div>
-)}
 {/* REAL BOTTOM SPACER (NO LAG) */}
 <div
   style={{

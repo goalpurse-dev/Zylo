@@ -10,8 +10,8 @@ export default function VideoGenerator() {
 
   useEffect(() => {
     async function loadVideos() {
-      const { data: authData } = await supabase.auth.getUser();
-      if (!authData?.user) return;
+      const { data: authData } = await supabase.auth.getSession();
+      if (!authData?.session?.user) return;
 
       const { data, error } = await supabase
         .from("jobs")

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 
 export default function TopPromoBanner() {
+  const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -63,7 +65,7 @@ export default function TopPromoBanner() {
      
 
      <button
-  onClick={() => (window.location.href = "/pricing")}
+  onClick={() => navigate("/workspace/pricing")}
   className="
     ml-2
     px-3.5 py-1.5

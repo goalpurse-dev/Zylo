@@ -21,29 +21,76 @@ function sleep(ms) {
 }
 
 function emailHtml(user) {
-  const name = user.email?.split("@")[0] || "there";
+  const raw = user.email?.split("@")[0] || "there";
+  // Capitalize first letter, strip dots/underscores/numbers for a cleaner greeting
+  const name = raw.replace(/[._\-\d]/g, " ").trim().split(" ")[0];
+  const displayName = name.charAt(0).toUpperCase() + name.slice(1);
 
-  return `
-  <div style="font-family:Arial;max-width:520px;margin:auto;padding:20px;">
-    <p>Hey ${name},</p>
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A note from Zyvo</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f4f5;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width:520px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
 
-    <p>Quick one —</p>
+          <!-- Header -->
+          <tr>
+            <td style="background:#0d0d0d;padding:24px 32px;">
+              <p style="margin:0;font-family:Arial,sans-serif;font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Zyvo</p>
+            </td>
+          </tr>
 
-    <p>You already have the tools to start getting real results with Zyvo.</p>
+          <!-- Body -->
+          <tr>
+            <td style="padding:36px 32px 28px;font-family:Arial,sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;">
 
-    <p>The biggest difference we see between creators who win and those who don’t:</p>
+              <p style="margin:0 0 16px;">Hey ${displayName},</p>
 
-    <p><strong>they simply generate more.</strong></p>
+              <p style="margin:0 0 16px;">I noticed you signed up for Zyvo a little while back — wanted to check in personally.</p>
 
-    <p>More ideas → more tests → more wins.</p>
+              <p style="margin:0 0 16px;">A lot of creators use Zyvo to produce scroll-stopping images and videos in minutes, then use that content across their channels, ads, and client work. No design skills needed.</p>
 
-    <p>Right now the Pro plan is <strong>25% off</strong>.</p>
+              <p style="margin:0 0 16px;">If you haven’t had a chance to dig in yet, now’s actually a pretty good time — we’re running <strong>25% off Pro</strong> for a limited window, and the upgrade takes about 30 seconds.</p>
 
-    <p><a href="https://tryzyvo.com/workspace/pricing">Upgrade here →</a></p>
+              <p style="margin:0 0 28px;">No pressure either way, just didn’t want you to miss it.</p>
 
-    <p>— Zyvo</p>
-  </div>
-  `;
+              <!-- CTA -->
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="border-radius:8px;background:#7A3BFF;">
+                    <a href="https://tryzyvo.com/workspace/pricing"
+                       style="display:inline-block;padding:13px 28px;font-family:Arial,sans-serif;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;letter-spacing:0.1px;">
+                      See what Pro unlocks →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:32px 0 0;color:#555555;">— Niko from Zyvo</p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:20px 32px;border-top:1px solid #eeeeee;font-family:Arial,sans-serif;font-size:12px;color:#999999;line-height:1.6;">
+              <p style="margin:0 0 4px;">You’re getting this because you signed up at tryzyvo.com.</p>
+              <p style="margin:0;">Zyvo · tryzyvo.com</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 }
 
 async function sendEmail(user) {
@@ -53,7 +100,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "you’re sitting on something",
+      subject: "a quick note from Zyvo",
       html: emailHtml(user),
     });
 
@@ -145,4 +192,20 @@ export default async function handler(req, res) {
 // 🧪 Local run
 if (process.argv[1]?.includes("send-next-batch.js")) {
   handler({}, { status: c => ({ json: d => console.log(c, d) }) });
+}
+// ================= LOCAL RUN =================
+if (process.argv[1]?.includes("send-clean-cycle-email.js")) {
+  console.log("🟢 Running email batch...");
+
+  handler(
+    {},
+    {
+      status: (code) => ({
+        json: (data) => {
+          console.log("📤 Response:", code, data);
+          process.exit(0);
+        },
+      }),
+    }
+  );
 }

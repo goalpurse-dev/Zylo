@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 
 const Star = ({ className = "" }) => (
   <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
@@ -61,7 +61,8 @@ function ReviewCard({ data, variant = "center" }) {
 
 export default function Reviews() {
   const [idx, setIdx] = useState(0);
-  const [anim, setAnim] = useState({ active: false, dir: 0 }); // -1 left, +1 right
+  const [anim, setAnim] = useState({ active: false, dir: 0, target: null }); // -1 left, +1 right
+  const touchStartX = useRef(null);
 
   const n = SEED.length;
   const at = (i) => ((i % n) + n) % n;
@@ -75,11 +76,28 @@ export default function Reviews() {
   const targetWhenPrev = "0%";
 
   const go = (dir) => {
-    if (!anim.active) setAnim({ active: true, dir });
+    if (!anim.active) setAnim({ active: true, dir, target: null });
   };
   const onEnd = () => {
-    setIdx((i) => at(i + anim.dir));
-    setAnim({ active: false, dir: 0 });
+    if (anim.target !== null) {
+      setIdx(anim.target);
+    } else {
+      setIdx((i) => at(i + anim.dir));
+    }
+    setAnim({ active: false, dir: 0, target: null });
+  };
+  const goTo = (i) => {
+    if (anim.active || i === idx) return;
+    const dir = i > idx ? 1 : -1;
+    setAnim({ active: true, dir, target: i });
+  };
+  const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const onTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(dx) < 40) return;
+    go(dx < 0 ? 1 : -1);
   };
 
   let translate = base;
@@ -119,6 +137,8 @@ export default function Reviews() {
           {/* Inner viewport with fade mask */}
           <div
             className="overflow-hidden"
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
             style={{
               WebkitMaskImage:
                 "linear-gradient(to right, transparent 0, black 6%, black 94%, transparent 100%)",
@@ -155,11 +175,11 @@ export default function Reviews() {
           {SEED.map((_, i) => (
             <button
               key={i}
-              onClick={() => setIdx(i)}
-              className={`w-2.5 h-2.5 rounded-full transition ${
+              onClick={() => goTo(i)}
+              className={`rounded-full transition-all duration-300 ${
                 i === idx
-                  ? "bg-[#007BFF]"
-                  : "bg-white/30 hover:bg-white/50"
+                  ? "w-5 h-2.5 bg-[#007BFF]"
+                  : "w-2.5 h-2.5 bg-white/30 hover:bg-white/50"
               }`}
               aria-label={`Go to review ${i + 1}`}
             />

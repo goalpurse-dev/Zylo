@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const models = [
@@ -9,6 +10,7 @@ const models = [
     video: "/trendmodel/nanobanana.mp4",
     tag: "BEST",
     highlight: true,
+    path: "/workspace/image-generator",
   },
   {
     name: "MiniMax Hailou 2.3 Fast",
@@ -16,6 +18,7 @@ const models = [
     image: "/trendmodel/hailou.webp",
     video: "/trendmodel/minimax.mp4",
     tag: "FAST",
+    path: "/workspace/video-generator",
   },
   {
     name: "Runway Gen-4",
@@ -23,17 +26,19 @@ const models = [
     image: "/trendmodel/runway.webp",
     video: "/trendmodel/runway.mp4",
     tag: "PRO",
+    path: "/workspace/video-generator",
   },
 ];
 
 // Duplicate for seamless infinite loop
 const loopedModels = [...models, ...models];
 
-function ModelCard({ model, compact }) {
+function ModelCard({ model, compact, onClick }) {
   const [hovered, setHovered] = useState(false);
 
   return (
     <div
+      onClick={onClick}
       className={`
         group cursor-pointer rounded-2xl overflow-hidden
         border border-white/10 bg-[#090A0A]
@@ -77,6 +82,7 @@ function ModelCard({ model, compact }) {
 }
 
 export default function LatestModels() {
+  const navigate = useNavigate();
   const mobileRef = useRef(null);
   const isUserInteracting = useRef(false);
   const intervalRef = useRef(null);
@@ -122,7 +128,7 @@ export default function LatestModels() {
         <h2 className="text-white text-[20px] md:text-[28px] font-bold tracking-tight">
           Trending AI Models
         </h2>
-        <button className="text-white/50 hover:text-white text-sm transition">More →</button>
+        <button onClick={() => navigate("/workspace/image-generator")} className="text-white/50 hover:text-white text-sm transition">More →</button>
       </div>
 
       {/* Mobile — infinite snap rail */}
@@ -136,7 +142,7 @@ export default function LatestModels() {
         >
           {loopedModels.map((model, i) => (
             <div key={i} className="snap-start shrink-0 w-[92%]">
-              <ModelCard model={model} />
+              <ModelCard model={model} onClick={() => navigate(model.path)} />
             </div>
           ))}
         </div>
@@ -145,21 +151,21 @@ export default function LatestModels() {
       {/* MD grid */}
       <div className="hidden md:grid lg:hidden grid-cols-3 gap-3">
         {models.map((model, i) => (
-          <ModelCard key={i} model={model} compact />
+          <ModelCard key={i} model={model} compact onClick={() => navigate(model.path)} />
         ))}
       </div>
 
       {/* LG rail */}
       <div className="hidden lg:grid 2xl:hidden grid-cols-3 gap-3">
         {models.map((model, i) => (
-          <ModelCard key={i} model={model} />
+          <ModelCard key={i} model={model} onClick={() => navigate(model.path)} />
         ))}
       </div>
 
       {/* 2XL grid */}
       <div className="hidden 2xl:grid grid-cols-3 gap-4">
         {models.map((model, i) => (
-          <ModelCard key={i} model={model} />
+          <ModelCard key={i} model={model} onClick={() => navigate(model.path)} />
         ))}
       </div>
     </motion.section>
