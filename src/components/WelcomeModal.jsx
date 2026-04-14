@@ -56,7 +56,7 @@ export default function WelcomeModal({ onClose }) {
             <div className="inline-flex items-center gap-2 bg-[#7A3BFF]/20 border border-[#7A3BFF]/40 rounded-2xl px-5 py-3 mb-6">
               <span className="text-2xl">⚡</span>
               <div className="text-left">
-                <div className="text-white font-bold text-lg leading-tight">10 Free Generations</div>
+                <div className="text-white font-bold text-lg leading-tight">10 free images to start</div>
                 <div className="text-white/50 text-xs">resets every month · no card needed</div>
               </div>
             </div>
@@ -79,14 +79,19 @@ export default function WelcomeModal({ onClose }) {
 
             {/* CTA */}
             <button
-              onClick={onClose}
+              onClick={() => {
+                // Signal FirstGenFlow to begin the guided tour
+                localStorage.setItem("zyvo_ftg_start", "1");
+                window.dispatchEvent(new CustomEvent("zyvo:ftg:start"));
+                onClose();
+              }}
               className="w-full py-4 rounded-2xl text-white font-bold text-base transition hover:opacity-90 active:scale-[0.98]"
               style={{
                 background: "linear-gradient(135deg, #7A3BFF, #9D6BFF)",
                 boxShadow: "0 8px 32px rgba(122,59,255,0.5)",
               }}
             >
-              Start Creating →
+              Create my first image →
             </button>
 
             <p className="text-white/25 text-xs mt-4">

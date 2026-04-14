@@ -40,6 +40,7 @@ const [userPlan, setUserPlan] = useState("free");
 
   const inspirationRef = useRef(null);
   const watchersRef = useRef({});
+  const ftgCelebFiredRef = useRef(false);
   const [postedImages, setPostedImages] = useState(new Set());
 
   const [activeJobId, setActiveJobId] = useState(null);
@@ -54,6 +55,13 @@ const [userPlan, setUserPlan] = useState("free");
 const location = useLocation();
 
 useEffect(() => {
+  // FTG tour prefill takes priority, then location state
+  const ftgPrompt = sessionStorage.getItem("zyvo_ftg_prompt");
+  if (ftgPrompt) {
+    sessionStorage.removeItem("zyvo_ftg_prompt");
+    setPrompt(ftgPrompt);
+    return;
+  }
   if (location.state?.prompt) {
     setPrompt(location.state.prompt);
   }
@@ -164,6 +172,12 @@ useEffect(() => {
         updated.status === "failed" ||
         updated.status === "canceled"
       ) {
+        // Fire FTG celebrate on very first image success ever in this session
+        if (updated.status === "succeeded" && !ftgCelebFiredRef.current) {
+          ftgCelebFiredRef.current = true;
+          window.dispatchEvent(new CustomEvent("zyvo:ftg:image-done"));
+        }
+
         watchersRef.current[job.id]?.();
         delete watchersRef.current[job.id];
       }

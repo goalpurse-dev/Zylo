@@ -316,7 +316,7 @@ useEffect(() => {
 }
 
   return (
-    <div className="w-full md:h-full flex flex-col gap-3 relative bg-[#191B1C] border border-white/5 rounded-[22px] p-5 md:overflow-hidden">
+    <div className="w-full flex flex-col gap-3 relative bg-[#191B1C] border border-white/5 rounded-[22px] p-5">
 
       {/* BLUR OVERLAY */}
 {isAnyModalOpen &&

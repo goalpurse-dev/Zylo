@@ -57,20 +57,21 @@ const [planCode, setPlanCode] = useState("free");
   loadPlan();
 }, [user]);
 
-  const Item = ({ icon: Icon, label, path }) => {
+  const Item = ({ icon: Icon, label, path, ftg }) => {
     const active = isActive(path);
 
     return (
       <button
         onClick={() => navigate(path)}
         className={`
+          ftg-nav-item
           w-full flex flex-col items-center gap-1 py-3 rounded-xl
           transition-all duration-200
-
           ${active
             ? "bg-white text-black"
             : "text-white/50 hover:text-white hover:bg-white/5"}
         `}
+        {...(ftg ? { "data-ftg": ftg } : {})}
       >
         <Icon className="w-5 h-5" />
         <span className="text-[11px] font-medium">{label}</span>
@@ -116,9 +117,9 @@ const [planCode, setPlanCode] = useState("free");
 
       {/* NAV */}
       <div className="flex flex-col items-center gap-2 w-full">
-        <Item icon={Home} label="Home" path="/workspace/home" />
-        <Item icon={Image} label="Image" path="/workspace/image-generator" />
-        <Item icon={Video} label="Video" path="/workspace/video-generator" />
+        <Item icon={Home}   label="Home"      path="/workspace/home" />
+        <Item icon={Image}  label="Image"     path="/workspace/image-generator" ftg="image-nav" />
+        <Item icon={Video}  label="Video"     path="/workspace/video-generator" />
         <Item icon={Folder} label="Creations" path="/workspace/creations" />
       </div>
 

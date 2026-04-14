@@ -5,6 +5,7 @@ const ModelSelector = React.memo(
   ({ selectedModel, openModel, setOpenModel }) => {
     return (
       <button
+        data-ftg="model"
         onClick={() => setOpenModel((p) => !p)}
         className="
           group

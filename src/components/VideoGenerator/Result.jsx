@@ -178,7 +178,7 @@ export default function Result({ results = [] }) {
   /* =============================== RENDER =============================== */
 
   return (
-    <div className="w-full min-h-full flex flex-col gap-4 bg-[#191B1C] rounded-[22px] p-4 md:p-6 pb-[90px] md:pb-6">
+    <div className="w-full flex-1 flex flex-col gap-4 bg-[#191B1C] rounded-[22px] p-4 md:p-6 pb-[90px] lg:pb-6">
 
       <h1 className="text-[#F4F6FB] font-semibold text-[20px]">Recent Creations</h1>
 

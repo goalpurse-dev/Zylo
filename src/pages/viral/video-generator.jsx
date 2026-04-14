@@ -8,6 +8,14 @@ export default function VideoGenerator() {
   const [results, setResults] = useState([]);
   const intervalRef = useRef(null);
 
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+
+  useEffect(() => {
+    const onResize = () => setIsDesktop(window.innerWidth >= 1024);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   useEffect(() => {
     async function loadVideos() {
       const { data: authData } = await supabase.auth.getSession();
@@ -28,7 +36,6 @@ export default function VideoGenerator() {
 
       setResults(data);
 
-      // Only keep polling if there are active jobs — stop when all are settled
       const hasActive = data.some(
         (j) => j.status === "running" || j.status === "queued"
       );
@@ -41,10 +48,8 @@ export default function VideoGenerator() {
       }
     }
 
-    // Initial load
     loadVideos();
 
-    // Realtime subscription — triggers a fresh fetch on any job change
     const channel = supabase
       .channel("video-jobs")
       .on(
@@ -61,16 +66,44 @@ export default function VideoGenerator() {
   }, []);
 
   return (
-    <div className="w-full flex flex-col md:flex-row md:h-screen md:overflow-hidden bg-[#090A0A]">
-      {/* Generate — on desktop: fixed height column, no scroll */}
-      <div className="w-full md:max-w-[450px] md:min-w-[400px] md:border-r md:border-white/5 p-4 md:p-5 md:h-full md:overflow-hidden flex-shrink-0">
-        <Generate />
-      </div>
+    <div className={`w-full bg-[#090A0A] ${isDesktop ? "h-full overflow-hidden" : ""}`}>
 
-      {/* Result — on mobile: normal flow below generate; on desktop: scrollable column */}
-      <div className="w-full flex-1 p-4 md:p-5 md:min-w-0 md:overflow-y-auto">
-        <Result results={results} />
-      </div>
+      {isDesktop ? (
+        /*
+         * DESKTOP — locked workspace, no outer scroll.
+         * Generate: static (overflow-hidden), clips if screen too short.
+         * Result: scrollable only when results overflow the column.
+         */
+        <div className="flex h-full">
+
+          {/* Generate — static, never scrolls */}
+          <div className="w-[450px] flex-shrink-0 h-full overflow-hidden border-r border-white/5">
+            <div className="p-5">
+              <Generate />
+            </div>
+          </div>
+
+          {/* Result — scrollable when results exist, fills full height */}
+          <div className="flex-1 min-w-0 h-full overflow-y-auto">
+            <div className="p-5 pb-8 min-h-full box-border flex flex-col">
+              <Result results={results} />
+            </div>
+          </div>
+
+        </div>
+      ) : (
+        /*
+         * MOBILE / TABLET — stacked.
+         * workspace-scroll handles all scrolling.
+         * pb-[220px] ensures Generate Video + Estimated cost always
+         * reachable above the fixed bottom nav.
+         */
+        <div className="flex flex-col p-4 pb-[220px] gap-4">
+          <Generate />
+          <Result results={results} />
+        </div>
+      )}
+
     </div>
   );
 }

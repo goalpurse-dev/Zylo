@@ -22,7 +22,6 @@ function sleep(ms) {
 
 function emailHtml(user) {
   const raw = user.email?.split("@")[0] || "there";
-  // Capitalize first letter, strip dots/underscores/numbers for a cleaner greeting
   const name = raw.replace(/[._\-\d]/g, " ").trim().split(" ")[0];
   const displayName = name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -31,57 +30,126 @@ function emailHtml(user) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>A note from Zyvo</title>
+  <title>Your Zyvo Pro offer</title>
 </head>
-<body style="margin:0;padding:0;background:#f4f4f5;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 16px;">
+<body style="margin:0;padding:0;background:#f0f0f2;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0f0f2;padding:40px 16px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" style="max-width:520px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <table role="presentation" width="100%" style="max-width:540px;">
 
-          <!-- Header -->
+          <!-- Header bar -->
           <tr>
-            <td style="background:#0d0d0d;padding:24px 32px;">
-              <p style="margin:0;font-family:Arial,sans-serif;font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Zyvo</p>
+            <td style="background:#0a0a0a;padding:20px 32px;border-radius:12px 12px 0 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <span style="font-family:Arial,sans-serif;font-size:18px;font-weight:700;color:#ffffff;letter-spacing:-0.4px;">Zyvo</span>
+                  </td>
+                  <td align="right">
+                    <span style="font-family:Arial,sans-serif;font-size:11px;font-weight:600;color:#7A3BFF;letter-spacing:1px;text-transform:uppercase;">Member Offer</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Offer banner -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#5b1fd1 0%,#7A3BFF 60%,#9f5cff 100%);padding:32px 32px 28px;">
+              <p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;color:rgba(255,255,255,0.7);letter-spacing:0.8px;text-transform:uppercase;">Limited time</p>
+              <p style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:42px;font-weight:700;color:#ffffff;line-height:1;letter-spacing:-1px;">40% off</p>
+              <p style="margin:0;font-family:Arial,sans-serif;font-size:16px;font-weight:500;color:rgba(255,255,255,0.85);">Zyvo Pro — for you, this week only</p>
             </td>
           </tr>
 
           <!-- Body -->
           <tr>
-            <td style="padding:36px 32px 28px;font-family:Arial,sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;">
+            <td style="background:#ffffff;padding:36px 32px 12px;">
 
-              <p style="margin:0 0 16px;">Hey ${displayName},</p>
+              <p style="margin:0 0 18px;font-family:Arial,sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;">Hi ${displayName},</p>
 
-              <p style="margin:0 0 16px;">I noticed you signed up for Zyvo a little while back — wanted to check in personally.</p>
+              <p style="margin:0 0 18px;font-family:Arial,sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;">
+                You signed up for Zyvo — and I wanted to reach out personally before this offer expires.
+              </p>
 
-              <p style="margin:0 0 16px;">A lot of creators use Zyvo to produce scroll-stopping images and videos in minutes, then use that content across their channels, ads, and client work. No design skills needed.</p>
+              <p style="margin:0 0 18px;font-family:Arial,sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;">
+                We’re giving a small group of members <strong>40% off their first month of Pro</strong>. That’s the full toolkit — unlimited image generation, priority processing, HD exports, and commercial usage rights — at less than the price of a coffee.
+              </p>
 
-              <p style="margin:0 0 16px;">If you haven’t had a chance to dig in yet, now’s actually a pretty good time — we’re running <strong>25% off Pro</strong> for a limited window, and the upgrade takes about 30 seconds.</p>
-
-              <p style="margin:0 0 28px;">No pressure either way, just didn’t want you to miss it.</p>
-
-              <!-- CTA -->
-              <table role="presentation" cellpadding="0" cellspacing="0">
+              <!-- Feature list -->
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 28px;">
                 <tr>
-                  <td style="border-radius:8px;background:#7A3BFF;">
-                    <a href="https://tryzyvo.com/workspace/pricing"
-                       style="display:inline-block;padding:13px 28px;font-family:Arial,sans-serif;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;letter-spacing:0.1px;">
-                      See what Pro unlocks →
-                    </a>
+                  <td style="padding:16px 20px;background:#fafafa;border-radius:10px;border:1px solid #eeeeee;">
+                    <p style="margin:0 0 10px;font-family:Arial,sans-serif;font-size:12px;font-weight:700;color:#888888;letter-spacing:0.8px;text-transform:uppercase;">What’s included in Pro</p>
+                    <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                      <tr>
+                        <td style="padding:5px 0;font-family:Arial,sans-serif;font-size:14px;color:#1a1a1a;">
+                          <span style="color:#7A3BFF;font-weight:700;margin-right:8px;">✓</span> Unlimited AI image &amp; video generation
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:5px 0;font-family:Arial,sans-serif;font-size:14px;color:#1a1a1a;">
+                          <span style="color:#7A3BFF;font-weight:700;margin-right:8px;">✓</span> Priority queue — results in seconds
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:5px 0;font-family:Arial,sans-serif;font-size:14px;color:#1a1a1a;">
+                          <span style="color:#7A3BFF;font-weight:700;margin-right:8px;">✓</span> Full HD exports &amp; commercial rights
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:5px 0;font-family:Arial,sans-serif;font-size:14px;color:#1a1a1a;">
+                          <span style="color:#7A3BFF;font-weight:700;margin-right:8px;">✓</span> Access to every style &amp; model
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
 
-              <p style="margin:32px 0 0;color:#555555;">— Niko from Zyvo</p>
+              <!-- CTA -->
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td align="center" style="padding-bottom:12px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="border-radius:9px;background:#7A3BFF;">
+                          <a href="https://tryzyvo.com/workspace/pricing"
+                             style="display:inline-block;padding:15px 36px;font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.2px;">
+                            Claim 40% off Pro →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <p style="margin:0 0 24px;font-family:Arial,sans-serif;font-size:12px;color:#aaaaaa;">Offer applies at checkout · No commitment, cancel anytime</p>
+                  </td>
+                </tr>
+              </table>
 
+            </td>
+          </tr>
+
+          <!-- Sign-off -->
+          <tr>
+            <td style="background:#ffffff;padding:0 32px 32px;">
+              <p style="margin:0;font-family:Arial,sans-serif;font-size:15px;line-height:1.7;color:#555555;">
+                Talk soon,<br />
+                <strong style="color:#1a1a1a;">Niko</strong><br />
+                <span style="font-size:13px;color:#aaaaaa;">Founder, Zyvo</span>
+              </p>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="padding:20px 32px;border-top:1px solid #eeeeee;font-family:Arial,sans-serif;font-size:12px;color:#999999;line-height:1.6;">
-              <p style="margin:0 0 4px;">You’re getting this because you signed up at tryzyvo.com.</p>
-              <p style="margin:0;">Zyvo · tryzyvo.com</p>
+            <td style="background:#f8f8f8;padding:20px 32px;border-top:1px solid #eeeeee;border-radius:0 0 12px 12px;">
+              <p style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:12px;color:#aaaaaa;line-height:1.6;">You received this because you have an account at tryzyvo.com and opted in to product updates.</p>
+              <p style="margin:0;font-family:Arial,sans-serif;font-size:12px;color:#aaaaaa;">Zyvo &middot; <a href="https://tryzyvo.com" style="color:#aaaaaa;text-decoration:underline;">tryzyvo.com</a></p>
             </td>
           </tr>
 
@@ -100,7 +168,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "a quick note from Zyvo",
+      subject: "your 40% off — just for you",
       html: emailHtml(user),
     });
 

@@ -21,30 +21,30 @@ export default function ProgressToast({ remaining, onClose, duration = 5000 }) {
   let showUpgrade = false;
 
   if (remaining >= 4) {
-    message = `${remaining} of ${FREE_LIMIT} free generations left this month.`;
+    message = `Nice! ${remaining} free images left this month.`;
   } else if (remaining === 3) {
     accentColor = "#9D6BFF";
     glowColor   = "rgba(157,107,255,0.3)";
     badge       = "Heads up";
-    message     = `Only 3 free generations left this month.`;
+    message     = `3 free images left this month.`;
     showUpgrade = true;
   } else if (remaining === 2) {
     accentColor = "#C084FC";
     glowColor   = "rgba(192,132,252,0.3)";
-    badge       = "Running low";
-    message     = `2 free generations left this month.`;
+    badge       = "Almost out";
+    message     = `2 free images left — make them count!`;
     showUpgrade = true;
   } else if (remaining === 1) {
     accentColor = "#E879F9";
     glowColor   = "rgba(232,121,249,0.3)";
     badge       = "Last one!";
-    message     = `1 free generation left this month.`;
+    message     = `1 free image left this month.`;
     showUpgrade = true;
   } else {
     accentColor = "#E879F9";
     glowColor   = "rgba(232,121,249,0.3)";
-    badge       = "Limit reached";
-    message     = "That was your last free generation this month.";
+    badge       = "All used";
+    message     = "You've used all your free images this month.";
     showUpgrade = true;
   }
 
@@ -52,10 +52,15 @@ export default function ProgressToast({ remaining, onClose, duration = 5000 }) {
     <div
       className="fixed right-4 md:right-6 z-[9999]"
       style={{
-        bottom: "calc(140px + env(safe-area-inset-bottom))",
+        bottom: "calc(var(--ftg-toast-bottom, 24px) + env(safe-area-inset-bottom))",
         animation: "slideNotifIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards",
       }}
     >
+      {/* Responsive bottom offset: above bottom nav on mobile, standard on desktop */}
+      <style>{`
+        @media (max-width: 1023px) { :root { --ftg-toast-bottom: 82px; } }
+        @media (min-width: 1024px) { :root { --ftg-toast-bottom: 24px; } }
+      `}</style>
       <div
         className="relative flex items-start gap-3.5 w-[300px] max-w-[calc(100vw-2rem)] rounded-2xl border backdrop-blur-xl px-4 py-4"
         style={{

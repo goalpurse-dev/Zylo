@@ -10,11 +10,17 @@ const PromptInput = React.memo(({ prompt, setPrompt }) => {
     return () => clearTimeout(t);
   }, [localPrompt]);
 
+  // Sync when parent changes prompt externally (e.g. FTG prefill)
+  useEffect(() => {
+    setLocalPrompt(prompt);
+  }, [prompt]);
+
   return (
     <div className="w-full">
 
       {/* OUTER CONTAINER */}
       <div
+        data-ftg="prompt"
         className="
           rounded-2xl
           bg-[#16181A]

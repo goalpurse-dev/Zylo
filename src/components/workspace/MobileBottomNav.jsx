@@ -6,38 +6,36 @@ import {
   Folder,
 } from "lucide-react";
 
-
+const NAV_ITEMS = [
+  { name: "Home",      icon: Home,   path: "/workspace/home" },
+  { name: "Image",     icon: Image,  path: "/workspace/image-generator", ftg: "image-nav" },
+  { name: "Video",     icon: Video,  path: "/workspace/video-generator" },
+  { name: "Creations", icon: Folder, path: "/workspace/creations" },
+];
 
 export default function MobileBottomNav({ isSelectorOpen }) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const items = [
-    { name: "Home", icon: Home, path: "/workspace/home" },
-    { name: "Image", icon: Image, path: "/workspace/image-generator" },
-    { name: "Video", icon: Video, path: "/workspace/video-generator" },
-    { name: "Creations", icon: Folder, path: "/workspace/creations" },
-  ];
-
   return (
-<div
-  className={`
-    fixed bottom-0 left-0 right-0
-    z-[100]
-    lg:hidden
-    bg-[#191B1C]
-    border-t border-white/5
-    transition-opacity duration-300
-    ${isSelectorOpen ? "opacity-0 pointer-events-none" : "opacity-100"}
-  `}
-  style={{
-    height: "calc(70px + env(safe-area-inset-bottom))",
-    paddingBottom: "env(safe-area-inset-bottom)",
-  }}
->
+    <div
+      className={`
+        ftg-bottom-nav
+        fixed bottom-0 left-0 right-0
+        z-[100]
+        lg:hidden
+        bg-[#191B1C]
+        border-t border-white/5
+        transition-opacity duration-300
+        ${isSelectorOpen ? "opacity-0 pointer-events-none" : "opacity-100"}
+      `}
+      style={{
+        height: "calc(70px + env(safe-area-inset-bottom))",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
+    >
       <div className="flex items-center justify-between px-3 py-2">
-
-        {items.map((item) => {
+        {NAV_ITEMS.map((item) => {
           const isActive = location.pathname.startsWith(item.path);
           const Icon = item.icon;
 
@@ -45,7 +43,8 @@ export default function MobileBottomNav({ isSelectorOpen }) {
             <button
               key={item.name}
               onClick={() => navigate(item.path)}
-              className="flex-1 flex justify-center"
+              className="ftg-nav-item flex-1 flex justify-center"
+              {...(item.ftg ? { "data-ftg": item.ftg } : {})}
             >
               <div
                 className={`
@@ -57,14 +56,11 @@ export default function MobileBottomNav({ isSelectorOpen }) {
                 `}
               >
                 <Icon size={20} />
-                <span className="text-[10px] mt-[2px]">
-                  {item.name}
-                </span>
+                <span className="text-[10px] mt-[2px]">{item.name}</span>
               </div>
             </button>
           );
         })}
-
       </div>
     </div>
   );

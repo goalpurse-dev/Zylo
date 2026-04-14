@@ -7,6 +7,7 @@ const GenerateButton = React.memo(
 
     return (
       <button
+        data-ftg="generate"
         onClick={onClick}
         disabled={!isReady}
         className={`
