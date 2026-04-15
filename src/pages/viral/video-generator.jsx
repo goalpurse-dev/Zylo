@@ -76,8 +76,8 @@ export default function VideoGenerator() {
          */
         <div className="flex h-full">
 
-          {/* Generate — static, never scrolls */}
-          <div className="w-[450px] flex-shrink-0 h-full overflow-hidden border-r border-white/5">
+          {/* Generate — scrollable when content overflows */}
+          <div className="w-[450px] flex-shrink-0 h-full overflow-y-auto bg-[#191B1C] border-r border-white/5">
             <div className="p-5">
               <Generate />
             </div>
