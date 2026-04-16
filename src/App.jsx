@@ -121,6 +121,8 @@ const LuxuryAIImages = lazy(() => import("./app/blog/imagegenerator/how-to-creat
 const DarkMoodyCinematicImages = lazy(() => import("./app/blog/imagegenerator/ai-dark-moody-cinematic-images.jsx"));
 const AIProductPhotography = lazy(() => import("./app/blog/imagegenerator/ai-product-photography-high-end.jsx"));
 const VisualStylesAI = lazy(() => import("./app/blog/imagegenerator/ai-visual-styles-most-engagement.jsx"));
+const HowToGoViralWithAI = lazy(() => import("./app/blog/imagegenerator/HowToGoViralWithAI.jsx"));
+const AIVideoNewViralCurrency = lazy(() => import("./app/blog/imagegenerator/AIVideoNewViralCurrency.jsx"));
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -373,6 +375,8 @@ return (
         <Route path="/blog/ai-image-generator-for-dark-visuals" element={<DarkMoodyCinematicImages/>} />
         <Route path="/blog/ai-product-photography-high-end" element={<AIProductPhotography/>} />
         <Route path="/blog/ai-visual-styles-most-engagement" element={<VisualStylesAI/>} />
+        <Route path="/blog/how-to-go-viral-with-ai" element={<HowToGoViralWithAI/>} />
+        <Route path="/blog/ai-video-new-viral-currency" element={<AIVideoNewViralCurrency/>} />
 
 
 

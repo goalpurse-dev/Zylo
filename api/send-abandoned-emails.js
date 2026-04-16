@@ -402,14 +402,27 @@ export default async function handler(req, res) {
   console.log("🔥 ABANDONED EMAIL CRON TRIGGERED");
 
   try {
-    const { data: users } = await supabase
-      .from("abandoned_checkouts")
-      .select("*")
-      .eq("paid", false)
-      .in("status", ["pending", "in_sequence"])
-      .lt("recovery_stage", 3);
+    let users = [];
+    let fromAC = 0;
+    const acBatchSize = 1000;
 
-    console.log("📊 Eligible abandoned checkouts:", users?.length);
+    while (true) {
+      const { data, error } = await supabase
+        .from("abandoned_checkouts")
+        .select("*")
+        .eq("paid", false)
+        .in("status", ["pending", "in_sequence"])
+        .lt("recovery_stage", 3)
+        .range(fromAC, fromAC + acBatchSize - 1);
+
+      if (error) throw error;
+      if (!data || data.length === 0) break;
+      users.push(...data);
+      if (data.length < acBatchSize) break;
+      fromAC += acBatchSize;
+    }
+
+    console.log("📊 Eligible abandoned checkouts:", users.length);
 
     let allProfiles = [];
     let from = 0;
@@ -464,4 +477,20 @@ export default async function handler(req, res) {
     console.error("❌ handler error:", err);
     return res.status(500).json({ error: "Internal error" });
   }
+}
+// ================= LOCAL RUN =================
+if (process.argv[1]?.includes("send-abandoned-emails.js")) {
+  console.log("🟢 Running abandoned email batch...");
+
+  handler(
+    {},
+    {
+      status: (code) => ({
+        json: (data) => {
+          console.log("📤 Response:", code, data);
+          process.exit(0);
+        },
+      }),
+    }
+  );
 }
