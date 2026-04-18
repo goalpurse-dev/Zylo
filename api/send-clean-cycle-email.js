@@ -11,13 +11,19 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const MAX_SEND = 300;
-const DELAY_MS = 3000;
-const RETRY_DELAY_MS = 1500;
-const COOLDOWN_HOURS = 72; // ⏳ only resend after 3 days
+const BATCH_SIZE   = 400;
+const BETWEEN_MS   = 3_000;   // 3s between individual sends
+const RETRY_MS     = 1_500;
+const COOLDOWN_MS  = 30 * 60 * 1_000; // 30 min between batches
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
+}
+
+function fmtMinutes(ms) {
+  const m = Math.floor(ms / 60_000);
+  const s = Math.floor((ms % 60_000) / 1_000);
+  return `${m}m ${s}s`;
 }
 
 function emailHtml(user) {
@@ -30,77 +36,125 @@ function emailHtml(user) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Zyvo Pro offer</title>
+  <title>Your Zyvo account is ready</title>
 </head>
-<body style="margin:0;padding:0;background:#ebebed;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ebebed;padding:40px 16px;">
+<body style="margin:0;padding:0;background:#e8e8eb;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#e8e8eb;padding:40px 16px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" style="max-width:540px;">
+        <table role="presentation" width="100%" style="max-width:560px;">
 
           <!-- Header -->
           <tr>
-            <td style="background:#0a0a0a;padding:22px 32px;border-radius:14px 14px 0 0;">
+            <td style="background:#07080f;padding:20px 32px;border-radius:16px 16px 0 0;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td><span style="font-family:Arial,sans-serif;font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">Zyvo</span></td>
-                  <td align="right"><span style="font-family:Arial,sans-serif;font-size:11px;font-weight:700;color:#9D6BFF;letter-spacing:1.3px;text-transform:uppercase;">For You</span></td>
+                  <td>
+                    <span style="font-family:Arial,sans-serif;font-size:22px;font-weight:900;color:#ffffff;letter-spacing:-0.8px;">Zyvo</span>
+                  </td>
+                  <td align="right">
+                    <span style="font-family:Arial,sans-serif;font-size:10px;font-weight:700;color:#7A3BFF;letter-spacing:1.8px;text-transform:uppercase;border:1px solid rgba(122,59,255,0.4);padding:4px 10px;border-radius:20px;">AI Creator</span>
+                  </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Hero -->
+          <!-- Hero gradient -->
           <tr>
-            <td style="background:linear-gradient(140deg,#12003a 0%,#3a0fa8 45%,#7A3BFF 100%);padding:44px 32px 38px;">
-              <p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:1.6px;text-transform:uppercase;">Limited offer</p>
-              <p style="margin:0 0 10px;font-family:Arial,sans-serif;font-size:48px;font-weight:800;color:#ffffff;line-height:1;letter-spacing:-2px;">40% off Pro</p>
-              <p style="margin:0;font-family:Arial,sans-serif;font-size:16px;color:rgba(255,255,255,0.7);line-height:1.6;font-weight:400;">The fastest way to create viral content — now at the lowest price we offer.</p>
+            <td style="background:linear-gradient(145deg,#07080f 0%,#16093a 40%,#2a0a6b 75%,#7A3BFF 100%);padding:50px 32px 44px;text-align:center;">
+              <div style="display:inline-block;background:rgba(122,59,255,0.2);border:1px solid rgba(122,59,255,0.4);border-radius:100px;padding:6px 18px;margin-bottom:22px;">
+                <span style="font-family:Arial,sans-serif;font-size:11px;font-weight:700;color:#c084fc;letter-spacing:1.4px;text-transform:uppercase;">Your account is active</span>
+              </div>
+              <p style="margin:0 0 14px;font-family:Arial,sans-serif;font-size:40px;font-weight:900;color:#ffffff;line-height:1.05;letter-spacing:-1.5px;">
+                The AI that makes<br/>creators go viral
+              </p>
+              <p style="margin:0;font-family:Arial,sans-serif;font-size:16px;color:rgba(255,255,255,0.6);line-height:1.7;max-width:400px;margin:0 auto;">
+                You signed up — now let's actually make something. Here's everything waiting for you inside Zyvo right now.
+              </p>
             </td>
           </tr>
 
           <!-- Body -->
           <tr>
-            <td style="background:#ffffff;padding:40px 32px 14px;">
+            <td style="background:#ffffff;padding:44px 32px 8px;">
 
-              <p style="margin:0 0 22px;font-family:Arial,sans-serif;font-size:16px;line-height:1.75;color:#1a1a1a;">Hi ${displayName},</p>
-
-              <p style="margin:0 0 18px;font-family:Arial,sans-serif;font-size:15px;line-height:1.8;color:#333333;">
-                I noticed you’re still on the free plan. I wanted to write personally — not just send a generic blast — because I think you’re leaving a lot on the table.
+              <p style="margin:0 0 24px;font-family:Arial,sans-serif;font-size:17px;line-height:1.75;color:#111111;">
+                Hey ${displayName},
               </p>
 
-              <p style="margin:0 0 18px;font-family:Arial,sans-serif;font-size:15px;line-height:1.8;color:#333333;">
-                The people getting real traction with Zyvo are the ones using Pro: generating cinematic AI videos, publishing HD content every day, moving faster than everyone else in their niche. <strong style="color:#1a1a1a;">That can be you.</strong>
+              <p style="margin:0 0 20px;font-family:Arial,sans-serif;font-size:15px;line-height:1.85;color:#333333;">
+                You created a Zyvo account — and that's honestly the right move. Whether you're trying to grow on TikTok, build a brand, or just make something that looks incredible, Zyvo is the fastest way to get there.
               </p>
 
-              <p style="margin:0 0 28px;font-family:Arial,sans-serif;font-size:15px;line-height:1.8;color:#333333;">
-                This week I’m offering <strong style="color:#1a1a1a;">40% off your first month</strong> — no code needed, applied automatically at checkout.
+              <p style="margin:0 0 32px;font-family:Arial,sans-serif;font-size:15px;line-height:1.85;color:#333333;">
+                Most creators spend hours trying to get good visuals. Zyvo users generate them in <strong style="color:#111111;">seconds</strong>.
               </p>
 
-              <!-- Feature list -->
+              <!-- What you can make -->
               <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 32px;">
                 <tr>
-                  <td style="padding:22px 24px;background:#f8f7ff;border-radius:12px;border:1px solid #e4deff;">
-                    <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:11px;font-weight:700;color:#9D6BFF;letter-spacing:1.2px;text-transform:uppercase;">What Pro unlocks</p>
+                  <td style="padding:26px 26px 22px;background:#f9f8ff;border-radius:14px;border:1px solid #ede9ff;">
+                    <p style="margin:0 0 18px;font-family:Arial,sans-serif;font-size:10px;font-weight:800;color:#7A3BFF;letter-spacing:2px;text-transform:uppercase;">What you can make right now</p>
                     <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
                       <tr>
-                        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#1a1a1a;line-height:1.6;border-bottom:1px solid #eeebff;">
-                          <span style="color:#7A3BFF;font-weight:900;margin-right:12px;">✦</span>AI video generation from text or image
+                        <td style="padding:10px 0 10px;border-bottom:1px solid #ede9ff;">
+                          <table role="presentation" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="width:34px;vertical-align:top;padding-top:1px;">
+                                <div style="width:26px;height:26px;background:linear-gradient(135deg,#7A3BFF,#9D6BFF);border-radius:8px;text-align:center;line-height:26px;font-size:13px;">🖼️</div>
+                              </td>
+                              <td style="padding-left:12px;">
+                                <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#111111;">Scroll-stopping AI images</p>
+                                <p style="margin:2px 0 0;font-family:Arial,sans-serif;font-size:12px;color:#888888;line-height:1.5;">Cinematic product shots, portraits, viral visuals — in seconds</p>
+                              </td>
+                            </tr>
+                          </table>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#1a1a1a;line-height:1.6;border-bottom:1px solid #eeebff;">
-                          <span style="color:#7A3BFF;font-weight:900;margin-right:12px;">✦</span>Unlimited HD images with commercial rights
+                        <td style="padding:10px 0 10px;border-bottom:1px solid #ede9ff;">
+                          <table role="presentation" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="width:34px;vertical-align:top;padding-top:1px;">
+                                <div style="width:26px;height:26px;background:linear-gradient(135deg,#7A3BFF,#9D6BFF);border-radius:8px;text-align:center;line-height:26px;font-size:13px;">🎬</div>
+                              </td>
+                              <td style="padding-left:12px;">
+                                <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#111111;">AI video from text or image</p>
+                                <p style="margin:2px 0 0;font-family:Arial,sans-serif;font-size:12px;color:#888888;line-height:1.5;">Turn a single prompt into a cinematic short clip</p>
+                              </td>
+                            </tr>
+                          </table>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#1a1a1a;line-height:1.6;border-bottom:1px solid #eeebff;">
-                          <span style="color:#7A3BFF;font-weight:900;margin-right:12px;">✦</span>Priority processing — results in seconds
+                        <td style="padding:10px 0 10px;border-bottom:1px solid #ede9ff;">
+                          <table role="presentation" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="width:34px;vertical-align:top;padding-top:1px;">
+                                <div style="width:26px;height:26px;background:linear-gradient(135deg,#7A3BFF,#9D6BFF);border-radius:8px;text-align:center;line-height:26px;font-size:13px;">🛍️</div>
+                              </td>
+                              <td style="padding-left:12px;">
+                                <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#111111;">Product photography without a studio</p>
+                                <p style="margin:2px 0 0;font-family:Arial,sans-serif;font-size:12px;color:#888888;line-height:1.5;">Drop in your product, get studio-quality results</p>
+                              </td>
+                            </tr>
+                          </table>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;color:#1a1a1a;line-height:1.6;">
-                          <span style="color:#7A3BFF;font-weight:900;margin-right:12px;">✦</span>Every model and style, zero restrictions
+                        <td style="padding:10px 0 0;">
+                          <table role="presentation" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="width:34px;vertical-align:top;padding-top:1px;">
+                                <div style="width:26px;height:26px;background:linear-gradient(135deg,#7A3BFF,#9D6BFF);border-radius:8px;text-align:center;line-height:26px;font-size:13px;">🚀</div>
+                              </td>
+                              <td style="padding-left:12px;">
+                                <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#111111;">20+ styles, updated weekly</p>
+                                <p style="margin:2px 0 0;font-family:Arial,sans-serif;font-size:12px;color:#888888;line-height:1.5;">Anime, photorealism, dark moody, editorial — your pick</p>
+                              </td>
+                            </tr>
+                          </table>
                         </td>
                       </tr>
                     </table>
@@ -108,25 +162,12 @@ function emailHtml(user) {
                 </tr>
               </table>
 
-              <!-- CTA -->
-              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 10px;">
+              <!-- Free credits callout -->
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 36px;">
                 <tr>
-                  <td align="center" style="padding-bottom:14px;">
-                    <table role="presentation" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="border-radius:12px;background:#7A3BFF;box-shadow:0 8px 28px rgba(122,59,255,0.45);">
-                          <a href="https://tryzyvo.com/workspace/pricing"
-                             style="display:inline-block;padding:18px 48px;font-family:Arial,sans-serif;font-size:16px;font-weight:800;color:#ffffff;text-decoration:none;letter-spacing:0.3px;">
-                            Get 40% off Pro Now →
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td align="center">
-                    <p style="margin:0 0 30px;font-family:Arial,sans-serif;font-size:12px;color:#bbbbbb;">Discount applied automatically &middot; Cancel anytime</p>
+                  <td style="padding:20px 24px;background:linear-gradient(135deg,#0d0620,#1a0533);border-radius:14px;text-align:center;">
+                    <p style="margin:0 0 6px;font-family:Arial,sans-serif;font-size:28px;font-weight:900;color:#ffffff;letter-spacing:-1px;">10 free generations</p>
+                    <p style="margin:0;font-family:Arial,sans-serif;font-size:13px;color:rgba(255,255,255,0.45);">waiting in your account right now · resets every month · no card needed</p>
                   </td>
                 </tr>
               </table>
@@ -134,15 +175,32 @@ function emailHtml(user) {
             </td>
           </tr>
 
+          <!-- CTA row -->
+          <tr>
+            <td style="background:#ffffff;padding:0 32px 40px;text-align:center;">
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 12px;">
+                <tr>
+                  <td style="border-radius:13px;background:linear-gradient(135deg,#7A3BFF,#9D6BFF);box-shadow:0 10px 36px rgba(122,59,255,0.55);">
+                    <a href="https://tryzyvo.com/workspace/image-generator"
+                       style="display:inline-block;padding:18px 52px;font-family:Arial,sans-serif;font-size:16px;font-weight:800;color:#ffffff;text-decoration:none;letter-spacing:0.2px;">
+                      Start creating now →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:0;font-family:Arial,sans-serif;font-size:12px;color:#bbbbbb;">Free to use · No credit card · Takes 10 seconds</p>
+            </td>
+          </tr>
+
           <!-- Sign-off -->
           <tr>
-            <td style="background:#ffffff;padding:0 32px 38px;border-top:1px solid #f0f0f0;">
-              <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:14px;line-height:1.75;color:#777777;">
-                If you ever have questions about what plan is right for you, just reply to this email. I read every one.
+            <td style="background:#fafafa;padding:28px 32px 32px;border-top:1px solid #f0f0f0;">
+              <p style="margin:0 0 16px;font-family:Arial,sans-serif;font-size:14px;line-height:1.8;color:#666666;">
+                The creators who get results are the ones who actually start. You already did the hard part by signing up — now just hit generate once and see what Zyvo can do for you.
               </p>
-              <p style="margin:0;font-family:Arial,sans-serif;font-size:15px;line-height:1.8;color:#555555;">
-                Talk soon,<br />
-                <strong style="color:#1a1a1a;">Niko</strong><br />
+              <p style="margin:0;font-family:Arial,sans-serif;font-size:15px;line-height:1.8;color:#444444;">
+                Let's build something,<br />
+                <strong style="color:#111111;">Niko</strong><br />
                 <span style="font-size:13px;color:#aaaaaa;">Founder, Zyvo</span>
               </p>
             </td>
@@ -150,9 +208,13 @@ function emailHtml(user) {
 
           <!-- Footer -->
           <tr>
-            <td style="background:#f5f5f7;padding:20px 32px;border-top:1px solid #e8e8e8;border-radius:0 0 14px 14px;">
-              <p style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:12px;color:#bbbbbb;line-height:1.6;">You received this because you have an account at tryzyvo.com and opted in to product updates.</p>
-              <p style="margin:0;font-family:Arial,sans-serif;font-size:12px;color:#bbbbbb;">Zyvo &middot; <a href="https://tryzyvo.com" style="color:#bbbbbb;text-decoration:underline;">tryzyvo.com</a></p>
+            <td style="background:#f0f0f2;padding:18px 32px;border-top:1px solid #e4e4e6;border-radius:0 0 16px 16px;">
+              <p style="margin:0 0 4px;font-family:Arial,sans-serif;font-size:11px;color:#c0c0c0;line-height:1.6;">
+                You're receiving this because you created a Zyvo account. This is a one-time activation email.
+              </p>
+              <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;color:#c0c0c0;">
+                Zyvo &middot; <a href="https://tryzyvo.com" style="color:#c0c0c0;text-decoration:underline;">tryzyvo.com</a>
+              </p>
             </td>
           </tr>
 
@@ -165,105 +227,139 @@ function emailHtml(user) {
 }
 
 async function sendEmail(user) {
-  let sendError = null;
-
-  for (let i = 1; i <= 2; i++) {
+  for (let attempt = 1; attempt <= 2; attempt++) {
     const { error } = await resend.emails.send({
-      from: "Zyvo <niko@tryzyvo.com>",
+      from: "Niko at Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "still on free? here's why people upgrade",
+      subject: "your Zyvo account has 10 free generations waiting",
       html: emailHtml(user),
     });
 
-    if (!error) {
-      sendError = null;
-      break;
-    }
+    if (!error) return true;
 
-    sendError = error;
-    await sleep(RETRY_DELAY_MS);
+    console.warn(`   ⚠️  Attempt ${attempt} failed for ${user.email}: ${error.message}`);
+    if (attempt < 2) await sleep(RETRY_MS);
   }
 
-  if (sendError) return false;
+  return false;
+}
 
-  // 🔥 mark user as sent
-  await supabase
-    .from("profiles")
-    .update({ last_email_sent_at: new Date().toISOString() })
-    .eq("email", user.email);
+async function fetchAllFreeUsers() {
+  const users = [];
+  let from = 0;
+  const PAGE = 1000;
 
-  return true;
+  while (true) {
+    console.log(`   Fetching rows ${from}–${from + PAGE - 1}...`);
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("email")
+      .eq("plan_code", "free")
+      .not("email", "is", null)
+      .range(from, from + PAGE - 1);
+
+    if (error) throw new Error(`Supabase fetch failed: ${error.message}`);
+    if (!data || data.length === 0) break;
+
+    users.push(...data.filter(u => u.email?.includes("@")));
+    console.log(`   → ${data.length} rows fetched (total: ${users.length})`);
+
+    if (data.length < PAGE) break;
+    from += PAGE;
+  }
+
+  return users;
 }
 
 export default async function handler(req, res) {
   try {
-    console.log("🚀 Starting batch send...");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log("  Zyvo activation email — full free-user blast");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-    const cutoff = new Date(
-      Date.now() - COOLDOWN_HOURS * 60 * 60 * 1000
-    ).toISOString();
+    console.log("📋 Fetching all free-plan users...");
+    const allUsers = await fetchAllFreeUsers();
+    console.log(`\n👥 Total free users: ${allUsers.length}\n`);
 
-    let allUsers = [];
-    let from = 0;
-    const batchSize = 1000;
+    if (allUsers.length === 0) {
+      console.log("✅ No free users found. Nothing to send.");
+      res?.status?.(200)?.json({ success: true, sent: 0, failed: 0 });
+      return;
+    }
 
-    // 🔥 FETCH WITH COOLDOWN FILTER
-    while (true) {
-      console.log(`   Fetching profiles ${from}–${from + batchSize - 1}...`);
+    const totalBatches = Math.ceil(allUsers.length / BATCH_SIZE);
+    let totalSent = 0;
+    let totalFailed = 0;
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("email, email_updates, last_email_sent_at")
-        .eq("email_updates", true)
-        .or(`last_email_sent_at.is.null,last_email_sent_at.lt.${cutoff}`)
-        .range(from, from + batchSize - 1);
+    for (let b = 0; b < totalBatches; b++) {
+      const batchNum  = b + 1;
+      const batchStart = b * BATCH_SIZE;
+      const batch     = allUsers.slice(batchStart, batchStart + BATCH_SIZE);
 
-      if (error) {
-        console.error("❌ Supabase fetch error:", error.message);
-        throw error;
+      console.log(`\n${"─".repeat(50)}`);
+      console.log(`📦 Batch ${batchNum} / ${totalBatches}  (${batch.length} emails)`);
+      console.log(`${"─".repeat(50)}`);
+
+      let batchSent   = 0;
+      let batchFailed = 0;
+
+      for (let i = 0; i < batch.length; i++) {
+        const user = batch[i];
+        const label = `[${batchStart + i + 1}/${allUsers.length}]`;
+
+        process.stdout.write(`➡️  ${label} ${user.email} ... `);
+        const ok = await sendEmail(user);
+
+        if (ok) {
+          batchSent++;
+          totalSent++;
+          console.log("✅");
+        } else {
+          batchFailed++;
+          totalFailed++;
+          console.log("❌ failed");
+        }
+
+        if (i < batch.length - 1) await sleep(BETWEEN_MS);
       }
 
-      if (!data || data.length === 0) break;
+      console.log(`\n✔  Batch ${batchNum} done — sent: ${batchSent}, failed: ${batchFailed}`);
+      console.log(`📊 Running total — sent: ${totalSent}, failed: ${totalFailed}`);
 
-      allUsers.push(...data);
-      console.log(`   → Got ${data.length} rows (total so far: ${allUsers.length})`);
+      // Pause between batches (skip after last batch)
+      if (b < totalBatches - 1) {
+        const waitMin = COOLDOWN_MS / 60_000;
+        console.log(`\n⏸  Cooling down for ${waitMin} minutes before next batch...`);
 
-      if (data.length < batchSize) break;
-      from += batchSize;
+        const tickEvery = 60_000; // log every 1 min
+        let waited = 0;
+        while (waited < COOLDOWN_MS) {
+          await sleep(tickEvery);
+          waited += tickEvery;
+          const remaining = COOLDOWN_MS - waited;
+          console.log(`   ⏳ ${fmtMinutes(remaining)} remaining...`);
+        }
+
+        console.log("▶  Resuming...");
+      }
     }
 
-    console.log(`\n👥 Eligible users: ${allUsers.length}`);
+    console.log(`\n${"━".repeat(50)}`);
+    console.log(`🎯 All done — Total sent: ${totalSent} | Failed: ${totalFailed}`);
+    console.log(`${"━".repeat(50)}\n`);
 
-    let sent = 0;
-    let skipped = 0;
-
-    for (const user of allUsers) {
-      if (sent >= MAX_SEND) break;
-      if (!user.email) { skipped++; continue; }
-
-      console.log(`➡️  [${sent + 1}] Sending to: ${user.email}`);
-      const ok = await sendEmail(user);
-
-      if (ok) sent++;
-      else skipped++;
-
-      await sleep(DELAY_MS);
-    }
-
-    console.log(`\n🎯 Done — Sent: ${sent} | Skipped: ${skipped}`);
-
-    res?.status?.(200)?.json({ success: true, sent, skipped });
+    res?.status?.(200)?.json({ success: true, sent: totalSent, failed: totalFailed });
 
   } catch (err) {
-    console.error("🔥 Error:", err);
-    res?.status?.(500)?.json({ error: "fail" });
+    console.error("\n🔥 Fatal error:", err.message);
+    res?.status?.(500)?.json({ error: err.message });
   } finally {
     process.exit(0);
   }
 }
 
-// ================= LOCAL RUN =================
+// ─── Local run ────────────────────────────────────────────────────────────────
 if (process.argv[1]?.includes("send-clean-cycle-email.js")) {
-  console.log("🟢 Running clean cycle email batch...\n");
-  handler({}, { status: (code) => ({ json: (data) => console.log("📤", code, data) }) });
+  handler({}, { status: (code) => ({ json: (data) => console.log("\n📤 Result:", code, data) }) });
 }
