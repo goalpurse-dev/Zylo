@@ -113,6 +113,9 @@ const ALL_BLOGS = [
   { to: "/blog/ai-product-photos-for-beaty-and-skincare",          title: "AI Product Photos for Beauty & Skincare Brands",         desc: "Learn how AI product photos work for beauty & skincare brands.",                                 date: "Jan 29, 2026", category: "Product Photos",     img: PP29 },
   { to: "/blog/how-visual-branding-seperates-winners-from-losers", title: "How Visual Branding Separates Winners from Losers",      desc: "Learn how visuals separate winning brands from the rest.",                                       date: "Jan 29, 2026", category: "Product Photos",     img: PP30 },
 
+  { to: "/blog/ai-product-photo-generator",           title: "Best AI Product Photo Generator in 2026 (Free + Ecommerce Guide)",    desc: "Generate studio-quality product photos, remove backgrounds, and create social media content — free to start.",     date: "Apr 18, 2026", category: "Product Photos",     img: PP6  },
+  { to: "/blog/zyvo-vs-midjourney-product-photos",    title: "Zyvo vs Midjourney for Product Photos: Which AI Tool Wins in 2026?",  desc: "An honest comparison covering quality, background removal, pricing, and ecommerce suitability.",                   date: "Apr 18, 2026", category: "Product Photos",     img: PP3  },
+
   // ═══════════════ Go Viral ═══════════════
   { to: "/blog/how-to-go-viral-with-ai",                           title: "How to Go Viral With AI in 2026: The Complete Strategy",  desc: "The exact playbook creators are using to dominate TikTok, Instagram, and YouTube with AI content.", date: "Apr 16, 2026", category: "Go Viral",           img: GV1  },
   { to: "/blog/ai-video-new-viral-currency",                       title: "AI Video Is the New Viral Currency — Here's How to Use It", desc: "How creators are hitting millions of views with AI-generated short-form video.",                date: "Apr 16, 2026", category: "Go Viral",           img: GV2  },
