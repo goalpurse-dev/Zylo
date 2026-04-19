@@ -136,12 +136,129 @@ function Viewer({ video, onClose }) {
   );
 }
 
+/* =============================== VIDEO THUMB =============================== */
+
+function VideoThumb({ item, isActive, onClick }) {
+  const isDone = !!item.result_url;
+  const [thumbProgress, setThumbProgress] = useState(0);
+  const tpRef = useRef(0);
+  const tpRafRef = useRef(null);
+
+  useEffect(() => {
+    const target = Math.min(99, Math.floor(Number(item.progress ?? 0)));
+    if (isDone) { tpRef.current = 100; setThumbProgress(100); return; }
+    if (target <= tpRef.current) return;
+    if (tpRafRef.current) cancelAnimationFrame(tpRafRef.current);
+    const startVal = tpRef.current;
+    const startTime = performance.now();
+    const dist = Math.max(1, target - startVal);
+    const duration = Math.max(250, dist * 18);
+    const tick = (now) => {
+      const t = Math.min(1, (now - startTime) / duration);
+      const ease = 1 - Math.pow(1 - t, 3);
+      const next = Math.round(startVal + dist * ease);
+      tpRef.current = next;
+      setThumbProgress(next);
+      if (t < 1) tpRafRef.current = requestAnimationFrame(tick);
+    };
+    tpRafRef.current = requestAnimationFrame(tick);
+    return () => { if (tpRafRef.current) cancelAnimationFrame(tpRafRef.current); };
+  }, [item.progress, isDone]);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`
+        relative flex-shrink-0 aspect-[9/16] w-[100px] sm:w-[120px]
+        rounded-xl overflow-hidden border transition-all bg-black
+        ${isActive
+          ? "border-[#7A3BFF] shadow-[0_0_18px_rgba(122,59,255,0.4)]"
+          : "border-white/10 hover:border-white/30"
+        }
+      `}
+    >
+      {isDone ? (
+        <>
+          <video
+            src={item.result_url}
+            className="w-full h-full object-cover"
+            muted playsInline autoPlay loop preload="metadata"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition">
+            <div className="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center">
+              <svg className="w-4 h-4 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#060912] overflow-hidden">
+          {/* Orb */}
+          <div
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              width: "90%", paddingBottom: "90%", top: "5%", left: "5%",
+              background: "radial-gradient(circle, rgba(122,59,255,0.16), transparent)",
+              filter: "blur(14px)",
+              animation: "pulse 2.5s ease-in-out infinite",
+            }}
+          />
+          {/* Mini progress ring */}
+          <div className="relative w-10 h-10 z-10">
+            <svg className="w-full h-full" style={{ transform: "rotate(-90deg)" }} viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id={`thumbRing_${item.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#7A3BFF" />
+                  <stop offset="100%" stopColor="#C077FF" />
+                </linearGradient>
+              </defs>
+              <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="9" />
+              <circle
+                cx="50" cy="50" r="38"
+                fill="none"
+                stroke={`url(#thumbRing_${item.id})`}
+                strokeWidth="9"
+                strokeLinecap="round"
+                strokeDasharray="238.8"
+                strokeDashoffset={238.8 * (1 - thumbProgress / 100)}
+                style={{ transition: "stroke-dashoffset 0.5s cubic-bezier(0.4,0,0.2,1)" }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-white/70 text-[9px] font-semibold tabular-nums">{thumbProgress}%</span>
+            </div>
+          </div>
+          {/* Bottom bar */}
+          <div className="absolute bottom-0 inset-x-0">
+            <div className="h-[2px] w-full bg-white/[0.04]">
+              <div
+                className="h-full"
+                style={{
+                  width: `${Math.max(2, thumbProgress)}%`,
+                  background: "linear-gradient(90deg, #7A3BFF, #C077FF)",
+                  transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)",
+                  boxShadow: "0 0 6px rgba(122,59,255,0.5)",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </button>
+  );
+}
+
 /* =============================== MAIN =============================== */
 
 export default function Result({ results = [] }) {
   const scrollRef = useRef(null);
-  const [activeVideo, setActiveVideo] = useState(null);
+  const [activeVideoId, setActiveVideoId] = useState(null);
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [previewProgress, setPreviewProgress] = useState(0);
+  const ppRef = useRef(0);
+  const ppRafRef = useRef(null);
 
   /* =============================== FILTER =============================== */
 
@@ -156,15 +273,20 @@ export default function Result({ results = [] }) {
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }, [results]);
 
+  /* derive activeVideo live so progress/result_url are always fresh */
+  const activeVideo = useMemo(
+    () => videoResults.find((v) => v.id === activeVideoId) ?? null,
+    [videoResults, activeVideoId]
+  );
+
   /* =============================== AUTO SELECT =============================== */
 
   useEffect(() => {
     if (videoResults.length === 0) {
-      setActiveVideo(null);
+      setActiveVideoId(null);
       return;
     }
-    // Auto-select latest in the preview strip — never auto-open fullscreen
-    setActiveVideo((prev) => prev ?? videoResults[0]);
+    setActiveVideoId((prev) => prev ?? videoResults[0].id);
   }, [videoResults.length]);
 
   /* =============================== SCROLL =============================== */
@@ -174,6 +296,41 @@ export default function Result({ results = [] }) {
     const amount = Math.floor(scrollRef.current.clientWidth * 0.7);
     scrollRef.current.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
   };
+
+  /* reset displayed progress whenever we switch to a different video */
+  useEffect(() => {
+    if (ppRafRef.current) cancelAnimationFrame(ppRafRef.current);
+    ppRef.current = 0;
+    setPreviewProgress(0);
+  }, [activeVideoId]);
+
+  /* smooth preview progress — runs whenever the live activeVideo progress changes */
+  useEffect(() => {
+    if (!activeVideo) return;
+    if (activeVideo.result_url) {
+      if (ppRafRef.current) cancelAnimationFrame(ppRafRef.current);
+      ppRef.current = 100;
+      setPreviewProgress(100);
+      return;
+    }
+    const target = Math.min(99, Math.floor(Number(activeVideo.progress ?? 0)));
+    if (target <= ppRef.current) return;
+    if (ppRafRef.current) cancelAnimationFrame(ppRafRef.current);
+    const startVal = ppRef.current;
+    const startTime = performance.now();
+    const dist = Math.max(1, target - startVal);
+    const duration = Math.max(300, dist * 20);
+    const tick = (now) => {
+      const t = Math.min(1, (now - startTime) / duration);
+      const ease = 1 - Math.pow(1 - t, 3);
+      const next = Math.round(startVal + dist * ease);
+      ppRef.current = next;
+      setPreviewProgress(next);
+      if (t < 1) ppRafRef.current = requestAnimationFrame(tick);
+    };
+    ppRafRef.current = requestAnimationFrame(tick);
+    return () => { if (ppRafRef.current) cancelAnimationFrame(ppRafRef.current); };
+  }, [activeVideo?.progress, activeVideo?.result_url]);
 
   /* =============================== RENDER =============================== */
 
@@ -223,59 +380,17 @@ export default function Result({ results = [] }) {
             className="w-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth px-2"
           >
             <div className="flex gap-3 py-2">
-              {videoResults.map((item) => {
-                const isActive = activeVideo?.id === item.id;
-                const isDone = !!item.result_url;
-
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveVideo(item);
-                      if (isDone) setViewerOpen(true);
-                    }}
-                    className={`
-                      relative flex-shrink-0 aspect-[9/16] w-[100px] sm:w-[120px]
-                      rounded-xl overflow-hidden border transition-all
-                      ${isActive
-                        ? "border-[#7A3BFF] shadow-[0_0_18px_rgba(122,59,255,0.4)]"
-                        : "border-white/10 hover:border-white/30"
-                      }
-                      bg-black
-                    `}
-                  >
-                    {isDone ? (
-                      <>
-                        <video
-                          src={item.result_url}
-                          className="w-full h-full object-cover"
-                          muted playsInline autoPlay loop preload="metadata"
-                        />
-                        {/* Play icon overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition">
-                          <div className="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center">
-                            <svg className="w-4 h-4 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M8 5v14l11-7z"/>
-                            </svg>
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center gap-1.5 bg-[#0D0F14]">
-                        <svg className="w-8 h-8 animate-spin" viewBox="0 0 100 100">
-                          <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8"/>
-                          <circle cx="50" cy="50" r="40" fill="none" stroke="#7A3BFF" strokeWidth="8"
-                            strokeDasharray="30 220" strokeLinecap="round" className="origin-center"/>
-                        </svg>
-                        {typeof item.progress === "number" && (
-                          <p className="text-[10px] text-white/40">{Math.floor(item.progress)}%</p>
-                        )}
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
+              {videoResults.map((item) => (
+                <VideoThumb
+                  key={item.id}
+                  item={item}
+                  isActive={activeVideoId === item.id}
+                  onClick={() => {
+                    setActiveVideoId(item.id);
+                    if (item.result_url) setViewerOpen(true);
+                  }}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -318,19 +433,108 @@ export default function Result({ results = [] }) {
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center gap-3 py-10">
-              <Loader2 className="w-8 h-8 text-[#7A3BFF] animate-spin" />
-              <p className="text-white/40 text-sm">
-                {typeof activeVideo.progress === "number"
-                  ? `Generating… ${Math.floor(activeVideo.progress)}%`
-                  : "Generating…"}
-              </p>
-              <div className="w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div className="relative flex flex-col items-center justify-center gap-5 py-14 overflow-hidden bg-[#060912] rounded-2xl min-h-[220px]">
+
+              {/* Ambient orb */}
+              <div
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  width: "55%", paddingBottom: "55%", top: "-10%", left: "22%",
+                  background: "radial-gradient(circle, rgba(122,59,255,0.17), transparent)",
+                  filter: "blur(40px)",
+                  animation: "pulse 2.8s ease-in-out infinite",
+                }}
+              />
+
+              {/* Video waveform bars */}
+              <div className="relative z-10 flex items-end gap-[3px] h-7">
+                {[0.4, 0.75, 1, 0.6, 0.9, 0.5, 1, 0.7, 0.85, 0.45].map((h, i) => (
+                  <div
+                    key={i}
+                    className="w-[3px] rounded-full"
+                    style={{
+                      height: `${h * 100}%`,
+                      background: "linear-gradient(to top, #7A3BFF, #C077FF)",
+                      opacity: 0.7,
+                      animation: `waveBar 1.1s ease-in-out ${i * 0.1}s infinite alternate`,
+                      transformOrigin: "bottom",
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Progress ring */}
+              <div className="relative w-[60px] h-[60px] z-10">
+                <svg className="w-full h-full" style={{ transform: "rotate(-90deg)" }} viewBox="0 0 100 100">
+                  <defs>
+                    <linearGradient id="previewRing" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#7A3BFF" />
+                      <stop offset="100%" stopColor="#C077FF" />
+                    </linearGradient>
+                  </defs>
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
+                  <circle
+                    cx="50" cy="50" r="40"
+                    fill="none"
+                    stroke="url(#previewRing)"
+                    strokeWidth="6"
+                    strokeLinecap="round"
+                    strokeDasharray="251.3"
+                    strokeDashoffset={251.3 * (1 - previewProgress / 100)}
+                    style={{ transition: "stroke-dashoffset 0.5s cubic-bezier(0.4,0,0.2,1)" }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-white/80 text-[13px] font-semibold tabular-nums">{previewProgress}%</span>
+                </div>
                 <div
-                  className="h-full bg-gradient-to-r from-[#7A3BFF] to-[#C77DFF] rounded-full transition-all duration-500"
-                  style={{ width: `${Math.max(5, Math.floor(activeVideo.progress ?? 0))}%` }}
+                  className="absolute rounded-full pointer-events-none"
+                  style={{
+                    inset: "-6px",
+                    background: "radial-gradient(circle, rgba(122,59,255,0.2), transparent 70%)",
+                    filter: "blur(6px)",
+                    animation: "pulse 2s ease-in-out infinite",
+                  }}
                 />
               </div>
+
+              {/* Status + dots */}
+              <div className="relative z-10 flex flex-col items-center gap-1.5">
+                <p className="text-white/45 text-[11px] font-medium tracking-[0.1em] uppercase">
+                  {previewProgress < 5
+                    ? "Queuing"
+                    : previewProgress < 30
+                    ? "Generating frames"
+                    : previewProgress < 70
+                    ? "Rendering video"
+                    : previewProgress < 95
+                    ? "Finalizing"
+                    : "Almost done"}
+                </p>
+                <div className="flex gap-[4px]">
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className="block w-[4px] h-[4px] rounded-full bg-[#7A3BFF]/55 animate-bounce"
+                      style={{ animationDelay: `${i * 150}ms`, animationDuration: "1.1s" }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div className="relative z-10 w-52 h-[2px] bg-white/[0.06] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${Math.max(2, previewProgress)}%`,
+                    background: "linear-gradient(90deg, #7A3BFF, #C077FF)",
+                    transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)",
+                    boxShadow: "0 0 8px rgba(122,59,255,0.6)",
+                  }}
+                />
+              </div>
+
             </div>
           )}
         </div>

@@ -115,6 +115,8 @@ const ALL_BLOGS = [
 
   { to: "/blog/ai-product-photo-generator",           title: "Best AI Product Photo Generator in 2026 (Free + Ecommerce Guide)",    desc: "Generate studio-quality product photos, remove backgrounds, and create social media content — free to start.",     date: "Apr 18, 2026", category: "Product Photos",     img: PP6  },
   { to: "/blog/zyvo-vs-midjourney-product-photos",    title: "Zyvo vs Midjourney for Product Photos: Which AI Tool Wins in 2026?",  desc: "An honest comparison covering quality, background removal, pricing, and ecommerce suitability.",                   date: "Apr 18, 2026", category: "Product Photos",     img: PP3  },
+  { to: "/blog/free-ai-image-generator",             title: "Free AI Image Generator: Create Stunning Images Instantly (2026)",     desc: "Use Zyvo's free AI image generator to create stunning, scroll-stopping visuals in seconds. No design skills needed.", date: "Apr 19, 2026", category: "AI Image Generator", img: IG3  },
+  { to: "/blog/free-viral-ai-tool",                  title: "The Best Free Viral AI Tool in 2026 (Used by Creators Getting Millions of Views)", desc: "How creators are hitting millions of views on TikTok and Instagram using a free viral AI tool — and how to copy their system.", date: "Apr 19, 2026", category: "Go Viral",           img: GV1  },
 
   // ═══════════════ Go Viral ═══════════════
   { to: "/blog/how-to-go-viral-with-ai",                           title: "How to Go Viral With AI in 2026: The Complete Strategy",  desc: "The exact playbook creators are using to dominate TikTok, Instagram, and YouTube with AI content.", date: "Apr 16, 2026", category: "Go Viral",           img: GV1  },

@@ -125,6 +125,8 @@ const HowToGoViralWithAI = lazy(() => import("./app/blog/imagegenerator/HowToGoV
 const AIVideoNewViralCurrency = lazy(() => import("./app/blog/imagegenerator/AIVideoNewViralCurrency.jsx"));
 const AIProductPhotoGenerator = lazy(() => import("./app/blog/productphotos/AIProductPhotoGenerator.jsx"));
 const ZyvoVsMidjourneyProductPhotos = lazy(() => import("./app/blog/productphotos/ZyvoVsMidjourneyProductPhotos.jsx"));
+const FreeAIImageGenerator = lazy(() => import("./app/blog/imagegenerator/free-ai-image-generator.jsx"));
+const FreeViralAITool = lazy(() => import("./app/blog/imagegenerator/free-viral-ai-tool.jsx"));
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -381,6 +383,8 @@ return (
         <Route path="/blog/ai-video-new-viral-currency" element={<AIVideoNewViralCurrency/>} />
         <Route path="/blog/ai-product-photo-generator" element={<AIProductPhotoGenerator/>} />
         <Route path="/blog/zyvo-vs-midjourney-product-photos" element={<ZyvoVsMidjourneyProductPhotos/>} />
+        <Route path="/blog/free-ai-image-generator" element={<FreeAIImageGenerator/>} />
+        <Route path="/blog/free-viral-ai-tool" element={<FreeViralAITool/>} />
 
 
 

@@ -87,6 +87,9 @@ const [showToast, setShowToast] = useState(false);
 const [postedImages, setPostedImages] = useState(new Set());
 const [isImageLoaded, setIsImageLoaded] = useState(false);
 const [viewerOpen, setViewerOpen] = useState(false);
+const [displayProgress, setDisplayProgress] = useState(0);
+const dpRef = useRef(0);
+const rafRef = useRef(null);
 
 
 
@@ -255,6 +258,28 @@ const isFailed =
     return () => clearTimeout(t);
   }, [isFailed]);
 
+  /* smooth progress animation */
+  useEffect(() => {
+    const target = Math.min(99, Math.floor(Number(item.progress ?? 0)));
+    if (isDone) { dpRef.current = 100; setDisplayProgress(100); return; }
+    if (target <= dpRef.current) return;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    const startVal = dpRef.current;
+    const startTime = performance.now();
+    const dist = Math.max(1, target - startVal);
+    const duration = Math.max(250, dist * 18);
+    const tick = (now) => {
+      const t = Math.min(1, (now - startTime) / duration);
+      const ease = 1 - Math.pow(1 - t, 3);
+      const next = Math.round(startVal + dist * ease);
+      dpRef.current = next;
+      setDisplayProgress(next);
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [item.progress, isDone]);
+
   if (!visible) return null;
 
   return (
@@ -336,60 +361,121 @@ const isFailed =
 
 
     {/* LOADING */}
-   {/* LOADING */}
 {!isDone && !isFailed && (
-  <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
+  <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#060912] overflow-hidden">
 
-    {/* 🔥 Animated background glow */}
-    <div className="absolute inset-0 bg-gradient-to-br from-[#7A3BFF]/20 via-transparent to-[#9D4EDD]/20 animate-pulse" />
+    {/* Ambient orbs */}
+    <div
+      className="absolute rounded-full pointer-events-none"
+      style={{
+        width: "65%", paddingBottom: "65%", top: "5%", left: "18%",
+        background: "radial-gradient(circle, rgba(122,59,255,0.18), transparent)",
+        filter: "blur(32px)",
+        animation: "pulse 2.8s ease-in-out infinite",
+      }}
+    />
+    <div
+      className="absolute rounded-full pointer-events-none"
+      style={{
+        width: "40%", paddingBottom: "40%", bottom: "8%", right: "8%",
+        background: "radial-gradient(circle, rgba(192,119,255,0.12), transparent)",
+        filter: "blur(24px)",
+        animation: "pulse 3.5s ease-in-out 1.2s infinite",
+      }}
+    />
 
-    {/* 🔥 Shimmer overlay */}
-    <div className="absolute inset-0">
-      <div className="w-full h-full bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.08),transparent)] animate-[shimmer_2s_linear_infinite]" />
+    {/* Diagonal shimmer sweep */}
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 1 }}>
+      <div
+        className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/[0.025] to-transparent"
+        style={{ animation: "shimmer 3s ease-in-out infinite", transform: "skewX(-15deg)" }}
+      />
     </div>
 
-    {/* 🔥 Fake blurred preview (feels like image forming) */}
-    <div className="absolute inset-0 backdrop-blur-[6px] opacity-40" />
-
-    {/* 🔥 Center content */}
-    <div className="relative z-10 flex flex-col items-center">
-
-      {/* Spinner upgraded */}
+    {/* Progress ring */}
+    <div className="relative z-10 flex flex-col items-center gap-3">
       <div className="relative">
-        <svg className="w-16 h-16" viewBox="0 0 100 100">
-          <circle
-            cx="50"
-            cy="50"
-            r="42"
-            fill="none"
-            stroke="rgba(255,255,255,0.15)"
-            strokeWidth="6"
-          />
-          <circle
-            cx="50"
-            cy="50"
-            r="42"
-            fill="none"
-            stroke="url(#grad)"
-            strokeWidth="6"
-            strokeDasharray="40 220"
-            strokeLinecap="round"
-            className="origin-center animate-spin"
-          />
+        <svg
+          className="w-[68px] h-[68px]"
+          style={{ transform: "rotate(-90deg)" }}
+          viewBox="0 0 100 100"
+        >
           <defs>
-            <linearGradient id="grad">
+            <linearGradient id={`imgRing_${item.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#7A3BFF" />
-              <stop offset="100%" stopColor="#C77DFF" />
+              <stop offset="100%" stopColor="#C077FF" />
             </linearGradient>
           </defs>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" />
+          <circle
+            cx="50" cy="50" r="40"
+            fill="none"
+            stroke={`url(#imgRing_${item.id})`}
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeDasharray="251.3"
+            strokeDashoffset={251.3 * (1 - displayProgress / 100)}
+            style={{ transition: "stroke-dashoffset 0.5s cubic-bezier(0.4,0,0.2,1)" }}
+          />
         </svg>
 
-        {/* glow pulse */}
-        <div className="absolute inset-0 rounded-full bg-[#7A3BFF]/20 blur-xl animate-pulse" />
+        {/* Percent — not rotated */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-white/85 text-[12px] font-semibold tabular-nums leading-none">
+            {displayProgress}%
+          </span>
+        </div>
+
+        {/* Glow halo */}
+        <div
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            inset: "-8px",
+            background: "radial-gradient(circle, rgba(122,59,255,0.22), transparent 70%)",
+            filter: "blur(10px)",
+            animation: "pulse 2s ease-in-out infinite",
+          }}
+        />
       </div>
 
-    
+      {/* Status label + dots */}
+      <div className="flex flex-col items-center gap-1.5">
+        <p className="text-white/40 text-[10px] font-medium tracking-[0.12em] uppercase">
+          {displayProgress < 5
+            ? "Queuing"
+            : displayProgress < 35
+            ? "Generating"
+            : displayProgress < 75
+            ? "Rendering"
+            : displayProgress < 95
+            ? "Finalizing"
+            : "Almost done"}
+        </p>
+        <div className="flex gap-[4px]">
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              className="block w-[4px] h-[4px] rounded-full bg-[#7A3BFF]/55 animate-bounce"
+              style={{ animationDelay: `${i * 150}ms`, animationDuration: "1.1s" }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
 
+    {/* Bottom progress bar */}
+    <div className="absolute bottom-0 inset-x-0" style={{ zIndex: 10 }}>
+      <div className="h-[2px] w-full bg-white/[0.04]">
+        <div
+          className="h-full rounded-r-full"
+          style={{
+            width: `${Math.max(2, displayProgress)}%`,
+            background: "linear-gradient(90deg, #7A3BFF, #C077FF)",
+            transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)",
+            boxShadow: "0 0 8px rgba(122,59,255,0.65)",
+          }}
+        />
+      </div>
     </div>
 
   </div>
@@ -463,20 +549,6 @@ const isFailed =
         </div>
       )}
 
-      {/* PROGRESS BAR */}
-      {!isDone && !isFailed && (
-        <div className="absolute inset-x-0 bottom-0 p-3">
-          <p className="text-white/70 text-xs mb-2">
-           Generating… {progress}%
-          </p>
-          <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-[#7A3BFF] to-[#492399] transition-all duration-300"
-              style={{ width: `${Math.max(5, progress)}%` }}
-            />
-          </div>
-        </div>
-      )}
     </div>
 
     {/* ===== FULLSCREEN VIEWER PORTAL ===== */}
