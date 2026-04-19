@@ -1,6 +1,7 @@
 import {  useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { MODELS } from "../../lib/image-generator/modelsConfig";
 import { useReferenceImages } from "../../components/reference-images/useReferenceImages";
 import ReferenceImageModal from "../../components/reference-images/ReferenceImageModal";
@@ -775,7 +776,7 @@ useEffect(() => {
     setOpenSize(false)
   }}
   className={`
-    fixed inset-0 z-[100]
+    fixed inset-0 z-[9998]
     bg-black/60
     transition-opacity duration-150
     ${
@@ -1130,96 +1131,104 @@ md:group-hover:brightness-110
 
 
 
-{openStyle && (
-  <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+{openStyle && createPortal(
+  <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:px-4">
+    {/* Backdrop */}
+    <div
+      className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+      onClick={() => setOpenStyle(false)}
+    />
 
+    {/* Sheet / Modal */}
     <div
       className="
-        w-full max-w-[800px]
-        max-h-[85vh]
-
-        bg-[linear-gradient(180deg,rgba(22,26,38,0.95),rgba(14,17,28,0.95))]
+        relative w-full md:max-w-[800px]
+        max-h-[90vh] md:max-h-[85vh]
+        bg-[linear-gradient(180deg,rgba(22,26,38,0.98),rgba(14,17,28,0.98))]
         border border-white/10
-        rounded-2xl
-        shadow-[0_25px_80px_rgba(0,0,0,0.6)]
-
-        p-5
-        overflow-y-auto
-        relative
+        rounded-t-2xl md:rounded-2xl
+        shadow-[0_-10px_60px_rgba(0,0,0,0.6)] md:shadow-[0_25px_80px_rgba(0,0,0,0.6)]
+        flex flex-col
+        overflow-hidden
       "
     >
+      {/* Handle (mobile) */}
+      <div className="md:hidden w-10 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-1 flex-shrink-0" />
+
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center px-5 py-4 flex-shrink-0">
         <div className="flex flex-col">
           <h3 className="text-white font-semibold text-lg">Select Style</h3>
-          <span className="text-xs text-white/40">
-            Choose how your image should look
-          </span>
+          <span className="text-xs text-white/40">Choose how your image should look</span>
         </div>
-
         <button onClick={() => setOpenStyle(false)}>
           <X className="w-5 h-5 text-white/60 hover:text-white" />
         </button>
       </div>
 
       {/* GRID */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-5 md:gap-6">
-        {stylesToRender.map(([key, style]) => (
-          <StyleCard
-            key={key}
-            label={style.label}
-            img={style.img}
-            active={key === selectedStyle}
-            onClick={() => {
-              setSelectedStyle(key)
-              setOpenStyle(false)
-            }}
-          />
-        ))}
-      </div>
+      <div className="overflow-y-auto overscroll-contain px-5 pb-safe">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-5 md:gap-6 pb-6">
+          {stylesToRender.map(([key, style]) => (
+            <StyleCard
+              key={key}
+              label={style.label}
+              img={style.img}
+              active={key === selectedStyle}
+              onClick={() => {
+                setSelectedStyle(key)
+                setOpenStyle(false)
+              }}
+            />
+          ))}
+        </div>
 
-      {isMobile && !showAll && (
-        <button
-          onClick={() => setShowAll(true)}
-          className="
-            w-full mt-4 py-2 rounded-xl
-            bg-white/5 border border-white/10
-            text-sm text-white/70
-            hover:bg-white/10 transition
-          "
-        >
-          Show all styles
-        </button>
-      )}
+        {isMobile && !showAll && (
+          <button
+            onClick={() => setShowAll(true)}
+            className="
+              w-full mb-6 py-2 rounded-xl
+              bg-white/5 border border-white/10
+              text-sm text-white/70
+              hover:bg-white/10 transition
+            "
+          >
+            Show all styles
+          </button>
+        )}
+      </div>
     </div>
-  </div>
+  </div>,
+  document.body
 )}
 
 
 
-{openModel && (
-  <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+{openModel && createPortal(
+  <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:px-4">
+    {/* Backdrop */}
+    <div
+      className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+      onClick={() => setOpenModel(false)}
+    />
 
     <div
-      style={{
-        paddingBottom: "env(safe-area-inset-bottom)"
-      }}
       className="
-        w-full max-w-[700px]
-        max-h-[85vh]
+        relative w-full md:max-w-[700px]
+        max-h-[90vh] md:max-h-[85vh]
 
-        rounded-2xl
+        rounded-t-2xl md:rounded-2xl
         border border-white/10
 
-        bg-[linear-gradient(180deg,rgba(22,26,38,0.95),rgba(14,17,28,0.95))]
-        bg-[#0f111a]/95
-        shadow-[0_25px_80px_rgba(0,0,0,0.6)]
+        bg-[linear-gradient(180deg,rgba(22,26,38,0.98),rgba(14,17,28,0.98))]
+        shadow-[0_-10px_60px_rgba(0,0,0,0.6)] md:shadow-[0_25px_80px_rgba(0,0,0,0.6)]
 
         flex flex-col
         overflow-hidden
-        relative
       "
     >
+      {/* Handle (mobile) */}
+      <div className="md:hidden w-10 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-1 flex-shrink-0" />
 
       {/* 🔥 GRADIENT OVERLAY */}
       <div className="pointer-events-none absolute inset-0 z-10">
@@ -1379,7 +1388,8 @@ md:group-hover:brightness-110
 </div>
  </div>
     </div>
-  </div>
+  </div>,
+  document.body
 )}
             </div>
 
