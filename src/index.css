@@ -504,6 +504,20 @@ body,
   0% { transform: translateX(-120%); }
   100% { transform: translateX(120%); }
 }
+@keyframes selectorFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); opacity: 0.6; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@media (min-width: 768px) {
+  @keyframes sheetSlideUp {
+    from { transform: translateY(12px) scale(0.97); opacity: 0; }
+    to   { transform: translateY(0)    scale(1);    opacity: 1; }
+  }
+}
 @keyframes waveBar {
   from { transform: scaleY(0.25); opacity: 0.5; }
   to   { transform: scaleY(1);    opacity: 0.85; }

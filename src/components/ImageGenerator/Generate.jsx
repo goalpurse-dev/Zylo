@@ -107,12 +107,12 @@ const StyleCard = ({ img, label, active, onClick }) => (
     onClick={onClick}
     className={`
      group relative rounded-2xl overflow-hidden h-[160px]
-      transition-all duration-300 ease-out
+      transition-all duration-200 ease-out active:scale-[0.96]
 
       ${
         active
           ? "scale-[1.05] border-2 border-[#7A3BFF] "
-          : "hover:scale-[1.03] md:hover:shadow-[0_0_25px_rgba(122,59,255,0.25)]"
+          : "md:hover:scale-[1.03] md:hover:shadow-[0_0_25px_rgba(122,59,255,0.25)]"
       }
     `}
   >
@@ -125,7 +125,7 @@ const StyleCard = ({ img, label, active, onClick }) => (
         ${
           active
             ? " scale-[1.04] shadow-lg bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]"
-            : "bg-white/10 group-hover:bg-gradient-to-r group-hover:from-[#7A3BFF]/40 group-hover:to-[#9D4EDD]/40"
+            : "bg-white/10 md:group-hover:bg-gradient-to-r md:group-hover:from-[#7A3BFF]/40 md:group-hover:to-[#9D4EDD]/40"
         }
       `}
     >
@@ -137,7 +137,7 @@ const StyleCard = ({ img, label, active, onClick }) => (
           src={img}
           loading="lazy"
           decoding="async"
-          className="h-40 w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="h-40 w-full object-cover transition-transform duration-500 md:group-hover:scale-110"
         />
 
         {/* DARK OVERLAY */}
@@ -1132,10 +1132,11 @@ md:group-hover:brightness-110
 
 
 {openStyle && createPortal(
-  <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:px-4">
+  <div data-selector-portal className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:px-4">
     {/* Backdrop */}
     <div
       className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+      style={{ animation: "selectorFadeIn 0.2s ease forwards" }}
       onClick={() => setOpenStyle(false)}
     />
 
@@ -1151,6 +1152,7 @@ md:group-hover:brightness-110
         flex flex-col
         overflow-hidden
       "
+      style={{ animation: "sheetSlideUp 0.28s cubic-bezier(0.32,0.72,0,1) forwards" }}
     >
       {/* Handle (mobile) */}
       <div className="md:hidden w-10 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-1 flex-shrink-0" />
@@ -1205,10 +1207,11 @@ md:group-hover:brightness-110
 
 
 {openModel && createPortal(
-  <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:px-4">
+  <div data-selector-portal className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:px-4">
     {/* Backdrop */}
     <div
       className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+      style={{ animation: "selectorFadeIn 0.2s ease forwards" }}
       onClick={() => setOpenModel(false)}
     />
 
@@ -1226,6 +1229,7 @@ md:group-hover:brightness-110
         flex flex-col
         overflow-hidden
       "
+      style={{ animation: "sheetSlideUp 0.28s cubic-bezier(0.32,0.72,0,1) forwards" }}
     >
       {/* Handle (mobile) */}
       <div className="md:hidden w-10 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-1 flex-shrink-0" />
@@ -1268,7 +1272,7 @@ md:group-hover:brightness-110
                 className={`
                   relative w-full flex items-center justify-between
                   px-3 py-2.5 rounded-xl
-                  transition-all duration-150
+                  transition-all duration-150 active:scale-[0.98]
 
                   ${
                     isActive
