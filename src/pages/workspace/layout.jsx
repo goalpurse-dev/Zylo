@@ -135,8 +135,8 @@ useEffect(() => {
         {/* HEADER */}
         <div
           className={`
-            sticky top-0 z-[60]
-            w-full
+            relative z-[60]
+            w-full shrink-0
             lg:transition-transform lg:duration-300
             ${showTopRow ? "lg:translate-y-0" : "lg:-translate-y-full"}
           `}
