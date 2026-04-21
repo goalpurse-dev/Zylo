@@ -48,37 +48,28 @@ export default function TopPromoBanner() {
     {/* CENTER CONTENT */}
     <div className="relative max-w-[750px] mx-auto flex items-center justify-center gap-2 sm:gap-4 px-4 pr-12 py-2.5 text-white text-sm sm:text-base">
       
-      <span className="text-white/90 font-medium sm:block hidden whitespace-nowrap">
-        Limited Offer
-      </span>
-
-      <span className="sm:block hidden text-white/30">—</span>
+      <span className="text-lg">✍️</span>
 
       <span className="text-white/90 font-semibold whitespace-nowrap">
-        Pro Plan
+        Script Builder
       </span>
 
-      <span className="text-yellow-300 font-bold text-base sm:text-lg whitespace-nowrap">
-        40% OFF
+      <span className="text-purple-300 font-bold whitespace-nowrap">
+        just dropped
       </span>
 
-     
+      <span className="xl:block hidden text-white/30">—</span>
 
-     <button
-  onClick={() => navigate("/workspace/pricing")}
-  className="
-    ml-2
-    px-3.5 py-1.5
-    rounded-md
-    text-sm font-medium text-white
-    bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500
-    hover:opacity-90
-   
-    transition
-  "
->
-  Upgrade
-</button>
+      <span className="xl:block hidden text-white/60 text-sm whitespace-nowrap">
+        Full scripts in 60s. Hook → Scenes → CTA.
+      </span>
+
+      <button
+        onClick={() => navigate("/workspace/viral-script")}
+        className="ml-2 px-3.5 py-1.5 rounded-md text-sm font-medium text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500 hover:opacity-90 transition whitespace-nowrap"
+      >
+        Try it free →
+      </button>
     </div>
   </div>
 </div>

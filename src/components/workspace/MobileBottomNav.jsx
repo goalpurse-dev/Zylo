@@ -3,14 +3,16 @@ import {
   Home,
   Image,
   Video,
+  PenLine,
   Folder,
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { name: "Home",      icon: Home,   path: "/workspace/home" },
-  { name: "Image",     icon: Image,  path: "/workspace/image-generator", ftg: "image-nav" },
-  { name: "Video",     icon: Video,  path: "/workspace/video-generator" },
-  { name: "Creations", icon: Folder, path: "/workspace/creations" },
+  { name: "Home",      icon: Home,    path: "/workspace/home" },
+  { name: "Image",     icon: Image,   path: "/workspace/image-generator", ftg: "image-nav" },
+  { name: "Video",     icon: Video,   path: "/workspace/video-generator" },
+  { name: "Script",    icon: PenLine, path: "/workspace/viral-script" },
+  { name: "Creations", icon: Folder,  path: "/workspace/creations" },
 ];
 
 export default function MobileBottomNav({ isSelectorOpen }) {

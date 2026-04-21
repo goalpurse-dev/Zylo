@@ -32,11 +32,12 @@ const TIERS = [
       "600 credits / month",
       "Up to 200 AI images",
       "Up to 30 AI videos",
+      "Up to 300 viral scripts",
+      "Image & video prompts per scene",
       "Watermark-free exports",
       "Private creation library",
       "Standard generation speed",
       "Email support",
-      "30 generations / day",
     ],
   },
   {
@@ -56,12 +57,12 @@ const TIERS = [
       "1,200 credits / month",
       "Up to 400 AI images",
       "Up to 60 AI videos",
+      "Up to 600 viral scripts",
+      "Image & video prompts per scene",
       "Watermark-free exports",
       "Private creation library",
       "Priority generation queue",
       "Advanced prompt controls",
-      "Email support",
-      "100 generations / day",
     ],
   },
   {
@@ -78,12 +79,12 @@ const TIERS = [
       "2,500 credits / month",
       "Up to 830 AI images",
       "Up to 125 AI videos",
+      "Up to 1,250 viral scripts",
+      "Image & video prompts per scene",
       "Watermark-free exports",
       "Unlimited creation history",
       "Fast-lane generation",
-      "Advanced prompt controls",
       "Priority support",
-      "300 generations / day",
     ],
   },
 ];
@@ -104,7 +105,7 @@ const FAQS = [
   { q: "Do you offer refunds?",
     a: "Unused credits are refundable within 7 days. Once credits are spent, refunds can't be issued due to AI generation costs." },
   { q: "What can I create with Zyvo?",
-    a: "Scroll-stopping AI images in 20+ styles, viral short-form videos, image-to-video, and more — all export-ready, no watermark." },
+    a: "Scroll-stopping AI images in 20+ styles, viral short-form videos, image-to-video, and AI-powered viral scripts with image & video prompts per scene — all export-ready, no watermark." },
   { q: "Is there a free plan?",
     a: "Yes — sign up free and get 10 image generations every month. No card required. Upgrade anytime you want more." },
 ];
@@ -631,7 +632,7 @@ export default function Pricing() {
             Every plan includes
           </p>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-y-3 gap-x-4">
-            {["Brand creation", "Ad creation", "Product creation", "Top quality exports", "Email support"].map(f => (
+            {["Viral Script Builder", "Brand creation", "Ad creation", "Top quality exports", "Email support"].map(f => (
               <div key={f} className="flex items-center gap-2 text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
                 <Check className="w-3.5 h-3.5 shrink-0" style={{ color: "#A855F7" }} />
                 {f}

@@ -4,8 +4,9 @@ import { ChevronDown, X, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const tools = [
-  { label: "Image Generator", to: "/workspace/image-generator", desc: "20+ AI styles" },
+  { label: "Image Generator",  to: "/workspace/image-generator", desc: "20+ AI styles" },
   { label: "Video Generator",  to: "/workspace/video-generator",  desc: "10+ video models" },
+  { label: "Script Builder",   to: "/workspace/viral-script",     desc: "Viral scripts in 60s", badge: true },
   { label: "Creations",        to: "/workspace/creations",        desc: "Your saved work" },
 ];
 
@@ -62,7 +63,7 @@ export default function Navbar() {
               {toolsOpen && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className="absolute top-full left-0 mt-3 w-64 bg-white rounded-2xl shadow-xl shadow-black/10 border border-gray-100 p-2 z-50"
+                  className="absolute top-full left-0 mt-3 w-72 bg-white rounded-2xl shadow-xl shadow-black/10 border border-gray-100 p-2 z-50"
                 >
                   {tools.map((t) => (
                     <Link
@@ -71,7 +72,12 @@ export default function Navbar() {
                       onClick={() => setToolsOpen(false)}
                       className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-purple-50 group transition"
                     >
-                      <span className="text-sm font-semibold text-gray-800 group-hover:text-[#7A3BFF] transition">{t.label}</span>
+                      <div className="flex items-center gap-2 whitespace-nowrap">
+                        <span className="text-sm font-semibold text-gray-800 group-hover:text-[#7A3BFF] transition">{t.label}</span>
+                        {t.badge && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#7A3BFF] text-white leading-none">NEW</span>
+                        )}
+                      </div>
                       <span className="text-xs text-gray-400">{t.desc}</span>
                     </Link>
                   ))}
@@ -107,6 +113,13 @@ export default function Navbar() {
 
           {/* MOBILE RIGHT */}
           <div className="lg:hidden flex items-center gap-2">
+            <Link
+              to="/signup"
+              className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-sm font-semibold text-gray-700 transition"
+            >
+              <GoogleIcon />
+              Start Free with Google
+            </Link>
             <Link
               to="/signup"
               className="px-4 py-2 rounded-xl text-white text-sm font-bold"
@@ -164,7 +177,12 @@ export default function Navbar() {
                     onClick={() => setMenuOpen(false)}
                     className="flex items-center justify-between px-4 py-3.5 rounded-xl bg-white border border-gray-100 hover:border-[#7A3BFF]/40 transition"
                   >
-                    <span className="text-sm font-semibold text-gray-800">{t.label}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-gray-800">{t.label}</span>
+                      {t.badge && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#7A3BFF] text-white leading-none">NEW</span>
+                      )}
+                    </div>
                     <span className="text-xs text-gray-400">{t.desc}</span>
                   </Link>
                 ))}

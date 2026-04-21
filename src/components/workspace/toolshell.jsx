@@ -8,8 +8,9 @@ import { createPortal } from "react-dom";
 
 import {
   Home,
-  Image,  
+  Image,
   Video,
+  PenLine,
   Folder,
   CreditCard,
   Settings,
@@ -117,10 +118,11 @@ const [planCode, setPlanCode] = useState("free");
 
       {/* NAV */}
       <div className="flex flex-col items-center gap-2 w-full">
-        <Item icon={Home}   label="Home"      path="/workspace/home" />
-        <Item icon={Image}  label="Image"     path="/workspace/image-generator" ftg="image-nav" />
-        <Item icon={Video}  label="Video"     path="/workspace/video-generator" />
-        <Item icon={Folder} label="Creations" path="/workspace/creations" />
+        <Item icon={Home}    label="Home"      path="/workspace/home" />
+        <Item icon={Image}   label="Image"     path="/workspace/image-generator" ftg="image-nav" />
+        <Item icon={Video}   label="Video"     path="/workspace/video-generator" />
+        <Item icon={PenLine} label="Script"    path="/workspace/viral-script" />
+        <Item icon={Folder}  label="Creations" path="/workspace/creations" />
       </div>
 
       {/* SPACER */}

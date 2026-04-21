@@ -17,6 +17,7 @@ import ViralVideoGenerator from "../../components/Figma/ViralVideoGenerator.jsx"
 import AboutZyvo from "../../components/Figma/AboutZyvo.jsx"
 import ViralNumbers from "../../components/Figma/ViralNumbers.jsx"
 import TrendingModels from "../../components/Figma/TrendingModels.jsx"
+import ScriptBuilderPromo from "../../components/workspace/ScriptBuilderPromo.jsx"
 
 
 
@@ -37,6 +38,7 @@ export default function Home() {
       <ViralNumbers />
       <TrendingModels />
       <ReviewSection />
+      <ScriptBuilderPromo />
       <ViralImageGenerator />
       <WhyZyvo />
       <ViralVideoGenerator />

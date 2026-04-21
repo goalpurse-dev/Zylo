@@ -6,13 +6,8 @@ dotenv.config({ path: ".env.local" });
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const EMAILS = [
-  "atticafn@gmail.com",
-  "wojsiatagnieszka@gmail.com",
-  "abdif658@gmail.com",
-  "tyshawnmatthewsjr964@gmail.com",
-  "curranharper@icloud.com",
-  "dmay198@gmail.com",
-  "maxivey673@gmail.com"
+  "wendtalex96@gmail.com",
+
 ];
 
 function sleep(ms) {
