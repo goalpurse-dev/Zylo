@@ -7,7 +7,6 @@ import ScriptUpsellModal from "../../components/ScriptBuilder/ScriptUpsellModal"
 import { supabase } from "../../lib/supabaseClient";
 
 const HISTORY_MAX = 5;
-const historyKey = (uid) => uid ? `zyvo-script-history-${uid}` : null;
 
 export default function ScriptBuilder() {
   const navigate = useNavigate();
@@ -40,11 +39,26 @@ export default function ScriptBuilder() {
 
       setUserId(user.id);
 
-      // Load this user's history
-      try {
-        const stored = JSON.parse(localStorage.getItem(historyKey(user.id)) || "[]");
-        if (mounted) setHistory(stored);
-      } catch {}
+      // Load history from Supabase so it syncs across devices
+      const { data: rows } = await supabase
+        .from("viral_scripts")
+        .select("id, created_at, preset, platform, type, idea, script_data")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(HISTORY_MAX);
+
+      if (mounted && rows) {
+        setHistory(rows.map((r) => ({
+          id: r.id,
+          createdAt: r.created_at,
+          preset: r.preset,
+          presetIcon: "✨",
+          platform: r.platform,
+          type: r.type,
+          idea: r.idea,
+          script: r.script_data,
+        })));
+      }
 
       const { data: profile } = await supabase
         .from("profiles")
@@ -95,12 +109,11 @@ export default function ScriptBuilder() {
     // Keep newest HISTORY_MAX, drop oldest
     const updated = [entry, ...history].slice(0, HISTORY_MAX);
     setHistory(updated);
-    if (userId) localStorage.setItem(historyKey(userId), JSON.stringify(updated));
     setScriptData({ ...script, _id: id });
     setViewingEntry(null);
     setMobileView("result");
 
-    // Persist to Supabase (best-effort, non-blocking)
+    // Persist to Supabase so it syncs across devices
     if (userId) {
       supabase.from("viral_scripts").insert([{
         id,
@@ -115,10 +128,9 @@ export default function ScriptBuilder() {
   };
 
   const handleDeleteHistory = (id) => {
-    const updated = history.filter((h) => h.id !== id);
-    setHistory(updated);
-    if (userId) localStorage.setItem(historyKey(userId), JSON.stringify(updated));
+    setHistory((prev) => prev.filter((h) => h.id !== id));
     if (viewingEntry?.id === id) setViewingEntry(null);
+    if (userId) supabase.from("viral_scripts").delete().eq("id", id).eq("user_id", userId).then(() => {});
   };
 
   const handleReset = () => {
