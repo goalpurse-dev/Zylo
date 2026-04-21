@@ -16,6 +16,40 @@
 
 // ─── Style-specific creative briefs ──────────────────────────────────────────
 
+// ─── Skeleton-specific system prompt ─────────────────────────────────────────
+
+const SKELETON_SYSTEM_PROMPT = `You are a professional prompt engineer specialising in cinematic 3D skeleton character scenes.
+
+Convert the user's idea into exactly:
+- 1 main cinematic scene (stored in "hook")
+- 5 b-roll prompts (stored in "scenes" array, indices 0-4)
+
+VISUAL CONSISTENCY RULES:
+- The skeleton character must stay consistent: clean cinematic 3D render, highly detailed, studio-quality lighting
+- Every prompt MUST start with "Place the skeleton character..."
+- Include: environment/setting, action/pose, lighting style, camera angle, atmosphere
+- Keep prompts short, visual, specific — no fluff, no abstract language
+
+CINEMATIC BOOST (always include at least 2 per prompt):
+depth of field, motion blur, volumetric lighting, environmental particles, reflections/shadows
+
+Return valid JSON only. No markdown, no preamble. Start with { end with }.
+
+JSON schema (return exactly this):
+{"meta":{"type":"Visual Prompts","platform":"TikTok / Reels","duration":"varies","style":"Cinematic 3D","tone":"Dramatic","audience":"Visual creators","preset":"Viral Skeleton","presetIcon":"💀"},"hook":{"label":"MAIN SCENE","duration":"hero shot","text":"[2-4 word scene title with emoji]","imagePrompt":"Place the skeleton character [full cinematic image prompt — Midjourney/DALL-E 3 quality, 9:16 vertical, subject+action+lighting+camera+atmosphere]","videoPrompt":"Place the skeleton character [full cinematic video prompt — Runway/Kling quality, duration in seconds, camera motion, action, audio direction]"},"alternateHooks":[],"scenes":[{"label":"B-ROLL 1","title":"[2-4 word title with emoji]","duration":"b-roll","text":"[scene description]","imagePrompt":"Place the skeleton character [image prompt]","videoPrompt":"Place the skeleton character [video prompt]"},{"label":"B-ROLL 2","title":"[2-4 word title with emoji]","duration":"b-roll","text":"[scene description]","imagePrompt":"Place the skeleton character [image prompt]","videoPrompt":"Place the skeleton character [video prompt]"},{"label":"B-ROLL 3","title":"[2-4 word title with emoji]","duration":"b-roll","text":"[scene description]","imagePrompt":"Place the skeleton character [image prompt]","videoPrompt":"Place the skeleton character [video prompt]"},{"label":"B-ROLL 4","title":"[2-4 word title with emoji]","duration":"b-roll","text":"[scene description]","imagePrompt":"Place the skeleton character [image prompt]","videoPrompt":"Place the skeleton character [video prompt]"},{"label":"B-ROLL 5","title":"[2-4 word title with emoji]","duration":"b-roll","text":"[scene description]","imagePrompt":"Place the skeleton character [image prompt]","videoPrompt":"Place the skeleton character [video prompt]"}],"cta":null}`;
+
+const SKELETON_LOADING_PHASES = [
+  "Analysing your concept…",
+  "Building the main scene…",
+  "Generating b-roll prompts…",
+  "Perfecting cinematic details…",
+  "Final render pass…",
+];
+
+export { SKELETON_LOADING_PHASES };
+
+// ─── Style-specific creative briefs ──────────────────────────────────────────
+
 const STYLE_BRIEFS = {
   mrbeast: `STYLE: MrBeast. Insane premise, escalating stakes, specific numbers ($47,231 not "a lot"), short punchy sentences, every scene raises energy. End on cliffhanger. Vocabulary: "insane","crazy","actually". Fast pacing.`,
   tiktok: `STYLE: TikTok Viral. Hook in first 2 words. Pattern interrupt every 8-12s. Value front-loaded. Sound-off friendly. No "So today I'm going to...". Casual, edgy, relatable. Breakneck pacing.`,
@@ -48,12 +82,16 @@ SCENE COUNT: hit exact number if specified; "auto" = best for duration; min 2 sc
 // ─── Builders ────────────────────────────────────────────────────────────────
 
 export function buildSystemPrompt(stylePreset) {
+  if (stylePreset?.id === "skeleton") return SKELETON_SYSTEM_PROMPT;
   const styleId = stylePreset?.id || "custom";
   const styleBrief = STYLE_BRIEFS[styleId] || STYLE_BRIEFS.custom;
   return `${MASTER_SYSTEM_PROMPT}\n\n${styleBrief}\n\n${JSON_SCHEMA}`;
 }
 
 export function buildUserMessage(form, stylePreset) {
+  if (stylePreset?.id === "skeleton") {
+    return `Convert this idea into cinematic 3D skeleton character prompts:\n\n"${form.idea}"\n\nGenerate 1 main scene + 5 b-roll prompts. Make them elite-level cinematic.`;
+  }
   const d = stylePreset?.defaults || {};
   const effectiveType     = form.type     || d.type     || "Full Script";
   const effectivePlatform = form.platform || d.platform || "TikTok";

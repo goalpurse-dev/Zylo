@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { generateScript, SCRIPT_CREDIT_COST } from "../../lib/generateScript";
 import GenerateButton from "../ImageGenerator/GenerateButton";
 import DurationSlider from "./DurationSlider";
+import { SKELETON_LOADING_PHASES } from "../../lib/scriptPrompt";
 
 const TONES = [
   { label: "🔥 High Energy & Hype", value: "High Energy & Hype" },
@@ -190,6 +191,7 @@ export default function ScriptChat({ stylePreset, onGenerate }) {
   // Step map:
   //   Custom:  0=type 1=platform 2=duration 3=scenes 4=style 5=tone 6=audience 7=idea 8=cta 9=generate
   //   Presets: 0=summary 1=duration 2=scenes 3=tone 4=audience 5=idea 6=cta 7=generate
+  const isSkeleton = stylePreset?.id === "skeleton";
   const C = isCustom; // shorthand
   const s = {
     // custom steps
@@ -215,6 +217,84 @@ export default function ScriptChat({ stylePreset, onGenerate }) {
   const effectiveAudience = form.audience || d.audience || "";
   const effectiveStyle    = form.style || d.style || "";
   const sceneLabel        = form.sceneCount === "auto" ? "AI decides" : form.sceneCount ? `${form.sceneCount} scenes` : "";
+
+  // ── Skeleton simplified flow ──────────────────────────────────────────────
+  if (isSkeleton) {
+    const skeletonPhases = SKELETON_LOADING_PHASES;
+    return (
+      <div ref={chatRef} className="flex flex-col gap-4">
+
+        {/* Header card */}
+        <div className={`${CARD} p-4 flex items-center gap-3`}>
+          <div className="relative h-14 w-14 rounded-xl overflow-hidden shrink-0 border border-white/[0.08]">
+            <img src="/styles/skeleton2.webp" alt="Viral Skeleton" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+          </div>
+          <div>
+            <div className="text-white font-bold text-sm">Viral Skeleton</div>
+            <div className="text-white/35 text-xs mt-0.5">1 main scene + 5 cinematic b-rolls</div>
+            <div className="flex gap-1.5 mt-1.5 flex-wrap">
+              {["Cinematic 3D", "Image prompts", "Video prompts"].map((t) => (
+                <span key={t} className="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.05] text-white/35 border border-white/[0.06]">{t}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Idea input */}
+        <div className={`${CARD} p-4 space-y-3`}>
+          <p className="text-white/60 text-sm font-medium">Describe your concept</p>
+          <p className="text-white/25 text-xs leading-relaxed">One sentence is enough. e.g. <em className="text-white/40">modern sneakers in ancient Greece</em> or <em className="text-white/40">skeleton DJ at a neon rave</em></p>
+          <textarea
+            rows={3}
+            placeholder="Your concept here..."
+            value={form.idea}
+            onChange={(e) => setForm((f) => ({ ...f, idea: e.target.value }))}
+            className={`${INPUT} px-3.5 py-2.5 text-sm resize-none leading-relaxed`}
+          />
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 flex items-start gap-2.5">
+            <span className="text-red-400 text-base shrink-0">⚠️</span>
+            <div>
+              <p className="text-red-400 text-xs font-semibold">Generation failed</p>
+              <p className="text-red-300/70 text-xs mt-0.5">{error}</p>
+            </div>
+            <button onClick={() => setError(null)} className="ml-auto text-red-400/50 hover:text-red-400 text-sm">✕</button>
+          </div>
+        )}
+
+        {/* Loading */}
+        {loading && (
+          <div className={`${CARD} py-6 flex flex-col items-center gap-4`}>
+            <div className="relative w-9 h-9">
+              <svg className="animate-spin w-9 h-9" viewBox="0 0 36 36" fill="none">
+                <circle cx="18" cy="18" r="15" stroke="rgba(255,255,255,0.05)" strokeWidth="2.5" />
+                <path d="M 18 3 A 15 15 0 0 1 33 18" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
+            </div>
+            <div className="text-center space-y-1">
+              <p key={loadingPhase} className="text-white/65 text-sm font-medium animate-fadeIn">
+                {skeletonPhases[loadingPhase] || skeletonPhases[0]}
+              </p>
+              <p className="text-white/20 text-xs">gpt-4o-mini · Usually 4–6 seconds</p>
+            </div>
+          </div>
+        )}
+
+        {!loading && (
+          <GenerateButton
+            onClick={handleGenerate}
+            disabled={!form.idea.trim()}
+            isGenerating={false}
+            estimatedCredits={SCRIPT_CREDIT_COST}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div ref={chatRef} className="flex flex-col gap-4">

@@ -1,5 +1,23 @@
 export const SCRIPT_STYLES = [
   {
+    id: "skeleton",
+    name: "Viral Skeleton",
+    icon: "💀",
+    previewImage: "/styles/skeleton2.webp",
+    tagline: "Cinematic 3D prompts · 1 scene + 5 b-rolls",
+    bgClass: "from-slate-500/15 to-gray-500/15",
+    borderClass: "border-slate-500/30",
+    accentColor: "#94a3b8",
+    isVisual: true,
+    defaults: {
+      platform: "TikTok",
+      type: "Visual Prompts",
+      style: "Shock",
+      tone: "Cinematic, dramatic, high-detail",
+      audience: "Visual creators",
+    },
+  },
+  {
     id: "mrbeast",
     name: "MrBeast Mode",
     icon: "💥",

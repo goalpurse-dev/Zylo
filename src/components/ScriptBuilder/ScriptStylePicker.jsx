@@ -48,10 +48,12 @@ function StyleCard({ style, onClick }) {
       {/* Top row: icon + arrow */}
       <div className="flex items-start justify-between mb-3">
         <div
-          className="h-8 w-8 rounded-lg flex items-center justify-center text-base"
+          className="h-8 w-8 rounded-lg flex items-center justify-center text-base overflow-hidden"
           style={{ background: `${style.accentColor}18`, border: `1px solid ${style.accentColor}30` }}
         >
-          {style.icon}
+          {style.previewImage
+            ? <img src={style.previewImage} alt={style.name} className="w-full h-full object-cover" />
+            : style.icon}
         </div>
         <span className="text-white/20 group-hover:text-white/50 text-xs transition-colors mt-1">→</span>
       </div>
