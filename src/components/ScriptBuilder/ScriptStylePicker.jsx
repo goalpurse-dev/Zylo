@@ -96,20 +96,28 @@ export default function ScriptStylePicker({ onSelect, history = [], onViewHistor
   return (
     <div className="px-5 py-6 flex flex-col gap-6">
 
-      {/* Recent scripts — shown first so mobile users see history immediately */}
+      {/* Recent scripts — mobile only, desktop has it in the Output panel */}
       {history.length > 0 && (
-        <div className="space-y-2">
+        <div className="lg:hidden space-y-2">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-white/30 text-[11px] font-semibold uppercase tracking-widest">Recent</span>
             <span className="text-white/15 text-[10px]">({history.length})</span>
           </div>
-          {history.slice(0, 4).map((entry) => (
+          {history.slice(0, 4).map((entry) => {
+            const style = SCRIPT_STYLES.find((s) => s.name === entry.preset);
+            return (
             <button
               key={entry.id}
               onClick={() => onViewHistory?.(entry)}
               className="w-full text-left flex items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-[#7A3BFF]/[0.06] hover:border-[#7A3BFF]/25 transition-all px-3.5 py-2.5"
             >
-              <span className="text-base leading-none shrink-0">{entry.presetIcon}</span>
+              <div className="h-8 w-8 rounded-lg flex items-center justify-center text-base overflow-hidden shrink-0"
+                style={style ? { background: `${style.accentColor}18`, border: `1px solid ${style.accentColor}30` } : undefined}
+              >
+                {style?.previewImage
+                  ? <img src={style.previewImage} alt={entry.preset} className="w-full h-full object-cover" />
+                  : <span>{style?.icon || entry.presetIcon}</span>}
+              </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-white/65 text-xs font-medium">{entry.preset}</span>
@@ -123,7 +131,8 @@ export default function ScriptStylePicker({ onSelect, history = [], onViewHistor
                 <p className="text-white/25 text-[11px] mt-0.5 truncate">{entry.idea || "No description"}</p>
               </div>
             </button>
-          ))}
+            );
+          })}
         </div>
       )}
 

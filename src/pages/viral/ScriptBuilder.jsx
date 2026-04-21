@@ -42,7 +42,7 @@ export default function ScriptBuilder() {
       // Load history from Supabase so it syncs across devices
       const { data: rows } = await supabase
         .from("viral_scripts")
-        .select("id, created_at, preset, platform, type, idea, script_data")
+        .select("id, created_at, preset, preset_icon, platform, type, idea, script_data")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(HISTORY_MAX);
@@ -52,7 +52,7 @@ export default function ScriptBuilder() {
           id: r.id,
           createdAt: r.created_at,
           preset: r.preset,
-          presetIcon: "✨",
+          presetIcon: r.preset_icon || "✨",
           platform: r.platform,
           type: r.type,
           idea: r.idea,
@@ -119,6 +119,7 @@ export default function ScriptBuilder() {
         id,
         user_id: userId,
         preset: entry.preset,
+        preset_icon: entry.presetIcon,
         platform: entry.platform,
         type: entry.type,
         idea: entry.idea,

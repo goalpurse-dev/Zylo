@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import ScriptFeedback from "./ScriptFeedback";
+import { SCRIPT_STYLES } from "../../lib/scriptTemplates";
 
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -183,11 +184,18 @@ function SceneCard({ section, index }) {
 
 // ─── History card ─────────────────────────────────────────────────────────────
 function HistoryCard({ entry, onView, onDelete }) {
+  const style = SCRIPT_STYLES.find((s) => s.name === entry.preset);
   return (
     <div className="group rounded-xl border border-white/[0.07] bg-white/[0.025] hover:bg-[#7A3BFF]/[0.05] hover:border-[#7A3BFF]/20 transition-all p-3 flex items-start justify-between gap-3">
       <button className="flex-1 text-left min-w-0" onClick={() => onView(entry)}>
         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-          <span className="text-sm leading-none">{entry.presetIcon}</span>
+          <div className="h-6 w-6 rounded-md flex items-center justify-center text-sm overflow-hidden shrink-0"
+            style={style ? { background: `${style.accentColor}18`, border: `1px solid ${style.accentColor}30` } : undefined}
+          >
+            {style?.previewImage
+              ? <img src={style.previewImage} alt={entry.preset} className="w-full h-full object-cover" />
+              : <span className="text-xs">{style?.icon || entry.presetIcon}</span>}
+          </div>
           <span className="text-white/60 text-xs font-medium">{entry.preset}</span>
           {entry.platform && (
             <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-white/[0.06] text-white/30 border border-white/[0.06]">
