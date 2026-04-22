@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { watchJob } from "../../lib/jobs";
 import { useLocation } from "react-router-dom";
+import { useSEO } from "../../hooks/useSEO";
 
 import Generate from "../../components/ImageGenerator/Generate.jsx";
 import Inspiration from "../../components/ImageGenerator/Inspiration.jsx";
@@ -33,6 +34,31 @@ const toNum = (v, fallback = 0) => {
 };
 
 export default function Image() {
+  useSEO({
+    title: "AI Image Generator — Create Viral, Scroll-Stopping Images Instantly | Zyvo",
+    description:
+      "Generate stunning AI images for TikTok, Instagram Reels, and YouTube in seconds. Cinematic, 3D, anime, and realistic styles. No design skills needed — free to start.",
+    canonical: "https://www.tryzyvo.com/workspace/image-generator",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "Zyvo AI Image Generator",
+      applicationCategory: "CreativeApplication",
+      operatingSystem: "Web",
+      description:
+        "Generate scroll-stopping AI images for social media in seconds. Cinematic, 3D, anime, realistic, and product styles — built for creators and brands.",
+      url: "https://www.tryzyvo.com/workspace/image-generator",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      featureList: [
+        "Cinematic and 3D AI image styles",
+        "Anime and realistic image generation",
+        "Product photo backgrounds",
+        "TikTok and Instagram optimised formats",
+        "One-click image download",
+      ],
+    },
+  });
+
   const [prompt, setPrompt] = useState("");
   const [results, setResults] = useState([]);
 const [userPlan, setUserPlan] = useState("free");

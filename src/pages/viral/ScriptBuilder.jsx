@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSEO } from "../../hooks/useSEO";
 import ScriptStylePicker from "../../components/ScriptBuilder/ScriptStylePicker";
 import ScriptChat from "../../components/ScriptBuilder/ScriptChat";
 import ScriptResult from "../../components/ScriptBuilder/ScriptResult";
@@ -10,6 +11,32 @@ const HISTORY_MAX = 5;
 
 export default function ScriptBuilder() {
   const navigate = useNavigate();
+
+  useSEO({
+    title: "AI Viral Script Builder — Write TikTok, Reels & YouTube Scripts in 60 Seconds | Zyvo",
+    description:
+      "Generate complete viral scripts with hooks, scenes, CTAs, and image prompts in under 60 seconds. Choose from 8 creator styles — MrBeast Mode, TikTok Viral, Story Arc, Comedy Skit, and more.",
+    canonical: "https://www.tryzyvo.com/workspace/viral-script",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "Zyvo Viral Script Builder",
+      applicationCategory: "CreativeApplication",
+      operatingSystem: "Web",
+      description:
+        "AI-powered viral script generator. Build TikTok, Instagram Reels, and YouTube scripts with hooks, scenes, CTAs, and AI image prompts in 60 seconds.",
+      url: "https://www.tryzyvo.com/workspace/viral-script",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      featureList: [
+        "8 creator style presets",
+        "Viral hook generator",
+        "Scene-by-scene script structure",
+        "AI image and video prompts per scene",
+        "3 alternate hooks for A/B testing",
+        "TikTok, Reels, and YouTube Shorts support",
+      ],
+    },
+  });
   const [selectedStyle, setSelectedStyle] = useState(null);
   const [scriptData, setScriptData] = useState(null);
   const [history, setHistory] = useState([]);

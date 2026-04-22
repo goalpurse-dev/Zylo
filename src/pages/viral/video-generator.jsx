@@ -1,10 +1,36 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
+import { useSEO } from "../../hooks/useSEO";
 
 import Generate from "../../components/VideoGenerator/Generate";
 import Result from "../../components/VideoGenerator/Result";
 
 export default function VideoGenerator() {
+  useSEO({
+    title: "AI Video Generator — Create Viral Short-Form Videos With AI | Zyvo",
+    description:
+      "Turn your ideas into viral AI videos for TikTok, Instagram Reels, and YouTube Shorts. Generate cinematic clips, animations, and scroll-stopping content in minutes.",
+    canonical: "https://www.tryzyvo.com/workspace/video-generator",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "Zyvo AI Video Generator",
+      applicationCategory: "CreativeApplication",
+      operatingSystem: "Web",
+      description:
+        "AI-powered video generator for TikTok, Reels, and YouTube Shorts. Create cinematic, animated, and viral short-form video content in minutes.",
+      url: "https://www.tryzyvo.com/workspace/video-generator",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      featureList: [
+        "AI short-form video generation",
+        "TikTok, Reels, and YouTube Shorts formats",
+        "Cinematic and animated video styles",
+        "Prompt-based video creation",
+        "Fast generation in minutes",
+      ],
+    },
+  });
+
   const [results, setResults] = useState([]);
   const intervalRef = useRef(null);
 
