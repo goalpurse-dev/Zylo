@@ -3,7 +3,7 @@ import React, { Suspense, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Mail, MessageCircleQuestion, BookOpenText, Home as HomeIcon, Send, ArrowLeft } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
-import { POSTS, getPostBySlug } from "./blog/posts";
+import { POSTS, CATEGORIES, getPostBySlug } from "./blog/posts";
 
 /** Programmatic jump to Contact tab */
 export function navigateToContact(navigate: ReturnType<typeof useNavigate>) {
@@ -55,25 +55,62 @@ function Faq() {
   );
 }
 
+const CATEGORY_COLORS: Record<string, string> = {
+  script:  "bg-violet-100 text-violet-700",
+  guide:   "bg-blue-100 text-blue-700",
+  billing: "bg-emerald-100 text-emerald-700",
+};
+
 /* --------------------------------- Blog --------------------------------- */
 function BlogList({ onOpen, search }: { onOpen: (slug: string) => void; search: string }) {
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+
   const list = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return POSTS;
-    return POSTS.filter((p) => (p.title + " " + p.summary + " " + (p.searchText || "")).toLowerCase().includes(q));
-  }, [search]);
+    return POSTS.filter((p) => {
+      const matchesSearch = !q || (p.title + " " + p.summary + " " + (p.searchText || "")).toLowerCase().includes(q);
+      const matchesCategory = activeCategory === "all" || p.category === activeCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [search, activeCategory]);
 
   return (
     <SectionCard title="Blog, guides & release notes">
+      {/* Category tabs */}
+      <div className="flex flex-wrap gap-2 mb-5">
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => setActiveCategory(cat.id)}
+            className={[
+              "rounded-lg px-3 py-1 text-sm font-medium transition",
+              activeCategory === cat.id
+                ? "bg-black text-white"
+                : "border border-gray-200 text-gray-600 hover:bg-gray-50",
+            ].join(" ")}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         {list.map((p) => (
-          <article key={p.slug} className="rounded-xl border border-black/5 bg-white p-4 hover:shadow-md transition">
-            <h3 className="text-lg font-semibold text-gray-900">{p.title}</h3>
-            <p className="mt-2 text-sm text-gray-600">{p.summary}</p>
+          <article key={p.slug} className="rounded-xl border border-black/5 bg-white p-4 hover:shadow-md transition flex flex-col">
+            <div className="flex items-center gap-2 mb-2">
+              {p.category && (
+                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${CATEGORY_COLORS[p.category] || "bg-gray-100 text-gray-600"}`}>
+                  {p.category}
+                </span>
+              )}
+              {p.readTime && <span className="text-[11px] text-gray-400">{p.readTime}</span>}
+            </div>
+            <h3 className="text-base font-semibold text-gray-900 leading-snug">{p.title}</h3>
+            <p className="mt-2 text-sm text-gray-600 flex-1">{p.summary}</p>
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-xs text-gray-500">{new Date(p.date).toLocaleDateString()}</span>
-              <button onClick={() => onOpen(p.slug)} className="rounded-lg border border-gray-200 px-3 py-1 text-sm hover:bg-gray-50">
-                Read
+              <span className="text-xs text-gray-400">{new Date(p.date).toLocaleDateString()}</span>
+              <button onClick={() => onOpen(p.slug)} className="rounded-lg border border-gray-200 px-3 py-1 text-sm hover:bg-gray-50 font-medium">
+                Read →
               </button>
             </div>
           </article>

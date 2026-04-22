@@ -1,7 +1,14 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, Suspense, lazy } from "react";
 import ScriptFeedback from "./ScriptFeedback";
 import { SCRIPT_STYLES } from "../../lib/scriptTemplates";
+
+const HowToWriteAViralScript = lazy(() => import("../../pages/help/blog/HowToWriteAViralScript.jsx"));
+const ViralScriptStyles       = lazy(() => import("../../pages/help/blog/ViralScriptStyles.jsx"));
+
+const GUIDES = [
+  { id: "how-to-write", label: "How to write a viral script", Component: HowToWriteAViralScript },
+  { id: "styles",       label: "The 8 creator script styles explained", Component: ViralScriptStyles },
+];
 
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -219,6 +226,7 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
   const [copiedAll, setCopiedAll] = useState(false);
   const [altHooksOpen, setAltHooksOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(true);
+  const [openGuide, setOpenGuide] = useState(null); // guide id or null
 
   const handleCopyAll = () => {
     navigator.clipboard.writeText(buildFullScriptText(script)).catch(() => {});
@@ -272,6 +280,13 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
                   <span>{icon}</span>
                   <span className="text-white/30 text-xs">{text}</span>
                 </div>
+              ))}
+            </div>
+            <div className="flex flex-col gap-1.5 mt-2">
+              {GUIDES.map((g) => (
+                <button key={g.id} onClick={() => setOpenGuide(g.id)} className="text-left text-xs text-[#9B6DFF]/70 hover:text-[#9B6DFF] transition-colors">
+                  {g.label} →
+                </button>
               ))}
             </div>
           </div>
@@ -360,6 +375,36 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
             className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-[#7A3BFF]/25 bg-[#7A3BFF]/[0.06] text-[#9B6DFF] hover:bg-[#7A3BFF]/[0.12] hover:border-[#7A3BFF]/40 text-sm font-semibold transition-all hover:scale-[1.005] active:scale-[0.995]">
             ✨ Generate Another Script
           </button>
+        )}
+
+        {/* Inline guide reader */}
+        {openGuide ? (
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+              <button onClick={() => setOpenGuide(null)} className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors">
+                ← Back
+              </button>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-white/25">Guide</span>
+            </div>
+            <div className="px-4 py-4 text-sm text-white/70 leading-relaxed prose-invert max-h-[480px] overflow-y-auto
+              [&_h2]:text-white [&_h2]:font-bold [&_h2]:text-base [&_h2]:mt-5 [&_h2]:mb-2
+              [&_h3]:text-white [&_h3]:font-semibold [&_h3]:text-sm [&_h3]:mt-4 [&_h3]:mb-1
+              [&_p]:mb-3 [&_ul]:mb-3 [&_ul]:pl-4 [&_li]:mb-1 [&_li]:list-disc [&_li]:list-outside
+              [&_strong]:text-white [&_em]:text-white/60 [&_a]:text-[#9B6DFF] [&_a]:no-underline [&_a:hover]:text-[#B88FFF]">
+              <Suspense fallback={<p className="text-white/30 text-xs">Loading…</p>}>
+                {(() => { const g = GUIDES.find(g => g.id === openGuide); return g ? <g.Component /> : null; })()}
+              </Suspense>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 flex flex-col gap-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/25">Guides</p>
+            {GUIDES.map((g) => (
+              <button key={g.id} onClick={() => setOpenGuide(g.id)} className="text-left text-xs text-[#9B6DFF] hover:text-[#B88FFF] transition-colors">
+                {g.label} →
+              </button>
+            ))}
+          </div>
         )}
 
         {/* Feedback */}

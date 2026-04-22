@@ -78,6 +78,7 @@ const CAT_PILL = {
   "Product Photos":     "bg-emerald-100 text-emerald-700",
   "AI Image Generator": "bg-blue-100 text-blue-700",
   "Go Viral":           "bg-purple-100 text-purple-700",
+  "Viral Script":       "bg-violet-100 text-violet-700",
 };
 
 const ALL_BLOGS = [
@@ -117,8 +118,8 @@ const ALL_BLOGS = [
   { to: "/blog/zyvo-vs-midjourney-product-photos",    title: "Zyvo vs Midjourney for Product Photos: Which AI Tool Wins in 2026?",  desc: "An honest comparison covering quality, background removal, pricing, and ecommerce suitability.",                   date: "Apr 18, 2026", category: "Product Photos",     img: PP3  },
   { to: "/blog/free-ai-image-generator",             title: "Free AI Image Generator: Create Stunning Images Instantly (2026)",     desc: "Use Zyvo's free AI image generator to create stunning, scroll-stopping visuals in seconds. No design skills needed.", date: "Apr 19, 2026", category: "AI Image Generator", img: IG3  },
   { to: "/blog/free-viral-ai-tool",                  title: "The Best Free Viral AI Tool in 2026 (Used by Creators Getting Millions of Views)", desc: "How creators are hitting millions of views on TikTok and Instagram using a free viral AI tool — and how to copy their system.", date: "Apr 19, 2026", category: "Go Viral",           img: GV1  },
-  { to: "/blog/how-to-write-a-viral-script",         title: "How to Write a Viral Script in 2026: The AI Framework That Gets Millions of Views", desc: "The exact anatomy of a viral script — hook types, scene structure, platform-specific CTAs, and how AI generates it in 60 seconds.", date: "Apr 21, 2026", category: "Go Viral",           img: GV2  },
-  { to: "/blog/ai-script-generator-viral-videos",    title: "AI Script Generator: Write Viral TikTok & YouTube Scripts in 60 Seconds (2026)",  desc: "How AI script generators work, what separates good ones from bad, and how to generate a complete script with image and video prompts.", date: "Apr 21, 2026", category: "Go Viral",           img: GV3  },
+  { to: "/blog/how-to-write-a-viral-script",         title: "How to Write a Viral Script in 2026: The AI Framework That Gets Millions of Views", desc: "The exact anatomy of a viral script — hook types, scene structure, platform-specific CTAs, and how AI generates it in 60 seconds.", date: "Apr 21, 2026", category: "Viral Script",        img: GV2  },
+  { to: "/blog/ai-script-generator-viral-videos",    title: "AI Script Generator: Write Viral TikTok & YouTube Scripts in 60 Seconds (2026)",  desc: "How AI script generators work, what separates good ones from bad, and how to generate a complete script with image and video prompts.", date: "Apr 21, 2026", category: "Viral Script",        img: GV3  },
 
   // ═══════════════ Go Viral ═══════════════
   { to: "/blog/how-to-go-viral-with-ai",                           title: "How to Go Viral With AI in 2026: The Complete Strategy",  desc: "The exact playbook creators are using to dominate TikTok, Instagram, and YouTube with AI content.", date: "Apr 16, 2026", category: "Go Viral",           img: GV1  },
@@ -157,7 +158,7 @@ const ALL_BLOGS = [
   { to: "/blog/ai-visual-styles-most-engagement",                  title: "Visual Styles That Get the Most Engagement (AI Edition)", desc: "Which visual styles get the most engagement — revealed.",                                        date: "Mar 15, 2026", category: "AI Image Generator", img: IG20 },
 ];
 
-const CATEGORIES = ["All", "Go Viral", "AI Image Generator", "Product Photos"];
+const CATEGORIES = ["All", "Viral Script", "Go Viral", "AI Image Generator", "Product Photos"];
 
 export default function BlogIndex() {
   useEffect(() => {
@@ -175,6 +176,7 @@ export default function BlogIndex() {
 
   const categoryCounts = {
     All:                  ALL_BLOGS.length,
+    "Viral Script":       ALL_BLOGS.filter((b) => b.category === "Viral Script").length,
     "Go Viral":           ALL_BLOGS.filter((b) => b.category === "Go Viral").length,
     "AI Image Generator": ALL_BLOGS.filter((b) => b.category === "AI Image Generator").length,
     "Product Photos":     ALL_BLOGS.filter((b) => b.category === "Product Photos").length,
