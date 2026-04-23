@@ -1,4 +1,5 @@
 import { useState, Suspense, lazy } from "react";
+import { Link } from "react-router-dom";
 import ScriptFeedback from "./ScriptFeedback";
 import { SCRIPT_STYLES } from "../../lib/scriptTemplates";
 
