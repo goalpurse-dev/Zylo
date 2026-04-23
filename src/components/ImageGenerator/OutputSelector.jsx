@@ -131,7 +131,7 @@ if (rect) {
                   overflow-y-auto
                 "
                 style={{
-                  maxHeight: "min(420px, calc(100vh - 40px))",
+                  maxHeight: "min(420px, calc(100dvh - 40px))",
                 }}
               >
                 {children}

@@ -276,37 +276,10 @@ export default function OnboardingModal({ user, onComplete }) {
                 <p className="text-white/40 text-sm mt-2">Upgrade anytime. Cancel anytime. No hidden fees.</p>
               </div>
 
-              {/* ── Free tier CTA — above plans ── */}
-              <div className="flex flex-col items-center gap-2.5 mb-6">
-                <div className="w-full sm:w-auto p-[1px] rounded-2xl" style={{ background: "linear-gradient(135deg, rgba(122,59,255,0.5), rgba(157,107,255,0.2), rgba(122,59,255,0.1))" }}>
-                  <button
-                    onClick={async () => {
-                      const success = await handleFinish()
-                      if (success) window.location.href = "/workspace/home"
-                    }}
-                    disabled={loading}
-                    className="w-full sm:w-auto px-8 py-3.5 rounded-[15px] font-semibold text-white text-[15px] tracking-[-0.01em] transition-all duration-200 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2.5 group"
-                    style={{ background: "linear-gradient(135deg, rgba(122,59,255,0.12), rgba(10,8,22,0.9))" }}
-                    onMouseEnter={(e) => (e.currentTarget.parentElement.style.background = "linear-gradient(135deg, rgba(122,59,255,0.8), rgba(157,107,255,0.5), rgba(122,59,255,0.3))")}
-                    onMouseLeave={(e) => (e.currentTarget.parentElement.style.background = "linear-gradient(135deg, rgba(122,59,255,0.5), rgba(157,107,255,0.2), rgba(122,59,255,0.1))")}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#9D6BFF] group-hover:bg-white transition-colors duration-200" />
-                    Continue for free
-                    <svg className="w-3.5 h-3.5 text-white/50 group-hover:text-white group-hover:translate-x-0.5 transition-all duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="flex items-center gap-1.5 text-[12px] text-white/35">
-                  <svg className="w-3 h-3 text-[#7A3BFF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
-                  <span>10 free image generations · No credit card needed</span>
-                </div>
-              </div>
-
               {/* Divider */}
               <div className="flex items-center gap-3 mb-6">
                 <div className="flex-1 h-px bg-white/[0.07]" />
-                <span className="text-xs text-white/25 font-medium whitespace-nowrap">or unlock more with a plan</span>
+                <span className="text-xs text-white/25 font-medium whitespace-nowrap">choose a plan to get started</span>
                 <div className="flex-1 h-px bg-white/[0.07]" />
               </div>
 
@@ -424,18 +397,31 @@ export default function OnboardingModal({ user, onComplete }) {
                 ))}
               </div>
 
-              {/* Try for free — bottom reminder */}
-              <div className="flex flex-col items-center mt-5">
-                <button
-                  onClick={async () => {
-                    const success = await handleFinish()
-                    if (success) window.location.href = "/workspace/home"
-                  }}
-                  disabled={loading}
-                  className="text-sm text-white/50 hover:text-white transition disabled:opacity-50"
-                >
-                  No thanks, continue for free →
-                </button>
+              {/* Continue for free — below plans */}
+              <div className="flex flex-col items-center gap-2 mt-6">
+                <div className="w-full sm:w-auto p-[1px] rounded-2xl" style={{ background: "linear-gradient(135deg, rgba(122,59,255,0.4), rgba(157,107,255,0.15), rgba(122,59,255,0.08))" }}>
+                  <button
+                    onClick={async () => {
+                      const success = await handleFinish()
+                      if (success) window.location.href = "/workspace/home"
+                    }}
+                    disabled={loading}
+                    className="w-full px-8 py-3.5 rounded-[15px] font-semibold text-white text-[15px] tracking-[-0.01em] transition-all duration-200 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2.5 group"
+                    style={{ background: "linear-gradient(135deg, rgba(122,59,255,0.1), rgba(10,8,22,0.9))" }}
+                    onMouseEnter={(e) => (e.currentTarget.parentElement.style.background = "linear-gradient(135deg, rgba(122,59,255,0.7), rgba(157,107,255,0.4), rgba(122,59,255,0.2))")}
+                    onMouseLeave={(e) => (e.currentTarget.parentElement.style.background = "linear-gradient(135deg, rgba(122,59,255,0.4), rgba(157,107,255,0.15), rgba(122,59,255,0.08))")}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#9D6BFF] group-hover:bg-white transition-colors duration-200" />
+                    Continue for free
+                    <svg className="w-3.5 h-3.5 text-white/50 group-hover:text-white group-hover:translate-x-0.5 transition-all duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="flex items-center gap-1.5 text-[12px] text-white/30">
+                  <svg className="w-3 h-3 text-[#7A3BFF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  <span>10 free image generations · No credit card needed</span>
+                </div>
               </div>
 
             </div>

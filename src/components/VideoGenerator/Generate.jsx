@@ -510,13 +510,13 @@ useEffect(() => {
     />
 
   
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
 
  
       <div
         className="
           w-[95%] md:w-[85%]
-          h-[85%]
+          max-h-[88dvh]
           bg-[#141722]/95
           border border-[#2A2F45]
           rounded-3xl

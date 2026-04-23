@@ -764,7 +764,7 @@ useEffect(() => {
 }, [settingsOpen]);
 
  return (
-<section className="w-full md:h-screen h-auto flex flex-col bg-[#090A0A]">
+<section className="w-full md:h-[100dvh] h-auto flex flex-col bg-[#090A0A]">
 
 <div
   onClick={(e) => {

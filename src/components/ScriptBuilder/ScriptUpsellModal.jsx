@@ -32,7 +32,7 @@ export default function ScriptUpsellModal({ open, mode, onClose }) {
       />
 
       {/* Modal */}
-      <div className="fixed z-[9999] left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[92%] max-w-[440px]">
+      <div className="fixed z-[9999] left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[92%] max-w-[440px] max-h-[90dvh] overflow-y-auto rounded-3xl">
         <div
           className="relative rounded-3xl overflow-hidden shadow-2xl"
           style={{ background: "linear-gradient(160deg, #0D0620 0%, #130826 50%, #0B0E1A 100%)" }}
