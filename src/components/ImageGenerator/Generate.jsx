@@ -592,13 +592,9 @@ let refImagesFinal = selected.map((x) => x.url);
 if (style?.defaultReference) {
   refImagesFinal.unshift(style.defaultReference);
 }
-const stylePrompt = IMAGE_STYLES[selectedStyle]?.promptHint ?? "";
-
-const finalPrompt = `
-${prompt.trim()}
-
-${stylePrompt}
-`;
+// Style hint is applied by buildFinalImagePrompt in generator.ts via the `style` param.
+// Do NOT add it here — it would be appended twice.
+const finalPrompt = prompt.trim();
 
 let overrideWidth = null;
 let overrideHeight = null;
