@@ -371,17 +371,17 @@ if (isFree) {
   }
 
 } else {
-  // 💰 PRO PLAN → deduct credits
-  const { error: creditErr } = await supabase.rpc("deduct_credits", {
-    uid,
-    amount: credits,
-  });
+  // 💰 PRO PLAN → verify balance upfront, but don't deduct yet.
+  // Actual deduction happens in runware-image after finish_job_success
+  // so failed/timed-out jobs never consume credits.
+  const { data: profileCredits } = await supabase
+    .from("profiles")
+    .select("credit_balance")
+    .eq("id", uid)
+    .single();
 
-  if (creditErr) {
-    if (creditErr.message?.includes("INSUFFICIENT_CREDITS")) {
-      throw new Error("INSUFFICIENT_CREDITS");
-    }
-    throw creditErr;
+  if ((profileCredits?.credit_balance ?? 0) < credits) {
+    throw new Error("INSUFFICIENT_CREDITS");
   }
 }
 
@@ -465,16 +465,8 @@ const job = await simulateJob({
   input,
 });
 
-// 🔥 AFTER JOB CREATED → log FREE usage
-if (isFree) {
-  const { error: insertErr } = await supabase
-    .from("image_generations")
-    .insert({ user_id: uid });
-
-  if (insertErr) {
-    console.error("Failed to log free generation:", insertErr);
-  }
-}
+// Free usage is logged in runware-image after finish_job_success,
+// so quota is only consumed when the image actually succeeds.
 
 return job;
 }
@@ -505,24 +497,17 @@ const { data: userData, error: uerr } = await supabase.auth.getUser();
 if (uerr || !userData?.user) throw new Error("Must be signed in");
 const uid = userData.user.id;
 
-// 🔒 ATOMIC CREDIT DEDUCTION
-// Only check balance, do NOT deduct
+// Gate: verify balance upfront but do NOT deduct yet.
+// Actual deduction happens in runware-video after confirmed success
+// so failed/timed-out jobs never consume credits.
 const { data: profile } = await supabase
   .from("profiles")
   .select("credit_balance")
   .eq("id", uid)
   .single();
 
-const { error: creditErr } = await supabase.rpc("deduct_credits", {
-  uid,
-  amount: credits,
-});
-
-if (creditErr) {
-  if (creditErr.message?.includes("INSUFFICIENT_CREDITS")) {
-    throw new Error("INSUFFICIENT_CREDITS");
-  }
-  throw creditErr;
+if ((profile?.credit_balance ?? 0) < credits) {
+  throw new Error("INSUFFICIENT_CREDITS");
 }
 
 const isMiniMax = params.toolKey.startsWith("minimax:");

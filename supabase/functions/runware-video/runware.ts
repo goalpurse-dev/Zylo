@@ -3,8 +3,9 @@
 
 type RunwareLaunchArgs = {
   subject: string;
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
+  resolution?: string;
   durationSec: number;
   referenceImages?: string[] | null;
   airTag: string;
@@ -113,19 +114,23 @@ export async function launchRunwareVideo(args: RunwareLaunchArgs): Promise<Runwa
   /* ================= SIZE HANDLING ================= */
 
   const isKling = args.airTag.startsWith("klingai:");
+  const isMiniMax = args.airTag.includes("minimax");
   const hasInputs = safeRefs.length > 0;
 
-  if (isKling) {
+  if (isMiniMax) {
+    // MiniMax uses a resolution string — forward whatever was passed, default 720p
+    task.resolution = args.resolution ?? "720p";
+  } else if (isKling) {
     if (hasInputs) {
-      // 🔥 Kling WITH reference images
-      task.resolution = "720p"; // REQUIRED by Runware
+      // Kling WITH reference images requires resolution string
+      task.resolution = "720p";
     } else {
-      // 🔥 Kling WITHOUT reference images
+      // Kling WITHOUT reference images uses explicit dimensions
       task.width = args.width;
       task.height = args.height;
     }
   } else {
-    // other models
+    // All other models use explicit dimensions
     task.width = args.width;
     task.height = args.height;
   }

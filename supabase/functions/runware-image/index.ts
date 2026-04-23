@@ -25,6 +25,35 @@ const MAX_POLLS = Math.floor(MAX_RUNTIME_MS / POLL_INTERVAL_MS);
 /* ===================== HELPERS ===================== */
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+async function chargeJobCredits(
+  sb: ReturnType<typeof createClient>,
+  jobId: string,
+) {
+  const { data: job } = await sb
+    .from("jobs")
+    .select("user_id, settings")
+    .eq("id", jobId)
+    .single();
+
+  if (!job?.user_id) return;
+
+  const credits = Number(job.settings?.credits ?? 0);
+
+  if (credits > 0) {
+    const { error } = await sb.rpc("deduct_credits", {
+      uid: job.user_id,
+      amount: credits,
+    });
+    if (error) console.error("Credit deduction failed after success:", error);
+  } else {
+    // Free user — log quota usage now that the image actually succeeded
+    const { error } = await sb
+      .from("image_generations")
+      .insert({ user_id: job.user_id });
+    if (error) console.error("Free usage log failed after success:", error);
+  }
+}
+
 function extractImageUrl(obj: any): string | null {
   const d0 = obj?.data?.[0] ?? obj?.data ?? obj ?? {};
   return d0?.imageURL || d0?.outputs?.[0]?.imageURL || null;
@@ -69,15 +98,20 @@ Deno.serve(async (req) => {
     });
   }
 
+  let jobId: string | null = null;
+  let sb: ReturnType<typeof createClient> | null = null;
+
   try {
     const body = await req.json();
     const {
-      jobId,
+      jobId: parsedJobId,
       airTag,
       prompt,
       referenceImages = [],
       settings = {},
     } = body;
+
+    jobId = parsedJobId ?? null;
 
     if (!jobId || !airTag || !prompt) {
       return new Response(
@@ -86,7 +120,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const sb = createClient(SUPABASE_URL, SERVICE_KEY, {
+    sb = createClient(SUPABASE_URL, SERVICE_KEY, {
       auth: { persistSession: false },
     });
 
@@ -155,7 +189,7 @@ Deno.serve(async (req) => {
         p_error: message,
       });
 
-      return new Response(JSON.stringify({ ok: false, error: message }));
+      return new Response(JSON.stringify({ ok: false, error: message }), { status: 500 });
     }
 
     const providerId =
@@ -169,6 +203,7 @@ Deno.serve(async (req) => {
         p_url: immediate,
         p_output: createJson,
       });
+      await chargeJobCredits(sb, jobId);
       return new Response(JSON.stringify({ ok: true, url: immediate }));
     }
 
@@ -205,15 +240,22 @@ Deno.serve(async (req) => {
           p_url: url,
           p_output: pollJson,
         });
-
+        await chargeJobCredits(sb, jobId);
         return new Response(JSON.stringify({ ok: true, url }));
       }
 
       const status = String(pollJson?.status || "").toLowerCase();
 
-      // 🔥 IGNORE THESE (Runware lies)
+      // Runware's timeout error — task is still processing on their end, keep polling
+      const errorCode = pollJson?.errorCode ?? pollJson?.data?.[0]?.errorCode;
+      if (errorCode === "failedTaskTimeout") {
+        console.log("Runware failedTaskTimeout — task still processing, continuing poll");
+        continue;
+      }
+
+      // 🔥 IGNORE THESE (Runware lies about failed status)
       if (status === "failed") {
-        console.log("Ignoring fake failed status");
+        console.log("Ignoring transient failed status");
         continue;
       }
 
@@ -236,17 +278,26 @@ Deno.serve(async (req) => {
       JSON.stringify({
         ok: false,
         error: "Image generation took too long. Please try again.",
-      })
+      }),
+      { status: 504 }
     );
 
   } catch (e) {
     console.error("runware-image failure:", e);
 
+    if (jobId && sb) {
+      await sb.rpc("finish_job_failed", {
+        p_id: jobId,
+        p_error: `Unhandled error: ${e instanceof Error ? e.message : String(e)}`,
+      }).catch((rpcErr) => console.error("finish_job_failed also failed:", rpcErr));
+    }
+
     return new Response(
       JSON.stringify({
         ok: false,
         error: "Image provider temporarily unavailable.",
-      })
+      }),
+      { status: 500 }
     );
   }
 });

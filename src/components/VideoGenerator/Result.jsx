@@ -259,6 +259,7 @@ export default function Result({ results = [] }) {
   const [previewProgress, setPreviewProgress] = useState(0);
   const ppRef = useRef(0);
   const ppRafRef = useRef(null);
+  const ppCreepRef = useRef(null);
 
   /* =============================== FILTER =============================== */
 
@@ -304,32 +305,53 @@ export default function Result({ results = [] }) {
     setPreviewProgress(0);
   }, [activeVideoId]);
 
-  /* smooth preview progress — runs whenever the live activeVideo progress changes */
+  /* smooth preview progress — animates to each new DB value, then creeps forward between updates */
   useEffect(() => {
     if (!activeVideo) return;
+
+    // Clear creep ticker on every update
+    if (ppCreepRef.current) clearInterval(ppCreepRef.current);
+
     if (activeVideo.result_url) {
       if (ppRafRef.current) cancelAnimationFrame(ppRafRef.current);
       ppRef.current = 100;
       setPreviewProgress(100);
       return;
     }
+
     const target = Math.min(99, Math.floor(Number(activeVideo.progress ?? 0)));
-    if (target <= ppRef.current) return;
-    if (ppRafRef.current) cancelAnimationFrame(ppRafRef.current);
-    const startVal = ppRef.current;
-    const startTime = performance.now();
-    const dist = Math.max(1, target - startVal);
-    const duration = Math.max(300, dist * 20);
-    const tick = (now) => {
-      const t = Math.min(1, (now - startTime) / duration);
-      const ease = 1 - Math.pow(1 - t, 3);
-      const next = Math.round(startVal + dist * ease);
-      ppRef.current = next;
-      setPreviewProgress(next);
-      if (t < 1) ppRafRef.current = requestAnimationFrame(tick);
+
+    // Animate to new target
+    const animateTo = (to) => {
+      if (to <= ppRef.current) return;
+      if (ppRafRef.current) cancelAnimationFrame(ppRafRef.current);
+      const startVal = ppRef.current;
+      const startTime = performance.now();
+      const dist = Math.max(1, to - startVal);
+      const duration = Math.max(300, dist * 20);
+      const tick = (now) => {
+        const t = Math.min(1, (now - startTime) / duration);
+        const ease = 1 - Math.pow(1 - t, 3);
+        const next = Math.round(startVal + dist * ease);
+        ppRef.current = next;
+        setPreviewProgress(next);
+        if (t < 1) ppRafRef.current = requestAnimationFrame(tick);
+      };
+      ppRafRef.current = requestAnimationFrame(tick);
     };
-    ppRafRef.current = requestAnimationFrame(tick);
-    return () => { if (ppRafRef.current) cancelAnimationFrame(ppRafRef.current); };
+
+    animateTo(target);
+
+    // Creep: nudge 0.4% every 2s between DB updates so bar is never frozen
+    ppCreepRef.current = setInterval(() => {
+      const ceiling = Math.min(98, target + 2);
+      if (ppRef.current < ceiling) animateTo(ppRef.current + 0.4);
+    }, 2000);
+
+    return () => {
+      if (ppRafRef.current) cancelAnimationFrame(ppRafRef.current);
+      if (ppCreepRef.current) clearInterval(ppCreepRef.current);
+    };
   }, [activeVideo?.progress, activeVideo?.result_url]);
 
   /* =============================== RENDER =============================== */

@@ -47,9 +47,8 @@ const POLL_INTERVAL_MS = 3000;
 const MAX_POLLS = Math.ceil(MAX_RUNTIME_MS / POLL_INTERVAL_MS);
 const MAX_CONSECUTIVE_POLL_ERRORS = 8;
 
-const PROGRESS_MIN = 20;
+const PROGRESS_MIN = 25;
 const PROGRESS_MAX_RUNNING = 95;
-const PROGRESS_UPDATE_EVERY_N_POLLS = 3;
 
 /* ================= HELPERS ================= */
 
@@ -61,8 +60,10 @@ function clamp(n: number, min: number, max: number) {
 
 function computeProgress(startMs: number) {
   const elapsed = Date.now() - startMs;
-  const pct = (elapsed / MAX_RUNTIME_MS) * 100;
-  return Math.floor(clamp(pct, PROGRESS_MIN, PROGRESS_MAX_RUNNING));
+  const ratio = Math.min(1, elapsed / MAX_RUNTIME_MS);
+  // Ease-out quad: fast early, slows toward the end so it never feels stuck
+  const eased = 1 - Math.pow(1 - ratio, 2);
+  return Math.floor(clamp(eased * PROGRESS_MAX_RUNNING + PROGRESS_MIN, PROGRESS_MIN, PROGRESS_MAX_RUNNING));
 }
 
 type SB = ReturnType<typeof createClient>;
@@ -83,6 +84,25 @@ async function safeRpc(
 ) {
   const { error } = await sb.rpc(fn, args);
   if (error) console.error(`[runware-video] RPC ${fn} error:`, error.message);
+}
+
+async function chargeJobCredits(sb: SB, jobId: string) {
+  const { data: job } = await sb
+    .from("jobs")
+    .select("user_id, settings")
+    .eq("id", jobId)
+    .single();
+
+  if (!job?.user_id) return;
+
+  const credits = Number(job.settings?.credits ?? 0);
+  if (credits <= 0) return;
+
+  const { error } = await sb.rpc("deduct_credits", {
+    uid: job.user_id,
+    amount: credits,
+  });
+  if (error) console.error("[runware-video] credit deduction failed after success:", error.message);
 }
 
 /* ================= HANDLER ================= */
@@ -209,7 +229,7 @@ Deno.serve(async (req) => {
           result_url: poll.url,
           charged: true,
         });
-
+        await chargeJobCredits(sb, jobId);
         return ok(req, { ok: true });
       }
 
@@ -229,14 +249,12 @@ Deno.serve(async (req) => {
         }
       }
 
-      // progress update
-      if (i % PROGRESS_UPDATE_EVERY_N_POLLS === 0) {
-        const p = computeProgress(startMs);
-        await safeRpc(sb, "bump_job_progress", {
-          p_id: jobId,
-          p_progress: p,
-        });
-      }
+      // progress update every poll so the frontend never stalls
+      const p = computeProgress(startMs);
+      await safeRpc(sb, "bump_job_progress", {
+        p_id: jobId,
+        p_progress: p,
+      });
     }
 
     /* ================= FINAL FAIL (AFTER 8 MIN) ================= */

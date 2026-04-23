@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
     ? {
         jobId,
         airTag: provider.airTag,
-        prompt: job.input?.subject ?? job.prompt ?? "",
+        prompt: job.prompt ?? job.input?.subject ?? "",
         referenceImages,
         settings: {
           ...(job.settings ?? {}),
@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
     : {
         jobId,
         airTag: provider.airTag,
-        prompt: job.input?.subject ?? job.prompt ?? "",
+        prompt: job.prompt ?? job.input?.subject ?? "",
         width: job.input?.width,
         height: job.input?.height,
         durationSec: job.input?.durationSec,
