@@ -6,54 +6,60 @@ export function useProfileCredits() {
 
   useEffect(() => {
     let mounted = true;
-    let channel;
+    let channel = null;
+    let pollTimer = null;
+    let uid = null;
 
-    (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      // Not logged in → show 0 credits
-      if (!user?.id) {
-        mounted && setCredits(0);
-        return;
-      }
-
-      // Initial fetch
+    const fetchCredits = async () => {
+      if (!uid || !mounted) return;
       const { data } = await supabase
         .from("profiles")
         .select("credit_balance")
-        .eq("id", user.id)
+        .eq("id", uid)
         .single();
-
-      if (mounted) {
-        setCredits(data?.credit_balance ?? 0);
+      if (mounted && data?.credit_balance != null) {
+        setCredits(data.credit_balance);
       }
+    };
 
-      // Realtime updates
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") fetchCredits();
+    };
+
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) { if (mounted) setCredits(0); return; }
+      uid = user.id;
+
+      // Initial fetch
+      await fetchCredits();
+
+      // Realtime — filter in callback so it works without REPLICA IDENTITY FULL
       channel = supabase
-        .channel(`credits_${user.id}`)
+        .channel(`credits_${uid}`)
         .on(
           "postgres_changes",
-          {
-            event: "UPDATE",
-            schema: "public",
-            table: "profiles",
-            filter: `id=eq.${user.id}`,
-          },
+          { event: "UPDATE", schema: "public", table: "profiles" },
           (payload) => {
-            const next = payload?.new?.credit_balance;
-            if (typeof next === "number") {
-              setCredits(next);
-            }
+            if (!mounted || payload.new?.id !== uid) return;
+            const next = payload.new?.credit_balance;
+            if (typeof next === "number") setCredits(next);
           }
         )
         .subscribe();
+
+      // Poll every 10s — catches deductions from Edge Functions that
+      // run under the service role key and may not fire Realtime events
+      pollTimer = setInterval(fetchCredits, 10_000);
+
+      document.addEventListener("visibilitychange", onVisibility);
     })();
 
     return () => {
       mounted = false;
       if (channel) supabase.removeChannel(channel);
+      if (pollTimer) clearInterval(pollTimer);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 

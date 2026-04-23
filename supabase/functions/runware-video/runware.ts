@@ -9,6 +9,7 @@ type RunwareLaunchArgs = {
   durationSec: number;
   referenceImages?: string[] | null;
   airTag: string;
+  withSound?: boolean;
 };
 
 export type RunwareLaunchResult = { jobId: string };
@@ -113,25 +114,36 @@ export async function launchRunwareVideo(args: RunwareLaunchArgs): Promise<Runwa
 
   /* ================= SIZE HANDLING ================= */
 
-  const isKling = args.airTag.startsWith("klingai:");
-  const isMiniMax = args.airTag.includes("minimax");
-  const hasInputs = safeRefs.length > 0;
+  const isKlingPro = args.airTag === "klingai:kling-video@3-pro";
+  const isKling    = args.airTag.startsWith("klingai:");
+  const isMiniMax  = args.airTag.includes("minimax");
+  const hasInputs  = safeRefs.length > 0;
 
   if (isMiniMax) {
-    // MiniMax uses a resolution string — forward whatever was passed, default 720p
+    // MiniMax uses a resolution string
     task.resolution = args.resolution ?? "720p";
+  } else if (isKlingPro) {
+    // Pro WITH ref image: frameImages already set, no resolution/size needed by Runware
+    // Pro WITHOUT ref image: use explicit dimensions passed from generator
+    if (!hasInputs) {
+      task.width  = args.width;
+      task.height = args.height;
+    }
+    // CFGScale required for Kling Pro
+    task.CFGScale = 0.5;
+    // Sound is a Kling Pro provider setting
+    task.providerSettings = { klingai: { sound: args.withSound ?? false } };
   } else if (isKling) {
     if (hasInputs) {
-      // Kling WITH reference images requires resolution string
+      // Kling Standard WITH reference images requires a resolution string
       task.resolution = "720p";
     } else {
-      // Kling WITHOUT reference images uses explicit dimensions
-      task.width = args.width;
+      task.width  = args.width;
       task.height = args.height;
     }
   } else {
     // All other models use explicit dimensions
-    task.width = args.width;
+    task.width  = args.width;
     task.height = args.height;
   }
 

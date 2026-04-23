@@ -148,6 +148,7 @@ Deno.serve(async (req) => {
         height: job.input?.height,
         durationSec: job.input?.durationSec,
         referenceImages,
+        withSound: job.input?.withSound ?? false,
       };
 
       console.log("VIDEO PAYLOAD:", JSON.stringify(payload));

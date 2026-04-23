@@ -21,6 +21,7 @@ export type ToolKey =
 
     /* ---------- VIDEO ---------- */
   | "video:klingaist"
+  | "video:klingpro"
   | "video:miniMaxFast"
   | "video:RunwayGen-4Turbo"
 
@@ -51,6 +52,8 @@ export type ProviderLink = {
   baseResolution?: "720p" | "768p" |"1080p";
   retailMultiplier?: number; // your markup multiplier
   baseCreditsPerSecond?: number; // 🔥 NEW
+
+  soundCreditsPerSecond?: number; // credits/s when sound is enabled
 
   // IMAGE (keep as-is)
   costUSD?: number;
@@ -210,6 +213,21 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     /* =======================================================
                               VIDEO 
      ======================================================= */
+
+ "video:klingpro": {
+  provider: "runware",
+  generator: "KlingAI Video 3.0 Pro",
+  airTag: "klingai:kling-video@3-pro",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-video",
+
+  costPerSecondUSD: 0.112,   // $0.56 / 5s without sound
+  baseResolution: "1080p",
+  retailMultiplier: 2,
+
+  baseCreditsPerSecond: 11,  // no sound: $0.224/s at ~$0.02/credit
+  soundCreditsPerSecond: 17, // with sound: $0.168/s cost → $0.336/s retail
+},
 
  "video:klingaist": {
   provider: "runware",

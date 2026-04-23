@@ -46,13 +46,13 @@ function buildEmail(user) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Pick your creator style</title>
+  <title>40% off Pro — today only</title>
 </head>
 <body style="margin:0;padding:0;background:#0d0d0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#0d0d0f;">
-    8 AI script engines. one for every creator style. which one are you? 👀&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+    we're cutting Pro to €15/mo for the next 48 hours. here's why it's worth it 👇&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0d0f;">
@@ -60,11 +60,11 @@ function buildEmail(user) {
       <td align="center" style="padding:40px 16px 60px;">
 
         <!-- CARD -->
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:580px;background:#16181f;border-radius:24px;border:1px solid rgba(255,255,255,0.07);overflow:hidden;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#16181f;border-radius:24px;border:1px solid rgba(255,255,255,0.07);overflow:hidden;">
 
           <!-- TOP ACCENT BAR -->
           <tr>
-            <td style="height:3px;background:linear-gradient(90deg,#f59e0b,#ec4899,#7A3BFF,#3b82f6,#10b981);"></td>
+            <td style="height:3px;background:linear-gradient(90deg,#7A3BFF,#c077ff,#ff57b2,#c077ff,#7A3BFF);"></td>
           </tr>
 
           <!-- LOGO ROW -->
@@ -78,150 +78,101 @@ function buildEmail(user) {
           <tr>
             <td style="padding:28px 32px 0;">
 
-              <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.12em;color:#a07bff;text-transform:uppercase;">
-                viral script builder · 8 styles
-              </p>
+              <!-- URGENCY BADGE -->
+              <div style="display:inline-block;background:rgba(255,77,109,0.12);border:1px solid rgba(255,77,109,0.3);border-radius:100px;padding:5px 14px;margin-bottom:18px;">
+                <span style="font-size:11px;font-weight:700;color:#ff6b8a;letter-spacing:0.08em;text-transform:uppercase;">⏳ 48-hour offer</span>
+              </div>
 
-              <h1 style="margin:0 0 20px;font-size:28px;font-weight:800;color:#ffffff;line-height:1.25;letter-spacing:-0.5px;">
-                Stop starting from scratch.<br/>
-                <span style="background:linear-gradient(90deg,#f59e0b,#ec4899,#7A3BFF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-                  Pick your style. Get your script.
-                </span>
+              <h1 style="margin:0 0 16px;font-size:30px;font-weight:800;color:#ffffff;line-height:1.2;letter-spacing:-0.5px;">
+                Pro for <span style="background:linear-gradient(90deg,#7A3BFF,#c077ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">€15/mo.</span><br/>Normal price: <span style="color:rgba(255,255,255,0.35);text-decoration:line-through;font-size:22px;">€32</span>
               </h1>
 
-              <p style="margin:0 0 20px;font-size:15px;line-height:1.8;color:rgba(255,255,255,0.65);">
-                Hey ${displayName} — we rebuilt the Viral Script Builder from the ground up.<br/>
-                Instead of a blank box, you now pick from <strong style="color:#fff;">8 tuned AI engines</strong>, each built around a specific creator style. Tell it your idea. Get a full structured script in seconds.
+              <p style="margin:0 0 22px;font-size:15px;line-height:1.8;color:rgba(255,255,255,0.65);">
+                Hey ${displayName} — for the next 48 hours we're running a limited deal on Pro. No code needed, just click below. Here's what you get:
               </p>
 
-              <!-- STYLE GRID -->
-              <p style="margin:0 0 14px;font-size:11px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.3);text-transform:uppercase;">choose your style</p>
-
-              <!-- row 1 -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:8px;">
+              <!-- WHAT'S INCLUDED BOX -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(122,59,255,0.07);border:1px solid rgba(122,59,255,0.2);border-radius:16px;margin-bottom:24px;">
                 <tr>
-                  <td width="49%" style="padding-right:4px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0f14;border:1px solid rgba(148,163,184,0.2);border-radius:14px;overflow:hidden;">
-                      <tr><td style="height:2px;background:rgba(148,163,184,0.6);"></td></tr>
-                      <tr>
-                        <td style="padding:14px 16px;">
-                          <p style="margin:0 0 4px;font-size:18px;">💀</p>
-                          <p style="margin:0 0 3px;font-size:13px;font-weight:700;color:#fff;">Viral Skeleton</p>
-                          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5;">Cinematic 3D prompts · 1 scene + 5 b-rolls</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                  <td width="49%" style="padding-left:4px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0f14;border:1px solid rgba(245,158,11,0.2);border-radius:14px;overflow:hidden;">
-                      <tr><td style="height:2px;background:rgba(245,158,11,0.7);"></td></tr>
-                      <tr>
-                        <td style="padding:14px 16px;">
-                          <p style="margin:0 0 4px;font-size:18px;">💥</p>
-                          <p style="margin:0 0 3px;font-size:13px;font-weight:700;color:#fff;">MrBeast Mode</p>
-                          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5;">Insane stakes · retention hooks · epic energy</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+                  <td style="padding:20px 22px;">
 
-              <!-- row 2 -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:8px;">
-                <tr>
-                  <td width="49%" style="padding-right:4px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0f14;border:1px solid rgba(236,72,153,0.2);border-radius:14px;overflow:hidden;">
-                      <tr><td style="height:2px;background:rgba(236,72,153,0.7);"></td></tr>
+                    <!-- Row -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
                       <tr>
-                        <td style="padding:14px 16px;">
-                          <p style="margin:0 0 4px;font-size:18px;">📱</p>
-                          <p style="margin:0 0 3px;font-size:13px;font-weight:700;color:#fff;">TikTok Viral</p>
-                          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5;">Fast hooks · trend-aware · curiosity-driven</p>
+                        <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.2);border:1px solid rgba(122,59,255,0.35);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">⚡</div></td>
+                        <td style="padding-left:10px;">
+                          <p style="margin:0;font-size:13px;color:#ffffff;font-weight:600;">1,200 credits / month</p>
+                          <p style="margin:2px 0 0;font-size:11px;color:rgba(255,255,255,0.4);">Up to 400 AI images or 60 AI videos</p>
                         </td>
                       </tr>
                     </table>
-                  </td>
-                  <td width="49%" style="padding-left:4px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0f14;border:1px solid rgba(59,130,246,0.2);border-radius:14px;overflow:hidden;">
-                      <tr><td style="height:2px;background:rgba(59,130,246,0.7);"></td></tr>
+
+                    <!-- Row -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
                       <tr>
-                        <td style="padding:14px 16px;">
-                          <p style="margin:0 0 4px;font-size:18px;">🎭</p>
-                          <p style="margin:0 0 3px;font-size:13px;font-weight:700;color:#fff;">Story Arc</p>
-                          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5;">3-act structure · emotional · character-driven</p>
+                        <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.2);border:1px solid rgba(122,59,255,0.35);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🎬</div></td>
+                        <td style="padding-left:10px;">
+                          <p style="margin:0;font-size:13px;color:#ffffff;font-weight:600;">All AI video & image models</p>
+                          <p style="margin:2px 0 0;font-size:11px;color:rgba(255,255,255,0.4);">Including Nano Banana, Kling, MiniMax & more</p>
                         </td>
                       </tr>
                     </table>
-                  </td>
-                </tr>
-              </table>
 
-              <!-- row 3 -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
-                <tr>
-                  <td width="49%" style="padding-right:4px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0f14;border:1px solid rgba(249,115,22,0.2);border-radius:14px;overflow:hidden;">
-                      <tr><td style="height:2px;background:rgba(249,115,22,0.7);"></td></tr>
+                    <!-- Row -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
                       <tr>
-                        <td style="padding:14px 16px;">
-                          <p style="margin:0 0 4px;font-size:18px;">😂</p>
-                          <p style="margin:0 0 3px;font-size:13px;font-weight:700;color:#fff;">Comedy Skit</p>
-                          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5;">Setup · punchline · relatable chaos</p>
+                        <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.2);border:1px solid rgba(122,59,255,0.35);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">✍️</div></td>
+                        <td style="padding-left:10px;">
+                          <p style="margin:0;font-size:13px;color:#ffffff;font-weight:600;">Viral Script Builder — all 8 styles</p>
+                          <p style="margin:2px 0 0;font-size:11px;color:rgba(255,255,255,0.4);">MrBeast Mode, TikTok Viral, Story Arc & more</p>
                         </td>
                       </tr>
                     </table>
-                  </td>
-                  <td width="49%" style="padding-left:4px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0f14;border:1px solid rgba(16,185,129,0.2);border-radius:14px;overflow:hidden;">
-                      <tr><td style="height:2px;background:rgba(16,185,129,0.7);"></td></tr>
+
+                    <!-- Row -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
                       <tr>
-                        <td style="padding:14px 16px;">
-                          <p style="margin:0 0 4px;font-size:18px;">💰</p>
-                          <p style="margin:0 0 3px;font-size:13px;font-weight:700;color:#fff;">Finance Edu</p>
-                          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5;">Authority · data · simple breakdowns</p>
+                        <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.2);border:1px solid rgba(122,59,255,0.35);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🚀</div></td>
+                        <td style="padding-left:10px;">
+                          <p style="margin:0;font-size:13px;color:#ffffff;font-weight:600;">Priority generation queue</p>
+                          <p style="margin:2px 0 0;font-size:11px;color:rgba(255,255,255,0.4);">Your jobs process before free tier users</p>
                         </td>
                       </tr>
                     </table>
-                  </td>
-                </tr>
-              </table>
 
-              <!-- DIVIDER -->
-              <hr style="border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0 0 24px;" />
-
-              <!-- WHAT EACH SCRIPT INCLUDES -->
-              <p style="margin:0 0 16px;font-size:14px;line-height:1.8;color:rgba(255,255,255,0.65);">
-                Every single style spits out the same thing:
-              </p>
-
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(122,59,255,0.06);border:1px solid rgba(122,59,255,0.15);border-radius:14px;margin-bottom:24px;">
-                <tr>
-                  <td style="padding:18px 20px;">
+                    <!-- Row -->
                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td style="padding:5px 0;">
-                          <span style="font-size:13px;color:rgba(255,255,255,0.8);">🪝&nbsp;&nbsp;<strong style="color:#fff;">Viral hook</strong> — written for your platform</span>
+                        <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.2);border:1px solid rgba(122,59,255,0.35);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🖼</div></td>
+                        <td style="padding-left:10px;">
+                          <p style="margin:0;font-size:13px;color:#ffffff;font-weight:600;">Watermark-free exports</p>
+                          <p style="margin:2px 0 0;font-size:11px;color:rgba(255,255,255,0.4);">Post directly — no Zyvo branding</p>
                         </td>
                       </tr>
+                    </table>
+
+                  </td>
+                </tr>
+              </table>
+
+              <!-- PRICE COMPARISON -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#111318;border:1px solid rgba(255,255,255,0.07);border-radius:14px;margin-bottom:24px;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td style="padding:5px 0;">
-                          <span style="font-size:13px;color:rgba(255,255,255,0.8);">🎬&nbsp;&nbsp;<strong style="color:#fff;">Scene-by-scene breakdown</strong> — ready to film</span>
+                        <td>
+                          <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">Original price</p>
+                          <p style="margin:4px 0 0;font-size:22px;font-weight:800;color:rgba(255,255,255,0.3);text-decoration:line-through;">€32/mo</p>
                         </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:5px 0;">
-                          <span style="font-size:13px;color:rgba(255,255,255,0.8);">📸&nbsp;&nbsp;<strong style="color:#fff;">Image & video prompts</strong> — one per scene</span>
+                        <td style="text-align:center;">
+                          <div style="display:inline-block;background:rgba(255,77,109,0.15);border:1px solid rgba(255,77,109,0.3);border-radius:8px;padding:4px 10px;">
+                            <span style="font-size:13px;font-weight:800;color:#FF4D6D;">LIMITED</span>
+                          </div>
                         </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:5px 0;">
-                          <span style="font-size:13px;color:rgba(255,255,255,0.8);">📣&nbsp;&nbsp;<strong style="color:#fff;">CTA that converts</strong> — not a throwaway line</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:5px 0;">
-                          <span style="font-size:13px;color:rgba(255,255,255,0.8);">🔀&nbsp;&nbsp;<strong style="color:#fff;">3 alternate hooks</strong> — A/B test before you post</span>
+                        <td style="text-align:right;">
+                          <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">Today only</p>
+                          <p style="margin:4px 0 0;font-size:22px;font-weight:800;color:#ffffff;">€15<span style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.4);">/mo</span></p>
                         </td>
                       </tr>
                     </table>
@@ -229,25 +180,25 @@ function buildEmail(user) {
                 </tr>
               </table>
 
-              <p style="margin:0 0 28px;font-size:15px;line-height:1.8;color:rgba(255,255,255,0.65);">
-                The AI doesn't just write words — it understands the <em>format</em> of what makes each style work. MrBeast Mode knows escalation. Story Arc knows the emotional beat. Comedy Skit knows the punchline timing.<br/><br/>
-                Pick your style. Type your idea. Get a script.
+              <!-- SOCIAL PROOF -->
+              <p style="margin:0 0 24px;font-size:14px;line-height:1.8;color:rgba(255,255,255,0.55);">
+                This offer expires in 48 hours and won't come back. If you've been thinking about upgrading, this is the moment. Cancel anytime — no questions asked.
               </p>
 
               <!-- CTA BUTTON -->
-              <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
+              <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;width:100%;">
                 <tr>
-                  <td style="border-radius:14px;background:linear-gradient(135deg,#7A3BFF,#c044ff);box-shadow:0 8px 28px rgba(122,59,255,0.45);">
-                    <a href="https://tryzyvo.com/workspace/viral-script"
-                       style="display:inline-block;padding:16px 36px;font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.3px;">
-                      Pick my style →
+                  <td style="border-radius:14px;background:linear-gradient(135deg,#7A3BFF,#9d4eff);box-shadow:0 8px 28px rgba(122,59,255,0.45);">
+                    <a href="https://tryzyvo.com/workspace/pricing"
+                       style="display:block;text-align:center;padding:17px 32px;font-size:17px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.3px;">
+                      Get Pro for €15/mo →
                     </a>
                   </td>
                 </tr>
               </table>
 
-              <p style="margin:0 0 28px;font-size:12px;color:rgba(255,255,255,0.25);">
-                uses credits · free credits included on every plan
+              <p style="margin:0 0 28px;text-align:center;font-size:12px;color:rgba(255,255,255,0.25);">
+                Instant access · Cancel anytime · Offer ends in 48h
               </p>
 
             </td>
@@ -287,7 +238,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "which creator are you? 👀",
+      subject: "40% off Pro — 48 hours only ⚡",
       html: buildEmail(user),
     });
 
@@ -364,7 +315,7 @@ export default async function handler(req, res) {
           .from("profiles")
           .update({
             last_email_sent_at: new Date().toISOString(),
-            last_email_type: "viral_styles_drop",
+            last_email_type: "pro_40off_48h",
           })
           .eq("email", user.email);
       } else {

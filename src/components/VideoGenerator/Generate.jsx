@@ -21,7 +21,7 @@ import { supabase } from "../../lib/supabaseClient";
 import {watchJob } from "../../lib/jobs";
 import { KEY_LINKS } from "../../lib/providers";
 import { generateVideoFromUI } from "../../lib/video-generator/generator";
-import { calculateVideoCredits } from "../../lib/video-generator/videoPricing";
+import { calculateVideoCredits, calculateVideoCreditsRaw } from "../../lib/video-generator/videoPricing";
 import VideoTemplate from "../../components/video-templates/VideoTemplate";
 import { createPortal } from "react-dom";
 import { useMemo } from "react";
@@ -84,16 +84,25 @@ const selectedModel = MODELS[selectedModelKey];
 
   const [selectedSize, setSelectedSize] = useState("16:9");
   const [selectedDuration, setSelectedDuration] = useState("5s");
- const [selectedResolution, setSelectedResolution] = useState("720p");
+  const [selectedResolution, setSelectedResolution] = useState("720p");
 
-const totalCredits = useMemo(() =>
-  calculateVideoCredits(
-    selectedModelKey,
-    selectedDuration,
-    selectedResolution
-  ),
-  [selectedModelKey, selectedDuration, selectedResolution]
-);
+  // Kling Pro specific state
+  const [klingProDuration, setKlingProDuration] = useState(5);
+  const [withSound, setWithSound] = useState(false);
+
+  const isKlingPro = selectedModelKey === "video:klingpro";
+
+  // For Kling Pro: resolution is locked by aspect ratio
+  const klingProResolution = isKlingPro
+    ? (selectedModel.sizeResolutions?.[selectedSize] ?? "1080p")
+    : null;
+
+const totalCredits = useMemo(() => {
+  if (isKlingPro) {
+    return calculateVideoCreditsRaw("video:klingpro", klingProDuration, withSound);
+  }
+  return calculateVideoCredits(selectedModelKey, selectedDuration, selectedResolution);
+}, [isKlingPro, klingProDuration, withSound, selectedModelKey, selectedDuration, selectedResolution]);
 
 const maxRefImages = selectedModel.maxReferenceImages;
 const canAddImages = maxRefImages > 0;
@@ -173,7 +182,7 @@ const handleUpload = async (e) => {
 
 
   const isAnyModalOpen = openModel || openSize || openDuration;
-   const isKling = selectedModelKey === "video:klingaist";
+const isKling = selectedModelKey === "video:klingaist";
 const hasRefs = selected.length > 0;
 
 const imageRequiredForModel =
@@ -183,7 +192,7 @@ const imageRequiredForModel =
 const missingRequiredImage = imageRequiredForModel && !hasRefs;
 
 
-const disableSizeSelector = isKling && hasRefs;
+const disableSizeSelector = (isKling || isKlingPro) && hasRefs;
 
 
 
@@ -290,9 +299,10 @@ useEffect(() => {
       modelKey: selectedModelKey,
       prompt: prompt.trim(),
       size: selectedSize,
-      duration: selectedDuration,
-      resolution: selectedResolution,
+      duration: isKlingPro ? `${klingProDuration}s` : selectedDuration,
+      resolution: isKlingPro ? (klingProResolution ?? "1080p") : selectedResolution,
       refImages: selected.map((img) => img.url),
+      withSound: isKlingPro ? withSound : false,
     });
 
     watchJob(job.id, () => {});
@@ -604,7 +614,7 @@ className={`
 </button>
 
       {/* SETTINGS */}
-      <div ref={controlsRef} className="grid grid-cols-2 gap-2 relative z-50 mt-2">
+      <div ref={controlsRef} className={`grid gap-2 relative z-50 mt-2 ${isKlingPro ? "grid-cols-1" : "grid-cols-2"}`}>
 
 
       
@@ -669,7 +679,28 @@ className={`
 
 
 
-        {/* DURATION */}
+        {/* DURATION — slider for Kling Pro, dropdown for everything else */}
+        {isKlingPro ? (
+          <div className="rounded-xl border border-white/10 bg-[#16181A] px-4 py-3 flex flex-col gap-1">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs text-white/50">Duration</p>
+              <p className="text-sm text-white font-medium">{klingProDuration}s</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-white/20 shrink-0">3</span>
+              <input
+                type="range"
+                min={3}
+                max={15}
+                step={1}
+                value={klingProDuration}
+                onChange={(e) => setKlingProDuration(Number(e.target.value))}
+                className="flex-1 accent-[#7A3BFF] cursor-pointer h-1"
+              />
+              <span className="text-[10px] text-white/20 shrink-0">15</span>
+            </div>
+          </div>
+        ) : (
         <button
           onClick={() => {
             setOpenDuration(!openDuration);
@@ -706,6 +737,7 @@ className={`
             />
           </div>
         </button>
+        )}
 
 {openModel &&
   createPortal(
@@ -832,13 +864,21 @@ className={`
       </div>
 
       {/* RESOLUTION */}
-<div className="flex flex-col  gap-2 mt-2 ">
+<div className="flex flex-col gap-2 mt-2">
   <p className="text-xs text-white/50">Resolution</p>
 
+  {isKlingPro ? (
+    // Locked resolution determined by aspect ratio
+    <div className="flex items-center gap-2">
+      <span className="px-4 py-2 rounded-xl text-sm font-medium bg-[#7A3BFF] text-white border border-[#7A3BFF] shadow-[0_0_16px_rgba(122,59,255,0.5)]">
+        {klingProResolution}
+      </span>
+      <span className="text-[11px] text-white/30">auto · set by aspect ratio</span>
+    </div>
+  ) : (
   <div className="flex gap-2 flex-wrap">
     {selectedModel.supportedResolutions.map((resKey) => {
       const isActive = selectedResolution === resKey;
-
       return (
         <button
           key={resKey}
@@ -846,10 +886,9 @@ className={`
           className={`
             px-4 py-2 rounded-xl text-sm font-medium
             border transition-all duration-200
-            ${
-             isActive
-          ? "bg-[#7A3BFF] text-white border-[#7A3BFF] shadow-[0_0_16px_rgba(122,59,255,0.5)]"
-          : "bg-[#1A1D2B] border-[#2A2F45] text-[#E6E8EE] hover:border-[#7A3BFF]/40 hover:shadow-[0_0_8px_rgba(122,59,255,0.2)] shadow-[0_0_3px_rgba(122,59,255,0.2)] "
+            ${isActive
+              ? "bg-[#7A3BFF] text-white border-[#7A3BFF] shadow-[0_0_16px_rgba(122,59,255,0.5)]"
+              : "bg-[#1A1D2B] border-[#2A2F45] text-[#E6E8EE] hover:border-[#7A3BFF]/40 hover:shadow-[0_0_8px_rgba(122,59,255,0.2)] shadow-[0_0_3px_rgba(122,59,255,0.2)]"
             }
           `}
         >
@@ -858,7 +897,34 @@ className={`
       );
     })}
   </div>
+  )}
 </div>
+
+{/* SOUND TOGGLE — Kling Pro only */}
+{isKlingPro && (
+  <button
+    onClick={() => setWithSound((v) => !v)}
+    className={`
+      flex items-center justify-between w-full mt-1
+      rounded-xl border px-4 py-3 transition-all duration-200
+      ${withSound
+        ? "border-[#7A3BFF]/60 bg-[#7A3BFF]/10"
+        : "border-white/10 bg-[#16181A] hover:border-[#7A3BFF]/30"
+      }
+    `}
+  >
+    <div className="flex items-center gap-2">
+      <span className="text-base">🔊</span>
+      <div className="text-left">
+        <p className="text-sm text-white font-medium">AI Sound</p>
+        <p className="text-[11px] text-white/40">{withSound ? "+6 credits/s" : "Off — saves credits"}</p>
+      </div>
+    </div>
+    <div className={`w-9 h-5 rounded-full transition-all duration-200 flex items-center px-0.5 ${withSound ? "bg-[#7A3BFF]" : "bg-white/10"}`}>
+      <div className={`w-4 h-4 rounded-full bg-white transition-all duration-200 ${withSound ? "translate-x-4" : "translate-x-0"}`} />
+    </div>
+  </button>
+)}
 
  {/* GENERATE BUTTON */}
 <button

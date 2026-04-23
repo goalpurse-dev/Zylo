@@ -477,11 +477,12 @@ export async function createVideoJobSimple(params: {
   toolKey: string;
   width?: number;
   height?: number;
-  resolution?: string; // ✅ ADD THIS
+  resolution?: string;
   durationSec: number;
   initImageUrls?: string[];
   calculatedCredits: number;
   project_id?: string | null;
+  withSound?: boolean;
 }) {
   const link = getProviderLink(params.toolKey);
 if (!link) throw new Error(`Video provider not configured`);
@@ -518,6 +519,7 @@ const input: any = {
   subject: params.subject.trim(),
   durationSec: params.durationSec,
   ref_images: params.initImageUrls ?? [],
+  withSound: params.withSound ?? false,
 };
 
 // ✅ MiniMax

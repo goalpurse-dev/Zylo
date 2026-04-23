@@ -6,6 +6,20 @@ const LOGOS = {
 
 export const MODELS = {
 
+  "video:klingpro": {
+    label: "KlingAI Video 3.0 Pro",
+    description: "Best cinematic + realistic motion. Great for storytelling, skeleton-style POV content, and premium viral videos. Supports AI sound and ultra-sharp 1080p/1440p output.",
+    logo: LOGOS.kling,
+    traits: ["Cinematic", "Realistic Motion", "🔊 Sound", "Premium"],
+    supportedSizes: ["16:9", "9:16", "1:1"],
+    supportedDurations: ["3s", "5s", "8s", "10s", "15s"],
+    supportedResolutions: ["1080p"],
+    maxReferenceImages: 1,
+    durationSlider: { min: 3, max: 15 },
+    hasSound: true,
+    // resolution is locked per size — not user-selectable
+    sizeResolutions: { "16:9": "1080p", "9:16": "1080p", "1:1": "1440p" },
+  },
 
    "video:klingaist": {
     label: "KlingAI Video 3.0 Standard",

@@ -134,6 +134,7 @@ Deno.serve(async (req) => {
       durationSec,
       referenceImages,
       airTag,
+      withSound,
     } = body ?? {};
 
     currentJobId = jobId ?? null;
@@ -162,6 +163,7 @@ Deno.serve(async (req) => {
       durationSec: Number(durationSec ?? 5),
       referenceImages: Array.isArray(referenceImages) ? referenceImages : [],
       airTag: String(airTag),
+      withSound: !!withSound,
     };
 
     if (isMiniMax) {
