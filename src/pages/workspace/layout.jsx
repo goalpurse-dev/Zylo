@@ -45,8 +45,9 @@ export default function WorkspaceLayout() {
       const key = `zyvo_workspace_welcome:${user.id}`;
       if (localStorage.getItem(key)) return;
 
+      // Don't set the key yet — only mark as seen when the user actually dismisses it.
+      // This way a page reload before interaction will show it again.
       setShowWelcome(true);
-      localStorage.setItem(key, "1");
     };
 
     run();
@@ -156,9 +157,14 @@ useEffect(() => {
           <Outlet />
         </div>
 
-        {/* WELCOME SCREEN */}
+        {/* WELCOME SCREEN — only dismissed by user action, never by page reload */}
         {showWelcome && (
-          <WelcomeScreen onClose={() => setShowWelcome(false)} />
+          <WelcomeScreen onClose={async () => {
+            const { data } = await supabase.auth.getUser();
+            const uid = data?.user?.id;
+            if (uid) localStorage.setItem(`zyvo_workspace_welcome:${uid}`, "1");
+            setShowWelcome(false);
+          }} />
         )}
 
         {/* MOBILE NAV */}
