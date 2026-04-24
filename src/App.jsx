@@ -129,6 +129,8 @@ const FreeAIImageGenerator = lazy(() => import("./app/blog/imagegenerator/free-a
 const FreeViralAITool = lazy(() => import("./app/blog/imagegenerator/free-viral-ai-tool.jsx"));
 const HowToWriteAViralScript = lazy(() => import("./app/blog/imagegenerator/how-to-write-a-viral-script.jsx"));
 const AIScriptGeneratorViralVideos = lazy(() => import("./app/blog/imagegenerator/ai-script-generator-viral-videos.jsx"));
+const AIVideoGeneratorTikTokReels = lazy(() => import("./app/blog/imagegenerator/ai-video-generator-tiktok-reels.jsx"));
+const HowToCreateViralAIVideos = lazy(() => import("./app/blog/imagegenerator/how-to-create-viral-ai-videos.jsx"));
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -389,6 +391,8 @@ return (
         <Route path="/blog/free-viral-ai-tool" element={<FreeViralAITool/>} />
         <Route path="/blog/how-to-write-a-viral-script" element={<HowToWriteAViralScript/>} />
         <Route path="/blog/ai-script-generator-viral-videos" element={<AIScriptGeneratorViralVideos/>} />
+        <Route path="/blog/ai-video-generator-tiktok-reels" element={<AIVideoGeneratorTikTokReels/>} />
+        <Route path="/blog/how-to-create-viral-ai-videos" element={<HowToCreateViralAIVideos/>} />
 
 
 

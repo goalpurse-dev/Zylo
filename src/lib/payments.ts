@@ -92,18 +92,8 @@ export async function openBillingPortal(options?: {
   const data = await res.json();
   if (!res.ok) {
     console.error("Portal error:", data);
-    alert(`Portal error: ${data?.error || "unknown"}`);
     return;
   }
-
-  // Debug once to confirm config wiring
-  console.log("PORTAL DEBUG:", data.debug);
-  alert(`config=${data?.debug?.config}
-deepLinked=${data?.debug?.deepLinked}
-subProductId=${data?.debug?.subProductId}
-subPriceId=${data?.debug?.subPriceId}
-allowedProducts=${(data?.debug?.allowedProducts || []).join(", ")}
-allowedPrices=${(data?.debug?.allowedPrices || []).join(", ")}`);
 
   location.href = data.url;
 }
