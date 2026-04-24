@@ -56,7 +56,7 @@ export default function WelcomeModal({ onClose }) {
             <div className="inline-flex items-center gap-2 bg-[#7A3BFF]/20 border border-[#7A3BFF]/40 rounded-2xl px-5 py-3 mb-6">
               <span className="text-2xl">⚡</span>
               <div className="text-left">
-                <div className="text-white font-bold text-lg leading-tight">10 free images to start</div>
+                <div className="text-white font-bold text-lg leading-tight">5 free images to start</div>
                 <div className="text-white/50 text-xs">resets every month · no card needed</div>
               </div>
             </div>

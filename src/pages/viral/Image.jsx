@@ -356,7 +356,9 @@ useEffect(() => {
         /* 📱 MOBILE — stacked, let workspace-scroll handle scrolling */
         <div className="flex flex-col px-3 pt-3 pb-[220px] space-y-3">
           {generatePanel}
-          {resultPanel}
+          <div className="md:pt-24 lg:pt-0">
+            {resultPanel}
+          </div>
         </div>
       )}
 

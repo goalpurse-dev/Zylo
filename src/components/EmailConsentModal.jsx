@@ -172,7 +172,7 @@ export default function OnboardingModal({ user, onComplete }) {
 
         <div className={`w-full ${step === 4 ? "max-w-5xl" : "max-w-lg"}`} key={step} style={{ animation: "fadeSlideUp 0.35s ease forwards" }}>
 
-          <Steps current={step} total={4} />
+          <Steps current={step} total={3} />
 
           {/* ── STEP 1 ───────────────────────────────────── */}
           {step === 1 && (
@@ -222,7 +222,7 @@ export default function OnboardingModal({ user, onComplete }) {
                 ← Back
               </button>
               <div className="text-center mb-8">
-                <div className="text-xs font-semibold uppercase tracking-widest text-[#7A3BFF] mb-3">Step 3 of 4</div>
+                <div className="text-xs font-semibold uppercase tracking-widest text-[#7A3BFF] mb-3">Step 3 of 3</div>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
                   Stay ahead of the curve
                 </h2>
@@ -251,12 +251,17 @@ export default function OnboardingModal({ user, onComplete }) {
                 </div>
               </div>
 
+              {/* Step 4 (pricing) is A/B tested separately — for now finish directly */}
               <button
-                onClick={next}
-                className="w-full py-3.5 rounded-2xl font-semibold text-white text-sm transition hover:brightness-110 active:scale-[0.98]"
+                onClick={async () => {
+                  const success = await handleFinish()
+                  if (success) window.location.href = "/workspace/home"
+                }}
+                disabled={loading}
+                className="w-full py-3.5 rounded-2xl font-semibold text-white text-sm transition hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
                 style={{ background: "linear-gradient(135deg,#7A3BFF,#9D6BFF)", boxShadow: "0 4px 20px rgba(122,59,255,0.4)" }}
               >
-                Continue →
+                {loading ? "Getting started…" : "Start creating →"}
               </button>
             </>
           )}
@@ -420,7 +425,7 @@ export default function OnboardingModal({ user, onComplete }) {
                 </div>
                 <div className="flex items-center gap-1.5 text-[12px] text-white/30">
                   <svg className="w-3 h-3 text-[#7A3BFF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
-                  <span>10 free image generations · No credit card needed</span>
+                  <span>5 free image generations · No credit card needed</span>
                 </div>
               </div>
 

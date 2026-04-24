@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const FREE_LIMIT = 10;
+const FREE_LIMIT = 5;
 
 export default function ProgressToast({ remaining, onClose, duration = 5000 }) {
   const navigate = useNavigate();
@@ -13,21 +13,14 @@ export default function ProgressToast({ remaining, onClose, duration = 5000 }) {
     return () => clearTimeout(t);
   }, [duration, onClose, remaining]);
 
-  // Purple/pink palette — no orange
-  let accentColor = "#7A3BFF";   // purple — normal
+  let accentColor = "#7A3BFF";
   let glowColor   = "rgba(122,59,255,0.25)";
   let badge       = null;
   let message     = "";
   let showUpgrade = false;
 
-  if (remaining >= 4) {
-    message = `Nice! ${remaining} free images left this month.`;
-  } else if (remaining === 3) {
-    accentColor = "#9D6BFF";
-    glowColor   = "rgba(157,107,255,0.3)";
-    badge       = "Heads up";
-    message     = `3 free images left this month.`;
-    showUpgrade = true;
+  if (remaining >= 3) {
+    message = `${remaining} free images left this month.`;
   } else if (remaining === 2) {
     accentColor = "#C084FC";
     glowColor   = "rgba(192,132,252,0.3)";

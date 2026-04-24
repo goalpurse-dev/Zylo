@@ -107,7 +107,7 @@ const FAQS = [
   { q: "What can I create with Zyvo?",
     a: "Scroll-stopping AI images in 20+ styles, viral short-form videos, image-to-video, and AI-powered viral scripts with image & video prompts per scene — all export-ready, no watermark." },
   { q: "Is there a free plan?",
-    a: "Yes — sign up free and get 10 image generations every month. No card required. Upgrade anytime you want more." },
+    a: "Yes — sign up free and get 5 image generations to try Zyvo. No card required. Upgrade anytime you want more." },
 ];
 
 const TESTIMONIALS = [
@@ -695,7 +695,7 @@ export default function Pricing() {
         {/* ── Free + Enterprise ─────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12 pricing-section">
           {[
-            { label: "Free", price: fmt(0, currency), sub: "10 image generations / month",
+            { label: "Free", price: fmt(0, currency), sub: "5 image generations to start",
               desc: "Try Zyvo with monthly free credits. No card required.", cta: "Try for free", to: "/signup" },
             { label: "Enterprise", price: "Custom", sub: "For teams and organizations",
               desc: "SSO & roles, unlimited workspaces, custom models, SLAs and priority support.", cta: "Contact sales", to: "/support/contact" },

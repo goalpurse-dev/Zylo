@@ -11,6 +11,7 @@ import { IMAGE_STYLES } from "../../lib/image-generator/styles";
 import { ChevronRight, Folder, VideoIcon } from "lucide-react";
 import Toast from "../../components/ImageGenerator/Toast";
 import ProgressToast from "../../components/ImageGenerator/ProgressToast";
+import FirstGenModal from "../../components/ImageGenerator/FirstGenModal";
 import LimitReachedToast from "../../components/ImageGenerator/LimitReachedToast";
 import GuestGenerateModal from "../../components/ImageGenerator/GuestGenerateModal";
 import { IMAGE_SIZES } from "../../lib/image-generator/sizes";
@@ -396,6 +397,8 @@ const [errorToast, setErrorToast] = useState(null);
 const location = useLocation();
 const navigate = useNavigate();
 const [progressToast, setProgressToast] = useState(null);
+const [firstGenModal, setFirstGenModal] = useState(null); // imageUrl | null
+const firstGenJobRef = useRef(null); // tracks job ID if this is user's first generation
 const [settingsOpen, setSettingsOpen] = useState(false);
 const [activeMenu, setActiveMenu] = useState(null); 
 const [limitToastOpen, setLimitToastOpen] = useState(false);
@@ -647,12 +650,26 @@ watchJob(job.id, (updatedJob) => {
       "The AI provider rejected this prompt."
     );
   }
+  // Show first-gen upsell modal — only for the job flagged as user's first generation
+  if (
+    updatedJob.status === "succeeded" &&
+    updatedJob.result_url &&
+    firstGenJobRef.current === updatedJob.id
+  ) {
+    firstGenJobRef.current = null; // clear so it only fires once
+    setTimeout(() => setFirstGenModal(updatedJob.result_url), 800);
+  }
 });
       // 🔥 decrement UI counter
  if (freeRemaining !== null && freeRemaining > 0) {
   const newRemaining = freeRemaining - 1;
-  setFreeRemaining(newRemaining);
 
+  // If this is their very first generation (was at 5), flag the job for the upsell modal
+  if (freeRemaining === 5 && planCode === "free") {
+    firstGenJobRef.current = job.id;
+  }
+
+  setFreeRemaining(newRemaining);
   if (newRemaining >= 0) {
     setProgressToast(newRemaining);
   }
@@ -707,10 +724,21 @@ useEffect(() => {
 
     if (code === "free") {
       setSelectedModelKey("image:flux.base");
-      if (!eligResult.error && eligResult.data) {
-        setFreeRemaining(eligResult.data.remaining);
-        if (eligResult.data.reset_at) setResetAt(eligResult.data.reset_at);
-      }
+
+      // Count directly from jobs table — account-based, accurate across all devices.
+      // image_generations table may lag; jobs.succeeded is the ground truth.
+      const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const { count: usedCount } = await supabase
+        .from("jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", currentUser.id)
+        .eq("type", "image")
+        .eq("status", "succeeded")
+        .gte("created_at", since);
+
+      const remaining = Math.max(0, 5 - (usedCount ?? 0));
+      setFreeRemaining(remaining);
+      if (remaining === 0) setLimitToastOpen(true);
     }
   };
 
@@ -919,7 +947,7 @@ className={`
 
 {freeRemaining > 0 ? (
   <span className={freeRemaining <= 1 ? "text-[#E879F9]" : freeRemaining <= 3 ? "text-[#C084FC]" : "text-white/40"}>
-    {freeRemaining} / 10 free this month
+    {freeRemaining} / 5 free this month
   </span>
 ) : (
   <>
@@ -1452,6 +1480,13 @@ md:group-hover:brightness-110
   <LimitReachedToast
     resetAt={resetAt}
     onClose={() => setLimitToastOpen(false)}
+  />
+)}
+
+{firstGenModal && (
+  <FirstGenModal
+    imageUrl={firstGenModal}
+    onClose={() => setFirstGenModal(null)}
   />
 )}
 

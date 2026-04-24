@@ -37,20 +37,31 @@ async function chargeJobCredits(
 
   if (!job?.user_id) return;
 
-  const credits = Number(job.settings?.credits ?? 0);
+  // Determine plan — check profile, not credits (flux.base has credits:1 but free users still use it)
+  const { data: profile } = await sb
+    .from("profiles")
+    .select("plan_code")
+    .eq("id", job.user_id)
+    .single();
 
-  if (credits > 0) {
-    const { error } = await sb.rpc("deduct_credits", {
-      uid: job.user_id,
-      amount: credits,
-    });
-    if (error) console.error("Credit deduction failed after success:", error);
-  } else {
-    // Free user — log quota usage now that the image actually succeeded
+  const isFree = (profile?.plan_code || "free").toLowerCase() === "free";
+
+  if (isFree) {
+    // Free user — log quota usage so cross-device remaining count stays accurate
     const { error } = await sb
       .from("image_generations")
       .insert({ user_id: job.user_id });
     if (error) console.error("Free usage log failed after success:", error);
+  } else {
+    // Paid user — deduct credits
+    const credits = Number(job.settings?.credits ?? 0);
+    if (credits > 0) {
+      const { error } = await sb.rpc("deduct_credits", {
+        uid: job.user_id,
+        amount: credits,
+      });
+      if (error) console.error("Credit deduction failed after success:", error);
+    }
   }
 }
 

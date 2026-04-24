@@ -46,7 +46,7 @@ export default function GuestGenerateModal({ open, onClose, onSignup }) {
               Start generating for free
             </h2>
             <p className="text-white/50 text-sm mb-6">
-              Create an account and get 10 free AI image generations — no card needed.
+              Create an account and get 5 free AI image generations — no card needed.
             </p>
 
             {/* Free badge */}

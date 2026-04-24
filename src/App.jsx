@@ -204,13 +204,13 @@ const [showOnboarding, setShowOnboarding] = React.useState(false);
 const [showWelcomeNotif, setShowWelcomeNotif] = React.useState(false);
 const [showWelcomeModal, setShowWelcomeModal] = React.useState(false);
 
-// Show welcome modal if flag was set before page refresh
-React.useEffect(() => {
-  if (localStorage.getItem("zyvo_show_welcome") === "1") {
-    setShowWelcomeModal(true);
-    localStorage.removeItem("zyvo_show_welcome");
-  }
-}, []);
+// WelcomeModal via zyvo_show_welcome flag disabled — WelcomeScreen in layout.jsx handles this
+// React.useEffect(() => {
+//   if (localStorage.getItem("zyvo_show_welcome") === "1") {
+//     setShowWelcomeModal(true);
+//     localStorage.removeItem("zyvo_show_welcome");
+//   }
+// }, []);
 
 React.useEffect(() => {
   if (!user) return;
@@ -225,8 +225,9 @@ React.useEffect(() => {
   if (!error && data) {
     setProfile(data);
 
-    // 🔥 THIS CONTROLS MODAL
-  setShowOnboarding(!data.onboarding_completed);
+    // 🔥 THIS CONTROLS MODAL — set to true to re-enable onboarding
+    // setShowOnboarding(!data.onboarding_completed);
+    setShowOnboarding(false);
   }
 };
 
@@ -300,9 +301,8 @@ return (
 
   {!hideNav && <Navbar />}
 
-{showWelcomeModal && (
-  <WelcomeModal onClose={() => setShowWelcomeModal(false)} />
-)}
+{/* WelcomeModal disabled — WelcomeScreen in layout.jsx handles new user welcome */}
+{/* {showWelcomeModal && <WelcomeModal onClose={() => setShowWelcomeModal(false)} />} */}
 
     <main className={mainClass}>
    <Suspense fallback={

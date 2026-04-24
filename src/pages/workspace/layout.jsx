@@ -5,6 +5,7 @@ import ToolShell from "../../components/workspace/toolshell.jsx";
 import TopRow from "../../components/workspace/toprow.jsx";
 import TopPromoBanner from "../../components/workspace/TopPromoBanner";
 import MobileBottomNav from "../../components/workspace/MobileBottomNav";
+import WelcomeScreen from "../../components/WelcomeScreen";
 
 
 export default function WorkspaceLayout() {
@@ -46,10 +47,6 @@ export default function WorkspaceLayout() {
 
       setShowWelcome(true);
       localStorage.setItem(key, "1");
-
-      setTimeout(() => {
-        setShowWelcome(false);
-      }, 25000);
     };
 
     run();
@@ -159,25 +156,9 @@ useEffect(() => {
           <Outlet />
         </div>
 
-        {/* WELCOME TOAST — desktop only */}
+        {/* WELCOME SCREEN */}
         {showWelcome && (
-          <div className="hidden lg:block fixed bottom-6 right-6 z-[9999]">
-            <div className="flex items-start gap-4 max-w-sm rounded-2xl border border-[#7A3BFF]/30 bg-[#0B0E1A]/80 backdrop-blur-xl px-5 py-4">
-              <img
-                src="/assets/ai/robot.webp"
-                className="w-10 h-10 rounded-full"
-              />
-              <div>
-                <div className="text-white font-semibold text-sm">
-                  Zyvo AI
-                </div>
-                <div className="text-white/70 text-sm mt-1">
-                  You’ve got 10 free images this month. Let’s create!
-                </div>
-              </div>
-              <button onClick={() => setShowWelcome(false)} className="text-white/40 hover:text-white transition text-sm">✕</button>
-            </div>
-          </div>
+          <WelcomeScreen onClose={() => setShowWelcome(false)} />
         )}
 
         {/* MOBILE NAV */}

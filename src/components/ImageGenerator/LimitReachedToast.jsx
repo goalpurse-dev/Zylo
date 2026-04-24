@@ -62,7 +62,7 @@ export default function LimitReachedToast({ resetAt, onClose }) {
             <div className="mb-4">
               <div className="flex justify-between items-center mb-1.5">
                 <span className="text-xs text-white/40">Free generations used</span>
-                <span className="text-xs font-bold text-white tabular-nums">10 / 10</span>
+                <span className="text-xs font-bold text-white tabular-nums">5 / 5</span>
               </div>
               <div className="h-1.5 w-full bg-white/[0.07] rounded-full overflow-hidden">
                 <div
@@ -74,7 +74,7 @@ export default function LimitReachedToast({ resetAt, onClose }) {
 
             {/* Message */}
             <p className="text-white/60 text-sm leading-relaxed mb-4">
-              You've used all <span className="text-white font-semibold">10 free generations</span> this month.
+              You've used all <span className="text-white font-semibold">5 free generations</span> this month.
               Upgrade to keep creating viral content.
             </p>
 

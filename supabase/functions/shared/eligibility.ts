@@ -12,7 +12,7 @@ export type EligibilityResult = {
   reason?: string;
 };
 
-const FREE_LIMIT = 10;
+const FREE_LIMIT = 5;
 const WINDOW_DAYS = 30;
 
 export async function getPlanCode(supabase: any, userId: string): Promise<string> {
@@ -40,13 +40,15 @@ export async function checkWeeklyFreeEligibility(supabase: any, userId: string):
     };
   }
 
-  // Rolling 7-day window: count generations since (now - 7 days)
+  // Count from jobs table — single source of truth, accurate across all devices.
   const sinceIso = new Date(Date.now() - WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
   const { count, error: countError } = await supabase
-    .from("image_generations")
+    .from("jobs")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
+    .eq("type", "image")
+    .eq("status", "succeeded")
     .gte("created_at", sinceIso);
 
   if (countError) throw new Error(countError.message);
@@ -66,9 +68,11 @@ export async function checkWeeklyFreeEligibility(supabase: any, userId: string):
 
   // Blocked: compute reset time = when the oldest of the last 3 becomes > 7 days old
   const { data: rows, error: rowsError } = await supabase
-    .from("image_generations")
+    .from("jobs")
     .select("created_at")
     .eq("user_id", userId)
+    .eq("type", "image")
+    .eq("status", "succeeded")
     .order("created_at", { ascending: false })
     .limit(FREE_LIMIT);
 
