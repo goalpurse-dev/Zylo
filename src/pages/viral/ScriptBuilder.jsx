@@ -40,7 +40,28 @@ export default function ScriptBuilder() {
   });
   const [selectedStyle, setSelectedStyle] = useState(null);
   const [imageIdea, setImageIdea] = useState(null);
-  const [imageResult, setImageResult] = useState(null); // { imageUrl, idea } from image-to-prompt
+  const [imageResult, setImageResult] = useState(null);
+
+  const reloadHistory = async (uid) => {
+    const { data: rows } = await supabase
+      .from("viral_scripts")
+      .select("id, created_at, preset, preset_icon, platform, type, idea, script_data")
+      .eq("user_id", uid)
+      .order("created_at", { ascending: false })
+      .limit(HISTORY_MAX);
+    if (rows) {
+      setHistory(rows.map((r) => ({
+        id: r.id,
+        createdAt: r.created_at,
+        preset: r.preset,
+        presetIcon: r.preset_icon || "✨",
+        platform: r.platform,
+        type: r.type,
+        idea: r.idea,
+        script: r.script_data,
+      })));
+    }
+  };
   const [scriptData, setScriptData] = useState(null);
   const [history, setHistory] = useState([]);
   const [viewingEntry, setViewingEntry] = useState(null);
@@ -141,6 +162,7 @@ export default function ScriptBuilder() {
     setHistory(updated);
     setScriptData({ ...script, _id: id });
     setViewingEntry(null);
+    setImageResult(null);
     setMobileView("result");
 
     // Persist to Supabase so it syncs across devices
@@ -168,10 +190,20 @@ export default function ScriptBuilder() {
     setSelectedStyle(null);
     setScriptData(null);
     setViewingEntry(null);
+    setImageResult(null);
     setMobileView("builder");
   };
 
   const handleViewHistory = (entry) => {
+    if (entry.type === "image_idea") {
+      setViewingEntry(null);
+      setScriptData(null);
+      setImageResult({ imageUrl: entry.script?.imageUrl ?? null, idea: entry.idea });
+      setMobileView("result");
+      return;
+    }
+    // Normal script entry — clear any image result
+    setImageResult(null);
     setViewingEntry(entry);
     setMobileView("result");
   };
@@ -243,6 +275,7 @@ export default function ScriptBuilder() {
               onImageIdea={(result) => {
                 setImageResult(result);
                 setMobileView("result");
+                if (userId) reloadHistory(userId);
               }}
             />
           ) : (
@@ -262,17 +295,20 @@ export default function ScriptBuilder() {
       <div className="hidden xl:flex flex-1 flex-col overflow-hidden">
         <div className="shrink-0 px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
           <span className="text-white/40 text-xs font-semibold uppercase tracking-widest">
-            {activeScript ? "Script Output" : "Output"}
+            {imageResult ? "Script Idea" : activeScript ? "Script Output" : "Output"}
           </span>
 
           <div className="flex items-center gap-3">
-            {viewingEntry && (
+            {imageResult && (
+              <button onClick={() => setImageResult(null)} className="text-white/25 hover:text-white/60 text-xs transition-colors">✕</button>
+            )}
+            {!imageResult && viewingEntry && (
               <>
                 <span className="text-white/30 text-xs">Viewing saved script</span>
                 <button onClick={() => setViewingEntry(null)} className="text-white/25 hover:text-white/60 text-xs transition-colors">✕</button>
               </>
             )}
-            {activeScript && !viewingEntry && (
+            {!imageResult && activeScript && !viewingEntry && (
               <button
                 onClick={handleReset}
                 className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/80 border border-white/10 hover:border-white/25 px-3 py-1.5 rounded-lg transition-all"
@@ -284,21 +320,15 @@ export default function ScriptBuilder() {
         </div>
 
         <ScriptResult
-          script={activeScript}
+          script={imageResult ? null : activeScript}
           history={history}
-          onViewHistory={(entry) => setViewingEntry(entry)}
+          onViewHistory={handleViewHistory}
           onDeleteHistory={handleDeleteHistory}
           onGenerateAnother={handleReset}
           userId={userId}
           scriptId={activeScript?._id}
           imageResult={imageResult}
-          onUseImageIdea={() => {
-            setImageIdea(imageResult?.idea);
-            setImageResult(null);
-            const first = SCRIPT_STYLES.find((s) => s.id !== "custom");
-            if (first) handleStyleSelect(first);
-          }}
-          onDiscardImageResult={() => { setImageResult(null); setMobileView("builder"); }}
+          onDiscardImageResult={() => setImageResult(null)}
         />
       </div>
 
@@ -307,13 +337,13 @@ export default function ScriptBuilder() {
         <div className="xl:hidden flex flex-col w-full h-full">
           <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-white/[0.06] bg-[#090A0A]">
             <button
-              onClick={() => setMobileView("builder")}
+              onClick={() => { setMobileView("builder"); if (imageResult) setImageResult(null); }}
               className="flex items-center gap-2 text-white/50 hover:text-white/80 text-sm transition-colors"
             >
               <span className="text-base leading-none">←</span>
               <span>Back</span>
             </button>
-            <span className="text-white text-sm font-semibold">{imageResult && !activeScript ? "Script Idea" : "Script Output"}</span>
+            <span className="text-white text-sm font-semibold">{imageResult ? "Script Idea" : "Script Output"}</span>
             <button onClick={handleReset} className="text-xs text-[#9B6DFF] hover:text-[#B88FFF] font-medium transition-colors">
               New
             </button>
@@ -321,7 +351,7 @@ export default function ScriptBuilder() {
 
           <div className="flex-1 min-h-0">
             <ScriptResult
-              script={activeScript}
+              script={imageResult ? null : activeScript}
               history={history}
               onViewHistory={handleViewHistory}
               onDeleteHistory={handleDeleteHistory}
@@ -330,13 +360,6 @@ export default function ScriptBuilder() {
               userId={userId}
               scriptId={activeScript?._id}
               imageResult={imageResult}
-              onUseImageIdea={() => {
-                setImageIdea(imageResult?.idea);
-                setImageResult(null);
-                setMobileView("builder");
-                const first = SCRIPT_STYLES.find((s) => s.id !== "custom");
-                if (first) handleStyleSelect(first);
-              }}
               onDiscardImageResult={() => { setImageResult(null); setMobileView("builder"); }}
             />
           </div>

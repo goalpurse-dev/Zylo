@@ -32,6 +32,20 @@ function ImageToScriptIdea({ onResult }) {
         throw creditErr;
       }
 
+      const entryId = crypto.randomUUID();
+
+      // Upload image to storage so the thumbnail persists permanently
+      const ext = file.name.split(".").pop() || "jpg";
+      const storagePath = `${user.id}/image-ideas/${entryId}.${ext}`;
+      let storedImageUrl = null;
+      const { error: uploadErr } = await supabase.storage
+        .from("reference-images")
+        .upload(storagePath, file, { upsert: false });
+      if (!uploadErr) {
+        const { data: pub } = supabase.storage.from("reference-images").getPublicUrl(storagePath);
+        storedImageUrl = pub?.publicUrl ?? null;
+      }
+
       const base64 = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result.split(",")[1]);
@@ -42,7 +56,20 @@ function ImageToScriptIdea({ onResult }) {
         body: { imageBase64: base64, mimeType: file.type || "image/jpeg", kind: "script" },
       });
       if (fnErr || !data?.prompt) throw new Error(fnErr?.message || "No idea returned");
-      onResult?.({ imageUrl, idea: data.prompt });
+
+      // Persist idea + image URL to DB
+      await supabase.from("viral_scripts").insert([{
+        id: entryId,
+        user_id: user.id,
+        preset: "From Image",
+        preset_icon: storedImageUrl ?? "🖼️",
+        platform: "",
+        type: "image_idea",
+        idea: data.prompt,
+        script_data: { imageUrl: storedImageUrl },
+      }]).then(() => {});
+
+      onResult?.({ imageUrl: storedImageUrl ?? imageUrl, idea: data.prompt, entryId });
       setPreview(null);
     } catch (err) {
       console.error("image-to-prompt error:", err);
@@ -204,7 +231,7 @@ export default function ScriptStylePicker({ onSelect, history = [], onViewHistor
 
       {/* Recent scripts — mobile only, desktop has it in the Output panel */}
       {history.length > 0 && (
-        <div className="lg:hidden space-y-2">
+        <div className="xl:hidden space-y-2">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-white/30 text-[11px] font-semibold uppercase tracking-widest">Recent</span>
             <span className="text-white/15 text-[10px]">({history.length})</span>
@@ -218,11 +245,13 @@ export default function ScriptStylePicker({ onSelect, history = [], onViewHistor
               className="w-full text-left flex items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-[#7A3BFF]/[0.06] hover:border-[#7A3BFF]/25 transition-all px-3.5 py-2.5"
             >
               <div className="h-8 w-8 rounded-lg flex items-center justify-center text-base overflow-hidden shrink-0"
-                style={style ? { background: `${style.accentColor}18`, border: `1px solid ${style.accentColor}30` } : undefined}
+                style={style ? { background: `${style.accentColor}18`, border: `1px solid ${style.accentColor}30` } : { border: "1px solid rgba(255,255,255,0.08)" }}
               >
-                {style?.previewImage
-                  ? <img src={style.previewImage} alt={entry.preset} className="w-full h-full object-cover" />
-                  : <span>{style?.icon || entry.presetIcon}</span>}
+                {entry.presetIcon?.startsWith("http")
+                  ? <img src={entry.presetIcon} alt={entry.preset} className="w-full h-full object-cover" />
+                  : style?.previewImage
+                    ? <img src={style.previewImage} alt={entry.preset} className="w-full h-full object-cover" />
+                    : <span>{style?.icon || entry.presetIcon}</span>}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">

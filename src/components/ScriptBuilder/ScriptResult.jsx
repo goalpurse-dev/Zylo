@@ -219,11 +219,13 @@ function HistoryCard({ entry, onView, onDelete }) {
       <button className="flex-1 text-left min-w-0" onClick={() => onView(entry)}>
         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
           <div className="h-6 w-6 rounded-md flex items-center justify-center text-sm overflow-hidden shrink-0"
-            style={style ? { background: `${style.accentColor}18`, border: `1px solid ${style.accentColor}30` } : undefined}
+            style={style ? { background: `${style.accentColor}18`, border: `1px solid ${style.accentColor}30` } : { border: "1px solid rgba(255,255,255,0.08)" }}
           >
-            {style?.previewImage
-              ? <img src={style.previewImage} alt={entry.preset} className="w-full h-full object-cover" />
-              : <span className="text-xs">{style?.icon || entry.presetIcon}</span>}
+            {entry.presetIcon?.startsWith("http")
+              ? <img src={entry.presetIcon} alt={entry.preset} className="w-full h-full object-cover" />
+              : style?.previewImage
+                ? <img src={style.previewImage} alt={entry.preset} className="w-full h-full object-cover" />
+                : <span className="text-xs">{style?.icon || entry.presetIcon}</span>}
           </div>
           <span className="text-white/60 text-xs font-medium">{entry.preset}</span>
           {entry.platform && (
@@ -275,10 +277,12 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
           <div className={`p-5 lg:p-6 ${bottomPad ? "pb-[90px]" : ""}`}>
             <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] overflow-hidden">
               {/* Image */}
-              <div className="relative w-full bg-black" style={{ aspectRatio: "16/9" }}>
-                <img src={imageResult.imageUrl} alt="Uploaded" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              </div>
+              {imageResult.imageUrl && (
+                <div className="relative w-full bg-black" style={{ maxHeight: "200px", overflow: "hidden" }}>
+                  <img src={imageResult.imageUrl} alt="Uploaded" className="w-full object-cover" style={{ maxHeight: "200px" }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                </div>
+              )}
               {/* Idea */}
               <div className="px-4 py-4">
                 <div className="flex items-center justify-between mb-2">
