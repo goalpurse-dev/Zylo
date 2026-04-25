@@ -6,6 +6,27 @@ import { SCRIPT_STYLES } from "../../lib/scriptTemplates";
 const HowToWriteAViralScript = lazy(() => import("../../pages/help/blog/HowToWriteAViralScript.jsx"));
 const ViralScriptStyles       = lazy(() => import("../../pages/help/blog/ViralScriptStyles.jsx"));
 
+function CopyButton({ text }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(text).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1600);
+  };
+  return (
+    <button
+      onClick={copy}
+      className={`text-[10px] px-2 py-0.5 rounded-md transition-all font-medium ${
+        copied
+          ? "bg-green-500/15 text-green-400 border border-green-500/20"
+          : "bg-white/[0.05] text-white/30 border border-white/[0.07] hover:text-white/60 hover:bg-white/[0.08]"
+      }`}
+    >
+      {copied ? "✓ copied" : "copy"}
+    </button>
+  );
+}
+
 const GUIDES = [
   { id: "how-to-write", label: "How to write a viral script", Component: HowToWriteAViralScript },
   { id: "styles",       label: "The 8 creator script styles explained", Component: ViralScriptStyles },
@@ -223,7 +244,7 @@ function HistoryCard({ entry, onView, onDelete }) {
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
-export default function ScriptResult({ script, history, onViewHistory, onDeleteHistory, onGenerateAnother, bottomPad, userId, scriptId }) {
+export default function ScriptResult({ script, history, onViewHistory, onDeleteHistory, onGenerateAnother, bottomPad, userId, scriptId, imageResult, onUseImageIdea, onDiscardImageResult }) {
   const [copiedAll, setCopiedAll] = useState(false);
   const [altHooksOpen, setAltHooksOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(true);
@@ -248,6 +269,36 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
   if (!script) {
     return (
       <div className="h-full flex flex-col overflow-y-auto">
+
+        {/* ── Image result card ── */}
+        {imageResult && (
+          <div className={`p-5 lg:p-6 ${bottomPad ? "pb-[90px]" : ""}`}>
+            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] overflow-hidden">
+              {/* Image */}
+              <div className="relative w-full bg-black" style={{ aspectRatio: "16/9" }}>
+                <img src={imageResult.imageUrl} alt="Uploaded" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              </div>
+              {/* Idea */}
+              <div className="px-4 py-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#9B6DFF]">AI script idea</p>
+                  <div className="flex items-center gap-2">
+                    <CopyButton text={imageResult.idea} />
+                    <button
+                      onClick={onDiscardImageResult}
+                      className="text-white/20 hover:text-white/50 text-xs transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+                <p className="text-white/80 text-[13px] leading-relaxed">"{imageResult.idea}"</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {history?.length > 0 ? (
           <div className={`p-5 lg:p-6 space-y-4 ${bottomPad ? "pb-[90px]" : ""}`}>
             <button onClick={() => setHistoryOpen((v) => !v)}

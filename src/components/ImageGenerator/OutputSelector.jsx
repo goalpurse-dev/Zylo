@@ -95,7 +95,7 @@ if (rect) {
       {open && rect &&
         createPortal(
           <div
-            className="hidden md:block fixed inset-0 z-[9999]"
+            className="hidden xl:block fixed inset-0 z-[9999]"
             data-selector-portal
           >
             {/* CLICK OUTSIDE */}
@@ -147,7 +147,7 @@ if (rect) {
       {open &&
         createPortal(
           <div
-            className="md:hidden fixed inset-0 z-[9999]"
+            className="xl:hidden fixed inset-0 z-[9999]"
             data-selector-portal
           >
             {/* BACKDROP */}

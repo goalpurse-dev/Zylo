@@ -104,7 +104,7 @@ function BackBtn({ stepHistory, onBack }) {
 
 // ─── Main ────────────────────────────────────────────────────────────────────
 
-export default function ScriptChat({ stylePreset, onGenerate }) {
+export default function ScriptChat({ stylePreset, onGenerate, prefillIdea }) {
   const isCustom = stylePreset?.id === "custom";
   const d = stylePreset?.defaults || {};
 
@@ -118,7 +118,7 @@ export default function ScriptChat({ stylePreset, onGenerate }) {
     audience: d.audience || "",
     length: "",
     sceneCount: "",
-    idea: "",
+    idea: prefillIdea || "",
     niche: "",
     cta: "",
     customCta: "",

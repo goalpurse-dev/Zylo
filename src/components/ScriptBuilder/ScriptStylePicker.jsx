@@ -1,4 +1,110 @@
+import { useRef, useState } from "react";
+import { supabase } from "../../lib/supabaseClient";
 import { SCRIPT_STYLES } from "../../lib/scriptTemplates";
+
+function ImageToScriptIdea({ onResult }) {
+  const fileRef = useRef(null);
+  const [loading, setLoading] = useState(false);
+  const [preview, setPreview] = useState(null);
+  const [error, setError] = useState(null);
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    const imageUrl = URL.createObjectURL(file);
+    setPreview(imageUrl);
+    setLoading(true);
+    setError(null);
+    try {
+      // Deduct 1 credit before calling the edge function
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not signed in");
+
+      const { error: creditErr } = await supabase.rpc("deduct_credits", {
+        uid: user.id,
+        amount: 1,
+      });
+      if (creditErr) {
+        if (creditErr.message?.includes("INSUFFICIENT_CREDITS")) {
+          throw new Error("INSUFFICIENT_CREDITS");
+        }
+        throw creditErr;
+      }
+
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const { data, error: fnErr } = await supabase.functions.invoke("image-to-prompt", {
+        body: { imageBase64: base64, mimeType: file.type || "image/jpeg", kind: "script" },
+      });
+      if (fnErr || !data?.prompt) throw new Error(fnErr?.message || "No idea returned");
+      onResult?.({ imageUrl, idea: data.prompt });
+      setPreview(null);
+    } catch (err) {
+      console.error("image-to-prompt error:", err);
+      const msg = err?.message?.includes("INSUFFICIENT_CREDITS")
+        ? "Not enough credits. Top up to analyze images."
+        : "Couldn't analyze image. Try again.";
+      setError(msg);
+      setPreview(null);
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+
+      <button
+        onClick={() => !loading && fileRef.current?.click()}
+        disabled={loading}
+        className="group relative w-full text-left rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-[#7A3BFF]/[0.06] hover:border-[#7A3BFF]/30 transition-all duration-200 active:scale-[0.99] overflow-hidden"
+      >
+        <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl bg-gradient-to-b from-[#7A3BFF] to-[#C084FC] opacity-70 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+          style={{ background: "linear-gradient(105deg,transparent 40%,rgba(122,59,255,0.06) 50%,transparent 60%)" }} />
+
+        <div className="flex items-center gap-3.5 pl-5 pr-4 py-4">
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${!loading ? "img2prompt-icon" : ""}`}
+            style={{ background: "rgba(122,59,255,0.14)", border: "1px solid rgba(122,59,255,0.28)" }}>
+            {loading ? (
+              <div className="w-4 h-4 rounded-full border-2 border-[#7A3BFF]/30 border-t-[#C084FC] animate-spin" />
+            ) : preview ? (
+              <img src={preview} alt="" className="w-full h-full object-cover rounded-lg" />
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <rect x="2" y="6" width="13" height="11" rx="2" stroke="#C084FC" strokeWidth="1.5"/>
+                <path d="M15 10l4-2.5v9L15 14" stroke="#C084FC" strokeWidth="1.5" strokeLinejoin="round"/>
+                <path d="M19.5 3.5L21 5M22.5 2L21 3.5" stroke="#ff57b2" strokeWidth="1.3" strokeLinecap="round"/>
+              </svg>
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-[13px] font-semibold leading-tight">
+              {loading ? "Analyzing image…" : "Generate from image"}
+            </p>
+            <p className="text-white/35 text-[11px] mt-0.5 leading-snug">
+              {loading ? "AI is crafting your viral concept" : "Upload any photo — AI writes the script idea"}
+            </p>
+          </div>
+
+          <span className="text-white/20 group-hover:text-[#7A3BFF] transition-colors text-lg shrink-0">→</span>
+        </div>
+      </button>
+
+      {error && (
+        <p className="text-[11px] text-red-400/70 mt-2 px-1 leading-snug">{error}</p>
+      )}
+    </div>
+  );
+}
 
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -92,7 +198,7 @@ function StyleCard({ style, onClick }) {
   );
 }
 
-export default function ScriptStylePicker({ onSelect, history = [], onViewHistory }) {
+export default function ScriptStylePicker({ onSelect, history = [], onViewHistory, onImageIdea }) {
   return (
     <div className="px-5 py-6 flex flex-col gap-6">
 
@@ -135,6 +241,9 @@ export default function ScriptStylePicker({ onSelect, history = [], onViewHistor
           })}
         </div>
       )}
+
+      {/* Image → Script idea */}
+      <ImageToScriptIdea onResult={onImageIdea} />
 
       {/* Section header */}
       <div>

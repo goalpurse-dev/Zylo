@@ -70,10 +70,10 @@ const [userPlan, setUserPlan] = useState("free");
   const [postedImages, setPostedImages] = useState(new Set());
 
   const [activeJobId, setActiveJobId] = useState(null);
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1280);
 
   useEffect(() => {
-    const onResize = () => setIsDesktop(window.innerWidth >= 1024);
+    const onResize = () => setIsDesktop(window.innerWidth >= 1280);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
@@ -356,7 +356,7 @@ useEffect(() => {
         /* 📱 MOBILE — stacked, let workspace-scroll handle scrolling */
         <div className="flex flex-col px-3 pt-3 pb-[220px] space-y-3">
           {generatePanel}
-          <div className="md:pt-24 lg:pt-0">
+          <div className="md:pt-24 xl:pt-0">
             {resultPanel}
           </div>
         </div>

@@ -655,6 +655,85 @@ const isFailed =
 
 /* =============================== MAIN =============================== */
 
+const THINKING_PHRASES = [
+  "Thinking…",
+  "Reading your prompt…",
+  "Crafting the scene…",
+  "Placing subjects…",
+  "Adding light and depth…",
+  "Enhancing realism…",
+  "Sharpening details…",
+  "Finalizing…",
+];
+
+function ThinkingBanner({ progress }) {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setIdx((i) => (i + 1) % THINKING_PHRASES.length), 2200);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="hidden md:flex flex-col items-center justify-center gap-6 py-20 select-none">
+      {/* Animated orb */}
+      <div className="relative w-24 h-24">
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: "radial-gradient(circle, rgba(122,59,255,0.35), transparent 70%)",
+            filter: "blur(16px)",
+            animation: "pulse 2s ease-in-out infinite",
+          }}
+        />
+        <svg className="w-full h-full" viewBox="0 0 100 100" style={{ transform: "rotate(-90deg)" }}>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" />
+          <circle
+            cx="50" cy="50" r="40" fill="none"
+            stroke="url(#thinkGrad)" strokeWidth="6"
+            strokeLinecap="round"
+            strokeDasharray={`${2 * Math.PI * 40}`}
+            strokeDashoffset={`${2 * Math.PI * 40 * (1 - (progress || 10) / 100)}`}
+            style={{ transition: "stroke-dashoffset 0.8s ease" }}
+          />
+          <defs>
+            <linearGradient id="thinkGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#7A3BFF" />
+              <stop offset="100%" stopColor="#C077FF" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-white/70 text-[13px] font-semibold tabular-nums">{progress || 10}%</span>
+        </div>
+      </div>
+
+      {/* Cycling phrase */}
+      <div className="text-center">
+        <p
+          key={idx}
+          className="text-white/60 text-[15px] font-medium"
+          style={{ animation: "fadePhrase 0.4s ease" }}
+        >
+          {THINKING_PHRASES[idx]}
+        </p>
+        <div className="flex justify-center gap-1 mt-3">
+          {[0,1,2].map((i) => (
+            <span key={i} className="w-1 h-1 rounded-full bg-[#7A3BFF]/50 animate-bounce"
+              style={{ animationDelay: `${i * 160}ms`, animationDuration: "1.1s" }} />
+          ))}
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes fadePhrase {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 export default function Result({ results, activeJobId, userPlan }) {
   const latestRef = useRef(null);
 const [isMobile, setIsMobile] = useState(false);
@@ -747,7 +826,14 @@ useEffect(() => {
 
    {photoResults.length === 0 ? (
 
-  /* ================= EMPTY STATE ================= */
+  /* ================= EMPTY / THINKING STATE ================= */
+  activeJobId ? (
+    <ThinkingBanner
+      progress={Math.min(99, Math.floor(Number(
+        results?.find(r => r.id === activeJobId)?.progress ?? 10
+      )))}
+    />
+  ) : (
   <div className="flex-1 flex flex-col items-center justify-center gap-3 select-none py-16 pb-[120px] md:pb-16">
     <img
       src="/assets/logos/sadzyvo.webp"
@@ -757,6 +843,7 @@ useEffect(() => {
     <p className="text-white/60 text-sm font-semibold">No generated content yet</p>
     <p className="text-white/25 text-xs">Your creations will appear here</p>
   </div>
+  )
 
 ) : (
 

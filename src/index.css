@@ -198,6 +198,36 @@ button, a, [role="button"], label, summary { cursor: pointer; }
 }
 
 
+/* ── Image-to-prompt card animations ── */
+@keyframes img2prompt-border {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes img2prompt-sweep {
+  0%   { transform: translateX(-100%) skewX(-15deg); opacity: 0; }
+  40%  { opacity: 1; }
+  100% { transform: translateX(250%) skewX(-15deg); opacity: 0; }
+}
+@keyframes img2prompt-float {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50%       { transform: translateY(-3px) scale(1.04); }
+}
+.img2prompt-border-anim {
+  background-size: 300% 300%;
+  animation: img2prompt-border 4s ease infinite;
+}
+.img2prompt-sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.09) 50%, transparent 60%);
+  animation: img2prompt-sweep 3.5s ease-in-out infinite;
+}
+.img2prompt-icon {
+  animation: img2prompt-float 3s ease-in-out infinite;
+}
+
 html,
 body {
   height: 100%;

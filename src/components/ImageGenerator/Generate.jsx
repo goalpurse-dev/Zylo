@@ -1508,3 +1508,84 @@ md:group-hover:brightness-110
 )
 
 };
+
+/* ─── Image → Prompt ──────────────────────────────────────────────────────── */
+
+function ImageToPromptButton({ onPrompt }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const fileRef = useRef(null);
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Convert to base64
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const { data, error: fnErr } = await supabase.functions.invoke("image-to-prompt", {
+        body: { imageBase64: base64, mimeType: file.type || "image/jpeg" },
+      });
+
+      if (fnErr || !data?.prompt) throw new Error(fnErr?.message || "No prompt returned");
+      onPrompt(data.prompt);
+    } catch (err) {
+      setError("Couldn't read image. Try again.");
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      <div
+        className="p-[1.5px] rounded-2xl img2prompt-border-anim"
+        style={{
+          background: loading
+            ? "linear-gradient(135deg,#7A3BFF,#C084FC)"
+            : "linear-gradient(135deg,#7A3BFF 0%,#C084FC 40%,#ff57b2 70%,#7A3BFF 100%)",
+        }}
+      >
+        <button
+          onClick={() => !loading && fileRef.current?.click()}
+          disabled={loading}
+          className="img2prompt-sweep w-full relative rounded-[14px] overflow-hidden text-left group transition-all duration-300"
+          style={{ background: "linear-gradient(135deg,rgba(12,8,22,0.97),rgba(18,10,32,0.97))" }}
+        >
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${!loading ? "img2prompt-icon" : ""}`}
+              style={{ background: "rgba(122,59,255,0.2)", border: "1px solid rgba(122,59,255,0.3)", boxShadow: "0 0 14px rgba(122,59,255,0.18)" }}>
+              {loading
+                ? <div className="w-4 h-4 rounded-full border-2 border-[#7A3BFF]/30 border-t-[#C084FC] animate-spin" />
+                : <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="13" height="10" rx="2" stroke="#C084FC" strokeWidth="1.5"/><path d="M16 10.5l4-2.5v8l-4-2.5" stroke="#C084FC" strokeWidth="1.5" strokeLinejoin="round"/><path d="M20 4l1.5 1.5M22.5 2l-1.5 1.5" stroke="#ff57b2" strokeWidth="1.2" strokeLinecap="round" opacity="0.8"/></svg>
+              }
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-[13px] font-bold leading-tight">{loading ? "Analyzing…" : "Get prompt from image"}</p>
+              <p className="text-white/40 text-[11px] mt-0.5">{loading ? "Building your prompt" : "Upload any image → AI writes its prompt"}</p>
+            </div>
+            {!loading && (
+              <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"
+                style={{ background: "linear-gradient(135deg,#7A3BFF,#C084FC)", boxShadow: "0 0 10px rgba(122,59,255,0.45)" }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </div>
+            )}
+          </div>
+        </button>
+      </div>
+      {error && <p className="text-[11px] text-red-400/70 mt-1.5 px-1">{error}</p>}
+    </div>
+  );
+}

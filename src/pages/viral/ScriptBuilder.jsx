@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSEO } from "../../hooks/useSEO";
 import ScriptStylePicker from "../../components/ScriptBuilder/ScriptStylePicker";
+import { SCRIPT_STYLES } from "../../lib/scriptTemplates";
 import ScriptChat from "../../components/ScriptBuilder/ScriptChat";
 import ScriptResult from "../../components/ScriptBuilder/ScriptResult";
 import ScriptUpsellModal from "../../components/ScriptBuilder/ScriptUpsellModal";
@@ -38,6 +39,8 @@ export default function ScriptBuilder() {
     },
   });
   const [selectedStyle, setSelectedStyle] = useState(null);
+  const [imageIdea, setImageIdea] = useState(null);
+  const [imageResult, setImageResult] = useState(null); // { imageUrl, idea } from image-to-prompt
   const [scriptData, setScriptData] = useState(null);
   const [history, setHistory] = useState([]);
   const [viewingEntry, setViewingEntry] = useState(null);
@@ -181,8 +184,8 @@ export default function ScriptBuilder() {
       {/* ─── LEFT PANEL ─────────────────────────────────────────────────────── */}
       <div
         className={`
-          w-full lg:max-w-[460px] lg:min-w-[420px] border-r border-white/[0.06] flex flex-col
-          ${mobileView === "result" ? "hidden lg:flex" : "flex"}
+          w-full xl:max-w-[460px] xl:min-w-[420px] border-r border-white/[0.06] flex flex-col
+          ${mobileView === "result" ? "hidden xl:flex" : "flex"}
         `}
       >
         {/* Header */}
@@ -216,7 +219,7 @@ export default function ScriptBuilder() {
           {activeScript && (
             <button
               onClick={() => setMobileView("result")}
-              className="lg:hidden flex items-center gap-1.5 text-[11px] text-[#9B6DFF] border border-[#7A3BFF]/40 px-3 py-1.5 rounded-lg font-medium hover:bg-[#7A3BFF]/10 transition-all shrink-0"
+              className="xl:hidden flex items-center gap-1.5 text-[11px] text-[#9B6DFF] border border-[#7A3BFF]/40 px-3 py-1.5 rounded-lg font-medium hover:bg-[#7A3BFF]/10 transition-all shrink-0"
             >
               View Script →
             </button>
@@ -230,13 +233,17 @@ export default function ScriptBuilder() {
         </div>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto pb-[80px] lg:pb-0">
+        <div className="flex-1 overflow-y-auto pb-[80px] xl:pb-0">
           {!selectedStyle ? (
             <ScriptStylePicker
               onSelect={handleStyleSelect}
               history={history}
               onViewHistory={handleViewHistory}
               onDeleteHistory={handleDeleteHistory}
+              onImageIdea={(result) => {
+                setImageResult(result);
+                setMobileView("result");
+              }}
             />
           ) : (
             <div className="px-5 py-5">
@@ -244,6 +251,7 @@ export default function ScriptBuilder() {
                 key={selectedStyle.id}
                 stylePreset={selectedStyle}
                 onGenerate={handleGenerate}
+                prefillIdea={imageIdea}
               />
             </div>
           )}
@@ -251,7 +259,7 @@ export default function ScriptBuilder() {
       </div>
 
       {/* ─── RIGHT PANEL (desktop) ──────────────────────────────────────────── */}
-      <div className="hidden lg:flex flex-1 flex-col overflow-hidden">
+      <div className="hidden xl:flex flex-1 flex-col overflow-hidden">
         <div className="shrink-0 px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
           <span className="text-white/40 text-xs font-semibold uppercase tracking-widest">
             {activeScript ? "Script Output" : "Output"}
@@ -283,12 +291,20 @@ export default function ScriptBuilder() {
           onGenerateAnother={handleReset}
           userId={userId}
           scriptId={activeScript?._id}
+          imageResult={imageResult}
+          onUseImageIdea={() => {
+            setImageIdea(imageResult?.idea);
+            setImageResult(null);
+            const first = SCRIPT_STYLES.find((s) => s.id !== "custom");
+            if (first) handleStyleSelect(first);
+          }}
+          onDiscardImageResult={() => { setImageResult(null); setMobileView("builder"); }}
         />
       </div>
 
       {/* ─── MOBILE RESULT PANEL ────────────────────────────────────────────── */}
-      {mobileView === "result" && activeScript && (
-        <div className="lg:hidden flex flex-col w-full h-full">
+      {mobileView === "result" && (activeScript || imageResult) && (
+        <div className="xl:hidden flex flex-col w-full h-full">
           <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-white/[0.06] bg-[#090A0A]">
             <button
               onClick={() => setMobileView("builder")}
@@ -297,7 +313,7 @@ export default function ScriptBuilder() {
               <span className="text-base leading-none">←</span>
               <span>Back</span>
             </button>
-            <span className="text-white text-sm font-semibold">Script Output</span>
+            <span className="text-white text-sm font-semibold">{imageResult && !activeScript ? "Script Idea" : "Script Output"}</span>
             <button onClick={handleReset} className="text-xs text-[#9B6DFF] hover:text-[#B88FFF] font-medium transition-colors">
               New
             </button>
@@ -313,6 +329,15 @@ export default function ScriptBuilder() {
               bottomPad
               userId={userId}
               scriptId={activeScript?._id}
+              imageResult={imageResult}
+              onUseImageIdea={() => {
+                setImageIdea(imageResult?.idea);
+                setImageResult(null);
+                setMobileView("builder");
+                const first = SCRIPT_STYLES.find((s) => s.id !== "custom");
+                if (first) handleStyleSelect(first);
+              }}
+              onDiscardImageResult={() => { setImageResult(null); setMobileView("builder"); }}
             />
           </div>
         </div>
