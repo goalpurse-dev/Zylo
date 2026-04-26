@@ -79,9 +79,12 @@ const [showUpgrade, setShowUpgrade] = useState(false);
   
 
 
+const DISABLED_VIDEO_MODELS = ["video:RunwayGen-4Turbo"];
+
 const firstVideoModelKey =
-  Object.keys(MODELS).find((key) => key.startsWith("video:")) ||
-  Object.keys(MODELS)[0];
+  Object.keys(MODELS).find(
+    (key) => key.startsWith("video:") && !DISABLED_VIDEO_MODELS.includes(key)
+  ) || Object.keys(MODELS)[0];
 
 
 const [selectedModelKey, setSelectedModelKey] = useState(firstVideoModelKey);
@@ -193,8 +196,7 @@ const isKling = selectedModelKey === "video:klingaist";
 const hasRefs = selected.length > 0;
 
 const imageRequiredForModel =
-  selectedModelKey === "video:miniMaxFast" ||
-  selectedModelKey === "video:RunwayGen-4Turbo";
+  selectedModelKey === "video:miniMaxFast";
 
 const missingRequiredImage = imageRequiredForModel && !hasRefs;
 
@@ -893,8 +895,11 @@ className={`
 
     {/* Models grid */}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {Object.entries(MODELS)
-  .filter(([key]) => key.startsWith("video:"))
+   {Object.entries(MODELS)
+  .filter(([key]) =>
+    key.startsWith("video:") &&
+    key !== "video:RunwayGen-4Turbo"
+  )
   .map(([key, model]) => (
 
         <VideoModelCard
