@@ -342,13 +342,13 @@ useEffect(() => {
 
       {isDesktop ? (
         /* 🖥️ DESKTOP — side by side */
-        <div className="flex h-full">
-          <div className="w-[40%] 2xl:w-[25%] h-full bg-[#191B1C]">
+        <div className="flex h-full gap-2 bg-[#090A0A]">
+          <div className="basis-[40%] 2xl:basis-[25%] shrink-0 h-full bg-[#090A0A]">
             <div className="h-full overflow-y-auto">
               {generatePanel}
             </div>
           </div>
-          <div className="w-[60%] 2xl:w-[75%] h-full overflow-y-auto px-2 pt-2 pb-6">
+          <div className="flex-1 min-w-0 h-full overflow-y-auto bg-[#090A0A] pb-6">
             {resultPanel}
           </div>
         </div>

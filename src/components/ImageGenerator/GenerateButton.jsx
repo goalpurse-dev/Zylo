@@ -11,19 +11,18 @@ const GenerateButton = React.memo(
         onClick={onClick}
         disabled={!isReady}
         className={`
-          relative w-full py-4 rounded-2xl
+          relative w-full py-4 rounded-xl
           flex items-center justify-center gap-3
           overflow-hidden
 
-          border border-white/10
-          bg-[#16181A]
+          border
 
           transition-all duration-200
 
           ${
             isReady
-              ? "hover:border-[#7A3BFF]/40 hover:bg-[#181A22]"
-              : "opacity-50 cursor-not-allowed"
+              ? "border-[#A884FF]/35 bg-gradient-to-b from-[#8B4DFF] to-[#6F2EFF] shadow-[0_12px_34px_rgba(122,59,255,0.34)] hover:brightness-110 active:scale-[0.99]"
+              : "border-white/[0.08] bg-[#202224] text-white/35 cursor-not-allowed"
           }
         `}
       >
@@ -41,7 +40,7 @@ const GenerateButton = React.memo(
 )}
 
         {/* CONTENT */}
-        <span className="relative z-10 flex items-center gap-3 text-white font-semibold text-[15px]">
+        <span className={`relative z-10 flex items-center gap-3 font-semibold text-[15px] ${isReady ? "text-white" : "text-white/35"}`}>
           {isGenerating ? (
             <span>Generating...</span>
           ) : (

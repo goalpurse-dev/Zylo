@@ -10,8 +10,8 @@ const StyleSelector = React.memo(
         onClick={() => setOpenStyle((p) => !p)}
         className={`
           group relative w-full overflow-hidden
-          rounded-xl border border-white/10
-          bg-[#16181A]
+          rounded-xl border border-white/[0.09]
+          bg-[#151719]
 
           flex items-stretch
 
@@ -37,7 +37,7 @@ const StyleSelector = React.memo(
                 bg-gradient-to-l
                 from-black/30
                 via-black/60
-                to-[#16181A]
+                to-[#151719]
               "
             />
           </div>
@@ -56,7 +56,7 @@ const StyleSelector = React.memo(
           <ChevronRight
             className={`
               w-5 h-5 transition-all duration-200
-              ${openStyle ? "rotate-90 text-purple-400" : "text-white/50"}
+              ${openStyle ? "rotate-90 text-[#B69CFF]" : "text-white/50"}
             `}
           />
         </div>

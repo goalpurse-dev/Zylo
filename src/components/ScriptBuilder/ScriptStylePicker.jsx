@@ -1,6 +1,11 @@
 import { useRef, useState } from "react";
+import {
+  Loader2,
+} from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { SCRIPT_STYLES } from "../../lib/scriptTemplates";
+
+const SAMPLE_REFERENCE_IMAGE = "/script/addimage.png";
 
 function ImageToScriptIdea({ onResult }) {
   const fileRef = useRef(null);
@@ -16,8 +21,8 @@ function ImageToScriptIdea({ onResult }) {
     setPreview(imageUrl);
     setLoading(true);
     setError(null);
+
     try {
-      // Deduct 1 credit before calling the edge function
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
 
@@ -33,14 +38,14 @@ function ImageToScriptIdea({ onResult }) {
       }
 
       const entryId = crypto.randomUUID();
-
-      // Upload image to storage so the thumbnail persists permanently
       const ext = file.name.split(".").pop() || "jpg";
       const storagePath = `${user.id}/image-ideas/${entryId}.${ext}`;
       let storedImageUrl = null;
+
       const { error: uploadErr } = await supabase.storage
         .from("reference-images")
         .upload(storagePath, file, { upsert: false });
+
       if (!uploadErr) {
         const { data: pub } = supabase.storage.from("reference-images").getPublicUrl(storagePath);
         storedImageUrl = pub?.publicUrl ?? null;
@@ -52,17 +57,17 @@ function ImageToScriptIdea({ onResult }) {
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
+
       const { data, error: fnErr } = await supabase.functions.invoke("image-to-prompt", {
         body: { imageBase64: base64, mimeType: file.type || "image/jpeg", kind: "script" },
       });
       if (fnErr || !data?.prompt) throw new Error(fnErr?.message || "No idea returned");
 
-      // Persist idea + image URL to DB
       await supabase.from("viral_scripts").insert([{
         id: entryId,
         user_id: user.id,
         preset: "From Image",
-        preset_icon: storedImageUrl ?? "🖼️",
+        preset_icon: storedImageUrl ?? "image",
         platform: "",
         type: "image_idea",
         idea: data.prompt,
@@ -91,43 +96,38 @@ function ImageToScriptIdea({ onResult }) {
       <button
         onClick={() => !loading && fileRef.current?.click()}
         disabled={loading}
-        className="group relative w-full text-left rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-[#7A3BFF]/[0.06] hover:border-[#7A3BFF]/30 transition-all duration-200 active:scale-[0.99] overflow-hidden"
+        className="group w-full rounded-xl border border-white/[0.08] bg-[#151718] px-3.5 py-3 text-left transition-colors hover:border-[#7A3BFF]/45 hover:bg-[#181A1B] active:scale-[0.99]"
       >
-        <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl bg-gradient-to-b from-[#7A3BFF] to-[#C084FC] opacity-70 group-hover:opacity-100 transition-opacity" />
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{ background: "linear-gradient(105deg,transparent 40%,rgba(122,59,255,0.06) 50%,transparent 60%)" }} />
-
-        <div className="flex items-center gap-3.5 pl-5 pr-4 py-4">
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${!loading ? "img2prompt-icon" : ""}`}
-            style={{ background: "rgba(122,59,255,0.14)", border: "1px solid rgba(122,59,255,0.28)" }}>
+        <div className="flex items-center gap-3">
+          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-white/[0.1] bg-white/[0.04]">
             {loading ? (
-              <div className="w-4 h-4 rounded-full border-2 border-[#7A3BFF]/30 border-t-[#C084FC] animate-spin" />
+              <div className="flex h-full w-full items-center justify-center bg-[#7A3BFF]/10">
+                <Loader2 className="h-4 w-4 animate-spin text-[#9B6DFF]" />
+              </div>
             ) : preview ? (
-              <img src={preview} alt="" className="w-full h-full object-cover rounded-lg" />
+              <img src={preview} alt="" className="h-full w-full object-cover" />
             ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <rect x="2" y="6" width="13" height="11" rx="2" stroke="#C084FC" strokeWidth="1.5"/>
-                <path d="M15 10l4-2.5v9L15 14" stroke="#C084FC" strokeWidth="1.5" strokeLinejoin="round"/>
-                <path d="M19.5 3.5L21 5M22.5 2L21 3.5" stroke="#ff57b2" strokeWidth="1.3" strokeLinecap="round"/>
-              </svg>
+              <img src={SAMPLE_REFERENCE_IMAGE} alt="" className="h-full w-full object-cover" />
             )}
           </div>
 
-          <div className="flex-1 min-w-0">
-            <p className="text-white text-[13px] font-semibold leading-tight">
-              {loading ? "Analyzing image…" : "Generate from image"}
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-bold leading-tight text-white">
+              {loading ? "Analyzing image..." : "Generate from image"}
             </p>
-            <p className="text-white/35 text-[11px] mt-0.5 leading-snug">
-              {loading ? "AI is crafting your viral concept" : "Upload any photo — AI writes the script idea"}
+            <p className="mt-0.5 truncate text-[11px] leading-snug text-white/50">
+              {loading ? "AI is crafting your viral concept" : "Add a reference photo"}
             </p>
           </div>
 
-          <span className="text-white/20 group-hover:text-[#7A3BFF] transition-colors text-lg shrink-0">→</span>
+          <span className="shrink-0 rounded-lg border border-[#7A3BFF]/30 bg-[#7A3BFF]/12 px-3 py-1.5 text-[11px] font-bold text-[#C9B6FF] transition-colors group-hover:border-[#7A3BFF]/55 group-hover:bg-[#7A3BFF]/18">
+            Add
+          </span>
         </div>
       </button>
 
       {error && (
-        <p className="text-[11px] text-red-400/70 mt-2 px-1 leading-snug">{error}</p>
+        <p className="mt-2 px-1 text-[11px] leading-snug text-red-400/70">{error}</p>
       )}
     </div>
   );
@@ -143,7 +143,6 @@ function timeAgo(iso) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-// Platform → short label
 const PLATFORM_SHORT = {
   "YouTube Long": "YT Long",
   "YouTube Shorts": "YT Shorts",
@@ -151,7 +150,6 @@ const PLATFORM_SHORT = {
   TikTok: "TikTok",
 };
 
-// Style → descriptor
 const STYLE_LABEL = {
   Shock: "Shock",
   "Curiosity Gap": "Curiosity",
@@ -159,67 +157,86 @@ const STYLE_LABEL = {
   Authority: "Authority",
 };
 
-const PRESETS = SCRIPT_STYLES.filter((s) => s.id !== "custom");
+const FEATURED_PRESET = SCRIPT_STYLES.find((s) => s.id === "skeleton");
+const PRESETS = SCRIPT_STYLES.filter((s) => s.id !== "custom" && s.id !== "skeleton");
 const CUSTOM = SCRIPT_STYLES.find((s) => s.id === "custom");
 
-function StyleCard({ style, onClick }) {
-  const platform = style.defaults?.platform;
-  const platformShort = PLATFORM_SHORT[platform] || platform;
+function StyleRow({ style, onClick, recommended = false }) {
+  const platformShort = PLATFORM_SHORT[style.defaults?.platform] || style.defaults?.platform;
   const scriptStyle = STYLE_LABEL[style.defaults?.style] || style.defaults?.style;
 
   return (
     <button
       onClick={onClick}
-      className="group relative text-left p-4 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-[#7A3BFF]/[0.06] hover:border-[#7A3BFF]/30 transition-all duration-200 active:scale-[0.98] overflow-hidden"
+      className={`group w-full rounded-xl border p-3 text-left transition-colors active:scale-[0.99] ${
+        recommended
+          ? "border-[#7A3BFF]/45 bg-[#171522] hover:border-[#9B6DFF]/70"
+          : "border-white/[0.08] bg-[#151718] hover:border-white/[0.16] hover:bg-[#181A1B]"
+      }`}
     >
-      {/* Accent left bar */}
-      <div
-        className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl transition-opacity duration-200 opacity-60 group-hover:opacity-100"
-        style={{ background: style.accentColor }}
-      />
-
-      {/* Top row: icon + arrow */}
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-center gap-3">
         <div
-          className="h-8 w-8 rounded-lg flex items-center justify-center text-base overflow-hidden"
-          style={{ background: `${style.accentColor}18`, border: `1px solid ${style.accentColor}30` }}
+          className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg text-base"
+          style={{ background: `${style.accentColor}16`, border: `1px solid ${style.accentColor}30` }}
         >
           {style.previewImage
-            ? <img src={style.previewImage} alt={style.name} className="w-full h-full object-cover" />
+            ? <img src={style.previewImage} alt={style.name} className="h-full w-full object-cover" />
             : style.icon}
         </div>
-        <span className="text-white/20 group-hover:text-white/50 text-xs transition-colors mt-1">→</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <div className="truncate text-[13px] font-bold leading-tight text-white">{style.name}</div>
+            {recommended && (
+              <span className="rounded-md bg-[#7A3BFF]/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#B69CFF]">
+                Best
+              </span>
+            )}
+          </div>
+          <div className="mt-1 truncate text-[11px] leading-snug text-white/45">{style.tagline}</div>
+          <div className="mt-2 flex gap-1.5">
+            {platformShort && (
+              <span className="rounded-md border border-white/[0.07] bg-white/[0.05] px-2 py-0.5 text-[10px] font-medium text-white/45">
+                {platformShort}
+              </span>
+            )}
+            {scriptStyle && (
+              <span className="rounded-md border border-white/[0.07] bg-white/[0.05] px-2 py-0.5 text-[10px] font-medium text-white/45">
+                {scriptStyle}
+              </span>
+            )}
+          </div>
+        </div>
+        <span
+          className={`shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-bold ${
+            recommended
+              ? "bg-[#7A3BFF] text-white"
+              : "border border-white/[0.08] bg-white/[0.05] text-white/65 group-hover:border-[#7A3BFF]/35 group-hover:bg-[#7A3BFF]/10 group-hover:text-[#C9B6FF]"
+          }`}
+        >
+          Use
+        </span>
       </div>
+    </button>
+  );
+}
 
-      {/* Name */}
-      <div className="text-white text-[13px] font-semibold leading-tight mb-1">
-        {style.name}
-      </div>
-
-      {/* Tagline */}
-      <div className="text-white/35 text-[11px] leading-snug mb-3">
-        {style.tagline}
-      </div>
-
-      {/* Stats row */}
-      <div className="flex flex-wrap gap-1.5">
-        {platformShort && (
-          <span
-            className="text-[10px] px-2 py-0.5 rounded-md font-medium"
-            style={{
-              background: `${style.accentColor}15`,
-              color: style.accentColor,
-              border: `1px solid ${style.accentColor}25`,
-            }}
-          >
-            {platformShort}
-          </span>
-        )}
-        {scriptStyle && (
-          <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.06] text-white/35 border border-white/[0.06] font-medium">
-            {scriptStyle}
-          </span>
-        )}
+function CustomRow({ style, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="group w-full rounded-xl border border-white/[0.08] bg-[#151718] p-3 text-left transition-colors hover:border-white/[0.16] hover:bg-[#181A1B] active:scale-[0.99]"
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/[0.1] bg-white/[0.06] text-base">
+          {style.icon}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[13px] font-bold leading-tight text-white">{style.name}</div>
+          <div className="mt-1 truncate text-[11px] leading-snug text-white/45">{style.tagline}</div>
+        </div>
+        <span className="shrink-0 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 py-1.5 text-[11px] font-bold text-white/65 group-hover:border-[#7A3BFF]/35 group-hover:bg-[#7A3BFF]/10 group-hover:text-[#C9B6FF]">
+          Use
+        </span>
       </div>
     </button>
   );
@@ -227,89 +244,81 @@ function StyleCard({ style, onClick }) {
 
 export default function ScriptStylePicker({ onSelect, history = [], onViewHistory, onImageIdea }) {
   return (
-    <div className="px-5 py-6 flex flex-col gap-6">
-
-      {/* Recent scripts — mobile only, desktop has it in the Output panel */}
+    <div className="flex flex-col gap-3 px-4 py-4">
       {history.length > 0 && (
-        <div className="xl:hidden space-y-2">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-white/30 text-[11px] font-semibold uppercase tracking-widest">Recent</span>
-            <span className="text-white/15 text-[10px]">({history.length})</span>
+        <div className="space-y-2 xl:hidden">
+          <div className="mb-1 flex items-center gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-white/30">Recent</span>
+            <span className="text-[10px] text-white/15">({history.length})</span>
           </div>
           {history.slice(0, 4).map((entry) => {
             const style = SCRIPT_STYLES.find((s) => s.name === entry.preset);
             return (
-            <button
-              key={entry.id}
-              onClick={() => onViewHistory?.(entry)}
-              className="w-full text-left flex items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-[#7A3BFF]/[0.06] hover:border-[#7A3BFF]/25 transition-all px-3.5 py-2.5"
-            >
-              <div className="h-8 w-8 rounded-lg flex items-center justify-center text-base overflow-hidden shrink-0"
-                style={style ? { background: `${style.accentColor}18`, border: `1px solid ${style.accentColor}30` } : { border: "1px solid rgba(255,255,255,0.08)" }}
+              <button
+                key={entry.id}
+                onClick={() => onViewHistory?.(entry)}
+                className="flex w-full items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.03] px-3.5 py-2.5 text-left transition-all hover:border-[#7A3BFF]/25 hover:bg-[#7A3BFF]/[0.06]"
               >
-                {entry.presetIcon?.startsWith("http")
-                  ? <img src={entry.presetIcon} alt={entry.preset} className="w-full h-full object-cover" />
-                  : style?.previewImage
-                    ? <img src={style.previewImage} alt={entry.preset} className="w-full h-full object-cover" />
-                    : <span>{style?.icon || entry.presetIcon}</span>}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-white/65 text-xs font-medium">{entry.preset}</span>
-                  {entry.platform && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-white/[0.07] text-white/30 border border-white/[0.06]">
-                      {PLATFORM_SHORT[entry.platform] || entry.platform}
-                    </span>
-                  )}
-                  <span className="text-white/20 text-[10px] ml-auto shrink-0">{timeAgo(entry.createdAt)}</span>
+                <div
+                  className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg text-base"
+                  style={style ? { background: `${style.accentColor}18`, border: `1px solid ${style.accentColor}30` } : { border: "1px solid rgba(255,255,255,0.08)" }}
+                >
+                  {entry.presetIcon?.startsWith("http")
+                    ? <img src={entry.presetIcon} alt={entry.preset} className="h-full w-full object-cover" />
+                    : style?.previewImage
+                      ? <img src={style.previewImage} alt={entry.preset} className="h-full w-full object-cover" />
+                      : <span>{style?.icon || entry.presetIcon}</span>}
                 </div>
-                <p className="text-white/25 text-[11px] mt-0.5 truncate">{entry.idea || "No description"}</p>
-              </div>
-            </button>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-white/65">{entry.preset}</span>
+                    {entry.platform && (
+                      <span className="rounded-md border border-white/[0.06] bg-white/[0.07] px-1.5 py-0.5 text-[10px] text-white/30">
+                        {PLATFORM_SHORT[entry.platform] || entry.platform}
+                      </span>
+                    )}
+                    <span className="ml-auto shrink-0 text-[10px] text-white/20">{timeAgo(entry.createdAt)}</span>
+                  </div>
+                  <p className="mt-0.5 truncate text-[11px] text-white/25">{entry.idea || "No description"}</p>
+                </div>
+              </button>
             );
           })}
         </div>
       )}
 
-      {/* Image → Script idea */}
-      <ImageToScriptIdea onResult={onImageIdea} />
+      <div className="rounded-2xl border border-white/[0.08] bg-[#111314] p-3">
+        <div className="mb-3 px-1">
+          <h2 className="text-[15px] font-bold tracking-tight text-white">Start a viral script</h2>
+          <p className="mt-1 text-[12px] leading-snug text-white/45">Upload an image or choose a writing style.</p>
+        </div>
 
-      {/* Section header */}
-      <div>
-        <h2 className="text-white text-base font-bold tracking-tight">Choose your style</h2>
-        <p className="text-white/30 text-xs mt-1">
-          Each preset has a tuned creative engine. Pick one and go.
-        </p>
-      </div>
+        <ImageToScriptIdea onResult={onImageIdea} />
 
-      {/* Style grid — 2 columns */}
-      <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="mb-2 mt-4 px-1">
+          <h3 className="text-[12px] font-bold uppercase tracking-wide text-white/35">Choose style</h3>
+        </div>
+
+        {FEATURED_PRESET && (
+          <StyleRow
+            style={FEATURED_PRESET}
+            onClick={() => onSelect(FEATURED_PRESET)}
+            recommended
+          />
+        )}
+
+        <div className="mt-2 grid grid-cols-1 gap-2">
           {PRESETS.map((style) => (
-            <StyleCard key={style.id} style={style} onClick={() => onSelect(style)} />
+            <StyleRow key={style.id} style={style} onClick={() => onSelect(style)} />
           ))}
         </div>
 
-        {/* Custom — full width, different visual treatment */}
         {CUSTOM && (
-          <button
-            onClick={() => onSelect(CUSTOM)}
-            className="group w-full text-left px-4 py-3.5 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-[#7A3BFF]/[0.06] hover:border-[#7A3BFF]/30 transition-all duration-200 active:scale-[0.99] flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-white/[0.06] border border-white/[0.1] flex items-center justify-center text-base">
-                {CUSTOM.icon}
-              </div>
-              <div>
-                <div className="text-white text-[13px] font-semibold">{CUSTOM.name}</div>
-                <div className="text-white/30 text-[11px] mt-0.5">{CUSTOM.tagline}</div>
-              </div>
-            </div>
-            <span className="text-white/20 group-hover:text-white/55 text-sm transition-colors">→</span>
-          </button>
+          <div className="mt-2">
+            <CustomRow style={CUSTOM} onClick={() => onSelect(CUSTOM)} />
+          </div>
         )}
       </div>
-
     </div>
   );
 }

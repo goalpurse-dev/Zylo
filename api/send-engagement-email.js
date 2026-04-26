@@ -13,12 +13,14 @@ const supabase = createClient(
 
 /* ================= CONFIG ================= */
 
-const DELAY_MS        = 400;
-const RETRY_DELAY_MS  = 2000;
-const BATCH_SIZE      = 1000;
-const MAX_SEND        = 50000;          // effectively "everyone"
-const MIN_HOURS_SINCE_LAST_EMAIL = 24;  // don't double-blast within a day
-const DRY_RUN         = false;
+const DELAY_MS                = 400;
+const RETRY_DELAY_MS          = 2000;
+const BATCH_SIZE              = 1000;
+const MAX_SEND                = 50000;
+const MIN_HOURS_SINCE_LAST_EMAIL = 24;
+const DRY_RUN                 = false;
+const COOLDOWN_EVERY          = 1000;          // pause after every N sends
+const COOLDOWN_MS             = 15 * 60 * 1000; // 15 minutes
 
 /* ================= HELPERS ================= */
 
@@ -46,13 +48,13 @@ function buildEmail(user) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Kling 3.0 Pro just landed on Zyvo</title>
+  <title>you're sleeping on this</title>
 </head>
 <body style="margin:0;padding:0;background:#0d0d0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#0d0d0f;">
-    the most cinematic AI video model just got added. here's what it can do 🎬&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+    it's not your niche. it's not the algorithm. it's this.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0d0f;">
@@ -64,7 +66,7 @@ function buildEmail(user) {
 
           <!-- TOP ACCENT BAR -->
           <tr>
-            <td style="height:3px;background:linear-gradient(90deg,#0ea5e9,#6366f1,#7A3BFF,#6366f1,#0ea5e9);"></td>
+            <td style="height:3px;background:linear-gradient(90deg,#7A3BFF,#c077ff,#ff57b2,#c077ff,#7A3BFF);"></td>
           </tr>
 
           <!-- LOGO ROW -->
@@ -76,79 +78,32 @@ function buildEmail(user) {
 
           <!-- HERO -->
           <tr>
-            <td style="padding:28px 32px 0;">
+            <td style="padding:24px 32px 0;">
 
-              <!-- NEW badge -->
-              <div style="display:inline-block;background:rgba(14,165,233,0.12);border:1px solid rgba(14,165,233,0.35);border-radius:100px;padding:5px 14px;margin-bottom:18px;">
-                <span style="font-size:11px;font-weight:700;color:#38bdf8;letter-spacing:0.08em;text-transform:uppercase;">🎬 new model drop</span>
-              </div>
-
-              <h1 style="margin:0 0 16px;font-size:30px;font-weight:800;color:#ffffff;line-height:1.2;letter-spacing:-0.5px;">
-                Kling 3.0 Pro is live.<br/>
-                <span style="background:linear-gradient(90deg,#0ea5e9,#7A3BFF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-                  The best AI video model just got added.
-                </span>
+              <h1 style="margin:0 0 20px;font-size:26px;font-weight:800;color:#ffffff;line-height:1.25;letter-spacing:-0.4px;">
+                ${displayName}, I'll be straight with you.
               </h1>
 
-              <p style="margin:0 0 24px;font-size:15px;line-height:1.8;color:rgba(255,255,255,0.65);">
-                Hey ${displayName} — we just added Kling AI 3.0 Pro to Zyvo. This is the model behind the most cinematic AI videos on TikTok and Reels right now. Here's what makes it different from everything else:
+              <p style="margin:0 0 14px;font-size:15px;line-height:1.85;color:rgba(255,255,255,0.65);">
+                Most creators blame the algorithm when their content doesn't grow. The algorithm isn't the problem.
               </p>
 
-              <!-- FEATURE CARDS -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:8px;">
-                <tr>
-                  <td width="49%" style="padding-right:4px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0f14;border:1px solid rgba(14,165,233,0.2);border-radius:14px;overflow:hidden;">
-                      <tr><td style="height:2px;background:rgba(14,165,233,0.7);"></td></tr>
-                      <tr>
-                        <td style="padding:14px 16px;">
-                          <p style="margin:0 0 4px;font-size:18px;">🎬</p>
-                          <p style="margin:0 0 3px;font-size:13px;font-weight:700;color:#fff;">3–15 second clips</p>
-                          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5;">Slider control · any duration in range</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                  <td width="49%" style="padding-left:4px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0f14;border:1px solid rgba(99,102,241,0.2);border-radius:14px;overflow:hidden;">
-                      <tr><td style="height:2px;background:rgba(99,102,241,0.7);"></td></tr>
-                      <tr>
-                        <td style="padding:14px 16px;">
-                          <p style="margin:0 0 4px;font-size:18px;">🔊</p>
-                          <p style="margin:0 0 3px;font-size:13px;font-weight:700;color:#fff;">AI-generated sound</p>
-                          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5;">First model on Zyvo with sound toggle</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+              <p style="margin:0 0 14px;font-size:15px;line-height:1.85;color:rgba(255,255,255,0.65);">
+                The problem is output quality and volume. The creators getting millions of views right now are producing better content, faster — because they're using AI tools that are actually powerful.
+              </p>
 
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+              <p style="margin:0 0 24px;font-size:15px;line-height:1.85;color:rgba(255,255,255,0.65);">
+                You have a Zyvo account. You're halfway there. But on the free plan, you're limited to 5 images a month and none of the tools that make the real difference. That's what I want to fix today.
+              </p>
+
+              <!-- SOCIAL PROOF BOX -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(122,59,255,0.07);border-left:3px solid #7A3BFF;border-radius:0 12px 12px 0;margin-bottom:24px;">
                 <tr>
-                  <td width="49%" style="padding-right:4px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0f14;border:1px solid rgba(122,59,255,0.2);border-radius:14px;overflow:hidden;">
-                      <tr><td style="height:2px;background:rgba(122,59,255,0.7);"></td></tr>
-                      <tr>
-                        <td style="padding:14px 16px;">
-                          <p style="margin:0 0 4px;font-size:18px;">📐</p>
-                          <p style="margin:0 0 3px;font-size:13px;font-weight:700;color:#fff;">1080p + 1440p output</p>
-                          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5;">9:16 · 16:9 · 1:1 · ultra sharp</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                  <td width="49%" style="padding-left:4px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0f14;border:1px solid rgba(16,185,129,0.2);border-radius:14px;overflow:hidden;">
-                      <tr><td style="height:2px;background:rgba(16,185,129,0.7);"></td></tr>
-                      <tr>
-                        <td style="padding:14px 16px;">
-                          <p style="margin:0 0 4px;font-size:18px;">🖼️</p>
-                          <p style="margin:0 0 3px;font-size:13px;font-weight:700;color:#fff;">Reference image input</p>
-                          <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5;">Consistent subjects across all clips</p>
-                        </td>
-                      </tr>
-                    </table>
+                  <td style="padding:16px 18px;">
+                    <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.7;font-style:italic;">
+                      "Went from 0 to 40K followers in 6 weeks using Zyvo videos. The script builder alone saved me 3 hours a week."
+                    </p>
+                    <p style="margin:8px 0 0;font-size:12px;color:rgba(255,255,255,0.35);">— Sarah M., content creator on Pro plan</p>
                   </td>
                 </tr>
               </table>
@@ -156,44 +111,78 @@ function buildEmail(user) {
               <!-- DIVIDER -->
               <hr style="border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0 0 22px;" />
 
-              <p style="margin:0 0 22px;font-size:15px;line-height:1.8;color:rgba(255,255,255,0.65);">
-                The motion realism on this model is genuinely different. Cinematic camera moves, stable subjects, physically plausible motion — it's the one creators use when they need a clip that actually looks expensive.
-              </p>
+              <p style="margin:0 0 14px;font-size:13px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.3);text-transform:uppercase;">here's what unlocks when you upgrade</p>
 
-              <!-- WHO IT'S FOR -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(122,59,255,0.06);border:1px solid rgba(122,59,255,0.15);border-radius:14px;margin-bottom:24px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
                 <tr>
-                  <td style="padding:18px 20px;">
-                    <p style="margin:0 0 12px;font-size:11px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.3);text-transform:uppercase;">Perfect for</p>
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr><td style="padding:4px 0;"><span style="font-size:13px;color:rgba(255,255,255,0.8);">✦&nbsp;&nbsp;Cinematic storytelling and POV content</span></td></tr>
-                      <tr><td style="padding:4px 0;"><span style="font-size:13px;color:rgba(255,255,255,0.8);">✦&nbsp;&nbsp;Faceless channels that need premium visual quality</span></td></tr>
-                      <tr><td style="padding:4px 0;"><span style="font-size:13px;color:rgba(255,255,255,0.8);">✦&nbsp;&nbsp;Brand and product content with consistent reference images</span></td></tr>
-                      <tr><td style="padding:4px 0;"><span style="font-size:13px;color:rgba(255,255,255,0.8);">✦&nbsp;&nbsp;Any video where the visual quality IS the hook</span></td></tr>
-                    </table>
+                  <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🎬</div></td>
+                  <td style="padding-left:10px;">
+                    <p style="margin:0;font-size:14px;color:#ffffff;font-weight:600;">AI videos with Kling 3.0 Pro</p>
+                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">The model behind the most cinematic content on TikTok right now. AI sound included.</p>
                   </td>
                 </tr>
               </table>
 
-              <p style="margin:0 0 26px;font-size:14px;line-height:1.8;color:rgba(255,255,255,0.5);">
-                Available now inside the Zyvo video generator. Pro plan required — it's a premium model.
-              </p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
+                <tr>
+                  <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">✍️</div></td>
+                  <td style="padding-left:10px;">
+                    <p style="margin:0;font-size:14px;color:#ffffff;font-weight:600;">Viral scripts in 60 seconds</p>
+                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">8 creator styles. Hook, scenes, CTA, image prompts — all structured and ready to film.</p>
+                  </td>
+                </tr>
+              </table>
+
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
+                <tr>
+                  <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🖼️</div></td>
+                  <td style="padding-left:10px;">
+                    <p style="margin:0;font-size:14px;color:#ffffff;font-weight:600;">400 AI images/month — premium models</p>
+                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Cinematic, 3D, realistic. The visual quality that makes people stop scrolling.</p>
+                  </td>
+                </tr>
+              </table>
+
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:26px;">
+                <tr>
+                  <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">📸</div></td>
+                  <td style="padding-left:10px;">
+                    <p style="margin:0;font-size:14px;color:#ffffff;font-weight:600;">Generate prompts from your own images</p>
+                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Upload any photo — AI reverse-engineers the perfect script idea or image prompt from it.</p>
+                  </td>
+                </tr>
+              </table>
 
               <!-- CTA BUTTON -->
-              <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;width:100%;">
+              <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;width:100%;">
                 <tr>
-                  <td style="border-radius:14px;background:linear-gradient(135deg,#0ea5e9,#7A3BFF);box-shadow:0 8px 28px rgba(99,102,241,0.4);">
-                    <a href="https://tryzyvo.com/workspace/video-generator"
-                       style="display:block;text-align:center;padding:17px 32px;font-size:17px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.3px;">
-                      Try Kling 3.0 Pro →
+                  <td style="border-radius:14px;background:linear-gradient(135deg,#7A3BFF,#9d4eff);box-shadow:0 8px 32px rgba(122,59,255,0.5);">
+                    <a href="https://tryzyvo.com/workspace/pricing"
+                       style="display:block;text-align:center;padding:18px 32px;font-size:18px;font-weight:800;color:#ffffff;text-decoration:none;letter-spacing:-0.3px;">
+                      Upgrade my account →
                     </a>
                   </td>
                 </tr>
               </table>
 
-              <p style="margin:0 0 28px;text-align:center;font-size:12px;color:rgba(255,255,255,0.25);">
-                Pro plan · credits charged only after your video renders
+              <p style="margin:0 0 6px;text-align:center;font-size:12px;color:rgba(255,255,255,0.25);">
+                Starter €12/mo · Pro €25/mo · Cancel anytime · No hidden fees
               </p>
+
+              <p style="margin:0 0 26px;text-align:center;font-size:12px;color:rgba(255,255,255,0.2);">
+                4,200+ creators already on paid plans
+              </p>
+
+              <!-- DIVIDER -->
+              <hr style="border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0 0 20px;" />
+
+              <!-- PS -->
+              <p style="margin:0 0 6px;font-size:14px;line-height:1.8;color:rgba(255,255,255,0.55);">
+                <strong style="color:rgba(255,255,255,0.8);">P.S.</strong> — If you only use one thing from a paid plan, use the Viral Script Builder. Pick your style, describe your idea, and in 60 seconds you have a full structured script with hooks, scene breakdowns, and image prompts. It genuinely changes how fast you can produce content.
+                <a href="https://tryzyvo.com/workspace/viral-script" style="color:#9B6DFF;text-decoration:none;font-weight:600;">Try it here →</a>
+              </p>
+
+              <p style="margin:16px 0 0;font-size:13px;color:rgba(255,255,255,0.3);">— Niko, Zyvo</p>
 
             </td>
           </tr>
@@ -202,8 +191,8 @@ function buildEmail(user) {
           <tr>
             <td style="padding:20px 32px 28px;border-top:1px solid rgba(255,255,255,0.06);">
               <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.25);line-height:1.7;">
-                You're getting this because you opted in to Zyvo updates.<br/>
-                <a href="https://tryzyvo.com/settings" style="color:rgba(255,255,255,0.35);text-decoration:underline;">Manage preferences</a>
+                You created a Zyvo account — that's why you're hearing from us.<br/>
+                <a href="https://tryzyvo.com/settings" style="color:rgba(255,255,255,0.35);text-decoration:underline;">Unsubscribe</a>
                 &nbsp;·&nbsp;
                 <a href="https://tryzyvo.com" style="color:rgba(255,255,255,0.35);text-decoration:underline;">tryzyvo.com</a>
               </p>
@@ -232,7 +221,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "the most cinematic AI video model just landed on Zyvo 🎬",
+      subject: "the real reason your content isn't growing",
       html: buildEmail(user),
     });
 
@@ -261,7 +250,8 @@ export default async function handler(req, res) {
       const { data, error } = await supabase
         .from("profiles")
         .select("email, last_email_sent_at")
-        .eq("email_updates", true)
+        .eq("plan_code", "free")
+        .not("email", "is", null)
         .range(from, from + BATCH_SIZE - 1);
 
       if (error) {
@@ -275,7 +265,7 @@ export default async function handler(req, res) {
       from += BATCH_SIZE;
     }
 
-    console.log(`📊 Total opted-in users: ${allUsers.length}`);
+    console.log(`📊 Total free users to email: ${allUsers.length}`);
 
     let sent = 0, failed = 0, skipped = 0;
 
@@ -309,7 +299,7 @@ export default async function handler(req, res) {
           .from("profiles")
           .update({
             last_email_sent_at: new Date().toISOString(),
-            last_email_type: "kling_pro_drop",
+            last_email_type: "free_fomo_blast",
           })
           .eq("email", user.email);
       } else {
@@ -317,6 +307,13 @@ export default async function handler(req, res) {
       }
 
       await sleep(DELAY_MS);
+
+      // Every COOLDOWN_EVERY successful sends, pause for 15 minutes
+      if (sent > 0 && sent % COOLDOWN_EVERY === 0) {
+        console.log(`⏸️  Sent ${sent} emails — cooling down for 15 minutes...`);
+        await sleep(COOLDOWN_MS);
+        console.log(`▶️  Resuming...`);
+      }
     }
 
     console.log("🎯 Campaign complete");

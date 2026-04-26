@@ -3,11 +3,18 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 /* =================== CONFIG =================== */
-/** Recurring plan map (MUST match your live price IDs) */
+/** Recurring plan map — includes both EUR (current) and legacy USD price IDs.
+ *  Add any old USD price IDs here so pre-migration subscribers still get credits on renewal. */
 const PRICE_MAP: Record<string, { plan: "starter" | "pro" | "generative"; credits: number }> = {
+  // ── EUR prices (current) ──
   "price_1TGKT6Htn4q5rIncI47V5Ein": { plan: "starter",    credits: 600 },
   "price_1TGKSqHtn4q5rIncIf8RPa6e": { plan: "pro",        credits: 1200 },
- "price_1TGKSSHtn4q5rIncSTurqkCN": { plan: "generative", credits: 2500 },
+  "price_1TGKSSHtn4q5rIncSTurqkCN": { plan: "generative", credits: 2500 },
+
+  // ── USD prices (legacy — pre-EUR migration subscribers) ──
+  "price_1T8gM3Htn4q5rInchn8CMEcO": { plan: "starter",    credits: 600 },
+  "price_1T8gMVHtn4q5rIncWwcUi9mG": { plan: "pro",        credits: 1200 },
+  "price_1T8gMsHtn4q5rIncW0vy8d57": { plan: "generative", credits: 2500 },
 };
 
 /** One-time top-up map (fallback if Price.metadata.credits is not set) */

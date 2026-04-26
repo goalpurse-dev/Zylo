@@ -814,7 +814,7 @@ useEffect(() => {
   ref={latestRef}
  className="
   w-full md:min-h-full
-  bg-[#191B1C]
+  bg-[#111314]
   flex flex-col
   px-4 pt-2 md:pb-6
   rounded-[22px]

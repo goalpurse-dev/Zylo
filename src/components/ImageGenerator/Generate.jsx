@@ -91,6 +91,12 @@ const glassBtn = `
   rounded-xl
 `;
 
+const SAMPLE_REFERENCE_IMAGES = [
+  "/assets/showcase/image3.webp",
+  "/assets/showcase/image4.webp",
+  "/assets/showcase/image5.webp",
+];
+
 const SubMenu = ({ title, onBack, children }) => (
   <div className=" flex flex-col ">
     <button
@@ -838,9 +844,9 @@ useEffect(() => {
 w-full h-full flex flex-col
  pb-[110px] md:pb-6
   rounded-[22px]
- bg-[#191B1C]
-border border-white/5
-shadow-[0_10px_40px_rgba(0,0,0,0.4)]
+ bg-[#111314]
+border border-white/[0.08]
+shadow-[0_10px_40px_rgba(0,0,0,0.32)]
   p-5 md:p-6
 
  space-y-3 lg:space-y-2
@@ -856,8 +862,8 @@ shadow-[0_10px_40px_rgba(0,0,0,0.4)]
     className="
       relative flex w-full p-1
       rounded-xl
-      bg-[#16181A]
-      border border-white/5
+      bg-[#151719]
+      border border-white/[0.08]
       overflow-hidden
     "
   >
@@ -871,11 +877,13 @@ shadow-[0_10px_40px_rgba(0,0,0,0.4)]
             ? "left-1"
             : "left-[calc(50%-2px)]"
         }
-        bg-[#16181A]
+        bg-[#221936]
+        border border-[#7A3BFF]/35
+        shadow-[0_10px_30px_rgba(122,59,255,0.22)]
         overflow-hidden
       `}
     >
-      <div className="mode-glow" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(122,59,255,0.26),transparent_72%)]" />
     </div>
 
     {[
@@ -946,12 +954,12 @@ className={`
 <div className="mt-3 flex items-center justify-center gap-3 text-sm font-medium">
 
 {freeRemaining > 0 ? (
-  <span className={freeRemaining <= 1 ? "text-[#E879F9]" : freeRemaining <= 3 ? "text-[#C084FC]" : "text-white/40"}>
+  <span className={freeRemaining <= 1 ? "text-[#B69CFF]" : freeRemaining <= 3 ? "text-[#9B6DFF]" : "text-white/40"}>
     {freeRemaining} / 5 free this month
   </span>
 ) : (
   <>
-    <span className="text-[#E879F9]">
+    <span className="text-[#B69CFF]">
       Monthly limit reached
     </span>
 
@@ -1004,72 +1012,50 @@ className={`
     setOpenReferenceModal(true)
   }}
   className={`
-    relative w-full rounded-xl overflow-hidden
-
-    border border-white/5
-    bg-[#16181A]
-
-    py-5
-
-    flex flex-col items-center justify-center gap-2
-
-    transition-all duration-200
+    group relative w-full rounded-xl overflow-hidden
+    border px-3.5 py-3.5
+    flex items-center gap-3 text-left
+    transition-all duration-200 active:scale-[0.99]
 
     ${
       canAddImages
-        ? "hover:border-[#7A3BFF]/40 hover:bg-[#181A22]"
+        ? "border-[#7A3BFF]/35 bg-[#21162F] hover:border-[#9B6DFF]/65 hover:bg-[#261A37]"
         : "opacity-40 cursor-not-allowed"
     }
   `}
 >
-
-  {/* 🔥 SAME STRUCTURE AS MODE SELECTOR */}
-  <div
-    className={`
-      absolute inset-1 rounded-lg transition-all duration-300
-
-     ${canAddImages ? "opacity-100" : "opacity-0"}
-    `}
-  >
-    <div className="mode-glow" />
+  <div className="flex h-11 w-[74px] shrink-0 items-center">
+    {(selected.length > 0 ? selected.slice(0, 3).map((img) => img.url) : SAMPLE_REFERENCE_IMAGES).slice(0, 3).map((src, index) => (
+      <div
+        key={`${src}-${index}`}
+        className="h-10 w-10 overflow-hidden rounded-lg border border-white/15 bg-white/[0.06] shadow-[0_8px_18px_rgba(0,0,0,0.28)]"
+        style={{ marginLeft: index === 0 ? 0 : -20, zIndex: 3 - index }}
+      >
+        <img src={src} alt="" className="h-full w-full object-cover" />
+      </div>
+    ))}
   </div>
 
-  {/* CONTENT */}
-<div className="relative z-10 flex flex-col items-center justify-center text-center ">
-<img
-  src="/icons/reference.png"
-  alt="Reference"
-  className={`
-    w-12 h-12 object-contain scale-125
-
-    transition-all duration-200
-
-    ${
-      canAddImages
-        ? "opacity-95 scale-110 drop-shadow-[0_0_20px_rgba(168,85,247,0.7)]"
-        : "opacity-40"
-    }
-  `}
-/>
-
-  <p
-  className={`
-    text-sm font-medium transition-all duration-200
-    mt-[-2px]
-
-    ${
-      selected.length > 0
-        ? "text-white"
-        : "text-white/60"
-    }
-  `}
->
-      {selected.length > 0
-        ? `${selected.length} reference${selected.length > 1 ? "s" : ""} added`
-        : "Add visual references"}
+  <div className="min-w-0 flex-1">
+    <div className="flex items-center gap-2">
+      <p className="truncate text-[13px] font-semibold text-white">
+        {selected.length > 0
+          ? `${selected.length} reference${selected.length > 1 ? "s" : ""} added`
+          : "Add visual references"}
+      </p>
+      <span className="rounded-md border border-white/10 bg-white/[0.07] px-1.5 py-0.5 text-[10px] font-medium text-white/55">
+        Optional
+      </span>
+    </div>
+    <p className="mt-0.5 truncate text-[11px] text-white/50">
+      JPEG/PNG/WEBP/GIF, 20 MB max
     </p>
-
   </div>
+
+  <span className="shrink-0 rounded-lg border border-[#B69CFF]/20 bg-[#7A3BFF]/18 px-3 py-1.5 text-[11px] font-bold text-[#D7CBFF] transition-colors group-hover:bg-[#7A3BFF]/28">
+    {selected.length > 0 ? "Edit" : "Add"}
+  </span>
+
 </button>
 
 
@@ -1433,7 +1419,7 @@ md:group-hover:brightness-110
   }}
 >
   <div className="pointer-events-auto">
-    <div className="w-full bg-[#191B1C] border-t border-white/5 md:px-0 px-4 pt-3 pb-3 backdrop-blur-xl">
+    <div className="w-full bg-[#101213]/95 border-t border-white/[0.08] md:px-0 px-4 pt-3 pb-3 backdrop-blur-xl">
      <div className="w-full md:max-w-none md:mx-0 max-w-[900px] mx-auto">
         <GenerateButton
           onClick={handleGenerate}
@@ -1555,7 +1541,7 @@ function ImageToPromptButton({ onPrompt }) {
         style={{
           background: loading
             ? "linear-gradient(135deg,#7A3BFF,#C084FC)"
-            : "linear-gradient(135deg,#7A3BFF 0%,#C084FC 40%,#ff57b2 70%,#7A3BFF 100%)",
+            : "linear-gradient(135deg,#7A3BFF 0%,#9B6DFF 48%,#B69CFF 72%,#7A3BFF 100%)",
         }}
       >
         <button
@@ -1569,7 +1555,7 @@ function ImageToPromptButton({ onPrompt }) {
               style={{ background: "rgba(122,59,255,0.2)", border: "1px solid rgba(122,59,255,0.3)", boxShadow: "0 0 14px rgba(122,59,255,0.18)" }}>
               {loading
                 ? <div className="w-4 h-4 rounded-full border-2 border-[#7A3BFF]/30 border-t-[#C084FC] animate-spin" />
-                : <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="13" height="10" rx="2" stroke="#C084FC" strokeWidth="1.5"/><path d="M16 10.5l4-2.5v8l-4-2.5" stroke="#C084FC" strokeWidth="1.5" strokeLinejoin="round"/><path d="M20 4l1.5 1.5M22.5 2l-1.5 1.5" stroke="#ff57b2" strokeWidth="1.2" strokeLinecap="round" opacity="0.8"/></svg>
+                : <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="13" height="10" rx="2" stroke="#C084FC" strokeWidth="1.5"/><path d="M16 10.5l4-2.5v8l-4-2.5" stroke="#C084FC" strokeWidth="1.5" strokeLinejoin="round"/><path d="M20 4l1.5 1.5M22.5 2l-1.5 1.5" stroke="#B69CFF" strokeWidth="1.2" strokeLinecap="round" opacity="0.8"/></svg>
               }
             </div>
             <div className="flex-1 min-w-0">

@@ -27,8 +27,15 @@ import { createPortal } from "react-dom";
 import { useMemo } from "react";
 import UpgradeToast from "../../components/VideoGenerator/UpgradeToast";
 import GuestVideoModal from "../../components/VideoGenerator/GuestVideoModal";
+import GenerateButton from "../../components/ImageGenerator/GenerateButton";
 VideoIcon
 Folder
+
+const SAMPLE_REFERENCE_IMAGES = [
+  "/assets/showcase/image3.webp",
+  "/assets/showcase/image4.webp",
+  "/assets/showcase/image5.webp",
+];
 
 export default function Generate({  }) {
 
@@ -326,7 +333,7 @@ useEffect(() => {
 }
 
   return (
-    <div className="w-full flex flex-col gap-3 relative bg-[#191B1C] border border-white/5 rounded-[22px] p-5">
+    <div className="w-full flex-1 flex flex-col gap-3 relative bg-[#111314] border border-white/[0.08] shadow-[0_10px_40px_rgba(0,0,0,0.32)] rounded-[22px] p-5 md:p-6">
 
       {/* BLUR OVERLAY */}
 {isAnyModalOpen &&
@@ -342,35 +349,45 @@ useEffect(() => {
     document.body
   )}
 
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-semibold text-white">
-          Create Viral Video
-        </h1>
-        <p className="text-sm text-white/50">
-          Turn your ideas into cinematic AI videos.
-        </p>
-      </div>
-
           {/* MODE SELECTOR */}
-<div className="relative w-full flex justify-center mt-2">
+<div className="w-full">
   <div
     className="
       relative flex w-full p-1
       rounded-xl
-      border border-white/5
-      bg-[#16181A]
+      bg-[#151719]
+      border border-white/[0.08]
       overflow-hidden
     "
   >
+    <div
+      className={`
+        absolute top-1 bottom-1 w-1/2 rounded-lg
+        transition-all duration-300
+        ${
+          location.pathname === "/workspace/video-generator"
+            ? "left-[calc(50%-2px)]"
+            : "left-1"
+        }
+        bg-[#221936]
+        border border-[#7A3BFF]/35
+        shadow-[0_10px_30px_rgba(122,59,255,0.22)]
+        overflow-hidden
+      `}
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(122,59,255,0.26),transparent_72%)]" />
+    </div>
+
     {[
       {
         label: "Viral Image",
         path: "/workspace/image-generator",
+        icon: "/icons/image.png",
       },
       {
         label: "Viral Video",
         path: "/workspace/video-generator",
+        icon: "/icons/video.png",
       },
     ].map((item) => {
       const isActive = location.pathname === item.path;
@@ -379,21 +396,23 @@ useEffect(() => {
         <button
           key={item.label}
           onClick={() => navigate(item.path)}
-          className="relative flex-1 py-2.5 text-sm font-medium z-10"
+          className="relative flex-1 py-1 flex flex-col items-center justify-center gap-[1px] mb-1 z-10"
         >
-          {isActive && (
-            <div
-              className="
-                absolute inset-0 rounded-xl
-                bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]
-                shadow-[0_0_25px_rgba(122,59,255,0.45)]
-                transition-all duration-300
-              "
-            />
-          )}
+          <img
+            src={item.icon}
+            alt={item.label}
+            className={`
+              object-contain transition-all duration-200
+              ${
+                isActive
+                  ? "w-8 h-8 opacity-100 scale-110 drop-shadow-[0_0_14px_rgba(168,85,247,0.9)]"
+                  : "w-7 h-7 opacity-50 hover:opacity-80 hover:scale-105"
+              }
+            `}
+          />
 
           <span
-            className={`relative z-10 ${
+            className={`text-xs font-medium transition-all duration-200 ${
               isActive ? "text-white" : "text-white/60"
             }`}
           >
@@ -405,32 +424,104 @@ useEffect(() => {
   </div>
 </div>
 
+      {/* MODEL */}
+<button
+  onClick={() => {
+    setOpenModel(!openModel);
+    setOpenSize(false);
+    setOpenDuration(false);
+  }}
+className={`
+  md:alive-card
+  group relative
+  rounded-xl
+  border border-white/10
+  bg-[#151719]
+  px-4 py-3.5
+  text-left
+  transition-all duration-200
+  hover:border-[#7A3BFF]/40
+  hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
+  active:scale-[0.98]
+
+  ${openModel ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : ""}
+`}
+>
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      <img
+        src={selectedModel.logo}
+        alt={selectedModel.label}
+        className="w-9 h-9 rounded-lg object-cover"
+      />
+
+      <div className="flex flex-col">
+        <p className="text-xs text-white/50">Model</p>
+        <p className="text-sm text-white font-medium">
+          {selectedModel.label}
+        </p>
+      </div>
+    </div>
+
+    <ChevronRight
+      className={`w-4 h-4 text-white/40 transition-all duration-200 ${
+        openModel
+          ? "rotate-90 text-purple-400"
+          : "group-hover:translate-x-1"
+      }`}
+    />
+  </div>
+</button>
+
       {/* PROMPT */}
-      
-<div className="relative">
+<div className="w-full">
   <div
+    data-ftg="prompt"
     className="
-      rounded-xl
-      border border-white/5
-      bg-[#16181A]
-      px-4 py-6
-      transition
-      focus-within:border-[#7A3BFF]/50
-      focus-within:shadow-[0_0_0_1px_rgba(122,59,255,0.3)]
+      rounded-2xl
+      bg-[#151719]
+      border border-white/[0.09]
+      px-4 py-4
     "
   >
-    <textarea
-      value={prompt}
-      onChange={(e) => setPrompt(e.target.value)}
-      placeholder="Describe your video scene..."
-      rows={4}
+    <span className="text-[13px] font-semibold text-white block mb-3">
+      Describe your video
+    </span>
+
+    <div
       className="
-        w-full bg-transparent outline-none
-        text-[15px] text-white
-        placeholder:text-white/40
-        resize-none
+        rounded-xl
+        bg-[#101213]
+        border border-white/[0.08]
+        px-4 py-3
+        transition
+        focus-within:border-[#7A3BFF]/50
+        focus-within:bg-[#111317]
       "
-    />
+    >
+      <textarea
+        value={prompt}
+        onChange={(e) => {
+          setPrompt(e.target.value);
+          const el = e.target;
+          el.style.height = "auto";
+          el.style.height = `${Math.min(el.scrollHeight, 220)}px`;
+        }}
+        placeholder="Describe your viral video..."
+        rows={4}
+        className="
+          w-full
+          bg-transparent
+          outline-none
+          resize-none
+          text-white
+          placeholder:text-white/35
+          text-[16px]
+          overflow-y-auto
+          max-h-[220px]
+        "
+      />
+    </div>
   </div>
 </div>
 
@@ -442,23 +533,48 @@ useEffect(() => {
     setOpenReferenceModal(true);
   }}
   className={`
-    w-full rounded-xl
-    border border-white/5
-    bg-[#16181A]
-    py-7
-    flex flex-col items-center justify-center gap-2
-    transition-all duration-200
+    group relative w-full rounded-xl overflow-hidden
+    border px-3.5 py-3.5
+    flex items-center gap-3 text-left
+    transition-all duration-200 active:scale-[0.99]
     ${
       canAddImages
-        ? "hover:border-[#7A3BFF]/50 hover:shadow-[0_8px_30px_rgba(122,59,255,0.15)] hover:scale-[1.01]"
+        ? "border-[#7A3BFF]/35 bg-[#21162F] hover:border-[#9B6DFF]/65 hover:bg-[#261A37]"
         : "opacity-40 cursor-not-allowed"
     }
   `}
 >
-  <ImagePlus className="w-6 h-6 text-white/50" />
-  <p className="text-sm text-white/60 font-medium">
-    Add visual references
-  </p>
+  <div className="flex h-11 w-[74px] shrink-0 items-center">
+    {(selected.length > 0 ? selected.slice(0, 3).map((img) => img.url) : SAMPLE_REFERENCE_IMAGES).slice(0, 3).map((src, index) => (
+      <div
+        key={`${src}-${index}`}
+        className="h-10 w-10 overflow-hidden rounded-lg border border-white/15 bg-white/[0.06] shadow-[0_8px_18px_rgba(0,0,0,0.28)]"
+        style={{ marginLeft: index === 0 ? 0 : -20, zIndex: 3 - index }}
+      >
+        <img src={src} alt="" className="h-full w-full object-cover" />
+      </div>
+    ))}
+  </div>
+
+  <div className="min-w-0 flex-1">
+    <div className="flex items-center gap-2">
+      <p className="truncate text-[13px] font-semibold text-white">
+        {selected.length > 0
+          ? `${selected.length} reference${selected.length > 1 ? "s" : ""} added`
+          : "Add visual references"}
+      </p>
+      <span className="rounded-md border border-white/10 bg-white/[0.07] px-1.5 py-0.5 text-[10px] font-medium text-white/55">
+        Optional
+      </span>
+    </div>
+    <p className="mt-0.5 truncate text-[11px] text-white/50">
+      JPEG/PNG/WEBP/GIF, 20 MB max
+    </p>
+  </div>
+
+  <span className="shrink-0 rounded-lg border border-[#B69CFF]/20 bg-[#7A3BFF]/18 px-3 py-1.5 text-[11px] font-bold text-[#D7CBFF] transition-colors group-hover:bg-[#7A3BFF]/28">
+    {selected.length > 0 ? "Edit" : "Add"}
+  </span>
 </button>
 {selected.length > 0 && (
   <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 w-full mt-2">
@@ -557,6 +673,8 @@ useEffect(() => {
 
  */}
 
+      {false && (
+      <>
       {/* MODEL */}
 <button
   onClick={() => {
@@ -569,7 +687,7 @@ className={`
   group relative
   rounded-xl
   border border-white/10
-  bg-[#16181A]
+  bg-[#151719]
   px-4 py-3.5
   text-left
   transition-all duration-200
@@ -612,7 +730,8 @@ className={`
 </div>
 
 </button>
-
+      </>
+      )}
       {/* SETTINGS */}
       <div ref={controlsRef} className={`grid gap-2 relative z-50 mt-2 ${isKlingPro ? "grid-cols-1" : "grid-cols-2"}`}>
 
@@ -633,7 +752,7 @@ className={`
   group relative
   rounded-xl
   border border-white/10
-  bg-[#16181A]
+  bg-[#151719]
   px-4 py-3.5
   text-left
   transition-all duration-200
@@ -681,7 +800,7 @@ className={`
 
         {/* DURATION — slider for Kling Pro, dropdown for everything else */}
         {isKlingPro ? (
-          <div className="rounded-xl border border-white/10 bg-[#16181A] px-4 py-3 flex flex-col gap-1">
+          <div className="rounded-xl border border-white/10 bg-[#151719] px-4 py-3 flex flex-col gap-1">
             <div className="flex items-center justify-between mb-1">
               <p className="text-xs text-white/50">Duration</p>
               <p className="text-sm text-white font-medium">{klingProDuration}s</p>
@@ -712,7 +831,7 @@ className={`
   group relative
   rounded-xl
   border border-white/10
-  bg-[#16181A]
+  bg-[#151719]
   px-4 py-3.5
   text-left
   transition-all duration-200
@@ -752,7 +871,7 @@ className={`
         md:-translate-y-1/2
         w-[92%] md:w-[800px]
         max-h-[75vh]
-        bg-[#191B1C]
+        bg-[#111314]
         border border-white/10
         rounded-xl
         shadow-2xl
@@ -888,7 +1007,7 @@ className={`
             border transition-all duration-200
             ${isActive
               ? "bg-[#7A3BFF] text-white border-[#7A3BFF] shadow-[0_0_16px_rgba(122,59,255,0.5)]"
-              : "bg-[#1A1D2B] border-[#2A2F45] text-[#E6E8EE] hover:border-[#7A3BFF]/40 hover:shadow-[0_0_8px_rgba(122,59,255,0.2)] shadow-[0_0_3px_rgba(122,59,255,0.2)]"
+              : "bg-[#151719] border-white/[0.08] text-[#E6E8EE] hover:border-[#7A3BFF]/40"
             }
           `}
         >
@@ -909,7 +1028,7 @@ className={`
       rounded-xl border px-4 py-3 transition-all duration-200
       ${withSound
         ? "border-[#7A3BFF]/60 bg-[#7A3BFF]/10"
-        : "border-white/10 bg-[#16181A] hover:border-[#7A3BFF]/30"
+        : "border-white/10 bg-[#151719] hover:border-[#7A3BFF]/30"
       }
     `}
   >
@@ -926,7 +1045,30 @@ className={`
   </button>
 )}
 
- {/* GENERATE BUTTON */}
+{/* GENERATE SECTION (FIXED ABOVE NAV) */}
+<div
+  className="fixed left-0 right-0 z-[90] md:static pointer-events-none"
+  style={{
+    bottom: "calc(70px + env(safe-area-inset-bottom))"
+  }}
+>
+  <div className="pointer-events-auto">
+    <div className="w-full bg-[#101213]/95 border-t border-white/[0.08] md:border-t-0 md:bg-transparent md:px-0 px-4 pt-3 pb-3 backdrop-blur-xl md:backdrop-blur-0">
+      <div className="w-full md:max-w-none md:mx-0 max-w-[900px] mx-auto">
+        <GenerateButton
+          onClick={handleGenerate}
+          disabled={!prompt.trim() || isGenerating || missingRequiredImage}
+          isGenerating={isGenerating}
+          estimatedCredits={totalCredits}
+        />
+      </div>
+    </div>
+  </div>
+</div>
+
+{false && (
+<>
+ {/* OLD GENERATE BUTTON */}
 <button
   onClick={handleGenerate}
   
@@ -974,6 +1116,8 @@ className={`
     <span className="cursor-default">Estimated cost: {totalCredits} credits</span>
   </div>
 </div>
+</>
+)}
 
 {/* 🔥 MOVE THIS HERE */}
 {openReferenceModal && canAddImages && (
@@ -1023,7 +1167,7 @@ function Modal({ title, onClose, children }) {
         top-[18%] md:top-1/2 md:-translate-y-1/2
         w-[92%] md:w-[450px]
         max-h-[70vh]
-        bg-[#191B1C]
+        bg-[#111314]
         border border-white/10
         rounded-xl
         shadow-2xl

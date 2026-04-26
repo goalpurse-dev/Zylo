@@ -211,17 +211,17 @@ export default function ScriptBuilder() {
   const activeScript = viewingEntry?.script || scriptData;
 
   return (
-    <div className="h-full w-full flex overflow-hidden bg-[#090A0A]">
+    <div className="h-full w-full flex overflow-hidden bg-[#111314]">
 
       {/* ─── LEFT PANEL ─────────────────────────────────────────────────────── */}
       <div
         className={`
-          w-full xl:max-w-[460px] xl:min-w-[420px] border-r border-white/[0.06] flex flex-col
+          w-full xl:max-w-[460px] xl:min-w-[420px] border-r border-white/[0.06] bg-[#111314] flex flex-col
           ${mobileView === "result" ? "hidden xl:flex" : "flex"}
         `}
       >
         {/* Header */}
-        <div className="shrink-0 px-5 py-4 border-b border-white/[0.06] flex items-center justify-between gap-3">
+        <div className="shrink-0 px-5 py-4 border-b border-white/[0.06] bg-[#111314] flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-[#7A3BFF] to-[#6F3AE6] flex items-center justify-center text-sm shadow-md shadow-purple-700/40">
               ✍️
@@ -265,7 +265,7 @@ export default function ScriptBuilder() {
         </div>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto pb-[80px] xl:pb-0">
+        <div className="flex-1 overflow-y-auto bg-[#111314] pb-[80px] xl:pb-0">
           {!selectedStyle ? (
             <ScriptStylePicker
               onSelect={handleStyleSelect}
@@ -292,8 +292,8 @@ export default function ScriptBuilder() {
       </div>
 
       {/* ─── RIGHT PANEL (desktop) ──────────────────────────────────────────── */}
-      <div className="hidden xl:flex flex-1 flex-col overflow-hidden">
-        <div className="shrink-0 px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
+      <div className="hidden xl:flex flex-1 flex-col overflow-hidden bg-[#111314]">
+        <div className="shrink-0 px-6 py-4 border-b border-white/[0.06] bg-[#111314] flex items-center justify-between">
           <span className="text-white/40 text-xs font-semibold uppercase tracking-widest">
             {imageResult ? "Script Idea" : activeScript ? "Script Output" : "Output"}
           </span>
@@ -334,8 +334,8 @@ export default function ScriptBuilder() {
 
       {/* ─── MOBILE RESULT PANEL ────────────────────────────────────────────── */}
       {mobileView === "result" && (activeScript || imageResult) && (
-        <div className="xl:hidden flex flex-col w-full h-full">
-          <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-white/[0.06] bg-[#090A0A]">
+        <div className="xl:hidden flex flex-col w-full h-full bg-[#111314]">
+          <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-white/[0.06] bg-[#111314]">
             <button
               onClick={() => { setMobileView("builder"); if (imageResult) setImageResult(null); }}
               className="flex items-center gap-2 text-white/50 hover:text-white/80 text-sm transition-colors"
@@ -349,7 +349,7 @@ export default function ScriptBuilder() {
             </button>
           </div>
 
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 bg-[#111314]">
             <ScriptResult
               script={imageResult ? null : activeScript}
               history={history}

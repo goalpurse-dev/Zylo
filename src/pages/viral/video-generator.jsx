@@ -137,18 +137,18 @@ export default function VideoGenerator() {
          * Generate: static (overflow-hidden), clips if screen too short.
          * Result: scrollable only when results overflow the column.
          */
-        <div className="flex h-full">
+        <div className="flex h-full gap-2 bg-[#090A0A]">
 
           {/* Generate — scrollable when content overflows */}
-          <div className="w-[450px] flex-shrink-0 h-full overflow-y-auto bg-[#191B1C] border-r border-white/5">
-            <div className="p-5">
+          <div className="basis-[40%] 2xl:basis-[25%] shrink-0 h-full overflow-y-auto bg-[#090A0A]">
+            <div className="p-2 min-h-full box-border flex flex-col">
               <Generate />
             </div>
           </div>
 
           {/* Result — scrollable when results exist, fills full height */}
-          <div className="flex-1 min-w-0 h-full overflow-y-auto">
-            <div className="p-5 pb-8 min-h-full box-border flex flex-col">
+          <div className="flex-1 min-w-0 h-full overflow-y-auto bg-[#090A0A]">
+            <div className="p-2 pb-8 min-h-full box-border flex flex-col">
               <Result results={results} />
             </div>
           </div>

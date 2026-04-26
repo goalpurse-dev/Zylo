@@ -270,7 +270,7 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
   // ── Empty state ──────────────────────────────────────────────────────────
   if (!script) {
     return (
-      <div className="h-full flex flex-col overflow-y-auto">
+      <div className="h-full flex flex-col overflow-y-auto bg-[#111314]">
 
         {/* ── Image result card ── */}
         {imageResult && (
@@ -353,7 +353,7 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
 
   // ── Script output ────────────────────────────────────────────────────────
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto bg-[#111314]">
       <div className={`p-5 lg:p-6 space-y-4 ${bottomPad ? "pb-[90px]" : ""}`}>
 
         {/* Meta + actions */}
