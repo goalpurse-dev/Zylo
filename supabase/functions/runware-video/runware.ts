@@ -83,16 +83,20 @@ export async function launchRunwareVideo(args: RunwareLaunchArgs): Promise<Runwa
   const taskUUID = crypto.randomUUID();
 
   const task: Record<string, unknown> = {
-    taskType: "videoInference",
-    taskUUID,
-    model: args.airTag,
-    positivePrompt: args.subject,
-    duration: args.durationSec,
-    numberResults: 1,
-    outputType: "URL",
-    outputFormat: "MP4",
-    includeCost: true,
-  };
+  taskType: "videoInference",
+  taskUUID,
+  model: args.airTag,
+  positivePrompt: args.subject,
+  duration: args.durationSec,
+  numberResults: 1,
+  outputType: "URL",
+  outputFormat: "mp4",
+  outputQuality: 85,
+  includeCost: true,
+
+  // ✅ CRITICAL FIX
+  deliveryMethod: "async",
+};
 
   /* ================= FILTER REFERENCE IMAGES ================= */
 
@@ -114,41 +118,43 @@ export async function launchRunwareVideo(args: RunwareLaunchArgs): Promise<Runwa
 
   /* ================= SIZE HANDLING ================= */
 
-  const isKlingPro = args.airTag === "klingai:kling-video@3-pro";
-  const isKling    = args.airTag.startsWith("klingai:");
-  const isMiniMax  = args.airTag.includes("minimax");
-  const hasInputs  = safeRefs.length > 0;
+ /* ================= SIZE HANDLING ================= */
 
-  if (isMiniMax) {
-    // MiniMax uses a resolution string
-    task.resolution = args.resolution ?? "720p";
-  } else if (isKlingPro) {
-    // Pro WITH ref image: frameImages already set, no resolution/size needed by Runware
-    // Pro WITHOUT ref image: use explicit dimensions passed from generator
-    if (!hasInputs) {
-      task.width  = args.width;
-      task.height = args.height;
-    }
-    // CFGScale required for Kling Pro
-    task.CFGScale = 0.5;
-    // Sound is a Kling Pro provider setting
-    task.providerSettings = { klingai: { sound: args.withSound ?? false } };
-  } else if (isKling) {
-    if (hasInputs) {
-      // Kling Standard WITH reference images requires a resolution string
-      task.resolution = "720p";
-    } else {
-      task.width  = args.width;
-      task.height = args.height;
-    }
-  } else {
-    // All other models use explicit dimensions
+const isKlingPro = args.airTag === "klingai:kling-video@3-pro";
+const isKling    = args.airTag.startsWith("klingai:");
+const isMiniMax  = args.airTag.includes("minimax");
+const hasInputs  = safeRefs.length > 0;
+
+if (isMiniMax) {
+  // MiniMax / Hailou uses only: "768p" or "1080p"
+  task.resolution = args.resolution === "1080p" ? "1080p" : "768p";
+
+  // Safety: MiniMax should not receive width/height
+  delete task.width;
+  delete task.height;
+} else if (isKlingPro) {
+  if (!hasInputs) {
     task.width  = args.width;
     task.height = args.height;
   }
 
+  task.CFGScale = 0.5;
+  task.providerSettings = { klingai: { sound: args.withSound ?? false } };
+} else if (isKling) {
+  if (hasInputs) {
+    task.resolution = "720p";
+  } else {
+    task.width  = args.width;
+    task.height = args.height;
+  }
+} else {
+  task.width  = args.width;
+  task.height = args.height;
+}
+
   /* ================= SEND ================= */
 
+  console.log("[runware-video] FINAL TASK", JSON.stringify(task, null, 2));
   const { res, text, json } = await postJson([task]);
 
   if (!res.ok) {
