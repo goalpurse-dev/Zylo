@@ -274,7 +274,7 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
 
         {/* ── Image result card ── */}
         {imageResult && (
-          <div className={`p-5 lg:p-6 ${bottomPad ? "pb-[90px]" : ""}`}>
+          <div className={`p-5 lg:p-6 ${bottomPad ? "pb-[110px]" : ""}`}>
             <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] overflow-hidden">
               {/* Image */}
               {imageResult.imageUrl && (
@@ -304,7 +304,7 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
         )}
 
         {history?.length > 0 ? (
-          <div className={`p-5 lg:p-6 space-y-4 ${bottomPad ? "pb-[90px]" : ""}`}>
+          <div className={`p-5 lg:p-6 space-y-4 ${bottomPad ? "pb-[110px]" : ""}`}>
             <button onClick={() => setHistoryOpen((v) => !v)}
               className="flex items-center gap-2 text-white/60 text-xs font-semibold uppercase tracking-widest hover:text-white/80 transition-colors">
               Recent Scripts
@@ -353,8 +353,8 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
 
   // ── Script output ────────────────────────────────────────────────────────
   return (
-    <div className="h-full overflow-y-auto bg-[#111314]">
-      <div className={`p-5 lg:p-6 space-y-4 ${bottomPad ? "pb-[90px]" : ""}`}>
+    <div className="h-full overflow-y-auto bg-[#111314]" style={{ overscrollBehavior: "contain" }}>
+      <div className={`p-5 lg:p-6 space-y-4 ${bottomPad ? "pb-[110px]" : ""}`}>
 
         {/* Meta + actions */}
         <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] px-4 py-3.5">

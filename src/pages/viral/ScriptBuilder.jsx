@@ -265,7 +265,10 @@ export default function ScriptBuilder() {
         </div>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto bg-[#111314] pb-[80px] xl:pb-0">
+        <div
+          className="flex-1 overflow-y-auto bg-[#111314] pb-[110px] xl:pb-0"
+          style={{ overscrollBehavior: "contain" }}
+        >
           {!selectedStyle ? (
             <ScriptStylePicker
               onSelect={handleStyleSelect}
@@ -349,7 +352,7 @@ export default function ScriptBuilder() {
             </button>
           </div>
 
-          <div className="flex-1 min-h-0 bg-[#111314]">
+          <div className="flex-1 min-h-0 bg-[#111314]" style={{ overscrollBehavior: "contain" }}>
             <ScriptResult
               script={imageResult ? null : activeScript}
               history={history}
