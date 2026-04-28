@@ -162,7 +162,11 @@ function useCurrentPlan() {
       if (!user) return setState({ plan: "free", hasSub: false, loading: false });
       const { data } = await supabase
         .from("profiles").select("plan_code, stripe_subscription_id").eq("id", user.id).single();
-      setState({ plan: data?.plan_code || "free", hasSub: !!data?.stripe_subscription_id, loading: false });
+      const planCode = data?.plan_code || "free";
+      const activeSub = !!data?.stripe_subscription_id;
+      // treat as paid if either: has active sub ID, or plan_code is a known paid tier
+      const isPaid = activeSub || (planCode !== "free" && planCode !== null);
+      setState({ plan: planCode, hasSub: activeSub, isPaid, loading: false });
     })();
   }, []);
   return state;
@@ -464,7 +468,7 @@ export default function Pricing() {
   const billing = "monthly";
   const [currency, setCurrency] = useState("EUR");
   const [askTier, setAskTier] = useState(null);
-  const { plan, hasSub } = useCurrentPlan();
+  const { plan, hasSub, isPaid, loading: planLoading } = useCurrentPlan();
   const liveCount = useLiveCounter(2000847);
 
   useEffect(() => { document.title = "Pricing — Zyvo AI"; }, []);
@@ -595,7 +599,7 @@ export default function Pricing() {
           </div>
         </div>
 
-        {plan !== "free" && (
+        {!planLoading && isPaid && (
           <p className="text-center text-xs mt-3 mb-2" style={{ color: "rgba(255,255,255,0.2)" }}>
             Current plan: <span style={{ color: "rgba(255,255,255,0.4)", fontWeight: 600 }}>{planLabel}</span>
           </p>
@@ -641,13 +645,19 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* ── Credit top-ups ────────────────────────────────────────────── */}
-        {plan !== "free" && (
+        {/* ── Credit top-ups — only for users with an active paid plan ── */}
+        {!planLoading && isPaid && (
           <div className="mb-12 pricing-section">
-            <h3 className="text-xl font-bold text-white text-center mb-1">Need more credits?</h3>
-            <p className="text-center text-sm mb-6" style={{ color: "rgba(255,255,255,0.3)" }}>
-              One-time packs · never expire · stack on top of your plan
-            </p>
+            <div className="flex flex-col items-center mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-semibold mb-3"
+                style={{ background: "rgba(168,85,247,0.12)", color: "#C084FC", border: "1px solid rgba(168,85,247,0.25)" }}>
+                ✦ Available on your plan
+              </div>
+              <h3 className="text-xl font-bold text-white mb-1">Need more credits?</h3>
+              <p className="text-center text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
+                One-time packs · never expire · stack on top of your plan
+              </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {TOPUPS.map(p => (
                 <div key={p.id} className="relative rounded-[20px] p-5 flex flex-col gap-4 pricing-card-hover"
@@ -671,9 +681,7 @@ export default function Pricing() {
                     onClick={async () => {
                       const { data: { user } } = await supabase.auth.getUser();
                       if (!user) return (window.location.href = "/signup");
-                      const priceId = TOPUP_PRICE_IDS[p.id];
-                      if (!priceId) return;
-                      await startCheckout({ type: "topup", pack: p.id });
+                      await startCheckout({ type: "topup", pack: p.id, userId: user.id, email: user.email });
                     }}
                     className="w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-[0.97]"
                     style={p.best ? {

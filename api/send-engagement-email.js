@@ -16,22 +16,12 @@ const supabase = createClient(
 const DELAY_MS                = 400;
 const RETRY_DELAY_MS          = 2000;
 const BATCH_SIZE              = 1000;
-const MAX_SEND                = 50000;
-const MIN_HOURS_SINCE_LAST_EMAIL = 24;
 const DRY_RUN                 = false;
-const COOLDOWN_EVERY          = 1000;          // pause after every N sends
-const COOLDOWN_MS             = 15 * 60 * 1000; // 15 minutes
 
 /* ================= HELPERS ================= */
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
-}
-
-function sentTooRecently(lastSentAt) {
-  if (!lastSentAt) return false;
-  const hoursSince = (Date.now() - new Date(lastSentAt).getTime()) / 36e5;
-  return hoursSince < MIN_HOURS_SINCE_LAST_EMAIL;
 }
 
 /* ================= EMAIL TEMPLATE ================= */
@@ -48,13 +38,13 @@ function buildEmail(user) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>you're sleeping on this</title>
+  <title>Kling 3.0 Pro has just landed</title>
 </head>
 <body style="margin:0;padding:0;background:#0d0d0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#0d0d0f;">
-    it's not your niche. it's not the algorithm. it's this.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+    Kling 3.0 Pro is now inside Zyvo. Turn one prompt into cinematic AI video today.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0d0f;">
@@ -81,19 +71,19 @@ function buildEmail(user) {
             <td style="padding:24px 32px 0;">
 
               <h1 style="margin:0 0 20px;font-size:26px;font-weight:800;color:#ffffff;line-height:1.25;letter-spacing:-0.4px;">
-                ${displayName}, I'll be straight with you.
+                ${displayName}, Kling 3.0 Pro just landed in Zyvo.
               </h1>
 
               <p style="margin:0 0 14px;font-size:15px;line-height:1.85;color:rgba(255,255,255,0.65);">
-                Most creators blame the algorithm when their content doesn't grow. The algorithm isn't the problem.
+                This is the upgrade I would pay attention to. Kling 3.0 Pro gives you cinematic AI video from a simple prompt, with stronger motion, cleaner scenes, and more polished results.
               </p>
 
               <p style="margin:0 0 14px;font-size:15px;line-height:1.85;color:rgba(255,255,255,0.65);">
-                The problem is output quality and volume. The creators getting millions of views right now are producing better content, faster — because they're using AI tools that are actually powerful.
+                If you have been waiting for video output that feels less random and more usable for Reels, TikTok, ads, product shots, and story-driven clips, this is the model to try first.
               </p>
 
               <p style="margin:0 0 24px;font-size:15px;line-height:1.85;color:rgba(255,255,255,0.65);">
-                You have a Zyvo account. You're halfway there. But on the free plan, you're limited to 5 images a month and none of the tools that make the real difference. That's what I want to fix today.
+                Your Zyvo account is already set up. Upgrade now and you can start using Kling 3.0 Pro alongside the tools that help you turn ideas into finished content faster.
               </p>
 
               <!-- SOCIAL PROOF BOX -->
@@ -101,7 +91,7 @@ function buildEmail(user) {
                 <tr>
                   <td style="padding:16px 18px;">
                     <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.7;font-style:italic;">
-                      "Went from 0 to 40K followers in 6 weeks using Zyvo videos. The script builder alone saved me 3 hours a week."
+                      "The difference with Zyvo video is speed. I can test ideas in minutes instead of spending the whole day editing one concept."
                     </p>
                     <p style="margin:8px 0 0;font-size:12px;color:rgba(255,255,255,0.35);">— Sarah M., content creator on Pro plan</p>
                   </td>
@@ -111,14 +101,14 @@ function buildEmail(user) {
               <!-- DIVIDER -->
               <hr style="border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0 0 22px;" />
 
-              <p style="margin:0 0 14px;font-size:13px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.3);text-transform:uppercase;">here's what unlocks when you upgrade</p>
+              <p style="margin:0 0 14px;font-size:13px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.3);text-transform:uppercase;">what you can make with the new video stack</p>
 
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
                 <tr>
                   <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🎬</div></td>
                   <td style="padding-left:10px;">
                     <p style="margin:0;font-size:14px;color:#ffffff;font-weight:600;">AI videos with Kling 3.0 Pro</p>
-                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">The model behind the most cinematic content on TikTok right now. AI sound included.</p>
+                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Create sharper, more cinematic clips for hooks, ads, product scenes, and short-form stories.</p>
                   </td>
                 </tr>
               </table>
@@ -128,7 +118,7 @@ function buildEmail(user) {
                   <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">✍️</div></td>
                   <td style="padding-left:10px;">
                     <p style="margin:0;font-size:14px;color:#ffffff;font-weight:600;">Viral scripts in 60 seconds</p>
-                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">8 creator styles. Hook, scenes, CTA, image prompts — all structured and ready to film.</p>
+                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Start with a hook, scene structure, CTA, and prompt direction before you generate the final clip.</p>
                   </td>
                 </tr>
               </table>
@@ -138,7 +128,7 @@ function buildEmail(user) {
                   <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🖼️</div></td>
                   <td style="padding-left:10px;">
                     <p style="margin:0;font-size:14px;color:#ffffff;font-weight:600;">400 AI images/month — premium models</p>
-                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Cinematic, 3D, realistic. The visual quality that makes people stop scrolling.</p>
+                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Build supporting thumbnails, concepts, backgrounds, and stills around the same campaign idea.</p>
                   </td>
                 </tr>
               </table>
@@ -148,7 +138,7 @@ function buildEmail(user) {
                   <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">📸</div></td>
                   <td style="padding-left:10px;">
                     <p style="margin:0;font-size:14px;color:#ffffff;font-weight:600;">Generate prompts from your own images</p>
-                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Upload any photo — AI reverse-engineers the perfect script idea or image prompt from it.</p>
+                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Upload a reference and turn it into prompt ideas for videos, images, and campaign variations.</p>
                   </td>
                 </tr>
               </table>
@@ -159,7 +149,7 @@ function buildEmail(user) {
                   <td style="border-radius:14px;background:linear-gradient(135deg,#7A3BFF,#9d4eff);box-shadow:0 8px 32px rgba(122,59,255,0.5);">
                     <a href="https://tryzyvo.com/workspace/pricing"
                        style="display:block;text-align:center;padding:18px 32px;font-size:18px;font-weight:800;color:#ffffff;text-decoration:none;letter-spacing:-0.3px;">
-                      Upgrade my account →
+                      Try Kling 3.0 Pro in Zyvo →
                     </a>
                   </td>
                 </tr>
@@ -178,7 +168,7 @@ function buildEmail(user) {
 
               <!-- PS -->
               <p style="margin:0 0 6px;font-size:14px;line-height:1.8;color:rgba(255,255,255,0.55);">
-                <strong style="color:rgba(255,255,255,0.8);">P.S.</strong> — If you only use one thing from a paid plan, use the Viral Script Builder. Pick your style, describe your idea, and in 60 seconds you have a full structured script with hooks, scene breakdowns, and image prompts. It genuinely changes how fast you can produce content.
+                <strong style="color:rgba(255,255,255,0.8);">P.S.</strong> — My suggestion: start with one simple video idea and run it through the Viral Script Builder first. Then use Kling 3.0 Pro to generate the clip from a stronger prompt.
                 <a href="https://tryzyvo.com/workspace/viral-script" style="color:#9B6DFF;text-decoration:none;font-weight:600;">Try it here →</a>
               </p>
 
@@ -221,7 +211,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "the real reason your content isn't growing",
+      subject: "Kling 3.0 Pro has just landed",
       html: buildEmail(user),
     });
 
@@ -241,16 +231,17 @@ async function sendEmail(user) {
 export default async function handler(req, res) {
   try {
     console.log("🚀 Starting engagement email campaign...");
-    console.log(`   dry_run=${DRY_RUN}  max_send=${MAX_SEND}  cooldown=${MIN_HOURS_SINCE_LAST_EMAIL}h`);
+    console.log(`   dry_run=${DRY_RUN}  target=email_updates:true`);
 
     let allUsers = [];
     let from = 0;
+    let hasMore = true;
 
-    while (true) {
+    while (hasMore) {
       const { data, error } = await supabase
         .from("profiles")
-        .select("email, last_email_sent_at")
-        .eq("plan_code", "free")
+        .select("email")
+        .eq("email_updates", true)
         .not("email", "is", null)
         .range(from, from + BATCH_SIZE - 1);
 
@@ -259,29 +250,20 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Failed to fetch users" });
       }
 
-      if (!data || data.length === 0) break;
-      allUsers.push(...data);
-      if (data.length < BATCH_SIZE) break;
+      if (data?.length) {
+        allUsers.push(...data);
+      }
+
+      hasMore = !!data && data.length === BATCH_SIZE;
       from += BATCH_SIZE;
     }
 
-    console.log(`📊 Total free users to email: ${allUsers.length}`);
+    console.log(`📊 Total opted-in users to email: ${allUsers.length}`);
 
     let sent = 0, failed = 0, skipped = 0;
 
     for (const user of allUsers) {
-      if (sent >= MAX_SEND) {
-        console.log(`🛑 Reached MAX_SEND (${MAX_SEND}) — stopping.`);
-        break;
-      }
-
       if (!user.email) { skipped++; continue; }
-
-      if (sentTooRecently(user.last_email_sent_at)) {
-        skipped++;
-        console.log(`⏭️  Skipping (emailed < ${MIN_HOURS_SINCE_LAST_EMAIL}h ago): ${user.email}`);
-        continue;
-      }
 
       if (DRY_RUN) {
         console.log(`🧪 DRY RUN: would send to ${user.email}`);
@@ -299,7 +281,7 @@ export default async function handler(req, res) {
           .from("profiles")
           .update({
             last_email_sent_at: new Date().toISOString(),
-            last_email_type: "free_fomo_blast",
+            last_email_type: "kling_3_pro_launch",
           })
           .eq("email", user.email);
       } else {
@@ -308,12 +290,6 @@ export default async function handler(req, res) {
 
       await sleep(DELAY_MS);
 
-      // Every COOLDOWN_EVERY successful sends, pause for 15 minutes
-      if (sent > 0 && sent % COOLDOWN_EVERY === 0) {
-        console.log(`⏸️  Sent ${sent} emails — cooling down for 15 minutes...`);
-        await sleep(COOLDOWN_MS);
-        console.log(`▶️  Resuming...`);
-      }
     }
 
     console.log("🎯 Campaign complete");

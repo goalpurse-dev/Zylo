@@ -135,6 +135,7 @@ const HowToMakeViralAITikTokVideos = lazy(() => import("./app/blog/imagegenerato
 const BestAIToolsFacelessTikTokVideos = lazy(() => import("./app/blog/imagegenerator/best-ai-tools-faceless-tiktok-videos.jsx"));
 const AIContentCreationToolsInstagram = lazy(() => import("./app/blog/imagegenerator/ai-content-creation-tools-instagram-viral.jsx"));
 const BestAIImageGeneratorsSocialMedia2026 = lazy(() => import("./app/blog/imagegenerator/best-ai-image-generators-social-media-2026.jsx"));
+const ViralScore = lazy(() => import("./pages/viral/ViralScore.jsx"));
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -438,6 +439,7 @@ return (
   <Route path="/workspace/image-generator" element={<Image />} />
   <Route path="/workspace/video-generator" element={<Video />} />
   <Route path="/workspace/viral-script" element={<Script />} />
+  <Route path="/workspace/viral-score" element={<ViralScore />} />
 
 
 </Route>
