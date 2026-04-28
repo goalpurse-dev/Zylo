@@ -161,9 +161,80 @@ const FEATURED_PRESET = SCRIPT_STYLES.find((s) => s.id === "skeleton");
 const PRESETS = SCRIPT_STYLES.filter((s) => s.id !== "custom" && s.id !== "skeleton");
 const CUSTOM = SCRIPT_STYLES.find((s) => s.id === "custom");
 
+/* ── Per-tag glass colours ─────────────────────────────────────── */
+const TAG_COLORS = {
+  "TikTok":    { bg: "rgba(255,87,178,0.16)",  border: "rgba(255,87,178,0.35)",  color: "#FF9FD0" },
+  "YT Long":   { bg: "rgba(239,68,68,0.14)",   border: "rgba(239,100,100,0.32)", color: "#FCA5A5" },
+  "YT Shorts": { bg: "rgba(239,68,68,0.14)",   border: "rgba(239,100,100,0.32)", color: "#FCA5A5" },
+  "IG Reels":  { bg: "rgba(168,85,247,0.16)",  border: "rgba(168,85,247,0.35)",  color: "#C084FC" },
+  "Shock":     { bg: "rgba(245,158,11,0.14)",  border: "rgba(245,158,11,0.33)",  color: "#FCD34D" },
+  "Curiosity": { bg: "rgba(59,130,246,0.14)",  border: "rgba(59,130,246,0.33)",  color: "#93C5FD" },
+  "Story":     { bg: "rgba(20,184,166,0.14)",  border: "rgba(20,184,166,0.33)",  color: "#5EEAD4" },
+  "Authority": { bg: "rgba(234,179,8,0.14)",   border: "rgba(234,179,8,0.33)",   color: "#FDE68A" },
+};
+const defaultTag = { bg: "rgba(255,255,255,0.08)", border: "rgba(255,255,255,0.16)", color: "rgba(255,255,255,0.70)" };
+
+function Tag({ label }) {
+  const t = TAG_COLORS[label] ?? defaultTag;
+  return (
+    <span
+      className="rounded-md px-2 py-0.5 text-[10px] font-semibold"
+      style={{
+        background: "linear-gradient(180deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.04) 100%)",
+        borderTop:    "1px solid rgba(255,255,255,0.22)",
+        borderBottom: `1px solid ${t.border}`,
+        borderLeft:   `1px solid ${t.bg}`,
+        borderRight:  `1px solid ${t.bg}`,
+        color: t.color,
+        boxShadow: `0 0 10px ${t.bg}, inset 0 -2px 6px ${t.bg}`,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+/* Glass "Use" button shared styles */
+const GLASS_USE = {
+  base: {
+    background: "linear-gradient(180deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.04) 100%)",
+    border: "1px solid rgba(255,255,255,0.18)",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12)",
+    color: "rgba(255,255,255,0.88)",
+    transition: "all 0.18s ease",
+  },
+  recommended: {
+    background: "linear-gradient(180deg, #9B6DFF 0%, #7A3BFF 100%)",
+    border: "1px solid rgba(184,150,255,0.45)",
+    boxShadow: "0 4px 18px rgba(122,59,255,0.55), inset 0 1px 0 rgba(255,255,255,0.22)",
+    color: "#fff",
+  },
+};
+
+function UseButton({ recommended }) {
+  const [hovered, setHovered] = useState(false);
+  const hoverStyle = {
+    background: "linear-gradient(180deg, rgba(155,109,255,0.28) 0%, rgba(122,59,255,0.14) 100%)",
+    border: "1px solid rgba(155,109,255,0.55)",
+    boxShadow: "0 4px 18px rgba(122,59,255,0.40), inset 0 1px 0 rgba(255,255,255,0.15)",
+    color: "#D4BBFF",
+    transition: "all 0.18s ease",
+  };
+  return (
+    <span
+      className="shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-bold cursor-pointer select-none"
+      style={recommended ? GLASS_USE.recommended : (hovered ? hoverStyle : GLASS_USE.base)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      Use
+    </span>
+  );
+}
+
 function StyleRow({ style, onClick, recommended = false }) {
   const platformShort = PLATFORM_SHORT[style.defaults?.platform] || style.defaults?.platform;
-  const scriptStyle = STYLE_LABEL[style.defaults?.style] || style.defaults?.style;
+  const scriptStyle   = STYLE_LABEL[style.defaults?.style]       || style.defaults?.style;
 
   return (
     <button
@@ -177,7 +248,7 @@ function StyleRow({ style, onClick, recommended = false }) {
       <div className="flex items-center gap-3">
         <div
           className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg text-base"
-          style={{ background: `${style.accentColor}16`, border: `1px solid ${style.accentColor}30` }}
+          style={{ background: `${style.accentColor}18`, border: `1px solid ${style.accentColor}35` }}
         >
           {style.previewImage
             ? <img src={style.previewImage} alt={style.name} className="h-full w-full object-cover" />
@@ -187,34 +258,26 @@ function StyleRow({ style, onClick, recommended = false }) {
           <div className="flex items-center gap-2">
             <div className="truncate text-[13px] font-bold leading-tight text-white">{style.name}</div>
             {recommended && (
-              <span className="rounded-md bg-[#7A3BFF]/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#B69CFF]">
+              <span
+                className="rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide"
+                style={{
+                  background: "linear-gradient(180deg, rgba(168,85,247,0.30) 0%, rgba(122,59,255,0.16) 100%)",
+                  border: "1px solid rgba(168,85,247,0.40)",
+                  boxShadow: "0 1px 6px rgba(122,59,255,0.35), inset 0 1px 0 rgba(255,255,255,0.10)",
+                  color: "#D4BBFF",
+                }}
+              >
                 Best
               </span>
             )}
           </div>
-          <div className="mt-1 truncate text-[11px] leading-snug text-white/45">{style.tagline}</div>
+          <div className="mt-1 truncate text-[11px] leading-snug text-white/65">{style.tagline}</div>
           <div className="mt-2 flex gap-1.5">
-            {platformShort && (
-              <span className="rounded-md border border-white/[0.07] bg-white/[0.05] px-2 py-0.5 text-[10px] font-medium text-white/45">
-                {platformShort}
-              </span>
-            )}
-            {scriptStyle && (
-              <span className="rounded-md border border-white/[0.07] bg-white/[0.05] px-2 py-0.5 text-[10px] font-medium text-white/45">
-                {scriptStyle}
-              </span>
-            )}
+            {platformShort && <Tag label={platformShort} />}
+            {scriptStyle    && <Tag label={scriptStyle} />}
           </div>
         </div>
-        <span
-          className={`shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-bold ${
-            recommended
-              ? "bg-[#7A3BFF] text-white"
-              : "border border-white/[0.08] bg-white/[0.05] text-white/65 group-hover:border-[#7A3BFF]/35 group-hover:bg-[#7A3BFF]/10 group-hover:text-[#C9B6FF]"
-          }`}
-        >
-          Use
-        </span>
+        <UseButton recommended={recommended} />
       </div>
     </button>
   );
@@ -232,11 +295,9 @@ function CustomRow({ style, onClick }) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="truncate text-[13px] font-bold leading-tight text-white">{style.name}</div>
-          <div className="mt-1 truncate text-[11px] leading-snug text-white/45">{style.tagline}</div>
+          <div className="mt-1 truncate text-[11px] leading-snug text-white/65">{style.tagline}</div>
         </div>
-        <span className="shrink-0 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 py-1.5 text-[11px] font-bold text-white/65 group-hover:border-[#7A3BFF]/35 group-hover:bg-[#7A3BFF]/10 group-hover:text-[#C9B6FF]">
-          Use
-        </span>
+        <UseButton recommended={false} />
       </div>
     </button>
   );
@@ -248,8 +309,8 @@ export default function ScriptStylePicker({ onSelect, history = [], onViewHistor
       {history.length > 0 && (
         <div className="space-y-2 xl:hidden">
           <div className="mb-1 flex items-center gap-2">
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-white/30">Recent</span>
-            <span className="text-[10px] text-white/15">({history.length})</span>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-white/55">Recent</span>
+            <span className="text-[10px] text-white/35">({history.length})</span>
           </div>
           {history.slice(0, 4).map((entry) => {
             const style = SCRIPT_STYLES.find((s) => s.name === entry.preset);
@@ -271,15 +332,15 @@ export default function ScriptStylePicker({ onSelect, history = [], onViewHistor
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-white/65">{entry.preset}</span>
+                    <span className="text-xs font-medium text-white/80">{entry.preset}</span>
                     {entry.platform && (
-                      <span className="rounded-md border border-white/[0.06] bg-white/[0.07] px-1.5 py-0.5 text-[10px] text-white/30">
+                      <span className="rounded-md border border-white/[0.10] bg-white/[0.07] px-1.5 py-0.5 text-[10px] text-white/55">
                         {PLATFORM_SHORT[entry.platform] || entry.platform}
                       </span>
                     )}
-                    <span className="ml-auto shrink-0 text-[10px] text-white/20">{timeAgo(entry.createdAt)}</span>
+                    <span className="ml-auto shrink-0 text-[10px] text-white/40">{timeAgo(entry.createdAt)}</span>
                   </div>
-                  <p className="mt-0.5 truncate text-[11px] text-white/25">{entry.idea || "No description"}</p>
+                  <p className="mt-0.5 truncate text-[11px] text-white/50">{entry.idea || "No description"}</p>
                 </div>
               </button>
             );
@@ -290,13 +351,13 @@ export default function ScriptStylePicker({ onSelect, history = [], onViewHistor
       <div className="rounded-2xl border border-white/[0.08] bg-[#111314] p-3">
         <div className="mb-3 px-1">
           <h2 className="text-[15px] font-bold tracking-tight text-white">Start a viral script</h2>
-          <p className="mt-1 text-[12px] leading-snug text-white/45">Upload an image or choose a writing style.</p>
+          <p className="mt-1 text-[12px] leading-snug text-white/65">Upload an image or choose a writing style.</p>
         </div>
 
         <ImageToScriptIdea onResult={onImageIdea} />
 
         <div className="mb-2 mt-4 px-1">
-          <h3 className="text-[12px] font-bold uppercase tracking-wide text-white/35">Choose style</h3>
+          <h3 className="text-[12px] font-bold uppercase tracking-wide text-white/60">Choose style</h3>
         </div>
 
         {FEATURED_PRESET && (

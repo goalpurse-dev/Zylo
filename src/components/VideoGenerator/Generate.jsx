@@ -371,13 +371,12 @@ useEffect(() => {
             ? "left-[calc(50%-2px)]"
             : "left-1"
         }
-        bg-[#221936]
-        border border-[#7A3BFF]/35
-        shadow-[0_10px_30px_rgba(122,59,255,0.22)]
+        bg-[#2D1B50]
+        border border-[#9B6DFF]/55
         overflow-hidden
       `}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(122,59,255,0.26),transparent_72%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.45),transparent_72%)]" />
     </div>
 
     {[
@@ -541,7 +540,7 @@ className={`
     transition-all duration-200 active:scale-[0.99]
     ${
       canAddImages
-        ? "border-[#7A3BFF]/35 bg-[#21162F] hover:border-[#9B6DFF]/65 hover:bg-[#261A37]"
+        ? "border-[#9B6DFF]/55 bg-[#2A1845] hover:border-[#C4A0FF]/80 hover:bg-[#341F55]"
         : "opacity-40 cursor-not-allowed"
     }
   `}
@@ -574,7 +573,7 @@ className={`
     </p>
   </div>
 
-  <span className="shrink-0 rounded-lg border border-[#B69CFF]/20 bg-[#7A3BFF]/18 px-3 py-1.5 text-[11px] font-bold text-[#D7CBFF] transition-colors group-hover:bg-[#7A3BFF]/28">
+  <span className="shrink-0 rounded-lg border border-[#C4A0FF]/45 bg-[#7A3BFF]/35 px-3 py-1.5 text-[11px] font-bold text-[#EAE0FF] transition-colors group-hover:bg-[#7A3BFF]/50">
     {selected.length > 0 ? "Edit" : "Add"}
   </span>
 </button>

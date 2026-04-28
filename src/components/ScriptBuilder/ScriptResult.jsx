@@ -74,7 +74,7 @@ function PromptBlock({ icon, label, text, linkLabel, linkTo }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] text-white/25 font-semibold uppercase tracking-widest flex items-center gap-1.5">
+        <span className="text-[10px] text-white/55 font-semibold uppercase tracking-widest flex items-center gap-1.5">
           <span>{icon}</span>{label}
         </span>
         <button
@@ -82,14 +82,14 @@ function PromptBlock({ icon, label, text, linkLabel, linkTo }) {
           className={`text-[10px] px-2 py-0.5 rounded-md transition-all font-medium ${
             copied
               ? "bg-green-500/15 text-green-400 border border-green-500/20"
-              : "bg-white/[0.05] text-white/30 border border-white/[0.07] hover:text-white/60 hover:bg-white/[0.08]"
+              : "bg-white/[0.07] text-white/55 border border-white/[0.10] hover:text-white/80 hover:bg-white/[0.10]"
           }`}
         >
           {copied ? "✓ copied" : "copy"}
         </button>
       </div>
       <div className="relative group bg-[#060810] border border-white/[0.07] rounded-xl px-4 py-3">
-        <p className="text-white/55 text-xs leading-relaxed font-mono">{text}</p>
+        <p className="text-white/75 text-xs leading-relaxed font-mono">{text}</p>
         {linkTo && (
           <Link to={linkTo}
             className="mt-2 inline-flex items-center gap-1 text-[11px] text-[#7A3BFF] hover:text-[#A078FF] transition-colors font-medium">
@@ -124,14 +124,14 @@ function SceneCard({ section, index }) {
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
         <div className="flex items-center gap-2.5">
           <div className="w-1.5 h-1.5 rounded-full" style={{ background: accentColor }} />
-          <span className="text-[10px] font-bold tracking-[0.1em] text-white/35 uppercase">{section.label}</span>
+          <span className="text-[10px] font-bold tracking-[0.1em] text-white/65 uppercase">{section.label}</span>
           {section.title && (
-            <span className="text-white/55 text-xs font-medium">{section.title}</span>
+            <span className="text-white/80 text-xs font-medium">{section.title}</span>
           )}
         </div>
         <div className="flex items-center gap-2">
           {section.duration && (
-            <span className="text-[10px] text-white/20 font-mono bg-white/[0.05] px-2 py-0.5 rounded-md">
+            <span className="text-[10px] text-white/50 font-mono bg-white/[0.07] px-2 py-0.5 rounded-md">
               {section.duration}
             </span>
           )}
@@ -147,7 +147,7 @@ function SceneCard({ section, index }) {
             className={`shrink-0 text-[10px] px-2 py-1 rounded-lg transition-all font-medium mt-0.5 ${
               scriptCopied
                 ? "bg-green-500/15 text-green-400 border border-green-500/20"
-                : "bg-white/[0.05] text-white/25 border border-white/[0.07] hover:text-white/55 hover:bg-white/[0.08]"
+                : "bg-white/[0.07] text-white/55 border border-white/[0.10] hover:text-white/80 hover:bg-white/[0.10]"
             }`}
           >
             {scriptCopied ? "✓" : "copy"}
@@ -162,8 +162,8 @@ function SceneCard({ section, index }) {
             onClick={() => setOpen((v) => !v)}
             className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all duration-200 ${
               open
-                ? "bg-[#7A3BFF]/10 border-[#7A3BFF]/30 text-white/70"
-                : "bg-white/[0.04] border-white/[0.10] text-white/45 hover:bg-[#7A3BFF]/[0.08] hover:border-[#7A3BFF]/25 hover:text-white/70"
+                ? "bg-[#7A3BFF]/15 border-[#7A3BFF]/40 text-white/85"
+                : "bg-white/[0.06] border-white/[0.12] text-white/65 hover:bg-[#7A3BFF]/[0.12] hover:border-[#7A3BFF]/35 hover:text-white/85"
             }`}
           >
             <div className="flex items-center gap-2.5">
@@ -227,15 +227,15 @@ function HistoryCard({ entry, onView, onDelete }) {
                 ? <img src={style.previewImage} alt={entry.preset} className="w-full h-full object-cover" />
                 : <span className="text-xs">{style?.icon || entry.presetIcon}</span>}
           </div>
-          <span className="text-white/60 text-xs font-medium">{entry.preset}</span>
+          <span className="text-white/80 text-xs font-medium">{entry.preset}</span>
           {entry.platform && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-white/[0.06] text-white/30 border border-white/[0.06]">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-white/[0.08] text-white/55 border border-white/[0.10]">
               {entry.platform}
             </span>
           )}
-          <span className="text-white/20 text-[10px] ml-auto shrink-0">{timeAgo(entry.createdAt)}</span>
+          <span className="text-white/40 text-[10px] ml-auto shrink-0">{timeAgo(entry.createdAt)}</span>
         </div>
-        <p className="text-white/30 text-xs leading-snug line-clamp-2">{entry.idea || "No description"}</p>
+        <p className="text-white/55 text-xs leading-snug line-clamp-2">{entry.idea || "No description"}</p>
       </button>
       <button onClick={() => onDelete(entry.id)}
         className="text-white/10 hover:text-red-400/60 transition-colors text-xs shrink-0 opacity-0 group-hover:opacity-100 mt-0.5">
@@ -306,9 +306,9 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
         {history?.length > 0 ? (
           <div className={`p-5 lg:p-6 space-y-4 ${bottomPad ? "pb-[90px]" : ""}`}>
             <button onClick={() => setHistoryOpen((v) => !v)}
-              className="flex items-center gap-2 text-white/30 text-xs font-semibold uppercase tracking-widest hover:text-white/60 transition-colors">
+              className="flex items-center gap-2 text-white/60 text-xs font-semibold uppercase tracking-widest hover:text-white/80 transition-colors">
               Recent Scripts
-              <span className="text-white/15 font-normal normal-case tracking-normal">({history.length})</span>
+              <span className="text-white/35 font-normal normal-case tracking-normal">({history.length})</span>
               <span className={`text-[10px] transition-transform duration-200 ${historyOpen ? "rotate-180" : ""}`}>▾</span>
             </button>
             {historyOpen && (
@@ -319,22 +319,22 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
               </div>
             )}
             <div className="pt-4 flex flex-col items-center gap-2 text-center">
-              <div className="text-2xl opacity-20">📝</div>
-              <p className="text-white/15 text-xs">New script will appear here.</p>
+              <div className="text-2xl opacity-50">📝</div>
+              <p className="text-white/45 text-xs">New script will appear here.</p>
             </div>
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center gap-5 px-6">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center text-2xl">📝</div>
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.05] border border-white/[0.12] flex items-center justify-center text-2xl">📝</div>
             <div className="space-y-1.5">
-              <p className="text-white/40 text-sm font-medium">Your script will appear here</p>
-              <p className="text-white/20 text-xs max-w-[220px] leading-relaxed">Choose a style on the left, answer a few questions, and hit generate.</p>
+              <p className="text-white/70 text-sm font-medium">Your script will appear here</p>
+              <p className="text-white/45 text-xs max-w-[220px] leading-relaxed">Choose a style on the left, answer a few questions, and hit generate.</p>
             </div>
             <div className="flex flex-col gap-2 w-full max-w-[260px]">
               {[["⚡", "Pick a style preset"], ["🎯", "Fill in the details"], ["✨", "Get your viral script"]].map(([icon, text], i) => (
-                <div key={i} className="flex items-center gap-3 text-left px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                <div key={i} className="flex items-center gap-3 text-left px-3 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.10]">
                   <span>{icon}</span>
-                  <span className="text-white/30 text-xs">{text}</span>
+                  <span className="text-white/60 text-xs">{text}</span>
                 </div>
               ))}
             </div>
@@ -363,13 +363,13 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-white font-bold text-sm">{script.meta?.presetIcon} {script.meta?.preset}</span>
                 {[script.meta?.type, script.meta?.platform, script.meta?.duration].filter(Boolean).map((tag, i) => (
-                  <span key={i} className="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.06] text-white/40 border border-white/[0.06] font-medium">{tag}</span>
+                  <span key={i} className="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.08] text-white/65 border border-white/[0.10] font-medium">{tag}</span>
                 ))}
               </div>
               <div className="flex gap-3 mt-1.5 flex-wrap">
                 {[script.meta?.style && `Style: ${script.meta.style}`, script.meta?.tone && `Tone: ${script.meta.tone}`, script.meta?.audience && `Audience: ${script.meta.audience}`]
                   .filter(Boolean).map((item, i) => (
-                    <span key={i} className="text-[10px] text-white/20">{item}</span>
+                    <span key={i} className="text-[10px] text-white/45">{item}</span>
                   ))}
               </div>
             </div>
@@ -378,12 +378,12 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
                 className={`text-xs px-2.5 py-1.5 rounded-lg border transition-all ${
                   copiedAll
                     ? "bg-green-500/15 border-green-500/30 text-green-400"
-                    : "bg-white/[0.04] border-white/[0.07] text-white/35 hover:text-white/65 hover:bg-white/[0.07]"
+                    : "bg-white/[0.06] border-white/[0.10] text-white/60 hover:text-white/85 hover:bg-white/[0.10]"
                 }`}>
                 {copiedAll ? "✓ copied" : "copy all"}
               </button>
               <button onClick={handleDownload}
-                className="text-xs px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.07] text-white/35 hover:text-white/65 hover:bg-white/[0.07] transition-all">
+                className="text-xs px-2.5 py-1.5 rounded-lg bg-white/[0.06] border border-white/[0.10] text-white/60 hover:text-white/85 hover:bg-white/[0.10] transition-all">
                 ↓
               </button>
             </div>
@@ -394,7 +394,7 @@ export default function ScriptResult({ script, history, onViewHistory, onDeleteH
         {script.alternateHooks?.length > 0 && (
           <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] overflow-hidden">
             <button onClick={() => setAltHooksOpen((v) => !v)}
-              className="w-full flex items-center justify-between px-4 py-3 text-xs text-white/35 hover:text-white/60 hover:bg-white/[0.02] transition-all">
+              className="w-full flex items-center justify-between px-4 py-3 text-xs text-white/65 hover:text-white/85 hover:bg-white/[0.03] transition-all">
               <span className="flex items-center gap-1.5 font-semibold">
                 🔀 Alternate Hooks
                 <span className="text-white/20 font-normal">({script.alternateHooks.length} variants)</span>

@@ -1,6 +1,13 @@
 import React from "react";
 import Credit from "/icons/whitecredit.png";
 
+const READY_BORDER = {
+  borderTop:    "1px solid rgba(255,255,255,0.28)",
+  borderBottom: "1px solid rgba(122,59,255,0.90)",
+  borderLeft:   "1px solid rgba(184,150,255,0.30)",
+  borderRight:  "1px solid rgba(184,150,255,0.30)",
+};
+
 const GenerateButton = React.memo(
   ({ onClick, disabled, isGenerating, estimatedCredits }) => {
     const isReady = !disabled && !isGenerating;
@@ -14,17 +21,14 @@ const GenerateButton = React.memo(
           relative w-full py-4 rounded-xl
           flex items-center justify-center gap-3
           overflow-hidden
-
-          border
-
           transition-all duration-200
-
           ${
             isReady
-              ? "border-[#A884FF]/35 bg-gradient-to-b from-[#8B4DFF] to-[#6F2EFF] shadow-[0_12px_34px_rgba(122,59,255,0.34)] hover:brightness-110 active:scale-[0.99]"
-              : "border-white/[0.08] bg-[#202224] text-white/35 cursor-not-allowed"
+              ? "bg-gradient-to-b from-[#A855F7] to-[#7A3BFF] hover:brightness-110 active:scale-[0.99]"
+              : "border border-white/[0.08] bg-[#202224] text-white/35 cursor-not-allowed"
           }
         `}
+        style={isReady ? READY_BORDER : undefined}
       >
         {/* 🔥 PREMIUM GLOW (same as toggles) */}
        {isReady && (
