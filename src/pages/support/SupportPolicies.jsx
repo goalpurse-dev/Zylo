@@ -33,7 +33,7 @@ export default function SupportPolicies() {
           >
             <div className="font-semibold">{p.title}</div>
             <div className="text-xs text-white/60 mt-1">
-              Last updated: 2026-03-14 • v1.0
+              Last updated: 2026-04-29 • v1.1
             </div>
           </Link>
         ))}

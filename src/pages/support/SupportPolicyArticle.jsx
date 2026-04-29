@@ -52,12 +52,14 @@ const POLICIES = {
 
   refunds: {
     title: "Refund & Cancellation Policy",
-    updated: "2026-03-14",
+    updated: "2026-04-29",
     body: [
       "Refunds are only available if purchased credits have not been used.",
       "Once credits are consumed, refunds cannot be issued because AI generation incurs real infrastructure costs.",
       "Subscription plans may be cancelled at any time before the next billing cycle.",
-      "If you believe a billing error occurred, please contact support."
+      "Renewal refunds: If your subscription renews automatically, you may request a refund within 48–72 hours of the renewal charge, provided that none of the credits added by that renewal have been used. If any renewal credits have been spent, the renewal charge is no longer eligible for a refund.",
+      "To request a renewal refund, contact support at support@tryzyvo.com with your account email and the date of the renewal charge. We will verify your credit usage and process eligible refunds within 3–5 business days.",
+      "If you believe a billing error occurred outside of these cases, please contact support."
     ]
   },
 
