@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs -I {} bash -c \"head -30 {}\")"
+      "Bash(xargs -I {} bash -c \"head -30 {}\")",
+      "Bash(node --experimental-vm-modules api/send-failed-payment-jessica.js)",
+      "Bash(node api/send-failed-payment-jessica.js)"
     ]
   }
 }

@@ -1,12 +1,29 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
+import { supabase } from "../lib/supabaseClient";
+
+async function saveEmailPreference(value) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from("profiles").update({ email_updates: value }).eq("id", user.id);
+  } catch { /* non-blocking */ }
+}
 
 export default function WelcomeScreen({ onClose }) {
   const navigate = useNavigate();
+  const [emailUpdates, setEmailUpdates] = useState(false);
 
-  const handleStart = () => {
+  const handleStart = async () => {
+    await saveEmailPreference(emailUpdates);
     onClose();
     navigate("/workspace/image-generator");
+  };
+
+  const handleSkip = async () => {
+    await saveEmailPreference(emailUpdates);
+    onClose();
   };
 
   return createPortal(
@@ -78,6 +95,38 @@ export default function WelcomeScreen({ onClose }) {
           ))}
         </div>
 
+        {/* Email updates consent */}
+        <label className="flex items-start gap-3 w-full text-left mb-8 cursor-pointer group">
+          <div className="relative shrink-0 mt-0.5">
+            <input
+              type="checkbox"
+              checked={emailUpdates}
+              onChange={e => setEmailUpdates(e.target.checked)}
+              className="sr-only"
+            />
+            <div
+              className="w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-150"
+              style={emailUpdates ? {
+                background: "linear-gradient(135deg, #7A3BFF, #A855F7)",
+                border: "1px solid rgba(168,85,247,0.6)",
+                boxShadow: "0 0 10px rgba(122,59,255,0.4)",
+              } : {
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.15)",
+              }}
+            >
+              {emailUpdates && (
+                <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+                  <path d="M1 4L4 7.5L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
+          </div>
+          <span className="text-white/45 text-[13px] leading-snug group-hover:text-white/60 transition-colors">
+            Send me tips, updates, and early access to new Zyvo features
+          </span>
+        </label>
+
         {/* Primary CTA */}
         <button
           onClick={handleStart}
@@ -92,7 +141,7 @@ export default function WelcomeScreen({ onClose }) {
 
         {/* Skip */}
         <button
-          onClick={onClose}
+          onClick={handleSkip}
           className="mt-4 text-white/25 text-sm hover:text-white/50 transition"
         >
           Explore on my own
