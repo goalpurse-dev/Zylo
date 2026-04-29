@@ -52,7 +52,7 @@ const POLICIES = {
 
   refunds: {
     title: "Refund & Cancellation Policy",
-    updated: "2026-04-29",
+    updated: "2026-04-28",
     body: [
       "Refunds are only available if purchased credits have not been used.",
       "Once credits are consumed, refunds cannot be issued because AI generation incurs real infrastructure costs.",
