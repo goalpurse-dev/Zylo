@@ -311,16 +311,9 @@ function PlanCard({ tier, billing, currentPlan, hasSub, currency, onAskDowngrade
   const thisRank = tierRank(tier.id);
   const isPopular = !!tier.popular;
 
-  let cta = "Get started";
+  let cta = "Subscribe";
   let disabled = false;
-  if (tier.id === currentPlan)                { cta = "Current plan"; disabled = true; }
-  else if (thisRank > curRank && curRank >= 0) cta = "Upgrade";
-  else if (thisRank < curRank && curRank >= 0) cta = "Downgrade";
-  else if (currentPlan === "free") {
-    if (tier.id === "starter")    cta = "Start going viral";
-    else if (tier.id === "pro")   cta = "Go Pro";
-    else                          cta = "Go all-in";
-  }
+  if (tier.id === currentPlan) { cta = "Current plan"; disabled = true; }
 
   async function handleClick() {
     const { data: { user } } = await supabase.auth.getUser();
