@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { startCheckout, openBillingPortal } from "../lib/payments";
 import { supabase } from "../lib/supabaseClient";
@@ -339,7 +339,7 @@ function PlanCard({ tier, billing, currentPlan, hasSub, currency, onAskDowngrade
 
   return (
     <div
-      className={`relative flex flex-col rounded-[24px] overflow-hidden pricing-card-hover ${isPopular ? "pro-border-pulse" : ""} ${animClass}`}
+      className={`relative flex flex-col flex-1 rounded-[24px] overflow-hidden pricing-card-hover ${isPopular ? "pro-border-pulse" : ""} ${animClass}`}
       style={{
         background: isPopular
           ? "linear-gradient(160deg, #130B28 0%, #1C0A3A 40%, #0E0E20 100%)"
@@ -478,8 +478,30 @@ export default function Pricing() {
     return t?.name ?? (plan === "free" ? "Free" : "—");
   }, [plan]);
 
-  // Mobile order: €12 → €25 → €50
+  // Mobile carousel — Pro (index 1) starts centred
   const mobileTiers = TIERS;
+  const carouselRef = useRef(null);
+  const [activeCard, setActiveCard] = useState(1);
+
+  // Scroll to Pro on mount
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+    // Small delay so layout is painted before we scroll
+    const id = setTimeout(() => {
+      const cardW = el.scrollWidth / mobileTiers.length;
+      el.scrollLeft = cardW; // skip Starter, land on Pro
+    }, 80);
+    return () => clearTimeout(id);
+  }, []);
+
+  const handleCarouselScroll = () => {
+    const el = carouselRef.current;
+    if (!el) return;
+    const cardW = el.scrollWidth / mobileTiers.length;
+    const idx = Math.round(el.scrollLeft / cardW);
+    setActiveCard(Math.min(Math.max(idx, 0), mobileTiers.length - 1));
+  };
 
   return (
     <section className="relative min-h-screen text-white overflow-x-hidden" style={{ background: "#07080F" }}>
@@ -577,13 +599,66 @@ export default function Pricing() {
           ))}
         </div>
 
-        {/* ── Plan cards — mobile (Pro first) ──────────────────────────── */}
-        <div className="md:hidden flex flex-col gap-4">
-          {mobileTiers.map((t, i) => (
-            <PlanCard key={t.id} tier={t} billing={billing} currentPlan={plan} hasSub={hasSub}
-              currency={currency} onAskDowngrade={setAskTier}
-              animClass={`pricing-card-${i + 1}`} />
-          ))}
+        {/* ── Plan cards — mobile carousel ─────────────────────────────── */}
+        <div className="md:hidden -mx-4">
+          {/* Scrollable track */}
+          <div
+            ref={carouselRef}
+            onScroll={handleCarouselScroll}
+            className="pricing-carousel flex items-stretch gap-3 overflow-x-auto px-4"
+            style={{
+              scrollSnapType: "x mandatory",
+              WebkitOverflowScrolling: "touch",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            }}
+          >
+            {/* Leading spacer so first card can snap to centre */}
+            <div className="shrink-0 w-[calc((100vw-72vw)/2-8px)]" />
+
+            {mobileTiers.map((t, i) => (
+              <div
+                key={t.id}
+                className="shrink-0 w-[72vw] flex flex-col"
+                style={{ scrollSnapAlign: "center" }}
+              >
+                <PlanCard
+                  tier={t}
+                  billing={billing}
+                  currentPlan={plan}
+                  hasSub={hasSub}
+                  currency={currency}
+                  onAskDowngrade={setAskTier}
+                  animClass={`pricing-card-${i + 1}`}
+                />
+              </div>
+            ))}
+
+            {/* Trailing spacer */}
+            <div className="shrink-0 w-[calc((100vw-72vw)/2-8px)]" />
+          </div>
+
+          {/* Dot indicators */}
+          <div className="flex items-center justify-center gap-2 mt-4">
+            {mobileTiers.map((t, i) => (
+              <button
+                key={t.id}
+                onClick={() => {
+                  const el = carouselRef.current;
+                  if (!el) return;
+                  const cardW = el.scrollWidth / mobileTiers.length;
+                  el.scrollTo({ left: cardW * i, behavior: "smooth" });
+                }}
+                className="transition-all duration-200"
+                style={{
+                  width: activeCard === i ? 20 : 6,
+                  height: 6,
+                  borderRadius: 99,
+                  background: activeCard === i ? t.accent : "rgba(255,255,255,0.15)",
+                }}
+              />
+            ))}
+          </div>
         </div>
 
         {/* ── Guarantee strip ───────────────────────────────────────────── */}

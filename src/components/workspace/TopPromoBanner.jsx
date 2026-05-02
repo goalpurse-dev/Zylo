@@ -46,29 +46,33 @@ export default function TopPromoBanner() {
     </button>
 
     {/* CENTER CONTENT */}
-    <div className="relative max-w-[750px] mx-auto flex items-center justify-center gap-2 sm:gap-4 px-4 pr-12 py-2.5 text-white text-sm sm:text-base">
-      
-      <span className="text-lg">✍️</span>
+    <div className="relative mx-auto flex items-center justify-center gap-2 px-4 pr-10 py-2.5 text-white overflow-hidden">
 
-      <span className="text-white/90 font-semibold whitespace-nowrap">
-        Script Builder
+      <span className="text-base leading-none shrink-0">⚡</span>
+
+      {/* Mobile: short. Desktop: full */}
+      <span className="text-white/90 font-semibold text-xs sm:text-sm whitespace-nowrap shrink-0">
+        Pro plan
       </span>
 
-      <span className="text-purple-300 font-bold whitespace-nowrap">
-        just dropped
+      <span className="text-purple-300 font-bold text-xs whitespace-nowrap shrink-0 sm:hidden">
+        25% off
       </span>
 
-      <span className="xl:block hidden text-white/30">—</span>
+      <span className="text-purple-300 font-bold text-sm whitespace-nowrap shrink-0 hidden sm:inline">
+        25% off — this week only
+      </span>
 
-      <span className="xl:block hidden text-white/60 text-sm whitespace-nowrap">
-        Full scripts in 60s. Hook → Scenes → CTA.
+      <span className="hidden lg:inline text-white/30 shrink-0">—</span>
+      <span className="hidden lg:inline text-white/60 text-sm whitespace-nowrap shrink-0">
+        1,200 credits/mo · AI images, videos &amp; scripts.
       </span>
 
       <button
-        onClick={() => navigate("/workspace/viral-script")}
-        className="ml-2 px-3.5 py-1.5 rounded-md text-sm font-medium text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500 hover:opacity-90 transition whitespace-nowrap"
+        onClick={() => navigate("/workspace/pricing")}
+        className="shrink-0 ml-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500 hover:opacity-90 transition whitespace-nowrap"
       >
-        Try it free →
+        Get the deal →
       </button>
     </div>
   </div>
