@@ -27,189 +27,177 @@ function sleep(ms) {
 /* ================= EMAIL TEMPLATE ================= */
 
 function buildEmail(user) {
-  const name = (user.email?.split("@")[0] || "creator")
-    .replace(/[._\-+]/g, " ")
-    .split(" ")[0];
-
-  const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+  const raw = (user.email?.split("@")[0] || "")
+    .replace(/[._\-+\d]/g, " ").trim().split(" ")[0] || "there";
+  const displayName = raw.charAt(0).toUpperCase() + raw.slice(1);
 
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>25% off Pro — this week only</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>You still haven't upgraded.</title>
 </head>
 <body style="margin:0;padding:0;background:#0d0d0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#0d0d0f;">
-    Pro is €25/mo — but not for long. Lock in 25% off before this offer closes.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+    You signed up. You never upgraded. Here's exactly what you're leaving on the table.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0d0f;">
-    <tr>
-      <td align="center" style="padding:40px 16px 60px;">
+    <tr><td align="center" style="padding:40px 16px 60px;">
 
-        <!-- CARD -->
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#16181f;border-radius:24px;border:1px solid rgba(255,255,255,0.07);overflow:hidden;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#16181f;border-radius:24px;border:1px solid rgba(255,255,255,0.07);overflow:hidden;">
 
-          <!-- TOP ACCENT BAR -->
-          <tr>
-            <td style="height:3px;background:linear-gradient(90deg,#7A3BFF,#c077ff,#ff57b2,#c077ff,#7A3BFF);"></td>
-          </tr>
+        <!-- accent bar -->
+        <tr><td style="height:3px;background:linear-gradient(90deg,#7A3BFF,#c077ff,#ff57b2,#c077ff,#7A3BFF);"></td></tr>
 
-          <!-- LOGO + BADGE -->
-          <tr>
-            <td style="padding:28px 32px 0;">
-              <table cellpadding="0" cellspacing="0" border="0">
+        <!-- logo -->
+        <tr><td style="padding:28px 32px 0;">
+          <span style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;">Z<span style="color:#7A3BFF;">yvo</span></span>
+        </td></tr>
+
+        <!-- body -->
+        <tr><td style="padding:24px 32px 0;">
+
+          <h1 style="margin:0 0 20px;font-size:26px;font-weight:800;color:#fff;line-height:1.25;letter-spacing:-0.4px;">
+            ${displayName}, you signed up — but never came back.
+          </h1>
+
+          <p style="margin:0 0 14px;font-size:15px;line-height:1.85;color:rgba(255,255,255,0.65);">
+            I'm not going to pretend this is just a newsletter. I'm reaching out because you made an account on Zyvo, used your free generations, and then stopped. I've seen this pattern with thousands of users and I know exactly what happened — the free tier just isn't enough to show you what this platform actually does.
+          </p>
+
+          <p style="margin:0 0 28px;font-size:15px;line-height:1.85;color:rgba(255,255,255,0.65);">
+            So let me make it impossible to say no.
+          </p>
+
+          <!-- offer box -->
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(122,59,255,0.1);border:1px solid rgba(122,59,255,0.35);border-radius:16px;margin-bottom:28px;">
+            <tr><td style="padding:22px 24px;">
+              <p style="margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(168,85,247,0.8);">This week only</p>
+              <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
                 <tr>
-                  <td>
-                    <span style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">Z<span style="color:#7A3BFF;">yvo</span></span>
+                  <td style="vertical-align:middle;padding-right:10px;">
+                    <span style="font-size:16px;color:rgba(255,255,255,0.3);text-decoration:line-through;font-weight:600;">€32/mo</span>
                   </td>
-                  <td style="padding-left:10px;">
-                    <span style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#FF57B2;background:rgba(255,87,178,0.12);border:1px solid rgba(255,87,178,0.25);border-radius:20px;padding:3px 9px;">Limited offer</span>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- HERO -->
-          <tr>
-            <td style="padding:24px 32px 0;">
-
-              <h1 style="margin:0 0 8px;font-size:26px;font-weight:800;color:#ffffff;line-height:1.25;letter-spacing:-0.4px;">
-                ${displayName}, 25% off Pro — this week only.
-              </h1>
-
-              <!-- PRICE DISPLAY -->
-              <table cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 24px;">
-                <tr>
                   <td style="vertical-align:middle;">
-                    <span style="font-size:16px;color:rgba(255,255,255,0.3);text-decoration:line-through;font-weight:600;">€25/mo</span>
+                    <span style="font-size:38px;font-weight:800;color:#fff;letter-spacing:-1px;">€25</span><span style="font-size:14px;color:rgba(255,255,255,0.4);">/mo</span>
                   </td>
-                  <td style="padding-left:12px;vertical-align:middle;">
-                    <span style="font-size:36px;font-weight:800;color:#ffffff;letter-spacing:-1px;">€18.75</span>
-                    <span style="font-size:14px;color:rgba(255,255,255,0.4);font-weight:500;">/mo</span>
-                  </td>
-                  <td style="padding-left:12px;vertical-align:middle;">
-                    <span style="font-size:11px;font-weight:700;color:#C084FC;background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);border-radius:20px;padding:4px 10px;white-space:nowrap;">SAVE 25%</span>
+                  <td style="vertical-align:middle;padding-left:10px;">
+                    <span style="font-size:11px;font-weight:700;color:#C084FC;background:rgba(168,85,247,0.18);border:1px solid rgba(168,85,247,0.35);border-radius:20px;padding:4px 10px;">SAVE 22%</span>
                   </td>
                 </tr>
               </table>
-
-              <p style="margin:0 0 14px;font-size:15px;line-height:1.85;color:rgba(255,255,255,0.65);">
-                Pro is the plan 80% of Zyvo creators end up on. 1,200 credits a month, 400 AI images, 60 AI videos, priority queue, and full access to every tool we build.
+              <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">
+                Pro plan · 1,200 credits/mo · cancel anytime · no hidden fees
               </p>
+            </td></tr>
+          </table>
 
-              <p style="margin:0 0 24px;font-size:15px;line-height:1.85;color:rgba(255,255,255,0.65);">
-                This 25% discount is only available this week. After that it goes back to full price with no exceptions.
+          <!-- what they get -->
+          <p style="margin:0 0 14px;font-size:13px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.3);text-transform:uppercase;">what you unlock today</p>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
+            <tr>
+              <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🖼️</div></td>
+              <td style="padding-left:10px;">
+                <p style="margin:0;font-size:14px;color:#fff;font-weight:600;">400 AI images per month</p>
+                <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Premium models, no watermarks, every style. Product photos, viral visuals, ads.</p>
+              </td>
+            </tr>
+          </table>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
+            <tr>
+              <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🎬</div></td>
+              <td style="padding-left:10px;">
+                <p style="margin:0;font-size:14px;color:#fff;font-weight:600;">60 AI videos per month</p>
+                <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Cinematic short-form clips for TikTok, Reels, and YouTube Shorts. From one prompt.</p>
+              </td>
+            </tr>
+          </table>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
+            <tr>
+              <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">✍️</div></td>
+              <td style="padding-left:10px;">
+                <p style="margin:0;font-size:14px;color:#fff;font-weight:600;">600 viral scripts per month</p>
+                <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Hook → scenes → CTA in 60 seconds. With image and video prompts per scene.</p>
+              </td>
+            </tr>
+          </table>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+            <tr>
+              <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🚀</div></td>
+              <td style="padding-left:10px;">
+                <p style="margin:0;font-size:14px;color:#fff;font-weight:600;">Priority queue + every new tool</p>
+                <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Skip the free-user queue. Get access to every feature we ship, on day one.</p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- social proof -->
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(122,59,255,0.07);border-left:3px solid #7A3BFF;border-radius:0 12px 12px 0;margin-bottom:10px;">
+            <tr><td style="padding:16px 18px;">
+              <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.7;font-style:italic;">
+                "I was on free for two months thinking I'd upgrade 'later.' The week I finally upgraded I got my first 100K view Reel using the AI video + script combo. I should have done it on day one."
               </p>
+              <p style="margin:8px 0 0;font-size:12px;color:rgba(255,255,255,0.35);">— Marcus T., now on Pro</p>
+            </td></tr>
+          </table>
 
-              <!-- WHAT'S INCLUDED -->
-              <p style="margin:0 0 14px;font-size:13px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.3);text-transform:uppercase;">what you get on pro</p>
-
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
-                <tr>
-                  <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">⚡</div></td>
-                  <td style="padding-left:10px;">
-                    <p style="margin:0;font-size:14px;color:#ffffff;font-weight:600;">1,200 credits every month</p>
-                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Enough for 400 images, 60 videos, or 600 viral scripts — or any mix.</p>
-                  </td>
-                </tr>
-              </table>
-
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
-                <tr>
-                  <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🎬</div></td>
-                  <td style="padding-left:10px;">
-                    <p style="margin:0;font-size:14px;color:#ffffff;font-weight:600;">AI images + videos + viral scripts</p>
-                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Every generation tool in one place — no extra subscriptions.</p>
-                  </td>
-                </tr>
-              </table>
-
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
-                <tr>
-                  <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🚀</div></td>
-                  <td style="padding-left:10px;">
-                    <p style="margin:0;font-size:14px;color:#ffffff;font-weight:600;">Priority generation queue</p>
-                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Your generations jump the queue — no waiting behind free users.</p>
-                  </td>
-                </tr>
-              </table>
-
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:26px;">
-                <tr>
-                  <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🔓</div></td>
-                  <td style="padding-left:10px;">
-                    <p style="margin:0;font-size:14px;color:#ffffff;font-weight:600;">Every new tool we launch</p>
-                    <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Pro users get access to new features the moment they go live.</p>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- SOCIAL PROOF -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(122,59,255,0.07);border-left:3px solid #7A3BFF;border-radius:0 12px 12px 0;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:16px 18px;">
-                    <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.7;font-style:italic;">
-                      "I pay for a lot of tools. Zyvo is the one I'd keep if I had to cut everything else. The output speed alone is worth it."
-                    </p>
-                    <p style="margin:8px 0 0;font-size:12px;color:rgba(255,255,255,0.35);">— Lena K., content creator on Pro</p>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- CTA -->
-              <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;width:100%;">
-                <tr>
-                  <td style="border-radius:14px;background:linear-gradient(135deg,#7A3BFF,#9d4eff);box-shadow:0 8px 32px rgba(122,59,255,0.5);">
-                    <a href="https://tryzyvo.com/workspace/pricing"
-                       style="display:block;text-align:center;padding:18px 32px;font-size:18px;font-weight:800;color:#ffffff;text-decoration:none;letter-spacing:-0.3px;">
-                      Get Pro — 25% off →
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
-              <p style="margin:0 0 26px;text-align:center;font-size:12px;color:rgba(255,255,255,0.25);">
-                €18.75/mo · Cancel anytime · No hidden fees · Offer ends this week
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(122,59,255,0.07);border-left:3px solid rgba(168,85,247,0.5);border-radius:0 12px 12px 0;margin-bottom:28px;">
+            <tr><td style="padding:16px 18px;">
+              <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.7;font-style:italic;">
+                "I cancel tools that don't pay for themselves. Zyvo paid for itself in the first week — one product image campaign alone brought in more than the monthly cost."
               </p>
+              <p style="margin:8px 0 0;font-size:12px;color:rgba(255,255,255,0.35);">— Priya S., e-commerce brand on Pro</p>
+            </td></tr>
+          </table>
 
-              <!-- DIVIDER -->
-              <hr style="border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0 0 20px;" />
+          <!-- CTA -->
+          <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;width:100%;">
+            <tr>
+              <td style="border-radius:14px;background:linear-gradient(135deg,#7A3BFF,#9d4eff);box-shadow:0 8px 32px rgba(122,59,255,0.5);">
+                <a href="https://tryzyvo.com/workspace/pricing"
+                   style="display:block;text-align:center;padding:18px 32px;font-size:18px;font-weight:800;color:#fff;text-decoration:none;letter-spacing:-0.3px;">
+                  Upgrade to Pro — 25% off →
+                </a>
+              </td>
+            </tr>
+          </table>
 
-              <!-- PS -->
-              <p style="margin:0 0 6px;font-size:14px;line-height:1.8;color:rgba(255,255,255,0.55);">
-                <strong style="color:rgba(255,255,255,0.8);">P.S.</strong> — If you're already on a plan, this offer doesn't apply to renewals — only new upgrades. If you're still on free, this is the best price Pro has ever been at.
-              </p>
+          <p style="margin:0 0 26px;text-align:center;font-size:12px;color:rgba(255,255,255,0.25);">
+            €25/mo this week only · Cancel anytime · Instant access
+          </p>
 
-              <p style="margin:16px 0 0;font-size:13px;color:rgba(255,255,255,0.3);">— Niko, Zyvo</p>
+          <hr style="border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0 0 20px;"/>
 
-            </td>
-          </tr>
+          <p style="margin:0 0 6px;font-size:14px;line-height:1.8;color:rgba(255,255,255,0.55);">
+            <strong style="color:rgba(255,255,255,0.8);">P.S.</strong> — This 25% discount is genuinely time-limited. I'm not going to keep re-sending this. If you've been thinking about it, now is the time.
+          </p>
 
-          <!-- FOOTER -->
-          <tr>
-            <td style="padding:20px 32px 28px;border-top:1px solid rgba(255,255,255,0.06);">
-              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.25);line-height:1.7;">
-                You opted in to Zyvo updates — that's why you're hearing from us.<br/>
-                <a href="https://tryzyvo.com/settings" style="color:rgba(255,255,255,0.35);text-decoration:underline;">Unsubscribe</a>
-                &nbsp;·&nbsp;
-                <a href="https://tryzyvo.com" style="color:rgba(255,255,255,0.35);text-decoration:underline;">tryzyvo.com</a>
-              </p>
-            </td>
-          </tr>
+          <p style="margin:16px 0 0;font-size:13px;color:rgba(255,255,255,0.3);">— Niko, Zyvo</p>
 
-        </table>
-        <!-- /CARD -->
+        </td></tr>
 
-      </td>
-    </tr>
+        <!-- footer -->
+        <tr><td style="padding:20px 32px 28px;border-top:1px solid rgba(255,255,255,0.06);">
+          <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.25);line-height:1.7;">
+            You created a free Zyvo account — that's why you're hearing from us.<br/>
+            <a href="https://tryzyvo.com/settings" style="color:rgba(255,255,255,0.35);text-decoration:underline;">Unsubscribe</a>
+            &nbsp;·&nbsp;
+            <a href="https://tryzyvo.com" style="color:rgba(255,255,255,0.35);text-decoration:underline;">tryzyvo.com</a>
+          </p>
+        </td></tr>
+
+      </table>
+
+    </td></tr>
   </table>
-
 </body>
 </html>`;
 
@@ -225,7 +213,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "25% off Pro — this week only",
+      subject: "you signed up but never upgraded — Pro is on sale right now",
       html: buildEmail(user),
     });
 
@@ -245,7 +233,7 @@ async function sendEmail(user) {
 export default async function handler(req, res) {
   try {
     console.log("🚀 Starting engagement email campaign...");
-    console.log(`   dry_run=${DRY_RUN}  target=email_updates:true`);
+    console.log(`   dry_run=${DRY_RUN}  target=plan_code:free (all free users)`);
 
     let allUsers = [];
     let from = 0;
@@ -255,7 +243,7 @@ export default async function handler(req, res) {
       const { data, error } = await supabase
         .from("profiles")
         .select("email")
-        .eq("email_updates", true)
+        .eq("plan_code", "free")
         .not("email", "is", null)
         .range(from, from + BATCH_SIZE - 1);
 
@@ -272,7 +260,7 @@ export default async function handler(req, res) {
       from += BATCH_SIZE;
     }
 
-    console.log(`📊 Total opted-in users to email: ${allUsers.length}`);
+    console.log(`📊 Total free users to email: ${allUsers.length}`);
 
     let sent = 0, failed = 0, skipped = 0;
 
@@ -295,7 +283,7 @@ export default async function handler(req, res) {
           .from("profiles")
           .update({
             last_email_sent_at: new Date().toISOString(),
-            last_email_type: "pro_25_percent_off",
+            last_email_type: "free_conversion_wake_up",
           })
           .eq("email", user.email);
       } else {

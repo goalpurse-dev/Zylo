@@ -285,14 +285,14 @@ function UpsellGate({ mode, onClose }) {
         <h2 className="text-white font-bold text-lg mb-2">
           {isGuest   ? "Sign in to analyze" :
            isCredits ? "Not enough credits" :
-                       "Upgrade to use Viral Score"}
+                       "Unlock Viral Score"}
         </h2>
         <p className="text-white/45 text-sm mb-6 leading-relaxed">
           {isGuest
             ? "Create a free Zyvo account to analyze your videos and get your full viral report."
             : isCredits
             ? `You need ${CREDIT_COST} credits to run an analysis. Top up your balance to continue.`
-            : "Viral Score is a premium tool. Upgrade your plan to unlock AI-powered video analysis."}
+            : "Viral Score is available on every paid plan — Starter and above. Pick any plan to get instant access."}
         </p>
         <a
           href={isGuest ? "/signup" : "/pricing"}

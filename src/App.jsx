@@ -136,6 +136,7 @@ const BestAIToolsFacelessTikTokVideos = lazy(() => import("./app/blog/imagegener
 const AIContentCreationToolsInstagram = lazy(() => import("./app/blog/imagegenerator/ai-content-creation-tools-instagram-viral.jsx"));
 const BestAIImageGeneratorsSocialMedia2026 = lazy(() => import("./app/blog/imagegenerator/best-ai-image-generators-social-media-2026.jsx"));
 const ViralScore = lazy(() => import("./pages/viral/ViralScore.jsx"));
+const LipSync    = lazy(() => import("./pages/viral/LipSync.jsx"));
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -440,6 +441,7 @@ return (
   <Route path="/workspace/video-generator" element={<Video />} />
   <Route path="/workspace/viral-script" element={<Script />} />
   <Route path="/workspace/viral-score" element={<ViralScore />} />
+  <Route path="/workspace/lip-sync"    element={<LipSync />} />
 
 
 </Route>
