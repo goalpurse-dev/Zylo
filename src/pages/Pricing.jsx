@@ -147,10 +147,10 @@ const PARTICLE_CONFIG = [
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
 const USD = 1.08;
-function fmt(eur, currency) {
-  const val = currency === "USD" ? eur * USD : eur;
-  const sym = currency === "USD" ? "$" : "€";
-  return `${sym}${Number.isInteger(val) ? val.toFixed(0) : val.toFixed(2)}`;
+function fmt(eur) {
+  const val = eur * USD;
+  const displayVal = val >= 10 ? Math.round(val) : val;
+  return `$${Number.isInteger(displayVal) ? displayVal.toFixed(0) : displayVal.toFixed(2)}`;
 }
 function tierRank(id) { return TIERS.findIndex(t => t.id === id); }
 
@@ -303,10 +303,10 @@ function FaqItem({ q, a }) {
 }
 
 /* ─── Plan card ───────────────────────────────────────────────────────────── */
-function PlanCard({ tier, billing, currentPlan, hasSub, currency, onAskDowngrade, animClass }) {
+function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade, animClass }) {
   const isYearly = billing === "yearly";
   const eurPrice = isYearly ? tier.yearlyPerMonth : tier.monthly;
-  const priceStr = fmt(eurPrice, currency);
+  const priceStr = fmt(eurPrice);
   const curRank = tierRank(currentPlan);
   const thisRank = tierRank(tier.id);
   const isPopular = !!tier.popular;
@@ -369,7 +369,7 @@ function PlanCard({ tier, billing, currentPlan, hasSub, currency, onAskDowngrade
         {/* Price */}
         <div className="mb-1 flex items-end gap-2">
           {tier.strikethrough && (
-            <span className="text-sm text-white/20 line-through mb-1.5">{fmt(tier.strikethrough, currency)}</span>
+            <span className="text-sm text-white/20 line-through mb-1.5">{fmt(tier.strikethrough)}</span>
           )}
           <span className="text-[52px] font-extrabold leading-none tracking-tighter text-white">{priceStr}</span>
           <span className="text-white/30 text-sm mb-2">/mo</span>
@@ -377,13 +377,13 @@ function PlanCard({ tier, billing, currentPlan, hasSub, currency, onAskDowngrade
 
         {isYearly && (
           <div key={`save-${tier.id}-yearly`} className="text-xs font-semibold text-green-400 mb-1 savings-badge-pop">
-            Save {Math.round((1 - tier.yearlyPerMonth / tier.monthly) * 100)}% · {fmt(tier.yearlyPerMonth * 12, currency)}/yr
+            Save {Math.round((1 - tier.yearlyPerMonth / tier.monthly) * 100)}% · {fmt(tier.yearlyPerMonth * 12)}/yr
           </div>
         )}
 
         <div className="text-xs text-white/20 mb-4">
-          {tier.id === "starter"    && `≈ ${fmt(0.4, currency)} per day`}
-          {tier.id === "pro"        && `≈ ${fmt(0.83, currency)} per day`}
+          {tier.id === "starter"    && `≈ ${fmt(0.4)} per day`}
+          {tier.id === "pro"        && `≈ ${fmt(0.83)} per day`}
           {tier.id === "generative" && "Unlimited production capacity"}
         </div>
 
@@ -459,7 +459,6 @@ function PlanCard({ tier, billing, currentPlan, hasSub, currency, onAskDowngrade
 /* ─── Page ────────────────────────────────────────────────────────────────── */
 export default function Pricing() {
   const billing = "monthly";
-  const [currency, setCurrency] = useState("EUR");
   const [askTier, setAskTier] = useState(null);
   const { plan, hasSub, isPaid, loading: planLoading } = useCurrentPlan();
   const liveCount = useLiveCounter(2000847);
@@ -567,27 +566,13 @@ export default function Pricing() {
             ))}
           </div>
 
-          {/* Currency toggle */}
-          <div className="flex items-center justify-center pricing-toggle">
-            <div className="flex items-center rounded-2xl p-1"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              {["EUR", "USD"].map(c => (
-                <button key={c} onClick={() => setCurrency(c)}
-                  className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
-                  style={currency === c ? { background: "rgba(255,255,255,0.08)", color: "#fff" }
-                    : { color: "rgba(255,255,255,0.3)" }}>
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* ── Plan cards — desktop ──────────────────────────────────────── */}
         <div className="hidden md:grid grid-cols-3 gap-4 lg:gap-5" id="pricing-section">
           {TIERS.map((t, i) => (
             <PlanCard key={t.id} tier={t} billing={billing} currentPlan={plan} hasSub={hasSub}
-              currency={currency} onAskDowngrade={setAskTier}
+              onAskDowngrade={setAskTier}
               animClass={`pricing-card-${i + 1}`} />
           ))}
         </div>
@@ -620,7 +605,6 @@ export default function Pricing() {
                   billing={billing}
                   currentPlan={plan}
                   hasSub={hasSub}
-                  currency={currency}
                   onAskDowngrade={setAskTier}
                   animClass={`pricing-card-${i + 1}`}
                 />
@@ -742,7 +726,7 @@ export default function Pricing() {
                   <div>
                     <div className="text-xs uppercase tracking-wider mb-1.5"
                       style={{ color: "rgba(255,255,255,0.25)" }}>{p.id} pack</div>
-                    <div className="text-3xl font-extrabold text-white">{fmt(p.price, currency)}</div>
+                    <div className="text-3xl font-extrabold text-white">{fmt(p.price)}</div>
                     <div className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>{p.credits} credits</div>
                   </div>
                   <button
@@ -771,7 +755,7 @@ export default function Pricing() {
         {/* ── Free + Enterprise ─────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12 pricing-section">
           {[
-            { label: "Free", price: fmt(0, currency), sub: "5 image generations to start",
+            { label: "Free", price: fmt(0), sub: "5 image generations to start",
               desc: "Try Zyvo with monthly free credits. No card required.", cta: "Try for free", to: "/signup" },
             { label: "Enterprise", price: "Custom", sub: "For teams and organizations",
               desc: "SSO & roles, unlimited workspaces, custom models, SLAs and priority support.", cta: "Contact sales", to: "/support/contact" },

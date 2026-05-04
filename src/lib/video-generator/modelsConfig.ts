@@ -1,7 +1,9 @@
 const LOGOS = {
-  hailou: "/assets/logos/hailou.webp",
-  kling: "/assets/logos/kling.webp",
-  runway: "/assets/logos/runway.webp",
+  hailou:     "/assets/logos/hailou.webp",
+  kling:      "/assets/logos/kling.webp",
+  runway:     "/assets/logos/runway.webp",
+  wan:        "/assets/logos/wan.webp",       // add logo file when available
+  vidu:       "/assets/logos/vidu.webp",      // add logo file when available
 };
 
 export const MODELS = {
@@ -46,5 +48,39 @@ export const MODELS = {
   },
 
 
- 
+
+  // ── Atlas Cloud models ──────────────────────────────────────
+
+  /**
+   * Wan 2.6 Flash — image-to-video only (requires a reference image).
+   * 720p · no audio · fast generation
+   */
+  "video:wan26flash": {
+    label:                "Wan 2.6 Flash",
+    description:          "Alibaba's Wan 2.6 Flash delivers fast, fluid image-to-video generation at 720p. Ideal for animating product shots, portraits, and scenes where you supply the starting frame.",
+    logo:                 LOGOS.wan,
+    traits:               ["Image-to-Video", "Fast", "Fluid Motion"],
+    supportedSizes:       ["16:9", "9:16"],
+    supportedDurations:   ["3s", "5s"],
+    supportedResolutions: ["720p"],
+    maxReferenceImages:   1,
+    requiresRefImage:     true,   // i2v only — caller must enforce this in the UI
+    hasSound:             false,
+  },
+
+  /**
+   * Vidu Q3 Turbo — text-to-video and image-to-video, audio always included.
+   * 540p/720p/1080p · audio on
+   */
+  "video:viduq3turbo": {
+    label:                "Vidu Q3 Turbo",
+    description:          "Vidu Q3 Turbo supports both text-to-video and image-to-video with built-in audio generation. Produces cinematic results with strong motion quality and sound.",
+    logo:                 LOGOS.vidu,
+    traits:               ["540p-1080p", "Text-to-Video", "Image-to-Video", "🔊 Audio"],
+    supportedSizes:       ["16:9", "9:16"],
+    supportedDurations:   ["3s", "5s", "8s"],
+    supportedResolutions: ["540p", "720p", "1080p"],
+    maxReferenceImages:   1,      // optional — 0 images = text-to-video
+    hasSound:             true,
+  },
 };

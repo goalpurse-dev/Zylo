@@ -2,6 +2,8 @@ import { getProviderLink, type ToolKey } from "../providers";
 import { RESOLUTIONS } from "./resolutions";
 import { DURATIONS } from "./durations";
 
+const CREDIT_RETAIL_USD = 0.02;
+
 export function calculateVideoCredits(
   toolKey: ToolKey,
   durationKey: keyof typeof DURATIONS,
@@ -12,6 +14,13 @@ export function calculateVideoCredits(
   if (!link?.baseCreditsPerSecond) return 0;
 
   const seconds = DURATIONS[durationKey].seconds;
+  const costPerSecondUSD = link.resolutionCostPerSecondUSD?.[resolutionKey];
+
+  if (costPerSecondUSD != null) {
+    const multiplier = link.retailMultiplier ?? 1;
+    return Math.ceil((costPerSecondUSD * multiplier * seconds) / CREDIT_RETAIL_USD);
+  }
+
   const resolutionMultiplier = RESOLUTIONS[resolutionKey].multiplier;
 
   const credits =

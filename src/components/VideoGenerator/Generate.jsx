@@ -79,7 +79,11 @@ const [showUpgrade, setShowUpgrade] = useState(false);
   
 
 
-const DISABLED_VIDEO_MODELS = ["video:RunwayGen-4Turbo"];
+const DISABLED_VIDEO_MODELS = [
+  "video:RunwayGen-4Turbo",
+  "video:wan26flash",
+  "video:viduq3turbo",
+];
 
 const firstVideoModelKey =
   Object.keys(MODELS).find(
@@ -100,7 +104,10 @@ const selectedModel = MODELS[selectedModelKey];
   const [klingProDuration, setKlingProDuration] = useState(5);
   const [withSound, setWithSound] = useState(false);
 
-  const isKlingPro = selectedModelKey === "video:klingpro";
+  const isKlingPro      = selectedModelKey === "video:klingpro";
+  const isViduQ3Turbo   = selectedModelKey === "video:viduq3turbo";
+  // true for any model that exposes the sound toggle
+  const modelHasSound   = isKlingPro || isViduQ3Turbo;
 
   // For Kling Pro: resolution is locked by aspect ratio
   const klingProResolution = isKlingPro
@@ -111,6 +118,7 @@ const totalCredits = useMemo(() => {
   if (isKlingPro) {
     return calculateVideoCreditsRaw("video:klingpro", klingProDuration, withSound);
   }
+  // Vidu Q3 Turbo: sound is included in base price, no extra credit cost
   return calculateVideoCredits(selectedModelKey, selectedDuration, selectedResolution);
 }, [isKlingPro, klingProDuration, withSound, selectedModelKey, selectedDuration, selectedResolution]);
 
@@ -311,7 +319,7 @@ useEffect(() => {
       duration: isKlingPro ? `${klingProDuration}s` : selectedDuration,
       resolution: isKlingPro ? (klingProResolution ?? "1080p") : selectedResolution,
       refImages: selected.map((img) => img.url),
-      withSound: isKlingPro ? withSound : false,
+      withSound: modelHasSound ? withSound : false,
     });
 
     watchJob(job.id, () => {});
@@ -897,7 +905,7 @@ className={`
    {Object.entries(MODELS)
   .filter(([key]) =>
     key.startsWith("video:") &&
-    key !== "video:RunwayGen-4Turbo"
+    !DISABLED_VIDEO_MODELS.includes(key)
   )
   .map(([key, model]) => (
 
@@ -1023,8 +1031,8 @@ className={`
   )}
 </div>
 
-{/* SOUND TOGGLE — Kling Pro only */}
-{isKlingPro && (
+{/* SOUND TOGGLE — Kling Pro + Vidu Q3 Turbo */}
+{modelHasSound && (
   <button
     onClick={() => setWithSound((v) => !v)}
     className={`
@@ -1040,7 +1048,11 @@ className={`
       <span className="text-base">🔊</span>
       <div className="text-left">
         <p className="text-sm text-white font-medium">AI Sound</p>
-        <p className="text-[11px] text-white/40">{withSound ? "+6 credits/s" : "Off — saves credits"}</p>
+        <p className="text-[11px] text-white/40">
+          {isKlingPro
+            ? (withSound ? "+6 credits/s" : "Off — saves credits")
+            : (withSound ? "On — included in price" : "Off")}
+        </p>
       </div>
     </div>
     <div className={`w-9 h-5 rounded-full transition-all duration-200 flex items-center px-0.5 ${withSound ? "bg-[#7A3BFF]" : "bg-white/10"}`}>

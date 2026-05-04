@@ -24,6 +24,8 @@ export type ToolKey =
   | "video:klingpro"
   | "video:miniMaxFast"
   | "video:RunwayGen-4Turbo"
+  | "video:wan26flash"
+  | "video:viduq3turbo"
 
 
 
@@ -33,13 +35,13 @@ export type ToolKey =
 
   
 
-export type Provider = "runware";
+export type Provider = "runware" | "atlascloud";
 
 export type ProviderLink = {
   provider: Provider;
   generator: string;
   airTag: string;
-  secret: "RUNWARE_API_KEY";
+  secret: "RUNWARE_API_KEY" | "ATLASCLOUD_API_KEY";
   edgeFn: string;
 
   resolutionPricing?: Record<
@@ -49,7 +51,8 @@ export type ProviderLink = {
 
   // 🔥 VIDEO PRICING CORE
   costPerSecondUSD?: number;
-  baseResolution?: "720p" | "768p" |"1080p";
+  resolutionCostPerSecondUSD?: Record<string, number>;
+  baseResolution?: "540p" | "720p" | "768p" |"1080p";
   retailMultiplier?: number; // your markup multiplier
   baseCreditsPerSecond?: number; // 🔥 NEW
 
@@ -276,6 +279,59 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
   // 🔥 THIS IS WHAT UI + BACKEND USE
   baseCreditsPerSecond: 5,
 },
+
+  /* =======================================================
+     ATLAS CLOUD VIDEO MODELS
+     Provider: Atlas Cloud (atlascloud)
+     Edge fn:  runware-video-atlascloud  (DO NOT reuse runware-video)
+     Secret:   ATLASCLOUD_API_KEY
+     Note:     provider is kept as "runware" so job-worker passes its
+               provider guard; actual routing is via edgeFn.
+     ======================================================= */
+
+  /**
+   * Wan-2.6 Flash  —  image-to-video ONLY
+   * Cost: $0.018/s  ×  2.2 markup  =  ~$0.040/s retail
+   * At $0.02/credit → 2 credits/s
+   */
+  "video:wan26flash": {
+    provider:   "runware",              // must stay "runware" for job-worker guard
+    generator:  "Wan 2.6 Flash",
+    airTag:     "alibaba/wan-2.6/image-to-video-flash",
+    secret:     "ATLASCLOUD_API_KEY",
+    edgeFn:     "/functions/v1/runware-video-atlascloud",
+
+    costPerSecondUSD:     0.018,
+    baseResolution:       "720p",
+    retailMultiplier:     2.2,
+    baseCreditsPerSecond: 2,            // $0.018 × 2.2 / $0.02 = 1.98 → 2
+  },
+
+  /**
+   * Vidu Q3-Turbo  —  text-to-video + image-to-video, includes audio
+   * Resolution costs:
+   * 540p  $0.034/s
+   * 720p  $0.051/s
+   * 1080p $0.068/s
+   * Audio is always included (not a user toggle on this model).
+   */
+  "video:viduq3turbo": {
+    provider:   "runware",              // must stay "runware" for job-worker guard
+    generator:  "Vidu Q3 Turbo",
+    airTag:     "vidu/q3-turbo",        // edge fn appends /text-to-video or /image-to-video
+    secret:     "ATLASCLOUD_API_KEY",
+    edgeFn:     "/functions/v1/runware-video-atlascloud",
+
+    costPerSecondUSD:     0.034,
+    resolutionCostPerSecondUSD: {
+      "540p":  0.034,
+      "720p":  0.051,
+      "1080p": 0.068,
+    },
+    baseResolution:       "540p",
+    retailMultiplier:     2.2,
+    baseCreditsPerSecond: 4,            // $0.034 × 2.2 / $0.02 = 3.74 → 4
+  },
 
   /* =======================================================
      PRODUCT PHOTOS (❌ DO NOT TOUCH – WORKING)

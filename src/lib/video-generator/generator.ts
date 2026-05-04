@@ -40,9 +40,14 @@ export async function generateVideoFromUI(params: {
     : calculateVideoCredits(toolKey, params.duration, params.resolution);
 
   const sizeConfig = VIDEO_SIZES[params.size] ?? VIDEO_SIZES["16:9"];
-  const is1080 = params.resolution === "1080p";
-  const width = is1080 ? sizeConfig.width1080.w : sizeConfig.width720.w;
-  const height = is1080 ? sizeConfig.width1080.h : sizeConfig.width720.h;
+  const dimensions =
+    params.resolution === "1080p"
+      ? sizeConfig.width1080
+      : params.resolution === "540p"
+        ? sizeConfig.width540
+        : sizeConfig.width720;
+  const width = dimensions.w;
+  const height = dimensions.h;
 
   const enhancedPrompt = buildVideoPrompt(params.prompt);
 
@@ -78,6 +83,10 @@ export async function generateVideoFromUI(params: {
   else {
     payload.width = width;
     payload.height = height;
+    // Vidu Q3 Turbo supports optional audio — forward the user's preference
+    if (toolKey === "video:viduq3turbo") {
+      payload.withSound = params.withSound ?? false;
+    }
   }
 
   return createVideoJobSimple({
