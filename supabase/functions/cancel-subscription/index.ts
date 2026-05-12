@@ -29,10 +29,18 @@ function send(req: Request, body: any, status = 200) {
   });
 }
 
+function stripeDate(unixSeconds?: number | null) {
+  return unixSeconds ? new Date(unixSeconds * 1000).toISOString() : null;
+}
+
 export default {
   async fetch(req: Request) {
     if (req.method === "OPTIONS") {
       return new Response("ok", { headers: cors(req) });
+    }
+
+    if (req.method !== "POST") {
+      return send(req, { error: "Method not allowed" }, 405);
     }
 
     try {
@@ -64,7 +72,7 @@ export default {
       const form = new URLSearchParams();
       form.set("cancel_at_period_end", "true");
 
-      await fetch(
+      const stripeRes = await fetch(
         `https://api.stripe.com/v1/subscriptions/${profile.stripe_subscription_id}`,
         {
           method: "POST",
@@ -76,13 +84,33 @@ export default {
         }
       );
 
-      // 🔥 UPDATE YOUR DB
+      const stripeData = await stripeRes.json();
+
+      if (!stripeRes.ok) {
+        throw new Error(stripeData.error?.message || "Stripe error");
+      }
+
+      // Stripe emits customer.subscription.updated for this change; this local
+      // update keeps the UI correct while the webhook delivery is pending.
       await supabaseAdmin
         .from("profiles")
-        .update({ cancel_at_period_end: true })
+        .update({
+          cancel_at_period_end: Boolean(stripeData.cancel_at_period_end),
+          stripe_subscription_status: stripeData.status,
+          current_period_end: stripeDate(stripeData.current_period_end),
+          plan_renews_at: stripeDate(stripeData.current_period_end),
+        })
         .eq("id", user.id);
 
-      return send(req, { success: true });
+      return send(req, {
+        success: true,
+        subscription: {
+          id: stripeData.id,
+          status: stripeData.status,
+          cancel_at_period_end: Boolean(stripeData.cancel_at_period_end),
+          current_period_end: stripeData.current_period_end ?? null,
+        },
+      });
     } catch (e: any) {
       return send(req, { error: e.message }, 500);
     }

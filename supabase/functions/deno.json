@@ -1,7 +1,7 @@
 {
   "deploy": {
     "permissions": {
-      "net": ["fal.run", "api.runware.ai", "esm.sh"]
+      "net": ["fal.run", "api.runware.ai", "esm.sh", "api.openai.com"]
     }
   }
 }

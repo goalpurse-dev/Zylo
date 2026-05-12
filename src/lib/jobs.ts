@@ -77,7 +77,9 @@ export type ImageToolKey =
   | "image:flux.max"
   | "image:nano-pro"
   | "image:seedream4.0"
-  | "image:nano.2";
+  | "image:nano.2"
+  | "image:fruit-v2"
+  | "image:fruit-v3";
 
 
   
@@ -117,6 +119,7 @@ export interface ImageInput {
   color_theme?: string | null;
   ref_images?: string[];
   negative?: string | null;
+
   brand?: { id: string | null; use_palette: boolean } | null;
   seed?: number | null;
   init_image_url?: string | null;
@@ -322,6 +325,9 @@ export async function createImageJobSimple(params: {
   // ✅ ADD THESE
   width?: number;
   height?: number;
+  refImages?: string[];
+  expectedRefSlotCount?: number;
+  chargeCreditsOverride?: number;
 }): Promise<JobRow> {
 
   const link = getProviderLink(params.toolKey);
@@ -338,6 +344,11 @@ if (link.resolutionPricing && params.resolution) {
     credits = config.credits;
     priceUSD = config.price;
   }
+}
+
+if (typeof params.chargeCreditsOverride === "number" && params.chargeCreditsOverride > 0) {
+  credits = params.chargeCreditsOverride;
+  priceUSD = credits * 0.02;
 }
 
   // ✅ must be signed in
@@ -425,9 +436,16 @@ height = height ?? 1024;
   negative: DEFAULT_NEGATIVE_IMAGE,
   brand: { id: null, use_palette: false },
   init_image_url: initUrl,
+  // Only store ref_images when non-empty so job-worker falls back to
+  // init_image_url correctly for jobs that pass refs via initImageUrls.
+  // undefined is omitted from JSON; job-worker checks Array.isArray + length.
+  ref_images: Array.isArray(params.refImages) && params.refImages.length > 0
+    ? params.refImages
+    : undefined,
 
   // ✅ ADD THESE (even if ImageInput type doesn't include them, it's still stored)
   width,
+
   height,
 };
 
@@ -453,6 +471,25 @@ height = height ?? 1024;
   if (params.providerHint) settings.provider_hint = params.providerHint;
 
   const preview = buildImagePreviewPrompt(input);
+
+  console.log("[jobs] createImageJobSimple refs", {
+    toolKey:       params.toolKey,
+    refCount:      params.refImages?.length ?? 0,
+    credits,
+    chargeCreditsOverride: params.chargeCreditsOverride ?? null,
+    storedInInput: !!(input as any).ref_images,
+    inputRefCount: ((input as any).ref_images as string[] | undefined)?.length ?? 0,
+  });
+
+  if (
+    typeof params.expectedRefSlotCount === "number" &&
+    (((input as any).ref_images as string[] | undefined)?.length ?? 0) !== params.expectedRefSlotCount
+  ) {
+    console.error("[AI FRUIT refs] REF SLOT/PAYLOAD MISMATCH", {
+      expectedRefSlotCount: params.expectedRefSlotCount,
+      payloadRefs: (input as any).ref_images,
+    });
+  }
 
   // ✅ 2) create job + trigger worker
 // ✅ 2) create job + trigger worker
@@ -483,13 +520,14 @@ export async function createVideoJobSimple(params: {
   calculatedCredits: number;
   project_id?: string | null;
   withSound?: boolean;
+  skipCreditCheck?: boolean;
 }) {
   const link = getProviderLink(params.toolKey);
 if (!link) throw new Error(`Video provider not configured`);
 
-const credits = params.calculatedCredits;
+const credits = params.skipCreditCheck ? 0 : params.calculatedCredits;
 
-if (!credits || credits <= 0) {
+if (!params.skipCreditCheck && (!credits || credits <= 0)) {
   throw new Error("INVALID_VIDEO_CREDIT_CALCULATION");
 }
 const priceUSD = Number(link.retailUSD ?? 0);
@@ -507,7 +545,7 @@ const { data: profile } = await supabase
   .eq("id", uid)
   .single();
 
-if ((profile?.credit_balance ?? 0) < credits) {
+if (!params.skipCreditCheck && (profile?.credit_balance ?? 0) < credits) {
   throw new Error("INSUFFICIENT_CREDITS");
 }
 
@@ -539,7 +577,7 @@ else {
 const settings = {
   tool_key: params.toolKey,
   credits,
-  charged: true,
+  charged: !params.skipCreditCheck,
   priceUSD,
   creation_type: CREATION_TYPES.VIDEO,
   provider_hint: {

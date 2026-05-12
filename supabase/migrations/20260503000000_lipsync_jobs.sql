@@ -12,9 +12,14 @@ create table if not exists public.lipsync_jobs (
 
 alter table public.lipsync_jobs enable row level security;
 
-create policy "users_own_lipsync_jobs"
-  on public.lipsync_jobs for all
-  using (auth.uid() = user_id);
+do $$ begin
+  if not exists (
+    select 1 from pg_policies
+    where tablename = 'lipsync_jobs' and policyname = 'users_own_lipsync_jobs'
+  ) then
+    create policy "users_own_lipsync_jobs" on public.lipsync_jobs for all using (auth.uid() = user_id);
+  end if;
+end $$;
 
 create index if not exists lipsync_jobs_user_id_idx  on public.lipsync_jobs(user_id);
 create index if not exists lipsync_jobs_created_idx  on public.lipsync_jobs(created_at desc);

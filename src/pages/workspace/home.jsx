@@ -31,7 +31,7 @@ export default function WorkspaceHome() {
   };
 
   return (
-    <div className="flex-1 ">
+    <div className="flex-1 pb-28 lg:pb-10">
 
    
 

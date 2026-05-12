@@ -1,0 +1,151 @@
+
+> test1@0.0.0 dev
+> vite --host 127.0.0.1
+
+
+  [32m[1mVITE[22m v7.2.4[39m  [2mready in [0m[1m229[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[2m16.48.32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m16.48.56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m16.48.57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m16.49.08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m16.49.17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m16.49.22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m16.49.30[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m16.49.37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m16.50.26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css[22m
+[2m16.50.27[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "../../components/viral-tools/shared/ToolGenerationLayout" from "src/pages/workspace/AIFruitStory.jsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/a/test1/src/pages/workspace/AIFruitStory.jsx[39m:2:33
+[33m  17 |  var _s = $RefreshSig$();
+  18 |  import React, { useState } from "react";
+  19 |  import ToolGenerationLayout from "../../components/viral-tools/shared/ToolGenerationLayout";
+     |                                    ^
+  20 |  import AIFruitStoryBuilder from "../../components/viral-tools/ai-fruit-story/AIFruitStoryBuilder";
+  21 |  import AIFruitStoryResults from "../../components/viral-tools/ai-fruit-story/AIFruitStoryResults";[39m
+      at TransformPluginContext._formatLog (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:29647:43)
+      at TransformPluginContext.error (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:29644:14)
+      at normalizeUrl (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:27767:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:27825:32
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:27793:4)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:29445:14)
+      at async loadAndTransform (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:23316:26)
+[2m16.50.27[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "../../components/viral-tools/shared/ToolGenerationLayout" from "src/pages/workspace/AIFruitStory.jsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/a/test1/src/pages/workspace/AIFruitStory.jsx[39m:2:33
+[33m  17 |  var _s = $RefreshSig$();
+  18 |  import React, { useState } from "react";
+  19 |  import ToolGenerationLayout from "../../components/viral-tools/shared/ToolGenerationLayout";
+     |                                    ^
+  20 |  import AIFruitStoryBuilder from "../../components/viral-tools/ai-fruit-story/AIFruitStoryBuilder";
+  21 |  import AIFruitStoryResults from "../../components/viral-tools/ai-fruit-story/AIFruitStoryResults";[39m
+[2m16.50.39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css[22m
+[2m16.50.40[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "../../components/viral-tools/shared/ToolGenerationLayout" from "src/pages/workspace/AIFruitStory.jsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/a/test1/src/pages/workspace/AIFruitStory.jsx[39m:2:33
+[33m  17 |  var _s = $RefreshSig$();
+  18 |  import React, { useState } from "react";
+  19 |  import ToolGenerationLayout from "../../components/viral-tools/shared/ToolGenerationLayout";
+     |                                    ^
+  20 |  import AIFruitStoryBuilder from "../../components/viral-tools/ai-fruit-story/AIFruitStoryBuilder";
+  21 |  import AIFruitStoryResults from "../../components/viral-tools/ai-fruit-story/AIFruitStoryResults";[39m
+[2m16.50.50[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "../../components/viral-tools/shared/ToolGenerationLayout" from "src/pages/workspace/AIFruitStory.jsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/a/test1/src/pages/workspace/AIFruitStory.jsx[39m:2:33
+[33m  17 |  var _s = $RefreshSig$();
+  18 |  import React, { useState } from "react";
+  19 |  import ToolGenerationLayout from "../../components/viral-tools/shared/ToolGenerationLayout";
+     |                                    ^
+  20 |  import AIFruitStoryBuilder from "../../components/viral-tools/ai-fruit-story/AIFruitStoryBuilder";
+  21 |  import AIFruitStoryResults from "../../components/viral-tools/ai-fruit-story/AIFruitStoryResults";[39m
+      at TransformPluginContext._formatLog (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:29647:43)
+      at TransformPluginContext.error (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:29644:14)
+      at normalizeUrl (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:27767:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:27825:32
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:27793:4)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:29445:14)
+      at async loadAndTransform (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:23316:26)
+      at async viteTransformMiddleware (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:25188:20)
+[2m17.07.37[22m [36m[1m[vite][22m[39m [32m.env.local changed, restarting server...[39m
+[2m17.07.37[22m [36m[1m[vite][22m[39m server restarted.
+[2m17.07.38[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "../../components/viral-tools/shared/ToolGenerationLayout" from "src/pages/workspace/AIFruitStory.jsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/a/test1/src/pages/workspace/AIFruitStory.jsx[39m:2:33
+[33m  17 |  var _s = $RefreshSig$();
+  18 |  import React, { useState } from "react";
+  19 |  import ToolGenerationLayout from "../../components/viral-tools/shared/ToolGenerationLayout";
+     |                                    ^
+  20 |  import AIFruitStoryBuilder from "../../components/viral-tools/ai-fruit-story/AIFruitStoryBuilder";
+  21 |  import AIFruitStoryResults from "../../components/viral-tools/ai-fruit-story/AIFruitStoryResults";[39m
+      at TransformPluginContext._formatLog (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:29647:43)
+      at TransformPluginContext.error (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:29644:14)
+      at normalizeUrl (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:27767:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:27825:32
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:27793:4)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:29445:14)
+      at async loadAndTransform (file:///C:/Users/a/test1/node_modules/vite/dist/node/chunks/config.js:23316:26)
+[2m17.07.38[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "../../components/viral-tools/shared/ToolGenerationLayout" from "src/pages/workspace/AIFruitStory.jsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/a/test1/src/pages/workspace/AIFruitStory.jsx[39m:2:33
+[33m  17 |  var _s = $RefreshSig$();
+  18 |  import React, { useState } from "react";
+  19 |  import ToolGenerationLayout from "../../components/viral-tools/shared/ToolGenerationLayout";
+     |                                    ^
+  20 |  import AIFruitStoryBuilder from "../../components/viral-tools/ai-fruit-story/AIFruitStoryBuilder";
+  21 |  import AIFruitStoryResults from "../../components/viral-tools/ai-fruit-story/AIFruitStoryResults";[39m
+[2m17.08.25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/App.jsx[22m
+[2m17.26.57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/workspace/AIFruitStory.jsx[22m
+[2m17.26.59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/workspace/AIFruitStory.jsx[22m
+[2m17.27.00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/workspace/AIFruitStory.jsx[22m
+[2m17.27.20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/AIFruitStoryBuilder.jsx[22m
+[2m17.27.26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/AIFruitStoryResults.jsx[22m
+[2m17.36.20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/AIFruitStoryResults.jsx[22m
+[2m17.45.48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/AIFruitStoryResults.jsx[22m
+[2m17.46.00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/AIFruitStoryResults.jsx[22m
+[2m17.46.15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/AIFruitStoryResults.jsx[22m
+[2m17.48.07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/AIFruitStoryResults.jsx[22m
+[2m17.48.43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/AIFruitStoryResults.jsx[22m
+[2m17.48.50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/AIFruitStoryResults.jsx[22m
+[2m17.49.00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/AIFruitStoryResults.jsx[22m
+[2m17.51.20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/workspace/AIFruitStory.jsx[22m
+[2m17.51.35[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m17.59.00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m17.59.22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.01.50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.04.02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.05.20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.11.39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.13.45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.14.46[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.18.33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.19.35[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.19.55[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m18.20.32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m18.21.45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m18.21.54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m18.25.21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.25.49[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.26.02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.26.10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.26.26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.26.33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.26.40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.26.48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.44.54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/workspace/AIFruitStory.jsx[22m
+[2m18.45.00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.45.57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.46.03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.50.00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/viral-tools/ai-fruit-story/steps/FruitStepStory.jsx[22m
+[2m18.50.15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/viral/shared/ToolGenerationLayout.jsx[22m

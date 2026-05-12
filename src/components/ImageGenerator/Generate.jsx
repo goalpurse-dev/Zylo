@@ -422,15 +422,8 @@ const [showAll, setShowAll] = useState(false);
 const currentSize =
   IMAGE_SIZES[selectedSize] ?? IMAGE_SIZES["1:1"];
 
-  const [localPrompt, setLocalPrompt] = useState(prompt)
-
-useEffect(() => {
-  const t = setTimeout(() => {
-    setPrompt(localPrompt)
-  }, 150)
-
-  return () => clearTimeout(t)
-}, [localPrompt])
+  // PromptInput handles its own local state + debounce internally.
+  // No duplicate localPrompt/debounce needed here.
 
 const [openSize, setOpenSize] = useState(false);
 const [openStyle, setOpenStyle] = useState(false);

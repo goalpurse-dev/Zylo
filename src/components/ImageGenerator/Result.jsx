@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 import { DownloadIcon, VideoIcon, Maximize2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CREATION_TYPES } from "../../lib/creations";
-import { supabase } from "../../lib/supabaseClient";
 
 /* =============================== CONFIG =============================== */
 
@@ -50,6 +49,38 @@ function getAspectStyle(item) {
   return { aspectRatio: "1 / 1" };
 }
 
+function isLoadableImageSrc(value) {
+  const src = typeof value === "string" ? value.trim() : "";
+  if (!src || src === "undefined" || src === "null" || src.startsWith("[object ")) return false;
+  if (/^data:image\//i.test(src) || /^blob:/i.test(src)) return true;
+  if (!/^https?:\/\//i.test(src)) return false;
+
+  try {
+    const parsed = new URL(src);
+    const host = parsed.hostname.toLowerCase();
+    const path = parsed.pathname.toLowerCase();
+
+    if (host === "runware.ai" && path.includes("/docs/")) return false;
+
+    return (
+      host === "im.runware.ai" ||
+      path.includes("/image/") ||
+      path.includes("/storage/v1/object/") ||
+      /\.(png|jpe?g|webp|gif|avif)$/i.test(path)
+    );
+  } catch {
+    return false;
+  }
+}
+
+function getDisplayImageSrc(value, query = "?format=webp&width=800") {
+  if (!isLoadableImageSrc(value)) return null;
+  const src = value.trim();
+  if (/^(data:image\/|blob:)/i.test(src)) return src;
+  if (src.includes("?")) return src;
+  return `${src}${query}`;
+}
+
 function scrollToElementWithinContainer(el, container, topOffset = 80) {
   if (!el) return;
 
@@ -81,156 +112,28 @@ function scrollToElementWithinContainer(el, container, topOffset = 80) {
 function ResultCard({ item, onOpen }) {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(true);
-  const [posting, setPosting] = useState(false);
-const [posted, setPosted] = useState(false);
-const [showToast, setShowToast] = useState(false);
-const [postedImages, setPostedImages] = useState(new Set());
 const [isImageLoaded, setIsImageLoaded] = useState(false);
 const [viewerOpen, setViewerOpen] = useState(false);
 const [displayProgress, setDisplayProgress] = useState(0);
 const dpRef = useRef(0);
 const rafRef = useRef(null);
 
+const imageSrc = getDisplayImageSrc(item.result_url);
+const fullImageSrc = getDisplayImageSrc(item.result_url, "?width=1200");
+const rawImageSrc = isLoadableImageSrc(item.result_url) ? item.result_url.trim() : null;
 
 
 
-useEffect(() => {
-  let ignore = false;
-
-  async function checkIfPosted() {
-    if (!item?.result_url) return;
-
-    const { data, error } = await supabase
-      .from("public_images")
-      .select("id")
-      .or(`runware_url.eq.${item.result_url},image_url.eq.${item.result_url}`)
-      .limit(1);
-
-    if (!ignore && !error && data && data.length > 0) {
-      setPosted(true);
-    }
-  }
-
-  checkIfPosted();
-
-  return () => {
-    ignore = true;
-  };
-}, [item?.result_url]);
-
-useEffect(() => {
-  async function loadPosted() {
-    const { data, error } = await supabase
-      .from("public_images")
-      .select("runware_url, image_url");
-
-    if (error) {
-      console.error("Failed to load posted images:", error);
-      return;
-    }
-
-    const urls = new Set(
-      (data || []).flatMap((d) => [d.runware_url, d.image_url])
-    );
-
-    setPostedImages(urls);
-  }
-
-  loadPosted();
-}, []);
- 
-const handlePublish = async () => {
-  if (posting || posted) return;
-
-  setPosting(true);
-
-  const { data: userData } = await supabase.auth.getUser();
-  const user = userData?.user;
-
-  if (!user) {
-    setPosting(false);
-    return;
-  }
-
-  const prompt = item.input?.subject ?? item.prompt;
-  const runwareUrl = item.result_url;
-
-  try {
-
-    // 1️⃣ download image
-   const response = await fetch(runwareUrl);
-const originalBlob = await response.blob();
-
-// convert to WEBP
-const bitmap = await createImageBitmap(originalBlob);
-
-const canvas = document.createElement("canvas");
-canvas.width = bitmap.width;
-canvas.height = bitmap.height;
-
-const ctx = canvas.getContext("2d");
-ctx.drawImage(bitmap, 0, 0);
-bitmap.close(); // ✅ ADD THIS
-
-const webpBlob = await new Promise((resolve, reject) => {
-  canvas.toBlob((blob) => {
-    if (!blob) return reject(new Error("WEBP conversion failed"));
-    resolve(blob);
-  }, "image/webp", 0.82);
-});
-
-const fileName = `${crypto.randomUUID()}.webp`;
-
-const { error: uploadError } = await supabase.storage
-  .from("public-images")
-  .upload(fileName, webpBlob, {
-    contentType: "image/webp"
-  });
-
-    if (uploadError) {
-      console.error("UPLOAD ERROR:", uploadError);
-      setPosting(false);
-      return;
-    }
-
-    // 4️⃣ get public URL
-    const { data } = supabase.storage
-      .from("public-images")
-      .getPublicUrl(fileName);
-
-    const supabaseUrl = data.publicUrl;
-
-    // 5️⃣ insert into DB
-    const { error } = await supabase
-      .from("public_images")
-      .insert({
-        user_id: user.id,
-        image_url: supabaseUrl,
-        runware_url: runwareUrl,
-        prompt
-      });
-
-    if (error) {
-      console.error("INSERT ERROR:", error);
-      setPosting(false);
-      return;
-    }
-
-    setPosted(true);
-    setShowToast(true);
-
-    setTimeout(() => setShowToast(false), 3000);
-
-  } catch (err) {
-    console.error(err);
-  }
-
-  setPosting(false);
-};
 
 
 
-const isDone = item.status === "succeeded" && !!item.result_url;
+
+const isDone = item.status === "succeeded" && !!imageSrc;
+const hasInvalidResult =
+  item.status === "succeeded" &&
+  typeof item.result_url === "string" &&
+  item.result_url.trim().length > 0 &&
+  !imageSrc;
 
   const progress = Math.min(
   99,
@@ -246,6 +149,7 @@ const isDone = item.status === "succeeded" && !!item.result_url;
   createdAt > 0 ? Date.now() - createdAt : 0;
 
 const isFailed =
+  hasInvalidResult ||
   !isDone &&
   item.status === "running" &&
   runtimeMs > MAX_RUNTIME_MS;
@@ -315,12 +219,20 @@ const isFailed =
 {isDone && (
 <>
 <img
-  src={item.result_url + "?format=webp&width=800"}
+  src={imageSrc}
   referrerPolicy="no-referrer"
   crossOrigin="anonymous"
   className="w-full h-full object-cover"
   loading="lazy"
   decoding="async"
+  onError={() => {
+    console.error("[image results] image failed to load", {
+      id: item.id,
+      result_url: item.result_url,
+      resolvedImageSrc: imageSrc,
+      output: item.output,
+    });
+  }}
 />
 {/* EXPAND ICON — always visible top-right */}
 <button
@@ -346,17 +258,6 @@ const isFailed =
 )}
 
 
-{showToast && (
-  <div className="
-    fixed z-[9999] bottom-6 left-1/2 -translate-x-1/2
-    bg-[#1a1d24] border border-white/10
-    text-white text-sm px-4 py-2 rounded-lg
-    shadow-lg
-    animate-[fadeInUp_.3s_ease]
-  ">
-    ✅ Image posted to Zyvo Public Gallery
-  </div>
-)}
 
 
 
@@ -502,7 +403,7 @@ const isFailed =
 
   <button
     onClick={async () => {
-      const res = await fetch(item.result_url + "?width=1200");
+      const res = await fetch(fullImageSrc || rawImageSrc);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -522,7 +423,7 @@ const isFailed =
   <button
     onClick={() =>
       navigate("/workspace/video-generator", {
-        state: { refImage: { id: item.id, url: item.result_url } },
+        state: { refImage: { id: item.id, url: rawImageSrc } },
       })
     }
     className="flex items-center gap-1 text-white text-xs px-3 py-1 rounded-md bg-white/15 hover:bg-white/25 transition active:scale-95"
@@ -531,19 +432,6 @@ const isFailed =
     Make Video
   </button>
 
-  <button
-    onClick={handlePublish}
-    disabled={posting || posted}
-    className={`text-white text-xs px-3 py-1 rounded-md transition-all duration-200
-      ${posted
-        ? "bg-green-500 cursor-default"
-        : posting
-        ? "bg-purple-400 cursor-wait"
-        : "bg-[#7A3BFF] hover:bg-[#6a32e6] active:scale-95"}
-    `}
-  >
-    {posted ? "Posted ✓" : posting ? "Posting..." : "Post"}
-  </button>
 
 </div>
         </div>
@@ -573,7 +461,7 @@ const isFailed =
         {/* IMAGE */}
         <div className="flex-1 flex items-center justify-center px-4 min-h-0">
           <img
-            src={item.result_url + "?width=1200"}
+            src={fullImageSrc}
             className="max-w-full max-h-full rounded-2xl object-contain"
             style={{ maxHeight: "calc(100dvh - 160px)" }}
           />
@@ -586,14 +474,14 @@ const isFailed =
           <button
             onClick={async () => {
               try {
-                const res = await fetch(item.result_url + "?width=1200");
+                const res = await fetch(fullImageSrc || rawImageSrc);
                 const blob = await res.blob();
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url; a.download = "zyvo-image.webp";
                 document.body.appendChild(a); a.click(); a.remove();
                 URL.revokeObjectURL(url);
-              } catch { window.open(item.result_url, "_blank"); }
+              } catch { window.open(rawImageSrc, "_blank"); }
             }}
             className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#7A3BFF] hover:bg-[#6A32E0] text-white font-semibold text-sm transition active:scale-95 shadow-[0_0_20px_rgba(122,59,255,0.4)]"
           >
@@ -606,25 +494,13 @@ const isFailed =
             onClick={() => {
               setViewerOpen(false);
               navigate("/workspace/video-generator", {
-                state: { refImage: { id: item.id, url: item.result_url } },
+                state: { refImage: { id: item.id, url: rawImageSrc } },
               });
             }}
             className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition active:scale-95"
           >
             <VideoIcon className="w-4 h-4" />
             Make Video
-          </button>
-
-          {/* POST */}
-          <button
-            onClick={() => { handlePublish(); }}
-            disabled={posting || posted}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold text-sm transition active:scale-95
-              ${posted ? "bg-green-500 text-white cursor-default"
-                : posting ? "bg-purple-400 text-white cursor-wait"
-                : "bg-white/10 hover:bg-white/20 text-white"}`}
-          >
-            {posted ? "Posted ✓" : posting ? "Posting…" : "Post to Gallery"}
           </button>
 
           {/* COPY PROMPT */}
@@ -638,7 +514,7 @@ const isFailed =
           {/* SHARE */}
           {"share" in navigator && (
             <button
-              onClick={() => navigator.share({ url: item.result_url, title: "My Zyvo image" }).catch(() => {})}
+              onClick={() => navigator.share({ url: rawImageSrc, title: "My Zyvo image" }).catch(() => {})}
               className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition active:scale-95"
             >
               Share

@@ -90,18 +90,86 @@ async function isUnder10MB(url: string) {
   }
 }
 
+function safeRunwarePositivePrompt(positivePrompt: unknown, max = 1450): string {
+  const safePositivePrompt = String(positivePrompt || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+
+  if (safePositivePrompt.length < 2) {
+    throw new Error("Video prompt is empty or too short");
+  }
+
+  return safePositivePrompt;
+}
+
 /* ================= LAUNCH ================= */
 
 export async function launchRunwareVideo(
   args: RunwareLaunchArgs,
 ): Promise<RunwareLaunchResult> {
   const taskUUID = crypto.randomUUID();
+  const rawRefs = (args.referenceImages ?? []).filter(Boolean).map(String);
+  const safePositivePrompt = safeRunwarePositivePrompt(args.subject);
+
+  if (args.airTag === "alibaba:wan@2.6-flash") {
+    const task = {
+      taskType: "videoInference",
+      model: "alibaba:wan@2.6-flash",
+      width: args.width ?? 1080,
+      height: args.height ?? 1920,
+      duration: args.durationSec,
+      numberResults: 1,
+      includeCost: true,
+      positivePrompt: safePositivePrompt,
+      inputs: {
+        referenceImages: rawRefs.slice(0, 1),
+      },
+      taskUUID,
+    };
+
+    console.log("[runware-video] FINAL TASK", JSON.stringify(task, null, 2));
+    const { res, text, json } = await postJson([task]);
+    if (!res.ok) throw new Error(`Runware launch failed (${res.status}): ${text}`);
+    const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
+    return { jobId: String(providerJobId) };
+  }
+
+  if (args.airTag === "google:3@3") {
+    const task = {
+      taskType: "videoInference",
+      duration: args.durationSec,
+      fps: 24,
+      model: "google:3@3",
+      outputFormat: "mp4",
+      height: args.height ?? 1920,
+      width: args.width ?? 1080,
+      numberResults: 1,
+      includeCost: true,
+      outputQuality: 85,
+      providerSettings: {
+        google: {
+          generateAudio: true,
+          enhancePrompt: true,
+        },
+      },
+      frameImages: rawRefs.slice(0, 1).map((url) => ({ inputImage: url })),
+      positivePrompt: safePositivePrompt,
+      taskUUID,
+    };
+
+    console.log("[runware-video] FINAL TASK", JSON.stringify(task, null, 2));
+    const { res, text, json } = await postJson([task]);
+    if (!res.ok) throw new Error(`Runware launch failed (${res.status}): ${text}`);
+    const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
+    return { jobId: String(providerJobId) };
+  }
 
   const task: Record<string, unknown> = {
     taskType: "videoInference",
     taskUUID,
     model: args.airTag,
-    positivePrompt: args.subject,
+    positivePrompt: safePositivePrompt,
     duration: args.durationSec,
     numberResults: 1,
     outputType: "URL",
@@ -121,7 +189,6 @@ export async function launchRunwareVideo(
 
   /* ================= FILTER REFERENCE IMAGES ================= */
 
-  const rawRefs = (args.referenceImages ?? []).filter(Boolean).map(String);
   const safeRefs: string[] = [];
 
   for (const url of rawRefs) {
@@ -139,7 +206,7 @@ export async function launchRunwareVideo(
   // Correct Runware format for image-to-video references.
   if (hasInputs) {
     task.inputs = {
-      frameImages: safeRefs.map((url) => ({ image: url })),
+      frameImages: safeRefs.slice(0, 1).map((url) => ({ image: url })),
     };
   } else if (rawRefs.length > 0) {
     console.warn("[runware-video] References were provided but none passed safety checks");

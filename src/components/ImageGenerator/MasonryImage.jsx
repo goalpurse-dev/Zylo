@@ -1,20 +1,4 @@
-import { supabase } from "../../lib/supabaseClient";
-
 export const MasonryImage = ({ src, prompt, onUse }) => {
-
-  const handlePublish = async (e) => {
-    e.stopPropagation();
-
-    const { data: user } = await supabase.auth.getUser();
-    if (!user?.user) return;
-
-    await supabase.from("public_images").insert({
-      user_id: user.user.id,
-      image_url: src,
-      prompt: prompt
-    });
-  };
-
   return (
     <div className="relative mb-3 break-inside-avoid overflow-hidden rounded-xl group cursor-pointer">
 
@@ -66,14 +50,6 @@ export const MasonryImage = ({ src, prompt, onUse }) => {
             "
           >
             Use
-          </button>
-
-          {/* Post to gallery */}
-          <button
-            onClick={handlePublish}
-            className="bg-white/90 text-black text-xs font-semibold px-3 py-1.5 rounded-lg"
-          >
-            Post
           </button>
 
         </div>

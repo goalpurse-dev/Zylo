@@ -16,6 +16,8 @@ export type ToolKey =
   | "image:nano-pro"
   | "image:seedream4.0"
   | "image:nano.2"
+  | "image:fruit-v2"
+  | "image:fruit-v3"
 
 
 
@@ -25,6 +27,7 @@ export type ToolKey =
   | "video:miniMaxFast"
   | "video:RunwayGen-4Turbo"
   | "video:wan26flash"
+  | "video:veo31fast"
   | "video:viduq3turbo"
 
 
@@ -213,8 +216,40 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
   },
 
 
+  /* -------------------------------------------------------
+     FRUIT STORY DEDICATED MODELS
+     zyvo-v2  → GPT Image 2 low (dynamic 2-3 credits/image)
+     zyvo-v3  → GPT Image 2 medium (8 credits/image)
+     ------------------------------------------------------- */
+
+  "image:fruit-v2": {
+    provider: "runware",
+    generator: "GPT Image 2",
+    airTag: "openai:gpt-image@2",
+    secret: "RUNWARE_API_KEY",
+    edgeFn: "/functions/v1/runware-image",
+
+    costUSD: 0.010423,
+    retailUSD: 0.02,
+    credits: 2,
+    margin: m(0.010423, 0.02),
+  },
+
+  "image:fruit-v3": {
+    provider: "runware",
+    generator: "GPT Image 2",
+    airTag: "openai:gpt-image@2",
+    secret: "RUNWARE_API_KEY",
+    edgeFn: "/functions/v1/runware-image",
+
+    costUSD: 0.08,
+    retailUSD: 0.16,
+    credits: 8,
+    margin: m(0.08, 0.16),
+  },
+
     /* =======================================================
-                              VIDEO 
+                              VIDEO
      ======================================================= */
 
  "video:klingpro": {
@@ -297,14 +332,27 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
   "video:wan26flash": {
     provider:   "runware",              // must stay "runware" for job-worker guard
     generator:  "Wan 2.6 Flash",
-    airTag:     "alibaba/wan-2.6/image-to-video-flash",
-    secret:     "ATLASCLOUD_API_KEY",
-    edgeFn:     "/functions/v1/runware-video-atlascloud",
+    airTag:     "alibaba:wan@2.6-flash",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
 
     costPerSecondUSD:     0.018,
     baseResolution:       "720p",
     retailMultiplier:     2.2,
     baseCreditsPerSecond: 2,            // $0.018 × 2.2 / $0.02 = 1.98 → 2
+  },
+
+  "video:veo31fast": {
+    provider:   "runware",
+    generator:  "Veo 3.1 Fast",
+    airTag:     "google:3@3",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
+
+    costPerSecondUSD:     0,
+    baseResolution:       "1080p",
+    retailMultiplier:     1,
+    baseCreditsPerSecond: 1,
   },
 
   /**

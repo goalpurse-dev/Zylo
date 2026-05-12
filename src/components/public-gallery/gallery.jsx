@@ -1,228 +1,316 @@
-import { useEffect, useState, useRef, useCallback } from "react";
-import { supabase } from "../../lib/supabaseClient";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const PAGE_SIZE = 12;
+// ─────────────────────────────────────────────────────────────────────────────
+// COMMUNITY NICHES DATA
+// To add a video to a niche: set src to the video URL, thumbnail to a still image (optional)
+// To add a new niche: add an entry to COMMUNITY_NICHES below, same shape as existing ones
+// ─────────────────────────────────────────────────────────────────────────────
+const COMMUNITY_NICHES = [
+  {
+    id: "skeleton-ai",
+    category: "Skeleton AI",
+    title: "Skeleton AI",
+    description:
+      "Dramatic skeleton characters living out chaotic life situations — betrayals, breakups, and shocking plot twists. Perfect for viral drama content.",
+    prompt:
+      "A skeleton character in a modern setting, dramatic soap opera scene, cinematic lighting, emotional music overlay, 9:16 vertical format.",
+    route: "/home",
+    videos: [
+      { id: "sk-1", src: "/library/skeleton.mp4", thumbnail: null, title: "Skeleton Drama" },
+      { id: "sk-2", src: "/library/skeleton2.mp4", thumbnail: null, title: "Skeleton Betrayal" },
+    ],
+  },
+  {
+    id: "ai-fruit-story",
+    category: "AI Fruit Story",
+    title: "AI Fruit Story",
+    description:
+      "Animated fruit characters in cinematic soap opera storylines. Perfect for viral drama content that gets millions of views.",
+    prompt:
+      "Animated fruit characters — mango boss and strawberry mom — in a dramatic argument scene, cinematic lighting, emotional close-ups, 9:16 vertical format.",
+    route: "/home",
+    videos: [
+      { id: "fs-1", src: "/library/aifruit.mp4", thumbnail: null, title: "Fruit Catches Cheating" },
+      { id: "fs-2", src: "/library/aifruit2.mp4", thumbnail: null, title: "Fruit Secret Twin" },
+    ],
+  },
+  {
+    id: "lego",
+    category: "Lego",
+    title: "Lego Stories",
+    description:
+      "LEGO-style characters acting out funny and dramatic scenes in stunning cinematic quality. Hugely viral on all platforms.",
+    prompt:
+      "LEGO mini-figures in a dramatic real-world setting, cinematic camera angles, vibrant colors, 9:16 vertical format.",
+    route: "/home",
+    videos: [
+      { id: "lg-1", src: "/library/lego.mp4", thumbnail: null, title: "Lego Argument" },
+      { id: "lg-2", src: "/library/lego2.mp4", thumbnail: null, title: "Lego Drama" },
+    ],
+  },
+  {
+    id: "skeleton-dog",
+    category: "Skeleton Dog",
+    title: "Skeleton Dog",
+    description:
+      "A lovable skeleton dog navigating hilarious and emotional everyday situations that viewers can't stop rewatching.",
+    prompt:
+      "An expressive skeleton dog character in everyday home situations, cute and emotional, cinematic quality, 9:16 vertical format.",
+    route: "/home",
+    videos: [
+      { id: "sd-1", src: "/library/xraydog.mp4", thumbnail: null, title: "Skeleton Dog Story" },
+      { id: "sd-2", src: null, thumbnail: null, title: "Skeleton Dog Drama" },
+    ],
+  },
+  {
+    id: "cartoon",
+    category: "Cartoon",
+    title: "Cartoon Stories",
+    description:
+      "Family Guy-style cartoon characters in relatable and chaotic life moments that go viral every time.",
+    prompt:
+      "Cartoon characters in a dramatic home setting, Family Guy animation style, expressive reactions, 9:16 vertical format.",
+    route: "/home",
+    videos: [
+      { id: "ct-1", src: null, thumbnail: "/library/cartoon.webp", title: "Cartoon Argument" },
+      { id: "ct-2", src: null, thumbnail: null, title: "Cartoon Drama" },
+    ],
+  },
+  {
+    id: "anime",
+    category: "Anime",
+    title: "Anime Stories",
+    description:
+      "Stunning anime-style characters in emotional and action-packed viral scenes that hook viewers instantly.",
+    prompt:
+      "Anime-style character in an emotional dramatic scene, Studio Ghibli inspired lighting, cinematic composition, 9:16 vertical format.",
+    route: "/home",
+    videos: [
+      { id: "an-1", src: null, thumbnail: "/library/anime.webp", title: "Anime Drama" },
+      { id: "an-2", src: null, thumbnail: null, title: "Anime Story" },
+    ],
+  },
+];
 
-function optimizeUrl(url, width = 480) {
-  if (!url) return url;
-  if (url.includes("/storage/v1/object/public/")) {
-    return url.replace(
-      "/storage/v1/object/public/",
-      "/storage/v1/render/image/public/"
-    ) + `?width=${width}&quality=55&format=webp`;
-  }
-  return url;
-}
+// Flat list of all videos with a reference back to their niche
+const ALL_VIDEOS = COMMUNITY_NICHES.flatMap((niche) =>
+  niche.videos.map((v) => ({ ...v, niche }))
+);
 
-function SkeletonCard({ height = 200 }) {
-  return (
-    <div
-      className="mb-3 break-inside-avoid rounded-xl bg-[#191B1C] animate-pulse"
-      style={{ height }}
-    />
-  );
-}
+// ─── Video card ───────────────────────────────────────────────────────────────
 
-export default function PublicGallery() {
-  const [images, setImages]       = useState([]);
-  const [likedImages, setLikedImages] = useState(new Set());
-  const [hasMore, setHasMore]     = useState(true);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+function VideoCard({ item, onClick }) {
+  const { niche } = item;
+  const videoRef = useRef(null);
 
-  const pageRef       = useRef(0);
-  const loadingRef    = useRef(false); // guards against concurrent fetches
-  const sentinelRef   = useRef(null);
-  const navigate      = useNavigate();
-
-  /* ── fetch one page ── */
-  const fetchPage = useCallback(async (pageIndex) => {
-    if (loadingRef.current) return;
-    loadingRef.current = true;
-
-    const from = pageIndex * PAGE_SIZE;
-    const to   = from + PAGE_SIZE - 1;
-
-    const { data, error } = await supabase
-      .from("public_images")
-      .select("id,image_url,runware_url,prompt,likes,uses,created_at")
-      .order("created_at", { ascending: false })
-      .range(from, to);
-
-    loadingRef.current = false;
-
-    if (error || !data || data.length === 0) {
-      setHasMore(false);
-      setLoadingMore(false);
-      setInitialLoading(false);
-      return;
-    }
-
-    setImages(prev => {
-      if (pageIndex === 0) return data;
-      const existing = new Set(prev.map(i => i.id));
-      return [...prev, ...data.filter(i => !existing.has(i.id))];
-    });
-
-    pageRef.current = pageIndex;
-    if (data.length < PAGE_SIZE) setHasMore(false);
-    setLoadingMore(false);
-    setInitialLoading(false);
+  // Seek to first frame so the video thumbnail is visible before hover
+  const handleLoadedMetadata = useCallback(() => {
+    if (videoRef.current) videoRef.current.currentTime = 0.1;
   }, []);
 
-  /* ── initial load + likes ── */
-  useEffect(() => {
-    fetchPage(0);
-
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data?.user) return;
-      supabase
-        .from("image_likes")
-        .select("image_id")
-        .eq("user_id", data.user.id)
-        .then(({ data: likes }) => {
-          if (likes) setLikedImages(new Set(likes.map(l => l.image_id)));
-        });
-    });
+  const startPlay = useCallback(() => {
+    if (videoRef.current) videoRef.current.play().catch(() => {});
   }, []);
 
-  /* ── IntersectionObserver for pagination (no scroll listener) ── */
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !loadingRef.current && hasMore) {
-          setLoadingMore(true);
-          fetchPage(pageRef.current + 1);
-        }
-      },
-      { rootMargin: "600px" }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [hasMore, fetchPage]);
-
-  /* ── like ── */
-  const handleLike = useCallback(async (imageId) => {
-    if (likedImages.has(imageId)) return;
-    const { data: user } = await supabase.auth.getUser();
-    if (!user?.user) return;
-
-    const { error } = await supabase
-      .from("image_likes")
-      .insert({ user_id: user.user.id, image_id: imageId });
-    if (error) return;
-
-    await supabase.rpc("increment_likes", { image_id: imageId });
-    setLikedImages(prev => new Set(prev).add(imageId));
-    setImages(prev =>
-      prev.map(img =>
-        img.id === imageId ? { ...img, likes: (img.likes || 0) + 1 } : img
-      )
-    );
-  }, [likedImages]);
-
-  /* ── use prompt ── */
-  const handleUsePrompt = useCallback(async (img) => {
-    await supabase.rpc("increment_uses", { image_id: img.id });
-    setImages(prev =>
-      prev.map(i => i.id === img.id ? { ...i, uses: (i.uses || 0) + 1 } : i)
-    );
-    navigate("/workspace/image-generator", { state: { prompt: img.prompt } });
-  }, [navigate]);
-
-  return (
-    <section className="w-full max-w-7xl mx-auto px-4 md:px-6 py-8">
-
-      <h1 className="text-3xl font-bold mb-6 text-white">
-        Zyvo <span className="text-purple-500">Community Creations</span>
-      </h1>
-
-      {/* Skeleton on first load */}
-      {initialLoading ? (
-        <div className="columns-2 md:columns-3 xl:columns-4 gap-3">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <SkeletonCard key={i} height={120 + (i % 4) * 40} />
-          ))}
-        </div>
-      ) : (
-        <div className="columns-2 md:columns-3 xl:columns-4 gap-3">
-          {images.map((img) => (
-            <GalleryCard
-              key={img.id}
-              img={img}
-              liked={likedImages.has(img.id)}
-              onLike={handleLike}
-              onUsePrompt={handleUsePrompt}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Pagination sentinel */}
-      <div ref={sentinelRef} style={{ height: 1 }} />
-
-      {/* Loading more indicator */}
-      {loadingMore && (
-        <div className="columns-2 md:columns-3 xl:columns-4 gap-3 mt-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <SkeletonCard key={i} height={140 + (i % 3) * 30} />
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
-/* ── Memoised card so re-renders don't repaint the whole grid ── */
-import { memo } from "react";
-
-const GalleryCard = memo(function GalleryCard({ img, liked, onLike, onUsePrompt }) {
-  const src = optimizeUrl(img.image_url || img.runware_url, 480);
+  const stopPlay = useCallback(() => {
+    if (!videoRef.current) return;
+    videoRef.current.pause();
+    videoRef.current.currentTime = 0.1;
+  }, []);
 
   return (
     <div
-      className="relative mb-3 break-inside-avoid rounded-xl overflow-hidden group shadow-lg shadow-black/40"
-      style={{ contain: "layout paint" }}
+      className="group relative aspect-[9/16] cursor-pointer overflow-hidden rounded-[18px] border border-white/[0.07] bg-[#0d0f10] transition hover:border-white/20"
+      onMouseEnter={item.src ? startPlay : undefined}
+      onMouseLeave={item.src ? stopPlay : undefined}
+      onClick={onClick}
     >
-      <img
-        src={src}
-        loading="lazy"
-        decoding="async"
-        className="w-full rounded-xl transition-transform duration-300 group-hover:scale-[1.02]"
-        style={{ background: "#0f1117", display: "block" }}
-        onError={(e) => {
-          if (img.runware_url && e.currentTarget.src !== img.runware_url) {
-            e.currentTarget.src = img.runware_url;
-          }
-        }}
-      />
+      {/* Thumbnail image (used for image-only cards or as poster for videos) */}
+      {item.thumbnail && (
+        <img
+          src={item.thumbnail}
+          alt={niche.category}
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+        />
+      )}
 
-      <div className="absolute top-2 left-2 text-[10px] bg-black/50 text-white px-2 py-[2px] rounded pointer-events-none">
-        Created with Zyvo
-      </div>
+      {/* Video — always visible so first frame acts as preview */}
+      {item.src && (
+        <video
+          ref={videoRef}
+          src={item.src}
+          className="absolute inset-0 h-full w-full object-cover"
+          muted
+          playsInline
+          loop
+          preload="metadata"
+          onLoadedMetadata={handleLoadedMetadata}
+        />
+      )}
 
-      <div className="absolute bottom-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        <button
-          onClick={() => onLike(img.id)}
-          className={`text-[10px] md:text-xs px-2 py-[3px] md:px-2 md:py-1 rounded-md backdrop-blur-md border border-white/20 shadow-sm transition active:scale-90 ${
-            liked ? "bg-purple-500/70 text-white" : "bg-white/10 text-white hover:bg-white/20"
-          }`}
-        >
-          ❤️ {img.likes || 0}
-        </button>
+      {/* Play icon on hover (only for video cards) */}
+      {item.src && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/45 backdrop-blur-sm">
+            <span className="ml-0.5 text-sm text-white">▶</span>
+          </div>
+        </div>
+      )}
 
-        <button
-          onClick={() => onUsePrompt(img)}
-          className="text-[10px] md:text-xs px-2 py-[3px] md:px-2 md:py-1 rounded-md bg-[#7A3BFF]/70 text-white backdrop-blur-md border border-white/20 hover:bg-[#7A3BFF]/90 transition"
-        >
-          Use Prompt
-        </button>
+      {/* Bottom gradient + label */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/70 to-transparent" />
+      <div className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-1.5">
+        <svg className="h-3.5 w-3.5 flex-shrink-0 text-white/60" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+        </svg>
+        <span className="text-[11px] font-semibold text-white/75">{niche.category}</span>
       </div>
     </div>
   );
-});
+}
+
+// ─── Modal (click-to-open side panel) ────────────────────────────────────────
+
+function NicheModal({ item, onClose }) {
+  const navigate = useNavigate();
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (item && videoRef.current && item.src) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, [item]);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  if (!item) return null;
+  const { niche } = item;
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4 backdrop-blur-[6px]"
+      onClick={onClose}
+    >
+      <div
+        className="relative flex w-full max-w-3xl flex-col overflow-hidden rounded-[26px] border border-white/10 bg-[#0d0f10] shadow-[0_32px_100px_rgba(0,0,0,0.75)] md:flex-row"
+        style={{ maxHeight: "90dvh" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Left: video */}
+        <div className="w-full flex-shrink-0 bg-black md:w-[45%]">
+          {item.src ? (
+            <video
+              ref={videoRef}
+              src={item.src}
+              className="h-full max-h-[55dvh] w-full object-contain md:max-h-none"
+              controls
+              playsInline
+              loop
+            />
+          ) : (
+            <div className="flex aspect-[9/16] max-h-[45dvh] items-center justify-center bg-[#0a0b0d] md:max-h-none md:h-full md:aspect-auto">
+              <div className="text-center">
+                <div className="text-4xl opacity-20">🎬</div>
+                <div className="mt-2 text-sm font-medium text-white/25">Coming soon</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right: niche info */}
+        <div className="flex flex-col justify-center gap-5 p-7 md:p-8">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-purple-400">
+              Niche
+            </span>
+            <h2 className="mt-2 text-2xl font-black leading-tight text-white">{niche.title}</h2>
+            <p className="mt-3 text-sm leading-relaxed text-white/50">{niche.description}</p>
+          </div>
+
+          <div className="space-y-2.5">
+            <button
+              onClick={() => { onClose(); navigate(niche.route); }}
+              className="flex w-full items-center justify-center gap-1.5 rounded-[14px] bg-white py-3.5 text-sm font-bold text-black transition hover:bg-white/90 active:scale-[0.98]"
+            >
+              Use this niche →
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full rounded-[14px] border border-white/10 bg-white/[0.04] py-3 text-sm font-semibold text-white/55 transition hover:bg-white/[0.08]"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main export ──────────────────────────────────────────────────────────────
+
+export default function PublicGallery() {
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const categories = ["All", ...COMMUNITY_NICHES.map((n) => n.category)];
+
+  const filteredVideos = (
+    activeCategory === "All"
+      ? ALL_VIDEOS
+      : ALL_VIDEOS.filter((v) => v.niche.category === activeCategory)
+  ).filter((v) => v.src || v.thumbnail);
+
+  return (
+    <section className="w-full max-w-7xl mx-auto px-4 md:px-6">
+      {/* Header */}
+      <div className="mb-5 flex items-center gap-3">
+        <div>
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-white">
+            <span>👥</span> Community Creations
+          </h2>
+          <p className="mt-1 text-sm text-white/40">
+            Watch how the community uses different niches to create engaging content.
+          </p>
+        </div>
+      </div>
+
+      {/* Filter tabs */}
+      <div className="mb-5 flex flex-wrap gap-2">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${
+              activeCategory === cat
+                ? "bg-white text-black"
+                : "border border-white/10 bg-white/[0.04] text-white/55 hover:bg-white/[0.08] hover:text-white"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Video grid */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+        {filteredVideos.map((item) => (
+          <VideoCard
+            key={item.id}
+            item={item}
+            onClick={() => setSelectedItem(item)}
+          />
+        ))}
+      </div>
+
+      {/* Click modal */}
+      <NicheModal item={selectedItem} onClose={() => setSelectedItem(null)} />
+    </section>
+  );
+}

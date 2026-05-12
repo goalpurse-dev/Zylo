@@ -48,6 +48,13 @@ Deno.serve(async (req) => {
       return fail(req, "Missing SUPABASE_URL / SERVICE_ROLE_KEY", 500);
     }
 
+    // Capture auth headers NOW — before any async work — so they are available
+    // inside EdgeRuntime.waitUntil even if the Request object is later GC'd.
+    // The provider edge function (runware-image) has JWT verification enabled
+    // and expects the original user JWT, NOT the service role key.
+    const incomingAuth   = req.headers.get("Authorization") || "";
+    const incomingApiKey = req.headers.get("apikey")        || Deno.env.get("SUPABASE_ANON_KEY") || "";
+
     const body = (await req.json().catch(() => ({}))) as { jobId?: string };
 
     const sbAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
@@ -116,10 +123,23 @@ Deno.serve(async (req) => {
       // ignore
     }
 
-    // Build refs consistently
-    const referenceImages =
-      job.input?.ref_images ??
+    // Priority: ref_images (fruit story / explicit refs) → init_image_url (style ref) → empty
+    // IMPORTANT: check length > 0, not just Array.isArray — empty arrays must fall through.
+    const refFromField = Array.isArray(job.input?.ref_images) && job.input.ref_images.length > 0
+      ? (job.input.ref_images as string[])
+      : null;
+    const referenceImages: string[] =
+      refFromField ??
       (job.input?.init_image_url ? [job.input.init_image_url] : []);
+
+    console.log("[job-worker] referenceImages forwarding", {
+      jobId,
+      source:          refFromField ? "ref_images" : job.input?.init_image_url ? "init_image_url" : "none",
+      count:           referenceImages.length,
+      hasRefImages:    !!refFromField,
+      inputRefImages:  refFromField ?? [],
+      firstUrl:        referenceImages[0]?.slice(0, 80) ?? null,
+    });
 
     // Use provider.edgeFn as the source of truth
     const EDGE_FN_URL = `${SUPABASE_URL}${provider.edgeFn}`;
@@ -151,24 +171,75 @@ Deno.serve(async (req) => {
         withSound: job.input?.withSound ?? false,
       };
 
-      console.log("VIDEO PAYLOAD:", JSON.stringify(payload));
-      
-    const handoffRes = await fetch(EDGE_FN_URL, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${SERVICE_ROLE_KEY}`,
-      },
-      body: JSON.stringify(payload),
+      console.log(`[job-worker] firing ${job.type} job ${jobId} → ${provider.edgeFn}`);
+
+    console.log("[job-worker] accepting handoff", {
+      jobId,
+      type: job.type,
+      tool_key: job.tool_key,
+      status: job.status,
+      providerEdgeFn: provider.edgeFn,
+      airTag: provider.airTag,
     });
 
+    // Fire the handoff without waiting for image/video generation to complete.
+    // runware-image now returns 202 immediately and processes in the background.
+    // waitUntil keeps this process alive long enough to log the handoff result.
+    const handoffPromise = (async () => {
+      let r: Response | null = null;
+      try {
+        r = await fetch(EDGE_FN_URL, {
+          method:  "POST",
+          headers: {
+            "content-type": "application/json",
+            // Forward the original user JWT so runware-image passes JWT verification.
+            // Using SERVICE_ROLE_KEY here causes UNAUTHORIZED_INVALID_JWT_FORMAT.
+            "authorization": incomingAuth,
+            "apikey":        incomingApiKey,
+          },
+          body: JSON.stringify(payload),
+        });
+      } catch (fetchErr) {
+        console.error("[job-worker] handoff fetch threw:", String(fetchErr));
+        // Mark the job failed — runware-image never received the request
+        try {
+          await sbAdmin.rpc("finish_job_failed", {
+            p_id:    jobId,
+            p_error: `Handoff fetch error: ${String(fetchErr)}`,
+          });
+        } catch (rpcErr) {
+          console.error("[job-worker] finish_job_failed threw:", String(rpcErr));
+        }
+        return;
+      }
+
+      // Fully consume the body so the TCP socket is released cleanly
+      let txt = "";
+      try { txt = await r.text(); } catch { /* ignore */ }
+
+      if (r.ok) {
+        console.log(`[job-worker] handoff accepted ${r.status}:`, txt.slice(0, 120));
+      } else {
+        console.error(`[job-worker] handoff failed ${r.status}:`, txt.slice(0, 200));
+        // runware-image returned a non-2xx — it won't process the job, so mark it failed
+        try {
+          await sbAdmin.rpc("finish_job_failed", {
+            p_id:    jobId,
+            p_error: `Handoff rejected (${r.status}): ${txt.slice(0, 150)}`,
+          });
+        } catch (rpcErr) {
+          console.error("[job-worker] finish_job_failed threw:", String(rpcErr));
+        }
+      }
+    })();
+
+    EdgeRuntime.waitUntil(handoffPromise);
+
     return json(req, {
-      ok: true,
-      id: jobId,
-      message: "handoff started",
-      edgeFn: provider.edgeFn,
-      handoff_ok: !!handoffRes && handoffRes.ok,
-      handoff_status: handoffRes?.status ?? null,
+      ok:      true,
+      id:      jobId,
+      message: "handoff fired",
+      edgeFn:  provider.edgeFn,
     });
   } catch (e) {
     console.error(e);

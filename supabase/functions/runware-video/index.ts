@@ -57,6 +57,19 @@ function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
 
+function safeRunwarePositivePrompt(positivePrompt: unknown, max = 1450): string {
+  const safePositivePrompt = String(positivePrompt || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+
+  if (safePositivePrompt.length < 2) {
+    throw new Error("Video prompt is empty or too short");
+  }
+
+  return safePositivePrompt;
+}
+
 function computeProgress(startMs: number) {
   const elapsed = Date.now() - startMs;
   const ratio = Math.min(1, elapsed / MAX_RUNTIME_MS);
@@ -199,9 +212,10 @@ Deno.serve(async (req) => {
     const rawReferenceImages = Array.isArray(referenceImages)
       ? referenceImages.filter(Boolean).map(String)
       : [];
+    const safePositivePrompt = safeRunwarePositivePrompt(prompt);
 
     const launchPayload: any = {
-      subject: String(prompt),
+      subject: safePositivePrompt,
       durationSec: Number(durationSec ?? 5),
       referenceImages: rawReferenceImages,
       airTag: airTagStr,

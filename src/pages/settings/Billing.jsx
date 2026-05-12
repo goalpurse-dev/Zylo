@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import Toast from "../../components/ui/Toast";
 import { useNavigate } from "react-router-dom";
-import { CreditCard, X, RotateCcw } from "lucide-react";
+import { CreditCard, RotateCcw } from "lucide-react";
 
 const card = "rounded-2xl border border-[#1F2230] bg-[#141622] p-5 text-white";
 const FUNCTION_PORTAL = "create-portal-session";  // your existing function
@@ -229,22 +229,21 @@ async function resumeSubscription() {
   <button
   onClick={resumeSubscription}
   disabled={loading === "resume"}
-  className="rounded-full border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-400 hover:bg-green-500/20 disabled:opacity-60"
+  className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/15 disabled:opacity-60"
 >
   <span className="flex items-center gap-1">
     <RotateCcw className={`w-4 h-4 ${loading === "resume" ? "animate-spin" : ""}`} />
-    {loading === "resume" ? "Processing…" : "Resume"}
+    {loading === "resume" ? "Processing..." : "Resume subscription"}
   </span>
 </button>
   ) : (
  <button
   onClick={cancelSubscription}
   disabled={loading === "cancel"}
-  className="rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/20 disabled:opacity-60"
+  className="rounded-full border border-white/10 bg-transparent px-3 py-1.5 text-xs font-medium text-[#8F95A3] hover:border-red-400/25 hover:bg-red-500/5 hover:text-red-300 disabled:opacity-60"
 >
-  <span className="flex items-center gap-1">
-    <X className={`w-4 h-4 ${loading === "cancel" ? "animate-spin" : ""}`} />
-    {loading === "cancel" ? "Processing…" : "Cancel"}
+  <span className="flex items-center gap-1.5">
+    {loading === "cancel" ? "Processing..." : "Cancel plan"}
   </span>
 </button>
   )}

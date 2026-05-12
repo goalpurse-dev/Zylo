@@ -36,166 +36,98 @@ function buildEmail(user) {
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>You still haven't upgraded.</title>
+  <title>people are already making these and you're not</title>
 </head>
-<body style="margin:0;padding:0;background:#0d0d0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
-  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#0d0d0f;">
-    You signed up. You never upgraded. Here's exactly what you're leaving on the table.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#f4f4f5;">
+    Fruit drama videos are blowing up right now. Here's how to make them in minutes without any editing.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d0d0f;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f5;">
     <tr><td align="center" style="padding:40px 16px 60px;">
 
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#16181f;border-radius:24px;border:1px solid rgba(255,255,255,0.07);overflow:hidden;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 24px rgba(0,0,0,0.07);">
 
-        <!-- accent bar -->
-        <tr><td style="height:3px;background:linear-gradient(90deg,#7A3BFF,#c077ff,#ff57b2,#c077ff,#7A3BFF);"></td></tr>
+        <!-- top bar -->
+        <tr><td style="height:3px;background:linear-gradient(90deg,#7A3BFF,#c077ff,#ff57b2);"></td></tr>
 
-        <!-- logo -->
-        <tr><td style="padding:28px 32px 0;">
-          <span style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;">Z<span style="color:#7A3BFF;">yvo</span></span>
-        </td></tr>
+        <!-- content -->
+        <tr><td style="padding:36px 40px 32px;">
 
-        <!-- body -->
-        <tr><td style="padding:24px 32px 0;">
-
-          <h1 style="margin:0 0 20px;font-size:26px;font-weight:800;color:#fff;line-height:1.25;letter-spacing:-0.4px;">
-            ${displayName}, you signed up — but never came back.
-          </h1>
-
-          <p style="margin:0 0 14px;font-size:15px;line-height:1.85;color:rgba(255,255,255,0.65);">
-            I'm not going to pretend this is just a newsletter. I'm reaching out because you made an account on Zyvo, used your free generations, and then stopped. I've seen this pattern with thousands of users and I know exactly what happened — the free tier just isn't enough to show you what this platform actually does.
+          <!-- logo -->
+          <p style="margin:0 0 32px;font-size:18px;font-weight:800;color:#0d0d0f;letter-spacing:-0.4px;">
+            Z<span style="color:#7A3BFF;">yvo</span>
           </p>
 
-          <p style="margin:0 0 28px;font-size:15px;line-height:1.85;color:rgba(255,255,255,0.65);">
-            So let me make it impossible to say no.
+          <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
+            Hey ${displayName},
           </p>
 
-          <!-- offer box -->
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(122,59,255,0.1);border:1px solid rgba(122,59,255,0.35);border-radius:16px;margin-bottom:28px;">
-            <tr><td style="padding:22px 24px;">
-              <p style="margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(168,85,247,0.8);">This week only</p>
-              <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
-                <tr>
-                  <td style="vertical-align:middle;padding-right:10px;">
-                    <span style="font-size:16px;color:rgba(255,255,255,0.3);text-decoration:line-through;font-weight:600;">€32/mo</span>
-                  </td>
-                  <td style="vertical-align:middle;">
-                    <span style="font-size:38px;font-weight:800;color:#fff;letter-spacing:-1px;">€25</span><span style="font-size:14px;color:rgba(255,255,255,0.4);">/mo</span>
-                  </td>
-                  <td style="vertical-align:middle;padding-left:10px;">
-                    <span style="font-size:11px;font-weight:700;color:#C084FC;background:rgba(168,85,247,0.18);border:1px solid rgba(168,85,247,0.35);border-radius:20px;padding:4px 10px;">SAVE 22%</span>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">
-                Pro plan · 1,200 credits/mo · cancel anytime · no hidden fees
-              </p>
-            </td></tr>
-          </table>
+          <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
+            Niko here. Real talk — fruit drama videos are one of the fastest growing formats on TikTok right now. Cheating stories, secret reveals, kicked out moments. Millions of views. And creators who figured this out early are cleaning up.
+          </p>
 
-          <!-- what they get -->
-          <p style="margin:0 0 14px;font-size:13px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.3);text-transform:uppercase;">what you unlock today</p>
+          <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
+            The problem is making them manually is a pain. You need scripts, scene images, voiceover, editing — it takes hours. So most people see the trend and do nothing.
+          </p>
 
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
-            <tr>
-              <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🖼️</div></td>
-              <td style="padding-left:10px;">
-                <p style="margin:0;font-size:14px;color:#fff;font-weight:600;">400 AI images per month</p>
-                <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Premium models, no watermarks, every style. Product photos, viral visuals, ads.</p>
-              </td>
-            </tr>
-          </table>
+          <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
+            We just fixed that. <strong style="color:#0d0d0f;">AI Fruit Story</strong> is live in your account right now. You pick a drama angle, choose your fruit characters, and Zyvo writes the story, generates every scene as a cinematic image, and animates it into a video. No editing. No design skills. Done in minutes.
+          </p>
 
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
-            <tr>
-              <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🎬</div></td>
-              <td style="padding-left:10px;">
-                <p style="margin:0;font-size:14px;color:#fff;font-weight:600;">60 AI videos per month</p>
-                <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Cinematic short-form clips for TikTok, Reels, and YouTube Shorts. From one prompt.</p>
-              </td>
-            </tr>
-          </table>
-
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
-            <tr>
-              <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">✍️</div></td>
-              <td style="padding-left:10px;">
-                <p style="margin:0;font-size:14px;color:#fff;font-weight:600;">600 viral scripts per month</p>
-                <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Hook → scenes → CTA in 60 seconds. With image and video prompts per scene.</p>
-              </td>
-            </tr>
-          </table>
-
+          <!-- feature card -->
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
             <tr>
-              <td width="28" valign="top"><div style="width:22px;height:22px;background:rgba(122,59,255,0.15);border:1px solid rgba(122,59,255,0.3);border-radius:7px;text-align:center;line-height:22px;font-size:11px;">🚀</div></td>
-              <td style="padding-left:10px;">
-                <p style="margin:0;font-size:14px;color:#fff;font-weight:600;">Priority queue + every new tool</p>
-                <p style="margin:3px 0 0;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">Skip the free-user queue. Get access to every feature we ship, on day one.</p>
+              <td style="padding:20px 22px;background:#faf8ff;border-radius:12px;border:1px solid #e5e7eb;">
+                <p style="margin:0 0 8px;font-size:15px;font-weight:700;color:#7A3BFF;">🍊 What you can make right now</p>
+                <p style="margin:0 0 6px;font-size:13px;color:#374151;line-height:1.65;">→ Cheating drama stories that get millions of views</p>
+                <p style="margin:0 0 6px;font-size:13px;color:#374151;line-height:1.65;">→ Secret reveal arcs that keep people watching until the end</p>
+                <p style="margin:0 0 6px;font-size:13px;color:#374151;line-height:1.65;">→ Comeback and revenge stories with real emotional payoff</p>
+                <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.65;">All generated automatically. Full cinematic scenes. Ready to post.</p>
               </td>
             </tr>
           </table>
 
-          <!-- social proof -->
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(122,59,255,0.07);border-left:3px solid #7A3BFF;border-radius:0 12px 12px 0;margin-bottom:10px;">
-            <tr><td style="padding:16px 18px;">
-              <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.7;font-style:italic;">
-                "I was on free for two months thinking I'd upgrade 'later.' The week I finally upgraded I got my first 100K view Reel using the AI video + script combo. I should have done it on day one."
-              </p>
-              <p style="margin:8px 0 0;font-size:12px;color:rgba(255,255,255,0.35);">— Marcus T., now on Pro</p>
-            </td></tr>
-          </table>
-
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(122,59,255,0.07);border-left:3px solid rgba(168,85,247,0.5);border-radius:0 12px 12px 0;margin-bottom:28px;">
-            <tr><td style="padding:16px 18px;">
-              <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.75);line-height:1.7;font-style:italic;">
-                "I cancel tools that don't pay for themselves. Zyvo paid for itself in the first week — one product image campaign alone brought in more than the monthly cost."
-              </p>
-              <p style="margin:8px 0 0;font-size:12px;color:rgba(255,255,255,0.35);">— Priya S., e-commerce brand on Pro</p>
-            </td></tr>
-          </table>
+          <p style="margin:0 0 28px;font-size:15px;line-height:1.75;color:#374151;">
+            Other people in your niche are posting these right now. The ones who start early get the algorithm boost while it's still fresh. Your account has everything you need — open it and try one.
+          </p>
 
           <!-- CTA -->
-          <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;width:100%;">
+          <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
             <tr>
-              <td style="border-radius:14px;background:linear-gradient(135deg,#7A3BFF,#9d4eff);box-shadow:0 8px 32px rgba(122,59,255,0.5);">
-                <a href="https://tryzyvo.com/workspace/pricing"
-                   style="display:block;text-align:center;padding:18px 32px;font-size:18px;font-weight:800;color:#fff;text-decoration:none;letter-spacing:-0.3px;">
-                  Upgrade to Pro — 25% off →
+              <td style="border-radius:10px;background:linear-gradient(135deg,#7A3BFF,#9d4eff);">
+                <a href="https://tryzyvo.com/workspace/fruit-story"
+                   style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.2px;">
+                  Make my first fruit story →
                 </a>
               </td>
             </tr>
           </table>
 
-          <p style="margin:0 0 26px;text-align:center;font-size:12px;color:rgba(255,255,255,0.25);">
-            €25/mo this week only · Cancel anytime · Instant access
+          <p style="margin:0 0 6px;font-size:15px;line-height:1.75;color:#374151;">
+            If you make one and want me to take a look, just reply with the link. Happy to give you honest feedback.
           </p>
 
-          <hr style="border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0 0 20px;"/>
-
-          <p style="margin:0 0 6px;font-size:14px;line-height:1.8;color:rgba(255,255,255,0.55);">
-            <strong style="color:rgba(255,255,255,0.8);">P.S.</strong> — This 25% discount is genuinely time-limited. I'm not going to keep re-sending this. If you've been thinking about it, now is the time.
+          <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">
+            — Niko<br/>
+            <span style="color:#9ca3af;font-size:13px;">Founder, Zyvo</span>
           </p>
-
-          <p style="margin:16px 0 0;font-size:13px;color:rgba(255,255,255,0.3);">— Niko, Zyvo</p>
 
         </td></tr>
 
         <!-- footer -->
-        <tr><td style="padding:20px 32px 28px;border-top:1px solid rgba(255,255,255,0.06);">
-          <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.25);line-height:1.7;">
-            You created a free Zyvo account — that's why you're hearing from us.<br/>
-            <a href="https://tryzyvo.com/settings" style="color:rgba(255,255,255,0.35);text-decoration:underline;">Unsubscribe</a>
+        <tr><td style="padding:20px 40px 24px;border-top:1px solid #f3f4f6;">
+          <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.7;">
+            You're getting this because you opted in to updates from Zyvo.<br/>
+            <a href="https://tryzyvo.com/settings" style="color:#9ca3af;text-decoration:underline;">Unsubscribe</a>
             &nbsp;·&nbsp;
-            <a href="https://tryzyvo.com" style="color:rgba(255,255,255,0.35);text-decoration:underline;">tryzyvo.com</a>
+            <a href="https://tryzyvo.com" style="color:#9ca3af;text-decoration:underline;">tryzyvo.com</a>
           </p>
         </td></tr>
 
       </table>
-
     </td></tr>
   </table>
 </body>
@@ -213,7 +145,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "you signed up but never upgraded — Pro is on sale right now",
+      subject: "people are already making these and you're not",
       html: buildEmail(user),
     });
 
@@ -233,7 +165,7 @@ async function sendEmail(user) {
 export default async function handler(req, res) {
   try {
     console.log("🚀 Starting engagement email campaign...");
-    console.log(`   dry_run=${DRY_RUN}  target=plan_code:free (all free users)`);
+    console.log(`   dry_run=${DRY_RUN}  target=email_updates:true`);
 
     let allUsers = [];
     let from = 0;
@@ -243,7 +175,7 @@ export default async function handler(req, res) {
       const { data, error } = await supabase
         .from("profiles")
         .select("email")
-        .eq("plan_code", "free")
+        .eq("email_updates", true)
         .not("email", "is", null)
         .range(from, from + BATCH_SIZE - 1);
 
@@ -260,7 +192,7 @@ export default async function handler(req, res) {
       from += BATCH_SIZE;
     }
 
-    console.log(`📊 Total free users to email: ${allUsers.length}`);
+    console.log(`📊 Total opted-in users to email: ${allUsers.length}`);
 
     let sent = 0, failed = 0, skipped = 0;
 
@@ -283,7 +215,7 @@ export default async function handler(req, res) {
           .from("profiles")
           .update({
             last_email_sent_at: new Date().toISOString(),
-            last_email_type: "free_conversion_wake_up",
+            last_email_type: "fruit_story_launch",
           })
           .eq("email", user.email);
       } else {

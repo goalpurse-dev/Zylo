@@ -29,6 +29,10 @@ function send(req: Request, body: any, status = 200) {
   });
 }
 
+function stripeDate(unixSeconds?: number | null) {
+  return unixSeconds ? new Date(unixSeconds * 1000).toISOString() : null;
+}
+
 export default {
   async fetch(req: Request) {
     if (req.method === "OPTIONS") {
@@ -86,16 +90,27 @@ export default {
         throw new Error(stripeData.error?.message || "Stripe error");
       }
 
-      // 🔥 UPDATE SUPABASE
+      // Stripe emits customer.subscription.updated for this change; this local
+      // update keeps the UI correct while the webhook delivery is pending.
       await supabaseAdmin
         .from("profiles")
         .update({
-          cancel_at_period_end: false,
+          cancel_at_period_end: Boolean(stripeData.cancel_at_period_end),
           stripe_subscription_status: stripeData.status,
+          current_period_end: stripeDate(stripeData.current_period_end),
+          plan_renews_at: stripeDate(stripeData.current_period_end),
         })
         .eq("id", user.id);
 
-      return send(req, { success: true });
+      return send(req, {
+        success: true,
+        subscription: {
+          id: stripeData.id,
+          status: stripeData.status,
+          cancel_at_period_end: Boolean(stripeData.cancel_at_period_end),
+          current_period_end: stripeData.current_period_end ?? null,
+        },
+      });
     } catch (e: any) {
       return send(req, { error: e.message }, 500);
     }

@@ -37,10 +37,18 @@ create table if not exists public.viral_score_reports (
 -- Row-level security
 alter table public.viral_score_reports enable row level security;
 
-create policy "users_own_viral_score_reports"
-  on public.viral_score_reports
-  for all
-  using (auth.uid() = user_id);
+do $$ begin
+  if not exists (
+    select 1 from pg_policies
+    where tablename = 'viral_score_reports'
+    and policyname  = 'users_own_viral_score_reports'
+  ) then
+    create policy "users_own_viral_score_reports"
+      on public.viral_score_reports
+      for all
+      using (auth.uid() = user_id);
+  end if;
+end $$;
 
 -- Indexes
 create index if not exists viral_score_reports_user_id_idx
