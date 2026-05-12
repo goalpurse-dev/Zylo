@@ -3,6 +3,15 @@ import FruitStepStory from "./steps/FruitStepStory";
 import FruitStepScenes from "./steps/FruitStepScenes";
 import FruitStepAnimate from "./steps/FruitStepAnimate";
 import { getFruitSceneCountForLength, isFruitVideoPromptReady } from "./api/fruitStoryApi";
+import Credit from "/icons/whitecredit.png";
+
+// Credits per 6-second clip by model
+// WAN: $0.4556/clip × 2 markup / $0.02 per credit = 46 credits
+// Veo: $0.9/clip × 2 markup / $0.02 per credit = 90 credits
+const VIDEO_CREDITS_PER_CLIP = {
+  "zyvo-video-v2": 46,   // Wan 2.6 Flash
+  "zyvo-video-v3": 90,   // Veo 3.1 Fast
+};
 
 const STEPS = [
   {
@@ -82,6 +91,8 @@ export default function AIFruitStoryBuilder({
   setStepIndex,
   hideMobileFooter = false,
   isContinuationMode = false,
+  hasEnoughCredits = true,
+  totalAnimationCost = 0,
 }) {
   const [stepError, setStepError] = useState("");
 
@@ -186,6 +197,10 @@ export default function AIFruitStoryBuilder({
       setStepError("Generate prompts first.");
       return;
     }
+    if (!hasEnoughCredits) {
+      setStepError(`Not enough credits. You need ${totalAnimationCost} credits to animate these clips.`);
+      return;
+    }
     setStepError("");
     onAnimateScenes?.();
   };
@@ -284,6 +299,24 @@ export default function AIFruitStoryBuilder({
           <p className="mt-1 text-sm text-white/45">{stepDescription}</p>
         </div>
 
+        {/* Not enough credits banner (animate step only) */}
+        {currentStep.id === "animate" && allScenesSucceeded && !hasEnoughCredits && (
+          <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-red-400/20 bg-red-500/10 p-3">
+            <div>
+              <div className="text-sm font-bold text-red-200">Not enough credits</div>
+              <div className="text-xs text-red-300/70">
+                You need {totalAnimationCost} credits to animate {scenes.slice(0, expectedSceneCount).filter(s => s.imageUrl).length} clips.
+              </div>
+            </div>
+            <a
+              href="/workspace/pricing"
+              className="shrink-0 rounded-xl border border-red-400/30 bg-red-500/20 px-3 py-1.5 text-xs font-bold text-red-200 transition hover:bg-red-500/30"
+            >
+              Add Credits →
+            </a>
+          </div>
+        )}
+
         {/* Step error */}
         {stepError && (
           <div className="mb-4 rounded-2xl border border-orange-300/20 bg-orange-500/10 p-3 text-sm font-bold text-orange-200">
@@ -380,11 +413,11 @@ export default function AIFruitStoryBuilder({
             <button
               type="button"
               onClick={handleAnimateScenes}
-              disabled={isAnimating || !allScenesSucceeded || !videoPromptsReady}
+              disabled={isAnimating || !allScenesSucceeded || !videoPromptsReady || !hasEnoughCredits}
               className={`
                 relative flex h-12 flex-1 items-center justify-center gap-3 overflow-hidden rounded-2xl
                 text-sm font-medium text-white transition-all duration-200
-                ${isAnimating || !allScenesSucceeded || !videoPromptsReady
+                ${isAnimating || !allScenesSucceeded || !videoPromptsReady || !hasEnoughCredits
                   ? "cursor-not-allowed bg-white/10"
                   : "bg-gradient-to-b from-[#A855F7] to-[#7A3BFF] hover:brightness-110 active:scale-[0.99]"
                 }
@@ -407,6 +440,18 @@ export default function AIFruitStoryBuilder({
                 ) : (
                   <>
                     <span>Animate Clips</span>
+                    {(() => {
+                      const clipCount = scenes.slice(0, expectedSceneCount).filter(s => s.imageUrl).length;
+                      const creditsPerClip = VIDEO_CREDITS_PER_CLIP[form.animationModel ?? "zyvo-video-v2"] ?? 46;
+                      const total = clipCount * creditsPerClip;
+                      if (total <= 0) return null;
+                      return (
+                        <span className="flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold">
+                          <img src={Credit} alt="" className="h-3.5 w-3.5 opacity-90" />
+                          {total}
+                        </span>
+                      );
+                    })()}
                   </>
                 )}
               </span>

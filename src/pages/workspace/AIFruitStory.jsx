@@ -5,11 +5,13 @@ import AIFruitStoryBuilder from "../../components/viral-tools/ai-fruit-story/AIF
 import AIFruitStoryResults from "../../components/viral-tools/ai-fruit-story/AIFruitStoryResults";
 import FruitStoryPaywall from "../../components/viral-tools/ai-fruit-story/FruitStoryPaywall";
 import useFruitStoryJob from "../../components/viral-tools/ai-fruit-story/hooks/useFruitStoryJob";
-import { isFruitVideoPromptReady, sceneCountToLength } from "../../components/viral-tools/ai-fruit-story/api/fruitStoryApi";
+import { isFruitVideoPromptReady, sceneCountToLength, FRUIT_VIDEO_CREDITS_PER_CLIP } from "../../components/viral-tools/ai-fruit-story/api/fruitStoryApi";
+import { useProfileCredits } from "../../hooks/useProfileCredits";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function AIFruitStory() {
   const navigate = useNavigate();
+  const creditBalance = useProfileCredits();
   const [stepIndex,       setStepIndex]       = useState(0);
   const [mobilePanel,     setMobilePanel]     = useState("builder");
   const [mobileTab,       setMobileTab]       = useState("generate"); // "generate" | "recent"
@@ -108,6 +110,12 @@ export default function AIFruitStory() {
   const hasEnoughCharacters = (form.selectedCharacters || []).length >= 2;
   const hasScenesReady     = scenesDone || scenes.some((scene) => scene.imageUrl);
   const expectedSceneCount = Number(form.sceneCount || scenes.length || 0);
+
+  // Total credit cost for animating all ready scenes (must be after expectedSceneCount)
+  const animationClipCount  = scenes.slice(0, expectedSceneCount).filter(s => s.imageUrl).length;
+  const creditsPerClip      = FRUIT_VIDEO_CREDITS_PER_CLIP[form.animationModel ?? "zyvo-video-v2"] ?? 46;
+  const totalAnimationCost  = animationClipCount * creditsPerClip;
+  const hasEnoughCredits    = creditBalance >= totalAnimationCost;
   const allRequiredScenesReady =
     expectedSceneCount > 0 &&
     scenes.length >= expectedSceneCount &&
@@ -211,7 +219,7 @@ export default function AIFruitStory() {
     isBusy ||
     (stepIndex === 0 && !hasEnoughCharacters) ||
     (stepIndex === 1 && !allRequiredScenesReady) ||
-    (stepIndex === 2 && (!allRequiredScenesReady || !videoPromptsReady));
+    (stepIndex === 2 && (!allRequiredScenesReady || !videoPromptsReady || !hasEnoughCredits));
 
   const builderPanel = (
     <AIFruitStoryBuilder
@@ -237,6 +245,8 @@ export default function AIFruitStory() {
       setStepIndex={setStepIndex}
       hideMobileFooter
       isContinuationMode={loadedFromRecent}
+      hasEnoughCredits={hasEnoughCredits}
+      totalAnimationCost={totalAnimationCost}
     />
   );
 

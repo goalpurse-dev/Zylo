@@ -336,10 +336,10 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     secret:     "RUNWARE_API_KEY",
     edgeFn:     "/functions/v1/runware-video",
 
-    costPerSecondUSD:     0.018,
+    costPerSecondUSD:     0.07593,       // $0.4556 / 6s actual cost
     baseResolution:       "720p",
-    retailMultiplier:     2.2,
-    baseCreditsPerSecond: 2,            // $0.018 × 2.2 / $0.02 = 1.98 → 2
+    retailMultiplier:     2,
+    baseCreditsPerSecond: 8,            // $0.4556 × 2 / 6s / $0.02 ≈ 7.6 → 8/s → 46 credits per 6s clip
   },
 
   "video:veo31fast": {
@@ -349,10 +349,10 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     secret:     "RUNWARE_API_KEY",
     edgeFn:     "/functions/v1/runware-video",
 
-    costPerSecondUSD:     0,
+    costPerSecondUSD:     0.15,         // $0.9 / 6s actual cost
     baseResolution:       "1080p",
-    retailMultiplier:     1,
-    baseCreditsPerSecond: 1,
+    retailMultiplier:     2,
+    baseCreditsPerSecond: 15,           // $0.9 × 2 / 6s / $0.02 = 15/s → 90 credits per 6s clip
   },
 
   /**

@@ -20,6 +20,14 @@ const VIDEO_WITH_SOUND = {
 };
 
 export const MAX_FRUIT_VOICEOVER_CHARS = 95;
+
+// Credits per 6-second animated clip by model
+// WAN 2.6 Flash: $0.4556/clip × 2 markup / $0.02 per credit = 46
+// Veo 3.1 Fast:  $0.90/clip  × 2 markup / $0.02 per credit = 90
+export const FRUIT_VIDEO_CREDITS_PER_CLIP = {
+  "zyvo-video-v2": 46,
+  "zyvo-video-v3": 90,
+};
 export const MAX_FRUIT_VOICEOVER_LINE_CHARS = 45;
 export const MIN_FRUIT_VIDEO_PROMPT_CHARS = 80;
 const MAX_RUNWARE_VIDEO_PROMPT_CHARS = 1450;
