@@ -36,13 +36,13 @@ function buildEmail(user) {
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>people are already making these and you're not</title>
+  <title>type one sentence. get a full viral video.</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#f4f4f5;">
-    Fruit drama videos are blowing up right now. Here's how to make them in minutes without any editing.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+    One prompt. Zyvo writes the story, generates every scene, and builds the full video. No editing. No skills needed.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f5;">
@@ -66,48 +66,60 @@ function buildEmail(user) {
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Niko here. Real talk — fruit drama videos are one of the fastest growing formats on TikTok right now. Cheating stories, secret reveals, kicked out moments. Millions of views. And creators who figured this out early are cleaning up.
+            Niko here. I want to show you something that's going to save you hours every single week.
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            The problem is making them manually is a pain. You need scripts, scene images, voiceover, editing — it takes hours. So most people see the trend and do nothing.
+            We just shipped <strong style="color:#0d0d0f;">AI Fruit Story</strong> — and it's genuinely unlike anything else out there right now. You type one prompt. One sentence describing your drama. That's it.
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            We just fixed that. <strong style="color:#0d0d0f;">AI Fruit Story</strong> is live in your account right now. You pick a drama angle, choose your fruit characters, and Zyvo writes the story, generates every scene as a cinematic image, and animates it into a video. No editing. No design skills. Done in minutes.
+            Zyvo takes that single prompt and builds the <em>entire</em> video for you. It writes a multi-scene story arc, generates every scene as a full cinematic 3D image, animates each scene with talking characters, and lines it all up ready to post. No editing. No design. No voiceover recording. Nothing.
           </p>
 
-          <!-- feature card -->
+          <!-- how it works -->
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
             <tr>
-              <td style="padding:20px 22px;background:#faf8ff;border-radius:12px;border:1px solid #e5e7eb;">
-                <p style="margin:0 0 8px;font-size:15px;font-weight:700;color:#7A3BFF;">🍊 What you can make right now</p>
-                <p style="margin:0 0 6px;font-size:13px;color:#374151;line-height:1.65;">→ Cheating drama stories that get millions of views</p>
-                <p style="margin:0 0 6px;font-size:13px;color:#374151;line-height:1.65;">→ Secret reveal arcs that keep people watching until the end</p>
-                <p style="margin:0 0 6px;font-size:13px;color:#374151;line-height:1.65;">→ Comeback and revenge stories with real emotional payoff</p>
-                <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.65;">All generated automatically. Full cinematic scenes. Ready to post.</p>
+              <td style="padding:22px 24px;background:#faf8ff;border-radius:12px;border:1px solid #ede9fe;">
+                <p style="margin:0 0 12px;font-size:14px;font-weight:800;color:#7A3BFF;letter-spacing:0.02em;">HOW IT WORKS</p>
+                <p style="margin:0 0 8px;font-size:14px;color:#374151;line-height:1.7;">
+                  <strong style="color:#0d0d0f;">1.</strong>&nbsp; Type your drama idea — one sentence is enough
+                </p>
+                <p style="margin:0 0 8px;font-size:14px;color:#374151;line-height:1.7;">
+                  <strong style="color:#0d0d0f;">2.</strong>&nbsp; Pick your fruit characters and story preset
+                </p>
+                <p style="margin:0 0 8px;font-size:14px;color:#374151;line-height:1.7;">
+                  <strong style="color:#0d0d0f;">3.</strong>&nbsp; Zyvo generates every scene image automatically
+                </p>
+                <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">
+                  <strong style="color:#0d0d0f;">4.</strong>&nbsp; Hit animate — full talking video, ready to post
+                </p>
               </td>
             </tr>
           </table>
 
+          <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
+            Fruit drama videos — cheating reveals, secret twins, comeback stories — are one of the highest performing formats on TikTok and Reels right now. Creators who got in early are hitting millions of views consistently. The format works. The question is whether you're making them.
+          </p>
+
           <p style="margin:0 0 28px;font-size:15px;line-height:1.75;color:#374151;">
-            Other people in your niche are posting these right now. The ones who start early get the algorithm boost while it's still fresh. Your account has everything you need — open it and try one.
+            Now you can make a full one in the time it takes to write a caption. Open your account and try it — the tool is already there.
           </p>
 
           <!-- CTA -->
           <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
             <tr>
               <td style="border-radius:10px;background:linear-gradient(135deg,#7A3BFF,#9d4eff);">
-                <a href="https://tryzyvo.com/workspace/fruit-story"
-                   style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.2px;">
-                  Make my first fruit story →
+                <a href="https://tryzyvo.com/workspace/ai-fruit-story"
+                   style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.2px;">
+                  Build my first fruit video →
                 </a>
               </td>
             </tr>
           </table>
 
           <p style="margin:0 0 6px;font-size:15px;line-height:1.75;color:#374151;">
-            If you make one and want me to take a look, just reply with the link. Happy to give you honest feedback.
+            If you post one and want feedback, reply with the link. I'll take a look.
           </p>
 
           <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">
@@ -145,7 +157,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "people are already making these and you're not",
+      subject: "type one sentence. get a full viral video.",
       html: buildEmail(user),
     });
 
@@ -215,7 +227,7 @@ export default async function handler(req, res) {
           .from("profiles")
           .update({
             last_email_sent_at: new Date().toISOString(),
-            last_email_type: "fruit_story_launch",
+            last_email_type: "fruit_story_single_prompt",
           })
           .eq("email", user.email);
       } else {

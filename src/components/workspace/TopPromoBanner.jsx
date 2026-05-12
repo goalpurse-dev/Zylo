@@ -48,31 +48,30 @@ export default function TopPromoBanner() {
     {/* CENTER CONTENT */}
     <div className="relative mx-auto flex items-center justify-center gap-2 px-4 pr-10 py-2.5 text-white overflow-hidden">
 
-      <span className="text-base leading-none shrink-0">⚡</span>
+      <span className="text-base leading-none shrink-0">🍊</span>
 
-      {/* Mobile: short. Desktop: full */}
       <span className="text-white/90 font-semibold text-xs sm:text-sm whitespace-nowrap shrink-0">
-        Pro plan
+        AI Fruit Story
       </span>
 
       <span className="text-purple-300 font-bold text-xs whitespace-nowrap shrink-0 sm:hidden">
-        25% off
+        just dropped
       </span>
 
       <span className="text-purple-300 font-bold text-sm whitespace-nowrap shrink-0 hidden sm:inline">
-        25% off — this week only
+        just dropped
       </span>
 
       <span className="hidden lg:inline text-white/30 shrink-0">—</span>
       <span className="hidden lg:inline text-white/60 text-sm whitespace-nowrap shrink-0">
-        1,200 credits/mo · AI images, videos &amp; scripts.
+        One prompt builds a full viral drama video. Try it now.
       </span>
 
       <button
-        onClick={() => navigate("/workspace/pricing")}
+        onClick={() => navigate("/workspace/ai-fruit-story")}
         className="shrink-0 ml-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500 hover:opacity-90 transition whitespace-nowrap"
       >
-        Get the deal →
+        Try it →
       </button>
     </div>
   </div>

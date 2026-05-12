@@ -6,48 +6,49 @@ import { TrendingUp, Flame } from "lucide-react";
 /* ─── Data ─────────────────────────────────────────────────── */
 const items = [
   {
+    title:  "AI Fruit Story",
+    badge:  "#1 This Week 🔥",
+    views:  "4.7M",
+    image:  "/viral-builder/ai-fruit/presets/cheating.webp",
+    glow:   "rgba(168,85,247,0.65)",
+    border: "#A855F7",
+    rank:   1,
+    path:   "/workspace/ai-fruit-story",
+  },
+  {
     title:  "Viral Skeleton",
-    badge:  "#1 This Week",
+    badge:  "Exploding 💀",
     views:  "3.2M",
     image:  "/styles/skeleton2.webp",
     glow:   "rgba(255,107,53,0.55)",
     border: "#FF6B35",
-    rank:   1,
+    rank:   2,
   },
   {
     title:  "Lego Style",
-    badge:  "Exploding 🧱",
+    badge:  "All-Time Top",
     views:  "1.8M",
     image:  "/styles/lego2.webp",
     glow:   "rgba(255,215,0,0.5)",
     border: "#FFD700",
-    rank:   2,
+    rank:   3,
   },
   {
     title:  "Cinematic",
-    badge:  "All-Time Top",
+    badge:  "Rising Fast ↑",
     views:  "2.1M",
     image:  "/styles/cinematic2.webp",
     glow:   "rgba(122,59,255,0.55)",
     border: "#7A3BFF",
-    rank:   3,
+    rank:   4,
   },
   {
     title:  "3D Cartoon",
-    badge:  "Rising Fast ↑",
+    badge:  "Fan Favourite",
     views:  "940K",
     image:  "/styles/cartoon2.webp",
     glow:   "rgba(0,212,255,0.45)",
     border: "#00D4FF",
-    rank:   4,
-  },
-  {
-    title:  "Minecraft",
-    badge:  "Fan Favourite",
-    views:  "1.5M",
-    image:  "/styles/minecraft2.webp",
-    glow:   "rgba(118,196,66,0.5)",
-    border: "#76C442",
     rank:   5,
   },
 ];
@@ -161,7 +162,7 @@ function HotCard({ item, navigate }) {
   return (
     <button
       type="button"
-      onClick={() => navigate("/workspace/image-generator")}
+      onClick={() => navigate(item.path || "/workspace/image-generator")}
       className="group relative w-full overflow-hidden rounded-2xl block text-left focus:outline-none"
       style={{ aspectRatio: "3 / 4.4" }}
     >

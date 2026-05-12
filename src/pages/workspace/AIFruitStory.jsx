@@ -1,17 +1,22 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ToolGenerationLayout from "../viral/shared/ToolGenerationLayout";
 import AIFruitStoryBuilder from "../../components/viral-tools/ai-fruit-story/AIFruitStoryBuilder";
 import AIFruitStoryResults from "../../components/viral-tools/ai-fruit-story/AIFruitStoryResults";
+import FruitStoryPaywall from "../../components/viral-tools/ai-fruit-story/FruitStoryPaywall";
 import useFruitStoryJob from "../../components/viral-tools/ai-fruit-story/hooks/useFruitStoryJob";
 import { isFruitVideoPromptReady, sceneCountToLength } from "../../components/viral-tools/ai-fruit-story/api/fruitStoryApi";
+import { supabase } from "../../lib/supabaseClient";
 
 export default function AIFruitStory() {
+  const navigate = useNavigate();
   const [stepIndex,       setStepIndex]       = useState(0);
   const [mobilePanel,     setMobilePanel]     = useState("builder");
   const [mobileTab,       setMobileTab]       = useState("generate"); // "generate" | "recent"
-  // True while an in-memory generation was loaded from Recent Generations.
-  // Cleared (with active job state) when the user navigates back to Step 1.
   const [loadedFromRecent, setLoadedFromRecent] = useState(false);
+  const [paywallOpen,     setPaywallOpen]     = useState(false);
+  const [paywallGuest,    setPaywallGuest]    = useState(false);
+  const [planCode,        setPlanCode]        = useState(null); // null = not yet checked
 
   const [form, setForm] = useState({
     storyPreset:        "cheating",
@@ -67,6 +72,38 @@ export default function AIFruitStory() {
     }
   }, [stepIndex, loadedFromRecent, reset]);
 
+  // Check auth + plan on mount — open paywall immediately if not on a paid plan
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!mounted) return;
+      if (!user) {
+        setPlanCode("guest");
+        setPaywallGuest(true);
+        setPaywallOpen(true);
+        return;
+      }
+      supabase.from("profiles").select("plan_code").eq("id", user.id).single()
+        .then(({ data }) => {
+          if (!mounted) return;
+          const code = (data?.plan_code || "free").toLowerCase();
+          setPlanCode(code);
+          if (code === "free") {
+            setPaywallGuest(false);
+            setPaywallOpen(true);
+          }
+        });
+    });
+    return () => { mounted = false; };
+  }, []);
+
+  // Show paywall helper
+  const showPaywall = () => {
+    setPaywallGuest(planCode === "guest");
+    setPaywallOpen(true);
+  };
+  const needsUpgrade = planCode === "free" || planCode === "guest" || planCode === null;
+
   const isBusy             = isPlanning || isGeneratingScenes || isAnimating;
   const hasEnoughCharacters = (form.selectedCharacters || []).length >= 2;
   const hasScenesReady     = scenesDone || scenes.some((scene) => scene.imageUrl);
@@ -92,7 +129,8 @@ export default function AIFruitStory() {
 
   const handleGenerateScenes = (overrides = {}) => {
     if (isBusy) return;
-    setLoadedFromRecent(false); // starting a new story — no longer tracking a restored session
+    if (needsUpgrade) { showPaywall(); return; }
+    setLoadedFromRecent(false);
     startSceneGeneration(overrides);
     setMobileTab("generate");
     showMobileResults();
@@ -106,8 +144,8 @@ export default function AIFruitStory() {
   function showMobileResults() {
     setMobilePanel("results");
     setTimeout(() => {
-      if (window.innerWidth < 1024) window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 100);
+      document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
+    }, 80);
   }
 
   /* ─── Continue a saved generation ─── */
@@ -149,6 +187,7 @@ export default function AIFruitStory() {
     if (isBusy) return;
     if (stepIndex === 0) {
       if (!hasEnoughCharacters) { setMobilePanel("builder"); return; }
+      if (needsUpgrade) { showPaywall(); return; }
       setStepIndex(1); setMobilePanel("builder"); return;
     }
     if (stepIndex === 1) {
@@ -218,6 +257,19 @@ export default function AIFruitStory() {
   );
 
   return (
+    <>
+    <FruitStoryPaywall
+      open={paywallOpen}
+      onClose={() => {
+        if (needsUpgrade) {
+          navigate("/workspace/home");
+        } else {
+          setPaywallOpen(false);
+        }
+      }}
+      isGuest={paywallGuest}
+      dismissable={!needsUpgrade}
+    />
     <ToolGenerationLayout
       left={
         <>
@@ -305,6 +357,7 @@ export default function AIFruitStory() {
         </div>
       }
     />
+    </>
   );
 }
 

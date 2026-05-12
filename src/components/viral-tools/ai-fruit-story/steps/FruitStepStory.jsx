@@ -371,16 +371,16 @@ const [favoriteIds, setFavoriteIds] = useState([]);
                 <button
                   type="button"
                   onClick={() => handlePresetClick(preset)}
-                  className={`group relative h-[128px] w-full overflow-hidden rounded-2xl border text-left transition-all duration-200 hover:-translate-y-0.5 sm:h-[152px] ${
+                  className={`group relative h-[128px] w-full overflow-hidden rounded-2xl border text-left transition-all duration-200 lg:hover:-translate-y-0.5 sm:h-[152px] ${
                     active
                       ? "border-transparent shadow-[0_0_0_1px_rgba(168,85,247,0.08),0_0_24px_rgba(168,85,247,0.18)]"
-                      : "border-white/10 hover:border-white/20"
+                      : "border-white/10 lg:hover:border-white/20"
                   }`}
                 >
                   <img
                     src={preset.image}
                     alt={preset.label}
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.035]"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 lg:group-hover:scale-[1.035]"
                     loading="lazy"
                   />
 
