@@ -146,6 +146,7 @@ import WelcomeModal from "./components/WelcomeModal";
 import { supabase } from "./lib/supabaseClient";
 import NotFoundRedirect from "./components/NotFoundRedirect";
 import PublicGallery from "./components/public-gallery/gallery";
+const AIFruitStoryLanding = lazy(() => import("./pages/landing/AIFruitStoryLanding.jsx"));
 {/* Viral */}
 
 
@@ -407,7 +408,8 @@ return (
 
 
         <Route path="/workspace/image-gen-test" element={<ImageGenTest/>} />
-         <Route path="/public-gallery" element={<PublicGallery />} />           
+         <Route path="/public-gallery" element={<PublicGallery />} />
+         <Route path="/ai-fruit-story-maker" element={<AIFruitStoryLanding />} />           
 
 
 

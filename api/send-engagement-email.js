@@ -36,13 +36,13 @@ function buildEmail(user) {
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>4.7M views/week. here's what they're making.</title>
+  <title>you signed up. then disappeared.</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#f4f4f5;">
-    Three drama angles are blowing up right now. Cheating reveals. Secret twins. Comeback stories. Here's exactly how to make them.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+    Creators who started 3 weeks ago already have 50k followers. The window is still open — but not for long.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f5;">
@@ -66,41 +66,39 @@ function buildEmail(user) {
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Niko here. Quick one — I've been watching which fruit drama angles are actually getting views this week, and three of them are running away from everything else.
+            Niko here. I'm not going to pretend this is a newsletter — I'm reaching out because you signed up for Zyvo and never made a single video.
           </p>
 
-          <!-- Top 3 angles -->
+          <p style="margin:0 0 24px;font-size:15px;line-height:1.75;color:#374151;">
+            I get it. Starting feels hard. But here's what's been happening while you've been waiting:
+          </p>
+
+          <!-- What they missed -->
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
             <tr>
               <td style="padding:22px 24px;background:#0d0d0f;border-radius:12px;">
-                <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#9ca3af;letter-spacing:0.1em;text-transform:uppercase;">Top performing angles right now</p>
+                <p style="margin:0 0 16px;font-size:13px;font-weight:700;color:#9ca3af;letter-spacing:0.1em;text-transform:uppercase;">While you were away</p>
 
-                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;">
                   <tr>
                     <td style="width:28px;padding-top:2px;">
-                      <span style="font-size:18px;">🔥</span>
+                      <span style="font-size:18px;">📈</span>
                     </td>
                     <td>
-                      <p style="margin:0;font-size:14px;font-weight:700;color:#ffffff;">Cheating Reveal</p>
-                      <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Partner catches them. Proof appears. The confrontation nobody expected.</p>
-                    </td>
-                    <td style="text-align:right;white-space:nowrap;padding-left:12px;">
-                      <span style="font-size:12px;font-weight:700;color:#A855F7;">4.7M / wk</span>
+                      <p style="margin:0;font-size:14px;font-weight:700;color:#ffffff;">Fruit drama hit 4.7M views/week</p>
+                      <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">The format blew up. Creators who started early are cashing in.</p>
                     </td>
                   </tr>
                 </table>
 
-                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;">
                   <tr>
                     <td style="width:28px;padding-top:2px;">
-                      <span style="font-size:18px;">👁️</span>
+                      <span style="font-size:18px;">🚀</span>
                     </td>
                     <td>
-                      <p style="margin:0;font-size:14px;font-weight:700;color:#ffffff;">Secret Twin Twist</p>
-                      <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Same face. Different person. Viewers rewatch it three times.</p>
-                    </td>
-                    <td style="text-align:right;white-space:nowrap;padding-left:12px;">
-                      <span style="font-size:12px;font-weight:700;color:#A855F7;">2.9M / wk</span>
+                      <p style="margin:0;font-size:14px;font-weight:700;color:#ffffff;">New creators hit 50k followers in 3 weeks</p>
+                      <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Not influencers. Regular people who just showed up and posted.</p>
                     </td>
                   </tr>
                 </table>
@@ -108,14 +106,11 @@ function buildEmail(user) {
                 <table width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr>
                     <td style="width:28px;padding-top:2px;">
-                      <span style="font-size:18px;">💅</span>
+                      <span style="font-size:18px;">⏳</span>
                     </td>
                     <td>
-                      <p style="margin:0;font-size:14px;font-weight:700;color:#ffffff;">Glow Up Revenge</p>
-                      <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Gets cheated on. Rebuilds. Walks past them like they don't exist.</p>
-                    </td>
-                    <td style="text-align:right;white-space:nowrap;padding-left:12px;">
-                      <span style="font-size:12px;font-weight:700;color:#A855F7;">2.1M / wk</span>
+                      <p style="margin:0;font-size:14px;font-weight:700;color:#ffffff;">The window is still open — barely</p>
+                      <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Every week more creators pile in. First-mover advantage fades fast.</p>
                     </td>
                   </tr>
                 </table>
@@ -124,11 +119,11 @@ function buildEmail(user) {
           </table>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            All three of these are available right now as presets inside AI Fruit Story. You pick the angle, choose your characters, and Zyvo handles everything — the script, the scene images, the animation, the talking characters. The whole video.
+            You already did the hardest part — you found Zyvo before the crowd did. Don't let that head start go to waste.
           </p>
 
           <p style="margin:0 0 28px;font-size:15px;line-height:1.75;color:#374151;">
-            The creators posting these consistently are building real audiences. Not because they're working harder — they're just starting earlier in a format that's still wide open. If you've been thinking about trying it, this week is the right time.
+            One video. That's all it takes to see what this is. Pick a drama angle, hit generate, and Zyvo writes the script, creates the characters, animates the scenes, and exports a ready-to-post video. Under 5 minutes.
           </p>
 
           <!-- CTA -->
@@ -137,14 +132,14 @@ function buildEmail(user) {
               <td style="border-radius:10px;background:linear-gradient(135deg,#7A3BFF,#9d4eff);">
                 <a href="https://tryzyvo.com/workspace/ai-fruit-story"
                    style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.2px;">
-                  Make one of these now →
+                  Make your first video now →
                 </a>
               </td>
             </tr>
           </table>
 
           <p style="margin:0 0 6px;font-size:14px;line-height:1.75;color:#9ca3af;">
-            Takes less than 5 minutes to generate your first full story.
+            No filming. No editing. No experience needed.
           </p>
 
           <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">
@@ -182,7 +177,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "4.7M views/week. here's what they're making.",
+      subject: "you signed up. then disappeared.",
       html: buildEmail(user),
     });
 
@@ -202,7 +197,7 @@ async function sendEmail(user) {
 export default async function handler(req, res) {
   try {
     console.log("🚀 Starting engagement email campaign...");
-    console.log(`   dry_run=${DRY_RUN}  target=email_updates:true`);
+    console.log(`   dry_run=${DRY_RUN}  target=plan_code:free`);
 
     let allUsers = [];
     let from = 0;
@@ -212,7 +207,7 @@ export default async function handler(req, res) {
       const { data, error } = await supabase
         .from("profiles")
         .select("email")
-        .eq("email_updates", true)
+        .eq("plan_code", "free")
         .not("email", "is", null)
         .range(from, from + BATCH_SIZE - 1);
 
@@ -252,7 +247,7 @@ export default async function handler(req, res) {
           .from("profiles")
           .update({
             last_email_sent_at: new Date().toISOString(),
-            last_email_type: "fruit_story_top_angles",
+            last_email_type: "re_engagement_free_plan",
           })
           .eq("email", user.email);
       } else {
