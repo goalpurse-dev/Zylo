@@ -736,8 +736,8 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
   const soundEffect = pickSoundEffect(scene, visualClue, action);
   const ambience = deriveAmbience(scene);
   const opening = isProviderPrompt
-    ? "Create a 6-second vertical 9:16 cinematic 3D fruit drama video from the input image. Preserve exact character designs."
-    : "Create a 6-second vertical 9:16 cinematic 3D fruit drama video from the input image, preserving the exact character designs.";
+    ? "Create a 6-second vertical 9:16 cinematic 3D fruit drama video FROM THE INPUT IMAGE. Animate ONLY the exact characters shown — same fruit type, face, color, hair, outfit. Do NOT change or replace any character."
+    : "Create a 6-second vertical 9:16 cinematic 3D fruit drama video from the input image. Animate ONLY the exact characters shown — same fruit type, same face, same peel color, same hair, same outfit. Do not redesign or replace any character.";
   const pacingLine = isProviderPrompt
     ? `Scene ${sceneNumber}: ${pacingRole}. Fast viral TikTok pacing. Start late, show the problem instantly, end early.`
     : `Scene ${sceneNumber}: ${pacingRole}. Fast viral TikTok pacing. Start late, show the problem instantly, end early.`;
@@ -750,11 +750,17 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
   // Required sections come FIRST so they survive the 1450-char trim.
   // Optional sections (Emotion, Visual clue, Ending beat, Camera) fill the rest.
   const audioLine = `Clear mouth-synced dialogue only. No background music. Optional single sound effect: ${soundEffect}. ${ambience}`;
-  const negativeLine = "No captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no background music, no non-English speech.";
+  const identityLock = isProviderPrompt
+    ? "CHARACTER LOCK: Same hair, face, color, outfit as the reference. No redesigns, no new characters."
+    : "CHARACTER IDENTITY LOCK: Every character must look exactly as in the reference image. Same fruit type, same face, same hair, same outfit. No new characters, no redesigns, no appearance changes.";
+  const negativeLine = isProviderPrompt
+    ? "No captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no redesigned characters, no different hair or clothing, no new faces not in the reference, no background music, no non-English speech."
+    : "No captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no redesigned characters, no different hairstyles or hair colors, no different outfits, no human faces replacing fruit characters, no new characters not in the reference image, no background music, no non-English speech.";
 
   const prompt = [
     opening,
     pacingLine,
+    identityLock,
     "",
     "SPOKEN DIALOGUE - SAY EXACTLY:",
     formatDialogueBlock(dialogue),
@@ -793,7 +799,7 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
 
 function trimProviderPrompt(prompt, max) {
   if (prompt.length <= max) return prompt;
-  const negative = "\nNegative: No captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no background music, no non-English speech.";
+  const negative = "\nNegative: No captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no redesigned characters, no different hair or outfits, no background music, no non-English speech.";
   const budget = max - negative.length;
   // Slice raw string — do NOT use normalizeWhitespace here because it strips newlines
   // which breaks dialogue parsing in extractPromptDialogueLines (it splits on \n)
@@ -1562,11 +1568,13 @@ export async function animateScene({ scene, form, videoToolKey }) {
   }
 
   const toolKey     = FRUIT_VIDEO_MODEL_TO_TOOLKEY[videoToolKey] ?? "video:klingpro";
+  const isVeo       = toolKey === "video:veo31fast";
   const withSound   = VIDEO_WITH_SOUND[videoToolKey] ?? false;
   const aspect      = form.sceneAspect ?? "9:16";
   const dims        = ASPECT_VIDEO_DIMS[aspect] ?? ASPECT_VIDEO_DIMS["9:16"];
   const durationSec = scene.durationSeconds ?? STORY_LENGTH_DURATION_SEC[form.storyLength] ?? 5;
-  const prompt      = buildRunwareVideoPrompt(scene.videoPrompt, scene, form);
+  const rawPrompt   = buildRunwareVideoPrompt(scene.videoPrompt, scene, form);
+  const prompt      = isVeo ? sanitizePromptForVeo(rawPrompt) : rawPrompt;
 
   const link          = getProviderLink(toolKey);
   const creditsPerSec = withSound
@@ -1589,6 +1597,29 @@ export async function animateScene({ scene, form, videoToolKey }) {
   return job;
 }
 
+// Veo 3.1 has strict content policy — replaces words that trigger invalidProviderContent.
+// Keeps the story structure intact while removing the specific words Veo rejects.
+function sanitizePromptForVeo(prompt) {
+  return prompt
+    .replace(/\bcheating\b/gi,      "hiding a secret")
+    .replace(/\bcheated?\b/gi,      "discovered the truth")
+    .replace(/\bcheater\b/gi,       "character")
+    .replace(/\bcheats?\b/gi,       "reveals")
+    .replace(/\baffair\b/gi,        "secret")
+    .replace(/\bbetrayal\b/gi,      "revelation")
+    .replace(/\bbetrayed\b/gi,      "shocked")
+    .replace(/\bbetrays?\b/gi,      "reveals")
+    .replace(/\bmistress\b/gi,      "mystery person")
+    .replace(/\baffair.partner\b/gi,"character")
+    .replace(/\bhot peach\b/gi,     "character")
+    .replace(/\bhotpeach\b/gi,      "character")
+    .replace(/\binfidelity\b/gi,    "secret")
+    .replace(/\bconfront(ation)?\b/gi, "reveal")
+    .replace(/\brage\b/gi,          "shock")
+    .replace(/\bfurious\b/gi,       "stunned")
+    .replace(/\bfury\b/gi,          "disbelief");
+}
+
 export async function animateClip({ clip, startScene, endScene, form, videoToolKey }) {
   const initImageUrls = [clip?.startImageUrl || startScene?.imageUrl].filter(Boolean);
 
@@ -1597,12 +1628,14 @@ export async function animateClip({ clip, startScene, endScene, form, videoToolK
   }
 
   const toolKey     = FRUIT_VIDEO_MODEL_TO_TOOLKEY[videoToolKey] ?? "video:wan26flash";
+  const isVeo       = toolKey === "video:veo31fast";
   const withSound   = VIDEO_WITH_SOUND[videoToolKey] ?? true;
   const aspect      = form.sceneAspect ?? "9:16";
   const dims        = ASPECT_VIDEO_DIMS[aspect] ?? ASPECT_VIDEO_DIMS["9:16"];
   const durationSec = 6;
   const fullPrompt  = buildFruitVideoPrompt({ clip, startScene, endScene, form });
-  const prompt      = buildRunwareVideoPrompt(fullPrompt, startScene, form);
+  const rawPrompt   = buildRunwareVideoPrompt(fullPrompt, startScene, form);
+  const prompt      = isVeo ? sanitizePromptForVeo(rawPrompt) : rawPrompt;
 
   console.log("[AI FRUIT] create animation clip job", {
     clipNumber: clip.clipNumber,

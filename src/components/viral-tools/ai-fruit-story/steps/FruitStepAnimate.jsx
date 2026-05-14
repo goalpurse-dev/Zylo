@@ -217,12 +217,22 @@ function PromptSceneCard({ scene, disabled, onChange, onReset }) {
 
       <textarea
         value={prompt}
-        onChange={(event) => onChange?.(scene.sceneNumber, event.target.value)}
+        onChange={(event) => onChange?.(scene.sceneNumber, event.target.value.slice(0, 1450))}
         disabled={disabled}
+        maxLength={1450}
         aria-label={`Scene ${scene.sceneNumber} Video Prompt`}
         placeholder="Video Prompt will appear here with Characters, Action, Dialogue, Voice direction, Motion, Camera, Audio, and Negative sections..."
         className="max-h-32 min-h-24 w-full resize-y overflow-y-auto rounded-xl border border-white/10 bg-[#0d0f10] px-3 py-2.5 font-mono text-[12px] leading-relaxed text-white/82 outline-none transition placeholder:text-white/25 focus:border-purple-300/45 disabled:opacity-60"
       />
+
+      {/* Character counter — only warn if user manually pastes over the limit */}
+      <div className="mt-1 flex items-center justify-end gap-1.5">
+        <span className={`text-[10px] font-mono tabular-nums ${
+          prompt.length >= 1450 ? "font-bold text-white/50" : "text-white/20"
+        }`}>
+          {prompt.length} / 1450
+        </span>
+      </div>
     </div>
   );
 }
