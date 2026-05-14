@@ -101,6 +101,8 @@ useEffect(() => {
     "/workspace/image-generator": "Image Generator",
     "/workspace/video-generator": "Video Generator",
     "/workspace/viral-script": "Video Generator",
+    "/workspace/skeleton-shorts": "Skeleton Shorts",
+    "/workspace/ai-fruit-story": "AI Fruit Story",
   };
 
   const title = titleMap[location.pathname] || "Workspace";

@@ -10,6 +10,7 @@ import {
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import AIFruitStory from "./pages/workspace/AIFruitStory";
+import SkeletonShorts from "./pages/workspace/SkeletonShorts";
 
 // pages…
 //import Home from "./pages/Home";
@@ -449,6 +450,7 @@ return (
   <Route path="/workspace/viral-score" element={<ViralScore />} />
   <Route path="/workspace/lip-sync"    element={<LipSync />} />
   <Route path="/workspace/ai-fruit-story" element={<AIFruitStory />} />
+  <Route path="/workspace/skeleton-shorts" element={<SkeletonShorts />} />
 
 
 </Route>

@@ -717,8 +717,9 @@ function sanitizeDialogueLine(value, scene, index = 0) {
     .replace(FRUIT_ADDRESS_RE, "")
     .trim();
   const words = line.split(/\s+/).filter(Boolean);
-  if (words.length < 2 || words.length > 7) {
-    line = (words.length >= 2 ? words.slice(0, 7).join(" ") : fallback);
+  // Max 5 words — shorter lines are pronounced more clearly by the model
+  if (words.length < 2 || words.length > 5) {
+    line = (words.length >= 2 ? words.slice(0, 5).join(" ") : fallback);
   }
   if (line.length > MAX_PROVIDER_DIALOGUE_LINE_CHARS) {
     line = line.slice(0, MAX_PROVIDER_DIALOGUE_LINE_CHARS).replace(/\s+\S*$/, "").trim();
@@ -848,19 +849,19 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
     ? `Scene ${sceneNumber}: ${pacingRole}. Dramatic emotional moment. Characters react and speak — no location change.`
     : `Scene ${sceneNumber}: ${pacingRole}. Emotional dramatic reaction. Characters stay in the same location as the reference image.`;
   const speechRules = isProviderPrompt
-    ? "Fluent English only. No French, Spanish or other languages — ENGLISH ONLY. Dialogue in first second. No silent intro, no pause. Mouth sync every word. Say EXACTLY quoted lines. No singing, no music, no gasps, no sighs."
-    : "Fluent English only. No French, Spanish, Finnish or any other language — ENGLISH ONLY. Dialogue starts in the first second. No silent intro, no waiting. Mouth sync every word. Say exactly the quoted lines. No gasps, no sighs, no extra sounds.";
+    ? "ENGLISH WORDS ONLY. Pronounce each word slowly, clearly, and distinctly in English. No random syllables, no mumbling, no gibberish — real English words only. Dialogue starts immediately in the first second. Mouth sync every single word. Say EXACTLY the quoted lines word for word."
+    : "ENGLISH WORDS ONLY. Each character must speak clear, slow, distinct English words. No random sounds, no mumbling, no gibberish, no non-English syllables. Start speaking in the first second. Mouth movement must match every English word exactly.";
   const movement = isProviderPrompt
     ? "Subtle in-place animation: facial expressions, lip sync, small hand gestures, head turns, eye movement. Characters stay in the same position. No walking away, no exiting frame, no entering."
     : "Subtle expressive animation: facial expressions, lip sync, small hand gestures, slight head turns, eye reactions. Characters stay in the same location. No walking away, no entering or exiting frame, no repositioning.";
   // Required sections come FIRST so they survive the 1450-char trim.
-  const audioLine = `Fluent English dialogue only. No gasps, no sighs. No music — no background music, no victory songs, no musical instruments. Ambient sound: ${ambience}`;
+  const audioLine = `SPOKEN DIALOGUE ONLY. Complete silence except for the spoken English words. No gasps, no sighs, no breathing sounds, no background music, no ambient noise, no sound effects, no instruments, no singing, no random sounds of any kind.`;
   const identityLock = isProviderPrompt
     ? "CHARACTER LOCK: Use ONLY the characters from the reference image. Same fruit type, same face, same hair, same outfit. No redesigns, no new characters, no location change."
     : "CHARACTER LOCK: Animate ONLY the characters shown in the reference image. Same fruit type, same face, same hair, same outfit, same background. No redesigns, no new characters.";
   const negativeLine = isProviderPrompt
-    ? "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background music, no gasps, no sighs, no non-English speech, no singing."
-    : "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background change, no background music, no gasps, no sighs, no non-English speech, no singing.";
+    ? "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background music, no gasps, no sighs, no ambient sounds, no sound effects, no mumbling, no gibberish, no non-English words, no singing."
+    : "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background music, no gasps, no sighs, no ambient sounds, no sound effects, no mumbling, no random syllables, no gibberish, no non-English words, no singing.";
 
   const prompt = [
     opening,
@@ -904,7 +905,7 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
 
 function trimProviderPrompt(prompt, max) {
   if (prompt.length <= max) return prompt;
-  const negative = "\nNegative: No captions, no subtitles, no text overlays, no watermarks, no extra characters, no identity changes, no music of any kind, no non-English speech, no singing.";
+  const negative = "\nNegative: No captions, no subtitles, no text overlays, no watermarks, no extra characters, no identity changes, no music, no gasps, no sighs, no ambient sounds, no mumbling, no gibberish, no non-English words.";
   const budget = max - negative.length;
   // Slice raw string — do NOT use normalizeWhitespace here because it strips newlines
   // which breaks dialogue parsing in extractPromptDialogueLines (it splits on \n)

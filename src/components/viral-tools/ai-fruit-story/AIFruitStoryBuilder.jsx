@@ -412,27 +412,34 @@ export default function AIFruitStoryBuilder({
           ) : (
             <button
               type="button"
-              onClick={handleAnimateScenes}
-              disabled={isAnimating || !allScenesSucceeded || !videoPromptsReady || !hasEnoughCredits}
+              onClick={phase === "done" ? undefined : handleAnimateScenes}
+              disabled={phase !== "done" && (isAnimating || !allScenesSucceeded || !videoPromptsReady || !hasEnoughCredits)}
               className={`
                 relative flex h-12 flex-1 items-center justify-center gap-3 overflow-hidden rounded-2xl
                 text-sm font-medium text-white transition-all duration-200
-                ${isAnimating || !allScenesSucceeded || !videoPromptsReady || !hasEnoughCredits
+                ${phase === "done"
+                  ? "cursor-default bg-gradient-to-b from-green-500/80 to-green-600/80"
+                  : isAnimating || !allScenesSucceeded || !videoPromptsReady || !hasEnoughCredits
                   ? "cursor-not-allowed bg-white/10"
                   : "bg-gradient-to-b from-[#A855F7] to-[#7A3BFF] hover:brightness-110 active:scale-[0.99]"
                 }
               `}
-              style={isAnimating || !allScenesSucceeded || !videoPromptsReady ? {} : READY_BORDER}
+              style={phase === "done" || isAnimating || !allScenesSucceeded || !videoPromptsReady ? {} : READY_BORDER}
             >
-              {!isAnimating && (
+              {phase !== "done" && !isAnimating && (
                 <>
                   <div className="absolute inset-1 rounded-xl"><div className="mode-glow" /></div>
                   <div className="generate-shine" />
                 </>
               )}
 
-              <span className="relative z-10 flex items-center gap-3">
-                {isAnimating ? (
+              <span className="relative z-10 flex items-center gap-2">
+                {phase === "done" ? (
+                  <>
+                    <span>✓</span>
+                    <span>Videos Ready</span>
+                  </>
+                ) : isAnimating ? (
                   <>
                     <span className="h-2 w-2 animate-pulse rounded-full bg-white/60" />
                     <span>Animating… {totalProgress > 0 ? `${totalProgress}%` : ""}</span>
@@ -442,7 +449,7 @@ export default function AIFruitStoryBuilder({
                     <span>Animate Clips</span>
                     {(() => {
                       const clipCount = scenes.slice(0, expectedSceneCount).filter(s => s.imageUrl).length;
-                      const creditsPerClip = VIDEO_CREDITS_PER_CLIP[form.animationModel ?? "zyvo-video-v2"] ?? 46;
+                      const creditsPerClip = VIDEO_CREDITS_PER_CLIP[form.animationModel ?? "zyvo-video-v2"] ?? 48;
                       const total = clipCount * creditsPerClip;
                       if (total <= 0) return null;
                       return (

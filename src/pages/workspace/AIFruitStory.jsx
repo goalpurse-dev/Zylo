@@ -99,6 +99,14 @@ export default function AIFruitStory() {
     return () => { mounted = false; };
   }, []);
 
+  // Auto-switch to results on mobile when animation finishes
+  useEffect(() => {
+    if (phase === "done" && stepIndex === 2 && window.innerWidth < 1024) {
+      setMobilePanel("results");
+      scrollTop();
+    }
+  }, [phase]);
+
   // Show paywall helper
   const showPaywall = () => {
     setPaywallGuest(planCode === "guest");
@@ -208,7 +216,7 @@ export default function AIFruitStory() {
     }
     if (stepIndex === 2) {
       if (!allRequiredScenesReady || isAnimating || !videoPromptsReady) return;
-      if (phase === "done") { setMobilePanel("results"); return; }
+      if (phase === "done") { setMobilePanel("results"); scrollTop(); return; }
       handleAnimateScenes();
     }
   };
@@ -217,13 +225,14 @@ export default function AIFruitStory() {
     stepIndex === 0 ? "Next Step" :
     stepIndex === 1 ? "Next: Animate" :
     isAnimating ? `Animating${totalProgress > 0 ? ` ${totalProgress}%` : ""}` :
-    phase === "done" ? "Finish" : "Animate Clips";
+    phase === "done" ? "Watch Videos" : "Animate Clips";
 
   const mobilePrimaryDisabled =
     isBusy ||
     (stepIndex === 0 && !hasEnoughCharacters) ||
     (stepIndex === 1 && !allRequiredScenesReady) ||
-    (stepIndex === 2 && (!allRequiredScenesReady || !videoPromptsReady || !hasEnoughCredits));
+    // On step 3: if done, Finish is always enabled. Otherwise check credits + prompts.
+    (stepIndex === 2 && phase !== "done" && (!allRequiredScenesReady || !videoPromptsReady || !hasEnoughCredits));
 
   const builderPanel = (
     <AIFruitStoryBuilder
@@ -355,7 +364,7 @@ export default function AIFruitStory() {
               onBack={goMobileBack}
               onPrimary={goMobileNext}
               isAnimateAction={stepIndex === 2 && !isAnimating && phase !== "done"}
-              creditCost={stepIndex === 2 && !isAnimating ? totalAnimationCost : 0}
+              creditCost={stepIndex === 2 && !isAnimating && phase !== "done" ? totalAnimationCost : 0}
               hasEnoughCredits={hasEnoughCredits}
             />
           </div>
@@ -381,56 +390,73 @@ function MobileFruitStoryFooter({
   onBack, onPrimary,
   isAnimateAction = false, creditCost = 0, hasEnoughCredits = true,
 }) {
-  const showCreditWarning = creditCost > 0 && !hasEnoughCredits;
+  const isDone = primaryLabel === "Watch Videos";
+  const showCreditWarning = creditCost > 0 && !hasEnoughCredits && !isDone;
 
   return (
-    <div className="fixed bottom-[calc(70px+env(safe-area-inset-bottom))] left-0 right-0 z-[95] border-t border-white/10 bg-[#101213]/95 px-4 pb-1 pt-3 backdrop-blur-xl lg:hidden">
-
-      {/* Low-credit warning */}
+    <div className="fixed bottom-[calc(70px+env(safe-area-inset-bottom))] left-0 right-0 z-[95] lg:hidden">
+      {/* Low-credit warning strip */}
       {showCreditWarning && (
-        <div className="mx-auto mb-2 flex max-w-[900px] items-center justify-between gap-2 rounded-xl border border-red-400/20 bg-red-500/10 px-3 py-2">
-          <span className="text-[12px] font-semibold text-red-300">Not enough credits — need {creditCost}</span>
-          <a href="/workspace/pricing" className="text-[12px] font-bold text-red-200 underline">Add Credits →</a>
+        <div className="mx-4 mb-1.5 flex items-center justify-between gap-2 rounded-[12px] border border-red-400/20 bg-red-500/10 px-3 py-2">
+          <span className="text-[11px] font-semibold text-red-300">Need {creditCost} credits</span>
+          <a href="/workspace/pricing" className="text-[11px] font-bold text-red-200 underline">Add Credits →</a>
         </div>
       )}
 
-      <div className="mx-auto flex w-full max-w-[900px] gap-2 px-3">
-        <button type="button" onClick={onBack} disabled={isFirstStep || isBusy}
-          className={`h-12 rounded-2xl px-4 text-sm font-bold transition ${isFirstStep || isBusy ? "cursor-not-allowed border border-white/5 bg-white/[0.02] text-white/20" : "border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"}`}
-        >
-          Back
-        </button>
+      <div className="border-t border-white/[0.08] bg-[#101213]/96 px-4 pb-2 pt-2.5 backdrop-blur-xl">
+        <div className="flex items-center gap-2">
 
-        <button
-          type="button"
-          onClick={onPrimary}
-          disabled={!canUsePrimary}
-          className={`relative h-12 flex-1 overflow-hidden rounded-2xl text-sm font-black transition-all active:scale-[0.99] ${
-            !canUsePrimary
-              ? "cursor-not-allowed bg-white/10 text-white/35"
-              : isAnimateAction
-              ? "text-white"
-              : "bg-white text-black hover:bg-white/90"
-          }`}
-          style={canUsePrimary && isAnimateAction ? {
-            background: "linear-gradient(to bottom, #A855F7, #7A3BFF)",
-            boxShadow: "0 4px 20px rgba(122,59,255,0.45)",
-          } : {}}
-        >
-          <span className="flex items-center justify-center gap-2">
-            {primaryLabel}
-            {creditCost > 0 && (
-              <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                !canUsePrimary ? "bg-white/10 text-white/40" :
-                isAnimateAction ? "bg-white/20 text-white/90" :
-                "bg-black/15 text-black/60"
-              }`}>
-                <img src="/icons/whitecredit.png" alt="" className={`h-3 w-3 ${!isAnimateAction && canUsePrimary ? "invert" : ""}`} />
-                {creditCost}
-              </span>
+          {/* Back — compact icon button */}
+          <button
+            type="button"
+            onClick={onBack}
+            disabled={isFirstStep || isBusy}
+            className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[14px] transition text-lg ${
+              isFirstStep || isBusy
+                ? "bg-white/[0.03] text-white/15"
+                : "bg-white/[0.06] text-white/60 active:scale-95"
+            }`}
+          >
+            ←
+          </button>
+
+          {/* Primary action */}
+          <button
+            type="button"
+            onClick={onPrimary}
+            disabled={!canUsePrimary}
+            className={`relative flex h-11 flex-1 items-center justify-center gap-2 overflow-hidden rounded-[14px] text-[14px] font-black transition-all active:scale-[0.98] ${
+              isDone
+                ? "bg-[#16a34a] text-white"
+                : !canUsePrimary
+                ? "cursor-not-allowed bg-white/[0.06] text-white/25"
+                : isAnimateAction
+                ? "text-white"
+                : "bg-white text-black"
+            }`}
+            style={canUsePrimary && isAnimateAction && !isDone ? {
+              background: "linear-gradient(135deg, #A855F7, #7A3BFF)",
+              boxShadow: "0 4px 16px rgba(122,59,255,0.4)",
+            } : {}}
+          >
+            {isDone ? (
+              <><span>✓</span><span>Videos Ready</span></>
+            ) : (
+              <>
+                <span>{primaryLabel}</span>
+                {creditCost > 0 && canUsePrimary && (
+                  <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                    isAnimateAction ? "bg-white/20 text-white" : "bg-black/10 text-black/60"
+                  }`}>
+                    <img src="/icons/whitecredit.png" alt="" className={`h-3 w-3 ${!isAnimateAction ? "invert" : ""}`} />
+                    {creditCost}
+                  </span>
+                )}
+              </>
             )}
-          </span>
-        </button>
+          </button>
+
+        </div>
       </div>
     </div>
   );
