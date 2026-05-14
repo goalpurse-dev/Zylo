@@ -208,16 +208,7 @@ export default function AIFruitStoryResults({
                   : "Generate your scenes on the left."}
                 </p>
             </div>
-            <div className="flex items-center gap-2">
-              {onEditOptions && (
-                <button
-                  type="button"
-                  onClick={onEditOptions}
-                  className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-white/70 lg:hidden"
-                >
-                  Edit options
-                </button>
-              )}
+            <div className="flex flex-shrink-0 items-center gap-1.5">
               <AspectBadge value={sceneAspect} />
             </div>
           </div>
@@ -290,17 +281,8 @@ export default function AIFruitStoryResults({
                 : readyScenes.length > 0 ? "Generated scene images ready to animate." : "Generate scenes first."}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            {onEditOptions && (
-              <button
-                type="button"
-                onClick={onEditOptions}
-                className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-white/70 lg:hidden"
-              >
-                Edit options
-              </button>
-            )}
-            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-semibold text-white/45">
+          <div className="flex flex-shrink-0 items-center gap-1.5">
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-white/45 whitespace-nowrap">
               {hasVideoOutputs ? `${clipCount} videos` : `${readyScenes.length} scenes`}
             </span>
             <AspectBadge value={sceneAspect} />

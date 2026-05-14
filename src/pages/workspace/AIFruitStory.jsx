@@ -146,7 +146,9 @@ export default function AIFruitStory() {
 
   const handleAnimateScenes = () => {
     startAnimation();
-    showMobileResults();
+    // Stay on builder (step 3 options) so user sees prompts/model — don't auto-jump to results
+    setMobilePanel("builder");
+    document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
   };
 
   function showMobileResults() {
@@ -191,16 +193,18 @@ export default function AIFruitStory() {
     setStepIndex((prev) => Math.max(0, prev - 1));
   };
 
+  const scrollTop = () => document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
+
   const goMobileNext = () => {
     if (isBusy) return;
     if (stepIndex === 0) {
       if (!hasEnoughCharacters) { setMobilePanel("builder"); return; }
       if (needsUpgrade) { showPaywall(); return; }
-      setStepIndex(1); setMobilePanel("builder"); return;
+      setStepIndex(1); setMobilePanel("builder"); scrollTop(); return;
     }
     if (stepIndex === 1) {
       if (!allRequiredScenesReady) return;
-      setStepIndex(2); setMobilePanel("results"); return;
+      setStepIndex(2); setMobilePanel("builder"); scrollTop(); return;
     }
     if (stepIndex === 2) {
       if (!allRequiredScenesReady || isAnimating || !videoPromptsReady) return;
@@ -348,10 +352,11 @@ export default function AIFruitStory() {
               isBusy={isBusy}
               canUsePrimary={!mobilePrimaryDisabled}
               primaryLabel={mobilePrimaryLabel}
-              showChangeOptions={mobilePanel === "results"}
               onBack={goMobileBack}
-              onChangeOptions={() => setMobilePanel("builder")}
               onPrimary={goMobileNext}
+              isAnimateAction={stepIndex === 2 && !isAnimating && phase !== "done"}
+              creditCost={stepIndex === 2 && !isAnimating ? totalAnimationCost : 0}
+              hasEnoughCredits={hasEnoughCredits}
             />
           </div>
 
@@ -373,27 +378,58 @@ export default function AIFruitStory() {
 
 function MobileFruitStoryFooter({
   isFirstStep, isBusy, canUsePrimary, primaryLabel,
-  showChangeOptions, onBack, onChangeOptions, onPrimary,
+  onBack, onPrimary,
+  isAnimateAction = false, creditCost = 0, hasEnoughCredits = true,
 }) {
+  const showCreditWarning = creditCost > 0 && !hasEnoughCredits;
+
   return (
     <div className="fixed bottom-[calc(70px+env(safe-area-inset-bottom))] left-0 right-0 z-[95] border-t border-white/10 bg-[#101213]/95 px-4 pb-1 pt-3 backdrop-blur-xl lg:hidden">
+
+      {/* Low-credit warning */}
+      {showCreditWarning && (
+        <div className="mx-auto mb-2 flex max-w-[900px] items-center justify-between gap-2 rounded-xl border border-red-400/20 bg-red-500/10 px-3 py-2">
+          <span className="text-[12px] font-semibold text-red-300">Not enough credits — need {creditCost}</span>
+          <a href="/workspace/pricing" className="text-[12px] font-bold text-red-200 underline">Add Credits →</a>
+        </div>
+      )}
+
       <div className="mx-auto flex w-full max-w-[900px] gap-2 px-3">
         <button type="button" onClick={onBack} disabled={isFirstStep || isBusy}
           className={`h-12 rounded-2xl px-4 text-sm font-bold transition ${isFirstStep || isBusy ? "cursor-not-allowed border border-white/5 bg-white/[0.02] text-white/20" : "border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"}`}
         >
           Back
         </button>
-        {showChangeOptions && (
-          <button type="button" onClick={onChangeOptions} disabled={isBusy}
-            className="h-12 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm font-bold text-white/75 transition hover:bg-white/[0.08] disabled:opacity-35"
-          >
-            Change options
-          </button>
-        )}
-        <button type="button" onClick={onPrimary} disabled={!canUsePrimary}
-          className={`h-12 flex-1 rounded-2xl text-sm font-black transition ${canUsePrimary ? "bg-white text-black hover:bg-white/90" : "cursor-not-allowed bg-white/10 text-white/35"}`}
+
+        <button
+          type="button"
+          onClick={onPrimary}
+          disabled={!canUsePrimary}
+          className={`relative h-12 flex-1 overflow-hidden rounded-2xl text-sm font-black transition-all active:scale-[0.99] ${
+            !canUsePrimary
+              ? "cursor-not-allowed bg-white/10 text-white/35"
+              : isAnimateAction
+              ? "text-white"
+              : "bg-white text-black hover:bg-white/90"
+          }`}
+          style={canUsePrimary && isAnimateAction ? {
+            background: "linear-gradient(to bottom, #A855F7, #7A3BFF)",
+            boxShadow: "0 4px 20px rgba(122,59,255,0.45)",
+          } : {}}
         >
-          {primaryLabel}
+          <span className="flex items-center justify-center gap-2">
+            {primaryLabel}
+            {creditCost > 0 && (
+              <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                !canUsePrimary ? "bg-white/10 text-white/40" :
+                isAnimateAction ? "bg-white/20 text-white/90" :
+                "bg-black/15 text-black/60"
+              }`}>
+                <img src="/icons/whitecredit.png" alt="" className={`h-3 w-3 ${!isAnimateAction && canUsePrimary ? "invert" : ""}`} />
+                {creditCost}
+              </span>
+            )}
+          </span>
         </button>
       </div>
     </div>

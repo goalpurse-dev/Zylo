@@ -36,13 +36,13 @@ function buildEmail(user) {
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>type one sentence. get a full viral video.</title>
+  <title>4.7M views/week. here's what they're making.</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#f4f4f5;">
-    One prompt. Zyvo writes the story, generates every scene, and builds the full video. No editing. No skills needed.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+    Three drama angles are blowing up right now. Cheating reveals. Secret twins. Comeback stories. Here's exactly how to make them.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f5;">
@@ -66,60 +66,85 @@ function buildEmail(user) {
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Niko here. I want to show you something that's going to save you hours every single week.
+            Niko here. Quick one — I've been watching which fruit drama angles are actually getting views this week, and three of them are running away from everything else.
           </p>
 
-          <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            We just shipped <strong style="color:#0d0d0f;">AI Fruit Story</strong> — and it's genuinely unlike anything else out there right now. You type one prompt. One sentence describing your drama. That's it.
-          </p>
-
-          <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Zyvo takes that single prompt and builds the <em>entire</em> video for you. It writes a multi-scene story arc, generates every scene as a full cinematic 3D image, animates each scene with talking characters, and lines it all up ready to post. No editing. No design. No voiceover recording. Nothing.
-          </p>
-
-          <!-- how it works -->
+          <!-- Top 3 angles -->
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
             <tr>
-              <td style="padding:22px 24px;background:#faf8ff;border-radius:12px;border:1px solid #ede9fe;">
-                <p style="margin:0 0 12px;font-size:14px;font-weight:800;color:#7A3BFF;letter-spacing:0.02em;">HOW IT WORKS</p>
-                <p style="margin:0 0 8px;font-size:14px;color:#374151;line-height:1.7;">
-                  <strong style="color:#0d0d0f;">1.</strong>&nbsp; Type your drama idea — one sentence is enough
-                </p>
-                <p style="margin:0 0 8px;font-size:14px;color:#374151;line-height:1.7;">
-                  <strong style="color:#0d0d0f;">2.</strong>&nbsp; Pick your fruit characters and story preset
-                </p>
-                <p style="margin:0 0 8px;font-size:14px;color:#374151;line-height:1.7;">
-                  <strong style="color:#0d0d0f;">3.</strong>&nbsp; Zyvo generates every scene image automatically
-                </p>
-                <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">
-                  <strong style="color:#0d0d0f;">4.</strong>&nbsp; Hit animate — full talking video, ready to post
-                </p>
+              <td style="padding:22px 24px;background:#0d0d0f;border-radius:12px;">
+                <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#9ca3af;letter-spacing:0.1em;text-transform:uppercase;">Top performing angles right now</p>
+
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
+                  <tr>
+                    <td style="width:28px;padding-top:2px;">
+                      <span style="font-size:18px;">🔥</span>
+                    </td>
+                    <td>
+                      <p style="margin:0;font-size:14px;font-weight:700;color:#ffffff;">Cheating Reveal</p>
+                      <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Partner catches them. Proof appears. The confrontation nobody expected.</p>
+                    </td>
+                    <td style="text-align:right;white-space:nowrap;padding-left:12px;">
+                      <span style="font-size:12px;font-weight:700;color:#A855F7;">4.7M / wk</span>
+                    </td>
+                  </tr>
+                </table>
+
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;">
+                  <tr>
+                    <td style="width:28px;padding-top:2px;">
+                      <span style="font-size:18px;">👁️</span>
+                    </td>
+                    <td>
+                      <p style="margin:0;font-size:14px;font-weight:700;color:#ffffff;">Secret Twin Twist</p>
+                      <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Same face. Different person. Viewers rewatch it three times.</p>
+                    </td>
+                    <td style="text-align:right;white-space:nowrap;padding-left:12px;">
+                      <span style="font-size:12px;font-weight:700;color:#A855F7;">2.9M / wk</span>
+                    </td>
+                  </tr>
+                </table>
+
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="width:28px;padding-top:2px;">
+                      <span style="font-size:18px;">💅</span>
+                    </td>
+                    <td>
+                      <p style="margin:0;font-size:14px;font-weight:700;color:#ffffff;">Glow Up Revenge</p>
+                      <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Gets cheated on. Rebuilds. Walks past them like they don't exist.</p>
+                    </td>
+                    <td style="text-align:right;white-space:nowrap;padding-left:12px;">
+                      <span style="font-size:12px;font-weight:700;color:#A855F7;">2.1M / wk</span>
+                    </td>
+                  </tr>
+                </table>
               </td>
             </tr>
           </table>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Fruit drama videos — cheating reveals, secret twins, comeback stories — are one of the highest performing formats on TikTok and Reels right now. Creators who got in early are hitting millions of views consistently. The format works. The question is whether you're making them.
+            All three of these are available right now as presets inside AI Fruit Story. You pick the angle, choose your characters, and Zyvo handles everything — the script, the scene images, the animation, the talking characters. The whole video.
           </p>
 
           <p style="margin:0 0 28px;font-size:15px;line-height:1.75;color:#374151;">
-            Now you can make a full one in the time it takes to write a caption. Open your account and try it — the tool is already there.
+            The creators posting these consistently are building real audiences. Not because they're working harder — they're just starting earlier in a format that's still wide open. If you've been thinking about trying it, this week is the right time.
           </p>
 
           <!-- CTA -->
-          <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+          <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:22px;">
             <tr>
               <td style="border-radius:10px;background:linear-gradient(135deg,#7A3BFF,#9d4eff);">
                 <a href="https://tryzyvo.com/workspace/ai-fruit-story"
                    style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.2px;">
-                  Build my first fruit video →
+                  Make one of these now →
                 </a>
               </td>
             </tr>
           </table>
 
-          <p style="margin:0 0 6px;font-size:15px;line-height:1.75;color:#374151;">
-            If you post one and want feedback, reply with the link. I'll take a look.
+          <p style="margin:0 0 6px;font-size:14px;line-height:1.75;color:#9ca3af;">
+            Takes less than 5 minutes to generate your first full story.
           </p>
 
           <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">
@@ -157,7 +182,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "type one sentence. get a full viral video.",
+      subject: "4.7M views/week. here's what they're making.",
       html: buildEmail(user),
     });
 
@@ -227,7 +252,7 @@ export default async function handler(req, res) {
           .from("profiles")
           .update({
             last_email_sent_at: new Date().toISOString(),
-            last_email_type: "fruit_story_single_prompt",
+            last_email_type: "fruit_story_top_angles",
           })
           .eq("email", user.email);
       } else {
