@@ -692,22 +692,30 @@ function formatDialogueBlock(dialogue) {
 
 function ensureImmediateAction(value, scene, max = 190) {
   const visualClue = deriveVisualClue(scene);
-  const fallback = `Character storms forward, points at ${visualClue}, and freezes in shock.`;
+  // Use in-place reactions only — no "storms forward" or directional movement
+  // that causes the model to create a new scene instead of animating the reference
+  const fallback = `Character reacts with shock, eyes wide, pointing at ${visualClue} in disbelief. Stays in place.`;
   const action = cleanSectionText(value, fallback, max);
-  if (hasActionVerb(action) && !hasVagueSlowSceneLanguage(action)) return action;
-  return cleanSectionText(`${fallback} ${action}`, fallback, max);
+  // Strip directional movement verbs that cause scene changes
+  const safe = action
+    .replace(/\bstorms?\s+(forward|in|out|away)\b/gi, "reacts")
+    .replace(/\bwalks?\s+(away|out|off)\b/gi, "steps back")
+    .replace(/\bruns?\b/gi, "reacts")
+    .replace(/\bslams?\s+door\b/gi, "reacts to the door");
+  if (hasActionVerb(safe) && !hasVagueSlowSceneLanguage(safe)) return cleanSectionText(safe, fallback, max);
+  return cleanSectionText(fallback, fallback, max);
 }
 
 function pickSoundEffect(scene, visualClue, action) {
   const text = `${scene?.title ?? ""} ${scene?.beatType ?? ""} ${scene?.storyPurpose ?? ""} ${scene?.actionDirection ?? ""} ${visualClue ?? ""} ${action ?? ""}`.toLowerCase();
   if (/(phone|text|message|call|dm|screen)/.test(text)) return "phone buzz";
-  if (/(door|slam|leave|walk away)/.test(text)) return "door slam";
-  if (/(baby|kid|crib|basket|cry)/.test(text)) return "baby cry";
-  if (/(suitcase|packed|bags)/.test(text)) return "suitcase drop";
+  if (/(door|slam|leave|walk away)/.test(text)) return "phone buzz"; // no door slam — causes scene change
+  if (/(baby|kid|crib|basket|cry)/.test(text)) return "soft cry";
+  if (/(suitcase|packed|bags)/.test(text)) return "phone buzz";
   if (/(note|paper|letter|receipt)/.test(text)) return "paper rustle";
   if (/(rain|street)/.test(text)) return "rain ambience";
-  if (/(crowd|public|restaurant|office)/.test(text)) return "crowd gasp";
-  return "gasp";
+  if (/(crowd|public|restaurant|office)/.test(text)) return "room ambience";
+  return "room ambience"; // removed "gasp" — causes the model to add gasp sounds
 }
 
 function deriveAmbience(scene) {
@@ -743,27 +751,27 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
   const endingBeat = cleanSectionText(scene.endingBeat || deriveEndingBeat(scene), "end on a shocked freeze-frame before the next secret drops", isProviderPrompt ? 100 : 125);
   const soundEffect = pickSoundEffect(scene, visualClue, action);
   const ambience = deriveAmbience(scene);
+  // The reference image IS the scene — animate it, don't create a new one
   const opening = isProviderPrompt
-    ? "Create a 6-second vertical 9:16 cinematic 3D fruit drama video FROM THE INPUT IMAGE. Animate ONLY the exact characters shown — same fruit type, face, color, hair, outfit. Do NOT change or replace any character."
-    : "Create a 6-second vertical 9:16 cinematic 3D fruit drama video from the input image. Animate ONLY the exact characters shown — same fruit type, same face, same peel color, same hair, same outfit. Do not redesign or replace any character.";
+    ? "Animate THIS EXACT REFERENCE IMAGE into a 6-second vertical 9:16 video. The reference image is the FIRST FRAME and the ONLY SCENE. Keep all characters in their exact positions from the reference. Same background, same environment, same lighting. Do NOT move characters out of frame. Do NOT pan to new locations. Do NOT create a new scene."
+    : "Animate this exact reference image into a 6-second vertical 9:16 video. The reference image is the starting frame and scene location. Keep all characters in their exact positions — same background, same room, same lighting. Do not move characters out of frame, do not pan to a new location, do not create a new scene.";
   const pacingLine = isProviderPrompt
-    ? `Scene ${sceneNumber}: ${pacingRole}. Fast viral TikTok pacing. Start late, show the problem instantly, end early.`
-    : `Scene ${sceneNumber}: ${pacingRole}. Fast viral TikTok pacing. Start late, show the problem instantly, end early.`;
+    ? `Scene ${sceneNumber}: ${pacingRole}. Dramatic emotional moment. Characters react and speak — no location change.`
+    : `Scene ${sceneNumber}: ${pacingRole}. Emotional dramatic reaction. Characters stay in the same location as the reference image.`;
   const speechRules = isProviderPrompt
-    ? "Fluent English only. No French, Spanish or other languages — ENGLISH ONLY. Dialogue in first second. No silent intro, no pause. Mouth sync every word. Say EXACTLY quoted lines. No singing, no music."
-    : "Fluent English only. No French, Spanish, Finnish or any other language — ENGLISH ONLY. Dialogue starts in the first second. No silent intro, no waiting. Mouth sync every word. Say exactly the quoted lines. Do not add, skip, translate, paraphrase, sing, or use subtitles.";
+    ? "Fluent English only. No French, Spanish or other languages — ENGLISH ONLY. Dialogue in first second. No silent intro, no pause. Mouth sync every word. Say EXACTLY quoted lines. No singing, no music, no gasps, no sighs."
+    : "Fluent English only. No French, Spanish, Finnish or any other language — ENGLISH ONLY. Dialogue starts in the first second. No silent intro, no waiting. Mouth sync every word. Say exactly the quoted lines. No gasps, no sighs, no extra sounds.";
   const movement = isProviderPrompt
-    ? "Fast gestures, mouth synced to dialogue, sharp eye reactions, head turns, urgent body language. No passive standing."
-    : "Fast expressive gestures, mouth synced to dialogue, sharp eye reactions, head turns, urgent body language. No passive standing.";
+    ? "Subtle in-place animation: facial expressions, lip sync, small hand gestures, head turns, eye movement. Characters stay in the same position. No walking away, no exiting frame, no entering."
+    : "Subtle expressive animation: facial expressions, lip sync, small hand gestures, slight head turns, eye reactions. Characters stay in the same location. No walking away, no entering or exiting frame, no repositioning.";
   // Required sections come FIRST so they survive the 1450-char trim.
-  // Optional sections (Emotion, Visual clue, Ending beat, Camera) fill the rest.
-  const audioLine = `Fluent English dialogue only. No music of any kind — no background music, no victory songs, no musical instruments. Sound effect: ${soundEffect}. ${ambience}`;
+  const audioLine = `Fluent English dialogue only. No gasps, no sighs. No music — no background music, no victory songs, no musical instruments. Ambient sound: ${ambience}`;
   const identityLock = isProviderPrompt
-    ? "CHARACTER LOCK: Same hair, face, color, outfit as the reference. No redesigns, no new characters."
-    : "CHARACTER IDENTITY LOCK: Every character must look exactly as in the reference image. Same fruit type, same face, same hair, same outfit. No new characters, no redesigns, no appearance changes.";
+    ? "CHARACTER LOCK: Use ONLY the characters from the reference image. Same fruit type, same face, same hair, same outfit. No redesigns, no new characters, no location change."
+    : "CHARACTER LOCK: Animate ONLY the characters shown in the reference image. Same fruit type, same face, same hair, same outfit, same background. No redesigns, no new characters.";
   const negativeLine = isProviderPrompt
-    ? "No captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no background music, no victory songs, no musical instruments, no non-English speech, no singing."
-    : "No captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no redesigned characters, no different hairstyles or outfits, no background music, no victory songs, no musical instruments, no non-English speech, no singing, no humming.";
+    ? "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background music, no gasps, no sighs, no non-English speech, no singing."
+    : "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background change, no background music, no gasps, no sighs, no non-English speech, no singing.";
 
   const prompt = [
     opening,
