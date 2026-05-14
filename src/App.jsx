@@ -135,6 +135,8 @@ const HowToMakeViralAITikTokVideos = lazy(() => import("./app/blog/imagegenerato
 const BestAIToolsFacelessTikTokVideos = lazy(() => import("./app/blog/imagegenerator/best-ai-tools-faceless-tiktok-videos.jsx"));
 const AIContentCreationToolsInstagram = lazy(() => import("./app/blog/imagegenerator/ai-content-creation-tools-instagram-viral.jsx"));
 const BestAIImageGeneratorsSocialMedia2026 = lazy(() => import("./app/blog/imagegenerator/best-ai-image-generators-social-media-2026.jsx"));
+const AIFruitStoryMakerBlog = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-maker.jsx"));
+const ViralAIFruitDramaVideos = lazy(() => import("./app/blog/imagegenerator/viral-ai-fruit-drama-videos.jsx"));
 const ViralScore = lazy(() => import("./pages/viral/ViralScore.jsx"));
 const LipSync    = lazy(() => import("./pages/viral/LipSync.jsx"));
 
@@ -404,6 +406,8 @@ return (
         <Route path="/blog/best-ai-tools-faceless-tiktok-videos" element={<BestAIToolsFacelessTikTokVideos/>} />
         <Route path="/blog/ai-content-creation-tools-instagram-viral" element={<AIContentCreationToolsInstagram/>} />
         <Route path="/blog/best-ai-image-generators-social-media-2026" element={<BestAIImageGeneratorsSocialMedia2026/>} />
+        <Route path="/blog/ai-fruit-story-maker" element={<AIFruitStoryMakerBlog/>} />
+        <Route path="/blog/viral-ai-fruit-drama-videos" element={<ViralAIFruitDramaVideos/>} />
 
 
 
