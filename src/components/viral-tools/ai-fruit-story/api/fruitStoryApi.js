@@ -1525,8 +1525,11 @@ export async function generateSceneImage({
     refCount: referenceImages.length,
   });
 
+  // Sanitize for GPT Image 2 safety filter before sending
+  const safePrompt = sanitizeImagePromptForGPT(masterPrompt);
+
   const job = await createImageJobSimple({
-    subject:      masterPrompt,
+    subject:      safePrompt,
     toolKey,
     size:         dims.size,
     width:        dims.width,
@@ -1603,6 +1606,33 @@ export async function animateScene({ scene, form, videoToolKey }) {
   });
 
   return job;
+}
+
+// GPT Image 2 safety filter — same words that trigger providerBadRequest.
+// Applied to ALL fruit image prompts since both fruit-v2 and fruit-v3 use GPT Image 2.
+function sanitizeImagePromptForGPT(prompt) {
+  return prompt
+    .replace(/\bcheating\b/gi,        "hiding a secret")
+    .replace(/\bcheated?\b/gi,        "discovered something")
+    .replace(/\bcheater\b/gi,         "character")
+    .replace(/\bcheats?\b/gi,         "hides")
+    .replace(/\baffair\b/gi,          "secret")
+    .replace(/\baffair.partner\b/gi,  "character")
+    .replace(/\bbetrayal\b/gi,        "revelation")
+    .replace(/\bbetrayed\b/gi,        "shocked")
+    .replace(/\bbetrays?\b/gi,        "reveals")
+    .replace(/\bmistress\b/gi,        "mystery character")
+    .replace(/\binfidelity\b/gi,      "secret")
+    .replace(/\bconfrontation\b/gi,   "tense moment")
+    .replace(/\bconfront(ing|s)?\b/gi,"reveals")
+    .replace(/\brage\b/gi,            "intense emotion")
+    .replace(/\bfury\b/gi,            "strong emotion")
+    .replace(/\bfurious\b/gi,         "intensely emotional")
+    .replace(/\bseductive\b/gi,       "stylish")
+    .replace(/\bsensual\b/gi,         "dramatic")
+    .replace(/\blipstick\s+mark\b/gi, "mysterious mark")
+    .replace(/\bhot peach\b/gi,       "peach character")
+    .replace(/\bhotpeach\b/gi,        "peach character");
 }
 
 // Veo 3.1 has strict content policy — replaces words that trigger invalidProviderContent.
