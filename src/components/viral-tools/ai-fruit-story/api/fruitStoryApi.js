@@ -41,11 +41,11 @@ const REQUIRED_VIDEO_PROMPT_SECTIONS = [
   "SPOKEN DIALOGUE",
   "SAY EXACTLY",
   "Speech rules:",
-  "Dialogue starts in the first second",
-  "Speak English only",
+  "Dialogue",          // covers "Dialogue in first second" and "Dialogue starts"
+  "ENGLISH ONLY",      // present in all speech rule variants
   "Action:",
   "Audio:",
-  "No background music",
+  "No music",          // covers "No music of any kind" and "No background music"
   "Negative:",
 ];
 
@@ -533,11 +533,19 @@ function normalizePromptQuotes(value) {
 }
 
 function hasMusicRequest(value) {
-  const withoutAllowedNoMusic = normalizeWhitespace(value)
+  // Strip all "no X music / no X scores" negations before checking for music keywords
+  const cleaned = normalizeWhitespace(value)
     .toLowerCase()
-    .replace(/no background music/g, "")
-    .replace(/without background music/g, "");
-  return /(background music|random music|cinematic music|emotional music|soundtrack|score|dramatic music bed|bg music|dramatic music)/i.test(withoutAllowedNoMusic);
+    .replace(/no\s+\w+\s+music/g, "")          // "no background music", "no dramatic music"
+    .replace(/without\s+\w+\s+music/g, "")
+    .replace(/no\s+music\s+of\s+any\s+kind/g, "")
+    .replace(/no\s+music/g, "")
+    .replace(/no\s+\w+\s+scores?/g, "")        // "no dramatic scores", "no film scores"
+    .replace(/no\s+scores?/g, "")
+    .replace(/no\s+soundtrack/g, "")
+    .replace(/no\s+musical\s+\w+/g, "")
+    .replace(/no\s+\w+\s+soundtrack/g, "");
+  return /(background music|random music|cinematic music|emotional music|soundtrack|score|dramatic music bed|bg music|dramatic music)/i.test(cleaned);
 }
 
 function hasVagueSlowSceneLanguage(value) {
@@ -742,20 +750,20 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
     ? `Scene ${sceneNumber}: ${pacingRole}. Fast viral TikTok pacing. Start late, show the problem instantly, end early.`
     : `Scene ${sceneNumber}: ${pacingRole}. Fast viral TikTok pacing. Start late, show the problem instantly, end early.`;
   const speechRules = isProviderPrompt
-    ? "Speak English only. CRITICAL: Do NOT speak French, Spanish, Finnish, Portuguese, or any other language — ENGLISH ONLY. Dialogue starts in the first second. No silent intro, no waiting, no pause. Mouth sync every word. Say EXACTLY the quoted lines. Do not add, skip, translate, or use subtitles."
-    : "Speak English only. CRITICAL: Do NOT speak French, Spanish, Finnish, Portuguese, or any other language under any circumstances — ENGLISH ONLY. Dialogue starts in the first second. No silent intro. No waiting. Characters speak immediately and clearly. Mouth movement must match every spoken word. Say exactly the quoted English lines. Do not add words, skip words, translate, paraphrase, or use subtitles.";
+    ? "Fluent English only. No French, Spanish or other languages — ENGLISH ONLY. Dialogue in first second. No silent intro, no pause. Mouth sync every word. Say EXACTLY quoted lines. No singing, no music."
+    : "Fluent English only. No French, Spanish, Finnish or any other language — ENGLISH ONLY. Dialogue starts in the first second. No silent intro, no waiting. Mouth sync every word. Say exactly the quoted lines. Do not add, skip, translate, paraphrase, sing, or use subtitles.";
   const movement = isProviderPrompt
     ? "Fast gestures, mouth synced to dialogue, sharp eye reactions, head turns, urgent body language. No passive standing."
     : "Fast expressive gestures, mouth synced to dialogue, sharp eye reactions, head turns, urgent body language. No passive standing.";
   // Required sections come FIRST so they survive the 1450-char trim.
   // Optional sections (Emotion, Visual clue, Ending beat, Camera) fill the rest.
-  const audioLine = `Clear mouth-synced dialogue only. No background music. Optional single sound effect: ${soundEffect}. ${ambience}`;
+  const audioLine = `Fluent English dialogue only. No music of any kind — no background music, no victory songs, no musical instruments. Sound effect: ${soundEffect}. ${ambience}`;
   const identityLock = isProviderPrompt
     ? "CHARACTER LOCK: Same hair, face, color, outfit as the reference. No redesigns, no new characters."
     : "CHARACTER IDENTITY LOCK: Every character must look exactly as in the reference image. Same fruit type, same face, same hair, same outfit. No new characters, no redesigns, no appearance changes.";
   const negativeLine = isProviderPrompt
-    ? "No captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no redesigned characters, no different hair or clothing, no new faces not in the reference, no background music, no non-English speech."
-    : "No captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no redesigned characters, no different hairstyles or hair colors, no different outfits, no human faces replacing fruit characters, no new characters not in the reference image, no background music, no non-English speech.";
+    ? "No captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no background music, no victory songs, no musical instruments, no non-English speech, no singing."
+    : "No captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no redesigned characters, no different hairstyles or outfits, no background music, no victory songs, no musical instruments, no non-English speech, no singing, no humming.";
 
   const prompt = [
     opening,
@@ -799,7 +807,7 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
 
 function trimProviderPrompt(prompt, max) {
   if (prompt.length <= max) return prompt;
-  const negative = "\nNegative: No captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no redesigned characters, no different hair or outfits, no background music, no non-English speech.";
+  const negative = "\nNegative: No captions, no subtitles, no text overlays, no watermarks, no extra characters, no identity changes, no music of any kind, no non-English speech, no singing.";
   const budget = max - negative.length;
   // Slice raw string — do NOT use normalizeWhitespace here because it strips newlines
   // which breaks dialogue parsing in extractPromptDialogueLines (it splits on \n)
