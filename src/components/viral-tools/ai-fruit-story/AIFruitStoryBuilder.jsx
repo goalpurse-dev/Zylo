@@ -9,8 +9,8 @@ import Credit from "/icons/whitecredit.png";
 // WAN: $0.4556/clip × 2 markup / $0.02 per credit = 46 credits
 // Veo: $0.9/clip × 2 markup / $0.02 per credit = 90 credits
 const VIDEO_CREDITS_PER_CLIP = {
-  "zyvo-video-v2": 46,   // Wan 2.6 Flash
-  "zyvo-video-v3": 90,   // Veo 3.1 Fast
+  "zyvo-video-v2": 48,   // Wan 2.6 Flash — 8 credits/s × 6s (matches providers.ts)
+  "zyvo-video-v3": 90,   // Veo 3.1 Fast  — 15 credits/s × 6s
 };
 
 const STEPS = [

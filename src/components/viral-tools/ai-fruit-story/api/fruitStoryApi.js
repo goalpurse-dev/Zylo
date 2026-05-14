@@ -1684,6 +1684,12 @@ export async function animateClip({ clip, startScene, endScene, form, videoToolK
     referenceImages: initImageUrls,
   });
 
+  const link            = getProviderLink(toolKey);
+  const creditsPerSec   = withSound
+    ? (link?.soundCreditsPerSecond ?? link?.baseCreditsPerSecond ?? 8)
+    : (link?.baseCreditsPerSecond ?? 8);
+  const calculatedCredits = Math.ceil(creditsPerSec * durationSec);
+
   return createVideoJobSimple({
     subject:           prompt,
     toolKey,
@@ -1691,8 +1697,7 @@ export async function animateClip({ clip, startScene, endScene, form, videoToolK
     height:            dims.height,
     durationSec,
     initImageUrls,
-    calculatedCredits: 0,
-    skipCreditCheck:   true,
+    calculatedCredits,
     project_id:        form.project_id ?? null,
     withSound,
   });

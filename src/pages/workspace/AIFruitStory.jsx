@@ -113,7 +113,7 @@ export default function AIFruitStory() {
 
   // Total credit cost for animating all ready scenes (must be after expectedSceneCount)
   const animationClipCount  = scenes.slice(0, expectedSceneCount).filter(s => s.imageUrl).length;
-  const creditsPerClip      = FRUIT_VIDEO_CREDITS_PER_CLIP[form.animationModel ?? "zyvo-video-v2"] ?? 46;
+  const creditsPerClip      = FRUIT_VIDEO_CREDITS_PER_CLIP[form.animationModel ?? "zyvo-video-v2"] ?? 48;
   const totalAnimationCost  = animationClipCount * creditsPerClip;
   const hasEnoughCredits    = creditBalance >= totalAnimationCost;
   const allRequiredScenesReady =
