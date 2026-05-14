@@ -781,10 +781,17 @@ DIALOGUE RULES (for videoDialogue[] and videoPrompt):
 - Each line: 2-7 words, English only, short and dramatic
 - Speaker label: character display name only, max 16 chars (e.g. "Boss Mango", "Hot Peach", "Orange Mom")
   DO NOT include role prefix ("CHEATER_", "VICTIM_") or fruit type duplicates in speaker names
-- NO fruit-type words as dialogue addresses: never write "you fool, mango" or "listen, pineapple"
-  The video model generates that fruit character when it reads the name — keep dialogue neutral
-- Lines must match the scene beat: hook=accusation/suspicion, discovery=shock/proof, confrontation=rage/denial
-- Make lines feel like real TikTok drama: short, punchy, emotionally charged, leave viewer wanting more
+- NO fruit-type words as dialogue addresses
+- Lines MUST be 100% logical for the story preset:
+  * BABY story → lines about pregnancy, parenthood, the baby news. NEVER "give me your phone" or cheating lines
+  * CHEATING story → lines about suspicion, proof, confrontation, betrayal
+  * SECRET TWIN → lines about confusion, identical appearances, the twin reveal
+  * CHEATS-BACK → lines about heartbreak, transformation, cold revenge, power shift
+  * KICKED-OUT → lines about rejection, leaving, determination, comeback
+  * CUSTOM → lines matching whatever story idea was provided
+- LOGICAL CONTINUITY: dialogue must flow from scene to scene. If scene 2 shows a character crying, scene 3 cannot pretend nothing happened.
+- EMOTIONAL ESCALATION: each scene should feel one step more intense than the last. Hook → suspicion → discovery → confrontation → payoff.
+- Make lines feel like real TikTok drama: short, punchy, emotionally charged, leave viewer wanting the next clip
 
 VIDEO PROMPT RULES:
 1. Animate FROM the still image as a viral TikTok drama clip

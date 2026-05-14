@@ -339,40 +339,129 @@ const VIRAL_LINE_POOLS = {
   ],
 };
 
-// Scene 1 always needs the strongest hook line — no fruit names anywhere
-const SCENE_1_HOOKS = [
-  ["Wait. Whose number is this?",          "Don't touch my phone right now."],
-  ["I found something in your jacket.",    "Just put it down. Please."],
-  ["That perfume. It's not mine. Explain.","You're hearing things."],
-  ["Who was at the door just now?",        "Nobody. It was nobody, I swear."],
-  ["Your phone has been buzzing all day.", "It's just work. That's all."],
-  ["I know what you did last night.",      "You don't know what you saw."],
-  ["There's a baby basket on our door.",   "That... that is not mine."],
-  ["Say her name. Right now.",             "You don't want to do this."],
-];
+// ── Beat-type specific dialogue pools (checked BEFORE character-role pools) ──
+// These ensure preset stories get contextually correct dialogue.
+const BEAT_LINE_POOLS = {
+  // Baby story beats
+  baby_reveal: [
+    ["The test is positive. We're pregnant.", "Oh my god. This is real."],
+    ["We're having a baby.", "I can't believe this is happening."],
+    ["I'm going to be a mom.", "We're going to be parents."],
+  ],
+  baby_hint: [
+    ["Why have you been so tired lately?",  "I've just been... feeling different."],
+    ["Something is different about you.",   "Maybe it is. Maybe something changed."],
+    ["Are you feeling okay? Tell me.",      "I don't know how to say this yet."],
+  ],
+  baby_clue: [
+    ["What is this? Is this a test?",       "Please don't freak out right now."],
+    ["I found something in the bathroom.",  "Just... listen before you react."],
+    ["Tell me what's going on. Now.",       "I was going to tell you tonight."],
+  ],
+  reaction: [
+    ["Are you absolutely sure?",            "I've never been more sure."],
+    ["This changes everything for us.",     "Everything. For the better."],
+    ["I'm going to be a parent.",           "We both are. Starting now."],
+  ],
+  bonding: [
+    ["Look at those tiny hands.",           "She has your eyes already."],
+    ["I love you so much right now.",       "I love you both so much."],
+    ["We actually did this.",               "We really did this together."],
+  ],
+  preparation: [
+    ["Is the nursery ready yet?",           "Almost. Almost perfect for her."],
+    ["We have so much left to do.",         "We'll figure it out together."],
+    ["Are we ready for this?",              "We were born ready for this."],
+  ],
+  // Twin story beats
+  double_spotted: [
+    ["I just saw you across the street.",   "That's impossible. I'm right here."],
+    ["You were in two places at once.",     "No. That cannot be right."],
+    ["Someone with your face was there.",   "You must be confused. It was me."],
+  ],
+  twin_reveal: [
+    ["Hello. I'm the other one.",           "This cannot be real right now."],
+    ["We look exactly the same, don't we.", "Who are you. Who are you."],
+    ["Did you miss your other half?",       "How long have you been here."],
+  ],
+  // Cheats-back beats
+  glow_up: [
+    ["You look completely different.",      "I finally look like myself."],
+    ["What happened to you?",               "I stopped waiting for you."],
+    ["You look incredible.",                "I know. I worked for it."],
+  ],
+  betrayal: [
+    ["I know everything now.",              "Let me explain this please."],
+    ["I saw it all. Every message.",        "It was a mistake. All of it."],
+    ["I trusted you completely.",           "I know. I broke that trust."],
+  ],
+  walk_away: [
+    ["I'm done. This is over.",             "Please don't do this to us."],
+    ["Don't follow me. Don't call me.",     "I'm so sorry. I'm so sorry."],
+    ["Goodbye. I mean it this time.",       "Wait. Just wait. Please wait."],
+  ],
+  // Kicked-out beats
+  conflict: [
+    ["Get out. I mean it. Get out.",        "Please. Just listen to me once."],
+    ["You have to leave right now.",        "Where am I supposed to go?"],
+    ["I want you gone by tonight.",         "This is my home too."],
+  ],
+  kicked_out: [
+    ["I have nowhere to go right now.",     "I'm sorry. I truly am sorry."],
+    ["You kicked me out with nothing.",     "You made your choice. Own it."],
+    ["Is this really what you want?",       "I don't know what I want."],
+  ],
+  determination: [
+    ["Watch what I do from here.",          "You've already moved on."],
+    ["I don't need you anymore.",           "You don't mean that. You do."],
+    ["This is just the beginning for me.",  "Good. You deserve your best."],
+  ],
+};
+
+// Scene 1 hooks by preset type
+const SCENE_1_HOOKS_BY_PRESET = {
+  baby:        ["I have something to tell you tonight.", "You're scaring me. What is it?"],
+  "baby":      ["I have something to tell you tonight.", "You're scaring me. What is it?"],
+  cheating:    ["Wait. Whose number is this?",           "Don't touch my phone right now."],
+  "cheats-back": ["I know what you did.",               "You don't know everything."],
+  "secret-twin": ["Something is very wrong here.",      "Everything is fine. Trust me."],
+  "kicked-out": ["This can't keep going like this.",    "What do you mean by that?"],
+  custom:      ["We need to talk. Right now.",           "Is everything okay with you?"],
+};
+
+const SCENE_1_HOOK_DEFAULT = ["Wait. Whose number is this?", "Don't touch my phone right now."];
 
 function pickViralLine(name, scene, index) {
-  const sceneNum = Number(scene?.sceneNumber ?? 1);
+  const sceneNum  = Number(scene?.sceneNumber ?? 1);
+  const beatType  = String(scene?.beatType ?? "").toLowerCase();
+  const storyPreset = String(scene?.storyPreset ?? scene?.preset ?? "").toLowerCase();
 
-  // Scene 1 always uses a dedicated viral hook — no generic fallback
+  // Scene 1: use preset-specific hook
   if (sceneNum === 1) {
-    const row = SCENE_1_HOOKS[0]; // first hook is the strongest
+    const row = SCENE_1_HOOKS_BY_PRESET[storyPreset] ?? SCENE_1_HOOK_DEFAULT;
     return row[index === 0 ? 0 : 1];
   }
 
-  const text = `${name ?? ""} ${scene?.beatType ?? ""} ${scene?.emotionDirection ?? ""} ${scene?.storyPurpose ?? ""} ${scene?.title ?? ""}`.toLowerCase();
+  // Beat-type pool takes priority over character-role pool
+  if (BEAT_LINE_POOLS[beatType]) {
+    const pool = BEAT_LINE_POOLS[beatType];
+    const row  = pool[sceneNum % pool.length];
+    return row[index === 0 ? 0 : 1];
+  }
+
+  // Fall back to character-role pools for cheating/drama scenes
+  const text = `${name ?? ""} ${beatType} ${scene?.emotionDirection ?? ""} ${scene?.storyPurpose ?? ""} ${scene?.title ?? ""}`.toLowerCase();
   let pool;
   if (/(boss|gangster|mafia|kingpin|brokkolib|broccoli)/.test(text))       pool = VIRAL_LINE_POOLS.boss;
   else if (/(villain|antagonist|gangster pineapple)/.test(text))           pool = VIRAL_LINE_POOLS.villain;
   else if (/(twin|double|copy|doppelganger)/.test(text))                   pool = VIRAL_LINE_POOLS.twin;
-  else if (/(cheater|mistress|affair|guilty|hot peach|hotpeach|secret)/.test(text)) pool = VIRAL_LINE_POOLS.cheater;
+  else if (/(cheater|mistress|affair|guilty|hot peach|hotpeach)/.test(text)) pool = VIRAL_LINE_POOLS.cheater;
   else if (/(mom|mother|wife|orange mom|strawberry mom|betrayed|heartbreak)/.test(text)) pool = VIRAL_LINE_POOLS.wife;
   else if (/(grandma|aunt|mama|matriarch)/.test(text))                     pool = VIRAL_LINE_POOLS.mom;
-  else if (/(kid|baby|son|daughter|child|lemon|apple son)/.test(text))     pool = VIRAL_LINE_POOLS.kid;
+  else if (/(kid|baby|son|daughter|child)/.test(text))                     pool = VIRAL_LINE_POOLS.kid;
   else if (/(shock|twist|reveal|discovery|confrontation)/.test(text))      pool = VIRAL_LINE_POOLS.shock;
   else                                                                       pool = VIRAL_LINE_POOLS.default;
 
-  // Pick a row based on scene number for variety, not random (deterministic = consistent rerenders)
   const row = pool[sceneNum % pool.length];
   return row[index === 0 ? 0 : 1];
 }
@@ -753,8 +842,8 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
   const ambience = deriveAmbience(scene);
   // The reference image IS the scene — animate it, don't create a new one
   const opening = isProviderPrompt
-    ? "Animate THIS EXACT REFERENCE IMAGE into a 6-second vertical 9:16 video. The reference image is the FIRST FRAME and the ONLY SCENE. Keep all characters in their exact positions from the reference. Same background, same environment, same lighting. Do NOT move characters out of frame. Do NOT pan to new locations. Do NOT create a new scene."
-    : "Animate this exact reference image into a 6-second vertical 9:16 video. The reference image is the starting frame and scene location. Keep all characters in their exact positions — same background, same room, same lighting. Do not move characters out of frame, do not pan to a new location, do not create a new scene.";
+    ? "IMAGE-TO-VIDEO: Animate the EXACT reference image provided. FIRST FRAME = reference image. Keep the IDENTICAL background, room, furniture, lighting, and character positions. Do NOT change the scene. Do NOT add new environments. Do NOT move characters out of frame. Only add subtle facial expressions, lip movement, and small gestures."
+    : "IMAGE-TO-VIDEO: Animate this exact reference image. The first frame must be identical to the reference. Keep the same background, same room, same lighting, same character positions. Only add subtle facial expressions and lip movement. Do not change the scene, do not pan away, do not add new locations.";
   const pacingLine = isProviderPrompt
     ? `Scene ${sceneNumber}: ${pacingRole}. Dramatic emotional moment. Characters react and speak — no location change.`
     : `Scene ${sceneNumber}: ${pacingRole}. Emotional dramatic reaction. Characters stay in the same location as the reference image.`;

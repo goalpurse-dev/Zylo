@@ -449,6 +449,7 @@ export default function useFruitStoryJob({ form }) {
       return ({
       sceneNumber,
       title:                 s.title               ?? `Scene ${sceneNumber}`,
+      storyPreset:           f.storyPreset          ?? "",
       imagePrompt:           s.imagePrompt          ?? "",
       videoPrompt:           "",
       videoDialogue:         Array.isArray(s.videoDialogue) ? s.videoDialogue : [],
