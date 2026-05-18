@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabaseClient";
 import Toast from "../../components/ui/Toast";
 import { useNavigate } from "react-router-dom";
 import { CreditCard, RotateCcw } from "lucide-react";
+import CancelFeedbackModal from "../../components/billing/CancelFeedbackModal";
 
 const card = "rounded-2xl border border-[#1F2230] bg-[#141622] p-5 text-white";
 const FUNCTION_PORTAL = "create-portal-session";  // your existing function
@@ -26,6 +27,7 @@ export default function Billing() {
   const [loading, setLoading] = useState(null); // "cancel" | "resume" | "portal"
   const [refreshing, setRefreshing] = useState(false);
   const [summary, setSummary] = useState(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const navigate = useNavigate();
 
   const planLabel = useMemo(() => {
@@ -70,30 +72,18 @@ export default function Billing() {
     return null;
   }, [summary]);
 
-async function cancelSubscription() {
-  if (!summary?.plan) {
-    Toast.error("No active subscription");
-    return;
-  }
+function cancelSubscription() {
+  if (!summary?.plan) { Toast.error("No active subscription"); return; }
+  setShowCancelModal(true);
+}
 
-if (!window.confirm(
-  `Cancel your plan? You'll keep access until ${formatDate(summary.plan.current_period_end)}`
-)) return;
-
+async function confirmCancel() {
+  setShowCancelModal(false);
   try {
     setLoading("cancel");
-
-    const { error } = await supabase.functions.invoke(
-      "cancel-subscription",
-      { method: "POST" }
-    );
-
+    const { error } = await supabase.functions.invoke("cancel-subscription", { method: "POST" });
     if (error) throw error;
-
-    Toast.success(
-      `Access continues until ${formatDate(summary.plan.current_period_end)}`
-    );
-
+    Toast.success(`Access continues until ${formatDate(summary.plan.current_period_end)}`);
     await loadSummary();
   } catch (e) {
     Toast.error(e.message || "Failed to cancel subscription");
@@ -182,6 +172,16 @@ async function resumeSubscription() {
   const invoices = summary?.invoices || [];
 
   return (
+    <>
+    <CancelFeedbackModal
+      open={showCancelModal}
+      onClose={() => setShowCancelModal(false)}
+      onConfirmCancel={confirmCancel}
+      onResume={() => { setShowCancelModal(false); resumeSubscription(); }}
+      periodEnd={formatDate(summary?.plan?.current_period_end)}
+      planCode={summary?.plan?.nickname}
+      isProcessing={loading === "cancel" || loading === "resume"}
+    />
     <div className="grid gap-4">
       {/* Current plan */}
       <div className={card}>
@@ -218,34 +218,32 @@ async function resumeSubscription() {
 </button>
 
   {/* PLAN ACTION */}
-  {!summary?.plan ? (
-<button
-  onClick={() => navigate("/workspace/pricing")}
-  className="rounded-full border border-[#1F2230] bg-[#141622] px-4 py-2 text-sm font-semibold text-[#B7BBC6] hover:bg-[#1A1D2B]"
->
-  Get plan
-</button>
-  ) : summary.plan.cancel_at_period_end ? (
-  <button
-  onClick={resumeSubscription}
-  disabled={loading === "resume"}
-  className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/15 disabled:opacity-60"
->
-  <span className="flex items-center gap-1">
-    <RotateCcw className={`w-4 h-4 ${loading === "resume" ? "animate-spin" : ""}`} />
-    {loading === "resume" ? "Processing..." : "Resume subscription"}
-  </span>
-</button>
+  {summary?.plan?.cancel_at_period_end ? (
+    /* ── Cancelled — big green Continue button ── */
+    <button
+      onClick={resumeSubscription}
+      disabled={loading === "resume"}
+      className="flex items-center gap-2 rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white shadow-[0_4px_20px_rgba(34,197,94,0.35)] transition hover:bg-emerald-400 active:scale-[0.97] disabled:opacity-60"
+    >
+      <RotateCcw className={`h-4 w-4 ${loading === "resume" ? "animate-spin" : ""}`} />
+      {loading === "resume" ? "Resuming…" : "Continue plan"}
+    </button>
+  ) : summary?.plan ? (
+    /* ── Active — subtle cancel ── */
+    <button
+      onClick={cancelSubscription}
+      disabled={loading === "cancel"}
+      className="rounded-full border border-white/10 bg-transparent px-3 py-1.5 text-xs font-medium text-[#8F95A3] transition hover:border-red-400/25 hover:bg-red-500/5 hover:text-red-300 disabled:opacity-60"
+    >
+      {loading === "cancel" ? "Processing…" : "Cancel plan"}
+    </button>
   ) : (
- <button
-  onClick={cancelSubscription}
-  disabled={loading === "cancel"}
-  className="rounded-full border border-white/10 bg-transparent px-3 py-1.5 text-xs font-medium text-[#8F95A3] hover:border-red-400/25 hover:bg-red-500/5 hover:text-red-300 disabled:opacity-60"
->
-  <span className="flex items-center gap-1.5">
-    {loading === "cancel" ? "Processing..." : "Cancel plan"}
-  </span>
-</button>
+    <button
+      onClick={() => navigate("/workspace/pricing")}
+      className="rounded-full border border-[#1F2230] bg-[#141622] px-4 py-2 text-sm font-semibold text-[#B7BBC6] hover:bg-[#1A1D2B]"
+    >
+      Get plan
+    </button>
   )}
 
 </div>
@@ -311,5 +309,6 @@ async function resumeSubscription() {
         
       </div>
     </div>
+    </>
   );
 }
