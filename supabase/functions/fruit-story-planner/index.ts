@@ -773,6 +773,7 @@ IMAGE PROMPT RULES:
 4. Background must visually match adjacent scenes (same room = same decor/lighting)
 5. End EVERY imagePrompt with: "NO text, NO captions, NO subtitles, NO speech bubbles, NO watermarks, NO typography."
 6. Structure: [characters+actions] → [exact emotion+body language] → [camera] → [environment+lighting matching previous scene] → [cinematic 3D fruit drama style] → [NO text rule]
+7. SAFETY — image prompts are processed by OpenAI which has strict content filters. NEVER use these words in imagePrompt: seductive, sensual, sexy, intimate, flirtatious, kissing, embrace, tight dress, cleavage, body, curves, passionate, desire, lust, affair, mistress, infidelity, lipstick mark. Use safe alternatives: emotional, close, elegant, standing together, heartbroken, shocked, tense.
 
 DIALOGUE RULES (for videoDialogue[] and videoPrompt):
 - Generate 1-2 lines per scene based on who is in that scene (characterIdsInScene)

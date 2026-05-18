@@ -1706,31 +1706,62 @@ export async function animateScene({ scene, form, videoToolKey }) {
   return job;
 }
 
-// GPT Image 2 safety filter — same words that trigger providerBadRequest.
-// Applied to ALL fruit image prompts since both fruit-v2 and fruit-v3 use GPT Image 2.
+// GPT Image 2 safety filter — replaces words that trigger safety_violations=[sexual].
+// "Hot Peach" + affair/drama context is the main trigger. Remove ALL sexual-adjacent words.
 function sanitizeImagePromptForGPT(prompt) {
   return prompt
-    .replace(/\bcheating\b/gi,        "hiding a secret")
-    .replace(/\bcheated?\b/gi,        "discovered something")
-    .replace(/\bcheater\b/gi,         "character")
-    .replace(/\bcheats?\b/gi,         "hides")
-    .replace(/\baffair\b/gi,          "secret")
-    .replace(/\baffair.partner\b/gi,  "character")
-    .replace(/\bbetrayal\b/gi,        "revelation")
-    .replace(/\bbetrayed\b/gi,        "shocked")
-    .replace(/\bbetrays?\b/gi,        "reveals")
-    .replace(/\bmistress\b/gi,        "mystery character")
-    .replace(/\binfidelity\b/gi,      "secret")
-    .replace(/\bconfrontation\b/gi,   "tense moment")
-    .replace(/\bconfront(ing|s)?\b/gi,"reveals")
-    .replace(/\brage\b/gi,            "intense emotion")
-    .replace(/\bfury\b/gi,            "strong emotion")
-    .replace(/\bfurious\b/gi,         "intensely emotional")
-    .replace(/\bseductive\b/gi,       "stylish")
-    .replace(/\bsensual\b/gi,         "dramatic")
-    .replace(/\blipstick\s+mark\b/gi, "mysterious mark")
-    .replace(/\bhot peach\b/gi,       "peach character")
-    .replace(/\bhotpeach\b/gi,        "peach character");
+    // Character names with sexual connotation
+    .replace(/\bhot\s+peach\b/gi,          "peach character")
+    .replace(/\bhotpeach\b/gi,             "peach character")
+    .replace(/\bhot\b(?=\s+\w*character)/gi, "")
+
+    // Story / relationship words that trigger filters
+    .replace(/\bcheating\b/gi,             "hiding a secret")
+    .replace(/\bcheated?\b/gi,             "made a discovery")
+    .replace(/\bcheater\b/gi,              "character")
+    .replace(/\bcheats?\b/gi,              "hides something")
+    .replace(/\baffair\b/gi,               "secret")
+    .replace(/\baffair[_\s]partner\b/gi,   "character")
+    .replace(/\bmistress\b/gi,             "character")
+    .replace(/\binfidelity\b/gi,           "secret")
+    .replace(/\blover\b/gi,                "character")
+    .replace(/\bbetrayal\b/gi,             "revelation")
+    .replace(/\bbetrayed\b/gi,             "shocked")
+    .replace(/\bbetrays?\b/gi,             "reveals")
+
+    // Body / appearance words that can trigger sexual filter
+    .replace(/\bseductive\b/gi,            "stylish")
+    .replace(/\bseductively\b/gi,          "confidently")
+    .replace(/\bsensual\b/gi,              "elegant")
+    .replace(/\bsensually\b/gi,            "gracefully")
+    .replace(/\bflirtatious\b/gi,          "confident")
+    .replace(/\bflirting\b/gi,             "smiling")
+    .replace(/\bintimate\b/gi,             "close")
+    .replace(/\bintimately\b/gi,           "closely")
+    .replace(/\btight\s+dress\b/gi,        "elegant dress")
+    .replace(/\bform[- ]fitting\b/gi,      "elegant")
+    .replace(/\bskin[- ]tight\b/gi,        "fitted")
+    .replace(/\bcleavage\b/gi,             "outfit")
+    .replace(/\bbody\b/gi,                 "figure")
+    .replace(/\bcurves?\b/gi,              "silhouette")
+
+    // Action words near romantic/physical context
+    .replace(/\bkissing\b/gi,              "standing close together")
+    .replace(/\bembracing\b/gi,            "standing together")
+    .replace(/\bcuddle\b/gi,               "sit close together")
+    .replace(/\blipstick\s*mark\b/gi,      "mysterious mark")
+    .replace(/\blipstick\b/gi,             "makeup")
+
+    // Emotion/drama words that in combination can trigger flags
+    .replace(/\bpassionate(ly)?\b/gi,      "emotional")
+    .replace(/\bdesire\b/gi,               "longing")
+    .replace(/\blust\b/gi,                 "emotion")
+    .replace(/\btempt(ing|ation)?\b/gi,    "persuade")
+    .replace(/\bseduce[sd]?\b/gi,          "convince")
+
+    // Clean up any double spaces
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }
 
 // Veo 3.1 has strict content policy — replaces words that trigger invalidProviderContent.
