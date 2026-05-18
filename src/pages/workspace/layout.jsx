@@ -108,7 +108,7 @@ useEffect(() => {
   const title = titleMap[location.pathname] || "Workspace";
 
   return (
-    <div className="flex w-full h-[100dvh] bg-[#090A0A] overflow-hidden">
+    <div className="flex w-full h-[100dvh] bg-[#090A0A] overflow-x-hidden overflow-y-hidden">
 
       {/* DESKTOP SIDEBAR */}
       <aside className="hidden lg:block h-full w-[80px] flex-shrink-0 z-50">
@@ -130,7 +130,7 @@ useEffect(() => {
       )}
 
       {/* MAIN */}
-      <div className="flex flex-col flex-1 h-[100dvh] overflow-hidden">
+      <div className="flex flex-col flex-1 h-[100dvh] overflow-x-hidden">
 
         {/* HEADER */}
         <div

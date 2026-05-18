@@ -429,7 +429,7 @@ function MobilePlanCard({ tier, index, billing, currentPlan, hasSub, onAskDowngr
     <div
       className="relative w-full flex flex-col"
       style={{
-        minHeight: "88dvh",
+        minHeight: "85vh",
         background: isPopular
           ? "linear-gradient(170deg, #1A0B38 0%, #200D42 50%, #100C22 100%)"
           : "#0D0F1C",
@@ -549,7 +549,7 @@ export default function Pricing() {
   }, [plan]);
 
   return (
-    <section className="relative min-h-screen text-white overflow-x-hidden" style={{ background: "#07080F" }}>
+    <section className="relative min-h-screen text-white" style={{ background: "#07080F" }}>
 
       <Particles />
 
