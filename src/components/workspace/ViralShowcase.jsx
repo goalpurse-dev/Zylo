@@ -84,7 +84,7 @@ export default function ViralShowcase() {
 
 function FeatureCard({ title, button, video, image, hoverVideo, big, mobile }) {
   const [hovered, setHovered] = useState(false);
-  const showVideo = !mobile && ((big && video) || (hoverVideo && hovered));
+  const showHoverVideo = !mobile && hoverVideo && hovered;
 
   return (
     <div
@@ -92,10 +92,21 @@ function FeatureCard({ title, button, video, image, hoverVideo, big, mobile }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {showVideo ? (
-        <video src={big ? video : hoverVideo} autoPlay muted loop playsInline preload="metadata"
+      {/* Big card video — always rendered so it preloads immediately, hidden on mobile */}
+      {big && video && (
+        <video
+          src={video}
+          autoPlay muted loop playsInline preload="auto"
+          className={`absolute inset-0 w-full h-full object-cover ${mobile ? "hidden" : ""}`}
+        />
+      )}
+      {/* Hover video for smaller cards */}
+      {showHoverVideo && (
+        <video src={hoverVideo} autoPlay muted loop playsInline preload="metadata"
           className="absolute inset-0 w-full h-full object-cover" />
-      ) : (
+      )}
+      {/* Fallback image — shown on mobile for big card, or when no video plays */}
+      {(!big || mobile || !video) && !showHoverVideo && (
         <img src={image} alt={title} loading="lazy"
           className="absolute inset-0 w-full h-full object-cover" />
       )}

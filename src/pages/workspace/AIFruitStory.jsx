@@ -182,13 +182,18 @@ export default function AIFruitStory() {
       animationModel:  row.animation_model ?? prev.animationModel,
     }));
 
-    // Mark that this is a restored session so Back→Step 1 triggers a clean reset
     setLoadedFromRecent(true);
 
-    // Show Step 2 as a completed/restored scene state before animation.
-    setStepIndex(1);
+    // If all scenes have videos → go straight to step 3 (animate/results)
+    // If only images → go to step 2 (scenes ready to animate)
+    const scenes = row.scenes ?? [];
+    const hasVideos = scenes.some(s => s.videoUrl);
+    const targetStep = hasVideos ? 2 : 1;
+
+    setStepIndex(targetStep);
     setMobileTab("generate");
-    setTimeout(() => setMobilePanel("results"), 100);
+    scrollTop();
+    setTimeout(() => setMobilePanel(hasVideos ? "results" : "builder"), 100);
   };
 
   /* ─── Delete a saved generation ─── */
@@ -198,7 +203,15 @@ export default function AIFruitStory() {
 
   const goMobileBack = () => {
     if (isFirstStep || isBusy) return;
+    // If videos are done, Back always goes straight to step 1 to start over
+    if (phase === "done") {
+      setStepIndex(0);
+      setMobilePanel("builder");
+      scrollTop();
+      return;
+    }
     setStepIndex((prev) => Math.max(0, prev - 1));
+    scrollTop();
   };
 
   const scrollTop = () => document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
@@ -299,20 +312,14 @@ export default function AIFruitStory() {
           {/* ── Mobile ── */}
           <div className="lg:hidden">
             <div className="sticky top-0 z-30 mb-3 border-b border-white/10 bg-[#0B0D0F]/95 py-3 backdrop-blur">
-              {/* Step 0 gets a three-tab toggle: Options / Results / Recent */}
+              {/* Step 0: Options / Recent only (no Results) */}
               {stepIndex === 0 ? (
-                <div className="grid grid-cols-3 rounded-full border border-white/10 bg-white/[0.04] p-1">
+                <div className="grid grid-cols-2 rounded-full border border-white/10 bg-white/[0.04] p-1">
                   <button type="button"
                     onClick={() => { setMobilePanel("builder"); setMobileTab("generate"); document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" }); }}
                     className={`rounded-full px-2 py-2 text-[13px] font-semibold transition ${mobilePanel === "builder" ? "bg-white text-black" : "text-white/60"}`}
                   >
                     Options
-                  </button>
-                  <button type="button"
-                    onClick={() => { setMobilePanel("results"); setMobileTab("generate"); document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" }); }}
-                    className={`rounded-full px-2 py-2 text-[13px] font-semibold transition ${mobilePanel === "results" && mobileTab === "generate" ? "bg-white text-black" : "text-white/60"}`}
-                  >
-                    Results
                   </button>
                   <button type="button"
                     onClick={() => { setMobilePanel("results"); setMobileTab("recent"); document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" }); }}

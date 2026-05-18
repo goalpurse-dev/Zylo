@@ -375,7 +375,7 @@ function VideoOutputCard({ clip, aspect }) {
             className="h-full w-full object-cover"
             controls
             playsInline
-            preload="metadata"
+            preload="auto"
           />
         ) : isFailed ? (
           <div className="flex h-full min-h-[220px] items-center justify-center bg-red-500/10 p-4 text-center text-xs font-semibold text-red-200">
@@ -701,7 +701,7 @@ function SceneVideoCard({ scene, index, aspect }) {
             className="h-full w-full object-cover"
             controls
             playsInline
-            preload="metadata"
+            preload="auto"
           />
         ) : displayImageSrc ? (
           <>

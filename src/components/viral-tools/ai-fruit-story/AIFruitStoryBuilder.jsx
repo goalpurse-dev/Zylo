@@ -162,7 +162,11 @@ export default function AIFruitStoryBuilder({
 
   const goBack = () => {
     setStepError("");
-    if (!isFirstStep) setStepIndex((prev) => prev - 1);
+    if (!isFirstStep) {
+      // If videos are done, always jump straight to step 1 — no reason to visit step 2
+      if (phase === "done") { setStepIndex(0); return; }
+      setStepIndex((prev) => prev - 1);
+    }
   };
 
   const handleStepClick = (targetIndex) => {
