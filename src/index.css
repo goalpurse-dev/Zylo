@@ -198,6 +198,24 @@ button, a, [role="button"], label, summary { cursor: pointer; }
 }
 
 
+/* ============================================================
+   Landing Page Pricing — matches workspace Pricing.jsx quality
+   ============================================================ */
+
+/* Subtle float for landing pricing cards */
+@keyframes lpPricingFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+.pricing-lp-card {
+  transition: box-shadow 0.3s ease;
+}
+
+.pricing-lp-float-1 { animation: lpPricingFloat 5.5s ease-in-out infinite; animation-delay: 0s; }
+.pricing-lp-float-2 { animation: lpPricingFloat 6s ease-in-out infinite; animation-delay: 0.9s; }
+.pricing-lp-float-3 { animation: lpPricingFloat 5.8s ease-in-out infinite; animation-delay: 1.8s; }
+
 /* ── Image-to-prompt card animations ── */
 @keyframes img2prompt-border {
   0%   { background-position: 0% 50%; }
