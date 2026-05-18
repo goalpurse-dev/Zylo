@@ -5,16 +5,21 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 /* =================== CONFIG =================== */
 /** Recurring plan map — includes both EUR (current) and legacy USD price IDs.
  *  Add any old USD price IDs here so pre-migration subscribers still get credits on renewal. */
-const PRICE_MAP: Record<string, { plan: "starter" | "pro" | "generative"; credits: number }> = {
-  // ── EUR prices (current) ──
+const PRICE_MAP: Record<string, { plan: "starter" | "pro" | "generative"; credits: number; interval?: "yearly" }> = {
+  // ── Monthly EUR prices (current) ──
   "price_1TGKT6Htn4q5rIncI47V5Ein": { plan: "starter",    credits: 600 },
   "price_1TGKSqHtn4q5rIncIf8RPa6e": { plan: "pro",        credits: 1200 },
   "price_1TGKSSHtn4q5rIncSTurqkCN": { plan: "generative", credits: 2500 },
 
-  // ── USD prices (legacy — pre-EUR migration subscribers) ──
+  // ── Monthly USD prices (legacy — pre-EUR migration subscribers) ──
   "price_1T8gM3Htn4q5rInchn8CMEcO": { plan: "starter",    credits: 600 },
   "price_1T8gMVHtn4q5rIncWwcUi9mG": { plan: "pro",        credits: 1200 },
   "price_1T8gMsHtn4q5rIncW0vy8d57": { plan: "generative", credits: 2500 },
+
+  // ── Annual prices — credits = first month's allocation; cron tops up monthly ──
+  "price_1TYWNYHtn4q5rIncWMa3mmvI": { plan: "starter",    credits: 600,  interval: "yearly" },
+  "price_1TYWOWHtn4q5rIncTmN3GXdy": { plan: "pro",        credits: 1200, interval: "yearly" },
+  "price_1TYWP8Htn4q5rIncbugChVhS": { plan: "generative", credits: 2500, interval: "yearly" },
 };
 
 /** One-time top-up map (fallback if Price.metadata.credits is not set) */
@@ -206,6 +211,7 @@ if (!userId) {
 
         // Grant plan credits for NON-proration recurring lines only
         let planCredits = 0;
+        let detectedInterval: "yearly" | undefined;
         const lines: any[] = inv.lines?.data ?? [];
         for (const ln of lines) {
           const priceId: string | undefined = ln.price?.id;
@@ -216,11 +222,28 @@ if (!userId) {
           if (map) {
             planCredits += map.credits;
             await setPlan(userId, map.plan);
+            if (map.interval === "yearly") detectedInterval = "yearly";
           }
         }
 
         if (planCredits > 0) {
           await grantCreditsOnce(userId, planCredits, "plan_renewal", inv.id);
+        }
+
+        // For annual subs: stamp billing_interval + monthly top-up tracking
+        if (detectedInterval === "yearly") {
+          await sb.from("profiles").update({
+            billing_interval:            "yearly",
+            annual_credits_per_month:    planCredits,
+            annual_credits_last_topup:   new Date().toISOString(),
+          }).eq("id", userId);
+        } else if (planCredits > 0) {
+          // Ensure monthly subs don't accidentally stay marked as yearly
+          await sb.from("profiles").update({
+            billing_interval:            "monthly",
+            annual_credits_per_month:    0,
+            annual_credits_last_topup:   null,
+          }).eq("id", userId);
         }
 
         // Sync subscription-ish fields using invoice periods
@@ -289,11 +312,14 @@ if (!userId) {
         const userId = await userIdByCustomerId(String(sub.customer));
         if (userId) {
           await sb.from("profiles").update({
-            plan_code: "free",
-            stripe_subscription_status: "canceled",
-            cancel_at_period_end: false,
-            current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
-            stripe_subscription_id: null,
+            plan_code:                   "free",
+            stripe_subscription_status:  "canceled",
+            cancel_at_period_end:        false,
+            current_period_end:          sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
+            stripe_subscription_id:      null,
+            billing_interval:            "monthly",
+            annual_credits_per_month:    0,
+            annual_credits_last_topup:   null,
           }).eq("id", userId);
         }
         return respond(req, { received: true });
