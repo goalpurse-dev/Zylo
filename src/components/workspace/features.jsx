@@ -120,7 +120,7 @@ export default function ToolSelector() {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
-      className="w-full mt-4 px-4"
+      className="w-full mt-4 px-5 md:px-8"
     >
       {/* MOBILE — 2-col grid; Creations is last and alone so it spans full width */}
       <div className="grid grid-cols-2 gap-3 md:hidden">

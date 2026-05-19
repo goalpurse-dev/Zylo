@@ -36,13 +36,13 @@ function buildEmail(user) {
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>we noticed you cancelled — can we fix it?</title>
+  <title>most people use Zyvo at 20% of what it can do</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#f4f4f5;">
-    Your plan is still active until the end of the period. One click to keep it — and I genuinely want to know why you left.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+    I've been watching how people use Zyvo — and I want to reach out to you directly.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f5;">
@@ -66,43 +66,46 @@ function buildEmail(user) {
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Niko here. I saw you cancelled your Zyvo plan — and before it ends, I genuinely want to know why.
+            Niko here — I've been looking at how people use Zyvo, and something keeps jumping out at me.
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Was it price? Missing features? Not enough time to use it? Just reply to this email with one sentence. I read every reply personally, and if something is broken or missing — I fix it.
+            Most people discover one thing, love it, and never realize how much more is sitting right there waiting for them. I've seen people do genuinely incredible work with Zyvo — but I've also seen people who barely scratched the surface and then quietly drifted away.
           </p>
 
-          <!-- Reasons card -->
+          <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
+            If that's you — I'm not here to guilt you. I just want to show you what you might be missing.
+          </p>
+
+          <!-- Feature card -->
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
             <tr>
               <td style="padding:22px 24px;background:#faf8ff;border-radius:12px;border:1px solid #ede9fe;">
-                <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#7A3BFF;letter-spacing:0.08em;text-transform:uppercase;">Common reasons — does any of these fit?</p>
-                <p style="margin:0 0 8px;font-size:14px;color:#374151;line-height:1.7;">💸 &nbsp;<strong>Too expensive</strong> — Reply and I'll see what I can do.</p>
-                <p style="margin:0 0 8px;font-size:14px;color:#374151;line-height:1.7;">🕐 &nbsp;<strong>Not enough time to use it</strong> — Your credits roll over. Come back when ready.</p>
-                <p style="margin:0 0 8px;font-size:14px;color:#374151;line-height:1.7;">🔧 &nbsp;<strong>Missing a feature I need</strong> — Tell me. Half our roadmap came from replies like this.</p>
-                <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">😐 &nbsp;<strong>Something didn't work</strong> — This one I really want to know about. Reply and I'll fix it.</p>
+                <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#7A3BFF;letter-spacing:0.08em;text-transform:uppercase;">Worth trying this week</p>
+                <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>Generate at scale</strong> — most people run one at a time. Try batching and watch what changes.</p>
+                <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>Fine-tune your style</strong> — the output adapts to you, but only if you tell it how. Most people never do.</p>
+                <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>Your credits roll over</strong> — they don't expire at the end of the month, so nothing goes to waste.</p>
               </td>
             </tr>
           </table>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Your plan is still active until the end of your current period. If you change your mind, you can resume in one click — no re-entering payment info, no new charge, everything picks up exactly where it left off.
+            And honestly? If you just reply to this email and tell me what you're working on right now, I'll personally point you to exactly what you need. That's not a bot — it's me.
           </p>
 
           <!-- CTA -->
           <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
             <tr>
-              <td style="border-radius:10px;background:linear-gradient(135deg,#16a34a,#22c55e);">
-                <a href="https://tryzyvo.com/settings/billing"
+              <td style="border-radius:10px;background:linear-gradient(135deg,#7A3BFF,#9f5fff);">
+                <a href="https://tryzyvo.com/dashboard"
                    style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.2px;">
-                  Keep my subscription →
+                  Open Zyvo and explore →
                 </a>
               </td>
             </tr>
           </table>
 
-          <p style="margin:0 0 24px;font-size:13px;color:#9ca3af;">One click. No new charge. Picks up exactly where you left off.</p>
+          <p style="margin:0 0 24px;font-size:13px;color:#9ca3af;">Or just reply to this email. I read every one.</p>
 
           <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">
             — Niko<br/>
@@ -139,7 +142,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "we noticed you cancelled — can we fix it?",
+      subject: "most people use Zyvo at 20% of what it can do",
       html: buildEmail(user),
     });
 
@@ -158,8 +161,8 @@ async function sendEmail(user) {
 
 export default async function handler(req, res) {
   try {
-    console.log("🚀 Starting win-back email campaign...");
-    console.log(`   dry_run=${DRY_RUN}  target=cancel_at_period_end:true`);
+    console.log("🚀 Starting engagement email campaign...");
+    console.log(`   dry_run=${DRY_RUN}  target=email_updates:true`);
 
     let allUsers = [];
     let from = 0;
@@ -169,7 +172,6 @@ export default async function handler(req, res) {
       const { data, error } = await supabase
         .from("profiles")
         .select("email")
-        .eq("cancel_at_period_end", true)
         .eq("email_updates", true)
         .not("email", "is", null)
         .range(from, from + BATCH_SIZE - 1);
@@ -210,7 +212,7 @@ export default async function handler(req, res) {
           .from("profiles")
           .update({
             last_email_sent_at: new Date().toISOString(),
-            last_email_type: "win_back_cancelled",
+            last_email_type: "engagement_broadcast",
           })
           .eq("email", user.email);
       } else {

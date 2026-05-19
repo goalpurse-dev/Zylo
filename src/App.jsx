@@ -324,7 +324,7 @@ return (
 }>
         <Routes>
           {/* Public home */}
-          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/" element={<Navigate to="/workspace/home" replace />} />
 
         
 
@@ -527,15 +527,7 @@ return (
           <Route path="/admin/feedback" element={<FeedbackAnalytics />} />
 
         
-          {/* Home stays in ToolShell BUT without sidebar (dead-centered content) */}
-          <Route
-  path="/home"
-  element={
-    <GuestOnly>
-      <NewHome />
-    </GuestOnly>
-  }
-/>
+          <Route path="/home" element={<Navigate to="/workspace/home" replace />} />
 
 
           <Route

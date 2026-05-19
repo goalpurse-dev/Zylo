@@ -95,7 +95,7 @@ export default function WhatsHot() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.52, ease: "easeOut" }}
-      className="w-full max-w-7xl mx-auto px-4 md:px-6 mt-10"
+      className="w-full max-w-7xl mx-auto px-5 md:px-8 mt-8"
     >
       {/* ── Header ── */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">

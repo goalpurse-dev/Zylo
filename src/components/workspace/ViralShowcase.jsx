@@ -6,9 +6,9 @@ export default function ViralShowcase() {
   const isUserInteracting = useRef(false);
 
   const items = [
-    { title: "Create Viral Video",          button: "Create Video",    video: "/showcase/bigcard.mp4",  image: "/showcase/bigcard.webp",  big: true },
-    { title: "Millions of Views Per Week",  button: "Start Creating",  image: "/showcase/card2.webp",   hoverVideo: "/showcase/card2.mp4" },
-    { title: "Create Unmatched Images",     button: "Create Image",    image: "/showcase/card3.webp",   hoverVideo: "/showcase/card3.mp4" },
+    { title: "Create Viral Video",          button: "Create Video",    video: "/showcase/bigcard.mp4",  image: "/showcase/bigcard.webp",  big: true,  badge: "Try Now" },
+    { title: "Millions of Views Per Week",  button: "Start Creating",  image: "/showcase/card2.webp",   hoverVideo: "/showcase/card2.mp4", badge: "Try Now" },
+    { title: "Create Unmatched Images",     button: "Create Image",    image: "/showcase/card3.webp",   hoverVideo: "/showcase/card3.mp4", badge: "Try Now" },
   ];
 
   const looped = [...items, ...items];
@@ -43,7 +43,7 @@ export default function ViralShowcase() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.45, duration: 0.55, ease: "easeOut" }}
-      className="w-full max-w-7xl mx-auto px-4 md:px-6 mt-6 md:mt-12"
+      className="w-full max-w-7xl mx-auto px-5 md:px-8 mt-5 md:mt-8"
     >
       {/* DESKTOP */}
       <div className="hidden md:flex gap-4 w-full">
@@ -82,7 +82,7 @@ export default function ViralShowcase() {
   );
 }
 
-function FeatureCard({ title, button, video, image, hoverVideo, big, mobile }) {
+function FeatureCard({ title, button, video, image, hoverVideo, big, mobile, badge }) {
   const [hovered, setHovered] = useState(false);
   const showHoverVideo = !mobile && hoverVideo && hovered;
 
@@ -111,6 +111,11 @@ function FeatureCard({ title, button, video, image, hoverVideo, big, mobile }) {
           className="absolute inset-0 w-full h-full object-cover" />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+      {badge && (
+        <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-full text-[11px] font-bold tracking-wide bg-black/50 backdrop-blur-sm border border-white/20 text-white">
+          {badge}
+        </div>
+      )}
       <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5 z-10">
         <h3 className="text-white font-bold leading-tight text-[16px] sm:text-[17px] md:text-[18px] xl:text-[16px] 2xl:text-[20px]">
           {title}

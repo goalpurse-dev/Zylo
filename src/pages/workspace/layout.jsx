@@ -132,15 +132,8 @@ useEffect(() => {
       {/* MAIN */}
       <div className="flex flex-col flex-1 h-[100dvh] overflow-x-hidden">
 
-        {/* HEADER */}
-        <div
-          className={`
-            relative z-[60]
-            w-full shrink-0
-            lg:transition-transform lg:duration-300
-            ${showTopRow ? "lg:translate-y-0" : "lg:-translate-y-full"}
-          `}
-        >
+        {/* HEADER — always sticky */}
+        <div className="relative z-[60] w-full shrink-0">
           {isHomeRoute && bannerVisible && (
             <TopPromoBanner onClose={() => setBannerVisible(false)} />
           )}

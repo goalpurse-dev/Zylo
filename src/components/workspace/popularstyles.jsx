@@ -33,7 +33,7 @@ export default function PopularStyles() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="w-full max-w-7xl mx-auto px-4 md:px-6 mt-10"
+      className="w-full max-w-7xl mx-auto px-5 md:px-8 mt-8"
     >
       <div className="flex items-center justify-between gap-4 mb-6">
         <h2 className="text-white text-[20px] md:text-[28px] font-bold tracking-tight">
