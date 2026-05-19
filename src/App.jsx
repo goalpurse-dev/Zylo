@@ -172,6 +172,7 @@ import { Analytics } from "@vercel/analytics/react";
 
 
 import NewHome from "./pages/home/home.jsx";
+import AuthCallbackPage from "./pages/AuthCallback.jsx";
 
 import "./styles/sand.css";
 
@@ -331,8 +332,11 @@ return (
    
 
 
-          {/* Blogs */}  
-        
+          {/* Auth callback — handles OAuth code exchange */}
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+
+          {/* Blogs */}
+
         <Route path="/blog" element={<BlogIndex />} />
 
         <Route path="/blog/product-photos-with-ai-for-shopify" element={<ProductPhotosShopify />} />

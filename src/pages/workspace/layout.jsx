@@ -14,6 +14,13 @@ export default function WorkspaceLayout() {
   const location = useLocation();
   const [showWelcome, setShowWelcome] = useState(false);
 
+  // Clean up trailing # left by Supabase OAuth token exchange
+  useEffect(() => {
+    if (window.location.hash === "#") {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+  }, []);
+
   const lastScrollY = useRef(0);
   const [showTopRow, setShowTopRow] = useState(true);
   const isHomeRoute = location.pathname === "/workspace/home";

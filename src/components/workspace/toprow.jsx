@@ -227,14 +227,52 @@ export default function TopRow({ onMenuClick, title }) {
           {/* ══ LOGGED IN ══ */}
           {user && (
             <>
-              {/* Credits pill */}
-              <button
-                onClick={() => navigate("/workspace/pricing")}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#14161C] border border-white/10 hover:border-[#7A3BFF]/50 hover:bg-[#181A22] transition"
-              >
-                <img src={Credit} className="h-4 w-auto object-contain brightness-125" />
-                <span className="text-[#9F5CFF] text-sm font-semibold">{formattedCredits}</span>
-              </button>
+              {/* Credits + Upgrade grouped */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => navigate("/workspace/pricing")}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#14161C] border border-white/10 hover:border-[#7A3BFF]/50 hover:bg-[#181A22] transition"
+                >
+                  <img src={Credit} className="h-4 w-auto object-contain brightness-125" />
+                  <span className="text-[#9F5CFF] text-sm font-semibold">{formattedCredits}</span>
+                </button>
+
+                {/* Upgrade right next to credits — free users only */}
+                {planCode === "free" && (
+                  <button
+                    onClick={() => navigate("/workspace/pricing")}
+                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white text-sm font-semibold hover:opacity-90 transition"
+                  >
+                    Upgrade
+                  </button>
+                )}
+              </div>
+
+              {/* Add Credits — shown when user has credits to top up */}
+              {credits > 1 && (
+                <button
+                  onClick={() => navigate("/workspace/pricing")}
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#14161C] border border-white/10 hover:border-[#7A3BFF]/50 hover:bg-[#181A22] text-white/70 hover:text-white text-sm font-medium transition"
+                >
+                  Add Credits
+                </button>
+              )}
+
+              {/* Gift — always visible when logged in */}
+              <div className="relative hidden sm:block" ref={giftRef}>
+                <button
+                  onClick={() => {
+                    if (giftRef.current) {
+                      const r = giftRef.current.getBoundingClientRect();
+                      setGiftPos({ top: r.bottom + 8, left: Math.max(8, r.right - 340) });
+                    }
+                    setGiftOpen((v) => !v);
+                  }}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-[#191B1C] border border-white/10 hover:border-purple-500/40 transition"
+                >
+                  <Gift className="w-4 h-4 text-white/60" />
+                </button>
+              </div>
 
               {/* Help */}
               <button
@@ -243,16 +281,6 @@ export default function TopRow({ onMenuClick, title }) {
               >
                 <HelpCircle className="w-4 h-4 text-white/60" />
               </button>
-
-              {/* Upgrade — purple, free users only */}
-              {planCode === "free" && (
-                <button
-                  onClick={() => navigate("/workspace/pricing")}
-                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white text-sm font-semibold hover:opacity-90 transition shadow-[0_0_14px_rgba(122,59,255,0.3)]"
-                >
-                  Upgrade
-                </button>
-              )}
 
               {/* Profile avatar */}
               <div className="relative" ref={profileRef}>
@@ -286,8 +314,6 @@ export default function TopRow({ onMenuClick, title }) {
                         <MenuItem icon={User} label="View Profile" onClick={() => { setProfileOpen(false); navigate("/settings"); }} />
                         <MenuItem icon={CreditCard} label="Subscriptions" onClick={() => { setProfileOpen(false); navigate("/workspace/pricing"); }} />
                         <MenuItem icon={Settings} label="Manage Account" onClick={() => { setProfileOpen(false); navigate("/settings"); }} />
-                        <MenuItem icon={History} label="Credits History" onClick={() => { setProfileOpen(false); navigate("/workspace/pricing"); }} />
-
                         <div className="border-t border-white/8 my-1.5" />
 
                         <button
