@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import FaceAsmrBuilder from "../../components/viral-tools/face-asmr/FaceAsmrBuilder";
 import FaceAsmrResults from "../../components/viral-tools/face-asmr/FaceAsmrResults";
@@ -6,11 +6,16 @@ import FaceAsmrPaywall from "../../components/viral-tools/face-asmr/FaceAsmrPayw
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
 import useFaceAsmrJob from "../../components/viral-tools/face-asmr/hooks/useFaceAsmrJob";
+import {
+  createFaceAsmrGeneration,
+  listFaceAsmrGenerations,
+} from "../../components/viral-tools/face-asmr/api/faceAsmrApi";
 
 const SCENE_COUNTS  = { "15s": 3, "30s": 6, "45s": 9 };
 const EMPTY_SCENE   = () => ({ description: "", imageFile: null, imagePreview: null });
-const STORAGE_KEY   = "zyvo_face_asmr_recent";
 const MAX_RECENT    = 8;
+const LEGACY_STORAGE_KEY = "zyvo_face_asmr_recent";
+const LEGACY_IMPORT_KEY_PREFIX = "zyvo_face_asmr_recent_imported";
 const PLAN_CACHE_KEY = "zyvo_face_plan";
 const PLAN_FALLBACK_CACHE_KEYS = [PLAN_CACHE_KEY, "zyvo_fruit_plan"];
 const PAID_PLAN_CODES = new Set(["starter", "pro", "generative"]);
@@ -39,33 +44,16 @@ function getCachedPaidPlan(userId) {
   return PAID_PLAN_CODES.has(code) ? code : null;
 }
 
-function saveGeneration(jobScenes) {
-  try {
-    const entry = {
-      id:        Date.now(),
-      createdAt: new Date().toISOString(),
-      scenes:    jobScenes
-        .filter((s) => s.imageUrl || s.videoUrl)
-        .map((s) => ({ index: s.index, imageUrl: s.imageUrl, videoUrl: s.videoUrl })),
-    };
-    const prev = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([entry, ...prev].slice(0, MAX_RECENT)));
-  } catch {}
-}
-
-function loadRecent() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
-  catch { return []; }
-}
-
 export default function FaceAsmr() {
   const navigate = useNavigate();
 
   const [mobilePanel, setMobilePanel]       = useState("builder");
   const [selectedLength, setSelectedLength] = useState("30s");
   const [scenes, setScenes]                 = useState(Array.from({ length: 9 }, EMPTY_SCENE));
-  const [recentGenerations, setRecentGenerations] = useState(loadRecent);
+  const [recentGenerations, setRecentGenerations] = useState([]);
   const [viewingRecentId, setViewingRecentId] = useState(null);
+  const savedGenerationRef = useRef(null);
+  const latestRunMetaRef = useRef({ lengthId: selectedLength, backgroundId: null });
 
   // Auth / plan gate — initial state computed synchronously so paywall opens on first render
   const { user, loading: authLoading } = useAuth();
@@ -138,13 +126,93 @@ export default function FaceAsmr() {
 
   const { phase, scenes: jobScenes, error, start, reset, showGeneration } = useFaceAsmrJob();
 
-  // Save completed generation to localStorage
-  useEffect(() => {
-    if (phase === "done" && jobScenes.length > 0 && viewingRecentId === null) {
-      saveGeneration(jobScenes);
-      setRecentGenerations(loadRecent());
+  const loadRecentGenerations = useCallback(async () => {
+    if (!user) {
+      setRecentGenerations([]);
+      return;
     }
-  }, [phase, jobScenes, viewingRecentId]);
+    try {
+      const rows = await listFaceAsmrGenerations(MAX_RECENT);
+      const importKey = `${LEGACY_IMPORT_KEY_PREFIX}:${user.id}`;
+      const legacyRows = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY) || "[]");
+      const shouldImportLegacy =
+        !localStorage.getItem(importKey) &&
+        Array.isArray(legacyRows) &&
+        legacyRows.length > 0;
+
+      if (!shouldImportLegacy) {
+        setRecentGenerations(rows);
+        return;
+      }
+
+      const signatures = new Set(
+        rows.map((gen) =>
+          (gen.scenes || [])
+            .map((s) => `${s.index}:${s.imageUrl || ""}:${s.videoUrl || ""}`)
+            .join("|")
+        )
+      );
+
+      const imported = [];
+      for (const gen of legacyRows.slice(0, MAX_RECENT)) {
+        const legacyScenes = (gen?.scenes || []).filter((s) => s.imageUrl || s.videoUrl);
+        const signature = legacyScenes
+          .map((s) => `${s.index}:${s.imageUrl || ""}:${s.videoUrl || ""}`)
+          .join("|");
+        if (!signature || signatures.has(signature)) continue;
+        signatures.add(signature);
+        try {
+          const saved = await createFaceAsmrGeneration({
+            scenes: legacyScenes,
+            lengthId: legacyScenes.length <= 3 ? "15s" : legacyScenes.length <= 6 ? "30s" : "45s",
+            backgroundId: null,
+          });
+          imported.push(saved);
+        } catch (e) {
+          console.error("[FaceAsmr] legacy recent import failed:", e.message);
+        }
+      }
+
+      localStorage.setItem(importKey, "1");
+      setRecentGenerations([...imported, ...rows].slice(0, MAX_RECENT));
+    } catch (e) {
+      console.error("[FaceAsmr] load recent generations failed:", e.message);
+      setRecentGenerations([]);
+    }
+  }, [user]);
+
+  useEffect(() => { void loadRecentGenerations(); }, [loadRecentGenerations]);
+
+  // Save completed generation to the signed-in user's Supabase history.
+  useEffect(() => {
+    if (!user || phase !== "done" || jobScenes.length === 0 || viewingRecentId !== null) return;
+
+    const signature = jobScenes
+      .map((s) => `${s.index}:${s.imageUrl || ""}:${s.videoUrl || ""}`)
+      .join("|");
+    if (!signature || signature === savedGenerationRef.current) return;
+    savedGenerationRef.current = signature;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const saved = await createFaceAsmrGeneration({
+          scenes: jobScenes,
+          lengthId: latestRunMetaRef.current.lengthId,
+          backgroundId: latestRunMetaRef.current.backgroundId,
+        });
+        if (cancelled) return;
+        setRecentGenerations((prev) => {
+          const deduped = prev.filter((row) => row.id !== saved.id);
+          return [saved, ...deduped].slice(0, MAX_RECENT);
+        });
+      } catch (e) {
+        console.error("[FaceAsmr] save generation failed:", e.message);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [phase, jobScenes, viewingRecentId, user]);
 
   const sceneCount = SCENE_COUNTS[selectedLength] ?? 6;
 
@@ -152,6 +220,8 @@ export default function FaceAsmr() {
     if (needsUpgrade) { showPaywall(); return; }
 
     setViewingRecentId(null);
+    savedGenerationRef.current = null;
+    latestRunMetaRef.current = { lengthId: selectedLength, backgroundId: params.background };
     setMobilePanel("results");
     document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
     start({ scenes: params.scenes, backgroundId: params.background });

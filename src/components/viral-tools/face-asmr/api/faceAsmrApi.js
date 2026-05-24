@@ -32,6 +32,58 @@ export async function generateFaceAsmrCharacterNames({ count }) {
   return names.slice(0, safeCount);
 }
 
+export async function createFaceAsmrGeneration({ scenes, lengthId, backgroundId }) {
+  const { data: userData, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !userData?.user) throw new Error("Must be signed in");
+
+  const savedScenes = (scenes ?? [])
+    .filter((s) => s.imageUrl || s.videoUrl)
+    .map((s, i) => ({
+      index: s.index ?? i,
+      imageUrl: s.imageUrl ?? null,
+      videoUrl: s.videoUrl ?? null,
+    }));
+
+  if (!savedScenes.length) throw new Error("No Face ASMR scenes to save");
+
+  const { data, error } = await supabase
+    .from("face_asmr_generations")
+    .insert({
+      user_id:       userData.user.id,
+      title:         "Viral Video",
+      scene_count:   savedScenes.length,
+      length_id:     lengthId ?? null,
+      background_id: backgroundId ?? null,
+      status:        "completed",
+      scenes:        savedScenes,
+    })
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return normalizeFaceAsmrGeneration(data);
+}
+
+export async function listFaceAsmrGenerations(limit = 8) {
+  const { data, error } = await supabase
+    .from("face_asmr_generations")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(normalizeFaceAsmrGeneration);
+}
+
+function normalizeFaceAsmrGeneration(row) {
+  if (!row) return null;
+  return {
+    ...row,
+    createdAt: row.created_at ?? row.createdAt ?? null,
+    scenes: Array.isArray(row.scenes) ? row.scenes : [],
+  };
+}
+
 /* ── Fixed video prompt ──────────────────────────────────────── */
 export const FACE_VIDEO_PROMPT =
   "Two hands entering frame and aggressively kneading and mashing the entire face like soft dough, " +
