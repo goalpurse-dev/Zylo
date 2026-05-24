@@ -1,4 +1,5 @@
 import { createImageJobSimple, createVideoJobSimple } from "../../../../lib/jobs";
+import { supabase } from "../../../../lib/supabaseClient";
 
 /* ── Constants ──────────────────────────────────────────────── */
 export const IMAGE_TOOL_KEY          = "image:fruit-v2";
@@ -15,6 +16,21 @@ export const IMAGE_FALLBACK_H        = 688;
 export const VIDEO_W                 = 496;
 export const VIDEO_H                 = 864;
 export const VIDEO_DURATION          = 5;
+
+export async function generateFaceAsmrCharacterNames({ count }) {
+  const safeCount = Math.max(1, Math.min(9, Number(count) || 1));
+  const { data, error } = await supabase.functions.invoke("face-asmr-characters", {
+    body: { count: safeCount },
+  });
+  if (error) throw error;
+
+  const names = Array.isArray(data?.names)
+    ? data.names.map((name) => String(name || "").trim()).filter(Boolean)
+    : [];
+
+  if (!names.length) throw new Error("No names returned");
+  return names.slice(0, safeCount);
+}
 
 /* ── Fixed video prompt ──────────────────────────────────────── */
 export const FACE_VIDEO_PROMPT =

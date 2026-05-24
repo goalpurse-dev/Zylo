@@ -3,7 +3,7 @@ import { Upload, X, ChevronRight, ChevronLeft } from "lucide-react";
 import ReferenceImageModal from "../../reference-images/ReferenceImageModal.jsx";
 import { useReferenceImages } from "../../reference-images/useReferenceImages";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
-import { IMAGE_CREDITS, VIDEO_CREDITS } from "./api/faceAsmrApi";
+import { generateFaceAsmrCharacterNames, IMAGE_CREDITS, VIDEO_CREDITS } from "./api/faceAsmrApi";
 
 const LENGTH_OPTIONS = [
   { value: "15s", label: "15 sec", scenes: 3 },
@@ -156,6 +156,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
   const creditBalance = useProfileCredits();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editingSceneIdx, setEditingSceneIdx] = useState(null);
+  const [aiWriting, setAiWriting] = useState(false);
 
   const { images, selected, addImage, toggleSelect, setSelected } = useReferenceImages(1);
 
@@ -196,14 +197,55 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
     if (validationError) setValidationError("");
   };
 
-  const handleAiWrite = () => {
-    const shuffled = [...CELEBRITIES].sort(() => Math.random() - 0.5);
-    setScenes((prev) =>
-      prev.map((s, i) => i < sceneCount
-        ? { ...s, description: shuffled[i % shuffled.length], imageFile: null, imagePreview: null }
-        : s
-      )
-    );
+  const typeSceneName = (sceneIndex, name) => new Promise((resolve) => {
+    let pos = 0;
+    const tick = () => {
+      pos += 1;
+      setScenes((prev) =>
+        prev.map((s, idx) => (
+          idx === sceneIndex ? { ...s, description: name.slice(0, pos) } : s
+        ))
+      );
+      if (pos >= name.length) resolve();
+      else setTimeout(tick, 22);
+    };
+    tick();
+  });
+
+  const handleAiWrite = async () => {
+    if (aiWriting) return;
+    const emptyIndexes = activeScenes
+      .map((scene, i) => ({ scene, i }))
+      .filter(({ scene }) => !scene.imagePreview && !scene.description.trim())
+      .map(({ i }) => i);
+
+    if (!emptyIndexes.length) return;
+
+    setValidationError("");
+    setAiWriting(true);
+    try {
+      const existingNames = new Set(
+        activeScenes
+          .map((scene) => scene.description.trim().toLowerCase())
+          .filter(Boolean)
+      );
+      const names = (await generateFaceAsmrCharacterNames({ count: emptyIndexes.length }))
+        .filter((name) => {
+          const key = name.trim().toLowerCase();
+          if (!key || existingNames.has(key)) return false;
+          existingNames.add(key);
+          return true;
+        });
+      if (names.length < emptyIndexes.length) throw new Error("AI returned duplicate names. Try again.");
+      for (let i = 0; i < emptyIndexes.length; i += 1) {
+        const name = names[i];
+        await typeSceneName(emptyIndexes[i], name);
+      }
+    } catch (e) {
+      setValidationError(e?.message || "AI could not write names. Try again.");
+    } finally {
+      setAiWriting(false);
+    }
   };
 
   const filledCount   = activeScenes.filter((s) => s.description.trim() || s.imagePreview).length;
@@ -308,10 +350,11 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
             <div className="px-5 py-3">
               <button
                 onClick={handleAiWrite}
-                className="flex w-full items-center justify-center gap-2.5 py-3.5 rounded-xl border border-[#7A3BFF]/30 bg-[#7A3BFF]/10 hover:bg-[#7A3BFF]/20 hover:border-[#7A3BFF]/60 text-white text-[14px] font-bold tracking-tight transition shadow-[inset_0_0_12px_rgba(122,59,255,0.15)]"
+                disabled={aiWriting}
+                className="flex w-full items-center justify-center gap-2.5 py-3.5 rounded-xl border border-[#7A3BFF]/30 bg-[#7A3BFF]/10 hover:bg-[#7A3BFF]/20 hover:border-[#7A3BFF]/60 text-white text-[14px] font-bold tracking-tight transition shadow-[inset_0_0_12px_rgba(122,59,255,0.15)] disabled:cursor-wait disabled:opacity-70"
               >
                 <img src="/icons/ailogo.png" alt="" className="w-7 h-7 object-contain shrink-0" />
-                Let AI write the characters
+                {aiWriting ? "Writing famous people..." : "Let AI write the characters"}
               </button>
             </div>
           </>
