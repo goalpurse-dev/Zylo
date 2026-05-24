@@ -441,6 +441,29 @@
     <priority>0.9</priority>
   </url>
 
+  <!-- FACE ASMR LANDING -->
+  <url>
+    <loc>https://www.tryzyvo.com/face-asmr-maker</loc>
+    <lastmod>2026-05-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- FACE ASMR BLOG POSTS -->
+  <url>
+    <loc>https://www.tryzyvo.com/blog/face-asmr-maker</loc>
+    <lastmod>2026-05-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/viral-face-asmr-videos</loc>
+    <lastmod>2026-05-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
   <!-- AI FRUIT STORY LANDING -->
   <url>
     <loc>https://www.tryzyvo.com/ai-fruit-story-maker</loc>

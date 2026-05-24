@@ -152,6 +152,9 @@ import { supabase } from "./lib/supabaseClient";
 import NotFoundRedirect from "./components/NotFoundRedirect";
 import PublicGallery from "./components/public-gallery/gallery";
 const AIFruitStoryLanding = lazy(() => import("./pages/landing/AIFruitStoryLanding.jsx"));
+const FaceAsmrLanding = lazy(() => import("./pages/landing/FaceAsmrLanding.jsx"));
+const FaceAsmrMakerBlog = lazy(() => import("./app/blog/imagegenerator/face-asmr-maker.jsx"));
+const ViralFaceAsmrVideos = lazy(() => import("./app/blog/imagegenerator/viral-face-asmr-videos.jsx"));
 {/* Viral */}
 
 
@@ -423,7 +426,10 @@ return (
 
         <Route path="/workspace/image-gen-test" element={<ImageGenTest/>} />
          <Route path="/public-gallery" element={<PublicGallery />} />
-         <Route path="/ai-fruit-story-maker" element={<AIFruitStoryLanding />} />           
+         <Route path="/ai-fruit-story-maker" element={<AIFruitStoryLanding />} />
+         <Route path="/face-asmr-maker" element={<FaceAsmrLanding />} />
+         <Route path="/blog/face-asmr-maker" element={<FaceAsmrMakerBlog />} />
+         <Route path="/blog/viral-face-asmr-videos" element={<ViralFaceAsmrVideos />} />           
 
 
 

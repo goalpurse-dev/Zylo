@@ -101,7 +101,7 @@ function buildEmail(user) {
           <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
             <tr>
               <td style="border-radius:10px;background:linear-gradient(135deg,#7A3BFF,#9f5fff);">
-                <a href="https://tryzyvo.com/workspace/face-asmr"
+                <a href="https://tryzyvo.com/face-asmr-maker"
                    style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.2px;">
                   Try Face ASMR now →
                 </a>
