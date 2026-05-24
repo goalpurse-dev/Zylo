@@ -50,6 +50,21 @@ const COMMUNITY_NICHES = [
     ],
   },
   {
+    id: "face-asmr",
+    category: "Face ASMR",
+    title: "Face ASMR",
+    description:
+      "Upload any face and place it into satisfying ASMR scenes. Viral content that gets millions of views on TikTok and Reels.",
+    prompt:
+      "A face placed into a satisfying ASMR scene with cinematic close-ups, soft lighting, and trending audio, 9:16 vertical format.",
+    route: "/workspace/face-asmr",
+    videos: [
+      { id: "fa-1", src: "/face/preview.mp4", thumbnail: null, title: "Face ASMR Scene" },
+      { id: "fa-2", src: "/face/1.mp4",       thumbnail: null, title: "Face ASMR Reveal" },
+      { id: "fa-3", src: "/face/2.mp4",       thumbnail: null, title: "Face ASMR Drama" },
+    ],
+  },
+  {
     id: "skeleton-dog",
     category: "Skeleton Dog",
     title: "Skeleton Dog",

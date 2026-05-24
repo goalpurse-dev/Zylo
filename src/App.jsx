@@ -173,6 +173,7 @@ import { Analytics } from "@vercel/analytics/react";
 
 import NewHome from "./pages/home/home.jsx";
 import AuthCallbackPage from "./pages/AuthCallback.jsx";
+const FaceAsmrPage = lazy(() => import("./pages/workspace/FaceAsmr.jsx"));
 
 import "./styles/sand.css";
 
@@ -458,6 +459,7 @@ return (
   <Route path="/workspace/viral-score" element={<ViralScore />} />
   <Route path="/workspace/lip-sync"    element={<LipSync />} />
   <Route path="/workspace/ai-fruit-story" element={<AIFruitStory />} />
+  <Route path="/workspace/face-asmr" element={<FaceAsmrPage />} />
   <Route path="/workspace/skeleton-shorts" element={<SkeletonShorts />} />
 
 

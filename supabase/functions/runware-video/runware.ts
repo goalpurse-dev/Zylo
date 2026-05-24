@@ -165,6 +165,37 @@ export async function launchRunwareVideo(
     return { jobId: String(providerJobId) };
   }
 
+  /* ── Seedance 1.5 Pro ── */
+  if (args.airTag === "bytedance:seedance@1.5-pro") {
+    const task: Record<string, unknown> = {
+      taskType:      "videoInference",
+      fps:           24,
+      model:         "bytedance:seedance@1.5-pro",
+      outputFormat:  "mp4",
+      height:        args.height ?? 864,
+      width:         args.width  ?? 496,
+      numberResults: 1,
+      includeCost:   true,
+      outputQuality: 85,
+      providerSettings: {
+        bytedance: { cameraFixed: false, audio: false },
+      },
+      positivePrompt: safePositivePrompt,
+      taskUUID,
+      duration: args.durationSec,
+    };
+
+    if (rawRefs.length > 0) {
+      task.frameImages = rawRefs.slice(0, 1).map((url) => ({ inputImage: url }));
+    }
+
+    console.log("[runware-video] SEEDANCE TASK", JSON.stringify(task, null, 2));
+    const { res, text, json } = await postJson([task]);
+    if (!res.ok) throw new Error(`Runware Seedance launch failed (${res.status}): ${text}`);
+    const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
+    return { jobId: String(providerJobId) };
+  }
+
   const task: Record<string, unknown> = {
     taskType: "videoInference",
     taskUUID,

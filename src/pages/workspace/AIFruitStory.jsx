@@ -7,7 +7,16 @@ import FruitStoryPaywall from "../../components/viral-tools/ai-fruit-story/Fruit
 import useFruitStoryJob from "../../components/viral-tools/ai-fruit-story/hooks/useFruitStoryJob";
 import { isFruitVideoPromptReady, sceneCountToLength, FRUIT_VIDEO_CREDITS_PER_CLIP } from "../../components/viral-tools/ai-fruit-story/api/fruitStoryApi";
 import { useProfileCredits } from "../../hooks/useProfileCredits";
+import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
+
+const FRUIT_PLAN_CACHE_KEY = "zyvo_fruit_plan";
+function getCachedPlan(userId) {
+  try { const d = JSON.parse(localStorage.getItem(FRUIT_PLAN_CACHE_KEY) || "{}"); return d.id === userId ? d.code : null; } catch { return null; }
+}
+function setCachedPlan(userId, code) {
+  try { localStorage.setItem(FRUIT_PLAN_CACHE_KEY, JSON.stringify({ id: userId, code })); } catch {}
+}
 
 export default function AIFruitStory() {
   const navigate = useNavigate();
@@ -16,9 +25,22 @@ export default function AIFruitStory() {
   const [mobilePanel,     setMobilePanel]     = useState("builder");
   const [mobileTab,       setMobileTab]       = useState("generate"); // "generate" | "recent"
   const [loadedFromRecent, setLoadedFromRecent] = useState(false);
-  const [paywallOpen,     setPaywallOpen]     = useState(false);
-  const [paywallGuest,    setPaywallGuest]    = useState(false);
-  const [planCode,        setPlanCode]        = useState(null); // null = not yet checked
+  const { user, loading: authLoading } = useAuth();
+
+  const [planCode, setPlanCode] = useState(() => {
+    if (authLoading) return null;
+    if (!user) return "guest";
+    return getCachedPlan(user.id) ?? null;
+  });
+  const [paywallOpen, setPaywallOpen] = useState(() => {
+    if (authLoading) return false;
+    if (!user) return true;
+    return getCachedPlan(user.id) === "free";
+  });
+  const [paywallGuest, setPaywallGuest] = useState(() => {
+    if (authLoading) return false;
+    return !user;
+  });
 
   const [form, setForm] = useState({
     storyPreset:        "cheating",
@@ -74,30 +96,32 @@ export default function AIFruitStory() {
     }
   }, [stepIndex, loadedFromRecent, reset]);
 
-  // Check auth + plan on mount — open paywall immediately if not on a paid plan
+  // Verify plan from DB in background — also handles authLoading-was-true-on-mount case
   useEffect(() => {
+    if (authLoading) return;
     let mounted = true;
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!mounted) return;
-      if (!user) {
-        setPlanCode("guest");
-        setPaywallGuest(true);
-        setPaywallOpen(true);
-        return;
-      }
-      supabase.from("profiles").select("plan_code").eq("id", user.id).single()
-        .then(({ data }) => {
-          if (!mounted) return;
-          const code = (data?.plan_code || "free").toLowerCase();
-          setPlanCode(code);
-          if (code === "free") {
-            setPaywallGuest(false);
-            setPaywallOpen(true);
-          }
-        });
-    });
+
+    if (!user) {
+      setPlanCode("guest"); setPaywallGuest(true); setPaywallOpen(true);
+      return;
+    }
+
+    supabase.from("profiles").select("plan_code").eq("id", user.id).single()
+      .then(({ data }) => {
+        if (!mounted) return;
+        const code = (data?.plan_code || "free").toLowerCase();
+        setCachedPlan(user.id, code);
+        setPlanCode(code);
+        if (code === "free") {
+          setPaywallGuest(false);
+          setPaywallOpen(true);
+        } else {
+          setPaywallOpen(false); // close if cached plan was stale
+        }
+      });
+
     return () => { mounted = false; };
-  }, []);
+  }, [user, authLoading]);
 
   // Auto-switch to results on mobile when animation finishes
   useEffect(() => {
@@ -154,8 +178,9 @@ export default function AIFruitStory() {
 
   const handleAnimateScenes = () => {
     startAnimation();
-    // Stay on builder (step 3 options) so user sees prompts/model — don't auto-jump to results
-    setMobilePanel("builder");
+    if (window.innerWidth < 1024) {
+      setMobilePanel("results");
+    }
     document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
   };
 
@@ -377,7 +402,7 @@ export default function AIFruitStory() {
           </div>
 
           {/* ── Desktop ── */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:block lg:h-full">
             {builderPanel}
           </div>
         </>
@@ -401,7 +426,7 @@ function MobileFruitStoryFooter({
   const showCreditWarning = creditCost > 0 && !hasEnoughCredits && !isDone;
 
   return (
-    <div className="fixed bottom-[calc(70px+env(safe-area-inset-bottom))] left-0 right-0 z-[95] lg:hidden">
+    <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-0 right-0 z-[95] lg:hidden">
       {/* Low-credit warning strip */}
       {showCreditWarning && (
         <div className="mx-4 mb-1.5 flex items-center justify-between gap-2 rounded-[12px] border border-red-400/20 bg-red-500/10 px-3 py-2">

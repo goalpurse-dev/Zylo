@@ -36,13 +36,13 @@ function buildEmail(user) {
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>most people use Zyvo at 20% of what it can do</title>
+  <title>we just dropped something wild 😮</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#f4f4f5;">
-    I've been watching how people use Zyvo — and I want to reach out to you directly.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+    Face ASMR is live on Zyvo — upload any face, pick a scene, go viral.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f5;">
@@ -66,46 +66,50 @@ function buildEmail(user) {
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Niko here — I've been looking at how people use Zyvo, and something keeps jumping out at me.
+            Niko here — we just shipped something I've been hyped about for a while, and I wanted to tell you about it directly.
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Most people discover one thing, love it, and never realize how much more is sitting right there waiting for them. I've seen people do genuinely incredible work with Zyvo — but I've also seen people who barely scratched the surface and then quietly drifted away.
+            <strong>Face ASMR is now live on Zyvo.</strong>
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            If that's you — I'm not here to guilt you. I just want to show you what you might be missing.
+            Here's how it works: you upload a face photo, pick one of our satisfying ASMR scenes, and we generate a full vertical video with that face placed right into the scene. Soap carving, kinetic sand, slime — whatever's trending. Takes about a minute. Gets millions of views.
           </p>
 
           <!-- Feature card -->
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
             <tr>
               <td style="padding:22px 24px;background:#faf8ff;border-radius:12px;border:1px solid #ede9fe;">
-                <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#7A3BFF;letter-spacing:0.08em;text-transform:uppercase;">Worth trying this week</p>
-                <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>Generate at scale</strong> — most people run one at a time. Try batching and watch what changes.</p>
-                <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>Fine-tune your style</strong> — the output adapts to you, but only if you tell it how. Most people never do.</p>
-                <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>Your credits roll over</strong> — they don't expire at the end of the month, so nothing goes to waste.</p>
+                <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#7A3BFF;letter-spacing:0.08em;text-transform:uppercase;">What makes it viral</p>
+                <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>Any face works</strong> — upload a celebrity, your own face, anyone. The AI handles the rest.</p>
+                <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>Trending ASMR scenes</strong> — we built the scene library around what's actually blowing up on TikTok and Reels right now.</p>
+                <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>Full video, not a loop</strong> — you get a real video you can post directly, watermark-free on any paid plan.</p>
               </td>
             </tr>
           </table>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            And honestly? If you just reply to this email and tell me what you're working on right now, I'll personally point you to exactly what you need. That's not a bot — it's me.
+            ASMR content is one of the highest-retention formats on short video right now. If you've been looking for a niche that's easy to make and hard to stop watching — this is it.
+          </p>
+
+          <p style="margin:0 0 24px;font-size:15px;line-height:1.75;color:#374151;">
+            Go try it — it's live right now.
           </p>
 
           <!-- CTA -->
           <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
             <tr>
               <td style="border-radius:10px;background:linear-gradient(135deg,#7A3BFF,#9f5fff);">
-                <a href="https://tryzyvo.com/dashboard"
+                <a href="https://tryzyvo.com/workspace/face-asmr"
                    style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.2px;">
-                  Open Zyvo and explore →
+                  Try Face ASMR now →
                 </a>
               </td>
             </tr>
           </table>
 
-          <p style="margin:0 0 24px;font-size:13px;color:#9ca3af;">Or just reply to this email. I read every one.</p>
+          <p style="margin:8px 0 24px;font-size:13px;color:#9ca3af;">Reply to this email if you have questions — it goes straight to me.</p>
 
           <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">
             — Niko<br/>
@@ -117,7 +121,7 @@ function buildEmail(user) {
         <!-- footer -->
         <tr><td style="padding:20px 40px 24px;border-top:1px solid #f3f4f6;">
           <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.7;">
-            You're getting this because you opted in to updates from Zyvo.<br/>
+            You're receiving this because you have a Zyvo account.<br/>
             <a href="https://tryzyvo.com/settings" style="color:#9ca3af;text-decoration:underline;">Unsubscribe</a>
             &nbsp;·&nbsp;
             <a href="https://tryzyvo.com" style="color:#9ca3af;text-decoration:underline;">tryzyvo.com</a>
@@ -142,7 +146,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "most people use Zyvo at 20% of what it can do",
+      subject: "we just dropped something wild 😮",
       html: buildEmail(user),
     });
 
@@ -162,7 +166,7 @@ async function sendEmail(user) {
 export default async function handler(req, res) {
   try {
     console.log("🚀 Starting engagement email campaign...");
-    console.log(`   dry_run=${DRY_RUN}  target=email_updates:true`);
+    console.log(`   dry_run=${DRY_RUN}  target=all_users`);
 
     let allUsers = [];
     let from = 0;
@@ -172,7 +176,6 @@ export default async function handler(req, res) {
       const { data, error } = await supabase
         .from("profiles")
         .select("email")
-        .eq("email_updates", true)
         .not("email", "is", null)
         .range(from, from + BATCH_SIZE - 1);
 
@@ -189,7 +192,7 @@ export default async function handler(req, res) {
       from += BATCH_SIZE;
     }
 
-    console.log(`📊 Total opted-in users to email: ${allUsers.length}`);
+    console.log(`📊 Total users to email: ${allUsers.length}`);
 
     let sent = 0, failed = 0, skipped = 0;
 
@@ -212,7 +215,7 @@ export default async function handler(req, res) {
           .from("profiles")
           .update({
             last_email_sent_at: new Date().toISOString(),
-            last_email_type: "engagement_broadcast",
+            last_email_type: "face_asmr_launch",
           })
           .eq("email", user.email);
       } else {

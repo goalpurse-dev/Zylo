@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { Check, X, Lock } from "lucide-react";
@@ -9,49 +9,49 @@ const TIERS = [
   {
     id: "starter",
     name: "Starter",
-    price: 10,
-    note: "Billed $120/yr",
-    accent: "#38BDF8",
-    btnFrom: "#1E6FA8",
-    btnTo: "#2E9EDB",
+    monthly: 12, yearlyPerMonth: 10,
+    yearlyNote: "Billed $120/yr",
+    accent: "#38BDF8", btnFrom: "#1E6FA8", btnTo: "#2E9EDB",
     features: ["600 credits / month", "Up to 30 AI videos", "AI Fruit Story", "Watermark-free exports", "Standard speed"],
-    priceId: "price_1TGKT6Htn4q5rIncI47V5Ein",
+    priceIds: { monthly: "price_1TGKT6Htn4q5rIncI47V5Ein", yearly: "price_1TYWNYHtn4q5rIncWMa3mmvI" },
   },
   {
     id: "pro",
     name: "Pro",
-    price: 21,
-    note: "Billed $252/yr",
-    accent: "#A855F7",
-    btnFrom: "#7A3BFF",
-    btnTo: "#A855F7",
+    monthly: 25, yearlyPerMonth: 21,
+    yearlyNote: "Billed $252/yr",
+    accent: "#A855F7", btnFrom: "#7A3BFF", btnTo: "#A855F7",
     popular: true,
     features: ["1,200 credits / month", "Up to 60 AI videos", "AI Fruit Story", "Watermark-free exports", "Priority queue"],
-    priceId: "price_1TGKSqHtn4q5rIncIf8RPa6e",
+    priceIds: { monthly: "price_1TGKSqHtn4q5rIncIf8RPa6e", yearly: "price_1TYWOWHtn4q5rIncTmN3GXdy" },
   },
   {
     id: "generative",
     name: "Generative",
-    price: 42,
-    note: "Billed $504/yr",
-    accent: "#FB923C",
-    btnFrom: "#B45309",
-    btnTo: "#F97316",
+    monthly: 50, yearlyPerMonth: 42,
+    yearlyNote: "Billed $504/yr",
+    accent: "#FB923C", btnFrom: "#B45309", btnTo: "#F97316",
     features: ["2,500 credits / month", "Up to 125 AI videos", "AI Fruit Story", "Unlimited history", "Fast-lane generation"],
-    priceId: "price_1TGKSSHtn4q5rIncSTurqkCN",
+    priceIds: { monthly: "price_1TGKSSHtn4q5rIncSTurqkCN", yearly: "price_1TYWP8Htn4q5rIncbugChVhS" },
   },
 ];
 
-async function handleSubscribe(tier) {
+async function handleSubscribe(tier, billing) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return (window.location.href = "/signup");
-  await startCheckout({ type: "subscription", priceId: tier.priceId, userId: user.id, email: user.email,
-    metadata: { email: user.email, plan: tier.id } });
+  await startCheckout({
+    type: "subscription",
+    priceId: tier.priceIds[billing],
+    userId: user.id,
+    email: user.email,
+    metadata: { email: user.email, plan: tier.id },
+  });
 }
 
 export default function FruitStoryPaywall({ open, onClose, isGuest, dismissable = true }) {
   const navigate = useNavigate();
   const videoRef = useRef(null);
+  const [billing, setBilling] = useState("yearly");
 
   useEffect(() => {
     if (!open) return;
@@ -74,18 +74,15 @@ export default function FruitStoryPaywall({ open, onClose, isGuest, dismissable 
 
   return createPortal(
     <div className="fixed inset-0 z-[500] flex items-end justify-center sm:items-center sm:p-4">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/85 backdrop-blur-md"
         onClick={dismissable ? onClose : undefined}
       />
 
-      {/* Modal */}
       <div
         className="relative z-10 flex w-full max-w-[880px] flex-col overflow-hidden rounded-t-[28px] border border-white/10 sm:rounded-[28px] md:flex-row"
         style={{ background: "linear-gradient(160deg,#0d0f14,#0b0c12)", maxHeight: "92dvh", boxShadow: "0 32px 80px rgba(0,0,0,0.85)" }}
       >
-        {/* X — always shown */}
         <button
           onClick={onClose}
           className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.07] text-white/50 transition hover:bg-white/12 hover:text-white"
@@ -93,14 +90,18 @@ export default function FruitStoryPaywall({ open, onClose, isGuest, dismissable 
           <X size={15} />
         </button>
 
-        {/* Left — phone video, only on md+ */}
+        {/* Left — phone video, desktop only */}
         <div className="relative hidden flex-shrink-0 items-center justify-center bg-black/40 p-8 md:flex md:w-[240px]">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_50%,rgba(122,59,255,0.18),transparent)]" />
           <div className="relative w-full max-w-[155px]">
             <div className="overflow-hidden rounded-[28px] border border-white/15 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.7)]">
               <div className="aspect-[9/19.5] w-full overflow-hidden">
-                <video ref={videoRef} src="/viral-builder/ai-fruit/result.mp4"
-                  className="h-full w-full object-cover" autoPlay muted loop playsInline preload="auto" />
+                <video
+                  ref={videoRef}
+                  src="/viral-builder/ai-fruit/result.mp4"
+                  className="h-full w-full object-cover"
+                  autoPlay muted loop playsInline preload="auto"
+                />
               </div>
             </div>
             <div className="mx-auto mt-2 h-1 w-12 rounded-full bg-white/15" />
@@ -120,19 +121,19 @@ export default function FruitStoryPaywall({ open, onClose, isGuest, dismissable 
                 {isGuest ? "Sign in to continue" : "Subscription Required"}
               </h2>
               <p className="text-[11px] text-white/40 mt-0.5">
-                {isGuest ? "Create an account, then pick a plan to use AI Fruit Story." : "You need a paid plan to create AI Fruit Story videos."}
+                {isGuest
+                  ? "Create an account, then pick a plan to use AI Fruit Story."
+                  : "You need a paid plan to create AI Fruit Story videos."}
               </p>
             </div>
           </div>
 
           {isGuest ? (
-            /* Guest view — video + sign up */
             <div className="flex flex-col items-center gap-5 p-6 text-center">
               <div className="relative w-[120px] flex-shrink-0">
                 <div className="overflow-hidden rounded-[22px] border border-white/15 bg-black shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
                   <div className="aspect-[9/19.5] w-full overflow-hidden">
-                    <video src="/viral-builder/ai-fruit/result.mp4"
-                      className="h-full w-full object-cover" autoPlay muted loop playsInline preload="auto" />
+                    <video src="/viral-builder/ai-fruit/result.mp4" className="h-full w-full object-cover" autoPlay muted loop playsInline preload="auto" />
                   </div>
                 </div>
                 <div className="mx-auto mt-1.5 h-1 w-8 rounded-full bg-white/15" />
@@ -144,70 +145,105 @@ export default function FruitStoryPaywall({ open, onClose, isGuest, dismissable 
                   className="w-full rounded-[12px] py-3 text-sm font-bold text-white transition hover:opacity-90"
                   style={{ background: "linear-gradient(135deg,#7A3BFF,#A855F7)" }}
                 >Create Free Account →</button>
-                <button onClick={() => { onClose(); navigate("/login"); }} className="block w-full text-xs text-white/30 transition hover:text-white/60">
-                  Already have an account? Log in
-                </button>
+                <button
+                  onClick={() => { onClose(); navigate("/login"); }}
+                  className="block w-full text-xs text-white/30 transition hover:text-white/60"
+                >Already have an account? Log in</button>
               </div>
             </div>
           ) : (
-            /* Paid plan cards */
-            <div className="grid grid-cols-1 gap-2.5 p-4 sm:grid-cols-3 sm:p-5">
-              {TIERS.map((tier) => (
+            <>
+              {/* Billing toggle */}
+              <div className="flex justify-center pt-4 pb-0">
                 <div
-                  key={tier.id}
-                  className="relative flex flex-col overflow-hidden rounded-[18px] border"
-                  style={{
-                    borderColor: tier.popular ? `${tier.accent}40` : "rgba(255,255,255,0.07)",
-                    background: tier.popular ? "linear-gradient(160deg,#130B28,#1C0A3A)" : "rgba(255,255,255,0.02)",
-                    boxShadow: tier.popular ? `0 0 36px ${tier.accent}18` : "none",
-                  }}
+                  className="inline-flex items-center rounded-full p-1 gap-0.5"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
                 >
-                  <div className="h-[2px] w-full" style={{ background: `linear-gradient(90deg,${tier.accent}CC,${tier.accent}30)` }} />
-
-                  {tier.popular && (
-                    <div className="absolute right-2.5 top-2.5 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide"
-                      style={{ background: `${tier.accent}20`, color: tier.accent, border: `1px solid ${tier.accent}40` }}>
-                      Popular
-                    </div>
-                  )}
-
-                  <div className="flex flex-col gap-3 p-4">
-                    <div className="text-[13px] font-bold" style={{ color: tier.accent }}>{tier.name}</div>
-
-                    {/* Mobile: horizontal price + button layout */}
-                    <div className="flex items-center justify-between gap-2 sm:block">
-                      <div className="flex items-end gap-1">
-                        <span className="text-[28px] font-extrabold leading-none text-white sm:text-[32px]">${tier.price}</span>
-                        <span className="mb-1 text-[11px] text-white/30">/mo</span>
-                      </div>
-                      <button
-                        onClick={() => handleSubscribe(tier)}
-                        className="flex-shrink-0 rounded-[10px] px-4 py-2 text-[12px] font-bold text-white transition hover:opacity-90 sm:hidden"
-                        style={{ background: `linear-gradient(135deg,${tier.btnFrom},${tier.btnTo})` }}
-                      >Get {tier.name}</button>
-                    </div>
-
-                    <div className="text-[10px] text-white/25">{tier.note}</div>
-
-                    {/* Full CTA — visible on sm+ */}
+                  {["yearly", "monthly"].map((opt) => (
                     <button
-                      onClick={() => handleSubscribe(tier)}
-                      className="hidden w-full rounded-[10px] py-2.5 text-[12px] font-bold text-white transition hover:opacity-90 sm:block"
-                      style={{ background: `linear-gradient(135deg,${tier.btnFrom},${tier.btnTo})` }}
-                    >Get {tier.name}</button>
-
-                    <ul className="space-y-1.5">
-                      {tier.features.map((f, i) => (
-                        <li key={i} className="flex items-start gap-1.5 text-[11px] text-white/45">
-                          <Check size={11} className="mt-0.5 flex-shrink-0" style={{ color: `${tier.accent}CC` }} />
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                      key={opt}
+                      onClick={() => setBilling(opt)}
+                      className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[12px] font-semibold transition-all duration-200"
+                      style={billing === opt
+                        ? { background: "linear-gradient(135deg,#7C3AED,#A855F7)", color: "#fff" }
+                        : { color: "rgba(255,255,255,0.35)" }}
+                    >
+                      {opt === "yearly" ? "Annual" : "Monthly"}
+                      {opt === "yearly" && (
+                        <span
+                          className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                          style={{
+                            background: billing === "yearly" ? "rgba(255,255,255,0.18)" : "rgba(167,243,208,0.15)",
+                            color: billing === "yearly" ? "#fff" : "#6EE7B7",
+                          }}
+                        >–17%</span>
+                      )}
+                    </button>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+
+              {/* Tier cards */}
+              <div className="grid grid-cols-1 gap-2.5 p-4 sm:grid-cols-3 sm:p-5">
+                {TIERS.map((tier) => {
+                  const price = billing === "yearly" ? tier.yearlyPerMonth : tier.monthly;
+                  const note  = billing === "yearly" ? tier.yearlyNote : "Billed monthly";
+                  return (
+                    <div
+                      key={tier.id}
+                      className="relative flex flex-col overflow-hidden rounded-[18px] border"
+                      style={{
+                        borderColor: tier.popular ? `${tier.accent}40` : "rgba(255,255,255,0.07)",
+                        background: tier.popular ? "linear-gradient(160deg,#130B28,#1C0A3A)" : "rgba(255,255,255,0.02)",
+                        boxShadow: tier.popular ? `0 0 36px ${tier.accent}18` : "none",
+                      }}
+                    >
+                      <div className="h-[2px] w-full" style={{ background: `linear-gradient(90deg,${tier.accent}CC,${tier.accent}30)` }} />
+
+                      {tier.popular && (
+                        <div
+                          className="absolute right-2.5 top-2.5 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide"
+                          style={{ background: `${tier.accent}20`, color: tier.accent, border: `1px solid ${tier.accent}40` }}
+                        >Popular</div>
+                      )}
+
+                      <div className="flex flex-col gap-3 p-4">
+                        <div className="text-[13px] font-bold" style={{ color: tier.accent }}>{tier.name}</div>
+
+                        <div className="flex items-center justify-between gap-2 sm:block">
+                          <div className="flex items-end gap-1">
+                            <span className="text-[28px] font-extrabold leading-none text-white sm:text-[32px]">${price}</span>
+                            <span className="mb-1 text-[11px] text-white/30">/mo</span>
+                          </div>
+                          <button
+                            onClick={() => handleSubscribe(tier, billing)}
+                            className="flex-shrink-0 rounded-[10px] px-4 py-2 text-[12px] font-bold text-white transition hover:opacity-90 sm:hidden"
+                            style={{ background: `linear-gradient(135deg,${tier.btnFrom},${tier.btnTo})` }}
+                          >Get {tier.name}</button>
+                        </div>
+
+                        <div className="text-[10px] text-white/25">{note}</div>
+
+                        <button
+                          onClick={() => handleSubscribe(tier, billing)}
+                          className="hidden w-full rounded-[10px] py-2.5 text-[12px] font-bold text-white transition hover:opacity-90 sm:block"
+                          style={{ background: `linear-gradient(135deg,${tier.btnFrom},${tier.btnTo})` }}
+                        >Get {tier.name}</button>
+
+                        <ul className="space-y-1.5">
+                          {tier.features.map((f, i) => (
+                            <li key={i} className="flex items-start gap-1.5 text-[11px] text-white/45">
+                              <Check size={11} className="mt-0.5 flex-shrink-0" style={{ color: `${tier.accent}CC` }} />
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
 
           <div className="px-5 pb-4 text-center">

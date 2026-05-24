@@ -297,7 +297,7 @@ export default function AIFruitStoryBuilder({
       </div>
 
       {/* ── Body ── */}
-      <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-[156px] sm:p-5 sm:pb-[156px] lg:pb-5">
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-[200px] sm:p-5 sm:pb-[200px] lg:pb-5">
         <div className="mb-5">
           <h2 className="text-lg font-black text-white">{stepTitle}</h2>
           <p className="mt-1 text-sm text-white/45">{stepDescription}</p>

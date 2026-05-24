@@ -4,7 +4,7 @@ export default function ToolGenerationLayout({ left, right }) {
   const hasRightPanel = Boolean(right);
 
   return (
-    <div className="min-h-screen bg-[#0B0D0F] text-white">
+    <div className="min-h-screen lg:min-h-0 bg-[#0B0D0F] text-white">
       <div className="mx-auto w-full max-w-[1800px] px-3 py-3 sm:px-4 sm:py-4">
         <div
           className={
@@ -13,12 +13,12 @@ export default function ToolGenerationLayout({ left, right }) {
               : "mx-auto grid w-full max-w-[560px] grid-cols-1"
           }
         >
-          <aside className="min-w-0 lg:sticky lg:top-4 lg:h-[calc(100vh-32px)]">
+          <aside className="min-w-0 lg:sticky lg:top-4 lg:h-[calc(100dvh-96px)]">
             {left}
           </aside>
 
           {hasRightPanel && (
-            <main className="hidden min-w-0 lg:block">{right}</main>
+            <main className="hidden min-w-0 lg:block lg:overflow-y-auto lg:max-h-[calc(100dvh-96px)]">{right}</main>
           )}
         </div>
       </div>

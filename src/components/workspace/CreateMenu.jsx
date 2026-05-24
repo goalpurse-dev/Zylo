@@ -12,6 +12,15 @@ export const CREATE_TOOLS = [
     preview: "/viral-builder/ai-fruit/characters/bossmango.png",
     color: "#7A3BFF",
   },
+  {
+    id: "face-asmr",
+    label: "Face ASMR",
+    sublabel: "",
+    path: "/workspace/face-asmr",
+    preview: "/face/ronaldo.png",
+    previewPosition: "object-center",
+    color: "#A855F7",
+  },
   // { id: "ai-voice-story", label: "AI Voice Story", ... },
 ];
 
@@ -81,7 +90,7 @@ export function DesktopCreatePanel({ open, onClose }) {
               className="relative h-[52px] w-[42px] flex-shrink-0 overflow-hidden rounded-[12px]"
               style={{ background: `linear-gradient(135deg, ${tool.color}55, ${tool.color}22)` }}
             >
-              <img src={tool.preview} alt={tool.label} className="h-full w-full object-cover object-top" />
+              <img src={tool.preview} alt={tool.label} className={`h-full w-full object-cover ${tool.previewPosition ?? "object-top"}`} />
             </div>
             <div className="flex-1 min-w-0">
               <div className={`text-[13px] font-semibold leading-tight ${active ? "text-white" : "text-white"}`}>{tool.label}</div>
@@ -198,11 +207,12 @@ export default function MobileCreateMenu({ open, onClose, anchorBottom = 72 }) {
   const fanAngles = total === 1
     ? [0]
     : Array.from({ length: total }, (_, i) => {
-        const spread = Math.min(60, (total - 1) * 30);
+        // 2 items need a wider spread so 62px icons don't overlap
+        const spread = total === 2 ? 52 : Math.min(70, (total - 1) * 28);
         return -spread / 2 + (spread / (total - 1)) * i;
       });
 
-  const FAN_RADIUS = 110; // px from center of close button
+  const FAN_RADIUS = 120; // px from center of close button
 
   return createPortal(
     <div
@@ -254,7 +264,7 @@ export default function MobileCreateMenu({ open, onClose, anchorBottom = 72 }) {
                   <img
                     src={tool.preview}
                     alt={tool.label}
-                    className="h-full w-full object-cover object-top scale-110"
+                    className={`h-full w-full object-cover scale-110 ${tool.previewPosition ?? "object-top"}`}
                   />
                 </div>
                 {/* Label */}

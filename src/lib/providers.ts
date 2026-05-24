@@ -29,6 +29,7 @@ export type ToolKey =
   | "video:wan26flash"
   | "video:veo31fast"
   | "video:viduq3turbo"
+  | "video:seedance15pro"
 
 
 
@@ -340,6 +341,24 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     baseResolution:       "720p",
     retailMultiplier:     2,
     baseCreditsPerSecond: 8,            // $0.4556 × 2 / 6s / $0.02 ≈ 7.6 → 8/s → 46 credits per 6s clip
+  },
+
+  /**
+   * Seedance 1.5 Pro 480p  —  5-second image-to-video
+   * Cost: $0.06/clip → $0.12 retail → 6 credits
+   */
+  "video:seedance15pro": {
+    provider:   "runware",
+    generator:  "Seedance 1.5 Pro",
+    airTag:     "bytedance:seedance@1.5-pro",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
+    costPerSecondUSD:     0.012,   // $0.06 / 5s
+    baseResolution:       "480p",
+    retailMultiplier:     2,
+    baseCreditsPerSecond: 1.2,    // 6 credits / 5s
+    credits:              6,      // flat 6 credits per 5-second clip
+    retailUSD:            0.12,
   },
 
   "video:veo31fast": {

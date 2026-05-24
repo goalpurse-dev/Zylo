@@ -23,6 +23,11 @@ import {
 
 const ANNOUNCEMENTS = [
   {
+    title: "😮 Face ASMR is Live",
+    date: "2026.05.24",
+    desc: "Upload a face, pick a scene, and generate viral ASMR videos. Trending content in minutes.",
+  },
+  {
     title: "🍊 AI Fruit Story is Live",
     date: "2026.05.10",
     desc: "Create viral fruit character stories — drama, comedy, betrayal. All AI, all fire.",
@@ -36,11 +41,6 @@ const ANNOUNCEMENTS = [
     title: "🎬 Video Generator V2",
     date: "2026.04.01",
     desc: "Faster cinematic video generation powered by MiniMax Hailou 2.3 and Runway Gen-4.",
-  },
-  {
-    title: "🖼️ Nano Banana 2 — Best Image Model",
-    date: "2026.03.15",
-    desc: "The most realistic image generation model is now live on Zyvo.",
   },
 ];
 
