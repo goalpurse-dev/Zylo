@@ -141,6 +141,7 @@ function timeAgo(dateStr) {
 function RecentThumb({ scene, index, onSelect }) {
   const [viewerOpen, setViewerOpen] = useState(false);
   const isVideo = !!scene.videoUrl;
+  const thumbUrl = scene.imageUrl || scene.videoPosterUrl || scene.thumbnailUrl;
   const handleClick = () => {
     if (onSelect) {
       onSelect();
@@ -156,25 +157,12 @@ function RecentThumb({ scene, index, onSelect }) {
         onClick={handleClick}
         className="group relative aspect-[9/16] overflow-hidden rounded-xl bg-black ring-1 ring-white/10 transition hover:ring-[#A87AFF]/70"
       >
-        {isVideo ? (
-          <video
-            src={scene.videoUrl}
-            muted
-            loop
-            playsInline
-            className="h-full w-full object-cover"
-            onMouseEnter={(e) => e.currentTarget.play()}
-            onMouseLeave={(e) => {
-              e.currentTarget.pause();
-              e.currentTarget.currentTime = 0;
-            }}
-          />
-        ) : scene.imageUrl ? (
-          <img src={scene.imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+        {thumbUrl ? (
+          <img src={thumbUrl} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
         ) : null}
         <div className="absolute inset-0 bg-black/20 transition group-hover:bg-black/0" />
         <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/65 px-2 py-0.5 text-[9px] font-bold text-white/70">
-          {isVideo ? "Video" : "Img"}
+          Preview
         </span>
       </button>
       {viewerOpen && <Viewer scene={scene} index={index} onClose={() => setViewerOpen(false)} />}

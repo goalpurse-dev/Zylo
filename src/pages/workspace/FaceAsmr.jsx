@@ -12,15 +12,31 @@ const EMPTY_SCENE   = () => ({ description: "", imageFile: null, imagePreview: n
 const STORAGE_KEY   = "zyvo_face_asmr_recent";
 const MAX_RECENT    = 8;
 const PLAN_CACHE_KEY = "zyvo_face_plan";
+const PLAN_FALLBACK_CACHE_KEYS = [PLAN_CACHE_KEY, "zyvo_fruit_plan"];
+const PAID_PLAN_CODES = new Set(["starter", "pro", "generative"]);
 
 function getCachedPlan(userId) {
   try {
-    const d = JSON.parse(localStorage.getItem(PLAN_CACHE_KEY) || "{}");
-    return d.id === userId ? d.code : null;
+    let fallback = null;
+    for (const key of PLAN_FALLBACK_CACHE_KEYS) {
+      const d = JSON.parse(localStorage.getItem(key) || "{}");
+      if (d.id !== userId || !d.code) continue;
+      const code = String(d.code).toLowerCase();
+      if (PAID_PLAN_CODES.has(code)) return code;
+      fallback = code;
+    }
+    return fallback;
   } catch { return null; }
 }
 function setCachedPlan(userId, code) {
-  try { localStorage.setItem(PLAN_CACHE_KEY, JSON.stringify({ id: userId, code })); } catch {}
+  try {
+    if (!code) localStorage.removeItem(PLAN_CACHE_KEY);
+    else localStorage.setItem(PLAN_CACHE_KEY, JSON.stringify({ id: userId, code }));
+  } catch {}
+}
+function getCachedPaidPlan(userId) {
+  const code = getCachedPlan(userId);
+  return PAID_PLAN_CODES.has(code) ? code : null;
 }
 
 function saveGeneration(jobScenes) {
@@ -57,11 +73,12 @@ export default function FaceAsmr() {
   const [planCode, setPlanCode] = useState(() => {
     if (authLoading) return null;
     if (!user) return "guest";
-    return getCachedPlan(user.id) ?? null;
+    return getCachedPlan(user.id) ?? "free";
   });
 
   const [paywallOpen, setPaywallOpen] = useState(() => {
     if (authLoading) return false;
+    if (user && !getCachedPaidPlan(user.id)) return true;
     if (!user) return true;                       // guest → open instantly
     return getCachedPlan(user.id) === "free";     // cached free → open instantly
   });
@@ -82,8 +99,15 @@ export default function FaceAsmr() {
     }
 
     supabase.from("profiles").select("plan_code").eq("id", user.id).single()
-      .then(({ data }) => {
+      .then(({ data, error: dbErr }) => {
         if (!mounted) return;
+        if (dbErr) {
+          // DB failed — clear stale cache, don't penalize paid users
+          setCachedPlan(user.id, null);
+          setPlanCode(null);
+          setPaywallOpen(false);
+          return;
+        }
         const code = (data?.plan_code || "free").toLowerCase();
         setCachedPlan(user.id, code);
         setPlanCode(code);
@@ -91,15 +115,21 @@ export default function FaceAsmr() {
           setPaywallGuest(false);
           setPaywallOpen(true);
         } else {
-          // Close if cached plan was stale (e.g. user just upgraded)
           setPaywallOpen(false);
         }
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setCachedPlan(user.id, null);
+        setPlanCode(null);
+        setPaywallOpen(false);
       });
 
     return () => { mounted = false; };
   }, [user, authLoading]);
 
-  const needsUpgrade = planCode === "free" || planCode === "guest" || planCode === null;
+  // null = still loading — don't block paid users while the DB query is in flight
+  const needsUpgrade = planCode === "free" || planCode === "guest";
 
   const showPaywall = () => {
     setPaywallGuest(planCode === "guest");
