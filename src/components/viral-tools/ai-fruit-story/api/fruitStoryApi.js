@@ -42,10 +42,9 @@ const REQUIRED_VIDEO_PROMPT_SECTIONS = [
   "SAY EXACTLY",
   "Speech rules:",
   "Dialogue",          // covers "Dialogue in first second" and "Dialogue starts"
-  "ENGLISH ONLY",      // present in all speech rule variants
+  "ENGLISH WORDS ONLY", // speechRules always starts with this phrase
   "Action:",
-  "Audio:",
-  "No music",          // covers "No music of any kind" and "No background music"
+  "no background music", // audioLine and trimmed negative both contain this phrase
   "Negative:",
 ];
 
@@ -822,6 +821,7 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
   const sceneNumber = Number(scene?.sceneNumber ?? 1);
   const pacingRole = getScenePacingRole(scene, form);
   const dialogue = getProviderDialogue({ scenePrompt, scene, form });
+  const characters = getSceneCharacterNames(scene, form);
   const visualClue = cleanSectionText(scene.visualClue || deriveVisualClue(scene), "one clear physical clue from the image", isProviderPrompt ? 90 : 110);
   const action = ensureImmediateAction(
     scene.action || scene.videoAction || scene.actionDirection || scene.storyPurpose || scene.scenePurpose || scene.title,
@@ -839,8 +839,35 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
     isProviderPrompt ? 110 : 135,
   );
   const endingBeat = cleanSectionText(scene.endingBeat || deriveEndingBeat(scene), "end on a shocked freeze-frame before the next secret drops", isProviderPrompt ? 100 : 125);
-  const soundEffect = pickSoundEffect(scene, visualClue, action);
-  const ambience = deriveAmbience(scene);
+
+  // Per-character voice directions — each character speaks with their own distinct style
+  const voiceLines = characters.slice(0, 2)
+    .map((char) => `${sanitizeSpeakerName(char.name || char.id)}: ${inferFruitVoiceStyle(char.name || char.id, char.role)}.`)
+    .join("\n");
+
+  // Scene-aware movement derived from emotion and action data
+  const emotionHint = cleanSectionText(scene.emotionDirection || scene.emotionalBeat, "", 55);
+  const movementFallback = isProviderPrompt
+    ? "Reactive in-place animation: intense facial close-ups, expressive eye movement, lip sync, micro-expressions, small defensive or reaching hand gestures. No character leaves or enters frame."
+    : "Expressive in-place animation: lip sync, eye reactions, subtle head turns, micro-expressions, small gestures. Characters stay in location.";
+  const movement = cleanSectionText(
+    emotionHint
+      ? `Characters react with ${emotionHint} — expressive facial close-ups, lip sync, eye contact, micro-gestures. No repositioning or exiting frame.`
+      : null,
+    movementFallback,
+    isProviderPrompt ? 145 : 190,
+  );
+
+  // Style descriptor based on the chosen story style
+  const storyStyle = getFruitStoryStyle(form.style || form.visualStyle || form.storyStyle);
+  const styleLine = storyStyle?.id === "dark-drama"
+    ? "Dark cinematic 3D, intense emotional acting, moody atmospheric lighting, controlled dramatic motion, realistic micro-expressions."
+    : storyStyle?.id === "cute_pixar_like"
+    ? "Cute stylized 3D, warm expressive acting, bright rounded character forms, smooth cheerful motion, big emotive eyes."
+    : storyStyle?.id === "dramatic_comedy"
+    ? "Stylized 3D comedy-drama, punchy exaggerated reactions, clean expressive motion, strong comedic timing."
+    : "Cinematic stylized 3D, highly detailed, expressive character acting, smooth natural motion, realistic micro-expressions.";
+
   // The reference image IS the scene — animate it, don't create a new one
   const opening = isProviderPrompt
     ? "IMAGE-TO-VIDEO: Animate the EXACT reference image provided. FIRST FRAME = reference image. Keep the IDENTICAL background, room, furniture, lighting, and character positions. Do NOT change the scene. Do NOT add new environments. Do NOT move characters out of frame. Only add subtle facial expressions, lip movement, and small gestures."
@@ -851,9 +878,6 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
   const speechRules = isProviderPrompt
     ? "ENGLISH WORDS ONLY. Pronounce each word slowly, clearly, and distinctly in English. No random syllables, no mumbling, no gibberish — real English words only. Dialogue starts immediately in the first second. Mouth sync every single word. Say EXACTLY the quoted lines word for word."
     : "ENGLISH WORDS ONLY. Each character must speak clear, slow, distinct English words. No random sounds, no mumbling, no gibberish, no non-English syllables. Start speaking in the first second. Mouth movement must match every English word exactly.";
-  const movement = isProviderPrompt
-    ? "Subtle in-place animation: facial expressions, lip sync, small hand gestures, head turns, eye movement. Characters stay in the same position. No walking away, no exiting frame, no entering."
-    : "Subtle expressive animation: facial expressions, lip sync, small hand gestures, slight head turns, eye reactions. Characters stay in the same location. No walking away, no entering or exiting frame, no repositioning.";
   // Required sections come FIRST so they survive the 1450-char trim.
   const audioLine = `SPOKEN DIALOGUE ONLY. Complete silence except for the spoken English words. No gasps, no sighs, no breathing sounds, no background music, no ambient noise, no sound effects, no instruments, no singing, no random sounds of any kind.`;
   const identityLock = isProviderPrompt
@@ -890,8 +914,12 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
     "Movement:",
     movement,
     "",
+    ...(voiceLines ? ["Voice:", voiceLines, ""] : []),
     "Camera:",
     camera,
+    "",
+    "Style:",
+    styleLine,
     "",
     "Ending beat:",
     endingBeat,
@@ -905,7 +933,7 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
 
 function trimProviderPrompt(prompt, max) {
   if (prompt.length <= max) return prompt;
-  const negative = "\nNegative: No captions, no subtitles, no text overlays, no watermarks, no extra characters, no identity changes, no music, no gasps, no sighs, no ambient sounds, no mumbling, no gibberish, no non-English words.";
+  const negative = "\nNegative: No captions, no subtitles, no text overlays, no watermarks, no extra characters, no identity changes, no background music, no gasps, no sighs, no ambient sounds, no mumbling, no gibberish, no non-English words.";
   const budget = max - negative.length;
   // Slice raw string — do NOT use normalizeWhitespace here because it strips newlines
   // which breaks dialogue parsing in extractPromptDialogueLines (it splits on \n)
