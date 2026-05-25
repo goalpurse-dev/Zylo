@@ -387,7 +387,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
            Outer div: constrained height + scroll.
            Inner div: grows freely — cards never shrink.        */}
       <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full">
-        <div className="px-5 py-3 lg:py-4 flex flex-col gap-2 lg:gap-3">
+        <div className="px-5 pt-3 pb-[160px] lg:pt-4 lg:pb-4 flex flex-col gap-2 lg:gap-3">
 
           {/* Step 0 — scene cards */}
           {step === 0 && (() => {
@@ -451,8 +451,8 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
         </div>
       </div>
 
-      {/* ══ FOOTER (always visible) ══ */}
-      <div className="shrink-0 px-5 py-3 lg:py-4 border-t border-white/[0.06]">
+      {/* ══ FOOTER ══ fixed on mobile (above nav bar, with blur), static on desktop */}
+      <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-0 right-0 z-[90] border-t border-white/[0.06] bg-[#0D0F11]/95 px-5 pb-2 pt-3 backdrop-blur-xl lg:static lg:shrink-0 lg:bg-transparent lg:backdrop-blur-0 lg:py-4">
         {step === 1 && savedDone && (
           <button
             onClick={() => { setStep(0); onBack?.(); }}
