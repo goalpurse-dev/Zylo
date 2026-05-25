@@ -155,6 +155,8 @@ const AIFruitStoryLanding = lazy(() => import("./pages/landing/AIFruitStoryLandi
 const FaceAsmrLanding = lazy(() => import("./pages/landing/FaceAsmrLanding.jsx"));
 const FaceAsmrMakerBlog = lazy(() => import("./app/blog/imagegenerator/face-asmr-maker.jsx"));
 const ViralFaceAsmrVideos = lazy(() => import("./app/blog/imagegenerator/viral-face-asmr-videos.jsx"));
+const AsmrVideoIdeasTiktok = lazy(() => import("./app/blog/imagegenerator/asmr-video-ideas-tiktok-2026.jsx"));
+const HowToStartAsmrChannel = lazy(() => import("./app/blog/imagegenerator/how-to-start-asmr-channel-with-ai.jsx"));
 {/* Viral */}
 
 
@@ -429,7 +431,9 @@ return (
          <Route path="/ai-fruit-story-maker" element={<AIFruitStoryLanding />} />
          <Route path="/face-asmr-maker" element={<FaceAsmrLanding />} />
          <Route path="/blog/face-asmr-maker" element={<FaceAsmrMakerBlog />} />
-         <Route path="/blog/viral-face-asmr-videos" element={<ViralFaceAsmrVideos />} />           
+         <Route path="/blog/viral-face-asmr-videos" element={<ViralFaceAsmrVideos />} />
+         <Route path="/blog/asmr-video-ideas-tiktok-2026" element={<AsmrVideoIdeasTiktok />} />
+         <Route path="/blog/how-to-start-asmr-channel-with-ai" element={<HowToStartAsmrChannel />} />
 
 
 

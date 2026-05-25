@@ -49,7 +49,7 @@ function LengthButton({ option, active, onClick }) {
       >
         <button
           onClick={onClick}
-          className="relative block px-4 py-2 rounded-[7px] bg-[#0D0F11] text-white text-[13px] font-bold overflow-hidden"
+          className="relative block px-4 py-2 rounded-[7px] bg-[#0D0F11] text-white text-[13px] font-bold overflow-hidden whitespace-nowrap"
         >
           <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0px 2px 5px rgba(255,255,255,0.15)" }} />
           <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to top, rgba(168,85,247,0.35) 0%, transparent 50%)" }} />
@@ -61,7 +61,7 @@ function LengthButton({ option, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="px-4 py-2 rounded-lg text-[13px] font-semibold text-white/40 hover:text-white/80 bg-white/[0.05] hover:bg-white/[0.09] transition"
+      className="px-4 py-2 rounded-lg text-[13px] font-semibold text-white/40 hover:text-white/80 bg-white/[0.05] hover:bg-white/[0.09] transition whitespace-nowrap"
     >
       {option.label}
     </button>
@@ -340,7 +340,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
                 {LENGTH_OPTIONS.map((opt) => (
                   <LengthButton key={opt.value} option={opt} active={selectedLength === opt.value} onClick={() => setSelectedLength(opt.value)} />
                 ))}
-                <span className="text-white/30 text-[12px] ml-1">{sceneCount} scenes · 5 sec each</span>
+                <span className="hidden sm:inline text-white/30 text-[12px] ml-1">{sceneCount} scenes · 5 sec each</span>
               </div>
             </div>
 

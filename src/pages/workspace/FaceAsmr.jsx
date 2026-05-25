@@ -292,7 +292,10 @@ export default function FaceAsmr() {
         </div>
 
         {/* ── MOBILE ── */}
-        <div className="flex lg:hidden flex-col w-full h-[calc(100%-70px)]">
+        <div
+          className="flex lg:hidden flex-col w-full"
+          style={{ height: "calc(100% - 84px - env(safe-area-inset-bottom, 0px))" }}
+        >
           <div className="shrink-0 mb-3 border-b border-white/10 bg-[#0B0D0F] pb-3">
             <div className="grid grid-cols-2 rounded-full border border-white/10 bg-white/[0.04] p-1">
               <button
