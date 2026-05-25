@@ -78,7 +78,7 @@ function SceneCard({ index, scene, onChange, onOpenPicker, anyUploaded }) {
   return (
     <div className="rounded-2xl bg-[#111315] border border-white/[0.08] overflow-hidden">
       {/* scene label bar */}
-      <div className="flex items-center gap-2.5 px-4 pt-3.5 pb-3 border-b border-white/[0.05]">
+      <div className="flex items-center gap-2.5 px-4 pt-2.5 pb-2 lg:pt-3.5 lg:pb-3 border-b border-white/[0.05]">
         <div className="w-6 h-6 rounded-full bg-[#7A3BFF]/25 border border-[#7A3BFF]/50 flex items-center justify-center shrink-0">
           <span className="text-[#C4A3FF] text-[11px] font-black leading-none">{index + 1}</span>
         </div>
@@ -86,7 +86,7 @@ function SceneCard({ index, scene, onChange, onOpenPicker, anyUploaded }) {
       </div>
 
       {/* content row */}
-      <div className="flex gap-3 p-4">
+      <div className="flex gap-3 p-3 lg:p-4">
         {/* thumbnail */}
         {hasCustom ? (
           /* ── UPLOADED: clear image, purple ring, checkmark ── */
@@ -135,7 +135,7 @@ function SceneCard({ index, scene, onChange, onOpenPicker, anyUploaded }) {
             disabled={hasCustom}
             placeholder={hasCustom
               ? "Using uploaded photo ✓"
-              : `e.g. "${CELEBRITIES[index % CELEBRITIES.length]}"\n\nCelebrity name or describe the face you want`}
+              : "Describe the face you want"}
             rows={4}
             className={`w-full rounded-xl px-3.5 py-3 text-[13px] resize-none outline-none transition leading-relaxed ${
               hasCustom
@@ -312,7 +312,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
         <div className="hidden lg:block h-px bg-white/[0.06] mx-5" />
 
         {/* ── Row 2: step indicator ── */}
-        <div className="flex items-center gap-2 px-5 py-3.5">
+        <div className="flex items-center gap-2 px-5 py-2 lg:py-3.5">
           {[{ label: "1  Scenes" }, { label: savedDone ? "Done" : "2  Background" }].map((s, i) => (
             <button
               key={i}
@@ -334,8 +334,8 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
         {step === 0 && (
           <>
             <div className="h-px bg-white/[0.06] mx-5" />
-            <div className="px-5 py-3.5">
-              <p className="text-white/40 text-[11px] font-semibold uppercase tracking-widest mb-2.5">Video Length</p>
+            <div className="px-5 py-2 lg:py-3.5">
+              <p className="text-white/40 text-[11px] font-semibold uppercase tracking-widest mb-1.5 lg:mb-2.5">Video Length</p>
               <div className="flex items-center gap-2">
                 {LENGTH_OPTIONS.map((opt) => (
                   <LengthButton key={opt.value} option={opt} active={selectedLength === opt.value} onClick={() => setSelectedLength(opt.value)} />
@@ -347,11 +347,11 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
             <div className="h-px bg-white/[0.06] mx-5" />
 
             {/* ── Row 4: AI write button ── */}
-            <div className="px-5 py-3">
+            <div className="px-5 py-2 lg:py-3">
               <button
                 onClick={handleAiWrite}
                 disabled={aiWriting}
-                className="flex w-full items-center justify-center gap-2.5 py-3.5 rounded-xl border border-[#7A3BFF]/30 bg-[#7A3BFF]/10 hover:bg-[#7A3BFF]/20 hover:border-[#7A3BFF]/60 text-white text-[14px] font-bold tracking-tight transition shadow-[inset_0_0_12px_rgba(122,59,255,0.15)] disabled:cursor-wait disabled:opacity-70"
+                className="flex w-full items-center justify-center gap-2.5 py-2.5 lg:py-3.5 rounded-xl border border-[#7A3BFF]/30 bg-[#7A3BFF]/10 hover:bg-[#7A3BFF]/20 hover:border-[#7A3BFF]/60 text-white text-[14px] font-bold tracking-tight transition shadow-[inset_0_0_12px_rgba(122,59,255,0.15)] disabled:cursor-wait disabled:opacity-70"
               >
                 <img src="/icons/ailogo.png" alt="" className="w-7 h-7 object-contain shrink-0" />
                 {aiWriting ? "Writing famous people..." : "Let AI write the characters"}
@@ -387,7 +387,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
            Outer div: constrained height + scroll.
            Inner div: grows freely — cards never shrink.        */}
       <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full">
-        <div className="px-5 py-4 flex flex-col gap-3">
+        <div className="px-5 py-3 lg:py-4 flex flex-col gap-2 lg:gap-3">
 
           {/* Step 0 — scene cards */}
           {step === 0 && (() => {
@@ -452,7 +452,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
       </div>
 
       {/* ══ FOOTER (always visible) ══ */}
-      <div className="shrink-0 px-5 py-4 border-t border-white/[0.06]">
+      <div className="shrink-0 px-5 py-3 lg:py-4 border-t border-white/[0.06]">
         {step === 1 && savedDone && (
           <button
             onClick={() => { setStep(0); onBack?.(); }}
@@ -480,7 +480,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
             )}
             <button
               onClick={handleNext}
-              className={`w-full py-3.5 rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 transition-all duration-500 ${
+              className={`w-full py-2.5 lg:py-3.5 rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 transition-all duration-500 ${
                 allFilled
                   ? "bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white hover:opacity-90"
                   : partialFilled
@@ -495,14 +495,14 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
           <div className="flex gap-2">
             <button
               onClick={() => { setStep(0); onBack?.(); }}
-              className="flex items-center justify-center w-12 py-3.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-white/60 hover:text-white transition shrink-0"
+              className="flex items-center justify-center w-12 py-2.5 lg:py-3.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-white/60 hover:text-white transition shrink-0"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={() => !isGenerating && hasEnoughCredits && onGenerate({ length: selectedLength, scenes: activeScenes, background: selectedBg, backgroundLabel: bgLabel })}
               disabled={isGenerating || !hasEnoughCredits}
-              className={`flex-1 py-3.5 rounded-xl font-bold text-[15px] transition flex items-center justify-center gap-2.5 ${
+              className={`flex-1 py-2.5 lg:py-3.5 rounded-xl font-bold text-[15px] transition flex items-center justify-center gap-2.5 ${
                 isDone
                   ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25"
                   : isGenerating
