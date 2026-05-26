@@ -170,7 +170,10 @@ export default function MobileBottomNav({ hidden }) {
             style={{ WebkitTapHighlightColor: "transparent" }}
           >
             <div className={`flex flex-col items-center justify-center w-[60px] h-[50px] rounded-xl transition-all duration-200 active:scale-95 ${
-              location.pathname.startsWith("/workspace/ai-fruit-story") ? "bg-white text-black" : "text-white/55"
+              location.pathname.startsWith("/workspace/ai-fruit-story") ||
+              location.pathname.startsWith("/workspace/face-asmr") ||
+              location.pathname.startsWith("/workspace/micro-camera-animal")
+                ? "bg-white text-black" : "text-white/55"
             }`}>
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C11.175 2 10.5 2.675 10.5 3.5V10.5H3.5C2.675 10.5 2 11.175 2 12C2 12.825 2.675 13.5 3.5 13.5H10.5V20.5C10.5 21.325 11.175 22 12 22C12.825 22 13.5 21.325 13.5 20.5V13.5H20.5C21.325 13.5 22 12.825 22 12C22 11.175 21.325 10.5 20.5 10.5H13.5V3.5C13.5 2.675 12.825 2 12 2Z"/>

@@ -48,7 +48,7 @@ async function handleSubscribe(tier, billing) {
   });
 }
 
-export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = true }) {
+export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = true, toolName = "Face ASMR", previewSrc = "/face/preview.mp4" }) {
   const navigate = useNavigate();
   const videoRef = useRef(null);
   const [billing, setBilling] = useState("yearly");
@@ -98,7 +98,7 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
               <div className="aspect-[9/19.5] w-full overflow-hidden">
                 <video
                   ref={videoRef}
-                  src="/face/preview.mp4"
+                  src={previewSrc}
                   className="h-full w-full object-cover"
                   autoPlay muted loop playsInline preload="auto"
                 />
@@ -118,12 +118,12 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
             </div>
             <div>
               <h2 className="text-[15px] font-bold text-white leading-tight">
-                {isGuest ? "Sign up to use Face ASMR" : "Subscription Required"}
+                {isGuest ? `Sign up to use ${toolName}` : "Subscription Required"}
               </h2>
               <p className="text-[11px] text-white/40 mt-0.5">
                 {isGuest
-                  ? "Create a free account to get started with Face ASMR."
-                  : "You need a paid plan to create Face ASMR videos."}
+                  ? `Create a free account to get started with ${toolName}.`
+                  : `You need a paid plan to create ${toolName} videos.`}
               </p>
             </div>
           </div>
@@ -133,13 +133,13 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
               <div className="relative w-[120px] flex-shrink-0">
                 <div className="overflow-hidden rounded-[22px] border border-white/15 bg-black shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
                   <div className="aspect-[9/19.5] w-full overflow-hidden">
-                    <video src="/face/preview.mp4" className="h-full w-full object-cover" autoPlay muted loop playsInline preload="auto" />
+                    <video src={previewSrc} className="h-full w-full object-cover" autoPlay muted loop playsInline preload="auto" />
                   </div>
                 </div>
                 <div className="mx-auto mt-1.5 h-1 w-8 rounded-full bg-white/15" />
               </div>
               <div className="space-y-3 w-full max-w-[300px]">
-                <p className="text-[13px] text-white/50">Create your free Zyvo account to start making viral Face ASMR videos.</p>
+                <p className="text-[13px] text-white/50">Create your free Zyvo account to start making viral {toolName} videos.</p>
                 <button
                   onClick={() => { onClose(); navigate("/signup"); }}
                   className="w-full rounded-[12px] py-3 text-sm font-bold text-white transition hover:opacity-90"
@@ -234,7 +234,7 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
                           {tier.features.map((f, i) => (
                             <li key={i} className="flex items-start gap-1.5 text-[11px] text-white/45">
                               <Check size={11} className="mt-0.5 flex-shrink-0" style={{ color: `${tier.accent}CC` }} />
-                              {f}
+                              {f.replace("Face ASMR", toolName)}
                             </li>
                           ))}
                         </ul>

@@ -65,6 +65,21 @@ const COMMUNITY_NICHES = [
     ],
   },
   {
+    id: "micro-camera",
+    category: "Micro Camera",
+    title: "Micro Camera Animal",
+    description:
+      "A tiny bodycam strapped to any small animal as it descends underground — cinematic POV footage that stops the scroll every time.",
+    prompt:
+      "Micro-camera mounted on an ant's back, descending into an underground colony, narrow LED beam, realistic macro footage, 9:16 vertical format.",
+    route: "/workspace/micro-camera-animal",
+    videos: [
+      { id: "mc-1", src: "/viral-builder/micro-camera/video.mp4",  thumbnail: null, title: "Bodycam Underground" },
+      { id: "mc-2", src: "/viral-builder/micro-camera/video2.mp4", thumbnail: null, title: "Micro Camera POV" },
+      { id: "mc-3", src: null, thumbnail: "/viral-builder/micro-camera/preview1.png", title: "Scene Preview" },
+    ],
+  },
+  {
     id: "skeleton-dog",
     category: "Skeleton Dog",
     title: "Skeleton Dog",

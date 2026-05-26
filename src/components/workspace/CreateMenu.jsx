@@ -21,6 +21,15 @@ export const CREATE_TOOLS = [
     previewPosition: "object-center",
     color: "#A855F7",
   },
+  {
+    id: "micro-camera-animal",
+    label: "Micro Camera",
+    sublabel: "",
+    path: "/workspace/micro-camera-animal",
+    preview: "/viral-builder/micro-camera/preview1.png",
+    previewPosition: "object-center",
+    color: "#16a34a",
+  },
   // { id: "ai-voice-story", label: "AI Voice Story", ... },
 ];
 

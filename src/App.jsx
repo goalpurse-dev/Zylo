@@ -178,7 +178,8 @@ import { Analytics } from "@vercel/analytics/react";
 
 import NewHome from "./pages/home/home.jsx";
 import AuthCallbackPage from "./pages/AuthCallback.jsx";
-const FaceAsmrPage = lazy(() => import("./pages/workspace/FaceAsmr.jsx"));
+const FaceAsmrPage           = lazy(() => import("./pages/workspace/FaceAsmr.jsx"));
+const MicroCameraAnimalPage  = lazy(() => import("./pages/workspace/MicroCameraAnimal.jsx"));
 
 import "./styles/sand.css";
 
@@ -471,6 +472,7 @@ return (
   <Route path="/workspace/ai-fruit-story" element={<AIFruitStory />} />
   <Route path="/workspace/face-asmr" element={<FaceAsmrPage />} />
   <Route path="/workspace/skeleton-shorts" element={<SkeletonShorts />} />
+  <Route path="/workspace/micro-camera-animal" element={<MicroCameraAnimalPage />} />
 
 
 </Route>

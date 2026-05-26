@@ -30,6 +30,9 @@ const TIERS = [
     btnTo:   "#7C3AED",
     features: [
       { text: "Viral Video Builder", star: true },
+      { text: "Face ASMR" },
+      { text: "AI Fruit Story" },
+      { text: "Micro Camera Animal" },
       { text: "600 credits / month" },
       { text: "Up to 200 AI images" },
       { text: "Up to 30 AI videos" },
@@ -54,6 +57,9 @@ const TIERS = [
     strikethrough: 32,
     features: [
       { text: "Viral Video Builder", star: true },
+      { text: "Face ASMR" },
+      { text: "AI Fruit Story" },
+      { text: "Micro Camera Animal" },
       { text: "1,200 credits / month" },
       { text: "Up to 400 AI images" },
       { text: "Up to 60 AI videos" },
@@ -76,6 +82,9 @@ const TIERS = [
     btnTo:   "#C084FC",
     features: [
       { text: "Viral Video Builder", star: true },
+      { text: "Face ASMR" },
+      { text: "AI Fruit Story" },
+      { text: "Micro Camera Animal" },
       { text: "2,500 credits / month" },
       { text: "Up to 830 AI images" },
       { text: "Up to 125 AI videos" },

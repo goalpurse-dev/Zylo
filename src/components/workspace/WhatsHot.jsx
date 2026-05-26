@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { TrendingUp, Flame } from "lucide-react";
@@ -16,31 +16,35 @@ const items = [
     path:   "/workspace/ai-fruit-story",
   },
   {
+    title:  "Micro Camera",
+    badge:  "Blowing Up 📷",
+    views:  "2.8M",
+    video:  "/viral-builder/micro-camera/video.mp4",
+    image:  "/viral-builder/micro-camera/preview1.png",
+    glow:   "rgba(122,59,255,0.60)",
+    border: "#7A3BFF",
+    rank:   2,
+    path:   "/workspace/micro-camera-animal",
+  },
+  {
     title:  "Viral Skeleton",
     badge:  "Exploding 💀",
     views:  "3.2M",
     image:  "/styles/skeleton2.webp",
     glow:   "rgba(255,107,53,0.55)",
     border: "#FF6B35",
-    rank:   2,
-  },
-  {
-    title:  "Lego Style",
-    badge:  "All-Time Top",
-    views:  "1.8M",
-    image:  "/styles/lego2.webp",
-    glow:   "rgba(255,215,0,0.5)",
-    border: "#FFD700",
     rank:   3,
   },
   {
-    title:  "Cinematic",
+    title:  "Face ASMR",
     badge:  "Rising Fast ↑",
     views:  "2.1M",
-    image:  "/styles/cinematic2.webp",
-    glow:   "rgba(122,59,255,0.55)",
-    border: "#7A3BFF",
+    video:  "/face/preview.mp4",
+    image:  "/face/neypreview.png",
+    glow:   "rgba(236,72,153,0.55)",
+    border: "#EC4899",
     rank:   4,
+    path:   "/workspace/face-asmr",
   },
   {
     title:  "3D Cartoon",
@@ -159,20 +163,32 @@ export default function WhatsHot() {
 
 /* ─── Card ──────────────────────────────────────────────────── */
 function HotCard({ item, navigate }) {
+  const [hovered, setHovered] = useState(false);
+
   return (
     <button
       type="button"
       onClick={() => navigate(item.path || "/workspace/image-generator")}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className="group relative w-full overflow-hidden rounded-2xl block text-left focus:outline-none"
       style={{ aspectRatio: "3 / 4.4" }}
     >
-      {/* image */}
+      {/* fallback image — always present as base layer */}
       <img
         src={item.image}
         alt={item.title}
         loading="lazy"
         className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
       />
+      {/* hover video */}
+      {item.video && hovered && (
+        <video
+          src={item.video}
+          autoPlay muted loop playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
 
       {/* base gradient */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/10" />

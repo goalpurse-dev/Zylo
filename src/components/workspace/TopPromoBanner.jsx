@@ -48,10 +48,10 @@ export default function TopPromoBanner() {
     {/* CENTER CONTENT */}
     <div className="relative mx-auto flex items-center justify-center gap-2 px-4 pr-10 py-2.5 text-white overflow-hidden">
 
-      <span className="text-base leading-none shrink-0">😮</span>
+      <span className="text-base leading-none shrink-0">📷</span>
 
       <span className="text-white/90 font-semibold text-xs sm:text-sm whitespace-nowrap shrink-0">
-        Face ASMR
+        Micro Camera Animal
       </span>
 
       <span className="text-purple-300 font-bold text-xs whitespace-nowrap shrink-0 sm:hidden">
@@ -64,11 +64,11 @@ export default function TopPromoBanner() {
 
       <span className="hidden lg:inline text-white/30 shrink-0">—</span>
       <span className="hidden lg:inline text-white/60 text-sm whitespace-nowrap shrink-0">
-        Upload a face, pick a scene, go viral. Try it now.
+        Strap a bodycam on any animal, watch it go underground.
       </span>
 
       <button
-        onClick={() => navigate("/workspace/face-asmr")}
+        onClick={() => navigate("/workspace/micro-camera-animal")}
         className="shrink-0 ml-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500 hover:opacity-90 transition whitespace-nowrap"
       >
         Try it →

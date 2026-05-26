@@ -23,6 +23,11 @@ import {
 
 const ANNOUNCEMENTS = [
   {
+    title: "📷 Micro Camera Animal is Live",
+    date: "2026.05.27",
+    desc: "Strap a bodycam onto any animal and watch it descend underground. Cinematic POV scenes, all AI.",
+  },
+  {
     title: "😮 Face ASMR is Live",
     date: "2026.05.24",
     desc: "Upload a face, pick a scene, and generate viral ASMR videos. Trending content in minutes.",
@@ -159,39 +164,7 @@ export default function TopRow({ onMenuClick, title }) {
                   <Gift className="w-4 h-4" />
                 </button>
 
-                {giftOpen && createPortal(
-                  <div
-                    ref={giftMenuRef}
-                    className="fixed w-[340px] bg-[#1B1D1F] border border-white/[0.06] rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.7)] overflow-hidden z-[9999]"
-                    style={{ top: giftPos.top, left: giftPos.left }}
-                  >
-                    {/* Live Now */}
-                    <div className="px-4 pt-4 pb-2">
-                      <p className="text-white/40 text-[11px] font-bold tracking-widest uppercase mb-3">Live Now</p>
-                      <div className="flex flex-col items-center gap-2 py-4 rounded-xl bg-white/[0.03] border border-white/5">
-                        <Gift className="w-6 h-6 text-white/20" />
-                        <p className="text-white/35 text-[12px]">Stay tuned for upcoming offers.</p>
-                      </div>
-                    </div>
-
-                    {/* Past Events */}
-                    <div className="px-4 pb-4 pt-1">
-                      <p className="text-white/40 text-[11px] font-bold tracking-widest uppercase mb-3">What's New</p>
-                      <div className="flex flex-col divide-y divide-white/5">
-                        {ANNOUNCEMENTS.map((item) => (
-                          <div key={item.title} className="py-3 first:pt-0 last:pb-0">
-                            <div className="flex items-start justify-between gap-2 mb-1">
-                              <span className="text-white/90 text-[13px] font-semibold leading-tight">{item.title}</span>
-                              <span className="text-white/30 text-[11px] shrink-0">{item.date}</span>
-                            </div>
-                            <p className="text-white/45 text-[12px] leading-relaxed">{item.desc}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>,
-                  document.body
-                )}
+                {/* portal rendered further down, shared with logged-in */}
               </div>
 
               {/* Pricing */}
@@ -337,6 +310,49 @@ export default function TopRow({ onMenuClick, title }) {
         </div>
       </div>
     </section>
+
+    {/* ── Gift dropdown portal — shared for both auth states ── */}
+    {giftOpen && createPortal(
+      <div
+        ref={giftMenuRef}
+        className="fixed w-[340px] bg-[#1B1D1F] border border-white/[0.06] rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.7)] overflow-hidden z-[9999]"
+        style={{ top: giftPos.top, left: giftPos.left }}
+      >
+        {/* Live Now */}
+        <div className="px-4 pt-4 pb-2">
+          <p className="text-white/40 text-[11px] font-bold tracking-widest uppercase mb-3">Live Now</p>
+          <div
+            className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition hover:opacity-90"
+            style={{ background: "linear-gradient(135deg, #5B21B6 0%, #7C3AED 50%, #A855F7 100%)" }}
+            onClick={() => { setGiftOpen(false); navigate("/workspace/pricing"); }}
+          >
+            <span className="text-2xl leading-none">🎁</span>
+            <div>
+              <p className="text-white text-[13px] font-bold leading-tight">Pro Plan — 25% Off</p>
+              <p className="text-white/70 text-[11px] mt-0.5">Limited time. Upgrade now and save.</p>
+            </div>
+            <span className="ml-auto text-white/60 text-[11px] font-bold shrink-0">→</span>
+          </div>
+        </div>
+
+        {/* What's New */}
+        <div className="px-4 pb-4 pt-1">
+          <p className="text-white/40 text-[11px] font-bold tracking-widest uppercase mb-3">What's New</p>
+          <div className="flex flex-col divide-y divide-white/5">
+            {ANNOUNCEMENTS.map((item) => (
+              <div key={item.title} className="py-3 first:pt-0 last:pb-0">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <span className="text-white/90 text-[13px] font-semibold leading-tight">{item.title}</span>
+                  <span className="text-white/30 text-[11px] shrink-0">{item.date}</span>
+                </div>
+                <p className="text-white/45 text-[12px] leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>,
+      document.body
+    )}
 
     {authModal && (
       <AuthModal mode={authModal} onClose={() => setAuthModal(null)} />
