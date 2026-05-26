@@ -236,7 +236,7 @@ export default function MicroCameraAnimal() {
           </div>
           <div className="flex-1 min-h-0">
             {mobilePanel === "builder" ? builderPanel : (
-              <div className="h-full overflow-y-auto">{resultsPanel}</div>
+              <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: "touch" }}>{resultsPanel}</div>
             )}
           </div>
         </div>

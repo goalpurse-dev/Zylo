@@ -217,11 +217,11 @@ export default function MobileCreateMenu({ open, onClose, anchorBottom = 72 }) {
     ? [0]
     : Array.from({ length: total }, (_, i) => {
         // 2 items need a wider spread so 62px icons don't overlap
-        const spread = total === 2 ? 52 : Math.min(70, (total - 1) * 28);
+        const spread = total === 2 ? 64 : Math.min(88, (total - 1) * 36);
         return -spread / 2 + (spread / (total - 1)) * i;
       });
 
-  const FAN_RADIUS = 120; // px from center of close button
+  const FAN_RADIUS = 148; // px from center of close button
 
   return createPortal(
     <div

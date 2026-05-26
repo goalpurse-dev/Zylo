@@ -379,9 +379,9 @@ export default function MicroCameraAnimalResults({
           </div>
         )}
 
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto" style={{ WebkitOverflowScrolling: "touch" }}>
           <div
-            className="grid grid-cols-2 content-start justify-items-stretch gap-x-3.5 gap-y-4 px-3 pb-8 lg:gap-3 lg:px-0 lg:pb-0 lg:[grid-template-columns:repeat(var(--mc-cols),minmax(0,min(100%,280px)))]"
+            className="grid grid-cols-2 content-start justify-items-stretch gap-x-3.5 gap-y-4 px-3 pb-[140px] lg:pb-6 lg:gap-3 lg:px-0 lg:[grid-template-columns:repeat(var(--mc-cols),minmax(0,min(100%,280px)))]"
             style={{ "--mc-cols": cols }}
           >
             {jobScenes.map((scene, i) => (

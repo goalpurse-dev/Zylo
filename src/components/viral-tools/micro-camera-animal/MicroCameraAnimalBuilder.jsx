@@ -122,8 +122,8 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase })
       </div>
 
       {/* ══ SCROLLABLE BODY ══ */}
-      <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full">
-        <div className="px-5 pt-4 pb-[100px] lg:pb-5 flex flex-col gap-4">
+      <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full" style={{ WebkitOverflowScrolling: "touch" }}>
+        <div className="px-5 pt-4 pb-[160px] lg:pb-5 flex flex-col gap-4">
 
           {/* Input */}
           <div className="rounded-2xl bg-[#111315] border border-white/[0.08] overflow-hidden">
