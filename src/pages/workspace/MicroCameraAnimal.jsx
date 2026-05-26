@@ -44,6 +44,15 @@ export default function MicroCameraAnimal() {
   const navigate = useNavigate();
   const [mobilePanel, setMobilePanel] = useState("builder");
 
+  // Lock workspace-scroll so Safari can't capture touch gestures meant for inner panels
+  useEffect(() => {
+    const el = document.getElementById("workspace-scroll");
+    if (!el) return;
+    const prev = el.style.overflow;
+    el.style.overflow = "hidden";
+    return () => { el.style.overflow = prev; };
+  }, []);
+
   const { user, loading: authLoading } = useAuth();
 
   const [planCode, setPlanCode] = useState(() => {
@@ -233,7 +242,7 @@ export default function MicroCameraAnimal() {
           </div>
           <div className="flex-1 min-h-0">
             {mobilePanel === "builder" ? builderPanel : (
-              <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: "touch" }}>{resultsPanel}</div>
+              <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}>{resultsPanel}</div>
             )}
           </div>
         </div>
