@@ -44,15 +44,6 @@ export default function MicroCameraAnimal() {
   const navigate = useNavigate();
   const [mobilePanel, setMobilePanel] = useState("builder");
 
-  // Lock workspace-scroll so Safari can't capture touch gestures meant for inner panels
-  useEffect(() => {
-    const el = document.getElementById("workspace-scroll");
-    if (!el) return;
-    const prev = el.style.overflow;
-    el.style.overflow = "hidden";
-    return () => { el.style.overflow = prev; };
-  }, []);
-
   const { user, loading: authLoading } = useAuth();
 
   const [planCode, setPlanCode] = useState(() => {
@@ -210,41 +201,42 @@ export default function MicroCameraAnimal() {
 
   return (
     <>
-      <div className="flex w-full h-full overflow-hidden p-3 gap-3 bg-[#0B0D0F]">
-
-        {/* Desktop: builder left */}
-        <div className="hidden lg:flex flex-col w-[420px] xl:w-[460px] shrink-0 h-full">
+      {/* Desktop layout */}
+      <div className="hidden lg:flex w-full h-full overflow-hidden p-3 gap-3 bg-[#0B0D0F]">
+        <div className="flex flex-col w-[420px] xl:w-[460px] shrink-0 h-full">
           {builderPanel}
         </div>
-
-        {/* Desktop: results right */}
-        <div className="hidden lg:flex flex-1 min-w-0 h-full overflow-y-auto">
+        <div className="flex flex-1 min-w-0 h-full overflow-y-auto">
           {resultsPanel}
         </div>
+      </div>
 
-        {/* Mobile */}
-        <div className="flex lg:hidden flex-col w-full h-full overflow-hidden">
-          <div className="shrink-0 mb-3 border-b border-white/10 bg-[#0B0D0F] pb-3">
-            <div className="grid grid-cols-2 rounded-full border border-white/10 bg-white/[0.04] p-1">
-              <button
-                onClick={() => setMobilePanel("builder")}
-                className={`rounded-full px-3 py-2 text-[13px] font-semibold transition ${mobilePanel === "builder" ? "bg-white text-black" : "text-white/60"}`}
-              >
-                Setup
-              </button>
-              <button
-                onClick={() => setMobilePanel("results")}
-                className={`rounded-full px-3 py-2 text-[13px] font-semibold transition ${mobilePanel === "results" ? "bg-white text-black" : "text-white/60"}`}
-              >
-                Results
-              </button>
-            </div>
+      {/* Mobile layout — workspace-scroll is the one scroller, tab strip is sticky */}
+      <div className="lg:hidden flex flex-col w-full bg-[#0B0D0F] min-h-full">
+        <div className="sticky top-0 z-20 px-3 pt-3 pb-3 border-b border-white/10 bg-[#0B0D0F]">
+          <div className="grid grid-cols-2 rounded-full border border-white/10 bg-white/[0.04] p-1">
+            <button
+              onClick={() => {
+                setMobilePanel("builder");
+                document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
+              }}
+              className={`rounded-full px-3 py-2 text-[13px] font-semibold transition ${mobilePanel === "builder" ? "bg-white text-black" : "text-white/60"}`}
+            >
+              Setup
+            </button>
+            <button
+              onClick={() => {
+                setMobilePanel("results");
+                document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
+              }}
+              className={`rounded-full px-3 py-2 text-[13px] font-semibold transition ${mobilePanel === "results" ? "bg-white text-black" : "text-white/60"}`}
+            >
+              Results
+            </button>
           </div>
-          <div className="flex-1 min-h-0">
-            {mobilePanel === "builder" ? builderPanel : (
-              <div className="h-full overflow-y-auto" style={{ WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}>{resultsPanel}</div>
-            )}
-          </div>
+        </div>
+        <div className="px-3 pb-3">
+          {mobilePanel === "builder" ? builderPanel : resultsPanel}
         </div>
       </div>
 

@@ -351,7 +351,7 @@ export default function MicroCameraAnimalResults({
     const cols        = Math.min(jobScenes.length, 3);
 
     return (
-      <div className="flex flex-col w-full h-full overflow-hidden p-3 gap-3">
+      <div className="flex flex-col w-full p-3 gap-3 lg:h-full lg:overflow-hidden">
 
         {/* Status bar */}
         <div className="shrink-0 flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-[#111315] border border-white/[0.07]">
@@ -379,7 +379,7 @@ export default function MicroCameraAnimalResults({
           </div>
         )}
 
-        <div className="flex-1 min-h-0 overflow-y-auto" style={{ WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}>
+        <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
           <div
             className="grid grid-cols-2 content-start justify-items-stretch gap-x-3.5 gap-y-4 px-3 pb-[140px] lg:pb-6 lg:gap-3 lg:px-0 lg:[grid-template-columns:repeat(var(--mc-cols),minmax(0,min(100%,280px)))]"
             style={{ "--mc-cols": cols }}
@@ -395,7 +395,7 @@ export default function MicroCameraAnimalResults({
 
   /* ══ IDLE ══ */
   return (
-    <div className="relative flex flex-col h-full min-h-[500px] rounded-2xl overflow-hidden">
+    <div className="relative flex flex-col min-h-[500px] rounded-2xl overflow-hidden lg:h-full">
       <img src={BG_THUMB} alt="" className="absolute inset-0 w-full h-full object-cover scale-110 blur-3xl opacity-25 pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-to-b from-[#0B0D0F]/70 via-[#0B0D0F]/40 to-[#0B0D0F]/85 pointer-events-none" />
 

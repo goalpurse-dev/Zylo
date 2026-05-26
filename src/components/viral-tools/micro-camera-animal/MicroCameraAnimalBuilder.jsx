@@ -73,7 +73,7 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase })
   };
 
   return (
-    <div className="flex flex-col bg-[#0D0F11] rounded-2xl border border-white/[0.07] overflow-hidden h-full">
+    <div className="flex flex-col bg-[#0D0F11] rounded-2xl border border-white/[0.07] lg:overflow-hidden lg:h-full">
 
       {/* ══ HEADER ══ */}
       <div className="shrink-0">
@@ -122,7 +122,7 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase })
       </div>
 
       {/* ══ SCROLLABLE BODY ══ */}
-      <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full" style={{ WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}>
+      <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full">
         <div className="px-5 pt-4 pb-[160px] lg:pb-5 flex flex-col gap-4">
 
           {/* Input */}
