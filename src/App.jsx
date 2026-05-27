@@ -153,10 +153,15 @@ import NotFoundRedirect from "./components/NotFoundRedirect";
 import PublicGallery from "./components/public-gallery/gallery";
 const AIFruitStoryLanding = lazy(() => import("./pages/landing/AIFruitStoryLanding.jsx"));
 const FaceAsmrLanding = lazy(() => import("./pages/landing/FaceAsmrLanding.jsx"));
+const MicroCameraAnimalLanding = lazy(() => import("./pages/landing/MicroCameraAnimalLanding.jsx"));
 const FaceAsmrMakerBlog = lazy(() => import("./app/blog/imagegenerator/face-asmr-maker.jsx"));
 const ViralFaceAsmrVideos = lazy(() => import("./app/blog/imagegenerator/viral-face-asmr-videos.jsx"));
 const AsmrVideoIdeasTiktok = lazy(() => import("./app/blog/imagegenerator/asmr-video-ideas-tiktok-2026.jsx"));
 const HowToStartAsmrChannel = lazy(() => import("./app/blog/imagegenerator/how-to-start-asmr-channel-with-ai.jsx"));
+const BestFaceAsmrVideoIdeas = lazy(() => import("./app/blog/imagegenerator/best-face-asmr-video-ideas-2026.jsx"));
+const MicroCameraAnimalMakerBlog = lazy(() => import("./app/blog/imagegenerator/micro-camera-animal-maker.jsx"));
+const ViralAnimalBodycamVideos = lazy(() => import("./app/blog/imagegenerator/viral-animal-bodycam-videos.jsx"));
+const AIFruitStoryCharacterIdeas = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-character-ideas.jsx"));
 {/* Viral */}
 
 
@@ -431,10 +436,15 @@ return (
          <Route path="/public-gallery" element={<PublicGallery />} />
          <Route path="/ai-fruit-story-maker" element={<AIFruitStoryLanding />} />
          <Route path="/face-asmr-maker" element={<FaceAsmrLanding />} />
+         <Route path="/micro-camera-animal-maker" element={<MicroCameraAnimalLanding />} />
          <Route path="/blog/face-asmr-maker" element={<FaceAsmrMakerBlog />} />
          <Route path="/blog/viral-face-asmr-videos" element={<ViralFaceAsmrVideos />} />
          <Route path="/blog/asmr-video-ideas-tiktok-2026" element={<AsmrVideoIdeasTiktok />} />
          <Route path="/blog/how-to-start-asmr-channel-with-ai" element={<HowToStartAsmrChannel />} />
+         <Route path="/blog/best-face-asmr-video-ideas-2026" element={<BestFaceAsmrVideoIdeas />} />
+         <Route path="/blog/micro-camera-animal-maker" element={<MicroCameraAnimalMakerBlog />} />
+         <Route path="/blog/viral-animal-bodycam-videos" element={<ViralAnimalBodycamVideos />} />
+         <Route path="/blog/ai-fruit-story-character-ideas" element={<AIFruitStoryCharacterIdeas />} />
 
 
 
