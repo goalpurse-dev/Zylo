@@ -7,8 +7,8 @@ const STORY_PRESETS = [
     label: "Cheating",
     description: "A fruit catches their partner cheating.",
     storyIdea:
-      "A fruit finds out their partner is cheating and plans an emotional reveal.",
-    conflict: "Cheating betrayal",
+      "An orange mom discovers her banana husband has been hiding a secret. The story unfolds across cinematic scenes: first a suspicious clue at the mall, then a confrontation over a mysterious phone message, followed by a dramatic argument, an emotional breakdown, and a final shocking twist that changes everything. Each scene must have expressive 3D fruit characters, specific dialogue that reveals the secret layer by layer, strong emotional reactions, and a clear story arc that escalates toward the ending.",
+    conflict: "Secret discovered — dramatic confrontation and emotional breakdown",
     image: "/viral-builder/ai-fruit/presets/cheating.webp",
     guideTitle: "Cheating story format",
     guideText:
@@ -25,8 +25,8 @@ const STORY_PRESETS = [
     label: "Getting a baby",
     description: "A fruit reveals they are having a baby.",
     storyIdea:
-      "A fruit tells their partner they are having a baby, but the reaction is not what they expected.",
-    conflict: "Unexpected baby reveal",
+      "A strawberry mom has a life-changing secret to tell her banana husband. The story builds across cinematic scenes: a tense hint that something is different, discovering the pregnancy test, the emotional reveal moment, a shocked and overwhelmed reaction, and finally a beautiful bonding scene where everything changes. Each scene needs specific dialogue that shows the emotional arc from nervous secret to joyful acceptance, with expressive 3D fruit characters and cinematic lighting.",
+    conflict: "Life-changing baby revelation — shock turning into joy",
     image: "/viral-builder/ai-fruit/presets/baby.webp",
     guideTitle: "Getting a baby format",
     guideText:
@@ -43,8 +43,8 @@ const STORY_PRESETS = [
     label: "Cheats back",
     description: "A betrayed fruit gets dramatic revenge.",
     storyIdea:
-      "A fruit gets cheated on, acts heartbroken, then secretly cheats back and shocks everyone.",
-    conflict: "Revenge after betrayal",
+      "An orange mom discovers her banana husband’s betrayal and decides to secretly get even. The story follows: the moment she finds out and her heartbreak, hiding her pain while planning quietly, a stunning transformation that shocks everyone, the dramatic revenge reveal at the worst possible moment for him, and a final confrontation where the tables are turned. Each scene needs sharp dialogue, expressive emotional acting, and a clear story arc from victim to victor.",
+    conflict: "Betrayal discovered — secret revenge planned and executed",
     image: "/viral-builder/ai-fruit/presets/cheats-back.webp",
     guideTitle: "Cheats back format",
     guideText:
@@ -61,8 +61,8 @@ const STORY_PRESETS = [
     label: "Secret twin",
     description: "A hidden twin changes the whole story.",
     storyIdea:
-      "A fruit discovers their partner has been hiding a secret twin who has been causing all the drama.",
-    conflict: "Secret twin reveal",
+      "An orange mom starts noticing strange things about her banana husband — he remembers things wrong, shows up in two places, acts completely different day to day. The story escalates: first confusion, then suspicion, a strange encounter that makes no sense, and finally the shocking twin reveal that explains every mystery. The final scene shows both twins face to face with the orange mom in the middle, everything suddenly making sense. Each scene needs sharp dialogue and a strong cliffhanger.",
+    conflict: "Identity mystery — twin reveal that explains everything",
     image: "/viral-builder/ai-fruit/presets/secret-twin.webp",
     guideTitle: "Secret twin format",
     guideText:
@@ -79,8 +79,8 @@ const STORY_PRESETS = [
     label: "Kicked out",
     description: "A fruit gets kicked out, then returns.",
     storyIdea:
-      "A fruit gets kicked out of the house during an argument, then returns with a shocking secret.",
-    conflict: "Kicked out and betrayed",
+      "A banana husband gets kicked out of the house after a heated argument with his orange mom wife. The story follows: the explosive argument that starts it all, him standing outside with his bags in shock, disappearing and rebuilding himself in secret, returning completely transformed with power and confidence, and a final confrontation where he reveals what he discovered while he was gone — a secret that changes everything. Each scene needs dramatic dialogue and a clear emotional arc.",
+    conflict: "Explosive argument leads to separation — shocking return with the truth",
     image: "/viral-builder/ai-fruit/presets/kicked-out.webp",
     guideTitle: "Kicked out format",
     guideText:
@@ -489,7 +489,7 @@ const [favoriteIds, setFavoriteIds] = useState([]);
                 conflict: e.target.value ? "Custom story conflict" : "",
               })
             }
-            placeholder="Example: An orange gets betrayed by his best friend apple, then discovers the banana planned everything..."
+            placeholder="Example: Orange Mom finds a suspicious message on Banana's phone at the mall. The story: Scene 1 — she spots the message, Scene 2 — she confronts him, Scene 3 — he denies everything, Scene 4 — she finds proof, Scene 5 — shocking twist ending. Each scene should escalate the drama with specific dialogue and emotional reactions."
             className="min-h-[140px] w-full resize-none rounded-2xl border border-white/10 bg-[#0D0F10] px-4 py-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-purple-400/60"
           />
         </div>

@@ -816,9 +816,49 @@ function deriveAmbience(scene) {
   return "Light room ambience only.";
 }
 
+function buildPerCharacterEmotionBlock(characters, scene, max) {
+  const emotionBase = (scene?.emotionDirection || scene?.emotionalBeat || "").toLowerCase();
+  if (!characters.length) {
+    return cleanSectionText(
+      scene?.emotion || scene?.emotionDirection || scene?.emotionalBeat,
+      "glossy eyes, clenched jaw, trembling fingers, and a shocked freeze",
+      max,
+    );
+  }
+  const lines = characters.slice(0, 3).map((char, idx) => {
+    const name = sanitizeSpeakerName(char.name || char.id);
+    const roleText = `${char.role || char.id || ""}`.toLowerCase();
+    if (idx === 0) {
+      if (/(wife|mom|betrayed|hurt|heartbroken|victim)/.test(roleText) || emotionBase.includes("betray") || emotionBase.includes("heartbreak")) {
+        return `${name}: betrayed and furious — jaw tight, eyes locked, hands shaking`;
+      }
+      if (/(husband|cheater|guilty|caught)/.test(roleText) || emotionBase.includes("guilt")) {
+        return `${name}: terrified and defensive — frozen still, eyes darting, hands raised`;
+      }
+      if (emotionBase.includes("shock") || emotionBase.includes("reveal")) {
+        return `${name}: in shock — eyes wide, mouth open, stepping back`;
+      }
+      return `${name}: overwhelmed — ${emotionBase || "intense emotional reaction"}, body frozen`;
+    }
+    if (idx === 1) {
+      if (/(mistress|affair|third|secret)/.test(roleText)) {
+        return `${name}: panicked — forced smile, hand reaching to hide evidence`;
+      }
+      if (/(kid|child|baby|son|daughter)/.test(roleText)) {
+        return `${name}: confused — wide innocent eyes, not understanding`;
+      }
+      return `${name}: stunned — caught completely off guard, stepping back`;
+    }
+    return `${name}: shocked bystander — staring in disbelief`;
+  });
+  const result = lines.join(". ");
+  return result.length <= max ? result : result.slice(0, max).replace(/\s+\S*$/, "").trim() || lines[0];
+}
+
 function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, max = null } = {}) {
   const isProviderPrompt = Boolean(max);
   const sceneNumber = Number(scene?.sceneNumber ?? 1);
+  const totalScenes = Number(form?.sceneCount ?? 5);
   const pacingRole = getScenePacingRole(scene, form);
   const dialogue = getProviderDialogue({ scenePrompt, scene, form });
   const characters = getSceneCharacterNames(scene, form);
@@ -828,9 +868,9 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
     scene,
     isProviderPrompt ? 145 : 190,
   );
-  const emotion = cleanSectionText(
-    scene.emotion || scene.emotionDirection || scene.emotionalBeat,
-    "glossy eyes, clenched jaw, trembling fingers, and a shocked freeze",
+  const emotion = buildPerCharacterEmotionBlock(
+    characters,
+    scene,
     isProviderPrompt ? 110 : 145,
   );
   const camera = cleanSectionText(
@@ -845,15 +885,27 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
     .map((char) => `${sanitizeSpeakerName(char.name || char.id)}: ${inferFruitVoiceStyle(char.name || char.id, char.role)}.`)
     .join("\n");
 
-  // Scene-aware movement derived from emotion and action data
+  // Scene-aware movement derived from emotion, action data, and character roles
   const emotionHint = cleanSectionText(scene.emotionDirection || scene.emotionalBeat, "", 55);
   const movementFallback = isProviderPrompt
     ? "Reactive in-place animation: intense facial close-ups, expressive eye movement, lip sync, micro-expressions, small defensive or reaching hand gestures. No character leaves or enters frame."
     : "Expressive in-place animation: lip sync, eye reactions, subtle head turns, micro-expressions, small gestures. Characters stay in location.";
-  const movement = cleanSectionText(
-    emotionHint
+  const charMovements = characters.slice(0, 2).map((char) => {
+    const name = sanitizeSpeakerName(char.name || char.id);
+    const roleText = `${char.role || char.id || ""}`.toLowerCase();
+    if (/(wife|mom|betrayed|victim)/.test(roleText)) return `${name}: points accusingly, jaw clenched, eyes locked`;
+    if (/(husband|cheater|guilty)/.test(roleText)) return `${name}: raises both hands defensively, frozen in place`;
+    if (/(mistress|third|secret)/.test(roleText)) return `${name}: hides face, reaches to grab phone or bag`;
+    if (/(kid|child|baby)/.test(roleText)) return `${name}: tilts head confused, small innocent gesture`;
+    return `${name}: reacts with ${emotionHint || "shock"}, intense expression`;
+  });
+  const movementSource = charMovements.length >= 2
+    ? charMovements.join(". ") + ". All characters stay in frame — no exits."
+    : (emotionHint
       ? `Characters react with ${emotionHint} — expressive facial close-ups, lip sync, eye contact, micro-gestures. No repositioning or exiting frame.`
-      : null,
+      : null);
+  const movement = cleanSectionText(
+    movementSource,
     movementFallback,
     isProviderPrompt ? 145 : 190,
   );
@@ -872,9 +924,11 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
   const opening = isProviderPrompt
     ? "IMAGE-TO-VIDEO: Animate the EXACT reference image provided. FIRST FRAME = reference image. Keep the IDENTICAL background, room, furniture, lighting, and character positions. Do NOT change the scene. Do NOT add new environments. Do NOT move characters out of frame. Only add subtle facial expressions, lip movement, and small gestures."
     : "IMAGE-TO-VIDEO: Animate this exact reference image. The first frame must be identical to the reference. Keep the same background, same room, same lighting, same character positions. Only add subtle facial expressions and lip movement. Do not change the scene, do not pan away, do not add new locations.";
+  const sceneTitleNote = scene.title ? ` — "${scene.title}"` : "";
+  const storyArcNote = `Scene ${sceneNumber} of ${totalScenes}`;
   const pacingLine = isProviderPrompt
-    ? `Scene ${sceneNumber}: ${pacingRole}. Dramatic emotional moment. Characters react and speak — no location change.`
-    : `Scene ${sceneNumber}: ${pacingRole}. Emotional dramatic reaction. Characters stay in the same location as the reference image.`;
+    ? `${storyArcNote}${sceneTitleNote}: ${pacingRole}. Dramatic emotional moment. Characters react and speak — no location change.`
+    : `${storyArcNote}${sceneTitleNote}: ${pacingRole}. Emotional dramatic reaction. Characters stay in the same location as the reference image.`;
   const speechRules = isProviderPrompt
     ? "ENGLISH WORDS ONLY. Pronounce each word slowly, clearly, and distinctly in English. No random syllables, no mumbling, no gibberish — real English words only. Dialogue starts immediately in the first second. Mouth sync every single word. Say EXACTLY the quoted lines word for word."
     : "ENGLISH WORDS ONLY. Each character must speak clear, slow, distinct English words. No random sounds, no mumbling, no gibberish, no non-English syllables. Start speaking in the first second. Mouth movement must match every English word exactly.";
@@ -887,10 +941,15 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
     ? "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background music, no gasps, no sighs, no ambient sounds, no sound effects, no mumbling, no gibberish, no non-English words, no singing."
     : "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background music, no gasps, no sighs, no ambient sounds, no sound effects, no mumbling, no random syllables, no gibberish, no non-English words, no singing.";
 
+  const storyContextLine = scene.storyPurpose || scene.scenePurpose
+    ? cleanSectionText(scene.storyPurpose || scene.scenePurpose, "", isProviderPrompt ? 80 : 100)
+    : null;
+
   const prompt = [
     opening,
     pacingLine,
     identityLock,
+    ...(storyContextLine ? [`Story beat: ${storyContextLine}`] : []),
     "",
     "SPOKEN DIALOGUE - SAY EXACTLY:",
     formatDialogueBlock(dialogue),

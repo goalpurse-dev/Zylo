@@ -363,6 +363,7 @@ export default function useFruitStoryJob({ form }) {
 
       castBibleRef.current = row.cast_data ?? [];
       setGenerationId(row.id);
+      generationRef.current = row.id;
       setScenes(restoredScenes);
       setVideoClips(buildVideoClipsFromScenes(restoredScenes));
 
@@ -374,15 +375,30 @@ export default function useFruitStoryJob({ form }) {
         animating:         "animating",
         completed:         "done",
       };
-      setPhase(statusToPhase[row.status] ?? "scenes-done");
+      const restoredPhase = statusToPhase[row.status] ?? "scenes-done";
+      // Update ref immediately so guards (e.g. startAnimation) see the correct phase
+      // before the next React render cycle runs the effect.
+      phaseRef.current = restoredPhase;
+      setPhase(restoredPhase);
       setError(null);
+
+      // Re-attach watchers for any video jobs that were in-flight when the user
+      // left the page. This lets them complete (or surface as failed) without
+      // the UI being permanently stuck at "Animating".
+      if (row.status === "animating") {
+        for (const scene of restoredScenes) {
+          if (scene.videoJobId && !isTerminal(scene.videoStatus ?? "idle")) {
+            watchVideoJob(scene.sceneNumber, scene.videoJobId);
+          }
+        }
+      }
 
       return row;
     } catch (e) {
       console.error("[useFruitStoryJob] loadGeneration failed:", e.message);
       return null;
     }
-  }, []);
+  }, [watchVideoJob]);
 
   /* ─── deleteGeneration ─── */
   const deleteGeneration = useCallback(async (id) => {
