@@ -172,7 +172,8 @@ export default function MobileBottomNav({ hidden }) {
             <div className={`flex flex-col items-center justify-center w-[60px] h-[50px] rounded-xl transition-all duration-200 active:scale-95 ${
               location.pathname.startsWith("/workspace/ai-fruit-story") ||
               location.pathname.startsWith("/workspace/face-asmr") ||
-              location.pathname.startsWith("/workspace/micro-camera-animal")
+              location.pathname.startsWith("/workspace/micro-camera-animal") ||
+              location.pathname.startsWith("/workspace/clay-rescue")
                 ? "bg-white text-black" : "text-white/55"
             }`}>
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">

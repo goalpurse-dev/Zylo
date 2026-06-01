@@ -82,7 +82,7 @@ export default function ToolShell() {
         <button
           onClick={() => { setCreateOpen((v) => !v); setWorkspaceOpen(false); }}
           className={`ftg-nav-item w-full flex flex-col items-center gap-1 py-3 rounded-xl transition-all duration-200 ${
-            isActive("/workspace/ai-fruit-story") || isActive("/workspace/face-asmr") || isActive("/workspace/micro-camera-animal")
+            isActive("/workspace/ai-fruit-story") || isActive("/workspace/face-asmr") || isActive("/workspace/micro-camera-animal") || isActive("/workspace/clay-rescue")
               ? "bg-white text-black"
               : "text-white/50 hover:text-white hover:bg-white/5"
           }`}

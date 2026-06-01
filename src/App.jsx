@@ -154,6 +154,7 @@ import PublicGallery from "./components/public-gallery/gallery";
 const AIFruitStoryLanding = lazy(() => import("./pages/landing/AIFruitStoryLanding.jsx"));
 const FaceAsmrLanding = lazy(() => import("./pages/landing/FaceAsmrLanding.jsx"));
 const MicroCameraAnimalLanding = lazy(() => import("./pages/landing/MicroCameraAnimalLanding.jsx"));
+const ClayRescueLanding = lazy(() => import("./pages/landing/ClayRescueLanding.jsx"));
 const FaceAsmrMakerBlog = lazy(() => import("./app/blog/imagegenerator/face-asmr-maker.jsx"));
 const ViralFaceAsmrVideos = lazy(() => import("./app/blog/imagegenerator/viral-face-asmr-videos.jsx"));
 const AsmrVideoIdeasTiktok = lazy(() => import("./app/blog/imagegenerator/asmr-video-ideas-tiktok-2026.jsx"));
@@ -161,6 +162,8 @@ const HowToStartAsmrChannel = lazy(() => import("./app/blog/imagegenerator/how-t
 const BestFaceAsmrVideoIdeas = lazy(() => import("./app/blog/imagegenerator/best-face-asmr-video-ideas-2026.jsx"));
 const MicroCameraAnimalMakerBlog = lazy(() => import("./app/blog/imagegenerator/micro-camera-animal-maker.jsx"));
 const ViralAnimalBodycamVideos = lazy(() => import("./app/blog/imagegenerator/viral-animal-bodycam-videos.jsx"));
+const ClayRescueMakerBlog = lazy(() => import("./app/blog/imagegenerator/clay-rescue-ai-video-maker.jsx"));
+const GiantHandRescueVideosBlog = lazy(() => import("./app/blog/imagegenerator/why-giant-hand-rescue-videos-go-viral.jsx"));
 const AIFruitStoryCharacterIdeas = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-character-ideas.jsx"));
 {/* Viral */}
 
@@ -185,6 +188,7 @@ import NewHome from "./pages/home/home.jsx";
 import AuthCallbackPage from "./pages/AuthCallback.jsx";
 const FaceAsmrPage           = lazy(() => import("./pages/workspace/FaceAsmr.jsx"));
 const MicroCameraAnimalPage  = lazy(() => import("./pages/workspace/MicroCameraAnimal.jsx"));
+const ClayRescuePage         = lazy(() => import("./pages/workspace/ClayRescue.jsx"));
 
 import "./styles/sand.css";
 
@@ -437,6 +441,7 @@ return (
          <Route path="/ai-fruit-story-maker" element={<AIFruitStoryLanding />} />
          <Route path="/face-asmr-maker" element={<FaceAsmrLanding />} />
          <Route path="/micro-camera-animal-maker" element={<MicroCameraAnimalLanding />} />
+         <Route path="/clay-rescue-maker" element={<ClayRescueLanding />} />
          <Route path="/blog/face-asmr-maker" element={<FaceAsmrMakerBlog />} />
          <Route path="/blog/viral-face-asmr-videos" element={<ViralFaceAsmrVideos />} />
          <Route path="/blog/asmr-video-ideas-tiktok-2026" element={<AsmrVideoIdeasTiktok />} />
@@ -444,6 +449,8 @@ return (
          <Route path="/blog/best-face-asmr-video-ideas-2026" element={<BestFaceAsmrVideoIdeas />} />
          <Route path="/blog/micro-camera-animal-maker" element={<MicroCameraAnimalMakerBlog />} />
          <Route path="/blog/viral-animal-bodycam-videos" element={<ViralAnimalBodycamVideos />} />
+         <Route path="/blog/clay-rescue-ai-video-maker" element={<ClayRescueMakerBlog />} />
+         <Route path="/blog/why-giant-hand-rescue-videos-go-viral" element={<GiantHandRescueVideosBlog />} />
          <Route path="/blog/ai-fruit-story-character-ideas" element={<AIFruitStoryCharacterIdeas />} />
 
 
@@ -483,6 +490,7 @@ return (
   <Route path="/workspace/face-asmr" element={<FaceAsmrPage />} />
   <Route path="/workspace/skeleton-shorts" element={<SkeletonShorts />} />
   <Route path="/workspace/micro-camera-animal" element={<MicroCameraAnimalPage />} />
+  <Route path="/workspace/clay-rescue" element={<ClayRescuePage />} />
 
 
 </Route>

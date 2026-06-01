@@ -25,7 +25,7 @@ const SUITE_GRID = [
   { name: "Micro Camera",    desc: "Animal bodycam goes underground",   typeLabel: "Video",  isNew: true,     image: "/viral-builder/micro-camera/preview1.png",          path: "/workspace/micro-camera-animal" },
   { name: "Video Generator", desc: "Create cinematic videos in seconds", typeLabel: "Video",  trending: false, image: "/home/videogen.png",                               path: "/workspace/video-generator"     },
   { name: "Viral Skeleton",  desc: "Scroll-stopping skeleton content",   typeLabel: null,     trending: true,  image: "/home/skeleton.png",                               path: "/workspace/skeleton-shorts"     },
-  { name: "Script Builder",  desc: "Write scripts that go viral",        typeLabel: "Script", trending: false, image: "/home/scriptgen.png",                              path: "/workspace/viral-script"        },
+  { name: "Clay Rescue",     desc: "Giant hands save tiny clay worlds",  typeLabel: "Video",  isNew: true,     image: "/clayrescue/smallpreview.webp",                   path: "/workspace/clay-rescue"         },
   { name: "Image Generator", desc: "Generate high-quality visuals",      typeLabel: "Image",  trending: false, image: "/home/imagegen.png",                               path: "/workspace/image-generator"    },
 ];
 

@@ -8,6 +8,20 @@ import { useNavigate } from "react-router-dom";
 // ─────────────────────────────────────────────────────────────────────────────
 const COMMUNITY_NICHES = [
   {
+    id: "clay-rescue",
+    category: "Clay Rescue",
+    title: "Clay Rescue",
+    description:
+      "Tiny clay people face huge disasters until a giant human hand applies a simple rescue fix. The clear before-and-after reaction makes it feel instantly viral.",
+    prompt:
+      "Miniature clay village disaster, tiny clay people panicking, giant realistic human hand enters frame and solves the problem, joyful celebration, cinematic 9:16 vertical video.",
+    route: "/workspace/clay-rescue",
+    videos: [
+      { id: "cr-1", src: "/clayrescue/homevideo.mp4", thumbnail: null, title: "Giant Hand Rescue" },
+      { id: "cr-2", src: "/clayrescue/homevideo2.mp4", thumbnail: null, title: "Clay Disaster Fix" },
+    ],
+  },
+  {
     id: "skeleton-ai",
     category: "Skeleton AI",
     title: "Skeleton AI",

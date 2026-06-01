@@ -30,6 +30,15 @@ export const CREATE_TOOLS = [
     previewPosition: "object-center",
     color: "#16a34a",
   },
+  {
+    id: "clay-rescue",
+    label: "Clay Rescue",
+    sublabel: "",
+    path: "/workspace/clay-rescue",
+    preview: "/clayrescue/smallpreview.webp",
+    previewPosition: "object-center",
+    color: "#7A3BFF",
+  },
   // { id: "ai-voice-story", label: "AI Voice Story", ... },
 ];
 
@@ -210,18 +219,16 @@ export default function MobileCreateMenu({ open, onClose, anchorBottom = 72 }) {
 
   const go = (path) => { onClose(); navigate(path); };
 
-  // Fan positions for up to 5 tools centred above the Create button
-  // For N items we spread them in an arc. For 1 item it's centred.
+  const useGridLayout = CREATE_TOOLS.length >= 4;
   const total = CREATE_TOOLS.length;
   const fanAngles = total === 1
     ? [0]
     : Array.from({ length: total }, (_, i) => {
-        // 2 items need a wider spread so 62px icons don't overlap
-        const spread = total === 2 ? 64 : Math.min(88, (total - 1) * 36);
+        const spread = total === 2 ? 64 : Math.min(96, (total - 1) * 40);
         return -spread / 2 + (spread / (total - 1)) * i;
       });
 
-  const FAN_RADIUS = 148; // px from center of close button
+  const FAN_RADIUS = 154; // px from center of close button
 
   return createPortal(
     <div
@@ -243,7 +250,42 @@ export default function MobileCreateMenu({ open, onClose, anchorBottom = 72 }) {
         className="absolute left-1/2 -translate-x-1/2"
         style={{ bottom: anchorBottom + 8 }}
       >
-        {CREATE_TOOLS.map((tool, i) => {
+        {useGridLayout ? (
+          <div
+            className="absolute left-1/2 grid w-[244px] -translate-x-1/2 grid-cols-2 gap-x-8 gap-y-5 transition-all duration-300"
+            style={{
+              bottom: 82,
+              transform: `translateX(-50%) ${open ? "scale(1)" : "scale(0.92)"}`,
+              opacity: open ? 1 : 0,
+            }}
+          >
+            {CREATE_TOOLS.map((tool, i) => (
+              <button
+                key={tool.id}
+                onClick={() => go(tool.path)}
+                className="flex w-[106px] flex-col items-center gap-1.5 active:scale-90 transition-transform"
+                style={{
+                  transitionDelay: open ? `${i * 40}ms` : "0ms",
+                }}
+              >
+                <div
+                  className="relative h-[62px] w-[62px] overflow-hidden rounded-full border-2 border-white/20"
+                  style={{ background: `linear-gradient(135deg, ${tool.color}, ${tool.color}99)` }}
+                >
+                  <img
+                    src={tool.preview}
+                    alt={tool.label}
+                    className={`h-full w-full object-cover scale-110 ${tool.previewPosition ?? "object-top"}`}
+                  />
+                </div>
+                <span className="max-w-full text-center text-[11px] font-semibold leading-tight text-white/90 drop-shadow-lg">
+                  {tool.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          CREATE_TOOLS.map((tool, i) => {
           const angleDeg = fanAngles[i] - 90; // -90 so 0deg = straight up
           const angleRad = (angleDeg * Math.PI) / 180;
           const x = Math.cos(angleRad) * FAN_RADIUS;
@@ -283,7 +325,8 @@ export default function MobileCreateMenu({ open, onClose, anchorBottom = 72 }) {
               </button>
             </div>
           );
-        })}
+          })
+        )}
 
         {/* Close / Create button at anchor */}
         <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-1/2">

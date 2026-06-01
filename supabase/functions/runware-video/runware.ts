@@ -186,7 +186,12 @@ export async function launchRunwareVideo(
     };
 
     if (rawRefs.length > 0) {
-      task.frameImages = rawRefs.slice(0, 1).map((url) => ({ inputImage: url }));
+      task.inputs = {
+        frameImages: rawRefs.slice(0, 2).map((url, index) => ({
+          image: url,
+          frame: index === 0 ? "first" : "last",
+        })),
+      };
     }
 
     console.log("[runware-video] SEEDANCE TASK", JSON.stringify(task, null, 2));
