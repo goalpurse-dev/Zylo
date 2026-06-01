@@ -197,7 +197,7 @@ function PhoneReferenceVideo({ title }) {
             muted
             loop
             playsInline
-            preload="auto"
+            preload="none"
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/70" />
 

@@ -47,7 +47,7 @@ const Motivational = () => {
       </button>
 
       {videoUrl && (
-        <video controls className="mt-6 rounded-lg shadow-lg max-w-md">
+        <video controls preload="none" className="mt-6 rounded-lg shadow-lg max-w-md">
           <source src={videoUrl} type="video/mp4" />
         </video>
       )}

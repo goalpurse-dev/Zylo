@@ -153,7 +153,7 @@ export default function WhyGiantHandRescueVideosGoViral() {
                 <li>Save celebration for the final 2 seconds</li>
               </ul>
             </div>
-            <video src="/clayrescue/homevideo.mp4" className="rounded-2xl border border-[#E5E0F5] shadow-sm" autoPlay muted loop playsInline preload="metadata" />
+            <video src="/clayrescue/homevideo.mp4" className="rounded-2xl border border-[#E5E0F5] shadow-sm" autoPlay muted loop playsInline preload="none" />
             <Link to="/workspace/clay-rescue" className="block rounded-2xl bg-[#7A3BFF] p-5 text-center text-[14px] font-bold text-white shadow-[0_4px_20px_rgba(122,59,255,0.35)] transition hover:opacity-90">
               Create Clay Rescue Video
             </Link>

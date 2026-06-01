@@ -51,7 +51,7 @@ function Viewer({ scene, index, onClose }) {
       </div>
       <div className="flex-1 min-h-0 flex items-center justify-center px-4" onClick={(e) => e.stopPropagation()}>
         {isVideo ? (
-          <video src={scene.videoUrl} controls autoPlay playsInline className="max-w-full max-h-full rounded-2xl object-contain" style={{ maxHeight: "calc(100dvh - 160px)" }} />
+          <video src={scene.videoUrl} controls autoPlay playsInline preload="none" className="max-w-full max-h-full rounded-2xl object-contain" style={{ maxHeight: "calc(100dvh - 160px)" }} />
         ) : (
           <img src={scene.imageUrl} alt="" className="max-w-full max-h-full rounded-2xl object-contain" style={{ maxHeight: "calc(100dvh - 160px)" }} />
         )}

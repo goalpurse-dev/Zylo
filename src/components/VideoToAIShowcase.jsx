@@ -147,6 +147,7 @@ export default function VideoToAIShowcase({
                 muted
                 loop
                 playsInline
+                preload="none"
               />
             ) : (
               <img
@@ -170,6 +171,7 @@ export default function VideoToAIShowcase({
                   muted
                   loop
                   playsInline
+                  preload="none"
                 />
               ) : (
                 <img

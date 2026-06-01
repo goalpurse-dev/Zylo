@@ -133,6 +133,7 @@ export default function Login() {
                   loop
                   playsInline
                   controls={false}
+                  preload="none"
                 />
               </div>
             </div>

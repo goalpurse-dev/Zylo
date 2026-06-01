@@ -147,6 +147,7 @@ export default function ImageToVideoShowcase() {
                       loop
                       muted
                       playsInline
+                      preload="none"
                     />
                   ) : (
                     <img

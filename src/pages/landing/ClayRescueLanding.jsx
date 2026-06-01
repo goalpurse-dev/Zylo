@@ -136,7 +136,7 @@ export default function ClayRescueLanding() {
               <div className="absolute -inset-8 rounded-full bg-purple-500/15 blur-3xl" />
               <div className="relative overflow-hidden rounded-[34px] border border-white/15 bg-black shadow-[0_32px_90px_rgba(0,0,0,0.85)]">
                 <div className="aspect-[9/16] overflow-hidden">
-                  <video ref={videoRef} src="/clayrescue/homevideo.mp4" className="h-full w-full object-cover" autoPlay muted loop playsInline preload="auto" />
+                  <video ref={videoRef} src="/clayrescue/homevideo.mp4" className="h-full w-full object-cover" autoPlay muted loop playsInline preload="none" />
                 </div>
               </div>
               <div className="mx-auto mt-2 h-1 w-16 rounded-full bg-white/15" />

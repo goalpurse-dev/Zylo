@@ -117,7 +117,7 @@ export default function AIFruitPromo() {
               <div className="relative overflow-hidden rounded-[32px] border-2 border-purple-200 bg-black shadow-[0_20px_56px_rgba(124,58,237,0.25)]">
                 <div className="aspect-[9/19.5] overflow-hidden">
                   <video ref={videoRef} src="/viral-builder/ai-fruit/result.mp4"
-                    className="h-full w-full object-cover" muted loop playsInline preload="metadata" />
+                    className="h-full w-full object-cover" muted loop playsInline preload="none" />
                 </div>
 
                 {/* Floating hearts over video */}

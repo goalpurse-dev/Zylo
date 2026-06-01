@@ -34,7 +34,7 @@ function MediaPane({ src, ratio = "9 / 16", alt = "" }) {
         style={{ aspectRatio: ratio, width: baseWidth }}
       >
         {isVideo(src)
-          ? <video src={src} className="h-full w-full object-cover" muted playsInline loop autoPlay />
+          ? <video src={src} className="h-full w-full object-cover" muted playsInline loop autoPlay preload="none" />
           : <img src={src} alt={alt} className="h-full w-full object-cover" />
         }
       </div>

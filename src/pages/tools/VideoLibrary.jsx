@@ -86,6 +86,7 @@ function PromptCard({ card, onOpen }) {
             loop
             playsInline
             autoPlay
+            preload="none"
           />
         ) : (
           <GradientBox className="absolute inset-0" />
@@ -186,6 +187,7 @@ function DetailOverlay({ card, onClose, onGenerate }) {
                 playsInline
                 muted
                 loop
+                preload="none"
               />
             ) : (
               <GradientBox className="absolute inset-0" />

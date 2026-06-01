@@ -100,7 +100,7 @@ export default function FruitStoryPaywall({ open, onClose, isGuest, dismissable 
                   ref={videoRef}
                   src="/viral-builder/ai-fruit/result.mp4"
                   className="h-full w-full object-cover"
-                  autoPlay muted loop playsInline preload="auto"
+                  autoPlay muted loop playsInline preload="none"
                 />
               </div>
             </div>
@@ -133,7 +133,7 @@ export default function FruitStoryPaywall({ open, onClose, isGuest, dismissable 
               <div className="relative w-[120px] flex-shrink-0">
                 <div className="overflow-hidden rounded-[22px] border border-white/15 bg-black shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
                   <div className="aspect-[9/19.5] w-full overflow-hidden">
-                    <video src="/viral-builder/ai-fruit/result.mp4" className="h-full w-full object-cover" autoPlay muted loop playsInline preload="auto" />
+                    <video src="/viral-builder/ai-fruit/result.mp4" className="h-full w-full object-cover" autoPlay muted loop playsInline preload="none" />
                   </div>
                 </div>
                 <div className="mx-auto mt-1.5 h-1 w-8 rounded-full bg-white/15" />

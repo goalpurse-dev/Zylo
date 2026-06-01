@@ -88,6 +88,7 @@ function Viewer({ video, onClose }) {
           controls
           autoPlay
           playsInline
+          preload="none"
           className="max-w-full max-h-full rounded-2xl object-contain"
           style={{ maxHeight: "calc(100dvh - 160px)" }}
         />
@@ -183,7 +184,7 @@ function VideoThumb({ item, isActive, onClick }) {
           <video
             src={item.result_url}
             className="w-full h-full object-cover"
-            muted playsInline autoPlay loop preload="metadata"
+            muted playsInline autoPlay loop preload="none"
           />
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition">
             <div className="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center">
@@ -426,7 +427,7 @@ export default function Result({ results = [] }) {
               <video
                 key={activeVideo.id}
                 src={activeVideo.result_url}
-                muted playsInline autoPlay loop
+                muted playsInline autoPlay loop preload="none"
                 className="w-full max-h-[40vh] object-contain"
               />
               {/* Open fullscreen + download strip */}

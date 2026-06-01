@@ -62,7 +62,7 @@ export default function ClayRescueAIVideoMakerBlog() {
 
         <div className="mb-16 grid overflow-hidden rounded-2xl md:grid-cols-[1.15fr_0.85fr]" style={{ minHeight: 360 }}>
           <img src="/clayrescue/landing.png" alt="Clay Rescue AI video maker preview" className="h-full w-full object-cover" loading="eager" />
-          <video src="/clayrescue/homevideo2.mp4" className="h-full w-full object-cover" autoPlay muted loop playsInline preload="metadata" />
+          <video src="/clayrescue/homevideo2.mp4" className="h-full w-full object-cover" autoPlay muted loop playsInline preload="none" />
         </div>
 
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_300px]">

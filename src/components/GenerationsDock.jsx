@@ -637,6 +637,7 @@ function GenerationItem({ id }) {
           muted
           loop
           playsInline
+          preload="none"
         />
       )}
 
@@ -706,6 +707,7 @@ function GenerationItem({ id }) {
                 src={mediaUrl}
                 controls
                 playsInline
+                preload="none"
                 className="w-full max-h-[260px] object-contain bg-black"
               />
             ) : (

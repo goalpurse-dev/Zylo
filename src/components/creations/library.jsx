@@ -113,6 +113,7 @@ function HorizontalRow({ title, items, getImageUrl, onItemClick }) {
                   playsInline
                   autoPlay
                   loop
+                  preload="none"
                 />
               ) : (
                 <img
@@ -248,6 +249,7 @@ export default function Library() {
                 src={activeItem.result_url}
                 controls
                 autoPlay
+                preload="none"
                 className="w-full max-h-[450px] object-contain bg-black rounded-md mt-3"
               />
             ) : (

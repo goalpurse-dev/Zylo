@@ -17,7 +17,7 @@ export default function TextToImageCard({
         muted
         loop
         playsInline
-        preload="metadata"
+        preload="none"
       />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#1677FF14] via-transparent to-[#7A3BFF14]" />
     </div>

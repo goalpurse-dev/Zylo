@@ -37,6 +37,7 @@ export default function QuickStepsVideoSection() {
         muted
         loop
         playsInline
+        preload="none"
         src={Example}
       />
 

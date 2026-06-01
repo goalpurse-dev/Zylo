@@ -279,6 +279,7 @@ function mapJobToCreationType(j) {
               muted
               loop
               playsInline
+              preload="none"
             />
           )}
 
@@ -319,6 +320,7 @@ function mapJobToCreationType(j) {
                   <video
                     controls
                     playsInline
+                    preload="none"
                     src={mediaUrl}
                     className="block w-auto h-auto max-w-[96vw] max-h-[72vh] object-contain"
                   />

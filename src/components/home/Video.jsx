@@ -88,7 +88,7 @@ function VideoCard({ src }) {
       )}
       style={{ aspectRatio: "9 / 16" }}
     >
-      <video src={src} muted loop autoPlay playsInline preload="metadata" className="h-full w-full object-cover" />
+      <video src={src} muted loop autoPlay playsInline preload="none" className="h-full w-full object-cover" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-black/30 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/30 to-transparent" />
       <div className="pointer-events-none absolute inset-0 ring-1 ring-white/10" />

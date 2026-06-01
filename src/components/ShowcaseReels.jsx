@@ -70,7 +70,7 @@ export default function ShowcaseReels({
                            bg-white/5 shadow-sm transition hover:shadow-[0_8px_28px_rgba(0,0,0,0.18)]"
                 title={r.caption}
               >
-                <video src={r.src} muted loop playsInline preload="metadata" className="absolute inset-0 w-full h-full object-cover" />
+                <video src={r.src} muted loop playsInline preload="none" className="absolute inset-0 w-full h-full object-cover" />
                 <figcaption
                   className="absolute left-2.5 bottom-2.5 text-[11px] px-2 py-1 rounded-md
                              bg-black/60 border border-white/10 backdrop-blur

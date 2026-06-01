@@ -103,6 +103,7 @@ import { Link, NavLink } from "react-router-dom";
       muted
       loop
       playsInline
+      preload="none"
       className="absolute inset-0 w-full h-full object-cover"
     />
 

@@ -251,6 +251,7 @@ function ViewerModal({ open, onClose, item }) {
                 className="w-full h-full object-contain"
                 controls
                 playsInline
+                preload="none"
               />
             ) : (
               <img
@@ -309,7 +310,7 @@ function Card({ item, showPrompt, onDelete }) {
                 className="h-full w-full object-cover"
                 muted
                 playsInline
-                preload="metadata"
+                preload="none"
               />
             ) : (
               <img

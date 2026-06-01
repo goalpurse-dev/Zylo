@@ -92,17 +92,17 @@ function FeatureCard({ title, button, video, image, hoverVideo, big, mobile, bad
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Big card video — always rendered so it preloads immediately, hidden on mobile */}
+      {/* Big card video — rendered but lazy-loaded, hidden on mobile */}
       {big && video && (
         <video
           src={video}
-          autoPlay muted loop playsInline preload="auto"
+          autoPlay muted loop playsInline preload="none"
           className={`absolute inset-0 w-full h-full object-cover ${mobile ? "hidden" : ""}`}
         />
       )}
       {/* Hover video for smaller cards */}
       {showHoverVideo && (
-        <video src={hoverVideo} autoPlay muted loop playsInline preload="metadata"
+        <video src={hoverVideo} autoPlay muted loop playsInline preload="none"
           className="absolute inset-0 w-full h-full object-cover" />
       )}
       {/* Fallback image — shown on mobile for big card, or when no video plays */}

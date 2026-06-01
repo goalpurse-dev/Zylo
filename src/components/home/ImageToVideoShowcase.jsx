@@ -132,6 +132,7 @@ export default function ImageToVideoShowcase() {
                 loop
                 muted
                 playsInline
+                preload="none"
                 className="h-full w-full object-cover rounded-3xl opacity-95"
               />
 

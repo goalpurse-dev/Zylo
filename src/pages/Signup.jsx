@@ -139,6 +139,7 @@ async function handleSubmit(e) {
                   className="w-full h-[580px] object-cover"
                   autoPlay muted loop playsInline controls={false}
                   poster="/assets/auth/intro-poster.jpg"
+                  preload="none"
                 />
               </div>
             </div>

@@ -189,7 +189,7 @@ function VideoCard({ item, onClick }) {
           muted
           playsInline
           loop
-          preload="metadata"
+          preload="none"
           onLoadedMetadata={handleLoadedMetadata}
         />
       )}
@@ -256,6 +256,7 @@ function NicheModal({ item, onClose }) {
               controls
               playsInline
               loop
+              preload="none"
             />
           ) : (
             <div className="flex aspect-[9/16] max-h-[45dvh] items-center justify-center bg-[#0a0b0d] md:max-h-none md:h-full md:aspect-auto">

@@ -88,7 +88,7 @@ export default function New1() {
       loop
       muted
       playsInline
-      preload="metadata"
+      preload="none"
       className="
         w-full h-full object-cover
         transition-transform duration-500

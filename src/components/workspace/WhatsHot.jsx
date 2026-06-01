@@ -196,7 +196,7 @@ function HotCard({ item, navigate }) {
       {item.video && hovered && (
         <video
           src={item.video}
-          autoPlay muted loop playsInline
+          autoPlay muted loop playsInline preload="none"
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}

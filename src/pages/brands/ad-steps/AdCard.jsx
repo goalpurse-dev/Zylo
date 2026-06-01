@@ -5,7 +5,7 @@ export default function AdCard({ job }) {
     <article className="overflow-hidden rounded-xl border border-white/10 bg-white/[.03]">
       <div className="aspect-video bg-black">
         {job.result_url ? (
-          <video src={job.result_url} className="w-full h-full object-cover" controls />
+          <video src={job.result_url} className="w-full h-full object-cover" controls preload="none" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-white/40 text-xs">
             {job.status === "failed" ? "Failed" : "Processing…"}

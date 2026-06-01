@@ -170,7 +170,7 @@ function VideoZone({ file, previewUrl, onFile, disabled }) {
         }}
       >
         {file && previewUrl ? (
-          <video src={previewUrl} className="w-full h-full object-contain" muted playsInline />
+          <video src={previewUrl} className="w-full h-full object-contain" muted playsInline preload="none" />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center select-none">
             {/* Faces fan */}
@@ -430,7 +430,7 @@ function ResultState({ resultUrl, onReset }) {
         </div>
 
         <div className="rounded-xl overflow-hidden" style={{ background: "#000", border: "1px solid rgba(255,255,255,0.08)" }}>
-          <video src={resultUrl} controls autoPlay loop playsInline className="w-full max-h-[65vh] object-contain" />
+          <video src={resultUrl} controls autoPlay loop playsInline preload="none" className="w-full max-h-[65vh] object-contain" />
         </div>
 
         <div className="flex gap-2">

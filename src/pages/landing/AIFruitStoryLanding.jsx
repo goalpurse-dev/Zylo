@@ -165,7 +165,7 @@ export default function AIFruitStoryLanding() {
                 <div className="overflow-hidden rounded-[38px] border-2 border-white/15 bg-black shadow-[0_32px_80px_rgba(0,0,0,0.8)]">
                   <div className="aspect-[9/19.5] overflow-hidden">
                     <video ref={videoRef} src="/viral-builder/ai-fruit/result.mp4"
-                      className="h-full w-full object-cover" muted loop playsInline preload="auto" />
+                      className="h-full w-full object-cover" muted loop playsInline preload="none" />
                   </div>
                 </div>
                 <div className="mx-auto mt-2 h-1 w-16 rounded-full bg-white/15" />

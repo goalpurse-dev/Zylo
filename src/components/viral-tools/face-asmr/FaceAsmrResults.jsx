@@ -66,6 +66,7 @@ function Viewer({ scene, index, onClose }) {
             controls
             autoPlay
             playsInline
+            preload="none"
             className="max-w-full max-h-full rounded-2xl object-contain"
             style={{ maxHeight: "calc(100dvh - 160px)" }}
           />

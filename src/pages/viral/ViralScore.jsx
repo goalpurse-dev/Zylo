@@ -971,6 +971,7 @@ export default function ViralScore() {
                     controls
                     muted
                     playsInline
+                    preload="none"
                     style={{ maxHeight: 220 }}
                   />
                 )}
