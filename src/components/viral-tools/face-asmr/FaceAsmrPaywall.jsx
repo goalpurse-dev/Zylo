@@ -12,7 +12,7 @@ const TIERS = [
     monthly: 12, yearlyPerMonth: 10,
     yearlyNote: "Billed $120/yr",
     accent: "#38BDF8", btnFrom: "#1E6FA8", btnTo: "#2E9EDB",
-    features: ["600 credits / month", "Up to 30 AI videos", "Face ASMR", "Watermark-free exports", "Standard speed"],
+    features: ["600 credits / month", "Up to 30 AI videos", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "Watermark-free exports", "Standard speed"],
     priceIds: { monthly: "price_1TGKT6Htn4q5rIncI47V5Ein", yearly: "price_1TYWNYHtn4q5rIncWMa3mmvI" },
   },
   {
@@ -22,7 +22,7 @@ const TIERS = [
     yearlyNote: "Billed $252/yr",
     accent: "#A855F7", btnFrom: "#7A3BFF", btnTo: "#A855F7",
     popular: true,
-    features: ["1,200 credits / month", "Up to 60 AI videos", "Face ASMR", "Watermark-free exports", "Priority queue"],
+    features: ["1,200 credits / month", "Up to 60 AI videos", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "Watermark-free exports", "Priority queue"],
     priceIds: { monthly: "price_1TGKSqHtn4q5rIncIf8RPa6e", yearly: "price_1TYWOWHtn4q5rIncTmN3GXdy" },
   },
   {
@@ -31,7 +31,7 @@ const TIERS = [
     monthly: 50, yearlyPerMonth: 42,
     yearlyNote: "Billed $504/yr",
     accent: "#FB923C", btnFrom: "#B45309", btnTo: "#F97316",
-    features: ["2,500 credits / month", "Up to 125 AI videos", "Face ASMR", "Unlimited history", "Fast-lane generation"],
+    features: ["2,500 credits / month", "Up to 125 AI videos", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "Unlimited history", "Fast-lane generation"],
     priceIds: { monthly: "price_1TGKSSHtn4q5rIncSTurqkCN", yearly: "price_1TYWP8Htn4q5rIncbugChVhS" },
   },
 ];
@@ -234,7 +234,7 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
                           {tier.features.map((f, i) => (
                             <li key={i} className="flex items-start gap-1.5 text-[11px] text-white/45">
                               <Check size={11} className="mt-0.5 flex-shrink-0" style={{ color: `${tier.accent}CC` }} />
-                              {f.replace("Face ASMR", toolName)}
+                              {f}
                             </li>
                           ))}
                         </ul>
