@@ -23,9 +23,9 @@ import {
 
 const ANNOUNCEMENTS = [
   {
-    title: "📷 Micro Camera Animal is Live",
-    date: "2026.05.27",
-    desc: "Strap a bodycam onto any animal and watch it descend underground. Cinematic POV scenes, all AI.",
+    title: "Clay Rescue is Live",
+    date: "2026.06.01",
+    desc: "Giant hands save tiny clay worlds from fires, floods, blocked roads, and more. Built for satisfying rescue videos.",
   },
   {
     title: "😮 Face ASMR is Live",
