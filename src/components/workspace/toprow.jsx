@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useProfileCredits } from "../../hooks/useProfileCredits";
 import { supabase } from "../../lib/supabaseClient";
 import AuthModal from "../AuthModal.jsx";
+import CreatorRewardsModal from "../CreatorRewardsModal.jsx";
 
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -59,6 +60,7 @@ export default function TopRow({ onMenuClick, title }) {
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftPos, setGiftPos] = useState({ top: 60, left: 0 });
   const [authModal, setAuthModal] = useState(null); // "login" | "signup" | null
+  const [rewardsModalOpen, setRewardsModalOpen] = useState(false);
 
   const profileRef = useRef(null);
   const menuRef = useRef(null);
@@ -321,18 +323,20 @@ export default function TopRow({ onMenuClick, title }) {
         {/* Live Now */}
         <div className="px-4 pt-4 pb-2">
           <p className="text-white/40 text-[11px] font-bold tracking-widest uppercase mb-3">Live Now</p>
-          <div
-            className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition hover:opacity-90"
-            style={{ background: "linear-gradient(135deg, #5B21B6 0%, #7C3AED 50%, #A855F7 100%)" }}
+
+          <PromoCard
+            emoji="🔥"
+            title="Earn Free Zyvo Credits"
+            description="Post about Zyvo on socials — earn up to 1,500 credits."
+            onClick={() => { setGiftOpen(false); setRewardsModalOpen(true); }}
+          />
+
+          <PromoCard
+            emoji="🎁"
+            title="Pro Plan — 25% Off"
+            description="Limited time. Upgrade now and save."
             onClick={() => { setGiftOpen(false); navigate("/workspace/pricing"); }}
-          >
-            <span className="text-2xl leading-none">🎁</span>
-            <div>
-              <p className="text-white text-[13px] font-bold leading-tight">Pro Plan — 25% Off</p>
-              <p className="text-white/70 text-[11px] mt-0.5">Limited time. Upgrade now and save.</p>
-            </div>
-            <span className="ml-auto text-white/60 text-[11px] font-bold shrink-0">→</span>
-          </div>
+          />
         </div>
 
         {/* What's New */}
@@ -357,7 +361,45 @@ export default function TopRow({ onMenuClick, title }) {
     {authModal && (
       <AuthModal mode={authModal} onClose={() => setAuthModal(null)} />
     )}
+
+    {rewardsModalOpen && (
+      <CreatorRewardsModal onClose={() => {
+        if (user) localStorage.setItem(`zyvo_creator_rewards_seen:${user.id}`, "1");
+        setRewardsModalOpen(false);
+      }} />
+    )}
     </>
+  );
+}
+
+function PromoCard({ emoji, title, description, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="group relative w-full overflow-hidden text-left rounded-2xl border border-white/10 bg-[#090A0A] transition-all duration-300 hover:border-purple-400/50 hover:shadow-[0_0_24px_rgba(168,85,247,0.16)] mb-2 last:mb-0"
+    >
+      <div className="pointer-events-none absolute inset-0 rounded-2xl">
+        <div className="absolute left-0 top-0 h-[1.5px] w-16 bg-gradient-to-r from-purple-500 via-fuchsia-400 to-transparent" />
+        <div className="absolute left-0 top-0 h-12 w-[1.5px] bg-gradient-to-b from-purple-500 via-fuchsia-400 to-transparent" />
+        <div className="absolute bottom-0 right-0 h-[1.5px] w-16 bg-gradient-to-l from-purple-500 via-fuchsia-400 to-transparent" />
+        <div className="absolute bottom-0 right-0 h-12 w-[1.5px] bg-gradient-to-t from-purple-500 via-fuchsia-400 to-transparent" />
+      </div>
+      <div className="pointer-events-none absolute -left-6 -top-6 h-20 w-20 rounded-full bg-purple-500/10 blur-2xl" />
+      <div className="pointer-events-none absolute -bottom-6 -right-6 h-20 w-20 rounded-full bg-fuchsia-500/10 blur-2xl" />
+
+      <div className="relative z-10 flex items-center gap-3 p-3.5">
+        <div className="shrink-0 w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xl">
+          {emoji}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[13px] font-bold leading-tight bg-gradient-to-r from-white via-purple-100 to-purple-400 bg-clip-text text-transparent">
+            {title}
+          </p>
+          <p className="text-white/45 text-[11px] mt-0.5 leading-snug">{description}</p>
+        </div>
+        <span className="text-white/30 group-hover:text-purple-300 text-[11px] font-bold shrink-0 transition-colors">→</span>
+      </div>
+    </button>
   );
 }
 

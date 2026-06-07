@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { X } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import CreatorRewardsModal from "../CreatorRewardsModal.jsx";
 
 export default function TopPromoBanner() {
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [visible, setVisible] = useState(false);
+  const [rewardsModalOpen, setRewardsModalOpen] = useState(false);
 
   useEffect(() => {
    const dismissed = sessionStorage.getItem("promo_closed");
@@ -19,6 +20,7 @@ export default function TopPromoBanner() {
   if (!visible) return null;
 
   return (
+<>
 <div className="w-full bg-[#090A0A]">
   <div
     className="
@@ -48,33 +50,41 @@ export default function TopPromoBanner() {
     {/* CENTER CONTENT */}
     <div className="relative mx-auto flex items-center justify-center gap-2 px-4 pr-10 py-2.5 text-white overflow-hidden">
 
-      <span className="text-base leading-none shrink-0">🛟</span>
+      <span className="text-base leading-none shrink-0">🔥</span>
 
       <span className="text-white/90 font-semibold text-xs sm:text-sm whitespace-nowrap shrink-0">
-        Clay Rescue
+        Free Zyvo Credits
       </span>
 
       <span className="text-purple-300 font-bold text-xs whitespace-nowrap shrink-0 sm:hidden">
-        just dropped
+        up for grabs
       </span>
 
       <span className="text-purple-300 font-bold text-sm whitespace-nowrap shrink-0 hidden sm:inline">
-        just dropped
+        up to 1,500 available
       </span>
 
       <span className="hidden lg:inline text-white/30 shrink-0">—</span>
       <span className="hidden lg:inline text-white/60 text-sm whitespace-nowrap shrink-0">
-        Giant hands save tiny clay worlds with satisfying fixes.
+        Post about Zyvo on socials and earn free credits for every view.
       </span>
 
       <button
-        onClick={() => navigate("/workspace/clay-rescue")}
+        onClick={() => setRewardsModalOpen(true)}
         className="shrink-0 ml-1 px-3 py-1.5 rounded-md text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500 hover:opacity-90 transition whitespace-nowrap"
       >
-        Try it →
+        Learn more →
       </button>
     </div>
   </div>
 </div>
+
+  {rewardsModalOpen && (
+    <CreatorRewardsModal onClose={() => {
+      if (user) localStorage.setItem(`zyvo_creator_rewards_seen:${user.id}`, "1");
+      setRewardsModalOpen(false);
+    }} />
+  )}
+  </>
   );
 }

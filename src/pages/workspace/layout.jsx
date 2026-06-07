@@ -6,6 +6,7 @@ import TopRow from "../../components/workspace/toprow.jsx";
 import TopPromoBanner from "../../components/workspace/TopPromoBanner";
 import MobileBottomNav from "../../components/workspace/MobileBottomNav";
 import WelcomeScreen from "../../components/WelcomeScreen";
+import CreatorRewardsModal from "../../components/CreatorRewardsModal";
 
 
 export default function WorkspaceLayout() {
@@ -13,6 +14,8 @@ export default function WorkspaceLayout() {
 
   const location = useLocation();
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showRewards, setShowRewards] = useState(false);
+  const [rewardsUserId, setRewardsUserId] = useState(null);
 
   // Clean up trailing # left by Supabase OAuth token exchange
   useEffect(() => {
@@ -34,12 +37,16 @@ export default function WorkspaceLayout() {
     setBannerVisible(!dismissed);
   }, [isHomeRoute]);
 
-  /* ================= WELCOME ================= */
+  /* ================= WELCOME / CREATOR REWARDS ================= */
   useEffect(() => {
     const run = async () => {
       const { data } = await supabase.auth.getUser();
       const user = data?.user;
       if (!user) return;
+
+      setRewardsUserId(user.id);
+      const rewardsKey = `zyvo_creator_rewards_seen:${user.id}`;
+      const hasSeenRewards = !!localStorage.getItem(rewardsKey);
 
       const { data: profile } = await supabase
         .from("profiles")
@@ -47,14 +54,19 @@ export default function WorkspaceLayout() {
         .eq("id", user.id)
         .single();
 
-      if ((profile?.plan_code || "free").toLowerCase() !== "free") return;
+      const isFree = (profile?.plan_code || "free").toLowerCase() === "free";
+      const welcomeKey = `zyvo_workspace_welcome:${user.id}`;
 
-      const key = `zyvo_workspace_welcome:${user.id}`;
-      if (localStorage.getItem(key)) return;
-
-      // Don't set the key yet — only mark as seen when the user actually dismisses it.
-      // This way a page reload before interaction will show it again.
-      setShowWelcome(true);
+      if (isFree && !localStorage.getItem(welcomeKey)) {
+        // Brand new account — Welcome screen comes first. The creator
+        // rewards popup follows right after it's dismissed (see onClose below),
+        // so it always lands as the *second* popup for new users.
+        // Don't set the key yet — only mark as seen when the user actually
+        // dismisses it. This way a page reload before interaction will show it again.
+        setShowWelcome(true);
+      } else if (!hasSeenRewards) {
+        setShowRewards(true);
+      }
     };
 
     run();
@@ -169,6 +181,19 @@ useEffect(() => {
             const uid = data?.user?.id;
             if (uid) localStorage.setItem(`zyvo_workspace_welcome:${uid}`, "1");
             setShowWelcome(false);
+
+            // Chain the creator rewards popup right after — second popup for new users
+            if (uid && !localStorage.getItem(`zyvo_creator_rewards_seen:${uid}`)) {
+              setShowRewards(true);
+            }
+          }} />
+        )}
+
+        {/* CREATOR REWARDS POPUP — shown once per user, ever */}
+        {showRewards && (
+          <CreatorRewardsModal onClose={() => {
+            if (rewardsUserId) localStorage.setItem(`zyvo_creator_rewards_seen:${rewardsUserId}`, "1");
+            setShowRewards(false);
           }} />
         )}
 
