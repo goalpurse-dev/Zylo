@@ -3,7 +3,7 @@ import { Upload, X, ChevronRight, ChevronLeft } from "lucide-react";
 import ReferenceImageModal from "../../reference-images/ReferenceImageModal.jsx";
 import { useReferenceImages } from "../../reference-images/useReferenceImages";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
-import { generateFaceAsmrCharacterNames, IMAGE_CREDITS, VIDEO_CREDITS } from "./api/faceAsmrApi";
+import { generateFaceAsmrCharacterNames, IMAGE_FALLBACK_CREDITS, VIDEO_CREDITS } from "./api/faceAsmrApi";
 
 const LENGTH_OPTIONS = [
   { value: "15s", label: "15 sec", scenes: 3 },
@@ -252,7 +252,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
   const allFilled     = filledCount === activeScenes.length;
   const partialFilled = filledCount > 0 && !allFilled;
 
-  const totalCost        = (IMAGE_CREDITS + VIDEO_CREDITS) * sceneCount;
+  const totalCost        = (IMAGE_FALLBACK_CREDITS + VIDEO_CREDITS) * sceneCount;
   const hasEnoughCredits = creditBalance >= totalCost;
   const isGenerating     = phase === "images" || phase === "videos";
   const isDone           = phase === "done";

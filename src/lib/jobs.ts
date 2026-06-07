@@ -537,15 +537,29 @@ if (uerr || !userData?.user) throw new Error("Must be signed in");
 const uid = userData.user.id;
 
 // Gate: verify balance upfront but do NOT deduct yet.
-// Actual deduction happens in runware-video after confirmed success
-// so failed/timed-out jobs never consume credits.
-const { data: profile } = await supabase
-  .from("profiles")
-  .select("credit_balance")
-  .eq("id", uid)
-  .single();
+// Subtract credits already committed to queued/running jobs so
+// concurrent submissions can't overdraw the balance.
+const [{ data: profile }, { data: activeJobs }] = await Promise.all([
+  supabase
+    .from("profiles")
+    .select("credit_balance")
+    .eq("id", uid)
+    .single(),
+  supabase
+    .from("jobs")
+    .select("charge_credits")
+    .eq("user_id", uid)
+    .in("status", ["queued", "running"])
+    .not("charge_credits", "is", null),
+]);
 
-if (!params.skipCreditCheck && (profile?.credit_balance ?? 0) < credits) {
+const pendingCredits = (activeJobs ?? []).reduce(
+  (sum, j) => sum + (Number(j.charge_credits) || 0),
+  0,
+);
+const availableBalance = (profile?.credit_balance ?? 0) - pendingCredits;
+
+if (!params.skipCreditCheck && availableBalance < credits) {
   throw new Error("INSUFFICIENT_CREDITS");
 }
 

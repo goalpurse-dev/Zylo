@@ -324,10 +324,10 @@ useEffect(() => {
 
     watchJob(job.id, () => {});
 
-    // unlock after short delay
+    // unlock after short delay (long enough to prevent rapid double-submit)
     setTimeout(() => {
       setIsGenerating(false);
-    }, 2000);
+    }, 3500);
 
     setPrompt("");
 

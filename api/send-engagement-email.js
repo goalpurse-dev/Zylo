@@ -36,13 +36,13 @@ function buildEmail(user) {
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>we just dropped something wild 😮</title>
+  <title>the viral Clay Rescue style just dropped — don't miss it</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#f4f4f5;">
-    Face ASMR is live on Zyvo — upload any face, pick a scene, go viral.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+    Clay Rescue videos are going viral right now — make yours before the wave passes.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f5;">
@@ -66,44 +66,44 @@ function buildEmail(user) {
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Niko here — we just shipped something I've been hyped about for a while, and I wanted to tell you about it directly.
+            Niko here — I'm emailing you directly because this trend is moving fast and I don't want you to miss it.
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            <strong>Face ASMR is now live on Zyvo.</strong>
+            <strong>The viral Clay Rescue style just dropped on Zyvo — and it's blowing up right now.</strong>
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Here's how it works: you upload a face photo, pick one of our satisfying ASMR scenes, and we generate a full vertical video with that face placed right into the scene. Soap carving, kinetic sand, slime — whatever's trending. Takes about a minute. Gets millions of views.
+            Clay Rescue videos are one of the fastest-growing formats on TikTok and Reels. The concept is simple: a tiny clay figure gets rescued from a dangerous situation, frame by frame. Satisfying, emotional, impossible to scroll past. These videos are racking up millions of views — and now you can make them in minutes on Zyvo.
           </p>
 
           <!-- Feature card -->
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
             <tr>
               <td style="padding:22px 24px;background:#faf8ff;border-radius:12px;border:1px solid #ede9fe;">
-                <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#7A3BFF;letter-spacing:0.08em;text-transform:uppercase;">What makes it viral</p>
-                <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>Any face works</strong> — upload a celebrity, your own face, anyone. The AI handles the rest.</p>
-                <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>Trending ASMR scenes</strong> — we built the scene library around what's actually blowing up on TikTok and Reels right now.</p>
-                <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>Full video, not a loop</strong> — you get a real video you can post directly, watermark-free on any paid plan.</p>
+                <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#7A3BFF;letter-spacing:0.08em;text-transform:uppercase;">Why Clay Rescue goes viral</p>
+                <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>Insane watch time</strong> — the rescue format keeps viewers locked in until the very end, which the algorithm loves.</p>
+                <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>No filming needed</strong> — Zyvo generates the full video from your prompt. No camera, no clay, no editing.</p>
+                <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><span style="color:#7A3BFF;font-weight:700;">→</span> &nbsp;<strong>Post before it peaks</strong> — trends like this have a window. The creators posting now are getting the most reach.</p>
               </td>
             </tr>
           </table>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            ASMR content is one of the highest-retention formats on short video right now. If you've been looking for a niche that's easy to make and hard to stop watching — this is it.
+            I've seen this format go from underground to mainstream in a matter of weeks. If you want views, now is the time.
           </p>
 
           <p style="margin:0 0 24px;font-size:15px;line-height:1.75;color:#374151;">
-            Go try it — it's live right now.
+            Go make your Clay Rescue video right now — before it's too late.
           </p>
 
           <!-- CTA -->
           <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
             <tr>
               <td style="border-radius:10px;background:linear-gradient(135deg,#7A3BFF,#9f5fff);">
-                <a href="https://tryzyvo.com/face-asmr-maker"
+                <a href="https://tryzyvo.com/clay-rescue-maker"
                    style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.2px;">
-                  Try Face ASMR now →
+                  Make my Clay Rescue video →
                 </a>
               </td>
             </tr>
@@ -146,7 +146,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "we just dropped something wild 😮",
+      subject: "the viral Clay Rescue style just dropped — don't miss it 🚨",
       html: buildEmail(user),
     });
 
@@ -215,7 +215,7 @@ export default async function handler(req, res) {
           .from("profiles")
           .update({
             last_email_sent_at: new Date().toISOString(),
-            last_email_type: "face_asmr_launch",
+            last_email_type: "clay_rescue_launch",
           })
           .eq("email", user.email);
       } else {
