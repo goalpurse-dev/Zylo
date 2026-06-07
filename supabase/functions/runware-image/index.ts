@@ -323,6 +323,98 @@ function buildReferenceInputs(
   return valid.length > 0 ? { referenceImages: valid } : undefined;
 }
 
+/**
+ * Several Runware/OpenAI models only accept an exact set of width×height
+ * pairs and reject anything else with "Unsupported use of width/height
+ * parameters" — a hard failure with no generation attempted. Snap whatever
+ * the client requested to the closest supported aspect ratio per model so
+ * the request is never rejected outright.
+ */
+const SUPPORTED_DIMENSIONS: Record<string, [number, number][]> = {
+  // Nano Pro (image:nano-pro)
+  "google:4@2": [
+    [1024, 1024], [2048, 2048], [4096, 4096],
+    [1264, 848], [2528, 1696], [5096, 3392], [5056, 3392],
+    [848, 1264], [1696, 2528], [3392, 5096], [3392, 5056],
+    [1200, 896], [2400, 1792], [4800, 3584],
+    [896, 1200], [1792, 2400], [3584, 4800],
+    [928, 1152], [1856, 2304], [3712, 4608],
+    [1152, 928], [2304, 1856], [4608, 3712],
+    [768, 1376], [1536, 2752], [3072, 5504],
+    [1376, 768], [2752, 1536], [5504, 3072],
+    [1548, 672], [1584, 672], [3168, 1344], [6336, 2688],
+  ],
+  // GPT Image 2 — backs both image:fruit-v2 and image:fruit-v3
+  "openai:gpt-image@2": [
+    [1024, 1024], [2048, 2048],
+    [1248, 832], [2496, 1664], [832, 1248], [1664, 2496],
+    [1168, 880], [2336, 1760], [880, 1168], [1760, 2336],
+    [768, 1360], [1536, 2720], [1360, 768], [2720, 1536],
+    [1552, 656], [3104, 1312],
+  ],
+  // GPT Image 1.5 (image:openai)
+  "openai:4@1": [
+    [1024, 1024], [1536, 1024], [1024, 1536],
+  ],
+};
+
+function snapToSupportedDimensions(
+  width: number,
+  height: number,
+  airTag: string,
+): { width: number; height: number } {
+  const supported = SUPPORTED_DIMENSIONS[airTag];
+  if (!supported?.length) return { width, height };
+
+  const targetRatio = width / height;
+  let best = supported[0];
+  let bestDiff = Infinity;
+
+  for (const pair of supported) {
+    const diff = Math.abs(pair[0] / pair[1] - targetRatio);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = pair;
+    }
+  }
+
+  return { width: best[0], height: best[1] };
+}
+
+/**
+ * GPT Image 2 (the fruit models) only accepts a single reference image —
+ * sending more triggers "Invalid number of elements for 'referenceImages'
+ * parameter" and fails the whole request. Cap per-model so extra refs are
+ * dropped instead of blowing up the generation.
+ */
+const MAX_REFERENCE_IMAGES: Record<string, number> = {
+  "openai:gpt-image@2": 1,
+};
+
+function clampReferenceImages(refs: string[], airTag: string): string[] {
+  const max = MAX_REFERENCE_IMAGES[airTag];
+  return typeof max === "number" ? refs.slice(0, max) : refs;
+}
+
+/**
+ * Mirrors safeRunwarePositivePrompt from runware-video. Runware enforces
+ * model-specific length bounds (e.g. GPT Image 2 requires 2-2500 chars) and
+ * rejects anything outside that range with "Invalid value for
+ * 'positivePrompt' parameter" — a hard failure with no generation attempted.
+ */
+function safeImagePositivePrompt(prompt: unknown, max = 2000): string {
+  const safe = String(prompt || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+
+  if (safe.length < 2) {
+    throw new Error("Image prompt is empty or too short");
+  }
+
+  return safe;
+}
+
 async function processRunwareImageJob(body: any): Promise<void> {
   const {
     jobId,
@@ -350,10 +442,12 @@ async function processRunwareImageJob(body: any): Promise<void> {
     (settings?.tool_key === "image:fruit-v3" || fruitModel === "zyvo-v3" ? "medium" : "low");
   const requestedWidth = Number(settings?.width ?? 1024);
   const requestedHeight = Number(settings?.height ?? 1024);
-  const isFruitV3 = settings?.tool_key === "image:fruit-v3" || fruitModel === "zyvo-v3";
-  const fruitV3Dims = requestedWidth >= requestedHeight
-    ? { width: 1920, height: 1088 }
-    : { width: 1088, height: 1920 };
+  const { width: safeWidth, height: safeHeight } = snapToSupportedDimensions(
+    requestedWidth,
+    requestedHeight,
+    airTag,
+  );
+  const safePrompt = safeImagePositivePrompt(prompt);
 
   /* ── Upload reference images ── */
   console.log("[runware-image] received referenceImages", {
@@ -415,9 +509,9 @@ async function processRunwareImageJob(body: any): Promise<void> {
     taskType:       "imageInference",
     taskUUID:       crypto.randomUUID(),
     model:          airTag,
-    positivePrompt: prompt,
-    width:          isFruitV3 ? fruitV3Dims.width : requestedWidth,
-    height:         isFruitV3 ? fruitV3Dims.height : requestedHeight,
+    positivePrompt: safePrompt,
+    width:          safeWidth,
+    height:         safeHeight,
     numberResults:  1,
     outputType:     isFruitModel ? ["URL"] : "URL",
     ...(isFruitModel
@@ -430,9 +524,22 @@ async function processRunwareImageJob(body: any): Promise<void> {
       : { outputFormat: "PNG" }),
   };
 
+  // Some models cap how many reference images they'll accept (GPT Image 2
+  // allows only 1) — clamp before building the payload so Runware never
+  // rejects the whole request over an "Invalid number of elements" error.
+  const cappedRefs = clampReferenceImages(runwareRefs, airTag);
+  if (cappedRefs.length < runwareRefs.length) {
+    console.warn("[runware-image] dropping extra reference images — model supports at most", {
+      jobId,
+      airTag,
+      max: cappedRefs.length,
+      provided: runwareRefs.length,
+    });
+  }
+
   // Attach uploaded reference images via the shared helper.
   // buildReferenceInputs returns undefined when refs is empty → task.inputs is omitted.
-  const refInputs = buildReferenceInputs(runwareRefs);
+  const refInputs = buildReferenceInputs(cappedRefs);
   if (refInputs) task.inputs = refInputs;
 
   // Keep our existing quality setting for OpenAI models (quality: "low" for fruit-v2)
