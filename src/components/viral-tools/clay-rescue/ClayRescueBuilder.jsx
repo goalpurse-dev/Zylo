@@ -181,6 +181,7 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
   };
 
   return (
+    <>
     <div className="flex flex-col bg-[#0D0F11] rounded-2xl border border-white/[0.07] lg:overflow-hidden lg:h-full">
 
       {/* ── HEADER (desktop only) ── */}
@@ -338,5 +339,6 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
       creditsNeeded={totalCredits}
       creditBalance={creditBalance}
     />
+    </>
   );
 }
