@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import { LENGTH_OPTIONS, calcCredits, detectAnimal } from "./api/microCameraAnimalApi";
+import NoCreditsModal from "../shared/NoCreditsModal";
 
 const EXAMPLES = ["ant", "worm", "beetle", "termite", "spider", "mole", "cricket"];
 
@@ -51,6 +52,7 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase })
   const [animalInput, setAnimalInput]         = useState("");
   const [validationError, setValidationError] = useState("");
   const [selectedLength, setSelectedLength]   = useState("15s");
+  const [noCreditsOpen, setNoCreditsOpen]     = useState(false);
   const creditBalance = useProfileCredits();
 
   const sceneCount       = LENGTH_OPTIONS.find((l) => l.value === selectedLength)?.scenes ?? 3;
@@ -62,6 +64,7 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase })
   const detectedProfile = animalInput.trim() ? detectAnimal(animalInput) : null;
 
   const handleGenerate = () => {
+    if (!hasEnoughCredits) { setNoCreditsOpen(true); return; }
     const trimmed = animalInput.trim();
     if (!trimmed) { setValidationError("Please type an animal first."); return; }
     if (/\band\b|\bor\b|\bwith\b|\bplus\b|[,&+]/i.test(trimmed) || trimmed.split(/\s+/).length > 4) {
@@ -225,15 +228,13 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase })
 
         <button
           onClick={isDone ? onReset : handleGenerate}
-          disabled={isGenerating || (!isDone && !hasEnoughCredits)}
+          disabled={isGenerating}
           className={`w-full py-2.5 lg:py-3.5 rounded-xl font-bold text-[15px] flex items-center justify-center gap-2.5 transition-all duration-300 ${
             isDone
               ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25"
               : isGenerating
               ? "bg-[#7A3BFF]/25 text-white/40 cursor-not-allowed"
-              : hasEnoughCredits && animalInput.trim()
-              ? "text-white bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] hover:opacity-90"
-              : "bg-white/[0.05] text-white/20 cursor-not-allowed"
+              : "text-white bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] hover:opacity-90"
           }`}
         >
           {isGenerating ? (
@@ -258,5 +259,12 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase })
         </button>
       </div>
     </div>
+
+    <NoCreditsModal
+      open={noCreditsOpen}
+      onClose={() => setNoCreditsOpen(false)}
+      creditsNeeded={totalCredits}
+      creditBalance={creditBalance}
+    />
   );
 }

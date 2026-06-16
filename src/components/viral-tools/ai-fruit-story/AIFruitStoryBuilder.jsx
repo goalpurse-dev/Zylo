@@ -4,6 +4,7 @@ import FruitStepScenes from "./steps/FruitStepScenes";
 import FruitStepAnimate from "./steps/FruitStepAnimate";
 import { getFruitSceneCountForLength, isFruitVideoPromptReady } from "./api/fruitStoryApi";
 import Credit from "/icons/whitecredit.png";
+import NoCreditsModal from "../shared/NoCreditsModal";
 
 // Credits per 6-second clip by model
 // WAN: $0.4556/clip × 2 markup / $0.02 per credit = 46 credits
@@ -93,8 +94,10 @@ export default function AIFruitStoryBuilder({
   isContinuationMode = false,
   hasEnoughCredits = true,
   totalAnimationCost = 0,
+  creditBalance = 0,
 }) {
   const [stepError, setStepError] = useState("");
+  const [noCreditsOpen, setNoCreditsOpen] = useState(false);
 
   const currentStep  = STEPS[stepIndex] || STEPS[0];
   const isFirstStep  = stepIndex === 0;
@@ -202,7 +205,7 @@ export default function AIFruitStoryBuilder({
       return;
     }
     if (!hasEnoughCredits) {
-      setStepError(`Not enough credits. You need ${totalAnimationCost} credits to animate these clips.`);
+      setNoCreditsOpen(true);
       return;
     }
     setStepError("");
@@ -222,6 +225,7 @@ export default function AIFruitStoryBuilder({
     : null;
 
   return (
+    <>
     <div className="relative flex h-full flex-col rounded-[28px] border border-white/10 bg-[#111315] shadow-2xl shadow-black/30">
       {/* ── Header ── */}
       <div className="border-b border-white/10 p-4 sm:p-5">
@@ -471,5 +475,13 @@ export default function AIFruitStoryBuilder({
         </div>
       </div>
     </div>
+
+    <NoCreditsModal
+      open={noCreditsOpen}
+      onClose={() => setNoCreditsOpen(false)}
+      creditsNeeded={totalAnimationCost}
+      creditBalance={creditBalance}
+    />
+    </>
   );
 }

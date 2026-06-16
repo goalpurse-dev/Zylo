@@ -4,6 +4,7 @@ import ReferenceImageModal from "../../reference-images/ReferenceImageModal.jsx"
 import { useReferenceImages } from "../../reference-images/useReferenceImages";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import { generateFaceAsmrCharacterNames, IMAGE_FALLBACK_CREDITS, VIDEO_CREDITS } from "./api/faceAsmrApi";
+import NoCreditsModal from "../shared/NoCreditsModal";
 
 const LENGTH_OPTIONS = [
   { value: "15s", label: "15 sec", scenes: 3 },
@@ -153,6 +154,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
   const [step, setStep] = useState(0);
   const [selectedBg, setSelectedBg] = useState("white-marble");
   const [validationError, setValidationError] = useState("");
+  const [noCreditsOpen, setNoCreditsOpen] = useState(false);
   const creditBalance = useProfileCredits();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editingSceneIdx, setEditingSceneIdx] = useState(null);
@@ -500,8 +502,8 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
-              onClick={() => !isGenerating && hasEnoughCredits && onGenerate({ length: selectedLength, scenes: activeScenes, background: selectedBg, backgroundLabel: bgLabel })}
-              disabled={isGenerating || !hasEnoughCredits}
+              onClick={() => { if (isGenerating) return; if (!hasEnoughCredits) { setNoCreditsOpen(true); return; } onGenerate({ length: selectedLength, scenes: activeScenes, background: selectedBg, backgroundLabel: bgLabel }); }}
+              disabled={isGenerating}
               className={`flex-1 py-2.5 lg:py-3.5 rounded-xl font-bold text-[15px] transition flex items-center justify-center gap-2.5 ${
                 isDone
                   ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25"
@@ -539,6 +541,13 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
         onToggle={toggleSelect}
       />
     )}
+
+    <NoCreditsModal
+      open={noCreditsOpen}
+      onClose={() => setNoCreditsOpen(false)}
+      creditsNeeded={totalCost}
+      creditBalance={creditBalance}
+    />
     </>
   );
 }

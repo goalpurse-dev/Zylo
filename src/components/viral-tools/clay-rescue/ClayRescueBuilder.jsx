@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronRight, Lightbulb } from "lucide-react";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import { LENGTH_OPTIONS, calcCredits } from "./api/clayRescueApi";
+import NoCreditsModal from "../shared/NoCreditsModal";
 
 const PROBLEM_SUGGESTIONS = ["Flood", "Homeless", "Fire", "Storm", "Volcano", "Trapped", "Blizzard", "Quicksand", "Earthquake", "Landslide"];
 const FIX_SUGGESTIONS     = ["Sponge", "Blanket", "Water bucket", "Umbrella", "Ladder", "Rope", "Bridge plank", "Fan", "Bandage", "Scarf"];
@@ -136,6 +137,7 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
   const [scenes, setScenes]                 = useState(() => makeScenes(4));
   const [aiMode, setAiMode]                 = useState(true);
   const [validationError, setValidationError] = useState("");
+  const [noCreditsOpen, setNoCreditsOpen]   = useState(false);
   const creditBalance = useProfileCredits();
 
   const totalCredits = calcCredits(scenes.length);
@@ -166,6 +168,7 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
   };
 
   const handleGenerate = () => {
+    if (!hasEnough) { setNoCreditsOpen(true); return; }
     const sceneInputs = aiMode
       ? scenes.map((s) => ({ problem: s.problem, fix: s.fix })) // presets still used for AI prompts
       : scenes;
@@ -303,15 +306,13 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
         )}
         <button
           onClick={isDone ? onReset : handleGenerate}
-          disabled={isGenerating || (!isDone && !hasEnough)}
+          disabled={isGenerating}
           className={`w-full py-2.5 lg:py-3.5 rounded-xl font-bold text-[15px] flex items-center justify-center gap-2.5 transition-all duration-300 ${
             isDone
               ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25"
               : isGenerating
               ? "bg-[#7A3BFF]/25 text-white/40 cursor-not-allowed"
-              : hasEnough
-              ? "text-white bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] hover:opacity-90"
-              : "bg-white/[0.05] text-white/20 cursor-not-allowed"
+              : "text-white bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] hover:opacity-90"
           }`}
         >
           {isGenerating ? (
@@ -330,5 +331,12 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
         </button>
       </div>
     </div>
+
+    <NoCreditsModal
+      open={noCreditsOpen}
+      onClose={() => setNoCreditsOpen(false)}
+      creditsNeeded={totalCredits}
+      creditBalance={creditBalance}
+    />
   );
 }

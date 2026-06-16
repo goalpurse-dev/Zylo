@@ -60,7 +60,7 @@ export default Deno.serve(async (req) => {
   const plan = data.plan_code;
 
   let bg_library_limit = 0;
-  if (plan === "starter") bg_library_limit = 30;
+  if (plan === "starter" || plan === "affiliate") bg_library_limit = 30;
   else if (plan === "pro") bg_library_limit = 100;
   else if (plan === "generative") bg_library_limit = -1;
 

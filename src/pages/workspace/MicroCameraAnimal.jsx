@@ -13,7 +13,7 @@ import {
 
 const MAX_RECENT      = 8;
 const PLAN_CACHE_KEY  = "zyvo_micro_cam_plan";
-const PAID_PLAN_CODES = new Set(["starter", "pro", "generative"]);
+const PAID_PLAN_CODES = new Set(["starter", "pro", "generative", "affiliate"]);
 
 function getCachedPlan(userId) {
   try {

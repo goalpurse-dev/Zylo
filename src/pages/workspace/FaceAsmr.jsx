@@ -18,7 +18,7 @@ const LEGACY_STORAGE_KEY = "zyvo_face_asmr_recent";
 const LEGACY_IMPORT_KEY_PREFIX = "zyvo_face_asmr_recent_imported";
 const PLAN_CACHE_KEY = "zyvo_face_plan";
 const PLAN_FALLBACK_CACHE_KEYS = [PLAN_CACHE_KEY, "zyvo_fruit_plan"];
-const PAID_PLAN_CODES = new Set(["starter", "pro", "generative"]);
+const PAID_PLAN_CODES = new Set(["starter", "pro", "generative", "affiliate"]);
 
 function getCachedPlan(userId) {
   try {

@@ -1,6 +1,8 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import Credit from "/icons/whitecredit.png";
 import { getFruitImageCreditsPerImage, getFruitSceneCountForLength } from "../api/fruitStoryApi";
+import { useProfileCredits } from "../../../../hooks/useProfileCredits";
+import NoCreditsModal from "../../shared/NoCreditsModal";
 
 // Style is fixed internally — not exposed to the user.
 // "cinematic" is the premium TikTok fruit drama default used by the planner.
@@ -143,6 +145,9 @@ export default function FruitStepScenes({
   isGenerating = false,
   isContinuationMode = false,
 }) {
+  const creditBalance = useProfileCredits();
+  const [noCreditsOpen, setNoCreditsOpen] = useState(false);
+
   const selectedLengthId = form.storyLength || "30s";
   const selectedModelId = form.sceneImageModel || "zyvo-v2";
   const selectedAspect = form.sceneAspect || "9:16";
@@ -180,6 +185,7 @@ const restoredClipCount = restoredSceneCount;
 
   const handleGenerate = () => {
     if (isGenerating) return;
+    if (creditBalance < sceneCredits) { setNoCreditsOpen(true); return; }
 
     setForm((prev) => ({
       ...prev,
@@ -235,6 +241,7 @@ const restoredClipCount = restoredSceneCount;
   }
 
   return (
+    <>
     <div className="space-y-4">
       {/* STORY LENGTH */}
       <div className="rounded-[20px] border border-white/10 bg-[#151719] p-3">
@@ -484,5 +491,13 @@ const restoredClipCount = restoredSceneCount;
         </div>
       )}
     </div>
+
+    <NoCreditsModal
+      open={noCreditsOpen}
+      onClose={() => setNoCreditsOpen(false)}
+      creditsNeeded={sceneCredits}
+      creditBalance={creditBalance}
+    />
+    </>
   );
 }

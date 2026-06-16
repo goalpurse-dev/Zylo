@@ -73,8 +73,8 @@ const withLock = (items) =>
       };
     }
 
-    // 🟣 STARTER
-    if (planTier === "starter") {
+    // 🟣 STARTER / AFFILIATE
+    if (planTier === "starter" || planTier === "affiliate") {
       if (i <= 3) return { ...bg, locked: false };
 
       if (i <= 10) {

@@ -4,6 +4,7 @@ import ToolGenerationLayout from "../viral/shared/ToolGenerationLayout";
 import AIFruitStoryBuilder from "../../components/viral-tools/ai-fruit-story/AIFruitStoryBuilder";
 import AIFruitStoryResults from "../../components/viral-tools/ai-fruit-story/AIFruitStoryResults";
 import FruitStoryPaywall from "../../components/viral-tools/ai-fruit-story/FruitStoryPaywall";
+import NoCreditsModal from "../../components/viral-tools/shared/NoCreditsModal";
 import useFruitStoryJob from "../../components/viral-tools/ai-fruit-story/hooks/useFruitStoryJob";
 import { isFruitVideoPromptReady, sceneCountToLength, FRUIT_VIDEO_CREDITS_PER_CLIP } from "../../components/viral-tools/ai-fruit-story/api/fruitStoryApi";
 import { useProfileCredits } from "../../hooks/useProfileCredits";
@@ -32,6 +33,7 @@ export default function AIFruitStory() {
     if (!user) return "guest";
     return getCachedPlan(user.id) ?? null;
   });
+  const [noCreditsOpen, setNoCreditsOpen] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(() => {
     if (authLoading) return false;
     if (!user) return true;
@@ -177,6 +179,7 @@ export default function AIFruitStory() {
   };
 
   const handleAnimateScenes = () => {
+    if (!hasEnoughCredits) { setNoCreditsOpen(true); return; }
     startAnimation();
     if (window.innerWidth < 1024) {
       setMobilePanel("results");
@@ -269,8 +272,8 @@ export default function AIFruitStory() {
     isBusy ||
     (stepIndex === 0 && !hasEnoughCharacters) ||
     (stepIndex === 1 && !allRequiredScenesReady) ||
-    // On step 3: if done, Finish is always enabled. Otherwise check credits + prompts.
-    (stepIndex === 2 && phase !== "done" && (!allRequiredScenesReady || !videoPromptsReady || !hasEnoughCredits));
+    // On step 3: if done, Finish is always enabled. Otherwise check scenes + prompts (credits show a modal).
+    (stepIndex === 2 && phase !== "done" && (!allRequiredScenesReady || !videoPromptsReady));
 
   const builderPanel = (
     <AIFruitStoryBuilder
@@ -298,6 +301,7 @@ export default function AIFruitStory() {
       isContinuationMode={loadedFromRecent}
       hasEnoughCredits={hasEnoughCredits}
       totalAnimationCost={totalAnimationCost}
+      creditBalance={creditBalance}
     />
   );
 
@@ -330,6 +334,12 @@ export default function AIFruitStory() {
       }}
       isGuest={paywallGuest}
       dismissable={!needsUpgrade}
+    />
+    <NoCreditsModal
+      open={noCreditsOpen}
+      onClose={() => setNoCreditsOpen(false)}
+      creditsNeeded={totalAnimationCost}
+      creditBalance={creditBalance}
     />
     <ToolGenerationLayout
       left={

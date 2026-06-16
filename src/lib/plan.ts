@@ -61,6 +61,21 @@ function defaultsFor(code: string): PlanFeatures {
       avatars_max: 5,
       queue: 'standard',
     },
+    affiliate: {
+      tools: {
+        photos: true,
+        't2i:v2': true,
+        't2i:v3': true,
+        't2i:v4': true,
+        'ads:sora': false,
+        'ads:veo-3.1-fast': true,
+      },
+      daily_job_limit: 30,
+      brands_max: 2,
+      products_per_brand_max: 2,
+      avatars_max: 5,
+      queue: 'standard',
+    },
     pro: {
       tools: {
         photos: true,
