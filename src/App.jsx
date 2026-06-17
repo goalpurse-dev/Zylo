@@ -189,6 +189,7 @@ import AuthCallbackPage from "./pages/AuthCallback.jsx";
 const FaceAsmrPage           = lazy(() => import("./pages/workspace/FaceAsmr.jsx"));
 const MicroCameraAnimalPage  = lazy(() => import("./pages/workspace/MicroCameraAnimal.jsx"));
 const ClayRescuePage         = lazy(() => import("./pages/workspace/ClayRescue.jsx"));
+const AICookingMaticPage     = lazy(() => import("./pages/workspace/AICookingMatic.jsx"));
 
 import "./styles/sand.css";
 
@@ -491,6 +492,7 @@ return (
   <Route path="/workspace/skeleton-shorts" element={<SkeletonShorts />} />
   <Route path="/workspace/micro-camera-animal" element={<MicroCameraAnimalPage />} />
   <Route path="/workspace/clay-rescue" element={<ClayRescuePage />} />
+  <Route path="/workspace/ai-cooking-matic" element={<AICookingMaticPage />} />
 
 
 </Route>

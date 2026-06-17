@@ -113,6 +113,12 @@
 .zy-sand .sand-toast--ok { background: #10b981; }
 .zy-sand .sand-toast--err { background: #ef4444; }
 
+/* ===== Shimmer animation (used by skeleton loaders) ===== */
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(200%); }
+}
+
 /* ===== Temporary shim: neutralize old dark utilities inside sand pages ===== */
 .zy-sand.sand-shim .text-white { color: var(--sand-ink) !important; }
 .zy-sand.sand-shim .bg-white\/5 { background: var(--sand-surface) !important; }
