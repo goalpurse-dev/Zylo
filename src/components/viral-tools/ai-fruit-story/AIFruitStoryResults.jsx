@@ -930,8 +930,8 @@ function GenerationCard({ generation, onContinue, onDelete }) {
   const scenes   = generation.scenes ?? [];
   const thumbs   = scenes.filter((s) => s.imageUrl).slice(0, 4);
   const status   = STATUS_LABELS[generation.status] ?? STATUS_LABELS.images_generated;
-  // "animating" is included so users can reload a stuck/interrupted animation and retry
-  const canAnimate = ["images_generated", "partial_failed", "animating", "completed"].includes(generation.status);
+  // "generating_images" included so users can click in and watch scenes arrive in real time
+  const canAnimate = ["generating_images", "images_generated", "partial_failed", "animating", "completed"].includes(generation.status);
 
   return (
     <div className="group rounded-[20px] border border-white/10 bg-white/[0.03] p-4 transition hover:border-white/15 hover:bg-white/[0.05]">

@@ -1,38 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { isFruitVideoPromptReady } from "../api/fruitStoryApi";
 
-function ActiveGlow({ children, className = "" }) {
-  return (
-    <div
-      className={`
-        relative overflow-hidden border border-[#D8B4FE]/55
-        bg-[linear-gradient(135deg,rgba(255,255,255,0.16)_0%,rgba(224,194,255,0.16)_30%,rgba(168,85,247,0.22)_65%,rgba(124,58,237,0.34)_100%)]
-        shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_12px_34px_rgba(124,58,237,0.18)]
-        ${className}
-      `}
-    >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_38%)]" />
-      <div className="pointer-events-none absolute inset-[1px] rounded-[inherit] ring-1 ring-inset ring-white/18" />
-      {children}
-    </div>
-  );
-}
-
-const ANIMATION_MODELS = [
-  {
-    id: "zyvo-video-v2",
-    label: "Zyvo Video V2",
-    description: "Fast talking clips with sound",
-    tag: "Wan 2.6 Flash",
-  },
-  {
-    id: "zyvo-video-v3",
-    label: "Zyvo Video V3",
-    description: "Premium talking clips with better audio and stronger motion",
-    tag: "Veo 3.1 Fast",
-  },
-];
-
 function getThumbUrl(url) {
   if (!url) return "";
   const raw = String(url);
@@ -50,7 +18,6 @@ export default function FruitStepAnimate({
   onEnsureVideoPrompts,
   isAnimating = false,
 }) {
-  const selectedModelId = form.animationModel || "zyvo-video-v2";
   const generatedScenes = useMemo(
     () => [...scenes]
       .filter((scene) => scene?.imageUrl)
@@ -63,13 +30,6 @@ export default function FruitStepAnimate({
   useEffect(() => {
     if (generatedScenes.length > 0) onEnsureVideoPrompts?.(false);
   }, [generatedScenes.length, onEnsureVideoPrompts]);
-
-  const updateFormValue = (key, value) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
 
   return (
     <div className="space-y-3">
@@ -116,47 +76,6 @@ export default function FruitStepAnimate({
         )}
       </div>
 
-      <div>
-        <h3 className="text-sm font-semibold text-white">Animation model</h3>
-        <p className="mt-1 text-xs text-white/40">
-          Choose the model used after your edited prompts are ready.
-        </p>
-
-        <div className="mt-3 grid gap-3">
-          {ANIMATION_MODELS.map((model) => {
-            const active = selectedModelId === model.id;
-            const content = (
-              <button
-                type="button"
-                onClick={() => updateFormValue("animationModel", model.id)}
-                className="w-full rounded-[20px] p-4 text-left"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-white">{model.label}</div>
-                    <p className={`mt-1 text-xs ${active ? "text-white/60" : "text-white/45"}`}>
-                      {model.description}
-                    </p>
-                  </div>
-                  <span className={`shrink-0 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-wide ${
-                    active ? "border-white/25 bg-white/14 text-white" : "border-white/10 bg-white/[0.04] text-white/35"
-                  }`}>
-                    {model.tag}
-                  </span>
-                </div>
-              </button>
-            );
-
-            return active ? (
-              <ActiveGlow key={model.id} className="rounded-[20px]">{content}</ActiveGlow>
-            ) : (
-              <div key={model.id} className="rounded-[20px] border border-white/10 bg-white/[0.025] transition hover:border-white/15 hover:bg-white/[0.05]">
-                {content}
-              </div>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 }

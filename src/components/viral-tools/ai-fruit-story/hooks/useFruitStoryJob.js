@@ -382,6 +382,16 @@ export default function useFruitStoryJob({ form }) {
       setPhase(restoredPhase);
       setError(null);
 
+      // Re-attach watchers for any image jobs that were in-flight when the user
+      // left the page during image generation.
+      if (row.status === "generating_images") {
+        for (const scene of restoredScenes) {
+          if (scene.imageJobId && !isTerminal(scene.imageStatus ?? "queued")) {
+            watchImageJob(scene.sceneNumber, scene.imageJobId);
+          }
+        }
+      }
+
       // Re-attach watchers for any video jobs that were in-flight when the user
       // left the page. This lets them complete (or surface as failed) without
       // the UI being permanently stuck at "Animating".
@@ -398,7 +408,7 @@ export default function useFruitStoryJob({ form }) {
       console.error("[useFruitStoryJob] loadGeneration failed:", e.message);
       return null;
     }
-  }, [watchVideoJob]);
+  }, [watchImageJob, watchVideoJob]);
 
   /* ─── deleteGeneration ─── */
   const deleteGeneration = useCallback(async (id) => {
@@ -731,7 +741,7 @@ export default function useFruitStoryJob({ form }) {
     setError(null);
     setVideoClips(clips);
 
-    const videoToolKey = f.animationModel ?? "zyvo-video-v2";
+    const videoToolKey = f.animationModel ?? "zyvo-video-v1";
 
     // Save animation model to DB
     void updateFruitStoryGeneration(generationRef.current, {

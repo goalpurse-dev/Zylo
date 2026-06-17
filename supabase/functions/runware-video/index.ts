@@ -383,8 +383,9 @@ Deno.serve(async (req) => {
   const airTagStr = String(airTag);
   const isMiniMax = airTagStr.includes("minimax");
   const isKling = airTagStr.includes("kling");
+  const isVeoLite = airTagStr === "google:veo@3.1-lite";
 
-  if (!isMiniMax && !isKling && (!width || !height)) {
+  if (!isMiniMax && !isKling && !isVeoLite && (!width || !height)) {
     return err(req, "Missing dimensions");
   }
 

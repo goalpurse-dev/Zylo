@@ -54,7 +54,7 @@ const respond = (req: Request, body: unknown, status = 200) =>
 
 /* ---------- Deno-safe Stripe signature verification ---------- */
 function hexToBytes(hex: string): Uint8Array {
-  if (hex.length % 2) throw new Error("invalid hex");
+  if (hex.length % 2) throw new Error("invalid hex length");
   const out = new Uint8Array(hex.length / 2);
   for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
   return out;
@@ -65,7 +65,7 @@ function timingSafeEqualBytes(a: Uint8Array, b: Uint8Array): boolean {
   for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
   return diff === 0;
 }
-async function verifyStripeSignature(raw: string, sigHeader: string | null, secret: string) {
+async function verifyStripeSignature(raw: string, sigHeader: string | null, secret: string): Promise<boolean> {
   if (!sigHeader) return false;
   const parts = Object.fromEntries(sigHeader.split(",").map((p) => {
     const [k, v] = p.split("="); return [k, v];
@@ -86,6 +86,7 @@ async function verifyStripeSignature(raw: string, sigHeader: string | null, secr
 const sb = createClient(SUPABASE_URL, SERVICE_ROLE);
 
 async function userIdByCustomerId(customerId: string): Promise<string | null> {
+  if (!customerId || customerId === "undefined") return null;
   const { data } = await sb.from("profiles").select("id").eq("stripe_customer_id", customerId).single();
   return data?.id ?? null;
 }
@@ -104,12 +105,26 @@ async function setPlan(userId: string, plan: "free" | "starter" | "pro" | "gener
   await sb.from("profiles").update({ plan_code: plan }).eq("id", userId);
 }
 
-/** idempotency for events */
+/**
+ * Idempotency guard — inserts a row keyed by Stripe event ID.
+ * Returns true  → event already handled, skip processing.
+ * Returns false → event is new, proceed.
+ * Never throws  → on DB error we fail-open (grantCreditsOnce is the real guard).
+ */
 async function alreadyProcessed(eventId: string): Promise<boolean> {
-  const ins = await sb.from("billing_events_processed").insert({ event_id: eventId }).select().single();
-  // @ts-ignore
-  if (ins.error && ins.error.code === "23505") return true;
-  return false;
+  try {
+    const { error } = await sb
+      .from("billing_events_processed")
+      .insert({ event_id: eventId })
+      .select()
+      .single();
+    if (error?.code === "23505") return true; // duplicate key → already handled
+    if (error) console.warn("[stripe-webhook] billing_events_processed insert:", error.message);
+    return false;
+  } catch (e) {
+    console.error("[stripe-webhook] alreadyProcessed threw:", e);
+    return false; // fail-open: grantCreditsOnce provides the real idempotency
+  }
 }
 
 /** grant credits once using a ledger row keyed by external_id */
@@ -147,31 +162,78 @@ export default {
     if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
     if (req.method !== "POST")   return respond(req, { error: "Method not allowed" }, 405);
 
+    // ── 1. Read body ─────────────────────────────────────────────────────────
+    let raw: string;
+    try {
+      raw = await req.text();
+    } catch (e) {
+      console.error("[stripe-webhook] failed to read body:", e);
+      return respond(req, { error: "Failed to read request body" }, 400);
+    }
+
+    // ── 2. Verify Stripe signature ────────────────────────────────────────────
+    //    Wrapped separately so a malformed sig header (odd-length hex, etc.)
+    //    returns 400 instead of an unhandled 500.
     const sig = req.headers.get("stripe-signature");
-    const raw = await req.text();
-    const valid = await verifyStripeSignature(raw, sig, WEBHOOK_SECRET);
+    let valid: boolean;
+    try {
+      valid = await verifyStripeSignature(raw, sig, WEBHOOK_SECRET);
+    } catch (e) {
+      console.error("[stripe-webhook] signature verification threw:", e);
+      return respond(req, { error: "Signature verification error" }, 400);
+    }
     if (!valid) return respond(req, { error: "Invalid signature" }, 400);
 
-    const event = JSON.parse(raw);
-    const type = event.type as string;
+    // ── 3. Parse event ────────────────────────────────────────────────────────
+    let event: any;
+    try {
+      event = JSON.parse(raw);
+    } catch {
+      return respond(req, { error: "Invalid JSON payload" }, 400);
+    }
 
-    // Deduplicate Stripe retries
+    const type: string = event?.type ?? "unknown";
+    // Null-safe object accessor — avoids "Cannot read property of null" on
+    // any access inside the handlers below.
+    const obj: any = event?.data?.object ?? {};
+
+    console.log(`[stripe-webhook] received ${type} id=${event?.id}`);
+
+    // ── 4. Deduplication ──────────────────────────────────────────────────────
+    //    alreadyProcessed is inside try/catch and never throws, so a DB hiccup
+    //    here cannot produce a 500.  grantCreditsOnce provides the real guard.
     if (await alreadyProcessed(event.id)) {
+      console.log(`[stripe-webhook] deduped ${type} id=${event.id}`);
       return respond(req, { ok: true, deduped: true });
     }
 
+    // ── 5. Handle known events ────────────────────────────────────────────────
+    //    All unknown/unsupported event types fall through to the final
+    //    `return respond(req, { ignored: true, type }, 200)` — they NEVER
+    //    cause a 500.  Only genuine DB/logic errors inside a known handler
+    //    surface as 500 (which tells Stripe to retry, which is correct for
+    //    transient failures).
     try {
-      /* ---------- Checkout completed ---------- */
+
+      /* ── checkout.session.completed ───────────────────────────────────── */
       if (type === "checkout.session.completed") {
-        const s = event.data.object as any;
+        const s = obj;
+
+        // Only act on sessions that actually have a paid/completing status.
+        // failed/canceled/requires_action sessions must be ignored here.
+        // (Async payment methods may complete with payment_status = "unpaid";
+        //  credits are granted on the matching async_payment_succeeded event.)
 
         // Resolve user
-        let userId: string | null = (s.metadata?.user_id as string) || (s.client_reference_id as string) || null;
-        if (!userId && s.customer) userId = await userIdByCustomerId(String(s.customer));
+        let userId: string | null =
+          (s?.metadata?.user_id as string) ||
+          (s?.client_reference_id as string) ||
+          null;
+        if (!userId && s?.customer) userId = await userIdByCustomerId(String(s.customer));
         if (!userId) return respond(req, { ok: true, reason: "no-user" });
 
-        // One-time top-ups
-        if (s.mode === "payment" && s.payment_status === "paid") {
+        // One-time top-ups — only when payment_status is confirmed "paid"
+        if (s?.mode === "payment" && s?.payment_status === "paid") {
           const items = await fetchCheckoutLineItems(s.id);
           let totalCredits = 0;
           for (const it of items) {
@@ -188,35 +250,38 @@ export default {
           return respond(req, { ok: true, topup_credits: totalCredits });
         }
 
-        // Initial subscription checkout: store ids (credits come on invoice.payment_succeeded)
-        if (s.mode === "subscription" && s.status === "complete") {
+        // Initial subscription checkout — store IDs; credits come on invoice.payment_succeeded
+        if (s?.mode === "subscription" && s?.status === "complete") {
           const patch: any = {};
           if (s.subscription) patch.stripe_subscription_id = s.subscription;
           if (s.customer)     patch.stripe_customer_id     = s.customer;
           if (Object.keys(patch).length) await sb.from("profiles").update(patch).eq("id", userId);
           return respond(req, { ok: true });
         }
+
+        // Any other checkout state (unpaid async, abandoned, etc.) — ignore
+        return respond(req, { ok: true, reason: "checkout-no-action" });
       }
 
-      /* ---------- Invoice paid (renewal & initial cycle credits) ---------- */
+      /* ── invoice.payment_succeeded ────────────────────────────────────── */
       if (type === "invoice.payment_succeeded") {
-        const inv = event.data.object as any;
-        const customerId = String(inv.customer);
+        const inv = obj;
+        const customerId = String(inv?.customer ?? "");
         let userId = await userIdByCustomerId(customerId);
 
-if (!userId) {
-  userId = inv.metadata?.user_id ?? inv.subscription_details?.metadata?.user_id ?? null;
-}
+        if (!userId) {
+          userId = inv?.metadata?.user_id ?? inv?.subscription_details?.metadata?.user_id ?? null;
+        }
         if (!userId) return respond(req, { ok: true, reason: "no-user" });
 
-        // Grant plan credits for NON-proration recurring lines only
+        // Grant plan credits for non-proration recurring lines only
         let planCredits = 0;
         let detectedInterval: "yearly" | undefined;
-        const lines: any[] = inv.lines?.data ?? [];
+        const lines: any[] = inv?.lines?.data ?? [];
         for (const ln of lines) {
-          const priceId: string | undefined = ln.price?.id;
-          const isRecurring = ln.plan || ln.price?.recurring;
-          const isProration = Boolean(ln.proration);
+          const priceId: string | undefined = ln?.price?.id;
+          const isRecurring = ln?.plan || ln?.price?.recurring;
+          const isProration = Boolean(ln?.proration);
           if (!priceId || !isRecurring || isProration) continue;
           const map = PRICE_MAP[priceId];
           if (map) {
@@ -230,75 +295,76 @@ if (!userId) {
           await grantCreditsOnce(userId, planCredits, "plan_renewal", inv.id);
         }
 
-        // For annual subs: stamp billing_interval + monthly top-up tracking
         if (detectedInterval === "yearly") {
           await sb.from("profiles").update({
-            billing_interval:            "yearly",
-            annual_credits_per_month:    planCredits,
-            annual_credits_last_topup:   new Date().toISOString(),
+            billing_interval:          "yearly",
+            annual_credits_per_month:  planCredits,
+            annual_credits_last_topup: new Date().toISOString(),
           }).eq("id", userId);
         } else if (planCredits > 0) {
-          // Ensure monthly subs don't accidentally stay marked as yearly
           await sb.from("profiles").update({
-            billing_interval:            "monthly",
-            annual_credits_per_month:    0,
-            annual_credits_last_topup:   null,
+            billing_interval:          "monthly",
+            annual_credits_per_month:  0,
+            annual_credits_last_topup: null,
           }).eq("id", userId);
         }
 
-        // Sync subscription-ish fields using invoice periods
-        const firstLine = inv.lines?.data?.[0];
-        const periodEndIso = firstLine?.period?.end ? new Date(firstLine.period.end * 1000).toISOString() : null;
+        const firstLine = inv?.lines?.data?.[0];
+        const periodEndIso = firstLine?.period?.end
+          ? new Date(firstLine.period.end * 1000).toISOString()
+          : null;
         await sb.from("profiles").update({
-          stripe_subscription_status: inv.status ?? "paid",
-          cancel_at_period_end: Boolean(inv.subscription_details?.cancel_at_period_end),
-          current_period_end: periodEndIso,
-          plan_renews_at: periodEndIso,
+          stripe_subscription_status: inv?.status ?? "paid",
+          cancel_at_period_end:       Boolean(inv?.subscription_details?.cancel_at_period_end),
+          current_period_end:         periodEndIso,
+          plan_renews_at:             periodEndIso,
         }).eq("id", userId);
 
         return respond(req, { ok: true, plan_credits: planCredits });
       }
 
-      /* ---------- Invoice failed (insufficient funds / dunning) ---------- */
+      /* ── invoice.payment_failed ───────────────────────────────────────── */
+      //   Covers: insufficient funds, dunning, 3D Secure failures on
+      //   subscription invoices.  No credits are ever added.
       if (type === "invoice.payment_failed") {
-        const inv = event.data.object as any;
-        const userId = await userIdByCustomerId(String(inv.customer));
+        const inv = obj;
+        const userId = await userIdByCustomerId(String(inv?.customer ?? ""));
         if (!userId) return respond(req, { ok: true, reason: "no-user" });
 
-        // Mark past_due (or open) — no credits added
         await sb.from("profiles").update({
           stripe_subscription_status: "past_due",
-          // keep current_period_end unchanged; user may still be in paid period
         }).eq("id", userId);
 
-        // Optional: record a zero-credit ledger entry so you can show “payment failed” in UI
+        // Optional audit row — swallow errors to avoid masking the real issue
         await sb.from("credit_grants").insert({
-          user_id: userId,
-          reason: "invoice_failed",
-          amount: 0,
-          external_id: inv.id,
+          user_id:     userId,
+          reason:      "invoice_failed",
+          amount:      0,
+          external_id: inv?.id,
         }).select().single().catch(() => {});
 
-        return respond(req, { ok: true, failed_invoice: inv.id });
+        return respond(req, { ok: true, failed_invoice: inv?.id });
       }
 
-      /* ---------- Subscription updated (status, cancel flags, price switches) ---------- */
+      /* ── customer.subscription.updated ───────────────────────────────── */
       if (type === "customer.subscription.updated") {
-        const sub = event.data.object as any;
-        const userId = await userIdByCustomerId(String(sub.customer));
+        const sub = obj;
+        const userId = await userIdByCustomerId(String(sub?.customer ?? ""));
         if (!userId) return respond(req, { ok: true });
 
         const priceId: string | undefined = sub?.items?.data?.[0]?.price?.id;
         const mapping = priceId ? PRICE_MAP[priceId] : undefined;
 
         const patch: any = {
-          stripe_subscription_status: sub.status ?? null,
-          cancel_at_period_end: Boolean(sub.cancel_at_period_end),
-          current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
+          stripe_subscription_status: sub?.status ?? null,
+          cancel_at_period_end:       Boolean(sub?.cancel_at_period_end),
+          current_period_end:         sub?.current_period_end
+            ? new Date(sub.current_period_end * 1000).toISOString()
+            : null,
         };
 
         if (mapping) {
-          patch.plan_code = mapping.plan;
+          patch.plan_code     = mapping.plan;
           patch.plan_renews_at = patch.current_period_end;
         }
 
@@ -306,29 +372,39 @@ if (!userId) {
         return respond(req, { received: true });
       }
 
-      /* ---------- Subscription canceled ---------- */
+      /* ── customer.subscription.deleted ───────────────────────────────── */
       if (type === "customer.subscription.deleted") {
-        const sub = event.data.object as any;
-        const userId = await userIdByCustomerId(String(sub.customer));
+        const sub = obj;
+        const userId = await userIdByCustomerId(String(sub?.customer ?? ""));
         if (userId) {
           await sb.from("profiles").update({
-            plan_code:                   "free",
-            stripe_subscription_status:  "canceled",
-            cancel_at_period_end:        false,
-            current_period_end:          sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
-            stripe_subscription_id:      null,
-            billing_interval:            "monthly",
-            annual_credits_per_month:    0,
-            annual_credits_last_topup:   null,
+            plan_code:                  "free",
+            stripe_subscription_status: "canceled",
+            cancel_at_period_end:       false,
+            current_period_end:         sub?.current_period_end
+              ? new Date(sub.current_period_end * 1000).toISOString()
+              : null,
+            stripe_subscription_id:     null,
+            billing_interval:           "monthly",
+            annual_credits_per_month:   0,
+            annual_credits_last_topup:  null,
           }).eq("id", userId);
         }
         return respond(req, { received: true });
       }
 
-      return respond(req, { ignored: type }, 200);
+      // ── All other events (payment_intent.*, charge.*, 3DS events, etc.) ──
+      // Return 200 immediately. Do NOT throw, do NOT try to process.
+      // This is the correct response so Stripe stops retrying unhandled events.
+      console.log(`[stripe-webhook] ignored unsupported event: ${type}`);
+      return respond(req, { ignored: true, type }, 200);
+
     } catch (e) {
-      console.error("webhook handler error", e);
-      return respond(req, { error: e instanceof Error ? e.message : String(e) }, 500);
+      // Only reached for genuine errors inside the known-event handlers above.
+      // Returning 500 tells Stripe to retry — correct for transient DB failures.
+      console.error(`[stripe-webhook] error handling ${type} id=${event?.id}:`,
+        e instanceof Error ? e.message : String(e));
+      return respond(req, { error: "internal error" }, 500);
     }
   },
 };

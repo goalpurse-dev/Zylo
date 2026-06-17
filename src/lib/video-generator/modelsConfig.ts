@@ -2,25 +2,23 @@ const LOGOS = {
   hailou:     "/assets/logos/hailou.webp",
   kling:      "/assets/logos/kling.webp",
   runway:     "/assets/logos/runway.webp",
-  wan:        "/assets/logos/wan.webp",       // add logo file when available
-  vidu:       "/assets/logos/vidu.webp",      // add logo file when available
+  wan:        "/assets/logos/wan.webp",
+  vidu:       "/assets/logos/vidu.webp",
+  veo:        "/images/logos/google.webp",
 };
 
 export const MODELS = {
 
-  "video:klingpro": {
-    label: "KlingAI Video 3.0 Pro",
-    description: "Best cinematic + realistic motion. Great for storytelling, skeleton-style POV content, and premium viral videos. Supports AI sound and ultra-sharp 1080p/1440p output.",
-    logo: LOGOS.kling,
-    traits: ["Cinematic", "Realistic Motion", "🔊 Sound", "Premium"],
-    supportedSizes: ["16:9", "9:16", "1:1"],
-    supportedDurations: ["3s", "5s", "8s", "10s", "15s"],
-    supportedResolutions: ["1080p"],
-    maxReferenceImages: 1,
-    durationSlider: { min: 3, max: 15 },
-    hasSound: true,
-    // resolution is locked per size — not user-selectable
-    sizeResolutions: { "16:9": "1080p", "9:16": "1080p", "1:1": "1440p" },
+  "video:veo31lite": {
+    label:                "Google Veo 3.1 Lite",
+    description:          "Google's Veo 3.1 Lite generates cinematic AI videos with built-in dialogue and sound. Fast 720p output with realistic motion and native audio — ideal for viral content, storytelling, and character-driven videos.",
+    logo:                 LOGOS.veo,
+    traits:               ["🔊 Sound & Dialogue", "Cinematic", "720p", "Fast"],
+    supportedSizes:       ["9:16", "16:9"],
+    supportedDurations:   ["4s", "6s", "8s"],
+    supportedResolutions: ["720p"],
+    maxReferenceImages:   2,
+    hasSound:             true,
   },
 
    "video:klingaist": {

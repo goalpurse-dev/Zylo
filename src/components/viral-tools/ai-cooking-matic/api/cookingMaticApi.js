@@ -252,6 +252,9 @@ export function extractIngredient(dishName) {
 }
 
 // ── Image generation ──────────────────────────────────────────────────────────
+export const FALLBACK_TOOL_KEY = "image:nano.2"; // Nano Banana 2 — faster, same cost to user
+export const FALLBACK_CREDITS  = IMAGE_CREDITS;  // keep user cost identical (2 credits)
+
 export async function generateCookingScene({ prompt, referenceUrl = null }) {
   return createImageJobSimple({
     subject: prompt,
@@ -262,6 +265,20 @@ export async function generateCookingScene({ prompt, referenceUrl = null }) {
     refImages: referenceUrl ? [referenceUrl] : [],
     expectedRefSlotCount: referenceUrl ? 1 : 0,
     chargeCreditsOverride: IMAGE_CREDITS,
+  });
+}
+
+// Nano Banana 2 fallback — no reference images, same credit cost
+export async function generateCookingSceneFallback({ prompt }) {
+  return createImageJobSimple({
+    subject: prompt,
+    toolKey: FALLBACK_TOOL_KEY,
+    width: IMAGE_W,
+    height: IMAGE_H,
+    size: `${IMAGE_W}x${IMAGE_H}`,
+    refImages: [],
+    expectedRefSlotCount: 0,
+    chargeCreditsOverride: FALLBACK_CREDITS,
   });
 }
 

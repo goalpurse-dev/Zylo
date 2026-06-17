@@ -8,6 +8,34 @@ import MobileBottomNav from "../../components/workspace/MobileBottomNav";
 import WelcomeScreen from "../../components/WelcomeScreen";
 import CreatorRewardsModal from "../../components/CreatorRewardsModal";
 
+// ── Global video outage banner ──────────────────────────────────────────────
+// Remove this component (and its usage below) once the Runware issue is fixed.
+function VideoOutageBanner({ onDismiss }) {
+  return (
+    <div className="relative w-full bg-amber-500/10 border-b border-amber-400/30 px-4 py-3">
+      <div className="pointer-events-none absolute inset-0 animate-pulse bg-amber-500/5" />
+      <div className="relative mx-auto flex max-w-5xl items-start gap-3">
+        <span className="shrink-0 text-lg leading-none mt-0.5">⚠️</span>
+        <div className="flex-1 min-w-0">
+          <span className="text-sm font-bold text-amber-300">Video generation is temporarily unstable. </span>
+          <span className="text-[13px] text-amber-200/75">
+            Our video provider is experiencing issues — generations may fail. We're actively fixing it.
+            If your generation fails you will <strong className="text-amber-200">NOT be charged</strong>.
+            Sorry for the inconvenience, hang tight!
+          </span>
+        </div>
+        <button
+          onClick={onDismiss}
+          className="shrink-0 ml-2 flex h-6 w-6 items-center justify-center rounded-md text-amber-400/60 hover:bg-amber-500/20 hover:text-amber-300 transition text-lg leading-none"
+          aria-label="Dismiss"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 export default function WorkspaceLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -29,6 +57,7 @@ export default function WorkspaceLayout() {
   const isHomeRoute = location.pathname === "/workspace/home";
   const [bannerVisible, setBannerVisible] = useState(false);
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+  const [outageBannerDismissed, setOutageBannerDismissed] = useState(false);
 
   /* ================= PROMO ================= */
   useEffect(() => {
@@ -156,6 +185,10 @@ useEffect(() => {
 
         {/* HEADER — always sticky */}
         <div className="relative z-[60] w-full shrink-0">
+          {!outageBannerDismissed && (
+            <VideoOutageBanner onDismiss={() => setOutageBannerDismissed(true)} />
+          )}
+
           {isHomeRoute && bannerVisible && (
             <TopPromoBanner onClose={() => setBannerVisible(false)} />
           )}

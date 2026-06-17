@@ -52,6 +52,27 @@ const PRESET_BEATS: Record<StoryPreset, Record<number, BeatTemplate[]>> = {
 
   /* ── CHEATING ── */
   cheating: {
+    3: [
+      { beatType: "hook",          title: "Sweet Couple Moment",           purpose: "Establish the couple as happy to make the betrayal hit harder",                emotionDirection: "surface warmth hiding unease",    actionDirection: "couple together in domestic scene, one partner distracted",                 cameraDirection: "warm two-shot, couple close",                backgroundDetail: "cozy home living room, warm lighting",              promptHint: "Happy couple scene. One character subtly distracted — averted eyes, nervous posture." },
+      { beatType: "affair_scene",  title: "The Secret Meeting",            purpose: "Show the cheater with the affair partner — the actual affair the viewer came for", emotionDirection: "secretive, charged, conspiratorial", actionDirection: "cheater and affair partner together in private, victim completely absent", cameraDirection: "close intimate two-shot, cheater and affair_partner only", backgroundDetail: "different location — hotel room, parked car, private restaurant", promptHint: "Cheater and affair_partner alone together. Secretive closeness. Guilty smiles or tense glances. NO victim in this scene." },
+      { beatType: "discovery",     title: "Caught — Everything Explodes",  purpose: "Victim discovers the affair or is confronted with proof — all three in one explosive scene", emotionDirection: "shock, rage, devastation",          actionDirection: "victim discovers cheater with affair partner or finds undeniable proof", cameraDirection: "dramatic wide shot showing all three characters",    backgroundDetail: "confrontation space — hallway, living room, or door",       promptHint: "Victim discovers the affair. Three-character confrontation. Shattered expression on victim. Guilt on cheater. Affair partner exposed." },
+    ],
+    5: [
+      { beatType: "hook",          title: "Sweet Couple Moment",           purpose: "Open with the couple happy — makes the betrayal land harder",                   emotionDirection: "happiness with hidden guilt",     actionDirection: "couple together, one partner slightly distracted or hiding phone",          cameraDirection: "warm domestic two-shot",                             backgroundDetail: "home kitchen or living room, warm lighting",                promptHint: "Happy couple. One character shows subtle guilt — slightly averted eyes, distracted energy." },
+      { beatType: "affair_scene",  title: "The Secret Meeting",            purpose: "Reveal the actual affair — cheater + affair_partner TOGETHER, victim absent",   emotionDirection: "secretive and conspiratorial",    actionDirection: "cheater and affair_partner alone together, intimate or secretive body language", cameraDirection: "close two-shot of cheater + affair_partner only",    backgroundDetail: "different location — hotel room, back alley, private café", promptHint: "Cheater and affair_partner alone. Secretive closeness. NO victim. This is the affair happening." },
+      { beatType: "discovery",     title: "Hard Evidence Found",           purpose: "Victim finds undeniable proof of the affair",                                    emotionDirection: "shock and devastation",           actionDirection: "victim sees proof — catches them, finds messages, or sees a photo",         cameraDirection: "dramatic close-up on victim discovering proof",              backgroundDetail: "home or confrontation location",                            promptHint: "Victim alone discovering proof. Wide eyes, trembling hands, shattered expression." },
+      { beatType: "confrontation", title: "The Confrontation",             purpose: "Betrayed character confronts the cheater directly with evidence",               emotionDirection: "controlled fury or tearful rage", actionDirection: "victim confronts cheater — evidence shown, accusation spoken through expression", cameraDirection: "intense two-shot, faces close",                backgroundDetail: "charged indoor space — living room or hallway",             promptHint: "Confrontation. Victim holds evidence or points accusingly. Cheater shows guilt or defensiveness. High tension." },
+      { beatType: "payoff",        title: "Final Walk Away or Twist",      purpose: "Powerful emotional payoff — victim walks away or delivers shocking reveal",     emotionDirection: "devastation, triumph, or twist",  actionDirection: "victim walks out with dignity or delivers a shocking final revelation",     cameraDirection: "wide powerful shot for walk-away or close for twist",        backgroundDetail: "doorway, open street, or confrontation room",               promptHint: "Final moment. Victim walks away with power, or drops a shocking twist. Expression: resolved and strong." },
+    ],
+    7: [
+      { beatType: "hook",          title: "Sweet Couple Moment",           purpose: "Establish the couple as seemingly happy",                                       emotionDirection: "surface warmth, hidden unease",   actionDirection: "couple in a tender moment — one partner secretly distracted",               cameraDirection: "warm close two-shot",                                backgroundDetail: "cozy home, golden lighting",                                promptHint: "Happy couple. One character subtly nervous or guilty. No conflict visible yet." },
+      { beatType: "suspicion",     title: "First Suspicious Clue",         purpose: "Victim notices something off — phone, receipt, strange message",               emotionDirection: "curiosity becoming unease",       actionDirection: "victim spots a clue and their expression shifts",                           cameraDirection: "close-up on clue then victim's reaction face",               backgroundDetail: "home — bedroom or kitchen, slightly cooler light",          promptHint: "Victim notices something wrong. Close on the clue. Face shifts from confused to suspicious." },
+      { beatType: "affair_scene",  title: "The Secret Meeting",            purpose: "The actual affair — cheater + affair_partner ALONE, victim completely absent",  emotionDirection: "secretive, charged, guilty",      actionDirection: "cheater and affair_partner together in private location — victim not present", cameraDirection: "intimate two-shot of cheater + affair_partner only",  backgroundDetail: "hotel room, parked car, or private café",                   promptHint: "Cheater and affair_partner alone. NO victim. Secretive closeness. This is the affair itself." },
+      { beatType: "investigation", title: "Quiet Investigation",           purpose: "Victim investigates privately — searching phone, following, asking a friend",   emotionDirection: "nervous determined focus",        actionDirection: "victim alone searching for truth — phone records, following someone",        cameraDirection: "tight solo close-up, victim's hands or face",               backgroundDetail: "private space — bedroom, car, or dim hallway",              promptHint: "Victim alone searching for truth. Phone in hand or following someone. Focused, anxious." },
+      { beatType: "discovery",     title: "Hard Evidence Found",           purpose: "Victim finds undeniable visual proof of the affair",                           emotionDirection: "shock and devastation",           actionDirection: "victim sees undeniable proof — catches them or finds a photo/message",      cameraDirection: "dramatic face close-up — moment of realization",             backgroundDetail: "discovery location — hallway, hotel lobby, or bedroom",     promptHint: "Full discovery. Undeniable proof. Shattered face. Wide eyes, trembling, silent scream." },
+      { beatType: "confrontation", title: "The Confrontation",             purpose: "Victim confronts cheater directly with the evidence",                          emotionDirection: "controlled rage or tearful anger",actionDirection: "confrontation — evidence shown, accusation made in expression",            cameraDirection: "intense two-shot or three-shot if affair_partner present",    backgroundDetail: "charged indoor space, dramatic lighting",                   promptHint: "Confrontation. Victim presents proof. Cheater shows guilt. Affair_partner may be present. Maximum tension." },
+      { beatType: "payoff",        title: "Final Walk Away or Twist",      purpose: "Story resolves with powerful emotional beat or cliffhanger",                   emotionDirection: "triumph, devastation, or shocking twist", actionDirection: "victim walks away with dignity or delivers a shocking final reveal",      cameraDirection: "powerful wide shot or dramatic close-up",                    backgroundDetail: "doorway, open space, or confrontation room",                promptHint: "Final beat. Victim stands strong. Walks away with power or drops a shocking twist." },
+    ],
     4: [
       { beatType: "hook",          title: "Sweet Moment with Hidden Clue",     purpose: "Hook the viewer with a happy couple scene that has one subtle suspicious detail visible",                      emotionDirection: "surface happiness with underlying unease",  actionDirection: "couple together, one partner distracted or hiding phone",                  cameraDirection: "warm medium shot, couple in frame",                  backgroundDetail: "cozy home living room or kitchen, warm lighting",           promptHint: "Happy couple scene. One character shows subtle nervousness — slightly averted eyes, hidden phone, or distracted posture." },
       { beatType: "discovery",     title: "The Suspicious Discovery",          purpose: "Betrayed character finds hard evidence of the affair",                                                         emotionDirection: "shock and growing horror",                   actionDirection: "character finds message, gift, or visual proof",                           cameraDirection: "close-up on hands and face reaction",                backgroundDetail: "bedroom or home space, natural light",                       promptHint: "Character alone, discovering visual proof. Wide eyes, trembling hands, frozen in shock." },
@@ -359,6 +380,7 @@ interface CharInput {
   role?: string;
   description?: string;
   image?: string;
+  synthetic?: boolean;
 }
 
 function slug(value: string): string {
@@ -390,6 +412,31 @@ function inferFruitType(c: CharInput): string {
   }
   if (text.includes("brokkoli")  || text.includes("broccoli")) return "broccoli";
   return slug(c.name ?? c.id ?? "fruit") || "fruit";
+}
+
+/* ─── SYNTHETIC AFFAIR PARTNER (auto-generated for cheating stories with < 3 chars) ─── */
+
+const AFFAIR_PARTNER_CANDIDATES = [
+  { fruit: "peach",  name: "Hot Peach"   },
+  { fruit: "mango",  name: "Mango Lady"  },
+  { fruit: "apple",  name: "Apple Girl"  },
+  { fruit: "cherry", name: "Cherry"      },
+  { fruit: "kiwi",   name: "Kiwi"        },
+  { fruit: "pear",   name: "Pear"        },
+  { fruit: "grape",  name: "Grape"       },
+];
+
+function buildSyntheticAffairPartner(existingChars: CharInput[]): CharInput & { synthetic: true } {
+  const usedFruits = new Set(existingChars.map(inferFruitType));
+  const pick = AFFAIR_PARTNER_CANDIDATES.find((c) => !usedFruits.has(c.fruit))
+    ?? AFFAIR_PARTNER_CANDIDATES[2];
+  return {
+    id:          `affair_partner_${pick.fruit}`,
+    name:        pick.name,
+    role:        "affair_partner",
+    description: `${pick.name} — AI-generated affair partner. ${pick.fruit} fruit character. Visually distinct from the other two characters. No reference image — must be described in full visual detail in every scene.`,
+    synthetic:   true,
+  };
 }
 
 // Lightweight fallback — only used when GPT doesn't assign a role from the images.
@@ -485,6 +532,7 @@ function buildCanonicalCast(selectedCharacters: CharInput[], preset: StoryPreset
         : narrativeRole === "affair_partner"        ? "visually distinct from the betrayed partner; never visually or narratively interchangeable"
         : narrativeRole === "kid"                   ? "innocent child character; never role-swapped into an adult"
         : "supporting character with a stable personality and story function",
+      synthetic: c.synthetic === true,
     };
   });
 }
@@ -496,7 +544,9 @@ function mergeCastWithPlanner(canonicalCast: any[], plannedCast: any[] = []) {
       c?.sourceCharacterId === base.sourceCharacterId ||
       c?.referenceLabel === base.referenceLabel ||
       c?.label === base.referenceLabel ||
-      c?.displayName === base.displayName
+      c?.displayName === base.displayName ||
+      // Match synthetic affair_partner by narrativeRole when GPT uses a different ID
+      (base.synthetic && base.narrativeRole === "affair_partner" && c?.narrativeRole === "affair_partner")
     );
     return {
       ...base,
@@ -550,12 +600,14 @@ function resolveSceneIds(scene: any, index: number, cast: any[], beats: BeatTemp
     // Suspicion — victim notices something wrong, cheater may be present
     suspicion:          present(victim, cheater),
 
-    // THE AFFAIR — cheater + affair_partner shown together (this is what the viewer wants to see)
+    // THE AFFAIR — cheater + affair_partner shown together
     suspicious_behavior:present(cheater, affair),
-    investigation:      present(cheater, affair),   // shows the actual affair happening
     affair_scene:       present(cheater, affair),
     cheater_regret:     present(cheater, affair),
     cheater_notices:    present(cheater, affair),
+
+    // INVESTIGATION — victim alone searching for truth
+    investigation:      present(victim),
 
     // DISCOVERY — victim catches them, show all 3 or victim + affair_partner
     discovery:          present(victim, cheater, affair),
@@ -714,6 +766,26 @@ In cheating/cheats-back stories with 3 characters:
 - AFFAIR_PARTNER (character 3): third party. MUST appear in AT LEAST 2 scenes: (1) alone with cheater = the actual affair scene, (2) discovery scene where victim catches them or finds proof of them.
 
 HARD REQUIREMENT: Include ONE scene where cheater + affair_partner are shown TOGETHER without the victim. This is the "affair happening" scene. Without this, the story makes no sense visually.
+
+════════════════════════════════════════
+RULE 2B — AUTO-GENERATED AFFAIR PARTNER
+════════════════════════════════════════
+
+If any CHARACTER LABEL is marked [⚠ AI-GENERATED CHARACTER — NO REFERENCE IMAGE]:
+1. That character is the affair_partner. They have no uploaded reference photo.
+2. LOOK at the 2 uploaded reference images. Decide based on visual energy:
+   - AGGRESSIVE / DOMINANT / SECRETIVE energy → CHEATER
+   - HURT / EMOTIONAL / TRUSTING energy → VICTIM
+   - Commit to this assignment in EVERY scene. Never reverse it.
+3. Since the affair_partner has no reference image, YOU must describe them visually in detail:
+   - Choose a specific look: fruit type, exact color, outfit, hair style, facial expression.
+   - Write this EXACT SAME description in EVERY imagePrompt the affair_partner appears in.
+   - Example: "a glamorous peach fruit-human character with rosy-gold skin, wavy auburn hair, wearing a sleek red dress, bold flirtatious expression"
+4. The affair_partner MUST appear in:
+   - affair_scene beat: with cheater ONLY (victim completely absent)
+   - discovery beat: victim catches them or finds proof (can include all 3)
+   - Optional: confrontation beat (if relevant)
+5. NEVER show the affair_partner in scenes where only victim+cheater should be — respect characterIdsInScene strictly.
 
 ════════════════════════════════════════
 RULE 3 — ONE CONTINUOUS STORY (CRITICAL)
@@ -942,11 +1014,20 @@ Deno.serve(async (req) => {
     return fail("At least 2 characters are required");
   }
 
-  const preset        = detectPreset({ storyPreset, storyIdea, conflict });
-  const beats         = getBeatsForPresetAndCount(preset, sceneCount);
-  const canonicalCast = buildCanonicalCast(selectedCharacters, preset);
-
+  const preset     = detectPreset({ storyPreset, storyIdea, conflict });
   const isCheating = preset === "cheating" || preset === "cheats-back";
+
+  // For cheating stories with only 2 uploaded characters, auto-generate a third
+  // affair-partner character so the story makes visual sense. GPT will decide
+  // which of the two uploaded characters is the cheater vs. the victim based on
+  // visual energy, then incorporate the synthetic affair partner into all affair scenes.
+  const effectiveCharacters: CharInput[] = (isCheating && selectedCharacters.length < 3)
+    ? [...selectedCharacters, buildSyntheticAffairPartner(selectedCharacters)]
+    : selectedCharacters;
+  const syntheticAffairAdded = effectiveCharacters.length > selectedCharacters.length;
+
+  const beats         = getBeatsForPresetAndCount(preset, sceneCount);
+  const canonicalCast = buildCanonicalCast(effectiveCharacters, preset);
 
   const dna = {
     conflictBucket: isCheating ? "cheating" : (CONFLICT_BUCKETS.find((c) => c === preset) ?? pickRandom(CONFLICT_BUCKETS)),
@@ -961,7 +1042,7 @@ Deno.serve(async (req) => {
   };
 
   const charBlock = canonicalCast.map((c) =>
-    `  - referenceLabel: ${c.referenceLabel}  |  castId: ${c.id}  |  sourceCharacterId: ${c.sourceCharacterId}  |  narrativeRole: ${c.narrativeRole}  |  fruitType: ${c.fruitType}  |  gender: ${c.genderPresentation}  |  function: ${c.narrativeFunction}`
+    `  - referenceLabel: ${c.referenceLabel}  |  castId: ${c.id}  |  sourceCharacterId: ${c.sourceCharacterId}  |  narrativeRole: ${c.narrativeRole}  |  fruitType: ${c.fruitType}  |  gender: ${c.genderPresentation}  |  function: ${c.narrativeFunction}${c.synthetic ? "  |  ⚠ AI-GENERATED CHARACTER — NO REFERENCE IMAGE — describe visual appearance in full detail in every imagePrompt (same description every scene)" : ""}`
   ).join("\n");
 
   const beatFlow = beats.map((b, i) =>
@@ -969,7 +1050,7 @@ Deno.serve(async (req) => {
   ).join("\n");
 
   const aspectLabel  = sceneAspect === "9:16" ? "vertical 9:16 TikTok" : "horizontal 16:9";
-  const charNames    = selectedCharacters.map((c) => c.name ?? c.id).join(", ");
+  const charNames    = effectiveCharacters.map((c) => `${c.name ?? c.id}${(c as any).synthetic ? " [AI-GENERATED, no ref image]" : ""}`).join(", ");
 
   const system = SYSTEM_BASE
     .replace("{{SCENE_COUNT}}",     String(sceneCount))
@@ -996,6 +1077,13 @@ Deno.serve(async (req) => {
     `Required scene beat flow (follow this EXACTLY):`,
     beatFlow,
     ``,
+    ...(syntheticAffairAdded ? [
+      `⚠ AFFAIR PARTNER AUTO-GENERATED: Only 2 characters were uploaded. A third affair-partner character (${canonicalCast.find((c) => c.narrativeRole === "affair_partner")?.displayName ?? "Affair Partner"}) has been automatically added. This character has NO reference image.`,
+      `→ YOU decide who is the CHEATER vs. the VICTIM based on visual energy from the 2 uploaded reference images (aggressive/dominant/secretive = cheater; hurt/emotional/trusting = victim).`,
+      `→ Describe the affair partner in FULL visual detail in every imagePrompt they appear in. Keep this description IDENTICAL across all scenes.`,
+      `→ The affair partner MUST appear in: the affair_scene (alone with cheater) and the discovery scene.`,
+      ``,
+    ] : []),
     `CRITICAL RULES:`,
     `1. Cast[] first — assign narrativeRoles EXACTLY as listed in locked cast above. Do NOT reassign roles.`,
     `2. Create EXACTLY ${sceneCount} scenes matching the beat flow above`,

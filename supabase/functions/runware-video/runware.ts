@@ -112,6 +112,41 @@ export async function launchRunwareVideo(
   const rawRefs = (args.referenceImages ?? []).filter(Boolean).map(String);
   const safePositivePrompt = safeRunwarePositivePrompt(args.subject);
 
+  if (args.airTag === "google:veo@3.1-lite") {
+    const task: Record<string, unknown> = {
+      taskType:      "videoInference",
+      model:         "google:veo@3.1-lite",
+      resolution:    "720p",
+      duration:      args.durationSec,
+      numberResults: 1,
+      includeCost:   true,
+      positivePrompt: safePositivePrompt,
+      providerSettings: {
+        google: {
+          generateAudio: true,
+          enhancePrompt: false,
+        },
+      },
+      taskUUID,
+    };
+
+    const refs = rawRefs.slice(0, 2);
+    if (refs.length > 0) {
+      task.inputs = {
+        frameImages: refs.map((url, index) => ({
+          image: url,
+          frame: index === 0 ? "first" : "last",
+        })),
+      };
+    }
+
+    console.log("[runware-video] VEO 3.1 LITE TASK", JSON.stringify(task, null, 2));
+    const { res, text, json } = await postJson([task]);
+    if (!res.ok) throw new Error(`Runware launch failed (${res.status}): ${text}`);
+    const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
+    return { jobId: String(providerJobId) };
+  }
+
   if (args.airTag === "alibaba:wan@2.6-flash") {
     const task = {
       taskType: "videoInference",

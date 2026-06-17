@@ -10,28 +10,24 @@ export const FRUIT_IMAGE_MODEL_TO_TOOLKEY = {
 };
 
 export const FRUIT_VIDEO_MODEL_TO_TOOLKEY = {
-  "zyvo-video-v2": "video:wan26flash",
-  "zyvo-video-v3": "video:veo31fast",
+  "zyvo-video-v1": "video:veo31lite",
 };
 
 const VIDEO_WITH_SOUND = {
-  "zyvo-video-v2": true,
-  "zyvo-video-v3": true,
+  "zyvo-video-v1": true,
 };
 
 export const MAX_FRUIT_VOICEOVER_CHARS = 95;
 
 // Credits per 6-second animated clip by model
-// WAN 2.6 Flash: $0.4556/clip × 2 markup / $0.02 per credit = 46
-// Veo 3.1 Fast:  $0.90/clip  × 2 markup / $0.02 per credit = 90
+// Veo 3.1 Lite: $0.05/s × 6s × 2 markup / $0.02 per credit = 30
 export const FRUIT_VIDEO_CREDITS_PER_CLIP = {
-  "zyvo-video-v2": 46,
-  "zyvo-video-v3": 90,
+  "zyvo-video-v1": 30,
 };
 export const MAX_FRUIT_VOICEOVER_LINE_CHARS = 45;
 export const MIN_FRUIT_VIDEO_PROMPT_CHARS = 80;
 const MAX_RUNWARE_VIDEO_PROMPT_CHARS = 1450;
-const MAX_PROVIDER_DIALOGUE_LINES = 3;
+const MAX_PROVIDER_DIALOGUE_LINES = 4;
 const MAX_PROVIDER_DIALOGUE_LINE_CHARS = 45;
 
 // Only check the sections that are truly essential for video generation.
@@ -740,7 +736,7 @@ function getProviderDialogue({ scenePrompt = "", scene = {}, form = {} }) {
       ...base.map((row) => sanitizeSpeakerName(row.speaker)),
     ]).size,
   );
-  const maxLines = speakerCount <= 1 ? 1 : speakerCount === 2 ? 2 : MAX_PROVIDER_DIALOGUE_LINES;
+  const maxLines = speakerCount <= 1 ? 1 : MAX_PROVIDER_DIALOGUE_LINES;
 
   const rawRows = base.slice(0, maxLines).map((row, index) => ({
     speaker: sanitizeSpeakerName(row.speaker || characters[index]?.name || `Fruit ${index + 1}`),
@@ -930,16 +926,16 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
     ? `${storyArcNote}${sceneTitleNote}: ${pacingRole}. Dramatic emotional moment. Characters react and speak — no location change.`
     : `${storyArcNote}${sceneTitleNote}: ${pacingRole}. Emotional dramatic reaction. Characters stay in the same location as the reference image.`;
   const speechRules = isProviderPrompt
-    ? "ENGLISH WORDS ONLY. Pronounce each word slowly, clearly, and distinctly in English. No random syllables, no mumbling, no gibberish — real English words only. Dialogue starts immediately in the first second. Mouth sync every single word. Say EXACTLY the quoted lines word for word."
-    : "ENGLISH WORDS ONLY. Each character must speak clear, slow, distinct English words. No random sounds, no mumbling, no gibberish, no non-English syllables. Start speaking in the first second. Mouth movement must match every English word exactly.";
+    ? "ENGLISH WORDS ONLY. Speak EXACTLY the quoted lines above — nothing else, no other language, no foreign sounds, no improvising. Dialogue starts immediately in the first second."
+    : "ENGLISH WORDS ONLY. Speak EXACTLY the quoted lines — no other language, no foreign syllables, no improvising. Dialogue starts in the first second. Minimal pause between lines.";
   // Required sections come FIRST so they survive the 1450-char trim.
-  const audioLine = `SPOKEN DIALOGUE ONLY. Complete silence except for the spoken English words. No gasps, no sighs, no breathing sounds, no background music, no ambient noise, no sound effects, no instruments, no singing, no random sounds of any kind.`;
+  const audioLine = `Dialogue only. No background music. Natural room ambience only. No gasps, no breathing sounds, no sound effects, no instruments, no singing, no gibberish sounds of any kind.`;
   const identityLock = isProviderPrompt
     ? "CHARACTER LOCK: Use ONLY the characters from the reference image. Same fruit type, same face, same hair, same outfit. No redesigns, no new characters, no location change."
     : "CHARACTER LOCK: Animate ONLY the characters shown in the reference image. Same fruit type, same face, same hair, same outfit, same background. No redesigns, no new characters.";
   const negativeLine = isProviderPrompt
-    ? "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background music, no gasps, no sighs, no ambient sounds, no sound effects, no mumbling, no gibberish, no non-English words, no singing."
-    : "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background music, no gasps, no sighs, no ambient sounds, no sound effects, no mumbling, no random syllables, no gibberish, no non-English words, no singing.";
+    ? "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background music, no gasps, no sighs, no sound effects, no mumbling, no gibberish, no non-English words, no Spanish, no French, no Arabic, no Mandarin, no random foreign syllables, no improvised speech, no singing."
+    : "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background music, no gasps, no sighs, no sound effects, no mumbling, no gibberish, no non-English words, no Spanish, no French, no Arabic, no random foreign syllables, no improvised speech, no singing.";
 
   const storyContextLine = scene.storyPurpose || scene.scenePurpose
     ? cleanSectionText(scene.storyPurpose || scene.scenePurpose, "", isProviderPrompt ? 80 : 100)
@@ -951,7 +947,7 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
     identityLock,
     ...(storyContextLine ? [`Story beat: ${storyContextLine}`] : []),
     "",
-    "SPOKEN DIALOGUE - SAY EXACTLY:",
+    "SPOKEN DIALOGUE - SAY EXACTLY THESE ENGLISH WORDS ONLY:",
     formatDialogueBlock(dialogue),
     "",
     "Speech rules:",
@@ -992,7 +988,7 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
 
 function trimProviderPrompt(prompt, max) {
   if (prompt.length <= max) return prompt;
-  const negative = "\nNegative: No captions, no subtitles, no text overlays, no watermarks, no extra characters, no identity changes, no background music, no gasps, no sighs, no ambient sounds, no mumbling, no gibberish, no non-English words.";
+  const negative = "\nNegative: No captions, no subtitles, no text overlays, no watermarks, no extra characters, no identity changes, no background music, no mumbling, no gibberish, no non-English words, no Spanish, no French, no Arabic, no random foreign syllables, no improvised speech.";
   const budget = max - negative.length;
   // Slice raw string — do NOT use normalizeWhitespace here because it strips newlines
   // which breaks dialogue parsing in extractPromptDialogueLines (it splits on \n)
@@ -1763,9 +1759,9 @@ export async function animateScene({ scene, form, videoToolKey }) {
     throw new Error(`Scene ${scene.sceneNumber} has no image yet — generate images first`);
   }
 
-  const toolKey     = FRUIT_VIDEO_MODEL_TO_TOOLKEY[videoToolKey] ?? "video:klingpro";
-  const isVeo       = toolKey === "video:veo31fast";
-  const withSound   = VIDEO_WITH_SOUND[videoToolKey] ?? false;
+  const toolKey     = FRUIT_VIDEO_MODEL_TO_TOOLKEY[videoToolKey] ?? "video:veo31lite";
+  const isVeo       = toolKey === "video:veo31fast" || toolKey === "video:veo31lite";
+  const withSound   = VIDEO_WITH_SOUND[videoToolKey] ?? true;
   const aspect      = form.sceneAspect ?? "9:16";
   const dims        = ASPECT_VIDEO_DIMS[aspect] ?? ASPECT_VIDEO_DIMS["9:16"];
   const durationSec = scene.durationSeconds ?? STORY_LENGTH_DURATION_SEC[form.storyLength] ?? 5;
@@ -1881,8 +1877,8 @@ export async function animateClip({ clip, startScene, endScene, form, videoToolK
     throw new Error(`Clip ${clip?.clipNumber ?? ""} is missing a scene image`);
   }
 
-  const toolKey     = FRUIT_VIDEO_MODEL_TO_TOOLKEY[videoToolKey] ?? "video:wan26flash";
-  const isVeo       = toolKey === "video:veo31fast";
+  const toolKey     = FRUIT_VIDEO_MODEL_TO_TOOLKEY[videoToolKey] ?? "video:veo31lite";
+  const isVeo       = toolKey === "video:veo31fast" || toolKey === "video:veo31lite";
   const withSound   = VIDEO_WITH_SOUND[videoToolKey] ?? true;
   const aspect      = form.sceneAspect ?? "9:16";
   const dims        = ASPECT_VIDEO_DIMS[aspect] ?? ASPECT_VIDEO_DIMS["9:16"];

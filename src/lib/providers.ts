@@ -28,6 +28,7 @@ export type ToolKey =
   | "video:RunwayGen-4Turbo"
   | "video:wan26flash"
   | "video:veo31fast"
+  | "video:veo31lite"
   | "video:viduq3turbo"
   | "video:seedance15pro"
 
@@ -372,6 +373,19 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     baseResolution:       "1080p",
     retailMultiplier:     2,
     baseCreditsPerSecond: 15,           // $0.9 × 2 / 6s / $0.02 = 15/s → 90 credits per 6s clip
+  },
+
+  "video:veo31lite": {
+    provider:   "runware",
+    generator:  "Veo 3.1 Lite",
+    airTag:     "google:veo@3.1-lite",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
+
+    costPerSecondUSD:     0.05,         // $0.40 / 8s confirmed
+    baseResolution:       "720p",
+    retailMultiplier:     2,
+    baseCreditsPerSecond: 5,            // $0.05 × 2 / $0.02 = 5/s → 30 credits per 6s clip
   },
 
   /**

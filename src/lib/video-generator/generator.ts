@@ -7,13 +7,6 @@ import { createVideoJobSimple } from "../jobs";
 import { buildVideoPrompt } from "./promptBuilder";
 import { calculateVideoCredits, calculateVideoCreditsRaw } from "./videoPricing";
 
-// Kling Pro: fixed dims per aspect ratio (1080p for 16:9 & 9:16, 1440p for 1:1)
-const KLING_PRO_DIMS: Record<string, { w: number; h: number }> = {
-  "16:9": { w: 1920, h: 1080 },
-  "9:16": { w: 1080, h: 1920 },
-  "1:1": { w: 1440, h: 1440 },
-};
-
 export async function generateVideoFromUI(params: {
   modelKey: keyof typeof MODELS;
   prompt: string;
@@ -29,15 +22,12 @@ export async function generateVideoFromUI(params: {
   const toolKey = UI_MODEL_TO_TOOLKEY[params.modelKey];
   if (!toolKey) throw new Error("No provider mapping");
 
-  const isKlingPro = toolKey === "video:klingpro";
-  const isKling = !isKlingPro && toolKey.startsWith("klingai:");
-  const isMiniMax = toolKey.startsWith("minimax:");
+  const isVeoLite  = toolKey === "video:veo31lite";
+  const isKling    = toolKey.startsWith("klingai:");
+  const isMiniMax  = toolKey.startsWith("minimax:");
 
   const durationSec = Number(params.duration.replace("s", ""));
-
-  const totalCredits = isKlingPro
-    ? calculateVideoCreditsRaw(toolKey, durationSec, params.withSound ?? false)
-    : calculateVideoCredits(toolKey, params.duration, params.resolution);
+  const totalCredits = calculateVideoCredits(toolKey, params.duration, params.resolution);
 
   const sizeConfig = VIDEO_SIZES[params.size] ?? VIDEO_SIZES["16:9"];
   const dimensions =
@@ -46,8 +36,6 @@ export async function generateVideoFromUI(params: {
       : params.resolution === "540p"
         ? sizeConfig.width540
         : sizeConfig.width720;
-  const width = dimensions.w;
-  const height = dimensions.h;
 
   const enhancedPrompt = buildVideoPrompt(params.prompt);
 
@@ -59,31 +47,26 @@ export async function generateVideoFromUI(params: {
     calculatedCredits: totalCredits,
   };
 
-  // ✅ KLING PRO — fixed dims by aspect ratio + sound flag
-  if (isKlingPro) {
-    const dims = KLING_PRO_DIMS[params.size] ?? KLING_PRO_DIMS["16:9"];
-    payload.width = dims.w;
-    payload.height = dims.h;
-    payload.withSound = params.withSound ?? false;
+  // ✅ VEO 3.1 LITE — resolution string, audio always on
+  if (isVeoLite) {
+    payload.resolution = "720p";
   }
 
   // ✅ KLING STANDARD — explicit width/height
   else if (isKling) {
-    payload.width = width;
-    payload.height = height;
+    payload.width = dimensions.w;
+    payload.height = dimensions.h;
   }
 
-  // ✅ MINIMAX / HAILOU
-  // Runware requires "768p" or "1080p", not "720p"
+  // ✅ MINIMAX / HAILOU — resolution string only
   else if (isMiniMax) {
     payload.resolution = params.resolution === "1080p" ? "1080p" : "768p";
   }
 
   // ✅ DEFAULT — explicit width/height
   else {
-    payload.width = width;
-    payload.height = height;
-    // Vidu Q3 Turbo supports optional audio — forward the user's preference
+    payload.width = dimensions.w;
+    payload.height = dimensions.h;
     if (toolKey === "video:viduq3turbo") {
       payload.withSound = params.withSound ?? false;
     }
