@@ -10,20 +10,22 @@ import CreatorRewardsModal from "../../components/CreatorRewardsModal";
 
 // ── Global video outage banner ──────────────────────────────────────────────
 // Remove this component (and its usage below) once the Runware issue is fixed.
-function VideoOutageBanner() {
+function VideoOutageBanner({ onDismiss }) {
   return (
-    <div className="relative w-full bg-amber-500/10 border-b border-amber-400/30 px-4 py-3">
-      <div className="pointer-events-none absolute inset-0 animate-pulse bg-amber-500/5" />
-      <div className="relative mx-auto flex max-w-5xl items-start gap-3">
-        <span className="shrink-0 text-lg leading-none mt-0.5">⚠️</span>
-        <div className="flex-1 min-w-0">
-          <span className="text-sm font-bold text-amber-300">Video generation is temporarily unstable. </span>
-          <span className="text-[13px] text-amber-200/75">
-            Our video provider is experiencing issues — generations may fail. We're actively fixing it.
-            If your generation fails you will <strong className="text-amber-200">NOT be charged</strong>.
-            Sorry for the inconvenience, hang tight!
-          </span>
-        </div>
+    <div className="relative w-full bg-amber-500/8 border-b border-amber-400/20 px-4 py-2">
+      <div className="relative mx-auto flex max-w-5xl items-center justify-center gap-2">
+        <span className="text-sm leading-none">⚠️</span>
+        <span className="text-[12px] text-amber-200/70 text-center">
+          <span className="font-semibold text-amber-300">Video generation may be unstable.</span>
+          {" "}If a generation fails you will not be charged.
+        </span>
+        <button
+          onClick={onDismiss}
+          className="absolute right-0 shrink-0 text-amber-400/40 hover:text-amber-300 transition text-base leading-none px-1"
+          aria-label="Dismiss"
+        >
+          ×
+        </button>
       </div>
     </div>
   );
@@ -50,6 +52,7 @@ export default function WorkspaceLayout() {
   const isHomeRoute = location.pathname === "/workspace/home";
   const [bannerVisible, setBannerVisible] = useState(false);
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+  const [outageDismissed, setOutageDismissed] = useState(false);
 
   /* ================= PROMO ================= */
   useEffect(() => {
@@ -177,7 +180,7 @@ useEffect(() => {
 
         {/* HEADER — always sticky */}
         <div className="relative z-[60] w-full shrink-0">
-          <VideoOutageBanner />
+          {!outageDismissed && <VideoOutageBanner onDismiss={() => setOutageDismissed(true)} />}
 
           {isHomeRoute && bannerVisible && (
             <TopPromoBanner onClose={() => setBannerVisible(false)} />
