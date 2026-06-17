@@ -446,11 +446,16 @@ className={`
         className="w-9 h-9 rounded-lg object-cover"
       />
 
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-0.5">
         <p className="text-xs text-white/50">Model</p>
-        <p className="text-sm text-white font-medium">
-          {selectedModel.label}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm text-white font-medium">{selectedModel.label}</p>
+          {selectedModel.hasSound && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-green-400/30 bg-green-500/15 px-2 py-0.5 text-[10px] font-bold text-green-300">
+              🔊 Sound On
+            </span>
+          )}
+        </div>
       </div>
     </div>
 

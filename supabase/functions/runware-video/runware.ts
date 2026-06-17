@@ -113,31 +113,33 @@ export async function launchRunwareVideo(
   const safePositivePrompt = safeRunwarePositivePrompt(args.subject);
 
   if (args.airTag === "google:veo@3.1-lite") {
+    const refs = rawRefs.slice(0, 2);
+
     const task: Record<string, unknown> = {
-      taskType:      "videoInference",
-      model:         "google:veo@3.1-lite",
-      resolution:    "720p",
-      duration:      args.durationSec,
-      numberResults: 1,
-      includeCost:   true,
+      taskType:       "videoInference",
+      model:          "google:veo@3.1-lite",
+      duration:       args.durationSec,
+      numberResults:  1,
+      includeCost:    true,
       positivePrompt: safePositivePrompt,
       providerSettings: {
-        google: {
-          generateAudio: true,
-          enhancePrompt: false,
-        },
+        google: { generateAudio: true },
       },
       taskUUID,
     };
 
-    const refs = rawRefs.slice(0, 2);
     if (refs.length > 0) {
+      // Image-to-video: Runware infers dimensions from the reference image
       task.inputs = {
         frameImages: refs.map((url, index) => ({
           image: url,
           frame: index === 0 ? "first" : "last",
         })),
       };
+    } else {
+      // Text-to-video: use width/height only — resolution + width/height conflict
+      task.width  = args.width  ?? 720;
+      task.height = args.height ?? 1280;
     }
 
     console.log("[runware-video] VEO 3.1 LITE TASK", JSON.stringify(task, null, 2));

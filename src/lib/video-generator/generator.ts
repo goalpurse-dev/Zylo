@@ -47,9 +47,11 @@ export async function generateVideoFromUI(params: {
     calculatedCredits: totalCredits,
   };
 
-  // ✅ VEO 3.1 LITE — resolution string, audio always on
+  // ✅ VEO 3.1 LITE — resolution string + dims for text-to-video fallback
   if (isVeoLite) {
     payload.resolution = "720p";
+    payload.width  = dimensions.w;
+    payload.height = dimensions.h;
   }
 
   // ✅ KLING STANDARD — explicit width/height

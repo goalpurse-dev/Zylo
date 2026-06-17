@@ -883,6 +883,83 @@ export default function useFruitStoryJob({ form }) {
     }
   }, [watchImageJob]);
 
+  /* ─── retryFailedClips ─── */
+  // clipNumbers: null = retry ALL failed clips, array = retry specific clip numbers
+  const retryFailedClips = useCallback(async (clipNumbers = null) => {
+    const f = formRef.current;
+    const currentClips = videoClipsRef.current;
+    const currentScenes = scenesRef.current;
+
+    const toRetry = currentClips.filter((clip) =>
+      !clip.videoUrl &&
+      clip.videoStatus === "failed" &&
+      (clipNumbers === null || clipNumbers.includes(clip.clipNumber))
+    );
+    if (!toRetry.length) return;
+
+    // Reset targeted clips to queued
+    setVideoClips((prev) => prev.map((clip) =>
+      toRetry.some((c) => c.clipNumber === clip.clipNumber)
+        ? { ...clip, videoJobId: null, videoStatus: "queued", videoProgress: 0, error: null }
+        : clip,
+    ));
+    setScenes((prev) => prev.map((s) =>
+      toRetry.some((c) => c.startSceneNumber === Number(s.sceneNumber))
+        ? { ...s, videoJobId: null, videoStatus: "queued", videoProgress: 0, error: null }
+        : s,
+    ));
+
+    phaseRef.current = "animating";
+    setPhase("animating");
+    setError(null);
+
+    const videoToolKey = f.animationModel ?? "zyvo-video-v1";
+
+    for (const clip of toRetry) {
+      const key = `clip:${clip.clipNumber}`;
+      inFlightClipKeysRef.current.delete(key); // clear stale lock so it isn't skipped
+      inFlightClipKeysRef.current.add(key);
+
+      const startScene = currentScenes.find(
+        (scene) => Number(scene.sceneNumber) === clip.startSceneNumber
+      );
+
+      try {
+        let job;
+        let lastErr;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            job = await animateClip({ clip, startScene, form: f, videoToolKey });
+            break;
+          } catch (err) {
+            lastErr = err;
+            const isTimeout = /idle.?timeout|504/i.test(err?.message ?? "");
+            if (isTimeout && attempt < 2) {
+              await new Promise((r) => setTimeout(r, (attempt + 1) * 8000));
+            } else {
+              throw err;
+            }
+          }
+        }
+        if (!job) throw lastErr;
+
+        setVideoClips((prev) => prev.map((item) =>
+          item.clipNumber === clip.clipNumber
+            ? { ...item, videoJobId: job.id, videoStatus: job.status, videoProgress: 0 }
+            : item,
+        ));
+        watchVideoJob(clip.startSceneNumber, job.id);
+      } catch (e) {
+        setVideoClips((prev) => prev.map((item) =>
+          item.clipNumber === clip.clipNumber
+            ? { ...item, videoStatus: "failed", error: e.message ?? "Retry failed" }
+            : item,
+        ));
+        inFlightClipKeysRef.current.delete(key);
+      }
+    }
+  }, [watchVideoJob]);
+
   /* ─── reset ─── */
   const reset = useCallback(() => {
     clearWatchers();
@@ -914,6 +991,7 @@ export default function useFruitStoryJob({ form }) {
 
     startSceneGeneration,
     startAnimation,
+    retryFailedClips,
     updateClipVoiceover,
     ensureVideoPrompts,
     updateSceneVideoPrompt,

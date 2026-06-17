@@ -75,6 +75,7 @@ export default function AIFruitStory() {
     scenesDone,
     startSceneGeneration,
     startAnimation,
+    retryFailedClips,
     ensureVideoPrompts,
     updateSceneVideoPrompt,
     regenerateSceneVideoPrompt,
@@ -318,6 +319,7 @@ export default function AIFruitStory() {
       onRegenerateScene={regenerateScene}
       onContinueGeneration={handleContinueGeneration}
       onDeleteGeneration={handleDeleteGeneration}
+      onRetryFailedClips={retryFailedClips}
     />
   );
 

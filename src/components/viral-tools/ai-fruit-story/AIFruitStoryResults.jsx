@@ -95,6 +95,7 @@ export default function AIFruitStoryResults({
   onRegenerateScene,
   onContinueGeneration,
   onDeleteGeneration,
+  onRetryFailedClips,
   mobileRecentTab   = false,
 }) {
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
@@ -296,15 +297,40 @@ export default function AIFruitStoryResults({
             body="Generated scene images will appear here."
           />
         ) : hasVideoOutputs ? (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {derivedVideoClips.map((clip) => (
-              <VideoOutputCard
-                key={clip.clipNumber}
-                clip={clip}
-                aspect={sceneAspect}
-              />
-            ))}
-          </div>
+          <>
+            {(() => {
+              const failedClips = derivedVideoClips.filter((c) => !c.videoUrl && c.videoStatus === "failed");
+              const allFailed   = failedClips.length > 0 && failedClips.length === derivedVideoClips.length;
+              return (
+                <>
+                  {allFailed && (
+                    <div className="mb-3 rounded-2xl border border-red-400/25 bg-red-500/10 p-4 text-center">
+                      <p className="mb-1 text-sm font-bold text-red-300">All videos failed to generate</p>
+                      <p className="mb-3 text-xs text-red-200/60">This is usually a provider issue. Hit the button below to retry everything.</p>
+                      <button
+                        onClick={() => onRetryFailedClips?.(null)}
+                        className="inline-flex items-center gap-2 rounded-xl bg-red-500/80 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-red-500"
+                      >
+                        🔄 Regenerate All Videos
+                      </button>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {derivedVideoClips.map((clip) => (
+                      <VideoOutputCard
+                        key={clip.clipNumber}
+                        clip={clip}
+                        aspect={sceneAspect}
+                        onRetry={!allFailed && !clip.videoUrl && clip.videoStatus === "failed"
+                          ? () => onRetryFailedClips?.([clip.clipNumber])
+                          : null}
+                      />
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
+          </>
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {readyScenes.map((scene, index) => (
@@ -352,7 +378,7 @@ function AnimationScenePreviewCard({ scene, index, aspect }) {
   );
 }
 
-function VideoOutputCard({ clip, aspect }) {
+function VideoOutputCard({ clip, aspect, onRetry }) {
   const isBusy = !clip.videoUrl && (
     clip.videoStatus === "queued" ||
     clip.videoStatus === "running" ||
@@ -378,8 +404,16 @@ function VideoOutputCard({ clip, aspect }) {
             preload="none"
           />
         ) : isFailed ? (
-          <div className="flex h-full min-h-[220px] items-center justify-center bg-red-500/10 p-4 text-center text-xs font-semibold text-red-200">
-            Animation failed
+          <div className="flex h-full min-h-[220px] flex-col items-center justify-center gap-3 bg-red-500/10 p-4 text-center">
+            <p className="text-xs font-semibold text-red-200">Generation failed</p>
+            {onRetry && (
+              <button
+                onClick={onRetry}
+                className="rounded-lg bg-red-500/70 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-red-500"
+              >
+                🔄 Retry
+              </button>
+            )}
           </div>
         ) : isBusy ? (
           <VideoLoadingMockup progress={progress} />
