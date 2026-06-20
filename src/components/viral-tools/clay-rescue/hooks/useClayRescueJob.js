@@ -25,7 +25,7 @@ function resolveUrl(job) {
   return raw && !raw.includes("localhost") ? raw.trim() : null;
 }
 
-function waitForJob(jobId, timeoutMs = 4.5 * 60 * 1000) {
+function waitForJob(jobId, timeoutMs = 4.5 * 60 * 1000, onRetrying = null) {
   return new Promise((resolve) => {
     let unsub, settled = false;
     const finish = (row) => {
@@ -36,7 +36,10 @@ function waitForJob(jobId, timeoutMs = 4.5 * 60 * 1000) {
       resolve(row);
     };
     const timer = setTimeout(() => finish(null), timeoutMs);
-    unsub = watchJob(jobId, (row) => { if (isTerminal(row.status)) finish(row); });
+    unsub = watchJob(jobId, (row) => {
+      if (onRetrying && row.status === "queued" && Number(row.attempts ?? 0) > 0) onRetrying(row);
+      if (isTerminal(row.status)) finish(row);
+    });
   });
 }
 
@@ -122,7 +125,11 @@ export default function useClayRescueJob() {
           fixJob = await generateFixImage({ fixImagePrompt, problemImageUrl: problemUrl });
           if (!isCurrentRun()) throw new Error("cancelled");
           patchScene(i, { fixJobId: fixJob.id, imageStatus: "running" });
-          fixResult = await waitForJob(fixJob.id);
+          fixResult = await waitForJob(fixJob.id, undefined, () => {
+            setPhase("retrying");
+            patchScene(i, { imageStatus: "retrying" });
+          });
+          if (isCurrentRun()) { setPhase("images"); patchScene(i, { imageStatus: "running" }); }
         } catch (err) {
           if (err.message === "cancelled") throw err;
           console.warn(`[ClayRescue] scene ${i} fix image failed`, err);

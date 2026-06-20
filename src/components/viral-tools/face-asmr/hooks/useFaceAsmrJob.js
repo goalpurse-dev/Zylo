@@ -22,7 +22,7 @@ function resolveUrl(job) {
   return raw && !raw.includes("localhost") ? raw.trim() : null;
 }
 
-function waitForJob(jobId, timeoutMs = 4.5 * 60 * 1000) {
+function waitForJob(jobId, timeoutMs = 4.5 * 60 * 1000, onRetrying = null) {
   return new Promise((resolve) => {
     let unsub;
     let settled = false;
@@ -37,6 +37,10 @@ function waitForJob(jobId, timeoutMs = 4.5 * 60 * 1000) {
 
     const timer = setTimeout(() => finish(null), timeoutMs);
     unsub = watchJob(jobId, (row) => {
+      // Surface provider-busy retries instead of silently waiting
+      if (onRetrying && row.status === "queued" && Number(row.attempts ?? 0) > 0) {
+        onRetrying(row);
+      }
       if (isTerminal(row.status)) finish(row);
     });
   });
@@ -144,7 +148,12 @@ export default function useFaceAsmrJob() {
           if (!isCurrentRun()) return;
 
           patchScene(i, { imageJobId: job.id, imageStatus: "running" });
-          result = await waitForJob(job.id);
+          result = await waitForJob(job.id, undefined, () => {
+            setPhase("retrying");
+            patchScene(i, { imageStatus: "retrying" });
+          });
+          // Restore phase after retry resolves (next iteration will reset)
+          if (isCurrentRun()) { setPhase("images"); patchScene(i, { imageStatus: "running" }); }
         } catch (err) {
           console.warn(`[FaceAsmr] primary image failed to start (scene ${i})`, err);
         }

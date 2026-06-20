@@ -2,6 +2,7 @@ import { supabase } from "./supabaseClient";
 
 import { uploadUserFile, publishToPublic } from "./storage";
 import { getProviderLink, type ToolKey } from "./providers";
+import { getPlanPriority } from "./queuePriority";
 
 import { CREATION_TYPES } from "./creations";
 
@@ -27,11 +28,14 @@ export type JobStatus =
 export interface CreateJobInput {
   id?: string;
   type: JobType;
-  tool_key?: ToolKey;        // ✅ ADD THIS
+  tool_key?: ToolKey;
   project_id?: string | null;
   prompt?: string | null;
   settings?: Record<string, any> | null;
   input?: Record<string, any> | null;
+  priority?: number;    // 1=generative, 2=pro, 3=starter, 9=free
+  plan_code?: string;
+  provider?: string;
 }
 
 
@@ -165,19 +169,31 @@ export async function createJob(
   const { data: userData, error: uerr } = await supabase.auth.getUser();
   if (uerr || !userData?.user) throw new Error("Must be signed in");
 
+// Ensure plan_code and priority are always derived from the same resolved source.
+// If only one is passed (e.g. legacy callers), derive the missing one so they
+// can never disagree in the DB.
+const resolvedJobPlanCode = (payload.plan_code ?? "free").toLowerCase().trim();
+const resolvedJobPriority = payload.priority ?? getPlanPriority(resolvedJobPlanCode);
+
 const insertPayload = {
   ...(payload.id ? { id: payload.id } : {}),
-  user_id: userData.user.id,
-  type: payload.type,
-  tool_key: payload.tool_key ?? null,
-  project_id: payload.project_id ?? null,
-  prompt: payload.prompt ?? null,
-  settings: payload.settings ?? {},
-  input: payload.input ?? {},
-  status: "queued" as JobStatus,
-  progress: 0,
+  user_id:      userData.user.id,
+  type:         payload.type,
+  tool_key:     payload.tool_key     ?? null,
+  project_id:   payload.project_id   ?? null,
+  prompt:       payload.prompt        ?? null,
+  settings:     payload.settings      ?? {},
+  input:        payload.input          ?? {},
+  status:       "queued" as JobStatus,
+  progress:     0,
   charge_credits: (payload.settings as any)?.credits ?? null,
-  charged: (payload.settings as any)?.charged ?? false,
+  charged:      (payload.settings as any)?.charged ?? false,
+  priority:     resolvedJobPriority,
+  plan_code:    resolvedJobPlanCode,
+  provider:     payload.provider    ?? "runware",
+  attempts:     0,
+  max_attempts: 5,
+  retry_after:  new Date().toISOString(),
 };
  
 
@@ -356,14 +372,25 @@ if (typeof params.chargeCreditsOverride === "number" && params.chargeCreditsOver
   if (uerr || !userData?.user) throw new Error("Must be signed in");
   const uid = userData.user.id;
 
-// 🔥 CHECK PLAN
-const { data: profile } = await supabase
-  .from("profiles")
-  .select("plan_code")
-  .eq("id", uid)
-  .single();
-  
-const isFree = profile?.plan_code === "free";
+  // Single profile fetch — resolves plan_code AND credit_balance together so
+  // plan_code and priority are always derived from the exact same row.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("plan_code, credit_balance")
+    .eq("id", uid)
+    .single();
+
+  const resolvedPlanCode = (profile?.plan_code ?? "free").toLowerCase().trim();
+  const resolvedPriority = getPlanPriority(resolvedPlanCode);
+  const isFree           = resolvedPlanCode === "free" || resolvedPlanCode === "trial";
+
+  console.log("[job-create] resolved plan", {
+    userId:   uid,
+    planCode: resolvedPlanCode,
+    priority: resolvedPriority,
+    toolKey:  params.toolKey,
+    type:     "image",
+  });
 
 if (isFree) {
   // Only allow flux.base
@@ -382,16 +409,10 @@ if (isFree) {
   }
 
 } else {
-  // 💰 PRO PLAN → verify balance upfront, but don't deduct yet.
+  // 💰 PAID PLAN → verify balance upfront, but don't deduct yet.
   // Actual deduction happens in runware-image after finish_job_success
   // so failed/timed-out jobs never consume credits.
-  const { data: profileCredits } = await supabase
-    .from("profiles")
-    .select("credit_balance")
-    .eq("id", uid)
-    .single();
-
-  if ((profileCredits?.credit_balance ?? 0) < credits) {
+  if ((profile?.credit_balance ?? 0) < credits) {
     throw new Error("INSUFFICIENT_CREDITS");
   }
 }
@@ -491,8 +512,7 @@ height = height ?? 1024;
     });
   }
 
-  // ✅ 2) create job + trigger worker
-// ✅ 2) create job + trigger worker
+  // ✅ 2) create job + trigger worker — plan_code and priority from same resolved source
 const job = await simulateJob({
   type: "image",
   tool_key: params.toolKey,
@@ -500,6 +520,9 @@ const job = await simulateJob({
   prompt: preview,
   settings,
   input,
+  priority:  resolvedPriority,
+  plan_code: resolvedPlanCode,
+  provider:  "runware",
 });
 
 // Free usage is logged in runware-image after finish_job_success,
@@ -542,7 +565,7 @@ const uid = userData.user.id;
 const [{ data: profile }, { data: activeJobs }] = await Promise.all([
   supabase
     .from("profiles")
-    .select("credit_balance")
+    .select("credit_balance, plan_code")
     .eq("id", uid)
     .single(),
   supabase
@@ -553,11 +576,23 @@ const [{ data: profile }, { data: activeJobs }] = await Promise.all([
     .not("charge_credits", "is", null),
 ]);
 
+// Resolve plan_code and priority from the same source — they must always be consistent
+const resolvedPlanCode = ((profile as any)?.plan_code ?? "free").toLowerCase().trim();
+const resolvedPriority = getPlanPriority(resolvedPlanCode);
+
+console.log("[job-create] resolved plan", {
+  userId:   uid,
+  planCode: resolvedPlanCode,
+  priority: resolvedPriority,
+  toolKey:  params.toolKey,
+  type:     "video",
+});
+
 const pendingCredits = (activeJobs ?? []).reduce(
   (sum, j) => sum + (Number(j.charge_credits) || 0),
   0,
 );
-const availableBalance = (profile?.credit_balance ?? 0) - pendingCredits;
+const availableBalance = ((profile as any)?.credit_balance ?? 0) - pendingCredits;
 
 if (!params.skipCreditCheck && availableBalance < credits) {
   throw new Error("INSUFFICIENT_CREDITS");
@@ -609,6 +644,9 @@ return await simulateJob({
   prompt: params.subject,
   settings,
   input,
+  priority:  resolvedPriority,
+  plan_code: resolvedPlanCode,
+  provider:  "runware",
 });
 
 }

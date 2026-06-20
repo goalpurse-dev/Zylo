@@ -110,9 +110,10 @@ function Lightbox({ scenes, startIndex, onClose }) {
 // ── Scene Card ────────────────────────────────────────────────────────────────
 function SceneCard({ scene, dishLabel, isActive, onView }) {
   const { index, imageStatus, imageUrl } = scene;
-  const isLoading = imageStatus === "queued" || imageStatus === "running";
-  const isFailed  = imageStatus === "failed";
-  const isDone    = imageStatus === "succeeded";
+  const isLoading  = imageStatus === "queued" || imageStatus === "running";
+  const isRetrying = imageStatus === "retrying";
+  const isFailed   = imageStatus === "failed";
+  const isDone     = imageStatus === "succeeded";
 
   return (
     <div
@@ -137,8 +138,10 @@ function SceneCard({ scene, dishLabel, isActive, onView }) {
                   <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
                 </div>
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                  <div className="w-6 h-6 border-2 border-orange-500/40 border-t-orange-400 rounded-full animate-spin" />
-                  <p className="text-white/25 text-[11px] font-medium">Generating…</p>
+                  <div className={`w-6 h-6 border-2 rounded-full animate-spin ${isRetrying ? "border-amber-500/40 border-t-amber-400" : "border-orange-500/40 border-t-orange-400"}`} />
+                  <p className={`text-[11px] font-medium ${isRetrying ? "text-amber-400/80" : "text-white/25"}`}>
+                    {isRetrying ? "Provider busy — retrying…" : "Generating…"}
+                  </p>
                 </div>
               </>
             )}
@@ -248,7 +251,8 @@ export default function AICookingMaticResults({
 
   const doneScenes   = scenes.filter((s) => s.imageStatus === "succeeded");
   const activeIndex  = scenes.findIndex((s) => s.imageStatus === "queued" || s.imageStatus === "running");
-  const isGenerating = phase === "images";
+  const isGenerating = phase === "images" || phase === "retrying";
+  const isRetryPhase = phase === "retrying";
   const isDone       = phase === "done";
   const progress     = doneScenes.length;
 
@@ -320,12 +324,19 @@ export default function AICookingMaticResults({
 
         {/* Progress bar */}
         {isGenerating && (
-          <div className="mt-3 h-1 bg-white/[0.06] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full transition-all duration-700"
-              style={{ width: `${(progress / 10) * 100}%` }}
-            />
-          </div>
+          <>
+            {isRetryPhase && (
+              <p className="mt-2 text-[11px] font-semibold text-amber-400/80">
+                Provider busy — retrying automatically…
+              </p>
+            )}
+            <div className="mt-2 h-1 bg-white/[0.06] rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-700 ${isRetryPhase ? "bg-gradient-to-r from-amber-500 to-yellow-500" : "bg-gradient-to-r from-orange-500 to-red-500"}`}
+                style={{ width: `${(progress / 10) * 100}%` }}
+              />
+            </div>
+          </>
         )}
 
         {/* Error banner */}

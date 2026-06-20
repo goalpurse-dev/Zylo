@@ -27,7 +27,7 @@ function resolveUrl(job) {
   return raw && !raw.includes("localhost") ? raw.trim() : null;
 }
 
-function waitForJob(jobId, timeoutMs = 4.5 * 60 * 1000) {
+function waitForJob(jobId, timeoutMs = 4.5 * 60 * 1000, onRetrying = null) {
   return new Promise((resolve) => {
     let unsub;
     let settled = false;
@@ -40,6 +40,9 @@ function waitForJob(jobId, timeoutMs = 4.5 * 60 * 1000) {
     };
     const timer = setTimeout(() => finish(null), timeoutMs);
     unsub = watchJob(jobId, (row) => {
+      if (onRetrying && row.status === "queued" && Number(row.attempts ?? 0) > 0) {
+        onRetrying(row);
+      }
       if (isTerminal(row.status)) finish(row);
     });
   });
@@ -118,7 +121,11 @@ export default function useMicroCameraAnimalJob() {
         job = await generateSceneImage({ prompt: imagePrompts[promptIdx], referenceUrl });
         if (!isCurrentRun()) return;
         patchScene(i, { imageJobId: job.id, imageStatus: "running" });
-        result = await waitForJob(job.id);
+        result = await waitForJob(job.id, undefined, () => {
+          setPhase("retrying");
+          patchScene(i, { imageStatus: "retrying" });
+        });
+        if (isCurrentRun()) { setPhase("images"); patchScene(i, { imageStatus: "running" }); }
       } catch (err) {
         console.warn(`[MicroCamera] scene image failed to start (scene ${i})`, err);
       }

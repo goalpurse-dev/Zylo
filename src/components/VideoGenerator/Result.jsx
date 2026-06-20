@@ -146,7 +146,8 @@ function VideoThumb({ item, isActive, onClick }) {
   const tpRafRef = useRef(null);
 
   useEffect(() => {
-    const target = Math.min(99, Math.floor(Number(item.progress ?? 0)));
+    const rawTarget = Math.min(99, Math.floor(Number(item.progress ?? 0)));
+    const target = item.status === "queued" ? Math.min(rawTarget, 8) : rawTarget;
     if (isDone) { tpRef.current = 100; setThumbProgress(100); return; }
     if (target <= tpRef.current) return;
     if (tpRafRef.current) cancelAnimationFrame(tpRafRef.current);
@@ -211,8 +212,8 @@ function VideoThumb({ item, isActive, onClick }) {
             <svg className="w-full h-full" style={{ transform: "rotate(-90deg)" }} viewBox="0 0 100 100">
               <defs>
                 <linearGradient id={`thumbRing_${item.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#7A3BFF" />
-                  <stop offset="100%" stopColor="#C077FF" />
+                  <stop offset="0%" stopColor={item.status === "queued" && Number(item.attempts ?? 0) > 0 ? "#f59e0b" : "#7A3BFF"} />
+                  <stop offset="100%" stopColor={item.status === "queued" && Number(item.attempts ?? 0) > 0 ? "#fbbf24" : "#C077FF"} />
                 </linearGradient>
               </defs>
               <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="9" />
@@ -231,6 +232,17 @@ function VideoThumb({ item, isActive, onClick }) {
               <span className="text-white/70 text-[9px] font-semibold tabular-nums">{thumbProgress}%</span>
             </div>
           </div>
+          {/* Real status label */}
+          <p className={`text-[8px] font-semibold tracking-wide uppercase mt-1 z-10 ${
+            item.status === "queued" && Number(item.attempts ?? 0) > 0 ? "text-amber-400/80" :
+            item.status === "queued" ? "text-white/30" : "text-white/35"
+          }`}>
+            {item.status === "queued" && Number(item.attempts ?? 0) > 0
+              ? "Retrying"
+              : item.status === "queued"
+              ? "Queued"
+              : "Generating"}
+          </p>
           {/* Bottom bar */}
           <div className="absolute bottom-0 inset-x-0">
             <div className="h-[2px] w-full bg-white/[0.04]">

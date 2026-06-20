@@ -242,7 +242,9 @@ function SceneCard({ scene, index }) {
             <>
               <Loader2 className="w-10 h-10 text-[#7A3BFF]/70 animate-spin" />
               <span className="text-white font-black text-[22px] tabular-nums leading-none">{Math.round(pct)}%</span>
-              <span className="text-white/35 text-[11px] font-medium">Generating scene…</span>
+              <span className={`text-[11px] font-medium ${scene.imageStatus === "retrying" ? "text-amber-400/80" : "text-white/35"}`}>
+                {scene.imageStatus === "retrying" ? "Provider busy — retrying…" : "Generating scene…"}
+              </span>
             </>
           ) : (
             <>
@@ -313,10 +315,11 @@ export default function ClayRescueResults({
     const cols        = Math.min(jobScenes.length, 3);
 
     const phaseText = {
-      images: { text: "Generating rescue scenes…",    color: "text-[#A87AFF]" },
-      videos: { text: "Animating the rescues…",       color: "text-emerald-400" },
-      done:   { text: viewingRecent ? "Done" : "All done! 🎉", color: "text-emerald-400" },
-      error:  { text: "Something went wrong",          color: "text-red-400" },
+      images:   { text: "Generating rescue scenes…",        color: "text-[#A87AFF]"   },
+      retrying: { text: "Provider busy — retrying…",        color: "text-amber-400"   },
+      videos:   { text: "Animating the rescues…",           color: "text-emerald-400" },
+      done:     { text: viewingRecent ? "Done" : "All done! 🎉", color: "text-emerald-400" },
+      error:    { text: "Something went wrong",              color: "text-red-400"     },
     };
     const { text: statusText, color: statusColor } = phaseText[phase] ?? phaseText.images;
 

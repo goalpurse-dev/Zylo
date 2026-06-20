@@ -61,17 +61,51 @@ Deno.serve(async (req) => {
       auth: { persistSession: false },
     });
 
+    /* ---------- concurrency guard ---------- */
+    // Env-configurable limits so we can tune without redeploy
+    const IMAGE_MAX = Number(Deno.env.get("RUNWARE_IMAGE_MAX_CONCURRENT") ?? 3);
+    const VIDEO_MAX = Number(Deno.env.get("RUNWARE_VIDEO_MAX_CONCURRENT") ?? 1);
+    const TOTAL_MAX = Number(Deno.env.get("RUNWARE_TOTAL_MAX_CONCURRENT") ?? 3);
+
     /* ---------- pick job ---------- */
     let jobId = body.jobId;
 
     if (!jobId) {
-      const { data, error } = await sbAdmin
+      // Count currently active jobs to enforce concurrency limits
+      const [{ count: activeImages }, { count: activeVideos }] = await Promise.all([
+        sbAdmin.from("jobs").select("id", { count: "exact", head: true })
+          .eq("type", "image").in("status", ["queued", "running", "processing"]),
+        sbAdmin.from("jobs").select("id", { count: "exact", head: true })
+          .eq("type", "video").in("status", ["queued", "running", "processing"]),
+      ]);
+
+      const totalActive = (activeImages ?? 0) + (activeVideos ?? 0);
+
+      if (totalActive >= TOTAL_MAX) {
+        return json(req, { ok: true, message: "concurrency limit reached", active: totalActive });
+      }
+
+      // Pick highest priority queued job, skipping video if video slot is full
+      const canTakeVideo = (activeVideos ?? 0) < VIDEO_MAX;
+      const canTakeImage = (activeImages ?? 0) < IMAGE_MAX;
+
+      let typeFilter: string | null = null;
+      if (canTakeImage && !canTakeVideo)  typeFilter = "image";
+      if (canTakeVideo && !canTakeImage)  typeFilter = "video";
+      // if both are available, pick whatever comes first by priority
+
+      let query = sbAdmin
         .from("jobs")
         .select("id")
         .eq("status", "queued")
+        .or("retry_after.is.null,retry_after.lte." + new Date().toISOString())
+        .order("priority", { ascending: true })
         .order("created_at", { ascending: true })
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
+
+      if (typeFilter) query = query.eq("type", typeFilter);
+
+      const { data, error } = await query.maybeSingle();
 
       if (error) return fail(req, `DB query error: ${error.message}`, 500);
       if (!data?.id) return json(req, { ok: true, message: "no queued jobs" });
@@ -221,14 +255,74 @@ Deno.serve(async (req) => {
         console.log(`[job-worker] handoff accepted ${r.status}:`, txt.slice(0, 120));
       } else {
         console.error(`[job-worker] handoff failed ${r.status}:`, txt.slice(0, 200));
-        // runware-image returned a non-2xx — it won't process the job, so mark it failed
+
+        // 402 / insufficientCredits from Runware often means concurrency / rate-limit,
+        // NOT a real empty balance. Re-queue with back-off instead of marking failed.
+        let isRetryable = false;
         try {
-          await sbAdmin.rpc("finish_job_failed", {
-            p_id:    jobId,
-            p_error: `Handoff rejected (${r.status}): ${txt.slice(0, 150)}`,
+          const errJson = JSON.parse(txt);
+          const errors  = Array.isArray(errJson?.errors) ? errJson.errors : [];
+          isRetryable   = errors.some((e: any) => {
+            const code = String(e?.code ?? "").toLowerCase();
+            const msg  = String(e?.message ?? "").toLowerCase();
+            return (
+              code === "insufficientcredits" ||
+              msg.includes("insufficient credits") ||
+              msg.includes("concurrency") ||
+              msg.includes("rate limit") ||
+              msg.includes("too many requests")
+            );
           });
-        } catch (rpcErr) {
-          console.error("[job-worker] finish_job_failed threw:", String(rpcErr));
+        } catch { /* non-JSON body */ }
+
+        if (isRetryable) {
+          // Back-off delays: 30s → 90s → 3min → 7min → 15min
+          const DELAYS = [30_000, 90_000, 180_000, 420_000, 900_000];
+          const { data: jobRow } = await sbAdmin
+            .from("jobs")
+            .select("attempts, max_attempts")
+            .eq("id", jobId)
+            .single()
+            .catch(() => ({ data: null }));
+
+          const attempts    = Number((jobRow as any)?.attempts    ?? 0) + 1;
+          const maxAttempts = Number((jobRow as any)?.max_attempts ?? 5);
+
+          if (attempts >= maxAttempts) {
+            // Exhausted retries — mark as permanently failed
+            try {
+              await sbAdmin.rpc("finish_job_failed", {
+                p_id:    jobId,
+                p_error: `Provider busy after ${attempts} attempts: ${txt.slice(0, 150)}`,
+              });
+            } catch (rpcErr) {
+              console.error("[job-worker] finish_job_failed threw:", String(rpcErr));
+            }
+            console.log(`[job-worker] Job ${jobId} exhausted ${attempts}/${maxAttempts} retries — marked failed`);
+          } else {
+            const delayMs    = DELAYS[Math.min(attempts - 1, DELAYS.length - 1)];
+            const retryAfter = new Date(Date.now() + delayMs).toISOString();
+
+            await sbAdmin.from("jobs").update({
+              status:      "queued",
+              attempts,
+              error:       `Provider busy — retrying (attempt ${attempts}/${maxAttempts}): ${txt.slice(0, 150)}`,
+              retry_after: retryAfter,
+              updated_at:  new Date().toISOString(),
+            }).eq("id", jobId).catch(() => {});
+
+            console.log(`[job-worker] Requeued job ${jobId} attempt ${attempts}/${maxAttempts}, retry after ${retryAfter}`);
+          }
+        } else {
+          // Non-retryable error — mark failed immediately
+          try {
+            await sbAdmin.rpc("finish_job_failed", {
+              p_id:    jobId,
+              p_error: `Handoff rejected (${r.status}): ${txt.slice(0, 150)}`,
+            });
+          } catch (rpcErr) {
+            console.error("[job-worker] finish_job_failed threw:", String(rpcErr));
+          }
         }
       }
     })();

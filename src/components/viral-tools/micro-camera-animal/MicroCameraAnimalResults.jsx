@@ -193,10 +193,11 @@ function RecentCreationsPanel({ recentGenerations = [], onOpenRecent }) {
 /* ── Phase label ── */
 function PhaseLabel({ phase, animalLabel, viewingRecent }) {
   const map = {
-    images: { text: `Generating ${animalLabel ? animalLabel + " " : ""}scenes…`, color: "text-[#A87AFF]" },
-    videos: { text: "Animating bodycam videos…",                                  color: "text-emerald-400" },
-    done:   { text: viewingRecent ? "Done" : "All done!",                          color: "text-emerald-400" },
-    error:  { text: "Something went wrong",                                        color: "text-red-400"    },
+    images:   { text: `Generating ${animalLabel ? animalLabel + " " : ""}scenes…`, color: "text-[#A87AFF]"   },
+    retrying: { text: "Provider busy — retrying…",                                 color: "text-amber-400"   },
+    videos:   { text: "Animating bodycam videos…",                                 color: "text-emerald-400" },
+    done:     { text: viewingRecent ? "Done" : "All done!",                        color: "text-emerald-400" },
+    error:    { text: "Something went wrong",                                       color: "text-red-400"    },
   };
   const { text, color } = map[phase] ?? map.images;
   return <span className={`text-[13px] font-semibold ${color}`}>{text}</span>;
@@ -276,7 +277,9 @@ function SceneCard({ scene, index }) {
                 <Loader2 className="w-10 h-10 text-[#7A3BFF]/70 animate-spin" />
               </div>
               <span className="text-white font-black text-[22px] tabular-nums leading-none">{Math.round(pct)}%</span>
-              <span className="text-white/35 text-[11px] font-medium">Generating image…</span>
+              <span className={`text-[11px] font-medium ${scene.imageStatus === "retrying" ? "text-amber-400/80" : "text-white/35"}`}>
+                {scene.imageStatus === "retrying" ? "Provider busy — retrying…" : "Generating image…"}
+              </span>
             </>
           ) : (
             <>

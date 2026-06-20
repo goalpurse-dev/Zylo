@@ -23,7 +23,7 @@ function resolveUrl(job) {
   return raw && !raw.includes("localhost") ? raw.trim() : null;
 }
 
-function waitForJob(jobId, timeoutMs = 5 * 60 * 1000) {
+function waitForJob(jobId, timeoutMs = 5 * 60 * 1000, onRetrying = null) {
   return new Promise((resolve) => {
     let unsub;
     let settled = false;
@@ -36,6 +36,7 @@ function waitForJob(jobId, timeoutMs = 5 * 60 * 1000) {
     };
     const timer = setTimeout(() => finish(null), timeoutMs);
     unsub = watchJob(jobId, (row) => {
+      if (onRetrying && row.status === "queued" && Number(row.attempts ?? 0) > 0) onRetrying(row);
       if (isTerminal(row.status)) finish(row);
     });
   });
@@ -132,7 +133,11 @@ export default function useAICookingMaticJob() {
         if (!isCurrentRun()) break;
         patchScene(i, { imageJobId: job.id, imageStatus: "running" });
 
-        const result = await waitForJob(job.id, PRIMARY_TIMEOUT_MS);
+        const result = await waitForJob(job.id, PRIMARY_TIMEOUT_MS, () => {
+          setPhase("retrying");
+          patchScene(i, { imageStatus: "retrying" });
+        });
+        if (isCurrentRun()) { setPhase("images"); patchScene(i, { imageStatus: "running" }); }
         if (!isCurrentRun()) break;
 
         if (result?.status === "succeeded") {

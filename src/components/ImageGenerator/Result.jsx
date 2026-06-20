@@ -162,9 +162,11 @@ const isFailed =
     return () => clearTimeout(t);
   }, [isFailed]);
 
-  /* smooth progress animation */
+  /* smooth progress animation — freeze at low value when genuinely queued */
   useEffect(() => {
-    const target = Math.min(99, Math.floor(Number(item.progress ?? 0)));
+    // Don't fake progress while queued — show real low value
+    const rawTarget = Math.min(99, Math.floor(Number(item.progress ?? 0)));
+    const target = item.status === "queued" ? Math.min(rawTarget, 8) : rawTarget;
     if (isDone) { dpRef.current = 100; setDisplayProgress(100); return; }
     if (target <= dpRef.current) return;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -341,9 +343,15 @@ const isFailed =
 
       {/* Status label + dots */}
       <div className="flex flex-col items-center gap-1.5">
-        <p className="text-white/40 text-[10px] font-medium tracking-[0.12em] uppercase">
-          {displayProgress < 5
-            ? "Queuing"
+        <p className={`text-[10px] font-medium tracking-[0.12em] uppercase ${
+          item.status === "queued" && Number(item.attempts ?? 0) > 0 ? "text-amber-400/80"
+          : item.status === "queued" ? "text-white/35"
+          : "text-white/40"
+        }`}>
+          {item.status === "queued" && Number(item.attempts ?? 0) > 0
+            ? "Provider busy — retrying"
+            : item.status === "queued"
+            ? "Queued"
             : displayProgress < 35
             ? "Generating"
             : displayProgress < 75
@@ -356,7 +364,13 @@ const isFailed =
           {[0, 1, 2].map((i) => (
             <span
               key={i}
-              className="block w-[4px] h-[4px] rounded-full bg-[#7A3BFF]/55 animate-bounce"
+              className={`block w-[4px] h-[4px] rounded-full animate-bounce ${
+                item.status === "queued" && Number(item.attempts ?? 0) > 0
+                  ? "bg-amber-400/55"
+                  : item.status === "queued"
+                  ? "bg-white/20"
+                  : "bg-[#7A3BFF]/55"
+              }`}
               style={{ animationDelay: `${i * 150}ms`, animationDuration: "1.1s" }}
             />
           ))}

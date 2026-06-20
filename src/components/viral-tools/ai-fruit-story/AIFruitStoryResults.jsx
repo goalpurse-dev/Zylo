@@ -1,7 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import {
   buildVideoClipsFromScenes,
 } from "./api/fruitStoryApi";
+import { supabase } from "../../../lib/supabaseClient";
+import { getCreationDisplayStatus } from "../../../lib/queueStatusUtils";
 
 const HEARTS = [
   { id: 1, left: "82%", delay: "0s",   duration: "4.2s", size: "18px", drift: "8px"   },
@@ -944,11 +946,13 @@ function AspectBadge({ value }) {
  * ───────────────────────────────────────────────────────────────────────── */
 
 const STATUS_LABELS = {
-  generating_images: { label: "Generating",      color: "text-blue-300 bg-blue-500/15 border-blue-400/25" },
-  images_generated:  { label: "Ready to animate", color: "text-green-300 bg-green-500/15 border-green-400/25" },
-  partial_failed:    { label: "Some scenes failed",color: "text-orange-300 bg-orange-500/15 border-orange-400/25" },
-  animating:         { label: "Animating",         color: "text-purple-300 bg-purple-500/15 border-purple-400/25" },
-  completed:         { label: "Completed",          color: "text-purple-200 bg-purple-500/20 border-purple-400/30" },
+  queued:            { label: "Queued",            color: "text-white/50    bg-white/[0.05]     border-white/10"          },
+  retrying:          { label: "Provider busy",     color: "text-amber-300   bg-amber-500/10     border-amber-400/25"      },
+  generating_images: { label: "Generating",        color: "text-blue-300    bg-blue-500/15      border-blue-400/25"       },
+  images_generated:  { label: "Ready to animate",  color: "text-green-300   bg-green-500/15     border-green-400/25"      },
+  partial_failed:    { label: "Some scenes failed", color: "text-orange-300  bg-orange-500/15    border-orange-400/25"     },
+  animating:         { label: "Animating",          color: "text-purple-300  bg-purple-500/15    border-purple-400/25"     },
+  completed:         { label: "Completed",          color: "text-purple-200  bg-purple-500/20    border-purple-400/30"     },
 };
 
 function timeAgo(dateStr) {
@@ -960,10 +964,43 @@ function timeAgo(dateStr) {
   return new Date(dateStr).toLocaleDateString();
 }
 
+const ACTIVE_GEN_STATUSES = new Set(["generating_images", "animating"]);
+
 function GenerationCard({ generation, onContinue, onDelete }) {
-  const scenes   = generation.scenes ?? [];
-  const thumbs   = scenes.filter((s) => s.imageUrl).slice(0, 4);
-  const status   = STATUS_LABELS[generation.status] ?? STATUS_LABELS.images_generated;
+  const scenes  = generation.scenes ?? [];
+  const thumbs  = scenes.filter((s) => s.imageUrl).slice(0, 4);
+
+  // Poll generation_queue for live status when this generation is active
+  const [queueStatus, setQueueStatus] = useState(null);
+  const pollRef  = useRef(null);
+  const mountRef = useRef(true);
+
+  const fetchQueueStatus = useCallback(async () => {
+    const { data: rows } = await supabase
+      .from("generation_queue")
+      .select("id, status, task_type, attempts, retry_after")
+      .eq("parent_generation_id", generation.id)
+      .order("created_at", { ascending: true });
+    if (!mountRef.current) return;
+    if (rows && rows.length > 0) setQueueStatus(getCreationDisplayStatus(rows));
+  }, [generation.id]);
+
+  useEffect(() => {
+    mountRef.current = true;
+    if (!ACTIVE_GEN_STATUSES.has(generation.status)) return;
+    fetchQueueStatus();
+    const schedule = () => { pollRef.current = setTimeout(async () => { await fetchQueueStatus(); schedule(); }, 4000); };
+    schedule();
+    return () => { mountRef.current = false; clearTimeout(pollRef.current); };
+  }, [generation.status, fetchQueueStatus]);
+
+  // Derive display status — prefer live queue data, fall back to DB status
+  const derivedStatusKey = queueStatus?.tone === "retrying" ? "retrying"
+    : queueStatus?.tone === "queued"                        ? "queued"
+    : generation.status;
+  const statusInfo = STATUS_LABELS[derivedStatusKey] ?? STATUS_LABELS[generation.status] ?? STATUS_LABELS.images_generated;
+  const statusLabel = queueStatus?.label ?? statusInfo.label;
+
   // "generating_images" included so users can click in and watch scenes arrive in real time
   const canAnimate = ["generating_images", "images_generated", "partial_failed", "animating", "completed"].includes(generation.status);
 
@@ -983,8 +1020,8 @@ function GenerationCard({ generation, onContinue, onDelete }) {
             <span>{timeAgo(generation.created_at)}</span>
           </div>
         </div>
-        <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold ${status.color}`}>
-          {status.label}
+        <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold ${statusInfo.color}`}>
+          {statusLabel}
         </span>
       </div>
 
