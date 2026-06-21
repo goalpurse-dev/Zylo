@@ -24,11 +24,11 @@ export const MAX_FRUIT_VOICEOVER_CHARS = 95;
 export const FRUIT_VIDEO_CREDITS_PER_CLIP = {
   "zyvo-video-v1": 30,
 };
-export const MAX_FRUIT_VOICEOVER_LINE_CHARS = 45;
+export const MAX_FRUIT_VOICEOVER_LINE_CHARS = 80;
 export const MIN_FRUIT_VIDEO_PROMPT_CHARS = 80;
 const MAX_RUNWARE_VIDEO_PROMPT_CHARS = 1450;
 const MAX_PROVIDER_DIALOGUE_LINES = 4;
-const MAX_PROVIDER_DIALOGUE_LINE_CHARS = 45;
+const MAX_PROVIDER_DIALOGUE_LINE_CHARS = 80;
 
 // Only check the sections that are truly essential for video generation.
 // Sections like "Ending beat:", "Camera:", "Visual clue:" are nice-to-have but
@@ -268,69 +268,69 @@ function deriveSingleSceneDialogue(scene) {
 // from scratch when it reads the name, ignoring the reference image.
 const VIRAL_LINE_POOLS = {
   boss: [
-    ["Who gave you permission for this?",    "You were never supposed to see that."],
-    ["Empty your pockets. Right now.",       "It was an accident. I swear."],
-    ["You think I wouldn't find out?",       "I can explain everything."],
-    ["This is over. You're done here.",      "Please don't do this to me."],
-    ["I trusted you with everything.",       "I made one mistake. Just one."],
+    ["Who gave you permission to do that?",    "You were never supposed to find out."],
+    ["Empty your pockets right now.",           "It was a mistake, I swear to you."],
+    ["You really thought I wouldn't find out?", "I can explain all of this, please."],
+    ["This is over. You are completely done.",  "Please don't do this to me now."],
+    ["I trusted you with absolutely everything.","I made one mistake. Only one time."],
   ],
   villain: [
-    ["Hello. Did you miss me?",              "You're not real. You can't be."],
-    ["Surprise. It was me all along.",       "That's impossible. How?"],
-    ["I took everything you had.",           "Give it back. Right now."],
-    ["You can't tell us apart, can you?",    "Stay away from my family."],
-    ["The game was rigged from the start.",  "You set me up, didn't you?"],
+    ["Hello there. Did you miss me?",           "You are not real. You cannot be here."],
+    ["Surprise — it was me the whole time.",    "That is impossible. How did you do it?"],
+    ["I took everything that was yours.",        "Give it all back right now."],
+    ["You cannot tell us apart, can you?",       "Stay away from my family. I mean it."],
+    ["The game was rigged from the very start.", "You set me up this whole time, didn't you?"],
   ],
   twin: [
-    ["Hello. I'm your twin.",                "No. You don't exist."],
-    ["I've been living your life.",          "Get out of my house. Now."],
-    ["He thinks I'm you. He always has.",    "Don't you dare go near him."],
-    ["Two of us. One secret.",               "I'm calling the police."],
+    ["Hello. I am your twin sister.",            "No. You do not exist. This is not real."],
+    ["I have been living your entire life.",      "Get out of my house right now."],
+    ["He thinks I am you. He always has.",       "Do not you dare go anywhere near him."],
+    ["There are two of us. One big secret.",     "I am calling the police immediately."],
   ],
   cheater: [
-    ["It's nothing. She's just a friend.",   "Show me the phone then."],
-    ["Don't open that. It's work stuff.",    "I already read it all."],
-    ["You're overreacting, I promise.",      "Her name is in your phone."],
-    ["I can explain this, please.",          "Stop. Just stop talking."],
-    ["She means nothing to me, I swear.",    "Then why her lipstick on you?"],
+    ["She is nothing to me, just a friend.",     "Then show me your phone right now."],
+    ["Do not open that. It is just work stuff.", "I already read every single message."],
+    ["You are overreacting, I promise you that.","Her name is saved in your phone."],
+    ["I can explain all of this to you.",        "Stop talking. I do not want to hear it."],
+    ["She means absolutely nothing to me.",      "Then why is her lipstick on your shirt?"],
   ],
   wife: [
-    ["Tell me who she is. Right now.",       "She is nobody. I promise."],
-    ["Tell me her name. Right now.",         "You're twisting everything."],
-    ["I found all your messages.",           "Those are old. Ancient history."],
-    ["Why does she keep calling you?",       "Block her. I'll do it now."],
-    ["You smell different. Explain.",        "That's from work, not from her."],
+    ["Tell me exactly who she is right now.",    "She is nobody. I promise you that."],
+    ["Tell me her name. I want to hear it.",     "You are twisting everything around."],
+    ["I found every single message you sent.",   "Those messages are old. Ancient history."],
+    ["Why does she keep calling your phone?",    "I will block her right now, I promise."],
+    ["You smell completely different. Explain.", "That smell is from work, not from her."],
   ],
   mom: [
-    ["I raised you better than this.",       "Mom, it's complicated, okay?"],
-    ["Who is that girl?",                    "She's just someone I know."],
-    ["I heard everything last night.",       "You weren't supposed to hear that."],
-    ["That baby has your eyes.",             "Mom please, not right now."],
-    ["Don't lie to your mother.",            "I wasn't going to lie, I swear."],
+    ["I raised you better than this behavior.",  "Mom, it is complicated, okay? Please."],
+    ["Who exactly is that girl you are with?",   "She is just someone I happen to know."],
+    ["I heard everything you said last night.",   "You were not supposed to hear any of that."],
+    ["That baby has your eyes. I can see it.",   "Mom please, not right now. Not today."],
+    ["Do not stand there and lie to me.",        "I was not going to lie, I swear it."],
   ],
   kid: [
-    ["I saw you kissing her, daddy.",        "Come here. Let me explain."],
-    ["Please don't leave us.",               "I'm not going anywhere, I promise."],
-    ["Mommy is crying again. Why?",          "Everything is fine. Go to sleep."],
-    ["That lady came again today.",          "What lady? Tell me everything."],
-    ["I found this in your jacket.",         "Put that down. Right now."],
+    ["Daddy, I saw you kissing that lady.",       "Come here right now. Let me explain this."],
+    ["Please please please do not leave us.",     "I am not going anywhere, I promise you."],
+    ["Mommy is crying again. Why is she crying?","Everything is fine sweetheart. Go to sleep."],
+    ["That same lady came back again today.",     "What lady? Tell me everything you saw."],
+    ["I found something inside your jacket.",     "Put that down right now. Do not touch it."],
   ],
   shock: [
-    ["Wait... that baby looks like you.",    "That's not what you think it is."],
-    ["I found the receipt.",                 "You weren't supposed to find that."],
-    ["This photo was in your wallet.",       "I can explain. Please listen."],
-    ["She texted you again. Just now.",      "Give me back my phone."],
-    ["Your bags are packed by the door.",    "You packed my bags? Seriously?"],
+    ["Wait — that baby looks exactly like you.", "That is not what you are thinking it is."],
+    ["I found the receipt inside your bag.",      "You were never supposed to find that."],
+    ["I found this photo inside your wallet.",    "I can explain this. Please just listen."],
+    ["She just texted you again right now.",      "Give me back my phone immediately."],
+    ["Your bags are already packed by the door.", "You packed my bags? Are you serious?"],
   ],
   default: [
-    ["Give me the phone. Right now.",        "You won't like what you see."],
-    ["Say her name. I dare you.",            "You already know the answer."],
-    ["I'm done. I'm so done with this.",     "Please. Give me one more chance."],
-    ["Who is she? Tell me everything.",      "It started as nothing, I swear."],
-    ["That note fell out your pocket.",      "That note is old. Very old."],
-    ["You lied straight to my face.",        "I was going to tell you today."],
-    ["I know what you did last night.",      "You don't know what you saw."],
-    ["Don't touch me right now.",            "Just let me explain, please."],
+    ["Give me your phone right now.",            "You are not going to like what you see."],
+    ["Say her name out loud. I dare you.",       "You already know the answer to that."],
+    ["I am done. I am completely done with this.","Please. Give me just one more chance."],
+    ["Who is she? Tell me absolutely everything.","It started as nothing at all, I swear."],
+    ["That note just fell out of your pocket.",  "That note is very old. Very very old."],
+    ["You lied directly to my face.",            "I was going to tell you everything today."],
+    ["I know exactly what you did last night.",  "You do not know what you actually saw."],
+    ["Do not touch me right now. Back away.",    "Just let me explain everything, please."],
   ],
 };
 
@@ -339,92 +339,92 @@ const VIRAL_LINE_POOLS = {
 const BEAT_LINE_POOLS = {
   // Baby story beats
   baby_reveal: [
-    ["The test is positive. We're pregnant.", "Oh my god. This is real."],
-    ["We're having a baby.", "I can't believe this is happening."],
-    ["I'm going to be a mom.", "We're going to be parents."],
+    ["The test is positive. We are going to have a baby.", "Oh my god. This is actually real."],
+    ["We are going to have a baby together.",               "I cannot believe this is really happening."],
+    ["I am going to be a mom. For real.",                   "And I am going to be a father."],
   ],
   baby_hint: [
-    ["Why have you been so tired lately?",  "I've just been... feeling different."],
-    ["Something is different about you.",   "Maybe it is. Maybe something changed."],
-    ["Are you feeling okay? Tell me.",      "I don't know how to say this yet."],
+    ["Why have you been so tired and sick lately?",  "I have just been feeling really different."],
+    ["Something is definitely different about you.", "Maybe something has changed. Something big."],
+    ["Are you feeling okay? Please tell me.",        "I do not know how to say this yet."],
   ],
   baby_clue: [
-    ["What is this? Is this a test?",       "Please don't freak out right now."],
-    ["I found something in the bathroom.",  "Just... listen before you react."],
-    ["Tell me what's going on. Now.",       "I was going to tell you tonight."],
+    ["What is this? Is this a pregnancy test?",      "Please just do not freak out right now."],
+    ["I found something in our bathroom just now.",  "Just please listen before you say anything."],
+    ["Tell me right now what is going on.",          "I was going to tell you tonight, I promise."],
   ],
   reaction: [
-    ["Are you absolutely sure?",            "I've never been more sure."],
-    ["This changes everything for us.",     "Everything. For the better."],
-    ["I'm going to be a parent.",           "We both are. Starting now."],
+    ["Are you absolutely one hundred percent sure?", "I have never been more sure of anything."],
+    ["This changes absolutely everything for us.",   "It changes everything. And that is good."],
+    ["I am actually going to be a parent.",          "We both are. Starting right now together."],
   ],
   bonding: [
-    ["Look at those tiny hands.",           "She has your eyes already."],
-    ["I love you so much right now.",       "I love you both so much."],
-    ["We actually did this.",               "We really did this together."],
+    ["Look at those tiny little hands right there.", "She already has your eyes. I can see it."],
+    ["I love you so incredibly much right now.",     "I love you both more than everything."],
+    ["We actually did this. We made this happen.",   "We really did this one together, didn't we."],
   ],
   preparation: [
-    ["Is the nursery ready yet?",           "Almost. Almost perfect for her."],
-    ["We have so much left to do.",         "We'll figure it out together."],
-    ["Are we ready for this?",              "We were born ready for this."],
+    ["Is the nursery even close to ready yet?",      "Almost ready. Almost perfect for our baby."],
+    ["We still have so much left to figure out.",    "We will figure it all out together somehow."],
+    ["Are we actually ready to be parents?",         "We were born ready for this moment."],
   ],
   // Twin story beats
   double_spotted: [
-    ["I just saw you across the street.",   "That's impossible. I'm right here."],
-    ["You were in two places at once.",     "No. That cannot be right."],
-    ["Someone with your face was there.",   "You must be confused. It was me."],
+    ["I just saw you standing across the street.",   "That is impossible. I am standing right here."],
+    ["You were somehow in two places at once.",      "No. That absolutely cannot be right at all."],
+    ["Someone with your exact face was over there.", "You must be confused. That person was me."],
   ],
   twin_reveal: [
-    ["Hello. I'm the other one.",           "This cannot be real right now."],
-    ["We look exactly the same, don't we.", "Who are you. Who are you."],
-    ["Did you miss your other half?",       "How long have you been here."],
+    ["Hello there. I am the other one.",             "This cannot be real. This cannot be happening."],
+    ["We look exactly the same, do we not.",         "Who are you? Tell me who you are right now."],
+    ["Did you miss your other half all this time?",  "How long exactly have you been hiding here."],
   ],
   // Cheats-back beats
   glow_up: [
-    ["You look completely different.",      "I finally look like myself."],
-    ["What happened to you?",               "I stopped waiting for you."],
-    ["You look incredible.",                "I know. I worked for it."],
+    ["You look completely and totally different.",    "I finally look exactly like myself now."],
+    ["What in the world happened to you?",            "I stopped sitting around waiting for you."],
+    ["You look absolutely incredible right now.",     "I know exactly how I look. I worked for it."],
   ],
   betrayal: [
-    ["I know everything now.",              "Let me explain this please."],
-    ["I saw it all. Every message.",        "It was a mistake. All of it."],
-    ["I trusted you completely.",           "I know. I broke that trust."],
+    ["I know absolutely everything now. All of it.", "Just let me explain this to you please."],
+    ["I saw every single message. Every one.",       "It was all one big mistake. All of it."],
+    ["I trusted you with everything I had.",         "I know that. And I broke all of it."],
   ],
   walk_away: [
-    ["I'm done. This is over.",             "Please don't do this to us."],
-    ["Don't follow me. Don't call me.",     "I'm so sorry. I'm so sorry."],
-    ["Goodbye. I mean it this time.",       "Wait. Just wait. Please wait."],
+    ["I am done with this. We are completely over.", "Please do not do this to us right now."],
+    ["Do not follow me. Do not ever call me.",       "I am so incredibly sorry. I am so sorry."],
+    ["Goodbye. And I really mean it this time.",     "Wait. Just wait one second. Please wait."],
   ],
   // Kicked-out beats
   conflict: [
-    ["Get out. I mean it. Get out.",        "Please. Just listen to me once."],
-    ["You have to leave right now.",        "Where am I supposed to go?"],
-    ["I want you gone by tonight.",         "This is my home too."],
+    ["Get out of here. I mean every word of it.",   "Please. Just listen to me one more time."],
+    ["You have to leave this house right now.",      "Where exactly am I supposed to go now?"],
+    ["I want you completely gone by tonight.",       "This is my home too. You cannot do this."],
   ],
   kicked_out: [
-    ["I have nowhere to go right now.",     "I'm sorry. I truly am sorry."],
-    ["You kicked me out with nothing.",     "You made your choice. Own it."],
-    ["Is this really what you want?",       "I don't know what I want."],
+    ["I have absolutely nowhere to go right now.",   "I am so sorry. I am truly deeply sorry."],
+    ["You kicked me out with nothing at all.",       "You made your choice. Now you own it."],
+    ["Is this really truly what you want from me?", "Honestly I do not know what I want anymore."],
   ],
   determination: [
-    ["Watch what I do from here.",          "You've already moved on."],
-    ["I don't need you anymore.",           "You don't mean that. You do."],
-    ["This is just the beginning for me.",  "Good. You deserve your best."],
+    ["Just watch exactly what I do from here.",     "You have already completely moved on anyway."],
+    ["I do not need you in my life anymore.",        "You do not mean that. You know you don't."],
+    ["This is only just the beginning for me.",      "Good. You deserve every single good thing."],
   ],
 };
 
 // Scene 1 hooks by preset type
 const SCENE_1_HOOKS_BY_PRESET = {
-  baby:        ["I have something to tell you tonight.", "You're scaring me. What is it?"],
-  "baby":      ["I have something to tell you tonight.", "You're scaring me. What is it?"],
-  cheating:    ["Wait. Whose number is this?",           "Don't touch my phone right now."],
-  "cheats-back": ["I know what you did.",               "You don't know everything."],
-  "secret-twin": ["Something is very wrong here.",      "Everything is fine. Trust me."],
-  "kicked-out": ["This can't keep going like this.",    "What do you mean by that?"],
-  custom:      ["We need to talk. Right now.",           "Is everything okay with you?"],
+  baby:          ["I have something really important to tell you tonight.", "You are scaring me. What is going on?"],
+  "baby":        ["I have something really important to tell you tonight.", "You are scaring me. What is going on?"],
+  cheating:      ["Wait — whose number is this in your phone?",            "Do not touch my phone right now."],
+  "cheats-back": ["I know exactly what you did to me.",                    "You do not know everything that happened."],
+  "secret-twin": ["Something is very seriously wrong here.",               "Everything is completely fine. Just trust me."],
+  "kicked-out":  ["This situation cannot keep going on like this.",        "What exactly do you mean by that?"],
+  custom:        ["We need to have a serious talk right now.",              "Is everything okay with you? What happened?"],
 };
 
-const SCENE_1_HOOK_DEFAULT = ["Wait. Whose number is this?", "Don't touch my phone right now."];
+const SCENE_1_HOOK_DEFAULT = ["Wait — whose number is this in your phone?", "Do not touch my phone right now."];
 
 function pickViralLine(name, scene, index) {
   const sceneNum  = Number(scene?.sceneNumber ?? 1);
@@ -712,9 +712,9 @@ function sanitizeDialogueLine(value, scene, index = 0) {
     .replace(FRUIT_ADDRESS_RE, "")
     .trim();
   const words = line.split(/\s+/).filter(Boolean);
-  // Max 5 words — shorter lines are pronounced more clearly by the model
-  if (words.length < 2 || words.length > 5) {
-    line = (words.length >= 2 ? words.slice(0, 5).join(" ") : fallback);
+  // Max 10 words — natural sentence length for clear spoken dialogue
+  if (words.length < 2 || words.length > 10) {
+    line = (words.length >= 2 ? words.slice(0, 10).join(" ") : fallback);
   }
   if (line.length > MAX_PROVIDER_DIALOGUE_LINE_CHARS) {
     line = line.slice(0, MAX_PROVIDER_DIALOGUE_LINE_CHARS).replace(/\s+\S*$/, "").trim();
@@ -889,16 +889,16 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
   const charMovements = characters.slice(0, 2).map((char) => {
     const name = sanitizeSpeakerName(char.name || char.id);
     const roleText = `${char.role || char.id || ""}`.toLowerCase();
-    if (/(wife|mom|betrayed|victim)/.test(roleText)) return `${name}: points accusingly, jaw clenched, eyes locked`;
-    if (/(husband|cheater|guilty)/.test(roleText)) return `${name}: raises both hands defensively, frozen in place`;
-    if (/(mistress|third|secret)/.test(roleText)) return `${name}: hides face, reaches to grab phone or bag`;
-    if (/(kid|child|baby)/.test(roleText)) return `${name}: tilts head confused, small innocent gesture`;
-    return `${name}: reacts with ${emotionHint || "shock"}, intense expression`;
+    if (/(wife|mom|betrayed|victim)/.test(roleText)) return `${name}: turns to face partner directly, jaw clenched, points accusingly, eyes locked on them`;
+    if (/(husband|cheater|guilty)/.test(roleText)) return `${name}: turns toward partner, raises hands defensively, eyes darting guiltily`;
+    if (/(mistress|third|secret)/.test(roleText)) return `${name}: shrinks back, avoids eye contact, reaches to grab phone or bag`;
+    if (/(kid|child|baby)/.test(roleText)) return `${name}: looks between the adults, head tilted, innocent confused gesture`;
+    return `${name}: turns to face the other character, reacts with ${emotionHint || "shock"}, direct eye contact`;
   });
   const movementSource = charMovements.length >= 2
-    ? charMovements.join(". ") + ". All characters stay in frame — no exits."
+    ? charMovements.join(". ") + ". Characters face each other directly throughout — no exits."
     : (emotionHint
-      ? `Characters react with ${emotionHint} — expressive facial close-ups, lip sync, eye contact, micro-gestures. No repositioning or exiting frame.`
+      ? `Character reacts with ${emotionHint} — expressive face, clear lip sync, strong eye contact toward the other person. No exits.`
       : null);
   const movement = cleanSectionText(
     movementSource,
@@ -918,24 +918,24 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
 
   // The reference image IS the scene — animate it, don't create a new one
   const opening = isProviderPrompt
-    ? "IMAGE-TO-VIDEO: Animate the EXACT reference image provided. FIRST FRAME = reference image. Keep the IDENTICAL background, room, furniture, lighting, and character positions. Do NOT change the scene. Do NOT add new environments. Do NOT move characters out of frame. Only add subtle facial expressions, lip movement, and small gestures."
-    : "IMAGE-TO-VIDEO: Animate this exact reference image. The first frame must be identical to the reference. Keep the same background, same room, same lighting, same character positions. Only add subtle facial expressions and lip movement. Do not change the scene, do not pan away, do not add new locations.";
+    ? "IMAGE-TO-VIDEO: Animate the EXACT reference image provided. FIRST FRAME = reference image. Keep the IDENTICAL background, room, furniture, and lighting. Characters may turn to face each other directly and hold eye contact. Add expressive facial reactions, clear lip-sync dialogue, and natural conversational gestures. Do NOT move characters out of frame. Do NOT add new environments or locations."
+    : "IMAGE-TO-VIDEO: Animate this exact reference image. First frame must match the reference. Keep the same background, room, and lighting. Characters turn toward each other, hold direct eye contact, and speak with clear natural lip-sync. Do not change the scene or add new locations.";
   const sceneTitleNote = scene.title ? ` — "${scene.title}"` : "";
   const storyArcNote = `Scene ${sceneNumber} of ${totalScenes}`;
   const pacingLine = isProviderPrompt
     ? `${storyArcNote}${sceneTitleNote}: ${pacingRole}. Dramatic emotional moment. Characters react and speak — no location change.`
     : `${storyArcNote}${sceneTitleNote}: ${pacingRole}. Emotional dramatic reaction. Characters stay in the same location as the reference image.`;
   const speechRules = isProviderPrompt
-    ? "ENGLISH WORDS ONLY. Speak EXACTLY the quoted lines above — nothing else, no other language, no foreign sounds, no improvising. Dialogue starts immediately in the first second."
-    : "ENGLISH WORDS ONLY. Speak EXACTLY the quoted lines — no other language, no foreign syllables, no improvising. Dialogue starts in the first second. Minimal pause between lines.";
+    ? "ENGLISH WORDS ONLY. Speak EXACTLY the quoted lines — clear, full pronunciation, natural sentence delivery. No mumbling, no muttering, no unintelligible sounds, no other languages. Each character speaks only their own line. Dialogue starts in the first second."
+    : "ENGLISH WORDS ONLY. Speak EXACTLY the quoted lines with clear natural pronunciation — no mumbling, no muttering, no foreign sounds. Each character speaks their own line clearly and directly to the other character. Dialogue starts in the first second.";
   // Required sections come FIRST so they survive the 1450-char trim.
-  const audioLine = `Dialogue only. No background music. Natural room ambience only. No gasps, no breathing sounds, no sound effects, no instruments, no singing, no gibberish sounds of any kind.`;
+  const audioLine = `Clear English dialogue only — fully pronounced, audible, and intelligible. No background music. Natural room ambience only. No gasps, no mumbling, no muttering, no gibberish, no unintelligible sounds, no foreign words, no singing.`;
   const identityLock = isProviderPrompt
     ? "CHARACTER LOCK: Use ONLY the characters from the reference image. Same fruit type, same face, same hair, same outfit. No redesigns, no new characters, no location change."
     : "CHARACTER LOCK: Animate ONLY the characters shown in the reference image. Same fruit type, same face, same hair, same outfit, same background. No redesigns, no new characters.";
   const negativeLine = isProviderPrompt
-    ? "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background music, no gasps, no sighs, no sound effects, no mumbling, no gibberish, no non-English words, no Spanish, no French, no Arabic, no Mandarin, no random foreign syllables, no improvised speech, no singing."
-    : "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background music, no gasps, no sighs, no sound effects, no mumbling, no gibberish, no non-English words, no Spanish, no French, no Arabic, no random foreign syllables, no improvised speech, no singing.";
+    ? "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background music, no gasps, no sighs, no mumbling, no muttering, no gibberish, no non-English words, no Spanish, no French, no Arabic, no Mandarin, no random foreign syllables, no improvised speech, no unintelligible sounds, no singing, no characters avoiding eye contact."
+    : "No captions, no subtitles, no text overlays, no watermarks, no new characters, no identity changes, no location change, no background music, no gasps, no mumbling, no muttering, no gibberish, no non-English words, no Spanish, no French, no Arabic, no random foreign syllables, no improvised speech, no unintelligible sounds, no singing.";
 
   const storyContextLine = scene.storyPurpose || scene.scenePurpose
     ? cleanSectionText(scene.storyPurpose || scene.scenePurpose, "", isProviderPrompt ? 80 : 100)
@@ -1466,6 +1466,13 @@ function buildMasterImagePrompt({
 
   /* ── 1. Global Zyvo style ── */
   parts.push(
+    "CRITICAL CHARACTER REQUIREMENT — READ FIRST:\n" +
+    "ALL characters in this image MUST be TALL ADULT anthropomorphic fruit-human characters.\n" +
+    "FULL ADULT body proportions — NOT children, NOT babies, NOT toddlers, NOT small figures.\n" +
+    "Characters must have: adult height, adult face structure with mature features, adult clothing,\n" +
+    "human-like adult arms/legs/hands, and adult emotional expressions.\n" +
+    "If the reference image shows a character with adult proportions, replicate those adult proportions exactly.\n" +
+    "Do NOT shrink characters into baby or child size. Do NOT give them baby faces or child heads.\n\n" +
     `${style.masterPrompt}\n\n` +
     `SELECTED STYLE: ${style.label}\n` +
     [
@@ -1484,14 +1491,14 @@ function buildMasterImagePrompt({
     "- If continuity reference is provided, use it only for environment, camera, lighting, and mood continuity, not for adding previous scene characters.\n\n" +
     "STYLE RULE:\n" +
     "Always use the Zyvo 3D AI fruit story visual style:\n" +
-    "- Polished 3D anthropomorphic fruit characters with expressive faces\n" +
+    "- Polished 3D anthropomorphic ADULT fruit characters with expressive adult faces\n" +
     "- Cinematic lighting, dramatic storytelling, and clean composition\n" +
     "- TikTok-optimized vertical framing when requested\n" +
     "- Preserve exact identity of all referenced characters\n" +
     "- Only include the characters listed for this scene\n" +
     "- Do not invent extra characters, merge identities, or change one character into another\n" +
     "- Clean, TikTok-ready framing — scroll-stopping premium quality\n" +
-    "- NO realism drift, NO random character redesigns\n" +
+    "- NO realism drift, NO random character redesigns, NO child or baby proportions\n" +
     "- NO text, captions, subtitles, speech bubbles, logos, or watermarks"
   );
 
@@ -1552,7 +1559,18 @@ function buildMasterImagePrompt({
     parts.push("SCENE DESCRIPTION:\n" + scene.imagePrompt);
   }
 
-  /* ── 7. Absolute no-text rule ── */
+  /* ── 7. Adult character + continuity final enforcement ── */
+  parts.push(
+    "FINAL ENFORCEMENT:\n" +
+    "- Characters MUST be TALL ADULT fruit-human characters — full adult height and adult body proportions.\n" +
+    "- No child-sized characters, no baby proportions, no toddler features.\n" +
+    "- All characters in the same story must wear the same clothes as in their previous scenes.\n" +
+    "- The room layout, furniture, and lighting must match the story's established environment.\n" +
+    "- Characters positioned in this scene must face and interact with each other naturally.\n" +
+    "- This image must feel like a frame from a continuous animated drama film, not an isolated illustration."
+  );
+
+  /* ── 8. Absolute no-text rule ── */
   parts.push(
     "ABSOLUTE RULE — NO TEXT OF ANY KIND:\n" +
     "NO text, NO captions, NO subtitles, NO speech bubbles, NO dialogue boxes,\n" +
@@ -1841,6 +1859,12 @@ function sanitizeImagePromptForGPT(prompt) {
     .replace(/\blust\b/gi,                 "emotion")
     .replace(/\btempt(ing|ation)?\b/gi,    "persuade")
     .replace(/\bseduce[sd]?\b/gi,          "convince")
+
+    // Baby story: prevent "baby fruit character" from generating an infant
+    // Keep "pregnancy test" and "two lines" intact (they are safe and specific)
+    .replace(/\bbaby\s+fruit\s+character\b/gi, "tiny item")
+    .replace(/\binfant\s+character\b/gi,        "tiny prop")
+    .replace(/\btiny\s+baby\s+fruit\b/gi,       "small item")
 
     // Clean up any double spaces
     .replace(/\s{2,}/g, " ")

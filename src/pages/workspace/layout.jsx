@@ -8,20 +8,19 @@ import MobileBottomNav from "../../components/workspace/MobileBottomNav";
 import WelcomeScreen from "../../components/WelcomeScreen";
 import CreatorRewardsModal from "../../components/CreatorRewardsModal";
 
-// ── Global video outage banner ──────────────────────────────────────────────
-// Remove this component (and its usage below) once the Runware issue is fixed.
+// ── Promo banner ──────────────────────────────────────────────
 function VideoOutageBanner({ onDismiss }) {
   return (
-    <div className="relative w-full bg-amber-500/8 border-b border-amber-400/20 px-4 py-2">
+    <div className="relative w-full bg-purple-500/8 border-b border-purple-400/20 px-4 py-2">
       <div className="relative mx-auto flex max-w-5xl items-center justify-center gap-2">
-        <span className="text-sm leading-none">⚠️</span>
-        <span className="text-[12px] text-amber-200/70 text-center">
-          <span className="font-semibold text-amber-300">Video generation may be unstable.</span>
-          {" "}If a generation fails you will not be charged.
+        <span className="text-sm leading-none">🎉</span>
+        <span className="text-[12px] text-purple-200/70 text-center">
+          <span className="font-semibold text-purple-300">Pro Plan — 25% off for a limited time.</span>
+          {" "}Upgrade now to unlock unlimited generations.
         </span>
         <button
           onClick={onDismiss}
-          className="absolute right-0 shrink-0 text-amber-400/40 hover:text-amber-300 transition text-base leading-none px-1"
+          className="absolute right-0 shrink-0 text-purple-400/40 hover:text-purple-300 transition text-base leading-none px-1"
           aria-label="Dismiss"
         >
           ×

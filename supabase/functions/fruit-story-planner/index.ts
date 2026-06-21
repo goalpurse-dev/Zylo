@@ -53,16 +53,16 @@ const PRESET_BEATS: Record<StoryPreset, Record<number, BeatTemplate[]>> = {
   /* ── CHEATING ── */
   cheating: {
     3: [
-      { beatType: "hook",          title: "Sweet Couple Moment",           purpose: "Establish the couple as happy to make the betrayal hit harder",                emotionDirection: "surface warmth hiding unease",    actionDirection: "couple together in domestic scene, one partner distracted",                 cameraDirection: "warm two-shot, couple close",                backgroundDetail: "cozy home living room, warm lighting",              promptHint: "Happy couple scene. One character subtly distracted — averted eyes, nervous posture." },
-      { beatType: "affair_scene",  title: "The Secret Meeting",            purpose: "Show the cheater with the affair partner — the actual affair the viewer came for", emotionDirection: "secretive, charged, conspiratorial", actionDirection: "cheater and affair partner together in private, victim completely absent", cameraDirection: "close intimate two-shot, cheater and affair_partner only", backgroundDetail: "different location — hotel room, parked car, private restaurant", promptHint: "Cheater and affair_partner alone together. Secretive closeness. Guilty smiles or tense glances. NO victim in this scene." },
-      { beatType: "discovery",     title: "Caught — Everything Explodes",  purpose: "Victim discovers the affair or is confronted with proof — all three in one explosive scene", emotionDirection: "shock, rage, devastation",          actionDirection: "victim discovers cheater with affair partner or finds undeniable proof", cameraDirection: "dramatic wide shot showing all three characters",    backgroundDetail: "confrontation space — hallway, living room, or door",       promptHint: "Victim discovers the affair. Three-character confrontation. Shattered expression on victim. Guilt on cheater. Affair partner exposed." },
+      { beatType: "hook",          title: "Sweet Couple Moment",           purpose: "Establish the couple as happy to make the betrayal hit harder",                emotionDirection: "surface warmth hiding unease",    actionDirection: "adult couple standing or sitting together in their home, one partner distracted by phone or avoiding eye contact",                 cameraDirection: "warm medium two-shot showing BOTH adult characters together in the same frame",                backgroundDetail: "cozy home living room, warm golden lighting",              promptHint: "TWO ADULT fruit-human characters shown together as a couple in their home. Both have full adult height and adult proportions. One partner is warm and close, the other is subtly distracted — slightly averted eyes, nervous posture, hiding something. Warm domestic atmosphere." },
+      { beatType: "affair_scene",  title: "The Secret Meeting",            purpose: "Show the cheater with the affair partner — the actual affair the viewer came for", emotionDirection: "secretive, charged, conspiratorial", actionDirection: "cheater adult character and affair_partner adult character together alone in private, sharing a secret moment — the victim is COMPLETELY ABSENT from this scene", cameraDirection: "close intimate medium two-shot showing ONLY the cheater and affair partner — no victim", backgroundDetail: "different private location — hotel lobby, parked car interior, private restaurant booth, or quiet alley", promptHint: "TWO ADULT fruit-human characters alone together in a private setting. The cheater and affair partner share a secretive, tense moment. Both are TALL ADULT characters with adult clothing and adult faces. Guilty expressions, conspiratorial body language. The betrayed partner is NOT in this scene at all." },
+      { beatType: "discovery",     title: "Caught — Everything Explodes",  purpose: "Victim discovers the affair or is confronted with proof — explosive confrontation", emotionDirection: "shock, rage, devastation",          actionDirection: "victim adult character discovers cheater with affair partner, or finds undeniable proof — all three adult characters face each other in explosive confrontation", cameraDirection: "dramatic wide shot or three-shot showing all characters with victim front and center",    backgroundDetail: "confrontation space — home hallway, living room doorway, or shared space",       promptHint: "THREE ADULT fruit-human characters in a dramatic confrontation. The betrayed partner stands facing the cheater with a shattered, furious expression. All three are TALL ADULT characters with adult proportions and adult clothing. Maximum emotional intensity — pointing, tears, shock, guilt visible on each face." },
     ],
     5: [
-      { beatType: "hook",          title: "Sweet Couple Moment",           purpose: "Open with the couple happy — makes the betrayal land harder",                   emotionDirection: "happiness with hidden guilt",     actionDirection: "couple together, one partner slightly distracted or hiding phone",          cameraDirection: "warm domestic two-shot",                             backgroundDetail: "home kitchen or living room, warm lighting",                promptHint: "Happy couple. One character shows subtle guilt — slightly averted eyes, distracted energy." },
-      { beatType: "affair_scene",  title: "The Secret Meeting",            purpose: "Reveal the actual affair — cheater + affair_partner TOGETHER, victim absent",   emotionDirection: "secretive and conspiratorial",    actionDirection: "cheater and affair_partner alone together, intimate or secretive body language", cameraDirection: "close two-shot of cheater + affair_partner only",    backgroundDetail: "different location — hotel room, back alley, private café", promptHint: "Cheater and affair_partner alone. Secretive closeness. NO victim. This is the affair happening." },
-      { beatType: "discovery",     title: "Hard Evidence Found",           purpose: "Victim finds undeniable proof of the affair",                                    emotionDirection: "shock and devastation",           actionDirection: "victim sees proof — catches them, finds messages, or sees a photo",         cameraDirection: "dramatic close-up on victim discovering proof",              backgroundDetail: "home or confrontation location",                            promptHint: "Victim alone discovering proof. Wide eyes, trembling hands, shattered expression." },
-      { beatType: "confrontation", title: "The Confrontation",             purpose: "Betrayed character confronts the cheater directly with evidence",               emotionDirection: "controlled fury or tearful rage", actionDirection: "victim confronts cheater — evidence shown, accusation spoken through expression", cameraDirection: "intense two-shot, faces close",                backgroundDetail: "charged indoor space — living room or hallway",             promptHint: "Confrontation. Victim holds evidence or points accusingly. Cheater shows guilt or defensiveness. High tension." },
-      { beatType: "payoff",        title: "Final Walk Away or Twist",      purpose: "Powerful emotional payoff — victim walks away or delivers shocking reveal",     emotionDirection: "devastation, triumph, or twist",  actionDirection: "victim walks out with dignity or delivers a shocking final revelation",     cameraDirection: "wide powerful shot for walk-away or close for twist",        backgroundDetail: "doorway, open street, or confrontation room",               promptHint: "Final moment. Victim walks away with power, or drops a shocking twist. Expression: resolved and strong." },
+      { beatType: "hook",          title: "Sweet Couple Moment",           purpose: "Open with the couple happy — makes the betrayal land harder",                   emotionDirection: "happiness with hidden guilt",     actionDirection: "two adult characters together as a couple in their home, one partner happy, the other subtly distracted or hiding their phone",          cameraDirection: "warm medium two-shot showing BOTH adult characters in the same frame",                             backgroundDetail: "home kitchen or living room, warm golden lighting",                promptHint: "TWO TALL ADULT fruit-human characters as a romantic couple in their home. Both have full adult height and proportions, adult clothing, and adult faces. One partner smiles warmly, the other shows subtle guilt — avoiding eye contact, distracted, nervous energy. Warm domestic scene." },
+      { beatType: "affair_scene",  title: "The Secret Meeting",            purpose: "Reveal the actual affair — cheater + affair_partner TOGETHER, victim absent",   emotionDirection: "secretive and conspiratorial",    actionDirection: "cheater adult character and affair_partner adult character alone together in a private location — victim completely absent from this scene", cameraDirection: "close medium two-shot of ONLY the cheater and affair partner",    backgroundDetail: "different private location — hotel room, parked car, back alley, private café", promptHint: "TWO TALL ADULT fruit-human characters alone together in a secret meeting. The cheater and affair partner, both with adult proportions and adult clothing, share a secretive moment. The betrayed partner is NOT present. Guilty and conspiratorial energy between them." },
+      { beatType: "discovery",     title: "Hard Evidence Found",           purpose: "Victim finds undeniable proof of the affair",                                    emotionDirection: "shock and devastation",           actionDirection: "betrayed adult character alone, holding undeniable proof — phone with messages, photo, or letter — staring at it in shock",         cameraDirection: "dramatic close-up on the adult character's face and the evidence in their hands",              backgroundDetail: "home interior — bedroom or living room, tense lighting",                            promptHint: "ONE TALL ADULT fruit-human character alone, discovering undeniable proof of betrayal. Adult proportions, adult face showing complete devastation. Holding a phone, photo, or document showing the affair. Wide tear-filled eyes, trembling hands, mouth open in silent shock." },
+      { beatType: "confrontation", title: "The Confrontation",             purpose: "Betrayed character confronts the cheater directly with evidence",               emotionDirection: "controlled fury or tearful rage", actionDirection: "betrayed adult character confronts cheater adult character face to face — holding evidence, pointing accusingly, both characters facing each other directly", cameraDirection: "intense medium two-shot showing both adult characters facing each other with the same furniture and room visible from previous scenes",                backgroundDetail: "same home interior from earlier scenes — living room or hallway",             promptHint: "TWO TALL ADULT fruit-human characters in a direct confrontation. Both face each other, eye contact locked. The betrayed character holds evidence or points accusingly — jaw tight, tears of rage. The cheater shows guilt and defensiveness — hands raised, looking away. SAME room and clothing as earlier scenes." },
+      { beatType: "payoff",        title: "Final Walk Away or Twist",      purpose: "Powerful emotional payoff — victim walks away or delivers shocking reveal",     emotionDirection: "devastation, triumph, or twist",  actionDirection: "betrayed adult character walks away with dignity toward a door or delivers a shocking final revelation that changes everything",     cameraDirection: "wide powerful shot showing adult character walking away, or tight close-up for a final twist reveal",        backgroundDetail: "doorway, open hallway, or confrontation room from earlier scenes",               promptHint: "ONE TALL ADULT fruit-human character making a powerful final move. Walking toward the door with head held high, or turning back with a devastating final truth. Adult proportions, strong posture, resolute expression. The cheater remains in the background, devastated." },
     ],
     7: [
       { beatType: "hook",          title: "Sweet Couple Moment",           purpose: "Establish the couple as seemingly happy",                                       emotionDirection: "surface warmth, hidden unease",   actionDirection: "couple in a tender moment — one partner secretly distracted",               cameraDirection: "warm close two-shot",                                backgroundDetail: "cozy home, golden lighting",                                promptHint: "Happy couple. One character subtly nervous or guilty. No conflict visible yet." },
@@ -114,28 +114,28 @@ const PRESET_BEATS: Record<StoryPreset, Record<number, BeatTemplate[]>> = {
   /* ── GETTING BABY ── */
   "baby": {
     4: [
-      { beatType: "hook",          title: "Normal Family Moment",         purpose: "Establish the family/couple in a normal warm scene",                           emotionDirection: "warmth and normalcy",            actionDirection: "couple or family in regular home moment",          cameraDirection: "warm medium shot",       backgroundDetail: "cozy home, warm lighting",                         promptHint: "Normal warm family scene. No baby yet. Happy and comfortable." },
-      { beatType: "baby_reveal",   title: "Baby Clue or Reveal",          purpose: "The baby is discovered, revealed, or the news is broken",                    emotionDirection: "surprise and wonder",            actionDirection: "baby item appears, news is given, or baby is seen",  cameraDirection: "close-up on reveal moment", backgroundDetail: "home space or hospital",                         promptHint: "Baby reveal moment. Tiny item, ultrasound, or baby character appears. Wonder and emotion." },
-      { beatType: "reaction",      title: "Shock and Joy Reaction",       purpose: "Emotional reaction to the baby news or presence",                            emotionDirection: "shock, joy, or overwhelming emotion", actionDirection: "character reacts with big emotion to the news",   cameraDirection: "expressive face close-up",  backgroundDetail: "reaction location — home or hospital",           promptHint: "Big emotional reaction to baby news. Wide eyes, hands over mouth, tears of joy or shock." },
-      { beatType: "payoff",        title: "Cute Payoff or Twist",         purpose: "Heartwarming resolution or unexpected sweet twist",                          emotionDirection: "joy, love, or sweet irony",      actionDirection: "baby bonding moment or sweet surprising twist",     cameraDirection: "warm wide shot or intimate close", backgroundDetail: "nursery, home, or hospital",                    promptHint: "Heartwarming final beat. Baby or family together. Sweet, emotional, wholesome." },
+      { beatType: "hook",        title: "Normal Day Together",      purpose: "Establish the couple as happy and normal before the life-changing news",        emotionDirection: "warmth and comfortable normalcy",       actionDirection: "both adult characters together in their home kitchen or living room, sharing a normal morning moment — coffee, breakfast, relaxed conversation",  cameraDirection: "warm medium two-shot showing BOTH characters together in the same frame",  backgroundDetail: "cozy home kitchen or living room, warm golden morning light",  promptHint: "TWO TALL ADULT fruit-human characters together in their cozy home. Both sitting or standing at the kitchen table sharing breakfast. Warm golden lighting. Happy, relaxed couple energy. The woman looks slightly distracted or nauseous but hides it. NO baby character. NO infant. Adults only. Same room, same warm lighting throughout." },
+      { beatType: "baby_reveal", title: "The Pregnancy Discovery",  purpose: "The woman discovers or reveals she is pregnant — a life-changing moment",    emotionDirection: "shock, disbelief, and overwhelming wonder",  actionDirection: "adult woman holding a positive pregnancy test with trembling hands, staring at it with wide tearful eyes — the man is not yet present",  cameraDirection: "close-up on the adult woman's face and the pregnancy test in her hands",  backgroundDetail: "home bathroom or bedroom, soft white light",  promptHint: "ONE TALL ADULT STRAWBERRY WOMAN standing in a bathroom, holding a positive pregnancy test with two clear visible lines. Her eyes are wide with shock and wonder, tears forming. Trembling hands. Close-up on her face and the test stick. PREGNANCY TEST clearly visible — NOT a baby fruit character, NOT an infant, NOT a baby orange. The pregnancy is shown through the white test stick with two lines ONLY. Soft emotional lighting." },
+      { beatType: "reaction",    title: "He Finds Out",             purpose: "The woman tells the man — his reaction is the emotional peak of the story",   emotionDirection: "overwhelmed shock turning into joy",  actionDirection: "woman shows man the pregnancy test — he reacts with maximum visible emotion, hands over mouth, eyes wide, knees nearly buckling with joy and shock",  cameraDirection: "expressive medium two-shot — both adult characters facing each other, test visible between them",  backgroundDetail: "same home interior from earlier scenes — living room or kitchen",  promptHint: "TWO TALL ADULT fruit-human characters facing each other. The STRAWBERRY WOMAN holds out the positive pregnancy test to the BANANA MAN. He reacts with explosive shock and joy — hands covering his mouth, eyes wide, overwhelmed. Same clothing as before, same room. The pregnancy test is the KEY prop — visible in the image. NO baby character, NO infant character. Adults only, pure emotional reaction." },
+      { beatType: "payoff",      title: "Sweet Celebration",        purpose: "Heartwarming final moment as the couple accepts the news and celebrates",    emotionDirection: "pure joy, love, and overwhelmed happiness",  actionDirection: "both adult characters together, holding the pregnancy test, smiling through tears, embracing or sitting close — celebrating the news",  cameraDirection: "warm intimate medium two-shot, both characters visible and emotional",  backgroundDetail: "same cozy home from earlier scenes, warm golden lighting",  promptHint: "TWO TALL ADULT fruit-human characters together in celebration. The BANANA MAN and STRAWBERRY WOMAN sit or stand close, both smiling and crying tears of joy, the pregnancy test between them. Same clothing as all previous scenes. Warm golden home lighting. Pure joy and love on both faces. NO baby character, NO infant, NO orange baby. This is ADULTS celebrating a pregnancy announcement." },
     ],
     6: [
-      { beatType: "hook",          title: "Normal Family Life",           purpose: "Establish normal family life before the baby change",                        emotionDirection: "comfortable normalcy",           actionDirection: "couple in normal routine moment",                  cameraDirection: "warm medium shot",       backgroundDetail: "cozy home",                                        promptHint: "Normal family or couple scene. Comfortable and warm. No hint of change yet." },
-      { beatType: "baby_hint",     title: "First Subtle Baby Hint",       purpose: "Drop the first hint that something new is coming",                           emotionDirection: "curiosity and suspense",         actionDirection: "small baby item appears in background or character notices something", cameraDirection: "subtle background clue shot", backgroundDetail: "home interior",                              promptHint: "Subtle hint. Tiny baby item in background. Character notices or pauses. Soft visual clue." },
-      { beatType: "baby_reveal",   title: "The Baby Reveal",              purpose: "The big moment — baby news broken or baby character appears",               emotionDirection: "shock and overwhelming emotion", actionDirection: "news given, ultrasound shown, or baby fruit character appears", cameraDirection: "close-up on reveal then reaction", backgroundDetail: "home or hospital setting",                 promptHint: "Baby reveal. Ultrasound, baby item, or tiny baby fruit character shown. Emotional peak." },
-      { beatType: "reaction",      title: "Emotional Reaction",           purpose: "Everyone's emotional reaction to the baby news",                            emotionDirection: "joy, shock, or sweet panic",     actionDirection: "character reacts with big visible emotion",        cameraDirection: "expressive face close-up",  backgroundDetail: "reaction space",                                promptHint: "Big emotional reaction. Tears of joy, shocked expression, or sweet overwhelmed face." },
-      { beatType: "preparation",   title: "Chaotic Sweet Preparation",    purpose: "Funny or touching preparation for the baby's arrival",                      emotionDirection: "joyful chaos or gentle excitement", actionDirection: "setting up nursery, buying tiny things, or silly preparation moment", cameraDirection: "medium shot showing effort or chaos", backgroundDetail: "nursery or baby store",                      promptHint: "Preparation scene. Characters assembling crib, buying tiny items, or hilariously overwhelmed. Warm and sweet." },
-      { beatType: "payoff",        title: "Heartwarming Final Moment",    purpose: "Sweet and emotional closing image with the baby",                           emotionDirection: "pure love and joy",              actionDirection: "baby bonding, first meeting, or sweet final twist",  cameraDirection: "intimate warm close-up",    backgroundDetail: "nursery or home",                               promptHint: "Final bonding moment. Baby and parent together. Overwhelmingly sweet and warm." },
+      { beatType: "hook",        title: "Normal Morning Together",  purpose: "Establish the couple as happy and ordinary before the surprise",               emotionDirection: "comfortable warmth and normalcy",       actionDirection: "both adult characters together in their home, sharing a normal morning moment",  cameraDirection: "warm medium two-shot both characters visible",  backgroundDetail: "cozy home kitchen or living room, warm morning light",  promptHint: "TWO TALL ADULT fruit-human characters — BANANA MAN and STRAWBERRY WOMAN — together at home in the morning. Both sitting at kitchen table having breakfast. Normal happy couple energy. Warm golden light. Adults only, no baby or infant characters." },
+      { beatType: "baby_hint",   title: "Something Feels Different", purpose: "First subtle hint that something has changed — the woman seems off",         emotionDirection: "mild curiosity mixed with quiet worry",  actionDirection: "woman alone, slightly nauseous or distracted, noticing something feels different about herself",  cameraDirection: "close-up on the woman's thoughtful, slightly worried face",  backgroundDetail: "home bathroom or kitchen, soft natural light",  promptHint: "ONE TALL ADULT STRAWBERRY WOMAN alone, looking slightly unwell or distracted. Her hand rests lightly on her stomach. Expression: something feels different. Maybe holding a glass of water, looking slightly pale. Subtle hint something has changed. NO baby character. Adult only." },
+      { beatType: "baby_reveal", title: "The Positive Test",         purpose: "The woman takes a pregnancy test and sees the positive result",              emotionDirection: "shock, wonder, and disbelief",          actionDirection: "woman holding a positive pregnancy test — two clear lines visible — her hands trembling, eyes filling with tears",  cameraDirection: "close-up on the pregnancy test in her hands and her emotional face",  backgroundDetail: "home bathroom, soft white light",  promptHint: "ONE TALL ADULT STRAWBERRY WOMAN holding a positive pregnancy test with TWO CLEAR LINES clearly visible. Hands shaking, eyes wide and tearful. PREGNANCY TEST is the central prop. NOT a baby character, NOT an orange infant, NOT any fruit baby. The test stick shows two lines indicating pregnancy. Emotional close-up, soft bathroom lighting." },
+      { beatType: "reaction",    title: "She Tells Him",             purpose: "She reveals the news to her partner — his reaction is the emotional climax", emotionDirection: "explosive shock turning into overwhelming joy",  actionDirection: "woman shows man the pregnancy test — he reacts with enormous emotion, hands over mouth, tears in eyes",  cameraDirection: "medium two-shot both characters, pregnancy test visible as central prop",  backgroundDetail: "same home interior, continuous from previous scenes",  promptHint: "TWO TALL ADULT fruit-human characters facing each other. STRAWBERRY WOMAN holds out the pregnancy test. BANANA MAN reacts with overwhelming shock and joy — hands on face, eyes wide, tears starting. Same clothing and room. Pregnancy test visible. NO baby characters. Adults only." },
+      { beatType: "preparation", title: "Getting Ready Together",    purpose: "Sweet montage of the couple starting to prepare for the baby's arrival",    emotionDirection: "joyful excitement mixed with nervous energy",  actionDirection: "both adult characters looking at a tiny baby item together — a small pair of booties, a crib in a store, or a baby book — overwhelmed but excited",  cameraDirection: "warm medium two-shot both characters together",  backgroundDetail: "baby store or home starting to be decorated, warm light",  promptHint: "TWO TALL ADULT fruit-human characters together, holding or looking at a tiny baby item — a tiny pair of booties, a small stuffed animal, or a baby book. Both look overwhelmed but excited. ADULTS ONLY — no actual baby character. Same clothing and proportions. Warm light, sweet energy." },
+      { beatType: "payoff",      title: "We Are Ready",              purpose: "Final heartwarming moment celebrating the pregnancy and their future",       emotionDirection: "pure love and happy anticipation",      actionDirection: "both adult characters close together, the woman's hands resting on her slightly curved stomach, both smiling with tears of happiness",  cameraDirection: "intimate warm close-up or medium two-shot both characters together",  backgroundDetail: "cozy home, same warm golden lighting as opening",  promptHint: "TWO TALL ADULT fruit-human characters together. The STRAWBERRY WOMAN has her hands resting gently on her stomach. BANANA MAN stands close with one hand over hers. Both smile through happy tears. No baby character — this is about the pregnancy itself. Same clothing as throughout the story. Warm golden light, full circle from scene one." },
     ],
     8: [
-      { beatType: "hook",              title: "Normal Family Moment",        purpose: "Regular family or couple moment, no hint of change yet",                  emotionDirection: "warm comfort",               actionDirection: "ordinary home moment",                            cameraDirection: "warm medium shot",         backgroundDetail: "cozy home",                                    promptHint: "Normal comfortable family scene. Ordinary moment with warmth." },
-      { beatType: "subtle_hint",       title: "Tiny Background Hint",        purpose: "First subtle clue planted in the background",                            emotionDirection: "slight curiosity",           actionDirection: "tiny baby item visible or character pauses oddly", cameraDirection: "wide shot with background detail", backgroundDetail: "home or kitchen",                            promptHint: "Background detail with tiny baby item. Character may or may not notice it yet." },
-      { beatType: "baby_clue",         title: "Clear Baby Clue",             purpose: "A definite baby-related clue that the character notices",                emotionDirection: "growing realization",         actionDirection: "character picks up or discovers baby item clearly", cameraDirection: "close on item then face",  backgroundDetail: "bedroom or kitchen",                           promptHint: "Baby item clearly found. Character picks it up. Expression shifts from neutral to realization." },
-      { beatType: "baby_reveal",       title: "The Big Baby Reveal",         purpose: "The main reveal moment — baby news given or baby appears",               emotionDirection: "shock and pure wonder",      actionDirection: "ultrasound shown, news broken, or baby fruit character appears", cameraDirection: "dramatic reveal close-up", backgroundDetail: "home or hospital",                           promptHint: "Big reveal moment. Undeniable baby news or tiny baby fruit character. Complete emotional peak." },
-      { beatType: "reaction",          title: "Overwhelming Reaction",       purpose: "The full emotional reaction to the baby revelation",                     emotionDirection: "overwhelmed joy or shock",   actionDirection: "character reacts with maximum visible emotion",    cameraDirection: "face close-up, tears or laughter", backgroundDetail: "reveal space",                              promptHint: "Full emotional reaction. Tears streaming, hands over mouth, or falling to knees with joy." },
-      { beatType: "preparation",       title: "Silly Preparation",           purpose: "Sweet or chaotic preparation scene showing love and overwhelm",          emotionDirection: "joyful overwhelm",           actionDirection: "assembling furniture, buying tiny clothes, chaotic shopping", cameraDirection: "medium shot in motion",  backgroundDetail: "nursery, baby store, or home",                 promptHint: "Preparation chaos. Characters overwhelmed but happy. Tiny items everywhere. Sweet and funny." },
-      { beatType: "bonding",           title: "Touching Bonding Scene",      purpose: "Quiet emotional bonding moment — tender and real",                       emotionDirection: "pure love",                  actionDirection: "parent holds, talks to, or reads to baby/kid",     cameraDirection: "intimate warm close-up",   backgroundDetail: "nursery, couch, or bedroom",                   promptHint: "Quiet bonding moment. One character with the baby, tender and loving. Warm and intimate." },
-      { beatType: "payoff",            title: "Sweet or Surprising Ending",  purpose: "Final heartwarming moment or sweet unexpected twist",                   emotionDirection: "joy and love",               actionDirection: "baby smiles, accepts them, or a sweet reveal completes the story", cameraDirection: "warm close shot or wide family shot", backgroundDetail: "home or nursery",                           promptHint: "Final sweet ending. Baby with family or sweet surprise. Heartwarming and smile-inducing." },
+      { beatType: "hook",          title: "Normal Morning Together",   purpose: "Establish the happy couple before the surprise", emotionDirection: "warm comfort", actionDirection: "both adult characters in their home morning routine together", cameraDirection: "warm medium two-shot", backgroundDetail: "cozy home kitchen, warm morning light", promptHint: "TWO TALL ADULT fruit-human characters together at home in the morning. Normal happy couple. NO baby or infant characters. Adults only." },
+      { beatType: "subtle_hint",   title: "Something Feels Off",       purpose: "First tiny hint that something has changed for the woman", emotionDirection: "mild private worry", actionDirection: "woman alone, one hand resting on stomach, looking distracted", cameraDirection: "close-up on her thoughtful face", backgroundDetail: "home kitchen or bathroom", promptHint: "ONE TALL ADULT STRAWBERRY WOMAN alone, looking slightly unwell, hand on stomach, distracted expression. Subtle first hint. No baby character." },
+      { beatType: "baby_clue",     title: "She Finds the Test",        purpose: "She takes or finds a pregnancy test", emotionDirection: "nervous anticipation", actionDirection: "woman alone holding a pregnancy test box or the test itself, hands shaking slightly", cameraDirection: "close-up on her hands holding the test box or stick", backgroundDetail: "bathroom, soft white light", promptHint: "ONE TALL ADULT STRAWBERRY WOMAN in bathroom holding a pregnancy test box or white test stick. Nervous, anticipating. NOT a baby character — the test is the prop. Adults only." },
+      { beatType: "baby_reveal",   title: "Two Lines",                 purpose: "She sees the positive result", emotionDirection: "shock and overwhelming wonder", actionDirection: "woman staring at pregnancy test with TWO CLEAR LINES, tears forming, hands trembling", cameraDirection: "dramatic close-up on the test and her face", backgroundDetail: "bathroom, emotional soft light", promptHint: "ONE TALL ADULT STRAWBERRY WOMAN holding a positive pregnancy test — TWO CLEAR LINES visible on the white stick. Eyes wide, tears forming, trembling hands. NOT a baby character or orange infant. The pregnancy test is the reveal. Emotional close-up." },
+      { beatType: "reaction",      title: "She Tells Him",             purpose: "She reveals the news to her partner", emotionDirection: "explosive shock turning into overwhelming joy", actionDirection: "woman shows man the pregnancy test — he reacts with enormous emotion", cameraDirection: "medium two-shot both adult characters, test visible", backgroundDetail: "same home interior", promptHint: "TWO TALL ADULT fruit-human characters. STRAWBERRY WOMAN shows BANANA MAN the pregnancy test. He reacts with shock and joy. Same clothing, same room. Test visible. No baby characters." },
+      { beatType: "preparation",   title: "First Baby Shopping Trip",  purpose: "Sweet first step toward preparing for the baby", emotionDirection: "joyful excitement", actionDirection: "both adult characters in a baby store, overwhelmed and excited by tiny items", cameraDirection: "medium shot both characters", backgroundDetail: "baby store, bright warm lighting", promptHint: "TWO TALL ADULT fruit-human characters in a baby store holding tiny baby items. Both are TALL ADULTS. No baby fruit character. Adults looking at tiny booties or a stuffed animal. Sweet and overwhelmed." },
+      { beatType: "bonding",       title: "A Quiet Moment Together",   purpose: "Tender private moment between the couple about their future", emotionDirection: "deep emotional love", actionDirection: "both adult characters close together at home, both placing hands on her stomach, looking at each other with love", cameraDirection: "intimate warm close-up, both visible", backgroundDetail: "cozy home, warm evening light", promptHint: "TWO TALL ADULT fruit-human characters. STRAWBERRY WOMAN with hands on stomach, BANANA MAN with hand over hers, both looking at each other with overwhelming love. Adults only. Warm intimate lighting." },
+      { beatType: "payoff",        title: "We Are Having a Baby",      purpose: "Final triumphant loving moment celebrating the pregnancy", emotionDirection: "pure joy and love", actionDirection: "both adult characters together celebrating, smiling through tears, holding the pregnancy test up", cameraDirection: "warm wide or medium shot both characters", backgroundDetail: "cozy home, same golden light as scene 1", promptHint: "TWO TALL ADULT fruit-human characters celebrating together. Holding up the positive pregnancy test, both smiling through happy tears. Same clothing throughout. No baby character. Adults celebrating a pregnancy. Full circle from scene 1." },
     ],
     10: [
       { beatType: "hook",           title: "Perfectly Normal Day",           purpose: "Establish the calm before the baby storm",                              emotionDirection: "comfortable normalcy",          actionDirection: "couple in regular morning routine",              cameraDirection: "warm medium",          backgroundDetail: "morning kitchen",                  promptHint: "Normal morning. Comfortable couple routine. Nothing unusual." },
@@ -660,9 +660,14 @@ function appendStrictImageRules(
   presentIds: string[],
   forbiddenIds: string[],
   cast: any[],
+  sceneIndex: number = 0,
+  totalScenes: number = 3,
+  previousBeat?: BeatTemplate,
 ) {
-  const presentLabels  = labelsForIds(presentIds,  cast);
+  const presentLabels   = labelsForIds(presentIds,  cast);
   const forbiddenLabels = labelsForIds(forbiddenIds, cast);
+  const sceneNum        = sceneIndex + 1;
+
   const base = String(prompt ?? "")
     .replace(/STRICT RULES:[\s\S]*$/i, "")
     .replace(/STORY BEAT:[\s\S]*?(?=\n\S)/i, "")
@@ -670,24 +675,54 @@ function appendStrictImageRules(
     .trim();
 
   const scenePrompt = base || beat.promptHint ||
-    `A cinematic 3D fruit drama scene. ${presentLabels.join(" and ")} in a ${beat.emotionDirection} moment.`;
+    `${presentLabels.join(" and ")} in a ${beat.emotionDirection} dramatic moment.`;
+
+  // Camera framing guidance per beat type
+  const cameraGuidance =
+    beat.beatType === "hook"                              ? "Wide or medium two-shot establishing both characters together in the same frame. Show their relationship clearly." :
+    beat.beatType === "affair_scene"                      ? "Intimate medium two-shot showing ONLY the two characters in this scene together. Close conspiratorial framing." :
+    beat.beatType === "discovery" || beat.beatType === "confrontation" ? "Dramatic confrontation framing — medium close-up two-shot or three-shot with faces clearly readable and expressive." :
+    beat.beatType === "payoff"   || beat.beatType === "walk_away"      ? "Wide powerful shot for walk-away OR tight dramatic close-up for a final reveal twist." :
+    beat.beatType === "suspicion" || beat.beatType === "investigation"  ? "Close-up on the clue or evidence in the character's hand, then pull to their reaction face." :
+    beat.beatType === "twin_reveal"                       ? "Dramatic split-reveal shot showing both identical characters side by side for maximum visual impact." :
+    beat.beatType === "baby_reveal" || beat.beatType === "reaction"    ? "Expressive close-up on the character's face capturing the full emotional reaction." :
+    beat.cameraDirection;
+
+  // Continuity line linking this scene to the previous
+  const continuityLine = sceneIndex > 0 && previousBeat
+    ? `Continuing DIRECTLY from scene ${sceneNum - 1} ("${previousBeat.title}" — ${previousBeat.actionDirection}). Keep the SAME clothing on all characters, the SAME room layout and furniture, the SAME time of day and lighting direction. Emotions evolve from the previous scene — do NOT reset emotional state.`
+    : `Opening scene: establish the characters, their relationship, and the setting clearly. This is the visual hook that draws the viewer in.`;
 
   return [
+    `Image ${sceneNum} of ${totalScenes} — ${beat.beatType.toUpperCase()}: ${beat.title}`,
+    "",
     scenePrompt,
     "",
     `SCENE BEAT: ${beat.beatType.toUpperCase()} — ${beat.title}`,
     `Story purpose: ${beat.purpose}`,
     `Required emotion: ${beat.emotionDirection}`,
     `Required action: ${beat.actionDirection}`,
-    `Camera/framing: ${beat.cameraDirection}`,
+    `Camera: ${cameraGuidance || beat.cameraDirection}`,
     `Background: ${beat.backgroundDetail}`,
     "",
-    "STRICT SCENE RULES:",
+    `STORY CONTINUITY: ${continuityLine}`,
+    "",
+    "CHARACTER RULES — NON-NEGOTIABLE:",
+    "- ALL characters are TALL ADULT anthropomorphic fruit-human characters",
+    "- FULL ADULT body proportions — NOT children, NOT babies, NOT toddlers",
+    "- Adult height, adult face structure, adult clothing, adult emotional expressions",
+    "- Human-like adult arms, legs, hands — dressed in adult clothing appropriate to the scene",
     `- Show ONLY these characters: ${presentLabels.join(", ") || "listed cast"}`,
     `- Do NOT show: ${forbiddenLabels.length ? forbiddenLabels.join(", ") : "any other named recurring character"}`,
-    "- No extra background main characters not in the scene cast",
     "- Keep all recurring characters visually identical to their reference images",
     "- Do not merge, swap, or redesign any character identity",
+    ...(["baby_reveal","baby_hint","baby_clue","reaction","bonding","preparation","payoff","subtle_hint"].includes(beat.beatType)
+      ? [
+          "BABY STORY RULE — CRITICAL: Do NOT generate a baby fruit character, infant, or child character in this image.",
+          "Show the pregnancy through a white PREGNANCY TEST stick with two visible lines, or through the characters' emotional reactions.",
+          "There is NO baby character yet. ALL characters in this image are TALL ADULT fruit-human characters ONLY.",
+        ]
+      : []),
     "NO text, NO captions, NO subtitles, NO speech bubbles, NO watermarks, NO typography.",
   ].filter((l) => l !== null).join("\n");
 }
@@ -731,8 +766,11 @@ function repairScenes(
         presentIds,
         forbiddenIds,
         cast,
+        index,
+        sceneCount,
+        index > 0 ? beats[index - 1] : undefined,
       ),
-      videoPrompt: String(source.videoPrompt ?? `SPOKEN DIALOGUE - SAY EXACTLY: FRUIT CHARACTER: "Say it now." Speech rules: Dialogue starts in the first second. Speak English only. Say exactly the quoted line. No silent intro. No background music. Action: ${beat.actionDirection}. Emotion: ${beat.emotionDirection}. Visual clue: one clear physical clue from the image. Movement: fast expressive gestures and mouth-synced speech. Camera: vertical 9:16 close-up with fast push-in. Audio: clear mouth-synced dialogue only, no background music, one small sound effect if useful, light room ambience only. Ending beat: mini cliffhanger reaction. Negative: no captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no background music.`)
+      videoPrompt: String(source.videoPrompt ?? `SPOKEN DIALOGUE - SAY EXACTLY: FRUIT CHARACTER: "I know what you did." FRUIT CHARACTER 2: "Let me explain everything." Speech rules: ENGLISH WORDS ONLY. Speak exactly the quoted lines with clear natural pronunciation — no mumbling, no muttering, no foreign sounds. Dialogue starts in the first second. Action: ${beat.actionDirection}. Emotion: ${beat.emotionDirection}. Movement: characters turn to face each other directly, eye contact locked, expressive lip-sync, natural conversational gestures. Camera: vertical 9:16 tight two-shot then push-in close-up. Audio: clear audible English dialogue only, light room ambience, no background music. Ending beat: mini cliffhanger reaction. Negative: no captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no background music, no mumbling, no gibberish.`)
         .replace(/\s*No text overlays, no watermarks, no subtitles\.?$/i, "").trim() +
         " No text overlays, no watermarks, no subtitles.",
       negativePrompt: "text, letters, subtitles, watermark, logo, speech bubbles, collage, multiple panels, split screen, ui elements, captions, extra main characters, identity swap",
@@ -844,36 +882,82 @@ IMAGE PROMPT RULES:
 3. ONLY characters in characterIdsInScene appear — all others completely absent
 4. Background must visually match adjacent scenes (same room = same decor/lighting)
 5. End EVERY imagePrompt with: "NO text, NO captions, NO subtitles, NO speech bubbles, NO watermarks, NO typography."
-6. Structure: [characters+actions] → [exact emotion+body language] → [camera] → [environment+lighting matching previous scene] → [cinematic 3D fruit drama style] → [NO text rule]
+6. Structure: [Image N of TOTAL — beat name] → [characters+actions] → [ADULT character rule] → [exact emotion+body language] → [continuity from previous image] → [camera] → [environment+lighting] → [cinematic 3D style] → [NO text rule]
 7. SAFETY — image prompts are processed by OpenAI which has strict content filters. NEVER use these words in imagePrompt: seductive, sensual, sexy, intimate, flirtatious, kissing, embrace, tight dress, cleavage, body, curves, passionate, desire, lust, affair, mistress, infidelity, lipstick mark. Use safe alternatives: emotional, close, elegant, standing together, heartbroken, shocked, tense.
+8. ADULT CHARACTER RULE — mandatory in EVERY imagePrompt: "All characters are TALL ADULT anthropomorphic fruit-human characters with full adult body proportions, human-like adult arms, legs, hands, and clothing. NOT children, NOT babies, NOT toddlers. Adult height, adult face structure, adult emotional range."
+9. STORY CONTINUITY — each scene after scene 1 must reference what happened in the previous scene: clothing stays the same, the location layout stays the same, important props carry forward, emotions evolve naturally.
+10. CAUSE AND EFFECT — every image after the first must answer: what happened because of the previous image, and what new event now pushes the story forward.
+11. CAMERA PER BEAT — use the right framing for the beat:
+    - hook: wide or medium establishing shot showing both characters together
+    - affair_scene: close intimate two-shot of only the cheater and affair partner (victim COMPLETELY absent)
+    - discovery: dramatic close-up on the clue or evidence, then pull to the shocked character's face
+    - confrontation: intense medium two-shot or three-shot with faces clearly readable
+    - payoff/walk_away: wide powerful shot for departure or dramatic close-up for twist reveal
+    - suspicion/investigation: tight close-up on the clue, character reaching for it
 
 DIALOGUE RULES (for videoDialogue[] and videoPrompt):
 - Generate 1-2 lines per scene based on who is in that scene (characterIdsInScene)
 - Solo scene (1 character) → 1 line only
-- 2+ characters → 1 line per character, alternating speakers
-- Each line: 2-7 words, English only, short and dramatic
+- 2+ characters → 1 line per character; lines must form a real back-and-forth exchange (accusation→denial, question→deflection, etc.)
+- Each line: 4-10 words, English only, clear and dramatically charged — complete natural English sentences
+- Characters speak DIRECTLY TO each other — not internal monologue. Example: "Why is her name in your phone?" / "I can explain everything, please listen."
+- Write lines that sound like actual human conversation — no fragments, no cryptic one-word responses unless dramatically intentional
 - Speaker label: character display name only, max 16 chars (e.g. "Boss Mango", "Hot Peach", "Orange Mom")
   DO NOT include role prefix ("CHEATER_", "VICTIM_") or fruit type duplicates in speaker names
 - NO fruit-type words as dialogue addresses
 - Lines MUST be 100% logical for the story preset:
   * BABY story → lines about pregnancy, parenthood, the baby news. NEVER "give me your phone" or cheating lines
-  * CHEATING story → lines about suspicion, proof, confrontation, betrayal
+  * CHEATING story → lines about suspicion, proof, confrontation, betrayal — direct accusations and defenses
   * SECRET TWIN → lines about confusion, identical appearances, the twin reveal
   * CHEATS-BACK → lines about heartbreak, transformation, cold revenge, power shift
   * KICKED-OUT → lines about rejection, leaving, determination, comeback
   * CUSTOM → lines matching whatever story idea was provided
+- CONVERSATIONAL FLOW: each line must logically respond to or set up the other character's line. Write pairs like: Character A says something → Character B directly responds to what A said.
 - LOGICAL CONTINUITY: dialogue must flow from scene to scene. If scene 2 shows a character crying, scene 3 cannot pretend nothing happened.
 - EMOTIONAL ESCALATION: each scene should feel one step more intense than the last. Hook → suspicion → discovery → confrontation → payoff.
-- Make lines feel like real TikTok drama: short, punchy, emotionally charged, leave viewer wanting the next clip
+- Make lines feel like real dramatic conversation — punchy, direct, emotionally charged, leave viewer hooked
 
 VIDEO PROMPT RULES:
 1. Animate FROM the still image as a viral TikTok drama clip
 2. SPOKEN DIALOGUE - SAY EXACTLY: section — use the videoDialogue[] lines you generated
 3. Dialogue starts in the FIRST SECOND. No silent intro, no waiting
-4. ENGLISH ONLY. No French, Spanish, Finnish, or any other language
-5. Fast movement, strong facial reaction, one visual clue, dramatic camera, mini cliffhanger
-6. Audio: clear dialogue + one optional sound effect + light ambience. NO background music
-7. End EVERY videoPrompt: "No captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no background music."
+4. ENGLISH ONLY — clear, fully pronounced English. No mumbling, no muttering, no unintelligible sounds, no foreign languages
+5. Characters FACE EACH OTHER DIRECTLY — eye contact, turned toward the person they are speaking to
+6. Strong facial reactions, expressive lip-sync, natural conversational body language, dramatic camera, mini cliffhanger
+7. Audio: clear audible English dialogue only + light room ambience. NO background music. NO gibberish sounds.
+8. End EVERY videoPrompt: "No captions, no subtitles, no text overlays, no logos, no watermarks, no extra characters, no identity changes, no background music, no mumbling, no gibberish."
+
+════════════════════════════════════════
+RULE 4 — HOOK SCENE AND BABY STORY RULES
+════════════════════════════════════════
+
+HOOK SCENE (ALWAYS — every preset):
+- Scene 1 MUST show ALL MAIN CHARACTERS together in the SAME frame
+- NEVER show only one character alone in scene 1
+- The hook must instantly show the relationship between the characters
+
+BABY / PREGNANCY STORIES — ABSOLUTE RULES:
+- NEVER generate a baby fruit character, infant character, or child character in ANY scene
+- The pregnancy is shown ONLY through: a white pregnancy test stick with two visible lines, an ultrasound photo, or emotional hand-on-stomach gestures
+- ALL characters in ALL scenes are TALL ADULT fruit-human characters
+- The baby does not exist yet as a character — the story is about the ANNOUNCEMENT and REACTION
+- Do NOT describe or generate "a tiny orange baby", "a baby fruit character", "a small fruit child", or any infant
+- imagePrompts for baby stories must specify "pregnancy test" or "emotional reaction" — never "baby character appears"
+
+════════════════════════════════════════
+RULE 5 — DIALOGUE AND SPEECH QUALITY
+════════════════════════════════════════
+
+All spoken dialogue must follow these rules WITHOUT EXCEPTION:
+- ALL dialogue is in clear, natural ENGLISH ONLY — fully pronounced, audible, intelligible
+- Characters speak DIRECTLY TO each other — they face each other, hold eye contact, and respond to what was just said
+- Every line is a complete natural English sentence (not a fragment or a single grunt)
+- Lines flow as a real back-and-forth conversation — accusation/defense, question/deflection, confession/reaction
+- NEVER write vague audio directions like "they mutter to each other", "unintelligible arguing", "background chatter"
+- NO mumbling, NO muttering, NO whispered unintelligible speech, NO foreign-language syllables
+- One character speaks at a time — no overlapping dialogue
+- Background characters remain completely silent unless they have a specific English line
+- When characters are emotional they may cry or raise their voice — but their words must remain clear English
 
 STORY STRUCTURE — required beat flow for {{SCENE_COUNT}} scenes:
 {{BEAT_FLOW}}
@@ -959,7 +1043,7 @@ const JSON_SCHEMA = `{
       "videoDialogue": [
         {
           "speaker": "Character display name only — NO fruit type, NO role prefix, NO ID. Max 16 chars. E.g. 'Boss Mango' not 'CHEATER_MANGO_BOSS_MANGO'",
-          "line": "2-7 word English line. No fruit-type names (mango/banana/pineapple etc) as dialogue addresses. Short, dramatic, viral."
+          "line": "4-10 word clear natural English sentence. Characters speak directly to each other. No fruit-type names as dialogue addresses. Dramatic, emotionally charged."
         }
       ],
       "videoPrompt": "viral 6-second video prompt with SPOKEN DIALOGUE - SAY EXACTLY, immediate English dialogue, fast action, visual clue, camera, clear dialogue-only audio, no background music, and cliffhanger. End with strict no-text/no-music negative rules.",
@@ -1008,6 +1092,8 @@ Deno.serve(async (req) => {
     storyLength: string;
     sceneAspect: string;
   };
+
+  console.log(`[fruit-story-planner] request received — storyIdea="${(storyIdea ?? "").slice(0,60)}" sceneCount=${sceneCount} chars=${selectedCharacters?.length}`);
 
   if (!storyIdea?.trim())  return fail("storyIdea is required");
   if (!Array.isArray(selectedCharacters) || selectedCharacters.length < 2) {
@@ -1115,6 +1201,7 @@ Deno.serve(async (req) => {
 
   /* ── OpenAI ── */
   let planJson: any;
+  console.log(`[fruit-story-planner] calling OpenAI — preset=${preset} sceneCount=${sceneCount} chars=${user.id}`);
   try {
     const aiRes = await fetch(OPENAI_CHAT, {
       method: "POST",
@@ -1128,19 +1215,27 @@ Deno.serve(async (req) => {
       }),
     });
 
+    console.log(`[fruit-story-planner] OpenAI status=${aiRes.status}`);
+
     if (!aiRes.ok) {
       const errText = await aiRes.text();
+      console.error(`[fruit-story-planner] OpenAI error: ${errText.slice(0, 500)}`);
       throw new Error(`OpenAI ${aiRes.status}: ${errText.slice(0, 300)}`);
     }
 
     const aiData  = await aiRes.json();
     const raw     = aiData.choices?.[0]?.message?.content ?? "";
+    console.log(`[fruit-story-planner] OpenAI response length=${raw.length} finish_reason=${aiData.choices?.[0]?.finish_reason}`);
     planJson      = JSON.parse(raw);
   } catch (e: any) {
+    console.error(`[fruit-story-planner] FAILED: ${e?.message ?? "Unknown error"}`);
     return fail(`Story planning failed: ${e?.message ?? "Unknown error"}`, 500);
   }
 
-  if (!Array.isArray(planJson?.scenes)) return fail("Planner returned invalid scene structure", 500);
+  if (!Array.isArray(planJson?.scenes)) {
+    console.error(`[fruit-story-planner] Invalid scene structure: ${JSON.stringify(planJson).slice(0, 200)}`);
+    return fail("Planner returned invalid scene structure", 500);
+  }
 
   /* ── Merge cast and repair scenes ── */
   const lockedCast = mergeCastWithPlanner(canonicalCast, planJson.cast ?? []);

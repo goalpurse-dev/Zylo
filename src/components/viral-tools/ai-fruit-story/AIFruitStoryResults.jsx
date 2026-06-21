@@ -381,6 +381,10 @@ function AnimationScenePreviewCard({ scene, index, aspect }) {
 }
 
 function VideoOutputCard({ clip, aspect, onRetry }) {
+  const [expanded, setExpanded] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef(null);
+
   const isBusy = !clip.videoUrl && (
     clip.videoStatus === "queued" ||
     clip.videoStatus === "running" ||
@@ -390,51 +394,125 @@ function VideoOutputCard({ clip, aspect, onRetry }) {
   const isFailed = !clip.videoUrl && clip.videoStatus === "failed";
   const progress = clip.videoProgress ?? 0;
 
+  const handleMouseEnter = () => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(() => {});
+      setIsPlaying(true);
+    }
+  };
+  const handleMouseLeave = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+      setIsPlaying(false);
+    }
+  };
+  const handleCardClick = () => {
+    if (clip.videoUrl) setExpanded(true);
+  };
+
   return (
-    <div className="rounded-[18px] border border-white/10 bg-white/[0.03] p-3">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="text-sm font-bold text-white">{clip.outputLabel || `Video ${clip.clipNumber}`}</div>
-        <ClipStatusBadge status={clip.videoStatus} />
-      </div>
-      <div className={`relative mx-auto max-h-[260px] max-w-[190px] overflow-hidden rounded-[16px] border border-white/10 bg-[#0d0f10] ${getAspectClass(aspect)}`}>
-        {clip.videoUrl ? (
-          <video
-            src={clip.videoUrl}
-            className="h-full w-full object-cover"
-            controls
-            playsInline
-            preload="none"
-          />
-        ) : isFailed ? (
-          <div className="flex h-full min-h-[220px] flex-col items-center justify-center gap-3 bg-red-500/10 p-4 text-center">
-            <p className="text-xs font-semibold text-red-200">Generation failed</p>
-            {onRetry && (
+    <>
+      <div className="rounded-[18px] border border-white/10 bg-white/[0.03] p-3">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="text-sm font-bold text-white">{clip.outputLabel || `Video ${clip.clipNumber}`}</div>
+          <ClipStatusBadge status={clip.videoStatus} />
+        </div>
+        <div
+          className={`group relative mx-auto max-h-[260px] max-w-[190px] overflow-hidden rounded-[16px] border border-white/10 bg-[#0d0f10] ${getAspectClass(aspect)} ${clip.videoUrl ? "cursor-pointer" : ""}`}
+          onMouseEnter={clip.videoUrl ? handleMouseEnter : undefined}
+          onMouseLeave={clip.videoUrl ? handleMouseLeave : undefined}
+          onClick={handleCardClick}
+        >
+          {clip.videoUrl ? (
+            <>
+              <video
+                ref={videoRef}
+                src={clip.videoUrl}
+                className="h-full w-full object-cover"
+                playsInline
+                muted
+                loop
+                preload="metadata"
+              />
+              {/* Play overlay — visible when not playing, fades on hover */}
+              <div className={`pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25 transition-opacity duration-200 ${isPlaying ? "opacity-0" : "opacity-100"}`}>
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm ring-1 ring-white/20">
+                  <svg className="ml-0.5 h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+              </div>
+              {/* Expand button */}
               <button
-                onClick={onRetry}
-                className="rounded-lg bg-red-500/70 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-red-500"
+                onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
+                className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white opacity-0 backdrop-blur-sm ring-1 ring-white/15 transition hover:bg-black/75 group-hover:opacity-100"
               >
-                🔄 Retry
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
               </button>
-            )}
-          </div>
-        ) : isBusy ? (
-          <VideoLoadingMockup progress={progress} />
-        ) : (
-          <VideoLoadingMockup progress={0} />
+            </>
+          ) : isFailed ? (
+            <div className="flex h-full min-h-[220px] flex-col items-center justify-center gap-3 bg-red-500/10 p-4 text-center">
+              <p className="text-xs font-semibold text-red-200">Generation failed</p>
+              {onRetry && (
+                <button
+                  onClick={onRetry}
+                  className="rounded-lg bg-red-500/70 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-red-500"
+                >
+                  Retry
+                </button>
+              )}
+            </div>
+          ) : isBusy ? (
+            <VideoLoadingMockup progress={progress} />
+          ) : (
+            <VideoLoadingMockup progress={0} />
+          )}
+        </div>
+        {clip.videoUrl && (
+          <a
+            href={clip.videoUrl}
+            download={`ai-fruit-video-${clip.clipNumber}.mp4`}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2 block rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-center text-xs font-semibold text-white/75 transition hover:bg-white/[0.09]"
+          >
+            Download
+          </a>
         )}
       </div>
-      {clip.videoUrl && (
-        <a
-          href={clip.videoUrl}
-          download={`ai-fruit-video-${clip.clipNumber}.mp4`}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-2 block rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-center text-xs font-semibold text-white/75 transition hover:bg-white/[0.09]"
+
+      {/* Expanded lightbox modal */}
+      {expanded && clip.videoUrl && (
+        <div
+          className="fixed inset-0 z-[250] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+          onClick={() => setExpanded(false)}
         >
-          Download
-        </a>
+          <div
+            className="relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <video
+              src={clip.videoUrl}
+              className="max-h-[88vh] max-w-[88vw] rounded-[18px] shadow-2xl"
+              controls
+              autoPlay
+              playsInline
+            />
+            <button
+              onClick={() => setExpanded(false)}
+              className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm ring-1 ring-white/20 transition hover:bg-white/25"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
       )}
-    </div>
+    </>
   );
 }
 
