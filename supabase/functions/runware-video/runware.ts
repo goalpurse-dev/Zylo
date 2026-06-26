@@ -123,7 +123,10 @@ export async function launchRunwareVideo(
       includeCost:    true,
       positivePrompt: safePositivePrompt,
       providerSettings: {
-        google: { generateAudio: true },
+        google: {
+          generateAudio:    args.withSound ?? true,
+          personGeneration: "allow_all",
+        },
       },
       taskUUID,
     };

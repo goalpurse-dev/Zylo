@@ -103,12 +103,13 @@ export default function ClayRescue() {
     setPaywallOpen(true);
   };
 
-  const { phase, scenes: jobScenes, error, start, reset, showGeneration } = useClayRescueJob();
+  const { phase, scenes: jobScenes, error, start, reset, showGeneration, retryScene } = useClayRescueJob();
 
   const [recentGenerations, setRecentGenerations] = useState([]);
   const [viewingRecentId, setViewingRecentId]     = useState(null);
   const savedGenerationRef = useRef(null);
   const latestLengthRef    = useRef("15s");
+  const latestWithSoundRef = useRef(true);
 
   const loadRecentGenerations = useCallback(async () => {
     if (!user) { setRecentGenerations([]); return; }
@@ -146,14 +147,15 @@ export default function ClayRescue() {
     return () => { cancelled = true; };
   }, [phase, jobScenes, viewingRecentId, user]);
 
-  const handleGenerate = ({ sceneInputs, selectedLength, aiMode }) => {
+  const handleGenerate = ({ sceneInputs, selectedLength, aiMode, withSound }) => {
     if (needsUpgrade) { showPaywall(); return; }
     setViewingRecentId(null);
     savedGenerationRef.current = null;
     latestLengthRef.current = selectedLength;
+    latestWithSoundRef.current = withSound ?? true;
     setMobilePanel("results");
     document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
-    start({ sceneInputs, aiMode });
+    start({ sceneInputs, aiMode, withSound });
   };
 
   const handleOpenRecent = (generation) => {
@@ -187,6 +189,7 @@ export default function ClayRescue() {
       viewingRecent={viewingRecentId !== null}
       onOpenRecent={handleOpenRecent}
       onRequestAuth={showPaywall}
+      onRetryScene={(index) => retryScene(index, latestWithSoundRef.current)}
       onReset={handleBackToDefault}
     />
   );

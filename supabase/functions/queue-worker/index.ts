@@ -29,7 +29,9 @@ const RUNWARE_IMAGE_MAX = Number(Deno.env.get("RUNWARE_IMAGE_MAX_CONCURRENT") ??
 const RUNWARE_VIDEO_MAX = Number(Deno.env.get("RUNWARE_VIDEO_MAX_CONCURRENT") ?? 1);
 
 /* ─── RETRY LOGIC ─── */
-const RETRY_DELAYS_MS = [30_000, 90_000, 180_000, 420_000, 900_000];
+// Longer delays because Runware's balance-based concurrency throttle takes
+// several minutes to clear — short retries just exhaust the attempt budget.
+const RETRY_DELAYS_MS = [300_000, 600_000, 900_000, 1_800_000, 3_600_000];
 
 function retryDelayMs(attempts: number): number {
   return RETRY_DELAYS_MS[Math.min(attempts, RETRY_DELAYS_MS.length - 1)];
@@ -47,6 +49,8 @@ function isRetryableConcurrencyError(errorBody: any): boolean {
     return (
       code    === "insufficientcredits" ||
       message.includes("insufficient credits") ||
+      message.includes("insufficientcredits") ||
+      message.includes("(402)") ||
       message.includes("concurrency") ||
       message.includes("rate limit") ||
       message.includes("too many requests")
@@ -122,8 +126,8 @@ async function syncCompletedJobs(sb: any): Promise<void> {
       const maxAttempts  = Number(row.max_attempts ?? 5);
       const errorPayload = { message: job.error ?? "Provider job failed", job_status: job.status };
 
-      // Check if the error is a retryable concurrency error
-      const retryable = isRetryableConcurrencyError({ errors: [{ code: "insufficientcredits", message: job.error ?? "" }] });
+      // Detect 402 / rate-limit errors by parsing the stored error message
+      const retryable = isRetryableConcurrencyError({ errors: [{ message: job.error ?? "" }] });
 
       if (retryable && attempts < maxAttempts) {
         const delay       = retryDelayMs(attempts - 1);

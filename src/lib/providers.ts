@@ -382,10 +382,12 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     secret:     "RUNWARE_API_KEY",
     edgeFn:     "/functions/v1/runware-video",
 
-    costPerSecondUSD:     0.05,         // $0.40 / 8s confirmed
     baseResolution:       "720p",
     retailMultiplier:     2,
-    baseCreditsPerSecond: 5,            // $0.05 × 2 / $0.02 = 5/s → 30 credits per 6s clip
+    // With sound (generateAudio: true)  — confirmed $0.05/s → 5 credits/s
+    soundCreditsPerSecond: 5,
+    // Without sound (generateAudio: false) — confirmed $0.03/s → 3 credits/s
+    baseCreditsPerSecond: 3,
   },
 
   /**

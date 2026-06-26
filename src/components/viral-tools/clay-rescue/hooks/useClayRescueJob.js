@@ -57,21 +57,29 @@ export default function useClayRescueJob() {
   const [scenes, setScenes] = useState([]);
   const [error,  setError]  = useState(null);
 
-  const cancelRef = useRef(false);
-  const activeRef = useRef(false);
-  const runIdRef  = useRef(0);
+  const cancelRef  = useRef(false);
+  const activeRef  = useRef(false);
+  const runIdRef   = useRef(0);
+  // Always-fresh mirror of `scenes` so retryScene never reads a stale closure
+  const scenesRef  = useRef([]);
 
   const patchScene = (index, patch) =>
-    setScenes((prev) => prev.map((s) => (s.index === index ? { ...s, ...patch } : s)));
+    setScenes((prev) => {
+      const next = prev.map((s) => (s.index === index ? { ...s, ...patch } : s));
+      scenesRef.current = next;
+      return next;
+    });
 
-  const start = useCallback(async ({ sceneInputs, aiMode = true }) => {
+  const start = useCallback(async ({ sceneInputs, aiMode = true, withSound = true }) => {
     if (activeRef.current) return;
     activeRef.current = true;
     cancelRef.current = false;
     const runId = ++runIdRef.current;
     const isCurrentRun = () => !cancelRef.current && runIdRef.current === runId;
 
-    setScenes(sceneInputs.map((si, i) => makeScene(i, si.problem, si.fix)));
+    const initial = sceneInputs.map((si, i) => makeScene(i, si.problem, si.fix));
+    scenesRef.current = initial;
+    setScenes(initial);
     setError(null);
     setPhase("images");
 
@@ -169,7 +177,7 @@ export default function useClayRescueJob() {
     // ── Submit ALL video jobs simultaneously ──
     const videoJobSettled = await Promise.allSettled(
       imageResults.map(({ problemUrl, fixUrl, videoPrompt }) =>
-        animateSceneClip({ fixImageUrl: fixUrl, problemImageUrl: problemUrl, videoPrompt })
+        animateSceneClip({ fixImageUrl: fixUrl, problemImageUrl: problemUrl, videoPrompt, withSound })
       )
     );
 
@@ -216,6 +224,117 @@ export default function useClayRescueJob() {
     setError(null);
   }, []);
 
+  /**
+   * Retry a single failed scene without touching the others.
+   * - imageStatus === "failed"  → redo image A → image B → video
+   * - videoStatus === "failed" (but image ok) → redo video only using existing imageUrl
+   */
+  const retryScene = useCallback(async (sceneIndex, withSound = true) => {
+    // Read from ref so we always get the latest state, never a stale closure
+    const scene = scenesRef.current.find((s) => s.index === sceneIndex);
+    if (!scene) return;
+
+    const videoFailed = scene.videoStatus === "failed" && scene.imageUrl;
+    const imageFailed = scene.imageStatus === "failed";
+    if (!videoFailed && !imageFailed) return;
+
+    setPhase("videos"); // keeps the results panel in "active" mode
+
+    const patchOne = (patch) =>
+      setScenes((prev) => {
+        const next = prev.map((s) => s.index === sceneIndex ? { ...s, ...patch } : s);
+        scenesRef.current = next;
+        return next;
+      });
+
+    if (videoFailed) {
+      // ── Video-only retry — reuse existing imageUrl ──────────────────────
+      patchOne({ videoStatus: "queued", videoJobId: null, videoUrl: null });
+
+      let videoJob;
+      try {
+        // Rebuild the video prompt from the stored problem/fix so it's consistent
+        const { videoPrompt } = buildScenePrompts(scene.problem, scene.fix, sceneIndex, false);
+        videoJob = await animateSceneClip({
+          fixImageUrl:     scene.imageUrl,
+          problemImageUrl: scene.problemUrl ?? null,
+          videoPrompt,
+          withSound,
+        });
+        patchOne({ videoJobId: videoJob.id, videoStatus: "running" });
+      } catch (e) {
+        console.error("[retryScene] video job submission failed:", e);
+        patchOne({ videoStatus: "failed" });
+        setPhase("done");
+        return;
+      }
+
+      const result = await waitForJob(videoJob.id, 9 * 60 * 1000);
+      const url = resolveUrl(result);
+      patchOne({
+        videoStatus: result?.status === "succeeded" && url ? "succeeded" : "failed",
+        videoUrl:    url ?? null,
+      });
+
+    } else {
+      // ── Full retry — image A → image B → video ─────────────────────────
+      patchOne({ problemStatus: "queued", imageStatus: "queued", videoStatus: "idle",
+                 problemUrl: null, imageUrl: null, videoUrl: null,
+                 problemJobId: null, fixJobId: null, videoJobId: null });
+
+      setPhase("images");
+
+      const { problemImagePrompt, fixImagePrompt, videoPrompt } =
+        buildScenePrompts(scene.problem, scene.fix, sceneIndex, false);
+
+      // Image A
+      let problemJob, problemResult;
+      try {
+        problemJob = await generateProblemImage({ problemImagePrompt });
+        patchOne({ problemJobId: problemJob.id, problemStatus: "running" });
+        problemResult = await waitForJob(problemJob.id);
+      } catch { patchOne({ problemStatus: "failed", imageStatus: "failed" }); setPhase("done"); return; }
+
+      const problemUrl = problemResult?.status === "succeeded" ? resolveUrl(problemResult) : null;
+      if (!problemUrl) { patchOne({ problemStatus: "failed", imageStatus: "failed" }); setPhase("done"); return; }
+      patchOne({ problemStatus: "succeeded", problemUrl });
+
+      // Image B
+      let fixJob, fixResult;
+      try {
+        fixJob = await generateFixImage({ fixImagePrompt, problemImageUrl: problemUrl });
+        patchOne({ fixJobId: fixJob.id, imageStatus: "running" });
+        fixResult = await waitForJob(fixJob.id);
+      } catch { patchOne({ imageStatus: "failed" }); setPhase("done"); return; }
+
+      const fixUrl = fixResult?.status === "succeeded" ? resolveUrl(fixResult) : null;
+      if (!fixUrl) { patchOne({ imageStatus: "failed" }); setPhase("done"); return; }
+      patchOne({ imageStatus: "succeeded", imageUrl: fixUrl });
+
+      setPhase("videos");
+
+      // Video
+      let videoJob;
+      try {
+        videoJob = await animateSceneClip({
+          fixImageUrl: fixUrl, problemImageUrl: problemUrl, videoPrompt, withSound,
+        });
+        patchOne({ videoJobId: videoJob.id, videoStatus: "running" });
+      } catch { patchOne({ videoStatus: "failed" }); setPhase("done"); return; }
+
+      const result = await waitForJob(videoJob.id, 9 * 60 * 1000);
+      const url = resolveUrl(result);
+      patchOne({
+        videoStatus: result?.status === "succeeded" && url ? "succeeded" : "failed",
+        videoUrl:    url ?? null,
+      });
+    }
+
+    setPhase("done");
+  // No [scenes] dep — we read via scenesRef which is always current
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const showGeneration = useCallback((generation) => {
     cancelRef.current = true;
     runIdRef.current += 1;
@@ -236,5 +355,5 @@ export default function useClayRescueJob() {
     setPhase("done");
   }, []);
 
-  return { phase, scenes, error, start, reset, showGeneration };
+  return { phase, scenes, error, start, reset, showGeneration, retryScene };
 }

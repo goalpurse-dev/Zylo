@@ -7,11 +7,12 @@ const CREDIT_RETAIL_USD = 0.02;
 export function calculateVideoCredits(
   toolKey: ToolKey,
   durationKey: keyof typeof DURATIONS,
-  resolutionKey: keyof typeof RESOLUTIONS
+  resolutionKey: keyof typeof RESOLUTIONS,
+  withSound = false,
 ) {
   const link = getProviderLink(toolKey);
 
-  if (!link?.baseCreditsPerSecond) return 0;
+  if (!link?.baseCreditsPerSecond && !link?.soundCreditsPerSecond) return 0;
 
   const seconds = DURATIONS[durationKey].seconds;
   const costPerSecondUSD = link.resolutionCostPerSecondUSD?.[resolutionKey];
@@ -21,14 +22,14 @@ export function calculateVideoCredits(
     return Math.ceil((costPerSecondUSD * multiplier * seconds) / CREDIT_RETAIL_USD);
   }
 
+  // Use sound rate when sound is on and a separate rate exists
+  const creditsPerSec = withSound && link.soundCreditsPerSecond != null
+    ? link.soundCreditsPerSecond
+    : (link.baseCreditsPerSecond ?? 0);
+
   const resolutionMultiplier = RESOLUTIONS[resolutionKey].multiplier;
 
-  const credits =
-    link.baseCreditsPerSecond *
-    seconds *
-    resolutionMultiplier;
-
-  return Math.ceil(credits);
+  return Math.ceil(creditsPerSec * seconds * resolutionMultiplier);
 }
 
 /** For models with a free-form duration slider (e.g. Kling Pro 3-15s) and optional sound. */

@@ -172,7 +172,7 @@ function RecentCreationsPanel({ recentGenerations = [], onOpenRecent }) {
 }
 
 /* ── Scene card ── */
-function SceneCard({ scene, index }) {
+function SceneCard({ scene, index, onRetry }) {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [pct, setPct] = useState(0);
   const imgDone   = scene.imageStatus === "succeeded";
@@ -258,12 +258,21 @@ function SceneCard({ scene, index }) {
         </div>
       )}
 
-      {/* Video timed out but image is ready — show image with warning */}
-      {vidFailed && imgDone && (
-        <div className="absolute bottom-12 left-0 right-0 flex justify-center z-30 pointer-events-none">
-          <span className="rounded-full bg-amber-500/80 px-3 py-1 text-[10px] font-bold text-white">
-            Video timed out — image saved
-          </span>
+      {/* Failed states — show retry button */}
+      {(vidFailed || imgFailed) && (
+        <div className="absolute inset-0 flex flex-col items-end justify-end p-3 z-30">
+          <button
+            onClick={(e) => { e.stopPropagation(); onRetry?.(); }}
+            className="flex items-center gap-1.5 rounded-xl bg-[#7A3BFF] hover:bg-[#6a30e0] px-3 py-2 text-[11px] font-bold text-white shadow-lg active:scale-95 transition"
+          >
+            <RotateCcw className="w-3 h-3" />
+            {imgFailed ? "Retry scene" : "Retry video"}
+          </button>
+          {vidFailed && imgDone && (
+            <span className="mt-1.5 rounded-full bg-black/60 px-2.5 py-0.5 text-[9px] font-semibold text-amber-400">
+              Video timed out — image saved
+            </span>
+          )}
         </div>
       )}
 
@@ -303,7 +312,7 @@ function SceneCard({ scene, index }) {
 export default function ClayRescueResults({
   phase, jobScenes, error, user,
   recentGenerations = [], viewingRecent = false,
-  onOpenRecent, onRequestAuth, onReset,
+  onOpenRecent, onRequestAuth, onReset, onRetryScene,
 }) {
   const hasRecent = recentGenerations.length > 0;
 
@@ -356,7 +365,7 @@ export default function ClayRescueResults({
             style={{ "--cr-cols": cols }}
           >
             {jobScenes.map((scene, i) => (
-              <SceneCard key={i} scene={scene} index={i} />
+              <SceneCard key={i} scene={scene} index={i} onRetry={() => onRetryScene?.(i)} />
             ))}
           </div>
         </div>

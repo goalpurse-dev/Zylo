@@ -77,7 +77,7 @@ export default function VideoGenerator() {
       const { data, error } = await supabase
         .from("jobs")
         .select(
-          "id, prompt, input, settings, result_url, created_at, status, progress, type"
+          "id, prompt, input, settings, result_url, created_at, status, progress, type, error"
         )
         .eq("type", "video")
         .eq("settings->>creation_type", "video")

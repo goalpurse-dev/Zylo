@@ -87,11 +87,12 @@ function SmallSuiteCard({ tool, i, navigate }) {
       transition={{ delay: i * 0.06, duration: 0.4, ease: "easeOut" }}
       className="group relative overflow-hidden rounded-xl text-left focus:outline-none w-full h-[170px] md:h-full"
     >
-      {/* background image */}
+      {/* background image — eager + high priority so it never shows black */}
       <img
         src={tool.image}
         alt={tool.name}
-        loading="lazy"
+        fetchpriority="high"
+        decoding="async"
         className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.07]"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent" />

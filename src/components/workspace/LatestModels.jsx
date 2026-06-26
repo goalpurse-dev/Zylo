@@ -49,20 +49,23 @@ function ModelCard({ model, compact, onClick }) {
       onMouseLeave={() => setHovered(false)}
     >
       <div className="relative aspect-[16/9] overflow-hidden">
+        {/* Image always rendered — never black, fades out when video is ready */}
         <img
           src={model.image}
           alt={model.name}
-          loading="lazy"
+          fetchpriority="high"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover transition duration-300"
           style={{ opacity: hovered ? 0 : 1 }}
         />
         <video
           src={model.video}
+          poster={model.image}
           autoPlay
           muted
           loop
           playsInline
-          preload="none"
+          preload="metadata"
           className="hidden md:block absolute inset-0 w-full h-full object-cover transition duration-300"
           style={{ opacity: hovered ? 1 : 0 }}
         />

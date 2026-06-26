@@ -119,6 +119,19 @@
   to   { transform: translateX(200%); }
 }
 
+/* ===== Connect-button border beam (SVG stroke-dashoffset) =====
+   pathLength="1000" on the <rect> normalises the path so these
+   offsets are always fractions of the full perimeter, keeping the
+   dot the same visual size at every point including corners. */
+@keyframes cb-beam-glow {
+  from { stroke-dashoffset: 1000; }
+  to   { stroke-dashoffset:    0; }
+}
+@keyframes cb-beam-core {
+  from { stroke-dashoffset: 1017.5; }
+  to   { stroke-dashoffset:   17.5; }
+}
+
 /* ===== Temporary shim: neutralize old dark utilities inside sand pages ===== */
 .zy-sand.sand-shim .text-white { color: var(--sand-ink) !important; }
 .zy-sand.sand-shim .bg-white\/5 { background: var(--sand-surface) !important; }

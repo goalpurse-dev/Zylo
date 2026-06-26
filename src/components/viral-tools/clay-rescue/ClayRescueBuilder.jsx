@@ -136,11 +136,12 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
   const [selectedLength, setSelectedLength] = useState("30s");
   const [scenes, setScenes]                 = useState(() => makeScenes(4));
   const [aiMode, setAiMode]                 = useState(true);
+  const [withSound, setWithSound]           = useState(true);
   const [validationError, setValidationError] = useState("");
   const [noCreditsOpen, setNoCreditsOpen]   = useState(false);
   const creditBalance = useProfileCredits();
 
-  const totalCredits = calcCredits(scenes.length);
+  const totalCredits = calcCredits(scenes.length, withSound);
   const hasEnough    = creditBalance >= totalCredits;
   const isGenerating = phase === "images" || phase === "videos";
   const isDone       = phase === "done";
@@ -177,7 +178,7 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
       if (invalid) { setValidationError("Fill in a problem and fix for every scene."); return; }
     }
     setValidationError("");
-    onGenerate({ sceneInputs, selectedLength, aiMode });
+    onGenerate({ sceneInputs, selectedLength, aiMode, withSound });
   };
 
   return (
@@ -253,6 +254,31 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
               <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${aiMode ? "left-[22px]" : "left-0.5"}`} />
             </div>
           </button>
+
+          {/* Sound toggle — compact row, visually distinct from AI card above */}
+          <div className="flex items-center justify-between px-1 py-0.5">
+            <div className="flex items-center gap-2">
+              <span className={`text-[15px] leading-none transition ${withSound ? "opacity-100" : "opacity-30"}`}>
+                {withSound ? "🔊" : "🔇"}
+              </span>
+              <div>
+                <span className={`text-[12px] font-semibold transition ${withSound ? "text-white/80" : "text-white/35"}`}>
+                  AI Sound
+                </span>
+                <span className="ml-2 text-[11px] text-white/25">
+                  {withSound ? "30 cr/clip · Veo 3.1 · 6s" : "8 cr/clip · silent · 7s"}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => setWithSound((v) => !v)}
+              className={`relative shrink-0 rounded-full transition-colors duration-200 focus:outline-none ${withSound ? "bg-[#7A3BFF]" : "bg-white/[0.12]"}`}
+              style={{ width: 34, height: 18 }}
+              aria-label={withSound ? "Turn sound off" : "Turn sound on"}
+            >
+              <div className={`absolute top-[3px] w-3 h-3 rounded-full bg-white shadow transition-all duration-200 ${withSound ? "left-[17px]" : "left-[3px]"}`} />
+            </button>
+          </div>
 
           {/* Video length */}
           <div>

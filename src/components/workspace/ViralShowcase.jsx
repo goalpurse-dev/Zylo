@@ -92,24 +92,41 @@ function FeatureCard({ title, button, video, image, hoverVideo, big, mobile, bad
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Big card video — rendered but lazy-loaded, hidden on mobile */}
-      {big && video && (
+      {/*
+        Always render the image as the base layer so there is never a black
+        flash while the video buffers. It sits below everything else (z-index
+        is document order — image first, video on top).
+      */}
+      <img
+        src={image}
+        alt={title}
+        fetchpriority="high"
+        decoding="async"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+
+      {/* Big-card auto-play video (desktop only) */}
+      {big && video && !mobile && (
         <video
           src={video}
-          autoPlay muted loop playsInline preload="none"
-          className={`absolute inset-0 w-full h-full object-cover ${mobile ? "hidden" : ""}`}
+          poster={image}
+          autoPlay muted loop playsInline
+          preload="metadata"
+          className="absolute inset-0 w-full h-full object-cover"
         />
       )}
+
       {/* Hover video for smaller cards */}
       {showHoverVideo && (
-        <video src={hoverVideo} autoPlay muted loop playsInline preload="none"
-          className="absolute inset-0 w-full h-full object-cover" />
+        <video
+          src={hoverVideo}
+          poster={image}
+          autoPlay muted loop playsInline
+          preload="metadata"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
       )}
-      {/* Fallback image — shown on mobile for big card, or when no video plays */}
-      {(!big || mobile || !video) && !showHoverVideo && (
-        <img src={image} alt={title} loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover" />
-      )}
+
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
       {badge && (
         <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-full text-[11px] font-bold tracking-wide bg-black/50 backdrop-blur-sm border border-white/20 text-white">

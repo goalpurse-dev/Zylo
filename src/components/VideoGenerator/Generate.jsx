@@ -101,12 +101,17 @@ const selectedModel = MODELS[selectedModelKey];
   const [selectedResolution, setSelectedResolution] = useState("720p");
 
   const isViduQ3Turbo = selectedModelKey === "video:viduq3turbo";
-  const [withSound, setWithSound] = useState(false);
-  const modelHasSound = isViduQ3Turbo;
+  const modelHasSound = !!selectedModel?.hasSound;
+  const [withSound, setWithSound] = useState(() => !!selectedModel?.soundDefaultOn);
+
+  // When model changes, default sound to the model's preferred default
+  useEffect(() => {
+    setWithSound(!!MODELS[selectedModelKey]?.soundDefaultOn);
+  }, [selectedModelKey]);
 
 const totalCredits = useMemo(() => {
-  return calculateVideoCredits(selectedModelKey, selectedDuration, selectedResolution);
-}, [selectedModelKey, selectedDuration, selectedResolution]);
+  return calculateVideoCredits(selectedModelKey, selectedDuration, selectedResolution, modelHasSound ? withSound : false);
+}, [selectedModelKey, selectedDuration, selectedResolution, withSound, modelHasSound]);
 
 const maxRefImages = selectedModel.maxReferenceImages;
 const canAddImages = maxRefImages > 0;
@@ -983,7 +988,7 @@ className={`
   </div>
 </div>
 
-{/* SOUND TOGGLE — Kling Pro + Vidu Q3 Turbo */}
+{/* SOUND TOGGLE */}
 {modelHasSound && (
   <button
     onClick={() => setWithSound((v) => !v)}
@@ -1001,7 +1006,7 @@ className={`
       <div className="text-left">
         <p className="text-sm text-white font-medium">AI Sound</p>
         <p className="text-[11px] text-white/40">
-          {withSound ? "On — included in price" : "Off"}
+          {withSound ? "On — dialogue, effects & sound" : "Off — silent video"}
         </p>
       </div>
     </div>

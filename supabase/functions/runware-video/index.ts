@@ -40,7 +40,7 @@ const SERVICE_KEY =
 
 /* ================= CONFIG ================= */
 
-const MAX_RUNTIME_MS = 8 * 60 * 1000;
+const MAX_RUNTIME_MS = 10 * 60 * 1000; // bumped to 10 min to cover internal 402 retry
 
 const POLL_INTERVAL_MS = 3000;
 const MAX_POLLS = Math.ceil(MAX_RUNTIME_MS / POLL_INTERVAL_MS);
@@ -108,6 +108,48 @@ async function safeRpc(
   if (error) {
     console.error(`[runware-video] RPC ${fn} error:`, error.message);
   }
+}
+
+/* ================= 402 LAUNCH RETRY ================= */
+
+// Runware returns 402 "insufficientCredits" when their balance-based concurrency
+// throttle kicks in — NOT when the account is actually empty. Wait, then retry.
+const LAUNCH_RETRY_DELAY_MS = 3 * 60 * 1000; // 3 min
+
+async function launchWithRetry(
+  sb: SB,
+  jobId: string,
+  payload: any,
+): Promise<string> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const { jobId: providerJobId } = await launchRunwareVideo(payload);
+      return String(providerJobId);
+    } catch (e: any) {
+      const msg = String(e?.message ?? "");
+      const is402 = msg.includes("(402)");
+
+      if (!is402 || attempt >= 1) throw e;
+
+      console.log(
+        `[runware-video] 402 on launch attempt ${attempt + 1}, retrying in ${LAUNCH_RETRY_DELAY_MS / 1000}s`,
+      );
+
+      // Set queued with future retry_after so job-worker won't re-dispatch this row
+      await safeUpdateJob(sb, jobId, {
+        status: "queued",
+        progress: 0,
+        retry_after: new Date(Date.now() + LAUNCH_RETRY_DELAY_MS + 10_000).toISOString(),
+      });
+      await sleep(LAUNCH_RETRY_DELAY_MS);
+      await safeUpdateJob(sb, jobId, {
+        status: "running",
+        progress: PROGRESS_MIN,
+        retry_after: new Date().toISOString(),
+      });
+    }
+  }
+  throw new Error("unreachable");
 }
 
 /* ================= CREDITS ================= */
@@ -253,7 +295,7 @@ async function processVideoJob(body: any) {
     JSON.stringify(launchPayload, null, 2),
   );
 
-  const { jobId: providerJobId } = await launchRunwareVideo(launchPayload);
+  const providerJobId = await launchWithRetry(sb, String(jobId), launchPayload);
 
   // ============== CHARGE AT LAUNCH ==============
   // Runware starts billing the instant launchRunwareVideo succeeds — not

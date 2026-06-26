@@ -148,6 +148,7 @@ useEffect(() => {
     "/workspace/face-asmr": "Face ASMR",
     "/workspace/micro-camera-animal": "Micro Camera",
     "/workspace/clay-rescue": "Clay Rescue",
+    "/workspace/publish":     "Publish",
   };
 
   const title = titleMap[location.pathname] || "Workspace";

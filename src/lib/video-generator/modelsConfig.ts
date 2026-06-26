@@ -18,7 +18,8 @@ export const MODELS = {
     supportedDurations:   ["4s", "6s", "8s"],
     supportedResolutions: ["720p"],
     maxReferenceImages:   2,
-    hasSound:             true,
+    hasSound:             true,   // sound toggle shown; default ON
+    soundDefaultOn:       true,   // pre-check the toggle when this model is selected
   },
 
    "video:klingaist": {

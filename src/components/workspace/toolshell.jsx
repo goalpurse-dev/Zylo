@@ -7,6 +7,7 @@ import {
   Home,
   Folder,
   LayoutGrid,
+  Send,
 } from "lucide-react";
 
 export default function ToolShell() {
@@ -94,6 +95,7 @@ export default function ToolShell() {
         </button>
 
         <Item icon={Folder} label="Creations" path="/workspace/creations" />
+        <Item icon={Send}   label="Publish"   path="/workspace/publish" />
       </div>
 
       {/* SPACER */}

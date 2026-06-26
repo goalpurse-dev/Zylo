@@ -3,10 +3,16 @@ import { supabase } from "../../../../lib/supabaseClient";
 
 /* ── Constants ──────────────────────────────────────────────── */
 export const IMAGE_TOOL_KEY  = "image:fruit-v2";
-export const VIDEO_TOOL_KEY  = "video:seedance15pro";
-export const IMAGE_CREDITS   = 2;   // ~$0.013 cost × 2 = ~2 credits
-export const VIDEO_CREDITS   = 8;   // ~$0.085 cost × 2 = ~8 credits
-export const VIDEO_DURATION  = 7;
+// Sound ON  → Veo 3.1 Lite   (native audio, $0.05/s)
+// Sound OFF → Seedance 1.5 Pro (no audio, much cheaper)
+export const VIDEO_TOOL_KEY         = "video:veo31lite";     // with sound
+export const VIDEO_TOOL_KEY_SILENT  = "video:seedance15pro"; // without sound
+export const IMAGE_CREDITS          = 2;                     // ~$0.013 cost × 2 = ~2 credits
+export const VIDEO_CREDITS_SOUND    = 30;                    // 5 cr/s × 6s — Veo 3.1 Lite + audio
+export const VIDEO_CREDITS_NO_SOUND = 8;                     // Seedance 1.5 Pro flat rate (original)
+export const VIDEO_CREDITS          = VIDEO_CREDITS_SOUND;   // legacy alias
+export const VIDEO_DURATION         = 7;                     // Seedance (silent) — 7s supported
+export const VIDEO_DURATION_SOUND   = 6;                     // Veo 3.1 Lite — supported: 4s / 6s / 8s
 export const IMAGE_W         = 768;
 export const IMAGE_H         = 1376;
 export const VIDEO_W         = 496;
@@ -19,13 +25,14 @@ export const LENGTH_OPTIONS = [
 
 function buildCausalVideoPrompt({ problem, fix, fixAction, resolvedState, reaction }) {
   return (
-    `7-second vertical miniature claymation. FIRST FRAME is the crisis: ${problem} is still fully visible and clay people are scared. ` +
+    `6-second vertical miniature claymation. FIRST FRAME is the crisis: ${problem} is still fully visible and clay people are scared. ` +
     `LAST FRAME must be the solved celebration: ${resolvedState}. ` +
     `Exact timing: 0-2s show the unsolved crisis clearly, no smiles. 2-3s giant realistic hand enters with ${fix}. ` +
     `3-5s the hand performs the fix: ${fixAction} The problem must visibly move, vanish, dry up, seal, melt, or get cleared on screen. ` +
-    `By second 5 the original problem is completely gone. 5-7s only after it is gone: ${reaction}. ` +
+    `By second 5 the original problem is completely gone. 5-6s only after it is gone: ${reaction}. ` +
     `Preserve the clay world, camera angle, tiny characters, handmade texture, and lighting, but DO NOT preserve the problem object or water/fire/spill/blockage. ` +
-    `Removing the problem is required, not a continuity error. If any problem remains visible, characters stay worried and do not celebrate. No text, no UI, no watermark.`
+    `Removing the problem is required, not a continuity error. If any problem remains visible, characters stay worried and do not celebrate. No text, no UI, no watermark. ` +
+    SOUND_DIRECTION
   );
 }
 
@@ -91,9 +98,33 @@ const EXTRA_AI_SCENARIOS = [
 
 // Added to AI_SCENARIOS after the base scenario bank is declared.
 
-export function calcCredits(sceneCount) {
-  return sceneCount * (IMAGE_CREDITS * 2 + VIDEO_CREDITS);
+export function calcCredits(sceneCount, withSound = true) {
+  const videoCredits = withSound ? VIDEO_CREDITS_SOUND : VIDEO_CREDITS_NO_SOUND;
+  return sceneCount * (IMAGE_CREDITS * 2 + videoCredits);
 }
+
+/* ─────────────────────────────────────────────────────────────
+   SOUND DIRECTION  (Veo 3.1 Fast generates native audio)
+   Rules:
+   • Physical / diegetic sounds only — touching, moving, clay
+   • Water / liquid sounds for relevant scenarios
+   • Crowd cheering AT THE END once rescue is complete
+   • Absolutely NO background music, NO score, NO soundtrack
+───────────────────────────────────────────────────────────── */
+const SOUND_DIRECTION =
+  "AUDIO DIRECTION: diegetic sounds only — no background music, no score, no soundtrack ever. " +
+  "During the crisis (0-2s): ambient tension sounds — distant rumbling, dripping, crackling, or wind depending on the disaster. " +
+  "Tiny clay characters gasp, whimper, or cry out in fear. " +
+  "During the rescue (2-5s): physical hands-on sounds — soft clay squelching as the giant hand grips and moves things, " +
+  "tapping, scraping, splashing, or crunching depending on what the fix item is. " +
+  "For water scenarios: realistic water sounds — rushing, absorbing, draining. " +
+  "FINALE AUDIO (5-6s) — THIS IS THE MOST IMPORTANT PART: " +
+  "the entire crowd of tiny clay people erupts into a massive joyful cheer the INSTANT the rescue is complete. " +
+  "It sounds like a stadium — a huge wave of voices all shouting together: " +
+  "\"HEYYY! AYYY! YAYYY!\" — pure euphoric crowd noise, overlapping voices, people screaming with happiness. " +
+  "Arms are raised, mouths open wide. The cheer builds and peaks. " +
+  "It must feel like the most satisfying crowd reaction imaginable — loud, warm, chaotic joy. " +
+  "This crowd cheer is the emotional payoff of the entire video and must be unmistakable.";
 
 /* ─────────────────────────────────────────────────────────────
    STYLE CONSTANTS
@@ -136,7 +167,7 @@ function buildFinalFramePrompt({ problem, fix, fixAction, resolvedState, reactio
 
 // Standard 7-second video structure (used as the closing paragraph of every video prompt)
 const VIDEO_STRUCTURE =
-  "Create a 7-second vertical miniature claymation animation using Image A as the opening state " +
+  "Create a 6-second vertical miniature claymation animation using Image A as the opening state " +
   "and Image B as the target rescue state. " +
   "The fix effect must be MASSIVELY OVERDONE and absurdly powerful — this absurd contrast IS the comedy. " +
   "WHAT TO PRESERVE (must not change): the buildings, street layout, characters, camera angle, clay art style, and lighting direction. " +
@@ -148,9 +179,10 @@ const VIDEO_STRUCTURE =
   "3–5s: fix item is applied — the problem element physically disappears as a direct result. " +
   "Show the water being absorbed and the ground becoming dry. Show the fire being extinguished and the building going dark. " +
   "The problem MUST be gone by second 5 — the camera does not need to stay on a flooded or burning scene. " +
-  "5–7s: scene is safe, problem is 100% gone, clay characters celebrate explosively — jumping, bouncing, arms raised, huge smiles. " +
+  "5–6s: scene is safe, problem is 100% gone, clay characters celebrate explosively — jumping, bouncing, arms raised, huge smiles. " +
   "Celebration starts ONLY after the problem has visually left the frame. " +
-  "No text, no UI, no watermark.";
+  "No text, no UI, no watermark. " +
+  SOUND_DIRECTION;
 
 const CAUSAL_RESCUE_RULES =
   "STRICT CAUSALITY RULES: The video must follow problem first, hand second, fix third, celebration last. " +
@@ -531,20 +563,20 @@ export async function generateFixImage({ fixImagePrompt, problemImageUrl }) {
 }
 
 /* ── Video generation ───────────────────────────────────────── */
-export async function animateSceneClip({ fixImageUrl, problemImageUrl, videoPrompt }) {
+export async function animateSceneClip({ fixImageUrl, problemImageUrl, videoPrompt, withSound = true }) {
   if (!fixImageUrl) throw new Error("animateSceneClip: missing fixImageUrl");
   const initImageUrls = problemImageUrl
     ? [problemImageUrl, fixImageUrl]
     : [fixImageUrl];
   return createVideoJobSimple({
-    subject: videoPrompt,
-    toolKey: VIDEO_TOOL_KEY,
-    width: VIDEO_W,
-    height: VIDEO_H,
-    durationSec: VIDEO_DURATION,
+    subject:           videoPrompt,
+    toolKey:           withSound ? VIDEO_TOOL_KEY : VIDEO_TOOL_KEY_SILENT,
+    width:             VIDEO_W,
+    height:            VIDEO_H,
+    durationSec:       withSound ? VIDEO_DURATION_SOUND : VIDEO_DURATION,
     initImageUrls,
-    calculatedCredits: VIDEO_CREDITS,
-    withSound: false,
+    calculatedCredits: withSound ? VIDEO_CREDITS_SOUND : VIDEO_CREDITS_NO_SOUND,
+    withSound:         withSound,
   });
 }
 

@@ -185,18 +185,21 @@ function HotCard({ item, navigate }) {
       className="group relative w-full overflow-hidden rounded-2xl block text-left focus:outline-none"
       style={{ aspectRatio: "3 / 4.4" }}
     >
-      {/* fallback image — always present as base layer */}
+      {/* Base image — always rendered, never hidden, so the card is never black */}
       <img
         src={item.image}
         alt={item.title}
-        loading="lazy"
+        fetchpriority="high"
+        decoding="async"
         className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
       />
-      {/* hover video */}
+      {/* Hover video sits on top of the image once it buffers */}
       {item.video && hovered && (
         <video
           src={item.video}
-          autoPlay muted loop playsInline preload="none"
+          poster={item.image}
+          autoPlay muted loop playsInline
+          preload="metadata"
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}

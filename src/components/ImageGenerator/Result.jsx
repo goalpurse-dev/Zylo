@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { DownloadIcon, VideoIcon, Maximize2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CREATION_TYPES } from "../../lib/creations";
+import { useAuth } from "../../context/AuthContext";
 
 /* =============================== CONFIG =============================== */
 
@@ -543,6 +544,161 @@ const isFailed =
   );
 }
 
+/* =============================== IMAGE GEN HERO =============================== */
+
+const IMG_STYLE_TILES = [
+  { src: "/images/forimage/realistic.png", label: "Cinematic" },
+  { src: "/images/forimage/anime1.png",    label: "Anime" },
+  { src: "/images/forimage/pixar.png",     label: "3D / Pixar" },
+  { src: "/images/forimage/neon.png",      label: "Cyberpunk" },
+];
+
+const IMG_CARD_CONFIG = [
+  { rotate: "-5deg", z: 1, dur: 3.4, delay: 0,    anim: "icf1" },
+  { rotate:  "3deg", z: 3, dur: 3.8, delay: 0.22, anim: "icf2" },
+  { rotate: "-2deg", z: 2, dur: 3.5, delay: 0.12, anim: "icf3" },
+  { rotate:  "5deg", z: 1, dur: 3.9, delay: 0.34, anim: "icf4" },
+];
+
+const IMG_HERO_PILLS = ["20+ Art Styles", "HD Quality", "Instant Results", "Free to Start"];
+
+function ImageGenHero() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+
+  return (
+    <div className="relative w-full h-full min-h-[560px] flex flex-col rounded-[22px] overflow-hidden bg-[#0E1012]">
+      {/* Blurred BG */}
+      <img
+        src={IMG_STYLE_TILES[0]?.src}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover scale-110 blur-3xl opacity-20 pointer-events-none"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0B0D0F]/85 via-[#0B0D0F]/55 to-[#0B0D0F]/92 pointer-events-none" />
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          top: "-80px", left: "50%", transform: "translateX(-50%)",
+          width: "420px", height: "420px",
+          background: "radial-gradient(circle, rgba(122,59,255,0.13), transparent 70%)",
+          filter: "blur(60px)",
+        }}
+      />
+
+      {/* Natural top-down flow — no forced bottom alignment */}
+      <div className="relative z-10 flex flex-col p-6 flex-1">
+
+        {/* Text block */}
+        <div className="flex flex-col gap-3.5">
+          <span className="text-[#A87AFF] text-[11px] font-bold tracking-widest uppercase">
+            ✦ AI Image Generator
+          </span>
+          <div>
+            <h2 className="text-white font-black text-[24px] lg:text-[28px] leading-tight tracking-tight">
+              Turn words into<br />
+              <span className="bg-gradient-to-r from-white via-purple-100 to-[#C084FC] bg-clip-text text-transparent">
+                stunning visuals
+              </span>
+            </h2>
+            <p className="text-white/45 text-[13px] mt-2 leading-relaxed max-w-[420px]">
+              Describe any scene, character, or concept — AI renders it in seconds across 20+ art styles.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {IMG_HERO_PILLS.map((label) => (
+              <span
+                key={label}
+                className="inline-flex h-6 items-center rounded-full border border-[rgba(168,122,255,0.25)] bg-[rgba(168,122,255,0.08)] px-2.5 text-[#c4a8ff] text-[11px] font-medium"
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Card fan — sits right below text with a fixed gap */}
+        <div className="flex items-end w-full mt-6">
+          {IMG_STYLE_TILES.map((tile, i) => {
+            const cfg = IMG_CARD_CONFIG[i];
+            return (
+              <div
+                key={tile.src + i}
+                className="relative flex-shrink-0
+                  w-[88px]
+                  sm:w-[110px]
+                  md:w-[132px]
+                  lg:w-[152px]
+                  xl:w-[138px]
+                  2xl:w-[200px]"
+                style={{ marginLeft: i === 0 ? 0 : "-14px", zIndex: cfg.z }}
+              >
+                <div
+                  className="relative overflow-hidden"
+                  style={{
+                    borderRadius: "14px",
+                    background:
+                      "linear-gradient(#0E1012, #0E1012) padding-box, " +
+                      "linear-gradient(135deg, rgba(168,122,255,0.65) 0%, rgba(255,255,255,0.22) 50%, rgba(122,59,255,0.55) 100%) border-box",
+                    border: "1.5px solid transparent",
+                    boxShadow: "0 10px 32px rgba(0,0,0,0.6)",
+                    animation: `${cfg.anim} ${cfg.dur}s ease-in-out ${cfg.delay}s infinite alternate`,
+                  }}
+                >
+                  <div style={{ aspectRatio: "3/4" }}>
+                    <img
+                      src={tile.src}
+                      alt={tile.label}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div
+                    className="absolute bottom-0 inset-x-0 px-2 pb-1.5 pt-5 pointer-events-none"
+                    style={{ background: "linear-gradient(to top, rgba(0,0,0,0.78), transparent)" }}
+                  >
+                    <span className="text-white/70 text-[9px] font-semibold tracking-wider uppercase">
+                      {tile.label}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* CTA — fixed gap below cards, never forced to any edge */}
+        <div className="mt-5">
+          {!user ? (
+            <button
+              onClick={() => navigate("/signup")}
+              className="w-full py-3.5 rounded-xl font-black text-white text-[15px] tracking-tight hover:opacity-90 active:scale-[0.98] transition-all select-none"
+              style={{
+                background: "linear-gradient(135deg, #7A3BFF 0%, #9F5CFF 50%, #C084FC 100%)",
+                boxShadow: "0 0 28px rgba(122,59,255,0.38)",
+              }}
+            >
+              ✦ &nbsp; Start generating for free
+            </button>
+          ) : (
+            <p className="text-center text-white/30 text-[12px] py-1">
+              Type your prompt on the left and hit Generate
+            </p>
+          )}
+        </div>
+
+      </div>
+
+      <style>{`
+        @keyframes icf1 { from { transform: rotate(-5deg) translateY(0); } to { transform: rotate(-5deg) translateY(-10px); } }
+        @keyframes icf2 { from { transform: rotate(3deg)  translateY(0); } to { transform: rotate(3deg)  translateY(-10px); } }
+        @keyframes icf3 { from { transform: rotate(-2deg) translateY(0); } to { transform: rotate(-2deg) translateY(-10px); } }
+        @keyframes icf4 { from { transform: rotate(5deg)  translateY(0); } to { transform: rotate(5deg)  translateY(-10px); } }
+      `}</style>
+    </div>
+  );
+}
+
 /* =============================== MAIN =============================== */
 
 const THINKING_PHRASES = [
@@ -626,6 +782,7 @@ function ThinkingBanner({ progress }) {
 
 export default function Result({ results, activeJobId, userPlan }) {
   const latestRef = useRef(null);
+  const { user } = useAuth();
 const [isMobile, setIsMobile] = useState(false);
 
 useEffect(() => {
@@ -699,6 +856,22 @@ useEffect(() => {
 
  
 
+  /* ── Empty states ── */
+  if (photoResults.length === 0 && !activeJobId) {
+    /* Logged-in but nothing generated yet → simple nudge */
+    if (user) {
+      return (
+        <div className="w-full md:min-h-full bg-[#111314] flex flex-col items-center justify-center gap-3 rounded-[22px] select-none py-16">
+          <img src="/assets/logos/sadzyvo.webp" className="w-16 h-16 opacity-40" alt="" />
+          <p className="text-white/60 text-sm font-semibold">Generate your first image</p>
+          <p className="text-white/25 text-xs">Type a prompt on the left and hit Generate</p>
+        </div>
+      );
+    }
+    /* Guest → full conversion hero */
+    return <ImageGenHero />;
+  }
+
   return (
 <div
   ref={latestRef}
@@ -716,24 +889,12 @@ useEffect(() => {
 
    {photoResults.length === 0 ? (
 
-  /* ================= EMPTY / THINKING STATE ================= */
-  activeJobId ? (
-    <ThinkingBanner
-      progress={Math.min(99, Math.floor(Number(
-        results?.find(r => r.id === activeJobId)?.progress ?? 10
-      )))}
-    />
-  ) : (
-  <div className="flex-1 flex flex-col items-center justify-center gap-3 select-none py-16 pb-[120px] md:pb-16">
-    <img
-      src="/assets/logos/sadzyvo.webp"
-      className="w-20 h-20 opacity-50"
-      alt=""
-    />
-    <p className="text-white/60 text-sm font-semibold">No generated content yet</p>
-    <p className="text-white/25 text-xs">Your creations will appear here</p>
-  </div>
-  )
+  /* ================= THINKING STATE (active job, no result yet) ================= */
+  <ThinkingBanner
+    progress={Math.min(99, Math.floor(Number(
+      results?.find(r => r.id === activeJobId)?.progress ?? 10
+    )))}
+  />
 
 ) : (
 
