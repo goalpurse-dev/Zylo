@@ -1,6 +1,6 @@
 import { useState, isValidElement } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, PenLine, Folder, LayoutGrid, Send } from "lucide-react";
+import { Home, PenLine, Folder, LayoutGrid } from "lucide-react";
 import { createPortal } from "react-dom";
 import MobileCreateMenu from "./CreateMenu";
 
@@ -190,15 +190,6 @@ export default function MobileBottomNav({ hidden }) {
             path="/workspace/creations"
             active={location.pathname.startsWith("/workspace/creations")}
             onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/workspace/creations"); }}
-          />
-
-          {/* Publish */}
-          <NavItem
-            name="Publish"
-            icon={Send}
-            path="/workspace/publish"
-            active={location.pathname.startsWith("/workspace/publish")}
-            onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/workspace/publish"); }}
           />
 
         </div>

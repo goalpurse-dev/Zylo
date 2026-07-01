@@ -7,7 +7,6 @@ import {
   Home,
   Folder,
   LayoutGrid,
-  Send,
 } from "lucide-react";
 
 export default function ToolShell() {
@@ -24,7 +23,12 @@ export default function ToolShell() {
 
     return (
       <button
-        onClick={() => navigate(path)}
+        onClick={() => {
+          setCreateOpen(false);
+          setWorkspaceOpen(false);
+          setPublishOpen(false);
+          navigate(path);
+        }}
         className={`
           ftg-nav-item
           w-full flex flex-col items-center gap-1 py-3 rounded-xl
@@ -95,7 +99,6 @@ export default function ToolShell() {
         </button>
 
         <Item icon={Folder} label="Creations" path="/workspace/creations" />
-        <Item icon={Send}   label="Publish"   path="/workspace/publish" />
       </div>
 
       {/* SPACER */}

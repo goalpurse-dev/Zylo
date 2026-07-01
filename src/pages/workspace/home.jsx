@@ -26,7 +26,7 @@ const SUITE_GRID = [
   { name: "Video Generator", desc: "Create cinematic videos in seconds", typeLabel: "Video",  trending: false, image: "/home/videogen.png",                               path: "/workspace/video-generator"     },
   { name: "Viral Skeleton",  desc: "Scroll-stopping skeleton content",   typeLabel: null,     trending: true,  image: "/home/skeleton.png",                               path: "/workspace/skeleton-shorts"     },
   { name: "Clay Rescue",     desc: "Giant hands save tiny clay worlds",  typeLabel: "Video",  isNew: true,     image: "/clayrescue/smallpreview.webp",                   path: "/workspace/clay-rescue"         },
-  { name: "Image Generator", desc: "Generate high-quality visuals",      typeLabel: "Image",  trending: false, image: "/home/imagegen.png",                               path: "/workspace/image-generator"    },
+  { name: "AI Cooking Matic", desc: "Cinematic recipe videos with AI voiceover", typeLabel: "Video", isNew: true, image: "/templates/AICOOKING/thumbnail.png",            path: "/workspace/ai-cooking-matic"   },
 ];
 
 /* ── Big left card ──────────────────────────────────────────────── */
@@ -185,7 +185,7 @@ export default function WorkspaceHome() {
         </div>
       </section>
 
-      {/* 5 — JUMP BACK IN */}
+      {/* 6 — JUMP BACK IN */}
       <JumpBackIn />
 
      
@@ -196,10 +196,10 @@ export default function WorkspaceHome() {
       {/* 8 — POPULAR STYLES */}
       <PopularStyles />
 
-       {/* 6 — WHAT'S HOT */}
+      {/* 9 — WHAT'S HOT */}
       <WhatsHot />
 
-      {/* 9 — INSPIRATION GALLERY */}
+      {/* 10 — INSPIRATION GALLERY */}
       <div className="mt-8">
         <PublicGallery />
       </div>

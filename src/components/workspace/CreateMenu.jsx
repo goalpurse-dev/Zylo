@@ -42,6 +42,51 @@ export const CREATE_TOOLS = [
   // { id: "ai-voice-story", label: "AI Voice Story", ... },
 ];
 
+export const PUBLISH_TOOLS = [
+  {
+    id: "post-schedule",
+    label: "Post / Schedule",
+    sublabel: "",
+    path: "/workspace/publish",
+    color: "#7A3BFF",
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+        <path d="M22 2L11 13" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M22 2L15 22L11 13L2 9L22 2Z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    id: "stats",
+    label: "Analyze Stats",
+    sublabel: "",
+    path: "/workspace/stats",
+    color: "#22C55E",
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+        <path d="M4 19V5" strokeLinecap="round" />
+        <path d="M4 19H20" strokeLinecap="round" />
+        <path d="M8 16V11" strokeLinecap="round" />
+        <path d="M12 16V7" strokeLinecap="round" />
+        <path d="M16 16V9" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    id: "connections",
+    label: "Connections",
+    sublabel: "",
+    path: "/workspace/connections",
+    color: "#F97316",
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+        <path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L11 4.93" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M14 11a5 5 0 0 0-7.07 0L4.81 13.12a5 5 0 0 0 7.07 7.07L13 19.07" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+];
+
 /* ─── Shared panel shell ──────────────────────────────────────────────────── */
 function DesktopPanel({ open, onClose, title, subtitle, children }) {
   useEffect(() => {
@@ -67,7 +112,7 @@ function DesktopPanel({ open, onClose, title, subtitle, children }) {
         <div className="flex items-center justify-between px-5 pt-6 pb-4 border-b border-white/[0.06]">
           <div>
             <h2 className="text-[15px] font-bold text-white">{title}</h2>
-            <p className="text-[11px] text-white/35 mt-0.5">{subtitle}</p>
+            {subtitle && <p className="text-[11px] text-white/35 mt-0.5">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
@@ -208,6 +253,53 @@ export function DesktopWorkspacePanel({ open, onClose }) {
 }
 
 /* ─── Mobile fan menu (CapCut style) ─────────────────────────────────────── */
+export function DesktopPublishPanel({ open, onClose }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const go = (path) => { onClose(); navigate(path); };
+
+  return (
+    <DesktopPanel key={location.pathname} open={open} onClose={onClose} title="Publish" subtitle="">
+      {PUBLISH_TOOLS.map((tool) => {
+        const active = location.pathname.startsWith(tool.path);
+        return (
+          <button
+            key={tool.id}
+            onClick={() => go(tool.path)}
+            className={`relative w-full flex items-center gap-3.5 overflow-hidden rounded-[16px] border p-3.5 text-left transition active:scale-[0.98] group ${
+              active
+                ? "border-white/14 bg-white/[0.06]"
+                : "border-white/[0.07] bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.06]"
+            }`}
+          >
+            {active && (
+              <div
+                className="absolute inset-y-0 left-0 w-1"
+                style={{ background: "rgba(190,242,100,0.55)" }}
+              />
+            )}
+            <div
+              className={`flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-[12px] border ${
+                active ? "border-white/12 bg-white/[0.06] text-lime-100" : "border-white/[0.07] bg-white/[0.04] text-white/50 group-hover:text-white"
+              }`}
+            >
+              {tool.icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[14px] font-bold text-white leading-tight">{tool.label}</div>
+              {tool.sublabel && <div className="text-[11px] text-white/40 mt-0.5">{tool.sublabel}</div>}
+            </div>
+            {active
+              ? <div className="h-2 w-2 flex-shrink-0 rounded-full bg-lime-300/80" />
+              : <svg className="h-4 w-4 text-white/25 group-hover:text-white/60 transition flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            }
+          </button>
+        );
+      })}
+    </DesktopPanel>
+  );
+}
+
 export default function MobileCreateMenu({ open, onClose, anchorBottom = 72 }) {
   const navigate = useNavigate();
 
