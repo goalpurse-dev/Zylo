@@ -7,7 +7,6 @@ import JumpBackIn from "../../components/workspace/JumpBackIn.jsx";
 import WhatsHot from "../../components/workspace/WhatsHot.jsx";
 import LatestModels from "../../components/workspace/LatestModels.jsx";
 import PopularStyles from "../../components/workspace/popularstyles.jsx";
-import PublishPromo from "../../components/workspace/PublishPromo.jsx";
 import PublicGallery from "../../components/public-gallery/gallery.jsx";
 import { useEffect } from "react";
 
@@ -184,9 +183,6 @@ export default function WorkspaceHome() {
           </div>
         </div>
       </section>
-
-      {/* 5 — PUBLISH */}
-      <PublishPromo />
 
       {/* 6 — JUMP BACK IN */}
       <JumpBackIn />
