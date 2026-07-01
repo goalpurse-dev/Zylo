@@ -146,9 +146,7 @@ function PromptSceneCard({ scene, disabled, onChange, onReset }) {
 
       {/* Character counter — only warn if user manually pastes over the limit */}
       <div className="mt-1 flex items-center justify-end gap-1.5">
-        <span className={`text-[10px] font-mono tabular-nums ${
-          prompt.length >= 1450 ? "font-bold text-white/50" : "text-white/20"
-        }`}>
+        <span className="text-[10px] font-mono tabular-nums text-white/25">
           {prompt.length} / 1450
         </span>
       </div>

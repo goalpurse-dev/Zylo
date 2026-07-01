@@ -7,6 +7,7 @@ import JumpBackIn from "../../components/workspace/JumpBackIn.jsx";
 import WhatsHot from "../../components/workspace/WhatsHot.jsx";
 import LatestModels from "../../components/workspace/LatestModels.jsx";
 import PopularStyles from "../../components/workspace/popularstyles.jsx";
+import PublishPromo from "../../components/workspace/PublishPromo.jsx";
 import PublicGallery from "../../components/public-gallery/gallery.jsx";
 import { useEffect } from "react";
 
@@ -26,7 +27,6 @@ const SUITE_GRID = [
   { name: "Video Generator", desc: "Create cinematic videos in seconds", typeLabel: "Video",  trending: false, image: "/home/videogen.png",                               path: "/workspace/video-generator"     },
   { name: "Viral Skeleton",  desc: "Scroll-stopping skeleton content",   typeLabel: null,     trending: true,  image: "/home/skeleton.png",                               path: "/workspace/skeleton-shorts"     },
   { name: "Clay Rescue",     desc: "Giant hands save tiny clay worlds",  typeLabel: "Video",  isNew: true,     image: "/clayrescue/smallpreview.webp",                   path: "/workspace/clay-rescue"         },
-  { name: "AI Cooking Matic", desc: "Cinematic recipe videos with AI voiceover", typeLabel: "Video", isNew: true, image: "/templates/AICOOKING/thumbnail.png",            path: "/workspace/ai-cooking-matic"   },
 ];
 
 /* ── Big left card ──────────────────────────────────────────────── */
@@ -184,6 +184,9 @@ export default function WorkspaceHome() {
           </div>
         </div>
       </section>
+
+      {/* 5 — PUBLISH */}
+      <PublishPromo />
 
       {/* 6 — JUMP BACK IN */}
       <JumpBackIn />

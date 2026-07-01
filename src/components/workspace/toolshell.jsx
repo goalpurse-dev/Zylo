@@ -9,6 +9,25 @@ import {
   LayoutGrid,
 } from "lucide-react";
 
+function NavItem({ icon: Icon, label, path, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        ftg-nav-item
+        w-full flex flex-col items-center gap-1 py-3 rounded-xl
+        transition-all duration-200
+        ${active
+          ? "bg-white text-black"
+          : "text-white/50 hover:text-white hover:bg-white/5"}
+      `}
+    >
+      <Icon className="w-5 h-5" />
+      <span className="text-[11px] font-medium">{label}</span>
+    </button>
+  );
+}
+
 export default function ToolShell() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,33 +36,6 @@ export default function ToolShell() {
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
 
   const isActive = (path) => location.pathname.startsWith(path);
-
-  const Item = ({ icon: Icon, label, path, ftg }) => {
-    const active = isActive(path);
-
-    return (
-      <button
-        onClick={() => {
-          setCreateOpen(false);
-          setWorkspaceOpen(false);
-          setPublishOpen(false);
-          navigate(path);
-        }}
-        className={`
-          ftg-nav-item
-          w-full flex flex-col items-center gap-1 py-3 rounded-xl
-          transition-all duration-200
-          ${active
-            ? "bg-white text-black"
-            : "text-white/50 hover:text-white hover:bg-white/5"}
-        `}
-        {...(ftg ? { "data-ftg": ftg } : {})}
-      >
-        <Icon className="w-5 h-5" />
-        <span className="text-[11px] font-medium">{label}</span>
-      </button>
-    );
-  };
 
   return (
     <>
@@ -66,7 +58,13 @@ export default function ToolShell() {
 
       {/* NAV */}
       <div className="flex flex-col items-center gap-2 w-full">
-        <Item icon={Home} label="Home" path="/workspace/home" />
+        <NavItem
+          icon={Home}
+          label="Home"
+          path="/workspace/home"
+          active={isActive("/workspace/home")}
+          onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/workspace/home"); }}
+        />
 
         {/* Workspace — opens Image / Video / Script panel */}
         <button
@@ -83,7 +81,7 @@ export default function ToolShell() {
           <span className="text-[11px] font-medium">Workspace</span>
         </button>
 
-        {/* Create — active only on create-tool routes, matches nav style */}
+        {/* Create — opens viral tools panel */}
         <button
           onClick={() => { setCreateOpen((v) => !v); setWorkspaceOpen(false); }}
           className={`ftg-nav-item w-full flex flex-col items-center gap-1 py-3 rounded-xl transition-all duration-200 ${
@@ -98,7 +96,13 @@ export default function ToolShell() {
           <span className="text-[11px] font-medium">Create</span>
         </button>
 
-        <Item icon={Folder} label="Creations" path="/workspace/creations" />
+        <NavItem
+          icon={Folder}
+          label="Creations"
+          path="/workspace/creations"
+          active={isActive("/workspace/creations")}
+          onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/workspace/creations"); }}
+        />
       </div>
 
       {/* SPACER */}

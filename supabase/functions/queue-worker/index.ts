@@ -24,14 +24,16 @@ const WORKER_ID         = `qw-${Date.now()}-${Math.random().toString(36).slice(2
 
 /* ─── CONCURRENCY LIMITS ─── */
 // Tune via env vars without redeploy
-const RUNWARE_TOTAL_MAX = Number(Deno.env.get("RUNWARE_TOTAL_MAX_CONCURRENT") ?? 3);
-const RUNWARE_IMAGE_MAX = Number(Deno.env.get("RUNWARE_IMAGE_MAX_CONCURRENT") ?? 3);
-const RUNWARE_VIDEO_MAX = Number(Deno.env.get("RUNWARE_VIDEO_MAX_CONCURRENT") ?? 1);
+const RUNWARE_TOTAL_MAX = Number(Deno.env.get("RUNWARE_TOTAL_MAX_CONCURRENT") ?? 15);
+const RUNWARE_IMAGE_MAX = Number(Deno.env.get("RUNWARE_IMAGE_MAX_CONCURRENT") ?? 8);
+const RUNWARE_VIDEO_MAX = Number(Deno.env.get("RUNWARE_VIDEO_MAX_CONCURRENT") ?? 8);
 
 /* ─── RETRY LOGIC ─── */
 // Longer delays because Runware's balance-based concurrency throttle takes
 // several minutes to clear — short retries just exhaust the attempt budget.
-const RETRY_DELAYS_MS = [300_000, 600_000, 900_000, 1_800_000, 3_600_000];
+// Short delays so jobs re-enter the pool as soon as a Runware slot frees up
+// 5s → 10s → 20s → 45s → 90s
+const RETRY_DELAYS_MS = [5_000, 10_000, 20_000, 45_000, 90_000];
 
 function retryDelayMs(attempts: number): number {
   return RETRY_DELAYS_MS[Math.min(attempts, RETRY_DELAYS_MS.length - 1)];

@@ -46,8 +46,9 @@ const REQUIRED_VIDEO_PROMPT_SECTIONS = [
 
 export function isFruitVideoPromptReady(value) {
   const text = String(value ?? "").trim();
+  const normalized = text.toLowerCase();
   if (text.length < MIN_FRUIT_VIDEO_PROMPT_CHARS) return false;
-  if (!REQUIRED_VIDEO_PROMPT_SECTIONS.every((section) => text.includes(section))) return false;
+  if (!REQUIRED_VIDEO_PROMPT_SECTIONS.every((section) => normalized.includes(section.toLowerCase()))) return false;
   if (hasMusicRequest(text)) return false;
   if (hasVagueSlowSceneLanguage(text)) return false;
   if (!hasActionVerb(text)) return false;
@@ -950,11 +951,11 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
     "SPOKEN DIALOGUE - SAY EXACTLY THESE ENGLISH WORDS ONLY:",
     formatDialogueBlock(dialogue),
     "",
-    "Speech rules:",
-    speechRules,
-    "",
     "Action:",
     action,
+    "",
+    "Speech rules:",
+    speechRules,
     "",
     "Audio:",
     audioLine,

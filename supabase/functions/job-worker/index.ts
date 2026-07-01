@@ -63,9 +63,9 @@ Deno.serve(async (req) => {
 
     /* ---------- concurrency guard ---------- */
     // Env-configurable limits so we can tune without redeploy
-    const IMAGE_MAX = Number(Deno.env.get("RUNWARE_IMAGE_MAX_CONCURRENT") ?? 3);
-    const VIDEO_MAX = Number(Deno.env.get("RUNWARE_VIDEO_MAX_CONCURRENT") ?? 1);
-    const TOTAL_MAX = Number(Deno.env.get("RUNWARE_TOTAL_MAX_CONCURRENT") ?? 3);
+    const IMAGE_MAX = Number(Deno.env.get("RUNWARE_IMAGE_MAX_CONCURRENT") ?? 8);
+    const VIDEO_MAX = Number(Deno.env.get("RUNWARE_VIDEO_MAX_CONCURRENT") ?? 8);
+    const TOTAL_MAX = Number(Deno.env.get("RUNWARE_TOTAL_MAX_CONCURRENT") ?? 15);
 
     /* ---------- pick job ---------- */
     let jobId = body.jobId;
@@ -276,8 +276,9 @@ Deno.serve(async (req) => {
         } catch { /* non-JSON body */ }
 
         if (isRetryable) {
-          // Back-off delays: 30s → 90s → 3min → 7min → 15min
-          const DELAYS = [30_000, 90_000, 180_000, 420_000, 900_000];
+          // Short back-off so queued scenes pick up as soon as a Runware slot frees
+          // 5s → 10s → 20s → 45s → 90s
+          const DELAYS = [5_000, 10_000, 20_000, 45_000, 90_000];
           const { data: jobRow } = await sbAdmin
             .from("jobs")
             .select("attempts, max_attempts")

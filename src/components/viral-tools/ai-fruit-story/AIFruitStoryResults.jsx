@@ -85,6 +85,33 @@ function getDisplayImageSrc(scene) {
   return `${raw}?format=webp&width=800`;
 }
 
+function isRunwareCdnUrl(value) {
+  try {
+    return new URL(String(value || "")).hostname.toLowerCase() === "im.runware.ai";
+  } catch {
+    return false;
+  }
+}
+
+function isOlderThan(dateStr, ms) {
+  const time = new Date(dateStr || 0).getTime();
+  return Number.isFinite(time) && Date.now() - time > ms;
+}
+
+function getRecentThumbSrc(scene, generation) {
+  const raw = resolveSceneImageSrc(scene);
+  if (!raw) return null;
+
+  // Runware CDN objects are not durable. Avoid repeatedly loading old provider
+  // thumbnails that are likely expired and will spam 404s in the console.
+  if (isRunwareCdnUrl(raw) && isOlderThan(generation?.created_at, 24 * 60 * 60 * 1000)) {
+    return null;
+  }
+
+  if (/^(data:image\/|blob:)/i.test(raw) || raw.includes("?")) return raw;
+  return `${raw}?format=webp&width=120`;
+}
+
 export default function AIFruitStoryResults({
   form,
   scenes = [],
@@ -1046,7 +1073,11 @@ const ACTIVE_GEN_STATUSES = new Set(["generating_images", "animating"]);
 
 function GenerationCard({ generation, onContinue, onDelete }) {
   const scenes  = generation.scenes ?? [];
-  const thumbs  = scenes.filter((s) => s.imageUrl).slice(0, 4);
+  const thumbs  = scenes
+    .map((scene) => ({ scene, src: getRecentThumbSrc(scene, generation) }))
+    .filter((item) => item.src)
+    .slice(0, 4);
+  const hadSavedImages = scenes.some((scene) => resolveSceneImageSrc(scene));
 
   // Poll generation_queue for live status when this generation is active
   const [queueStatus, setQueueStatus] = useState(null);
@@ -1106,10 +1137,10 @@ function GenerationCard({ generation, onContinue, onDelete }) {
       {/* Thumbnail strip */}
       {thumbs.length > 0 ? (
         <div className="mb-3 grid grid-cols-4 gap-1.5 overflow-hidden rounded-[12px]">
-          {thumbs.map((scene, i) => (
+          {thumbs.map(({ scene, src }, i) => (
             <div key={i} className="aspect-[9/16] overflow-hidden rounded-[8px] bg-[#0d0f10]">
               <img
-                src={`${scene.imageUrl}?format=webp&width=120`}
+                src={src}
                 alt={`Scene ${scene.sceneNumber}`}
                 className="h-full w-full object-cover"
                 loading="lazy"
@@ -1123,7 +1154,9 @@ function GenerationCard({ generation, onContinue, onDelete }) {
         </div>
       ) : (
         <div className="mb-3 flex h-16 items-center justify-center rounded-[12px] border border-dashed border-white/10 bg-white/[0.02]">
-          <span className="text-[11px] text-white/25">No images yet</span>
+          <span className="text-[11px] text-white/25">
+            {hadSavedImages ? "Images expired" : "No images yet"}
+          </span>
         </div>
       )}
 

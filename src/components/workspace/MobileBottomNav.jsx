@@ -125,6 +125,7 @@ export default function MobileBottomNav({ hidden }) {
         onClose={() => setWorkspaceOpen(false)}
       />
 
+
       <div
         className={`ftg-bottom-nav fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-[#0e1012] border-t border-white/[0.07] transition-opacity duration-300 ${
           hidden ? "opacity-0 pointer-events-none" : "opacity-100"
@@ -191,6 +192,7 @@ export default function MobileBottomNav({ hidden }) {
             active={location.pathname.startsWith("/workspace/creations")}
             onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/workspace/creations"); }}
           />
+
 
         </div>
       </div>
