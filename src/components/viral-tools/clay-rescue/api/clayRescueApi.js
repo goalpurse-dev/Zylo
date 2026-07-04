@@ -15,8 +15,12 @@ export const VIDEO_DURATION         = 7;                     // Seedance (silent
 export const VIDEO_DURATION_SOUND   = 6;                     // Veo 3.1 Lite — supported: 4s / 6s / 8s
 export const IMAGE_W         = 768;
 export const IMAGE_H         = 1376;
-export const VIDEO_W         = 496;
-export const VIDEO_H         = 864;
+// Must be one of Veo 3.1 Lite's allowed resolutions (720x1280, 1280x720,
+// 1920x1080, 1080x1920) — Runware rejects anything else with
+// "unsupportedModelResolution". Seedance 1.5 Pro (the silent fallback)
+// also accepts 720x1280 fine, so one pair works for both toolKeys.
+export const VIDEO_W         = 720;
+export const VIDEO_H         = 1280;
 
 export const LENGTH_OPTIONS = [
   { value: "30s", label: "30 sec", scenes: 4 },  // 7s × 4 = 28s
