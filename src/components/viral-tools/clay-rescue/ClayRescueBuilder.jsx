@@ -266,7 +266,7 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
                   AI Sound
                 </span>
                 <span className="ml-2 text-[11px] text-white/25">
-                  {withSound ? "30 cr/clip · Veo 3.1 · 6s" : "8 cr/clip · silent · 7s"}
+                  {withSound ? "30 cr/clip · Veo 3.1 · 6s" : "18 cr/clip · silent · 7s"}
                 </span>
               </div>
             </div>

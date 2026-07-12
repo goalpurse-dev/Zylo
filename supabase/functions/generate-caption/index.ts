@@ -10,10 +10,25 @@ import { requireUser } from "../shared/auth.ts";
 const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY")!;
 const MAX_PROMPT = 600;
 
+const PLATFORM_LIMITS: Record<string, number> = {
+  instagram: 2200,
+  tiktok:    2200,
+  youtube:   5000,
+};
+
 const PLATFORM_HINTS: Record<string, string> = {
-  instagram: "Instagram Reels. Use 3-5 relevant hashtags at the end. Max 220 characters before hashtags.",
-  tiktok:    "TikTok. Keep it punchy and trend-aware. Max 150 characters, 3-5 hashtags at the end.",
-  youtube:   "YouTube Shorts. Keep it clean and curiosity-driven. No hashtags needed.",
+  instagram: `Instagram Reels.
+- Line 1: scroll-stopping hook — question, cliffhanger, bold claim, or "POV:" opener. Max 10 words.
+- Lines 2-3: 1-2 short punchy sentences that build tension or curiosity.
+- Blank line, then hashtags on one line.
+- Hashtags: EXACTLY 5 hashtags — 2 broad reach tags (e.g. #reels #viral) + 2 mid-tier niche tags (100K-1M posts) + 1 ultra-specific content tag. No more, no less.`,
+  tiktok: `TikTok.
+- One-sentence hook that triggers curiosity or emotion. Max 12 words.
+- Optional: one follow-up sentence.
+- Blank line, then EXACTLY 5 hashtags: 2 discovery tags (e.g. #fyp #foryou) + 3 niche content tags. No more, no less.`,
+  youtube: `YouTube Shorts.
+- 2-3 sentences: open with curiosity gap or bold statement, build intrigue, end with call to action.
+- Blank line, then 3-5 hashtags: 1-2 broad discovery tags + 2-3 content-specific tags.`,
 };
 
 Deno.serve(async (req) => {
@@ -44,9 +59,14 @@ Deno.serve(async (req) => {
   const safePrompt = String(prompt).slice(0, MAX_PROMPT).trim();
 
   const systemMessage =
-    `You are a social media content expert. ` +
-    `Write a single compelling, engaging caption for ${hint} ` +
-    `Output ONLY the caption text — no explanation, no quotes, no extra formatting.`;
+    `You are a top-tier viral content strategist who has grown Instagram accounts to millions of followers. ` +
+    `You know exactly which hooks stop the scroll, which hashtag mixes maximize reach, and how to make any video concept feel unmissable. ` +
+    `Write one caption following these exact rules for ${hint}\n` +
+    `Key rules:\n` +
+    `- Never start with "I" or the brand name\n` +
+    `- No corporate language, no cringe motivational filler\n` +
+    `- Emojis are allowed but use 1-2 max, only if they add impact\n` +
+    `- Output ONLY the caption + hashtags. No explanation, no quotes, no markdown.`;
 
   const userMessage = `Video concept: ${safePrompt}`;
 
@@ -64,8 +84,8 @@ Deno.serve(async (req) => {
           { role: "system", content: systemMessage },
           { role: "user",   content: userMessage   },
         ],
-        max_tokens:  250,
-        temperature: 0.85,
+        max_tokens:  500,
+        temperature: 0.9,
       }),
     });
 

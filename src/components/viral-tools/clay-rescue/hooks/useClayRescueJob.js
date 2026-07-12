@@ -198,7 +198,7 @@ export default function useClayRescueJob() {
       videoJobSettled.map((settled, i) => {
         const { index } = imageResults[i];
         if (settled.status !== "fulfilled") return Promise.resolve();
-        return waitForJob(settled.value.id, 9 * 60 * 1000).then((result) => {
+        return waitForJob(settled.value.id, 6 * 60 * 1000).then((result) => {
           if (!isCurrentRun()) return;
           const videoUrl = resolveUrl(result);
           patchScene(index, {
@@ -269,7 +269,7 @@ export default function useClayRescueJob() {
         return;
       }
 
-      const result = await waitForJob(videoJob.id, 9 * 60 * 1000);
+      const result = await waitForJob(videoJob.id, 6 * 60 * 1000);
       const url = resolveUrl(result);
       patchOne({
         videoStatus: result?.status === "succeeded" && url ? "succeeded" : "failed",
@@ -322,7 +322,7 @@ export default function useClayRescueJob() {
         patchOne({ videoJobId: videoJob.id, videoStatus: "running" });
       } catch { patchOne({ videoStatus: "failed" }); setPhase("done"); return; }
 
-      const result = await waitForJob(videoJob.id, 9 * 60 * 1000);
+      const result = await waitForJob(videoJob.id, 6 * 60 * 1000);
       const url = resolveUrl(result);
       patchOne({
         videoStatus: result?.status === "succeeded" && url ? "succeeded" : "failed",

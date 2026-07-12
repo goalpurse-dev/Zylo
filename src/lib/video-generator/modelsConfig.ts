@@ -5,10 +5,29 @@ const LOGOS = {
   wan:        "/assets/logos/wan.webp",
   vidu:       "/assets/logos/vidu.webp",
   veo:        "/images/logos/google.webp",
+  bytedance:  "/assets/logos/hailou.webp",   // reuse until we have a ByteDance logo
 };
 
 export const MODELS = {
 
+  // ── v2: Seedance 1.5 Pro ─────────────────────────────────────
+  "video:seedance15pro": {
+    label:                "Seedance 1.5 Pro",
+    description:          "ByteDance's Seedance 1.5 Pro delivers fast, high-quality video generation with optional AI audio. 720p output, up to 2 reference images, and a flexible 3–10 second duration range.",
+    logo:                 LOGOS.bytedance,
+    traits:               ["Fast", "720p", "Efficient", "🔊 Optional Sound"],
+    supportedSizes:       ["9:16", "16:9", "1:1", "4:3", "3:4"],
+    supportedDurations:   ["4s", "5s", "6s", "7s", "8s", "9s", "10s", "11s", "12s"],
+    supportedResolutions: ["720p"],
+    maxReferenceImages:   2,
+    hasSound:             true,
+    soundDefaultOn:       false,
+    durationSlider:       true,
+    minDuration:          4,
+    maxDuration:          12,
+  },
+
+  // ── v3: Veo 3.1 Lite ────────────────────────────────────────
   "video:veo31lite": {
     label:                "Google Veo 3.1 Lite",
     description:          "Google's Veo 3.1 Lite generates cinematic AI videos with built-in dialogue and sound. Fast 720p output with realistic motion and native audio — ideal for viral content, storytelling, and character-driven videos.",
@@ -18,8 +37,8 @@ export const MODELS = {
     supportedDurations:   ["4s", "6s", "8s"],
     supportedResolutions: ["720p"],
     maxReferenceImages:   2,
-    hasSound:             true,   // sound toggle shown; default ON
-    soundDefaultOn:       true,   // pre-check the toggle when this model is selected
+    hasSound:             true,
+    soundDefaultOn:       true,
   },
 
    "video:klingaist": {

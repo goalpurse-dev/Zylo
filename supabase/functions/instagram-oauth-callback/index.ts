@@ -25,11 +25,11 @@ import { encryptToken } from "../shared/social-token.ts";
 
 const SUPABASE_URL  = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY   = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const APP_ID        = Deno.env.get("INSTAGRAM_APP_ID")!;
-const APP_SECRET    = Deno.env.get("INSTAGRAM_APP_SECRET")!;
-const REDIRECT_URI  = Deno.env.get("INSTAGRAM_REDIRECT_URI")!;
-const ENC_KEY_HEX   = Deno.env.get("SOCIAL_TOKEN_ENCRYPTION_KEY")!;
-const APP_ORIGIN    = Deno.env.get("APP_ORIGIN")!; // e.g. https://zyvo.ai
+const APP_ID        = (Deno.env.get("INSTAGRAM_APP_ID") ?? "").trim();
+const APP_SECRET    = (Deno.env.get("INSTAGRAM_APP_SECRET") ?? "").trim();
+const REDIRECT_URI  = (Deno.env.get("INSTAGRAM_REDIRECT_URI") ?? "").trim();
+const ENC_KEY_HEX   = (Deno.env.get("SOCIAL_TOKEN_ENCRYPTION_KEY") ?? "").trim();
+const APP_ORIGIN    = (Deno.env.get("APP_ORIGIN") ?? "").trim(); // e.g. https://zyvo.ai
 
 /* ── INSTAGRAM API ENDPOINTS ─────────────────────────────────────────────── */
 
@@ -54,8 +54,42 @@ function frontendRedirect(path: string): Response {
   return Response.redirect(`${APP_ORIGIN}${safePath}`, 302);
 }
 
-function errorRedirect(reason: string): Response {
-  return frontendRedirect(`/workspace/publish?ig_connect=error&reason=${encodeURIComponent(reason)}`);
+function withIgParams(path: string, status: "success" | "error", reason?: string): string {
+  const safeBase = path === "/workspace/connections" ? path : "/workspace/publish";
+  const params = new URLSearchParams({ ig_connect: status });
+  if (reason) params.set("reason", reason);
+  return `${safeBase}?${params.toString()}`;
+}
+
+function errorRedirect(reason: string, path = "/workspace/publish"): Response {
+  return frontendRedirect(withIgParams(path, "error", reason));
+}
+
+function decodeReturnPath(rawState: string | null): string {
+  const encoded = String(rawState ?? "").split(".")[1];
+  if (!encoded) return "/workspace/publish";
+  try {
+    const padded = encoded.replaceAll("-", "+").replaceAll("_", "/").padEnd(Math.ceil(encoded.length / 4) * 4, "=");
+    const decoded = atob(padded);
+    return decoded === "/workspace/connections" ? decoded : "/workspace/publish";
+  } catch {
+    return "/workspace/publish";
+  }
+}
+
+function suggestsProfessionalAccountProblem(value: string | null): boolean {
+  const text = String(value ?? "").toLowerCase();
+  return [
+    "business",
+    "creator",
+    "professional",
+    "instagram_business",
+    "permission",
+    "permissions",
+    "scope",
+    "not authorized",
+    "not eligible",
+  ].some((needle) => text.includes(needle));
 }
 
 /* ── HANDLER ──────────────────────────────────────────────────────────────── */
@@ -66,25 +100,34 @@ Deno.serve(async (req) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
+  const url          = new URL(req.url);
+  const code         = url.searchParams.get("code");
+  const rawState     = url.searchParams.get("state");
+  const returnPath   = decodeReturnPath(rawState);
+  const providerErr  = url.searchParams.get("error");
+  const errReason    = url.searchParams.get("error_reason");
+  const errDescription = url.searchParams.get("error_description");
+
   if (!APP_ORIGIN) {
     console.error("[ig-callback] APP_ORIGIN secret is not set");
     return new Response("Server misconfiguration", { status: 500 });
   }
-
-  const url          = new URL(req.url);
-  const code         = url.searchParams.get("code");
-  const rawState     = url.searchParams.get("state");
-  const providerErr  = url.searchParams.get("error");
-  const errReason    = url.searchParams.get("error_reason");
+  if (!APP_ID || !APP_SECRET || !REDIRECT_URI || !ENC_KEY_HEX) {
+    console.error("[ig-callback] Missing Instagram OAuth/token secrets");
+    return errorRedirect("oauth_not_configured", returnPath);
+  }
 
   // Meta returned an error (e.g. user clicked "Cancel")
   if (providerErr) {
+    if (suggestsProfessionalAccountProblem(`${providerErr} ${errReason ?? ""} ${errDescription ?? ""}`)) {
+      return errorRedirect("professional_account_required", returnPath);
+    }
     const reason = errReason === "user_denied" ? "access_denied" : "provider_error";
-    return errorRedirect(reason);
+    return errorRedirect(reason, returnPath);
   }
 
   if (!code || !rawState) {
-    return errorRedirect("invalid_callback");
+    return errorRedirect("invalid_callback", returnPath);
   }
 
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
@@ -101,15 +144,15 @@ Deno.serve(async (req) => {
 
   if (stateErr || !stateRow) {
     console.error("[ig-callback] State lookup failed:", stateErr?.message ?? "not found");
-    return errorRedirect("invalid_state");
+    return errorRedirect("invalid_state", returnPath);
   }
 
   if (new Date(stateRow.expires_at) < new Date()) {
-    return errorRedirect("expired_state");
+    return errorRedirect("expired_state", returnPath);
   }
 
   if (stateRow.used_at !== null) {
-    return errorRedirect("state_already_used");
+    return errorRedirect("state_already_used", returnPath);
   }
 
   // ── 2. Atomically mark state as used ─────────────────────────────────────
@@ -124,7 +167,7 @@ Deno.serve(async (req) => {
 
   if (!consumed?.length) {
     // Another request already consumed this state
-    return errorRedirect("state_already_used");
+    return errorRedirect("state_already_used", returnPath);
   }
 
   const userId = stateRow.user_id;
@@ -149,7 +192,10 @@ Deno.serve(async (req) => {
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       console.error("[ig-callback] Token exchange failed:", res.status, text.slice(0, 200));
-      return errorRedirect("token_exchange_failed");
+      if (suggestsProfessionalAccountProblem(text)) {
+        return errorRedirect("professional_account_required", returnPath);
+      }
+      return errorRedirect("token_exchange_failed", returnPath);
     }
 
     const data = await res.json();
@@ -157,7 +203,7 @@ Deno.serve(async (req) => {
     if (!shortToken) throw new Error("No access_token in token response");
   } catch (e) {
     console.error("[ig-callback] Token exchange exception:", (e as Error).message);
-    return errorRedirect("token_exchange_failed");
+    return errorRedirect("token_exchange_failed", returnPath);
   }
 
   // ── 4. Exchange for long-lived token (60 days) ────────────────────────────
@@ -204,7 +250,10 @@ Deno.serve(async (req) => {
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       console.error("[ig-callback] Profile fetch failed:", res.status, text.slice(0, 200));
-      return errorRedirect("profile_fetch_failed");
+      if (suggestsProfessionalAccountProblem(text)) {
+        return errorRedirect("professional_account_required", returnPath);
+      }
+      return errorRedirect("profile_fetch_failed", returnPath);
     }
 
     const profile = await res.json();
@@ -216,7 +265,7 @@ Deno.serve(async (req) => {
     if (!igUserId) throw new Error("Profile response missing id");
   } catch (e) {
     console.error("[ig-callback] Profile fetch exception:", (e as Error).message);
-    return errorRedirect("profile_fetch_failed");
+    return errorRedirect("profile_fetch_failed", returnPath);
   }
 
   // ── 6. Encrypt token (AES-256-GCM, random IV) ────────────────────────────
@@ -225,7 +274,7 @@ Deno.serve(async (req) => {
     encryptedToken = await encryptToken(longToken, ENC_KEY_HEX);
   } catch (e) {
     console.error("[ig-callback] Token encryption failed:", (e as Error).message);
-    return errorRedirect("internal_error");
+    return errorRedirect("internal_error", returnPath);
   }
 
   // ── 7. Upsert social_accounts row ─────────────────────────────────────────
@@ -252,8 +301,8 @@ Deno.serve(async (req) => {
 
   if (upsertErr) {
     console.error("[ig-callback] Account upsert failed:", upsertErr.message);
-    return errorRedirect("internal_error");
+    return errorRedirect("internal_error", returnPath);
   }
 
-  return frontendRedirect("/workspace/publish?ig_connect=success");
+  return frontendRedirect(withIgParams(returnPath, "success"));
 });

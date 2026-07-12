@@ -10,14 +10,32 @@ type RunwareLaunchArgs = {
   referenceImages?: string[] | null;
   airTag: string;
   withSound?: boolean;
+  /** Our internal job id — purely for log correlation, never sent to Runware. */
+  jobId?: string;
 };
 
 export type RunwareLaunchResult = { jobId: string };
 
 export type RunwarePollResult =
   | { status: "queued" | "running" }
-  | { status: "failed"; error?: string }
+  | { status: "failed"; error?: string; code?: string }
   | { status: "succeeded"; url: string };
+
+/* ================= LOGGING =================
+   Structured, greppable lines for Supabase → Edge Functions → runware-video
+   → Logs. Every line starts with an icon + [runware] + event name so a scroll
+   through the log feed reads like a timeline instead of noise.
+================================================= */
+
+function rwLog(level: "info" | "warn" | "error", event: string, ctx: Record<string, unknown> = {}) {
+  const icon = level === "error" ? "🔴" : level === "warn" ? "🟠" : "🔵";
+  const line = `${icon} [runware] ${event}`;
+  const detail = JSON.stringify({ ts: new Date().toISOString(), ...ctx });
+
+  if (level === "error") console.error(line, detail);
+  else if (level === "warn") console.warn(line, detail);
+  else console.log(line, detail);
+}
 
 /* ================= ENV ================= */
 
@@ -36,12 +54,25 @@ function headers(): Headers {
   });
 }
 
-async function postJson(body: unknown) {
-  const res = await fetch(TASKS_URL, {
-    method: "POST",
-    headers: headers(),
-    body: JSON.stringify(body),
-  });
+async function postJson(body: unknown, jobId?: string) {
+  let res: Response;
+
+  try {
+    res = await fetch(TASKS_URL, {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify(body),
+    });
+  } catch (e) {
+    // Network-level failure (DNS, timeout, connection reset) — this is
+    // invisible in the old code because it just threw with no context.
+    rwLog("error", "network_failure", {
+      jobId,
+      message: (e as Error)?.message ?? String(e),
+      url: TASKS_URL,
+    });
+    throw e;
+  }
 
   const text = await res.text();
 
@@ -50,6 +81,14 @@ async function postJson(body: unknown) {
     json = text ? JSON.parse(text) : {};
   } catch {
     json = {};
+  }
+
+  if (!res.ok) {
+    rwLog("error", "runware_http_error", {
+      jobId,
+      status: res.status,
+      body: text.slice(0, 2000),
+    });
   }
 
   return { res, text, json };
@@ -118,10 +157,12 @@ export async function launchRunwareVideo(
     const task: Record<string, unknown> = {
       taskType:       "videoInference",
       model:          "google:veo@3.1-lite",
+      positivePrompt: safePositivePrompt,
+      width:          args.width  ?? 1280,
+      height:         args.height ?? 720,
       duration:       args.durationSec,
       numberResults:  1,
       includeCost:    true,
-      positivePrompt: safePositivePrompt,
       providerSettings: {
         google: {
           generateAudio:    args.withSound ?? true,
@@ -132,23 +173,15 @@ export async function launchRunwareVideo(
     };
 
     if (refs.length > 0) {
-      // Image-to-video: Runware infers dimensions from the reference image
-      task.inputs = {
-        frameImages: refs.map((url, index) => ({
-          image: url,
-          frame: index === 0 ? "first" : "last",
-        })),
-      };
-    } else {
-      // Text-to-video: use width/height only — resolution + width/height conflict
-      task.width  = args.width  ?? 720;
-      task.height = args.height ?? 1280;
+      // frameImages must be plain URL strings, not { image, frame } objects
+      task.inputs = { frameImages: refs };
     }
 
-    console.log("[runware-video] VEO 3.1 LITE TASK", JSON.stringify(task, null, 2));
-    const { res, text, json } = await postJson([task]);
+    rwLog("info", "launch_request", { jobId: args.jobId, model: "veo-3.1-lite", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
+    const { res, text, json } = await postJson([task], args.jobId);
     if (!res.ok) throw new Error(`Runware launch failed (${res.status}): ${text}`);
     const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
+    rwLog("info", "launch_success", { jobId: args.jobId, model: "veo-3.1-lite", providerJobId });
     return { jobId: String(providerJobId) };
   }
 
@@ -168,10 +201,11 @@ export async function launchRunwareVideo(
       taskUUID,
     };
 
-    console.log("[runware-video] FINAL TASK", JSON.stringify(task, null, 2));
-    const { res, text, json } = await postJson([task]);
+    rwLog("info", "launch_request", { jobId: args.jobId, model: "wan-2.6-flash", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
+    const { res, text, json } = await postJson([task], args.jobId);
     if (!res.ok) throw new Error(`Runware launch failed (${res.status}): ${text}`);
     const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
+    rwLog("info", "launch_success", { jobId: args.jobId, model: "wan-2.6-flash", providerJobId });
     return { jobId: String(providerJobId) };
   }
 
@@ -198,15 +232,47 @@ export async function launchRunwareVideo(
       taskUUID,
     };
 
-    console.log("[runware-video] FINAL TASK", JSON.stringify(task, null, 2));
-    const { res, text, json } = await postJson([task]);
+    rwLog("info", "launch_request", { jobId: args.jobId, model: "google-3@3", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
+    const { res, text, json } = await postJson([task], args.jobId);
     if (!res.ok) throw new Error(`Runware launch failed (${res.status}): ${text}`);
     const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
+    rwLog("info", "launch_success", { jobId: args.jobId, model: "google-3@3", providerJobId });
+    return { jobId: String(providerJobId) };
+  }
+
+  /* ── Seedance 2.0 Fast ── */
+  if (args.airTag === "bytedance:seedance@2.0-fast") {
+    const task: Record<string, unknown> = {
+      taskType:      "videoInference",
+      model:         "bytedance:seedance@2.0-fast",
+      positivePrompt: safePositivePrompt,
+      width:         args.width  ?? 496,
+      height:        args.height ?? 864,
+      duration:      args.durationSec,
+      numberResults: 1,
+      includeCost:   true,
+      outputQuality: 95,
+      settings: { audio: args.withSound ?? false },
+      taskUUID,
+    };
+
+    const refs      = rawRefs.slice(0, 5); // max 5 reference images
+    if (refs.length > 0) {
+      task.inputs = { frameImages: refs };   // plain URL strings
+    }
+
+    rwLog("info", "launch_request", { jobId: args.jobId, model: "seedance-2.0-fast", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
+    const { res, text, json } = await postJson([task], args.jobId);
+    if (!res.ok) throw new Error(`Runware Seedance 2.0 Fast launch failed (${res.status}): ${text}`);
+    const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
+    rwLog("info", "launch_success", { jobId: args.jobId, model: "seedance-2.0-fast", providerJobId });
     return { jobId: String(providerJobId) };
   }
 
   /* ── Seedance 1.5 Pro ── */
   if (args.airTag === "bytedance:seedance@1.5-pro") {
+    // Valid range: 4–12 seconds (Runware rejects anything outside this)
+    const clampedDuration = Math.min(12, Math.max(4, Math.round(args.durationSec)));
     const task: Record<string, unknown> = {
       taskType:      "videoInference",
       fps:           24,
@@ -218,26 +284,23 @@ export async function launchRunwareVideo(
       includeCost:   true,
       outputQuality: 85,
       providerSettings: {
-        bytedance: { cameraFixed: false, audio: false },
+        bytedance: { cameraFixed: false, audio: args.withSound ?? false },
       },
       positivePrompt: safePositivePrompt,
       taskUUID,
-      duration: args.durationSec,
+      duration: clampedDuration,
     };
 
     if (rawRefs.length > 0) {
-      task.inputs = {
-        frameImages: rawRefs.slice(0, 2).map((url, index) => ({
-          image: url,
-          frame: index === 0 ? "first" : "last",
-        })),
-      };
+      // Plain URL strings — same format confirmed working for Seedance models
+      task.inputs = { frameImages: rawRefs.slice(0, 2) };
     }
 
-    console.log("[runware-video] SEEDANCE TASK", JSON.stringify(task, null, 2));
-    const { res, text, json } = await postJson([task]);
+    rwLog("info", "launch_request", { jobId: args.jobId, model: "seedance-1.5-pro", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
+    const { res, text, json } = await postJson([task], args.jobId);
     if (!res.ok) throw new Error(`Runware Seedance launch failed (${res.status}): ${text}`);
     const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
+    rwLog("info", "launch_success", { jobId: args.jobId, model: "seedance-1.5-pro", providerJobId });
     return { jobId: String(providerJobId) };
   }
 
@@ -271,7 +334,7 @@ export async function launchRunwareVideo(
     if (await isUnder10MB(url)) {
       safeRefs.push(url);
     } else {
-      console.warn("[runware-video] Dropped ref over 10MB or unreachable:", url);
+      rwLog("warn", "ref_image_dropped", { jobId: args.jobId, reason: "over_10mb_or_unreachable", url });
     }
   }
 
@@ -285,7 +348,7 @@ export async function launchRunwareVideo(
       frameImages: safeRefs.slice(0, 1).map((url) => ({ image: url })),
     };
   } else if (rawRefs.length > 0) {
-    console.warn("[runware-video] References were provided but none passed safety checks");
+    rwLog("warn", "ref_images_all_dropped", { jobId: args.jobId });
   }
 
   /* ================= SIZE HANDLING ================= */
@@ -327,9 +390,9 @@ export async function launchRunwareVideo(
 
   /* ================= SEND ================= */
 
-  console.log("[runware-video] FINAL TASK", JSON.stringify(task, null, 2));
+  rwLog("info", "launch_request", { jobId: args.jobId, model: args.airTag, width: task.width, height: task.height, resolution: task.resolution, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
 
-  const { res, text, json } = await postJson([task]);
+  const { res, text, json } = await postJson([task], args.jobId);
 
   if (!res.ok) {
     throw new Error(`Runware launch failed (${res.status}): ${text}`);
@@ -340,21 +403,58 @@ export async function launchRunwareVideo(
     json?.data?.[0]?.id ||
     taskUUID;
 
+  rwLog("info", "launch_success", { jobId: args.jobId, model: args.airTag, providerJobId });
+
   return { jobId: String(providerJobId) };
+}
+
+/* ================= ERROR EXTRACTION =================
+   Runware's failure payloads aren't shaped consistently — sometimes the
+   error is a single object under `error`, sometimes an array under
+   `errors`, sometimes nested one level deeper under `response`. Content-
+   policy rejections (e.g. Vertex AI blocking a Veo prompt) can also arrive
+   with no top-level `status` field at all, which used to fall through to
+   "queued" and just burn the poll budget until the 320s timeout. Check
+   every known shape up front, regardless of `status`.
+================================================= */
+
+function firstTruthy<T>(...values: (T | null | undefined)[]): T | undefined {
+  for (const v of values) if (v) return v;
+  return undefined;
+}
+
+function extractRunwareError(first: any): { message: string; code?: string } | null {
+  const candidate = firstTruthy(
+    first?.error,
+    Array.isArray(first?.errors) ? first?.errors?.[0] : first?.errors,
+    first?.response?.error,
+    Array.isArray(first?.response?.errors) ? first?.response?.errors?.[0] : first?.response?.errors,
+  );
+
+  if (!candidate) return null;
+
+  const message =
+    candidate?.message ||
+    candidate?.additionalDetails?.responseContent ||
+    (typeof candidate === "string" ? candidate : JSON.stringify(candidate));
+
+  const code = candidate?.errorCode || candidate?.code;
+
+  return { message: String(message), code: code ? String(code) : undefined };
 }
 
 /* ================= POLL ================= */
 
-export async function pollRunware(jobId: string): Promise<RunwarePollResult> {
+export async function pollRunware(providerJobId: string, ourJobId?: string): Promise<RunwarePollResult> {
   const payload = [
     {
       taskType: "getResponse",
-      taskUUID: jobId,
+      taskUUID: providerJobId,
       numberResults: 1,
     },
   ];
 
-  const { res, text, json } = await postJson(payload);
+  const { res, text, json } = await postJson(payload, ourJobId);
 
   if (!res.ok) {
     return {
@@ -364,6 +464,21 @@ export async function pollRunware(jobId: string): Promise<RunwarePollResult> {
   }
 
   const first = json?.data?.[0] ?? json;
+
+  // Check for an error payload before trusting `status` — some failure
+  // shapes (content-policy rejections in particular) omit `status` entirely.
+  const errInfo = extractRunwareError(first);
+  if (errInfo) {
+    rwLog("error", "provider_rejected_video", {
+      jobId: ourJobId,
+      providerJobId,
+      code: errInfo.code ?? null,
+      message: errInfo.message,
+      raw: JSON.stringify(first).slice(0, 1000),
+    });
+    return { status: "failed", error: errInfo.message, code: errInfo.code };
+  }
+
   const raw = String(first?.status || "").toLowerCase();
 
   if (!raw || raw === "queued" || raw === "pending") {
@@ -377,10 +492,7 @@ export async function pollRunware(jobId: string): Promise<RunwarePollResult> {
   if (raw.includes("fail") || raw === "error") {
     return {
       status: "failed",
-      error:
-        first?.error?.message ||
-        first?.errors?.[0]?.message ||
-        JSON.stringify(first?.errors || first?.error || "provider failed"),
+      error: "provider failed",
     };
   }
 

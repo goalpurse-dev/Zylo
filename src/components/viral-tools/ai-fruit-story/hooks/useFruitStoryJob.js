@@ -7,6 +7,8 @@ import {
   animateClip,
   buildVideoClipsFromScenes,
   buildSceneVideoPrompt,
+  buildSceneVideoPromptWithDialogue,
+  generateVisionVideoPrompts,
   isFruitVideoPromptReady,
   dialogueToVoiceover,
   normalizeClipDialogue,
@@ -651,17 +653,46 @@ export default function useFruitStoryJob({ form }) {
     });
   }, []);
 
-  const ensureVideoPrompts = useCallback((force = false) => {
+  const ensureVideoPrompts = useCallback(async (force = false) => {
     const f = formRef.current;
+    const currentScenes = scenesRef.current;
+
+    const scenesNeedingPrompts = currentScenes.filter((scene) => {
+      if (!scene?.imageUrl) return false;
+      const existing = String(scene.videoPrompt ?? "").trim();
+      return force || !isFruitVideoPromptReady(existing);
+    });
+
+    if (scenesNeedingPrompts.length === 0) return;
+
+    // Phase 1: generate text-based prompts immediately so the UI is unblocked
     syncScenesWithVideoPrompts((prev) => prev.map((scene) => {
       if (!scene?.imageUrl) return scene;
-      const existingPrompt = String(scene.videoPrompt ?? "").trim();
-      if (!force && isFruitVideoPromptReady(existingPrompt)) return scene;
-      return {
-        ...scene,
-        videoPrompt: buildSceneVideoPrompt({ scene, form: f }),
-      };
+      const existing = String(scene.videoPrompt ?? "").trim();
+      if (!force && isFruitVideoPromptReady(existing)) return scene;
+      return { ...scene, videoPrompt: buildSceneVideoPrompt({ scene, form: f }) };
     }));
+
+    // Phase 2: enhance with vision — analyse actual images and generate image-aware dialogue
+    try {
+      const castBible = castBibleRef.current ?? [];
+      const visionData = await generateVisionVideoPrompts({
+        scenes: scenesNeedingPrompts,
+        form: { ...f, castBible },
+      });
+      if (Array.isArray(visionData?.scenes)) {
+        syncScenesWithVideoPrompts((prev) => prev.map((scene) => {
+          const v = visionData.scenes.find((r) => Number(r.sceneNumber) === Number(scene.sceneNumber));
+          if (!v?.dialogue?.length) return scene;
+          return {
+            ...scene,
+            videoPrompt: buildSceneVideoPromptWithDialogue({ scene, form: f, dialogue: v.dialogue }),
+          };
+        }));
+      }
+    } catch (err) {
+      console.warn("[AI FRUIT] vision prompts failed, keeping text prompts", err);
+    }
   }, [syncScenesWithVideoPrompts]);
 
   const updateSceneVideoPrompt = useCallback((sceneNumber, value) => {
@@ -672,13 +703,36 @@ export default function useFruitStoryJob({ form }) {
     ));
   }, [syncScenesWithVideoPrompts]);
 
-  const regenerateSceneVideoPrompt = useCallback((sceneNumber) => {
+  const regenerateSceneVideoPrompt = useCallback(async (sceneNumber) => {
     const f = formRef.current;
+    const targetScene = scenesRef.current.find((s) => Number(s.sceneNumber) === Number(sceneNumber));
+
+    // Phase 1: immediate text-based prompt
     syncScenesWithVideoPrompts((prev) => prev.map((scene) =>
       Number(scene.sceneNumber) === Number(sceneNumber)
         ? { ...scene, videoPrompt: buildSceneVideoPrompt({ scene, form: f }) }
         : scene,
     ));
+
+    if (!targetScene?.imageUrl) return;
+
+    // Phase 2: vision-enhance for this one scene
+    try {
+      const castBible = castBibleRef.current ?? [];
+      const visionData = await generateVisionVideoPrompts({
+        scenes: [targetScene],
+        form: { ...f, castBible },
+      });
+      const v = visionData?.scenes?.[0];
+      if (!v?.dialogue?.length) return;
+      syncScenesWithVideoPrompts((prev) => prev.map((scene) =>
+        Number(scene.sceneNumber) === Number(sceneNumber)
+          ? { ...scene, videoPrompt: buildSceneVideoPromptWithDialogue({ scene, form: f, dialogue: v.dialogue }) }
+          : scene,
+      ));
+    } catch (err) {
+      console.warn("[AI FRUIT] vision regen failed, keeping text prompt", err);
+    }
   }, [syncScenesWithVideoPrompts]);
 
   const startAnimation = useCallback(async () => {

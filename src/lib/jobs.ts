@@ -207,6 +207,79 @@ const insertPayload = {
   return data as JobRow;
 }
 
+// Marks a `jobs` row as a fully-assembled, ready-to-post video — as opposed
+// to a single raw provider-generated clip. Tool-agnostic on purpose: Clay
+// Rescue's ffmpeg.wasm stitch is the first thing that produces one, but any
+// future "combine these clips into one finished video" feature (Fruit Story,
+// Cooking Matic, etc.) should tag its output with this same tool_key so it
+// lands in the same Publish category rather than inventing a new one.
+export const FULL_VIDEO_TOOL_KEY = "full-video";
+
+/**
+ * Persists a video that was already fully rendered client-side (no provider
+ * job involved) directly as a succeeded `jobs` row. Bypasses `createJob`'s
+ * provider pipeline entirely — `createVideoJobSimple`/`createImageJobSimple`
+ * would throw here since `FULL_VIDEO_TOOL_KEY` isn't a registered provider
+ * tool_key, and there's no generation to dispatch anyway.
+ *
+ * Pass `existingId` (the id returned from a previous call) to update that
+ * same row on a re-render instead of creating a new one every time the user
+ * re-stitches.
+ */
+export async function saveFullVideo(params: {
+  resultUrl: string;
+  prompt?: string | null;
+  existingId?: string | null;
+}): Promise<JobRow> {
+  const { data: userData, error: uerr } = await supabase.auth.getUser();
+  if (uerr || !userData?.user) throw new Error("Must be signed in");
+
+  if (params.existingId) {
+    const { data, error } = await supabase
+      .from("jobs")
+      .update({
+        result_url: params.resultUrl,
+        prompt: params.prompt ?? null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", params.existingId)
+      .eq("user_id", userData.user.id)
+      .select("*")
+      .single();
+    if (error) throw error;
+    return data as JobRow;
+  }
+
+  const insertPayload = {
+    user_id: userData.user.id,
+    type: "video" as JobType,
+    tool_key: FULL_VIDEO_TOOL_KEY,
+    prompt: params.prompt ?? null,
+    settings: {},
+    input: {},
+    status: "succeeded" as JobStatus,
+    progress: 100,
+    result_url: params.resultUrl,
+    charge_credits: 0,
+    charged: true,
+    priority: 9,
+    plan_code: "free",
+    provider: "client",
+    attempts: 0,
+    max_attempts: 0,
+    retry_after: new Date().toISOString(),
+  };
+
+  const { data, error } = await supabase
+    .from("jobs")
+    .insert(insertPayload)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return data as JobRow;
+}
+
 export async function listJobs(
   status?: JobStatus,
 ): Promise<JobRow[]> {

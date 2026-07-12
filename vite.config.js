@@ -27,6 +27,11 @@ export default defineConfig({
   },
 
   optimizeDeps: {
-    exclude: ["react-icons"],
+    // @ffmpeg/ffmpeg spins up a Web Worker internally — Vite's dev-time
+    // dependency pre-bundling rewrites that worker import in a way that
+    // 404s at runtime, which leaves ffmpeg.load() hanging forever waiting
+    // on a worker that never came up. Excluding both from pre-bundling
+    // lets the package's own worker URL resolution work unmodified.
+    exclude: ["react-icons", "@ffmpeg/ffmpeg", "@ffmpeg/util"],
   },
 });

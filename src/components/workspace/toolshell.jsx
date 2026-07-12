@@ -1,15 +1,16 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "../../assets/Logo.png";
 import { useState } from "react";
-import { DesktopCreatePanel, DesktopWorkspacePanel } from "./CreateMenu";
+import { DesktopCreatePanel, DesktopWorkspacePanel, DesktopPublishPanel } from "./CreateMenu";
 
 import {
   Home,
   Folder,
   LayoutGrid,
+  Send,
 } from "lucide-react";
 
-function NavItem({ icon: Icon, label, path, active, onClick }) {
+function NavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
       onClick={onClick}
@@ -34,13 +35,20 @@ export default function ToolShell() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
 
   const isActive = (path) => location.pathname.startsWith(path);
+
+  // Only one nav item is ever "active" at a time. While a panel is open, its
+  // own button wins and everything else (including route-matched items like
+  // Home) turns off — otherwise you'd see two highlighted at once.
+  const anyPanelOpen = createOpen || workspaceOpen || publishOpen;
 
   return (
     <>
     <DesktopCreatePanel open={createOpen} onClose={() => setCreateOpen(false)} />
     <DesktopWorkspacePanel open={workspaceOpen} onClose={() => setWorkspaceOpen(false)} />
+    <DesktopPublishPanel open={publishOpen} onClose={() => setPublishOpen(false)} />
     <div className="h-full flex flex-col items-center py-4 px-2 bg-[#090A0A] border-r border-white/5">
 
       {/* LOGO */}
@@ -61,31 +69,27 @@ export default function ToolShell() {
         <NavItem
           icon={Home}
           label="Home"
-          path="/workspace/home"
-          active={isActive("/workspace/home")}
-          onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/workspace/home"); }}
+          active={!anyPanelOpen && isActive("/workspace/home")}
+          onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); setPublishOpen(false); navigate("/workspace/home"); }}
         />
 
-        {/* Workspace — opens Image / Video / Script panel */}
         <button
-          onClick={() => { setWorkspaceOpen((v) => !v); setCreateOpen(false); }}
+          onClick={() => { setPublishOpen((v) => !v); setWorkspaceOpen(false); setCreateOpen(false); }}
           className={`ftg-nav-item w-full flex flex-col items-center gap-1 py-3 rounded-xl transition-all duration-200 ${
-              isActive("/workspace/image-generator") ||
-            isActive("/workspace/video-generator") ||
-            isActive("/workspace/viral-script")
+            publishOpen || (!anyPanelOpen && (isActive("/workspace/publish") || isActive("/workspace/stats") || isActive("/workspace/connections")))
               ? "bg-white text-black"
               : "text-white/50 hover:text-white hover:bg-white/5"
           }`}
         >
-          <LayoutGrid className="w-5 h-5" />
-          <span className="text-[11px] font-medium">Workspace</span>
+          <Send className="w-5 h-5" />
+          <span className="text-[11px] font-medium">Publish</span>
         </button>
 
         {/* Create — opens viral tools panel */}
         <button
-          onClick={() => { setCreateOpen((v) => !v); setWorkspaceOpen(false); }}
+          onClick={() => { setCreateOpen((v) => !v); setWorkspaceOpen(false); setPublishOpen(false); }}
           className={`ftg-nav-item w-full flex flex-col items-center gap-1 py-3 rounded-xl transition-all duration-200 ${
-            isActive("/workspace/ai-fruit-story") || isActive("/workspace/face-asmr") || isActive("/workspace/micro-camera-animal") || isActive("/workspace/clay-rescue")
+            createOpen || (!anyPanelOpen && (isActive("/workspace/ai-fruit-story") || isActive("/workspace/face-asmr") || isActive("/workspace/micro-camera-animal") || isActive("/workspace/clay-rescue") || isActive("/workspace/ai-cooking-matic") || isActive("/workspace/footballer-nationality-swap")))
               ? "bg-white text-black"
               : "text-white/50 hover:text-white hover:bg-white/5"
           }`}
@@ -96,12 +100,27 @@ export default function ToolShell() {
           <span className="text-[11px] font-medium">Create</span>
         </button>
 
+        {/* Workspace — opens Image / Video panel */}
+        <button
+          onClick={() => { setWorkspaceOpen((v) => !v); setCreateOpen(false); setPublishOpen(false); }}
+          className={`ftg-nav-item w-full flex flex-col items-center gap-1 py-3 rounded-xl transition-all duration-200 ${
+            workspaceOpen || (!anyPanelOpen && (
+              isActive("/workspace/image-generator") ||
+              isActive("/workspace/video-generator")
+            ))
+              ? "bg-white text-black"
+              : "text-white/50 hover:text-white hover:bg-white/5"
+          }`}
+        >
+          <LayoutGrid className="w-5 h-5" />
+          <span className="text-[11px] font-medium">Workspace</span>
+        </button>
+
         <NavItem
           icon={Folder}
           label="Creations"
-          path="/workspace/creations"
-          active={isActive("/workspace/creations")}
-          onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/workspace/creations"); }}
+          active={!anyPanelOpen && isActive("/workspace/creations")}
+          onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); setPublishOpen(false); navigate("/workspace/creations"); }}
         />
       </div>
 

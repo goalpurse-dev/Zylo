@@ -690,7 +690,7 @@ function appendStrictImageRules(
 
   // Continuity line linking this scene to the previous
   const continuityLine = sceneIndex > 0 && previousBeat
-    ? `Continuing DIRECTLY from scene ${sceneNum - 1} ("${previousBeat.title}" — ${previousBeat.actionDirection}). Keep the SAME clothing on all characters, the SAME room layout and furniture, the SAME time of day and lighting direction. Emotions evolve from the previous scene — do NOT reset emotional state.`
+    ? `Scene ${sceneNum} of ${totalScenes} — continuing the story from scene ${sceneNum - 1} ("${previousBeat.title}"). CHARACTER CLOTHING must stay identical to the reference images — this is locked. However THIS scene happens in a NEW moment: ${beat.backgroundDetail}. The POSES, EXPRESSIONS, and LOCATION must reflect this scene's beat (${beat.beatType.toUpperCase()}) — do NOT reuse the same composition or room layout from the previous scene. Each scene must look VISUALLY DISTINCT while keeping the same character appearances.`
     : `Opening scene: establish the characters, their relationship, and the setting clearly. This is the visual hook that draws the viewer in.`;
 
   return [
@@ -700,10 +700,11 @@ function appendStrictImageRules(
     "",
     `SCENE BEAT: ${beat.beatType.toUpperCase()} — ${beat.title}`,
     `Story purpose: ${beat.purpose}`,
-    `Required emotion: ${beat.emotionDirection}`,
-    `Required action: ${beat.actionDirection}`,
+    `REQUIRED EMOTION (characters MUST show this): ${beat.emotionDirection}`,
+    `REQUIRED ACTION (characters MUST be doing this): ${beat.actionDirection}`,
     `Camera: ${cameraGuidance || beat.cameraDirection}`,
-    `Background: ${beat.backgroundDetail}`,
+    `Background/Location: ${beat.backgroundDetail}`,
+    `IMPORTANT: Reference images show the character APPEARANCE ONLY. Pose, expression, and body language must match the REQUIRED EMOTION and REQUIRED ACTION above — not the reference image's default pose.`,
     "",
     `STORY CONTINUITY: ${continuityLine}`,
     "",

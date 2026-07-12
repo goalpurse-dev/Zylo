@@ -1,5 +1,7 @@
 import { createPortal } from "react-dom";
-import { X, CheckCircle2, ArrowRight, Loader2 } from "lucide-react";
+import { X, CheckCircle2, ArrowRight, Loader2, UserPlus, LogOut } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "../../lib/supabaseClient";
 
 /* ── Platform SVG icons ──────────────────────────────────────────────────── */
 
@@ -37,27 +39,25 @@ const PLATFORMS = [
     note:     "Business or Creator account required",
     gradient: "from-[#833AB4] via-[#C13584] to-[#F77737]",
     btnBg:    "bg-gradient-to-r from-[#833AB4] via-[#C13584] to-[#F77737]",
-    glow:     "shadow-[0_4px_24px_rgba(193,53,132,0.35)]",
+    glow:     "",
   },
   {
     id:       "tiktok",
     label:    "TikTok",
     Icon:     TtIcon,
-    note:     "Coming soon",
+    note:     "Post videos or send to your drafts",
     gradient: "from-[#010101] to-[#2d2d2d]",
     btnBg:    "bg-[#111111]",
     glow:     "shadow-[0_4px_24px_rgba(0,0,0,0.4)]",
-    disabled: true,
   },
   {
     id:       "youtube",
     label:    "YouTube",
     Icon:     YtIcon,
-    note:     "Coming soon",
+    note:     "Upload videos to your channel",
     gradient: "from-[#FF0000] to-[#CC0000]",
-    btnBg:    "bg-[#FF0000]",
-    glow:     "shadow-[0_4px_24px_rgba(255,0,0,0.30)]",
-    disabled: true,
+    btnBg:    "bg-[#FF0000] hover:bg-[#DD0000]",
+    glow:     "",
   },
 ];
 
@@ -65,10 +65,172 @@ const PLATFORMS = [
 
 export default function ConnectAccountsModal({
   connectedAccounts = [],   // [{id, platform, username, ...}]
-  onConnectInstagram,       // () => void — starts IG OAuth
+  onConnectInstagram,       // opens the Instagram requirement confirmation
   connectingIG = false,     // bool — shows spinner on IG button
+  onDisconnect,             // (accountId) => void
   onClose,
+  onShowToast,              // (type, message) => void — optional
 }) {
+  const [disconnecting,    setDisconnecting]    = useState(null);
+  const [ytConfirmOpen,    setYtConfirmOpen]    = useState(false);
+  const [connectingYT,     setConnectingYT]     = useState(false);
+  const [ttConfirmOpen,    setTtConfirmOpen]    = useState(false);
+  const [connectingTT,     setConnectingTT]     = useState(false);
+
+  async function handleDisconnect(account) {
+    if (!onDisconnect) return;
+    setDisconnecting(account.id);
+    await onDisconnect(account.id);
+    setDisconnecting(null);
+  }
+
+  async function connectYouTube() {
+    setConnectingYT(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        onShowToast?.("error", "Please sign in before connecting YouTube.");
+        setConnectingYT(false);
+        return;
+      }
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/youtube-oauth-start`,
+        {
+          method:  "POST",
+          headers: {
+            Authorization:  `Bearer ${session.access_token}`,
+            apikey:         import.meta.env.VITE_SUPABASE_ANON_KEY,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      const json = await res.json().catch(() => ({}));
+      const authorizationUrl = json.authorizationUrl || json.url;
+      if (authorizationUrl) {
+        window.location.assign(authorizationUrl);
+      } else {
+        onShowToast?.("error", json.error || "Could not connect YouTube. Please try again.");
+        setConnectingYT(false);
+        setYtConfirmOpen(false);
+      }
+    } catch {
+      onShowToast?.("error", "Network error. Please try again.");
+      setConnectingYT(false);
+    }
+  }
+  async function connectTikTok() {
+    setConnectingTT(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        onShowToast?.("error", "Please sign in before connecting TikTok.");
+        setConnectingTT(false);
+        return;
+      }
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tiktok-oauth-start`,
+        {
+          method:  "POST",
+          headers: {
+            Authorization:  `Bearer ${session.access_token}`,
+            apikey:         import.meta.env.VITE_SUPABASE_ANON_KEY,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      const json = await res.json().catch(() => ({}));
+      const authorizationUrl = json.authorizationUrl || json.url;
+      if (authorizationUrl) {
+        window.location.assign(authorizationUrl);
+      } else {
+        onShowToast?.("error", json.error || "Could not connect TikTok. Please try again.");
+        setConnectingTT(false);
+        setTtConfirmOpen(false);
+      }
+    } catch {
+      onShowToast?.("error", "Network error. Please try again.");
+      setConnectingTT(false);
+    }
+  }
+
+  /* ── TikTok confirm sub-modal ───────────────────────────────────────── */
+  if (ttConfirmOpen) {
+    return createPortal(
+      <div className="fixed inset-0 z-[9200] flex items-center justify-center px-4" onClick={() => { if (!connectingTT) setTtConfirmOpen(false); }}>
+        <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" />
+        <div className="relative z-10 w-full max-w-[380px] rounded-2xl border border-white/[0.08] bg-[#0e1012] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+          <div className="px-6 pt-5 pb-6">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#111111] text-white mb-4">
+              <TtIcon size={20} />
+            </div>
+            <h2 className="text-[17px] font-bold text-white leading-tight mb-2">Connect TikTok</h2>
+            <p className="text-[13px] text-white/50 leading-relaxed mb-6">
+              Zyvo will ask permission to send videos to your TikTok account when you choose to publish. You stay in control of the caption, visibility, and posting options.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setTtConfirmOpen(false)}
+                disabled={connectingTT}
+                className="flex-1 rounded-xl border border-white/10 bg-white/[0.04] py-2.5 text-sm font-semibold text-white/50 hover:bg-white/[0.07] hover:text-white/80 transition disabled:opacity-40"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={connectTikTok}
+                disabled={connectingTT}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#111111] hover:bg-[#1a1a1a] py-2.5 text-sm font-bold text-white transition disabled:opacity-70 shadow-[0_4px_24px_rgba(0,0,0,0.4)]"
+              >
+                {connectingTT ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+                {connectingTT ? "Redirecting…" : "Continue to TikTok"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
+  /* ── YouTube confirm sub-modal ─────────────────────────────────────── */
+  if (ytConfirmOpen) {
+    return createPortal(
+      <div className="fixed inset-0 z-[9200] flex items-center justify-center px-4" onClick={() => { if (!connectingYT) setYtConfirmOpen(false); }}>
+        <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" />
+        <div className="relative z-10 w-full max-w-[380px] rounded-2xl border border-white/[0.08] bg-[#0e1012] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-[#FF0000]/50 to-transparent" />
+          <div className="px-6 pt-5 pb-6">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF0000] to-[#CC0000] text-white mb-4">
+              <YtIcon size={20} />
+            </div>
+            <h2 className="text-[17px] font-bold text-white leading-tight mb-2">Connect YouTube</h2>
+            <p className="text-[13px] text-white/50 leading-relaxed mb-6">
+              Zyvo will ask permission to upload videos to your YouTube channel when you choose to publish. We only use this to show your connected channel and upload videos you explicitly publish from Zyvo.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setYtConfirmOpen(false)}
+                disabled={connectingYT}
+                className="flex-1 rounded-xl border border-white/10 bg-white/[0.04] py-2.5 text-sm font-semibold text-white/50 hover:bg-white/[0.07] hover:text-white/80 transition disabled:opacity-40"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={connectYouTube}
+                disabled={connectingYT}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#FF0000] hover:bg-[#DD0000] py-2.5 text-sm font-bold text-white transition disabled:opacity-70 shadow-[0_4px_24px_rgba(255,0,0,0.30)]"
+              >
+                {connectingYT ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+                {connectingYT ? "Redirecting…" : "Continue"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
   return createPortal(
     <div
       className="fixed inset-0 z-[9100] flex items-center justify-center px-4"
@@ -104,9 +266,14 @@ export default function ConnectAccountsModal({
         {/* Platform cards */}
         <div className="px-4 pb-5 space-y-3">
           {PLATFORMS.map((p) => {
-            const connected = connectedAccounts.some(a => a.platform === p.id);
-            const isIG      = p.id === "instagram";
-            const loading   = isIG && connectingIG;
+            const connected    = connectedAccounts.some(a => a.platform === p.id);
+            const isIG         = p.id === "instagram";
+            const isYT         = p.id === "youtube";
+            const isTT         = p.id === "tiktok";
+            const loading      = (isIG && connectingIG) || (isYT && connectingYT) || (isTT && connectingTT);
+            const onConnect    = isYT ? () => setYtConfirmOpen(true)
+                                : isTT ? () => setTtConfirmOpen(true)
+                                : onConnectInstagram;
 
             return (
               <div
@@ -114,8 +281,6 @@ export default function ConnectAccountsModal({
                 className={`relative overflow-hidden rounded-xl border transition ${
                   p.disabled && !connected
                     ? "border-white/[0.05] bg-white/[0.02] opacity-50"
-                    : connected
-                    ? "border-emerald-500/25 bg-emerald-500/[0.06]"
                     : "border-white/[0.08] bg-white/[0.03]"
                 }`}
               >
@@ -129,8 +294,12 @@ export default function ConnectAccountsModal({
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-white leading-none">{p.label}</p>
                     {connected ? (
-                      <p className="mt-1 text-[11px] text-emerald-400 leading-none">
-                        @{connectedAccounts.find(a => a.platform === p.id)?.username || "connected"}
+                      <p className="mt-1 text-[11px] text-emerald-300 leading-none font-medium">
+                        {isYT
+                          ? (connectedAccounts.find(a => a.platform === p.id)?.display_name
+                             || connectedAccounts.find(a => a.platform === p.id)?.username
+                             || "Connected")
+                          : `@${connectedAccounts.find(a => a.platform === p.id)?.username || "connected"}`}
                       </p>
                     ) : (
                       <p className="mt-1 text-[11px] text-white/35 leading-none">{p.note}</p>
@@ -139,9 +308,9 @@ export default function ConnectAccountsModal({
 
                   {/* Action */}
                   {connected ? (
-                    <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                      <span className="text-[11px] font-semibold text-emerald-400">Connected</span>
+                    <div className="flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-400/15 px-3 py-1.5">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
+                      <span className="text-[11px] font-bold text-emerald-300">Connected</span>
                     </div>
                   ) : p.disabled ? (
                     <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] text-white/30 font-medium">
@@ -149,7 +318,7 @@ export default function ConnectAccountsModal({
                     </span>
                   ) : (
                     <button
-                      onClick={onConnectInstagram}
+                      onClick={onConnect}
                       disabled={loading}
                       className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white transition active:scale-[.97] disabled:opacity-70 ${p.btnBg} ${p.glow}`}
                     >
@@ -158,10 +327,35 @@ export default function ConnectAccountsModal({
                       ) : (
                         <ArrowRight className="h-4 w-4" />
                       )}
-                      {loading ? "Redirecting…" : `Add ${p.label}`}
+                      {loading ? "Redirecting..." : `Add ${p.label}`}
                     </button>
                   )}
                 </div>
+
+                {/* Connected actions row */}
+                {connected && (
+                  <div className="flex gap-2 border-t border-white/[0.06] px-4 pb-3 pt-2.5">
+                    <button
+                      onClick={onConnect}
+                      className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] py-2 text-[12px] font-semibold text-white/60 transition hover:bg-white/[0.08] hover:text-white active:scale-[.97]"
+                    >
+                      <UserPlus className="h-3.5 w-3.5" />
+                      Add another account
+                    </button>
+                    <button
+                      onClick={() => handleDisconnect(connectedAccounts.find(a => a.platform === p.id))}
+                      disabled={disconnecting === connectedAccounts.find(a => a.platform === p.id)?.id}
+                      className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/[0.06] py-2 text-[12px] font-semibold text-red-400 transition hover:bg-red-500/[0.12] hover:text-red-300 active:scale-[.97] disabled:opacity-50"
+                    >
+                      {disconnecting === connectedAccounts.find(a => a.platform === p.id)?.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <LogOut className="h-3.5 w-3.5" />
+                      )}
+                      Disconnect
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}

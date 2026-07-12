@@ -1,0 +1,29 @@
+[functions.instagram-oauth-start]
+verify_jwt = true
+
+[functions.instagram-oauth-callback]
+verify_jwt = false
+
+[functions.youtube-oauth-callback]
+verify_jwt = false
+
+[functions.tiktok-oauth-start]
+verify_jwt = true
+
+[functions.tiktok-oauth-callback]
+verify_jwt = false
+
+[functions.youtube-analytics-overview]
+verify_jwt = true
+
+[functions.youtube-analytics-videos]
+verify_jwt = true
+
+[functions.youtube-analytics-realtime]
+verify_jwt = true
+
+[functions.youtube-analytics-sync]
+verify_jwt = true
+
+[functions.youtube-analytics-video-detail]
+verify_jwt = true

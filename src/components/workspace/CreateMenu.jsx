@@ -39,6 +39,24 @@ export const CREATE_TOOLS = [
     previewPosition: "object-center",
     color: "#7A3BFF",
   },
+  {
+    id: "ai-cooking-matic",
+    label: "AI Cooking Matic",
+    sublabel: "",
+    path: "/workspace/ai-cooking-matic",
+    preview: "/templates/AICOOKING/thumbnail.png",
+    previewPosition: "object-center",
+    color: "#EA580C",
+  },
+  {
+    id: "footballer-nationality-swap",
+    label: "Nationality Swap",
+    sublabel: "",
+    path: "/workspace/footballer-nationality-swap",
+    preview: "/face/ronaldo.png",
+    previewPosition: "object-center",
+    color: "#F59E0B",
+  },
   // { id: "ai-voice-story", label: "AI Voice Story", ... },
 ];
 
@@ -143,12 +161,15 @@ export function DesktopCreatePanel({ open, onClose }) {
           <button
             key={tool.id}
             onClick={() => go(tool.path)}
-            className={`w-full flex items-center gap-3.5 rounded-[16px] border p-3.5 text-left transition active:scale-[0.98] group ${
+            className={`relative w-full flex items-center gap-3.5 overflow-hidden rounded-[16px] border p-3.5 text-left transition active:scale-[0.98] group ${
               active
-                ? "border-white/20 bg-white/[0.08]"
+                ? "border-white/14 bg-white/[0.06]"
                 : "border-white/[0.07] bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.06]"
             }`}
           >
+            {active && (
+              <div className="absolute inset-y-0 left-0 w-1" style={{ background: "rgba(190,242,100,0.55)" }} />
+            )}
             <div
               className="relative h-[52px] w-[42px] flex-shrink-0 overflow-hidden rounded-[12px]"
               style={{ background: `linear-gradient(135deg, ${tool.color}55, ${tool.color}22)` }}
@@ -156,11 +177,11 @@ export function DesktopCreatePanel({ open, onClose }) {
               <img src={tool.preview} alt={tool.label} className={`h-full w-full object-cover ${tool.previewPosition ?? "object-top"}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className={`text-[13px] font-semibold leading-tight ${active ? "text-white" : "text-white"}`}>{tool.label}</div>
+              <div className="text-[13px] font-semibold leading-tight text-white">{tool.label}</div>
               {tool.sublabel && <div className="text-[11px] text-white/40 mt-0.5">{tool.sublabel}</div>}
             </div>
             {active
-              ? <div className="h-2 w-2 flex-shrink-0 rounded-full bg-purple-400" />
+              ? <div className="h-2 w-2 flex-shrink-0 rounded-full bg-lime-300/80" />
               : <svg className="h-4 w-4 text-white/25 group-hover:text-white/60 transition flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
             }
           </button>
@@ -173,7 +194,7 @@ export function DesktopCreatePanel({ open, onClose }) {
   );
 }
 
-/* ─── Desktop Workspace panel (Image / Video / Script) ───────────────────── */
+/* ─── Desktop Workspace panel (Image / Video) ─────────────────────────────── */
 const WORKSPACE_TOOLS = [
   {
     id: "image",
@@ -200,17 +221,6 @@ const WORKSPACE_TOOLS = [
       </svg>
     ),
   },
-  {
-    id: "script",
-    label: "Script Builder",
-    sublabel: "",
-    path: "/workspace/viral-script",
-    icon: (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-        <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
 ];
 
 export function DesktopWorkspacePanel({ open, onClose }) {
@@ -226,14 +236,17 @@ export function DesktopWorkspacePanel({ open, onClose }) {
           <button
             key={tool.id}
             onClick={() => go(tool.path)}
-            className={`w-full flex items-center gap-3.5 rounded-[16px] border p-3.5 text-left transition active:scale-[0.98] group ${
+            className={`relative w-full flex items-center gap-3.5 overflow-hidden rounded-[16px] border p-3.5 text-left transition active:scale-[0.98] group ${
               active
-                ? "border-white/20 bg-white/[0.08]"
+                ? "border-white/14 bg-white/[0.06]"
                 : "border-white/[0.07] bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.06]"
             }`}
           >
+            {active && (
+              <div className="absolute inset-y-0 left-0 w-1" style={{ background: "rgba(190,242,100,0.55)" }} />
+            )}
             <div className={`flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-[12px] border ${
-              active ? "border-white/20 bg-white/10 text-white" : "border-white/[0.07] bg-white/[0.04] text-white/50 group-hover:text-white"
+              active ? "border-white/12 bg-white/[0.06] text-lime-100" : "border-white/[0.07] bg-white/[0.04] text-white/50 group-hover:text-white"
             }`}>
               {tool.icon}
             </div>
@@ -242,7 +255,7 @@ export function DesktopWorkspacePanel({ open, onClose }) {
               {tool.sublabel && <div className="text-[11px] text-white/40 mt-0.5">{tool.sublabel}</div>}
             </div>
             {active
-              ? <div className="h-2 w-2 flex-shrink-0 rounded-full bg-white/60" />
+              ? <div className="h-2 w-2 flex-shrink-0 rounded-full bg-lime-300/80" />
               : <svg className="h-4 w-4 text-white/25 group-hover:text-white/60 transition flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round"/></svg>
             }
           </button>

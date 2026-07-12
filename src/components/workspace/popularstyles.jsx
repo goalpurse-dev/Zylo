@@ -1,4 +1,4 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -33,7 +33,7 @@ export default function PopularStyles() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="w-full max-w-7xl mx-auto px-5 md:px-8 mt-8"
+      className="w-full px-5 md:px-[50px] mt-8"
     >
       <div className="flex items-center justify-between gap-4 mb-6">
         <h2 className="text-white text-[20px] md:text-[28px] font-bold tracking-tight">
@@ -94,11 +94,16 @@ function StyleCard({ style, mobile = false }) {
         group relative overflow-hidden text-left
         rounded-[24px] border border-white/10 bg-[#090A0A]
         transition-all duration-300
-        hover:border-purple-400/50
-        hover:shadow-[0_0_30px_rgba(168,85,247,0.16)]
+        hover:border-purple-400 focus-visible:border-purple-400
         ${mobile ? "snap-start w-[calc(50vw-16px)] min-w-[240px] h-[128px]" : "w-full h-[128px] md:h-[136px]"}
       `}
     >
+      {/* Vignette wash — saturated purple at the edges, fading to nothing
+          in the middle so the card center stays readable/dark. */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-[24px] opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100"
+        style={{ background: "radial-gradient(ellipse at center, transparent 30%, rgba(168,85,247,0.28) 100%)" }}
+      />
       <div className="pointer-events-none absolute inset-0 rounded-[24px]">
         <div className="absolute left-0 top-0 h-[1.5px] w-24 bg-gradient-to-r from-purple-500 via-fuchsia-400 to-transparent" />
         <div className="absolute left-0 top-0 h-20 w-[1.5px] bg-gradient-to-b from-purple-500 via-fuchsia-400 to-transparent" />
@@ -110,13 +115,17 @@ function StyleCard({ style, mobile = false }) {
 
       <div className="relative z-10 flex h-full items-center justify-between gap-4 p-4 md:p-5">
         <div className="min-w-0 flex-1">
-          <h3 className="text-[18px] md:text-[20px] font-bold leading-tight bg-gradient-to-r from-white via-purple-100 to-purple-500 bg-clip-text text-transparent inline-block">
+          <h3 className="text-[18px] md:text-[20px] font-bold leading-tight text-white transition-colors duration-300 group-hover:text-purple-300 group-focus-visible:text-purple-300">
             {style.title}
           </h3>
           <p className="mt-2 text-white/55 text-sm leading-6 max-w-[220px]"
             style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
             {style.description}
           </p>
+          <ArrowUpRight
+            size={16}
+            className="mt-2 -translate-x-1 text-purple-300 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100"
+          />
         </div>
         <div className="relative shrink-0 w-[100px] h-[100px] md:w-[115px] md:h-[115px]">
           <img

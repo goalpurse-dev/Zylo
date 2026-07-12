@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Sparkles, RotateCcw, Download, Share2, X, Maximize2 } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, RotateCcw, Download, Share2, X, Maximize2, Wand2 } from "lucide-react";
+import useClayRescueEditor from "./videoEditor/useClayRescueEditor";
+import ClayRescueTimeline from "./videoEditor/ClayRescueTimeline";
 
 async function downloadFile(url, filename) {
   try {
@@ -308,6 +310,86 @@ function SceneCard({ scene, index, onRetry }) {
   );
 }
 
+/* ── Final stitched video + timeline editor ── */
+function FinalVideoPanel({ sceneClips }) {
+  const {
+    clips, dirty, finalUrl, stitching, progress, renderError,
+    saving, saveError, saved,
+    render, reorder, setTrim, deleteClip,
+  } = useClayRescueEditor(sceneClips);
+
+  if (!sceneClips.length) return null;
+
+  return (
+    <div className="shrink-0 flex flex-col gap-3 rounded-2xl border border-white/[0.08] bg-[#0d0f11] p-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[12px] font-black uppercase tracking-widest text-[#A87AFF]">Full Rescue Video</p>
+        {finalUrl && !stitching && (
+          <button
+            onClick={() => downloadFile(finalUrl, "clay-rescue-full.mp4")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white/70 hover:text-white text-[11px] font-semibold transition"
+          >
+            <Download className="w-3.5 h-3.5" /> Download
+          </button>
+        )}
+      </div>
+
+      <div className="relative mx-auto w-full max-w-[260px] aspect-[9/16] rounded-2xl overflow-hidden bg-black border border-white/[0.08]">
+        {finalUrl && (
+          <video src={finalUrl} controls playsInline className="absolute inset-0 w-full h-full object-cover" />
+        )}
+        {stitching && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-black/70 backdrop-blur-sm">
+            <Loader2 className="w-8 h-8 text-[#A87AFF] animate-spin" />
+            <span className="text-white font-black text-[18px] tabular-nums">{progress}%</span>
+            <span className="text-white/50 text-[11px] font-medium">Rendering final video…</span>
+          </div>
+        )}
+        {!finalUrl && !stitching && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-white/30 text-[12px]">Preview appears here</span>
+          </div>
+        )}
+      </div>
+
+      {renderError && (
+        <p className="text-center text-red-400 text-[12px]">{renderError}</p>
+      )}
+
+      {!renderError && finalUrl && (
+        <div className="flex items-center justify-center gap-1.5 text-[11px]">
+          {saving && (
+            <span className="flex items-center gap-1.5 text-white/35">
+              <Loader2 className="w-3 h-3 animate-spin" /> Saving to your account…
+            </span>
+          )}
+          {!saving && saved && (
+            <span className="text-emerald-400/80">✓ Saved — ready to publish</span>
+          )}
+          {!saving && saveError && (
+            <span className="text-amber-400/80">{saveError}</span>
+          )}
+        </div>
+      )}
+
+      <ClayRescueTimeline clips={clips} onReorder={reorder} onTrim={setTrim} onDelete={deleteClip} />
+
+      <button
+        onClick={render}
+        disabled={!dirty || stitching}
+        className={`flex items-center justify-center gap-2 rounded-xl py-3 text-[13px] font-black transition active:scale-[0.98] ${
+          dirty && !stitching
+            ? "bg-[#7A3BFF] text-white shadow-[0_0_24px_rgba(122,59,255,0.5)] hover:bg-[#6a30e0]"
+            : "bg-white/[0.05] text-white/25 cursor-not-allowed"
+        }`}
+      >
+        {stitching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+        {stitching ? "Rendering…" : dirty ? "Ready — Render Changes" : "Ready"}
+      </button>
+    </div>
+  );
+}
+
 /* ── Main ── */
 export default function ClayRescueResults({
   phase, jobScenes, error, user,
@@ -315,6 +397,16 @@ export default function ClayRescueResults({
   onOpenRecent, onRequestAuth, onReset, onRetryScene,
 }) {
   const hasRecent = recentGenerations.length > 0;
+
+  const sceneClips = useMemo(
+    () =>
+      phase === "done"
+        ? jobScenes
+            .filter((s) => s.videoStatus === "succeeded" && s.videoUrl)
+            .map((s) => ({ sceneIndex: s.index, videoUrl: s.videoUrl }))
+        : [],
+    [phase, jobScenes]
+  );
 
   /* ══ ACTIVE GENERATION ══ */
   if (phase !== "idle") {
@@ -360,13 +452,19 @@ export default function ClayRescueResults({
         )}
 
         <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
-          <div
-            className="grid grid-cols-2 content-start justify-items-stretch gap-x-3.5 gap-y-4 px-3 pb-[140px] lg:pb-6 lg:gap-3 lg:px-0 lg:[grid-template-columns:repeat(var(--cr-cols),minmax(0,min(100%,280px)))]"
-            style={{ "--cr-cols": cols }}
-          >
-            {jobScenes.map((scene, i) => (
-              <SceneCard key={i} scene={scene} index={i} onRetry={() => onRetryScene?.(i)} />
-            ))}
+          <div className="flex flex-col gap-4 px-3 pb-[140px] lg:pb-6 lg:px-0">
+            {phase === "done" && sceneClips.length > 0 && (
+              <FinalVideoPanel sceneClips={sceneClips} />
+            )}
+
+            <div
+              className="grid grid-cols-2 content-start justify-items-stretch gap-x-3.5 gap-y-4 lg:gap-3 lg:[grid-template-columns:repeat(var(--cr-cols),minmax(0,min(100%,280px)))]"
+              style={{ "--cr-cols": cols }}
+            >
+              {jobScenes.map((scene, i) => (
+                <SceneCard key={i} scene={scene} index={i} onRetry={() => onRetryScene?.(i)} />
+              ))}
+            </div>
           </div>
         </div>
       </div>

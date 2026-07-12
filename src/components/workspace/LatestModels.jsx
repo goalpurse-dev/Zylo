@@ -125,7 +125,7 @@ export default function LatestModels() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="w-full max-w-7xl mx-auto px-5 md:px-8 mt-8"
+      className="w-full px-5 md:px-[50px] mt-8"
     >
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-white text-[20px] md:text-[28px] font-bold tracking-tight">

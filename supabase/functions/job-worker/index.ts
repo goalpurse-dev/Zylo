@@ -3,6 +3,16 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getProviderLink } from "../../../src/lib/providers.ts";
+import { logEvent as persistLog, type LogLevel } from "../_shared/systemLog.ts";
+
+function logEvent(level: LogLevel, event: string, ctx: Record<string, unknown> = {}) {
+  const icon = level === "error" ? "🔴" : level === "warn" ? "🟠" : "🟢";
+  console[level === "error" ? "error" : level === "warn" ? "warn" : "log"](
+    `${icon} [job-worker] ${event}`,
+    JSON.stringify({ ts: new Date().toISOString(), ...ctx }),
+  );
+  void persistLog("job-worker", level, event, ctx);
+}
 
 /* ============================ CORS ============================ */
 
@@ -82,6 +92,9 @@ Deno.serve(async (req) => {
       const totalActive = (activeImages ?? 0) + (activeVideos ?? 0);
 
       if (totalActive >= TOTAL_MAX) {
+        logEvent("warn", "concurrency_limit_reached", {
+          activeImages, activeVideos, totalActive, totalMax: TOTAL_MAX,
+        });
         return json(req, { ok: true, message: "concurrency limit reached", active: totalActive });
       }
 
@@ -107,7 +120,10 @@ Deno.serve(async (req) => {
 
       const { data, error } = await query.maybeSingle();
 
-      if (error) return fail(req, `DB query error: ${error.message}`, 500);
+      if (error) {
+        logEvent("error", "pick_job_query_failed", { message: error.message });
+        return fail(req, `DB query error: ${error.message}`, 500);
+      }
       if (!data?.id) return json(req, { ok: true, message: "no queued jobs" });
 
       jobId = data.id;
@@ -116,8 +132,8 @@ Deno.serve(async (req) => {
     // claim job (safe if already claimed elsewhere)
     try {
       await sbAdmin.rpc("claim_job", { p_id: jobId });
-    } catch {
-      // ignore claim race
+    } catch (e) {
+      logEvent("warn", "claim_job_rpc_threw", { jobId, message: String((e as any)?.message ?? e) });
     }
 
     const { data: job, error: jobErr } = await sbAdmin
@@ -126,8 +142,14 @@ Deno.serve(async (req) => {
       .eq("id", jobId)
       .single();
 
-    if (jobErr) return fail(req, `Job load error: ${jobErr.message}`, 500);
-    if (!job) return fail(req, "Job not found", 404);
+    if (jobErr) {
+      logEvent("error", "job_load_failed", { jobId, message: jobErr.message });
+      return fail(req, `Job load error: ${jobErr.message}`, 500);
+    }
+    if (!job) {
+      logEvent("error", "job_not_found", { jobId });
+      return fail(req, "Job not found", 404);
+    }
 
     if (job.status !== "queued" && job.status !== "running" && job.status !== "processing") {
       // already done or canceled
@@ -135,15 +157,18 @@ Deno.serve(async (req) => {
     }
 
     if (job.type !== "image" && job.type !== "video") {
+      logEvent("error", "unsupported_job_type", { jobId, type: job.type });
       return fail(req, `Unsupported job type: ${job.type}`, 400);
     }
 
     if (!job.tool_key) {
+      logEvent("error", "missing_tool_key", { jobId, userId: job.user_id });
       return fail(req, "Missing tool_key on job row", 400);
     }
 
     const provider = getProviderLink(job.tool_key);
     if (!provider || provider.provider !== "runware") {
+      logEvent("error", "unsupported_provider", { jobId, toolKey: job.tool_key, userId: job.user_id });
       return fail(req, "Unsupported provider", 400);
     }
 
@@ -205,12 +230,11 @@ Deno.serve(async (req) => {
         withSound: job.input?.withSound ?? false,
       };
 
-      console.log(`[job-worker] firing ${job.type} job ${jobId} → ${provider.edgeFn}`);
-
-    console.log("[job-worker] accepting handoff", {
+    logEvent("info", "accepting_handoff", {
       jobId,
+      userId: job.user_id,
+      toolKey: job.tool_key,
       type: job.type,
-      tool_key: job.tool_key,
       status: job.status,
       providerEdgeFn: provider.edgeFn,
       airTag: provider.airTag,
@@ -234,7 +258,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify(payload),
         });
       } catch (fetchErr) {
-        console.error("[job-worker] handoff fetch threw:", String(fetchErr));
+        logEvent("error", "handoff_fetch_threw", { jobId, userId: job.user_id, edgeFn: provider.edgeFn, message: String(fetchErr) });
         // Mark the job failed — runware-image never received the request
         try {
           await sbAdmin.rpc("finish_job_failed", {
@@ -242,7 +266,7 @@ Deno.serve(async (req) => {
             p_error: `Handoff fetch error: ${String(fetchErr)}`,
           });
         } catch (rpcErr) {
-          console.error("[job-worker] finish_job_failed threw:", String(rpcErr));
+          logEvent("error", "finish_job_failed_threw", { jobId, message: String(rpcErr) });
         }
         return;
       }
@@ -252,9 +276,9 @@ Deno.serve(async (req) => {
       try { txt = await r.text(); } catch { /* ignore */ }
 
       if (r.ok) {
-        console.log(`[job-worker] handoff accepted ${r.status}:`, txt.slice(0, 120));
+        logEvent("info", "handoff_accepted", { jobId, status: r.status });
       } else {
-        console.error(`[job-worker] handoff failed ${r.status}:`, txt.slice(0, 200));
+        logEvent("error", "handoff_failed", { jobId, userId: job.user_id, status: r.status, body: txt.slice(0, 200) });
 
         // 402 / insufficientCredits from Runware often means concurrency / rate-limit,
         // NOT a real empty balance. Re-queue with back-off instead of marking failed.
@@ -297,9 +321,9 @@ Deno.serve(async (req) => {
                 p_error: `Provider busy after ${attempts} attempts: ${txt.slice(0, 150)}`,
               });
             } catch (rpcErr) {
-              console.error("[job-worker] finish_job_failed threw:", String(rpcErr));
+              logEvent("error", "finish_job_failed_threw", { jobId, message: String(rpcErr) });
             }
-            console.log(`[job-worker] Job ${jobId} exhausted ${attempts}/${maxAttempts} retries — marked failed`);
+            logEvent("error", "retries_exhausted", { jobId, userId: job.user_id, attempts, maxAttempts });
           } else {
             const delayMs    = DELAYS[Math.min(attempts - 1, DELAYS.length - 1)];
             const retryAfter = new Date(Date.now() + delayMs).toISOString();
@@ -312,7 +336,7 @@ Deno.serve(async (req) => {
               updated_at:  new Date().toISOString(),
             }).eq("id", jobId).catch(() => {});
 
-            console.log(`[job-worker] Requeued job ${jobId} attempt ${attempts}/${maxAttempts}, retry after ${retryAfter}`);
+            logEvent("warn", "job_requeued", { jobId, userId: job.user_id, attempts, maxAttempts, retryAfter });
           }
         } else {
           // Non-retryable error — mark failed immediately
@@ -322,7 +346,7 @@ Deno.serve(async (req) => {
               p_error: `Handoff rejected (${r.status}): ${txt.slice(0, 150)}`,
             });
           } catch (rpcErr) {
-            console.error("[job-worker] finish_job_failed threw:", String(rpcErr));
+            logEvent("error", "finish_job_failed_threw", { jobId, message: String(rpcErr) });
           }
         }
       }
@@ -337,9 +361,7 @@ Deno.serve(async (req) => {
       edgeFn:  provider.edgeFn,
     });
   } catch (e) {
-    console.error(e);
+    logEvent("error", "unhandled_error", { message: String((e as any)?.message ?? e) });
     return fail(req, `Unhandled error: ${String(e)}`, 500);
   }
-
-  
 });

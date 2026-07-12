@@ -83,7 +83,7 @@ export default function ScriptUpsellModal({ open, mode, onClose }) {
             <p className="text-white/45 text-sm leading-relaxed mb-5">
               {isGuest
                 ? "Create a free account and start generating AI-powered viral scripts with image & video prompts for every scene."
-                : "The Script Builder is included on every paid plan — starting from Starter at €12/mo. Pick any plan and get instant access."}
+                : "The Script Builder is included on every paid plan — starting from Starter at $20/mo. Pick any plan and get instant access."}
             </p>
 
             {/* Features */}

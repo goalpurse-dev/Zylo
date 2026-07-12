@@ -165,6 +165,8 @@ const ViralAnimalBodycamVideos = lazy(() => import("./app/blog/imagegenerator/vi
 const ClayRescueMakerBlog = lazy(() => import("./app/blog/imagegenerator/clay-rescue-ai-video-maker.jsx"));
 const GiantHandRescueVideosBlog = lazy(() => import("./app/blog/imagegenerator/why-giant-hand-rescue-videos-go-viral.jsx"));
 const AIFruitStoryCharacterIdeas = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-character-ideas.jsx"));
+const ScheduleAutoPublishAIVideosBlog = lazy(() => import("./app/blog/imagegenerator/schedule-auto-publish-ai-videos.jsx"));
+const OneClickPublishingPlaybookBlog = lazy(() => import("./app/blog/imagegenerator/one-click-publishing-playbook.jsx"));
 {/* Viral */}
 
 
@@ -190,7 +192,10 @@ const FaceAsmrPage           = lazy(() => import("./pages/workspace/FaceAsmr.jsx
 const MicroCameraAnimalPage  = lazy(() => import("./pages/workspace/MicroCameraAnimal.jsx"));
 const ClayRescuePage         = lazy(() => import("./pages/workspace/ClayRescue.jsx"));
 const AICookingMaticPage     = lazy(() => import("./pages/workspace/AICookingMatic.jsx"));
+const FootballerNationalitySwapPage = lazy(() => import("./pages/workspace/FootballerNationalitySwap.jsx"));
 const PublishPage            = lazy(() => import("./pages/workspace/publish.jsx"));
+const StatsPage              = lazy(() => import("./pages/workspace/stats.jsx"));
+const ConnectionsPage        = lazy(() => import("./pages/workspace/connections.jsx"));
 
 import "./styles/sand.css";
 
@@ -454,6 +459,8 @@ return (
          <Route path="/blog/clay-rescue-ai-video-maker" element={<ClayRescueMakerBlog />} />
          <Route path="/blog/why-giant-hand-rescue-videos-go-viral" element={<GiantHandRescueVideosBlog />} />
          <Route path="/blog/ai-fruit-story-character-ideas" element={<AIFruitStoryCharacterIdeas />} />
+         <Route path="/blog/schedule-auto-publish-ai-videos" element={<ScheduleAutoPublishAIVideosBlog />} />
+         <Route path="/blog/one-click-publishing-playbook" element={<OneClickPublishingPlaybookBlog />} />
 
 
 
@@ -494,7 +501,10 @@ return (
   <Route path="/workspace/micro-camera-animal" element={<MicroCameraAnimalPage />} />
   <Route path="/workspace/clay-rescue" element={<ClayRescuePage />} />
   <Route path="/workspace/ai-cooking-matic" element={<AICookingMaticPage />} />
+  <Route path="/workspace/footballer-nationality-swap" element={<FootballerNationalitySwapPage />} />
   <Route path="/workspace/publish"          element={<PublishPage />} />
+  <Route path="/workspace/stats"            element={<StatsPage />} />
+  <Route path="/workspace/connections"      element={<ConnectionsPage />} />
 
 
 </Route>

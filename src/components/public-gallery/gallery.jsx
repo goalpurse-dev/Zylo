@@ -189,7 +189,7 @@ function VideoCard({ item, onClick }) {
           muted
           playsInline
           loop
-          preload="none"
+          preload="metadata"
           onLoadedMetadata={handleLoadedMetadata}
         />
       )}
@@ -313,7 +313,7 @@ export default function PublicGallery() {
   ).filter((v) => v.src || v.thumbnail);
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 md:px-6">
+    <section className="w-full px-4 md:px-[50px]">
       {/* Header */}
       <div className="mb-5 flex items-center gap-3">
         <div>

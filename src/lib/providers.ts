@@ -31,6 +31,7 @@ export type ToolKey =
   | "video:veo31lite"
   | "video:viduq3turbo"
   | "video:seedance15pro"
+  | "video:seedance20fast"
 
 
 
@@ -57,7 +58,7 @@ export type ProviderLink = {
   // 🔥 VIDEO PRICING CORE
   costPerSecondUSD?: number;
   resolutionCostPerSecondUSD?: Record<string, number>;
-  baseResolution?: "540p" | "720p" | "768p" |"1080p";
+  baseResolution?: "480p" | "540p" | "720p" | "768p" | "1080p";
   retailMultiplier?: number; // your markup multiplier
   baseCreditsPerSecond?: number; // 🔥 NEW
 
@@ -354,12 +355,26 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     airTag:     "bytedance:seedance@1.5-pro",
     secret:     "RUNWARE_API_KEY",
     edgeFn:     "/functions/v1/runware-video",
-    costPerSecondUSD:     0.012,   // $0.06 / 5s
-    baseResolution:       "480p",
+    // Confirmed: $0.10/4s no sound = $0.025/s | $0.20/4s with sound = $0.05/s
+    costPerSecondUSD:      0.025,
+    baseResolution:        "720p",
+    retailMultiplier:      2,
+    baseCreditsPerSecond:  2.5,   // no sound: $0.025 × 2 / $0.02 = 2.5 cr/s
+    soundCreditsPerSecond: 5,     // with sound: $0.05 × 2 / $0.02 = 5 cr/s
+  },
+
+  "video:seedance20fast": {
+    provider:   "runware",
+    generator:  "Seedance 2.0 Fast",
+    airTag:     "bytedance:seedance@2.0-fast",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
+    // Same per-second rate as 1.5 Pro — will update after price testing
+    costPerSecondUSD:     0.012,
+    baseResolution:       "720p",
     retailMultiplier:     2,
-    baseCreditsPerSecond: 1.2,    // 6 credits / 5s
-    credits:              6,      // flat 6 credits per 5-second clip
-    retailUSD:            0.12,
+    baseCreditsPerSecond: 1.2,   // no sound
+    soundCreditsPerSecond: 1.2,  // placeholder — update after test
   },
 
   "video:veo31fast": {

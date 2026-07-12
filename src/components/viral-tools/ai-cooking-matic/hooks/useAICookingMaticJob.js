@@ -3,8 +3,11 @@ import { watchJob, cancelJob } from "../../../../lib/jobs";
 import {
   generateCookingScene,
   generateCookingSceneFallback,
+  animateCookingClip,
   extractIngredient,
   SCENE_TEMPLATES,
+  CLIP_VIDEO_PROMPTS,
+  CLIP_PAIRS,
   VIBES,
 } from "../api/cookingMaticApi";
 
@@ -66,6 +69,13 @@ const makeScene = (i) => ({
   imageUrl: null,
 });
 
+const makeClip = (i) => ({
+  index: i,
+  videoJobId: null,
+  videoStatus: "idle",
+  videoUrl: null,
+});
+
 // Primary timeout: GPT Image 2 normally completes in <30s — 3min covers
 // any Runware-side queuing without blocking the whole generation forever.
 const PRIMARY_TIMEOUT_MS  = 3 * 60 * 1000;
@@ -75,6 +85,7 @@ const FALLBACK_TIMEOUT_MS = 2 * 60 * 1000;
 export default function useAICookingMaticJob() {
   const [phase, setPhase]         = useState("idle");
   const [scenes, setScenes]       = useState([]);
+  const [clips, setClips]         = useState([]);
   const [error, setError]         = useState(null);
   const [dishLabel, setDishLabel] = useState("");
 
@@ -84,6 +95,9 @@ export default function useAICookingMaticJob() {
 
   const patchScene = (index, patch) =>
     setScenes((prev) => prev.map((s) => (s.index === index ? { ...s, ...patch } : s)));
+
+  const patchClip = (index, patch) =>
+    setClips((prev) => prev.map((c) => (c.index === index ? { ...c, ...patch } : c)));
 
   const start = useCallback(async ({ dishName, vibeId }) => {
     if (activeRef.current) return;
@@ -95,6 +109,7 @@ export default function useAICookingMaticJob() {
     const ingredient = extractIngredient(dishName);
     const vibe       = VIBES.find((v) => v.id === vibeId) ?? VIBES[0];
     const vibeToken  = vibe.token;
+    const styleReferenceUrl = vibe.image ?? null;
 
     setDishLabel(dishName);
     setScenes(Array.from({ length: 10 }, (_, i) => makeScene(i)));
@@ -128,7 +143,7 @@ export default function useAICookingMaticJob() {
       let primaryJobId   = null;
 
       try {
-        const job = await generateCookingScene({ prompt, referenceUrl: refUrl });
+        const job = await generateCookingScene({ prompt, referenceUrl: refUrl, styleReferenceUrl });
         primaryJobId = job.id;
         if (!isCurrentRun()) break;
         patchScene(i, { imageJobId: job.id, imageStatus: "running" });
@@ -204,6 +219,55 @@ export default function useAICookingMaticJob() {
       }
     }
 
+    if (!isCurrentRun()) { activeRef.current = false; return; }
+
+    // ── VIDEO PHASE — 5 clips, each using 2 paired image results ─────────────
+    setPhase("videos");
+    setClips(Array.from({ length: 5 }, (_, i) => makeClip(i)));
+
+    // Submit all 5 video jobs simultaneously
+    const videoSubmissions = await Promise.allSettled(
+      CLIP_PAIRS.map(async ([a, b], clipIdx) => {
+        const firstUrl  = imageResults.find((r) => r.index === a)?.url ?? null;
+        const secondUrl = imageResults.find((r) => r.index === b)?.url ?? null;
+
+        if (!firstUrl && !secondUrl) {
+          patchClip(clipIdx, { videoStatus: "failed" });
+          return null;
+        }
+
+        patchClip(clipIdx, { videoStatus: "queued" });
+        const prompt = CLIP_VIDEO_PROMPTS[clipIdx](dishName, ingredient, vibeToken);
+
+        try {
+          const job = await animateCookingClip({ firstImageUrl: firstUrl, secondImageUrl: secondUrl, prompt });
+          if (!isCurrentRun()) return null;
+          patchClip(clipIdx, { videoJobId: job.id, videoStatus: "running" });
+          return { clipIdx, job };
+        } catch (e) {
+          console.error(`[cooking] clip ${clipIdx} submit failed:`, e.message);
+          patchClip(clipIdx, { videoStatus: "failed" });
+          return null;
+        }
+      })
+    );
+
+    // Watch all submitted video jobs concurrently
+    await Promise.allSettled(
+      videoSubmissions.map((settled) => {
+        if (settled.status !== "fulfilled" || !settled.value) return Promise.resolve();
+        const { clipIdx, job } = settled.value;
+        return waitForJob(job.id, 9 * 60 * 1000).then((result) => {
+          if (!isCurrentRun()) return;
+          const url = result?.status === "succeeded" ? resolveUrl(result) : null;
+          patchClip(clipIdx, {
+            videoStatus: result?.status === "succeeded" && url ? "succeeded" : "failed",
+            videoUrl:    url ?? null,
+          });
+        });
+      })
+    );
+
     if (isCurrentRun()) setPhase("done");
     activeRef.current = false;
   }, []);
@@ -213,6 +277,7 @@ export default function useAICookingMaticJob() {
     activeRef.current = false;
     setPhase("idle");
     setScenes([]);
+    setClips([]);
     setError(null);
     setDishLabel("");
   }, []);
@@ -220,16 +285,90 @@ export default function useAICookingMaticJob() {
   const showGeneration = useCallback((generation) => {
     if (!generation) return;
     const saved = Array.isArray(generation.scenes) ? generation.scenes : [];
+    const savedClips = Array.isArray(generation.clips) ? generation.clips : [];
     const filled = Array.from({ length: 10 }, (_, i) => {
       const found = saved.find((s) => s.index === i);
       return found
         ? { ...makeScene(i), imageStatus: "succeeded", imageUrl: found.imageUrl }
         : makeScene(i);
     });
+    const filledClips = Array.from({ length: 5 }, (_, i) => {
+      const found = savedClips.find((c) => c.index === i);
+      return found
+        ? { ...makeClip(i), videoStatus: "succeeded", videoUrl: found.videoUrl }
+        : makeClip(i);
+    });
     setDishLabel(generation.dish_name ?? "");
     setScenes(filled);
+    setClips(filledClips);
     setPhase("done");
   }, []);
 
-  return { phase, scenes, error, dishLabel, start, reset, showGeneration };
+  /**
+   * Regenerate ONLY the video clips using the scenes already loaded in state.
+   * Called when a user loads a past generation that has scenes but missing clips.
+   */
+  const startVideoOnly = useCallback(async ({ vibeId = "dark-moody", withSound = false } = {}) => {
+    const imageResults  = scenes
+      .filter(s => s.imageUrl)
+      .map(s => ({ index: s.index, url: s.imageUrl }));
+
+    if (!imageResults.length) return;
+
+    const vibeToken = (VIBES.find(v => v.id === vibeId) ?? VIBES[0]).token;
+    const dish      = dishLabel || "dish";
+    const ingredient = extractIngredient(dish);
+
+    cancelRef.current  = false;
+    activeRef.current  = true;
+    const runId = ++runIdRef.current;
+    const isCurrentRun = () => !cancelRef.current && runIdRef.current === runId;
+
+    setPhase("videos");
+    setClips(Array.from({ length: 5 }, (_, i) => makeClip(i)));
+
+    const patchClip = (index, patch) =>
+      setClips(prev => prev.map(c => c.index === index ? { ...c, ...patch } : c));
+
+    const videoSubmissions = await Promise.allSettled(
+      CLIP_PAIRS.map(async ([a, b], clipIdx) => {
+        const firstUrl  = imageResults.find(r => r.index === a)?.url ?? null;
+        const secondUrl = imageResults.find(r => r.index === b)?.url ?? null;
+        if (!firstUrl && !secondUrl) { patchClip(clipIdx, { videoStatus: "failed" }); return null; }
+
+        patchClip(clipIdx, { videoStatus: "queued" });
+        const prompt = CLIP_VIDEO_PROMPTS[clipIdx](dish, ingredient, vibeToken);
+        try {
+          const job = await animateCookingClip({ firstImageUrl: firstUrl, secondImageUrl: secondUrl, prompt });
+          if (!isCurrentRun()) return null;
+          patchClip(clipIdx, { videoJobId: job.id, videoStatus: "running" });
+          return { clipIdx, job };
+        } catch (e) {
+          console.error(`[cooking] video-only clip ${clipIdx} failed:`, e.message);
+          patchClip(clipIdx, { videoStatus: "failed" });
+          return null;
+        }
+      })
+    );
+
+    await Promise.allSettled(
+      videoSubmissions.map(settled => {
+        if (settled.status !== "fulfilled" || !settled.value) return Promise.resolve();
+        const { clipIdx, job } = settled.value;
+        return waitForJob(job.id, 9 * 60 * 1000).then(result => {
+          if (!isCurrentRun()) return;
+          const url = result?.status === "succeeded" ? resolveUrl(result) : null;
+          patchClip(clipIdx, {
+            videoStatus: result?.status === "succeeded" && url ? "succeeded" : "failed",
+            videoUrl:    url ?? null,
+          });
+        });
+      })
+    );
+
+    if (isCurrentRun()) { setPhase("done"); activeRef.current = false; }
+  }, [scenes, dishLabel]);
+
+
+  return { phase, scenes, clips, error, dishLabel, start, reset, showGeneration, startVideoOnly };
 }

@@ -198,6 +198,7 @@ Deno.serve(async (req) => {
     creation_id    = null,    // jobs table row — for Zyvo-generated videos
     video_url: directUrl = null, // direct storage URL — for custom uploads
     caption = "",
+    scheduled_for  = null,    // ISO string — if set, defer publishing to this time
   } = body ?? {};
 
   if (!social_account_id || typeof social_account_id !== "string") {
@@ -259,10 +260,25 @@ Deno.serve(async (req) => {
     return err(req, "Invalid video source", 400);
   }
 
+  // Validate scheduled_for if provided
+  let scheduledFor: string | null = null;
+  if (scheduled_for) {
+    const schedDate = new Date(scheduled_for);
+    const now       = new Date();
+    const maxDate   = new Date(now.getTime() + 31 * 24 * 60 * 60 * 1000);
+    if (isNaN(schedDate.getTime()) || schedDate <= now) {
+      return err(req, "scheduled_for must be a future date", 400);
+    }
+    if (schedDate > maxDate) {
+      return err(req, "Cannot schedule more than 30 days in advance", 400);
+    }
+    scheduledFor = schedDate.toISOString();
+  }
+
   // ── Idempotency ───────────────────────────────────────────────────────────
   const minuteBucket = Math.floor(Date.now() / 1000 / 60);
   const idemKey      = await sha256Hex(
-    `${user.id}:${creation_id ?? videoUrl}:${social_account_id}:${minuteBucket}`,
+    `${user.id}:${creation_id ?? videoUrl}:${social_account_id}:${scheduledFor ?? minuteBucket}`,
   );
 
   const { data: existing } = await sb
@@ -285,6 +301,29 @@ Deno.serve(async (req) => {
   }
 
   const igUserId = account.platform_user_id;
+
+  // ── Scheduled post: store job and return early ────────────────────────────
+  if (scheduledFor) {
+    const { data: schedJob, error: schedErr } = await sb
+      .from("instagram_publish_jobs")
+      .insert({
+        user_id:           user.id,
+        social_account_id: account.id,
+        creation_id:       creation_id ?? null,
+        video_url:         videoUrl,
+        caption:           caption.trim(),
+        status:            "queued",
+        idempotency_key:   idemKey,
+        scheduled_for:     scheduledFor,
+      })
+      .select("id")
+      .single();
+    if (schedErr || !schedJob) {
+      console.error("[ig-publish] Scheduled job insert failed:", schedErr?.message);
+      return err(req, "Failed to schedule post", 500);
+    }
+    return ok(req, { job_id: schedJob.id, status: "queued", scheduled_for: scheduledFor }, 202);
+  }
 
   // ── Create Reel media container at Meta ───────────────────────────────────
   const containerBody = new URLSearchParams({
@@ -329,6 +368,7 @@ Deno.serve(async (req) => {
       status:            "processing",
       idempotency_key:   idemKey,
       container_id:      containerId,
+      scheduled_for:     null,
     })
     .select("id")
     .single();

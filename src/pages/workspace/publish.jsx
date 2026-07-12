@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Plus, Send, CheckCircle2, XCircle, ChevronRight, ExternalLink, RefreshCw } from "lucide-react";
+import { Plus, Send, CheckCircle2, XCircle, ChevronRight, ExternalLink, RefreshCw, Play, Pause } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { useAuth } from "../../context/AuthContext";
 import PostModal from "../../components/publish/PostModal";
 import ConnectAccountsModal from "../../components/publish/ConnectAccountsModal";
+import { FULL_VIDEO_TOOL_KEY } from "../../lib/jobs";
 
 /* ── Platform icons ─────────────────────────────────────────────────────── */
 
@@ -61,19 +62,26 @@ function dateSuffix(date) {
   return date.toLocaleDateString("en-US", { month: "long", day: "numeric" });
 }
 
+// YYYY-MM-DD — matches the key format PostModal's schedule calendar uses
+function dateKey(date) {
+  return date.toLocaleDateString("sv");
+}
+
 
 /* ── Connected account pill ──────────────────────────────────────────────── */
 
 function ConnectedAccount({ account, onDisconnect }) {
   const [confirming, setConfirming] = useState(false);
   const [loading, setLoading] = useState(false);
+  const isYT = account.platform === "youtube";
 
   async function handleDisconnect() {
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      const fnName = isYT ? "youtube-disconnect" : "instagram-disconnect";
       const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/instagram-disconnect`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${fnName}`,
         {
           method: "POST",
           headers: {
@@ -93,13 +101,21 @@ function ConnectedAccount({ account, onDisconnect }) {
 
   return (
     <div className="flex items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#FCB045] shrink-0">
-        <IgIcon className="w-4 h-4 text-white" />
-      </div>
+      {isYT ? (
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FF0000] shrink-0">
+          <YtIcon className="w-4 h-4 text-white" />
+        </div>
+      ) : (
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#FCB045] shrink-0">
+          <IgIcon className="w-4 h-4 text-white" />
+        </div>
+      )}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-white leading-none">Instagram</p>
+        <p className="text-sm font-semibold text-white leading-none">{isYT ? "YouTube" : "Instagram"}</p>
         <p className="mt-0.5 text-[11px] text-white/40 truncate">
-          @{account.username || account.platform_user_id}
+          {isYT
+            ? (account.display_name || account.username || account.platform_user_id)
+            : `@${account.username || account.platform_user_id}`}
         </p>
       </div>
       <div className="flex items-center gap-1.5">
@@ -136,48 +152,69 @@ function ConnectedAccount({ account, onDisconnect }) {
   );
 }
 
-/* ── Queue slot ──────────────────────────────────────────────────────────── */
+/* ── Queue slot (a real scheduled/in-flight job) ──────────────────────────── */
 
-function QueueSlot({ time = "09:00 am", job = null, onAdd }) {
-  if (job) {
-    return (
-      <div className="flex items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3">
-        <span className="shrink-0 text-sm text-white/50 w-[72px]">{time}</span>
-        <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          <div className="h-10 w-[22px] shrink-0 rounded-md overflow-hidden bg-white/5">
-            {job.video_url && (
-              <video src={job.video_url} className="w-full h-full object-cover" muted preload="none" />
-            )}
-          </div>
-          <p className="text-sm text-white/70 truncate flex-1">{job.caption || "No caption"}</p>
+function QueueSlot({ time = "—", job }) {
+  const displayTime = job.scheduled_for
+    ? new Date(job.scheduled_for).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
+    : time;
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3">
+      <span className="shrink-0 text-sm text-white/50 w-[72px]">{displayTime}</span>
+      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+        <div className="h-10 w-[22px] shrink-0 rounded-md overflow-hidden bg-white/5">
+          {job.video_url && (
+            <video
+              src={job.video_url}
+              className="w-full h-full object-cover"
+              muted preload="metadata"
+              onLoadedMetadata={e => { e.currentTarget.currentTime = 0.1; }}
+            />
+          )}
         </div>
-        <StatusBadge status={job.status} />
+        <p className="text-sm text-white/70 truncate flex-1">{job.caption || "No caption"}</p>
       </div>
-    );
-  }
+      <StatusBadge status={job.status} scheduledFor={job.scheduled_for} />
+    </div>
+  );
+}
 
+/* ── Add Video button (per queue day) ─────────────────────────────────────── */
+
+function AddVideoButton({ onClick }) {
   return (
     <button
-      onClick={onAdd}
-      className="group flex items-center gap-3 rounded-xl border border-white/[0.05] bg-transparent px-4 py-3 w-full text-left hover:border-white/10 hover:bg-white/[0.02] transition"
+      onClick={onClick}
+      className="group flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-3 text-sm font-semibold text-white/40 transition hover:border-[#7A3BFF]/40 hover:bg-[#7A3BFF]/[0.06] hover:text-[#C084FC]"
     >
-      <span className="shrink-0 text-sm text-white/30 w-[72px]">{time}</span>
-      <span className="text-sm text-white/20 italic group-hover:text-white/35 transition">
-        Press "Add to queue" to place your next video here
-      </span>
+      <Plus className="h-4 w-4" />
+      Add Video
     </button>
   );
 }
 
 /* ── Status badge ────────────────────────────────────────────────────────── */
 
-function StatusBadge({ status }) {
+function StatusBadge({ status, scheduledFor = null }) {
+  if (status === "queued" && scheduledFor) {
+    const d = new Date(scheduledFor);
+    const label = "Scheduled · " + d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      + " " + d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+    return (
+      <span className="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-medium text-[#C084FC] bg-[#7A3BFF]/10 border-[#7A3BFF]/25">
+        {label}
+      </span>
+    );
+  }
   const map = {
     queued:             { label: "Queued",                  cls: "text-white/50  bg-white/5       border-white/10" },
     creating_container: { label: "Preparing Reel",          cls: "text-blue-400  bg-blue-500/10   border-blue-500/25" },
-    processing:         { label: "Processing on Instagram", cls: "text-amber-400 bg-amber-500/10  border-amber-500/25" },
+    preparing:          { label: "Preparing",               cls: "text-blue-400  bg-blue-500/10   border-blue-500/25" },
+    uploading:          { label: "Uploading",               cls: "text-blue-400  bg-blue-500/10   border-blue-500/25" },
+    processing:         { label: "Processing",              cls: "text-amber-400 bg-amber-500/10  border-amber-500/25" },
     publishing:         { label: "Publishing",              cls: "text-amber-400 bg-amber-500/10  border-amber-500/25" },
     published:          { label: "Published",               cls: "text-emerald-400 bg-emerald-500/10 border-emerald-500/25" },
+    draft_created:      { label: "Sent to TikTok Drafts",   cls: "text-sky-400   bg-sky-500/10     border-sky-500/25" },
     failed:             { label: "Failed",                  cls: "text-red-400   bg-red-500/10    border-red-500/25" },
     canceled:           { label: "Canceled",                cls: "text-white/30  bg-white/5       border-white/5" },
   };
@@ -192,39 +229,111 @@ function StatusBadge({ status }) {
 /* ── Past publication card ───────────────────────────────────────────────── */
 
 function PastCard({ job }) {
+  const vidRef    = useRef(null);
+  const [playing, setPlaying]   = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  function togglePlay() {
+    const v = vidRef.current;
+    if (!v) return;
+    if (playing) { v.pause(); setPlaying(false); }
+    else         { v.play().catch(() => {}); setPlaying(true); }
+  }
+
+  const caption     = job.caption || "";
+  const hashIdx     = caption.search(/#\w/);
+  const captionText = hashIdx > 0 ? caption.slice(0, hashIdx).trimEnd() : caption;
+  const captionTags = hashIdx > 0 ? caption.slice(hashIdx) : "";
+  const fullLen     = caption.length;
+  const isLong      = fullLen > 350;
+  const showFull    = expanded || !isLong;
+
+  const dateStr = job.published_at
+    ? new Date(job.published_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+    : new Date(job.created_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-white/[0.07] bg-white/[0.02] p-3.5">
-      <div className="h-[72px] w-[40px] shrink-0 overflow-hidden rounded-lg bg-white/5">
-        {job.video_url && (
-          <video src={job.video_url} className="h-full w-full object-cover" muted preload="none" />
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="flex h-4 w-4 items-center justify-center rounded bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#FCB045]">
-            <IgIcon className="w-2.5 h-2.5 text-white" />
-          </div>
-          <StatusBadge status={job.status} />
-          {job.permalink && (
-            <a
-              href={job.permalink}
-              target="_blank"
-              rel="noreferrer"
-              className="ml-auto flex items-center gap-1 text-[11px] text-white/40 hover:text-white/70 transition"
-            >
-              View <ExternalLink className="w-3 h-3" />
-            </a>
+    <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
+      <div className="flex">
+        {/* Video — 9:16, clickable to play */}
+        <div
+          className="relative shrink-0 w-[100px] bg-black cursor-pointer"
+          style={{ aspectRatio: "9/16" }}
+          onClick={togglePlay}
+        >
+          {job.video_url ? (
+            <>
+              <video
+                ref={vidRef}
+                src={job.video_url}
+                className="absolute inset-0 h-full w-full object-cover"
+                muted preload="metadata"
+                onLoadedMetadata={() => { if (vidRef.current) vidRef.current.currentTime = 0.1; }}
+                onEnded={() => setPlaying(false)}
+              />
+              <div className={`absolute inset-0 flex items-center justify-center transition-opacity ${playing ? "opacity-0 hover:opacity-100" : "opacity-100"}`}>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-black/55 backdrop-blur-sm border border-white/20">
+                  {playing
+                    ? <Pause className="h-4 w-4 text-white" />
+                    : <Play  className="h-4 w-4 text-white ml-0.5" />}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="absolute inset-0 bg-white/[0.04]" />
           )}
         </div>
-        <p className="text-sm text-white/70 line-clamp-2 leading-snug">{job.caption || "—"}</p>
-        {job.error_message && (
-          <p className="mt-1 text-[11px] text-red-400/80">{job.error_message}</p>
-        )}
-        <p className="mt-1.5 text-[11px] text-white/25">
-          {job.published_at
-            ? new Date(job.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
-            : new Date(job.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-        </p>
+
+        {/* Details */}
+        <div className="flex-1 min-w-0 p-3.5 flex flex-col justify-between">
+          <div>
+            {/* Platform + status row */}
+            <div className="flex items-center gap-2 flex-wrap mb-2">
+              <div className="flex h-4 w-4 items-center justify-center rounded bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#FCB045] shrink-0">
+                <IgIcon className="w-2.5 h-2.5 text-white" />
+              </div>
+              <StatusBadge status={job.status} scheduledFor={job.scheduled_for} />
+              {job.permalink && (
+                <a
+                  href={job.permalink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="ml-auto flex items-center gap-1 text-[11px] text-white/40 hover:text-white/70 transition"
+                >
+                  View <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+            </div>
+
+            {/* Caption */}
+            {caption ? (
+              <>
+                <p className="text-[13px] text-white/70 leading-snug">
+                  {showFull ? captionText : caption.slice(0, 350) + "…"}
+                </p>
+                {captionTags && showFull && (
+                  <p className="mt-2 text-[13px] text-[#9F5CFF]/80 leading-snug">{captionTags}</p>
+                )}
+                {isLong && (
+                  <button
+                    onClick={() => setExpanded(v => !v)}
+                    className="mt-1 text-[11px] text-[#9F5CFF] hover:text-[#C084FC] transition"
+                  >
+                    {expanded ? "Show less" : "Show more"}
+                  </button>
+                )}
+              </>
+            ) : (
+              <p className="text-[13px] text-white/25 italic">No caption</p>
+            )}
+
+            {job.error_message && (
+              <p className="mt-1.5 text-[11px] text-red-400/80 leading-snug">{job.error_message}</p>
+            )}
+          </div>
+
+          <p className="mt-2 text-[11px] text-white/25">{dateStr}</p>
+        </div>
       </div>
     </div>
   );
@@ -253,6 +362,72 @@ function Toast({ type, message, onClose }) {
 
 /* ── Main page ───────────────────────────────────────────────────────────── */
 
+function InstagramRequirementModal({ loading, onCancel, onContinue }) {
+  const [showSwitchHelp, setShowSwitchHelp] = useState(false);
+
+  return (
+    <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm">
+      <div className="w-full max-w-[440px] overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0e1012] shadow-2xl">
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-[#7A3BFF]/60 to-transparent" />
+        <div className="p-6">
+          <div className="flex items-start justify-between gap-4">
+            <h2 className="text-[18px] font-bold leading-tight text-white">
+              Instagram requires a Creator or Business account
+            </h2>
+            <button
+              onClick={onCancel}
+              disabled={loading}
+              className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-white/[0.05] text-[15px] font-semibold leading-none text-white/45 transition hover:bg-white/[0.1] hover:text-white disabled:opacity-50"
+              aria-label="Close"
+            >
+              x
+            </button>
+          </div>
+          <p className="mt-3 text-sm leading-relaxed text-white/55">
+            To publish directly from Zyvo, Instagram requires your account to be set as a Creator or Business account. Switching is free and takes about 30 seconds. Personal accounts can still download videos and post manually.
+          </p>
+          <button
+            onClick={() => setShowSwitchHelp((value) => !value)}
+            className="mt-4 text-sm font-semibold text-[#C084FC] transition hover:text-white"
+          >
+            How do I switch my account?
+          </button>
+
+          {showSwitchHelp && (
+            <div className="mt-4 rounded-xl border border-white/[0.08] bg-white/[0.04] p-4">
+              <p className="text-sm font-semibold text-white">Switch in Instagram</p>
+              <ol className="mt-3 space-y-2 text-sm leading-relaxed text-white/55">
+                <li>1. Open Instagram and go to your profile.</li>
+                <li>2. Tap the menu, then Settings and privacy.</li>
+                <li>3. Open Account type and tools.</li>
+                <li>4. Choose Switch to professional account.</li>
+                <li>5. Pick Creator or Business, then come back to Zyvo and continue.</li>
+              </ol>
+            </div>
+          )}
+
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button
+              onClick={onCancel}
+              disabled={loading}
+              className="rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-white/60 transition hover:bg-white/[0.08] hover:text-white disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onContinue}
+              disabled={loading}
+              className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#090A0A] transition hover:bg-white/90 disabled:opacity-70"
+            >
+              {loading ? "Redirecting..." : "Continue to Instagram"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PublishPage() {
   const { user } = useAuth();
   const location = useLocation();
@@ -262,10 +437,28 @@ export default function PublishPage() {
   const [accounts, setAccounts]         = useState([]);
   const [pastJobs, setPastJobs]         = useState([]);
   const [activeJobs, setActiveJobs]     = useState([]);
+
+  // Map of creation_id → 'scheduled' | 'published' for PostModal thumbnail badges
+  // creation_id → array of platforms ("instagram" | "youtube") it's already been
+  // posted/scheduled to. Shown as small badges on the video, not a hard lock —
+  // the video can still be reused for another platform or another day.
+  const videoPostStatus = useMemo(() => {
+    const map = {};
+    for (const job of [...activeJobs, ...pastJobs]) {
+      if (!job.creation_id || job.status === "failed" || job.status === "canceled") continue;
+      if (!map[job.creation_id]) map[job.creation_id] = [];
+      if (!map[job.creation_id].includes(job.platform)) map[job.creation_id].push(job.platform);
+    }
+    return map;
+  }, [activeJobs, pastJobs]);
   const [loadingAccounts, setLoadingAccounts] = useState(true);
   const [loadingJobs, setLoadingJobs]   = useState(false);
   const [postModalOpen, setPostModalOpen]       = useState(false);
   const [connectModalOpen, setConnectModalOpen] = useState(false);
+  const [instagramConfirmOpen, setInstagramConfirmOpen] = useState(false);
+  // Set when "Add Video" is clicked for a specific queue day — tells
+  // PostModal to open straight into the Schedule section for that date.
+  const [scheduleForDate, setScheduleForDate]   = useState(null);
   const [toast, setToast]               = useState(null);
   const [connectingIG, setConnectingIG] = useState(false);
 
@@ -278,22 +471,69 @@ export default function PublishPage() {
   /* ── Handle OAuth callback params ──────────────────────────────────────── */
   useEffect(() => {
     const p = new URLSearchParams(location.search);
+
     const igConnect = p.get("ig_connect");
     if (igConnect === "success") {
       showToast("success", "Instagram connected successfully!");
       navigate("/workspace/publish", { replace: true });
       fetchAccounts();
+      return;
     } else if (igConnect === "error") {
       const reason = p.get("reason") || "unknown";
       const msgs = {
         access_denied:         "Connection cancelled.",
         token_exchange_failed: "Could not complete connection. Please try again.",
         profile_fetch_failed:  "Could not read your Instagram profile. Please try again.",
+        professional_account_required: "Instagram needs your account to be switched to Creator or Business before Zyvo can publish directly. You can switch for free in Instagram settings, then try connecting again.",
         expired_state:         "Connection link expired. Please try again.",
         state_already_used:    "Connection link already used. Please try again.",
+        oauth_not_configured:  "Instagram connection is not configured yet.",
         internal_error:        "Something went wrong. Please try again.",
       };
       showToast("error", msgs[reason] || "Connection failed. Please try again.");
+      navigate("/workspace/publish", { replace: true });
+      return;
+    }
+
+    const ytConnect = p.get("yt_connect");
+    if (ytConnect === "success") {
+      showToast("success", "YouTube connected successfully!");
+      navigate("/workspace/publish", { replace: true });
+      fetchAccounts();
+    } else if (ytConnect === "error") {
+      const reason = p.get("reason") || "unknown";
+      const msgs = {
+        access_denied:        "Connection cancelled.",
+        token_exchange_failed:"Could not complete YouTube connection. Please try again.",
+        profile_fetch_failed: "Could not read your YouTube channel. Please try again.",
+        no_channel_found:     "No YouTube channel found on this account. Please create a channel first.",
+        expired_state:        "Connection link expired. Please try again.",
+        state_already_used:   "Connection link already used. Please try again.",
+        oauth_not_configured: "YouTube connection is not configured yet.",
+        internal_error:       "Something went wrong. Please try again.",
+      };
+      showToast("error", msgs[reason] || "YouTube connection failed. Please try again.");
+      navigate("/workspace/publish", { replace: true });
+      return;
+    }
+
+    const ttConnect = p.get("tt_connect");
+    if (ttConnect === "success") {
+      showToast("success", "TikTok connected successfully!");
+      navigate("/workspace/publish", { replace: true });
+      fetchAccounts();
+    } else if (ttConnect === "error") {
+      const reason = p.get("reason") || "unknown";
+      const msgs = {
+        access_denied:         "Connection cancelled.",
+        token_exchange_failed: "Could not complete TikTok connection. Please try again.",
+        profile_fetch_failed:  "Could not read your TikTok profile. Please try again.",
+        expired_state:         "Connection link expired. Please try again.",
+        state_already_used:    "Connection link already used. Please try again.",
+        oauth_not_configured:  "TikTok connection is not configured yet.",
+        internal_error:        "Something went wrong. Please try again.",
+      };
+      showToast("error", msgs[reason] || "TikTok connection failed. Please try again.");
       navigate("/workspace/publish", { replace: true });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -304,29 +544,83 @@ export default function PublishPage() {
     setLoadingAccounts(true);
     try {
       const { data, error } = await supabase.rpc("get_my_social_accounts");
-      if (!error) setAccounts((data || []).filter(a => a.platform === "instagram"));
+      if (!error) setAccounts(data || []);
     } finally {
       setLoadingAccounts(false);
     }
   }, []);
 
-  /* ── Fetch publish jobs ────────────────────────────────────────────────── */
+  /* ── Disconnect account ────────────────────────────────────────────────── */
+  const disconnectAccount = useCallback(async (accountId) => {
+    const account  = accounts.find(a => a.id === accountId);
+    const platform = account?.platform ?? "instagram";
+    const fnName   = platform === "youtube" ? "youtube-disconnect" : "instagram-disconnect";
+
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${fnName}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ account_id: accountId }),
+      }
+    );
+    if (res.ok) setAccounts(prev => prev.filter(a => a.id !== accountId));
+  }, [accounts]);
+
+  /* ── Fetch publish jobs (Instagram + YouTube, merged) ───────────────────── */
   const fetchJobs = useCallback(async ({ silent = false } = {}) => {
     if (!user) return;
     if (!silent) setLoadingJobs(true);
     try {
-      const { data } = await supabase
-        .from("instagram_publish_jobs")
-        .select("id, status, caption, video_url, permalink, media_id, error_message, created_at, published_at")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(50);
+      const [{ data: igData }, { data: ytData }, { data: ttData }] = await Promise.all([
+        supabase
+          .from("instagram_publish_jobs")
+          .select("id, status, caption, video_url, permalink, media_id, error_message, created_at, published_at, creation_id, scheduled_for")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(50),
+        supabase
+          .from("youtube_publish_jobs")
+          .select("id, status, description, video_url, youtube_url, error_message, created_at, published_at, creation_id")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(50),
+        supabase
+          .from("tiktok_publish_jobs")
+          .select("id, status, publish_mode, title, video_url, tiktok_share_url, error_message, created_at, published_at, creation_id")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(50),
+      ]);
 
-      const jobs = data || [];
-      // terminal + historical: published, failed, canceled
-      setPastJobs(jobs.filter(j => ["published", "failed", "canceled"].includes(j.status)));
+      const igJobs = (igData || []).map(j => ({ ...j, platform: "instagram" }));
+      const ytJobs = (ytData || []).map(j => ({
+        ...j,
+        platform:      "youtube",
+        caption:       j.description,
+        permalink:     j.youtube_url,
+        scheduled_for: null, // YouTube doesn't support scheduling yet — always immediate
+      }));
+      const ttJobs = (ttData || []).map(j => ({
+        ...j,
+        platform:      "tiktok",
+        caption:       j.title,
+        permalink:     j.tiktok_share_url,
+        scheduled_for: null, // TikTok doesn't support scheduling yet — always immediate
+      }));
+      const jobs = [...igJobs, ...ytJobs, ...ttJobs].sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+
+      // terminal + historical: published, failed, canceled (+ TikTok's draft_created)
+      setPastJobs(jobs.filter(j => ["published", "draft_created", "failed", "canceled"].includes(j.status)));
       // still in flight
-      setActiveJobs(jobs.filter(j => ["queued", "creating_container", "processing", "publishing"].includes(j.status)));
+      setActiveJobs(jobs.filter(j => ["queued", "creating_container", "processing", "publishing", "uploading", "preparing"].includes(j.status)));
     } finally {
       if (!silent) setLoadingJobs(false);
     }
@@ -347,6 +641,7 @@ export default function PublishPage() {
         .eq("user_id", user.id)
         .eq("type", "video")
         .eq("status", "succeeded")
+        .eq("tool_key", FULL_VIDEO_TOOL_KEY)
         .not("result_url", "is", null)
         .order("created_at", { ascending: false })
         .limit(30);
@@ -410,6 +705,11 @@ export default function PublishPage() {
     setConnectingIG(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        showToast("error", "Please sign in before connecting Instagram.");
+        setConnectingIG(false);
+        return;
+      }
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/instagram-oauth-start`,
         {
@@ -419,11 +719,13 @@ export default function PublishPage() {
             apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({ returnTo: "/workspace/publish" }),
         }
       );
-      const json = await res.json();
-      if (json.url) {
-        window.location.href = json.url;
+      const json = await res.json().catch(() => ({}));
+      const authorizationUrl = json.authorizationUrl || json.url;
+      if (authorizationUrl) {
+        window.location.assign(authorizationUrl);
       } else {
         showToast("error", json.error || "Could not initiate connection. Please try again.");
         setConnectingIG(false);
@@ -434,6 +736,15 @@ export default function PublishPage() {
     }
   }
 
+  function requestInstagramConnect() {
+    setInstagramConfirmOpen(true);
+  }
+
+  function cancelInstagramConnect() {
+    if (connectingIG) return;
+    setInstagramConfirmOpen(false);
+  }
+
   const upcomingDays = getUpcomingDays(7);
   const hasConnectedAccounts = accounts.length > 0;
 
@@ -442,6 +753,16 @@ export default function PublishPage() {
       setConnectModalOpen(true);
       return;
     }
+    setScheduleForDate(null);
+    setPostModalOpen(true);
+  }
+
+  function openScheduleForDay(day) {
+    if (!hasConnectedAccounts) {
+      setConnectModalOpen(true);
+      return;
+    }
+    setScheduleForDate(dateKey(day));
     setPostModalOpen(true);
   }
 
@@ -449,19 +770,15 @@ export default function PublishPage() {
     <div className="min-h-screen pb-28 lg:pb-12">
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="px-5 lg:px-8 pt-6 pb-5">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-[22px] font-bold text-white tracking-tight">Your Posting Queue</h1>
-            <p className="mt-0.5 text-sm text-white/40">Your content published while you sleep</p>
-          </div>
-          <button
-            onClick={openPostModal}
-            className="flex shrink-0 items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#090A0A] hover:bg-white/90 active:scale-[.98] transition shadow-md"
-          >
-            <Plus className="h-4 w-4" />
-            Publish New Content
-          </button>
-        </div>
+        <h1 className="text-[22px] font-bold text-white tracking-tight">Your Posting Queue</h1>
+        <p className="mt-0.5 text-sm text-white/40">Your content published while you sleep</p>
+        <button
+          onClick={openPostModal}
+          className="mt-4 flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#090A0A] hover:bg-white/90 active:scale-[.98] transition shadow-md"
+        >
+          <Plus className="h-4 w-4" />
+          Publish New Content
+        </button>
       </div>
 
       {/* ── Tabs ───────────────────────────────────────────────────────── */}
@@ -473,8 +790,8 @@ export default function PublishPage() {
               onClick={() => setTab(t)}
               className={`rounded-lg py-2 text-sm font-semibold transition ${
                 tab === t
-                  ? "bg-white text-[#090A0A] shadow-sm"
-                  : "text-white/40 hover:text-white/70"
+                  ? "bg-white/[0.10] text-white"
+                  : "text-white/40 hover:text-white/60"
               }`}
             >
               {t === "scheduled" ? "Scheduled" : "Past Publications"}
@@ -499,12 +816,11 @@ export default function PublishPage() {
               />
             ))}
             <button
-              onClick={connectInstagram}
-              disabled={connectingIG}
+              onClick={() => setConnectModalOpen(true)}
               className="flex items-center gap-2 rounded-xl border border-dashed border-white/[0.08] bg-transparent px-4 py-2.5 text-sm text-white/30 hover:border-white/15 hover:text-white/60 transition w-full"
             >
               <Plus className="h-3.5 w-3.5" />
-              {connectingIG ? "Redirecting…" : "Connect another account"}
+              Connect another account
             </button>
           </div>
         ) : (
@@ -602,31 +918,40 @@ export default function PublishPage() {
         {/* ── Scheduled tab ──────────────────────────────────────────── */}
         {tab === "scheduled" && (
           <div className="space-y-6">
-            {/* Active / pending jobs at top */}
-            {activeJobs.length > 0 && (
+            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white/40">
+              Add a video to a day below to schedule it — nothing posts until you add one.
+            </div>
+
+            {/* Active / pending jobs (publishing right now, not scheduled for later) */}
+            {activeJobs.filter(j => !j.scheduled_for).length > 0 && (
               <div className="space-y-2">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-white/30">In progress</p>
-                {activeJobs.map(job => (
-                  <QueueSlot key={job.id} time="—" job={job} />
+                {activeJobs.filter(j => !j.scheduled_for).map(job => (
+                  <QueueSlot key={job.id} job={job} />
                 ))}
               </div>
             )}
 
-            {/* Day slots */}
-            {upcomingDays.map((day) => (
-              <div key={day.toDateString()}>
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="text-[15px] font-semibold text-white">
+            {/* Day-by-day queue */}
+            {upcomingDays.map((day) => {
+              const dayJobs = activeJobs.filter(
+                j => j.scheduled_for && dateKey(new Date(j.scheduled_for)) === dateKey(day)
+              );
+              return (
+                <div key={day.toDateString()}>
+                  <h3 className="mb-2 text-[15px] font-semibold text-white">
                     {dayLabel(day)}{" "}
                     <span className="text-white/40">| {dateSuffix(day)}</span>
                   </h3>
-                  <button className="rounded-lg border border-white/[0.06] bg-transparent px-3 py-1 text-xs text-white/35 hover:border-white/15 hover:text-white/60 transition">
-                    Edit Queue
-                  </button>
+                  <div className="space-y-2">
+                    {dayJobs.map(job => (
+                      <QueueSlot key={job.id} job={job} />
+                    ))}
+                    <AddVideoButton onClick={() => openScheduleForDay(day)} />
+                  </div>
                 </div>
-                <QueueSlot time="09:00 am" onAdd={openPostModal} />
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -682,23 +1007,39 @@ export default function PublishPage() {
       {connectModalOpen && (
         <ConnectAccountsModal
           connectedAccounts={accounts}
-          onConnectInstagram={connectInstagram}
+          onConnectInstagram={requestInstagramConnect}
           connectingIG={connectingIG}
+          onDisconnect={disconnectAccount}
           onClose={() => setConnectModalOpen(false)}
+          onShowToast={showToast}
+        />
+      )}
+
+      {instagramConfirmOpen && (
+        <InstagramRequirementModal
+          loading={connectingIG}
+          onCancel={cancelInstagramConnect}
+          onContinue={connectInstagram}
         />
       )}
 
       {/* ── Post modal ─────────────────────────────────────────────────── */}
       {postModalOpen && (
         <PostModal
-          connectedAccounts={accounts}
+          igAccounts={accounts.filter(a => a.platform === "instagram")}
+          ytAccounts={accounts.filter(a => a.platform === "youtube")}
+          ttAccounts={accounts.filter(a => a.platform === "tiktok")}
           videos={videos}
           loadingVideos={loadingVideos}
-          onConnectInstagram={connectInstagram}
-          onClose={() => setPostModalOpen(false)}
+          onConnectInstagram={requestInstagramConnect}
+          onClose={() => { setPostModalOpen(false); setScheduleForDate(null); }}
+          videoPostStatus={videoPostStatus}
+          scheduledJobs={activeJobs.filter(j => j.scheduled_for)}
+          initialScheduleDate={scheduleForDate}
           onPublished={() => {
             setPostModalOpen(false);
-            showToast("success", "Publishing to Instagram…");
+            setScheduleForDate(null);
+            showToast("success", "Publishing…");
             fetchJobs();
           }}
         />
