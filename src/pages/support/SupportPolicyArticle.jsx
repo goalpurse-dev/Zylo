@@ -82,6 +82,20 @@ const POLICIES = {
       "We implement security practices designed to protect personal data from unauthorized access.",
       "Users remain responsible for ensuring they have the rights to any data uploaded or generated through the platform."
     ]
+  },
+
+  "data-deletion": {
+    title: "Data Deletion Instructions",
+    updated: "2026-07-20",
+    body: [
+      "You can request the permanent deletion of your Zyvo account and personal data at any time.",
+      "1. Email support@tryzyvo.com from the email address connected to your Zyvo account.",
+      "2. Use “Data Deletion Request” as the subject line and include the email address associated with your account.",
+      "3. We may ask you to verify that you own the account before processing the request.",
+      "4. After verification, we will delete or anonymize your account information, uploaded assets, generated content, and connected-account tokens that are under our control.",
+      "We aim to complete verified deletion requests within 30 days and will email you when the request is complete.",
+      "Some information may be retained when required for legal, tax, fraud-prevention, security, or dispute-resolution purposes. Data in backups may remain until those backups are securely overwritten through our normal retention cycle."
+    ]
   }
 
 };

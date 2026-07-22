@@ -1,6 +1,19 @@
 // deno-lint-ignore-file no-explicit-any
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { logEvent as persistLog, type LogLevel } from "../_shared/systemLog.ts";
+
+function logEvent(level: LogLevel, event: string, ctx: Record<string, unknown> = {}) {
+  const icon = level === "error" ? "🔴" : level === "warn" ? "🟠" : "🟢";
+  const line = `${icon} [runware-image] ${event}`;
+  const detail = JSON.stringify({ ts: new Date().toISOString(), ...ctx });
+
+  if (level === "error") console.error(line, detail);
+  else if (level === "warn") console.warn(line, detail);
+  else console.log(line, detail);
+
+  void persistLog("runware-image", level, event, ctx);
+}
 
 /* ===================== ENV ===================== */
 const RUNWARE_KEY  = Deno.env.get("RUNWARE_API_KEY")!;
@@ -45,12 +58,12 @@ async function safeRpc(
   try {
     const { data, error } = await sb.rpc(name, args);
     if (error) {
-      console.error(`[runware-image] RPC ${name} failed:`, JSON.stringify(error).slice(0, 200));
+      logEvent("error", "rpc_failed", { jobId: args?.p_id, rpc: name, message: error.message });
       return { data: null, error };
     }
     return { data, error: null };
   } catch (err) {
-    console.error(`[runware-image] RPC ${name} threw:`, String((err as any)?.message ?? err));
+    logEvent("error", "rpc_threw", { jobId: args?.p_id, rpc: name, message: String((err as any)?.message ?? err) });
     return { data: null, error: err };
   }
 }
@@ -231,6 +244,50 @@ function extractImageUrl(obj: any): string | null {
   return scan(obj);
 }
 
+function extensionFromContentType(contentType: string | null, fallback = "png") {
+  const normalized = String(contentType || "").toLowerCase();
+  if (normalized.includes("webp")) return "webp";
+  if (normalized.includes("jpeg") || normalized.includes("jpg")) return "jpg";
+  if (normalized.includes("gif")) return "gif";
+  if (normalized.includes("avif")) return "avif";
+  if (normalized.includes("png")) return "png";
+  return fallback;
+}
+
+async function persistImageResult(
+  sb: ReturnType<typeof createClient>,
+  jobId: string,
+  sourceUrl: string,
+): Promise<string> {
+  if (!/^https?:\/\//i.test(sourceUrl)) return sourceUrl;
+
+  try {
+    const res = await fetch(sourceUrl);
+    if (!res.ok) throw new Error(`download failed ${res.status}`);
+
+    const contentType = res.headers.get("content-type") || "image/png";
+    const blob = await res.blob();
+    const ext = extensionFromContentType(contentType);
+    const path = `runware/images/${jobId}.${ext}`;
+
+    const { error: uploadError } = await sb.storage
+      .from("generated")
+      .upload(path, blob, {
+        contentType,
+        cacheControl: "31536000",
+        upsert: true,
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data } = sb.storage.from("generated").getPublicUrl(path);
+    return data?.publicUrl || sourceUrl;
+  } catch (e) {
+    logEvent("warn", "persist_result_failed", { jobId, message: String((e as any)?.message ?? e) });
+    return sourceUrl;
+  }
+}
+
 function getRunwareError(obj: any): { code?: string; message: string } | null {
   const raw =
     obj?.errors?.[0] ??
@@ -267,11 +324,10 @@ async function uploadImageToRunware(publicUrl: string): Promise<string> {
   });
 
   if (!result.ok || !result.json?.data?.[0]?.imageURL) {
-    console.error("[runware-image] imageUpload response body", {
+    logEvent("error", "image_upload_failed", {
       sourceUrl: publicUrl,
       status: result.status,
-      body: result.text.slice(0, 1000),
-      json: result.json,
+      body: result.text.slice(0, 500),
     });
     throw new Error(`imageUpload failed (${result.status}): ${result.text.slice(0, 200)}`);
   }
@@ -281,10 +337,10 @@ async function uploadImageToRunware(publicUrl: string): Promise<string> {
 async function chargeJobCredits(
   sb: ReturnType<typeof createClient>,
   jobId: string,
-) {
+): Promise<boolean> {
   const { data: job } = await sb
-    .from("jobs").select("user_id, settings").eq("id", jobId).single();
-  if (!job?.user_id) return;
+    .from("jobs").select("user_id").eq("id", jobId).single();
+  if (!job?.user_id) return false;
 
   const { data: profile } = await sb
     .from("profiles").select("plan_code").eq("id", job.user_id).single();
@@ -293,13 +349,21 @@ async function chargeJobCredits(
 
   if (isFree) {
     const { error } = await sb.from("image_generations").insert({ user_id: job.user_id });
-    if (error) console.error("[runware-image] free usage log failed:", error);
+    if (error) logEvent("error", "free_usage_log_failed", { jobId, userId: job.user_id, message: error.message });
+    return true;
   } else {
-    const credits = Number(job.settings?.credits ?? 0);
-    if (credits > 0) {
-      await safeRpc(sb, "deduct_credits", { uid: job.user_id, amount: credits });
+    const { data, error } = await safeRpc(sb, "charge_job_credits", { p_job_id: jobId });
+    if (error || data !== true) {
+      logEvent("error", "credit_charge_failed", { jobId, userId: job.user_id, message: String(error ?? "insufficient credits") });
+      return false;
     }
+    return true;
   }
+}
+
+async function refundJobCredits(sb: ReturnType<typeof createClient>, jobId: string) {
+  const { error } = await safeRpc(sb, "refund_job_credits", { p_job_id: jobId });
+  if (error) logEvent("error", "credit_refund_failed", { jobId, message: String(error) });
 }
 
 /* ===================== BACKGROUND JOB PROCESSOR =====================
@@ -331,6 +395,15 @@ function buildReferenceInputs(
  * the request is never rejected outright.
  */
 const SUPPORTED_DIMENSIONS: Record<string, [number, number][]> = {
+  // Nano Banana 2 (image:nano.2)
+  "google:4@3": [
+    [1024, 1024], [2048, 2048],
+    [1264, 848], [2528, 1696], [848, 1264], [1696, 2528],
+    [1200, 896], [2400, 1792], [896, 1200], [1792, 2400],
+    [928, 1152], [1856, 2304], [1152, 928], [2304, 1856],
+    [768, 1376], [1536, 2752], [1376, 768], [2752, 1536],
+    [1584, 672], [3168, 1344],
+  ],
   // Nano Pro (image:nano-pro)
   "google:4@2": [
     [1024, 1024], [2048, 2048], [4096, 4096],
@@ -381,14 +454,8 @@ function snapToSupportedDimensions(
   return { width: best[0], height: best[1] };
 }
 
-/**
- * GPT Image 2 (the fruit models) only accepts a single reference image —
- * sending more triggers "Invalid number of elements for 'referenceImages'
- * parameter" and fails the whole request. Cap per-model so extra refs are
- * dropped instead of blowing up the generation.
- */
 const MAX_REFERENCE_IMAGES: Record<string, number> = {
-  "openai:gpt-image@2": 1,
+  "openai:gpt-image@2": 4,
 };
 
 function clampReferenceImages(refs: string[], airTag: string): string[] {
@@ -463,26 +530,14 @@ async function processRunwareImageJob(body: any): Promise<void> {
       continue;
     }
     if (!url.startsWith("https://")) {
-      console.error("[runware-image] ref upload FAILED:", {
-        url,
-        error: "Reference URL is not HTTPS",
-      });
-      continue;
-    }
-    if (false && !url.startsWith("https://")) {
-      console.warn("[runware-image] ref skipped — not HTTPS:", url.slice(0, 100));
+      logEvent("error", "ref_not_https", { jobId, url: url.slice(0, 200) });
       continue;
     }
     try {
-      console.log("[runware-image] uploading ref to Runware:", url);
       const rwUrl = await uploadImageToRunware(url);
-      console.log("[runware-image] ref uploaded OK →", rwUrl.slice(0, 100));
       runwareRefs.push(rwUrl);
     } catch (e) {
-      console.error("[runware-image] ref upload FAILED:", {
-        url,
-        error: String((e as any)?.message ?? e),
-      });
+      logEvent("error", "ref_upload_failed", { jobId, url: url.slice(0, 200), message: String((e as any)?.message ?? e) });
     }
   }
 
@@ -498,7 +553,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
   /* ── Build Runware task ── */
   if (isFruitModel && referenceImages.length > 0 && runwareRefs.length === 0) {
     const message = "All fruit story references failed to upload";
-    console.error("[runware-image]", message, { jobId, referenceImages });
+    logEvent("error", "all_refs_failed", { jobId, toolKey: airTag, refCount: referenceImages.length });
     await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: message });
     return;
   }
@@ -529,12 +584,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
   // rejects the whole request over an "Invalid number of elements" error.
   const cappedRefs = clampReferenceImages(runwareRefs, airTag);
   if (cappedRefs.length < runwareRefs.length) {
-    console.warn("[runware-image] dropping extra reference images — model supports at most", {
-      jobId,
-      airTag,
-      max: cappedRefs.length,
-      provided: runwareRefs.length,
-    });
+    logEvent("warn", "refs_capped", { jobId, toolKey: airTag, max: cappedRefs.length, provided: runwareRefs.length });
   }
 
   // Attach uploaded reference images via the shared helper.
@@ -550,26 +600,13 @@ async function processRunwareImageJob(body: any): Promise<void> {
   }
 
   if (isFruitModel && referenceImages.length > 0 && !task.inputs?.referenceImages?.length) {
-    console.error("[runware-image] FRUIT REF LOST BEFORE RUNWARE", {
-      originalRefs: referenceImages,
-      uploadedRefs: runwareRefs,
-      task,
-    });
+    logEvent("error", "fruit_refs_lost", { jobId, toolKey: airTag, originalCount: referenceImages.length, uploadedCount: runwareRefs.length });
     await safeRpc(sb, "finish_job_failed", {
       p_id: jobId,
       p_error: "Fruit references lost before Runware payload",
     });
     return;
   }
-
-  // Verify refs made it into the final payload
-  console.log("[runware-image] final task refs", {
-    taskUUID:         task.taskUUID,
-    model:            task.model,
-    hasInputs:        !!task.inputs,
-    referenceImages:  task.inputs?.referenceImages ?? [],
-  });
-  console.log("[runware-image] FULL TASK PAYLOAD", JSON.stringify(task).slice(0, 3000));
 
   /* ── Submit task to Runware ── */
   const createResult = await safeFetchRetry(TASKS_URL, {
@@ -582,7 +619,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
     const message =
       createResult.json?.errors?.[0]?.message ||
       `Runware rejected task (${createResult.status}): ${createResult.text.slice(0, 200)}`;
-    console.error("[runware-image] task creation failed:", message);
+    logEvent("error", "task_creation_failed", { jobId, toolKey: airTag, status: createResult.status, message });
     await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: message });
     return;
   }
@@ -593,7 +630,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
     createResult.json?.data?.[0]?.id ??
     task.taskUUID;
 
-  console.log("[runware-image] Runware accepted, providerId:", providerId);
+  logEvent("info", "task_accepted", { jobId, toolKey: airTag, providerId });
 
   // 15% — task accepted by Runware
   void safeRpc(sb, "bump_job_progress", { p_id: jobId, p_progress: 15 });
@@ -601,16 +638,19 @@ async function processRunwareImageJob(body: any): Promise<void> {
   /* ── Instant success (sync models return URL in create response) ── */
   const immediate = extractImageUrl(createResult.json);
   if (immediate) {
-    console.log("[runware-image] FULL SUCCESS RESPONSE", JSON.stringify(createResult.json).slice(0, 3000));
-    console.log("[runware-image] final image url (instant):", immediate.slice(0, 100));
-    console.log("[runware-image] calling finish_job_success", { jobId });
-    const { data, error } = await safeRpc(sb, "finish_job_success", {
+    const storedUrl = await persistImageResult(sb, jobId, immediate);
+    const charged = await chargeJobCredits(sb, jobId);
+    if (!charged) {
+      await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: "INSUFFICIENT_CREDITS" });
+      return;
+    }
+    const { error } = await safeRpc(sb, "finish_job_success", {
       p_id:     jobId,
-      p_url:    immediate,
+      p_url:    storedUrl,
       p_output: createResult.json,
     });
-    console.log("[runware-image] finish_job_success result", { data, error: String(error ?? "null") });
-    await chargeJobCredits(sb, jobId);
+    if (error) await refundJobCredits(sb, jobId);
+    logEvent("info", "job_succeeded", { jobId, toolKey: airTag, instant: true, finishError: error ? String(error) : null });
     return;
   }
 
@@ -638,7 +678,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
     try {
       pollResult = await pollRunwareResponse(providerId);
     } catch (e) {
-      console.warn(`[runware-image] poll ${i} network error:`, String(e));
+      logEvent("warn", "poll_exception", { jobId, poll: i, message: String(e) });
       continue;
     }
 
@@ -646,32 +686,26 @@ async function processRunwareImageJob(body: any): Promise<void> {
     const pollStatus = String(pollResult.json?.status ?? pollResult.json?.data?.[0]?.status ?? "").toLowerCase();
     const runwareError = getRunwareError(pollResult.json);
 
-    console.log("[runware-image] poll result", {
-      jobId,
-      poll: i,
-      httpStatus: pollResult.status,
-      runwareStatus: pollStatus,
-      hasImageUrl: !!url,
-      errorCode: runwareError?.code ?? null,
-    });
-
     if (url) {
-      console.log("[runware-image] FULL SUCCESS RESPONSE", JSON.stringify(pollResult.json).slice(0, 3000));
-      console.log("[runware-image] final image url:", url.slice(0, 100));
-      console.log("[runware-image] calling finish_job_success", { jobId });
-      const { data, error } = await safeRpc(sb, "finish_job_success", {
+      const storedUrl = await persistImageResult(sb, jobId, url);
+      const charged = await chargeJobCredits(sb, jobId);
+      if (!charged) {
+        await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: "INSUFFICIENT_CREDITS" });
+        return;
+      }
+      const { error } = await safeRpc(sb, "finish_job_success", {
         p_id:     jobId,
-        p_url:    url,
+        p_url:    storedUrl,
         p_output: pollResult.json,
       });
-      console.log("[runware-image] finish_job_success result", { data, error: String(error ?? "null") });
-      await chargeJobCredits(sb, jobId);
+      if (error) await refundJobCredits(sb, jobId);
+      logEvent("info", "job_succeeded", { jobId, toolKey: airTag, instant: false, poll: i, finishError: error ? String(error) : null });
       return;
     }
 
     // Log full response shape when there's no URL (helps debug GPT Image 2 format)
     if (!pollResult.json) {
-      console.warn("[runware-image] poll returned no JSON, raw:", pollResult.text.slice(0, 300));
+      logEvent("warn", "poll_no_json", { jobId, poll: i, raw: pollResult.text.slice(0, 300) });
       continue;
     }
 
@@ -681,26 +715,24 @@ async function processRunwareImageJob(body: any): Promise<void> {
       pollResult.json?.data?.[0]?.errorCode;
 
     if (errorCode === "failedTaskTimeout") {
-      console.log("[runware-image] Runware failedTaskTimeout — still processing, continuing");
       continue;
     }
 
     if (runwareError) {
       const message = `${runwareError.code ? `${runwareError.code}: ` : ""}${runwareError.message}`;
-      console.error("[runware-image] Runware returned error:", message);
+      logEvent("error", "provider_failed", { jobId, toolKey: airTag, poll: i, message });
       await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: message });
       return;
     }
 
     // Runware sometimes emits transient "failed" before the result is ready
     if (pollStatus === "failed") {
-      console.log("[runware-image] transient failed status — ignoring");
       continue;
     }
   }
 
   /* ── Final timeout ── */
-  console.error("[runware-image] max runtime reached, no result received for jobId:", jobId);
+  logEvent("error", "job_failed", { jobId, toolKey: airTag, reason: "timeout", elapsedMs: Date.now() - start });
   await safeRpc(sb, "finish_job_failed", {
     p_id:    jobId,
     p_error: "Image generation timed out after 5 minutes. Please try again.",
@@ -717,6 +749,13 @@ Deno.serve(async (req) => {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
+  if (!SERVICE_KEY || req.headers.get("x-job-worker-key") !== SERVICE_KEY) {
+    return new Response(
+      JSON.stringify({ ok: false, error: "Unauthorized worker handoff" }),
+      { status: 401, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+    );
+  }
+
   let jobId: string | null = null;
 
   try {
@@ -724,6 +763,7 @@ Deno.serve(async (req) => {
     jobId = body?.jobId ?? null;
 
     if (!jobId || !body?.airTag || !body?.prompt) {
+      logEvent("warn", "request_rejected_missing_fields", { jobId, hasAirTag: !!body?.airTag, hasPrompt: !!body?.prompt });
       return new Response(
         JSON.stringify({ ok: false, error: "Missing required fields: jobId, airTag, prompt" }),
         { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
@@ -733,14 +773,19 @@ Deno.serve(async (req) => {
     // Start background processing — does NOT block the HTTP response
     EdgeRuntime.waitUntil(
       processRunwareImageJob(body).catch(async (err) => {
-        console.error("[runware-image] background process threw:", err);
+        const message = err instanceof Error ? err.message : String(err);
+        logEvent("error", "background_process_crashed", {
+          jobId,
+          message,
+          stack: err instanceof Error ? err.stack : undefined,
+        });
         // processRunwareImageJob already calls finish_job_failed for known errors;
         // this catch is a final safety net for unexpected throws
         try {
           const sb = makeSb();
           await safeRpc(sb, "finish_job_failed", {
             p_id:    jobId!,
-            p_error: `Unexpected error: ${err instanceof Error ? err.message : String(err)}`,
+            p_error: `Unexpected error: ${message}`,
           });
         } catch { /* ignore */ }
       }),
@@ -753,7 +798,7 @@ Deno.serve(async (req) => {
     );
 
   } catch (e) {
-    console.error("[runware-image] handler error:", e);
+    logEvent("error", "handler_error", { jobId, message: String((e as any)?.message ?? e) });
     return new Response(
       JSON.stringify({ ok: false, error: "Failed to accept job request." }),
       { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },

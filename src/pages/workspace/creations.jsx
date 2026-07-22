@@ -1,16 +1,9 @@
 import Step1 from "../../components/creations/library.jsx";
-import Faq from "../../components/creations/faq.jsx";
 import Footer from "../../components/myproduct/footer.jsx";
-
-
-import { useState, useEffect } from "react";
-
-
-
-
+import { useEffect } from "react";
 export default function Creations() {
   useEffect(() => {
-    document.title = "Your Generated Product Creations";
+    document.title = "Your Creations | Zyvo";
   }, []);
 
   return (

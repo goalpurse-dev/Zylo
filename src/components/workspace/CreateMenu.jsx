@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
+import { Pin, X } from "lucide-react";
 
 // ─── Add new tools here as they launch ───────────────────────────────────────
 export const CREATE_TOOLS = [
@@ -10,7 +11,7 @@ export const CREATE_TOOLS = [
     sublabel: "",
     path: "/workspace/ai-fruit-story",
     preview: "/viral-builder/ai-fruit/characters/bossmango.png",
-    color: "#7A3BFF",
+    color: "#bef264",
   },
   {
     id: "face-asmr",
@@ -19,7 +20,7 @@ export const CREATE_TOOLS = [
     path: "/workspace/face-asmr",
     preview: "/face/ronaldo.png",
     previewPosition: "object-center",
-    color: "#A855F7",
+    color: "#bef264",
   },
   {
     id: "micro-camera-animal",
@@ -28,7 +29,7 @@ export const CREATE_TOOLS = [
     path: "/workspace/micro-camera-animal",
     preview: "/viral-builder/micro-camera/preview1.png",
     previewPosition: "object-center",
-    color: "#16a34a",
+    color: "#bef264",
   },
   {
     id: "clay-rescue",
@@ -37,7 +38,25 @@ export const CREATE_TOOLS = [
     path: "/workspace/clay-rescue",
     preview: "/clayrescue/smallpreview.webp",
     previewPosition: "object-center",
-    color: "#7A3BFF",
+    color: "#bef264",
+  },
+  {
+    id: "ai-cooking-matic",
+    label: "AI Cooking Matic",
+    sublabel: "",
+    path: "/workspace/ai-cooking-matic",
+    preview: "/templates/AICOOKING/thumbnail.png",
+    previewPosition: "object-center",
+    color: "#bef264",
+  },
+  {
+    id: "footballer-nationality-swap",
+    label: "Nationality Swap",
+    sublabel: "",
+    path: "/workspace/footballer-nationality-swap",
+    preview: "/template/nationality-swap/preview.png",
+    previewPosition: "object-center",
+    color: "#bef264",
   },
   // { id: "ai-voice-story", label: "AI Voice Story", ... },
 ];
@@ -46,9 +65,14 @@ export const PUBLISH_TOOLS = [
   {
     id: "post-schedule",
     label: "Post / Schedule",
+    pinnedLabel: "Publish",
     sublabel: "",
     path: "/workspace/publish",
-    color: "#7A3BFF",
+    preview: "/icons/publish-transparent.png",
+    previewPosition: "object-center",
+    imageClassName: "scale-[1.35]",
+    transparentIcon: true,
+    color: "#bef264",
     icon: (
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
         <path d="M22 2L11 13" strokeLinecap="round" strokeLinejoin="round" />
@@ -59,9 +83,14 @@ export const PUBLISH_TOOLS = [
   {
     id: "stats",
     label: "Analyze Stats",
+    pinnedLabel: "Stats",
     sublabel: "",
     path: "/workspace/stats",
-    color: "#22C55E",
+    preview: "/icons/stats-transparent.png",
+    previewPosition: "object-center",
+    imageClassName: "scale-[1.35]",
+    transparentIcon: true,
+    color: "#bef264",
     icon: (
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
         <path d="M4 19V5" strokeLinecap="round" />
@@ -77,7 +106,10 @@ export const PUBLISH_TOOLS = [
     label: "Connections",
     sublabel: "",
     path: "/workspace/connections",
-    color: "#F97316",
+    preview: "/icons/connection-transparent.png",
+    previewPosition: "object-center",
+    transparentIcon: true,
+    color: "#bef264",
     icon: (
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
         <path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L11 4.93" strokeLinecap="round" strokeLinejoin="round" />
@@ -88,7 +120,7 @@ export const PUBLISH_TOOLS = [
 ];
 
 /* ─── Shared panel shell ──────────────────────────────────────────────────── */
-function DesktopPanel({ open, onClose, title, subtitle, children }) {
+function DesktopPanel({ open, onClose, title, subtitle, sectionLabel, grid, children }) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
@@ -98,18 +130,22 @@ function DesktopPanel({ open, onClose, title, subtitle, children }) {
 
   return createPortal(
     <>
-      {open && <div className="fixed inset-0 z-[149]" onClick={onClose} />}
+      {open && <div className="zyvo-panel-dismiss-layer fixed bottom-0 right-0 z-[149]" onClick={onClose} />}
       <div
-        className="fixed top-0 z-[150] h-full w-[260px] flex flex-col bg-[#0d0f10] border-r border-white/[0.07]"
+        className="zyvo-popover-panel fixed z-[150] w-[260px] flex flex-col overflow-hidden rounded-[22px]"
         style={{
-          left: "80px",
+          top: "calc(var(--zyvo-notice-height, 0px) + 12px)",
+          left: "224px",
+          height: "calc(100dvh - var(--zyvo-notice-height, 0px) - 24px)",
           opacity: open ? 1 : 0,
           transform: open ? "scale(1) translateX(0)" : "scale(0.97) translateX(-8px)",
           pointerEvents: open ? "auto" : "none",
           transition: "opacity 200ms ease-out, transform 200ms ease-out",
         }}
       >
-        <div className="flex items-center justify-between px-5 pt-6 pb-4 border-b border-white/[0.06]">
+        <div className="zyvo-popover-accent absolute left-6 right-6 top-0 h-px" />
+
+        <div className="relative flex items-center justify-between border-b border-white/[0.06] px-5 pb-4 pt-5">
           <div>
             <h2 className="text-[15px] font-bold text-white">{title}</h2>
             {subtitle && <p className="text-[11px] text-white/35 mt-0.5">{subtitle}</p>}
@@ -119,8 +155,11 @@ function DesktopPanel({ open, onClose, title, subtitle, children }) {
             className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-white/50 hover:bg-white/10 hover:text-white transition text-sm"
           >✕</button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {children}
+        <div className="flex-1 overflow-y-auto p-4">
+          {sectionLabel && (
+            <p className="px-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-white/25">{sectionLabel}</p>
+          )}
+          <div className={grid ? "grid grid-cols-1 gap-2" : "space-y-2"}>{children}</div>
         </div>
       </div>
     </>,
@@ -128,58 +167,178 @@ function DesktopPanel({ open, onClose, title, subtitle, children }) {
   );
 }
 
+// One accent across the shell and every opened panel.
+const LIME_DOT = <span className="h-2 w-2 flex-shrink-0 rounded-full bg-lime-300" style={{ boxShadow: "0 0 8px 1px #bef264" }} />;
+
+function PinToggle({ pinned, onToggle, label, disabled = false }) {
+  const toggle = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (disabled) return;
+    onToggle?.();
+  };
+
+  return (
+    <span
+      role="button"
+      tabIndex={0}
+      onClick={toggle}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") toggle(event);
+      }}
+      className={`zyvo-pin-toggle ml-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-[8px] transition ${pinned ? "is-pinned" : ""} ${disabled ? "is-disabled" : ""}`}
+      aria-label={`${pinned ? "Unpin" : "Pin"} ${label}`}
+      aria-disabled={disabled}
+      title={disabled ? "Maximum 4 pinned tools" : `${pinned ? "Unpin" : "Pin"} ${label}`}
+    >
+      <Pin className="h-3.5 w-3.5" fill={pinned ? "currentColor" : "none"} />
+    </span>
+  );
+}
+
+/* ─── Shared tool row — used by the Publish panel (and anywhere a full-width
+   single-column list makes more sense than a grid). Handles both card
+   shapes: an image preview (CREATE_TOOLS) or an inline SVG icon
+   (WORKSPACE_TOOLS / PUBLISH_TOOLS). The left accent bar and icon glow are
+   color-matched to the tool's own brand color so rows feel distinct rather
+   than a flat repeated list; the active indicator itself is always the
+   lime spark, an inset white top-highlight gives active rows the same
+   glassy "lit up" look as the rail. ─── */
+function ToolRow({ tool, active, onClick, pinned, onTogglePin, pinDisabled }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`zyvo-panel-item group relative w-full flex items-center gap-3 overflow-hidden rounded-[15px] border p-3 text-left transition-all duration-200 active:scale-[0.98] ${
+        active
+          ? "is-active border-white/[0.16] bg-white/[0.08]"
+          : "border-white/[0.07] bg-white/[0.03] hover:border-white/[0.16] hover:bg-white/[0.06] hover:-translate-y-0.5"
+      }`}
+      style={active ? { boxShadow: `0 0 24px -6px ${tool.color}80, inset 0 1px 0 rgba(255,255,255,0.16)` } : undefined}
+    >
+      {active && (
+        <div className="absolute inset-y-0 left-0 w-[3px]" style={{ background: `linear-gradient(180deg, ${tool.color}, ${tool.color}00)` }} />
+      )}
+      {!active && (
+        <div
+          className="pointer-events-none absolute -top-8 -right-8 h-20 w-20 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-30"
+          style={{ background: tool.color }}
+        />
+      )}
+
+      {tool.preview ? (
+        <div
+          className={`relative flex-shrink-0 overflow-hidden transition ${tool.transparentIcon ? "h-8 w-8" : "h-[52px] w-[52px] rounded-[12px] ring-1 ring-white/10 group-hover:ring-white/20"}`}
+          style={{
+            background: tool.transparentIcon ? "transparent" : `linear-gradient(135deg, ${tool.color}55, ${tool.color}22)`,
+            boxShadow: active && !tool.transparentIcon ? `0 0 16px -2px ${tool.color}99` : undefined,
+          }}
+        >
+          <img src={tool.preview} alt={tool.label} className={`h-full w-full object-contain ${tool.previewPosition ?? "object-top"} ${tool.imageClassName ?? ""}`} />
+        </div>
+      ) : (
+        <div
+          className={`flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-[12px] border transition ${
+            active ? "border-white/10 text-white" : "border-white/[0.07] bg-white/[0.04] text-white/50 group-hover:text-white"
+          }`}
+          style={active ? { background: `linear-gradient(135deg, ${tool.color}55, ${tool.color}22)`, boxShadow: `0 0 16px -2px ${tool.color}99` } : undefined}
+        >
+          {tool.icon}
+        </div>
+      )}
+
+      <div className="relative flex-1 min-w-0">
+        <div className="flex items-center gap-1">
+          <div className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-tight text-white">{tool.label}</div>
+          <PinToggle pinned={pinned} onToggle={onTogglePin} label={tool.label} disabled={pinDisabled} />
+        </div>
+        {tool.sublabel && <div className="text-[11px] text-white/40 mt-0.5">{tool.sublabel}</div>}
+      </div>
+
+      {active ? LIME_DOT : (
+        <svg className="h-4 w-4 text-white/25 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
+/* ─── Compact grid cell — used by Create / Workspace panels, arranged
+   2-up per row (the "put a couple on the same row" OpenArt treatment)
+   instead of one item per line. Corner color-glow on hover + the same
+   lime spark + glassy highlight when active as ToolRow. ─── */
+function ToolGridItem({ tool, active, onClick, pinned, onTogglePin, pinDisabled }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`zyvo-panel-item group relative flex items-center gap-3 overflow-hidden rounded-[15px] border p-3 text-left transition-all duration-200 active:scale-[0.97] ${
+        active
+          ? "is-active border-white/[0.16] bg-white/[0.08]"
+          : "border-white/[0.07] bg-white/[0.035] hover:border-white/[0.18] hover:bg-white/[0.07] hover:-translate-y-0.5"
+      }`}
+      style={{ boxShadow: active ? `0 0 22px -6px ${tool.color}80, inset 0 1px 0 rgba(255,255,255,0.16)` : undefined }}
+    >
+      <div
+        className="pointer-events-none absolute -top-8 -right-8 h-20 w-20 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-35"
+        style={{ background: tool.color }}
+      />
+
+      {tool.preview ? (
+        <div
+          className={`relative flex-shrink-0 overflow-hidden transition ${tool.transparentIcon ? "h-8 w-8" : "h-9 w-9 rounded-[10px] ring-1 ring-white/10 group-hover:ring-white/20"}`}
+          style={{ background: tool.transparentIcon ? "transparent" : `linear-gradient(135deg, ${tool.color}55, ${tool.color}22)`, boxShadow: active && !tool.transparentIcon ? `0 0 14px -2px ${tool.color}99` : undefined }}
+        >
+          <img src={tool.preview} alt={tool.label} className={`h-full w-full object-cover ${tool.previewPosition ?? "object-top"}`} />
+        </div>
+      ) : (
+        <div
+          className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[10px] border transition ${
+            active ? "border-white/10 text-white" : "border-white/[0.07] bg-white/[0.04] text-white/50 group-hover:text-white"
+          }`}
+          style={active ? { background: `linear-gradient(135deg, ${tool.color}55, ${tool.color}22)`, boxShadow: `0 0 14px -2px ${tool.color}99` } : undefined}
+        >
+          {tool.icon}
+        </div>
+      )}
+
+      <div className="relative flex min-w-0 flex-1 items-center gap-1.5">
+        <span className="min-w-0 flex-1 text-[12.5px] font-semibold leading-tight text-white">{tool.label}</span>
+        <PinToggle pinned={pinned} onToggle={onTogglePin} label={tool.label} disabled={pinDisabled} />
+      </div>
+    </button>
+  );
+}
+
 /* ─── Desktop Create panel ────────────────────────────────────────────────── */
-export function DesktopCreatePanel({ open, onClose }) {
+export function DesktopCreatePanel({ open, onClose, pinnedIds = [], onTogglePin, pinLimitReached = false }) {
   const navigate = useNavigate();
   const location = useLocation();
 
   const go = (path) => { onClose(); navigate(path); };
 
   return (
-    <DesktopPanel open={open} onClose={onClose} title="Create" subtitle="Choose a tool to start">
-      {CREATE_TOOLS.map((tool) => {
-        const active = location.pathname.startsWith(tool.path);
-        return (
-          <button
-            key={tool.id}
-            onClick={() => go(tool.path)}
-            className={`w-full flex items-center gap-3.5 rounded-[16px] border p-3.5 text-left transition active:scale-[0.98] group ${
-              active
-                ? "border-white/20 bg-white/[0.08]"
-                : "border-white/[0.07] bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.06]"
-            }`}
-          >
-            <div
-              className="relative h-[52px] w-[42px] flex-shrink-0 overflow-hidden rounded-[12px]"
-              style={{ background: `linear-gradient(135deg, ${tool.color}55, ${tool.color}22)` }}
-            >
-              <img src={tool.preview} alt={tool.label} className={`h-full w-full object-cover ${tool.previewPosition ?? "object-top"}`} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className={`text-[13px] font-semibold leading-tight ${active ? "text-white" : "text-white"}`}>{tool.label}</div>
-              {tool.sublabel && <div className="text-[11px] text-white/40 mt-0.5">{tool.sublabel}</div>}
-            </div>
-            {active
-              ? <div className="h-2 w-2 flex-shrink-0 rounded-full bg-purple-400" />
-              : <svg className="h-4 w-4 text-white/25 group-hover:text-white/60 transition flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            }
-          </button>
-        );
-      })}
-      <div className="mt-2 rounded-[14px] border border-dashed border-white/[0.07] py-5 text-center">
+    <DesktopPanel open={open} onClose={onClose} title="Create" subtitle="Choose a tool to start" sectionLabel="Viral Tools" grid>
+      {CREATE_TOOLS.map((tool) => (
+        <ToolGridItem key={tool.id} tool={tool} active={location.pathname.startsWith(tool.path)} onClick={() => go(tool.path)} pinned={pinnedIds.includes(tool.id)} onTogglePin={() => onTogglePin?.(tool.id)} pinDisabled={pinLimitReached && !pinnedIds.includes(tool.id)} />
+      ))}
+      <div className="mt-0.5 rounded-[14px] border border-dashed border-white/[0.07] py-5 text-center">
         <div className="text-[11px] text-white/20 font-medium">More tools coming soon</div>
       </div>
     </DesktopPanel>
   );
 }
 
-/* ─── Desktop Workspace panel (Image / Video / Script) ───────────────────── */
-const WORKSPACE_TOOLS = [
+/* ─── Desktop Workspace panel (Image / Video) ─────────────────────────────── */
+export const WORKSPACE_TOOLS = [
   {
     id: "image",
     label: "Image Generator",
     sublabel: "",
     path: "/workspace/image-generator",
+    preview: "/icons/image-generator-transparent.png",
+    previewPosition: "object-center",
+    transparentIcon: true,
+    color: "#bef264",
     icon: (
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
         <rect x="3" y="3" width="18" height="18" rx="3"/>
@@ -193,6 +352,10 @@ const WORKSPACE_TOOLS = [
     label: "Video Generator",
     sublabel: "",
     path: "/workspace/video-generator",
+    preview: "/icons/video-generator-transparent.png",
+    previewPosition: "object-center",
+    transparentIcon: true,
+    color: "#bef264",
     icon: (
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
         <path d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14" strokeLinecap="round"/>
@@ -200,242 +363,143 @@ const WORKSPACE_TOOLS = [
       </svg>
     ),
   },
-  {
-    id: "script",
-    label: "Script Builder",
-    sublabel: "",
-    path: "/workspace/viral-script",
-    icon: (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-        <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
 ];
 
-export function DesktopWorkspacePanel({ open, onClose }) {
+export const ALL_PINNABLE_TOOLS = [...CREATE_TOOLS, ...WORKSPACE_TOOLS, ...PUBLISH_TOOLS];
+
+export function DesktopWorkspacePanel({ open, onClose, pinnedIds = [], onTogglePin, pinLimitReached = false }) {
   const navigate = useNavigate();
   const location = useLocation();
   const go = (path) => { onClose(); navigate(path); };
 
   return (
-    <DesktopPanel open={open} onClose={onClose} title="Workspace" subtitle="Your creation tools">
-      {WORKSPACE_TOOLS.map((tool) => {
-        const active = location.pathname.startsWith(tool.path);
-        return (
-          <button
-            key={tool.id}
-            onClick={() => go(tool.path)}
-            className={`w-full flex items-center gap-3.5 rounded-[16px] border p-3.5 text-left transition active:scale-[0.98] group ${
-              active
-                ? "border-white/20 bg-white/[0.08]"
-                : "border-white/[0.07] bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.06]"
-            }`}
-          >
-            <div className={`flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-[12px] border ${
-              active ? "border-white/20 bg-white/10 text-white" : "border-white/[0.07] bg-white/[0.04] text-white/50 group-hover:text-white"
-            }`}>
-              {tool.icon}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[13px] font-semibold text-white leading-tight">{tool.label}</div>
-              {tool.sublabel && <div className="text-[11px] text-white/40 mt-0.5">{tool.sublabel}</div>}
-            </div>
-            {active
-              ? <div className="h-2 w-2 flex-shrink-0 rounded-full bg-white/60" />
-              : <svg className="h-4 w-4 text-white/25 group-hover:text-white/60 transition flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            }
-          </button>
-        );
-      })}
+    <DesktopPanel open={open} onClose={onClose} title="Workspace" subtitle="Your creation tools" sectionLabel="Generators" grid>
+      {WORKSPACE_TOOLS.map((tool) => (
+        <ToolGridItem key={tool.id} tool={tool} active={location.pathname.startsWith(tool.path)} onClick={() => go(tool.path)} pinned={pinnedIds.includes(tool.id)} onTogglePin={() => onTogglePin?.(tool.id)} pinDisabled={pinLimitReached && !pinnedIds.includes(tool.id)} />
+      ))}
+    </DesktopPanel>
+  );
+}
+
+/* ─── Desktop Publish panel ────────────────────────────────────────────────── */
+export function DesktopPublishPanel({ open, onClose, pinnedIds = [], onTogglePin, pinLimitReached = false }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const go = (path) => { onClose(); navigate(path); };
+
+  return (
+    <DesktopPanel key={location.pathname} open={open} onClose={onClose} title="Publish" sectionLabel="Distribution">
+      {PUBLISH_TOOLS.map((tool) => (
+        <ToolRow key={tool.id} tool={tool} active={location.pathname.startsWith(tool.path)} onClick={() => go(tool.path)} pinned={pinnedIds.includes(tool.id)} onTogglePin={() => onTogglePin?.(tool.id)} pinDisabled={pinLimitReached && !pinnedIds.includes(tool.id)} />
+      ))}
     </DesktopPanel>
   );
 }
 
 /* ─── Mobile fan menu (CapCut style) ─────────────────────────────────────── */
-export function DesktopPublishPanel({ open, onClose }) {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const go = (path) => { onClose(); navigate(path); };
-
-  return (
-    <DesktopPanel key={location.pathname} open={open} onClose={onClose} title="Publish" subtitle="">
-      {PUBLISH_TOOLS.map((tool) => {
-        const active = location.pathname.startsWith(tool.path);
-        return (
-          <button
-            key={tool.id}
-            onClick={() => go(tool.path)}
-            className={`relative w-full flex items-center gap-3.5 overflow-hidden rounded-[16px] border p-3.5 text-left transition active:scale-[0.98] group ${
-              active
-                ? "border-white/14 bg-white/[0.06]"
-                : "border-white/[0.07] bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.06]"
-            }`}
-          >
-            {active && (
-              <div
-                className="absolute inset-y-0 left-0 w-1"
-                style={{ background: "rgba(190,242,100,0.55)" }}
-              />
-            )}
-            <div
-              className={`flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-[12px] border ${
-                active ? "border-white/12 bg-white/[0.06] text-lime-100" : "border-white/[0.07] bg-white/[0.04] text-white/50 group-hover:text-white"
-              }`}
-            >
-              {tool.icon}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[14px] font-bold text-white leading-tight">{tool.label}</div>
-              {tool.sublabel && <div className="text-[11px] text-white/40 mt-0.5">{tool.sublabel}</div>}
-            </div>
-            {active
-              ? <div className="h-2 w-2 flex-shrink-0 rounded-full bg-lime-300/80" />
-              : <svg className="h-4 w-4 text-white/25 group-hover:text-white/60 transition flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            }
-          </button>
-        );
-      })}
-    </DesktopPanel>
-  );
-}
-
 export default function MobileCreateMenu({ open, onClose, anchorBottom = 72 }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) return undefined;
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+    };
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
-  }, [open]);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onClose]);
 
   const go = (path) => { onClose(); navigate(path); };
-
-  const useGridLayout = CREATE_TOOLS.length >= 4;
-  const total = CREATE_TOOLS.length;
-  const fanAngles = total === 1
-    ? [0]
-    : Array.from({ length: total }, (_, i) => {
-        const spread = total === 2 ? 64 : Math.min(96, (total - 1) * 40);
-        return -spread / 2 + (spread / (total - 1)) * i;
-      });
-
-  const FAN_RADIUS = 154; // px from center of close button
+  if (!open) return null;
 
   return createPortal(
-    <div
-      className={`fixed inset-0 z-[199] transition-all duration-300 ${
-        open ? "pointer-events-auto" : "pointer-events-none"
-      }`}
-    >
+    <div className="fixed inset-0 z-[199]" role="presentation">
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        aria-label="Close Create menu"
         onClick={onClose}
-        className={`absolute inset-0 transition-opacity duration-300 ${
-          open ? "opacity-100" : "opacity-0"
-        }`}
-        style={{ background: "rgba(0,0,0,0.82)", backdropFilter: "blur(8px)" }}
+        className="absolute inset-0 bg-black/[0.74] backdrop-blur-[7px]"
       />
 
       {/* Fan items — positioned above the center of the nav */}
-      <div
-        className="absolute left-1/2 -translate-x-1/2"
-        style={{ bottom: anchorBottom + 8 }}
+      <section
+        aria-label="Create menu"
+        className="absolute left-1/2 w-[calc(100%-28px)] max-w-[380px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-white/[0.11] bg-[#121416]/[0.98] p-3.5 shadow-[0_22px_70px_rgba(0,0,0,.62),inset_0_1px_0_rgba(255,255,255,.06)]"
+        style={{
+          bottom: `calc(${anchorBottom}px + env(safe-area-inset-bottom) + 14px)`,
+          animation: "zyvoCreateMenuIn 180ms cubic-bezier(.2,.8,.2,1) both",
+        }}
       >
-        {useGridLayout ? (
-          <div
-            className="absolute left-1/2 grid w-[244px] -translate-x-1/2 grid-cols-2 gap-x-8 gap-y-5 transition-all duration-300"
-            style={{
-              bottom: 82,
-              transform: `translateX(-50%) ${open ? "scale(1)" : "scale(0.92)"}`,
-              opacity: open ? 1 : 0,
-            }}
+        <div className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-lime-300/60 to-transparent" />
+        <div className="mb-3 flex items-center justify-between px-1">
+          <div>
+            <p className="text-[15px] font-bold tracking-[-0.02em] text-white">Create</p>
+            <p className="mt-0.5 text-[10px] font-medium text-white/35">Pick a tool and start creating</p>
+          </div>
+          <button
+            type="button"
+            aria-label="Close Create menu"
+            onClick={onClose}
+            className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.08] bg-white/[0.05] text-white/55 transition active:scale-90 active:text-white"
           >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
             {CREATE_TOOLS.map((tool, i) => (
               <button
                 key={tool.id}
+                type="button"
                 onClick={() => go(tool.path)}
-                className="flex w-[106px] flex-col items-center gap-1.5 active:scale-90 transition-transform"
+                aria-current={location.pathname.startsWith(tool.path) ? "page" : undefined}
+                className={`relative flex min-h-[72px] items-center gap-2.5 overflow-hidden rounded-[18px] border p-2.5 text-left transition active:scale-[0.97] ${
+                  location.pathname.startsWith(tool.path)
+                    ? "border-lime-300/40 bg-lime-300/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,.08),0_0_24px_rgba(190,242,100,.08)]"
+                    : "border-white/[0.08] bg-white/[0.035] hover:border-white/[0.14] hover:bg-white/[0.06]"
+                }`}
                 style={{
-                  transitionDelay: open ? `${i * 40}ms` : "0ms",
+                  animation: `zyvoCreateItemIn 200ms ${i * 30}ms cubic-bezier(.2,.8,.2,1) both`,
                 }}
               >
-                <div
-                  className="relative h-[62px] w-[62px] overflow-hidden rounded-full border-2 border-white/20"
-                  style={{ background: `linear-gradient(135deg, ${tool.color}, ${tool.color}99)` }}
-                >
+                <div className={`relative h-11 w-11 shrink-0 overflow-hidden rounded-[14px] border ${
+                  location.pathname.startsWith(tool.path) ? "border-lime-300/35" : "border-white/10"
+                }`}>
                   <img
                     src={tool.preview}
                     alt={tool.label}
-                    className={`h-full w-full object-cover scale-110 ${tool.previewPosition ?? "object-top"}`}
+                    className={`h-full w-full object-cover ${tool.previewPosition ?? "object-top"}`}
                   />
                 </div>
-                <span className="max-w-full text-center text-[11px] font-semibold leading-tight text-white/90 drop-shadow-lg">
+                <span className={`min-w-0 text-[11px] font-semibold leading-[14px] ${
+                  location.pathname.startsWith(tool.path) ? "text-lime-300" : "text-white/80"
+                }`}>
                   {tool.label}
                 </span>
+                {location.pathname.startsWith(tool.path) && (
+                  <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-lime-300 shadow-[0_0_8px_#bef264]" />
+                )}
               </button>
             ))}
-          </div>
-        ) : (
-          CREATE_TOOLS.map((tool, i) => {
-          const angleDeg = fanAngles[i] - 90; // -90 so 0deg = straight up
-          const angleRad = (angleDeg * Math.PI) / 180;
-          const x = Math.cos(angleRad) * FAN_RADIUS;
-          const y = Math.sin(angleRad) * FAN_RADIUS;
-
-          return (
-            <div
-              key={tool.id}
-              className="absolute transition-all duration-300"
-              style={{
-                left: `calc(50% + ${x}px)`,
-                bottom: `calc(0px - ${y}px)`,
-                transform: `translate(-50%, 50%) ${open ? "scale(1)" : "scale(0.5)"}`,
-                opacity: open ? 1 : 0,
-                transitionDelay: open ? `${i * 50}ms` : "0ms",
-              }}
-            >
-              <button
-                onClick={() => go(tool.path)}
-                className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
-              >
-                {/* Icon circle */}
-                <div
-                  className="relative h-[62px] w-[62px] overflow-hidden rounded-full border-2 border-white/20"
-                  style={{ background: `linear-gradient(135deg, ${tool.color}, ${tool.color}99)` }}
-                >
-                  <img
-                    src={tool.preview}
-                    alt={tool.label}
-                    className={`h-full w-full object-cover scale-110 ${tool.previewPosition ?? "object-top"}`}
-                  />
-                </div>
-                {/* Label */}
-                <span className="text-[11px] font-semibold text-white/90 whitespace-nowrap drop-shadow-lg">
-                  {tool.label}
-                </span>
-              </button>
-            </div>
-          );
-          })
-        )}
-
-        {/* Close / Create button at anchor */}
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-1/2">
-          <button
-            onClick={onClose}
-            className={`flex h-[54px] w-[54px] items-center justify-center rounded-full border-2 transition-all duration-300 ${
-              open
-                ? "border-white/30 bg-[#1a1c20] rotate-45 scale-100"
-                : "opacity-0 scale-50"
-            }`}
-          >
-            <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C11.175 2 10.5 2.675 10.5 3.5V10.5H3.5C2.675 10.5 2 11.175 2 12C2 12.825 2.675 13.5 3.5 13.5H10.5V20.5C10.5 21.325 11.175 22 12 22C12.825 22 13.5 21.325 13.5 20.5V13.5H20.5C21.325 13.5 22 12.825 22 12C22 11.175 21.325 10.5 20.5 10.5H13.5V3.5C13.5 2.675 12.825 2 12 2Z"/>
-            </svg>
-          </button>
         </div>
-      </div>
+
+        <style>{`
+          @keyframes zyvoCreateMenuIn {
+            from { opacity: 0; transform: translate(-50%, 12px) scale(.98); }
+            to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+          }
+          @keyframes zyvoCreateItemIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+      </section>
     </div>,
     document.body
   );

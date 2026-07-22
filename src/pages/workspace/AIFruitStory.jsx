@@ -213,11 +213,12 @@ export default function AIFruitStory() {
 
     setLoadedFromRecent(true);
 
-    // If all scenes have videos → go straight to step 3 (animate/results)
-    // If only images → go to step 2 (scenes ready to animate)
-    const scenes = row.scenes ?? [];
-    const hasVideos = scenes.some(s => s.videoUrl);
-    const targetStep = hasVideos ? 2 : 1;
+    // Images still generating → go to Scenes step to watch progress.
+    // Everything else (images done, animating, completed) → go straight to
+    // Animate step so the user reviews prompts and clicks Animate themselves.
+    const stillGenerating = row.status === "generating_images";
+    const hasVideos = (row.scenes ?? []).some(s => s.videoUrl);
+    const targetStep = stillGenerating ? 1 : 2;
 
     setStepIndex(targetStep);
     setMobileTab("generate");

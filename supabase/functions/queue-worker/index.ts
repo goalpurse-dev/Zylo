@@ -3,6 +3,16 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getProviderLink } from "../../../src/lib/providers.ts";
+import { logEvent as persistLog, type LogLevel } from "../_shared/systemLog.ts";
+
+function logEvent(level: LogLevel, event: string, ctx: Record<string, unknown> = {}) {
+  const icon = level === "error" ? "🔴" : level === "warn" ? "🟠" : "🟢";
+  console[level === "error" ? "error" : level === "warn" ? "warn" : "log"](
+    `${icon} [queue-worker] ${event}`,
+    JSON.stringify({ ts: new Date().toISOString(), ...ctx }),
+  );
+  void persistLog("queue-worker", level, event, ctx);
+}
 
 /* ─── CORS ─── */
 const CORS = {
@@ -140,8 +150,9 @@ async function syncCompletedJobs(sb: any): Promise<void> {
           p_retry_after: retryAfter,
           p_error:       errorPayload,
         });
-        console.log(`[queue-worker] Requeued ${row.id} after ${delay / 1000}s (attempt ${attempts}/${maxAttempts})`);
+        logEvent("warn", "queue_job_requeued", { queueJobId: row.id, jobId: row.job_id, attempts, maxAttempts, delayMs: delay });
       } else {
+        logEvent("error", "queue_job_failed", { queueJobId: row.id, jobId: row.job_id, attempts, maxAttempts, jobStatus: job.status, error: job.error });
         await sb.from("generation_queue").update({
           status:    "failed",
           attempts,
@@ -162,7 +173,7 @@ async function dispatchQueuedJobs(sb: any): Promise<{ dispatched: number }> {
 
   const availableSlots = Math.max(0, RUNWARE_TOTAL_MAX - (counts.image + counts.video));
   if (availableSlots === 0) {
-    console.log("[queue-worker] All concurrency slots full, skipping dispatch");
+    logEvent("warn", "concurrency_limit_reached", { counts, totalMax: RUNWARE_TOTAL_MAX });
     return { dispatched: 0 };
   }
 
@@ -205,13 +216,13 @@ async function dispatchQueuedJobs(sb: any): Promise<{ dispatched: number }> {
       latestCounts.total++;
       dispatched++;
 
-      console.log(`[queue-worker] Dispatched queue job ${qJob.id} → jobs row ${jobId}`);
+      logEvent("info", "queue_job_dispatched", { queueJobId: qJob.id, jobId, userId: qJob.user_id, taskType: qJob.task_type });
     } catch (e: any) {
-      console.error(`[queue-worker] Failed to dispatch ${qJob.id}:`, e?.message);
-
       const attempts    = Number(qJob.attempts ?? 0) + 1;
       const maxAttempts = Number(qJob.max_attempts ?? 5);
       const retryable   = isRetryableConcurrencyError(e) || /504|idle.?timeout/i.test(e?.message ?? "");
+
+      logEvent("error", "queue_dispatch_failed", { queueJobId: qJob.id, userId: qJob.user_id, attempts, maxAttempts, retryable, message: e?.message });
 
       if (retryable && attempts < maxAttempts) {
         await sb.rpc("requeue_generation_queue_job", {
@@ -296,8 +307,9 @@ async function createAndFireJob(sb: any, qJob: any): Promise<string> {
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    console.error(`[queue-worker] job-worker handoff failed (${res.status}): ${text.slice(0, 200)}`);
-    // Job still exists in DB — job-worker's cron will eventually pick it up
+    logEvent("error", "job_worker_handoff_failed", { jobId: job.id, queueJobId: qJob.id, status: res.status, body: text.slice(0, 200) });
+    // Job row still exists at status "queued" — nothing currently re-triggers
+    // job-worker for it automatically, so without a later sweep it stays stuck.
   }
 
   return job.id as string;
@@ -329,7 +341,7 @@ Deno.serve(async (req) => {
 
     return json({ ok: true, dispatched, worker: WORKER_ID });
   } catch (e: any) {
-    console.error("[queue-worker] Unhandled error:", e?.message);
+    logEvent("error", "unhandled_error", { message: e?.message ?? String(e) });
     return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
   }
 });

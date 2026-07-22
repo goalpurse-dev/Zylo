@@ -8,6 +8,13 @@ export default defineConfig({
     transformer: "none", // ensure Tailwind v3 uses PostCSS and NOT Lightning CSS
   },
 
+  // Browser code can never be truly secret, but production output should expose
+  // no readable source maps and should ship only minified, content-hashed files.
+  build: {
+    minify: "esbuild",
+    sourcemap: false,
+  },
+
   server: {
     proxy: {
       "/api/openai": {
@@ -27,6 +34,11 @@ export default defineConfig({
   },
 
   optimizeDeps: {
-    exclude: ["react-icons"],
+    // @ffmpeg/ffmpeg spins up a Web Worker internally — Vite's dev-time
+    // dependency pre-bundling rewrites that worker import in a way that
+    // 404s at runtime, which leaves ffmpeg.load() hanging forever waiting
+    // on a worker that never came up. Excluding both from pre-bundling
+    // lets the package's own worker URL resolution work unmodified.
+    exclude: ["react-icons", "@ffmpeg/ffmpeg", "@ffmpeg/util"],
   },
 });

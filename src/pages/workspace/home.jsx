@@ -1,135 +1,88 @@
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import Glow from "../../components/workspace/Glow.jsx";
 import Features from "../../components/workspace/features.jsx";
-import ViralShowcase from "../../components/workspace/ViralShowcase.jsx";
-import JumpBackIn from "../../components/workspace/JumpBackIn.jsx";
-import WhatsHot from "../../components/workspace/WhatsHot.jsx";
-import LatestModels from "../../components/workspace/LatestModels.jsx";
-import PopularStyles from "../../components/workspace/popularstyles.jsx";
-import PublicGallery from "../../components/public-gallery/gallery.jsx";
-import { useEffect } from "react";
+import ZyvoSuiteCarousel from "../../components/workspace/ZyvoSuiteCarousel.jsx";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 
-/* ── Big hero card data ─────────────────────────────────────────── */
-const SUITE_HERO = {
-  name: "AI Fruit Story",
-  desc: "Characters, stories, viral content & more",
-  badge: "NEW",
-  image: "/viral-builder/ai-fruit/presets/kicked-out.webp",
-  path: "/workspace/ai-fruit-story",
-};
+const ViralShowcase = lazy(() => import("../../components/workspace/ViralShowcase.jsx"));
+const LatestTrends = lazy(() => import("../../components/workspace/LatestTrends.jsx"));
+const JumpBackIn = lazy(() => import("../../components/workspace/JumpBackIn.jsx"));
+const LatestModels = lazy(() => import("../../components/workspace/LatestModels.jsx"));
+const PopularStyles = lazy(() => import("../../components/workspace/popularstyles.jsx"));
+const WhatsHot = lazy(() => import("../../components/workspace/WhatsHot.jsx"));
+const PublicGallery = lazy(() => import("../../components/public-gallery/gallery.jsx"));
 
-/* ── Right grid cards ───────────────────────────────────────────── */
-const SUITE_GRID = [
-  { name: "Face ASMR",        desc: "Viral face reveal ASMR videos",     typeLabel: "Video",  trending: true,  image: "/face/neypreview.png",                              path: "/workspace/face-asmr"           },
-  { name: "Micro Camera",    desc: "Animal bodycam goes underground",   typeLabel: "Video",  isNew: true,     image: "/viral-builder/micro-camera/preview1.png",          path: "/workspace/micro-camera-animal" },
-  { name: "Video Generator", desc: "Create cinematic videos in seconds", typeLabel: "Video",  trending: false, image: "/home/videogen.png",                               path: "/workspace/video-generator"     },
-  { name: "Viral Skeleton",  desc: "Scroll-stopping skeleton content",   typeLabel: null,     trending: true,  image: "/home/skeleton.png",                               path: "/workspace/skeleton-shorts"     },
-  { name: "Clay Rescue",     desc: "Giant hands save tiny clay worlds",  typeLabel: "Video",  isNew: true,     image: "/clayrescue/smallpreview.webp",                   path: "/workspace/clay-rescue"         },
-];
+function DeferredSection({ children, minHeight = 280, className = "" }) {
+  const sectionRef = useRef(null);
+  const [shouldRender, setShouldRender] = useState(false);
 
-/* ── Big left card ──────────────────────────────────────────────── */
-function BigSuiteCard({ tool, navigate, mobile }) {
+  useEffect(() => {
+    if (shouldRender) return undefined;
+    if (!("IntersectionObserver" in window)) {
+      setShouldRender(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setShouldRender(true);
+        observer.disconnect();
+      },
+      { rootMargin: "500px 0px" },
+    );
+
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, [shouldRender]);
+
   return (
-    <motion.button
-      onClick={() => navigate(tool.path)}
-      initial={{ opacity: 0, x: -16 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className={`group relative overflow-hidden rounded-2xl text-left focus:outline-none w-full ${
-        mobile ? "h-[200px]" : "h-full"
-      }`}
-    >
-      {/* background image */}
-      <img
-        src={tool.image}
-        alt={tool.name}
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-      />
-      {/* dark overlay — very heavy at bottom for text legibility */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/65 to-black/15" />
-      {/* extra bottom punch so title/desc always pop */}
-      <div className="absolute bottom-0 left-0 right-0 h-[55%] bg-gradient-to-t from-black/80 to-transparent" />
-
-      {/* content */}
-      <div className="relative z-10 flex flex-col h-full p-5 md:p-6">
-        {tool.badge && (
-          <span className="self-start px-2 py-0.5 rounded-md bg-[#7A3BFF] text-white text-[9px] font-black tracking-widest uppercase">
-            {tool.badge}
-          </span>
-        )}
-        <div className="mt-auto">
-          <h3 className="text-white font-black text-[20px] md:text-[26px] leading-tight tracking-tight drop-shadow-lg">
-            {tool.name}
-          </h3>
-          <p className="mt-1.5 text-white/70 text-[12px] md:text-[13px] leading-relaxed">
-            {tool.desc}
-          </p>
-          <div className="mt-4 inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-white hover:bg-white/90 transition-all shadow-lg shadow-black/40">
-            <span className="text-[#0a0a0c] text-[13px] font-bold tracking-tight">Try now ↗</span>
-          </div>
-        </div>
-      </div>
-    </motion.button>
+    <div ref={sectionRef} className={className} style={{ minHeight: shouldRender ? undefined : minHeight }}>
+      {shouldRender && (
+        <Suspense fallback={<div aria-hidden="true" style={{ minHeight }} />}>
+          {children}
+        </Suspense>
+      )}
+    </div>
   );
 }
 
-/* ── Small grid card ────────────────────────────────────────────── */
-function SmallSuiteCard({ tool, i, navigate }) {
-  return (
-    <motion.button
-      onClick={() => navigate(tool.path)}
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: i * 0.06, duration: 0.4, ease: "easeOut" }}
-      className="group relative overflow-hidden rounded-xl text-left focus:outline-none w-full h-[170px] md:h-full"
-    >
-      {/* background image — eager + high priority so it never shows black */}
-      <img
-        src={tool.image}
-        alt={tool.name}
-        fetchpriority="high"
-        decoding="async"
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.07]"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent" />
+function useDeferredHeroVideo() {
+  const [shouldLoad, setShouldLoad] = useState(false);
 
-      {/* content */}
-      <div className="relative z-10 flex flex-col h-full p-3 md:p-3.5">
-        {/* top-right badge */}
-        <div className="flex justify-end">
-          {tool.isNew ? (
-            <span className="px-2 py-0.5 rounded-md bg-emerald-400 text-black text-[9px] font-black tracking-wide uppercase">
-              New
-            </span>
-          ) : tool.trending ? (
-            <span className="px-2 py-0.5 rounded-md bg-[#f7c948] text-black text-[9px] font-black tracking-wide uppercase">
-              Trending
-            </span>
-          ) : tool.typeLabel ? (
-            <span className="px-2 py-0.5 rounded-md bg-black/50 backdrop-blur-sm border border-white/15 text-white/80 text-[9px] font-semibold">
-              {tool.typeLabel}
-            </span>
-          ) : null}
-        </div>
-        {/* bottom text */}
-        <div className="mt-auto">
-          <p className="text-white font-bold text-[13px] md:text-[14px] leading-tight drop-shadow">
-            {tool.name}
-          </p>
-          <p className="mt-0.5 text-white/55 text-[11px] leading-snug line-clamp-2">
-            {tool.desc}
-          </p>
-        </div>
-      </div>
-    </motion.button>
-  );
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 768px)");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const saveData = navigator.connection?.saveData;
+
+    if (!desktop.matches || reducedMotion.matches || saveData) return undefined;
+
+    let idleId;
+    let timeoutId;
+
+    const startVideo = () => {
+      if ("requestIdleCallback" in window) {
+        idleId = window.requestIdleCallback(() => setShouldLoad(true), { timeout: 2000 });
+      } else {
+        timeoutId = window.setTimeout(() => setShouldLoad(true), 700);
+      }
+    };
+
+    if (document.readyState === "complete") startVideo();
+    else window.addEventListener("load", startVideo, { once: true });
+
+    return () => {
+      window.removeEventListener("load", startVideo);
+      if (idleId !== undefined) window.cancelIdleCallback?.(idleId);
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+    };
+  }, []);
+
+  return shouldLoad;
 }
 
 export default function WorkspaceHome() {
-  const navigate = useNavigate();
+  const shouldLoadHeroVideo = useDeferredHeroVideo();
+  const [heroVideoReady, setHeroVideoReady] = useState(false);
 
   useEffect(() => {
     document.title = "Create Visuals Faster";
@@ -139,69 +92,71 @@ export default function WorkspaceHome() {
     <div className="flex-1 pb-24 lg:pb-12">
 
       {/* 1 — HERO */}
-      <Glow />
+      <div className="relative isolate flex min-h-[350px] flex-col justify-center overflow-hidden bg-[#090A0A] pb-4 sm:min-h-[390px] sm:pb-6 md:min-h-[440px] md:pb-4">
+        <div className="absolute inset-0 -z-40 bg-[radial-gradient(circle_at_50%_18%,#4a1f70_0%,#18101f_36%,#090A0A_72%)]" />
+        {shouldLoadHeroVideo && (
+          <video
+            className={`absolute inset-0 -z-30 hidden h-full w-full object-cover transition-opacity duration-700 md:block ${heroVideoReady ? "opacity-100" : "opacity-0"}`}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="none"
+            aria-hidden="true"
+            onCanPlay={() => setHeroVideoReady(true)}
+          >
+            <source src="/home/zyvo-hero.webm" type="video/webm" />
+            <source src="/home/zyvo-hero.mp4" type="video/mp4" />
+          </video>
+        )}
+        <div className="absolute inset-0 -z-20 bg-[linear-gradient(180deg,rgba(9,10,10,.38)_0%,rgba(9,10,10,.08)_32%,rgba(9,10,10,.32)_64%,#090A0A_100%)]" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_38%,transparent_0%,rgba(9,10,10,.14)_42%,rgba(9,10,10,.66)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 -z-10 h-[62%] bg-gradient-to-t from-[#090A0A] via-[#090A0A]/85 to-transparent" />
+        <Glow />
 
       {/* 2 — CATEGORY TABS */}
-      <Features />
+        <Features />
+      </div>
 
-      {/* 3 — SHOWCASE CARDS */}
-      <ViralShowcase />
+      {/* 3 — ZYVO SUITE */}
+      <ZyvoSuiteCarousel />
 
-      {/* 4 — ZYVO SUITE */}
-      <section className="w-full max-w-7xl mx-auto px-5 md:px-8 mt-8">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-white text-[20px] md:text-[26px] font-bold tracking-tight">
-            Zyvo Suite
-          </h2>
-          <button
-            onClick={() => navigate("/workspace/image-generator")}
-            className="text-white/50 hover:text-white text-sm font-semibold transition-colors"
-          >
-            More →
-          </button>
-        </div>
+      {/* 4 — SHOWCASE CARDS */}
+      <DeferredSection minHeight={280}>
+        <ViralShowcase />
+      </DeferredSection>
 
-        {/* DESKTOP — big card left + 3×2 grid right, fixed height so both sides are equal */}
-        <div className="hidden md:flex gap-4 h-[300px] lg:h-[340px] xl:h-[360px] max-h-[380px]">
-          <div className="w-[36%] xl:w-[40%] shrink-0 h-full">
-            <BigSuiteCard tool={SUITE_HERO} navigate={navigate} />
-          </div>
-          <div className="flex-1 h-full grid grid-cols-3 grid-rows-2 gap-3">
-            {SUITE_GRID.map((tool, i) => (
-              <SmallSuiteCard key={tool.name} tool={tool} i={i} navigate={navigate} />
-            ))}
-          </div>
-        </div>
-
-        {/* MOBILE — stacked: big card then 2-col grid */}
-        <div className="md:hidden flex flex-col gap-3">
-          <BigSuiteCard tool={SUITE_HERO} navigate={navigate} mobile />
-          <div className="grid grid-cols-2 gap-3">
-            {SUITE_GRID.map((tool, i) => (
-              <SmallSuiteCard key={tool.name} tool={tool} i={i} navigate={navigate} />
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 5 — LATEST TRENDS */}
+      <DeferredSection minHeight={620}>
+        <LatestTrends />
+      </DeferredSection>
 
       {/* 6 — JUMP BACK IN */}
-      <JumpBackIn />
+      <DeferredSection minHeight={240}>
+        <JumpBackIn />
+      </DeferredSection>
 
      
 
       {/* 7 — LATEST AI MODELS */}
-      <LatestModels />
+      <DeferredSection minHeight={340}>
+        <LatestModels />
+      </DeferredSection>
 
       {/* 8 — POPULAR STYLES */}
-      <PopularStyles />
+      <DeferredSection minHeight={360}>
+        <PopularStyles />
+      </DeferredSection>
 
       {/* 9 — WHAT'S HOT */}
-      <WhatsHot />
+      <DeferredSection minHeight={360}>
+        <WhatsHot />
+      </DeferredSection>
 
       {/* 10 — INSPIRATION GALLERY */}
-      <div className="mt-8">
+      <DeferredSection minHeight={900} className="mt-8">
         <PublicGallery />
-      </div>
+      </DeferredSection>
 
     </div>
   );

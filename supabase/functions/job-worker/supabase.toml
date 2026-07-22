@@ -1,4 +1,5 @@
 [functions.job-worker]
+# Explicit bearer authentication and job-owner checks are enforced in index.ts.
 # Let the function run even if the client didn’t attach a valid JWT.
 # We already use SERVICE_ROLE inside the function to do the DB work.
 verify_jwt = false

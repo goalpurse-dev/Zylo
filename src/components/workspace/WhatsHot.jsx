@@ -110,7 +110,7 @@ export default function WhatsHot() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.52, ease: "easeOut" }}
-      className="w-full max-w-7xl mx-auto px-5 md:px-8 mt-8"
+      className="w-full px-5 md:px-[50px] mt-8"
     >
       {/* ── Header ── */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">
@@ -189,7 +189,8 @@ function HotCard({ item, navigate }) {
       <img
         src={item.image}
         alt={item.title}
-        fetchpriority="high"
+        loading="lazy"
+        fetchPriority="low"
         decoding="async"
         className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
       />
@@ -199,7 +200,7 @@ function HotCard({ item, navigate }) {
           src={item.video}
           poster={item.image}
           autoPlay muted loop playsInline
-          preload="metadata"
+          preload="none"
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}

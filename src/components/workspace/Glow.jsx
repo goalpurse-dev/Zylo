@@ -2,14 +2,22 @@ import { motion } from "framer-motion";
 
 export default function GlowHeader() {
   return (
-    <section className="relative w-full pt-6 md:pt-10 pb-1 overflow-hidden bg-[#090A0A]">
+    <section className="relative w-full overflow-hidden pt-4 sm:pt-7 md:pt-10">
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 text-center px-5 md:px-8"
+        className="relative z-10 px-3 text-center sm:px-5 md:px-8"
       >
-        <h1 className="text-[30px] md:text-[50px] lg:text-[58px] font-black leading-[1.15] tracking-tight">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 hidden items-center gap-2 rounded-full border border-white/10 bg-[#110d16]/45 px-3.5 py-1.5 text-[11px] font-bold text-white/75 shadow-[0_8px_30px_rgba(0,0,0,.2)] backdrop-blur-xl md:inline-flex"
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-[#a970ff] shadow-[0_0_10px_#a970ff]" />
+          AI creation suite for viral content
+        </motion.div>
+        <h1 className="mx-auto max-w-4xl text-[30px] font-black leading-[1.04] tracking-[-0.045em] sm:text-[36px] md:text-[52px] lg:text-[58px] xl:text-[64px]">
           <motion.span
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -24,7 +32,7 @@ export default function GlowHeader() {
             transition={{ delay: 0.15, duration: 0.5 }}
             className="block"
           >
-            <span className="bg-gradient-to-r from-[#c084fc] via-[#e879f9] to-[#f472b6] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#d8c1ff] via-[#a970ff] to-[#e879f9] bg-clip-text text-transparent">
               create
             </span>
             <span className="text-white"> today?</span>
@@ -36,12 +44,6 @@ export default function GlowHeader() {
           </motion.span>
         </h1>
 
-        <motion.div
-          initial={{ scaleX: 0, opacity: 0 }}
-          animate={{ scaleX: 1, opacity: 1 }}
-          transition={{ delay: 0.35, duration: 0.5 }}
-          className="mt-5 h-px w-20 mx-auto bg-gradient-to-r from-transparent via-white/20 to-transparent"
-        />
       </motion.div>
     </section>
   );

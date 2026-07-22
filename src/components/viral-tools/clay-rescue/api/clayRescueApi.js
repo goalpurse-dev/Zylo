@@ -3,23 +3,21 @@ import { supabase } from "../../../../lib/supabaseClient";
 
 /* ── Constants ──────────────────────────────────────────────── */
 export const IMAGE_TOOL_KEY  = "image:fruit-v2";
-// Sound ON  → Veo 3.1 Lite   (native audio, $0.05/s)
+// Sound ON  → Seedance 2.0 Fast (audio is always included by the model)
 // Sound OFF → Seedance 1.5 Pro (no audio, much cheaper)
-export const VIDEO_TOOL_KEY         = "video:veo31lite";     // with sound
+export const VIDEO_TOOL_KEY         = "video:seedance20fast"; // with sound
 export const VIDEO_TOOL_KEY_SILENT  = "video:seedance15pro"; // without sound
 export const IMAGE_CREDITS          = 2;                     // ~$0.013 cost × 2 = ~2 credits
-export const VIDEO_CREDITS_SOUND    = 30;                    // 5 cr/s × 6s — Veo 3.1 Lite + audio
-export const VIDEO_CREDITS_NO_SOUND = 8;                     // Seedance 1.5 Pro flat rate (original)
+export const VIDEO_CREDITS_SOUND    = 37;                    // measured $0.364092 / 6s, rounded up
+export const VIDEO_CREDITS_NO_SOUND = 18;                    // Seedance 1.5 Pro: ceil(2.5 cr/s × 7s)
 export const VIDEO_CREDITS          = VIDEO_CREDITS_SOUND;   // legacy alias
 export const VIDEO_DURATION         = 7;                     // Seedance (silent) — 7s supported
-export const VIDEO_DURATION_SOUND   = 6;                     // Veo 3.1 Lite — supported: 4s / 6s / 8s
+export const VIDEO_DURATION_SOUND   = 6;                     // Seedance 2.0 Fast
 export const IMAGE_W         = 768;
 export const IMAGE_H         = 1376;
-// Must be one of Veo 3.1 Lite's allowed resolutions (720x1280, 1280x720,
-// 1920x1080, 1080x1920) — Runware rejects anything else with
-// "unsupportedModelResolution". Seedance 1.5 Pro (the silent fallback)
-// also accepts 720x1280 fine, so one pair works for both toolKeys.
-export const VIDEO_W         = 720;
+export const VIDEO_W_SOUND   = 496;  // Seedance 2.0 Fast 480p portrait
+export const VIDEO_H_SOUND   = 864;
+export const VIDEO_W         = 720;  // Seedance 1.5 Pro silent fallback
 export const VIDEO_H         = 1280;
 
 export const LENGTH_OPTIONS = [
@@ -29,13 +27,31 @@ export const LENGTH_OPTIONS = [
 
 function buildCausalVideoPrompt({ problem, fix, fixAction, resolvedState, reaction }) {
   return (
-    `6-second vertical miniature claymation. FIRST FRAME is the crisis: ${problem} is still fully visible and clay people are scared. ` +
-    `LAST FRAME must be the solved celebration: ${resolvedState}. ` +
-    `Exact timing: 0-2s show the unsolved crisis clearly, no smiles. 2-3s giant realistic hand enters with ${fix}. ` +
-    `3-5s the hand performs the fix: ${fixAction} The problem must visibly move, vanish, dry up, seal, melt, or get cleared on screen. ` +
-    `By second 5 the original problem is completely gone. 5-6s only after it is gone: ${reaction}. ` +
-    `Preserve the clay world, camera angle, tiny characters, handmade texture, and lighting, but DO NOT preserve the problem object or water/fire/spill/blockage. ` +
-    `Removing the problem is required, not a continuity error. If any problem remains visible, characters stay worried and do not celebrate. No text, no UI, no watermark. ` +
+    `6-second vertical miniature claymation. ONE CONTINUOUS SHOT — no cuts, no scene changes, no transitions, no jump to a different scene. ` +
+    `The same camera angle is maintained from the first frame to the last. ` +
+
+    `SECOND 0-2: Show the active crisis — ${problem} is clearly present and severe. Clay people look scared and helpless. No smiles. ` +
+
+    `SECOND 2-3: A giant realistic human hand enters the frame from above, holding ${fix}. ` +
+    `The hand moves DIRECTLY TOWARD THE PROBLEM (the ${problem}) — NOT toward the clay characters. ` +
+    `The hand must never touch, wipe, or interact with the clay people. ` +
+
+    `SECOND 3-5: The hand applies ${fix} DIRECTLY TO THE PROBLEM AREA — ${fixAction} ` +
+    `The problem GRADUALLY AND PHYSICALLY disappears as a direct result of the fix: ` +
+    `if it is flood water, the water level visibly drops inch by inch as the fix absorbs it — you can see the ground slowly reappearing. ` +
+    `If it is fire, the flames visibly shrink and die out one by one. ` +
+    `This is a continuous physical process shown in real time — NOT an instant vanish, NOT a scene cut, NOT a dissolve to the solved state. ` +
+    `The viewer watches the problem being physically eliminated within the same shot. ` +
+
+    `SECOND 5-6: The problem is now 100% gone. The resolved state: ${resolvedState}. ` +
+    `Only NOW do the clay people react — ${reaction}. ` +
+
+    `ABSOLUTE RULES: ` +
+    `(1) The hand only touches the problem element, never the characters. ` +
+    `(2) The problem disappears gradually through the physical action of the fix — never instantly, never via a cut or dissolve. ` +
+    `(3) This is one uninterrupted continuous shot. No scene change. No flash. No cut to a different angle or a pre-resolved frame. ` +
+    `(4) Characters celebrate only AFTER the problem is visibly gone within the same continuous shot. ` +
+    `No text, no UI, no watermark. ` +
     SOUND_DIRECTION
   );
 }
@@ -108,7 +124,7 @@ export function calcCredits(sceneCount, withSound = true) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   SOUND DIRECTION  (Veo 3.1 Fast generates native audio)
+   SOUND DIRECTION  (Seedance 2.0 Fast includes native audio)
    Rules:
    • Physical / diegetic sounds only — touching, moving, clay
    • Water / liquid sounds for relevant scenarios
@@ -169,22 +185,35 @@ function buildFinalFramePrompt({ problem, fix, fixAction, resolvedState, reactio
   );
 }
 
-// Standard 7-second video structure (used as the closing paragraph of every video prompt)
 const VIDEO_STRUCTURE =
-  "Create a 6-second vertical miniature claymation animation using Image A as the opening state " +
-  "and Image B as the target rescue state. " +
-  "The fix effect must be MASSIVELY OVERDONE and absurdly powerful — this absurd contrast IS the comedy. " +
-  "WHAT TO PRESERVE (must not change): the buildings, street layout, characters, camera angle, clay art style, and lighting direction. " +
-  "WHAT MUST CHANGE (this is required and allowed): the problem element — flood water, fire, earthquake crack — " +
-  "MUST visually disappear completely during the video. This is not a violation of scene consistency; removing the problem IS the goal. " +
-  "The video follows this causal chain: " +
-  "0–2s: crisis is fully visible and intense — characters show fear and panic. " +
-  "2–3s: giant realistic human hand enters from above holding the fix item. " +
-  "3–5s: fix item is applied — the problem element physically disappears as a direct result. " +
-  "Show the water being absorbed and the ground becoming dry. Show the fire being extinguished and the building going dark. " +
-  "The problem MUST be gone by second 5 — the camera does not need to stay on a flooded or burning scene. " +
-  "5–6s: scene is safe, problem is 100% gone, clay characters celebrate explosively — jumping, bouncing, arms raised, huge smiles. " +
-  "Celebration starts ONLY after the problem has visually left the frame. " +
+  "Create a 6-second vertical miniature claymation animation. " +
+  "ONE CONTINUOUS UNCUT SHOT from start to finish — no cuts, no transitions, no jump to a different scene, no dissolve to the resolved state. " +
+  "Image A is the opening crisis state. Image B is the final resolved state. " +
+  "The video shows the PHYSICAL PROCESS of getting from A to B within the same continuous shot. " +
+
+  "WHAT MUST STAY THE SAME throughout: buildings, street layout, camera angle, clay art style, lighting. " +
+  "WHAT MUST CHANGE during the video: the problem element (water, fire, crack, blockage) is physically eliminated by the fix item. " +
+
+  "TIMING: " +
+  "0–2s: The crisis is fully active and intense. Characters are scared, panicked, helpless. No smiles whatsoever. " +
+  "2–3s: A giant realistic human hand descends from above holding the fix item. " +
+  "The hand moves directly toward the PROBLEM (the water, fire, or blockage) — NOT toward the characters. " +
+  "The hand must never touch, wipe, or grab any clay person. " +
+  "3–5s: The fix item makes DIRECT PHYSICAL CONTACT with the problem and begins eliminating it. " +
+  "The elimination is GRADUAL and VISIBLE in real time within this same shot: " +
+  "— flood water: the water level visibly drops frame by frame as the sponge or towel absorbs it, revealing dry ground incrementally. " +
+  "— fire: flames visibly shrink and extinguish one by one as water hits them. " +
+  "— blockage: the obstruction is physically lifted or removed, gap opens progressively. " +
+  "This physical process is shown continuously — it is NOT an instant vanish, NOT a cut, NOT a sudden scene change. " +
+  "The viewer watches the problem being eliminated in real time. " +
+  "5–6s: Problem is 100% gone. Characters now notice the miracle and erupt in joyful celebration. " +
+  "Celebration ONLY starts after the problem has fully disappeared within this same shot. " +
+
+  "HARD RULES: " +
+  "(1) Hand interacts with the problem element only — never with characters. " +
+  "(2) Problem disappears gradually through the physical action of the fix — never instantly. " +
+  "(3) Single continuous shot — no scene change, no cut, no dissolve to a pre-resolved frame. " +
+  "(4) The absurd comedy comes from the fix being ridiculously oversized/simple yet perfectly effective. " +
   "No text, no UI, no watermark. " +
   SOUND_DIRECTION;
 
@@ -219,12 +248,12 @@ const AI_SCENARIOS = [
 
     videoPrompt:
       `${VIDEO_STRUCTURE} ` +
-      `Specific action: the hand presses a sponge into the floodwater. ` +
-      `The flood water IS ALLOWED TO AND MUST disappear — this is required, not a scene violation. ` +
-      `Show the water level visibly dropping as the sponge absorbs it, until the cobblestones are completely dry and visible. ` +
-      `The scene goes from flooded street to dry clean cobblestone street — this transition IS the point of the video. ` +
-      `The effect is absurdly overdone: one sponge removes all the water instantly. ` +
-      `Zero water on the ground before anyone smiles. Then full joyful celebration.`,
+      `Specific action for this scene: the giant hand presses a large yellow sponge DIRECTLY INTO THE FLOOD WATER on the cobblestone street — not onto any character. ` +
+      `The sponge makes contact with the water surface and you can watch the water level DROP GRADUALLY as the sponge absorbs it — ` +
+      `first the tops of the cobblestones reappear, then more stones, then the street becomes progressively drier inch by inch. ` +
+      `This absorption process is shown as a continuous physical effect, not an instant vanish. ` +
+      `The sponge visibly swells and darkens as it soaks up the water. ` +
+      `By second 5 the cobblestones are completely dry. Then and only then do the villagers cheer.`,
   },
   {
     tag: "homeless",
@@ -575,8 +604,8 @@ export async function animateSceneClip({ fixImageUrl, problemImageUrl, videoProm
   return createVideoJobSimple({
     subject:           videoPrompt,
     toolKey:           withSound ? VIDEO_TOOL_KEY : VIDEO_TOOL_KEY_SILENT,
-    width:             VIDEO_W,
-    height:            VIDEO_H,
+    width:             withSound ? VIDEO_W_SOUND : VIDEO_W,
+    height:            withSound ? VIDEO_H_SOUND : VIDEO_H,
     durationSec:       withSound ? VIDEO_DURATION_SOUND : VIDEO_DURATION,
     initImageUrls,
     calculatedCredits: withSound ? VIDEO_CREDITS_SOUND : VIDEO_CREDITS_NO_SOUND,
@@ -585,20 +614,24 @@ export async function animateSceneClip({ fixImageUrl, problemImageUrl, videoProm
 }
 
 /* ── Supabase persistence ───────────────────────────────────── */
-export async function createClayRescueGeneration({ lengthId, scenes }) {
-  const { data: userData, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !userData?.user) throw new Error("Must be signed in");
-
-  const savedScenes = (scenes ?? [])
+function serializeScenes(scenes) {
+  return (scenes ?? [])
     .filter((s) => s.fixUrl || s.imageUrl || s.problemUrl || s.videoUrl)
     .map((s, i) => ({
       index:      s.index ?? i,
       problem:    s.problem ?? "",
       fix:        s.fix ?? "",
       problemUrl: s.problemUrl ?? null,
-      fixUrl:     s.fixUrl ?? s.imageUrl ?? null,  // hook stores fix image as imageUrl
+      fixUrl:     s.fixUrl ?? s.imageUrl ?? null,
       videoUrl:   s.videoUrl ?? null,
     }));
+}
+
+export async function createClayRescueGeneration({ lengthId, scenes }) {
+  const { data: userData, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !userData?.user) throw new Error("Must be signed in");
+
+  const savedScenes = serializeScenes(scenes);
 
   if (!savedScenes.length) throw new Error("No scenes to save");
 
@@ -609,6 +642,109 @@ export async function createClayRescueGeneration({ lengthId, scenes }) {
 
   if (error) throw new Error(error.message);
   return normalizeRow(data);
+}
+
+export async function updateClayRescueGenerationFinalVideo(generationId, finalVideoUrl) {
+  if (!generationId || !finalVideoUrl) throw new Error("Missing generation or final video URL");
+
+  const { data: userData, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !userData?.user) throw new Error("Must be signed in");
+
+  const { data, error } = await supabase
+    .from("clay_rescue_generations")
+    .update({ final_video_url: finalVideoUrl })
+    .eq("id", generationId)
+    .eq("user_id", userData.user.id)
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return normalizeRow(data);
+}
+
+export async function updateClayRescueGenerationScenes(generationId, scenes) {
+  if (!generationId) throw new Error("Missing generation id");
+  const savedScenes = serializeScenes(scenes);
+  if (!savedScenes.length) throw new Error("No scenes to save");
+
+  const { data: userData, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !userData?.user) throw new Error("Must be signed in");
+
+  const { data, error } = await supabase
+    .from("clay_rescue_generations")
+    .update({ scenes: savedScenes })
+    .eq("id", generationId)
+    .eq("user_id", userData.user.id)
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return normalizeRow(data);
+}
+
+export async function clearClayRescueGenerationFinalVideo(generationId) {
+  if (!generationId) return null;
+
+  const { data: userData, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !userData?.user) throw new Error("Must be signed in");
+
+  const { data, error } = await supabase
+    .from("clay_rescue_generations")
+    .update({ final_video_url: null })
+    .eq("id", generationId)
+    .eq("user_id", userData.user.id)
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return normalizeRow(data);
+}
+
+export async function recoverClayRescueGenerationVideos(generation) {
+  const missingScenes = (generation?.scenes ?? []).filter(
+    (scene) => !scene.videoUrl && (scene.fixUrl || scene.imageUrl),
+  );
+  if (!generation?.id || missingScenes.length === 0) return generation;
+
+  const { data: userData, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !userData?.user) return generation;
+
+  let query = supabase
+    .from("jobs")
+    .select("id, input, result_url, created_at, tool_key")
+    .eq("user_id", userData.user.id)
+    .eq("type", "video")
+    .eq("status", "succeeded")
+    .in("tool_key", ["video:veo31lite", "video:seedance20fast", "video:seedance15pro"])
+    .not("result_url", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  const createdAt = generation.createdAt ?? generation.created_at;
+  if (createdAt) query = query.gte("created_at", createdAt);
+
+  const { data: jobs, error } = await query;
+  if (error || !jobs?.length) return generation;
+
+  let recoveredCount = 0;
+  const recoveredScenes = generation.scenes.map((scene) => {
+    if (scene.videoUrl) return scene;
+    const fixUrl = scene.fixUrl ?? scene.imageUrl;
+    if (!fixUrl) return scene;
+
+    const matchingJob = jobs.find((job) => {
+      const refs = Array.isArray(job.input?.ref_images) ? job.input.ref_images : [];
+      return refs.includes(fixUrl) && typeof job.result_url === "string";
+    });
+    if (!matchingJob) return scene;
+
+    recoveredCount += 1;
+    return { ...scene, videoUrl: matchingJob.result_url };
+  });
+
+  if (recoveredCount === 0) return generation;
+  const updated = await updateClayRescueGenerationScenes(generation.id, recoveredScenes);
+  return await clearClayRescueGenerationFinalVideo(updated.id);
 }
 
 export async function listClayRescueGenerations(limit = 8) {
@@ -624,6 +760,7 @@ function normalizeRow(row) {
   return {
     ...row,
     createdAt: row.created_at ?? row.createdAt ?? null,
+    finalVideoUrl: row.final_video_url ?? row.finalVideoUrl ?? null,
     scenes: Array.isArray(row.scenes) ? row.scenes : [],
   };
 }

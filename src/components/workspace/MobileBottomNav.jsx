@@ -1,105 +1,154 @@
-import { useState, isValidElement } from "react";
+import { useEffect, useState, isValidElement } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, PenLine, Folder, LayoutGrid } from "lucide-react";
+import { Home, Folder, LayoutGrid, Sparkles, X } from "lucide-react";
 import { createPortal } from "react-dom";
-import MobileCreateMenu from "./CreateMenu";
+import MobileCreateMenu, { WORKSPACE_TOOLS } from "./CreateMenu";
 
 /* ─── Workspace pop-up menu (image + video) ──────────────────────────────── */
-const WORKSPACE_ITEMS = [
-  {
-    id: "image",
-    label: "Image",
-    path: "/workspace/image-generator",
-    icon: (
-      <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-        <rect x="3" y="3" width="18" height="18" rx="3" />
-        <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" stroke="none" />
-        <path d="M21 15l-5-5L5 21" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-  {
-    id: "video",
-    label: "Video",
-    path: "/workspace/video-generator",
-    icon: (
-      <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-        <path d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14" strokeLinecap="round" />
-        <rect x="3" y="7" width="12" height="10" rx="2" />
-      </svg>
-    ),
-  },
-  {
-    id: "script",
-    label: "Script",
-    path: "/workspace/viral-script",
-    icon: (
-      <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-        <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-];
-
-function WorkspacePopup({ open, onClose, anchorRef }) {
+function CenteredActionMenu({ open, onClose, title, items, columns = 3 }) {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   const go = (path) => { onClose(); navigate(path); };
 
   return createPortal(
-    <div className="fixed inset-0 z-[190]" onClick={onClose}>
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      {/* Fan of 2 items above Workspace nav item */}
-      <div
-        className="absolute"
-        style={{ bottom: "calc(72px + env(safe-area-inset-bottom) + 12px)", left: "calc(10%)" }}
+    <div className="fixed inset-0 z-[190]" role="presentation">
+      <button
+        type="button"
+        aria-label={`Close ${title} menu`}
+        className="absolute inset-0 bg-black/70 backdrop-blur-[7px]"
+        onClick={onClose}
+      />
+
+      <section
+        aria-label={`${title} menu`}
+        className="absolute left-1/2 w-[calc(100%-28px)] max-w-[380px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-white/[0.11] bg-[#121416]/[0.97] p-3.5 shadow-[0_22px_70px_rgba(0,0,0,.58),inset_0_1px_0_rgba(255,255,255,.06)]"
+        style={{
+          bottom: "calc(78px + env(safe-area-inset-bottom) + 14px)",
+          animation: "zyvoMobileMenuIn 180ms cubic-bezier(.2,.8,.2,1) both",
+        }}
       >
-        <div className="flex gap-5" onClick={(e) => e.stopPropagation()}>
-          {WORKSPACE_ITEMS.map((item, i) => (
-            <div
-              key={item.id}
-              className="flex flex-col items-center gap-2 transition-all"
-              style={{
-                animation: `popUp 0.22s ${i * 60}ms cubic-bezier(0.34,1.56,0.64,1) both`,
-              }}
-            >
-              <button
-                onClick={() => go(item.path)}
-                className="h-[56px] w-[56px] flex items-center justify-center rounded-full bg-[#1a1c24] border border-white/15 active:scale-90 transition-transform"
-              >
-                {item.icon}
-              </button>
-              <span className="text-[11px] font-semibold text-white/80">{item.label}</span>
-            </div>
-          ))}
+        <div className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-lime-300/60 to-transparent" />
+
+        <div className="mb-3 flex items-center justify-between px-1">
+          <div>
+            <p className="text-[15px] font-bold tracking-[-0.02em] text-white">{title}</p>
+            <p className="mt-0.5 text-[10px] font-medium text-white/35">Choose where you want to go</p>
+          </div>
+          <button
+            type="button"
+            aria-label={`Close ${title} menu`}
+            onClick={onClose}
+            className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.08] bg-white/[0.05] text-white/55 transition active:scale-90 active:text-white"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
-      </div>
-      <style>{`
-        @keyframes popUp {
-          from { opacity: 0; transform: translateY(18px) scale(0.7); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-      `}</style>
+
+        <div className={`grid gap-2 ${columns === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+          {items.map((item, index) => {
+            const active = location.pathname.startsWith(item.path);
+
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => go(item.path)}
+                aria-current={active ? "page" : undefined}
+                className={`relative flex min-h-[96px] flex-col items-center justify-center gap-2 overflow-hidden rounded-[18px] border px-2 py-3 text-center transition active:scale-[0.96] ${
+                  active
+                    ? "border-lime-300/40 bg-lime-300/[0.09] text-lime-300 shadow-[inset_0_1px_0_rgba(255,255,255,.08),0_0_24px_rgba(190,242,100,.08)]"
+                    : "border-white/[0.08] bg-white/[0.035] text-white hover:border-white/[0.14] hover:bg-white/[0.06]"
+                }`}
+                style={{
+                  animation: `zyvoMobileItemIn 200ms ${index * 35}ms cubic-bezier(.2,.8,.2,1) both`,
+                }}
+              >
+                <span
+                  className={`grid h-11 w-11 place-items-center rounded-[14px] border transition ${
+                    active
+                      ? "border-lime-300/25 bg-lime-300/[0.10] text-lime-300"
+                      : "border-white/[0.09] bg-black/20 text-white"
+                  }`}
+                >
+                  {item.preview ? (
+                    <img
+                      src={item.preview}
+                      alt=""
+                      className="h-7 w-7 object-contain"
+                    />
+                  ) : item.icon}
+                </span>
+                <span className={`text-[11px] font-semibold leading-[14px] ${active ? "text-lime-300" : "text-white/80"}`}>
+                  {item.label}
+                </span>
+                {active && <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-lime-300 shadow-[0_0_8px_#bef264]" />}
+              </button>
+            );
+          })}
+        </div>
+
+        <style>{`
+          @keyframes zyvoMobileMenuIn {
+            from { opacity: 0; transform: translate(-50%, 12px) scale(.98); }
+            to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+          }
+          @keyframes zyvoMobileItemIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+      </section>
     </div>,
     document.body
   );
 }
 
 /* ─── Nav item ───────────────────────────────────────────────────────────── */
-function NavItem({ name, icon: Icon, path, active, onClick }) {
+function NavItem({ name, icon: Icon, iconSrc, active, onClick, expanded }) {
   return (
     <button
+      type="button"
       onClick={onClick || undefined}
-      className="ftg-nav-item flex flex-1 justify-center"
+      aria-expanded={expanded}
+      className="ftg-nav-item flex w-[52px] shrink-0 flex-col items-center gap-1 rounded-xl py-1 transition active:scale-95"
     >
-      <div className={`flex flex-col items-center justify-center w-[60px] h-[50px] rounded-xl transition-all duration-200 active:scale-95 ${
-        active ? "bg-white text-black" : "text-white/55"
+      <span className={`grid h-6 w-6 place-items-center transition-colors ${
+        active ? "text-lime-300" : "text-white"
       }`}>
-        {isValidElement(Icon) ? Icon : <Icon size={20} />}
-        <span className="text-[10px] mt-[2px] font-medium">{name}</span>
-      </div>
+        {iconSrc ? (
+          <span
+            aria-hidden="true"
+            className="block h-[25px] w-[25px] bg-current"
+            style={{
+              WebkitMaskImage: `url("${iconSrc}")`,
+              maskImage: `url("${iconSrc}")`,
+              WebkitMaskPosition: "center",
+              maskPosition: "center",
+              WebkitMaskRepeat: "no-repeat",
+              maskRepeat: "no-repeat",
+              WebkitMaskSize: "contain",
+              maskSize: "contain",
+            }}
+          />
+        ) : isValidElement(Icon) ? Icon : <Icon size={23} strokeWidth={1.9} />}
+      </span>
+      <span className={`w-full text-center text-[11px] font-medium leading-4 tracking-[0.1px] ${
+        active ? "text-lime-300" : "text-white/55"
+      }`}>
+        {name}
+      </span>
     </button>
   );
 }
@@ -111,7 +160,18 @@ export default function MobileBottomNav({ hidden }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
 
-  const NAV_HEIGHT = 72;
+  const NAV_HEIGHT = 78;
+  const createActive =
+    location.pathname.startsWith("/workspace/ai-fruit-story") ||
+    location.pathname.startsWith("/workspace/face-asmr") ||
+    location.pathname.startsWith("/workspace/micro-camera-animal") ||
+    location.pathname.startsWith("/workspace/clay-rescue") ||
+    location.pathname.startsWith("/workspace/ai-cooking-matic") ||
+    location.pathname.startsWith("/workspace/footballer-nationality-swap");
+  const anyMenuOpen = createOpen || workspaceOpen;
+  const workspaceRouteActive =
+    location.pathname.startsWith("/workspace/image-generator") ||
+    location.pathname.startsWith("/workspace/video-generator");
 
   return (
     <>
@@ -120,14 +180,15 @@ export default function MobileBottomNav({ hidden }) {
         onClose={() => setCreateOpen(false)}
         anchorBottom={NAV_HEIGHT}
       />
-      <WorkspacePopup
+      <CenteredActionMenu
         open={workspaceOpen}
         onClose={() => setWorkspaceOpen(false)}
+        title="Tools"
+        items={WORKSPACE_TOOLS}
+        columns={2}
       />
-
-
       <div
-        className={`ftg-bottom-nav fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-[#0e1012] border-t border-white/[0.07] transition-opacity duration-300 ${
+        className={`ftg-bottom-nav fixed bottom-0 left-0 right-0 z-[100] border-t border-white/[0.08] bg-[linear-gradient(180deg,#1b1d1f_0%,#17191b_100%)] shadow-[0_-18px_45px_rgba(0,0,0,.28)] transition-opacity duration-300 lg:hidden ${
           hidden ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
         style={{
@@ -135,64 +196,47 @@ export default function MobileBottomNav({ hidden }) {
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        <div className={`flex items-center justify-between px-2 h-[${NAV_HEIGHT}px]`} style={{ height: NAV_HEIGHT }}>
+        {/*
+          RESTORE LATER: the Home-only raised Create treatment is temporarily
+          disabled while Publish is hidden. It used `useRaisedCreateItem`, a
+          split top border, a 92px curved notch, and a 48px lime/cyan gradient
+          Create orb positioned at -mt-[23px]. The flat NavItem below replaces it.
+        */}
+
+        <div className="relative z-[1] flex items-start justify-between px-4 pt-[12px]" style={{ height: NAV_HEIGHT }}>
 
           {/* Home */}
           <NavItem
             name="Home"
             icon={Home}
-            path="/workspace/home"
-            active={location.pathname === "/workspace/home"}
+            active={!anyMenuOpen && location.pathname === "/workspace/home"}
             onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/workspace/home"); }}
           />
 
-          {/* Workspace */}
-          <button
-            className="ftg-nav-item flex flex-1 justify-center"
-            onClick={() => { setCreateOpen(false); setWorkspaceOpen((v) => !v); }}
-          >
-            <div className={`flex flex-col items-center justify-center w-[60px] h-[50px] rounded-xl transition-all duration-200 active:scale-95 ${
-              workspaceOpen ||
-              location.pathname.includes("image-generator") ||
-              location.pathname.includes("video-generator") ||
-              location.pathname.includes("viral-script")
-                ? "bg-white text-black"
-                : "text-white/55"
-            }`}>
-              <LayoutGrid size={20} />
-              <span className="text-[10px] mt-[2px] font-medium">Workspace</span>
-            </div>
-          </button>
+          {/* Create — same orb everywhere, raised only on Home */}
+          <NavItem
+            name="Create"
+            icon={Sparkles}
+            active={createOpen || (!anyMenuOpen && createActive)}
+            expanded={createOpen}
+            onClick={() => { setWorkspaceOpen(false); setCreateOpen((value) => !value); }}
+          />
 
-          {/* Create */}
-          <button
-            className="ftg-nav-item flex flex-1 justify-center"
-            onClick={() => { setWorkspaceOpen(false); setCreateOpen((v) => !v); }}
-            style={{ WebkitTapHighlightColor: "transparent" }}
-          >
-            <div className={`flex flex-col items-center justify-center w-[60px] h-[50px] rounded-xl transition-all duration-200 active:scale-95 ${
-              location.pathname.startsWith("/workspace/ai-fruit-story") ||
-              location.pathname.startsWith("/workspace/face-asmr") ||
-              location.pathname.startsWith("/workspace/micro-camera-animal") ||
-              location.pathname.startsWith("/workspace/clay-rescue")
-                ? "bg-white text-black" : "text-white/55"
-            }`}>
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C11.175 2 10.5 2.675 10.5 3.5V10.5H3.5C2.675 10.5 2 11.175 2 12C2 12.825 2.675 13.5 3.5 13.5H10.5V20.5C10.5 21.325 11.175 22 12 22C12.825 22 13.5 21.325 13.5 20.5V13.5H20.5C21.325 13.5 22 12.825 22 12C22 11.175 21.325 10.5 20.5 10.5H13.5V3.5C13.5 2.675 12.825 2 12 2Z"/>
-              </svg>
-              <span className="text-[10px] mt-[2px] font-medium">Create</span>
-            </div>
-          </button>
+          {/* Tools */}
+          <NavItem
+            name="Tools"
+            icon={LayoutGrid}
+            active={workspaceOpen || (!anyMenuOpen && workspaceRouteActive)}
+            onClick={() => { setCreateOpen(false); setWorkspaceOpen((value) => !value); }}
+          />
 
           {/* Creations */}
           <NavItem
             name="Creations"
             icon={Folder}
-            path="/workspace/creations"
-            active={location.pathname.startsWith("/workspace/creations")}
+            active={!anyMenuOpen && location.pathname.startsWith("/workspace/creations")}
             onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/workspace/creations"); }}
           />
-
 
         </div>
       </div>

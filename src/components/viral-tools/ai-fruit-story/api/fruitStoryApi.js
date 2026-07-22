@@ -3,6 +3,27 @@ import { createImageJobSimple, createVideoJobSimple } from "../../../../lib/jobs
 import { getProviderLink } from "../../../../lib/providers";
 import { getFruitStoryStyle } from "../config/fruitStoryStyles";
 
+// supabase-js's functions.invoke() sets error.message to the fixed string
+// "Edge Function returned a non-2xx status code" on any non-2xx response —
+// the edge function's actual { error: "..." } body only lives on
+// error.context (the raw Response), which invoke() never reads for you.
+// Without this, every real backend error message gets replaced by that one
+// generic phrase.
+async function resolveFunctionErrorMessage(error, fallback) {
+  const ctx = error?.context;
+  if (ctx && typeof ctx.clone === "function") {
+    try {
+      const body = await ctx.clone().json();
+      if (body?.error) return String(body.error);
+    } catch {}
+    try {
+      const text = await ctx.clone().text();
+      if (text) return text.slice(0, 500);
+    } catch {}
+  }
+  return error?.message || fallback;
+}
+
 /* ─── Model key mappings ─── */
 export const FRUIT_IMAGE_MODEL_TO_TOOLKEY = {
   "zyvo-v2": "image:fruit-v2",  // GPT Image 2    — 2 credits/image
@@ -33,14 +54,16 @@ const MAX_PROVIDER_DIALOGUE_LINE_CHARS = 80;
 // Only check the sections that are truly essential for video generation.
 // Sections like "Ending beat:", "Camera:", "Visual clue:" are nice-to-have but
 // can be trimmed away by the 1450-char limit — don't block generation over them.
+// "SPOKEN DIALOGUE" header contains "SAY EXACTLY", "ENGLISH WORDS ONLY", and "Dialogue"
+// so those checks are satisfied even when speechRules is trimmed by the 1450-char budget.
+// "Speech rules:" label itself is omitted — with 4-line alternating dialogue the section
+// can be pushed past the budget, and its content is now encoded in the per-speaker rules.
 const REQUIRED_VIDEO_PROMPT_SECTIONS = [
   "SPOKEN DIALOGUE",
   "SAY EXACTLY",
-  "Speech rules:",
-  "Dialogue",          // covers "Dialogue in first second" and "Dialogue starts"
-  "ENGLISH WORDS ONLY", // speechRules always starts with this phrase
+  "ENGLISH WORDS ONLY",
   "Action:",
-  "no background music", // audioLine and trimmed negative both contain this phrase
+  "no background music",
   "Negative:",
 ];
 
@@ -744,13 +767,15 @@ function getProviderDialogue({ scenePrompt = "", scene = {}, form = {} }) {
     line: sanitizeDialogueLine(row.line, scene, index),
   }));
 
-  // Remove duplicate consecutive speakers and ensure each speaker appears only once
-  const seenSpeakers = new Set();
-  const rows = rawRows.filter((row) => {
-    if (seenSpeakers.has(row.speaker)) return false;
-    seenSpeakers.add(row.speaker);
-    return true;
-  });
+  // Block consecutive same-speaker runs (A,A,B → drop duplicate A) but allow
+  // alternating A,B,A,B so the dialogue reads as a real back-and-forth exchange.
+  const rows = [];
+  for (const row of rawRows) {
+    if (rows.length === 0 || row.speaker !== rows[rows.length - 1].speaker) {
+      rows.push(row);
+    }
+  }
+  const seenSpeakers = new Set(rows.map((r) => r.speaker));
 
   // If deduplication left only one row but we have 2+ characters, add the second character's line
   if (rows.length === 1 && characters.length >= 2) {
@@ -773,7 +798,7 @@ function getProviderDialogue({ scenePrompt = "", scene = {}, form = {} }) {
 }
 
 function formatDialogueBlock(dialogue) {
-  return dialogue.map((row) => `${row.speaker}: "${row.line}"`).join("\n");
+  return dialogue.map((row) => `${row.speaker.toUpperCase()}: "${row.line}"`).join("\n");
 }
 
 function ensureImmediateAction(value, scene, max = 190) {
@@ -852,12 +877,29 @@ function buildPerCharacterEmotionBlock(characters, scene, max) {
   return result.length <= max ? result : result.slice(0, max).replace(/\s+\S*$/, "").trim() || lines[0];
 }
 
-function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, max = null } = {}) {
+function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, max = null, overrideDialogue = null } = {}) {
   const isProviderPrompt = Boolean(max);
   const sceneNumber = Number(scene?.sceneNumber ?? 1);
   const totalScenes = Number(form?.sceneCount ?? 5);
   const pacingRole = getScenePacingRole(scene, form);
-  const dialogue = getProviderDialogue({ scenePrompt, scene, form });
+
+  // When vision-generated dialogue is provided, sanitize + deduplicate it;
+  // otherwise fall back to the text-based getProviderDialogue.
+  let dialogue;
+  if (Array.isArray(overrideDialogue) && overrideDialogue.length > 0) {
+    const rows = [];
+    for (const row of overrideDialogue) {
+      const speaker = sanitizeSpeakerName(String(row.speaker ?? ""));
+      const line = String(row.line ?? "").trim();
+      if (!speaker || !line) continue;
+      if (rows.length === 0 || speaker !== rows[rows.length - 1].speaker) {
+        rows.push({ speaker, line });
+      }
+    }
+    dialogue = rows.length > 0 ? rows : getProviderDialogue({ scenePrompt, scene, form });
+  } else {
+    dialogue = getProviderDialogue({ scenePrompt, scene, form });
+  }
   const characters = getSceneCharacterNames(scene, form);
   const visualClue = cleanSectionText(scene.visualClue || deriveVisualClue(scene), "one clear physical clue from the image", isProviderPrompt ? 90 : 110);
   const action = ensureImmediateAction(
@@ -926,9 +968,12 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
   const pacingLine = isProviderPrompt
     ? `${storyArcNote}${sceneTitleNote}: ${pacingRole}. Dramatic emotional moment. Characters react and speak — no location change.`
     : `${storyArcNote}${sceneTitleNote}: ${pacingRole}. Emotional dramatic reaction. Characters stay in the same location as the reference image.`;
-  const speechRules = isProviderPrompt
-    ? "ENGLISH WORDS ONLY. Speak EXACTLY the quoted lines — clear, full pronunciation, natural sentence delivery. No mumbling, no muttering, no unintelligible sounds, no other languages. Each character speaks only their own line. Dialogue starts in the first second."
-    : "ENGLISH WORDS ONLY. Speak EXACTLY the quoted lines with clear natural pronunciation — no mumbling, no muttering, no foreign sounds. Each character speaks their own line clearly and directly to the other character. Dialogue starts in the first second.";
+  // Build per-speaker mouth-control rule from the actual dialogue speakers.
+  // Put "ENGLISH WORDS ONLY" first so it survives the 1450-char budget trim.
+  const dialogueSpeakers = [...new Set(dialogue.map((r) => r.speaker.toUpperCase()))].slice(0, 2);
+  const speechRules = dialogueSpeakers.length >= 2
+    ? `ENGLISH WORDS ONLY. ${dialogueSpeakers[0]} lines: ONLY ${dialogueSpeakers[0]} speaks — ${dialogueSpeakers[1]} mouth COMPLETELY CLOSED. ${dialogueSpeakers[1]} lines: ONLY ${dialogueSpeakers[1]} speaks — ${dialogueSpeakers[0]} mouth COMPLETELY CLOSED. Clear full pronunciation. No mumbling.`
+    : "ENGLISH WORDS ONLY. Speaker's mouth moves — silent character mouth COMPLETELY CLOSED. Clear full pronunciation. No mumbling.";
   // Required sections come FIRST so they survive the 1450-char trim.
   const audioLine = `Clear English dialogue only — fully pronounced, audible, and intelligible. No background music. Natural room ambience only. No gasps, no mumbling, no muttering, no gibberish, no unintelligible sounds, no foreign words, no singing.`;
   const identityLock = isProviderPrompt
@@ -1003,6 +1048,33 @@ export function buildRunwareVideoPrompt(scenePrompt, scene = {}, form = {}, max 
 
 export function buildSceneVideoPrompt({ scene, form = {} }) {
   return buildStrictFruitVideoPrompt({ scene, form, max: MAX_RUNWARE_VIDEO_PROMPT_CHARS });
+}
+
+export function buildSceneVideoPromptWithDialogue({ scene, form = {}, dialogue }) {
+  return buildStrictFruitVideoPrompt({ scene, form, max: MAX_RUNWARE_VIDEO_PROMPT_CHARS, overrideDialogue: dialogue ?? null });
+}
+
+export async function generateVisionVideoPrompts({ scenes, form }) {
+  const { data, error } = await supabase.functions.invoke("fruit-story-video-prompts", {
+    body: {
+      scenes: scenes.map((s) => ({
+        sceneNumber:         s.sceneNumber,
+        imageUrl:            s.imageUrl,
+        title:               s.title,
+        storyPurpose:        s.storyPurpose,
+        beatType:            s.beatType,
+        emotionDirection:    s.emotionDirection,
+        characterIdsInScene: s.characterIdsInScene ?? s.charactersInScene ?? [],
+      })),
+      form: {
+        castBible:   form.castBible ?? [],
+        storyPreset: form.storyPreset ?? "",
+      },
+    },
+  });
+  if (error) throw new Error(await resolveFunctionErrorMessage(error, "Vision prompt failed"));
+  if (!data?.ok) throw new Error(data?.error ?? "Vision prompt failed");
+  return data; // { ok, scenes: [{sceneNumber, dialogue, imageObservations}] }
 }
 
 export function buildFruitVideoPrompt({ clip, startScene, endScene, form }) {
@@ -1278,9 +1350,18 @@ function envMatch(a, b) {
   );
 }
 
+// Beat types that intentionally use a different location — previous scene image
+// would anchor the model to the wrong environment and cause visual cloning.
+const DISTINCT_LOCATION_BEATS = new Set([
+  "affair_scene", "investigation", "glow_up", "comeback", "walk_away",
+  "twin_reveal", "double_spotted", "suspicious_behavior",
+]);
+
 function shouldUsePreviousSceneRef(prevScene, currentScene) {
   if (!prevScene || !currentScene) return false;
   if (!currentScene.continuityFromPrevious) return false;
+  // Never use previous-scene ref for beats that happen in a different location
+  if (DISTINCT_LOCATION_BEATS.has(currentScene.beatType)) return false;
   return envMatch(prevScene.environment, currentScene.environment);
 }
 
@@ -1565,10 +1646,11 @@ function buildMasterImagePrompt({
     "FINAL ENFORCEMENT:\n" +
     "- Characters MUST be TALL ADULT fruit-human characters — full adult height and adult body proportions.\n" +
     "- No child-sized characters, no baby proportions, no toddler features.\n" +
-    "- All characters in the same story must wear the same clothes as in their previous scenes.\n" +
-    "- The room layout, furniture, and lighting must match the story's established environment.\n" +
+    "- Character CLOTHING and FRUIT TYPE must stay identical to their reference images — this is locked.\n" +
+    "- Character POSE, EXPRESSION, and BODY LANGUAGE must match THIS scene's Required emotion and Required action — NOT the reference image's default pose.\n" +
+    "- The BACKGROUND and ENVIRONMENT must reflect the scene's story beat and location (see SCENE BEAT CONTEXT above) — each scene should look visually DISTINCT.\n" +
     "- Characters positioned in this scene must face and interact with each other naturally.\n" +
-    "- This image must feel like a frame from a continuous animated drama film, not an isolated illustration."
+    "- Reference images are for APPEARANCE ONLY (face, outfit, fruit type, body shape). Do not copy their pose or background."
   );
 
   /* ── 8. Absolute no-text rule ── */
@@ -1588,7 +1670,7 @@ export async function planFruitStory(payload) {
     body: payload,
   });
 
-  if (error) throw new Error(error.message || "Story planning failed");
+  if (error) throw new Error(await resolveFunctionErrorMessage(error, "Story planning failed"));
   if (!data?.ok) throw new Error(data?.error || "Story planning failed");
 
   return data; // { title, hook, storySummary, storyDNA, cast[], scenes[] }

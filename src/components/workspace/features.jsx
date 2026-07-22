@@ -1,186 +1,174 @@
-import { useState, useRef, useEffect } from "react";
-import { Video, Image as ImageIcon, Folder, ChevronDown, PenLine } from "lucide-react";
+import { createElement, useEffect, useRef, useState } from "react";
+import { motion as Motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, Folder, Home, LayoutGrid, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { CREATE_TOOLS, WORKSPACE_TOOLS } from "./CreateMenu";
 
-const tools = [
-  {
-    name: "Image",
-    icon: ImageIcon,
-    path: "/workspace/image-generator",
-    items: [
-      { label: "Image Generator",  path: "/workspace/image-generator", emoji: "🖼️" },
-      { label: "AI Fruit Story",   path: "/workspace/ai-fruit-story",  emoji: "🍊" },
-    ],
-  },
-  {
-    name: "Video",
-    icon: Video,
-    path: "/workspace/video-generator",
-    items: [
-      { label: "Video Generator",  path: "/workspace/video-generator", emoji: "🎬" },
-      { label: "AI Fruit Story",   path: "/workspace/ai-fruit-story",  emoji: "🍊" },
-    ],
-  },
-  {
-    name: "Script",
-    icon: PenLine,
-    path: "/workspace/viral-script",
-    items: [
-      { label: "Script Builder",   path: "/workspace/viral-script",    emoji: "✍️" },
-      { label: "AI Fruit Story",   path: "/workspace/ai-fruit-story",  emoji: "🍊" },
-    ],
-  },
-  {
-    name: "AI Fruit",
-    icon: null,
-    emoji: "🍊",
-    path: "/workspace/ai-fruit-story",
-  },
-  {
-    name: "Creations",
-    icon: Folder,
-    path: "/workspace/creations",
-  },
+const groups = [
+  { name: "Home", icon: Home, path: "/workspace/home" },
+  { name: "Create", icon: Sparkles, items: CREATE_TOOLS },
+  { name: "Workspace", icon: LayoutGrid, items: WORKSPACE_TOOLS },
+  { name: "Creations", icon: Folder, path: "/workspace/creations" },
 ];
 
-function ToolDropdown({ tool, onNavigate }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  const Icon = tool.icon;
-  const hasItems = tool.items?.length > 0;
-  const isFruit = !!tool.emoji;
+function GroupIcon({ group, compact = false }) {
+  const size = compact ? "h-[17px] w-[17px]" : "h-[23px] w-[23px]";
 
-  useEffect(() => {
-    if (!open) return;
-    const close = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, [open]);
+  if (group.iconSrc) {
+    return (
+      <img
+        src={group.iconSrc}
+        alt=""
+        aria-hidden="true"
+        className={`${size} shrink-0 object-contain`}
+      />
+    );
+  }
 
-  const handleClick = () => {
-    if (hasItems) setOpen((v) => !v);
-    else onNavigate(tool.path);
-  };
+  return createElement(group.icon, {
+    className: `${size} shrink-0 text-white/90`,
+    strokeWidth: 1.9,
+  });
+}
 
-  return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={handleClick}
-        className={`relative flex items-center gap-2 px-4 py-2 text-[14px] font-extrabold rounded-full transition select-none ${
-          isFruit ? "text-orange-300 hover:text-orange-200" : "text-white hover:text-purple-300"
-        }`}
-      >
-        {/* "AI Fruit Story dropped" announcement pill */}
-        {tool.drop && (
-          <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gradient-to-r from-[#7A3BFF] to-[#A855F7] px-2.5 py-[3px] text-[8px] font-bold tracking-wide text-white leading-none shadow-[0_0_10px_rgba(122,59,255,0.5)]">
-            {tool.drop}
-          </span>
-        )}
-        {isFruit
-          ? <span className="text-[17px] leading-none">{tool.emoji}</span>
-          : <Icon size={17} className="text-white" />
-        }
-        {tool.name}
-        {hasItems && (
-          <ChevronDown size={13} className={`opacity-60 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-        )}
-      </button>
-
-      {/* Dropdown */}
-      {hasItems && open && (
-        <div className="absolute left-1/2 top-full z-50 mt-2 w-[200px] -translate-x-1/2 overflow-hidden rounded-[16px] border border-white/10 bg-[#111315] shadow-[0_16px_48px_rgba(0,0,0,0.6)]">
-          {tool.items.map((item) => (
-            <button
-              key={item.path + item.label}
-              onClick={() => { setOpen(false); onNavigate(item.path); }}
-              className="flex w-full items-center gap-3 px-4 py-3 text-left text-[13px] font-semibold text-white/80 transition hover:bg-white/[0.06] hover:text-white"
-            >
-              <span className="text-base">{item.emoji}</span>
-              <span className="flex-1">{item.label}</span>
-              {item.badge && (
-                <span className="rounded-full bg-[#7A3BFF]/20 px-2 py-0.5 text-[9px] font-bold text-purple-300">
-                  {item.badge}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+function SubmenuIcon({ tool }) {
+  if (tool.preview) {
+    return (
+      <img
+        src={tool.preview}
+        alt=""
+        className={`h-full w-full object-contain ${tool.previewPosition ?? "object-center"}`}
+      />
+    );
+  }
+  return tool.icon ?? null;
 }
 
 export default function ToolSelector() {
   const navigate = useNavigate();
-  const [openMobile, setOpenMobile] = useState(null);
+  const navRef = useRef(null);
+  const [openGroup, setOpenGroup] = useState(null);
+  const activeGroup = groups.find((group) => group.name === openGroup);
+
+  useEffect(() => {
+    if (!openGroup) return;
+    const closeOnOutsideClick = (event) => {
+      if (!navRef.current?.contains(event.target)) setOpenGroup(null);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setOpenGroup(null);
+    };
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [openGroup]);
+
+  const selectGroup = (group) => {
+    if (group.path) {
+      setOpenGroup(null);
+      navigate(group.path);
+      return;
+    }
+    setOpenGroup((current) => current === group.name ? null : group.name);
+  };
+
+  const selectTool = (path) => {
+    setOpenGroup(null);
+    navigate(path);
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
+    <Motion.nav
+      ref={navRef}
+      initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
-      className="w-full mt-4 px-5 md:px-8"
+      transition={{ delay: 0.28, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      aria-label="Zyvo tools"
+      className="relative z-30 mx-auto mt-5 w-full max-w-[780px] px-3 sm:mt-7 sm:px-4 md:mt-8 md:px-3"
     >
-      {/* MOBILE — 2-col grid; Creations is last and alone so it spans full width */}
-      <div className="grid grid-cols-2 gap-3 md:hidden">
-        {tools.map((tool, i) => {
-          const Icon = tool.icon;
-          const hasItems = tool.items?.length > 0;
-          const isOpen = openMobile === i;
-          const isAlone = i === tools.length - 1 && tools.length % 2 !== 0;
-
+      <div className="grid grid-cols-2 gap-1.5 sm:hidden">
+        {groups.map((group) => {
+          const isOpen = openGroup === group.name;
           return (
-            <div key={i} className={`relative ${isAlone ? "col-span-2" : ""}`}>
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={() => {
-                  if (hasItems) setOpenMobile(isOpen ? null : i);
-                  else navigate(tool.path);
-                }}
-                className="relative w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 bg-[#191B1C] text-white text-sm font-semibold transition-all hover:bg-white/5"
-              >
-                {tool.emoji
-                  ? <span className="text-base">{tool.emoji}</span>
-                  : <Icon size={16} className="text-white" />
-                }
-                <span>{tool.name}</span>
-                {hasItems && <ChevronDown size={13} className={`opacity-60 transition-transform ${isOpen ? "rotate-180" : ""}`} />}
-              </motion.button>
-
-              {/* Mobile dropdown */}
-              {hasItems && isOpen && (
-                <div className="absolute left-0 right-0 top-full z-50 mt-1.5 overflow-hidden rounded-[14px] border border-white/10 bg-[#111315] shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
-                  {tool.items.map((item) => (
-                    <button
-                      key={item.path + item.label}
-                      onClick={() => { setOpenMobile(null); navigate(item.path); }}
-                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-[13px] font-semibold text-white/80 transition hover:bg-white/[0.06] hover:text-white"
-                    >
-                      <span>{item.emoji}</span>
-                      <span className="flex-1">{item.label}</span>
-                      {item.badge && (
-                        <span className="rounded-full bg-[#7A3BFF]/20 px-2 py-0.5 text-[9px] font-bold text-purple-300">
-                          {item.badge}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <button
+              key={group.name}
+              type="button"
+              onClick={() => selectGroup(group)}
+              aria-expanded={group.items ? isOpen : undefined}
+              className={`group flex min-h-[76px] flex-col items-center justify-center gap-2 rounded-[17px] border px-1.5 text-white shadow-[inset_0_1px_0_rgba(255,255,255,.025)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b78aff] ${
+                isOpen
+                  ? "border-[#b78aff]/35 bg-[#21192a]/95"
+                  : "border-white/[0.09] bg-[#18171a]/92 active:bg-white/[0.08]"
+              }`}
+            >
+              <GroupIcon group={group} />
+              <span className="text-[12px] font-semibold leading-none tracking-[-0.01em] text-white/90">
+                {group.name}
+              </span>
+            </button>
           );
         })}
       </div>
 
-      {/* DESKTOP */}
-      <div className="hidden md:flex items-center justify-center mt-2">
-        <div className="w-full max-w-[780px] flex items-center justify-between bg-[#191B1C] border border-white/10 rounded-full px-6 py-2">
-          {tools.map((tool, i) => (
-            <ToolDropdown key={i} tool={tool} onNavigate={navigate} />
-          ))}
-        </div>
+      <div className="hidden grid-cols-4 gap-0 rounded-full border border-white/[0.09] bg-[#100c14]/68 p-1 shadow-[0_18px_60px_rgba(0,0,0,.34),inset_0_1px_0_rgba(255,255,255,.035)] backdrop-blur-2xl sm:grid">
+        {groups.map((group) => {
+          const isOpen = openGroup === group.name;
+          return (
+            <button
+              key={group.name}
+              type="button"
+              onClick={() => selectGroup(group)}
+              aria-expanded={group.items ? isOpen : undefined}
+              className={`group flex min-h-[48px] items-center justify-center gap-2 rounded-[17px] px-2.5 text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b78aff] sm:rounded-full ${
+                isOpen ? "bg-white/[0.085] shadow-[inset_0_1px_0_rgba(255,255,255,.055)]" : "hover:bg-white/[0.05]"
+              }`}
+            >
+              <GroupIcon group={group} compact />
+              <span className="text-[13px] font-semibold tracking-[-0.01em] text-white">{group.name}</span>
+              {group.items && (
+                <ChevronDown
+                  className={`h-3 w-3 text-white/35 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                  strokeWidth={2}
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
-    </motion.div>
+
+      <AnimatePresence mode="wait">
+        {activeGroup?.items && (
+          <Motion.div
+            key={activeGroup.name}
+            initial={{ opacity: 0, y: -8, scale: 0.985 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.99 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="mt-2 overflow-hidden rounded-[22px] border border-white/[0.1] bg-[#100c14]/88 p-2 shadow-[0_24px_70px_rgba(0,0,0,.5)] backdrop-blur-2xl"
+          >
+            <div className={`grid gap-1 ${activeGroup.items.length > 3 ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-3"}`}>
+              {activeGroup.items.map((tool) => (
+                <button
+                  key={tool.id}
+                  type="button"
+                  onClick={() => selectTool(tool.path)}
+                  className="group flex min-h-[62px] items-center gap-3 rounded-[16px] px-3 py-2 text-left transition hover:bg-white/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b78aff]"
+                >
+                  <span className={`grid h-9 w-9 shrink-0 place-items-center overflow-hidden text-white ${tool.transparentIcon ? "" : "rounded-xl border border-white/10 bg-white/[0.055] p-0.5"}`}>
+                    <SubmenuIcon tool={tool} />
+                  </span>
+                  <span className="text-[13px] font-semibold text-white/85 transition group-hover:text-white">
+                    {tool.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </Motion.div>
+        )}
+      </AnimatePresence>
+    </Motion.nav>
   );
 }

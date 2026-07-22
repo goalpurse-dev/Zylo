@@ -45,11 +45,17 @@ function waitForJob(jobId, timeoutMs = 4.5 * 60 * 1000, onRetrying = null) {
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
+function retryErrorMessage(error, fallback = "Video retry failed — try again") {
+  const message = String(error?.message ?? error ?? "").trim();
+  if (message === "INSUFFICIENT_CREDITS") return "Not enough credits to retry this video";
+  return message || fallback;
+}
+
 const makeScene = (i, problem = "", fix = "") => ({
   index: i, problem, fix,
   problemJobId: null, problemStatus: "idle", problemUrl: null,
   fixJobId: null,     imageStatus: "idle",   imageUrl: null,
-  videoJobId: null,   videoStatus: "idle",   videoUrl: null,
+  videoJobId: null,   videoStatus: "idle",   videoUrl: null, videoError: null,
 });
 
 export default function useClayRescueJob() {
@@ -186,10 +192,13 @@ export default function useClayRescueJob() {
     videoJobSettled.forEach((settled, i) => {
       const { index } = imageResults[i];
       if (settled.status === "fulfilled") {
-        patchScene(index, { videoJobId: settled.value.id, videoStatus: "running" });
+        patchScene(index, { videoJobId: settled.value.id, videoStatus: "running", videoError: null });
       } else {
         console.error(`[ClayRescue] video submission failed scene ${imageResults[i].index}`, settled.reason);
-        patchScene(index, { videoStatus: "failed" });
+        patchScene(index, {
+          videoStatus: "failed",
+          videoError: retryErrorMessage(settled.reason, "Video submission failed — try again"),
+        });
       }
     });
 
@@ -198,12 +207,16 @@ export default function useClayRescueJob() {
       videoJobSettled.map((settled, i) => {
         const { index } = imageResults[i];
         if (settled.status !== "fulfilled") return Promise.resolve();
-        return waitForJob(settled.value.id, 9 * 60 * 1000).then((result) => {
+        return waitForJob(settled.value.id, 6 * 60 * 1000).then((result) => {
           if (!isCurrentRun()) return;
           const videoUrl = resolveUrl(result);
           patchScene(index, {
             videoStatus: result?.status === "succeeded" && videoUrl ? "succeeded" : "failed",
             videoUrl: videoUrl ?? null,
+            videoError:
+              result?.status === "succeeded" && videoUrl
+                ? null
+                : retryErrorMessage(result?.error, "Video timed out — image saved"),
           });
         });
       })
@@ -249,7 +262,7 @@ export default function useClayRescueJob() {
 
     if (videoFailed) {
       // ── Video-only retry — reuse existing imageUrl ──────────────────────
-      patchOne({ videoStatus: "queued", videoJobId: null, videoUrl: null });
+      patchOne({ videoStatus: "queued", videoJobId: null, videoUrl: null, videoError: null });
 
       let videoJob;
       try {
@@ -264,23 +277,27 @@ export default function useClayRescueJob() {
         patchOne({ videoJobId: videoJob.id, videoStatus: "running" });
       } catch (e) {
         console.error("[retryScene] video job submission failed:", e);
-        patchOne({ videoStatus: "failed" });
+        patchOne({ videoStatus: "failed", videoError: retryErrorMessage(e) });
         setPhase("done");
         return;
       }
 
-      const result = await waitForJob(videoJob.id, 9 * 60 * 1000);
+      const result = await waitForJob(videoJob.id, 6 * 60 * 1000);
       const url = resolveUrl(result);
       patchOne({
         videoStatus: result?.status === "succeeded" && url ? "succeeded" : "failed",
         videoUrl:    url ?? null,
+        videoError:
+          result?.status === "succeeded" && url
+            ? null
+            : retryErrorMessage(result?.error, "Video retry timed out — try again"),
       });
 
     } else {
       // ── Full retry — image A → image B → video ─────────────────────────
       patchOne({ problemStatus: "queued", imageStatus: "queued", videoStatus: "idle",
                  problemUrl: null, imageUrl: null, videoUrl: null,
-                 problemJobId: null, fixJobId: null, videoJobId: null });
+                 problemJobId: null, fixJobId: null, videoJobId: null, videoError: null });
 
       setPhase("images");
 
@@ -320,13 +337,21 @@ export default function useClayRescueJob() {
           fixImageUrl: fixUrl, problemImageUrl: problemUrl, videoPrompt, withSound,
         });
         patchOne({ videoJobId: videoJob.id, videoStatus: "running" });
-      } catch { patchOne({ videoStatus: "failed" }); setPhase("done"); return; }
+      } catch (e) {
+        patchOne({ videoStatus: "failed", videoError: retryErrorMessage(e) });
+        setPhase("done");
+        return;
+      }
 
-      const result = await waitForJob(videoJob.id, 9 * 60 * 1000);
+      const result = await waitForJob(videoJob.id, 6 * 60 * 1000);
       const url = resolveUrl(result);
       patchOne({
         videoStatus: result?.status === "succeeded" && url ? "succeeded" : "failed",
         videoUrl:    url ?? null,
+        videoError:
+          result?.status === "succeeded" && url
+            ? null
+            : retryErrorMessage(result?.error, "Video retry timed out — try again"),
       });
     }
 
@@ -340,18 +365,23 @@ export default function useClayRescueJob() {
     runIdRef.current += 1;
     activeRef.current = false;
     setError(null);
-    setScenes(
-      (generation?.scenes || [])
-        .filter((s) => s.fixUrl || s.problemUrl || s.videoUrl)
-        .map((s, i) => ({
-          index: s.index ?? i,
-          problem: s.problem ?? "",
-          fix: s.fix ?? "",
-          problemJobId: null, problemStatus: s.problemUrl ? "succeeded" : "failed", problemUrl: s.problemUrl ?? null,
-          fixJobId: null,     imageStatus: s.fixUrl ? "succeeded" : "failed",   imageUrl: s.fixUrl ?? s.problemUrl ?? null,
-          videoJobId: null,   videoStatus: s.videoUrl ? "succeeded" : "failed", videoUrl: s.videoUrl ?? null,
-        }))
-    );
+    const restoredScenes = (generation?.scenes || [])
+      .filter((s) => s.fixUrl || s.problemUrl || s.videoUrl)
+      .map((s, i) => ({
+        index: s.index ?? i,
+        problem: s.problem ?? "",
+        fix: s.fix ?? "",
+        problemJobId: null, problemStatus: s.problemUrl ? "succeeded" : "failed", problemUrl: s.problemUrl ?? null,
+        fixJobId: null,     imageStatus: s.fixUrl ? "succeeded" : "failed",   imageUrl: s.fixUrl ?? s.problemUrl ?? null,
+        videoJobId: null,   videoStatus: s.videoUrl ? "succeeded" : "failed", videoUrl: s.videoUrl ?? null,
+        videoError: s.videoUrl ? null : "Video unavailable — retry to generate it",
+      }));
+
+    // retryScene reads from this ref so restored Recent generations must update
+    // it at the same time as the rendered state. Otherwise the button silently
+    // returns because it cannot find the scene that is visibly on screen.
+    scenesRef.current = restoredScenes;
+    setScenes(restoredScenes);
     setPhase("done");
   }, []);
 

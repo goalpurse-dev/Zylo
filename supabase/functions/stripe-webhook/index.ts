@@ -6,17 +6,28 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 /** Recurring plan map — includes both EUR (current) and legacy USD price IDs.
  *  Add any old USD price IDs here so pre-migration subscribers still get credits on renewal. */
 const PRICE_MAP: Record<string, { plan: "starter" | "pro" | "generative"; credits: number; interval?: "yearly" }> = {
-  // ── Monthly EUR prices (current) ──
-  "price_1TGKT6Htn4q5rIncI47V5Ein": { plan: "starter",    credits: 600 },
+  // ── Monthly v3 prices (current — June 2026) ──
+  // Credits = price / $0.02 per credit (50% margin)
+  "price_1TmVZZHtn4q5rIncOuf5aKP4": { plan: "starter",    credits: 900  },  // $18 / $0.02
+  "price_1TmVfXHtn4q5rInc9IaN1l3U": { plan: "pro",        credits: 1900 },  // $38 / $0.02
+  "price_1TmVg2Htn4q5rIncWL0b3HJr": { plan: "generative", credits: 3900 },  // $78 / $0.02
+
+  // ── Annual v3 prices (current — June 2026) ──
+  "price_1TmVhxHtn4q5rIncS8sxm6UR": { plan: "starter",    credits: 900,  interval: "yearly" },
+  "price_1TmVjnHtn4q5rInccPDBIVaX": { plan: "pro",        credits: 1900, interval: "yearly" },
+  "price_1TmVlUHtn4q5rIncbtWbGyof": { plan: "generative", credits: 3900, interval: "yearly" },
+
+  // ── Monthly v2 prices (legacy — keep so existing subscribers still get credits) ──
+  "price_1TGKT6Htn4q5rIncI47V5Ein": { plan: "starter",    credits: 600  },
   "price_1TGKSqHtn4q5rIncIf8RPa6e": { plan: "pro",        credits: 1200 },
   "price_1TGKSSHtn4q5rIncSTurqkCN": { plan: "generative", credits: 2500 },
 
-  // ── Monthly USD prices (legacy — pre-EUR migration subscribers) ──
-  "price_1T8gM3Htn4q5rInchn8CMEcO": { plan: "starter",    credits: 600 },
+  // ── Monthly v1 prices (legacy — pre-EUR migration) ──
+  "price_1T8gM3Htn4q5rInchn8CMEcO": { plan: "starter",    credits: 600  },
   "price_1T8gMVHtn4q5rIncWwcUi9mG": { plan: "pro",        credits: 1200 },
   "price_1T8gMsHtn4q5rIncW0vy8d57": { plan: "generative", credits: 2500 },
 
-  // ── Annual prices — credits = first month's allocation; cron tops up monthly ──
+  // ── Annual v2 prices (legacy) ──
   "price_1TYWNYHtn4q5rIncWMa3mmvI": { plan: "starter",    credits: 600,  interval: "yearly" },
   "price_1TYWOWHtn4q5rIncTmN3GXdy": { plan: "pro",        credits: 1200, interval: "yearly" },
   "price_1TYWP8Htn4q5rIncbugChVhS": { plan: "generative", credits: 2500, interval: "yearly" },

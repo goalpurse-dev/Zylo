@@ -53,22 +53,24 @@ function ModelCard({ model, compact, onClick }) {
         <img
           src={model.image}
           alt={model.name}
-          fetchpriority="high"
+          loading="lazy"
+          fetchPriority="low"
           decoding="async"
           className="absolute inset-0 w-full h-full object-cover transition duration-300"
           style={{ opacity: hovered ? 0 : 1 }}
         />
-        <video
-          src={model.video}
-          poster={model.image}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          className="hidden md:block absolute inset-0 w-full h-full object-cover transition duration-300"
-          style={{ opacity: hovered ? 1 : 0 }}
-        />
+        {model.video && hovered && (
+          <video
+            src={model.video}
+            poster={model.image}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="none"
+            className="hidden md:block absolute inset-0 w-full h-full object-cover"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
         <div className="absolute top-2 left-2 text-xs px-2 py-0.5 rounded-full bg-black/60 text-purple-300 border border-white/10 backdrop-blur">
           {model.tag}
@@ -125,7 +127,7 @@ export default function LatestModels() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="w-full max-w-7xl mx-auto px-5 md:px-8 mt-8"
+      className="w-full px-5 md:px-[50px] mt-8"
     >
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-white text-[20px] md:text-[28px] font-bold tracking-tight">

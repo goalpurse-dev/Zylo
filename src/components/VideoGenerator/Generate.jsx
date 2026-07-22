@@ -21,7 +21,7 @@ import { supabase } from "../../lib/supabaseClient";
 import {watchJob } from "../../lib/jobs";
 import { KEY_LINKS } from "../../lib/providers";
 import { generateVideoFromUI } from "../../lib/video-generator/generator";
-import { calculateVideoCredits } from "../../lib/video-generator/videoPricing";
+import { calculateVideoCredits, calculateVideoCreditsRaw } from "../../lib/video-generator/videoPricing";
 import VideoTemplate from "../../components/video-templates/VideoTemplate";
 import { createPortal } from "react-dom";
 import { useMemo } from "react";
@@ -79,39 +79,36 @@ const [showUpgrade, setShowUpgrade] = useState(false);
   
 
 
-const DISABLED_VIDEO_MODELS = [
-  "video:RunwayGen-4Turbo",
-  "video:wan26flash",
-  "video:viduq3turbo",
-];
+// Only these two models are active — everything else is disabled
+const V2_KEY = "video:seedance15pro";
+const V3_KEY = "video:veo31lite";
 
-const firstVideoModelKey =
-  Object.keys(MODELS).find(
-    (key) => key.startsWith("video:") && !DISABLED_VIDEO_MODELS.includes(key)
-  ) || Object.keys(MODELS)[0];
-
-
-const [selectedModelKey, setSelectedModelKey] = useState(firstVideoModelKey);
-const selectedModel = MODELS[selectedModelKey];
-
-
+const [selectedModelKey, setSelectedModelKey] = useState(V2_KEY);
+const selectedModel = MODELS[selectedModelKey] ?? MODELS[V3_KEY];
 
   const [selectedSize, setSelectedSize] = useState("9:16");
   const [selectedDuration, setSelectedDuration] = useState("6s");
+  const [sliderDuration, setSliderDuration] = useState(8);  // for slider models
   const [selectedResolution, setSelectedResolution] = useState("720p");
 
-  const isViduQ3Turbo = selectedModelKey === "video:viduq3turbo";
-  const modelHasSound = !!selectedModel?.hasSound;
+  const modelHasSound   = !!selectedModel?.hasSound;
+  const usesDurationSlider = !!selectedModel?.durationSlider;
   const [withSound, setWithSound] = useState(() => !!selectedModel?.soundDefaultOn);
 
-  // When model changes, default sound to the model's preferred default
+  // Reset sound default and duration when model changes
   useEffect(() => {
     setWithSound(!!MODELS[selectedModelKey]?.soundDefaultOn);
+    // Reset duration to a sensible default for each model
+    if (selectedModelKey === V2_KEY) setSliderDuration(6);
+    if (selectedModelKey === V3_KEY) setSelectedDuration("6s");
   }, [selectedModelKey]);
 
 const totalCredits = useMemo(() => {
+  if (usesDurationSlider) {
+    return Math.ceil(calculateVideoCreditsRaw(selectedModelKey, sliderDuration, modelHasSound ? withSound : false));
+  }
   return calculateVideoCredits(selectedModelKey, selectedDuration, selectedResolution, modelHasSound ? withSound : false);
-}, [selectedModelKey, selectedDuration, selectedResolution, withSound, modelHasSound]);
+}, [selectedModelKey, selectedDuration, sliderDuration, selectedResolution, withSound, modelHasSound, usesDurationSlider]);
 
 const maxRefImages = selectedModel.maxReferenceImages;
 const canAddImages = maxRefImages > 0;
@@ -300,13 +297,13 @@ useEffect(() => {
 
     // 🔥 CREATE JOB
     const job = await generateVideoFromUI({
-      modelKey: selectedModelKey,
-      prompt: prompt.trim(),
-      size: selectedSize,
-      duration: selectedDuration,
+      modelKey:   selectedModelKey,
+      prompt:     prompt.trim(),
+      size:       selectedSize,
+      duration:   usesDurationSlider ? String(sliderDuration) : selectedDuration,
       resolution: selectedResolution,
-      refImages: selected.map((img) => img.url),
-      withSound: modelHasSound ? withSound : false,
+      refImages:  selected.map((img) => img.url),
+      withSound:  modelHasSound ? withSound : false,
     });
 
     watchJob(job.id, () => {});
@@ -330,7 +327,7 @@ useEffect(() => {
 }
 
   return (
-    <div className="w-full flex-1 flex flex-col gap-3 relative bg-[#111314] border border-white/[0.08] shadow-[0_10px_40px_rgba(0,0,0,0.32)] rounded-[22px] p-5 md:p-6">
+    <div className="w-full flex-1 flex flex-col gap-2.5 relative bg-[#0b0c0e] border border-white/[0.06] shadow-[0_10px_40px_rgba(0,0,0,0.4)] rounded-2xl p-4 md:p-5 pb-[80px] md:pb-5">
 
       {/* BLUR OVERLAY */}
 {isAnyModalOpen &&
@@ -420,188 +417,80 @@ useEffect(() => {
   </div>
 </div>
 
-      {/* MODEL */}
-<button
-  onClick={() => {
-    setOpenModel(!openModel);
-    setOpenSize(false);
-    setOpenDuration(false);
-  }}
-className={`
-  md:alive-card
-  group relative
-  rounded-xl
-  border border-white/10
-  bg-[#151719]
-  px-4 py-3.5
-  text-left
-  transition-all duration-200
-  hover:border-[#7A3BFF]/40
-  hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
-  active:scale-[0.98]
-
-  ${openModel ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : ""}
-`}
->
-  <div className="flex items-center justify-between">
-    <div className="flex items-center gap-3">
-      <img
-        src={selectedModel.logo}
-        alt={selectedModel.label}
-        className="w-9 h-9 rounded-lg object-cover"
-      />
-
-      <div className="flex flex-col gap-0.5">
-        <p className="text-xs text-white/50">Model</p>
-        <div className="flex items-center gap-2">
-          <p className="text-sm text-white font-medium">{selectedModel.label}</p>
-          {selectedModel.hasSound && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-green-400/30 bg-green-500/15 px-2 py-0.5 text-[10px] font-bold text-green-300">
-              🔊 Sound On
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-
-    <ChevronRight
-      className={`w-4 h-4 text-white/40 transition-all duration-200 ${
-        openModel
-          ? "rotate-90 text-purple-400"
-          : "group-hover:translate-x-1"
-      }`}
-    />
-  </div>
-</button>
-
-      {/* PROMPT */}
-<div className="w-full">
-  <div
-    data-ftg="prompt"
-    className="
-      rounded-2xl
-      bg-[#151719]
-      border border-white/[0.09]
-      px-4 py-4
-    "
-  >
-    <span className="text-[13px] font-semibold text-white block mb-3">
-      Describe your video
-    </span>
-
-    <div
-      className="
-        rounded-xl
-        bg-[#101213]
-        border border-white/[0.08]
-        px-4 py-3
-        transition
-        focus-within:border-[#7A3BFF]/50
-        focus-within:bg-[#111317]
-      "
-    >
-      <textarea
-        value={prompt}
-        onChange={(e) => {
-          setPrompt(e.target.value);
-          const el = e.target;
-          el.style.height = "auto";
-          el.style.height = `${Math.min(el.scrollHeight, 220)}px`;
-        }}
-        placeholder="Describe your viral video..."
-        rows={4}
-        className="
-          w-full
-          bg-transparent
-          outline-none
-          resize-none
-          text-white
-          placeholder:text-white/35
-          text-[16px]
-          overflow-y-auto
-          max-h-[220px]
-        "
-      />
-    </div>
-  </div>
+      {/* MODEL — v2/v3 toggle */}
+<div className="flex items-center gap-2 bg-[#0e1012] border border-white/[0.07] rounded-xl p-1">
+  {[
+    { key: V2_KEY, label: "V2", badge: "Fast"    },
+    { key: V3_KEY, label: "V3", badge: "Premium" },
+  ].map(({ key, label, badge }) => {
+    const active = selectedModelKey === key;
+    return (
+      <button
+        key={key}
+        onClick={() => setSelectedModelKey(key)}
+        className={`relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 transition-all ${
+          active ? "bg-[#7A3BFF] text-white shadow-lg shadow-[#7A3BFF]/20" : "text-white/40 hover:text-white/70"
+        }`}
+      >
+        <span className={`text-[12px] font-bold tracking-wide ${active ? "text-white" : ""}`}>{label}</span>
+        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+          active ? "bg-white/20 text-white" : "bg-white/[0.05] text-white/30"
+        }`}>{badge}</span>
+      </button>
+    );
+  })}
 </div>
 
-      {/* IMPORT IMAGE */}
-  <button
-  disabled={!canAddImages}
-  onClick={() => {
-    if (!canAddImages) return;
-    setOpenReferenceModal(true);
-  }}
-  className={`
-    group relative w-full rounded-xl overflow-hidden
-    border px-3.5 py-3.5
-    flex items-center gap-3 text-left
-    transition-all duration-200 active:scale-[0.99]
-    ${
-      canAddImages
-        ? "border-[#9B6DFF]/55 bg-[#2A1845] hover:border-[#C4A0FF]/80 hover:bg-[#341F55]"
-        : "opacity-40 cursor-not-allowed"
-    }
-  `}
+      {/* PROMPT */}
+<div
+  data-ftg="prompt"
+  className="rounded-xl border border-white/[0.08] bg-[#0e1012] px-4 py-3 focus-within:border-[#7A3BFF]/40 transition"
 >
-  <div className="flex h-11 w-[74px] shrink-0 items-center">
-    {(selected.length > 0 ? selected.slice(0, 3).map((img) => img.url) : SAMPLE_REFERENCE_IMAGES).slice(0, 3).map((src, index) => (
-      <div
-        key={`${src}-${index}`}
-        className="h-10 w-10 overflow-hidden rounded-lg border border-white/15 bg-white/[0.06] shadow-[0_8px_18px_rgba(0,0,0,0.28)]"
-        style={{ marginLeft: index === 0 ? 0 : -20, zIndex: 3 - index }}
-      >
-        <img src={src} alt="" className="h-full w-full object-cover" />
-      </div>
-    ))}
-  </div>
+  <p className="text-[10px] font-semibold uppercase tracking-wider text-white/25 mb-2">Prompt</p>
+  <textarea
+    value={prompt}
+    onChange={(e) => {
+      setPrompt(e.target.value);
+      const el = e.target;
+      el.style.height = "auto";
+      el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+    }}
+    placeholder="Describe your video..."
+    rows={3}
+    className="w-full bg-transparent outline-none resize-none text-white/90 placeholder:text-white/20 text-[14px] leading-relaxed overflow-y-auto max-h-[200px]"
+  />
+</div>
 
-  <div className="min-w-0 flex-1">
-    <div className="flex items-center gap-2">
-      <p className="truncate text-[13px] font-semibold text-white">
-        {selected.length > 0
-          ? `${selected.length} reference${selected.length > 1 ? "s" : ""} added`
-          : "Add visual references"}
-      </p>
-      <span className="rounded-md border border-white/10 bg-white/[0.07] px-1.5 py-0.5 text-[10px] font-medium text-white/55">
-        Optional
+      {/* REFERENCE IMAGES — compact */}
+{canAddImages && (
+  <button
+    onClick={() => setOpenReferenceModal(true)}
+    className="group flex items-center gap-3 w-full rounded-xl border border-white/[0.07] bg-[#0e1012] px-4 py-2.5 text-left hover:border-white/15 transition-all active:scale-[0.99]"
+  >
+    {/* Mini stacked previews */}
+    <div className="flex items-center shrink-0" style={{ width: selected.length > 0 ? 40 : 28 }}>
+      {selected.length > 0
+        ? selected.slice(0, 2).map((img, i) => (
+            <div key={img.id} className="w-7 h-7 rounded-md overflow-hidden border border-white/10" style={{ marginLeft: i > 0 ? -8 : 0, zIndex: 2 - i }}>
+              <img src={img.url} className="w-full h-full object-cover" />
+            </div>
+          ))
+        : <div className="w-7 h-7 rounded-md border border-white/[0.08] bg-white/[0.04] flex items-center justify-center">
+            <svg className="w-3.5 h-3.5 text-white/30" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 20.25h18V6.75A2.25 2.25 0 0018.75 4.5H5.25A2.25 2.25 0 003 6.75v13.5z" /></svg>
+          </div>
+      }
+    </div>
+    <div className="flex-1 min-w-0">
+      <span className="text-[13px] text-white/60 group-hover:text-white/80 transition">
+        {selected.length > 0 ? `${selected.length} reference${selected.length > 1 ? "s" : ""} · click to edit` : "Add images or videos"}
       </span>
     </div>
-    <p className="mt-0.5 truncate text-[11px] text-white/50">
-      JPEG/PNG/WEBP/GIF, 20 MB max
-    </p>
-  </div>
-
-  <span className="shrink-0 rounded-lg border border-[#C4A0FF]/45 bg-[#7A3BFF]/35 px-3 py-1.5 text-[11px] font-bold text-[#EAE0FF] transition-colors group-hover:bg-[#7A3BFF]/50">
-    {selected.length > 0 ? "Edit" : "Add"}
-  </span>
-</button>
-{selected.length > 0 && (
-  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 w-full mt-2">
-    {selected.map((img) => (
-      <div
-        key={img.id}
-        className="relative aspect-square rounded-xl overflow-hidden"
-      >
-        <img
-          src={img.url}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <button
-          onClick={() => toggleSelect(img)}
-          className="absolute top-2 right-2 bg-black/60 backdrop-blur-md rounded-full p-1"
-        >
-          <X className="w-4 h-4 text-white" />
-        </button>
-      </div>
-    ))}
-  </div>
+    <span className="text-[10px] text-white/25 shrink-0">Optional</span>
+  </button>
 )}
 
-
 {missingRequiredImage && (
-  <p className="text-xs text-amber-400 mt-2">
+  <p className="text-xs text-amber-400">
     {selectedModel.label} requires a reference image.
   </p>
 )}
@@ -734,105 +623,75 @@ className={`
       </>
       )}
       {/* SETTINGS */}
-      <div ref={controlsRef} className="grid grid-cols-2 gap-2 relative z-50 mt-2">
+      <div ref={controlsRef} className="relative z-50 flex flex-col gap-2">
+        {/* Size — full width */}
+        <div className="grid grid-cols-1 gap-2">
 
-
-      
 {/* SIZE */}
 <button
   disabled={disableSizeSelector}
   onClick={() => {
     if (disableSizeSelector) return;
-
     setOpenSize(!openSize);
     setOpenModel(false);
     setOpenDuration(false);
   }}
-className={`
-  md:alive-card
-  group relative
-  rounded-xl
-  border border-white/10
-  bg-[#151719]
-  px-4 py-3.5
-  text-left
-  transition-all duration-200
-  hover:border-[#7A3BFF]/40
-  hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
-  active:scale-[0.98]
-
-  ${openSize ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : ""}
-  ${disableSizeSelector ? "opacity-40 cursor-not-allowed" : ""}
-`}
+  className={`group flex items-center justify-between rounded-xl border bg-[#0e1012] px-3.5 py-2.5 text-left transition-all
+    ${openSize ? "border-[#7A3BFF]/60" : "border-white/[0.07] hover:border-white/15"}
+    ${disableSizeSelector ? "opacity-40 cursor-not-allowed" : ""}`}
 >
-  <div className="flex flex-col gap-1">
-
-
-
-    {/* LABEL */}
-    <p className="text-xs text-white/50">Size</p>
-
-    {/* VALUE ROW */}
-    <div className="flex items-center justify-between">
-
-      {/* LEFT SIDE — VALUE */}
-      <p className="text-sm text-white font-medium">
-        {selectedSize}
-      </p>
-
-      {/* RIGHT SIDE — PREVIEW + CHEVRON */}
-      <div className="flex items-center gap-3">
-
-        <AspectPreview ratio={selectedSize} />
-
-        <ChevronRight
-          className={`w-4 h-4 text-white/40 transition-all duration-200 ${
-            openSize
-              ? "rotate-90 text-purple-400"
-              : "group-hover:translate-x-1"
-          }`}
-        />
-      </div>
-    </div>
+  <div>
+    <p className="text-[10px] font-semibold uppercase tracking-wider text-white/25 mb-0.5">Size</p>
+    <p className="text-[13px] font-semibold text-white">{selectedSize}</p>
+  </div>
+  <div className="flex items-center gap-2">
+    <AspectPreview ratio={selectedSize} />
+    <ChevronRight className={`w-3.5 h-3.5 text-white/30 transition-all ${openSize ? "rotate-90 text-[#7A3BFF]" : "group-hover:translate-x-0.5"}`} />
   </div>
 </button>
 
+        </div>{/* close size row */}
 
+        {/* Duration — own full-width row */}
+        <div>
 
-        {/* DURATION */}
-        <button
-          onClick={() => {
-            setOpenDuration(!openDuration);
-            setOpenModel(false);
-            setOpenSize(false);
-          }}
-          className={`
-            md:alive-card
-            group relative
-            rounded-xl
-            border border-white/10
-            bg-[#151719]
-            px-4 py-3.5
-            text-left
-            transition-all duration-200
-            hover:border-[#7A3BFF]/40
-            hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
-            active:scale-[0.98]
-            ${openDuration ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : ""}
-          `}
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-xs text-white/50">Duration</p>
-              <p className="text-sm text-white font-medium">{selectedDuration}</p>
-            </div>
-            <ChevronRight
-              className={`w-4 h-4 text-white/40 transition-all duration-200 ${
-                openDuration ? "rotate-90 text-purple-400" : "group-hover:translate-x-1"
-              }`}
-            />
-          </div>
-        </button>
+{/* DURATION */}
+{usesDurationSlider ? (
+  <div className="rounded-xl border border-white/[0.07] bg-[#0e1012] px-3.5 py-3">
+    <div className="flex items-center justify-between mb-2.5">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-white/25">Duration</p>
+      <p className="text-[13px] font-bold text-white">{sliderDuration}<span className="text-white/40 font-normal text-[11px]">s</span></p>
+    </div>
+    <input
+      type="range"
+      min={selectedModel.minDuration ?? 4}
+      max={selectedModel.maxDuration ?? 15}
+      step={1}
+      value={sliderDuration}
+      onChange={(e) => setSliderDuration(Number(e.target.value))}
+      className="w-full h-1 rounded-full appearance-none cursor-pointer"
+      style={{ accentColor: "#7A3BFF" }}
+    />
+    <div className="flex justify-between mt-1.5">
+      <span className="text-[10px] text-white/25">{selectedModel.minDuration ?? 4}s</span>
+      <span className="text-[10px] text-white/25">{selectedModel.maxDuration ?? 15}s</span>
+    </div>
+  </div>
+) : (
+  <button
+    onClick={() => { setOpenDuration(!openDuration); setOpenModel(false); setOpenSize(false); }}
+    className={`w-full group flex items-center justify-between rounded-xl border bg-[#0e1012] px-3.5 py-2.5 text-left transition-all
+      ${openDuration ? "border-[#7A3BFF]/60" : "border-white/[0.07] hover:border-white/15"}`}
+  >
+    <p className="text-[10px] font-semibold uppercase tracking-wider text-white/25">Duration</p>
+    <div className="flex items-center gap-2">
+      <p className="text-[13px] font-semibold text-white">{selectedDuration}</p>
+      <ChevronRight className={`w-3.5 h-3.5 text-white/30 transition-all ${openDuration ? "rotate-90 text-[#7A3BFF]" : "group-hover:translate-x-0.5"}`} />
+    </div>
+  </button>
+)}
+
+        </div>{/* close duration row */}
 
 {openModel &&
   createPortal(
@@ -961,79 +820,58 @@ className={`
         )}
       </div>
 
-      {/* RESOLUTION */}
-<div className="flex flex-col gap-2 mt-2">
-  <p className="text-xs text-white/50">Resolution</p>
-
-  <div className="flex gap-2 flex-wrap">
-    {selectedModel.supportedResolutions.map((resKey) => {
-      const isActive = selectedResolution === resKey;
-      return (
-        <button
-          key={resKey}
-          onClick={() => setSelectedResolution(resKey)}
-          className={`
-            px-4 py-2 rounded-xl text-sm font-medium
-            border transition-all duration-200
-            ${isActive
-              ? "bg-[#7A3BFF] text-white border-[#7A3BFF] shadow-[0_0_16px_rgba(122,59,255,0.5)]"
-              : "bg-[#151719] border-white/[0.08] text-[#E6E8EE] hover:border-[#7A3BFF]/40"
-            }
-          `}
-        >
-          {RESOLUTIONS[resKey].label}
-        </button>
-      );
-    })}
-  </div>
-</div>
-
-{/* SOUND TOGGLE */}
+      {/* SOUND — compact inline row, no resolution needed (always 720p) */}
 {modelHasSound && (
   <button
+    type="button"
     onClick={() => setWithSound((v) => !v)}
-    className={`
-      flex items-center justify-between w-full mt-1
-      rounded-xl border px-4 py-3 transition-all duration-200
-      ${withSound
-        ? "border-[#7A3BFF]/60 bg-[#7A3BFF]/10"
-        : "border-white/10 bg-[#151719] hover:border-[#7A3BFF]/30"
-      }
-    `}
+    style={{ touchAction: "manipulation" }}
+    className="flex items-center justify-between w-full rounded-xl border border-white/[0.07] bg-[#0e1012] px-3.5 py-2.5 hover:border-white/15 active:scale-[0.99]"
   >
     <div className="flex items-center gap-2">
-      <span className="text-base">🔊</span>
-      <div className="text-left">
-        <p className="text-sm text-white font-medium">AI Sound</p>
-        <p className="text-[11px] text-white/40">
-          {withSound ? "On — dialogue, effects & sound" : "Off — silent video"}
-        </p>
-      </div>
+      <span className="text-[13px]">{withSound ? "🔊" : "🔇"}</span>
+      <span className="text-[13px] font-medium text-white/70">AI Sound</span>
+      <span className="text-[11px] text-white/30">{withSound ? "On" : "Off"}</span>
     </div>
-    <div className={`w-9 h-5 rounded-full transition-all duration-200 flex items-center px-0.5 ${withSound ? "bg-[#7A3BFF]" : "bg-white/10"}`}>
-      <div className={`w-4 h-4 rounded-full bg-white transition-all duration-200 ${withSound ? "translate-x-4" : "translate-x-0"}`} />
+    <div
+      className="relative shrink-0 rounded-full"
+      style={{ width: 34, height: 18, background: withSound ? "#7A3BFF" : "rgba(255,255,255,0.10)", transition: "background 120ms" }}
+    >
+      <div
+        className="absolute top-[3px] w-3 h-3 rounded-full bg-white shadow"
+        style={{ left: withSound ? 17 : 3, transition: "left 120ms" }}
+      />
     </div>
   </button>
 )}
 
-{/* GENERATE SECTION (FIXED ABOVE NAV) */}
-<div
-  className="fixed left-0 right-0 z-[90] md:static pointer-events-none"
-  style={{
-    bottom: "calc(70px + env(safe-area-inset-bottom))"
-  }}
->
-  <div className="pointer-events-auto">
-    <div className="w-full bg-[#101213]/95 border-t border-white/[0.08] md:border-t-0 md:bg-transparent md:px-0 px-4 pt-3 pb-3 backdrop-blur-xl md:backdrop-blur-0">
-      <div className="w-full md:max-w-none md:mx-0 max-w-[900px] mx-auto">
-        <GenerateButton
-          onClick={handleGenerate}
-          disabled={!prompt.trim() || isGenerating || missingRequiredImage}
-          isGenerating={isGenerating}
-          estimatedCredits={totalCredits}
-        />
-      </div>
-    </div>
+{/* GENERATE + RESET
+     mt-auto pushes this to the bottom of the flex-col container.
+     The container has pb-[80px] so this clears the mobile nav. */}
+<div className="mt-auto flex items-center gap-3 pt-1">
+  {/* Reset — bare text */}
+  <button
+    onClick={() => {
+      setPrompt("");
+      setSelected([]);
+      setSliderDuration(8);
+      setSelectedDuration("6s");
+    }}
+    className="shrink-0 flex items-center gap-1 text-white/30 hover:text-white/60 transition-colors active:scale-95"
+  >
+    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5" />
+    </svg>
+    <span className="text-[11px] font-medium">Reset</span>
+  </button>
+  {/* Generate */}
+  <div className="flex-1">
+    <GenerateButton
+      onClick={handleGenerate}
+      disabled={!prompt.trim() || isGenerating || missingRequiredImage}
+      isGenerating={isGenerating}
+      estimatedCredits={totalCredits}
+    />
   </div>
 </div>
 

@@ -49,6 +49,12 @@ import GV9  from "../../assets/blog/image-generator/dubai.png";
 import GV10 from "../../assets/inspiration/14.png";
 import GV11 from "../../assets/inspiration/4.png";
 import GV12 from "../../assets/inspiration/7.png";
+import PUB1 from "../../assets/blog/publish/publish-landing-hero-wide.png";
+import PUB2 from "../../assets/blog/publish/multi-platform-distribution-wide.png";
+import PUB3 from "../../assets/blog/publish/content-pipeline-wide.png";
+import PUB4 from "../../assets/blog/publish/manual-vs-automated-wide.png";
+import PUB5 from "../../assets/blog/publish/analytics-landing-hero-wide.png";
+import PUB6 from "../../assets/blog/publish/analytics-growth-square.png";
 
 // ── AI Image Generator images ──────────────────────────────────────────────
 import IG1  from "../../assets/grid/image/astronaut.jpg";
@@ -79,6 +85,7 @@ const CAT_PILL = {
   "AI Image Generator": "bg-blue-100 text-blue-700",
   "Go Viral":           "bg-purple-100 text-purple-700",
   "Viral Script":       "bg-violet-100 text-violet-700",
+  "Publishing & Analytics": "bg-fuchsia-100 text-fuchsia-700",
 };
 
 const ALL_BLOGS = [
@@ -132,6 +139,14 @@ const ALL_BLOGS = [
   { to: "/blog/how-to-start-asmr-channel-with-ai",       title: "How to Start an ASMR Channel with AI in 2026 (No Camera or Mic Needed)",             desc: "The complete playbook to launch an ASMR TikTok channel using AI — no equipment, no editing, daily posting from a single photo upload.", date: "May 25, 2026", category: "Go Viral",           img: GV12 },
   { to: "/blog/clay-rescue-ai-video-maker",              title: "Clay Rescue AI Video Maker: Create Viral Giant Hand Rescue Videos",                  desc: "How to create tiny clay rescue videos with clear disasters, visible giant hand fixes, and emotional clay people reactions.",            date: "Jun 1, 2026",  category: "Go Viral",           img: "/clayrescue/smallpreview.webp" },
   { to: "/blog/why-giant-hand-rescue-videos-go-viral",   title: "Why Giant Hand Rescue Videos Go Viral on TikTok in 2026",                            desc: "The retention psychology behind miniature disasters, simple visible fixes, and celebration payoffs in Clay Rescue videos.",             date: "Jun 1, 2026",  category: "Go Viral",           img: "/clayrescue/landing1.png" },
+  { to: "/blog/schedule-auto-publish-ai-videos",         title: "How to Schedule & Auto-Publish AI Videos in 2026 (One-Click Guide)",                 desc: "Plan up to 28 days ahead and publish AI videos to Instagram, TikTok, and YouTube from one workspace.",                                 date: "Jul 2, 2026",  category: "Publishing & Analytics", img: PUB1 },
+  { to: "/blog/social-media-scheduler-for-creators",     title: "Social Media Scheduler for Creators: The Complete 2026 Guide",                      desc: "Choose a creator-focused scheduler and build a repeatable short-form video publishing workflow.",                                      date: "Jul 20, 2026", category: "Publishing & Analytics", img: PUB3 },
+  { to: "/blog/how-to-cross-post-instagram-tiktok-youtube", title: "How to Cross-Post to Instagram, TikTok, and YouTube in 2026",                    desc: "Publish one short-form video across three platforms without repeating the entire upload workflow.",                                    date: "Jul 20, 2026", category: "Publishing & Analytics", img: PUB2 },
+  { to: "/blog/28-day-social-media-content-calendar",    title: "How to Build a 28-Day Social Media Content Calendar",                              desc: "Plan a sustainable month of TikTok, Reels, and Shorts content without sacrificing quality.",                                          date: "Jul 20, 2026", category: "Publishing & Analytics", img: PUB1 },
+  { to: "/blog/social-media-automation-for-creators",    title: "Social Media Automation for Creators Without Losing Control",                       desc: "Automate scheduling and repeated distribution while keeping creative judgment and final review manual.",                              date: "Jul 20, 2026", category: "Publishing & Analytics", img: PUB4 },
+  { to: "/blog/youtube-analytics-for-creators",          title: "YouTube Analytics for Creators: A Practical 2026 Guide",                            desc: "Understand views, watch time, subscribers, average view duration, trends, and top videos.",                                            date: "Jul 20, 2026", category: "Publishing & Analytics", img: PUB5 },
+  { to: "/blog/short-form-video-metrics-that-matter",    title: "Short-Form Video Metrics That Actually Matter in 2026",                             desc: "Evaluate reach, attention, engagement, and audience conversion without relying on views alone.",                                      date: "Jul 20, 2026", category: "Publishing & Analytics", img: PUB6 },
+  { to: "/blog/one-click-publishing-playbook",           title: "One-Click Publishing: Why Posting Consistency Beats Virality in 2026",              desc: "Why the creators winning in 2026 aren't the most talented — they're the most consistent, and how automation makes that possible.",     date: "Jul 2, 2026",  category: "Go Viral",           img: GV10 },
 
   // ═══════════════ Go Viral ═══════════════
   { to: "/blog/how-to-go-viral-with-ai",                           title: "How to Go Viral With AI in 2026: The Complete Strategy",  desc: "The exact playbook creators are using to dominate TikTok, Instagram, and YouTube with AI content.", date: "Apr 16, 2026", category: "Go Viral",           img: GV1  },
@@ -170,7 +185,7 @@ const ALL_BLOGS = [
   { to: "/blog/ai-visual-styles-most-engagement",                  title: "Visual Styles That Get the Most Engagement (AI Edition)", desc: "Which visual styles get the most engagement — revealed.",                                        date: "Mar 15, 2026", category: "AI Image Generator", img: IG20 },
 ];
 
-const CATEGORIES = ["All", "Viral Script", "Go Viral", "AI Image Generator", "Product Photos"];
+const CATEGORIES = ["All", "Publishing & Analytics", "Viral Script", "Go Viral", "AI Image Generator", "Product Photos"];
 
 export default function BlogIndex() {
   useEffect(() => {
@@ -190,6 +205,7 @@ export default function BlogIndex() {
     All:                  ALL_BLOGS.length,
     "Viral Script":       ALL_BLOGS.filter((b) => b.category === "Viral Script").length,
     "Go Viral":           ALL_BLOGS.filter((b) => b.category === "Go Viral").length,
+    "Publishing & Analytics": ALL_BLOGS.filter((b) => b.category === "Publishing & Analytics").length,
     "AI Image Generator": ALL_BLOGS.filter((b) => b.category === "AI Image Generator").length,
     "Product Photos":     ALL_BLOGS.filter((b) => b.category === "Product Photos").length,
   };
@@ -209,7 +225,7 @@ export default function BlogIndex() {
             </span>
           </h1>
           <p className="text-white/50 mt-3 text-[14px] md:text-[15px] max-w-xl mx-auto leading-relaxed">
-            Strategies, guides, and insights on AI image generation, product photos, and going viral.
+            Strategies and practical guides for creating, publishing, measuring, and growing with AI content.
           </p>
         </div>
       </div>

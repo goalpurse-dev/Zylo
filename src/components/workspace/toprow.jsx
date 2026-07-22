@@ -109,7 +109,7 @@ export default function TopRow({ onMenuClick, title }) {
 
   return (
     <>
-    <section className="w-full z-[60] bg-[#090A0A] border-b border-white/5">
+    <section className="z-[60] w-full bg-[#090A0A]">
       <div className="flex items-center justify-between px-4 lg:px-6 py-3">
 
         {/* ── LEFT ── */}
@@ -206,10 +206,25 @@ export default function TopRow({ onMenuClick, title }) {
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => navigate("/workspace/pricing")}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#14161C] border border-white/10 hover:border-[#7A3BFF]/50 hover:bg-[#181A22] transition"
+                  className="flex items-center gap-1.5 rounded-full border border-lime-400/20 bg-gradient-to-r from-lime-300/[0.10] to-lime-500/[0.07] px-3 py-1.5 shadow-[inset_0_1px_0_rgba(217,249,157,0.04)] transition hover:border-lime-400/35 hover:from-lime-300/[0.14] hover:to-lime-500/[0.10]"
                 >
-                  <img src={Credit} className="h-4 w-auto object-contain brightness-125" />
-                  <span className="text-[#9F5CFF] text-sm font-semibold">{formattedCredits}</span>
+                  <span
+                    aria-hidden="true"
+                    className="h-4 w-4 shrink-0 bg-lime-300"
+                    style={{
+                      WebkitMaskImage: `url(${Credit})`,
+                      maskImage: `url(${Credit})`,
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskSize: "contain",
+                      maskSize: "contain",
+                    }}
+                  />
+                  <span className="text-sm font-semibold text-lime-300">
+                    {formattedCredits}
+                  </span>
                 </button>
 
                 {/* Upgrade right next to credits — free users only */}

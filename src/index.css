@@ -16,6 +16,25 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Native browser fullscreen (the video element's own fullscreen button, not
+   our custom lightbox) always fills the whole monitor — a landscape shape.
+   Any <video> styled with object-cover (used everywhere for 9:16 thumbnails/
+   previews) carries that cover behavior straight into fullscreen too, so a
+   portrait clip gets zoomed/cropped to fill a landscape screen instead of
+   showing pillarboxed at its real aspect ratio. Force contain + black bars
+   specifically in the fullscreen state — normal inline playback is untouched. */
+.nationality-swap-final-video:fullscreen,
+.nationality-swap-final-video:-webkit-full-screen,
+.nationality-swap-final-video:-moz-full-screen,
+.nationality-swap-final-video:-ms-fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  background: #000 !important;
+}
+
 /* (Everything below stays EXACTLY like you had it) */
 .tool-shell { color-scheme: dark; }
 *, *::before, *::after { box-sizing: border-box; }
@@ -353,6 +372,62 @@ body,
   100% {
     opacity: 1;
     width: 32px;
+  }
+}
+
+@keyframes voiceoverScriptBeam {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.voiceover-script-beam {
+  border-color: transparent !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+  isolation: isolate;
+}
+
+.voiceover-script-beam::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: -65%;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 292deg,
+    rgba(249, 115, 22, 0.08) 308deg,
+    rgba(251, 146, 60, 0.72) 329deg,
+    #fdba74 342deg,
+    rgba(249, 115, 22, 0.16) 354deg,
+    transparent 360deg
+  );
+  filter: drop-shadow(0 0 7px rgba(249, 115, 22, 0.7));
+  animation: voiceoverScriptBeam 3.4s linear infinite;
+}
+
+.voiceover-script-beam::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: 1px;
+  border-radius: calc(1rem - 1px);
+  pointer-events: none;
+  background: #0e1012;
+}
+
+.voiceover-script-beam > * {
+  position: relative;
+  z-index: 1;
+}
+
+.voiceover-script-beam:focus-within {
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voiceover-script-beam::before {
+    animation: none;
   }
 }
 
@@ -920,4 +995,49 @@ html, body, #root {
   height: 5px;
   border-radius: 9999px;
   background: linear-gradient(to right, #7A3BFF, #9B6DFF);
+}
+
+/* AI Cooking Matic — selected voice take */
+@keyframes cookingVoiceTakeShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes cookingVoiceTakeSheen {
+  0%, 38% { transform: translateX(-180%) skewX(-18deg); opacity: 0; }
+  48% { opacity: 0.42; }
+  64%, 100% { transform: translateX(260%) skewX(-18deg); opacity: 0; }
+}
+
+.voice-take-selected {
+  background:
+    linear-gradient(108deg,
+      rgba(67, 30, 17, 0.88) 0%,
+      rgba(154, 52, 18, 0.34) 24%,
+      rgba(76, 29, 28, 0.50) 49%,
+      rgba(234, 88, 12, 0.23) 72%,
+      rgba(29, 22, 21, 0.92) 100%);
+  background-size: 240% 100%;
+  animation: cookingVoiceTakeShift 5.5s ease-in-out infinite;
+}
+
+.voice-take-selected::after {
+  content: "";
+  position: absolute;
+  inset: -30% auto -30% -20%;
+  width: 28%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 216, 170, 0.16), transparent);
+  animation: cookingVoiceTakeSheen 5.5s ease-in-out infinite;
+}
+
+.voice-take-wave {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.34), rgba(255, 255, 255, 0.035), rgba(0, 0, 0, 0.28));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voice-take-selected,
+  .voice-take-selected::after {
+    animation: none;
+  }
 }

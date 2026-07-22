@@ -9,30 +9,9 @@ import WelcomeScreen from "../../components/WelcomeScreen";
 import CreatorRewardsModal from "../../components/CreatorRewardsModal";
 
 // ── Promo banner ──────────────────────────────────────────────
-function VideoOutageBanner({ onDismiss }) {
-  return (
-    <div className="relative w-full bg-purple-500/8 border-b border-purple-400/20 px-4 py-2">
-      <div className="relative mx-auto flex max-w-5xl items-center justify-center gap-2">
-        <span className="text-sm leading-none">🎉</span>
-        <span className="text-[12px] text-purple-200/70 text-center">
-          <span className="font-semibold text-purple-300">Pro Plan — 25% off for a limited time.</span>
-          {" "}Upgrade now to unlock unlimited generations.
-        </span>
-        <button
-          onClick={onDismiss}
-          className="absolute right-0 shrink-0 text-purple-400/40 hover:text-purple-300 transition text-base leading-none px-1"
-          aria-label="Dismiss"
-        >
-          ×
-        </button>
-      </div>
-    </div>
-  );
-}
-
-
 export default function WorkspaceLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const noticeRef = useRef(null);
 
   const location = useLocation();
   const [showWelcome, setShowWelcome] = useState(false);
@@ -48,17 +27,7 @@ export default function WorkspaceLayout() {
 
   const lastScrollY = useRef(0);
   const [showTopRow, setShowTopRow] = useState(true);
-  const isHomeRoute = location.pathname === "/workspace/home";
-  const [bannerVisible, setBannerVisible] = useState(false);
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
-  const [outageDismissed, setOutageDismissed] = useState(false);
-
-  /* ================= PROMO ================= */
-  useEffect(() => {
-    if (!isHomeRoute) return;
-    const dismissed = localStorage.getItem("promo_closed");
-    setBannerVisible(!dismissed);
-  }, [isHomeRoute]);
 
   /* ================= WELCOME / CREATOR REWARDS ================= */
   useEffect(() => {
@@ -139,6 +108,7 @@ useEffect(() => {
     "/workspace/myproduct": "Product",
     "/workspace/library": "Bg Library",
     "/workspace/creations": "Creations",
+    "/workspace/creations/viral-videos": "Viral Videos",
     "/workspace/pricing": "Pricing",
     "/workspace/image-generator": "Image Generator",
     "/workspace/video-generator": "Video Generator",
@@ -147,17 +117,42 @@ useEffect(() => {
     "/workspace/ai-fruit-story": "AI Fruit Story",
     "/workspace/face-asmr": "Face ASMR",
     "/workspace/micro-camera-animal": "Micro Camera",
-    "/workspace/clay-rescue": "Clay Rescue",
-    "/workspace/publish":     "Publish",
+    "/workspace/clay-rescue":        "Clay Rescue",
+    "/workspace/ai-cooking-matic":   "AI Cooking Matic",
+    "/workspace/publishv":           "Publish",
+    "/workspace/stats":              "Stats",
+    "/workspace/connections":        "Connections",
   };
 
   const title = titleMap[location.pathname] || "Workspace";
 
+  useEffect(() => {
+    const notice = noticeRef.current;
+    if (!notice) return;
+
+    const syncNoticeHeight = () => {
+      document.documentElement.style.setProperty("--zyvo-notice-height", `${notice.getBoundingClientRect().height}px`);
+    };
+
+    syncNoticeHeight();
+    const observer = new ResizeObserver(syncNoticeHeight);
+    observer.observe(notice);
+    return () => {
+      observer.disconnect();
+      document.documentElement.style.removeProperty("--zyvo-notice-height");
+    };
+  }, []);
+
   return (
-    <div className="flex w-full h-[100dvh] bg-[#090A0A] overflow-x-hidden overflow-y-hidden">
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#090A0A]">
+      <div ref={noticeRef} className="relative z-[70] w-full shrink-0">
+        <TopPromoBanner />
+      </div>
+
+      <div className="flex min-h-0 flex-1 overflow-hidden">
 
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden lg:block h-full w-[80px] flex-shrink-0 z-50">
+      <aside className="hidden h-full w-[220px] flex-shrink-0 lg:block z-50">
         <ToolShell />
       </aside>
 
@@ -169,23 +164,17 @@ useEffect(() => {
             onClick={() => setSidebarOpen(false)}
           />
 
-          <aside className="fixed top-0 left-0 z-50 h-full w-[80px] bg-[#090A0A] lg:hidden">
+          <aside className="fixed bottom-0 left-0 z-50 w-[220px] max-w-[88vw] lg:hidden" style={{ top: "var(--zyvo-notice-height, 0px)" }}>
             <ToolShell onClose={() => setSidebarOpen(false)} />
           </aside>
         </>
       )}
 
       {/* MAIN */}
-      <div className="flex flex-col flex-1 h-[100dvh] overflow-x-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden">
 
         {/* HEADER — always sticky */}
         <div className="relative z-[60] w-full shrink-0">
-          {!outageDismissed && <VideoOutageBanner onDismiss={() => setOutageDismissed(true)} />}
-
-          {isHomeRoute && bannerVisible && (
-            <TopPromoBanner onClose={() => setBannerVisible(false)} />
-          )}
-
           <TopRow
             onMenuClick={() => setSidebarOpen(prev => !prev)}
             title={title}
@@ -225,6 +214,7 @@ useEffect(() => {
 
         {/* MOBILE NAV */}
         <MobileBottomNav hidden={isSelectorOpen} />
+      </div>
       </div>
 
    

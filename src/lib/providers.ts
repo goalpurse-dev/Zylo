@@ -31,6 +31,7 @@ export type ToolKey =
   | "video:veo31lite"
   | "video:viduq3turbo"
   | "video:seedance15pro"
+  | "video:seedance20fast"
 
 
 
@@ -57,7 +58,7 @@ export type ProviderLink = {
   // 🔥 VIDEO PRICING CORE
   costPerSecondUSD?: number;
   resolutionCostPerSecondUSD?: Record<string, number>;
-  baseResolution?: "540p" | "720p" | "768p" |"1080p";
+  baseResolution?: "480p" | "540p" | "720p" | "768p" | "1080p";
   retailMultiplier?: number; // your markup multiplier
   baseCreditsPerSecond?: number; // 🔥 NEW
 
@@ -345,8 +346,13 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
   },
 
   /**
-   * Seedance 1.5 Pro 480p  —  5-second image-to-video
-   * Cost: $0.06/clip → $0.12 retail → 6 credits
+   * Seedance 1.5 Pro — 6s clip, WITH audio (providerSettings.bytedance.audio:
+   * true — confirmed working, see runware-video/runware.ts). This is the
+   * "correct" Seedance tier — real native audio support, unlike 2.0 Fast.
+   * Measured from actual Runware invoices:
+   *   480p (496x864): $0.1431144 / 6s → $0.023852/s
+   *   720p:           $0.3151728 / 6s → $0.052529/s
+   * No-sound rate is from an earlier, unverified 4s test — left as-is.
    */
   "video:seedance15pro": {
     provider:   "runware",
@@ -354,12 +360,29 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     airTag:     "bytedance:seedance@1.5-pro",
     secret:     "RUNWARE_API_KEY",
     edgeFn:     "/functions/v1/runware-video",
-    costPerSecondUSD:     0.012,   // $0.06 / 5s
+    costPerSecondUSD:      0.052529,  // 720p, with audio — measured
+    baseResolution:        "720p",
+    retailMultiplier:      2,
+    baseCreditsPerSecond:  2.5,       // no sound (unverified, earlier 4s test)
+    soundCreditsPerSecond: 5.25,      // with sound, 720p — measured
+  },
+
+  /**
+   * Seedance 2.0 Fast — audio is always included even though its Runware
+   * schema has no audio toggle. Measured $0.364092/6s @ 480p (496x864).
+   * Clay Rescue uses this for its sound-on path; its sound-off path remains
+   * on Seedance 1.5 Pro.
+   */
+  "video:seedance20fast": {
+    provider:   "runware",
+    generator:  "Seedance 2.0 Fast",
+    airTag:     "bytedance:seedance@2.0-fast",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
+    costPerSecondUSD:     0.060682,   // $0.364092 / 6s, measured @ 480p (496x864)
     baseResolution:       "480p",
     retailMultiplier:     2,
-    baseCreditsPerSecond: 1.2,    // 6 credits / 5s
-    credits:              6,      // flat 6 credits per 5-second clip
-    retailUSD:            0.12,
+    baseCreditsPerSecond: 7,          // generic video-generator retail rate; audio is always included
   },
 
   "video:veo31fast": {

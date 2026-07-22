@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { launchRunwareVideo, pollRunware } from "./runware.ts";
+import { logEvent as persistLog } from "../_shared/systemLog.ts";
 
 /* ================= CORS ================= */
 
@@ -40,14 +41,48 @@ const SERVICE_KEY =
 
 /* ================= CONFIG ================= */
 
-const MAX_RUNTIME_MS = 10 * 60 * 1000; // bumped to 10 min to cover internal 402 retry
+// Supabase Pro wall-clock limit is ~400s total (including waitUntil background work).
+// We must mark the job "failed" *before* Supabase kills the function mid-poll,
+// otherwise the job stays stuck in "running" and the frontend never gets a
+// terminal state to trigger the retry button.
+const MAX_RUNTIME_MS = 320 * 1000; // 320s — leaves ~80s buffer before Supabase kills it
 
-const POLL_INTERVAL_MS = 3000;
+const POLL_INTERVAL_MS = 4000;     // slightly longer interval to save CPU budget
 const MAX_POLLS = Math.ceil(MAX_RUNTIME_MS / POLL_INTERVAL_MS);
 const MAX_CONSECUTIVE_POLL_ERRORS = 8;
 
 const PROGRESS_MIN = 25;
 const PROGRESS_MAX_RUNNING = 95;
+
+/* ================= LOGGING =================
+   Every line is prefixed with an icon + [runware-video] + event name so
+   Supabase → Edge Functions → runware-video → Logs reads like a timeline:
+   scan for 🔴 to find failures, filter by jobId to follow one video's whole
+   life (launch → poll → content-policy retry → success/fail).
+================================================= */
+
+type LogLevel = "info" | "warn" | "error";
+
+function logEvent(level: LogLevel, event: string, ctx: Record<string, unknown> = {}) {
+  const icon = level === "error" ? "🔴" : level === "warn" ? "🟠" : "🟢";
+  const line = `${icon} [runware-video] ${event}`;
+  const detail = JSON.stringify({ ts: new Date().toISOString(), ...ctx });
+
+  if (level === "error") console.error(line, detail);
+  else if (level === "warn") console.warn(line, detail);
+  else console.log(line, detail);
+
+  void persistLog("runware-video", level, event, ctx);
+}
+
+// Safety net for genuinely unexpected crashes (a bug, not a provider
+// rejection) — without this, a stray unhandled promise inside waitUntil
+// can vanish from the logs entirely.
+globalThis.addEventListener("unhandledrejection", (e: any) => {
+  logEvent("error", "unhandled_rejection", {
+    reason: e?.reason instanceof Error ? (e.reason.stack ?? e.reason.message) : String(e?.reason),
+  });
+});
 
 /* ================= HELPERS ================= */
 
@@ -110,6 +145,45 @@ async function safeRpc(
   }
 }
 
+function extensionFromContentType(contentType: string | null, fallback = "mp4") {
+  const normalized = String(contentType || "").toLowerCase();
+  if (normalized.includes("webm")) return "webm";
+  if (normalized.includes("quicktime")) return "mov";
+  if (normalized.includes("mpegurl")) return "m3u8";
+  if (normalized.includes("mp4")) return "mp4";
+  return fallback;
+}
+
+async function persistVideoResult(sb: SB, jobId: string, sourceUrl: string): Promise<string> {
+  if (!/^https?:\/\//i.test(sourceUrl)) return sourceUrl;
+
+  try {
+    const res = await fetch(sourceUrl);
+    if (!res.ok) throw new Error(`download failed ${res.status}`);
+
+    const contentType = res.headers.get("content-type") || "video/mp4";
+    const blob = await res.blob();
+    const ext = extensionFromContentType(contentType);
+    const path = `runware/videos/${jobId}.${ext}`;
+
+    const { error: uploadError } = await sb.storage
+      .from("generated")
+      .upload(path, blob, {
+        contentType,
+        cacheControl: "31536000",
+        upsert: true,
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data } = sb.storage.from("generated").getPublicUrl(path);
+    return data?.publicUrl || sourceUrl;
+  } catch (e) {
+    console.warn("[runware-video] failed to persist result, using provider URL:", String((e as any)?.message ?? e));
+    return sourceUrl;
+  }
+}
+
 /* ================= 402 LAUNCH RETRY ================= */
 
 // Runware returns 402 "insufficientCredits" when their balance-based concurrency
@@ -131,9 +205,11 @@ async function launchWithRetry(
 
       if (!is402 || attempt >= 1) throw e;
 
-      console.log(
-        `[runware-video] 402 on launch attempt ${attempt + 1}, retrying in ${LAUNCH_RETRY_DELAY_MS / 1000}s`,
-      );
+      logEvent("warn", "launch_402_retry", {
+        jobId,
+        attempt: attempt + 1,
+        retryInSec: LAUNCH_RETRY_DELAY_MS / 1000,
+      });
 
       // Set queued with future retry_after so job-worker won't re-dispatch this row
       await safeUpdateJob(sb, jobId, {
@@ -159,30 +235,14 @@ async function launchWithRetry(
 // Runware starts billing the instant the job launches, not when polling
 // later confirms completion, so the ledger needs to move at the same moment.
 async function chargeJobCredits(sb: SB, jobId: string): Promise<boolean> {
-  const { data: job } = await sb
-    .from("jobs")
-    .select("user_id, settings")
-    .eq("id", jobId)
-    .single();
+  const { data, error } = await sb.rpc("charge_job_credits", { p_job_id: jobId });
 
-  if (!job?.user_id) return false;
-
-  const credits = Number(job.settings?.credits ?? 0);
-  if (credits <= 0) return true;
-
-  const { error } = await sb.rpc("deduct_credits", {
-    uid: job.user_id,
-    amount: credits,
-  });
-
-  if (error) {
-    console.error(
-      "[runware-video] credit deduction failed at launch:",
-      error.message,
-    );
+  if (error || data !== true) {
+    logEvent("error", "credit_charge_failed", { jobId, message: error?.message ?? "insufficient credits" });
     return false;
   }
 
+  logEvent("info", "credit_charge_success", { jobId });
   return true;
 }
 
@@ -190,42 +250,112 @@ async function chargeJobCredits(sb: SB, jobId: string): Promise<boolean> {
 // the user shouldn't pay for a video they never received. Mirrors the
 // fallback pattern used in stripe-webhook's atomicAddCredits.
 async function refundJobCredits(sb: SB, jobId: string) {
-  const { data: job } = await sb
-    .from("jobs")
-    .select("user_id, settings")
-    .eq("id", jobId)
-    .single();
-
-  if (!job?.user_id) return;
-
-  const credits = Number(job.settings?.credits ?? 0);
-  if (credits <= 0) return;
-
-  const { error } = await sb.rpc("increment_credit_balance", {
-    p_user_id: job.user_id,
-    p_delta: credits,
-  });
+  const { data, error } = await sb.rpc("refund_job_credits", { p_job_id: jobId });
 
   if (error) {
-    console.error(
-      "[runware-video] credit refund RPC failed, falling back to direct update:",
-      error.message,
-    );
+    logEvent("error", "credit_refund_rpc_failed", { jobId, message: error.message });
+  } else if (data === true) {
+    logEvent("info", "credit_refund_success", { jobId });
+  }
+}
 
-    const { data: profile } = await sb
-      .from("profiles")
-      .select("credit_balance")
-      .eq("id", job.user_id)
-      .single();
+/* ================= CONTENT-POLICY RETRY ================= */
 
-    await sb
-      .from("profiles")
-      .update({ credit_balance: (profile?.credit_balance ?? 0) + credits })
-      .eq("id", job.user_id);
-  } else {
-    console.log(
-      `[runware-video] refunded ${credits} credits to user ${job.user_id} for failed job ${jobId}`,
-    );
+// When a provider (most often Vertex AI behind Veo) rejects a prompt for
+// violating its usage guidelines, retrying the exact same prompt just
+// fails again. Instead, ask OpenAI to rewrite it — removing whatever most
+// likely tripped the filter — and relaunch. Each attempt asks for a more
+// conservative rewrite than the last.
+const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
+const MAX_CONTENT_RETRIES = 2;
+// Below this much remaining runtime, don't bother starting another
+// attempt — there isn't enough budget left to launch + poll it out.
+const MIN_TIME_FOR_RETRY_MS = 45 * 1000;
+
+const CONTENT_POLICY_CODES = new Set([
+  "invalidProviderContent",
+  "contentPolicyViolation",
+  "contentModeration",
+]);
+
+const CONTENT_POLICY_KEYWORDS = [
+  "usage guidelines",
+  "content policy",
+  "safety filter",
+  "safety system",
+  "flagged",
+  "moderation",
+  "vertex ai",
+];
+
+function isContentPolicyFailure(poll: { error?: string; code?: string }): boolean {
+  if (poll.code && CONTENT_POLICY_CODES.has(poll.code)) return true;
+  const msg = String(poll.error || "").toLowerCase();
+  return CONTENT_POLICY_KEYWORDS.some((kw) => msg.includes(kw));
+}
+
+async function sanitizePromptWithOpenAI(
+  originalPrompt: string,
+  attempt: number,
+  jobId?: string,
+): Promise<string> {
+  if (!OPENAI_KEY) {
+    logEvent("warn", "sanitize_skipped_no_key", { jobId });
+    return originalPrompt;
+  }
+
+  const strictness =
+    attempt >= 2
+      ? "Be very conservative: strip out anything that could remotely be read as violent, dangerous, harmful to a person, sexual, or otherwise sensitive, even if it seems like a stretch. Keep only the safest possible interpretation of the scene."
+      : "Remove or soften wording likely to trigger an automated content-safety filter (references to real harm, weapons, blood, distress, or anything that could be misread as violent or unsafe), while keeping the scene's core action and characters recognizable.";
+
+  const systemMessage =
+    `You rewrite AI video generation prompts that were rejected by a provider's content-safety filter (e.g. Google Vertex AI). ` +
+    `${strictness} ` +
+    `Preserve the overall structure, camera direction, and any dialogue formatting exactly — only change the parts likely causing the rejection. ` +
+    `Output ONLY the rewritten prompt text. No explanation, no quotes, no markdown.`;
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${OPENAI_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemMessage },
+          { role: "user", content: originalPrompt },
+        ],
+        max_tokens: 800,
+        temperature: 0.4,
+      }),
+    });
+
+    if (!res.ok) {
+      logEvent("error", "sanitize_openai_error", {
+        jobId,
+        status: res.status,
+        body: (await res.text().catch(() => "")).slice(0, 500),
+      });
+      return originalPrompt;
+    }
+
+    const data = await res.json();
+    const rewritten = String(data.choices?.[0]?.message?.content ?? "").trim();
+
+    logEvent("info", "sanitize_success", {
+      jobId,
+      attempt,
+      before: originalPrompt.slice(0, 160),
+      after: (rewritten || originalPrompt).slice(0, 160),
+    });
+
+    return rewritten || originalPrompt;
+  } catch (e) {
+    logEvent("error", "sanitize_exception", { jobId, message: (e as Error).message });
+    return originalPrompt;
   }
 }
 
@@ -250,8 +380,21 @@ async function processVideoJob(body: any) {
 
   const airTagStr = String(airTag);
 
+  logEvent("info", "job_start", {
+    jobId,
+    airTag: airTagStr,
+    durationSec,
+    width,
+    height,
+    resolution,
+    withSound: !!withSound,
+    refCount: Array.isArray(referenceImages) ? referenceImages.length : 0,
+    promptPreview: String(prompt ?? "").slice(0, 160),
+  });
+
   // Runway removed/disabled for now because Runware -> Runway image refs fail.
   if (airTagStr.startsWith("runway:")) {
+    logEvent("warn", "job_rejected_runway_disabled", { jobId });
     await safeUpdateJob(sb, String(jobId), {
       status: "failed",
       error:
@@ -272,123 +415,246 @@ async function processVideoJob(body: any) {
   const rawReferenceImages = Array.isArray(referenceImages)
     ? referenceImages.filter(Boolean).map(String)
     : [];
-  const safePositivePrompt = safeRunwarePositivePrompt(prompt);
+  let currentPrompt = safeRunwarePositivePrompt(prompt);
 
-  const launchPayload: any = {
-    subject: safePositivePrompt,
-    durationSec: Number(durationSec ?? 5),
-    referenceImages: rawReferenceImages,
-    airTag: airTagStr,
-    withSound: !!withSound,
-  };
+  const { data: existingJobState } = await sb
+    .from("jobs")
+    .select("settings,charged")
+    .eq("id", String(jobId))
+    .maybeSingle();
+  const existingSettings = existingJobState?.settings ?? {};
+  let resumableProviderJobId = String(existingSettings?.provider_job_id ?? "").trim() || null;
 
-  if (isMiniMax) {
-    launchPayload.resolution =
-      resolution === "1080p" ? "1080p" : "768p";
-  } else {
-    launchPayload.width = Number(width);
-    launchPayload.height = Number(height);
+  function buildLaunchPayload(promptText: string) {
+    const p: any = {
+      subject: promptText,
+      durationSec: Number(durationSec ?? 5),
+      referenceImages: rawReferenceImages,
+      airTag: airTagStr,
+      withSound: !!withSound,
+      jobId: String(jobId),
+    };
+
+    if (isMiniMax) {
+      p.resolution = resolution === "1080p" ? "1080p" : "768p";
+    } else {
+      p.width = Number(width);
+      p.height = Number(height);
+    }
+
+    return p;
   }
 
-  console.log(
-    "[runware-video] FINAL PROVIDER PAYLOAD:",
-    JSON.stringify(launchPayload, null, 2),
-  );
-
-  const providerJobId = await launchWithRetry(sb, String(jobId), launchPayload);
-
-  // ============== CHARGE AT LAUNCH ==============
-  // Runware starts billing the instant launchRunwareVideo succeeds — not
-  // when polling later confirms a finished video. Charging here keeps your
-  // ledger in sync with the real billing trigger. If the job doesn't pan
-  // out, every failure branch below refunds it.
-  const charged = await chargeJobCredits(sb, String(jobId));
-
-  /* ================= SAVE PROVIDER ID ================= */
-
-  const { data: settingsRow } = await sb
-    .from("jobs")
-    .select("settings")
-    .eq("id", String(jobId))
-    .single();
-
-  await safeUpdateJob(sb, String(jobId), {
-    settings: {
-      ...(settingsRow?.settings ?? {}),
-      provider_job_id: providerJobId,
-    },
-  });
-
-  /* ================= POLLING ================= */
-
+  // Shared across every attempt (including content-policy retries) so the
+  // whole job — original attempt plus any rewrites — stays inside the
+  // ~320s wall-clock budget instead of resetting the clock each retry.
   const startMs = Date.now();
-  let consecutivePollErrors = 0;
+  let charged = Boolean(existingJobState?.charged);
+  let contentRetryCount = Number(existingSettings?.content_retry_count ?? 0);
 
-  for (let i = 0; i < MAX_POLLS; i++) {
-    await sleep(POLL_INTERVAL_MS);
+  attempts:
+  for (;;) {
+    const launchPayload = buildLaunchPayload(currentPrompt);
 
-    if (Date.now() - startMs > MAX_RUNTIME_MS) break;
+    logEvent("info", "attempt_start", {
+      jobId,
+      attempt: contentRetryCount + 1,
+      isContentRetry: contentRetryCount > 0,
+      elapsedMs: Date.now() - startMs,
+    });
 
-    let poll: any;
-
-    try {
-      poll = await pollRunware(providerJobId);
-      consecutivePollErrors = 0;
-    } catch (e) {
-      consecutivePollErrors++;
-
-      console.error("[runware-video] Poll error:", e);
-
-      if (consecutivePollErrors >= MAX_CONSECUTIVE_POLL_ERRORS) {
+    // ============== CHARGE AT LAUNCH ==============
+    // Runware starts billing the instant launchRunwareVideo succeeds — not
+    // when polling later confirms a finished video. Charging here keeps your
+    // ledger in sync with the real billing trigger. If the job doesn't pan
+    // out, every failure branch below refunds it. Only charge once — a
+    // content-policy retry relaunches the same paid job, it doesn't buy
+    // another one.
+    if (!charged) {
+      charged = await chargeJobCredits(sb, String(jobId));
+      if (!charged) {
         await safeUpdateJob(sb, String(jobId), {
           status: "failed",
-          error: "Provider polling failed repeatedly",
+          error: "INSUFFICIENT_CREDITS",
+        });
+        return;
+      }
+    }
+
+    let providerJobId: string;
+
+    if (resumableProviderJobId) {
+      providerJobId = resumableProviderJobId;
+      resumableProviderJobId = null;
+      logEvent("info", "provider_poll_resumed", {
+        jobId,
+        providerJobId,
+        elapsedMs: Date.now() - startMs,
+      });
+    } else {
+      providerJobId = await launchWithRetry(sb, String(jobId), launchPayload);
+
+      /* ================= SAVE PROVIDER ID ================= */
+
+      const { data: settingsRow } = await sb
+        .from("jobs")
+        .select("settings")
+        .eq("id", String(jobId))
+        .single();
+
+      await safeUpdateJob(sb, String(jobId), {
+        settings: {
+          ...(settingsRow?.settings ?? {}),
+          provider_job_id: providerJobId,
+          content_retry_count: contentRetryCount,
+          ...(contentRetryCount > 0 ? { sanitized_prompt: currentPrompt } : {}),
+        },
+      });
+    }
+
+    /* ================= POLLING ================= */
+
+    let consecutivePollErrors = 0;
+    let lastLoggedStatus = "";
+
+    for (let i = 0; i < MAX_POLLS; i++) {
+      await sleep(POLL_INTERVAL_MS);
+
+      if (Date.now() - startMs > MAX_RUNTIME_MS) break attempts;
+
+      let poll: any;
+
+      try {
+        poll = await pollRunware(providerJobId, String(jobId));
+        consecutivePollErrors = 0;
+      } catch (e) {
+        consecutivePollErrors++;
+
+        logEvent("error", "poll_exception", {
+          jobId,
+          consecutiveErrors: consecutivePollErrors,
+          message: (e as Error)?.message ?? String(e),
+        });
+
+        if (consecutivePollErrors >= MAX_CONSECUTIVE_POLL_ERRORS) {
+          logEvent("error", "job_failed", { jobId, reason: "poll_errors_exhausted", elapsedMs: Date.now() - startMs });
+          await safeUpdateJob(sb, String(jobId), {
+            status: "failed",
+            error: "Provider polling failed repeatedly",
+          });
+          if (charged) await refundJobCredits(sb, String(jobId));
+          return;
+        }
+
+        continue;
+      }
+
+      // Only log when the status actually changes, or every ~20s as a
+      // heartbeat — logging every 4s poll for minutes drowns out the
+      // signal you actually care about.
+      const statusKey = String(poll?.status || "unknown");
+      if (statusKey !== lastLoggedStatus || i % 5 === 0) {
+        logEvent("info", "poll_status", {
+          jobId,
+          status: statusKey,
+          attempt: contentRetryCount + 1,
+          elapsedMs: Date.now() - startMs,
+        });
+        lastLoggedStatus = statusKey;
+      }
+
+      if (poll?.url) {
+        logEvent("info", "provider_video_ready", { jobId, elapsedMs: Date.now() - startMs });
+        const storedUrl = await persistVideoResult(sb, String(jobId), poll.url);
+        await safeUpdateJob(sb, String(jobId), {
+          status: "succeeded",
+          progress: 100,
+          result_url: storedUrl,
+          charged: true,
+        });
+        logEvent("info", "job_succeeded", {
+          jobId,
+          contentRetryCount,
+          totalElapsedMs: Date.now() - startMs,
+        });
+        // Already charged at launch — do not charge again here.
+        return;
+      }
+
+      const status = String(poll?.status || "").toLowerCase();
+
+      // For real provider failures, fail the job instead of waiting forever.
+      if (status === "failed") {
+        const timeLeftMs = MAX_RUNTIME_MS - (Date.now() - startMs);
+        const contentPolicyHit = isContentPolicyFailure(poll);
+
+        if (contentPolicyHit) {
+          logEvent("warn", "content_policy_detected", {
+            jobId,
+            code: poll?.code ?? null,
+            message: poll?.error,
+            contentRetryCount,
+            timeLeftMs,
+          });
+        }
+
+        if (
+          contentPolicyHit &&
+          contentRetryCount < MAX_CONTENT_RETRIES &&
+          timeLeftMs > MIN_TIME_FOR_RETRY_MS
+        ) {
+          contentRetryCount++;
+          logEvent("info", "content_retry_starting", {
+            jobId,
+            attempt: contentRetryCount,
+            maxRetries: MAX_CONTENT_RETRIES,
+          });
+
+          currentPrompt = await sanitizePromptWithOpenAI(currentPrompt, contentRetryCount, String(jobId));
+
+          await safeUpdateJob(sb, String(jobId), {
+            status: "running",
+            progress: PROGRESS_MIN,
+          });
+
+          continue attempts;
+        }
+
+        logEvent("error", "job_failed", {
+          jobId,
+          reason: contentPolicyHit ? "content_policy_retries_exhausted" : "provider_failed",
+          providerError: poll?.error,
+          contentRetryCount,
+          elapsedMs: Date.now() - startMs,
+        });
+
+        await safeUpdateJob(sb, String(jobId), {
+          status: "failed",
+          error:
+            contentRetryCount > 0
+              ? `Video rejected by the provider's content filter after ${contentRetryCount} rewritten attempt${contentRetryCount > 1 ? "s" : ""}. Try a different description.`
+              : poll?.error ?? "Provider failed",
         });
         if (charged) await refundJobCredits(sb, String(jobId));
         return;
       }
 
-      continue;
-    }
+      const p = computeProgress(startMs);
 
-    console.log("[runware-video] POLL RESULT:", JSON.stringify(poll));
-
-    if (poll?.url) {
-      await safeUpdateJob(sb, String(jobId), {
-        status: "succeeded",
-        progress: 100,
-        result_url: poll.url,
-        charged: true,
+      await safeRpc(sb, "bump_job_progress", {
+        p_id: String(jobId),
+        p_progress: p,
       });
-      // Already charged at launch — do not charge again here.
-      return;
     }
-
-    const status = String(poll?.status || "").toLowerCase();
-
-    // For real provider failures, fail the job instead of waiting forever.
-    if (status === "failed") {
-      await safeUpdateJob(sb, String(jobId), {
-        status: "failed",
-        error: poll?.error ?? "Provider failed",
-      });
-      if (charged) await refundJobCredits(sb, String(jobId));
-      return;
-    }
-
-    const p = computeProgress(startMs);
-
-    await safeRpc(sb, "bump_job_progress", {
-      p_id: String(jobId),
-      p_progress: p,
-    });
   }
 
   /* ================= FINAL FAIL ================= */
 
+  logEvent("error", "job_failed", { jobId, reason: "timeout", contentRetryCount, elapsedMs: Date.now() - startMs });
+
   await safeUpdateJob(sb, String(jobId), {
     status: "failed",
-    error: "Final timeout after 8 minutes",
+    error: "Video generation timed out — click Retry video to try again",
   });
   if (charged) await refundJobCredits(sb, String(jobId));
 }
@@ -410,6 +676,10 @@ Deno.serve(async (req) => {
 
   if (req.method !== "POST") return err(req, "Method not allowed", 405);
 
+  if (!SERVICE_KEY || req.headers.get("x-job-worker-key") !== SERVICE_KEY) {
+    return err(req, "Unauthorized worker handoff", 401);
+  }
+
   if (!SUPABASE_URL || !SERVICE_KEY) {
     return err(req, "Missing Supabase env", 500);
   }
@@ -422,18 +692,30 @@ Deno.serve(async (req) => {
   if (!durationSec) return err(req, "Missing durationSec");
   if (!airTag) return err(req, "Missing airTag");
 
-  const airTagStr = String(airTag);
-  const isMiniMax = airTagStr.includes("minimax");
-  const isKling = airTagStr.includes("kling");
-  const isVeoLite = airTagStr === "google:veo@3.1-lite";
+  const airTagStr    = String(airTag);
+  const isMiniMax    = airTagStr.includes("minimax");
+  const isKling      = airTagStr.includes("kling");
+  const isVeoLite    = airTagStr === "google:veo@3.1-lite";
+  const isSeedance20 = airTagStr === "bytedance:seedance@2.0-fast";
 
-  if (!isMiniMax && !isKling && !isVeoLite && (!width || !height)) {
+  // Seedance 2.0 Fast and Veo provide their own dimensions — skip the guard
+  if (!isMiniMax && !isKling && !isVeoLite && !isSeedance20 && (!width || !height)) {
+    logEvent("warn", "request_rejected_missing_dimensions", { jobId, airTag: airTagStr, width, height });
     return err(req, "Missing dimensions");
   }
 
+  logEvent("info", "request_accepted", { jobId, airTag: airTagStr });
+
   EdgeRuntime.waitUntil(
     processVideoJob(body).catch(async (e) => {
-      console.error("[runware-video] background process threw:", e);
+      // Reaching this means something threw *outside* processVideoJob's own
+      // handling (a genuine bug, not a modeled provider failure) — log the
+      // full stack so it's actually debuggable from the dashboard.
+      logEvent("error", "background_process_crashed", {
+        jobId,
+        message: e instanceof Error ? e.message : String(e),
+        stack: e instanceof Error ? e.stack : undefined,
+      });
       try {
         const sb = createClient(SUPABASE_URL, SERVICE_KEY, {
           auth: { persistSession: false },
@@ -443,7 +725,12 @@ Deno.serve(async (req) => {
           error: e instanceof Error ? e.message : String(e),
         });
         await refundJobCredits(sb, String(jobId));
-      } catch { /* ignore */ }
+      } catch (inner) {
+        logEvent("error", "crash_handler_itself_failed", {
+          jobId,
+          message: inner instanceof Error ? inner.message : String(inner),
+        });
+      }
     }),
   );
 

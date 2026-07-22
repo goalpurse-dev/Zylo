@@ -11,6 +11,7 @@ export async function generateVideoFromUI(params: {
   modelKey: keyof typeof MODELS;
   prompt: string;
   size: string;
+  /** Either a key like "6s" or a raw number string like "8" (from slider) */
   duration: string;
   resolution: string;
   refImages?: string[];
@@ -22,12 +23,20 @@ export async function generateVideoFromUI(params: {
   const toolKey = UI_MODEL_TO_TOOLKEY[params.modelKey];
   if (!toolKey) throw new Error("No provider mapping");
 
-  const isVeoLite  = toolKey === "video:veo31lite";
-  const isKling    = toolKey.startsWith("klingai:");
-  const isMiniMax  = toolKey.startsWith("minimax:");
+  const isVeoLite       = toolKey === "video:veo31lite";
+  const isKling         = toolKey.startsWith("klingai:");
+  const isMiniMax       = toolKey.startsWith("minimax:");
+  const isSeedanceSlider = toolKey === "video:seedance15pro" || toolKey === "video:seedance20fast";
 
-  const durationSec = Number(params.duration.replace("s", ""));
-  const totalCredits = calculateVideoCredits(toolKey, params.duration, params.resolution);
+  // Support both "6s" keys and raw numeric strings from the duration slider
+  const durationSec = params.duration.endsWith("s")
+    ? Number(params.duration.slice(0, -1))
+    : Number(params.duration);
+
+  // Credits: slider models use raw seconds; button models use the key
+  const totalCredits = isSeedanceSlider
+    ? Math.ceil(calculateVideoCreditsRaw(toolKey, durationSec, params.withSound ?? false))
+    : calculateVideoCredits(toolKey, params.duration, params.resolution, params.withSound ?? false);
 
   const sizeConfig = VIDEO_SIZES[params.size] ?? VIDEO_SIZES["16:9"];
   const dimensions =
@@ -40,38 +49,42 @@ export async function generateVideoFromUI(params: {
   const enhancedPrompt = buildVideoPrompt(params.prompt);
 
   const payload: any = {
-    subject: enhancedPrompt,
+    subject:           enhancedPrompt,
     toolKey,
     durationSec,
-    initImageUrls: params.refImages ?? [],
+    initImageUrls:     params.refImages ?? [],
     calculatedCredits: totalCredits,
+    withSound:         params.withSound ?? false,
   };
 
-  // ✅ VEO 3.1 LITE — resolution string + dims for text-to-video fallback
-  if (isVeoLite) {
+  // ✅ SEEDANCE (1.5 Pro / 2.0 Fast) — explicit width/height at 720p
+  if (isSeedanceSlider) {
+    payload.width  = dimensions.w;
+    payload.height = dimensions.h;
+  }
+
+  // ✅ VEO 3.1 LITE — resolution string only (width/height ignored by Runware)
+  else if (isVeoLite) {
     payload.resolution = "720p";
     payload.width  = dimensions.w;
     payload.height = dimensions.h;
   }
 
-  // ✅ KLING STANDARD — explicit width/height
+  // ✅ KLING — explicit width/height
   else if (isKling) {
     payload.width = dimensions.w;
     payload.height = dimensions.h;
   }
 
-  // ✅ MINIMAX / HAILOU — resolution string only
+  // ✅ MINIMAX — resolution string only
   else if (isMiniMax) {
     payload.resolution = params.resolution === "1080p" ? "1080p" : "768p";
   }
 
-  // ✅ DEFAULT — explicit width/height
+  // ✅ DEFAULT
   else {
     payload.width = dimensions.w;
     payload.height = dimensions.h;
-    if (toolKey === "video:viduq3turbo") {
-      payload.withSound = params.withSound ?? false;
-    }
   }
 
   return createVideoJobSimple({

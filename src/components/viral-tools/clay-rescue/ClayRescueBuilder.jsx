@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { ChevronRight, Lightbulb } from "lucide-react";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
-import { LENGTH_OPTIONS, calcCredits } from "./api/clayRescueApi";
+import {
+  LENGTH_OPTIONS,
+  VIDEO_CREDITS_NO_SOUND,
+  VIDEO_CREDITS_SOUND,
+  calcCredits,
+} from "./api/clayRescueApi";
 import NoCreditsModal from "../shared/NoCreditsModal";
 
 const PROBLEM_SUGGESTIONS = ["Flood", "Homeless", "Fire", "Storm", "Volcano", "Trapped", "Blizzard", "Quicksand", "Earthquake", "Landslide"];
@@ -266,7 +271,9 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
                   AI Sound
                 </span>
                 <span className="ml-2 text-[11px] text-white/25">
-                  {withSound ? "30 cr/clip · Veo 3.1 · 6s" : "8 cr/clip · silent · 7s"}
+                  {withSound
+                    ? `${VIDEO_CREDITS_SOUND} cr/clip · Seedance 2.0 · 6s`
+                    : `${VIDEO_CREDITS_NO_SOUND} cr/clip · silent · 7s`}
                 </span>
               </div>
             </div>

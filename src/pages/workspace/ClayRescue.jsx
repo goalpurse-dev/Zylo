@@ -7,13 +7,28 @@ import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
 import useClayRescueJob from "../../components/viral-tools/clay-rescue/hooks/useClayRescueJob";
 import {
+  clearClayRescueGenerationFinalVideo,
   createClayRescueGeneration,
   listClayRescueGenerations,
+  recoverClayRescueGenerationVideos,
+  updateClayRescueGenerationScenes,
+  updateClayRescueGenerationFinalVideo,
 } from "../../components/viral-tools/clay-rescue/api/clayRescueApi";
 
 const MAX_RECENT      = 8;
 const PLAN_CACHE_KEY  = "zyvo_clay_plan";
 const PAID_PLAN_CODES = new Set(["starter", "pro", "generative", "affiliate"]);
+
+function scenePersistenceSignature(scenes) {
+  return JSON.stringify((scenes ?? []).map((scene, index) => ({
+    index: scene.index ?? index,
+    problem: scene.problem ?? "",
+    fix: scene.fix ?? "",
+    problemUrl: scene.problemUrl ?? null,
+    fixUrl: scene.fixUrl ?? scene.imageUrl ?? null,
+    videoUrl: scene.videoUrl ?? null,
+  })));
+}
 
 function getCachedPlan(userId) {
   try {
@@ -107,7 +122,10 @@ export default function ClayRescue() {
 
   const [recentGenerations, setRecentGenerations] = useState([]);
   const [viewingRecentId, setViewingRecentId]     = useState(null);
-  const savedGenerationRef = useRef(null);
+  const [activeGenerationId, setActiveGenerationId] = useState(null);
+  const [finalVideoUrl, setFinalVideoUrl] = useState(null);
+  const persistedScenesRef = useRef("");
+  const persistedFinalVideoRef = useRef("");
   const latestLengthRef    = useRef("15s");
   const latestWithSoundRef = useRef(true);
 
@@ -124,33 +142,65 @@ export default function ClayRescue() {
 
   useEffect(() => { void loadRecentGenerations(); }, [loadRecentGenerations]);
 
-  // Auto-save when generation completes
+  // Create the generation once, then update that same row whenever a retried
+  // scene completes. This keeps successful retry video URLs across refreshes.
   useEffect(() => {
-    if (!user || phase !== "done" || jobScenes.length === 0 || viewingRecentId !== null) return;
-    const signature = jobScenes.map((s) => `${s.index}:${s.imageUrl || ""}:${s.videoUrl || ""}`).join("|");
-    if (!signature || signature === savedGenerationRef.current) return;
-    savedGenerationRef.current = signature;
+    if (!user || phase !== "done" || jobScenes.length === 0) return;
+    const sceneSignature = scenePersistenceSignature(jobScenes);
+    const persistenceKey = `${activeGenerationId ?? "new"}:${sceneSignature}`;
+    if (persistedScenesRef.current === persistenceKey) return;
+    persistedScenesRef.current = persistenceKey;
 
     let cancelled = false;
     (async () => {
       try {
-        const saved = await createClayRescueGeneration({ lengthId: latestLengthRef.current, scenes: jobScenes });
+        const saved = activeGenerationId
+          ? await updateClayRescueGenerationScenes(activeGenerationId, jobScenes)
+          : await createClayRescueGeneration({ lengthId: latestLengthRef.current, scenes: jobScenes });
         if (cancelled) return;
+        persistedScenesRef.current = `${saved.id}:${sceneSignature}`;
+        setActiveGenerationId(saved.id);
         setRecentGenerations((prev) => {
           const deduped = prev.filter((r) => r.id !== saved.id);
           return [saved, ...deduped].slice(0, MAX_RECENT);
         });
       } catch (e) {
+        if (persistedScenesRef.current === persistenceKey) persistedScenesRef.current = "";
         console.error("[ClayRescue] save generation failed:", e.message);
       }
     })();
     return () => { cancelled = true; };
-  }, [phase, jobScenes, viewingRecentId, user]);
+  }, [activeGenerationId, phase, jobScenes, user]);
+
+  // The editor upload and generation-row insert run independently. Persist as
+  // soon as both the generation id and uploaded MP4 URL are available, no
+  // matter which one finishes first.
+  useEffect(() => {
+    if (!activeGenerationId || !finalVideoUrl) return;
+    const signature = `${activeGenerationId}:${finalVideoUrl}`;
+    if (persistedFinalVideoRef.current === signature) return;
+
+    let cancelled = false;
+    updateClayRescueGenerationFinalVideo(activeGenerationId, finalVideoUrl)
+      .then((updated) => {
+        if (cancelled) return;
+        persistedFinalVideoRef.current = signature;
+        setRecentGenerations((prev) =>
+          prev.map((generation) => generation.id === updated.id ? updated : generation)
+        );
+      })
+      .catch((e) => console.error("[ClayRescue] save generation final video failed:", e.message));
+
+    return () => { cancelled = true; };
+  }, [activeGenerationId, finalVideoUrl]);
 
   const handleGenerate = ({ sceneInputs, selectedLength, aiMode, withSound }) => {
     if (needsUpgrade) { showPaywall(); return; }
     setViewingRecentId(null);
-    savedGenerationRef.current = null;
+    setActiveGenerationId(null);
+    setFinalVideoUrl(null);
+    persistedFinalVideoRef.current = "";
+    persistedScenesRef.current = "";
     latestLengthRef.current = selectedLength;
     latestWithSoundRef.current = withSound ?? true;
     setMobilePanel("results");
@@ -158,18 +208,64 @@ export default function ClayRescue() {
     start({ sceneInputs, aiMode, withSound });
   };
 
-  const handleOpenRecent = (generation) => {
-    setViewingRecentId(generation?.id ?? null);
-    showGeneration(generation);
+  const handleOpenRecent = async (generation) => {
+    let restoredGeneration = generation;
+    try {
+      restoredGeneration = await recoverClayRescueGenerationVideos(generation);
+      if (restoredGeneration?.id === generation?.id && restoredGeneration !== generation) {
+        setRecentGenerations((prev) =>
+          prev.map((item) => item.id === restoredGeneration.id ? restoredGeneration : item)
+        );
+      }
+    } catch (e) {
+      console.error("[ClayRescue] recover completed retry videos failed:", e.message);
+    }
+
+    setViewingRecentId(restoredGeneration?.id ?? null);
+    setActiveGenerationId(restoredGeneration?.id ?? null);
+    setFinalVideoUrl(restoredGeneration?.finalVideoUrl ?? null);
+    persistedFinalVideoRef.current = restoredGeneration?.id && restoredGeneration?.finalVideoUrl
+      ? `${restoredGeneration.id}:${restoredGeneration.finalVideoUrl}`
+      : "";
+    persistedScenesRef.current = restoredGeneration?.id
+      ? `${restoredGeneration.id}:${scenePersistenceSignature(restoredGeneration.scenes)}`
+      : "";
+    showGeneration(restoredGeneration);
     setMobilePanel("results");
     document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const handleBackToDefault = () => {
     setViewingRecentId(null);
+    setActiveGenerationId(null);
+    setFinalVideoUrl(null);
+    persistedFinalVideoRef.current = "";
+    persistedScenesRef.current = "";
     reset();
     setMobilePanel("builder");
   };
+
+  const handleRetryScene = (index) => {
+    // A changed scene invalidates the previously stitched MP4. The editor will
+    // create and persist one replacement when the retried clip succeeds.
+    setFinalVideoUrl(null);
+    persistedFinalVideoRef.current = "";
+    if (activeGenerationId) {
+      clearClayRescueGenerationFinalVideo(activeGenerationId)
+        .then((updated) => {
+          if (!updated) return;
+          setRecentGenerations((prev) =>
+            prev.map((generation) => generation.id === updated.id ? updated : generation)
+          );
+        })
+        .catch((e) => console.error("[ClayRescue] clear stale final video failed:", e.message));
+    }
+    retryScene(index, latestWithSoundRef.current);
+  };
+
+  const handleFinalVideoSaved = useCallback((url) => {
+    setFinalVideoUrl(url);
+  }, []);
 
   const builderPanel = (
     <ClayRescueBuilder
@@ -187,9 +283,11 @@ export default function ClayRescue() {
       user={user}
       recentGenerations={recentGenerations}
       viewingRecent={viewingRecentId !== null}
+      finalVideoUrl={finalVideoUrl}
       onOpenRecent={handleOpenRecent}
       onRequestAuth={showPaywall}
-      onRetryScene={(index) => retryScene(index, latestWithSoundRef.current)}
+      onRetryScene={handleRetryScene}
+      onFinalVideoSaved={handleFinalVideoSaved}
       onReset={handleBackToDefault}
     />
   );
