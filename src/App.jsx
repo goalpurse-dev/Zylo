@@ -155,6 +155,10 @@ const AIFruitStoryLanding = lazy(() => import("./pages/landing/AIFruitStoryLandi
 const FaceAsmrLanding = lazy(() => import("./pages/landing/FaceAsmrLanding.jsx"));
 const MicroCameraAnimalLanding = lazy(() => import("./pages/landing/MicroCameraAnimalLanding.jsx"));
 const ClayRescueLanding = lazy(() => import("./pages/landing/ClayRescueLanding.jsx"));
+const PublishLanding = lazy(() => import("./pages/landing/PublishLanding.jsx"));
+const StatsLanding = lazy(() => import("./pages/landing/StatsLanding.jsx"));
+const ConnectionsLanding = lazy(() => import("./pages/landing/ConnectionsLanding.jsx"));
+const CreatorGrowthGuide = lazy(() => import("./app/blog/CreatorGrowthGuide.jsx"));
 const FaceAsmrMakerBlog = lazy(() => import("./app/blog/imagegenerator/face-asmr-maker.jsx"));
 const ViralFaceAsmrVideos = lazy(() => import("./app/blog/imagegenerator/viral-face-asmr-videos.jsx"));
 const AsmrVideoIdeasTiktok = lazy(() => import("./app/blog/imagegenerator/asmr-video-ideas-tiktok-2026.jsx"));
@@ -449,6 +453,9 @@ return (
          <Route path="/face-asmr-maker" element={<FaceAsmrLanding />} />
          <Route path="/micro-camera-animal-maker" element={<MicroCameraAnimalLanding />} />
          <Route path="/clay-rescue-maker" element={<ClayRescueLanding />} />
+         <Route path="/publish" element={<PublishLanding />} />
+         <Route path="/stats" element={<StatsLanding />} />
+         <Route path="/connections" element={<ConnectionsLanding />} />
          <Route path="/blog/face-asmr-maker" element={<FaceAsmrMakerBlog />} />
          <Route path="/blog/viral-face-asmr-videos" element={<ViralFaceAsmrVideos />} />
          <Route path="/blog/asmr-video-ideas-tiktok-2026" element={<AsmrVideoIdeasTiktok />} />
@@ -461,6 +468,12 @@ return (
          <Route path="/blog/ai-fruit-story-character-ideas" element={<AIFruitStoryCharacterIdeas />} />
          <Route path="/blog/schedule-auto-publish-ai-videos" element={<ScheduleAutoPublishAIVideosBlog />} />
          <Route path="/blog/one-click-publishing-playbook" element={<OneClickPublishingPlaybookBlog />} />
+         <Route path="/blog/social-media-scheduler-for-creators" element={<CreatorGrowthGuide slug="social-media-scheduler-for-creators" />} />
+         <Route path="/blog/how-to-cross-post-instagram-tiktok-youtube" element={<CreatorGrowthGuide slug="how-to-cross-post-instagram-tiktok-youtube" />} />
+         <Route path="/blog/28-day-social-media-content-calendar" element={<CreatorGrowthGuide slug="28-day-social-media-content-calendar" />} />
+         <Route path="/blog/social-media-automation-for-creators" element={<CreatorGrowthGuide slug="social-media-automation-for-creators" />} />
+         <Route path="/blog/youtube-analytics-for-creators" element={<CreatorGrowthGuide slug="youtube-analytics-for-creators" />} />
+         <Route path="/blog/short-form-video-metrics-that-matter" element={<CreatorGrowthGuide slug="short-form-video-metrics-that-matter" />} />
 
 
 
@@ -486,6 +499,7 @@ return (
   <Route path="/workspace/productphotoo" element={<ProductPhoto />} />
   <Route path="/workspace/libraryo" element={<Library1 />} />
   <Route path="/workspace/creations" element={<Creations />} />
+  <Route path="/workspace/creations/viral-videos" element={<Creations />} />
   <Route path="/workspace/myproducto" element={<Myproduct />} />
   <Route path="/workspace/step2o" element={<Step2 />} />
   <Route path="/workspace/step3o" element={<Step3 />} />
@@ -502,7 +516,8 @@ return (
   <Route path="/workspace/clay-rescue" element={<ClayRescuePage />} />
   <Route path="/workspace/ai-cooking-matic" element={<AICookingMaticPage />} />
   <Route path="/workspace/footballer-nationality-swap" element={<FootballerNationalitySwapPage />} />
-  <Route path="/workspace/publish"          element={<PublishPage />} />
+  <Route path="/workspace/publish"          element={<Navigate to="/workspace/home" replace />} />
+  <Route path="/workspace/publishv"         element={<PublishPage />} />
   <Route path="/workspace/stats"            element={<StatsPage />} />
   <Route path="/workspace/connections"      element={<ConnectionsPage />} />
 

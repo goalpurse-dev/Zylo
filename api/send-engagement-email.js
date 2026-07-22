@@ -36,13 +36,13 @@ function buildEmail(user) {
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>New: turn your views into free Zyvo credits</title>
+  <title>Massive Zyvo update coming soon</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#f4f4f5;">
-    Post about Zyvo on TikTok, IG, or YouTube Shorts and get paid in free credits for every view — up to 1,500 per video.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+    Schedule, publish, and track every social post from one place. Zyvo Publish is coming very soon.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f5;">
@@ -66,40 +66,37 @@ function buildEmail(user) {
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Niko here — wanted to be the first to tell you about something we just launched, because I think you're going to like it a lot.
+            Niko here — I wanted you to be among the first to know that a massive Zyvo update is coming very soon.
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            <strong>You can now earn free Zyvo credits just by posting videos about Zyvo on social media.</strong>
+            <strong>We're getting ready to bring Zyvo Publish to production.</strong>
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            It's our new Creator Rewards program: post a video on TikTok, Instagram, or YouTube Shorts showing how you make AI videos with Zyvo, and we'll pay you in credits based on how many views it racks up. The bigger it pops, the more free credits land in your account — no purchase, no catch.
+            Soon, you'll be able to create your content and handle the rest of your social workflow without leaving Zyvo. No more downloading every video, opening several apps, and uploading the same post over and over.
           </p>
 
           <!-- Feature card -->
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
             <tr>
               <td style="padding:22px 24px;background:#faf8ff;border-radius:12px;border:1px solid #ede9fe;">
-                <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#7A3BFF;letter-spacing:0.08em;text-transform:uppercase;">How the rewards stack up</p>
+                <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#7A3BFF;letter-spacing:0.08em;text-transform:uppercase;">Everything in one place</p>
                 <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                  <tr><td style="padding:5px 0;font-size:14px;color:#374151;">First approved post</td><td align="right" style="padding:5px 0;font-size:14px;font-weight:700;color:#7A3BFF;">+50 credits</td></tr>
-                  <tr><td style="padding:5px 0;font-size:14px;color:#374151;">1,000 views</td><td align="right" style="padding:5px 0;font-size:14px;font-weight:700;color:#7A3BFF;">+50 credits</td></tr>
-                  <tr><td style="padding:5px 0;font-size:14px;color:#374151;">5,000 views</td><td align="right" style="padding:5px 0;font-size:14px;font-weight:700;color:#7A3BFF;">+150 credits</td></tr>
-                  <tr><td style="padding:5px 0;font-size:14px;color:#374151;">10,000 views</td><td align="right" style="padding:5px 0;font-size:14px;font-weight:700;color:#7A3BFF;">+300 credits</td></tr>
-                  <tr><td style="padding:5px 0;font-size:14px;color:#374151;">25,000 views</td><td align="right" style="padding:5px 0;font-size:14px;font-weight:700;color:#7A3BFF;">+750 credits</td></tr>
-                  <tr><td style="padding:5px 0;font-size:14px;color:#374151;border-top:1px solid #ede9fe;">50,000 views</td><td align="right" style="padding:5px 0;font-size:14px;font-weight:700;color:#7A3BFF;border-top:1px solid #ede9fe;">+1,500 credits</td></tr>
+                  <tr><td style="padding:7px 0;font-size:14px;color:#374151;">Schedule posts ahead of time</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
+                  <tr><td style="padding:7px 0;font-size:14px;color:#374151;">Publish to all connected socials in one click</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
+                  <tr><td style="padding:7px 0;font-size:14px;color:#374151;">Track views, engagement, and performance</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
                 </table>
               </td>
             </tr>
           </table>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            That's up to <strong>1,500 free credits from a single video</strong> — enough to keep generating for weeks without spending a cent.
+            Connect your accounts once, then schedule or publish across TikTok, Instagram, and YouTube from a single dashboard. After your content goes live, you'll be able to see how it performs without jumping between analytics pages.
           </p>
 
           <p style="margin:0 0 24px;font-size:15px;line-height:1.75;color:#374151;">
-            Getting started takes two minutes: film yourself using Zyvo, post it on TikTok, IG, or YouTube Shorts, then DM us <strong>"credit"</strong> on Instagram <a href="https://instagram.com/zyvo.ai" style="color:#7A3BFF;text-decoration:underline;">@zyvo.ai</a> and we'll send you the full how-to and get your post approved.
+            We're putting the finishing touches on the production rollout now. We'll let you know as soon as Zyvo Publish is ready for you.
           </p>
 
           <!-- CTA -->
@@ -108,13 +105,13 @@ function buildEmail(user) {
               <td style="border-radius:10px;background:linear-gradient(135deg,#7A3BFF,#9f5fff);">
                 <a href="https://tryzyvo.com/workspace"
                    style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.2px;">
-                  Start earning free credits →
+                  Open your Zyvo workspace →
                 </a>
               </td>
             </tr>
           </table>
 
-          <p style="margin:8px 0 24px;font-size:13px;color:#9ca3af;">Reply to this email if you have questions — it goes straight to me.</p>
+          <p style="margin:8px 0 24px;font-size:13px;color:#9ca3af;">Reply and tell me which social platform you want us to support next — it goes straight to me.</p>
 
           <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">
             — Niko<br/>
@@ -151,7 +148,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "you can now earn free Zyvo credits just by posting online 🎁",
+      subject: "Massive Zyvo update coming soon 🚀",
       html: buildEmail(user),
     });
 
@@ -170,7 +167,7 @@ async function sendEmail(user) {
 
 export default async function handler(req, res) {
   try {
-    console.log("🚀 Starting free-credits engagement email campaign...");
+    console.log("🚀 Starting Zyvo Publish teaser email campaign...");
     console.log(`   dry_run=${DRY_RUN}  target=all_users`);
 
     let allUsers = [];
@@ -220,7 +217,7 @@ export default async function handler(req, res) {
           .from("profiles")
           .update({
             last_email_sent_at: new Date().toISOString(),
-            last_email_type: "creator_rewards_launch",
+            last_email_type: "publish_massive_update_teaser",
           })
           .eq("email", user.email);
       } else {

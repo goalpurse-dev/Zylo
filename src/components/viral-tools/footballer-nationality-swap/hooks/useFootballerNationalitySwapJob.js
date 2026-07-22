@@ -2,7 +2,9 @@ import { useCallback, useRef, useState } from "react";
 import { watchJob, cancelJob } from "../../../../lib/jobs";
 import {
   buildImagePrompt,
+  buildFriendlyImagePrompt,
   buildVideoPrompt,
+  buildFriendlyVideoPrompt,
   fetchFootballerIdentity,
   generateFootballerImage,
   animateFootballerClip,
@@ -72,9 +74,105 @@ const makeScene = (i, si = {}) => ({
   videoStyle:  si.videoStyle ?? "stadium-tunnel",
 
   identityStatus: "idle", localizedName: null, jerseyNumber: null, spokenLine: null, language: null,
-  imageJobId: null, imageStatus: "idle", imageUrl: null,
-  videoJobId: null, videoStatus: "idle", videoUrl: null,
+  imageJobId: null, imageStatus: "idle", imageUrl: null, imageError: null,
+  videoJobId: null, videoStatus: "idle", videoUrl: null, videoError: null,
 });
+
+// OpenAI (gpt-image) flags real-footballer-likeness prompts more than most —
+// especially the biggest names ("create face of mbappe" etc). Cascade through
+// engine + prompt-strength combos before giving up:
+//   1. OpenAI, exact prompt          2. Nano Banana 2, exact prompt
+//   3. OpenAI, friendlier prompt     4. Nano Banana 2, friendlier prompt
+async function generateImageWithFallback({ si, patch, isCurrentRun, onRetrying }) {
+  const primaryPrompt  = buildImagePrompt(si);
+  const friendlyPrompt = buildFriendlyImagePrompt(si);
+
+  const stages = [
+    { provider: "openai", prompt: primaryPrompt,  label: "openai/primary-prompt" },
+    { provider: "nano2",  prompt: primaryPrompt,  label: "nano2/primary-prompt" },
+    { provider: "openai", prompt: friendlyPrompt, label: "openai/friendly-prompt" },
+    { provider: "nano2",  prompt: friendlyPrompt, label: "nano2/friendly-prompt" },
+  ];
+
+  for (const stage of stages) {
+    if (!isCurrentRun()) throw new Error("cancelled");
+    patch({ imageStatus: "queued" });
+
+    let job, result;
+    try {
+      job = await generateFootballerImage({ imagePrompt: stage.prompt, provider: stage.provider });
+      if (!isCurrentRun()) throw new Error("cancelled");
+      patch({ imageJobId: job.id, imageStatus: "running" });
+      result = await waitForJob(job.id, undefined, onRetrying);
+      if (isCurrentRun()) patch({ imageStatus: "running" });
+    } catch (err) {
+      if (err.message === "cancelled") throw err;
+      console.warn(`[Footballer] image stage "${stage.label}" failed to start`, err);
+    }
+    if (!isCurrentRun()) throw new Error("cancelled");
+
+    const url = result?.status === "succeeded" ? resolveUrl(result) : null;
+    if (url) return url;
+
+    // Timed out (result === null) rather than a clean failure — the primary
+    // job may still complete later at the provider, so cancel it to avoid a
+    // late success charging credits after we've already moved on.
+    if (result === null && job?.id) cancelJob(job.id).catch(() => {});
+
+    console.warn(`[Footballer] image stage "${stage.label}" produced no image, trying next stage`);
+  }
+
+  console.error("[Footballer] all 4 image stages exhausted (openai/nano2 × primary/friendly prompt)");
+  patch({ imageStatus: "failed", imageError: "Generation failed — try again" });
+  return null;
+}
+
+// Primary is Seedance 2.0 Fast @ 480p (cheap, not hitting the content-filter
+// wall Veo did — see providers.ts). Fallback is Seedance 1.5 Pro @ 720p,
+// which has confirmed native audio via providerSettings.bytedance.audio.
+//   1. Seedance 2.0 Fast, exact prompt   2. Seedance 2.0 Fast, friendlier prompt
+//   3. Seedance 1.5 Pro, exact prompt    4. Seedance 1.5 Pro, friendlier prompt
+async function generateVideoWithFallback({ imageUrl, spokenLine, expression, videoStyle, patch, isCurrentRun }) {
+  const primaryPrompt  = buildVideoPrompt({ spokenLine, expression, videoStyle });
+  const friendlyPrompt = buildFriendlyVideoPrompt({ spokenLine, expression, videoStyle });
+
+  const stages = [
+    { provider: "seedance2",  prompt: primaryPrompt,  label: "seedance2.0/primary-prompt" },
+    { provider: "seedance2",  prompt: friendlyPrompt, label: "seedance2.0/friendly-prompt" },
+    { provider: "seedance15", prompt: primaryPrompt,  label: "seedance1.5/primary-prompt" },
+    { provider: "seedance15", prompt: friendlyPrompt, label: "seedance1.5/friendly-prompt" },
+  ];
+
+  for (const stage of stages) {
+    if (!isCurrentRun()) throw new Error("cancelled");
+    patch({ videoStatus: "queued" });
+
+    let job, result;
+    try {
+      job = await animateFootballerClip({ imageUrl, videoPrompt: stage.prompt, provider: stage.provider });
+      if (!isCurrentRun()) throw new Error("cancelled");
+      patch({ videoJobId: job.id, videoStatus: "running" });
+      result = await waitForJob(job.id, 6 * 60 * 1000);
+    } catch (err) {
+      if (err.message === "cancelled") throw err;
+      console.warn(`[Footballer] video stage "${stage.label}" failed to start`, err);
+    }
+    if (!isCurrentRun()) throw new Error("cancelled");
+
+    const url = result?.status === "succeeded" ? resolveUrl(result) : null;
+    if (url) return url;
+
+    // Timed out rather than a clean failure — cancel so a late success at
+    // the provider can't charge credits after we've already moved on.
+    if (result === null && job?.id) cancelJob(job.id).catch(() => {});
+
+    console.warn(`[Footballer] video stage "${stage.label}" produced no video, trying next stage`);
+  }
+
+  console.error("[Footballer] all 4 video stages exhausted (seedance2.0/seedance1.5 × primary/friendly prompt)");
+  patch({ videoStatus: "failed", videoError: "Video failed — try again" });
+  return null;
+}
 
 export default function useFootballerNationalitySwapJob() {
   const [phase,  setPhase]  = useState("idle");
@@ -107,8 +205,10 @@ export default function useFootballerNationalitySwapJob() {
     setError(null);
     setPhase("images");
 
-    // ── Each scene runs its own identity + image → video pipeline independently.
-    //    Scenes start staggered by SCENE_STAGGER_MS to avoid simultaneous API bursts.
+    // ── Each scene runs identity → image → video in sequence (identity has to
+    //    resolve first now — the localized name gets printed on the player
+    //    card, so the image prompt needs it before it can build). Scenes
+    //    start staggered by SCENE_STAGGER_MS to avoid simultaneous API bursts.
     const sceneResultSettled = await Promise.allSettled(
       sceneInputs.map(async (si, i) => {
         await delay(i * SCENE_STAGGER_MS);
@@ -116,52 +216,28 @@ export default function useFootballerNationalitySwapJob() {
 
         patchScene(i, { identityStatus: "queued", imageStatus: "queued" });
 
-        // Identity (name / jersey / spoken line) and the portrait image are
-        // independent of each other — run them concurrently.
-        const identityPromise = (async () => {
-          patchScene(i, { identityStatus: "running" });
-          try {
-            const identity = await resolveIdentity(si);
-            if (!isCurrentRun()) return null;
-            patchScene(i, { identityStatus: "succeeded", ...identity });
-            return identity;
-          } catch (e) {
-            console.warn(`[Footballer] scene ${i} identity failed`, e);
-            if (isCurrentRun()) patchScene(i, { identityStatus: "failed" });
-            return null;
-          }
-        })();
-
-        const imagePromise = (async () => {
-          const imagePrompt = buildImagePrompt(si);
-          let imageJob, imageResult;
-          try {
-            imageJob = await generateFootballerImage({ imagePrompt });
-            if (!isCurrentRun()) throw new Error("cancelled");
-            patchScene(i, { imageJobId: imageJob.id, imageStatus: "running" });
-            imageResult = await waitForJob(imageJob.id, undefined, () => {
-              patchScene(i, { imageStatus: "retrying" });
-            });
-            if (isCurrentRun()) patchScene(i, { imageStatus: "running" });
-          } catch (err) {
-            if (err.message === "cancelled") throw err;
-            console.warn(`[Footballer] scene ${i} image failed`, err);
-          }
+        patchScene(i, { identityStatus: "running" });
+        let identity = null;
+        try {
+          identity = await resolveIdentity(si);
           if (!isCurrentRun()) throw new Error("cancelled");
+          patchScene(i, { identityStatus: "succeeded", ...identity });
+        } catch (e) {
+          if (e.message === "cancelled") throw e;
+          console.warn(`[Footballer] scene ${i} identity failed`, e);
+          patchScene(i, { identityStatus: "failed" });
+        }
+        if (!isCurrentRun()) throw new Error("cancelled");
 
-          const imageUrl = imageResult?.status === "succeeded" ? resolveUrl(imageResult) : null;
-          if (!imageUrl) {
-            if (imageResult === null && imageJob?.id) cancelJob(imageJob.id).catch(() => {});
-            patchScene(i, { imageStatus: "failed" });
-            return null;
-          }
-          patchScene(i, { imageStatus: "succeeded", imageUrl });
-          return imageUrl;
-        })();
-
-        const [identity, imageUrl] = await Promise.all([identityPromise, imagePromise]);
+        const imageUrl = await generateImageWithFallback({
+          si: { ...si, localizedName: identity?.localizedName },
+          patch: (patch) => patchScene(i, patch),
+          isCurrentRun,
+          onRetrying: () => patchScene(i, { imageStatus: "retrying" }),
+        });
         if (!isCurrentRun()) throw new Error("cancelled");
         if (!imageUrl) throw new Error(`scene ${i}: image failed`);
+        patchScene(i, { imageStatus: "succeeded", imageUrl, imageError: null });
 
         return {
           index: i,
@@ -188,36 +264,25 @@ export default function useFootballerNationalitySwapJob() {
 
     setPhase("videos");
 
-    const videoJobSettled = await Promise.allSettled(
-      imageResults.map(({ imageUrl, spokenLine, expression, videoStyle }) =>
-        animateFootballerClip({ imageUrl, videoPrompt: buildVideoPrompt({ spokenLine, expression, videoStyle }) })
-      )
-    );
-
-    if (!isCurrentRun()) return;
-
-    videoJobSettled.forEach((settled, i) => {
-      const { index } = imageResults[i];
-      if (settled.status === "fulfilled") {
-        patchScene(index, { videoJobId: settled.value.id, videoStatus: "running" });
-      } else {
-        console.error(`[Footballer] video submission failed scene ${imageResults[i].index}`, settled.reason);
-        patchScene(index, { videoStatus: "failed" });
-      }
-    });
-
     await Promise.allSettled(
-      videoJobSettled.map((settled, i) => {
-        const { index } = imageResults[i];
-        if (settled.status !== "fulfilled") return Promise.resolve();
-        return waitForJob(settled.value.id, 6 * 60 * 1000).then((result) => {
-          if (!isCurrentRun()) return;
-          const videoUrl = resolveUrl(result);
-          patchScene(index, {
-            videoStatus: result?.status === "succeeded" && videoUrl ? "succeeded" : "failed",
-            videoUrl: videoUrl ?? null,
+      imageResults.map(async ({ index, imageUrl, spokenLine, expression, videoStyle }) => {
+        if (!isCurrentRun()) return;
+        patchScene(index, { videoStatus: "queued" });
+
+        let videoUrl;
+        try {
+          videoUrl = await generateVideoWithFallback({
+            imageUrl, spokenLine, expression, videoStyle,
+            patch: (patch) => patchScene(index, patch),
+            isCurrentRun,
           });
-        });
+        } catch (err) {
+          if (err.message !== "cancelled") console.warn(`[Footballer] video cascade threw for scene ${index}`, err);
+          return;
+        }
+
+        if (!isCurrentRun() || !videoUrl) return;
+        patchScene(index, { videoStatus: "succeeded", videoUrl, videoError: null });
       })
     );
 
@@ -259,33 +324,22 @@ export default function useFootballerNationalitySwapJob() {
       });
 
     if (videoFailed && !needsFull) {
-      patchOne({ videoStatus: "queued", videoJobId: null, videoUrl: null });
-      let videoJob;
-      try {
-        const videoPrompt = buildVideoPrompt({
-          spokenLine: scene.spokenLine,
-          expression: scene.expression,
-          videoStyle: scene.videoStyle,
-        });
-        videoJob = await animateFootballerClip({ imageUrl: scene.imageUrl, videoPrompt });
-        patchOne({ videoJobId: videoJob.id, videoStatus: "running" });
-      } catch (e) {
-        console.error("[retryScene] video job submission failed:", e);
-        patchOne({ videoStatus: "failed" });
-        setPhase("done");
-        return;
-      }
-
-      const result = await waitForJob(videoJob.id, 6 * 60 * 1000);
-      const url = resolveUrl(result);
-      patchOne({
-        videoStatus: result?.status === "succeeded" && url ? "succeeded" : "failed",
-        videoUrl:    url ?? null,
+      patchOne({ videoStatus: "queued", videoJobId: null, videoUrl: null, videoError: null });
+      const videoUrl = await generateVideoWithFallback({
+        imageUrl: scene.imageUrl,
+        spokenLine: scene.spokenLine,
+        expression: scene.expression,
+        videoStyle: scene.videoStyle,
+        patch: patchOne,
+        isCurrentRun: () => true,
       });
+      if (videoUrl) {
+        patchOne({ videoStatus: "succeeded", videoUrl, videoError: null });
+      }
     } else {
       patchOne({
         identityStatus: "queued", imageStatus: "queued", videoStatus: "idle",
-        imageUrl: null, videoUrl: null, imageJobId: null, videoJobId: null,
+        imageUrl: null, imageError: null, videoUrl: null, imageJobId: null, videoJobId: null,
       });
 
       setPhase("images");
@@ -298,37 +352,28 @@ export default function useFootballerNationalitySwapJob() {
         patchOne({ identityStatus: "failed" });
       }
 
-      const imagePrompt = buildImagePrompt(scene);
-      let imageJob, imageResult;
-      try {
-        imageJob = await generateFootballerImage({ imagePrompt });
-        patchOne({ imageJobId: imageJob.id, imageStatus: "running" });
-        imageResult = await waitForJob(imageJob.id);
-      } catch { patchOne({ imageStatus: "failed" }); setPhase("done"); return; }
-
-      const imageUrl = imageResult?.status === "succeeded" ? resolveUrl(imageResult) : null;
-      if (!imageUrl) { patchOne({ imageStatus: "failed" }); setPhase("done"); return; }
-      patchOne({ imageStatus: "succeeded", imageUrl });
+      const imageUrl = await generateImageWithFallback({
+        si: { ...scene, localizedName: identity?.localizedName ?? scene.localizedName },
+        patch: patchOne,
+        isCurrentRun: () => true,
+        onRetrying: () => patchOne({ imageStatus: "retrying" }),
+      });
+      if (!imageUrl) { setPhase("done"); return; }
+      patchOne({ imageStatus: "succeeded", imageUrl, imageError: null });
 
       setPhase("videos");
 
-      let videoJob;
-      try {
-        const videoPrompt = buildVideoPrompt({
-          spokenLine: identity?.spokenLine ?? scene.spokenLine,
-          expression: scene.expression,
-          videoStyle: scene.videoStyle,
-        });
-        videoJob = await animateFootballerClip({ imageUrl, videoPrompt });
-        patchOne({ videoJobId: videoJob.id, videoStatus: "running" });
-      } catch { patchOne({ videoStatus: "failed" }); setPhase("done"); return; }
-
-      const result = await waitForJob(videoJob.id, 6 * 60 * 1000);
-      const url = resolveUrl(result);
-      patchOne({
-        videoStatus: result?.status === "succeeded" && url ? "succeeded" : "failed",
-        videoUrl:    url ?? null,
+      const videoUrl = await generateVideoWithFallback({
+        imageUrl,
+        spokenLine: identity?.spokenLine ?? scene.spokenLine,
+        expression: scene.expression,
+        videoStyle: scene.videoStyle,
+        patch: patchOne,
+        isCurrentRun: () => true,
       });
+      if (videoUrl) {
+        patchOne({ videoStatus: "succeeded", videoUrl, videoError: null });
+      }
     }
 
     setPhase("done");
@@ -355,8 +400,8 @@ export default function useFootballerNationalitySwapJob() {
           jerseyNumber:  s.jerseyNumber ?? "",
           spokenLine:    s.spokenLine ?? "",
           language: null,
-          imageJobId: null, imageStatus: s.imageUrl ? "succeeded" : "failed", imageUrl: s.imageUrl ?? null,
-          videoJobId: null, videoStatus: s.videoUrl ? "succeeded" : "failed", videoUrl: s.videoUrl ?? null,
+          imageJobId: null, imageStatus: s.imageUrl ? "succeeded" : "failed", imageUrl: s.imageUrl ?? null, imageError: null,
+          videoJobId: null, videoStatus: s.videoUrl ? "succeeded" : "failed", videoUrl: s.videoUrl ?? null, videoError: null,
         }))
     );
     setPhase("done");

@@ -84,10 +84,24 @@ export default function ViralShowcase() {
 
 function FeatureCard({ title, button, video, image, hoverVideo, big, mobile, badge }) {
   const [hovered, setHovered] = useState(false);
+  const [videoInRange, setVideoInRange] = useState(false);
+  const cardRef = useRef(null);
   const showHoverVideo = !mobile && hoverVideo && hovered;
+
+  useEffect(() => {
+    if (!big || !video || mobile || !cardRef.current) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setVideoInRange(entry.isIntersecting),
+      { rootMargin: "200px 0px" },
+    );
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, [big, mobile, video]);
 
   return (
     <div
+      ref={cardRef}
       className={`relative overflow-hidden rounded-2xl border border-white/10 bg-[#141416] group cursor-pointer h-full w-full ${mobile ? "h-[220px]" : ""}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -100,18 +114,19 @@ function FeatureCard({ title, button, video, image, hoverVideo, big, mobile, bad
       <img
         src={image}
         alt={title}
-        fetchpriority="high"
+        loading="lazy"
+        fetchPriority="auto"
         decoding="async"
         className="absolute inset-0 w-full h-full object-cover"
       />
 
       {/* Big-card auto-play video (desktop only) */}
-      {big && video && !mobile && (
+      {big && video && !mobile && videoInRange && (
         <video
           src={video}
           poster={image}
           autoPlay muted loop playsInline
-          preload="metadata"
+          preload="none"
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}
@@ -122,7 +137,7 @@ function FeatureCard({ title, button, video, image, hoverVideo, big, mobile, bad
           src={hoverVideo}
           poster={image}
           autoPlay muted loop playsInline
-          preload="metadata"
+          preload="none"
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}

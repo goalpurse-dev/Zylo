@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { startCheckout, openBillingPortal } from "../lib/payments";
 import { supabase } from "../lib/supabaseClient";
@@ -44,7 +44,7 @@ const TIERS = [
       { text: "All AI models & templates" },
 
       { section: "Publishing" },
-      { text: "1 social post published / day" },
+      { text: "1 social post published / day", tag: "Soon" },
       { text: "1 scheduled post / day / platform", tag: "Soon" },
 
       { section: "General" },
@@ -80,7 +80,7 @@ const TIERS = [
       { text: "All AI models & templates" },
 
       { section: "Publishing" },
-      { text: "3 social posts published / day" },
+      { text: "3 social posts published / day", tag: "Soon" },
       { text: "3 scheduled posts / day / platform", tag: "Soon" },
 
       { section: "General" },
@@ -116,7 +116,7 @@ const TIERS = [
       { text: "All AI models & templates" },
 
       { section: "Publishing" },
-      { text: "8 social posts published / day" },
+      { text: "8 social posts published / day", tag: "Soon" },
       { text: "8 scheduled posts / day / platform", tag: "Soon" },
 
       { section: "General" },
@@ -196,9 +196,12 @@ const COMPARISON_DATA = [
   { label: "Face ASMR", values: [true, true, true] },
   { label: "AI Fruit Story", values: [true, true, true] },
   { label: "Micro Camera Animal", values: [true, true, true] },
+  { label: "AI Cooking Matic", values: [true, true, true] },
+  { label: "Nationality Swap", values: [true, true, true] },
   { label: "Video & Image Generator", values: [true, true, true] },
-  { section: "Publishing" },
-  { label: "Social posts / day", values: ["1", "3", "8"] },
+  { section: "Publishing", tag: "Soon" },
+  { label: "Connected accounts per social platform", values: ["1", "3", "5"], tag: "Soon" },
+  { label: "Social posts / day", values: ["1", "3", "8"], tag: "Soon" },
   { label: "Scheduled posts / day", values: ["1", "3", "8"], tag: "Soon" },
   { section: "General" },
   { label: "Watermark-free exports", values: [true, true, true] },
@@ -665,9 +668,15 @@ function ComparisonTable() {
             {COMPARISON_DATA.map((row, i) => row.section ? (
               <tr key={i} style={{ background: "rgba(255,255,255,0.015)", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
                 <td colSpan={4} className="px-4 py-2.5">
-                  <span className="text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: "rgba(255,255,255,0.25)" }}>
-                    {row.section}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: "rgba(255,255,255,0.25)" }}>
+                      {row.section}
+                    </span>
+                    {row.tag && (
+                      <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
+                        style={{ background: "rgba(168,85,247,0.15)", color: "#C084FC" }}>{row.tag}</span>
+                    )}
+                  </div>
                 </td>
               </tr>
             ) : (

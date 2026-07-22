@@ -272,7 +272,7 @@ function SceneCard({ scene, index, onRetry }) {
           </button>
           {vidFailed && imgDone && (
             <span className="mt-1.5 rounded-full bg-black/60 px-2.5 py-0.5 text-[9px] font-semibold text-amber-400">
-              Video timed out — image saved
+              {scene.videoError || "Video timed out — image saved"}
             </span>
           )}
         </div>
@@ -311,12 +311,12 @@ function SceneCard({ scene, index, onRetry }) {
 }
 
 /* ── Final stitched video + timeline editor ── */
-function FinalVideoPanel({ sceneClips }) {
+function FinalVideoPanel({ sceneClips, initialFinalUrl, onFinalVideoSaved }) {
   const {
     clips, dirty, finalUrl, stitching, progress, renderError,
     saving, saveError, saved,
     render, reorder, setTrim, deleteClip,
-  } = useClayRescueEditor(sceneClips);
+  } = useClayRescueEditor(sceneClips, { initialFinalUrl, onFinalVideoSaved });
 
   if (!sceneClips.length) return null;
 
@@ -394,7 +394,8 @@ function FinalVideoPanel({ sceneClips }) {
 export default function ClayRescueResults({
   phase, jobScenes, error, user,
   recentGenerations = [], viewingRecent = false,
-  onOpenRecent, onRequestAuth, onReset, onRetryScene,
+  finalVideoUrl = null,
+  onOpenRecent, onRequestAuth, onReset, onRetryScene, onFinalVideoSaved,
 }) {
   const hasRecent = recentGenerations.length > 0;
 
@@ -454,7 +455,11 @@ export default function ClayRescueResults({
         <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
           <div className="flex flex-col gap-4 px-3 pb-[140px] lg:pb-6 lg:px-0">
             {phase === "done" && sceneClips.length > 0 && (
-              <FinalVideoPanel sceneClips={sceneClips} />
+              <FinalVideoPanel
+                sceneClips={sceneClips}
+                initialFinalUrl={finalVideoUrl}
+                onFinalVideoSaved={onFinalVideoSaved}
+              />
             )}
 
             <div
@@ -462,7 +467,12 @@ export default function ClayRescueResults({
               style={{ "--cr-cols": cols }}
             >
               {jobScenes.map((scene, i) => (
-                <SceneCard key={i} scene={scene} index={i} onRetry={() => onRetryScene?.(i)} />
+                <SceneCard
+                  key={scene.index ?? i}
+                  scene={scene}
+                  index={i}
+                  onRetry={() => onRetryScene?.(scene.index ?? i)}
+                />
               ))}
             </div>
           </div>

@@ -8,14 +8,19 @@ import {
   ArrowRightLeft,
   Scissors,
   Type,
-  SlidersHorizontal,
   Plus,
   Trash2,
   Copy,
   Clock3,
   ZoomIn,
   ZoomOut,
+  Maximize2,
 } from "lucide-react";
+import {
+  buildAdaptiveCaptionGroups,
+  CAPTION_GROUPING_VERSION,
+  captionModeForStyle,
+} from "./captionGrouping";
 
 const heavyFont = "Impact, Arial Black, Inter, sans-serif";
 const boldFont = "Arial Black, Inter, sans-serif";
@@ -23,12 +28,13 @@ const cleanFont = "Inter, Arial, sans-serif";
 const slabFont = "Georgia, Times New Roman, serif";
 const blackStroke = "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,0 4px 12px rgba(0,0,0,0.55)";
 const softGlow = "0 0 14px currentColor,0 6px 20px rgba(0,0,0,0.65)";
-const DEFAULT_PREVIEW_TEXT = "zyvo is the best ai generating platform you can use in 2026. create viral videos in seconds.";
 const LEGACY_PREVIEW_TEXTS = new Set([
   "zyvo is best",
   "zyvo is best for viral cooking videos",
+  "zyvo is the best ai generating platform you can use in 2026. create viral videos in seconds.",
 ]);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const CAPTION_PRESETS = [
   {
     id: "viral-yellow",
@@ -274,7 +280,7 @@ export const CAPTION_PRESETS = [
     mode: "box",
     groupSize: 5,
     maxChars: 30,
-    demo: "zyvo is best",
+    demo: "TASTE THIS",
     cardBg: "#111",
     blockStyle: { background: "rgba(0,0,0,0.58)", borderRadius: 14, padding: "7px 11px" },
     wordStyle: { color: "rgba(255,255,255,0.7)", fontWeight: 760, fontSize: 15, fontFamily: cleanFont, padding: "1px 3px", borderRadius: 5 },
@@ -292,24 +298,12 @@ export const CAPTION_PRESETS = [
   },
 ];
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const TEXT_SPEEDS = [
   { id: "fast", label: "Fast", desc: "Snappy pop", revealSec: 0.28 },
   { id: "normal", label: "Normal", desc: "Balanced", revealSec: 0.62 },
   { id: "slow", label: "Slow", desc: "Smooth reveal", revealSec: 1.1 },
 ];
-
-// Seconds per word for the manual-caption preview loop — this drives how
-// fast the demo text cycles with no real voiceover attached yet, so it has
-// to look like plausible human speech on its own. Pinned to actual speech
-// rates (conversational English averages ~150 wpm; energetic/fast talkers
-// top out around 190-200 wpm) rather than arbitrary numbers — the old
-// "fast" value of 0.16s/word was 375 wpm, which nobody can actually speak,
-// and it's the default every new text overlay starts at.
-const MANUAL_WORD_SECONDS = {
-  fast: 0.31,   // ~194 wpm — energetic, still humanly speakable
-  normal: 0.39, // ~154 wpm — natural conversational pace
-  slow: 0.5,    // ~120 wpm — deliberate, easy to follow
-};
 
 const SOURCE_CLIP_DURATION = 6;
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -320,93 +314,116 @@ const preventMouseDefault = (event) => {
   if (!isTouchEvent(event) && event?.cancelable !== false) event.preventDefault();
 };
 
-function createDefaultText(duration) {
+function createTextOverlay(duration, text = "New caption") {
   return {
     id: uid(),
-    text: DEFAULT_PREVIEW_TEXT,
+    text,
     start: 0,
-    end: Math.max(2, duration),
+    end: Math.min(Math.max(0.8, duration), 3),
     x: 50,
-    y: 42,
+    y: 76,
+    scale: 1,
     styleId: "viral-yellow",
     // "normal" (not "fast") so the very first thing anyone sees is the
     // calm, natural-speech pace — "fast" is still there to opt into.
     speed: "normal",
-    previewLoop: true,
+    previewLoop: false,
   };
 }
 
 function normalizeTextOverlays(raw, duration) {
   const safeDuration = Math.max(0.5, Number(duration) || 0.5);
-  const list = Array.isArray(raw) && raw.length ? raw : [createDefaultText(duration)];
+  const list = Array.isArray(raw) ? raw.filter(item => {
+    const cleanText = String(item?.text || "").trim().toLowerCase();
+    return !item?.previewLoop && !LEGACY_PREVIEW_TEXTS.has(cleanText);
+  }) : [];
   return list.map((item, index) => {
-    const start = clamp(Number(item.start ?? index * 1.5), 0, Math.max(0, safeDuration - 0.35));
-    const end = clamp(Number(item.end ?? start + 4), start + 0.35, safeDuration);
+    const minDuration = item.autoCaption ? 0.04 : 0.35;
+    const start = clamp(Number(item.start ?? index * 1.5), 0, Math.max(0, safeDuration - minDuration));
+    const end = clamp(Number(item.end ?? start + 4), start + minDuration, safeDuration);
     return {
       id: item.id || uid(),
-      text: item.text || DEFAULT_PREVIEW_TEXT,
+      text: item.text || "New caption",
       start,
       end,
       x: clamp(Number(item.x ?? 50), 8, 92),
-      y: clamp(Number(item.y ?? 42), 8, 92),
+      y: clamp(Number(item.y ?? 76), 8, 92),
+      scale: clamp(Number(item.scale ?? 1), 0.55, 2.2),
       styleId: item.styleId || item.captionStyle || "viral-yellow",
       speed: item.speed || "normal",
-      previewLoop: Boolean(item.previewLoop),
+      previewLoop: false,
+      words: Array.isArray(item.words) ? item.words : null,
+      autoCaption: Boolean(item.autoCaption),
+      sourceSignature: item.sourceSignature || null,
+      groupingVersion: Number(item.groupingVersion || 0),
     };
   });
 }
 
-// `groupSize` on a preset is a ceiling, not a target — the max words that
-// style is ever allowed to bundle into one on-screen block (its visual
-// "personality": glitch bursts stay punchy, sentence-style can go fuller).
-// How many words actually land in a block is decided in chunkWords by pace,
-// not by this number.
-function getGroupSize(preset, words = []) {
-  const configured = Array.isArray(preset?.groupSize) ? preset.groupSize[1] : preset?.groupSize;
-  const base = Number(configured ?? 4);
-  if (!["single", "word-pop"].includes(preset?.mode)) return base;
-  const durations = words
-    .map(word => Math.max(0, Number(word.end ?? 0) - Number(word.start ?? 0)))
-    .filter(Boolean);
-  const avg = durations.length ? durations.reduce((sum, value) => sum + value, 0) / durations.length : 0.22;
-  return avg < 0.11 ? Math.max(2, base) : base;
+function captionOverlaySignature(items) {
+  return JSON.stringify((Array.isArray(items) ? items : []).map(item => ({
+    id: item?.id,
+    text: item?.text,
+    start: Number(item?.start ?? 0),
+    end: Number(item?.end ?? 0),
+    x: Number(item?.x ?? 50),
+    y: Number(item?.y ?? 76),
+    scale: Number(item?.scale ?? 1),
+    styleId: item?.styleId,
+    speed: item?.speed,
+    autoCaption: Boolean(item?.autoCaption),
+    sourceSignature: item?.sourceSignature ?? null,
+    groupingVersion: Number(item?.groupingVersion || 0),
+    words: Array.isArray(item?.words)
+      ? item.words.map(word => [word.word, Number(word.start ?? 0), Number(word.end ?? 0)])
+      : null,
+  })));
 }
 
-function chunkWords(words, presetOrSize) {
-  const preset = typeof presetOrSize === "object" ? presetOrSize : { groupSize: presetOrSize };
-  const sizeCeiling = getGroupSize(preset, words);
-  const maxChars = Number(preset.maxChars ?? 32);
-  const maxDuration = Number(preset.maxBlockDuration ?? 3.2);
-  const minDuration = Number(preset.minBlockDuration ?? 0.8);
-  // Adaptive grouping: aim for each block to stay on screen for roughly
-  // this long, regardless of how many words that takes. Fast words (short
-  // per-word duration) keep accumulating past this target for longer, so
-  // more of them fit in a block; slow words hit it almost immediately, so
-  // blocks shrink toward a single word. Pace decides the count — `groupSize`
-  // above only stops it from exceeding a style's ceiling.
-  const targetDuration = Number(preset.targetBlockDuration ?? 1.1);
-  const chunks = [];
-  let slice = [];
-  for (const word of words) {
-    const next = [...slice, word];
-    const text = next.map(w => w.word).join(" ");
-    const duration = next.length ? Number(next[next.length - 1].end ?? 0) - Number(next[0].start ?? 0) : 0;
-    const tooLong = slice.length > 0 && (next.length > sizeCeiling || text.length > maxChars || duration > maxDuration || duration >= targetDuration);
-    if (tooLong) {
-      const start = Number(slice[0].start ?? 0);
-      const end = Math.max(Number(slice[slice.length - 1].end ?? start), start + minDuration);
-      chunks.push({ words: slice, start, end });
-      slice = [word];
-    } else {
-      slice = next;
-    }
-  }
-  if (slice.length) {
-    const start = Number(slice[0].start ?? 0);
-    const end = Math.max(Number(slice[slice.length - 1].end ?? start), start + minDuration);
-    chunks.push({ words: slice, start, end });
-  }
-  return chunks;
+function distributeCaptionWords(text, start, end) {
+  const parts = String(text || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return [];
+  const duration = Math.max(0.35, end - start);
+  return parts.map((word, index) => ({
+    word,
+    start: start + (duration * index) / parts.length,
+    end: start + (duration * (index + 1)) / parts.length,
+  }));
+}
+
+function chunkCaptionWords(words, preset) {
+  return buildAdaptiveCaptionGroups(words, {
+    styleId: preset?.id,
+    mode: preset?.mode,
+    maxWords: Math.min(3, Number(preset?.groupSize ?? 3) || 3),
+    maxChars: Math.min(30, Number(preset?.maxChars ?? 26) || 26),
+  });
+}
+
+function buildCaptionOverlays(words, preset, duration, layout = {}) {
+  if (!Array.isArray(words) || !words.length) return [];
+  const signature = words.map(word => `${word.word}:${Number(word.start || 0).toFixed(2)}:${Number(word.end || 0).toFixed(2)}`).join("|");
+  const editorChunks = chunkCaptionWords(words, preset);
+  return editorChunks.map((chunk, index) => ({
+    id: `caption-${index}-${Math.round(chunk.start * 1000)}`,
+    text: chunk.words.map(word => word.word).join(" "),
+    words: chunk.words,
+    start: clamp(Number(chunk.start ?? 0), 0, duration),
+    end: clamp(Number(chunk.end ?? chunk.start + 0.8), Number(chunk.start ?? 0) + 0.04, duration),
+    x: clamp(Number(layout.x ?? 50), 8, 92),
+    y: clamp(Number(layout.y ?? 76), 8, 92),
+    scale: clamp(Number(layout.scale ?? 1), 0.55, 2.2),
+    styleId: preset.id,
+    speed: "normal",
+    previewLoop: false,
+    autoCaption: true,
+    sourceSignature: signature,
+    groupingVersion: CAPTION_GROUPING_VERSION,
+  }));
+}
+
+function buildDisplayCaptionChunks(words, preset) {
+  return chunkCaptionWords(words, preset).map(chunk => ({ ...chunk, stable: true }));
 }
 
 function PresetCard({ preset, active, onClick }) {
@@ -434,16 +451,17 @@ function PresetCard({ preset, active, onClick }) {
 
 function getCaptionWordsForMode(chunk, activeWordIdx, preset) {
   const words = chunk.words ?? [];
-  if (preset.mode === "single") {
+  const mode = preset?.mode ?? captionModeForStyle(preset?.id);
+  if (mode === "single") {
     const active = words[Math.max(0, activeWordIdx)];
     return active ? [{ ...active, sourceIndex: Math.max(0, activeWordIdx) }] : [];
   }
-  if (preset.mode === "word-pop") {
+  if (mode === "word-pop") {
     const current = Math.max(0, activeWordIdx);
     const start = Math.max(0, current - 1);
     return words.slice(start, current + 1).map((word, index) => ({ ...word, sourceIndex: start + index }));
   }
-  if (preset.mode === "typewriter") {
+  if (mode === "typewriter") {
     return words.slice(0, Math.max(0, activeWordIdx) + 1).map((word, index) => ({ ...word, sourceIndex: index }));
   }
   return words.map((word, index) => ({ ...word, sourceIndex: index }));
@@ -489,57 +507,23 @@ function CaptionWordRenderer({ chunk, elapsed, preset }) {
   );
 }
 
-function buildManualCaptionLoop(text, speedId, preset) {
-  const words = String(text || DEFAULT_PREVIEW_TEXT).trim().split(/\s+/).filter(Boolean);
-  const wordSeconds = MANUAL_WORD_SECONDS[speedId] ?? MANUAL_WORD_SECONDS.fast;
-  const timedWords = words.map((word, index) => ({
-    word,
-    start: Number((index * wordSeconds).toFixed(3)),
-    end: Number(((index + 1) * wordSeconds).toFixed(3)),
-  }));
-  const chunks = chunkWords(timedWords, {
-    ...(preset ?? {}),
-    groupSize: Math.min(Number(preset?.groupSize ?? 5), 5),
-    maxChars: Math.min(Number(preset?.maxChars ?? 28), 28),
-    minBlockDuration: 0.75,
-    maxBlockDuration: 1.85,
-  }).map(chunk => ({ ...chunk, stable: true }));
-  const loopDuration = Math.max(1.4, chunks[chunks.length - 1]?.end ?? timedWords[timedWords.length - 1]?.end ?? 1.4);
-  return {
-    loopDuration,
-    chunks,
-  };
-}
-
-function AutoCaptionOverlay({ chunks, elapsed, preset }) {
-  if (!chunks?.length || !preset) return null;
-
-  const chunk = chunks.find(c => elapsed >= c.start - 0.12 && elapsed < c.end + 0.18);
-  if (!chunk) return null;
-
-  return (
-    <div className="pointer-events-none absolute left-1/2 top-[76%] w-[88%] -translate-x-1/2 -translate-y-1/2 text-center">
-      <CaptionWordRenderer chunk={chunk} elapsed={elapsed} preset={preset} />
-    </div>
-  );
-}
-
-function ManualTextOverlay({ item, elapsed, selected, onSelect, onDragStart }) {
+function ManualTextOverlay({ item, elapsed, selected, onSelect, onDragStart, onResizeStart }) {
   const preset = CAPTION_PRESETS.find(p => p.id === item.styleId) ?? CAPTION_PRESETS[0];
-  const { loopDuration, chunks } = useMemo(
-    () => buildManualCaptionLoop(item.text, item.speed, preset),
-    [item.text, item.speed, preset]
+  const words = useMemo(
+    () => Array.isArray(item.words) && item.words.length
+      ? item.words
+      : distributeCaptionWords(item.text, item.start, item.end),
+    [item.words, item.text, item.start, item.end]
   );
-  const localElapsed = Math.max(0, elapsed - item.start);
-  const loopElapsed = loopDuration > 0 ? localElapsed % loopDuration : 0;
-  const chunk = chunks.find(c => loopElapsed >= c.start - 0.05 && loopElapsed < c.end + 0.08) ?? chunks[0];
-  const fadeIn = clamp(localElapsed / 0.16, 0, 1);
-  const fadeOut = clamp((item.end - elapsed) / 0.16, 0, 1);
-  const opacity = Math.min(fadeIn, fadeOut);
+  const displayChunks = useMemo(() => buildDisplayCaptionChunks(words, preset), [words, preset]);
+  const chunk = displayChunks.find(part => elapsed >= part.start - 0.04 && elapsed < part.end + 0.08)
+    ?? displayChunks.find(part => elapsed < part.start)
+    ?? displayChunks[displayChunks.length - 1];
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={(e) => { e.stopPropagation(); onSelect(item.id); }}
       onMouseDown={(e) => { onSelect(item.id); onDragStart(e, item.id); }}
       onTouchStart={(e) => { onSelect(item.id); onDragStart(e, item.id); }}
@@ -549,20 +533,35 @@ function ManualTextOverlay({ item, elapsed, selected, onSelect, onDragStart }) {
         top: `${item.y}%`,
         width: "86%",
         transform: "translate(-50%, -50%)",
-        opacity,
+        opacity: 1,
       }}
     >
-      <div className={`inline-flex max-w-full items-center justify-center gap-1 rounded-lg p-1 transition ${
+      <div
+        className={`relative inline-flex max-w-full items-center justify-center gap-1 rounded-lg p-1 transition ${
         selected ? "bg-orange-500/12 outline outline-1 outline-dashed outline-orange-300/70" : "outline outline-1 outline-transparent group-hover:bg-white/[0.04] group-hover:outline-white/20"
-      }`}>
-        {chunk && <CaptionWordRenderer chunk={chunk} elapsed={loopElapsed} preset={preset} />}
+        }`}
+        style={{ transform: `scale(${item.scale ?? 1})` }}
+      >
+        <CaptionWordRenderer chunk={chunk} elapsed={elapsed} preset={preset} />
         {selected && <GripVertical className="ml-1 h-3.5 w-3.5 text-white/70" />}
+        {selected && (
+          <button
+            type="button"
+            aria-label="Resize caption"
+            title="Drag to resize caption"
+            onMouseDown={(e) => onResizeStart(e, item.id)}
+            onTouchStart={(e) => onResizeStart(e, item.id)}
+            className="absolute -bottom-3 -right-3 flex h-6 w-6 cursor-nwse-resize touch-none items-center justify-center rounded-full border border-orange-200/70 bg-[#111] text-orange-300 shadow-lg"
+          >
+            <Maximize2 className="h-3 w-3" />
+          </button>
+        )}
       </div>
-    </button>
+    </div>
   );
 }
 
-export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, onStyleChange, onChangeAudio, onDraftChange }) {
+export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, onChangeAudio, onDraftChange }) {
   const readyClips = useMemo(
     () => clips.filter(c => c.videoUrl).sort((a, b) => a.index - b.index),
     [clips]
@@ -572,17 +571,27 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
   const containerRef = useRef(null);
   const timelineViewportRef = useRef(null);
   const timelineRef = useRef(null);
+  const playheadRef = useRef(null);
+  const timeLabelRef = useRef(null);
   const rafRef = useRef(null);
   const startRef = useRef(0);
   const playingRef = useRef(false);
+  const elapsedRef = useRef(0);
+  const applyElapsedLatestRef = useRef(null);
+  const captionRenderKeyRef = useRef("");
+  const currentIdxRef = useRef(0);
+  const lastDisplayedSecondRef = useRef(-1);
+  const timelineAutoFollowBlockedUntilRef = useRef(0);
   const draftSignatureRef = useRef("");
 
   const [playing, setPlaying] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [textDragId, setTextDragId] = useState(null);
+  const [textResize, setTextResize] = useState(null);
   const [timelineDrag, setTimelineDrag] = useState(null);
   const [peaks, setPeaks] = useState([]);
+  const [measuredAudioDuration, setMeasuredAudioDuration] = useState(null);
   const [audioOffset, setAudioOffset] = useState(captionDraft?.audioOffset ?? 0);
   const [clipEdits, setClipEdits] = useState(() => captionDraft?.clipEdits ?? {});
   const [timelineZoom, setTimelineZoom] = useState(() => clamp(captionDraft?.timelineZoom ?? 1.25, 0.65, 2.6));
@@ -611,31 +620,76 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
   }, [readyClips, timelineClipEdits]);
 
   const TOTAL_DURATION = Math.max(sequenceClips.reduce((sum, item) => sum + item.duration, 0), 0.1);
+  const voicePlaybackRate = voiceData?.imported
+    ? 1
+    : clamp(
+      Number(voiceData?.playbackRate)
+        || (Number(voiceData?.durationSec) > 0 ? Number(voiceData.durationSec) / TOTAL_DURATION : 1),
+      0.5,
+      2,
+    );
   const pxPerSecond = 38 * timelineZoom;
   const timelineWidth = Math.max(620, TOTAL_DURATION * pxPerSecond);
-  const [textOverlays, setTextOverlays] = useState(() => normalizeTextOverlays(captionDraft?.textOverlays, TOTAL_DURATION));
+  const scriptWords = useMemo(() => {
+    const source = Array.isArray(captionDraft?.captionScript?.words) ? captionDraft.captionScript.words : [];
+    if (voiceData?.imported || captionDraft?.captionScript?.timelineNormalized || Math.abs(voicePlaybackRate - 1) < 0.001) return source;
+    return source.map(word => ({
+      ...word,
+      start: Number(((Number(word.start) || 0) / voicePlaybackRate).toFixed(3)),
+      end: Number(((Number(word.end) || 0) / voicePlaybackRate).toFixed(3)),
+    }));
+  }, [captionDraft?.captionScript?.timelineNormalized, captionDraft?.captionScript?.words, voiceData?.imported, voicePlaybackRate]);
+  const autoPreset = CAPTION_PRESETS.find(p => p.id === captionDraft?.captionStyle) ?? CAPTION_PRESETS[0];
+  const sourceSignature = useMemo(
+    () => scriptWords.map(word => `${word.word}:${Number(word.start || 0).toFixed(2)}:${Number(word.end || 0).toFixed(2)}`).join("|"),
+    [scriptWords]
+  );
+  const [textOverlays, setTextOverlays] = useState(() => {
+    const saved = normalizeTextOverlays(captionDraft?.textOverlays, TOTAL_DURATION);
+    return saved.length ? saved : buildCaptionOverlays(scriptWords, autoPreset, TOTAL_DURATION, captionDraft?.captionLayout);
+  });
+  const captionsInitializedRef = useRef(textOverlays.length > 0);
   const [selectedTextId, setSelectedTextId] = useState(() => textOverlays[0]?.id ?? null);
 
   const selectedText = textOverlays.find(t => t.id === selectedTextId) ?? textOverlays[0] ?? null;
-  const scriptWords = captionDraft?.captionScript?.words ?? [];
-  const autoPreset = CAPTION_PRESETS.find(p => p.id === captionDraft?.captionStyle) ?? CAPTION_PRESETS[0];
-  const autoChunks = useMemo(() => chunkWords(scriptWords, autoPreset), [scriptWords, autoPreset]);
   const activeTextOverlays = textOverlays.filter(item => elapsed >= item.start && elapsed < item.end);
+  // Never mount an inactive selected caption on top of the active caption
+  // while playback is running. Paused mode still keeps it visible for edits.
+  const visibleTextOverlays = playing
+    ? activeTextOverlays.slice(0, 1)
+    : (selectedText && !activeTextOverlays.some(item => item.id === selectedText.id)
+      ? [selectedText]
+      : activeTextOverlays.slice(0, 1));
 
   const updateText = useCallback((id, patch) => {
-    setTextOverlays(prev => prev.map(item => item.id === id ? { ...item, ...patch } : item));
+    setTextOverlays(prev => prev.map(item => {
+      if (item.id !== id) return item;
+      const next = { ...item, ...patch };
+      if ("text" in patch || "start" in patch || "end" in patch) {
+        next.words = distributeCaptionWords(next.text, next.start, next.end);
+      }
+      return next;
+    }));
+  }, []);
+
+  // Caption placement and size are global presentation settings. Text and
+  // timing remain editable per caption, but moving/resizing any caption keeps
+  // every caption visually consistent throughout the final video.
+  const updateAllCaptionLayout = useCallback((patch) => {
+    setTextOverlays(prev => prev.map(item => ({ ...item, ...patch })));
   }, []);
 
   const addText = useCallback(() => {
-    const start = clamp(elapsed, 0, Math.max(0, TOTAL_DURATION - 0.5));
+    const start = clamp(elapsedRef.current, 0, Math.max(0, TOTAL_DURATION - 0.5));
     const item = {
-      ...createDefaultText(TOTAL_DURATION),
+      ...createTextOverlay(TOTAL_DURATION),
       id: uid(),
-      text: "zyvo is best",
+      text: "New caption",
       start,
       end: clamp(start + 4, start + 0.5, TOTAL_DURATION),
-      x: 50,
-      y: 42,
+      x: selectedText?.x ?? 50,
+      y: selectedText?.y ?? 76,
+      scale: selectedText?.scale ?? 1,
       styleId: selectedText?.styleId ?? "viral-yellow",
       speed: selectedText?.speed ?? "normal",
       previewLoop: false,
@@ -644,7 +698,7 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
     setSelectedTextId(item.id);
     seek(start);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elapsed, TOTAL_DURATION, selectedText?.styleId, selectedText?.speed]);
+  }, [TOTAL_DURATION, selectedText?.styleId, selectedText?.speed, selectedText?.x, selectedText?.y, selectedText?.scale]);
 
   const duplicateText = useCallback(() => {
     if (!selectedText) return;
@@ -654,7 +708,9 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
       id: uid(),
       start,
       end: clamp(selectedText.end + 0.4, start + 0.5, TOTAL_DURATION),
-      y: clamp(selectedText.y + 8, 8, 92),
+      x: selectedText.x,
+      y: selectedText.y,
+      scale: selectedText.scale ?? 1,
     };
     setTextOverlays(prev => [...prev, item]);
     setSelectedTextId(item.id);
@@ -663,59 +719,96 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
   const deleteText = useCallback(() => {
     if (!selectedText) return;
     setTextOverlays(prev => {
-      if (prev.length <= 1) {
-        const replacement = createDefaultText(TOTAL_DURATION);
-        setSelectedTextId(replacement.id);
-        return [replacement];
-      }
       const next = prev.filter(item => item.id !== selectedText.id);
       setSelectedTextId(next[0]?.id ?? null);
       return next;
     });
-  }, [selectedText, TOTAL_DURATION]);
+  }, [selectedText]);
 
   useEffect(() => {
-    setTextOverlays(prev => prev.map((item, index) => {
-      const cleanText = String(item.text || "").trim().toLowerCase();
-      const isLegacyPreviewText = LEGACY_PREVIEW_TEXTS.has(cleanText) || cleanText === DEFAULT_PREVIEW_TEXT;
-      const isSeedPreview = prev.length === 1 && index === 0 && (
-        item.previewLoop ||
-        isLegacyPreviewText
-      );
-      const start = isSeedPreview ? 0 : clamp(item.start, 0, Math.max(0, TOTAL_DURATION - 0.35));
-      const end = isSeedPreview ? TOTAL_DURATION : clamp(item.end, start + 0.35, TOTAL_DURATION);
-      const text = isSeedPreview && isLegacyPreviewText ? DEFAULT_PREVIEW_TEXT : item.text;
-      const previewLoop = isSeedPreview ? true : item.previewLoop;
-      return start === item.start && end === item.end && text === item.text && previewLoop === item.previewLoop
-        ? item
-        : { ...item, start, end, text, previewLoop };
-    }));
+    setTextOverlays(prev => {
+      const clean = normalizeTextOverlays(prev, TOTAL_DURATION);
+      if (!scriptWords.length) {
+        const next = clean.filter(item => !item.autoCaption);
+        return captionOverlaySignature(next) === captionOverlaySignature(prev) ? prev : next;
+      }
+      const existingSource = clean.find(item => item.autoCaption)?.sourceSignature;
+      const staleAutoGrouping = clean.some(item => item.autoCaption && item.groupingVersion < CAPTION_GROUPING_VERSION);
+      if (!clean.length || staleAutoGrouping || (existingSource && existingSource !== sourceSignature)) {
+        const generated = buildCaptionOverlays(scriptWords, autoPreset, TOTAL_DURATION, captionDraft?.captionLayout);
+        const manual = clean.filter(item => !item.autoCaption);
+        captionsInitializedRef.current = generated.length > 0;
+        const next = [...generated, ...manual];
+        return captionOverlaySignature(next) === captionOverlaySignature(prev) ? prev : next;
+      }
+      return captionOverlaySignature(clean) === captionOverlaySignature(prev) ? prev : clean;
+    });
     if (elapsed > TOTAL_DURATION) seek(Math.max(0, TOTAL_DURATION - 0.05));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [TOTAL_DURATION]);
+  }, [TOTAL_DURATION, sourceSignature]);
+
+  useEffect(() => {
+    if (!textOverlays.length) {
+      if (selectedTextId !== null) setSelectedTextId(null);
+      return;
+    }
+    if (!textOverlays.some(item => item.id === selectedTextId)) {
+      setSelectedTextId(textOverlays[0].id);
+    }
+  }, [selectedTextId, textOverlays]);
 
   useEffect(() => {
     if (!selectedTextId) return;
     const styleId = captionDraft?.captionStyle;
     const speed = captionDraft?.textSpeed;
     if (!styleId && !speed) return;
-    setTextOverlays(prev => prev.map(item => {
-      if (item.id !== selectedTextId) return item;
-      const next = { ...item };
-      if (styleId && next.styleId !== styleId) next.styleId = styleId;
-      if (speed && next.speed !== speed) next.speed = speed;
-      return next.styleId === item.styleId && next.speed === item.speed ? item : next;
-    }));
+    setTextOverlays(prev => {
+      let changed = false;
+      const nextItems = prev.map(item => {
+        if (item.id !== selectedTextId && !item.autoCaption) return item;
+        const next = { ...item };
+        if (styleId && next.styleId !== styleId) next.styleId = styleId;
+        if (speed && next.speed !== speed) next.speed = speed;
+        if (next.styleId === item.styleId && next.speed === item.speed) return item;
+        changed = true;
+        return next;
+      });
+      return changed ? nextItems : prev;
+    });
   }, [captionDraft?.captionStyle, captionDraft?.textSpeed, selectedTextId]);
 
   useEffect(() => {
+    // On the first Step 3 render the preview may mount one render before the
+    // transcript reaches the parent. Never let that temporary empty state
+    // overwrite the real caption script supplied by CaptionStep.
+    if (!captionsInitializedRef.current && textOverlays.length === 0) return;
+    const editableWords = textOverlays
+      .slice()
+      .sort((a, b) => a.start - b.start)
+      .flatMap(item => Array.isArray(item.words) && item.words.length
+        ? item.words
+        : distributeCaptionWords(item.text, item.start, item.end));
+    const editableScript = textOverlays
+      .slice()
+      .sort((a, b) => a.start - b.start)
+      .map(item => item.text.trim())
+      .filter(Boolean)
+      .join(" ");
     const nextDraft = {
       ...(captionDraft ?? {}),
       captionStyle: selectedText?.styleId ?? autoPreset.id,
       textSpeed: selectedText?.speed ?? captionDraft?.textSpeed ?? "normal",
-      captionScript: captionDraft?.captionScript ?? null,
-      previewText: selectedText?.text ?? DEFAULT_PREVIEW_TEXT,
-      captionLayout: selectedText ? { x: selectedText.x, y: selectedText.y } : captionDraft?.captionLayout,
+      captionScript: {
+        ...(captionDraft?.captionScript ?? {}),
+        script: editableScript,
+        words: editableWords,
+        segments: textOverlays.map(item => ({ text: item.text, start: item.start, end: item.end })),
+        playbackRate: voicePlaybackRate,
+        timelineDurationSec: TOTAL_DURATION,
+        timelineNormalized: !voiceData?.imported,
+      },
+      previewText: selectedText?.text ?? "",
+      captionLayout: selectedText ? { x: selectedText.x, y: selectedText.y, scale: selectedText.scale ?? 1 } : captionDraft?.captionLayout,
       textOverlays,
       selectedTextId,
       audioOffset,
@@ -737,9 +830,10 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
     draftSignatureRef.current = signature;
     onDraftChange?.(nextDraft);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [textOverlays, selectedTextId, audioOffset, timelineClipEdits, selectedText?.styleId, timelineZoom]);
+  }, [textOverlays, selectedTextId, audioOffset, timelineClipEdits, selectedText?.styleId, selectedText?.scale, timelineZoom, voiceData?.imported, voicePlaybackRate, TOTAL_DURATION]);
 
   useEffect(() => {
+    setMeasuredAudioDuration(null);
     if (!audioUrl) { setPeaks([]); return; }
     let cancelled = false;
     (async () => {
@@ -749,6 +843,9 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
         const Ctx = window.AudioContext || window.webkitAudioContext;
         const ctx = new Ctx();
         const decoded = await ctx.decodeAudioData(buf.slice(0));
+        if (!cancelled && Number.isFinite(decoded.duration) && decoded.duration > 0) {
+          setMeasuredAudioDuration(decoded.duration);
+        }
         const raw = decoded.getChannelData(0);
         const samples = 150;
         const blockSize = Math.max(1, Math.floor(raw.length / samples));
@@ -768,8 +865,41 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
     return () => { cancelled = true; };
   }, [audioUrl]);
 
-  const applyElapsed = useCallback((t) => {
-    setElapsed(t);
+  useEffect(() => {
+    if (!audioRef.current) return;
+    audioRef.current.playbackRate = voicePlaybackRate;
+    audioRef.current.preservesPitch = true;
+  }, [audioUrl, voicePlaybackRate]);
+
+  const timeToPx = useCallback((time) => time * pxPerSecond, [pxPerSecond]);
+
+  const applyElapsed = useCallback((t, forceCommit = false) => {
+    const previous = elapsedRef.current;
+    const wrappedAtEnd = previous > TOTAL_DURATION - 0.35 && t < 0.35;
+    if (playingRef.current && !forceCommit && !wrappedAtEnd && t + 0.035 < previous) return;
+    elapsedRef.current = t;
+    if (playheadRef.current) playheadRef.current.style.transform = `translateX(${timeToPx(t)}px)`;
+    const wholeSecond = Math.floor(t);
+    if (timeLabelRef.current && wholeSecond !== lastDisplayedSecondRef.current) {
+      lastDisplayedSecondRef.current = wholeSecond;
+      timeLabelRef.current.textContent = `${fmtTime(t)} / ${fmtTime(TOTAL_DURATION)}`;
+    }
+    const activeCaption = textOverlays.find(item => t >= item.start && t < item.end);
+    const activeWords = activeCaption
+      ? (Array.isArray(activeCaption.words) && activeCaption.words.length
+        ? activeCaption.words
+        : distributeCaptionWords(activeCaption.text, activeCaption.start, activeCaption.end))
+      : [];
+    let activeWordIndex = activeWords.findIndex(word => t >= word.start && t < Math.max(word.end, word.start + 0.1));
+    if (activeWordIndex < 0 && activeWords.length) {
+      const nextWord = activeWords.findIndex(word => t < word.start);
+      activeWordIndex = nextWord < 0 ? activeWords.length - 1 : Math.max(0, nextWord - 1);
+    }
+    const renderKey = `${activeCaption?.id ?? "none"}:${activeWordIndex}`;
+    if (forceCommit || !playingRef.current || renderKey !== captionRenderKeyRef.current) {
+      captionRenderKeyRef.current = renderKey;
+      setElapsed(t);
+    }
     const active = sequenceClips.find(item => t >= item.sequenceStart && t < item.sequenceEnd) ?? sequenceClips[sequenceClips.length - 1];
     const clipIdx = active?.position ?? 0;
     const clipTime = active ? active.edit.start + clamp(t - active.sequenceStart, 0, active.duration) : 0;
@@ -782,24 +912,61 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
       }
     });
     if (audioRef.current) {
-      const audioTime = Math.max(0, t - audioOffset);
-      if (Math.abs(audioRef.current.currentTime - audioTime) > 0.25) audioRef.current.currentTime = audioTime;
-      audioRef.current.volume = t >= audioOffset ? 1 : 0;
+      const audioTime = Math.max(0, t - audioOffset) * voicePlaybackRate;
+      if (t < audioOffset) {
+        audioRef.current.volume = 0;
+        if (!audioRef.current.paused) audioRef.current.pause();
+        if (audioRef.current.currentTime > 0.03) audioRef.current.currentTime = 0;
+      } else {
+        audioRef.current.volume = 1;
+        if (Math.abs(audioRef.current.currentTime - audioTime) > 0.08) {
+          audioRef.current.currentTime = audioTime;
+        }
+        if (playingRef.current && audioRef.current.paused && !audioRef.current.ended) {
+          audioRef.current.play().catch(() => {});
+        }
+      }
     }
-    setCurrentIdx(clipIdx);
-  }, [sequenceClips, audioOffset]);
+    if (clipIdx !== currentIdxRef.current) {
+      currentIdxRef.current = clipIdx;
+      setCurrentIdx(clipIdx);
+    }
+
+    const viewport = timelineViewportRef.current;
+    if (playingRef.current && viewport && Date.now() >= timelineAutoFollowBlockedUntilRef.current) {
+      const playheadPx = timeToPx(t);
+      const margin = Math.min(160, viewport.clientWidth * 0.32);
+      const visibleLeft = viewport.scrollLeft;
+      const visibleRight = visibleLeft + viewport.clientWidth;
+      if (playheadPx < visibleLeft + margin || playheadPx > visibleRight - margin) {
+        viewport.scrollLeft = clamp(playheadPx - viewport.clientWidth * 0.46, 0, Math.max(0, timelineWidth - viewport.clientWidth));
+      }
+    }
+  }, [sequenceClips, audioOffset, textOverlays, timeToPx, TOTAL_DURATION, timelineWidth, voicePlaybackRate]);
+
+  // requestAnimationFrame schedules the same callback recursively. Route it
+  // through a ref so it always sees the newest caption blocks/timings after
+  // the transcript arrives or the creator edits the timeline.
+  applyElapsedLatestRef.current = applyElapsed;
 
   const tick = useCallback(() => {
     if (!playingRef.current) return;
     const now = performance.now();
     let next = (now - startRef.current) / 1000;
+    const audio = audioRef.current;
+    // HTML audio starts asynchronously and can trail performance.now() by a
+    // visible fraction of a second. Once the voice rail begins, use the
+    // decoded audio position as the master clock so captions follow speech.
+    if (audio && next >= audioOffset && !audio.ended) {
+      next = audioOffset + Math.max(0, audio.currentTime / voicePlaybackRate);
+    }
     if (next >= TOTAL_DURATION) {
       next = 0;
       startRef.current = now;
     }
-    applyElapsed(next);
+    applyElapsedLatestRef.current?.(next);
     rafRef.current = requestAnimationFrame(tick);
-  }, [TOTAL_DURATION, applyElapsed]);
+  }, [TOTAL_DURATION, audioOffset, voicePlaybackRate]);
 
   const pause = useCallback(() => {
     playingRef.current = false;
@@ -811,24 +978,31 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
 
   const play = useCallback(() => {
     if (readyClips.length === 0) return;
-    startRef.current = performance.now() - elapsed * 1000;
+    startRef.current = performance.now() - elapsedRef.current * 1000;
     playingRef.current = true;
     setPlaying(true);
-    videoRefs.current[currentIdx]?.play().catch(() => {});
-    audioRef.current?.play().catch(() => {});
+    videoRefs.current[currentIdxRef.current]?.play().catch(() => {});
+    if (audioRef.current) {
+      const shouldPlayAudio = elapsedRef.current >= audioOffset;
+      const desiredAudioTime = Math.max(0, elapsedRef.current - audioOffset) * voicePlaybackRate;
+      if (Math.abs(audioRef.current.currentTime - desiredAudioTime) > 0.03) {
+        audioRef.current.currentTime = desiredAudioTime;
+      }
+      audioRef.current.volume = shouldPlayAudio ? 1 : 0;
+      if (shouldPlayAudio) audioRef.current.play().catch(() => {});
+      else audioRef.current.pause();
+    }
     rafRef.current = requestAnimationFrame(tick);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readyClips.length, currentIdx, tick]);
+  }, [audioOffset, readyClips.length, tick, voicePlaybackRate]);
 
   const seek = useCallback((t) => {
     const clamped = clamp(t, 0, TOTAL_DURATION - 0.05);
-    applyElapsed(clamped);
+    applyElapsed(clamped, true);
     if (playingRef.current) startRef.current = performance.now() - clamped * 1000;
   }, [TOTAL_DURATION, applyElapsed]);
 
-  const togglePlay = () => (playing ? pause() : play());
+  const togglePlay = useCallback(() => (playingRef.current ? pause() : play()), [pause, play]);
   const restart = () => { seek(0); if (!playing) play(); };
-  const timeToPx = useCallback((time) => time * pxPerSecond, [pxPerSecond]);
   const eventToTimelineTime = useCallback((event) => {
     if (!timelineRef.current) return 0;
     const point = event.touches ? event.touches[0] : event;
@@ -839,16 +1013,44 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
   useEffect(() => {
     if (readyClips.length > 0) {
       videoRefs.current.forEach(v => { if (v) v.muted = true; });
-      play();
+      // Preview opens paused. This prevents hidden/mobile panels from starting
+      // playback before the creator deliberately enters Preview.
+      pause();
+      seek(0);
     }
     return () => pause();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [readyClips.length]);
 
+  useEffect(() => {
+    const handleSpace = (event) => {
+      if (event.code !== "Space" || event.repeat) return;
+      const target = event.target;
+      const tagName = target?.tagName;
+      if (target?.isContentEditable || ["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(tagName)) return;
+      event.preventDefault();
+      togglePlay();
+    };
+    window.addEventListener("keydown", handleSpace);
+    return () => window.removeEventListener("keydown", handleSpace);
+  }, [togglePlay]);
+
   const startTextDrag = (e, id) => {
     preventMouseDefault(e);
     e.stopPropagation();
+    if (playingRef.current) pause();
     setTextDragId(id);
+  };
+
+  const startTextResize = (e, id) => {
+    preventMouseDefault(e);
+    e.stopPropagation();
+    if (playingRef.current) pause();
+    const point = e.touches ? e.touches[0] : e;
+    const item = textOverlays.find(text => text.id === id);
+    if (!item) return;
+    setSelectedTextId(id);
+    setTextResize({ id, startX: point.clientX, startY: point.clientY, startScale: item.scale ?? 1 });
   };
 
   useEffect(() => {
@@ -858,7 +1060,7 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
       const point = e.touches ? e.touches[0] : e;
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      updateText(textDragId, {
+      updateAllCaptionLayout({
         x: clamp(((point.clientX - rect.left) / rect.width) * 100, 8, 92),
         y: clamp(((point.clientY - rect.top) / rect.height) * 100, 8, 92),
       });
@@ -874,7 +1076,28 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
       window.removeEventListener("mouseup", up);
       window.removeEventListener("touchend", up);
     };
-  }, [textDragId, updateText]);
+  }, [textDragId, updateAllCaptionLayout]);
+
+  useEffect(() => {
+    if (!textResize) return;
+    const move = (e) => {
+      if (isTouchEvent(e) && e.cancelable) e.preventDefault();
+      const point = e.touches ? e.touches[0] : e;
+      const delta = ((point.clientX - textResize.startX) + (point.clientY - textResize.startY)) / 220;
+      updateAllCaptionLayout({ scale: clamp(textResize.startScale + delta, 0.55, 2.2) });
+    };
+    const up = () => setTextResize(null);
+    window.addEventListener("mousemove", move);
+    window.addEventListener("touchmove", move, { passive: false });
+    window.addEventListener("mouseup", up);
+    window.addEventListener("touchend", up);
+    return () => {
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("touchmove", move);
+      window.removeEventListener("mouseup", up);
+      window.removeEventListener("touchend", up);
+    };
+  }, [textResize, updateAllCaptionLayout]);
 
   const handleTimelineClick = (e) => {
     if (timelineDrag || !timelineRef.current) return;
@@ -908,7 +1131,27 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
       if (isTouchEvent(e) && e.cancelable) e.preventDefault();
       const t = eventToTimelineTime(e);
       if (timelineDrag.kind === "audio") {
-        setAudioOffset(clamp(t - timelineDrag.grabOffset, 0, Math.max(0, TOTAL_DURATION - 1)));
+        const nextOffset = clamp(t - timelineDrag.grabOffset, 0, Math.max(0, TOTAL_DURATION - 1));
+        setAudioOffset(previousOffset => {
+          const delta = nextOffset - previousOffset;
+          if (Math.abs(delta) > 0.0001) {
+            setTextOverlays(previous => previous.map(item => {
+              if (!item.autoCaption) return item;
+              const shiftedWords = (item.words ?? []).map(word => ({
+                ...word,
+                start: clamp(Number(word.start || 0) + delta, 0, TOTAL_DURATION),
+                end: clamp(Number(word.end || 0) + delta, 0, TOTAL_DURATION),
+              }));
+              return {
+                ...item,
+                start: clamp(item.start + delta, 0, TOTAL_DURATION),
+                end: clamp(item.end + delta, 0, TOTAL_DURATION),
+                words: shiftedWords,
+              };
+            }));
+          }
+          return nextOffset;
+        });
         return;
       }
       if (timelineDrag.kind === "text-move") {
@@ -946,34 +1189,27 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
     };
   }, [timelineDrag, TOTAL_DURATION, timelineClipEdits, textOverlays, updateText, eventToTimelineTime]);
 
-  const playheadPx = timeToPx(elapsed);
   const audioLeftPx = clamp(timeToPx(audioOffset), 0, Math.max(0, timeToPx(TOTAL_DURATION) - 40));
-  const audioWidthPx = audioUrl ? Math.max(40, timeToPx(TOTAL_DURATION) - audioLeftPx) : 0;
+  const audioDuration = clamp(
+    (Number(measuredAudioDuration) || Number(voiceData?.durationSec) || 0.5) / voicePlaybackRate,
+    0.5,
+    Math.max(0.5, TOTAL_DURATION - audioOffset),
+  );
+  const audioWidthPx = audioUrl ? Math.max(72, timeToPx(audioDuration)) : 0;
+  const audioClipLabel = voiceData?.fileName || voiceData?.voiceLabel || "Voiceover";
   const timelineTicks = useMemo(() => {
     const step = timelineZoom > 1.7 ? 3 : 6;
     const count = Math.floor(TOTAL_DURATION / step) + 1;
     return Array.from({ length: count }, (_, i) => i * step).filter(t => t <= TOTAL_DURATION);
   }, [TOTAL_DURATION, timelineZoom]);
 
-  useEffect(() => {
-    const viewport = timelineViewportRef.current;
-    if (!viewport || timelineDrag) return;
-    const visibleLeft = viewport.scrollLeft;
-    const visibleRight = visibleLeft + viewport.clientWidth;
-    const margin = Math.min(160, viewport.clientWidth * 0.32);
-    if (playing || playheadPx < visibleLeft + margin || playheadPx > visibleRight - margin) {
-      viewport.scrollLeft = clamp(playheadPx - viewport.clientWidth * 0.46, 0, Math.max(0, timelineWidth - viewport.clientWidth));
-    }
-  }, [elapsed, playheadPx, playing, timelineDrag, timelineWidth]);
-
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-[#07090B]">
-      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2.5 overflow-hidden px-3 pt-3">
+    <div className="flex min-h-0 w-full flex-col rounded-2xl border border-white/[0.07] bg-[#07090B] lg:h-full lg:overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2.5 px-3 pt-3 lg:overflow-hidden">
         <div
           ref={containerRef}
           onClick={() => selectedText && setSelectedTextId(selectedText.id)}
-          className="relative mx-auto aspect-[9/16] w-full max-w-[360px] shrink-0 overflow-hidden rounded-2xl bg-black shadow-[0_28px_90px_rgba(0,0,0,0.45)] xl:max-w-[400px]"
-          style={{ maxHeight: "min(62vh, 680px)" }}
+          className="relative mx-auto aspect-[9/16] h-[min(58dvh,680px)] max-h-[calc(100dvh-310px)] w-auto max-w-full shrink-0 overflow-hidden rounded-2xl bg-black shadow-[0_28px_90px_rgba(0,0,0,0.45)]"
         >
           {readyClips.length === 0 ? (
             <div className="flex h-full items-center justify-center text-[13px] text-white/25">No clips ready yet</div>
@@ -990,11 +1226,21 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
                 />
               ))}
 
-              {audioUrl && <audio ref={audioRef} src={audioUrl} className="hidden" />}
+              {audioUrl && (
+                <audio
+                  ref={audioRef}
+                  src={audioUrl}
+                  className="hidden"
+                  onLoadedMetadata={(event) => {
+                    const duration = event.currentTarget.duration;
+                    event.currentTarget.playbackRate = voicePlaybackRate;
+                    event.currentTarget.preservesPitch = true;
+                    if (Number.isFinite(duration) && duration > 0) setMeasuredAudioDuration(duration);
+                  }}
+                />
+              )}
 
-              <AutoCaptionOverlay chunks={autoChunks} elapsed={elapsed} preset={autoPreset} />
-
-              {activeTextOverlays.map(item => (
+              {visibleTextOverlays.map(item => (
                 <ManualTextOverlay
                   key={item.id}
                   item={item}
@@ -1002,10 +1248,11 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
                   selected={item.id === selectedTextId}
                   onSelect={setSelectedTextId}
                   onDragStart={startTextDrag}
+                  onResizeStart={startTextResize}
                 />
               ))}
 
-              <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-2">
+              <div className="absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2">
                 <button
                   type="button"
                   onClick={restart}
@@ -1040,7 +1287,7 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
             </div>
             <button type="button" onClick={addText}
               className="flex h-8 shrink-0 items-center gap-1 rounded-lg bg-white px-2.5 text-[11px] font-black text-black transition active:scale-95">
-              <Plus className="h-3.5 w-3.5" /> Text
+              <Plus className="h-3.5 w-3.5" /> Caption
             </button>
           </div>
           <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none]">
@@ -1050,11 +1297,46 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
             <button type="button" onClick={deleteText} className="flex shrink-0 items-center gap-1 rounded-lg bg-white/[0.05] px-2.5 py-1.5 text-[10px] font-bold text-white/58 transition hover:bg-red-500/15 hover:text-red-200">
               <Trash2 className="h-3 w-3" /> Delete
             </button>
-            <div className="flex shrink-0 items-center gap-1 rounded-lg bg-white/[0.04] px-2 py-1.5 text-[10px] font-bold text-white/38">
-              <SlidersHorizontal className="h-3 w-3" /> x {Math.round(selectedText?.x ?? 50)} y {Math.round(selectedText?.y ?? 42)}
+            <div className="flex shrink-0 items-center gap-1.5 rounded-lg bg-white/[0.04] px-2 py-1 text-[10px] font-bold text-white/45">
+              <Maximize2 className="h-3 w-3" />
+              <input
+                aria-label="Caption size"
+                type="range"
+                min="0.55"
+                max="2.2"
+                step="0.05"
+                disabled={!selectedText}
+                value={selectedText?.scale ?? 1}
+                onChange={(e) => selectedText && updateAllCaptionLayout({ scale: Number(e.target.value) })}
+                className="h-1 w-16 accent-orange-400"
+              />
+              <span>{Math.round((selectedText?.scale ?? 1) * 100)}%</span>
             </div>
-            <div className="flex shrink-0 items-center gap-1 rounded-lg bg-white/[0.04] px-2 py-1.5 text-[10px] font-bold text-white/38">
-              <Clock3 className="h-3 w-3" /> {selectedText ? `${selectedText.start.toFixed(1)}-${selectedText.end.toFixed(1)}s` : "0.0s"}
+            <div className="flex shrink-0 items-center gap-1 rounded-lg bg-white/[0.04] px-2 py-1 text-[10px] font-bold text-white/45">
+              <Clock3 className="h-3 w-3" />
+              <input
+                aria-label="Caption start time"
+                type="number"
+                min="0"
+                max={selectedText ? selectedText.end - 0.35 : TOTAL_DURATION}
+                step="0.1"
+                disabled={!selectedText}
+                value={selectedText ? selectedText.start.toFixed(1) : "0.0"}
+                onChange={(e) => selectedText && updateText(selectedText.id, { start: clamp(Number(e.target.value), 0, selectedText.end - 0.35) })}
+                className="w-11 bg-transparent text-center text-white/70 outline-none"
+              />
+              <span className="text-white/20">→</span>
+              <input
+                aria-label="Caption end time"
+                type="number"
+                min={selectedText ? selectedText.start + 0.35 : 0.35}
+                max={TOTAL_DURATION}
+                step="0.1"
+                disabled={!selectedText}
+                value={selectedText ? selectedText.end.toFixed(1) : "0.0"}
+                onChange={(e) => selectedText && updateText(selectedText.id, { end: clamp(Number(e.target.value), selectedText.start + 0.35, TOTAL_DURATION) })}
+                className="w-11 bg-transparent text-center text-white/70 outline-none"
+              />
             </div>
             {audioUrl && (
               <div className="ml-auto flex min-w-[140px] items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.03] px-2.5 py-1.5">
@@ -1081,7 +1363,7 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
             <Scissors className="h-3 w-3" /> Zyvo AI editor
           </div>
           <div className="flex min-w-0 items-center gap-2">
-            <span className="hidden shrink-0 text-[9px] font-bold text-white/25 sm:block">{fmtTime(elapsed)} / {fmtTime(TOTAL_DURATION)}</span>
+            <span ref={timeLabelRef} className="hidden shrink-0 text-[9px] font-bold text-white/25 sm:block">{fmtTime(elapsed)} / {fmtTime(TOTAL_DURATION)}</span>
             <div className="flex shrink-0 items-center gap-1 rounded-lg bg-white/[0.04] p-1">
               <button
                 type="button"
@@ -1114,6 +1396,9 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
         </div>
         <div
           ref={timelineViewportRef}
+          onWheel={() => { timelineAutoFollowBlockedUntilRef.current = Date.now() + 2200; }}
+          onPointerDown={() => { timelineAutoFollowBlockedUntilRef.current = Date.now() + 2200; }}
+          onTouchStart={() => { timelineAutoFollowBlockedUntilRef.current = Date.now() + 2200; }}
           className="rounded-xl border border-white/[0.06] bg-white/[0.025] overflow-x-auto overflow-y-visible [scrollbar-color:rgba(255,255,255,0.18)_transparent] [scrollbar-width:thin]"
         >
           <div
@@ -1170,7 +1455,11 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
               })}
             </div>
 
-            <div className="relative mt-2 h-8 rounded-lg bg-white/[0.025]">
+            <div className="mb-1 mt-2 flex items-center justify-between px-1 text-[8px] font-black uppercase tracking-[0.18em] text-white/25">
+              <span>Captions</span>
+              <span className="normal-case tracking-normal text-white/18">Drag blocks · pull white edges to retime</span>
+            </div>
+            <div className="relative h-10 rounded-lg border border-white/[0.04] bg-white/[0.025]">
               {textOverlays.map(item => {
                 const left = timeToPx(item.start);
                 const width = Math.max(56, timeToPx(item.end) - timeToPx(item.start));
@@ -1180,7 +1469,7 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
                     key={item.id}
                     data-timeline-interactive="true"
                     className={`absolute inset-y-1 cursor-grab touch-none rounded-md border px-2 transition active:cursor-grabbing ${
-                      active ? "border-orange-300/70 bg-orange-500/35 text-white shadow-[0_0_20px_rgba(249,115,22,0.18)]" : "border-fuchsia-300/25 bg-fuchsia-500/18 text-fuchsia-100/70"
+                      active ? "border-orange-300/70 bg-gradient-to-r from-orange-500/45 to-amber-400/25 text-white" : "border-orange-200/15 bg-orange-500/10 text-orange-50/65"
                     }`}
                     style={{ left: `${left}px`, width: `${width}px` }}
                     onMouseDown={startTextBlockDrag(item)}
@@ -1203,44 +1492,38 @@ export default function CaptionPreviewPanel({ clips, captionDraft, voiceData, on
                       className="absolute bottom-0 right-0 top-0 z-10 w-2 cursor-ew-resize touch-none rounded-r-md bg-white/60"
                       title="Text end"
                     />
-                    <span className="relative z-[1] block truncate text-center text-[8px] font-black leading-6">{item.text}</span>
+                    <span className="relative z-[1] block truncate text-center text-[9px] font-black leading-8">{item.text}</span>
                   </div>
                 );
               })}
             </div>
 
             {audioUrl && (
-              <div className="relative mt-2 h-8 rounded-lg bg-white/[0.03]">
+              <div className="relative mt-2 h-14 rounded-lg bg-white/[0.025]">
                 <div
                   data-timeline-interactive="true"
-                  className="absolute inset-y-1 flex cursor-grab touch-none items-center gap-px rounded-md border border-sky-300/30 bg-sky-500/18 px-1 shadow-[0_0_22px_rgba(56,189,248,0.12)] active:cursor-grabbing"
+                  className="absolute inset-y-1 cursor-grab touch-none overflow-hidden rounded-md border border-sky-200/75 border-l-[4px] bg-[#09284b] shadow-[0_5px_18px_rgba(0,0,0,0.28)] active:cursor-grabbing"
                   style={{ left: `${audioLeftPx}px`, width: `${audioWidthPx}px` }}
-                  onMouseDown={startTimelineDrag("audio", { grabOffset: Math.max(0, elapsed - audioOffset) })}
-                  onTouchStart={startTimelineDrag("audio", { grabOffset: Math.max(0, elapsed - audioOffset) })}
+                  onMouseDown={startTimelineDrag("audio", { grabOffset: Math.max(0, elapsedRef.current - audioOffset) })}
+                  onTouchStart={startTimelineDrag("audio", { grabOffset: Math.max(0, elapsedRef.current - audioOffset) })}
                   title="Drag audio"
                 >
-                  {(peaks.length ? peaks : Array.from({ length: 90 }, (_, i) => ((i * 37) % 80) / 80)).map((p, i) => (
-                    <div key={i} className="flex-1 rounded-full bg-sky-300/75" style={{ height: `${Math.max(14, p * 100)}%` }} />
-                  ))}
+                  <div className="flex h-5 items-center justify-between gap-2 border-b border-sky-100/15 bg-[#13507a] px-1.5 text-[8px] font-semibold text-sky-50/90">
+                    <span className="truncate">{audioClipLabel}</span>
+                    <span className="shrink-0 text-sky-100/60">{audioDuration.toFixed(1)}s</span>
+                  </div>
+                  <svg className="absolute bottom-1 left-1 right-1 h-7" style={{ width: "calc(100% - 8px)" }} viewBox="0 0 150 28" preserveAspectRatio="none" aria-hidden="true">
+                    {(peaks.length ? peaks : Array.from({ length: 150 }, (_, i) => ((i * 37) % 80) / 80)).map((peak, index) => {
+                      const x = index + 0.5;
+                      const height = Math.max(2, peak * 24);
+                      return <line key={index} x1={x} x2={x} y1={27} y2={27 - height} stroke="#26b9ed" strokeWidth="0.72" opacity="0.92" />;
+                    })}
+                  </svg>
                 </div>
               </div>
             )}
 
-            {autoChunks.length > 0 && (
-              <div className="relative mt-2 h-5 rounded-lg bg-white/[0.02]">
-                {autoChunks.map((c, i) => (
-                  <div
-                    key={i}
-                    className="absolute inset-y-0 flex items-center justify-center overflow-hidden border-r border-black/30 bg-rose-500/14 px-1"
-                    style={{ left: `${timeToPx(c.start)}px`, width: `${Math.max(28, timeToPx(c.end) - timeToPx(c.start))}px` }}
-                  >
-                    <span className="truncate text-[7px] font-bold text-rose-100/55">{c.words.map(w => w.word).join(" ")}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="pointer-events-none absolute bottom-2 top-2 z-20 w-px bg-orange-400 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]" style={{ left: `${playheadPx}px` }} />
+            <div ref={playheadRef} className="pointer-events-none absolute bottom-2 left-0 top-2 z-20 w-px bg-orange-400 shadow-[0_0_0_1px_rgba(0,0,0,0.35)] will-change-transform" />
           </div>
         </div>
       </div>

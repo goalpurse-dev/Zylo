@@ -1,0 +1,147 @@
+.zyvo-compact-shell,
+.zyvo-popover-panel {
+  color-scheme: dark;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  background:
+    radial-gradient(circle at 48% -8%, rgba(190, 242, 100, 0.09), transparent 34%),
+    linear-gradient(180deg, rgb(20, 15, 25) 0%, rgb(11, 9, 14) 100%);
+  box-shadow: 0 24px 65px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.zyvo-nav-active {
+  border: 1px solid transparent !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025) 0%, rgba(190, 242, 100, 0.035) 55%, rgba(132, 204, 22, 0.13) 100%),
+    rgba(12, 13, 12, 0.96) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    inset 0 -7px 13px rgba(132, 204, 22, 0.16);
+}
+
+.zyvo-nav-active::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(249, 255, 239, 0.69) 20%,
+    rgba(235, 249, 209, 0.7) 40%,
+    rgba(216, 243, 167, 0.76) 60%,
+    rgba(184, 232, 94, 0.88) 80%,
+    rgba(132, 204, 22, 1) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.zyvo-nav-icon {
+  color: inherit;
+}
+
+.zyvo-popover-accent {
+  background: linear-gradient(90deg, transparent, rgba(190,242,100,.82), transparent);
+}
+
+.zyvo-panel-dismiss-layer {
+  left: 220px;
+  top: var(--zyvo-notice-height, 0px);
+}
+
+.zyvo-panel-item {
+  border-color: rgba(255,255,255,.07) !important;
+  background: rgba(255,255,255,.03) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.02) !important;
+}
+
+.zyvo-panel-item:hover {
+  border-color: rgba(190,242,100,.22) !important;
+  background: rgba(255,255,255,.055) !important;
+}
+
+.zyvo-panel-item.is-active,
+.zyvo-panel-item:has(.bg-lime-300) {
+  border-color: rgba(190,242,100,.34) !important;
+  background: rgba(132,204,22,.09) !important;
+  box-shadow: 0 0 18px rgba(132,204,22,.09), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+
+.zyvo-panel-item > .pointer-events-none { background: #bef264 !important; }
+.zyvo-panel-item > .absolute.inset-y-0 { background: linear-gradient(180deg, #bef264, transparent) !important; }
+
+.zyvo-pin-toggle {
+  color: rgba(255,255,255,.24);
+  border: 1px solid transparent;
+}
+
+.zyvo-pin-toggle:hover {
+  color: rgba(255,255,255,.72);
+  border-color: rgba(255,255,255,.08);
+  background: rgba(255,255,255,.055);
+}
+
+.zyvo-pin-toggle.is-pinned {
+  color: #d9f99d;
+  border-color: rgba(190,242,100,.22);
+  background: rgba(132,204,22,.1);
+  box-shadow: 0 0 11px rgba(132,204,22,.13);
+}
+
+.zyvo-pin-toggle.is-disabled {
+  cursor: not-allowed;
+  opacity: .24;
+}
+
+.zyvo-pin-toggle.is-disabled:hover {
+  color: rgba(255,255,255,.24);
+  border-color: transparent;
+  background: transparent;
+}
+
+.zyvo-pinned-item:hover {
+  background: rgba(255,255,255,.04);
+}
+
+.zyvo-pinned-item.is-active {
+  background: rgba(132,204,22,.08);
+}
+
+.zyvo-pinned-item.is-active > span:first-child {
+  border-color: rgba(190,242,100,.2);
+  color: #d9f99d;
+  background: rgba(132,204,22,.09);
+}
+
+.zyvo-pinned-item.is-active > span:nth-child(2) {
+  color: #d9f99d;
+}
+
+.zyvo-panel-icon {
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.58);
+}
+
+.zyvo-panel-item:hover .zyvo-panel-icon,
+.zyvo-panel-item.is-active .zyvo-panel-icon {
+  border-color: rgba(190,242,100,.24);
+  background: rgba(132,204,22,.1);
+  color: #d9f99d;
+}
+
+@media (max-width: 1023px) {
+  .zyvo-panel-dismiss-layer {
+    left: 0;
+  }
+
+  .zyvo-popover-panel {
+    left: 12px !important;
+    width: calc(100vw - 24px) !important;
+  }
+}

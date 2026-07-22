@@ -7,6 +7,8 @@ import PostModal from "../../components/publish/PostModal";
 import ConnectAccountsModal from "../../components/publish/ConnectAccountsModal";
 import { FULL_VIDEO_TOOL_KEY } from "../../lib/jobs";
 
+const PUBLISH_ROUTE = "/workspace/publishv";
+
 /* ── Platform icons ─────────────────────────────────────────────────────── */
 
 function IgIcon({ className = "w-5 h-5" }) {
@@ -34,10 +36,6 @@ function YtIcon({ className = "w-5 h-5" }) {
 }
 
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
-
-function formatDate(date) {
-  return date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-}
 
 function getUpcomingDays(count = 7) {
   const days = [];
@@ -70,16 +68,50 @@ function dateKey(date) {
 
 /* ── Connected account pill ──────────────────────────────────────────────── */
 
+const CONNECTED_PLATFORM_UI = {
+  youtube: {
+    label: "YouTube",
+    group: "border-red-500/20 bg-red-500/[0.035]",
+    icon: "bg-[#FF0000] text-white shadow-[0_0_20px_rgba(255,0,0,0.18)]",
+    count: "border-red-500/20 bg-red-500/10 text-red-300",
+    dot: "bg-red-400",
+  },
+  instagram: {
+    label: "Instagram",
+    group: "border-fuchsia-500/20 bg-fuchsia-500/[0.035]",
+    icon: "bg-gradient-to-br from-[#833AB4] via-[#C13584] to-[#FD1D1D] text-white shadow-[0_0_20px_rgba(193,53,132,0.18)]",
+    count: "border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-300",
+    dot: "bg-fuchsia-400",
+  },
+  tiktok: {
+    label: "TikTok",
+    group: "border-cyan-400/15 bg-cyan-400/[0.025]",
+    icon: "border border-white/10 bg-[#17191d] text-white shadow-[3px_2px_0_rgba(238,29,82,0.3),-3px_-2px_0_rgba(37,244,238,0.22)]",
+    count: "border-cyan-400/15 bg-cyan-400/[0.07] text-cyan-200",
+    dot: "bg-cyan-300",
+  },
+};
+
+function connectedAccountLabel(account) {
+  if (account.platform === "youtube") {
+    return account.display_name || account.username || account.platform_user_id;
+  }
+  const username = account.username || account.display_name || account.platform_user_id;
+  return username?.startsWith("@") ? username : `@${username}`;
+}
+
 function ConnectedAccount({ account, onDisconnect }) {
   const [confirming, setConfirming] = useState(false);
   const [loading, setLoading] = useState(false);
-  const isYT = account.platform === "youtube";
+  const platformUi = CONNECTED_PLATFORM_UI[account.platform] || CONNECTED_PLATFORM_UI.instagram;
 
   async function handleDisconnect() {
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const fnName = isYT ? "youtube-disconnect" : "instagram-disconnect";
+      const fnName = account.platform === "youtube" ? "youtube-disconnect"
+        : account.platform === "tiktok" ? "tiktok-disconnect"
+        : "instagram-disconnect";
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${fnName}`,
         {
@@ -100,25 +132,12 @@ function ConnectedAccount({ account, onDisconnect }) {
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3">
-      {isYT ? (
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FF0000] shrink-0">
-          <YtIcon className="w-4 h-4 text-white" />
-        </div>
-      ) : (
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#FCB045] shrink-0">
-          <IgIcon className="w-4 h-4 text-white" />
-        </div>
-      )}
+    <div className="flex flex-wrap items-center gap-2.5 px-3 py-2.5 sm:flex-nowrap">
+      <span className={`h-2 w-2 shrink-0 rounded-full ${platformUi.dot}`} />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-white leading-none">{isYT ? "YouTube" : "Instagram"}</p>
-        <p className="mt-0.5 text-[11px] text-white/40 truncate">
-          {isYT
-            ? (account.display_name || account.username || account.platform_user_id)
-            : `@${account.username || account.platform_user_id}`}
-        </p>
+        <p className="truncate text-[13px] font-semibold text-white/75">{connectedAccountLabel(account)}</p>
       </div>
-      <div className="flex items-center gap-1.5">
+      <div className="ml-auto flex items-center gap-1.5">
         <span className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-400">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
           Connected
@@ -153,6 +172,46 @@ function ConnectedAccount({ account, onDisconnect }) {
 }
 
 /* ── Queue slot (a real scheduled/in-flight job) ──────────────────────────── */
+
+function ConnectedAccountGroup({ platform, accounts, onDisconnect }) {
+  const ui = CONNECTED_PLATFORM_UI[platform] || CONNECTED_PLATFORM_UI.instagram;
+
+  return (
+    <section className={`overflow-hidden rounded-2xl border ${ui.group}`}>
+      <div className="flex items-center gap-3 border-b border-white/[0.06] px-3.5 py-3">
+        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${ui.icon}`}>
+          {platform === "youtube" ? (
+            <YtIcon className="h-4 w-4" />
+          ) : platform === "tiktok" ? (
+            <TtIcon className="h-4 w-4" />
+          ) : (
+            <IgIcon className="h-4 w-4" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[13px] font-bold text-white">{ui.label}</p>
+          <p className="text-[10px] text-white/35">
+            {accounts.length} connected {platform === "youtube"
+              ? (accounts.length === 1 ? "channel" : "channels")
+              : (accounts.length === 1 ? "account" : "accounts")}
+          </p>
+        </div>
+        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${ui.count}`}>
+          {accounts.length}
+        </span>
+      </div>
+      <div className="divide-y divide-white/[0.055]">
+        {accounts.map(account => (
+          <ConnectedAccount
+            key={account.id}
+            account={account}
+            onDisconnect={onDisconnect}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function QueueSlot({ time = "—", job }) {
   const displayTime = job.scheduled_for
@@ -228,10 +287,12 @@ function StatusBadge({ status, scheduledFor = null }) {
 
 /* ── Past publication card ───────────────────────────────────────────────── */
 
-function PastCard({ job }) {
+function PastCard({ job, account }) {
   const vidRef    = useRef(null);
   const [playing, setPlaying]   = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const platformUi = CONNECTED_PLATFORM_UI[job.platform] || CONNECTED_PLATFORM_UI.instagram;
+  const accountName = account ? connectedAccountLabel(account) : "Previously connected account";
 
   function togglePlay() {
     const v = vidRef.current;
@@ -289,9 +350,18 @@ function PastCard({ job }) {
           <div>
             {/* Platform + status row */}
             <div className="flex items-center gap-2 flex-wrap mb-2">
-              <div className="flex h-4 w-4 items-center justify-center rounded bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#FCB045] shrink-0">
-                <IgIcon className="w-2.5 h-2.5 text-white" />
+              <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md ${platformUi.icon}`}>
+                {job.platform === "youtube" ? (
+                  <YtIcon className="h-3 w-3" />
+                ) : job.platform === "tiktok" ? (
+                  <TtIcon className="h-3 w-3" />
+                ) : (
+                  <IgIcon className="h-3 w-3" />
+                )}
               </div>
+              <span className="max-w-[220px] truncate text-[11px] font-medium text-white/50">
+                {platformUi.label} · <span className="text-white/70">{accountName}</span>
+              </span>
               <StatusBadge status={job.status} scheduledFor={job.scheduled_for} />
               {job.permalink && (
                 <a
@@ -435,6 +505,10 @@ export default function PublishPage() {
 
   const [tab, setTab]                   = useState("scheduled");
   const [accounts, setAccounts]         = useState([]);
+  const [showConnectedAccounts, setShowConnectedAccounts] = useState(() => {
+    if (typeof window === "undefined" || !user?.id) return false;
+    return window.localStorage.getItem(`zyvo:publish:show-connected-accounts:${user.id}`) === "true";
+  });
   const [pastJobs, setPastJobs]         = useState([]);
   const [activeJobs, setActiveJobs]     = useState([]);
 
@@ -468,6 +542,29 @@ export default function PublishPage() {
 
   const showToast = useCallback((type, message) => setToast({ type, message }), []);
 
+  useEffect(() => {
+    if (!user?.id) {
+      setShowConnectedAccounts(false);
+      return;
+    }
+    setShowConnectedAccounts(
+      window.localStorage.getItem(`zyvo:publish:show-connected-accounts:${user.id}`) === "true",
+    );
+  }, [user?.id]);
+
+  function toggleConnectedAccounts() {
+    setShowConnectedAccounts(current => {
+      const next = !current;
+      if (user?.id) {
+        window.localStorage.setItem(
+          `zyvo:publish:show-connected-accounts:${user.id}`,
+          String(next),
+        );
+      }
+      return next;
+    });
+  }
+
   /* ── Handle OAuth callback params ──────────────────────────────────────── */
   useEffect(() => {
     const p = new URLSearchParams(location.search);
@@ -475,7 +572,7 @@ export default function PublishPage() {
     const igConnect = p.get("ig_connect");
     if (igConnect === "success") {
       showToast("success", "Instagram connected successfully!");
-      navigate("/workspace/publish", { replace: true });
+      navigate(PUBLISH_ROUTE, { replace: true });
       fetchAccounts();
       return;
     } else if (igConnect === "error") {
@@ -491,14 +588,14 @@ export default function PublishPage() {
         internal_error:        "Something went wrong. Please try again.",
       };
       showToast("error", msgs[reason] || "Connection failed. Please try again.");
-      navigate("/workspace/publish", { replace: true });
+      navigate(PUBLISH_ROUTE, { replace: true });
       return;
     }
 
     const ytConnect = p.get("yt_connect");
     if (ytConnect === "success") {
       showToast("success", "YouTube connected successfully!");
-      navigate("/workspace/publish", { replace: true });
+      navigate(PUBLISH_ROUTE, { replace: true });
       fetchAccounts();
     } else if (ytConnect === "error") {
       const reason = p.get("reason") || "unknown";
@@ -513,14 +610,14 @@ export default function PublishPage() {
         internal_error:       "Something went wrong. Please try again.",
       };
       showToast("error", msgs[reason] || "YouTube connection failed. Please try again.");
-      navigate("/workspace/publish", { replace: true });
+      navigate(PUBLISH_ROUTE, { replace: true });
       return;
     }
 
     const ttConnect = p.get("tt_connect");
     if (ttConnect === "success") {
       showToast("success", "TikTok connected successfully!");
-      navigate("/workspace/publish", { replace: true });
+      navigate(PUBLISH_ROUTE, { replace: true });
       fetchAccounts();
     } else if (ttConnect === "error") {
       const reason = p.get("reason") || "unknown";
@@ -534,7 +631,7 @@ export default function PublishPage() {
         internal_error:        "Something went wrong. Please try again.",
       };
       showToast("error", msgs[reason] || "TikTok connection failed. Please try again.");
-      navigate("/workspace/publish", { replace: true });
+      navigate(PUBLISH_ROUTE, { replace: true });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -580,19 +677,19 @@ export default function PublishPage() {
       const [{ data: igData }, { data: ytData }, { data: ttData }] = await Promise.all([
         supabase
           .from("instagram_publish_jobs")
-          .select("id, status, caption, video_url, permalink, media_id, error_message, created_at, published_at, creation_id, scheduled_for")
+          .select("id, status, caption, video_url, permalink, media_id, error_message, created_at, published_at, creation_id, scheduled_for, social_account_id")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(50),
         supabase
           .from("youtube_publish_jobs")
-          .select("id, status, description, video_url, youtube_url, error_message, created_at, published_at, creation_id")
+          .select("id, status, description, video_url, youtube_url, error_message, created_at, published_at, creation_id, social_account_id")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(50),
         supabase
           .from("tiktok_publish_jobs")
-          .select("id, status, publish_mode, title, video_url, tiktok_share_url, error_message, created_at, published_at, creation_id")
+          .select("id, status, publish_mode, title, video_url, tiktok_share_url, error_message, created_at, published_at, creation_id, social_account_id")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(50),
@@ -719,7 +816,7 @@ export default function PublishPage() {
             apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ returnTo: "/workspace/publish" }),
+          body: JSON.stringify({ returnTo: PUBLISH_ROUTE }),
         }
       );
       const json = await res.json().catch(() => ({}));
@@ -747,6 +844,15 @@ export default function PublishPage() {
 
   const upcomingDays = getUpcomingDays(7);
   const hasConnectedAccounts = accounts.length > 0;
+  const connectedAccountGroups = useMemo(
+    () => ["youtube", "instagram", "tiktok"]
+      .map(platform => ({
+        platform,
+        accounts: accounts.filter(account => account.platform === platform),
+      }))
+      .filter(group => group.accounts.length > 0),
+    [accounts],
+  );
 
   function openPostModal() {
     if (!hasConnectedAccounts) {
@@ -803,25 +909,70 @@ export default function PublishPage() {
       <div className="px-5 lg:px-8 space-y-6">
 
         {/* ── Connect banner / connected accounts ────────────────────── */}
-        {loadingAccounts ? (
+        {tab === "scheduled" && (loadingAccounts ? (
           <div className="h-14 rounded-2xl border border-white/[0.05] bg-white/[0.02] animate-pulse" />
         ) : hasConnectedAccounts ? (
           <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-white/30">Connected accounts</p>
-            {accounts.map(acc => (
-              <ConnectedAccount
-                key={acc.id}
-                account={acc}
-                onDisconnect={(id) => setAccounts(prev => prev.filter(a => a.id !== id))}
-              />
-            ))}
             <button
-              onClick={() => setConnectModalOpen(true)}
-              className="flex items-center gap-2 rounded-xl border border-dashed border-white/[0.08] bg-transparent px-4 py-2.5 text-sm text-white/30 hover:border-white/15 hover:text-white/60 transition w-full"
+              type="button"
+              onClick={toggleConnectedAccounts}
+              aria-expanded={showConnectedAccounts}
+              className="group flex w-full items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.025] px-4 py-3 text-left transition hover:border-white/15 hover:bg-white/[0.045]"
             >
-              <Plus className="h-3.5 w-3.5" />
-              Connect another account
+              <div className="flex -space-x-1.5">
+                {connectedAccountGroups.map(group => (
+                  <span
+                    key={group.platform}
+                    className={`flex h-7 w-7 items-center justify-center rounded-lg ring-2 ring-[#0c0d0f] ${
+                      CONNECTED_PLATFORM_UI[group.platform]?.icon || CONNECTED_PLATFORM_UI.instagram.icon
+                    }`}
+                  >
+                    {group.platform === "youtube" ? (
+                      <YtIcon className="h-3 w-3" />
+                    ) : group.platform === "tiktok" ? (
+                      <TtIcon className="h-3 w-3" />
+                    ) : (
+                      <IgIcon className="h-3 w-3" />
+                    )}
+                  </span>
+                ))}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[12px] font-semibold text-white/70">
+                  {showConnectedAccounts ? "Hide connected accounts" : "Show connected accounts"}
+                </p>
+                <p className="mt-0.5 text-[10px] text-white/30">
+                  {accounts.length} connected {accounts.length === 1 ? "account" : "accounts"}
+                </p>
+              </div>
+              <ChevronRight
+                className={`h-4 w-4 text-white/25 transition-transform duration-200 group-hover:text-white/50 ${
+                  showConnectedAccounts ? "rotate-90" : ""
+                }`}
+              />
             </button>
+
+            {showConnectedAccounts && (
+              <div className="space-y-3 pt-1">
+                <div className="grid grid-cols-1 gap-3">
+                  {connectedAccountGroups.map(group => (
+                    <ConnectedAccountGroup
+                      key={group.platform}
+                      platform={group.platform}
+                      accounts={group.accounts}
+                      onDisconnect={(id) => setAccounts(prev => prev.filter(account => account.id !== id))}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={() => setConnectModalOpen(true)}
+                  className="flex w-full items-center gap-2 rounded-xl border border-dashed border-white/[0.08] bg-transparent px-4 py-2.5 text-sm text-white/30 transition hover:border-white/15 hover:text-white/60"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Connect another account
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="relative">
@@ -913,7 +1064,7 @@ export default function PublishPage() {
               </span>
             </button>
           </div>
-        )}
+        ))}
 
         {/* ── Scheduled tab ──────────────────────────────────────────── */}
         {tab === "scheduled" && (
@@ -995,7 +1146,11 @@ export default function PublishPage() {
             ) : (
               <div className="space-y-2">
                 {pastJobs.map(job => (
-                  <PastCard key={job.id} job={job} />
+                  <PastCard
+                    key={job.id}
+                    job={job}
+                    account={accounts.find(account => account.id === job.social_account_id)}
+                  />
                 ))}
               </div>
             )}

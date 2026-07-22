@@ -3,23 +3,21 @@ import { supabase } from "../../../../lib/supabaseClient";
 
 /* ── Constants ──────────────────────────────────────────────── */
 export const IMAGE_TOOL_KEY  = "image:fruit-v2";
-// Sound ON  → Veo 3.1 Lite   (native audio, $0.05/s)
+// Sound ON  → Seedance 2.0 Fast (audio is always included by the model)
 // Sound OFF → Seedance 1.5 Pro (no audio, much cheaper)
-export const VIDEO_TOOL_KEY         = "video:veo31lite";     // with sound
+export const VIDEO_TOOL_KEY         = "video:seedance20fast"; // with sound
 export const VIDEO_TOOL_KEY_SILENT  = "video:seedance15pro"; // without sound
 export const IMAGE_CREDITS          = 2;                     // ~$0.013 cost × 2 = ~2 credits
-export const VIDEO_CREDITS_SOUND    = 30;                    // 5 cr/s × 6s — Veo 3.1 Lite + audio
+export const VIDEO_CREDITS_SOUND    = 37;                    // measured $0.364092 / 6s, rounded up
 export const VIDEO_CREDITS_NO_SOUND = 18;                    // Seedance 1.5 Pro: ceil(2.5 cr/s × 7s)
 export const VIDEO_CREDITS          = VIDEO_CREDITS_SOUND;   // legacy alias
 export const VIDEO_DURATION         = 7;                     // Seedance (silent) — 7s supported
-export const VIDEO_DURATION_SOUND   = 6;                     // Veo 3.1 Lite — supported: 4s / 6s / 8s
+export const VIDEO_DURATION_SOUND   = 6;                     // Seedance 2.0 Fast
 export const IMAGE_W         = 768;
 export const IMAGE_H         = 1376;
-// Must be one of Veo 3.1 Lite's allowed resolutions (720x1280, 1280x720,
-// 1920x1080, 1080x1920) — Runware rejects anything else with
-// "unsupportedModelResolution". Seedance 1.5 Pro (the silent fallback)
-// also accepts 720x1280 fine, so one pair works for both toolKeys.
-export const VIDEO_W         = 720;
+export const VIDEO_W_SOUND   = 496;  // Seedance 2.0 Fast 480p portrait
+export const VIDEO_H_SOUND   = 864;
+export const VIDEO_W         = 720;  // Seedance 1.5 Pro silent fallback
 export const VIDEO_H         = 1280;
 
 export const LENGTH_OPTIONS = [
@@ -126,7 +124,7 @@ export function calcCredits(sceneCount, withSound = true) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   SOUND DIRECTION  (Veo 3.1 Fast generates native audio)
+   SOUND DIRECTION  (Seedance 2.0 Fast includes native audio)
    Rules:
    • Physical / diegetic sounds only — touching, moving, clay
    • Water / liquid sounds for relevant scenarios
@@ -606,8 +604,8 @@ export async function animateSceneClip({ fixImageUrl, problemImageUrl, videoProm
   return createVideoJobSimple({
     subject:           videoPrompt,
     toolKey:           withSound ? VIDEO_TOOL_KEY : VIDEO_TOOL_KEY_SILENT,
-    width:             VIDEO_W,
-    height:            VIDEO_H,
+    width:             withSound ? VIDEO_W_SOUND : VIDEO_W,
+    height:            withSound ? VIDEO_H_SOUND : VIDEO_H,
     durationSec:       withSound ? VIDEO_DURATION_SOUND : VIDEO_DURATION,
     initImageUrls,
     calculatedCredits: withSound ? VIDEO_CREDITS_SOUND : VIDEO_CREDITS_NO_SOUND,
@@ -616,20 +614,24 @@ export async function animateSceneClip({ fixImageUrl, problemImageUrl, videoProm
 }
 
 /* ── Supabase persistence ───────────────────────────────────── */
-export async function createClayRescueGeneration({ lengthId, scenes }) {
-  const { data: userData, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !userData?.user) throw new Error("Must be signed in");
-
-  const savedScenes = (scenes ?? [])
+function serializeScenes(scenes) {
+  return (scenes ?? [])
     .filter((s) => s.fixUrl || s.imageUrl || s.problemUrl || s.videoUrl)
     .map((s, i) => ({
       index:      s.index ?? i,
       problem:    s.problem ?? "",
       fix:        s.fix ?? "",
       problemUrl: s.problemUrl ?? null,
-      fixUrl:     s.fixUrl ?? s.imageUrl ?? null,  // hook stores fix image as imageUrl
+      fixUrl:     s.fixUrl ?? s.imageUrl ?? null,
       videoUrl:   s.videoUrl ?? null,
     }));
+}
+
+export async function createClayRescueGeneration({ lengthId, scenes }) {
+  const { data: userData, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !userData?.user) throw new Error("Must be signed in");
+
+  const savedScenes = serializeScenes(scenes);
 
   if (!savedScenes.length) throw new Error("No scenes to save");
 
@@ -640,6 +642,109 @@ export async function createClayRescueGeneration({ lengthId, scenes }) {
 
   if (error) throw new Error(error.message);
   return normalizeRow(data);
+}
+
+export async function updateClayRescueGenerationFinalVideo(generationId, finalVideoUrl) {
+  if (!generationId || !finalVideoUrl) throw new Error("Missing generation or final video URL");
+
+  const { data: userData, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !userData?.user) throw new Error("Must be signed in");
+
+  const { data, error } = await supabase
+    .from("clay_rescue_generations")
+    .update({ final_video_url: finalVideoUrl })
+    .eq("id", generationId)
+    .eq("user_id", userData.user.id)
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return normalizeRow(data);
+}
+
+export async function updateClayRescueGenerationScenes(generationId, scenes) {
+  if (!generationId) throw new Error("Missing generation id");
+  const savedScenes = serializeScenes(scenes);
+  if (!savedScenes.length) throw new Error("No scenes to save");
+
+  const { data: userData, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !userData?.user) throw new Error("Must be signed in");
+
+  const { data, error } = await supabase
+    .from("clay_rescue_generations")
+    .update({ scenes: savedScenes })
+    .eq("id", generationId)
+    .eq("user_id", userData.user.id)
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return normalizeRow(data);
+}
+
+export async function clearClayRescueGenerationFinalVideo(generationId) {
+  if (!generationId) return null;
+
+  const { data: userData, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !userData?.user) throw new Error("Must be signed in");
+
+  const { data, error } = await supabase
+    .from("clay_rescue_generations")
+    .update({ final_video_url: null })
+    .eq("id", generationId)
+    .eq("user_id", userData.user.id)
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return normalizeRow(data);
+}
+
+export async function recoverClayRescueGenerationVideos(generation) {
+  const missingScenes = (generation?.scenes ?? []).filter(
+    (scene) => !scene.videoUrl && (scene.fixUrl || scene.imageUrl),
+  );
+  if (!generation?.id || missingScenes.length === 0) return generation;
+
+  const { data: userData, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !userData?.user) return generation;
+
+  let query = supabase
+    .from("jobs")
+    .select("id, input, result_url, created_at, tool_key")
+    .eq("user_id", userData.user.id)
+    .eq("type", "video")
+    .eq("status", "succeeded")
+    .in("tool_key", ["video:veo31lite", "video:seedance20fast", "video:seedance15pro"])
+    .not("result_url", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  const createdAt = generation.createdAt ?? generation.created_at;
+  if (createdAt) query = query.gte("created_at", createdAt);
+
+  const { data: jobs, error } = await query;
+  if (error || !jobs?.length) return generation;
+
+  let recoveredCount = 0;
+  const recoveredScenes = generation.scenes.map((scene) => {
+    if (scene.videoUrl) return scene;
+    const fixUrl = scene.fixUrl ?? scene.imageUrl;
+    if (!fixUrl) return scene;
+
+    const matchingJob = jobs.find((job) => {
+      const refs = Array.isArray(job.input?.ref_images) ? job.input.ref_images : [];
+      return refs.includes(fixUrl) && typeof job.result_url === "string";
+    });
+    if (!matchingJob) return scene;
+
+    recoveredCount += 1;
+    return { ...scene, videoUrl: matchingJob.result_url };
+  });
+
+  if (recoveredCount === 0) return generation;
+  const updated = await updateClayRescueGenerationScenes(generation.id, recoveredScenes);
+  return await clearClayRescueGenerationFinalVideo(updated.id);
 }
 
 export async function listClayRescueGenerations(limit = 8) {
@@ -655,6 +760,7 @@ function normalizeRow(row) {
   return {
     ...row,
     createdAt: row.created_at ?? row.createdAt ?? null,
+    finalVideoUrl: row.final_video_url ?? row.finalVideoUrl ?? null,
     scenes: Array.isArray(row.scenes) ? row.scenes : [],
   };
 }

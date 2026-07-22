@@ -3,8 +3,12 @@
 // Returns { script, words: [{word,start,end}], segments: [{text,start,end}] }
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY")!;
+const ELEVEN_KEY = Deno.env.get("ELEVENLABS_KEY")!;
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const CORS = {
   "access-control-allow-origin": "*",
@@ -17,20 +21,7 @@ function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: CORS });
 }
 
-function estimateWordTimings(text: string, durationSec: number) {
-  const words = text.trim().split(/\s+/).filter(Boolean);
-  const safeDuration = Math.max(1, Number(durationSec) || 30);
-  const secondsPerWord = words.length > 0
-    ? Math.max(0.18, Math.min(0.52, safeDuration / words.length))
-    : 0.32;
-  return words.map((word, i) => ({
-    word,
-    start: Number((i * secondsPerWord).toFixed(2)),
-    end: Number(((i + 1) * secondsPerWord).toFixed(2)),
-  }));
-}
-
-function buildSegments(words: { word: string; start: number; end: number }[], size = 5) {
+function buildSegments(words: { word: string; start: number; end: number }[], size = 3) {
   const out: { text: string; start: number; end: number }[] = [];
   for (let i = 0; i < words.length; i += size) {
     const chunk = words.slice(i, i + size);
@@ -60,31 +51,92 @@ Deno.serve(async (req) => {
   if (!(audio instanceof File)) {
     return json({ error: "audio file required" }, 400);
   }
+  if (audio.size <= 0 || audio.size > 25 * 1024 * 1024) {
+    return json({ error: "Audio must be between 1 byte and 25 MB" }, 413);
+  }
+  if (audio.type && !audio.type.startsWith("audio/")) {
+    return json({ error: "Unsupported audio file" }, 415);
+  }
 
-  const durationSec = Number(form.get("durationSec") ?? 30);
-  const body = new FormData();
-  body.append("file", audio, audio.name || "speech.mp3");
-  body.append("model", "whisper-1");
-  body.append("response_format", "json");
+  const generationId = String(form.get("generationId") ?? "").trim();
+  if (!generationId) return json({ error: "Missing generationId" }, 400);
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: req.headers.get("authorization") ?? "" } },
+    auth: { persistSession: false },
+  });
+  const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+  const { error: reserveError } = await supabase.rpc("reserve_cooking_service_request", {
+    p_generation_id: generationId,
+    p_kind: "transcription",
+  });
+  if (reserveError) {
+    const limited = String(reserveError.message ?? "").includes("SERVICE_LIMIT_REACHED");
+    return json({ error: limited ? "Automatic transcription limit reached for this creation" : "Creation access denied" }, limited ? 429 : 403);
+  }
+
+  const knownTranscript = String(form.get("transcript") ?? "").trim().slice(0, 4000);
+  const providerBody = new FormData();
+  providerBody.append("file", audio, audio.name || "speech.mp3");
+  if (knownTranscript) {
+    // Forced Alignment keeps the creator's exact script and returns the
+    // precise time at which ElevenLabs hears each word in the audio.
+    providerBody.append("text", knownTranscript);
+  } else {
+    // Imported audio has no trusted script, so Scribe v2 produces both the
+    // transcript and its native word timestamps.
+    providerBody.append("model_id", "scribe_v2");
+    providerBody.append("timestamps_granularity", "word");
+    providerBody.append("tag_audio_events", "false");
+    providerBody.append("diarize", "false");
+  }
 
   try {
-    const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    const res = await fetch(
+      knownTranscript
+        ? "https://api.elevenlabs.io/v1/forced-alignment"
+        : "https://api.elevenlabs.io/v1/speech-to-text",
+      {
       method: "POST",
-      headers: { Authorization: `Bearer ${OPENAI_KEY}` },
-      body,
-    });
+      headers: { "xi-api-key": ELEVEN_KEY },
+      body: providerBody,
+      },
+    );
 
     if (!res.ok) {
+      await admin.rpc("release_cooking_service_request", { p_generation_id: generationId, p_kind: "transcription" });
       const text = await res.text().catch(() => "");
-      console.error("[cooking-speech-transcribe] OpenAI error:", res.status, text.slice(0, 200));
+      console.error("[cooking-speech-transcribe] ElevenLabs error:", res.status, text.slice(0, 200));
       return json({ error: "Speech transcription failed" }, 502);
     }
 
     const data = await res.json();
-    const script = String(data.text ?? "").trim();
-    const words = estimateWordTimings(script, durationSec);
-    return json({ script, words, segments: buildSegments(words) });
+    const script = knownTranscript || String(data.text ?? "").trim();
+    const providerWords = Array.isArray(data.words)
+      ? data.words
+        .filter((item: { type?: unknown }) => !item.type || item.type === "word")
+        .map((item: { word?: unknown; text?: unknown; start?: unknown; end?: unknown }) => ({
+          word: String(item.word ?? item.text ?? "").trim(),
+          start: Number(Number(item.start ?? 0).toFixed(3)),
+          end: Number(Number(item.end ?? item.start ?? 0).toFixed(3)),
+        }))
+        .filter((item: { word: string; start: number; end: number }) => item.word && Number.isFinite(item.start) && Number.isFinite(item.end))
+      : [];
+    if (!script || !providerWords.length) {
+      await admin.rpc("release_cooking_service_request", { p_generation_id: generationId, p_kind: "transcription" });
+      console.error("[cooking-speech-transcribe] ElevenLabs returned no word timestamps");
+      return json({ error: "Speech timing generation failed" }, 502);
+    }
+    return json({
+      script,
+      words: providerWords,
+      segments: buildSegments(providerWords),
+      timingVersion: 3,
+      timingSource: knownTranscript
+        ? "elevenlabs-forced-alignment"
+        : "elevenlabs-scribe-v2-word-timestamps",
+    });
   } catch (error) {
+    await admin.rpc("release_cooking_service_request", { p_generation_id: generationId, p_kind: "transcription" });
     console.error("[cooking-speech-transcribe] Exception:", (error as Error).message);
     return json({ error: "Speech transcription failed" }, 500);
   }

@@ -29,6 +29,7 @@ Deno.serve(async (req) => {
     : "instagram";
   const limit    = Math.min(Math.max(parseInt(body?.limit ?? "50") || 50, 1), 100);
   const offset   = Math.max(parseInt(body?.offset ?? "0") || 0, 0);
+  const accountId = typeof body?.account_id === "string" ? body.account_id : null;
 
   // Use service role for the definer RPCs — they enforce auth.uid() internally
   const userSb = supabaseForUser(req);
@@ -66,10 +67,48 @@ Deno.serve(async (req) => {
     .limit(1)
     .maybeSingle();
 
+  let filteredPosts = posts ?? [];
+  let accountSummary = summary?.account ?? null;
+
+  if (accountId) {
+    const { data: ownedAccount } = await sb
+      .from("social_accounts")
+      .select("id")
+      .eq("id", accountId)
+      .eq("user_id", user.id)
+      .eq("platform", platform)
+      .is("revoked_at", null)
+      .maybeSingle();
+    if (!ownedAccount) return err(req, "Analytics account not found", 404);
+
+    filteredPosts = filteredPosts.filter((post: { social_account_id?: string }) =>
+      post.social_account_id === accountId
+    );
+
+    const { data: snapshot } = await sb
+      .from("social_account_metrics_snapshots")
+      .select("followers, following, media_count, avg_views, avg_likes, avg_comments, avg_engagement, snapshotted_at")
+      .eq("user_id", user.id)
+      .eq("social_account_id", accountId)
+      .eq("platform", platform)
+      .order("snapshotted_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    accountSummary = snapshot ?? null;
+  }
+
+  const topPosts = [...filteredPosts]
+    .sort((a, b) => Number(b.views ?? b.reach ?? b.likes ?? 0) - Number(a.views ?? a.reach ?? a.likes ?? 0))
+    .slice(0, 10);
+
   return ok(req, {
     platform,
-    posts:           posts ?? [],
-    summary:         summary ?? null,
+    posts:           filteredPosts,
+    summary:         summary ? { ...summary, account: accountSummary, top_posts: topPosts } : {
+      account: accountSummary,
+      top_posts: topPosts,
+      latest_insight: null,
+    },
     recommendations: recommendations ?? null,
     meta: {
       limit,

@@ -122,24 +122,59 @@ const TT_PRIVACY_LABELS = {
   SELF_ONLY:             "Only me",
 };
 
-/* ── Platform selector pill ──────────────────────────────────────────────── */
-function PlatformPill({ account, selected, onToggle }) {
-  const isYT = account.platform === "youtube";
-  const platform = account.platform;
+/* ── Compact platform + account selector ────────────────────────────────── */
+function accountLabel(account) {
+  if (!account) return "";
+  if (account.platform === "youtube") {
+    return account.display_name || account.username || account.platform_user_id;
+  }
+  const username = account.username || account.display_name || account.platform_user_id;
+  return username?.startsWith("@") ? username : `@${username}`;
+}
+
+const PLATFORM_PICKER_ACTIVE = {
+  youtube: {
+    card: "border-red-500/35 bg-[#211315] shadow-[0_0_0_1px_rgba(255,0,0,0.08)]",
+    wash: "bg-gradient-to-r from-transparent via-red-500/[0.07] to-red-500/15",
+    icon: "border-red-500/30 bg-red-500/10",
+    badge: "bg-red-500/15 text-red-300",
+    select: "border-red-500/25 bg-[#30181c] text-white/75 hover:border-red-500/45",
+    check: "border-red-400/70 bg-red-500/20",
+  },
+  instagram: {
+    card: "border-fuchsia-500/35 bg-[#20131f] shadow-[0_0_0_1px_rgba(193,53,132,0.09)]",
+    wash: "bg-gradient-to-r from-transparent via-fuchsia-500/[0.07] to-fuchsia-500/15",
+    icon: "border-fuchsia-500/30 bg-fuchsia-500/10",
+    badge: "bg-fuchsia-500/15 text-fuchsia-300",
+    select: "border-fuchsia-500/25 bg-[#2e182c] text-white/75 hover:border-fuchsia-500/45",
+    check: "border-fuchsia-400/70 bg-fuchsia-500/20",
+  },
+  tiktok: {
+    card: "border-cyan-400/25 bg-[#121d1f] shadow-[0_0_0_1px_rgba(37,244,238,0.06)]",
+    wash: "bg-gradient-to-r from-transparent via-cyan-400/[0.05] to-cyan-400/10",
+    icon: "border-cyan-400/20 bg-cyan-400/[0.07]",
+    badge: "bg-cyan-400/10 text-cyan-200",
+    select: "border-cyan-400/20 bg-[#162629] text-white/75 hover:border-cyan-400/35",
+    check: "border-cyan-300/60 bg-cyan-400/15",
+  },
+};
+
+function PlatformAccountPicker({ platform, accounts, selectedAccount, onToggle, onSelectAccount }) {
+  const selected = !!selectedAccount;
+  const displayedAccount = selectedAccount || accounts[0];
+  const active = PLATFORM_PICKER_ACTIVE[platform] || PLATFORM_PICKER_ACTIVE.instagram;
+
   return (
-    <button
-      onClick={onToggle}
-      className={`relative flex w-full items-center gap-2 overflow-hidden rounded-xl border px-4 py-2.5 transition-all duration-300 ${
+    <div
+      className={`relative flex w-full items-center gap-3 overflow-hidden rounded-xl border px-3 py-2.5 transition-all duration-300 ${
         selected
-          ? "border-[#7A3BFF]/25 bg-[#151220] text-white shadow-[0_0_0_1px_rgba(122,59,255,0.08)]"
+          ? `${active.card} text-white`
           : "border-white/[0.07] bg-white/[0.03] text-white/50 hover:border-white/15"
       }`}
     >
       {selected && (
         <>
-          {/* dark → subtly-brighter wave, low-key like a shadow catching light */}
-          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-[#7A3BFF]/10 to-[#7A3BFF]/25" />
-          {/* faint looping shimmer sweep for a "dynamic" feel */}
+          <span className={`absolute inset-0 ${active.wash}`} />
           <span className="absolute inset-0 overflow-hidden">
             <span
               className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent"
@@ -149,24 +184,67 @@ function PlatformPill({ account, selected, onToggle }) {
         </>
       )}
 
-      <div className="relative z-[1] flex flex-1 items-center gap-2 min-w-0">
-        <PlatformIcon platform={platform} size={16} />
-        <div className="text-left flex-1 min-w-0">
-          <p className="text-xs font-semibold leading-none">{PLATFORM_LABELS[platform] ?? platform}</p>
-          <p className={`mt-0.5 text-[10px] leading-none ${selected ? "text-white/50" : "text-white/40"}`}>
-            {isYT ? (account.display_name || account.username || account.platform_user_id) : `@${account.username || account.platform_user_id}`}
-          </p>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-pressed={selected}
+        className="relative z-[1] flex min-w-0 flex-1 items-center gap-2.5 text-left"
+      >
+        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
+          selected ? active.icon : "border-white/[0.07] bg-white/[0.04]"
+        }`}>
+          <PlatformIcon platform={platform} size={17} />
         </div>
-      </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <p className="text-xs font-semibold leading-none">{PLATFORM_LABELS[platform] ?? platform}</p>
+            {selected && (
+              <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide ${active.badge}`}>
+                On
+              </span>
+            )}
+          </div>
+          {accounts.length === 1 && (
+            <p className={`mt-1 truncate text-[10px] leading-none ${selected ? "text-white/50" : "text-white/35"}`}>
+              {accountLabel(displayedAccount)}
+            </p>
+          )}
+        </div>
+      </button>
 
-      <div
+      {accounts.length > 1 && (
+        <div className="relative z-[2] max-w-[48%] shrink-0">
+          <select
+            value={displayedAccount.id}
+            onChange={e => onSelectAccount(e.target.value)}
+            aria-label={`Choose ${PLATFORM_LABELS[platform] ?? platform} account`}
+            className={`w-full appearance-none truncate rounded-lg border py-2 pl-2.5 pr-7 text-[11px] font-medium outline-none transition ${
+              selected
+                ? active.select
+                : "border-white/[0.08] bg-[#17191d] text-white/45 hover:border-white/15"
+            }`}
+          >
+            {accounts.map(account => (
+              <option key={account.id} value={account.id}>
+                {accountLabel(account)}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-white/35" />
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-label={`${selected ? "Remove" : "Add"} ${PLATFORM_LABELS[platform] ?? platform}`}
         className={`relative z-[1] flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300 ${
-          selected ? "border-[#9F5CFF]/70 bg-[#7A3BFF]/20 scale-100" : "border-white/20 scale-90"
+          selected ? `scale-100 ${active.check}` : "scale-90 border-white/20"
         }`}
       >
         {selected && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
-      </div>
-    </button>
+      </button>
+    </div>
   );
 }
 
@@ -308,7 +386,6 @@ function ScheduleCalendar({ scheduledJobs = [], videos = [], selectedDate, onSel
     setViewMonth(m); setViewYear(y);
   }
 
-  const prevFirst = new Date(viewYear, viewMonth - 1, 1);
   const nextFirst = new Date(viewYear, viewMonth + 1, 1);
   const canPrev   = new Date(viewYear, viewMonth, 0) >= minDate; // last day of prev month >= min
   const canNext   = nextFirst <= maxDate;
@@ -411,7 +488,14 @@ export default function PostModal({
   initialScheduleDate = null,
 }) {
   const allAccounts = useMemo(() => [...ytAccounts, ...igAccounts, ...ttAccounts], [igAccounts, ytAccounts, ttAccounts]);
-
+  const platformGroups = useMemo(
+    () => [
+      { platform: "youtube", accounts: ytAccounts },
+      { platform: "instagram", accounts: igAccounts },
+      { platform: "tiktok", accounts: ttAccounts },
+    ].filter(group => group.accounts.length > 0),
+    [igAccounts, ytAccounts, ttAccounts],
+  );
   const [visible, setVisible]                   = useState(false);
   const [step, setStep]                         = useState(1);   // 1=pick, 2=details
   const [selectedVideo, setSelectedVideo]       = useState(null);
@@ -486,9 +570,6 @@ export default function PostModal({
   // Date bounds for scheduling
   const minDate = new Date(); minDate.setDate(minDate.getDate() + 1);
   const maxDate = new Date(); maxDate.setDate(maxDate.getDate() + 30);
-  const minDateStr = minDate.toISOString().slice(0, 10);
-  const maxDateStr = maxDate.toISOString().slice(0, 10);
-
   // Entrance animation
   useEffect(() => {
     const id = requestAnimationFrame(() => setVisible(true));
@@ -688,6 +769,11 @@ export default function PostModal({
     if (selectedAccounts.length === 0) { setPublishError("Select at least one account."); return; }
     if (!selectedVideo) return;
     if (hasYtSelected && !ytTitle.trim()) { setPublishError("A title is required for YouTube videos."); return; }
+    const selectedPlatforms = selectedAccounts.map(id => allAccounts.find(account => account.id === id)?.platform);
+    if (new Set(selectedPlatforms).size !== selectedPlatforms.length) {
+      setPublishError("Choose only one account per platform for each post.");
+      return;
+    }
     setPublishing(true);
     setPublishError("");
     try {
@@ -764,8 +850,28 @@ export default function PostModal({
     submitPost(iso);
   }
 
-  function toggleAccount(id) {
-    setSelectedAccounts(prev => prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]);
+  function selectAccountForPlatform(platform, id) {
+    const platformAccountIds = new Set(
+      allAccounts.filter(account => account.platform === platform).map(account => account.id),
+    );
+    setSelectedAccounts(prev => [
+      ...prev.filter(accountId => !platformAccountIds.has(accountId)),
+      id,
+    ]);
+    setPublishError("");
+  }
+
+  function togglePlatform(platform) {
+    const accounts = platformGroups.find(group => group.platform === platform)?.accounts || [];
+    if (accounts.length === 0) return;
+
+    const selected = accounts.find(account => selectedAccounts.includes(account.id));
+    if (selected) {
+      setSelectedAccounts(prev => prev.filter(id => id !== selected.id));
+      setPublishError("");
+    } else {
+      selectAccountForPlatform(platform, accounts[0].id);
+    }
   }
 
   /* ── Render ──────────────────────────────────────────────────────────────── */
@@ -1021,12 +1127,14 @@ export default function PostModal({
                     </button>
                   ) : (
                     <div className="space-y-2">
-                      {allAccounts.map(acc => (
-                        <PlatformPill
-                          key={acc.id}
-                          account={acc}
-                          selected={selectedAccounts.includes(acc.id)}
-                          onToggle={() => toggleAccount(acc.id)}
+                      {platformGroups.map(group => (
+                        <PlatformAccountPicker
+                          key={group.platform}
+                          platform={group.platform}
+                          accounts={group.accounts}
+                          selectedAccount={group.accounts.find(account => selectedAccounts.includes(account.id))}
+                          onToggle={() => togglePlatform(group.platform)}
+                          onSelectAccount={id => selectAccountForPlatform(group.platform, id)}
                         />
                       ))}
                     </div>

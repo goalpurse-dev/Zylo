@@ -55,7 +55,9 @@ function frontendRedirect(path: string): Response {
 }
 
 function withIgParams(path: string, status: "success" | "error", reason?: string): string {
-  const safeBase = path === "/workspace/connections" ? path : "/workspace/publish";
+  const safeBase = ["/workspace/connections", "/workspace/publish", "/workspace/stats"].includes(path)
+    ? path
+    : "/workspace/publish";
   const params = new URLSearchParams({ ig_connect: status });
   if (reason) params.set("reason", reason);
   return `${safeBase}?${params.toString()}`;
@@ -71,7 +73,9 @@ function decodeReturnPath(rawState: string | null): string {
   try {
     const padded = encoded.replaceAll("-", "+").replaceAll("_", "/").padEnd(Math.ceil(encoded.length / 4) * 4, "=");
     const decoded = atob(padded);
-    return decoded === "/workspace/connections" ? decoded : "/workspace/publish";
+    return ["/workspace/connections", "/workspace/publish", "/workspace/stats"].includes(decoded)
+      ? decoded
+      : "/workspace/publish";
   } catch {
     return "/workspace/publish";
   }
@@ -290,7 +294,11 @@ Deno.serve(async (req) => {
         avatar_url:             avatarUrl,
         access_token_encrypted: encryptedToken,
         token_expires_at:       expiresAt,
-        scopes:                 ["instagram_business_basic", "instagram_business_content_publish"],
+        scopes:                 [
+          "instagram_business_basic",
+          "instagram_business_content_publish",
+          "instagram_business_manage_insights",
+        ],
         metadata:               {},
         revoked_at:             null,
         connected_at:           new Date().toISOString(),

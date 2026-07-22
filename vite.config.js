@@ -8,6 +8,13 @@ export default defineConfig({
     transformer: "none", // ensure Tailwind v3 uses PostCSS and NOT Lightning CSS
   },
 
+  // Browser code can never be truly secret, but production output should expose
+  // no readable source maps and should ship only minified, content-hashed files.
+  build: {
+    minify: "esbuild",
+    sourcemap: false,
+  },
+
   server: {
     proxy: {
       "/api/openai": {

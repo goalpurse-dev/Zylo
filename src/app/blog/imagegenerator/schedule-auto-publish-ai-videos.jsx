@@ -2,30 +2,32 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
-import Img1 from "../../../assets/inspiration/16.png";
-import Img2 from "../../../assets/inspiration/19.png";
-import Img3 from "../../../assets/inspiration/22.png";
-import Img4 from "../../../assets/inspiration/24.png";
-import Img5 from "../../../assets/inspiration/26.png";
+import publishCalendarVisual from "../../../assets/blog/publish/publish-landing-hero-wide.png";
+import publishAnalyticsVisual from "../../../assets/blog/publish/analytics-landing-hero-wide.png";
+import connectVisual from "../../../assets/blog/publish/one-video-three-platforms-vertical.png";
+import queueVisual from "../../../assets/blog/publish/automated-posting-queue-vertical.png";
+import successVisual from "../../../assets/blog/publish/publish-success-vertical.png";
+import scheduleVisual from "../../../assets/blog/publish/schedule-28-days-vertical.png";
+import captionVisual from "../../../assets/blog/publish/ai-caption-generator-vertical.png";
 
 const related = [
   {
-    title: "How to Make Viral AI TikTok Videos in 2026 (Step-by-Step)",
-    description: "Script, generate, post. The complete step-by-step workflow for making viral AI TikTok videos.",
-    date: "26.04.2026",
-    slug: "/blog/how-to-make-viral-ai-tiktok-videos",
+    title: "Social Media Scheduler for Creators: The Complete 2026 Guide",
+    description: "Choose a scheduling workflow designed around short-form video and consistent multi-platform publishing.",
+    date: "20.07.2026",
+    slug: "/blog/social-media-scheduler-for-creators",
   },
   {
-    title: "AI Video Generator for TikTok & Reels: The Complete 2026 Guide",
-    description: "Which AI video models produce the best short-form content and the fastest workflow from idea to viral video.",
-    date: "24.04.2026",
-    slug: "/blog/ai-video-generator-tiktok-reels",
+    title: "How to Cross-Post to Instagram, TikTok, and YouTube",
+    description: "Prepare one clean video for three connected destinations without repeating the full upload process.",
+    date: "20.07.2026",
+    slug: "/blog/how-to-cross-post-instagram-tiktok-youtube",
   },
   {
-    title: "Best AI Tools for Faceless TikTok Videos in 2026",
-    description: "The exact AI stack behind the fastest-growing faceless TikTok channels.",
-    date: "26.04.2026",
-    slug: "/blog/best-ai-tools-faceless-tiktok-videos",
+    title: "How to Build a 28-Day Social Media Content Calendar",
+    description: "Plan a sustainable month of TikTok, Reels, and Shorts content around your real production capacity.",
+    date: "20.07.2026",
+    slug: "/blog/28-day-social-media-content-calendar",
   },
 ];
 
@@ -36,16 +38,16 @@ export default function ScheduleAutoPublishAIVideos() {
     if (meta) {
       meta.setAttribute(
         "content",
-        "Step-by-step guide to scheduling and auto-publishing AI-generated videos to Instagram and YouTube with Zyvo's Publish workspace. Connect your accounts, build a posting queue, and go live with one click."
+        "Step-by-step guide to scheduling AI videos up to 28 days ahead and publishing to Instagram, TikTok, and YouTube with Zyvo Publish."
       );
     }
   }, []);
 
   return (
     <div className="w-full bg-[#F7F5FA]">
-      <div className="mx-auto max-w-6xl px-6 py-24">
+      <div className="mx-auto max-w-6xl px-6 pb-24 pt-6 sm:pt-10">
 
-        <nav className="mb-8 text-[13px] text-[#888]">
+        <nav className="mb-6 text-[13px] text-[#888]">
           <Link to="/blog" className="hover:text-[#7A3BFF]">Blog</Link>
           <span className="mx-2">/</span>
           <Link to="/blog" className="hover:text-[#7A3BFF]">Go Viral</Link>
@@ -53,11 +55,11 @@ export default function ScheduleAutoPublishAIVideos() {
           <span>Schedule & Auto-Publish AI Videos</span>
         </nav>
 
-        <header className="mb-16 max-w-4xl">
+        <header className="mb-10 max-w-4xl">
           <span className="inline-block bg-purple-100 text-purple-700 text-[12px] font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-5">
             Go Viral
           </span>
-          <h1 className="text-[44px] font-bold text-[#110829] leading-tight mb-6">
+          <h1 className="mb-6 text-[36px] font-bold leading-tight text-[#110829] sm:text-[44px]">
             How to Schedule & Auto-Publish AI Videos in 2026 (One-Click Guide)
           </h1>
           <p className="text-[19px] text-[#4A4A55] leading-relaxed">
@@ -66,8 +68,14 @@ export default function ScheduleAutoPublishAIVideos() {
           <p className="text-[13px] text-[#999] mt-5">Jul 2, 2026 · 8 min read · Publishing & Scheduling</p>
         </header>
 
-        <div className="mb-24 w-full h-[420px] rounded-2xl overflow-hidden border border-[#ECE8F2]">
-          <img src={Img1} alt="Scheduling AI videos to auto-publish on Instagram and YouTube" className="w-full h-full object-cover" />
+        <div className="mb-20 overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
+          <img
+            src={publishCalendarVisual}
+            alt="Zyvo Publish calendar for scheduling videos to Instagram, TikTok, and YouTube"
+            className="aspect-[1376/768] w-full rounded-[22px] object-cover"
+            loading="eager"
+            fetchPriority="high"
+          />
         </div>
 
         <section className="mb-20 max-w-3xl">
@@ -79,20 +87,18 @@ export default function ScheduleAutoPublishAIVideos() {
           </p>
         </section>
 
-        <section className="mb-32 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-          <div className="w-full h-[360px] rounded-2xl border border-[#ECE8F2] bg-white overflow-hidden">
-            <img src={Img2} alt="Connecting Instagram and YouTube accounts in Zyvo Publish" className="w-full h-full object-cover" />
-          </div>
+        <section className="mb-24 grid gap-10 md:grid-cols-[.72fr_1.28fr] md:items-center">
+          <img src={connectVisual} alt="One video connected to Instagram, TikTok, and YouTube publishing channels" className="mx-auto aspect-[9/16] w-full max-w-[300px] rounded-3xl object-cover shadow-xl" loading="lazy" />
           <div>
             <span className="text-[#7A3BFF] text-[13px] font-bold uppercase tracking-widest mb-4 block">Step 1</span>
             <h2 className="text-[32px] font-semibold text-[#110829] mb-6 leading-tight">
               Connect your accounts
             </h2>
             <p className="text-[#4A4A55] text-[16px] leading-relaxed mb-5">
-              Open Publish and click <strong>Connect Social Accounts</strong>. Zyvo currently publishes directly to Instagram and YouTube, with TikTok connections rolling out next — you'll see it marked "Coming soon" in the connect panel until it's live.
+              Open Publish and click <strong>Connect Social Accounts</strong>. Zyvo supports Instagram, TikTok, and YouTube, so your short-form channels stay together in one publishing workspace.
             </p>
             <p className="text-[#4A4A55] text-[16px] leading-relaxed mb-5">
-              Instagram requires your account to be set to Creator or Business — a free switch that takes about 30 seconds in the Instagram app. YouTube just needs upload permission on your channel, granted through a standard Google sign-in.
+              Instagram requires your account to be set to Creator or Business — a free switch that takes about 30 seconds in the Instagram app. YouTube uses a standard Google connection, while TikTok lets you review the available privacy and posting options for your account.
             </p>
             <p className="text-[#4A4A55] text-[16px] leading-relaxed">
               Zyvo only ever requests publish permission — it never reads DMs or follower lists, and you can disconnect any account at any time.
@@ -100,7 +106,7 @@ export default function ScheduleAutoPublishAIVideos() {
           </div>
         </section>
 
-        <section className="mb-32">
+        <section className="mb-28">
           <h2 className="text-[34px] font-semibold text-[#110829] mb-8 max-w-3xl leading-tight">
             Step 2: Build your posting queue
           </h2>
@@ -111,7 +117,7 @@ export default function ScheduleAutoPublishAIVideos() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
             {[
               { title: "Pick your days", desc: "Choose exactly which days of the week each time slot fires — Monday and Thursday at 9am, daily at noon, whatever matches your niche.", tag: "Flexible" },
-              { title: "Set the time", desc: "Add as many slots per day as you want. Zyvo shows the next 7 days so you can see your whole week's queue at a glance.", tag: "Full control" },
+              { title: "Set the time", desc: "Plan supported posts up to 28 days ahead, so you can see nearly a month of content and spot empty days before they become missed posts.", tag: "Full control" },
               { title: "Fill slots later", desc: "You don't need finished videos to set up your queue. Build the schedule first, then drop videos into slots as you finish generating them.", tag: "Plan ahead" },
             ].map((m) => (
               <div key={m.title} className="bg-white rounded-2xl border border-[#ECE8F2] p-6">
@@ -122,12 +128,14 @@ export default function ScheduleAutoPublishAIVideos() {
             ))}
           </div>
 
-          <div className="w-full h-[380px] rounded-2xl border border-[#ECE8F2] bg-white overflow-hidden">
-            <img src={Img3} alt="Setting up a weekly posting queue in Zyvo Publish" className="w-full h-full object-cover" />
+          <div className="mx-auto grid max-w-[700px] gap-4 sm:grid-cols-2">
+            <img src={queueVisual} alt="Automated social media posting queue for short-form videos" className="aspect-[9/16] w-full rounded-3xl object-cover shadow-xl" loading="lazy" />
+            <img src={scheduleVisual} alt="Twenty-eight day social media video scheduling calendar" className="aspect-[9/16] w-full rounded-3xl object-cover shadow-xl" loading="lazy" />
           </div>
+
         </section>
 
-        <section className="mb-32 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+        <section className="mb-24 grid gap-10 md:grid-cols-[1.25fr_.75fr] md:items-center">
           <div>
             <span className="text-[#7A3BFF] text-[13px] font-bold uppercase tracking-widest mb-4 block">Step 3</span>
             <h2 className="text-[32px] font-semibold text-[#110829] mb-6 leading-tight">
@@ -143,8 +151,9 @@ export default function ScheduleAutoPublishAIVideos() {
               Behind the scenes, Zyvo prepares the video for each platform's requirements — container creation, processing, and publishing — so you don't have to think about format differences.
             </p>
           </div>
-          <div className="w-full h-[360px] rounded-2xl border border-[#ECE8F2] bg-white overflow-hidden">
-            <img src={Img4} alt="Publishing a video to multiple platforms at once with Zyvo" className="w-full h-full object-cover" />
+          <div className="grid grid-cols-2 gap-3">
+            <img src={captionVisual} alt="AI caption assistant preparing copy for a scheduled video" className="aspect-[9/16] w-full rounded-3xl object-cover shadow-xl" loading="lazy" />
+            <img src={successVisual} alt="Successful multi-platform video publication confirmation" className="aspect-[9/16] w-full rounded-3xl object-cover shadow-xl" loading="lazy" />
           </div>
         </section>
 
@@ -185,8 +194,13 @@ export default function ScheduleAutoPublishAIVideos() {
           </div>
         </section>
 
-        <div className="mb-24 w-full h-[380px] rounded-2xl overflow-hidden border border-[#ECE8F2]">
-          <img src={Img5} alt="AI video posting queue running automatically" className="w-full h-full object-cover" />
+        <div className="mb-24 overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.14)] sm:p-2">
+          <img
+            src={publishAnalyticsVisual}
+            alt="Zyvo analytics dashboard tracking views and audience growth after publishing"
+            className="aspect-[1376/768] w-full rounded-[22px] object-cover"
+            loading="lazy"
+          />
         </div>
 
         <RelatedArticles articles={related} />

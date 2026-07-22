@@ -337,10 +337,10 @@ async function uploadImageToRunware(publicUrl: string): Promise<string> {
 async function chargeJobCredits(
   sb: ReturnType<typeof createClient>,
   jobId: string,
-) {
+): Promise<boolean> {
   const { data: job } = await sb
-    .from("jobs").select("user_id, settings").eq("id", jobId).single();
-  if (!job?.user_id) return;
+    .from("jobs").select("user_id").eq("id", jobId).single();
+  if (!job?.user_id) return false;
 
   const { data: profile } = await sb
     .from("profiles").select("plan_code").eq("id", job.user_id).single();
@@ -350,12 +350,20 @@ async function chargeJobCredits(
   if (isFree) {
     const { error } = await sb.from("image_generations").insert({ user_id: job.user_id });
     if (error) logEvent("error", "free_usage_log_failed", { jobId, userId: job.user_id, message: error.message });
+    return true;
   } else {
-    const credits = Number(job.settings?.credits ?? 0);
-    if (credits > 0) {
-      await safeRpc(sb, "deduct_credits", { uid: job.user_id, amount: credits });
+    const { data, error } = await safeRpc(sb, "charge_job_credits", { p_job_id: jobId });
+    if (error || data !== true) {
+      logEvent("error", "credit_charge_failed", { jobId, userId: job.user_id, message: String(error ?? "insufficient credits") });
+      return false;
     }
+    return true;
   }
+}
+
+async function refundJobCredits(sb: ReturnType<typeof createClient>, jobId: string) {
+  const { error } = await safeRpc(sb, "refund_job_credits", { p_job_id: jobId });
+  if (error) logEvent("error", "credit_refund_failed", { jobId, message: String(error) });
 }
 
 /* ===================== BACKGROUND JOB PROCESSOR =====================
@@ -387,6 +395,15 @@ function buildReferenceInputs(
  * the request is never rejected outright.
  */
 const SUPPORTED_DIMENSIONS: Record<string, [number, number][]> = {
+  // Nano Banana 2 (image:nano.2)
+  "google:4@3": [
+    [1024, 1024], [2048, 2048],
+    [1264, 848], [2528, 1696], [848, 1264], [1696, 2528],
+    [1200, 896], [2400, 1792], [896, 1200], [1792, 2400],
+    [928, 1152], [1856, 2304], [1152, 928], [2304, 1856],
+    [768, 1376], [1536, 2752], [1376, 768], [2752, 1536],
+    [1584, 672], [3168, 1344],
+  ],
   // Nano Pro (image:nano-pro)
   "google:4@2": [
     [1024, 1024], [2048, 2048], [4096, 4096],
@@ -622,13 +639,18 @@ async function processRunwareImageJob(body: any): Promise<void> {
   const immediate = extractImageUrl(createResult.json);
   if (immediate) {
     const storedUrl = await persistImageResult(sb, jobId, immediate);
+    const charged = await chargeJobCredits(sb, jobId);
+    if (!charged) {
+      await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: "INSUFFICIENT_CREDITS" });
+      return;
+    }
     const { error } = await safeRpc(sb, "finish_job_success", {
       p_id:     jobId,
       p_url:    storedUrl,
       p_output: createResult.json,
     });
+    if (error) await refundJobCredits(sb, jobId);
     logEvent("info", "job_succeeded", { jobId, toolKey: airTag, instant: true, finishError: error ? String(error) : null });
-    await chargeJobCredits(sb, jobId);
     return;
   }
 
@@ -666,13 +688,18 @@ async function processRunwareImageJob(body: any): Promise<void> {
 
     if (url) {
       const storedUrl = await persistImageResult(sb, jobId, url);
+      const charged = await chargeJobCredits(sb, jobId);
+      if (!charged) {
+        await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: "INSUFFICIENT_CREDITS" });
+        return;
+      }
       const { error } = await safeRpc(sb, "finish_job_success", {
         p_id:     jobId,
         p_url:    storedUrl,
         p_output: pollResult.json,
       });
+      if (error) await refundJobCredits(sb, jobId);
       logEvent("info", "job_succeeded", { jobId, toolKey: airTag, instant: false, poll: i, finishError: error ? String(error) : null });
-      await chargeJobCredits(sb, jobId);
       return;
     }
 
@@ -720,6 +747,13 @@ async function processRunwareImageJob(body: any): Promise<void> {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
+  }
+
+  if (!SERVICE_KEY || req.headers.get("x-job-worker-key") !== SERVICE_KEY) {
+    return new Response(
+      JSON.stringify({ ok: false, error: "Unauthorized worker handoff" }),
+      { status: 401, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+    );
   }
 
   let jobId: string | null = null;

@@ -2,11 +2,20 @@ import { useState, useRef, useEffect } from "react";
 import { Search, X, Sparkles } from "lucide-react";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import NoCreditsModal from "../shared/NoCreditsModal";
-import { VIBES, DISH_CATEGORIES, ALL_DISHES, TOTAL_CREDITS } from "./api/cookingMaticApi";
+import { VIBES, DISH_CATEGORIES, ALL_DISHES } from "./api/cookingMaticApi";
 
 function randomPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-export default function AICookingMaticBuilder({ onGenerate, phase, recentGenerations = [], onLoadRecent }) {
+export default function AICookingMaticBuilder({
+  onGenerate,
+  phase,
+  recentGenerations = [],
+  onLoadRecent,
+  showRecentTab = true,
+  totalCredits = 111,
+  voiceLimit = 2,
+  externalError = "",
+}) {
   const creditBalance = useProfileCredits();
   const [noCreditsOpen, setNoCreditsOpen] = useState(false);
   const [setupTab, setSetupTab] = useState("generate"); // "generate" | "recent"
@@ -17,9 +26,11 @@ export default function AICookingMaticBuilder({ onGenerate, phase, recentGenerat
   const [validationError, setValidationError] = useState("");
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
+  const TOTAL_CREDITS = totalCredits;
 
-  const hasEnoughCredits = creditBalance >= TOTAL_CREDITS;
+  const hasEnoughCredits = creditBalance >= totalCredits;
   const isGenerating = phase === "images" || phase === "videos" || phase === "retrying";
+  const activeSetupTab = showRecentTab ? setupTab : "generate";
 
   useEffect(() => {
     const h = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setDropdownOpen(false); };
@@ -45,7 +56,7 @@ export default function AICookingMaticBuilder({ onGenerate, phase, recentGenerat
 
   return (
     <>
-    <div className="flex flex-col h-full bg-[#0D0F11] rounded-2xl border border-white/[0.07] overflow-hidden">
+    <div className="flex min-h-0 flex-col rounded-2xl border border-white/[0.07] bg-[#0D0F11] lg:h-full lg:overflow-hidden">
 
       {/* Header */}
       <div className="shrink-0 px-5 pt-5 pb-3 border-b border-white/[0.06]">
@@ -62,20 +73,26 @@ export default function AICookingMaticBuilder({ onGenerate, phase, recentGenerat
           </div>
           <h1 className="text-white font-black text-[16px]">AI Cooking Matic</h1>
         </div>
-        {/* Generate / Recent tabs */}
-        <div className="grid grid-cols-2 rounded-xl border border-white/[0.07] bg-white/[0.03] p-0.5">
-          {["generate", "recent"].map(t => (
-            <button key={t} type="button" onClick={() => setSetupTab(t)}
-              className={`rounded-lg py-1.5 text-[12px] font-semibold transition capitalize ${setupTab === t ? "bg-white text-black" : "text-white/45 hover:text-white/70"}`}>
-              {t === "generate" ? "Generate" : `Recent${recentGenerations.length > 0 ? ` (${recentGenerations.length})` : ""}`}
-            </button>
-          ))}
-        </div>
+        {/* Small screens need the tab; desktop already has Recent on the right. */}
+        {showRecentTab && (
+          <div className="grid grid-cols-2 rounded-xl border border-white/[0.07] bg-white/[0.03] p-0.5">
+            {["generate", "recent"].map(t => (
+              <button key={t} type="button" onClick={() => setSetupTab(t)}
+                className={`rounded-lg py-1.5 text-[12px] font-semibold transition capitalize ${activeSetupTab === t ? "bg-white text-black" : "text-white/45 hover:text-white/70"}`}>
+                {t === "generate" ? "Generate" : `Recent${recentGenerations.length > 0 ? ` (${recentGenerations.length})` : ""}`}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto [scrollbar-width:none] px-5 py-4 space-y-4">
-      {setupTab === "recent" ? (
+      <div className={`space-y-4 px-5 py-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:[scrollbar-width:none] ${
+        activeSetupTab === "generate"
+          ? "pb-[calc(156px+env(safe-area-inset-bottom))] lg:pb-4"
+          : "pb-[calc(104px+env(safe-area-inset-bottom))] lg:pb-4"
+      }`}>
+      {activeSetupTab === "recent" ? (
         /* Recent generations list */
         <div className="space-y-2">
           {recentGenerations.length === 0 ? (
@@ -96,7 +113,9 @@ export default function AICookingMaticBuilder({ onGenerate, phase, recentGenerat
                 <div className="flex-1 min-w-0">
                   <p className="text-white/80 text-[13px] font-bold truncate">{gen.dish_name}</p>
                   <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                    {clipCount === 5 && gen.voice?.audioUrl
+                    {gen.fullVideoUrl
+                      ? <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-400/20">&#10003; Exported video</span>
+                      : clipCount === 5 && gen.voice?.audioUrl
                       ? <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">✓ Voice added</span>
                       : clipCount === 5
                       ? <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/20">▶ Add Voice</span>
@@ -165,7 +184,7 @@ export default function AICookingMaticBuilder({ onGenerate, phase, recentGenerat
                 </div>
               )}
             </div>
-            {validationError && <p className="text-red-400 text-[11px] font-medium mt-1.5">{validationError}</p>}
+            {(validationError || externalError) && <p className="mt-1.5 text-[11px] font-medium text-red-400">{validationError || externalError}</p>}
           </div>
         )}
 
@@ -177,7 +196,7 @@ export default function AICookingMaticBuilder({ onGenerate, phase, recentGenerat
               const active = selectedVibe === vibe.id;
               return (
                 <button key={vibe.id} type="button" onClick={() => setSelectedVibe(vibe.id)}
-                  className={`group relative h-[128px] w-full overflow-hidden rounded-2xl border text-left transition-all duration-200 hover:-translate-y-0.5 ${
+                  className={`group relative isolate h-[128px] w-full overflow-hidden rounded-2xl border text-left transition-all duration-200 hover:-translate-y-0.5 ${
                     active
                       ? "border-transparent shadow-[0_0_0_1px_rgba(249,115,22,0.10),0_0_24px_rgba(249,115,22,0.16)]"
                       : "border-white/10 hover:border-white/20"
@@ -221,7 +240,7 @@ export default function AICookingMaticBuilder({ onGenerate, phase, recentGenerat
       </div>
 
       {/* Footer — only show on Generate tab */}
-      {setupTab === "generate" && <div className="shrink-0 px-5 pb-5 pt-3 border-t border-white/[0.06]">
+      {activeSetupTab === "generate" && <div className="fixed inset-x-3 bottom-[calc(86px+env(safe-area-inset-bottom))] z-40 shrink-0 rounded-2xl border border-white/[0.08] bg-[#101213]/96 px-4 pb-3 pt-3 shadow-[0_-18px_55px_rgba(0,0,0,0.50)] backdrop-blur-xl lg:static lg:inset-auto lg:z-auto lg:rounded-none lg:border-x-0 lg:border-b-0 lg:bg-transparent lg:px-5 lg:pb-5 lg:shadow-none">
         {!hasEnoughCredits && !isGenerating && (
           <div className="flex items-center justify-between mb-3 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20">
             <span className="text-red-300 text-[12px] font-semibold">Need {TOTAL_CREDITS} cr · you have {creditBalance}</span>
@@ -241,6 +260,7 @@ export default function AICookingMaticBuilder({ onGenerate, phase, recentGenerat
             <><Sparkles className="w-4 h-4" />Generate<span className="flex items-center gap-1 px-2 py-0.5 bg-white/20 rounded-full text-[12px] font-bold"><img src="/icons/whitecredit.png" alt="" className="w-3 h-3 object-contain" />{TOTAL_CREDITS}</span></>
           )}
         </button>
+        <p className="mt-2 text-center text-[10px] text-white/25">Includes scenes, clips, AI script tools and up to {voiceLimit} generated voice takes.</p>
       </div>} {/* close generate-tab footer */}
     </div>
     <NoCreditsModal open={noCreditsOpen} onClose={() => setNoCreditsOpen(false)} creditsNeeded={TOTAL_CREDITS} creditBalance={creditBalance} />

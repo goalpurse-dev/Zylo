@@ -2,8 +2,9 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
-import Img1 from "../../../assets/inspiration/17.png";
-import Img2 from "../../../assets/inspiration/20.png";
+import publishCalendarVisual from "../../../assets/blog/publish/manual-vs-automated-wide.png";
+import publishAnalyticsVisual from "../../../assets/blog/publish/analytics-landing-hero-wide.png";
+import calendarSquareVisual from "../../../assets/blog/publish/calendar-28-days-square.png";
 
 const related = [
   {
@@ -13,16 +14,16 @@ const related = [
     slug: "/blog/schedule-auto-publish-ai-videos",
   },
   {
-    title: "Why Your Posts Don't Go Viral",
-    description: "Learn why your posts don't go viral and exactly how to fix it.",
-    date: "10.02.2026",
-    slug: "/blog/why-your-posts-dont-go-viral",
+    title: "Social Media Automation for Creators Without Losing Control",
+    description: "Automate timing and repeated distribution while keeping creative decisions and final review manual.",
+    date: "20.07.2026",
+    slug: "/blog/social-media-automation-for-creators",
   },
   {
-    title: "AI Content Creation Tools for Instagram: Which One Actually Goes Viral? (2026)",
-    description: "We tested every major AI tool for Instagram — see which ones actually drive saves, shares, and reach.",
-    date: "27.04.2026",
-    slug: "/blog/ai-content-creation-tools-instagram-viral",
+    title: "Short-Form Video Metrics That Actually Matter",
+    description: "Evaluate reach, attention, engagement, and audience conversion without relying on views alone.",
+    date: "20.07.2026",
+    slug: "/blog/short-form-video-metrics-that-matter",
   },
 ];
 
@@ -40,8 +41,8 @@ export default function OneClickPublishingPlaybook() {
 
   return (
     <div className="w-full bg-[#F7F5FA]">
-      <div className="mx-auto max-w-6xl px-6 py-24">
-        <nav className="mb-8 text-[13px] text-[#888]">
+      <div className="mx-auto max-w-6xl px-6 pb-24 pt-6 sm:pt-10">
+        <nav className="mb-6 text-[13px] text-[#888]">
           <Link to="/blog" className="hover:text-[#7A3BFF]">Blog</Link>
           <span className="mx-2">/</span>
           <Link to="/blog" className="hover:text-[#7A3BFF]">Go Viral</Link>
@@ -49,11 +50,11 @@ export default function OneClickPublishingPlaybook() {
           <span>One-Click Publishing Playbook</span>
         </nav>
 
-        <header className="mb-16 max-w-4xl">
+        <header className="mb-10 max-w-4xl">
           <span className="mb-5 inline-block rounded-full bg-purple-100 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-purple-700">
             Go Viral
           </span>
-          <h1 className="mb-6 text-[44px] font-bold leading-tight text-[#110829]">
+          <h1 className="mb-6 text-[36px] font-bold leading-tight text-[#110829] sm:text-[44px]">
             One-Click Publishing: Why Posting Consistency Beats Virality in 2026
           </h1>
           <p className="text-[19px] leading-relaxed text-[#4A4A55]">
@@ -62,9 +63,14 @@ export default function OneClickPublishingPlaybook() {
           <p className="mt-5 text-[13px] text-[#999]">July 2, 2026 · 7 min read · Publishing Strategy</p>
         </header>
 
-        <div className="mb-16 grid overflow-hidden rounded-2xl md:grid-cols-2 gap-4" style={{ minHeight: 320 }}>
-          <img src={Img1} alt="Consistent AI content posting schedule" className="h-full w-full object-cover rounded-2xl" loading="eager" />
-          <img src={Img2} alt="One-click publishing across social platforms" className="h-full w-full object-cover rounded-2xl" loading="eager" />
+        <div className="mb-16 overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
+          <img
+            src={publishCalendarVisual}
+            alt="Zyvo Publish calendar for a consistent multi-platform posting schedule"
+            className="aspect-[1376/768] w-full rounded-[22px] object-cover"
+            loading="eager"
+            fetchPriority="high"
+          />
         </div>
 
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_300px]">
@@ -97,7 +103,7 @@ export default function OneClickPublishingPlaybook() {
 
             <div className="my-10 rounded-2xl border border-purple-200 bg-purple-50 p-6">
               <p className="mb-2 text-[15px] font-bold text-[#7A3BFF]">Build Your Posting Queue in Zyvo</p>
-              <p className="mb-4 text-[14px] text-[#4A4A55]">Connect Instagram and YouTube, set your posting times, and let Zyvo publish while you focus on making the next video.</p>
+              <p className="mb-4 text-[14px] text-[#4A4A55]">Connect Instagram, TikTok, and YouTube, plan supported posts up to 28 days ahead, and let Zyvo handle the publishing work while you make the next video.</p>
               <Link to="/workspace/publish" className="inline-block rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold text-white transition hover:opacity-90">
                 Open Publish
               </Link>
@@ -125,14 +131,21 @@ export default function OneClickPublishingPlaybook() {
             <div className="rounded-2xl border border-[#E5E0F5] bg-white p-5 shadow-sm">
               <p className="mb-3 text-[12px] font-bold uppercase tracking-widest text-[#7A3BFF]">Quick Facts</p>
               <ul className="space-y-3 text-[13px] text-[#4A4A55]">
-                <li>Live platforms: Instagram, YouTube</li>
-                <li>Coming soon: TikTok</li>
+                <li>Live platforms: Instagram, TikTok, YouTube</li>
                 <li>Setup time: under 2 minutes</li>
-                <li>Queue slots: unlimited, per day of the week</li>
+                <li>Planning window: up to 28 days ahead</li>
                 <li>Tracks: views, likes, engagement</li>
               </ul>
             </div>
-            <img src={Img2} alt="Multi-platform posting queue preview" className="rounded-2xl border border-[#E5E0F5] shadow-sm" loading="lazy" />
+            <div className="overflow-hidden rounded-2xl border border-[#241b38] bg-[#090a0d] p-1 shadow-sm">
+              <img
+                src={publishAnalyticsVisual}
+                alt="Zyvo analytics dashboard showing views and growth after consistent publishing"
+                className="aspect-[16/9] w-full rounded-[13px] object-cover"
+                loading="lazy"
+              />
+            </div>
+            <img src={calendarSquareVisual} alt="A planned 28-day social media content calendar" className="aspect-square w-full rounded-2xl border border-[#E5E0F5] object-cover shadow-sm" loading="lazy" />
             <Link to="/workspace/publish" className="block rounded-2xl bg-[#7A3BFF] p-5 text-center text-[14px] font-bold text-white shadow-[0_4px_20px_rgba(122,59,255,0.35)] transition hover:opacity-90">
               Set Up Your Queue
             </Link>

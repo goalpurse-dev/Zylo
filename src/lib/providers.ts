@@ -346,8 +346,13 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
   },
 
   /**
-   * Seedance 1.5 Pro 480p  —  5-second image-to-video
-   * Cost: $0.06/clip → $0.12 retail → 6 credits
+   * Seedance 1.5 Pro — 6s clip, WITH audio (providerSettings.bytedance.audio:
+   * true — confirmed working, see runware-video/runware.ts). This is the
+   * "correct" Seedance tier — real native audio support, unlike 2.0 Fast.
+   * Measured from actual Runware invoices:
+   *   480p (496x864): $0.1431144 / 6s → $0.023852/s
+   *   720p:           $0.3151728 / 6s → $0.052529/s
+   * No-sound rate is from an earlier, unverified 4s test — left as-is.
    */
   "video:seedance15pro": {
     provider:   "runware",
@@ -355,26 +360,29 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     airTag:     "bytedance:seedance@1.5-pro",
     secret:     "RUNWARE_API_KEY",
     edgeFn:     "/functions/v1/runware-video",
-    // Confirmed: $0.10/4s no sound = $0.025/s | $0.20/4s with sound = $0.05/s
-    costPerSecondUSD:      0.025,
+    costPerSecondUSD:      0.052529,  // 720p, with audio — measured
     baseResolution:        "720p",
     retailMultiplier:      2,
-    baseCreditsPerSecond:  2.5,   // no sound: $0.025 × 2 / $0.02 = 2.5 cr/s
-    soundCreditsPerSecond: 5,     // with sound: $0.05 × 2 / $0.02 = 5 cr/s
+    baseCreditsPerSecond:  2.5,       // no sound (unverified, earlier 4s test)
+    soundCreditsPerSecond: 5.25,      // with sound, 720p — measured
   },
 
+  /**
+   * Seedance 2.0 Fast — audio is always included even though its Runware
+   * schema has no audio toggle. Measured $0.364092/6s @ 480p (496x864).
+   * Clay Rescue uses this for its sound-on path; its sound-off path remains
+   * on Seedance 1.5 Pro.
+   */
   "video:seedance20fast": {
     provider:   "runware",
     generator:  "Seedance 2.0 Fast",
     airTag:     "bytedance:seedance@2.0-fast",
     secret:     "RUNWARE_API_KEY",
     edgeFn:     "/functions/v1/runware-video",
-    // Same per-second rate as 1.5 Pro — will update after price testing
-    costPerSecondUSD:     0.012,
-    baseResolution:       "720p",
+    costPerSecondUSD:     0.060682,   // $0.364092 / 6s, measured @ 480p (496x864)
+    baseResolution:       "480p",
     retailMultiplier:     2,
-    baseCreditsPerSecond: 1.2,   // no sound
-    soundCreditsPerSecond: 1.2,  // placeholder — update after test
+    baseCreditsPerSecond: 7,          // generic video-generator retail rate; audio is always included
   },
 
   "video:veo31fast": {

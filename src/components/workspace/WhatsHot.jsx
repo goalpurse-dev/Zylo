@@ -189,7 +189,8 @@ function HotCard({ item, navigate }) {
       <img
         src={item.image}
         alt={item.title}
-        fetchpriority="high"
+        loading="lazy"
+        fetchPriority="low"
         decoding="async"
         className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
       />
@@ -199,7 +200,7 @@ function HotCard({ item, navigate }) {
           src={item.video}
           poster={item.image}
           autoPlay muted loop playsInline
-          preload="metadata"
+          preload="none"
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}

@@ -23,6 +23,14 @@ export default function Navbar() {
   const [toolsOpen, setToolsOpen] = useState(false);
   const [menuOpen, setMenuOpen]   = useState(false);
   const [mobileTools, setMobileTools] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const updateHeader = () => setScrolled(window.scrollY > 24);
+    updateHeader();
+    window.addEventListener("scroll", updateHeader, { passive: true });
+    return () => window.removeEventListener("scroll", updateHeader);
+  }, []);
 
   // close tools dropdown on outside click
   useEffect(() => {
@@ -40,13 +48,19 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-200/80 shadow-sm">
+      <header
+        className={`fixed top-0 z-50 w-full transition-all duration-300 ${
+          scrolled
+            ? "border-b border-white/10 bg-[#0c0910]/88 shadow-[0_10px_35px_rgba(0,0,0,.24)] backdrop-blur-xl"
+            : "border-b border-transparent bg-transparent"
+        }`}
+      >
         <div className="max-w-7xl mx-auto px-5 lg:px-10 h-16 flex items-center justify-between gap-6">
 
           {/* LOGO */}
           <Link to="/" className="flex items-center gap-2 shrink-0">
             <img src={Logo} alt="Zyvo" className="h-8 w-8" />
-            <span className="text-[#7A3BFF] font-bold text-xl tracking-tight">ZyvoAI</span>
+            <span className="text-white font-bold text-xl tracking-tight">Zyvo<span className="text-[#a970ff]">AI</span></span>
           </Link>
 
           {/* DESKTOP NAV */}
@@ -54,7 +68,7 @@ export default function Navbar() {
             <div className="relative">
               <button
                 onClick={(e) => { e.stopPropagation(); setToolsOpen((o) => !o); }}
-                className="flex items-center gap-1.5 text-gray-700 font-semibold text-[15px] hover:text-[#7A3BFF] transition"
+                className="flex items-center gap-1.5 text-white/75 font-semibold text-[15px] hover:text-white transition"
               >
                 Tools
                 <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${toolsOpen ? "rotate-180" : ""}`} />
@@ -85,23 +99,23 @@ export default function Navbar() {
               )}
             </div>
 
-            <Link to="/workspace/pricing" className="text-[15px] font-semibold text-gray-700 hover:text-[#7A3BFF] transition">Pricing</Link>
-            <Link to="/support"           className="text-[15px] font-semibold text-gray-700 hover:text-[#7A3BFF] transition">Help</Link>
-            <Link to="/login"             className="text-[15px] font-semibold text-gray-700 hover:text-[#7A3BFF] transition">Login</Link>
+            <Link to="/workspace/pricing" className="text-[15px] font-semibold text-white/75 hover:text-white transition">Pricing</Link>
+            <Link to="/support"           className="text-[15px] font-semibold text-white/75 hover:text-white transition">Help</Link>
+            <Link to="/login"             className="text-[15px] font-semibold text-white/75 hover:text-white transition">Login</Link>
           </nav>
 
           {/* DESKTOP CTAs */}
           <div className="hidden lg:flex items-center gap-3">
             <Link
               to="/signup"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-[15px] font-semibold text-gray-700 transition"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 text-[15px] font-semibold text-white transition backdrop-blur-md"
             >
               <GoogleIcon />
               Continue with Google
             </Link>
             <Link
               to="/signup"
-              className="px-5 py-2.5 rounded-xl text-white text-[15px] font-bold transition hover:opacity-90"
+              className="px-5 py-2.5 rounded-xl text-white text-[15px] font-bold transition hover:-translate-y-0.5"
               style={{
                 background: "linear-gradient(135deg, #7A3BFF, #9D6BFF)",
                 boxShadow: "0 4px 16px rgba(122,59,255,0.4)",
@@ -115,7 +129,7 @@ export default function Navbar() {
           <div className="lg:hidden flex items-center gap-2">
             <Link
               to="/signup"
-              className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-sm font-semibold text-gray-700 transition"
+              className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 text-sm font-semibold text-white transition"
             >
               <GoogleIcon />
               Start Free with Google
@@ -129,7 +143,7 @@ export default function Navbar() {
             </Link>
             <button
               onClick={() => setMenuOpen(true)}
-              className="p-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              className="p-2 rounded-xl border border-white/10 bg-white/10 text-white hover:bg-white/15 transition"
             >
               <Menu className="w-5 h-5" />
             </button>

@@ -33,8 +33,42 @@ const MEDIA_FIELDS = [
   "is_shared_to_feed",
 ].join(",");
 
-const INSIGHTS_METRICS_REEL  = "reach,saved,shares,plays,comments,likes";
-const INSIGHTS_METRICS_IMAGE = "reach,saved,shares,impressions,likes,comments";
+const INSIGHTS_METRICS_REEL  = ["reach", "saved", "shares", "views", "plays", "comments", "likes"];
+const INSIGHTS_METRICS_IMAGE = ["reach", "saved", "shares", "views", "impressions", "comments", "likes"];
+
+async function fetchAvailableInsights(
+  postId: string,
+  metrics: string[],
+  token: string,
+): Promise<Record<string, number>> {
+  if (!metrics.length) return {};
+
+  const params = new URLSearchParams({ metric: metrics.join(","), access_token: token });
+  try {
+    const res = await fetch(`${IG_GRAPH_BASE}/${postId}/insights?${params}`);
+    if (res.ok) {
+      const json = await res.json();
+      return Object.fromEntries((json?.data ?? []).map((metric: any) => [
+        metric.name,
+        Number(metric.values?.[0]?.value ?? metric.value ?? 0),
+      ]));
+    }
+
+    // Meta exposes different metrics for reels, images, and carousels. Split a
+    // failed batch until only unsupported individual metrics remain.
+    if (metrics.length > 1) {
+      const middle = Math.ceil(metrics.length / 2);
+      const [left, right] = await Promise.all([
+        fetchAvailableInsights(postId, metrics.slice(0, middle), token),
+        fetchAvailableInsights(postId, metrics.slice(middle), token),
+      ]);
+      return { ...left, ...right };
+    }
+  } catch (error) {
+    console.warn("[ig-media-sync] insights unavailable:", (error as Error).message);
+  }
+  return {};
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(req) });
@@ -45,6 +79,7 @@ Deno.serve(async (req) => {
   // Resolve the user ID — either from JWT or from cron call
   let userId: string;
   const body = await req.json().catch(() => ({}));
+  const requestedAccountId = typeof body?.account_id === "string" ? body.account_id : null;
 
   if (body?.secret && body?.user_id) {
     if (!CRON_SECRET || body.secret !== CRON_SECRET) return err(req, "Forbidden", 403);
@@ -56,12 +91,14 @@ Deno.serve(async (req) => {
   }
 
   // Fetch active IG social accounts for this user (service role bypasses RLS)
-  const { data: accounts, error: acctErr } = await sb
+  let accountQuery = sb
     .from("social_accounts")
     .select("id, platform_user_id, username, access_token_encrypted, scopes")
     .eq("user_id", userId)
     .eq("platform", "instagram")
     .is("revoked_at", null);
+  if (requestedAccountId) accountQuery = accountQuery.eq("id", requestedAccountId);
+  const { data: accounts, error: acctErr } = await accountQuery;
 
   if (acctErr) {
     console.error("[ig-media-sync] accounts fetch error:", acctErr.message);
@@ -142,28 +179,17 @@ Deno.serve(async (req) => {
       const hasInsightsScope = account.scopes?.includes("instagram_business_manage_insights");
 
       if (hasInsightsScope) {
-        const insightMetrics = isVideo ? INSIGHTS_METRICS_REEL : INSIGHTS_METRICS_IMAGE;
-        const insightParams = new URLSearchParams({
-          metric:       insightMetrics,
-          access_token: token,
-        });
-        try {
-          const res = await fetch(`${IG_GRAPH_BASE}/${postId}/insights?${insightParams}`);
-          if (res.ok) {
-            const json = await res.json();
-            for (const m of (json?.data ?? [])) {
-              insightsRaw[m.name] = Number(m.values?.[0]?.value ?? m.value ?? 0);
-            }
-          }
-        } catch (e) {
-          console.warn("[ig-media-sync] insights fetch exception:", (e as Error).message);
-        }
+        insightsRaw = await fetchAvailableInsights(
+          postId,
+          isVideo ? INSIGHTS_METRICS_REEL : INSIGHTS_METRICS_IMAGE,
+          token,
+        );
       }
 
       // Build metrics snapshot — prioritise insights, fall back to media fields
       const likes    = insightsRaw.likes    ?? Number(item.like_count    ?? 0);
       const comments = insightsRaw.comments ?? Number(item.comments_count ?? 0);
-      const views    = insightsRaw.plays    ?? null;
+      const views    = insightsRaw.views ?? insightsRaw.plays ?? null;
       const reach    = insightsRaw.reach    ?? null;
       const impressions = insightsRaw.impressions ?? null;
       const shares   = insightsRaw.shares   ?? null;
@@ -205,6 +231,7 @@ Deno.serve(async (req) => {
           .from("social_post_metrics_snapshots")
           .select("views, likes, comments, engagement_rate")
           .eq("user_id", userId)
+          .eq("platform", "instagram")
           .order("snapshotted_at", { ascending: false })
           .limit(20);
 

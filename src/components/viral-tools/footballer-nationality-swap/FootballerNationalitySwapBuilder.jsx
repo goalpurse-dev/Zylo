@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { ChevronRight, ChevronDown, Settings2 } from "lucide-react";
+import { useState, useEffect, useId } from "react";
+import { ChevronRight, ChevronDown, Settings2, CheckCircle2, XCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import {
@@ -95,6 +95,13 @@ function TypewriterGhost({ text }) {
 
 /* ── Scene count pill selector — sliding highlight ── */
 function SceneCountSelector({ value, onChange }) {
+  // FootballerNationalitySwapBuilder is mounted twice at once (desktop +
+  // mobile layout, only one visible via CSS at a time) — a hardcoded
+  // layoutId here would be shared by both simultaneously-live instances,
+  // which is exactly what caused the flash/lag on load: Framer Motion's
+  // shared-layout animation assumes one instance per id. useId() keeps each
+  // mounted copy's pill independent.
+  const instanceId = useId();
   return (
     <div className="relative grid grid-cols-3 rounded-full border border-white/10 bg-white/[0.04] p-1">
       {SCENE_COUNT_OPTIONS.map((n) => {
@@ -107,7 +114,7 @@ function SceneCountSelector({ value, onChange }) {
           >
             {active && (
               <motion.div
-                layoutId="footballer-scene-count-pill"
+                layoutId={`footballer-scene-count-pill-${instanceId}`}
                 transition={{ type: "spring", stiffness: 500, damping: 35 }}
                 className="absolute inset-0 rounded-full bg-[#F59E0B]"
                 style={{ zIndex: -1 }}
@@ -298,7 +305,7 @@ function SceneCard({ index, scene, onChange }) {
   );
 }
 
-export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, phase }) {
+export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, phase, viewingRecent = false }) {
   const [sceneCount, setSceneCount] = useState(DEFAULT_SCENE_COUNT);
   // Always hold MAX_SCENES worth of state — switching the count only changes
   // how many are sliced for display/submission, so hidden scene data is never lost.
@@ -312,6 +319,17 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
   const hasEnough     = creditBalance >= totalCredits;
   const isGenerating  = phase === "images" || phase === "videos";
   const isDone        = phase === "done";
+  const isError       = phase === "error";
+  // On small screens the "Setup" tab and the results are mutually exclusive
+  // (no side-by-side view like desktop), so showing the full multi-field
+  // form again right after a generation finishes/fails reads as if nothing
+  // happened. Swap it for a compact status + "start a new one" CTA instead.
+  const showStatus = isDone || isError;
+  // Desktop keeps the full form visible after finishing YOUR OWN run (you
+  // might want to tweak and regenerate) — but when browsing a past
+  // generation, the form has nothing to do with what's on screen, so
+  // collapse it there too, not just on mobile.
+  const showStatusOnDesktop = viewingRecent && showStatus;
 
   const handleChange = (index, field, value) => {
     setScenes((prev) => prev.map((s, i) => (i === index ? { ...s, [field]: value } : s)));
@@ -355,8 +373,31 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
         <div className="h-px bg-white/[0.06] mx-5" />
       </div>
 
-      {/* ── SCROLLABLE BODY ── */}
-      <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full">
+      {/* ── STATUS — replaces the form on small screens once done/failed, and on
+           desktop too when browsing a past generation (its form is unrelated). ── */}
+      {showStatus && (
+        <div className={`${showStatusOnDesktop ? "" : "lg:hidden"} flex-1 flex flex-col items-center justify-center gap-4 px-6 py-16 text-center`}>
+          <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+            isError ? "bg-red-500/15" : "bg-emerald-500/15"
+          }`}>
+            {isError
+              ? <XCircle className="w-7 h-7 text-red-400" />
+              : <CheckCircle2 className="w-7 h-7 text-emerald-400" />}
+          </div>
+          <p className="text-white font-bold text-[16px]">
+            {isError ? "This generation failed" : "This generation is successfully done"}
+          </p>
+          <button
+            onClick={onReset}
+            className="px-5 py-2.5 rounded-xl font-bold text-[13px] text-black bg-gradient-to-r from-[#F59E0B] to-[#FBBF24] hover:opacity-90 transition"
+          >
+            Start a new one
+          </button>
+        </div>
+      )}
+
+      {/* ── SCROLLABLE BODY — hidden on mobile once done/failed, and on desktop too when browsing a past generation ── */}
+      <div className={`${showStatus ? (showStatusOnDesktop ? "hidden" : "hidden lg:block") : ""} lg:flex-1 lg:min-h-0 lg:overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full`}>
         <div className="px-5 pt-4 pb-[160px] lg:pb-5 flex flex-col gap-3">
 
           {/* Scene count */}
@@ -377,8 +418,8 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
         </div>
       </div>
 
-      {/* ── FOOTER ── */}
-      <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-0 right-0 z-[90] border-t border-white/[0.06] bg-[#0D0F11]/95 px-5 pb-2 pt-3 backdrop-blur-xl lg:static lg:shrink-0 lg:bg-transparent lg:backdrop-blur-0 lg:py-4">
+      {/* ── FOOTER — hidden whenever the status block above is showing; it has its own CTA ── */}
+      <div className={`${showStatus ? (showStatusOnDesktop ? "hidden" : "hidden lg:block") : ""} fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-0 right-0 z-[90] border-t border-white/[0.06] bg-[#0D0F11]/95 px-5 pb-2 pt-3 backdrop-blur-xl lg:static lg:shrink-0 lg:bg-transparent lg:backdrop-blur-0 lg:py-4`}>
         {!hasEnough && (
           <div className="flex items-center justify-between gap-2 mb-3 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20">
             <span className="text-red-300 text-[12px] font-semibold">Need {totalCredits} credits · you have {creditBalance}</span>

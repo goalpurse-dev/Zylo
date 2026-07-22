@@ -2,10 +2,11 @@ import {
   ExternalLink, RefreshCw, TrendingUp, TrendingDown,
   Eye, Clock, Users, Play, AlertCircle, X, ChevronRight,
 } from "lucide-react";
-import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import { createElement, useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import InstagramStats from "../../components/stats/InstagramStats";
 
 // ── Module-level cache — survives route changes within the session ────────────
 const _cache = new Map();
@@ -514,7 +515,7 @@ function VideoDetailModal({ video: initialVideo, accountId, dateRange, onClose }
 // ── Platform tabs config ──────────────────────────────────────────────────────
 const PLATFORMS = [
   { id: "youtube",   label: "YouTube",   Icon: YTIcon,      color: "text-red-400",     active: true  },
-  { id: "instagram", label: "Instagram", Icon: IGIcon,      color: "text-pink-400",    active: false },
+  { id: "instagram", label: "Instagram", Icon: IGIcon,      color: "text-pink-400",    active: true  },
   { id: "tiktok",    label: "TikTok",    Icon: TikTokIcon,  color: "text-white/40",    active: false },
 ];
 
@@ -529,6 +530,7 @@ export default function StatsPage() {
   const navigate  = useNavigate();
 
   const [ytAccounts, setYtAccounts]     = useState([]);
+  const [igAccounts, setIgAccounts]     = useState([]);
   const [selectedId, setSelectedId]     = useState(null);
   const [accountsLoading, setAccountsLoading] = useState(true);
 
@@ -543,8 +545,35 @@ export default function StatsPage() {
   const [realtimeRange, setRealtimeRange] = useState("48h");
   const [videoTab, setVideoTab]       = useState("top");
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [igRefreshKey, setIgRefreshKey] = useState(0);
+  const [igStatus, setIgStatus] = useState({ loading: false, lastSynced: null });
 
   const prevRangeRef = useRef(dateRange);
+
+  const reconnectInstagram = useCallback(async () => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+      if (!accessToken) throw new Error("missing_session");
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/instagram-oauth-start`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ returnTo: "/workspace/stats" }),
+        },
+      );
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload?.authorizationUrl) throw new Error("oauth_start_failed");
+      window.location.assign(payload.authorizationUrl);
+    } catch {
+      setError("Instagram reconnect couldn’t be started. Please try again.");
+    }
+  }, []);
 
   // ── Load accounts ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -553,7 +582,9 @@ export default function StatsPage() {
       setAccountsLoading(true);
       const { data: accts } = await supabase.rpc("get_my_social_accounts");
       const yt = (accts ?? []).filter(a => a.platform === "youtube");
+      const ig = (accts ?? []).filter(a => a.platform === "instagram");
       setYtAccounts(yt);
+      setIgAccounts(ig);
       if (yt.length > 0) {
         setSelectedId(yt[0].id);
         // Pre-populate from cache immediately
@@ -567,7 +598,7 @@ export default function StatsPage() {
 
   // ── Fetch analytics ──────────────────────────────────────────────────────
   const fetchAnalytics = useCallback(async (force = false) => {
-    if (!selectedId) return;
+    if (!selectedId || platform !== "youtube") return;
     setLoading(true);
     setError(null);
     try {
@@ -591,11 +622,16 @@ export default function StatsPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedId, dateRange]);
+  }, [selectedId, dateRange, platform]);
+
+  useEffect(() => {
+    const accounts = platform === "youtube" ? ytAccounts : platform === "instagram" ? igAccounts : [];
+    if (!accounts.some(account => account.id === selectedId)) setSelectedId(accounts[0]?.id ?? null);
+  }, [platform, ytAccounts, igAccounts, selectedId]);
 
   // Initial load + range/account switch
   useEffect(() => {
-    if (!selectedId) return;
+    if (!selectedId || platform !== "youtube") return;
     const rangeChanged = prevRangeRef.current !== dateRange;
     prevRangeRef.current = dateRange;
 
@@ -611,15 +647,15 @@ export default function StatsPage() {
 
     fetchAnalytics(rangeChanged || !cached);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId, dateRange]);
+  }, [selectedId, dateRange, platform]);
 
   // Auto-refresh every 60s
   useEffect(() => {
-    if (!selectedId) return;
+    if (!selectedId || platform !== "youtube") return;
     const id = setInterval(() => fetchAnalytics(false), 60_000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId, dateRange]);
+  }, [selectedId, dateRange, platform]);
 
   // ── Derived ──────────────────────────────────────────────────────────────
   const channel  = data?.channel;
@@ -655,23 +691,29 @@ export default function StatsPage() {
   }
 
   // ── No accounts ───────────────────────────────────────────────────────────
-  if (ytAccounts.length === 0 && platform === "youtube") {
+  const currentAccounts = platform === "youtube" ? ytAccounts : platform === "instagram" ? igAccounts : [];
+  const missingPlatformAccount = (platform === "youtube" || platform === "instagram") && currentAccounts.length === 0;
+  if (missingPlatformAccount) {
+    const isInstagram = platform === "instagram";
+    const PlatformIcon = isInstagram ? IGIcon : YTIcon;
     return (
       <div className="min-h-screen px-5 pb-28 pt-6 lg:px-8 lg:pb-12">
         <PageHeader platform={platform} setPlatform={setPlatform} dateRange={dateRange}
           setDateRange={setDateRange} onRefresh={() => {}} loading={false} lastSynced={null}
-          ytAccounts={[]} selectedId={null} setSelectedId={setSelectedId} />
+          accounts={[]} selectedId={null} setSelectedId={setSelectedId} />
         <div className="mt-6 flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-white/[0.07] bg-white/[0.03] p-8 text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500/10">
-            <YTIcon className="h-7 w-7 text-red-400" />
+          <div className={`mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${isInstagram ? "bg-fuchsia-500/10" : "bg-red-500/10"}`}>
+            <PlatformIcon className={`h-7 w-7 ${isInstagram ? "text-fuchsia-300" : "text-red-400"}`} />
           </div>
-          <p className="font-semibold text-white">Connect YouTube to see analytics</p>
+          <p className="font-semibold text-white">Connect {isInstagram ? "Instagram" : "YouTube"} to see analytics</p>
           <p className="mt-1.5 max-w-xs text-sm text-white/40">
-            Connect your YouTube channel to track views, watch time, subscriber growth, and top videos.
+            {isInstagram
+              ? "Connect your professional Instagram account to track views, reach, interactions, and top posts."
+              : "Connect your YouTube channel to track views, watch time, subscriber growth, and top videos."}
           </p>
           <button onClick={() => navigate("/workspace/connections")}
-            className="mt-5 rounded-xl bg-red-500/15 px-5 py-2.5 text-sm font-bold text-red-300 transition hover:bg-red-500/25">
-            Connect YouTube
+            className={`mt-5 rounded-xl px-5 py-2.5 text-sm font-bold transition ${isInstagram ? "bg-fuchsia-500/15 text-fuchsia-300 hover:bg-fuchsia-500/25" : "bg-red-500/15 text-red-300 hover:bg-red-500/25"}`}>
+            Connect {isInstagram ? "Instagram" : "YouTube"}
           </button>
         </div>
       </div>
@@ -685,13 +727,31 @@ export default function StatsPage() {
       <PageHeader
         platform={platform} setPlatform={setPlatform}
         dateRange={dateRange} setDateRange={setDateRange}
-        onRefresh={() => fetchAnalytics(true)} loading={loading} lastSynced={lastSynced}
-        ytAccounts={ytAccounts} selectedId={selectedId} setSelectedId={setSelectedId}
+        onRefresh={() => platform === "youtube" ? fetchAnalytics(true) : setIgRefreshKey(key => key + 1)}
+        loading={platform === "youtube" ? loading : igStatus.loading}
+        lastSynced={platform === "youtube" ? lastSynced : igStatus.lastSynced}
+        accounts={currentAccounts} selectedId={selectedId} setSelectedId={setSelectedId}
       />
 
       {/* ── Non-YT placeholder ── */}
-      {platform !== "youtube" && (
+      {platform === "tiktok" && (
         <ComingSoonState platform={platform} onConnect={() => navigate("/workspace/connections")} />
+      )}
+
+      {platform === "instagram" && error && (
+        <div className="mb-5 rounded-2xl border border-red-500/20 bg-red-500/[0.06] px-4 py-3 text-sm text-red-300">
+          {error}
+        </div>
+      )}
+
+      {platform === "instagram" && (
+        <InstagramStats
+          account={igAccounts.find(account => account.id === selectedId)}
+          dateRange={dateRange}
+          refreshKey={igRefreshKey}
+          onReconnect={reconnectInstagram}
+          onStatus={setIgStatus}
+        />
       )}
 
       {platform === "youtube" && (
@@ -935,7 +995,7 @@ export default function StatsPage() {
 
 // ── Extracted sub-components ──────────────────────────────────────────────────
 
-function PageHeader({ platform, setPlatform, dateRange, setDateRange, onRefresh, loading, lastSynced, ytAccounts, selectedId, setSelectedId }) {
+function PageHeader({ platform, setPlatform, dateRange, setDateRange, onRefresh, loading, lastSynced, accounts, selectedId, setSelectedId }) {
   return (
     <div className="mb-5 space-y-3">
       <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:flex-wrap sm:text-left">
@@ -948,10 +1008,10 @@ function PageHeader({ platform, setPlatform, dateRange, setDateRange, onRefresh,
           )}
         </div>
 
-        {ytAccounts.length > 1 && (
+        {accounts.length > 1 && (
           <select value={selectedId ?? ""} onChange={e => setSelectedId(e.target.value)}
             className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-center text-sm text-white/65 focus:outline-none sm:w-auto sm:text-left">
-            {ytAccounts.map(a => <option key={a.id} value={a.id}>{a.display_name ?? "YouTube"}</option>)}
+            {accounts.map(a => <option key={a.id} value={a.id}>{a.display_name ?? a.username ?? platform}</option>)}
           </select>
         )}
 
@@ -988,7 +1048,7 @@ function PageHeader({ platform, setPlatform, dateRange, setDateRange, onRefresh,
                   ? "border-white/[0.06] bg-white/[0.02] text-white/45 hover:bg-white/[0.05] hover:text-white/70"
                   : "cursor-default border-white/[0.04] bg-transparent text-white/20"
             }`}>
-            <Icon className={`h-3.5 w-3.5 ${platform === id ? color : ""}`} />
+            {createElement(Icon, { className: `h-3.5 w-3.5 ${platform === id ? color : ""}` })}
             {label}
             {!active && (
               <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[9px] font-bold text-white/30">Soon</span>
@@ -1000,11 +1060,11 @@ function PageHeader({ platform, setPlatform, dateRange, setDateRange, onRefresh,
   );
 }
 
-function ComingSoonState({ platform, onConnect }) {
+function ComingSoonState({ platform }) {
   const p = PLATFORMS.find(p => p.id === platform);
   return (
     <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-white/[0.07] bg-white/[0.03] p-8 text-center">
-      {p && <p.Icon className={`mb-4 h-10 w-10 ${p.color} opacity-30`} />}
+      {p && createElement(p.Icon, { className: `mb-4 h-10 w-10 ${p.color} opacity-30` })}
       <p className="font-semibold text-white">{p?.label ?? "Platform"} Analytics</p>
       <p className="mt-1.5 max-w-xs text-sm text-white/35">Coming soon — connect more platforms to track all your content in one place.</p>
     </div>

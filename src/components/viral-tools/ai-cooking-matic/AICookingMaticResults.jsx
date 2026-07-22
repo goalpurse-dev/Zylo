@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Download, X, ChevronLeft, ChevronRight, AlertCircle, UtensilsCrossed, RotateCcw, Play, Pause, Music2 } from "lucide-react";
+import { Check, Download, X, ChevronLeft, ChevronRight, AlertCircle, UtensilsCrossed, RotateCcw, Play, Pause, Music2, Sparkles } from "lucide-react";
 import { CLIP_PAIRS, SCENE_LABELS, VIBES } from "./api/cookingMaticApi";
 import CaptionPreviewPanel from "./CaptionPreviewPanel";
 
@@ -12,6 +12,13 @@ function timeAgo(dateStr) {
   const h = Math.floor(m / 60);
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h / 24)}d ago`;
+}
+
+function formatAudioDuration(seconds) {
+  if (!Number.isFinite(seconds) || seconds <= 0) return "--:--";
+  const rounded = Math.round(seconds);
+  const minutes = Math.floor(rounded / 60);
+  return `${minutes}:${String(rounded % 60).padStart(2, "0")}`;
 }
 
 function downloadImage(url, filename) {
@@ -109,7 +116,7 @@ function Lightbox({ scenes, startIndex, onClose }) {
 }
 
 // ── Scene Card ────────────────────────────────────────────────────────────────
-function SceneCard({ scene, dishLabel, isActive, onView, onRedo }) {
+function SceneCard({ scene, isActive, onView, onRedo }) {
   const { index, imageStatus, imageUrl } = scene;
   const isLoading  = imageStatus === "queued" || imageStatus === "running";
   const isRetrying = imageStatus === "retrying";
@@ -153,6 +160,13 @@ function SceneCard({ scene, dishLabel, isActive, onView, onRedo }) {
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
             <X className="w-6 h-6 text-red-400/50" />
             <p className="text-white/25 text-[11px]">Failed</p>
+            {onRedo && (
+              <button type="button" onClick={onRedo}
+                className="mt-1 flex items-center gap-1.5 rounded-full border border-red-300/20 bg-red-500/10 px-3 py-1.5 text-[10px] font-bold text-red-200 transition hover:bg-red-500/20"
+                title={scene.error || "Regenerate this scene"}>
+                <RotateCcw className="h-3 w-3" /> Regenerate
+              </button>
+            )}
           </div>
         )}
 
@@ -209,11 +223,11 @@ function SceneCard({ scene, dishLabel, isActive, onView, onRedo }) {
 
 // ── Clip Card (video) ─────────────────────────────────────────────────────────
 const CLIP_LABELS = [
-  "Chef Intro + Ingredient",
-  "Prep + Coating",
-  "Into the Oil + Fry",
-  "Wok Toss + Plating",
-  "Chef Reveal + Hero",
+  "Dish Hook + Ingredients",
+  "Prep + Add to Bowl",
+  "Season + Start Cooking",
+  "Cook + Finish & Plate",
+  "Present + Food Close-Up",
 ];
 
 function ClipCard({ clip, posterUrl, onRedo }) {
@@ -223,11 +237,13 @@ function ClipCard({ clip, posterUrl, onRedo }) {
   const isDone    = videoStatus === "succeeded";
   const [videoReady, setVideoReady] = useState(false);
 
-  // Detect stalled jobs: if loading for > 90s without the hook updating us, show a warning
-  const [stalled, setStalled] = useState(false);
+  // Seedance commonly finishes around 1–3 minutes, then the result is copied
+  // into permanent storage. At 90s show a truthful finalizing state, not a
+  // false failure warning while Runware is still working normally.
+  const [finalizing, setFinalizing] = useState(false);
   useEffect(() => {
-    if (!isLoading) { setStalled(false); return; }
-    const t = setTimeout(() => setStalled(true), 90_000);
+    if (!isLoading) { setFinalizing(false); return; }
+    const t = setTimeout(() => setFinalizing(true), 90_000);
     return () => clearTimeout(t);
   }, [isLoading, videoStatus]);
 
@@ -258,13 +274,20 @@ function ClipCard({ clip, posterUrl, onRedo }) {
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-red-950/20">
             <AlertCircle className="w-6 h-6 text-red-400/60" />
             <p className="text-[11px] text-red-400/60">Failed</p>
+            {onRedo && (
+              <button type="button" onClick={onRedo}
+                className="mt-1 flex items-center gap-1.5 rounded-full border border-red-300/20 bg-red-500/10 px-3 py-1.5 text-[10px] font-bold text-red-200 transition hover:bg-red-500/20"
+                title={clip.error || "Regenerate this clip"}>
+                <RotateCcw className="h-3 w-3" /> Regenerate
+              </button>
+            )}
           </div>
         ) : isLoading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#0a0b0d]">
-            {stalled ? (
+            {finalizing ? (
               <>
-                <AlertCircle className="w-5 h-5 text-amber-400/60" />
-                <p className="text-[11px] text-amber-400/60 text-center px-2">Taking long…<br/>may have failed</p>
+                <div className="w-6 h-6 border-2 rounded-full animate-spin border-orange-500/40 border-t-orange-400" />
+                <p className="text-[11px] text-white/35 text-center px-3">Finalizing video…<br/>this can take a few minutes</p>
               </>
             ) : (
               <>
@@ -320,104 +343,246 @@ function ClipCard({ clip, posterUrl, onRedo }) {
   );
 }
 
-function VoiceResultPanel({ scenes, voiceData, dishLabel, onViewScene }) {
-  const [playing, setPlaying] = useState(false);
-  const audioRef = useRef(null);
-  const previewScenes = scenes.filter(s => s.imageUrl).slice(0, 3);
-  const bars = [28, 44, 36, 64, 48, 76, 42, 58, 82, 46, 70, 38, 54, 88, 50, 66, 32, 72, 40, 60, 34, 78, 46, 56];
+function VoiceResultPanel({ scenes, voiceData, voiceGenerations = [], dishLabel, onViewScene, onSelectVoice, onContinue }) {
+  const [playingKey, setPlayingKey] = useState(null);
+  const [playbackProgress, setPlaybackProgress] = useState(0);
+  const [probedDurations, setProbedDurations] = useState({});
+  const audioRefs = useRef(new Map());
+  const previewScenes = scenes.filter(s => s.imageUrl);
+  const sounds = voiceGenerations.length > 0 ? voiceGenerations : (voiceData?.audioUrl ? [voiceData] : []);
+  const soundKeyFor = (sound, index = 0) => sound.id || sound.audioUrl || `${sound.voiceId || sound.voiceLabel || "voice"}-${index}`;
+  const durationSignature = sounds.map((sound, index) => `${soundKeyFor(sound, index)}:${sound.durationSec || ""}`).join("|");
+  const bars = [34, 62, 45, 78, 54, 88, 42, 68, 50, 82, 38, 72, 58, 92, 46, 76, 40, 84, 52, 70, 44, 80, 56, 66, 36, 74, 48, 86, 60, 72, 42, 64];
 
-  const toggle = () => {
-    if (!voiceData?.audioUrl) return;
-    if (!audioRef.current) {
-      const audio = new Audio(voiceData.audioUrl);
-      audioRef.current = audio;
-      audio.onended = () => setPlaying(false);
-      audio.onerror = () => setPlaying(false);
+  useEffect(() => () => {
+    audioRefs.current.forEach(audio => audio.pause());
+    audioRefs.current.clear();
+  }, []);
+
+  useEffect(() => {
+    const pending = [];
+    let cancelled = false;
+    sounds.forEach((sound, index) => {
+      const soundKey = soundKeyFor(sound, index);
+      if (!sound.audioUrl || Number(sound.durationSec) > 0 || Number(probedDurations[soundKey]) > 0) return;
+      const audio = new Audio();
+      pending.push(audio);
+      audio.preload = "metadata";
+      audio.onloadedmetadata = () => {
+        if (cancelled || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
+        setProbedDurations(current => ({ ...current, [soundKey]: Number(audio.duration.toFixed(2)) }));
+      };
+      audio.src = sound.audioUrl;
+    });
+    return () => {
+      cancelled = true;
+      pending.forEach(audio => { audio.removeAttribute("src"); });
+    };
+  // The signature changes only when a take or its persisted duration changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [durationSignature]);
+
+  const isSelected = (sound) => Boolean(
+    voiceData && (
+      (voiceData.id && sound.id === voiceData.id) ||
+      (!voiceData.id && sound.audioUrl === voiceData.audioUrl)
+    )
+  );
+
+  const measureDuration = (url) => new Promise((resolve) => {
+    const audio = new Audio();
+    const finish = (value) => {
+      audio.removeAttribute("src");
+      resolve(Number.isFinite(value) && value > 0 ? Number(value.toFixed(2)) : null);
+    };
+    audio.preload = "metadata";
+    audio.onloadedmetadata = () => finish(audio.duration);
+    audio.onerror = () => finish(null);
+    audio.src = url;
+  });
+
+  const selectTake = async (sound, soundIndex = 0) => {
+    if (!sound?.audioUrl) return;
+    const soundKey = soundKeyFor(sound, soundIndex);
+    const knownDuration = Number(sound.durationSec) || Number(probedDurations[soundKey]) || null;
+    const durationSec = knownDuration || await measureDuration(sound.audioUrl);
+    if (durationSec) setProbedDurations(current => ({ ...current, [soundKey]: durationSec }));
+    onSelectVoice?.(durationSec ? { ...sound, durationSec } : sound);
+  };
+
+  const toggle = (sound, soundKey, soundIndex) => {
+    if (!sound?.audioUrl) return;
+    audioRefs.current.forEach((audio, audioKey) => {
+      if (audioKey !== soundKey) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    });
+    let audio = audioRefs.current.get(soundKey);
+    if (!audio) {
+      audio = new Audio(sound.audioUrl);
+      audioRefs.current.set(soundKey, audio);
+      audio.ontimeupdate = () => {
+        const progress = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+        setPlaybackProgress(Math.max(0, Math.min(100, progress)));
+      };
+      audio.onended = () => { setPlayingKey(null); setPlaybackProgress(0); };
+      audio.onerror = () => { setPlayingKey(null); setPlaybackProgress(0); };
     }
-    if (playing) {
-      audioRef.current.pause();
-      setPlaying(false);
+    void selectTake(sound, soundIndex);
+    if (playingKey === soundKey) {
+      audio.pause();
+      setPlayingKey(null);
     } else {
-      audioRef.current.play();
-      setPlaying(true);
+      setPlaybackProgress(audio.duration ? (audio.currentTime / audio.duration) * 100 : 0);
+      void audio.play();
+      setPlayingKey(soundKey);
     }
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-white/[0.07] bg-[#101214] p-4">
+    <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-white/[0.07] bg-[#101214] p-3 sm:p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[11px] font-black uppercase tracking-widest text-white/32">Voiceover</p>
-          <h3 className="mt-1 truncate text-[18px] font-black text-white">{dishLabel || "Cooking Story"}</h3>
+          <div className="flex items-center gap-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/32">Voice takes</p>
+            {sounds.length > 0 && <span className="rounded-full bg-orange-500/12 px-2 py-0.5 text-[9px] font-black text-orange-300">{sounds.length}</span>}
+          </div>
+          <h3 className="mt-0.5 truncate text-[16px] font-black text-white">{dishLabel || "Cooking Story"}</h3>
         </div>
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-orange-400/20 bg-orange-500/10">
-          <Music2 className="h-4 w-4 text-orange-300" />
+        <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.025] px-2.5 py-1.5 text-[10px] font-bold text-white/38">
+          <Sparkles className="h-3.5 w-3.5 text-orange-300" /> Latest auto-selected
         </div>
       </div>
 
-      <div className="mt-5 flex flex-1 flex-col justify-center">
-        {voiceData?.audioUrl ? (
-          <div className="rounded-3xl border border-orange-400/20 bg-[linear-gradient(135deg,rgba(249,115,22,0.12),rgba(239,68,68,0.08),rgba(255,255,255,0.035))] p-4 shadow-[0_22px_70px_rgba(249,115,22,0.10)]">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="truncate text-[14px] font-black text-white">{voiceData.voiceLabel || voiceData.voiceId || "Voice"} ready</p>
-                <p className="mt-0.5 text-[11px] text-white/38">{voiceData.script?.length ?? 0} chars · MP3 voiceover</p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button type="button"
-                  onClick={() => {
-                    const a = document.createElement("a");
-                    a.href = voiceData.audioUrl;
-                    a.download = `${dishLabel || "voiceover"}.mp3`;
-                    a.target = "_blank";
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                  }}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white/70 transition hover:bg-white/20 hover:text-white active:scale-95"
-                  title="Download MP3"
+      <div className="mt-3 shrink-0">
+        {sounds.length > 0 ? (
+          <div className="max-h-[202px] space-y-1 overflow-y-auto pr-1 [scrollbar-color:rgba(255,255,255,.14)_transparent] [scrollbar-width:thin]">
+            {sounds.map((sound, soundIndex) => {
+              const soundKey = soundKeyFor(sound, soundIndex);
+              const playing = playingKey === soundKey;
+              const selected = isSelected(sound);
+              const progress = playing ? playbackProgress : 0;
+              const durationSec = Number(sound.durationSec) || Number(probedDurations[soundKey]) || null;
+              const durationState = durationSec == null ? "Checking" : durationSec < 24 ? "Too short" : durationSec > 34 ? "Too long" : "Fits video";
+              const durationTone = durationState === "Fits video" ? "text-emerald-400" : durationState === "Checking" ? "text-white/25" : durationState === "Too short" ? "text-red-300" : "text-amber-300";
+              return (
+                <div
+                  key={soundKey}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={selected}
+                  onClick={() => { void selectTake(sound, soundIndex); }}
+                  onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") void selectTake(sound, soundIndex); }}
+                  className={`group relative cursor-pointer overflow-hidden rounded-xl border p-2 transition-all duration-200 active:scale-[0.995] ${selected ? "voice-take-selected border-orange-400/45 shadow-[0_8px_28px_rgba(249,115,22,0.08)]" : "border-white/[0.07] bg-white/[0.025] hover:border-white/15 hover:bg-white/[0.045]"}`}
                 >
-                  <Download className="h-4 w-4" />
-                </button>
-                <button type="button" onClick={toggle}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-black transition active:scale-95">
-                  {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-0.5 h-4 w-4 fill-current" />}
-                </button>
-              </div>
-            </div>
-            <div className="flex h-20 items-center gap-1.5 overflow-hidden rounded-2xl border border-white/10 bg-black/25 px-3">
-              {bars.map((height, index) => (
-                <div key={index}
-                  className={`w-full rounded-full transition ${playing ? "bg-orange-300/85" : "bg-white/25"}`}
-                  style={{ height: `${height}%`, opacity: playing ? 0.45 + (index % 5) * 0.1 : 0.35 }}
-                />
-              ))}
-            </div>
+                  {selected && <div className="absolute inset-y-2 left-0 z-[2] w-0.5 rounded-full bg-gradient-to-b from-amber-200 via-orange-400 to-red-500" />}
+                  <div className="relative z-[1] flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(event) => { event.stopPropagation(); toggle(sound, soundKey, soundIndex); }}
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition active:scale-90 ${playing ? "bg-orange-400 text-black shadow-[0_0_18px_rgba(251,146,60,0.24)]" : selected ? "bg-white text-black" : "bg-white/[0.08] text-white/70 group-hover:bg-white group-hover:text-black"}`}
+                      aria-label={playing ? "Pause voice take" : "Play voice take"}
+                    >
+                      {playing ? <Pause className="h-3 w-3 fill-current" /> : <Play className="ml-0.5 h-3 w-3 fill-current" />}
+                    </button>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-center gap-1.5">
+                        <span className="truncate text-[12px] font-black text-white">{sound.voiceLabel || sound.voiceId || "Voice"}</span>
+                        {sound.imported && sound.fileName && (
+                          <span className="max-w-[220px] truncate text-[9px] font-medium text-white/38" title={sound.fileName}>· {sound.fileName}</span>
+                        )}
+                        <span className="text-[9px] font-semibold text-white/28">Take {sounds.length - soundIndex}</span>
+                        {soundIndex === 0 && <span className="rounded-full bg-orange-500/15 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide text-orange-300">Latest</span>}
+                        <span className={`ml-auto text-[8px] font-black tabular-nums sm:hidden ${durationTone}`}>{formatAudioDuration(durationSec)} · {durationState}</span>
+                      </div>
+                      <div className="voice-take-wave relative inline-flex h-4 max-w-full items-center gap-[2px] overflow-hidden rounded-md border border-white/[0.06] px-1.5 align-middle">
+                        {bars.map((height, barIndex) => {
+                          const reached = playing && ((barIndex + 1) / bars.length) * 100 <= progress;
+                          return (
+                            <span
+                              key={barIndex}
+                              className={`w-[2px] shrink-0 rounded-full transition-colors duration-150 ${reached ? "bg-amber-200" : selected ? "bg-orange-100/55" : "bg-white/30"}`}
+                              style={{ height: `${Math.max(16, Math.round((height - ((soundIndex * 7 + barIndex * 3) % 16)) * 0.48))}%` }}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <div className="mr-1 hidden min-w-[68px] text-right sm:block">
+                        <p className="text-[10px] font-black tabular-nums text-white/72">{formatAudioDuration(durationSec)} <span className="font-medium text-white/22">/ 0:30</span></p>
+                        <p className={`text-[8px] font-black uppercase tracking-wide ${durationTone}`}>{durationState}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          const a = document.createElement("a");
+                          a.href = sound.audioUrl;
+                          a.download = `${dishLabel || "voiceover"}-take-${sounds.length - soundIndex}.mp3`;
+                          a.target = "_blank";
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                        }}
+                        className="flex h-7 w-7 items-center justify-center rounded-full text-white/28 transition hover:bg-white/[0.08] hover:text-white"
+                        title="Download MP3"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                      </button>
+                      <span className={`flex h-6 w-6 items-center justify-center rounded-full border transition ${selected ? "border-orange-300 bg-orange-400 text-black" : "border-white/12 bg-white/[0.025] text-transparent"}`}>
+                        <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
-          <div className="flex min-h-[220px] flex-col items-center justify-center rounded-3xl border border-dashed border-white/10 bg-white/[0.025] px-6 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
-              <Music2 className="h-5 w-5 text-white/30" />
+          <div className="flex min-h-[104px] items-center justify-center gap-3 rounded-xl border border-dashed border-white/10 bg-white/[0.02] px-5 text-left">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
+              <Music2 className="h-4 w-4 text-white/30" />
             </div>
-            <h3 className="mt-4 text-[17px] font-black text-white">No sounds generated yet</h3>
-            <p className="mt-1 max-w-xs text-[12px] leading-relaxed text-white/38">Choose a voice and generate speech to create the final audio track.</p>
+            <div>
+              <h3 className="text-[13px] font-black text-white">Your voice takes appear here</h3>
+              <p className="mt-0.5 text-[11px] text-white/35">Generate two or more, preview them, then select your favorite.</p>
+            </div>
           </div>
         )}
       </div>
 
-      <div className="mt-5">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col">
         <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-white/28">Scene preview</p>
-        <div className="grid grid-cols-3 gap-2">
-          {Array.from({ length: 3 }).map((_, index) => {
-            const scene = previewScenes[index];
+        <div className="min-h-0 flex-1 lg:overflow-y-auto lg:pr-1 lg:[scrollbar-width:thin]">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 min-[900px]:grid-cols-6">
+          {previewScenes.map((scene) => {
             return (
-              <button key={index} type="button" onClick={() => scene?.imageUrl && onViewScene(scene.index)}
-                className="aspect-[9/16] overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.035] transition hover:border-white/18">
+              <button key={scene.index} type="button" onClick={() => onViewScene(scene.index)}
+                className="aspect-[9/16] overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.035] transition hover:border-white/18">
                 {scene?.imageUrl ? <img src={scene.imageUrl} alt="" className="h-full w-full object-cover" /> : <div className="h-full w-full animate-pulse bg-white/[0.04]" />}
               </button>
             );
           })}
+          </div>
         </div>
+      </div>
+
+      <div className="fixed inset-x-3 bottom-[calc(86px+env(safe-area-inset-bottom))] z-40 rounded-2xl border border-white/[0.08] bg-[#101213]/96 p-3 shadow-[0_-18px_55px_rgba(0,0,0,0.5)] backdrop-blur-xl lg:hidden">
+        <p className="mb-2 text-center text-[10px] font-semibold text-white/38">
+          {voiceData?.audioUrl ? "Voice selected. Continue when it sounds right." : "Select a generated or imported voice to continue."}
+        </p>
+        <button
+          type="button"
+          disabled={!voiceData?.audioUrl}
+          onClick={onContinue}
+          className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 px-4 text-[14px] font-black text-white transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-35"
+        >
+          Continue to Captions <ChevronRight className="h-4 w-4" />
+        </button>
       </div>
     </div>
   );
@@ -432,7 +597,6 @@ function RecentPanel({ generations, onLoad }) {
       <div className="space-y-3">
         {generations.map((gen) => {
           const thumbs = (gen.scenes ?? []).filter((s) => s.imageUrl).slice(0, 3);
-          const vibe   = VIBES.find((v) => v.id === gen.vibe_id);
           return (
             <button
               key={gen.id}
@@ -452,6 +616,7 @@ function RecentPanel({ generations, onLoad }) {
                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                   {(() => {
                     const clipCount = (gen.clips ?? []).filter(c => c.videoUrl).length;
+                    if (gen.fullVideoUrl) return <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-400/25">&#10003; Exported video</span>;
                     if (clipCount === 5 && gen.voice?.audioUrl) return <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">✓ Voice added</span>;
                     if (clipCount === 5) return <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/25">▶ Add Voice</span>;
                     if (clipCount > 0)   return <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400">{clipCount}/5 clips</span>;
@@ -473,10 +638,14 @@ function RecentPanel({ generations, onLoad }) {
 export default function AICookingMaticResults({
   workflowStep = "setup",
   voiceData = null,
+  voiceGenerations = [],
+  onSelectVoice,
   captionDraft = null,
   onCaptionStyleChange,
   onCaptionDraftChange,
   onChangeAudio,
+  onVoiceContinue,
+  onFinishPreview,
   phase,
   scenes,
   clips = [],
@@ -484,6 +653,8 @@ export default function AICookingMaticResults({
   error = null,
   onNew,
   onRegenerate,
+  onRetryScene,
+  onRetryClip,
   recentGenerations = [],
   onLoadRecent,
 }) {
@@ -494,7 +665,6 @@ export default function AICookingMaticResults({
   const activeIndex   = scenes.findIndex((s) => s.imageStatus === "queued" || s.imageStatus === "running");
   const isImagePhase  = phase === "images" || phase === "retrying";
   const isVideoPhase  = phase === "videos";
-  const isGenerating  = isImagePhase || isVideoPhase;
   const isRetryPhase  = phase === "retrying";
   const isDone        = phase === "done";
   const progress      = doneScenes.length;
@@ -508,9 +678,9 @@ export default function AICookingMaticResults({
   // ── IDLE state — full width, no card constraint ──
   if (phase === "idle" && scenes.length === 0) {
     return (
-      <div className="flex flex-col w-full p-4 gap-6 lg:h-full lg:overflow-y-auto">
+      <div className="flex w-full flex-col gap-4 px-4 pb-[calc(104px+env(safe-area-inset-bottom))] pt-3 lg:h-full lg:gap-6 lg:overflow-y-auto lg:p-4">
         {/* Hero — centered intro */}
-        <div className="flex flex-col items-center justify-center text-center py-10">
+        <div className="hidden flex-col items-center justify-center py-10 text-center lg:flex">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500/20 to-red-600/10 border border-orange-500/20 flex items-center justify-center mb-4">
             <UtensilsCrossed className="w-7 h-7 text-orange-300" />
           </div>
@@ -557,6 +727,7 @@ export default function AICookingMaticResults({
                         <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                           {(() => {
                             const clipCount = (gen.clips ?? []).filter(c => c.videoUrl).length;
+                            if (gen.fullVideoUrl) return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-400/25">&#10003; Exported video</span>;
                             if (clipCount === 5 && gen.voice?.audioUrl) return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">✓ Voice added</span>;
                             if (clipCount === 5) return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/25">▶ Add Voice</span>;
                             if (clipCount > 0)   return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400">{clipCount}/5 clips</span>;
@@ -574,14 +745,22 @@ export default function AICookingMaticResults({
             </div>
           </div>
         )}
+        {recentGenerations.length === 0 && (
+          <div className="flex min-h-[240px] flex-col items-center justify-center rounded-2xl border border-dashed border-white/[0.08] bg-white/[0.02] px-6 text-center lg:hidden">
+            <UtensilsCrossed className="h-6 w-6 text-white/20" />
+            <p className="mt-3 text-[13px] font-bold text-white/55">No recent generations yet</p>
+            <p className="mt-1 text-[11px] text-white/30">Open Create to make your first cooking video.</p>
+          </div>
+        )}
       </div>
     );
   }
 
   if (showCaptionPreview) {
     return (
-      <div className="flex w-full p-3 lg:h-full lg:overflow-hidden">
+      <div className="flex w-full px-3 pb-[calc(170px+env(safe-area-inset-bottom))] pt-3 lg:h-full lg:overflow-hidden lg:p-3">
         <CaptionPreviewPanel
+          key={voiceData?.id || voiceData?.audioUrl || "no-selected-voice"}
           clips={doneClips}
           captionDraft={captionDraft}
           voiceData={voiceData}
@@ -589,6 +768,16 @@ export default function AICookingMaticResults({
           onDraftChange={onCaptionDraftChange}
           onChangeAudio={onChangeAudio}
         />
+        <div className="fixed inset-x-3 bottom-[calc(86px+env(safe-area-inset-bottom))] z-40 rounded-2xl border border-white/[0.08] bg-[#101213]/96 p-3 shadow-[0_-18px_55px_rgba(0,0,0,0.5)] backdrop-blur-xl lg:hidden">
+          <p className="mb-2 text-center text-[10px] font-semibold text-white/38">Check caption timing and placement, then finish your video.</p>
+          <button
+            type="button"
+            onClick={onFinishPreview}
+            className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 px-4 text-[14px] font-black text-white transition active:scale-[0.98]"
+          >
+            Finish &amp; Export <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     );
   }
@@ -596,12 +785,15 @@ export default function AICookingMaticResults({
   if (showVoiceResults) {
     return (
       <>
-        <div className="flex w-full p-3 lg:h-full lg:overflow-hidden">
+        <div className="flex w-full px-3 pb-[calc(180px+env(safe-area-inset-bottom))] pt-3 lg:h-full lg:overflow-hidden lg:p-3">
           <VoiceResultPanel
             scenes={scenes}
             voiceData={voiceData}
+            voiceGenerations={voiceGenerations}
+            onSelectVoice={onSelectVoice}
             dishLabel={dishLabel}
             onViewScene={handleView}
+            onContinue={onVoiceContinue}
           />
         </div>
 
@@ -619,7 +811,7 @@ export default function AICookingMaticResults({
   // ── ACTIVE / DONE state ── (matches Clay Rescue layout pattern)
   return (
     <>
-    <div className="flex flex-col w-full p-3 gap-3 lg:h-full lg:overflow-hidden">
+    <div className="flex w-full flex-col gap-3 p-3 pb-[calc(104px+env(safe-area-inset-bottom))] lg:h-full lg:overflow-hidden lg:pb-3">
 
       {/* Status bar — own rounded card like Clay Rescue */}
       <div className="shrink-0 flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-[#111315] border border-white/[0.07]">
@@ -679,7 +871,7 @@ export default function AICookingMaticResults({
               {clips.map(clip => {
                 const posterSceneIndex = CLIP_PAIRS[clip.index]?.[0];
                 const posterUrl = scenes.find(s => s.index === posterSceneIndex)?.imageUrl ?? null;
-                return <ClipCard key={clip.index} clip={clip} posterUrl={posterUrl} onRedo={onRegenerate} />;
+                return <ClipCard key={clip.index} clip={clip} posterUrl={posterUrl} onRedo={onRetryClip ? () => onRetryClip(clip.index) : onRegenerate} />;
               })}
             </div>
           </div>
@@ -692,7 +884,7 @@ export default function AICookingMaticResults({
           )}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
             {scenes.map(scene => (
-              <SceneCard key={scene.index} scene={scene} dishLabel={dishLabel} isActive={scene.index === activeIndex} onView={handleView} onRedo={onRegenerate} />
+              <SceneCard key={scene.index} scene={scene} isActive={scene.index === activeIndex} onView={handleView} onRedo={onRetryScene ? () => onRetryScene(scene.index) : onRegenerate} />
             ))}
           </div>
         </div>

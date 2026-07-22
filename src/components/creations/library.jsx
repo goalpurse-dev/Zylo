@@ -1,13 +1,15 @@
 // src/pages/Library.jsx
 import { useEffect, useRef, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
-import { Download, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, X, ChevronLeft, ChevronRight, Clapperboard, Images } from "lucide-react";
+import { FULL_VIDEO_TOOL_KEY } from "../../lib/jobs";
 
 /* =====================================================
    HORIZONTAL ROW
 ===================================================== */
-function HorizontalRow({ title, items, getImageUrl, onItemClick }) {
+function HorizontalRow({ title, items, getImageUrl, onItemClick, isVideo = false, emptyText = "No creations yet." }) {
   const rowRef = useRef(null);
 
   const isDown = useRef(false);
@@ -104,7 +106,7 @@ function HorizontalRow({ title, items, getImageUrl, onItemClick }) {
               onClick={() => onItemClick(item)}
               className="overflow-hidden rounded-md block relative"
             >
-              {title === "Videos" ? (
+              {isVideo ? (
                 <video
                   src={getImageUrl(item)}
                   poster="/assets/video-preview.webp"
@@ -139,7 +141,7 @@ function HorizontalRow({ title, items, getImageUrl, onItemClick }) {
         ))}
 
         {items.length === 0 && (
-          <p className="text-[#4A4A55] mt-2">No creations yet.</p>
+          <p className="text-white/30 mt-2 text-sm">{emptyText}</p>
         )}
       </div>
     </div>
@@ -152,8 +154,11 @@ function HorizontalRow({ title, items, getImageUrl, onItemClick }) {
 
 export default function Library() {
   const { user, loading } = useAuth();
+  const location = useLocation();
+  const viralOnly = location.pathname.endsWith("/viral-videos");
 
   const [videos, setVideos] = useState([]);
+  const [viralVideos, setViralVideos] = useState([]);
   const [images, setImages] = useState([]);
   const [activeItem, setActiveItem] = useState(null);
 
@@ -162,17 +167,29 @@ export default function Library() {
 
     const load = async () => {
 
-      const [videoRes, imageRes] = await Promise.all([
+      const [videoRes, viralVideoRes, imageRes] = await Promise.all([
 
         supabase
           .from("jobs")
-          .select("id, created_at, result_url, prompt, type")
+          .select("id, created_at, result_url, prompt, type, tool_key")
           .eq("user_id", user.id)
           .eq("type", "video")
           .eq("status", "succeeded")
           .not("result_url", "is", null)
           .order("created_at", { ascending: false })
-          .limit(20),
+          .limit(30),
+
+        // This is intentionally the same finished-video query as Publish.
+        supabase
+          .from("jobs")
+          .select("id, created_at, result_url, prompt, type, tool_key")
+          .eq("user_id", user.id)
+          .eq("type", "video")
+          .eq("status", "succeeded")
+          .eq("tool_key", FULL_VIDEO_TOOL_KEY)
+          .not("result_url", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(30),
 
         supabase
           .from("jobs")
@@ -187,9 +204,11 @@ export default function Library() {
       ]);
 
       const videoData = videoRes.data || [];
+      const viralVideoData = viralVideoRes.data || [];
       const imageData = imageRes.data || [];
 
-      setVideos(videoData);
+      setViralVideos(viralVideoData);
+      setVideos(videoData.filter((item) => item.tool_key !== FULL_VIDEO_TOOL_KEY));
 
       setImages(
         imageData.map((j) => ({
@@ -206,28 +225,68 @@ export default function Library() {
   return (
     <section>
 
-      <div className="flex flex-col gap-4 items-center mt-10 px-5 md:px-8">
-        <h1 className="text-[#F4F6FB] font-semibold text-[22px]">
+      <div className="flex flex-col gap-3 items-center mt-10 px-5 md:px-8">
+        <h1 className="text-[#F4F6FB] font-bold text-[24px]">
           Your Creations
         </h1>
         <p className="text-[#B7BBC6] text-[14px] text-center">
-          Max 20 per tool. Oldest are removed automatically.
+          Find your generated assets and finished, ready-to-publish videos.
         </p>
+        <nav className="mt-2 flex items-center rounded-2xl border border-white/[0.08] bg-white/[0.03] p-1">
+          <Link
+            to="/workspace/creations"
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-bold transition ${
+              !viralOnly ? "bg-white text-black" : "text-white/45 hover:text-white"
+            }`}
+          >
+            <Images className="h-4 w-4" /> All creations
+          </Link>
+          <Link
+            to="/workspace/creations/viral-videos"
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-bold transition ${
+              viralOnly ? "bg-gradient-to-r from-orange-500 to-red-500 text-white" : "text-white/45 hover:text-white"
+            }`}
+          >
+            <Clapperboard className="h-4 w-4" /> Viral videos
+          </Link>
+        </nav>
       </div>
 
-      <HorizontalRow
-        title="Images"
-        items={images}
-        getImageUrl={(i) => i.result_url}
-        onItemClick={setActiveItem}
-      />
-
-      <HorizontalRow
-        title="Videos"
-        items={videos}
-        getImageUrl={(i) => i.result_url}
-        onItemClick={setActiveItem}
-      />
+      {viralOnly ? (
+        <HorizontalRow
+          title="Viral Videos"
+          items={viralVideos}
+          getImageUrl={(i) => i.result_url}
+          onItemClick={setActiveItem}
+          isVideo
+          emptyText="No finished viral videos yet. Export a video from one of the viral tools and it will appear here."
+        />
+      ) : (
+        <>
+          {viralVideos.length > 0 && (
+            <HorizontalRow
+              title="Viral Videos"
+              items={viralVideos}
+              getImageUrl={(i) => i.result_url}
+              onItemClick={setActiveItem}
+              isVideo
+            />
+          )}
+          <HorizontalRow
+            title="Images"
+            items={images}
+            getImageUrl={(i) => i.result_url}
+            onItemClick={setActiveItem}
+          />
+          <HorizontalRow
+            title="Videos"
+            items={videos}
+            getImageUrl={(i) => i.result_url}
+            onItemClick={setActiveItem}
+            isVideo
+          />
+        </>
+      )}
 
       {activeItem && (
         <div

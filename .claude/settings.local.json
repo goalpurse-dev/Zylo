@@ -9,7 +9,18 @@
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\a\\\\test1\" -Force)",
       "Bash(Select-Object Name)",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\a\\\\test1\" -Recurse -Directory)",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(npx eslint *)",
+      "Bash(git stash *)",
+      "Bash(npx tsc *)",
+      "Bash(npx supabase *)",
+      "Bash(awk -F'=' '{print $1}' .env.local)",
+      "Bash(which ffmpeg *)",
+      "Read(//c/Program Files/nodejs/**)",
+      "Bash(node \"C:\\\\Users\\\\Huhta\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Public-Zylo\\\\c18a8266-9c0e-4f33-bc5f-ca181087558e\\\\scratchpad\\\\probe_mp4.js\" \"public/template/nationality-swap/nationality-swap-full.mp4\")",
+      "Bash(rm -f \"C:\\\\Users\\\\Huhta\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Public-Zylo\\\\c18a8266-9c0e-4f33-bc5f-ca181087558e\\\\scratchpad\\\\probe_mp4.js\")",
+      "Bash(node \"C:\\\\Users\\\\Huhta\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Public-Zylo\\\\c18a8266-9c0e-4f33-bc5f-ca181087558e\\\\scratchpad\\\\probe_tracks.js\" \"public/template/nationality-swap/endwatermark.mp4\")",
+      "Bash(grep -rn \"layout/ToolShell\\\\|from \\\\\"\\\\\\\\.\\\\\\\\./\\\\\\\\.\\\\\\\\./components/layout\" src --include=*.jsx --include=*.js)"
     ]
   }
 }

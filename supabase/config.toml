@@ -4,6 +4,12 @@ verify_jwt = true
 [functions.instagram-oauth-callback]
 verify_jwt = false
 
+[functions.instagram-media-sync]
+verify_jwt = true
+
+[functions.get-analytics]
+verify_jwt = true
+
 [functions.youtube-oauth-callback]
 verify_jwt = false
 
@@ -27,3 +33,21 @@ verify_jwt = true
 
 [functions.youtube-analytics-video-detail]
 verify_jwt = true
+
+[functions.cooking-script-captions]
+verify_jwt = true
+
+[functions.cooking-speech-transcribe]
+verify_jwt = true
+
+[functions.cooking-voice-generate]
+verify_jwt = true
+
+[functions.cooking-voice-preview]
+verify_jwt = true
+
+[functions.runware-image]
+verify_jwt = false
+
+[functions.runware-video]
+verify_jwt = false

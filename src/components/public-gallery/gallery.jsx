@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -17,8 +17,8 @@ const COMMUNITY_NICHES = [
       "Miniature clay village disaster, tiny clay people panicking, giant realistic human hand enters frame and solves the problem, joyful celebration, cinematic 9:16 vertical video.",
     route: "/workspace/clay-rescue",
     videos: [
-      { id: "cr-1", src: "/clayrescue/homevideo.mp4", thumbnail: null, title: "Giant Hand Rescue" },
-      { id: "cr-2", src: "/clayrescue/homevideo2.mp4", thumbnail: null, title: "Clay Disaster Fix" },
+      { id: "cr-1", src: "/clayrescue/homevideo.mp4", thumbnail: "/community-posters/cr-1.jpg", title: "Giant Hand Rescue" },
+      { id: "cr-2", src: "/clayrescue/homevideo2.mp4", thumbnail: "/community-posters/cr-2.jpg", title: "Clay Disaster Fix" },
     ],
   },
   {
@@ -31,8 +31,8 @@ const COMMUNITY_NICHES = [
       "A skeleton character in a modern setting, dramatic soap opera scene, cinematic lighting, emotional music overlay, 9:16 vertical format.",
     route: "/home",
     videos: [
-      { id: "sk-1", src: "/library/skeleton.mp4", thumbnail: null, title: "Skeleton Drama" },
-      { id: "sk-2", src: "/library/skeleton2.mp4", thumbnail: null, title: "Skeleton Betrayal" },
+      { id: "sk-1", src: "/library/skeleton.mp4", thumbnail: "/community-posters/sk-1.jpg", title: "Skeleton Drama" },
+      { id: "sk-2", src: "/library/skeleton2.mp4", thumbnail: "/community-posters/sk-2.jpg", title: "Skeleton Betrayal" },
     ],
   },
   {
@@ -45,8 +45,8 @@ const COMMUNITY_NICHES = [
       "Animated fruit characters — mango boss and strawberry mom — in a dramatic argument scene, cinematic lighting, emotional close-ups, 9:16 vertical format.",
     route: "/home",
     videos: [
-      { id: "fs-1", src: "/library/aifruit.mp4", thumbnail: null, title: "Fruit Catches Cheating" },
-      { id: "fs-2", src: "/library/aifruit2.mp4", thumbnail: null, title: "Fruit Secret Twin" },
+      { id: "fs-1", src: "/library/aifruit.mp4", thumbnail: "/community-posters/fs-1.jpg", title: "Fruit Catches Cheating" },
+      { id: "fs-2", src: "/library/aifruit2.mp4", thumbnail: "/community-posters/fs-2.jpg", title: "Fruit Secret Twin" },
     ],
   },
   {
@@ -59,8 +59,8 @@ const COMMUNITY_NICHES = [
       "LEGO mini-figures in a dramatic real-world setting, cinematic camera angles, vibrant colors, 9:16 vertical format.",
     route: "/home",
     videos: [
-      { id: "lg-1", src: "/library/lego.mp4", thumbnail: null, title: "Lego Argument" },
-      { id: "lg-2", src: "/library/lego2.mp4", thumbnail: null, title: "Lego Drama" },
+      { id: "lg-1", src: "/library/lego.mp4", thumbnail: "/community-posters/lg-1.jpg", title: "Lego Argument" },
+      { id: "lg-2", src: "/library/lego2.mp4", thumbnail: "/community-posters/lg-2.jpg", title: "Lego Drama" },
     ],
   },
   {
@@ -73,9 +73,9 @@ const COMMUNITY_NICHES = [
       "A face placed into a satisfying ASMR scene with cinematic close-ups, soft lighting, and trending audio, 9:16 vertical format.",
     route: "/workspace/face-asmr",
     videos: [
-      { id: "fa-1", src: "/face/preview.mp4", thumbnail: null, title: "Face ASMR Scene" },
-      { id: "fa-2", src: "/face/1.mp4",       thumbnail: null, title: "Face ASMR Reveal" },
-      { id: "fa-3", src: "/face/2.mp4",       thumbnail: null, title: "Face ASMR Drama" },
+      { id: "fa-1", src: "/face/preview.mp4", thumbnail: "/community-posters/fa-1.jpg", title: "Face ASMR Scene" },
+      { id: "fa-2", src: "/face/1.mp4",       thumbnail: "/community-posters/fa-2.jpg", title: "Face ASMR Reveal" },
+      { id: "fa-3", src: "/face/2.mp4",       thumbnail: "/community-posters/fa-3.jpg", title: "Face ASMR Drama" },
     ],
   },
   {
@@ -88,8 +88,8 @@ const COMMUNITY_NICHES = [
       "Micro-camera mounted on an ant's back, descending into an underground colony, narrow LED beam, realistic macro footage, 9:16 vertical format.",
     route: "/workspace/micro-camera-animal",
     videos: [
-      { id: "mc-1", src: "/viral-builder/micro-camera/video.mp4",  thumbnail: null, title: "Bodycam Underground" },
-      { id: "mc-2", src: "/viral-builder/micro-camera/video2.mp4", thumbnail: null, title: "Micro Camera POV" },
+      { id: "mc-1", src: "/viral-builder/micro-camera/video.mp4",  thumbnail: "/community-posters/mc-1.jpg", title: "Bodycam Underground" },
+      { id: "mc-2", src: "/viral-builder/micro-camera/video2.mp4", thumbnail: "/community-posters/mc-2.jpg", title: "Micro Camera POV" },
       { id: "mc-3", src: null, thumbnail: "/viral-builder/micro-camera/preview1.png", title: "Scene Preview" },
     ],
   },
@@ -103,7 +103,7 @@ const COMMUNITY_NICHES = [
       "An expressive skeleton dog character in everyday home situations, cute and emotional, cinematic quality, 9:16 vertical format.",
     route: "/home",
     videos: [
-      { id: "sd-1", src: "/library/xraydog.mp4", thumbnail: null, title: "Skeleton Dog Story" },
+      { id: "sd-1", src: "/library/xraydog.mp4", thumbnail: "/community-posters/sd-1.jpg", title: "Skeleton Dog Story" },
       { id: "sd-2", src: null, thumbnail: null, title: "Skeleton Dog Drama" },
     ],
   },
@@ -147,28 +147,42 @@ const ALL_VIDEOS = COMMUNITY_NICHES.flatMap((niche) =>
 function VideoCard({ item, onClick }) {
   const { niche } = item;
   const videoRef = useRef(null);
+  const [videoActive, setVideoActive] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
 
-  // Seek to first frame so the video thumbnail is visible before hover
-  const handleLoadedMetadata = useCallback(() => {
-    if (videoRef.current) videoRef.current.currentTime = 0.1;
-  }, []);
+  useEffect(() => {
+    if (!videoActive || !videoRef.current) return;
+    videoRef.current.play().catch(() => {});
+  }, [videoActive]);
 
-  const startPlay = useCallback(() => {
-    if (videoRef.current) videoRef.current.play().catch(() => {});
-  }, []);
+  const startPreview = () => {
+    if (!item.src) return;
+    setVideoReady(false);
+    setVideoActive(true);
+  };
 
-  const stopPlay = useCallback(() => {
-    if (!videoRef.current) return;
-    videoRef.current.pause();
-    videoRef.current.currentTime = 0.1;
-  }, []);
+  const stopPreview = () => {
+    if (!item.src) return;
+    setVideoActive(false);
+    setVideoReady(false);
+  };
 
   return (
     <div
       className="group relative aspect-[9/16] cursor-pointer overflow-hidden rounded-[18px] border border-white/[0.07] bg-[#0d0f10] transition hover:border-white/20"
-      onMouseEnter={item.src ? startPlay : undefined}
-      onMouseLeave={item.src ? stopPlay : undefined}
+      onMouseEnter={startPreview}
+      onMouseLeave={stopPreview}
+      onFocus={startPreview}
+      onBlur={stopPreview}
       onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
     >
       {/* Thumbnail image (used for image-only cards or as poster for videos) */}
       {item.thumbnail && (
@@ -177,29 +191,39 @@ function VideoCard({ item, onClick }) {
           alt={niche.category}
           className="absolute inset-0 h-full w-full object-cover"
           loading="lazy"
+          decoding="async"
         />
       )}
 
-      {/* Video — always visible so first frame acts as preview */}
-      {item.src && (
+      {/* Video bytes are requested only after hover/focus; the lightweight poster handles idle cards. */}
+      {item.src && videoActive && (
         <video
           ref={videoRef}
           src={item.src}
-          className="absolute inset-0 h-full w-full object-cover"
+          poster={item.thumbnail || undefined}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ${
+            videoReady ? "opacity-100" : "opacity-0"
+          }`}
           muted
           playsInline
           loop
           preload="metadata"
-          onLoadedMetadata={handleLoadedMetadata}
+          onCanPlay={() => setVideoReady(true)}
         />
       )}
 
-      {/* Play icon on hover (only for video cards) */}
-      {item.src && (
+      {/* The play affordance disappears once the inline preview starts. */}
+      {item.src && !videoActive && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
           <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/45 backdrop-blur-sm">
             <span className="ml-0.5 text-sm text-white">▶</span>
           </div>
+        </div>
+      )}
+
+      {item.src && videoActive && !videoReady && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="h-7 w-7 animate-spin rounded-full border-2 border-white/25 border-t-white/90" />
         </div>
       )}
 
@@ -252,11 +276,12 @@ function NicheModal({ item, onClose }) {
             <video
               ref={videoRef}
               src={item.src}
+              poster={item.thumbnail || undefined}
               className="h-full max-h-[55dvh] w-full object-contain md:max-h-none"
               controls
               playsInline
               loop
-              preload="none"
+              preload="metadata"
             />
           ) : (
             <div className="flex aspect-[9/16] max-h-[45dvh] items-center justify-center bg-[#0a0b0d] md:max-h-none md:h-full md:aspect-auto">

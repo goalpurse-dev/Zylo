@@ -12,6 +12,12 @@ const POLICIES = [
   { title: "Refund & Cancellation Policy", slug: "refunds" },
   { title: "Copyright / DMCA", slug: "dmca" },
   { title: "Data Processing Addendum (DPA)", slug: "dpa" },
+  {
+    title: "Data Deletion Instructions",
+    slug: "data-deletion",
+    updated: "2026-07-20",
+    version: "v1.0",
+  },
 ];
 
 export default function SupportPolicies() {
@@ -33,7 +39,7 @@ export default function SupportPolicies() {
           >
             <div className="font-semibold">{p.title}</div>
             <div className="text-xs text-white/60 mt-1">
-              Last updated: 2026-04-29 • v1.1
+              Last updated: {p.updated ?? "2026-04-29"} &bull; {p.version ?? "v1.1"}
             </div>
           </Link>
         ))}

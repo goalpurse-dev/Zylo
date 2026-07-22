@@ -235,33 +235,14 @@ async function launchWithRetry(
 // Runware starts billing the instant the job launches, not when polling
 // later confirms completion, so the ledger needs to move at the same moment.
 async function chargeJobCredits(sb: SB, jobId: string): Promise<boolean> {
-  const { data: job } = await sb
-    .from("jobs")
-    .select("user_id, settings")
-    .eq("id", jobId)
-    .single();
+  const { data, error } = await sb.rpc("charge_job_credits", { p_job_id: jobId });
 
-  if (!job?.user_id) return false;
-
-  const credits = Number(job.settings?.credits ?? 0);
-  if (credits <= 0) return true;
-
-  const { error } = await sb.rpc("deduct_credits", {
-    uid: job.user_id,
-    amount: credits,
-  });
-
-  if (error) {
-    logEvent("error", "credit_charge_failed", {
-      jobId,
-      userId: job.user_id,
-      credits,
-      message: error.message,
-    });
+  if (error || data !== true) {
+    logEvent("error", "credit_charge_failed", { jobId, message: error?.message ?? "insufficient credits" });
     return false;
   }
 
-  logEvent("info", "credit_charge_success", { jobId, userId: job.user_id, credits });
+  logEvent("info", "credit_charge_success", { jobId });
   return true;
 }
 
@@ -269,44 +250,12 @@ async function chargeJobCredits(sb: SB, jobId: string): Promise<boolean> {
 // the user shouldn't pay for a video they never received. Mirrors the
 // fallback pattern used in stripe-webhook's atomicAddCredits.
 async function refundJobCredits(sb: SB, jobId: string) {
-  const { data: job } = await sb
-    .from("jobs")
-    .select("user_id, settings")
-    .eq("id", jobId)
-    .single();
-
-  if (!job?.user_id) return;
-
-  const credits = Number(job.settings?.credits ?? 0);
-  if (credits <= 0) return;
-
-  const { error } = await sb.rpc("increment_credit_balance", {
-    p_user_id: job.user_id,
-    p_delta: credits,
-  });
+  const { data, error } = await sb.rpc("refund_job_credits", { p_job_id: jobId });
 
   if (error) {
-    logEvent("error", "credit_refund_rpc_failed", {
-      jobId,
-      userId: job.user_id,
-      credits,
-      message: error.message,
-    });
-
-    const { data: profile } = await sb
-      .from("profiles")
-      .select("credit_balance")
-      .eq("id", job.user_id)
-      .single();
-
-    await sb
-      .from("profiles")
-      .update({ credit_balance: (profile?.credit_balance ?? 0) + credits })
-      .eq("id", job.user_id);
-
-    logEvent("warn", "credit_refund_fallback_applied", { jobId, userId: job.user_id, credits });
-  } else {
-    logEvent("info", "credit_refund_success", { jobId, userId: job.user_id, credits });
+    logEvent("error", "credit_refund_rpc_failed", { jobId, message: error.message });
+  } else if (data === true) {
+    logEvent("info", "credit_refund_success", { jobId });
   }
 }
 
@@ -468,6 +417,14 @@ async function processVideoJob(body: any) {
     : [];
   let currentPrompt = safeRunwarePositivePrompt(prompt);
 
+  const { data: existingJobState } = await sb
+    .from("jobs")
+    .select("settings,charged")
+    .eq("id", String(jobId))
+    .maybeSingle();
+  const existingSettings = existingJobState?.settings ?? {};
+  let resumableProviderJobId = String(existingSettings?.provider_job_id ?? "").trim() || null;
+
   function buildLaunchPayload(promptText: string) {
     const p: any = {
       subject: promptText,
@@ -492,8 +449,8 @@ async function processVideoJob(body: any) {
   // whole job — original attempt plus any rewrites — stays inside the
   // ~320s wall-clock budget instead of resetting the clock each retry.
   const startMs = Date.now();
-  let charged = false;
-  let contentRetryCount = 0;
+  let charged = Boolean(existingJobState?.charged);
+  let contentRetryCount = Number(existingSettings?.content_retry_count ?? 0);
 
   attempts:
   for (;;) {
@@ -506,8 +463,6 @@ async function processVideoJob(body: any) {
       elapsedMs: Date.now() - startMs,
     });
 
-    const providerJobId = await launchWithRetry(sb, String(jobId), launchPayload);
-
     // ============== CHARGE AT LAUNCH ==============
     // Runware starts billing the instant launchRunwareVideo succeeds — not
     // when polling later confirms a finished video. Charging here keeps your
@@ -517,24 +472,45 @@ async function processVideoJob(body: any) {
     // another one.
     if (!charged) {
       charged = await chargeJobCredits(sb, String(jobId));
+      if (!charged) {
+        await safeUpdateJob(sb, String(jobId), {
+          status: "failed",
+          error: "INSUFFICIENT_CREDITS",
+        });
+        return;
+      }
     }
 
-    /* ================= SAVE PROVIDER ID ================= */
+    let providerJobId: string;
 
-    const { data: settingsRow } = await sb
-      .from("jobs")
-      .select("settings")
-      .eq("id", String(jobId))
-      .single();
+    if (resumableProviderJobId) {
+      providerJobId = resumableProviderJobId;
+      resumableProviderJobId = null;
+      logEvent("info", "provider_poll_resumed", {
+        jobId,
+        providerJobId,
+        elapsedMs: Date.now() - startMs,
+      });
+    } else {
+      providerJobId = await launchWithRetry(sb, String(jobId), launchPayload);
 
-    await safeUpdateJob(sb, String(jobId), {
-      settings: {
-        ...(settingsRow?.settings ?? {}),
-        provider_job_id: providerJobId,
-        content_retry_count: contentRetryCount,
-        ...(contentRetryCount > 0 ? { sanitized_prompt: currentPrompt } : {}),
-      },
-    });
+      /* ================= SAVE PROVIDER ID ================= */
+
+      const { data: settingsRow } = await sb
+        .from("jobs")
+        .select("settings")
+        .eq("id", String(jobId))
+        .single();
+
+      await safeUpdateJob(sb, String(jobId), {
+        settings: {
+          ...(settingsRow?.settings ?? {}),
+          provider_job_id: providerJobId,
+          content_retry_count: contentRetryCount,
+          ...(contentRetryCount > 0 ? { sanitized_prompt: currentPrompt } : {}),
+        },
+      });
+    }
 
     /* ================= POLLING ================= */
 
@@ -699,6 +675,10 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== "POST") return err(req, "Method not allowed", 405);
+
+  if (!SERVICE_KEY || req.headers.get("x-job-worker-key") !== SERVICE_KEY) {
+    return err(req, "Unauthorized worker handoff", 401);
+  }
 
   if (!SUPABASE_URL || !SERVICE_KEY) {
     return err(req, "Missing Supabase env", 500);

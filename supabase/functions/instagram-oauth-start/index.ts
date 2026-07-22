@@ -21,7 +21,11 @@ const REDIRECT_URI   = (Deno.env.get("INSTAGRAM_REDIRECT_URI") ?? "").trim();
 /* ── CONSTANTS ────────────────────────────────────────────────────────────── */
 
 const IG_AUTH_URL    = "https://www.instagram.com/oauth/authorize/";
-const SCOPES         = "instagram_business_basic,instagram_business_content_publish";
+const SCOPES         = [
+  "instagram_business_basic",
+  "instagram_business_content_publish",
+  "instagram_business_manage_insights",
+].join(",");
 const STATE_TTL_MS   = 10 * 60 * 1000;   // 10 minutes
 const RATE_MAX       = 5;                 // starts per user per hour
 const RATE_WINDOW_MS = 60 * 60 * 1000;   // 1 hour
@@ -50,7 +54,9 @@ function isValidRedirectUri(value: string): boolean {
 }
 
 function safeReturnPath(value: unknown): string {
-  return value === "/workspace/connections" ? "/workspace/connections" : "/workspace/publish";
+  return ["/workspace/connections", "/workspace/publish", "/workspace/stats"].includes(String(value))
+    ? String(value)
+    : "/workspace/publish";
 }
 
 function encodeReturnPath(path: string): string {

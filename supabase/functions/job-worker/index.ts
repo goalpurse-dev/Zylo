@@ -65,11 +65,29 @@ Deno.serve(async (req) => {
     const incomingAuth   = req.headers.get("Authorization") || "";
     const incomingApiKey = req.headers.get("apikey")        || Deno.env.get("SUPABASE_ANON_KEY") || "";
 
-    const body = (await req.json().catch(() => ({}))) as { jobId?: string };
+    const body = (await req.json().catch(() => ({}))) as {
+      jobId?: string;
+      recoverExistingProvider?: boolean;
+    };
+    const recoverExistingProvider = body.recoverExistingProvider === true;
 
     const sbAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
       auth: { persistSession: false },
     });
+
+    // This function intentionally keeps platform JWT verification disabled so
+    // queue-worker can call it with either legacy JWT or modern sb_secret keys.
+    // Authenticate every request here instead, and never let one user claim or
+    // dispatch another user's job.
+    const bearerToken = incomingAuth.replace(/^Bearer\s+/i, "").trim();
+    const isServiceRequest = Boolean(bearerToken) && bearerToken === SERVICE_ROLE_KEY;
+    let authenticatedUserId: string | null = null;
+    if (!isServiceRequest) {
+      if (!bearerToken) return fail(req, "Authentication required", 401);
+      const { data: authData, error: authError } = await sbAdmin.auth.getUser(bearerToken);
+      if (authError || !authData.user) return fail(req, "Invalid authentication", 401);
+      authenticatedUserId = authData.user.id;
+    }
 
     /* ---------- concurrency guard ---------- */
     // Env-configurable limits so we can tune without redeploy
@@ -79,6 +97,22 @@ Deno.serve(async (req) => {
 
     /* ---------- pick job ---------- */
     let jobId = body.jobId;
+
+    if (!jobId && !isServiceRequest) {
+      return fail(req, "Only the queue worker can claim an unspecified job", 403);
+    }
+
+    if (jobId && authenticatedUserId) {
+      const { data: ownedJob, error: ownershipError } = await sbAdmin
+        .from("jobs")
+        .select("user_id")
+        .eq("id", jobId)
+        .maybeSingle();
+      if (ownershipError) return fail(req, "Could not verify job ownership", 500);
+      if (!ownedJob || ownedJob.user_id !== authenticatedUserId) {
+        return fail(req, "Job not found", 404);
+      }
+    }
 
     if (!jobId) {
       // Count currently active jobs to enforce concurrency limits
@@ -129,31 +163,55 @@ Deno.serve(async (req) => {
       jobId = data.id;
     }
 
-    // claim job (safe if already claimed elsewhere)
-    try {
-      await sbAdmin.rpc("claim_job", { p_id: jobId });
-    } catch (e) {
-      logEvent("warn", "claim_job_rpc_threw", { jobId, message: String((e as any)?.message ?? e) });
-    }
-
-    const { data: job, error: jobErr } = await sbAdmin
+    // Atomically transition queued -> running. The old best-effort claim RPC
+    // ignored its return value and then accepted already-running rows, allowing
+    // two worker invocations to launch the same paid provider task twice.
+    const claimableAt = new Date().toISOString();
+    let { data: job, error: jobErr } = await sbAdmin
       .from("jobs")
-      .select("id,user_id,type,input,settings,tool_key,status,progress,prompt")
+      .update({ status: "running" })
       .eq("id", jobId)
-      .single();
+      .eq("status", "queued")
+      .or(`retry_after.is.null,retry_after.lte.${claimableAt}`)
+      .select("id,user_id,type,input,settings,tool_key,status,progress,prompt")
+      .maybeSingle();
 
     if (jobErr) {
-      logEvent("error", "job_load_failed", { jobId, message: jobErr.message });
-      return fail(req, `Job load error: ${jobErr.message}`, 500);
+      logEvent("error", "job_claim_failed", { jobId, message: jobErr.message });
+      return fail(req, `Job claim error: ${jobErr.message}`, 500);
     }
     if (!job) {
-      logEvent("error", "job_not_found", { jobId });
-      return fail(req, "Job not found", 404);
-    }
+      const { data: existing } = await sbAdmin
+        .from("jobs")
+        .select("id,user_id,type,input,settings,tool_key,status,progress,prompt")
+        .eq("id", jobId)
+        .maybeSingle();
+      const status = existing?.status ?? "missing";
 
-    if (job.status !== "queued" && job.status !== "running" && job.status !== "processing") {
-      // already done or canceled
-      return json(req, { ok: true, id: jobId, message: "job not runnable", status: job.status });
+      const canRecover = Boolean(
+        recoverExistingProvider &&
+        existing &&
+        existing.type === "video" &&
+        ["running", "processing", "failed"].includes(String(existing.status)) &&
+        (existing.settings as any)?.provider_job_id
+      );
+
+      if (canRecover) {
+        job = existing;
+        logEvent("info", "provider_poll_recovery_accepted", {
+          jobId,
+          status,
+          providerJobId: String((existing.settings as any).provider_job_id),
+        });
+      } else {
+        logEvent("info", "duplicate_dispatch_prevented", { jobId, status });
+        return json(req, {
+          ok: true,
+          id: jobId,
+          message: "job already claimed or not ready",
+          status,
+        });
+      }
     }
 
     if (job.type !== "image" && job.type !== "video") {
@@ -250,10 +308,11 @@ Deno.serve(async (req) => {
           method:  "POST",
           headers: {
             "content-type": "application/json",
-            // Forward the original user JWT so runware-image passes JWT verification.
-            // Using SERVICE_ROLE_KEY here causes UNAUTHORIZED_INVALID_JWT_FORMAT.
+            // Provider functions use an explicit server-to-server secret because
+            // modern Supabase service keys are not necessarily JWT formatted.
             "authorization": incomingAuth,
             "apikey":        incomingApiKey,
+            "x-job-worker-key": SERVICE_ROLE_KEY,
           },
           body: JSON.stringify(payload),
         });

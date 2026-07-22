@@ -1,26 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import {
   ChevronLeft,
   ChevronRight,
-  Camera,
-  Sparkles,
-  Smile,
-  Video,
-  Skull,
-  Shapes,
-  ChefHat,
 } from "lucide-react";
 
 const SUITE_ITEMS = [
-  { name: "AI Fruit Story", desc: "Characters, stories, viral content & more", badge: "NEW", Icon: Sparkles, image: "/viral-builder/ai-fruit/presets/kicked-out.webp", path: "/workspace/ai-fruit-story" },
-  { name: "Face ASMR", desc: "Viral face reveal ASMR videos", badge: "TRENDING", Icon: Smile, image: "/face/neypreview.png", path: "/workspace/face-asmr" },
-  { name: "Micro Camera", desc: "Animal bodycam goes underground", badge: "NEW", Icon: Camera, image: "/viral-builder/micro-camera/preview1.png", path: "/workspace/micro-camera-animal" },
-  { name: "Video Generator", desc: "Create cinematic videos in seconds", badge: null, Icon: Video, image: "/home/videogen.png", path: "/workspace/video-generator" },
-  { name: "Viral Skeleton", desc: "Scroll-stopping skeleton content", badge: "TRENDING", Icon: Skull, image: "/home/skeleton.png", path: "/workspace/skeleton-shorts" },
-  { name: "Clay Rescue", desc: "Giant hands save tiny clay worlds", badge: "NEW", Icon: Shapes, image: "/clayrescue/smallpreview.webp", path: "/workspace/clay-rescue" },
-  { name: "AI Cooking Matic", desc: "Viral cooking videos on autopilot", badge: "NEW", Icon: ChefHat, image: "/templates/AICOOKING/thumbnail.png", path: "/workspace/ai-cooking-matic" },
+  { name: "AI Fruit Story", desc: "Characters, stories, viral content & more", badge: "NEW", image: "/viral-builder/ai-fruit/presets/kicked-out.webp", path: "/workspace/ai-fruit-story" },
+  { name: "Face ASMR", desc: "Viral face reveal ASMR videos", badge: "TRENDING", image: "/face/neypreview.png", path: "/workspace/face-asmr" },
+  { name: "Nationality Swap", desc: "Reimagine football stars around the world", badge: "NEW", image: "/template/nationality-swap/preview.png", path: "/workspace/footballer-nationality-swap" },
+  { name: "Micro Camera", desc: "Animal bodycam goes underground", badge: "NEW", image: "/viral-builder/micro-camera/preview1.png", path: "/workspace/micro-camera-animal" },
+  { name: "Video Generator", desc: "Create cinematic videos in seconds", badge: null, image: "/home/videogen.png", path: "/workspace/video-generator" },
+  { name: "Viral Skeleton", desc: "Scroll-stopping skeleton content", badge: "TRENDING", image: "/home/skeleton.png", path: "/workspace/skeleton-shorts" },
+  { name: "Clay Rescue", desc: "Giant hands save tiny clay worlds", badge: "NEW", image: "/clayrescue/smallpreview.webp", path: "/workspace/clay-rescue" },
+  { name: "AI Cooking Matic", desc: "Viral cooking videos on autopilot", badge: "NEW", image: "/templates/AICOOKING/thumbnail.png", path: "/workspace/ai-cooking-matic" },
 ];
 
 const CARD_WIDTH = 224;
@@ -30,15 +24,11 @@ const CARD_GAP = 4;
 const CARD_SPACING = CARD_WIDTH + CARD_GAP;
 const STAGE_HEIGHT = CARD_HEIGHT + 42;
 const LABEL_ROW_PULLUP = 28;
-const ICON_SIZE = 40;
 const PERSPECTIVE = 1400;
 const ROTATION_SPEED = 0.105;
+const MAX_RENDER_FPS = 30;
 const MAX_CARD_TILT = 18;
 const HEIGHT_FOCUS_OFFSET = -0.28;
-
-function wrapIndex(index) {
-  return (index + SUITE_ITEMS.length) % SUITE_ITEMS.length;
-}
 
 function circularOffset(index, centerIndex) {
   const total = SUITE_ITEMS.length;
@@ -81,7 +71,7 @@ function labelY(offset) {
   const slotTop = (STAGE_HEIGHT - CARD_HEIGHT) / 2;
   const labelRowTop = STAGE_HEIGHT - LABEL_ROW_PULLUP;
 
-  return slotTop + top + height - ICON_SIZE / 2 - labelRowTop;
+  return slotTop + top + height + 16 - labelRowTop;
 }
 
 function CurvedTitleLine() {
@@ -102,7 +92,6 @@ function CurvedTitleLine() {
 }
 
 function MobileSuiteCard({ item, variant = "rail", onClick }) {
-  const Icon = item.Icon;
   const isGrid = variant === "grid";
 
   return (
@@ -126,7 +115,6 @@ function MobileSuiteCard({ item, variant = "rail", onClick }) {
         </span>
       )}
       <div className="absolute bottom-3 left-3 right-3 z-10 flex items-center gap-2 text-white">
-        <Icon className="h-4 w-4 shrink-0" />
         <span className="truncate text-[15px] font-extrabold leading-none">{item.name}</span>
       </div>
     </button>
@@ -157,7 +145,7 @@ function SuiteCard({ item, offset, active, onClick }) {
         zIndex: 100 - Math.round(abs * 12),
         transform: `translate3d(${x}px, ${y}px, 0)`,
       }}
-      className="group absolute left-1/2 top-1/2 box-border overflow-hidden border-x-[2px] border-black bg-[#090A0A] text-left shadow-[0_24px_80px_rgba(0,0,0,0.55)] [backface-visibility:hidden] hover:!opacity-100"
+      className="group absolute left-1/2 top-1/2 box-border overflow-hidden border-x-[2px] border-black bg-[#090A0A] text-left shadow-[0_24px_80px_rgba(0,0,0,0.55)] transition-[transform,opacity,filter] duration-100 ease-linear [backface-visibility:hidden] hover:!opacity-100"
     >
       <div
         data-arc-face
@@ -167,7 +155,7 @@ function SuiteCard({ item, offset, active, onClick }) {
           transform: `perspective(760px) rotateY(${innerRotate}deg) scaleX(${widthCompensation})`,
           transformOrigin: "center center",
         }}
-        className="absolute inset-x-0 overflow-hidden will-change-[height,top,transform]"
+        className="absolute inset-x-0 overflow-hidden transition-[height,top,transform] duration-100 ease-linear will-change-[height,top,transform]"
       >
         <img
           src={item.image}
@@ -199,7 +187,7 @@ export default function ZyvoSuiteCarousel() {
   const [phase, setPhase] = useState(Math.floor(SUITE_ITEMS.length / 2));
   const [showMobileMore, setShowMobileMore] = useState(false);
   const phaseRef = useRef(Math.floor(SUITE_ITEMS.length / 2));
-  const lastFrameRef = useRef(null);
+  const desktopSectionRef = useRef(null);
 
   const orderedItems = useMemo(
     () => SUITE_ITEMS
@@ -209,20 +197,46 @@ export default function ZyvoSuiteCarousel() {
   );
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    const desktop = window.matchMedia("(min-width: 801px)");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (!desktop.matches || reducedMotion.matches) return undefined;
 
+    let isVisible = false;
     let frameId;
-    function tick(now) {
-      if (lastFrameRef.current == null) lastFrameRef.current = now;
-      const seconds = (now - lastFrameRef.current) / 1000;
-      lastFrameRef.current = now;
-      phaseRef.current = wrapPhase(phaseRef.current + seconds * ROTATION_SPEED);
-      setPhase(phaseRef.current);
+    let lastFrame;
+    let lastRender = 0;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+        lastFrame = undefined;
+      },
+      { rootMargin: "120px 0px" },
+    );
+    if (desktopSectionRef.current) observer.observe(desktopSectionRef.current);
+
+    const tick = (now) => {
+      if (isVisible && !document.hidden) {
+        if (lastFrame === undefined) lastFrame = now;
+        const elapsedSeconds = Math.min((now - lastFrame) / 1000, 0.1);
+        lastFrame = now;
+        phaseRef.current = wrapPhase(phaseRef.current + elapsedSeconds * ROTATION_SPEED);
+
+        if (now - lastRender >= 1000 / MAX_RENDER_FPS) {
+          setPhase(phaseRef.current);
+          lastRender = now;
+        }
+      } else {
+        lastFrame = undefined;
+      }
       frameId = window.requestAnimationFrame(tick);
-    }
+    };
 
     frameId = window.requestAnimationFrame(tick);
-    return () => window.cancelAnimationFrame(frameId);
+    return () => {
+      observer.disconnect();
+      window.cancelAnimationFrame(frameId);
+    };
   }, []);
 
   function goPrev() {
@@ -281,23 +295,17 @@ export default function ZyvoSuiteCarousel() {
               ))}
             </div>
 
-            <div className="mt-5 flex h-12 items-center gap-3 rounded-full border border-white/10 bg-[#17191a] px-5 text-white/78 shadow-[0_18px_50px_rgba(0,0,0,.35)]">
-              <Sparkles className="h-5 w-5 shrink-0 text-white" />
-              <span className="min-w-0 flex-1 truncate text-[14px] font-semibold">Make a 30-second ad for my product...</span>
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#ff4ed1] text-white">
-                <ChevronRight className="h-5 w-5 -rotate-90" />
-              </span>
-            </div>
           </div>
         )}
       </section>
 
-      <motion.section
+      <Motion.section
+      ref={desktopSectionRef}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="relative mx-auto mt-8 w-full overflow-hidden px-0 md:px-[50px] max-[800px]:hidden"
+      className="relative mx-auto mt-3 w-full overflow-hidden px-0 md:px-[50px] max-[800px]:hidden"
     >
       <div className="relative z-20 mb-[-22px] flex flex-col items-center text-center">
         <h2 className="bg-gradient-to-r from-[#ffb4e8] via-[#ff4ed1] to-[#8f58ff] bg-clip-text text-[32px] font-black tracking-tight text-transparent md:text-[44px]">
@@ -355,7 +363,6 @@ export default function ZyvoSuiteCarousel() {
           {orderedItems.map((item) => {
             const offset = item.offset;
             const isCenter = Math.abs(offset) < 0.32;
-            const Icon = item.Icon;
             const abs = Math.abs(offset);
             const isVisible = abs <= 2.45;
 
@@ -368,13 +375,8 @@ export default function ZyvoSuiteCarousel() {
                   transform: `translate3d(${projectedX(offset)}px, ${labelY(offset)}px, 0)`,
                   opacity: isVisible ? Math.max(0.34, 1 - abs * 0.22) : 0,
                 }}
-                className="absolute left-1/2 top-0 z-30 flex flex-col items-center gap-2 will-change-transform"
+                className="absolute left-1/2 top-0 z-30 flex flex-col items-center transition-[transform,opacity] duration-100 ease-linear will-change-transform"
               >
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full border transition-colors duration-300 ${
-                  isCenter ? "border-white/10 bg-black text-white" : "border-white/10 bg-black/80 text-white/45"
-                }`}>
-                  <Icon className="h-4 w-4" />
-                </div>
                 <span className={`text-center text-[13px] font-semibold leading-tight transition-colors duration-300 ${
                   isCenter ? "text-white" : "text-white/35"
                 }`}>
@@ -385,7 +387,7 @@ export default function ZyvoSuiteCarousel() {
           })}
         </div>
       </div>
-      </motion.section>
+      </Motion.section>
     </>
   );
 }

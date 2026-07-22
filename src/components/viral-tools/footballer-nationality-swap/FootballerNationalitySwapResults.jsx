@@ -1,7 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Sparkles, RotateCcw, Download, Share2, X, Maximize2 } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, RotateCcw, Download, Share2, X, Maximize2, Wand2 } from "lucide-react";
+import useFootballerStitchEditor from "./videoEditor/useFootballerStitchEditor";
+// Trim/reorder timeline editor is paused for now — FootballerStitchTimeline.jsx
+// is still there, just not wired into FinalVideoPanel until this comes back.
 
 async function downloadFile(url, filename) {
   try {
@@ -37,7 +40,7 @@ function Viewer({ scene, index, onClose }) {
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex flex-col" onClick={onClose}>
+    <div className="fixed inset-0 z-[9999] bg-black/95 flex flex-col" onClick={onClose}>
       <div className="flex items-center justify-between px-5 py-3 shrink-0" onClick={(e) => e.stopPropagation()}>
         <div className="min-w-0">
           <span className="text-white/50 text-sm truncate">
@@ -51,7 +54,10 @@ function Viewer({ scene, index, onClose }) {
       </div>
       <div className="flex-1 min-h-0 flex items-center justify-center px-4" onClick={(e) => e.stopPropagation()}>
         {isVideo ? (
-          <video src={scene.videoUrl} controls autoPlay playsInline preload="none" className="max-w-full max-h-full rounded-2xl object-contain" style={{ maxHeight: "calc(100dvh - 160px)" }} />
+          <video
+            src={scene.videoUrl} controls autoPlay playsInline preload="auto" poster={scene.imageUrl || undefined}
+            className="max-w-full max-h-full rounded-2xl object-contain" style={{ maxHeight: "calc(100dvh - 160px)" }}
+          />
         ) : (
           <img src={scene.imageUrl} alt="" className="max-w-full max-h-full rounded-2xl object-contain" style={{ maxHeight: "calc(100dvh - 160px)" }} />
         )}
@@ -98,14 +104,43 @@ function timeAgo(dateStr) {
 }
 
 function RecentThumb({ scene, onSelect }) {
+  const [hovering, setHovering] = useState(false);
+  const videoRef = useRef(null);
   const thumbUrl = scene.imageUrl || scene.thumbnailUrl;
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (hovering) {
+      v.currentTime = 0;
+      v.play().catch(() => {});
+    } else {
+      v.pause();
+    }
+  }, [hovering]);
+
   return (
     <button
       type="button"
       onClick={onSelect}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+      onFocus={() => setHovering(true)}
+      onBlur={() => setHovering(false)}
       className="group relative aspect-[9/16] overflow-hidden rounded-xl bg-black ring-1 ring-white/10 transition hover:ring-[#FBBF24]/70"
     >
       {thumbUrl && <img src={thumbUrl} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />}
+      {scene.videoUrl && (
+        <video
+          ref={videoRef}
+          src={scene.videoUrl}
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ${hovering ? "opacity-100" : "opacity-0"}`}
+        />
+      )}
       <div className="absolute inset-0 bg-black/20 transition group-hover:bg-black/0" />
     </button>
   );
@@ -227,11 +262,11 @@ function SceneCard({ scene, index, onRetry }) {
       )}
 
       {imgFailed && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-[#160808]">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-[#160808] px-4 text-center">
           <div className="w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center">
             <span className="text-red-400 text-xl">✕</span>
           </div>
-          <span className="text-red-400 text-[14px] font-semibold">Failed</span>
+          <span className="text-red-400 text-[14px] font-semibold">{scene.imageError || "Failed"}</span>
         </div>
       )}
 
@@ -269,7 +304,7 @@ function SceneCard({ scene, index, onRetry }) {
           </button>
           {vidFailed && imgDone && (
             <span className="mt-1.5 rounded-full bg-black/60 px-2.5 py-0.5 text-[9px] font-semibold text-amber-400">
-              Video timed out — image saved
+              {scene.videoError || "Video timed out — image saved"}
             </span>
           )}
         </div>
@@ -315,13 +350,119 @@ function SceneCard({ scene, index, onRetry }) {
   );
 }
 
+/* ── Final stitched video ──
+   Edit (trim/reorder timeline) is disabled for now — paused mid-build, will
+   come back later. This just shows the auto-stitched result + a retry
+   button if the render itself failed. */
+function FinalVideoPanel({ sceneClips, generationId, existingFullVideoUrl, onSaved }) {
+  const {
+    finalUrl, stitching, progress, renderError,
+    saving, saveError, saved,
+    render, dirty,
+  } = useFootballerStitchEditor(sceneClips, { generationId, existingFullVideoUrl, onSaved });
+
+  if (!sceneClips.length) return null;
+
+  return (
+    <div className="shrink-0 flex flex-col gap-3 rounded-2xl border border-white/[0.08] bg-[#0d0f11] p-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <p className="text-[12px] font-black uppercase tracking-widest text-[#FBBF24]">Full Swap Video</p>
+          {finalUrl && !stitching && !renderError && (
+            <span className="shrink-0 rounded-full bg-[#F59E0B]/15 border border-[#F59E0B]/30 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-[#FBBF24]">
+              🔥 Viral Ready
+            </span>
+          )}
+        </div>
+
+        {finalUrl && !stitching && (
+          <button
+            onClick={() => downloadFile(finalUrl, "nationality-swap-full.mp4")}
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white/70 hover:text-white transition"
+            title="Download"
+          >
+            <Download className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+
+      {/* ── Hero video ── */}
+      <div className="relative mx-auto w-full max-w-[260px] aspect-[9/16] rounded-2xl overflow-hidden bg-black border border-white/[0.08]">
+        {finalUrl && (
+          <video
+            src={finalUrl}
+            controls
+            playsInline
+            preload="auto"
+            className="nationality-swap-final-video absolute inset-0 w-full h-full bg-black object-contain"
+          />
+        )}
+        {stitching && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-black/70 backdrop-blur-sm">
+            <Loader2 className="w-8 h-8 text-[#FBBF24] animate-spin" />
+            <span className="text-white font-black text-[18px] tabular-nums">{progress}%</span>
+            <span className="text-white/50 text-[11px] font-medium">Rendering final video…</span>
+          </div>
+        )}
+        {!finalUrl && !stitching && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center">
+            {renderError ? (
+              <span className="text-red-400 text-[12px]">{renderError}</span>
+            ) : (
+              <span className="text-white/30 text-[12px]">Preview appears here</span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {!renderError && finalUrl && (
+        <div className="flex items-center justify-center gap-1.5 text-[11px]">
+          {saving && (
+            <span className="flex items-center gap-1.5 text-white/35">
+              <Loader2 className="w-3 h-3 animate-spin" /> Saving to your account…
+            </span>
+          )}
+          {!saving && saved && (
+            <span className="text-emerald-400/80">✓ Saved — ready to publish</span>
+          )}
+          {!saving && saveError && (
+            <span className="text-amber-400/80">{saveError}</span>
+          )}
+        </div>
+      )}
+
+      {renderError && (
+        <button
+          onClick={render}
+          disabled={!dirty || stitching}
+          className="flex items-center justify-center gap-2 rounded-xl py-3 text-[13px] font-black transition active:scale-[0.98] bg-[#F59E0B] text-black shadow-[0_0_24px_rgba(245,158,11,0.5)] hover:bg-[#d98a09] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {stitching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+          {stitching ? "Rendering…" : "Retry"}
+        </button>
+      )}
+    </div>
+  );
+}
+
 /* ── Main ── */
 export default function FootballerNationalitySwapResults({
   phase, jobScenes, error, user,
   recentGenerations = [], viewingRecent = false,
   onOpenRecent, onRequestAuth, onReset, onRetryScene,
+  generationId = null, fullVideoUrl = null, onFullVideoSaved,
 }) {
   const hasRecent = recentGenerations.length > 0;
+
+  const sceneClips = useMemo(
+    () =>
+      phase === "done"
+        ? jobScenes
+            .filter((s) => s.videoStatus === "succeeded" && s.videoUrl)
+            .map((s) => ({ sceneIndex: s.index, videoUrl: s.videoUrl }))
+        : [],
+    [phase, jobScenes]
+  );
 
   /* ══ ACTIVE GENERATION ══ */
   if (phase !== "idle") {
@@ -367,6 +508,15 @@ export default function FootballerNationalitySwapResults({
 
         <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
           <div className="flex flex-col gap-4 px-3 pb-[140px] lg:pb-6 lg:px-0">
+            {phase === "done" && sceneClips.length > 0 && (
+              <FinalVideoPanel
+                sceneClips={sceneClips}
+                generationId={generationId}
+                existingFullVideoUrl={fullVideoUrl}
+                onSaved={onFullVideoSaved}
+              />
+            )}
+
             <div
               className="grid grid-cols-2 content-start justify-items-stretch gap-x-3.5 gap-y-4 lg:gap-3 lg:[grid-template-columns:repeat(var(--fs-cols),minmax(0,min(100%,280px)))]"
               style={{ "--fs-cols": cols }}
@@ -406,38 +556,46 @@ export default function FootballerNationalitySwapResults({
               Any Nation
             </span>
           </h2>
-          <p className="text-white/55 text-[13px] mt-2 leading-relaxed max-w-[460px]">
-            Pick a footballer and a nationality. We invent a fictional alternate-universe player, give them a
-            localized name, jersey number, and a media-day introduction spoken in the local language.
-          </p>
+          {!hasRecent && (
+            <p className="text-white/55 text-[13px] mt-2 leading-relaxed max-w-[460px]">
+              Pick a footballer and a nationality. We invent a fictional alternate-universe player, give them a
+              localized name, jersey number, and a media-day introduction spoken in the local language.
+            </p>
+          )}
         </div>
 
-        {/* Traits — hidden on mobile */}
-        <div className="hidden sm:flex flex-wrap gap-2">
-          {FEATURES.map((f) => (
-            <span key={f.label} className="inline-flex h-7 items-center gap-1.5 rounded-[32px] border border-[rgba(214,225,255,0.08)] bg-white/[0.06] px-3 text-[#b0b4ba] text-[11.89px] font-medium leading-[19px] tracking-[-0.08px] shadow-[inset_0_0_7.1px_rgba(255,255,255,0.21)]">
-              <span>{f.icon}</span>{f.label}
-            </span>
-          ))}
-        </div>
+        {/* Traits — hidden on mobile, and hidden once there are recent generations so the video + recent-gen row can grow */}
+        {!hasRecent && (
+          <div className="hidden sm:flex flex-wrap gap-2">
+            {FEATURES.map((f) => (
+              <span key={f.label} className="inline-flex h-7 items-center gap-1.5 rounded-[32px] border border-[rgba(214,225,255,0.08)] bg-white/[0.06] px-3 text-[#b0b4ba] text-[11.89px] font-medium leading-[19px] tracking-[-0.08px] shadow-[inset_0_0_7.1px_rgba(255,255,255,0.21)]">
+                <span>{f.icon}</span>{f.label}
+              </span>
+            ))}
+          </div>
+        )}
 
-        <div className="flex items-stretch gap-3 flex-1 min-h-0" style={{ minHeight: "200px" }}>
+        <div className="flex items-stretch gap-3 flex-1 min-h-0">
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.05 }}
-            className="relative flex-1 min-w-0 rounded-2xl overflow-hidden aspect-[9/16] bg-black shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+            className={`relative shrink-0 rounded-2xl overflow-hidden aspect-[9/16] bg-black shadow-[0_8px_32px_rgba(0,0,0,0.5)] ${
+              hasRecent ? "h-full" : "w-full max-w-[300px]"
+            }`}
           >
-            <img src="/face/ronaldo.png" alt="" className="w-full h-full object-cover" />
+            <video
+              src="/template/nationality-swap/nationality-swap-full.mp4"
+              autoPlay muted loop playsInline preload="auto"
+              className="w-full h-full object-cover"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
-            <div className="absolute bottom-3 left-3 right-3">
-              <p className="text-white font-black text-[15px] leading-tight">Erwin Háguez</p>
-              <p className="text-[#FBBF24] text-[11px] font-bold">#9 · Mexico 🇲🇽</p>
-            </div>
           </motion.div>
 
           {hasRecent && (
-            <RecentCreationsPanel recentGenerations={recentGenerations} onOpenRecent={onOpenRecent} />
+            <div className="flex-1 min-w-0">
+              <RecentCreationsPanel recentGenerations={recentGenerations} onOpenRecent={onOpenRecent} />
+            </div>
           )}
         </div>
 

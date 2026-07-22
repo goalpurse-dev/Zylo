@@ -251,8 +251,10 @@ export async function launchRunwareVideo(
       duration:      args.durationSec,
       numberResults: 1,
       includeCost:   true,
+      outputType:    "URL",
+      outputFormat:  "MP4",
       outputQuality: 95,
-      settings: { audio: args.withSound ?? false },
+      deliveryMethod: "async",
       taskUUID,
     };
 
@@ -479,6 +481,14 @@ export async function pollRunware(providerJobId: string, ourJobId?: string): Pro
     return { status: "failed", error: errInfo.message, code: errInfo.code };
   }
 
+  // Runware's successful async response frequently includes videoURL but no
+  // status field. Check the deliverable first or a completed video is treated
+  // as queued forever until our edge runtime times out.
+  const url = pickVideoUrl(json);
+  if (url) {
+    return { status: "succeeded", url };
+  }
+
   const raw = String(first?.status || "").toLowerCase();
 
   if (!raw || raw === "queued" || raw === "pending") {
@@ -496,12 +506,6 @@ export async function pollRunware(providerJobId: string, ourJobId?: string): Pro
     };
   }
 
-  const url = pickVideoUrl(json);
-
   // Async jobs can temporarily have no URL yet.
-  if (!url) {
-    return { status: "queued" };
-  }
-
-  return { status: "succeeded", url };
+  return { status: "queued" };
 }

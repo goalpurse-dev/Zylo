@@ -15,6 +15,10 @@ function renderErrorMessage(e) {
   return STAGE_MESSAGES[e?.stage] ?? "Couldn't render the final video. Try again.";
 }
 
+function revokeLocalPreview(url) {
+  if (typeof url === "string" && url.startsWith("blob:")) URL.revokeObjectURL(url);
+}
+
 // "published" (referenced by PostModal's custom-upload flow) isn't a real
 // bucket in this project — confirmed via `supabase storage ls`, only
 // user-assets/public-assets/avatars/products/generated/reference-images/
@@ -52,28 +56,44 @@ async function uploadFinalVideo(blob) {
  * failure shouldn't block the user from previewing/downloading the video
  * they already got.
  */
-export default function useClayRescueEditor(sceneClips) {
+export default function useClayRescueEditor(
+  sceneClips,
+  { initialFinalUrl = null, onFinalVideoSaved } = {},
+) {
   // sceneClips: [{ sceneIndex, videoUrl }] — only scenes with a finished video
   const [clips, setClips] = useState([]);
   const [dirty, setDirty] = useState(false);
-  const [finalUrl, setFinalUrl] = useState(null);
+  const [finalUrl, setFinalUrl] = useState(initialFinalUrl);
   const [stitching, setStitching] = useState(false);
   const [progress, setProgress] = useState(0);
   const [renderError, setRenderError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(Boolean(initialFinalUrl));
 
   const seenSignatureRef = useRef("");
-  const finalUrlRef = useRef(null);
+  const finalUrlRef = useRef(initialFinalUrl);
   const savedJobIdRef = useRef(null);
+  const autoRenderedSignatureRef = useRef("");
 
   // Seed / reset clip list whenever the underlying set of finished scene
   // videos changes (new generation, retried scene, etc.) — but not on every
   // render, so in-progress trims/reorders aren't clobbered.
   useEffect(() => {
     const signature = sceneClips.map((c) => `${c.sceneIndex}:${c.videoUrl}`).join("|");
-    if (signature === seenSignatureRef.current) return;
+    if (signature === seenSignatureRef.current) {
+      // The generation row can arrive after the clips. Adopt its persisted
+      // final URL only when there is no local render already on screen.
+      if (
+        initialFinalUrl &&
+        (!finalUrlRef.current || !String(finalUrlRef.current).startsWith("blob:"))
+      ) {
+        finalUrlRef.current = initialFinalUrl;
+        setFinalUrl(initialFinalUrl);
+        setSaved(true);
+      }
+      return;
+    }
 
     let cancelled = false;
     (async () => {
@@ -101,16 +121,18 @@ export default function useClayRescueEditor(sceneClips) {
       }));
       setClips(seeded);
       setDirty(false);
-      if (finalUrlRef.current) URL.revokeObjectURL(finalUrlRef.current);
-      finalUrlRef.current = null;
-      setFinalUrl(null);
+      revokeLocalPreview(finalUrlRef.current);
+      finalUrlRef.current = initialFinalUrl;
+      setFinalUrl(initialFinalUrl);
       savedJobIdRef.current = null;
-      setSaved(false);
+      setSaved(Boolean(initialFinalUrl));
       setSaveError(null);
     })();
 
     return () => { cancelled = true; };
-  }, [sceneClips]);
+  }, [sceneClips, initialFinalUrl]);
+
+  useEffect(() => () => revokeLocalPreview(finalUrlRef.current), []);
 
   const render = useCallback(async () => {
     if (!clips.length) return;
@@ -124,7 +146,7 @@ export default function useClayRescueEditor(sceneClips) {
         clips.map((c) => ({ url: c.videoUrl, trimStart: c.trimStart, trimEnd: c.trimEnd })),
         setProgress,
       );
-      if (finalUrlRef.current) URL.revokeObjectURL(finalUrlRef.current);
+      revokeLocalPreview(finalUrlRef.current);
       finalUrlRef.current = url;
       setFinalUrl(url);
       setDirty(false);
@@ -135,6 +157,7 @@ export default function useClayRescueEditor(sceneClips) {
       setSaving(true);
       try {
         const resultUrl = await uploadFinalVideo(blob);
+        onFinalVideoSaved?.(resultUrl);
         const job = await saveFullVideo({
           resultUrl,
           prompt: "Clay Rescue — full rescue video",
@@ -153,16 +176,16 @@ export default function useClayRescueEditor(sceneClips) {
       setRenderError(renderErrorMessage(e));
       setStitching(false);
     }
-  }, [clips]);
+  }, [clips, onFinalVideoSaved]);
 
   // Auto-render exactly once, the first time we have clips and no final video yet.
-  const autoRenderedRef = useRef(false);
   useEffect(() => {
-    if (autoRenderedRef.current) return;
     if (clips.length === 0 || finalUrl || stitching) return;
-    autoRenderedRef.current = true;
+    const signature = clips.map((c) => `${c.sceneIndex}:${c.videoUrl}`).join("|");
+    if (autoRenderedSignatureRef.current === signature) return;
+    autoRenderedSignatureRef.current = signature;
     render();
-  }, [clips.length, finalUrl, stitching, render]);
+  }, [clips, finalUrl, stitching, render]);
 
   const reorder = useCallback((fromIndex, toIndex) => {
     setClips((prev) => {

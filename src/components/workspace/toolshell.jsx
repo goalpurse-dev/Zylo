@@ -1,132 +1,195 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { createElement, useState } from "react";
+import { ChevronRight, Folder, Home, LayoutGrid, Pin, Sparkles } from "lucide-react";
 import Logo from "../../assets/Logo.png";
-import { useState } from "react";
-import { DesktopCreatePanel, DesktopWorkspacePanel, DesktopPublishPanel } from "./CreateMenu";
+import { ALL_PINNABLE_TOOLS, DesktopCreatePanel, DesktopWorkspacePanel } from "./CreateMenu";
+import "../../styles/workspace-shell.css";
 
-import {
-  Home,
-  Folder,
-  LayoutGrid,
-  Send,
-} from "lucide-react";
+const NAV_IDLE = "text-white/[0.88] hover:text-white hover:bg-white/[0.045] border border-transparent";
+const PINNED_TOOLS_KEY = "zyvo:pinned-tools:v1";
+const DEFAULT_PINNED_TOOLS = ["ai-cooking-matic"];
+const TEMPORARILY_HIDDEN_TOOL_IDS = new Set(["post-schedule", "stats"]);
 
-function NavItem({ icon: Icon, label, active, onClick }) {
+function getInitialPinnedTools() {
+  if (typeof window === "undefined") return DEFAULT_PINNED_TOOLS;
+  try {
+    const saved = window.localStorage.getItem(PINNED_TOOLS_KEY);
+    if (saved === null) return DEFAULT_PINNED_TOOLS;
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed)
+      ? parsed.filter((id) => !TEMPORARILY_HIDDEN_TOOL_IDS.has(id)).slice(0, 4)
+      : DEFAULT_PINNED_TOOLS;
+  } catch {
+    return DEFAULT_PINNED_TOOLS;
+  }
+}
+
+function NavItem({ icon, iconSrc, label, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`
-        ftg-nav-item
-        w-full flex flex-col items-center gap-1 py-3 rounded-xl
-        transition-all duration-200
-        ${active
-          ? "bg-white text-black"
-          : "text-white/50 hover:text-white hover:bg-white/5"}
-      `}
+      className={`relative flex w-full items-center gap-1.5 rounded-[10px] px-3 py-1.5 text-left transition-all duration-200 active:scale-[0.985] ${active ? "zyvo-nav-active text-white" : NAV_IDLE}`}
     >
-      <Icon className="w-5 h-5" />
-      <span className="text-[11px] font-medium">{label}</span>
+      <span className="zyvo-nav-icon grid h-5 w-5 shrink-0 place-items-center transition">
+        {iconSrc
+          ? <img src={iconSrc} alt="" className="h-5 w-5 object-contain" />
+          : createElement(icon, { className: "h-[16px] w-[16px]", strokeWidth: 2 })}
+      </span>
+      <span className="text-[13.5px] font-semibold">{label}</span>
     </button>
   );
 }
 
-export default function ToolShell() {
+function PinnedToolItem({ tool, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`zyvo-pinned-item group flex w-full items-center gap-2.5 rounded-[11px] px-2 py-1.5 text-left transition ${active ? "is-active" : ""}`}
+    >
+      <span className={`grid h-7 w-7 shrink-0 place-items-center overflow-hidden text-white/50 ${tool.transparentIcon ? "" : "rounded-[8px] border border-white/[0.07] bg-white/[0.035]"}`}>
+        {tool.preview ? (
+          <img src={tool.preview} alt="" className={`h-full w-full object-contain ${tool.previewPosition ?? "object-top"} ${tool.imageClassName ?? ""}`} />
+        ) : (
+          tool.icon
+        )}
+      </span>
+      <span className="min-w-0 flex-1 truncate text-[11.5px] font-semibold text-white/[0.86] transition group-hover:text-white">
+        {tool.pinnedLabel ?? tool.label}
+      </span>
+      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-white/15 transition group-hover:translate-x-0.5 group-hover:text-lime-300/70" />
+    </button>
+  );
+}
+
+export default function ToolShell({ onClose }) {
   const navigate = useNavigate();
   const location = useLocation();
-
   const [createOpen, setCreateOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
-  const [publishOpen, setPublishOpen] = useState(false);
+  const [pinnedIds, setPinnedIds] = useState(getInitialPinnedTools);
 
   const isActive = (path) => location.pathname.startsWith(path);
+  const anyPanelOpen = createOpen || workspaceOpen;
+  const createActive = createOpen || (!anyPanelOpen && (
+    isActive("/workspace/ai-fruit-story") ||
+    isActive("/workspace/face-asmr") ||
+    isActive("/workspace/micro-camera-animal") ||
+    isActive("/workspace/clay-rescue") ||
+    isActive("/workspace/ai-cooking-matic") ||
+    isActive("/workspace/footballer-nationality-swap")
+  ));
+  const workspaceActive = workspaceOpen || (!anyPanelOpen && (
+    isActive("/workspace/image-generator") || isActive("/workspace/video-generator")
+  ));
 
-  // Only one nav item is ever "active" at a time. While a panel is open, its
-  // own button wins and everything else (including route-matched items like
-  // Home) turns off — otherwise you'd see two highlighted at once.
-  const anyPanelOpen = createOpen || workspaceOpen || publishOpen;
+  const closePanels = () => {
+    setCreateOpen(false);
+    setWorkspaceOpen(false);
+  };
+
+  const go = (path) => {
+    closePanels();
+    onClose?.();
+    navigate(path);
+  };
+
+  const togglePin = (toolId) => {
+    setPinnedIds((current) => {
+      if (!current.includes(toolId) && current.length >= 4) return current;
+      const next = current.includes(toolId)
+        ? current.filter((id) => id !== toolId)
+        : [...current, toolId];
+      try {
+        window.localStorage.setItem(PINNED_TOOLS_KEY, JSON.stringify(next));
+      } catch {
+        // Keep the current-session UI working if storage is unavailable.
+      }
+      return next;
+    });
+  };
+
+  const pinnedTools = pinnedIds
+    .map((id) => ALL_PINNABLE_TOOLS.find((tool) => tool.id === id))
+    .filter(Boolean);
+  const pinLimitReached = pinnedIds.length >= 4;
 
   return (
     <>
-    <DesktopCreatePanel open={createOpen} onClose={() => setCreateOpen(false)} />
-    <DesktopWorkspacePanel open={workspaceOpen} onClose={() => setWorkspaceOpen(false)} />
-    <DesktopPublishPanel open={publishOpen} onClose={() => setPublishOpen(false)} />
-    <div className="h-full flex flex-col items-center py-4 px-2 bg-[#090A0A] border-r border-white/5">
+      <DesktopCreatePanel open={createOpen} onClose={() => setCreateOpen(false)} pinnedIds={pinnedIds} onTogglePin={togglePin} pinLimitReached={pinLimitReached} />
+      <DesktopWorkspacePanel open={workspaceOpen} onClose={() => setWorkspaceOpen(false)} pinnedIds={pinnedIds} onTogglePin={togglePin} pinLimitReached={pinLimitReached} />
+      <div className="h-full p-3 pr-2">
+        <div className="zyvo-compact-shell relative flex h-full flex-col overflow-hidden rounded-[24px] px-3 py-4">
+          <div className="pointer-events-none absolute inset-x-7 top-0 h-px bg-gradient-to-r from-transparent via-lime-300/35 to-transparent" />
 
-      {/* LOGO */}
-      <div className="mb-6">
-       <img
-  src={Logo}
-  className="
-    w-10 h-10
-    object-contain
+          <div className="relative mb-6 flex items-center gap-2.5 px-1.5">
+            <img src={Logo} alt="Zyvo" className="h-8 w-8 object-contain" />
+            <span className="text-[18px] font-black tracking-[-0.035em] text-white">Zyvo</span>
+          </div>
 
-    drop-shadow-[0_0_10px_rgba(122,59,255,0.6)]
-  "
-/>
+          <nav className="relative flex flex-col gap-1.5">
+            <NavItem
+              icon={Home}
+              label="Home"
+              active={!anyPanelOpen && isActive("/workspace/home")}
+              onClick={() => go("/workspace/home")}
+            />
+
+            <NavItem
+              icon={Sparkles}
+              label="Create"
+              active={createActive}
+              onClick={() => {
+                setCreateOpen((value) => !value);
+                setWorkspaceOpen(false);
+              }}
+            />
+
+            <NavItem
+              icon={LayoutGrid}
+              label="Workspace"
+              active={workspaceActive}
+              onClick={() => {
+                setWorkspaceOpen((value) => !value);
+                setCreateOpen(false);
+              }}
+            />
+
+            <NavItem
+              icon={Folder}
+              label="Creations"
+              active={!anyPanelOpen && isActive("/workspace/creations")}
+              onClick={() => go("/workspace/creations")}
+            />
+          </nav>
+
+          <section className="mt-6 min-h-0 flex-1 overflow-y-auto px-1">
+            <div className="mb-2 flex items-center gap-2 px-1">
+              <Pin className="h-3 w-3 text-white/25" />
+              <p className="text-[9.5px] font-semibold uppercase tracking-[0.14em] text-white/25">Pinned tools</p>
+            </div>
+
+            <div className="space-y-0.5">
+              {pinnedTools.length > 0 ? pinnedTools.map((tool) => (
+                <PinnedToolItem
+                  key={tool.id}
+                  tool={tool}
+                  active={isActive(tool.path)}
+                  onClick={() => go(tool.path)}
+                />
+              )) : (
+                <div className="rounded-[11px] border border-dashed border-white/[0.07] px-3 py-3 text-[10px] leading-relaxed text-white/25">
+                  Pin tools from any menu to keep them here.
+                </div>
+              )}
+            </div>
+          </section>
+
+          <div className="relative mx-1 mb-1 rounded-[14px] border border-white/[0.06] bg-white/[0.025] px-3 py-2.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-white/25">Zyvo workspace</p>
+            <p className="mt-0.5 text-[10px] text-white/40">Create. Grow. Repeat.</p>
+          </div>
+        </div>
       </div>
-
-      {/* NAV */}
-      <div className="flex flex-col items-center gap-2 w-full">
-        <NavItem
-          icon={Home}
-          label="Home"
-          active={!anyPanelOpen && isActive("/workspace/home")}
-          onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); setPublishOpen(false); navigate("/workspace/home"); }}
-        />
-
-        <button
-          onClick={() => { setPublishOpen((v) => !v); setWorkspaceOpen(false); setCreateOpen(false); }}
-          className={`ftg-nav-item w-full flex flex-col items-center gap-1 py-3 rounded-xl transition-all duration-200 ${
-            publishOpen || (!anyPanelOpen && (isActive("/workspace/publish") || isActive("/workspace/stats") || isActive("/workspace/connections")))
-              ? "bg-white text-black"
-              : "text-white/50 hover:text-white hover:bg-white/5"
-          }`}
-        >
-          <Send className="w-5 h-5" />
-          <span className="text-[11px] font-medium">Publish</span>
-        </button>
-
-        {/* Create — opens viral tools panel */}
-        <button
-          onClick={() => { setCreateOpen((v) => !v); setWorkspaceOpen(false); setPublishOpen(false); }}
-          className={`ftg-nav-item w-full flex flex-col items-center gap-1 py-3 rounded-xl transition-all duration-200 ${
-            createOpen || (!anyPanelOpen && (isActive("/workspace/ai-fruit-story") || isActive("/workspace/face-asmr") || isActive("/workspace/micro-camera-animal") || isActive("/workspace/clay-rescue") || isActive("/workspace/ai-cooking-matic") || isActive("/workspace/footballer-nationality-swap")))
-              ? "bg-white text-black"
-              : "text-white/50 hover:text-white hover:bg-white/5"
-          }`}
-        >
-          <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-            <path d="M12 2C11.175 2 10.5 2.675 10.5 3.5V10.5H3.5C2.675 10.5 2 11.175 2 12C2 12.825 2.675 13.5 3.5 13.5H10.5V20.5C10.5 21.325 11.175 22 12 22C12.825 22 13.5 21.325 13.5 20.5V13.5H20.5C21.325 13.5 22 12.825 22 12C22 11.175 21.325 10.5 20.5 10.5H13.5V3.5C13.5 2.675 12.825 2 12 2Z"/>
-          </svg>
-          <span className="text-[11px] font-medium">Create</span>
-        </button>
-
-        {/* Workspace — opens Image / Video panel */}
-        <button
-          onClick={() => { setWorkspaceOpen((v) => !v); setCreateOpen(false); setPublishOpen(false); }}
-          className={`ftg-nav-item w-full flex flex-col items-center gap-1 py-3 rounded-xl transition-all duration-200 ${
-            workspaceOpen || (!anyPanelOpen && (
-              isActive("/workspace/image-generator") ||
-              isActive("/workspace/video-generator")
-            ))
-              ? "bg-white text-black"
-              : "text-white/50 hover:text-white hover:bg-white/5"
-          }`}
-        >
-          <LayoutGrid className="w-5 h-5" />
-          <span className="text-[11px] font-medium">Workspace</span>
-        </button>
-
-        <NavItem
-          icon={Folder}
-          label="Creations"
-          active={!anyPanelOpen && isActive("/workspace/creations")}
-          onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); setPublishOpen(false); navigate("/workspace/creations"); }}
-        />
-      </div>
-
-      {/* SPACER */}
-      <div className="flex-1" />
-    </div>
     </>
   );
 }

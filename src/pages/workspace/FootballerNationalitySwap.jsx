@@ -107,6 +107,8 @@ export default function FootballerNationalitySwap() {
 
   const [recentGenerations, setRecentGenerations] = useState([]);
   const [viewingRecentId, setViewingRecentId]     = useState(null);
+  const [currentGenerationId, setCurrentGenerationId] = useState(null);
+  const [currentFullVideoUrl, setCurrentFullVideoUrl] = useState(null);
   const savedGenerationRef = useRef(null);
   const latestSceneCountRef = useRef(3);
 
@@ -139,6 +141,8 @@ export default function FootballerNationalitySwap() {
           const deduped = prev.filter((r) => r.id !== saved.id);
           return [saved, ...deduped].slice(0, MAX_RECENT);
         });
+        setCurrentGenerationId(saved.id);
+        setCurrentFullVideoUrl(saved.fullVideoUrl ?? null);
       } catch (e) {
         console.error("[FootballerNationalitySwap] save generation failed:", e.message);
       }
@@ -151,6 +155,8 @@ export default function FootballerNationalitySwap() {
     setViewingRecentId(null);
     savedGenerationRef.current = null;
     latestSceneCountRef.current = sceneCount;
+    setCurrentGenerationId(null);
+    setCurrentFullVideoUrl(null);
     setMobilePanel("results");
     document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
     start({ sceneInputs });
@@ -158,6 +164,8 @@ export default function FootballerNationalitySwap() {
 
   const handleOpenRecent = (generation) => {
     setViewingRecentId(generation?.id ?? null);
+    setCurrentGenerationId(generation?.id ?? null);
+    setCurrentFullVideoUrl(generation?.fullVideoUrl ?? null);
     showGeneration(generation);
     setMobilePanel("results");
     document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
@@ -165,15 +173,28 @@ export default function FootballerNationalitySwap() {
 
   const handleBackToDefault = () => {
     setViewingRecentId(null);
+    setCurrentGenerationId(null);
+    setCurrentFullVideoUrl(null);
     reset();
     setMobilePanel("builder");
   };
+
+  // Keeps the recent-generations list in sync once a fresh stitch finishes,
+  // so reopening it later (without a page reload) still shows the video
+  // instead of trying to re-stitch.
+  const handleFullVideoSaved = useCallback((url) => {
+    setCurrentFullVideoUrl(url);
+    setRecentGenerations((prev) =>
+      prev.map((g) => (g.id === currentGenerationId ? { ...g, fullVideoUrl: url } : g))
+    );
+  }, [currentGenerationId]);
 
   const builderPanel = (
     <FootballerNationalitySwapBuilder
       onGenerate={handleGenerate}
       onReset={handleBackToDefault}
       phase={phase}
+      viewingRecent={viewingRecentId !== null}
     />
   );
 
@@ -189,6 +210,9 @@ export default function FootballerNationalitySwap() {
       onRequestAuth={showPaywall}
       onRetryScene={(index) => retryScene(index)}
       onReset={handleBackToDefault}
+      generationId={currentGenerationId}
+      fullVideoUrl={currentFullVideoUrl}
+      onFullVideoSaved={handleFullVideoSaved}
     />
   );
 
@@ -242,7 +266,7 @@ export default function FootballerNationalitySwap() {
         isGuest={paywallGuest}
         dismissable={!needsUpgrade}
         toolName="Nationality Swap"
-        previewSrc="/face/preview.mp4"
+        previewSrc="/template/nationality-swap/nationality-swap-full.mp4"
       />
     </>
   );

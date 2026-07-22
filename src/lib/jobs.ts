@@ -375,9 +375,9 @@ export function watchJob(
 
 /* ======================= WORKER INVOKER ======================= */
 
-export async function runWorkerForJob(jobId: string) {
+export async function runWorkerForJob(jobId: string, recoverExistingProvider = false) {
   const { data, error } = await supabase.functions.invoke("job-worker", {
-    body: { jobId },
+    body: { jobId, recoverExistingProvider },
   });
 
   if (error) {

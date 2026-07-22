@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     "Rules:\n" +
     "- localizedName: a fictional full name that sounds natural for the target nationality, playfully inspired by the original player's name (e.g. keep a similar sound or initial).\n" +
     "- jerseyNumber: a plausible football shirt number, as a string of digits between 1 and 99.\n" +
-    "- spokenLine: a short, warm, one-sentence media-day introduction (max 20 words), written in the PRIMARY LANGUAGE spoken in that nationality, using that language's native script, where the player states their fictional name and that they're the new number for that nation.\n" +
+    "- spokenLine: a short, warm, one-sentence media-day introduction (max 20 words), written in the PRIMARY LANGUAGE spoken in that nationality, using that language's native script, where the player states their fictional name and that they're the new number for that nation. Make it feel authentic and a little funny — naturally work in one real local slang word, idiom, or culturally distinctive expression from that language, not a flat literal translation.\n" +
     "- language: the English name of the language used in spokenLine.";
 
   const userMessage = `Real footballer for inspiration: ${footballer}\nTarget nationality: ${nationality}`;
