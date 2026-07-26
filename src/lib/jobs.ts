@@ -353,7 +353,6 @@ export function watchJob(
   const unsub = subscribeJob(id, (row) => !stopped && onChange(row));
   (async function pollLoop() {
     while (!stopped) {
-      await new Promise((r) => setTimeout(r, pollMs));
       try {
         const row = await getJob(id);
         if (!stopped) onChange(row);
@@ -361,6 +360,7 @@ export function watchJob(
       } catch {
         // ignore polling errors
       }
+      await new Promise((r) => setTimeout(r, pollMs));
     }
   })();
   return () => {

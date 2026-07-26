@@ -17,8 +17,9 @@ function logEvent(level: LogLevel, event: string, ctx: Record<string, unknown> =
 
 /* ===================== ENV ===================== */
 const RUNWARE_KEY  = Deno.env.get("RUNWARE_API_KEY")!;
-const RUNWARE_BASE = "https://api.runware.ai/v1/air";
-const TASKS_URL    = `${RUNWARE_BASE}/tasks`;
+// Runware's current native REST API uses one endpoint for submission,
+// getResponse polling and image uploads.
+const TASKS_URL = "https://api.runware.ai/v1";
 
 const SUPABASE_URL =
   Deno.env.get("SUPABASE_URL") ?? Deno.env.get("PROJECT_URL")!;
@@ -28,7 +29,7 @@ const SERVICE_KEY =
 
 /* ===================== CONFIG ===================== */
 const MAX_RUNTIME_MS   = 5 * 60 * 1000; // 5 min — within edge-fn wall-clock limit
-const POLL_INTERVAL_MS = 2000;
+const POLL_INTERVAL_MS = 1500;
 const MAX_POLLS        = Math.floor(MAX_RUNTIME_MS / POLL_INTERVAL_MS);
 const FETCH_TIMEOUT_MS = 30_000;
 
@@ -312,6 +313,39 @@ async function pollRunwareResponse(taskUUID: string) {
   });
 }
 
+async function getRunwareTaskDetails(taskUUID: string) {
+  return safeFetch(TASKS_URL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${RUNWARE_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify([{ taskType: "getTaskDetails", taskUUID }]),
+  });
+}
+
+function matchingTaskEntries(payload: any, taskUUID: string): any[] {
+  const entries = Array.isArray(payload?.data) ? payload.data : [];
+  const matching = entries.filter((entry: any) =>
+    !entry?.taskUUID || String(entry.taskUUID) === taskUUID
+  );
+  return matching.length ? matching : entries;
+}
+
+function providerProgress(payload: any, taskUUID: string): number | null {
+  const values = matchingTaskEntries(payload, taskUUID)
+    .map((entry: any) => Number(entry?.progress))
+    .filter((value: number) => Number.isFinite(value));
+  return values.length ? Math.max(...values) : null;
+}
+
+function providerStatus(payload: any, taskUUID: string): string {
+  const statuses = matchingTaskEntries(payload, taskUUID)
+    .map((entry: any) => String(entry?.status ?? "").toLowerCase())
+    .filter(Boolean);
+  if (statuses.includes("success")) return "success";
+  if (statuses.includes("error")) return "error";
+  if (statuses.includes("processing")) return "processing";
+  return String(payload?.status ?? "").toLowerCase();
+}
+
 async function uploadImageToRunware(publicUrl: string): Promise<string> {
   const result = await safeFetchRetry(TASKS_URL, {
     method:  "POST",
@@ -401,7 +435,7 @@ const SUPPORTED_DIMENSIONS: Record<string, [number, number][]> = {
     [1264, 848], [2528, 1696], [848, 1264], [1696, 2528],
     [1200, 896], [2400, 1792], [896, 1200], [1792, 2400],
     [928, 1152], [1856, 2304], [1152, 928], [2304, 1856],
-    [768, 1376], [1536, 2752], [1376, 768], [2752, 1536],
+    [768, 1376], [1536, 2752], [3072, 5504], [1376, 768], [2752, 1536], [5504, 3072],
     [1584, 672], [3168, 1344],
   ],
   // Nano Pro (image:nano-pro)
@@ -438,6 +472,14 @@ function snapToSupportedDimensions(
 ): { width: number; height: number } {
   const supported = SUPPORTED_DIMENSIONS[airTag];
   if (!supported?.length) return { width, height };
+
+  // Preserve an exact provider-supported size. Several aspect-ratio families
+  // contain 1K, 2K and 4K variants with identical ratios; ratio-only matching
+  // would otherwise select the first (smallest) variant and silently downsize.
+  const exact = supported.find(([candidateWidth, candidateHeight]) =>
+    candidateWidth === width && candidateHeight === height
+  );
+  if (exact) return { width: exact[0], height: exact[1] };
 
   const targetRatio = width / height;
   let best = supported[0];
@@ -482,6 +524,106 @@ function safeImagePositivePrompt(prompt: unknown, max = 2000): string {
   return safe;
 }
 
+async function completeRunwareImageJob(
+  sb: ReturnType<typeof createClient>,
+  jobId: string,
+  toolKey: string,
+  sourceUrl: string,
+  providerOutput: any,
+  context: Record<string, unknown> = {},
+): Promise<void> {
+  await safeRpc(sb, "bump_job_progress", { p_id: jobId, p_progress: 95 });
+  const storedUrl = await persistImageResult(sb, jobId, sourceUrl);
+  await safeRpc(sb, "bump_job_progress", { p_id: jobId, p_progress: 98 });
+
+  const charged = await chargeJobCredits(sb, jobId);
+  if (!charged) {
+    await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: "INSUFFICIENT_CREDITS" });
+    return;
+  }
+
+  const { error } = await safeRpc(sb, "finish_job_success", {
+    p_id: jobId,
+    p_url: storedUrl,
+    p_output: providerOutput,
+  });
+  if (error) await refundJobCredits(sb, jobId);
+  logEvent("info", "job_succeeded", {
+    jobId,
+    toolKey,
+    ...context,
+    finishError: error ? String(error) : null,
+  });
+}
+
+async function recoverExistingRunwareImageJob(
+  sb: ReturnType<typeof createClient>,
+  jobId: string,
+  toolKey: string,
+  providerId: string,
+): Promise<void> {
+  const startedAt = Date.now();
+  const recoveryWindowMs = 2 * 60 * 1000;
+
+  logEvent("info", "provider_recovery_started", { jobId, toolKey, providerId });
+
+  for (let attempt = 0; Date.now() - startedAt < recoveryWindowMs; attempt += 1) {
+    try {
+      const details = await getRunwareTaskDetails(providerId);
+      const detailEntry = matchingTaskEntries(details.json, providerId)[0];
+      const detailResponse = detailEntry?.response ?? detailEntry ?? null;
+      const recoveredUrl = extractImageUrl(detailResponse);
+      if (recoveredUrl) {
+        await completeRunwareImageJob(sb, jobId, toolKey, recoveredUrl, detailResponse, {
+          recoveredAfterReconnect: true,
+          attempt,
+        });
+        return;
+      }
+    } catch (error) {
+      logEvent("warn", "provider_recovery_details_failed", {
+        jobId,
+        providerId,
+        attempt,
+        message: String((error as any)?.message ?? error),
+      });
+    }
+
+    try {
+      const pollResult = await pollRunwareResponse(providerId);
+      const recoveredUrl = extractImageUrl(pollResult.json);
+      if (recoveredUrl) {
+        await completeRunwareImageJob(sb, jobId, toolKey, recoveredUrl, pollResult.json, {
+          recoveredAfterReconnect: true,
+          attempt,
+        });
+        return;
+      }
+
+      const runwareError = getRunwareError(pollResult.json);
+      if (runwareError && runwareError.code !== "failedTaskTimeout" && runwareError.code !== "taskNotFound") {
+        const message = `${runwareError.code ? `${runwareError.code}: ` : ""}${runwareError.message}`;
+        await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: message });
+        return;
+      }
+    } catch (error) {
+      logEvent("warn", "provider_recovery_poll_failed", {
+        jobId,
+        providerId,
+        attempt,
+        message: String((error as any)?.message ?? error),
+      });
+    }
+
+    await safeRpc(sb, "bump_job_progress", { p_id: jobId, p_progress: 98 });
+    await sleep(2500);
+  }
+
+  // Keep the row recoverable. A later page open can ask Runware again instead
+  // of incorrectly failing an image that may already exist at the provider.
+  logEvent("warn", "provider_recovery_pending", { jobId, toolKey, providerId });
+}
+
 async function processRunwareImageJob(body: any): Promise<void> {
   const {
     jobId,
@@ -489,6 +631,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
     prompt,
     referenceImages = [],
     settings        = {},
+    recoverExistingProvider = false,
   } = body;
 
   const sb = makeSb();
@@ -515,6 +658,12 @@ async function processRunwareImageJob(body: any): Promise<void> {
     airTag,
   );
   const safePrompt = safeImagePositivePrompt(prompt);
+  const existingProviderId = String(settings?.provider_job_id || "");
+
+  if (recoverExistingProvider && existingProviderId) {
+    await recoverExistingRunwareImageJob(sb, jobId, airTag, existingProviderId);
+    return;
+  }
 
   /* ── Upload reference images ── */
   console.log("[runware-image] received referenceImages", {
@@ -558,22 +707,24 @@ async function processRunwareImageJob(body: any): Promise<void> {
     return;
   }
 
-  // Fruit models use GPT Image 2 with multiple Runware-uploaded references.
-  // Non-fruit models keep the legacy string outputType + PNG format.
+  // Use one deterministic provider task per database job. Large 4K images can
+  // take longer than the HTTP timeout in sync mode; retrying that timed-out
+  // creation POST can make Runware render the same task more than once.
+  const providerTaskId = String(settings?.provider_job_id || jobId);
   const task: any = {
     taskType:       "imageInference",
-    taskUUID:       crypto.randomUUID(),
+    taskUUID:       providerTaskId,
     model:          airTag,
     positivePrompt: safePrompt,
     width:          safeWidth,
     height:         safeHeight,
     numberResults:  1,
+    includeCost:    true,
+    deliveryMethod: "async",
     outputType:     isFruitModel ? ["URL"] : "URL",
     ...(isFruitModel
       ? {
-          includeCost: true,
           skipResponse: settings?.skipResponse ?? openAiSettings?.skipResponse ?? true,
-          deliveryMethod: settings?.deliveryMethod ?? openAiSettings?.deliveryMethod ?? "async",
           outputQuality: settings?.outputQuality ?? openAiSettings?.outputQuality ?? 85,
         }
       : { outputFormat: "PNG" }),
@@ -609,13 +760,54 @@ async function processRunwareImageJob(body: any): Promise<void> {
   }
 
   /* ── Submit task to Runware ── */
-  const createResult = await safeFetchRetry(TASKS_URL, {
-    method:  "POST",
-    headers: { Authorization: `Bearer ${RUNWARE_KEY}`, "Content-Type": "application/json" },
-    body:    JSON.stringify([task]),
-  });
+  // running -> processing atomically reserves provider submission. Duplicate
+  // Edge invocations cannot submit again because only one can transition the
+  // row from running.
+  const providerSettings = {
+    ...settings,
+    provider_job_id: providerTaskId,
+    provider_delivery_method: "async",
+  };
+  const { data: reservation, error: reservationError } = await sb
+    .from("jobs")
+    .update({ status: "processing", settings: providerSettings })
+    .eq("id", jobId)
+    .eq("status", "running")
+    .select("id")
+    .maybeSingle();
 
-  if (!createResult.ok || createResult.json?.errors?.length) {
+  if (reservationError) {
+    throw new Error(`Could not reserve provider submission: ${reservationError.message}`);
+  }
+  if (!reservation) {
+    logEvent("warn", "duplicate_submission_suppressed", {
+      jobId,
+      toolKey: airTag,
+      providerId: providerTaskId,
+    });
+    return;
+  }
+
+  // Creation is deliberately single-attempt. If its response is lost after
+  // acceptance, poll the reserved task ID instead of submitting another paid
+  // generation.
+  let createResult: { ok: boolean; status: number; text: string; json: any } | null = null;
+  try {
+    createResult = await safeFetch(TASKS_URL, {
+      method:  "POST",
+      headers: { Authorization: `Bearer ${RUNWARE_KEY}`, "Content-Type": "application/json" },
+      body:    JSON.stringify([task]),
+    });
+  } catch (error) {
+    logEvent("warn", "task_submit_response_lost", {
+      jobId,
+      toolKey: airTag,
+      providerId: providerTaskId,
+      message: String((error as any)?.message ?? error),
+    });
+  }
+
+  if (createResult && (!createResult.ok || createResult.json?.errors?.length)) {
     const message =
       createResult.json?.errors?.[0]?.message ||
       `Runware rejected task (${createResult.status}): ${createResult.text.slice(0, 200)}`;
@@ -624,11 +816,12 @@ async function processRunwareImageJob(body: any): Promise<void> {
     return;
   }
 
-  // Prefer Runware's assigned taskUUID; fall back to ours
+  // Prefer Runware's echoed taskUUID. A lost submit response falls back to the
+  // reserved deterministic ID and enters the same polling/recovery path.
   const providerId =
-    createResult.json?.data?.[0]?.taskUUID ??
-    createResult.json?.data?.[0]?.id ??
-    task.taskUUID;
+    createResult?.json?.data?.[0]?.taskUUID ??
+    createResult?.json?.data?.[0]?.id ??
+    providerTaskId;
 
   logEvent("info", "task_accepted", { jobId, toolKey: airTag, providerId });
 
@@ -636,21 +829,11 @@ async function processRunwareImageJob(body: any): Promise<void> {
   void safeRpc(sb, "bump_job_progress", { p_id: jobId, p_progress: 15 });
 
   /* ── Instant success (sync models return URL in create response) ── */
-  const immediate = extractImageUrl(createResult.json);
+  const immediate = extractImageUrl(createResult?.json);
   if (immediate) {
-    const storedUrl = await persistImageResult(sb, jobId, immediate);
-    const charged = await chargeJobCredits(sb, jobId);
-    if (!charged) {
-      await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: "INSUFFICIENT_CREDITS" });
-      return;
-    }
-    const { error } = await safeRpc(sb, "finish_job_success", {
-      p_id:     jobId,
-      p_url:    storedUrl,
-      p_output: createResult.json,
+    await completeRunwareImageJob(sb, jobId, airTag, immediate, createResult?.json, {
+      instant: true,
     });
-    if (error) await refundJobCredits(sb, jobId);
-    logEvent("info", "job_succeeded", { jobId, toolKey: airTag, instant: true, finishError: error ? String(error) : null });
     return;
   }
 
@@ -668,12 +851,6 @@ async function processRunwareImageJob(body: any): Promise<void> {
     const elapsed = Date.now() - start;
     if (elapsed > MAX_RUNTIME_MS) break;
 
-    // Non-blocking progress bump
-    if (i % 10 === 0) {
-      const progress = Math.min(90, 15 + Math.round((elapsed / MAX_RUNTIME_MS) * 75));
-      void safeRpc(sb, "bump_job_progress", { p_id: jobId, p_progress: progress });
-    }
-
     let pollResult: { ok: boolean; status: number; text: string; json: any };
     try {
       pollResult = await pollRunwareResponse(providerId);
@@ -683,23 +860,24 @@ async function processRunwareImageJob(body: any): Promise<void> {
     }
 
     const url = extractImageUrl(pollResult.json);
-    const pollStatus = String(pollResult.json?.status ?? pollResult.json?.data?.[0]?.status ?? "").toLowerCase();
+    const pollStatus = providerStatus(pollResult.json, providerId);
+    const reportedProgress = providerProgress(pollResult.json, providerId);
     const runwareError = getRunwareError(pollResult.json);
 
+    const syntheticProgress = 15 + Math.round((elapsed / MAX_RUNTIME_MS) * 75);
+    const progress = Math.min(
+      90,
+      reportedProgress === null
+        ? syntheticProgress
+        : 15 + Math.round(reportedProgress * 0.75),
+    );
+    await safeRpc(sb, "bump_job_progress", { p_id: jobId, p_progress: progress });
+
     if (url) {
-      const storedUrl = await persistImageResult(sb, jobId, url);
-      const charged = await chargeJobCredits(sb, jobId);
-      if (!charged) {
-        await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: "INSUFFICIENT_CREDITS" });
-        return;
-      }
-      const { error } = await safeRpc(sb, "finish_job_success", {
-        p_id:     jobId,
-        p_url:    storedUrl,
-        p_output: pollResult.json,
+      await completeRunwareImageJob(sb, jobId, airTag, url, pollResult.json, {
+        instant: false,
+        poll: i,
       });
-      if (error) await refundJobCredits(sb, jobId);
-      logEvent("info", "job_succeeded", { jobId, toolKey: airTag, instant: false, poll: i, finishError: error ? String(error) : null });
       return;
     }
 
@@ -717,6 +895,12 @@ async function processRunwareImageJob(body: any): Promise<void> {
     if (errorCode === "failedTaskTimeout") {
       continue;
     }
+    // A submit response can be lost just before Runware registers the async
+    // task. Give that reserved task ID a short recovery window rather than
+    // failing the database job on the first taskNotFound poll.
+    if (errorCode === "taskNotFound" && elapsed < 30_000) {
+      continue;
+    }
 
     if (runwareError) {
       const message = `${runwareError.code ? `${runwareError.code}: ` : ""}${runwareError.message}`;
@@ -726,12 +910,32 @@ async function processRunwareImageJob(body: any): Promise<void> {
     }
 
     // Runware sometimes emits transient "failed" before the result is ready
-    if (pollStatus === "failed") {
+    if (pollStatus === "error") {
       continue;
     }
   }
 
   /* ── Final timeout ── */
+  try {
+    const details = await getRunwareTaskDetails(providerId);
+    const detailEntry = matchingTaskEntries(details.json, providerId)[0];
+    const detailResponse = detailEntry?.response ?? null;
+    const recoveredUrl = extractImageUrl(detailResponse);
+    if (recoveredUrl) {
+      await completeRunwareImageJob(sb, jobId, airTag, recoveredUrl, detailResponse, {
+        instant: false,
+        recoveredFromTaskDetails: true,
+      });
+      return;
+    }
+  } catch (error) {
+    logEvent("warn", "task_details_recovery_failed", {
+      jobId,
+      providerId,
+      message: String((error as any)?.message ?? error),
+    });
+  }
+
   logEvent("error", "job_failed", { jobId, toolKey: airTag, reason: "timeout", elapsedMs: Date.now() - start });
   await safeRpc(sb, "finish_job_failed", {
     p_id:    jobId,

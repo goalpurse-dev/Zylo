@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Flame, Play } from "lucide-react";
 
-import trendVideoOne from "../../assets/home/latest/video9.16.mp4";
-import trendVideoTwo from "../../assets/home/latest/videoo9.16.mp4";
-import trendVideoThree from "../../assets/home/latest/videooo9.16.mp4";
-import trendImage from "../../assets/home/latest/image9.16.webp";
+import trendVideoOne from "../../assets/home/latest/video9.16-fast.mp4";
+import trendVideoTwo from "../../assets/home/latest/videoo9.16-fast.mp4";
+import trendVideoThree from "../../assets/home/latest/videooo9.16-fast.mp4";
+import trendImage from "../../assets/home/latest/image9.16-fast.webp";
 
 const TRENDS = [
   {
@@ -34,31 +34,12 @@ const TRENDS = [
 ];
 
 function TrendVideo({ src, label }) {
-  const wrapperRef = useRef(null);
   const videoRef = useRef(null);
-  const [shouldLoad, setShouldLoad] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const wrapper = wrapperRef.current;
-    if (!wrapper) return undefined;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        setShouldLoad(true);
-        observer.disconnect();
-      },
-      { rootMargin: "350px 0px" },
-    );
-
-    observer.observe(wrapper);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
     const video = videoRef.current;
-    if (!video || !shouldLoad) return undefined;
+    if (!video) return undefined;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reducedMotion) return undefined;
@@ -73,10 +54,10 @@ function TrendVideo({ src, label }) {
 
     observer.observe(video);
     return () => observer.disconnect();
-  }, [shouldLoad]);
+  }, []);
 
   return (
-    <div ref={wrapperRef} className="absolute inset-0 bg-[#101014]">
+    <div className="absolute inset-0 bg-[#101014]">
       <div className={`absolute inset-0 transition-opacity duration-500 ${isReady ? "opacity-0" : "opacity-100"}`}>
         <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_50%_35%,rgba(168,85,247,.24),transparent_42%),linear-gradient(145deg,#18131f,#0b0b0e_68%)]" />
         <div className="absolute inset-0 grid place-items-center">
@@ -84,19 +65,17 @@ function TrendVideo({ src, label }) {
         </div>
       </div>
 
-      {shouldLoad && (
-        <video
-          ref={videoRef}
-          src={src}
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          aria-label={label}
-          onCanPlay={() => setIsReady(true)}
-          className={`h-full w-full object-cover transition duration-700 ${isReady ? "scale-100 opacity-100" : "scale-[1.03] opacity-0"}`}
-        />
-      )}
+      <video
+        ref={videoRef}
+        src={src}
+        muted
+        loop
+        playsInline
+        preload="auto"
+        aria-label={label}
+        onLoadedData={() => setIsReady(true)}
+        className={`h-full w-full object-cover transition duration-700 ${isReady ? "scale-100 opacity-100" : "scale-[1.03] opacity-0"}`}
+      />
     </div>
   );
 }
@@ -207,9 +186,19 @@ export default function LatestTrends() {
 
       <div className="relative mx-auto max-w-[1380px]">
         <div className="mb-5 md:mb-6">
-          <p className="mb-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-lime-300">
-            Latest Trend
-          </p>
+          <div className="mb-2 flex flex-wrap items-center gap-2.5">
+            <span className="text-[18px] leading-none select-none">🔥</span>
+            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-lime-300">
+              Most Viral Templates
+            </p>
+            <span className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/15 px-2.5 py-0.5">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-70" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-500" />
+              </span>
+              <span className="text-[9px] font-bold tracking-widest text-red-400">LIVE</span>
+            </span>
+          </div>
           <h2 id="latest-trends-title" className="text-[28px] font-black tracking-[-0.045em] text-white sm:text-[34px] md:text-[42px]">
             Lost Worlds IRL
           </h2>

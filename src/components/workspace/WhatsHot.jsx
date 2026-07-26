@@ -1,108 +1,78 @@
-import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { TrendingUp, Flame } from "lucide-react";
+import { ArrowUpRight, TrendingUp } from "lucide-react";
 
 /* ─── Data ─────────────────────────────────────────────────── */
 const items = [
   {
-    title:  "Clay Rescue",
-    badge:  "#1 Right Now",
-    views:  "5.1M",
-    video:  "/clayrescue/homevideo.mp4",
-    image:  "/clayrescue/smallpreview.webp",
-    glow:   "rgba(168,85,247,0.65)",
-    border: "#A855F7",
+    title:  "2AM Worlds",
+    views:  "6.2M",
+    image:  "/template/2am-world/preview.png",
+    accent: "#BEF264",
     rank:   1,
+    path:   "/workspace/two-am",
+  },
+  {
+    title:  "Clay Rescue",
+    views:  "5.1M",
+    image:  "/clayrescue/smallpreview.webp",
+    accent: "#A855F7",
+    rank:   2,
     path:   "/workspace/clay-rescue",
   },
   {
     title:  "AI Fruit Story",
-    badge:  "#2 This Week",
     views:  "4.7M",
     image:  "/viral-builder/ai-fruit/presets/cheating.webp",
-    glow:   "rgba(168,85,247,0.65)",
-    border: "#A855F7",
-    rank:   2,
+    accent: "#A855F7",
+    rank:   3,
     path:   "/workspace/ai-fruit-story",
   },
   {
     title:  "Micro Camera",
-    badge:  "Blowing Up",
     views:  "2.8M",
-    video:  "/viral-builder/micro-camera/video.mp4",
     image:  "/viral-builder/micro-camera/preview1.png",
-    glow:   "rgba(122,59,255,0.60)",
-    border: "#7A3BFF",
-    rank:   3,
+    accent: "#7A3BFF",
+    rank:   4,
     path:   "/workspace/micro-camera-animal",
   },
   {
     title:  "Viral Skeleton",
-    badge:  "Exploding",
     views:  "3.2M",
-    image:  "/styles/skeleton2.webp",
-    glow:   "rgba(255,107,53,0.55)",
-    border: "#FF6B35",
-    rank:   4,
+    image:  "/home/viral-templates/skeleton.webp",
+    accent: "#FF6B35",
+    rank:   5,
+    path:   "/workspace/skeleton-shorts",
   },
   {
     title:  "Face ASMR",
-    badge:  "Rising Fast",
     views:  "2.1M",
-    video:  "/face/preview.mp4",
     image:  "/face/neypreview.png",
-    glow:   "rgba(236,72,153,0.55)",
-    border: "#EC4899",
-    rank:   5,
+    accent: "#EC4899",
+    rank:   6,
     path:   "/workspace/face-asmr",
   },
   {
-    title:  "3D Cartoon",
-    badge:  "Fan Favourite",
-    views:  "940K",
-    image:  "/styles/cartoon2.webp",
-    glow:   "rgba(0,212,255,0.45)",
-    border: "#00D4FF",
-    rank:   5,
+    title:  "AI Cooking Matic",
+    views:  "1.8M",
+    image:  "/home/viral-templates/cook.webp",
+    accent: "#FFB020",
+    rank:   7,
+    path:   "/workspace/ai-cooking-matic",
+  },
+  {
+    title:  "Nationality Swap",
+    views:  "1.4M",
+    image:  "/home/viral-templates/nationalityswap.webp",
+    accent: "#22D3EE",
+    rank:   8,
+    path:   "/workspace/footballer-nationality-swap",
   },
 ];
 
 /* ─── Component ─────────────────────────────────────────────── */
 export default function WhatsHot() {
-  const scrollRef            = useRef(null);
-  const isUserInteracting    = useRef(false);
-  const navigate             = useNavigate();
-
-  /* auto-scroll loop on mobile */
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    const CARD_W  = 160; // px (matches w-[160px] below)
-    const GAP     = 12;
-    const STEP    = CARD_W + GAP;
-
-    const id = setInterval(() => {
-      if (isUserInteracting.current) return;
-      el.scrollBy({ left: STEP, behavior: "smooth" });
-
-      setTimeout(() => {
-        const half = el.scrollWidth / 2;
-        if (el.scrollLeft >= half - STEP) {
-          el.style.scrollSnapType = "none";
-          el.scrollLeft -= half;
-          requestAnimationFrame(() => {
-            el.style.scrollSnapType = "x mandatory";
-          });
-        }
-      }, 420);
-    }, 2600);
-
-    return () => clearInterval(id);
-  }, []);
-
-  const looped = [...items, ...items];
+  const navigate = useNavigate();
 
   return (
     <motion.section
@@ -113,60 +83,50 @@ export default function WhatsHot() {
       className="w-full px-5 md:px-[50px] mt-8"
     >
       {/* ── Header ── */}
-      <div className="flex items-center gap-3 mb-5 flex-wrap">
-        <div className="flex items-center gap-2.5">
-          <motion.span
-            animate={{ scale: [1, 1.18, 1] }}
-            transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
-            className="text-[26px] leading-none select-none"
-          >
-            🔥
-          </motion.span>
-          <h2 className="text-white text-[20px] md:text-[28px] font-bold tracking-tight">
-            What&apos;s Hot Right Now
-          </h2>
-        </div>
-
-        {/* live pill */}
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/15 border border-red-500/30">
+      <div className="mb-5 flex flex-wrap items-center gap-2.5 md:mb-6">
+        <span className="text-[20px] leading-none select-none">🔥</span>
+        <h2 className="text-white text-[20px] md:text-[28px] font-bold tracking-tight">
+          Most Viral Templates
+        </h2>
+        <span className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/15 px-3 py-1">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-70" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
           </span>
           <span className="text-red-400 text-[11px] font-bold tracking-widest">LIVE</span>
-        </div>
+        </span>
       </div>
 
-      {/* ── Mobile auto-scroll strip ── */}
-      <div className="md:hidden overflow-hidden">
-        <div
-          ref={scrollRef}
-          onTouchStart={() => (isUserInteracting.current = true)}
-          onTouchEnd={() => setTimeout(() => (isUserInteracting.current = false), 1800)}
-          className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {looped.map((item, i) => (
-            <div key={i} className="snap-start shrink-0 w-[160px]">
+      {/* ── Ranked template grid — full width, wraps to as many rows as needed ── */}
+      <div className="relative">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+          {items.map((item, i) => (
+            <motion.div
+              key={item.title}
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.05, duration: 0.4, ease: "easeOut" }}
+            >
               <HotCard item={item} navigate={navigate} />
-            </div>
+            </motion.div>
           ))}
         </div>
-      </div>
 
-      {/* ── Desktop row ── */}
-      <div className="hidden md:flex gap-4">
-        {items.map((item, i) => (
-          <motion.div
-            key={item.title}
-            className="flex-1"
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.07, duration: 0.45, ease: "easeOut" }}
+        {/* bottom fade — sinks the last row into the page background */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#090A0A] via-[#090A0A]/70 to-transparent sm:h-32 md:h-40" />
+
+        {/* explore templates CTA — floats over the fade */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center sm:bottom-6">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("zyvo:open-create-menu"))}
+            className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-lime-500/40 bg-[#101312]/90 px-5 py-2.5 text-[13px] font-bold text-lime-300 backdrop-blur-sm transition hover:bg-lime-300 hover:text-black"
           >
-            <HotCard item={item} navigate={navigate} />
-          </motion.div>
-        ))}
+            Explore Templates
+            <ArrowUpRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </motion.section>
   );
@@ -174,97 +134,44 @@ export default function WhatsHot() {
 
 /* ─── Card ──────────────────────────────────────────────────── */
 function HotCard({ item, navigate }) {
-  const [hovered, setHovered] = useState(false);
-
   return (
     <button
       type="button"
       onClick={() => navigate(item.path || "/workspace/image-generator")}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="group relative w-full overflow-hidden rounded-2xl block text-left focus:outline-none"
-      style={{ aspectRatio: "3 / 4.4" }}
+      className="group relative isolate flex w-full flex-col gap-1 rounded-[16px] border border-white/[0.07] bg-[#101312] p-1 text-left transition-colors duration-200 hover:border-lime-300/30 hover:bg-[#151915]"
     >
-      {/* Base image — always rendered, never hidden, so the card is never black */}
-      <img
-        src={item.image}
-        alt={item.title}
-        loading="lazy"
-        fetchPriority="low"
-        decoding="async"
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
-      />
-      {/* Hover video sits on top of the image once it buffers */}
-      {item.video && hovered && (
-        <video
-          src={item.video}
-          poster={item.image}
-          autoPlay muted loop playsInline
-          preload="none"
-          className="absolute inset-0 w-full h-full object-cover"
+      <div className="relative aspect-[343/195] w-full overflow-hidden rounded-xl bg-black">
+        <img
+          src={item.image}
+          alt={item.title}
+          loading="lazy"
+          fetchPriority="low"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
         />
-      )}
 
-      {/* base gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/10" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
 
-      {/* animated glow border */}
-      <div
-        className="absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-400 opacity-0 group-hover:opacity-100"
-        style={{ boxShadow: `inset 0 0 0 1.5px ${item.border}99, 0 0 24px ${item.glow}` }}
-      />
-
-      {/* idle subtle border */}
-      <div className="absolute inset-0 rounded-2xl border border-white/10 pointer-events-none" />
-
-      {/* ── Top: badge + rank ── */}
-      <div className="absolute top-2.5 left-2.5 right-2.5 flex items-start justify-between gap-1">
-        {/* badge */}
         <div
-          className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide backdrop-blur-sm truncate"
-          style={{
-            background: `${item.border}28`,
-            border: `1px solid ${item.border}55`,
-            color: item.border,
-          }}
-        >
-          {item.badge}
-        </div>
-
-        {/* rank number */}
-        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center border border-white/15">
-          <span className="text-white font-black text-[10px] leading-none">
-            {item.rank}
-          </span>
-        </div>
+          className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          style={{ boxShadow: `inset 0 0 0 1.5px ${item.accent}99, 0 0 24px ${item.accent}55` }}
+        />
       </div>
 
-      {/* ── Bottom: info ── */}
-      <div className="absolute bottom-0 left-0 right-0 p-3">
-        <p className="text-white font-bold text-[14px] leading-tight drop-shadow-md">
-          {item.title}
-        </p>
-
-        <div className="flex items-center gap-1 mt-1">
-          <TrendingUp size={10} className="text-white/50 flex-shrink-0" />
-          <span className="text-white/50 text-[10px] font-medium">
-            {item.views} views / wk
+      <div className="flex items-center justify-between gap-2 p-2">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span
+            className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-black text-black"
+            style={{ background: item.rank === 1 ? "#BEF264" : "#84CC16" }}
+          >
+            {item.rank}
           </span>
+          <p className="truncate text-[12.5px] font-semibold text-white">{item.title}</p>
         </div>
 
-        {/* CTA — visible at all times on mobile, hover on desktop */}
-        <div
-          className="
-            mt-2 w-full py-1.5 rounded-xl
-            bg-white/15 backdrop-blur-sm
-            text-white text-[11px] font-semibold text-center
-            border border-white/10
-            transition-all duration-300
-            md:opacity-0 md:translate-y-1
-            md:group-hover:opacity-100 md:group-hover:translate-y-0
-          "
-        >
-          Try this style →
+        <div className="flex flex-shrink-0 items-center gap-1 text-white/40">
+          <TrendingUp className="h-2.5 w-2.5" />
+          <span className="text-[10px] font-semibold">{item.views}</span>
         </div>
       </div>
     </button>

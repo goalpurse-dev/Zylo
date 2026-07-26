@@ -15,6 +15,7 @@ const SUITE_ITEMS = [
   { name: "Viral Skeleton", desc: "Scroll-stopping skeleton content", badge: "TRENDING", image: "/home/skeleton.png", path: "/workspace/skeleton-shorts" },
   { name: "Clay Rescue", desc: "Giant hands save tiny clay worlds", badge: "NEW", image: "/clayrescue/smallpreview.webp", path: "/workspace/clay-rescue" },
   { name: "AI Cooking Matic", desc: "Viral cooking videos on autopilot", badge: "NEW", image: "/templates/AICOOKING/thumbnail.png", path: "/workspace/ai-cooking-matic" },
+  { name: "2AM Worlds", desc: "TikTok slideshows of worlds at 2AM", badge: "NEW", image: "/template/2am-world/preview.png", path: "/workspace/two-am" },
 ];
 
 const CARD_WIDTH = 224;
@@ -145,7 +146,7 @@ function SuiteCard({ item, offset, active, onClick }) {
         zIndex: 100 - Math.round(abs * 12),
         transform: `translate3d(${x}px, ${y}px, 0)`,
       }}
-      className="group absolute left-1/2 top-1/2 box-border overflow-hidden border-x-[2px] border-black bg-[#090A0A] text-left shadow-[0_24px_80px_rgba(0,0,0,0.55)] transition-[transform,opacity,filter] duration-100 ease-linear [backface-visibility:hidden] hover:!opacity-100"
+      className="group absolute left-1/2 top-1/2 box-border overflow-hidden bg-[#090A0A] text-left shadow-[0_24px_80px_rgba(0,0,0,0.55)] transition-[transform,opacity,filter] duration-100 ease-linear [backface-visibility:hidden] hover:!opacity-100"
     >
       <div
         data-arc-face

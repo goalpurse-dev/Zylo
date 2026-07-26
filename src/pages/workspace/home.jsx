@@ -127,30 +127,28 @@ export default function WorkspaceHome() {
       </DeferredSection>
 
       {/* 5 — LATEST TRENDS */}
-      <DeferredSection minHeight={620}>
+      <Suspense fallback={<div aria-hidden="true" style={{ minHeight: 620 }} />}>
         <LatestTrends />
-      </DeferredSection>
+      </Suspense>
 
       {/* 6 — JUMP BACK IN */}
       <DeferredSection minHeight={240}>
         <JumpBackIn />
       </DeferredSection>
 
-     
+      {/* 7 — MOST VIRAL TEMPLATES */}
+      <DeferredSection minHeight={360}>
+        <WhatsHot />
+      </DeferredSection>
 
-      {/* 7 — LATEST AI MODELS */}
+      {/* 8 — LATEST AI MODELS */}
       <DeferredSection minHeight={340}>
         <LatestModels />
       </DeferredSection>
 
-      {/* 8 — POPULAR STYLES */}
+      {/* 9 — POPULAR STYLES */}
       <DeferredSection minHeight={360}>
         <PopularStyles />
-      </DeferredSection>
-
-      {/* 9 — WHAT'S HOT */}
-      <DeferredSection minHeight={360}>
-        <WhatsHot />
       </DeferredSection>
 
       {/* 10 — INSPIRATION GALLERY */}

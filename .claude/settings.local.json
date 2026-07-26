@@ -20,7 +20,24 @@
       "Bash(node \"C:\\\\Users\\\\Huhta\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Public-Zylo\\\\c18a8266-9c0e-4f33-bc5f-ca181087558e\\\\scratchpad\\\\probe_mp4.js\" \"public/template/nationality-swap/nationality-swap-full.mp4\")",
       "Bash(rm -f \"C:\\\\Users\\\\Huhta\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Public-Zylo\\\\c18a8266-9c0e-4f33-bc5f-ca181087558e\\\\scratchpad\\\\probe_mp4.js\")",
       "Bash(node \"C:\\\\Users\\\\Huhta\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Public-Zylo\\\\c18a8266-9c0e-4f33-bc5f-ca181087558e\\\\scratchpad\\\\probe_tracks.js\" \"public/template/nationality-swap/endwatermark.mp4\")",
-      "Bash(grep -rn \"layout/ToolShell\\\\|from \\\\\"\\\\\\\\.\\\\\\\\./\\\\\\\\.\\\\\\\\./components/layout\" src --include=*.jsx --include=*.js)"
+      "Bash(grep -rn \"layout/ToolShell\\\\|from \\\\\"\\\\\\\\.\\\\\\\\./\\\\\\\\.\\\\\\\\./components/layout\" src --include=*.jsx --include=*.js)",
+      "Bash(npx vite *)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(curl -sf http://localhost:5173)",
+      "Bash(break)",
+      "Read(//tmp/**)",
+      "Bash(npx playwright *)",
+      "Bash(npm ls *)",
+      "Bash(node -e \"console.log\\(require.resolve\\('playwright'\\)\\)\")",
+      "Bash(node _tmp_shot.mjs)",
+      "Bash(rm -f _tmp_shot.mjs _tmp_home.png _tmp_home_full.png _tmp_suite_1.png _tmp_suite_2.png _tmp_suite_3.png _tmp_bottom.png)",
+      "Bash(lsof -ti:5174 -sTCP:LISTEN)",
+      "Bash(xargs -r kill)",
+      "Bash(rm -f _tmp_shot.mjs _tmp_desktop.png _tmp_mobile.png)",
+      "Bash(lsof -ti:5173 -sTCP:LISTEN)",
+      "Bash(rm -f _tmp_shot.mjs _tmp_lostworlds.png _tmp_grid.png)",
+      "Bash(rm -f _tmp_shot.mjs _tmp_grid.png)"
     ]
   }
 }

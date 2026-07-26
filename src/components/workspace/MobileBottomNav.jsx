@@ -162,6 +162,7 @@ export default function MobileBottomNav({ hidden }) {
 
   const NAV_HEIGHT = 78;
   const createActive =
+    location.pathname.startsWith("/workspace/two-am") ||
     location.pathname.startsWith("/workspace/ai-fruit-story") ||
     location.pathname.startsWith("/workspace/face-asmr") ||
     location.pathname.startsWith("/workspace/micro-camera-animal") ||
@@ -172,6 +173,16 @@ export default function MobileBottomNav({ hidden }) {
   const workspaceRouteActive =
     location.pathname.startsWith("/workspace/image-generator") ||
     location.pathname.startsWith("/workspace/video-generator");
+
+  useEffect(() => {
+    const openCreate = () => {
+      if (window.matchMedia("(min-width: 1024px)").matches) return;
+      setWorkspaceOpen(false);
+      setCreateOpen(true);
+    };
+    window.addEventListener("zyvo:open-create-menu", openCreate);
+    return () => window.removeEventListener("zyvo:open-create-menu", openCreate);
+  }, []);
 
   return (
     <>

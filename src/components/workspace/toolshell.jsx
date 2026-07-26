@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { createElement, useState } from "react";
+import { createElement, useEffect, useState } from "react";
 import { ChevronRight, Folder, Home, LayoutGrid, Pin, Sparkles } from "lucide-react";
 import Logo from "../../assets/Logo.png";
 import { ALL_PINNABLE_TOOLS, DesktopCreatePanel, DesktopWorkspacePanel } from "./CreateMenu";
@@ -71,6 +71,7 @@ export default function ToolShell({ onClose }) {
   const isActive = (path) => location.pathname.startsWith(path);
   const anyPanelOpen = createOpen || workspaceOpen;
   const createActive = createOpen || (!anyPanelOpen && (
+    isActive("/workspace/two-am") ||
     isActive("/workspace/ai-fruit-story") ||
     isActive("/workspace/face-asmr") ||
     isActive("/workspace/micro-camera-animal") ||
@@ -86,6 +87,16 @@ export default function ToolShell({ onClose }) {
     setCreateOpen(false);
     setWorkspaceOpen(false);
   };
+
+  useEffect(() => {
+    const openCreate = () => {
+      if (!window.matchMedia("(min-width: 1024px)").matches) return;
+      setWorkspaceOpen(false);
+      setCreateOpen(true);
+    };
+    window.addEventListener("zyvo:open-create-menu", openCreate);
+    return () => window.removeEventListener("zyvo:open-create-menu", openCreate);
+  }, []);
 
   const go = (path) => {
     closePanels();
