@@ -970,7 +970,7 @@ export default function AICookingMatic() {
         isGuest={paywallGuest}
         dismissable={!needsUpgrade}
         toolName="AI Cooking Matic"
-        previewSrc="/face/preview.mp4"
+        previewSrc="/template/aicooking/video.mp4"
       />
 
       {exportOpen && (

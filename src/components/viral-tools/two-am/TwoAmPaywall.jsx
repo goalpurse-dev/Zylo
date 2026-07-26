@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { Check, X, Lock } from "lucide-react";
@@ -12,7 +12,7 @@ const TIERS = [
     monthly: 20, yearlyPerMonth: 16,
     yearlyNote: "Billed $192/yr",
     accent: "#8B5CF6", btnFrom: "#5B21B6", btnTo: "#7C3AED",
-    features: ["750 credits / month", "~25 AI videos with sound", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "Watermark-free exports", "Standard speed"],
+    features: ["750 credits / month", "~25 AI videos with sound", "2AM Worlds", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Watermark-free exports", "Standard speed"],
     priceIds: { monthly: "price_1TmVZZHtn4q5rIncOuf5aKP4", yearly: "price_1TmVhxHtn4q5rIncS8sxm6UR" },
   },
   {
@@ -22,7 +22,7 @@ const TIERS = [
     yearlyNote: "Billed $420/yr",
     accent: "#A855F7", btnFrom: "#7C3AED", btnTo: "#A855F7",
     popular: true,
-    features: ["1,600 credits / month", "~53 AI videos with sound", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "Watermark-free exports", "Priority queue"],
+    features: ["1,600 credits / month", "~53 AI videos with sound", "2AM Worlds", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Watermark-free exports", "Priority queue"],
     priceIds: { monthly: "price_1TmVfXHtn4q5rInc9IaN1l3U", yearly: "price_1TmVjnHtn4q5rInccPDBIVaX" },
   },
   {
@@ -31,7 +31,7 @@ const TIERS = [
     monthly: 85, yearlyPerMonth: 70,
     yearlyNote: "Billed $840/yr",
     accent: "#C084FC", btnFrom: "#9333EA", btnTo: "#C084FC",
-    features: ["3,200 credits / month", "~106 AI videos with sound", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "Unlimited history", "Fast-lane generation"],
+    features: ["3,200 credits / month", "~106 AI videos with sound", "2AM Worlds", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Unlimited history", "Fast-lane generation"],
     priceIds: { monthly: "price_1TmVg2Htn4q5rIncWL0b3HJr", yearly: "price_1TmVlUHtn4q5rIncbtWbGyof" },
   },
 ];
@@ -48,19 +48,14 @@ async function handleSubscribe(tier, billing) {
   });
 }
 
-export default function FruitStoryPaywall({ open, onClose, isGuest, dismissable = true }) {
+export default function TwoAmPaywall({ open, onClose, isGuest, dismissable = true, toolName = "2AM Worlds", previewSrc = "/template/2am-world/pokemon (7).png" }) {
   const navigate = useNavigate();
-  const videoRef = useRef(null);
   const [billing, setBilling] = useState("yearly");
 
   useEffect(() => {
     if (!open) return;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
-  }, [open]);
-
-  useEffect(() => {
-    if (open && videoRef.current) videoRef.current.play().catch(() => {});
   }, [open]);
 
   useEffect(() => {
@@ -90,17 +85,16 @@ export default function FruitStoryPaywall({ open, onClose, isGuest, dismissable 
           <X size={15} />
         </button>
 
-        {/* Left — phone video, desktop only */}
+        {/* Left — phone photo, desktop only */}
         <div className="relative hidden flex-shrink-0 items-center justify-center bg-black/40 p-8 md:flex md:w-[240px]">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_50%,rgba(122,59,255,0.18),transparent)]" />
           <div className="relative w-full max-w-[155px]">
             <div className="overflow-hidden rounded-[28px] border border-white/15 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.7)]">
               <div className="aspect-[9/19.5] w-full overflow-hidden">
-                <video
-                  ref={videoRef}
-                  src="/viral-builder/ai-fruit/result.mp4"
+                <img
+                  src={previewSrc}
+                  alt="2AM Worlds preview"
                   className="h-full w-full object-cover"
-                  autoPlay muted loop playsInline preload="none"
                 />
               </div>
             </div>
@@ -118,12 +112,12 @@ export default function FruitStoryPaywall({ open, onClose, isGuest, dismissable 
             </div>
             <div>
               <h2 className="text-[15px] font-bold text-white leading-tight">
-                {isGuest ? "Sign in to continue" : "Subscription Required"}
+                {isGuest ? `Sign up to use ${toolName}` : "Subscription Required"}
               </h2>
               <p className="text-[11px] text-white/40 mt-0.5">
                 {isGuest
-                  ? "Create an account, then pick a plan to use AI Fruit Story."
-                  : "You need a paid plan to create AI Fruit Story videos."}
+                  ? `Create a free account to get started with ${toolName}.`
+                  : `You need a paid plan to create ${toolName}.`}
               </p>
             </div>
           </div>
@@ -133,13 +127,13 @@ export default function FruitStoryPaywall({ open, onClose, isGuest, dismissable 
               <div className="relative w-[120px] flex-shrink-0">
                 <div className="overflow-hidden rounded-[22px] border border-white/15 bg-black shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
                   <div className="aspect-[9/19.5] w-full overflow-hidden">
-                    <video src="/viral-builder/ai-fruit/result.mp4" className="h-full w-full object-cover" autoPlay muted loop playsInline preload="none" />
+                    <img src={previewSrc} alt="2AM Worlds preview" className="h-full w-full object-cover" />
                   </div>
                 </div>
                 <div className="mx-auto mt-1.5 h-1 w-8 rounded-full bg-white/15" />
               </div>
               <div className="space-y-3 w-full max-w-[300px]">
-                <p className="text-[13px] text-white/50">Create your free Zyvo account to get started. Then pick any plan to unlock AI Fruit Story.</p>
+                <p className="text-[13px] text-white/50">Create your free Zyvo account to start making viral {toolName} slideshows.</p>
                 <button
                   onClick={() => { onClose(); navigate("/signup"); }}
                   className="w-full rounded-[12px] py-3 text-sm font-bold text-white transition hover:opacity-90"
