@@ -65,9 +65,9 @@ const PLAN_TIERS = [
 ]
 
 const PRICE_IDS = {
-  starter: "price_1TGKT6Htn4q5rIncI47V5Ein",
-  pro: "price_1TGKSqHtn4q5rIncIf8RPa6e",
-  generative: "price_1TGKSSHtn4q5rIncSTurqkCN",
+  starter: "price_1TmVZZHtn4q5rIncOuf5aKP4",
+  pro: "price_1TmVfXHtn4q5rInc9IaN1l3U",
+  generative: "price_1TmVg2Htn4q5rIncWL0b3HJr",
 }
 
 /* ─── Reusable tick ──────────────────────────────────────────────── */

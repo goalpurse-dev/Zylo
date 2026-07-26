@@ -13,7 +13,7 @@ const TIERS = [
     yearlyNote: "Billed $192/yr",
     accent: "#8B5CF6", btnFrom: "#5B21B6", btnTo: "#7C3AED",
     features: ["750 credits / month", "~25 AI videos with sound", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "Watermark-free exports", "Standard speed"],
-    priceIds: { monthly: "price_1TGKT6Htn4q5rIncI47V5Ein", yearly: "price_1TYWNYHtn4q5rIncWMa3mmvI" },
+    priceIds: { monthly: "price_1TmVZZHtn4q5rIncOuf5aKP4", yearly: "price_1TmVhxHtn4q5rIncS8sxm6UR" },
   },
   {
     id: "pro",
@@ -23,7 +23,7 @@ const TIERS = [
     accent: "#A855F7", btnFrom: "#7C3AED", btnTo: "#A855F7",
     popular: true,
     features: ["1,600 credits / month", "~53 AI videos with sound", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "Watermark-free exports", "Priority queue"],
-    priceIds: { monthly: "price_1TGKSqHtn4q5rIncIf8RPa6e", yearly: "price_1TYWOWHtn4q5rIncTmN3GXdy" },
+    priceIds: { monthly: "price_1TmVfXHtn4q5rInc9IaN1l3U", yearly: "price_1TmVjnHtn4q5rInccPDBIVaX" },
   },
   {
     id: "generative",
@@ -32,7 +32,7 @@ const TIERS = [
     yearlyNote: "Billed $840/yr",
     accent: "#C084FC", btnFrom: "#9333EA", btnTo: "#C084FC",
     features: ["3,200 credits / month", "~106 AI videos with sound", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "Unlimited history", "Fast-lane generation"],
-    priceIds: { monthly: "price_1TGKSSHtn4q5rIncSTurqkCN", yearly: "price_1TYWP8Htn4q5rIncbugChVhS" },
+    priceIds: { monthly: "price_1TmVg2Htn4q5rIncWL0b3HJr", yearly: "price_1TmVlUHtn4q5rIncbtWbGyof" },
   },
 ];
 
