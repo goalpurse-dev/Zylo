@@ -119,6 +119,7 @@ useEffect(() => {
     "/workspace/micro-camera-animal": "Micro Camera",
     "/workspace/clay-rescue":        "Clay Rescue",
     "/workspace/ai-cooking-matic":   "AI Cooking Matic",
+    "/workspace/two-am":             "2AM In...",
     "/workspace/publishv":           "Publish",
     "/workspace/stats":              "Stats",
     "/workspace/connections":        "Connections",

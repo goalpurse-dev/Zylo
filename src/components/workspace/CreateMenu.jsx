@@ -58,6 +58,15 @@ export const CREATE_TOOLS = [
     previewPosition: "object-center",
     color: "#bef264",
   },
+  {
+    id: "two-am",
+    label: "2AM Worlds",
+    sublabel: "",
+    path: "/workspace/two-am",
+    preview: "/template/2am-world/preview.png",
+    previewPosition: "object-center",
+    color: "#bef264",
+  },
   // { id: "ai-voice-story", label: "AI Voice Story", ... },
 ];
 

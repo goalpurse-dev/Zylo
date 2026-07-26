@@ -163,16 +163,20 @@ Deno.serve(async (req) => {
       jobId = data.id;
     }
 
-    // Atomically transition queued -> running. The old best-effort claim RPC
-    // ignored its return value and then accepted already-running rows, allowing
-    // two worker invocations to launch the same paid provider task twice.
-    const claimableAt = new Date().toISOString();
+    // Atomically transition queued -> running. The queued-status predicate is
+    // the duplicate-dispatch guard: only one concurrent worker can update and
+    // receive the row. When this worker picks an unspecified job, the query
+    // above has already enforced retry_after. Explicit job IDs are newly
+    // created handoffs or authorized recovery calls, so repeating retry_after
+    // here is unnecessary. It also causes PostgREST to qualify the filter as
+    // jobs.retry_after in the UPDATE CTE on some deployments, producing a
+    // false "column jobs.retry_after does not exist" error even after the
+    // column migration has been applied.
     let { data: job, error: jobErr } = await sbAdmin
       .from("jobs")
       .update({ status: "running" })
       .eq("id", jobId)
       .eq("status", "queued")
-      .or(`retry_after.is.null,retry_after.lte.${claimableAt}`)
       .select("id,user_id,type,input,settings,tool_key,status,progress,prompt")
       .maybeSingle();
 
@@ -191,8 +195,10 @@ Deno.serve(async (req) => {
       const canRecover = Boolean(
         recoverExistingProvider &&
         existing &&
-        existing.type === "video" &&
-        ["running", "processing", "failed"].includes(String(existing.status)) &&
+        (
+          (existing.type === "video" && ["running", "processing", "failed"].includes(String(existing.status))) ||
+          (existing.type === "image" && ["running", "processing"].includes(String(existing.status)))
+        ) &&
         (existing.settings as any)?.provider_job_id
       );
 
@@ -276,6 +282,7 @@ Deno.serve(async (req) => {
           width: job.input?.width,
           height: job.input?.height,
         },
+        recoverExistingProvider,
       }
     : {
         jobId,

@@ -197,6 +197,7 @@ const MicroCameraAnimalPage  = lazy(() => import("./pages/workspace/MicroCameraA
 const ClayRescuePage         = lazy(() => import("./pages/workspace/ClayRescue.jsx"));
 const AICookingMaticPage     = lazy(() => import("./pages/workspace/AICookingMatic.jsx"));
 const FootballerNationalitySwapPage = lazy(() => import("./pages/workspace/FootballerNationalitySwap.jsx"));
+const TwoAmPage               = lazy(() => import("./pages/workspace/TwoAm.jsx"));
 const PublishPage            = lazy(() => import("./pages/workspace/publish.jsx"));
 const StatsPage              = lazy(() => import("./pages/workspace/stats.jsx"));
 const ConnectionsPage        = lazy(() => import("./pages/workspace/connections.jsx"));
@@ -516,6 +517,7 @@ return (
   <Route path="/workspace/clay-rescue" element={<ClayRescuePage />} />
   <Route path="/workspace/ai-cooking-matic" element={<AICookingMaticPage />} />
   <Route path="/workspace/footballer-nationality-swap" element={<FootballerNationalitySwapPage />} />
+  <Route path="/workspace/two-am" element={<TwoAmPage />} />
   <Route path="/workspace/publish"          element={<Navigate to="/workspace/home" replace />} />
   <Route path="/workspace/publishv"         element={<PublishPage />} />
   <Route path="/workspace/stats"            element={<StatsPage />} />
