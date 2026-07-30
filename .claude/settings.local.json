@@ -37,7 +37,11 @@
       "Bash(rm -f _tmp_shot.mjs _tmp_desktop.png _tmp_mobile.png)",
       "Bash(lsof -ti:5173 -sTCP:LISTEN)",
       "Bash(rm -f _tmp_shot.mjs _tmp_lostworlds.png _tmp_grid.png)",
-      "Bash(rm -f _tmp_shot.mjs _tmp_grid.png)"
+      "Bash(rm -f _tmp_shot.mjs _tmp_grid.png)",
+      "Bash(grep -Ei \"\\\\.\\(jsx|tsx|js|ts\\)$\")",
+      "Bash(grep -Ei \"\\\\.css$\")",
+      "Bash(grep -n \"path=\\\\\"/\\\\|Route\" src/App.jsx)",
+      "Bash(npm run *)"
     ]
   }
 }

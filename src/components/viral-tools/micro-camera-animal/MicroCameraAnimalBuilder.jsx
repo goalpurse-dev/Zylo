@@ -1,8 +1,18 @@
 import { useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Lock, VolumeX } from "lucide-react";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
-import { LENGTH_OPTIONS, calcCredits, detectAnimal } from "./api/microCameraAnimalApi";
+import {
+  LENGTH_OPTIONS,
+  calcCredits,
+  detectAnimal,
+  VIDEO_MODELS,
+  DEFAULT_VIDEO_MODEL,
+  VIDEO_MODEL_MIN_PLAN,
+  PLAN_LABELS,
+  getAllowedVideoModels,
+} from "./api/microCameraAnimalApi";
 import NoCreditsModal from "../shared/NoCreditsModal";
+import MicroCameraUpgradeModal from "./MicroCameraUpgradeModal";
 
 const EXAMPLES = ["ant", "worm", "beetle", "termite", "spider", "mole", "cricket"];
 
@@ -48,20 +58,33 @@ const PREVIEWS = [
   "/viral-builder/micro-camera/image2.webp",
 ];
 
-export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase }) {
+export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase, planCode }) {
   const [animalInput, setAnimalInput]         = useState("");
   const [validationError, setValidationError] = useState("");
   const [selectedLength, setSelectedLength]   = useState("15s");
+  const [videoModel, setVideoModel]           = useState(DEFAULT_VIDEO_MODEL);
+  const [upgradeModelId, setUpgradeModelId]   = useState(null);
   const [noCreditsOpen, setNoCreditsOpen]     = useState(false);
   const creditBalance = useProfileCredits();
 
+  const allowedModels = getAllowedVideoModels(planCode);
+
   const sceneCount       = LENGTH_OPTIONS.find((l) => l.value === selectedLength)?.scenes ?? 3;
-  const totalCredits     = calcCredits(sceneCount);
+  const totalCredits     = calcCredits(sceneCount, videoModel);
   const hasEnoughCredits = creditBalance >= totalCredits;
   const isGenerating     = phase === "images" || phase === "videos";
   const isDone           = phase === "done";
 
   const detectedProfile = animalInput.trim() ? detectAnimal(animalInput) : null;
+
+  const handleSelectVideoModel = (modelId) => {
+    if (isGenerating) return;
+    if (!allowedModels.includes(modelId)) {
+      setUpgradeModelId(modelId);
+      return;
+    }
+    setVideoModel(modelId);
+  };
 
   const handleGenerate = () => {
     if (!hasEnoughCredits) { setNoCreditsOpen(true); return; }
@@ -72,7 +95,7 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase })
       return;
     }
     setValidationError("");
-    onGenerate({ animalInput: trimmed, selectedLength });
+    onGenerate({ animalInput: trimmed, selectedLength, videoModel });
   };
 
   return (
@@ -182,6 +205,56 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase })
             </div>
           </div>
 
+          {/* Video model — pill selector, plan-gated */}
+          <div>
+            <p className="text-white/30 text-[10px] font-semibold uppercase tracking-widest mb-2">Video Model</p>
+            <div className="flex items-center gap-2 bg-[#0e1012] border border-white/[0.07] rounded-xl p-1">
+              {Object.values(VIDEO_MODELS).map((model) => {
+                const active = videoModel === model.id;
+                const locked = !allowedModels.includes(model.id);
+
+                if (locked) {
+                  return (
+                    <button
+                      key={model.id}
+                      onClick={() => handleSelectVideoModel(model.id)}
+                      title={`${model.label} requires the ${PLAN_LABELS[VIDEO_MODEL_MIN_PLAN[model.id]]} plan`}
+                      className="relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 overflow-hidden text-white/25 hover:text-white/40 transition-all"
+                    >
+                      <span className="pointer-events-none absolute inset-0 animate-shimmer" />
+                      <Lock className="w-3 h-3 shrink-0" />
+                      <span className="text-[12px] font-bold tracking-wide">{model.label}</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide bg-gradient-to-r from-[#F5C042]/25 to-[#F59E0B]/25 text-[#F5C042] border border-[#F5C042]/30">
+                        {PLAN_LABELS[VIDEO_MODEL_MIN_PLAN[model.id]]}
+                      </span>
+                    </button>
+                  );
+                }
+
+                return (
+                  <button
+                    key={model.id}
+                    onClick={() => handleSelectVideoModel(model.id)}
+                    className={`relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 transition-all ${
+                      active
+                        ? "bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white shadow-lg shadow-[#7A3BFF]/20"
+                        : "text-white/40 hover:text-white/70"
+                    }`}
+                  >
+                    <span className={`text-[12px] font-bold tracking-wide ${active ? "text-white" : ""}`}>{model.label}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                      active ? "bg-white/20 text-white" : "bg-white/[0.05] text-white/30"
+                    }`}>{model.tag}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/25">
+              <VolumeX className="w-3.5 h-3.5 text-red-400 shrink-0" />
+              <span className="text-[11px] font-bold uppercase tracking-wide text-red-300">No audio generated</span>
+            </div>
+          </div>
+
           {/* Length selector */}
           <div>
             <p className="text-white/30 text-[10px] font-semibold uppercase tracking-widest mb-2">Video Length</p>
@@ -266,6 +339,13 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase })
       onClose={() => setNoCreditsOpen(false)}
       creditsNeeded={totalCredits}
       creditBalance={creditBalance}
+    />
+
+    <MicroCameraUpgradeModal
+      open={!!upgradeModelId}
+      onClose={() => setUpgradeModelId(null)}
+      modelId={upgradeModelId}
+      requiredPlan={upgradeModelId ? VIDEO_MODEL_MIN_PLAN[upgradeModelId] : null}
     />
     </>
   );

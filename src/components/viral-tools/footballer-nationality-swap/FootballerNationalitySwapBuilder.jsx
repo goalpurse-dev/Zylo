@@ -1,5 +1,5 @@
 import { useState, useEffect, useId } from "react";
-import { ChevronRight, ChevronDown, Settings2, CheckCircle2, XCircle } from "lucide-react";
+import { ChevronRight, ChevronDown, Settings2, CheckCircle2, XCircle, Lock, Volume2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import {
@@ -9,9 +9,15 @@ import {
   EXPRESSION_OPTIONS,
   VIDEO_STYLE_OPTIONS,
   VIDEO_DURATION,
+  VIDEO_MODELS,
+  DEFAULT_VIDEO_MODEL,
+  VIDEO_MODEL_MIN_PLAN,
+  PLAN_LABELS,
+  getAllowedVideoModels,
   calcCredits,
 } from "./api/footballerNationalitySwapApi";
 import NoCreditsModal from "../shared/NoCreditsModal";
+import FootballerUpgradeModal from "./FootballerUpgradeModal";
 
 const MAX_CHARS = 24;
 
@@ -305,17 +311,21 @@ function SceneCard({ index, scene, onChange }) {
   );
 }
 
-export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, phase, viewingRecent = false }) {
+export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, phase, viewingRecent = false, planCode }) {
   const [sceneCount, setSceneCount] = useState(DEFAULT_SCENE_COUNT);
   // Always hold MAX_SCENES worth of state — switching the count only changes
   // how many are sliced for display/submission, so hidden scene data is never lost.
   const [scenes, setScenes] = useState(() => makeInitialScenes());
   const [validationError, setValidationError] = useState("");
   const [noCreditsOpen, setNoCreditsOpen] = useState(false);
+  const [videoModel, setVideoModel] = useState(DEFAULT_VIDEO_MODEL);
+  const [upgradeModelId, setUpgradeModelId] = useState(null);
   const creditBalance = useProfileCredits();
 
+  const allowedModels = getAllowedVideoModels(planCode);
+
   const visibleScenes = scenes.slice(0, sceneCount);
-  const totalCredits  = calcCredits(sceneCount);
+  const totalCredits  = calcCredits(sceneCount, videoModel);
   const hasEnough     = creditBalance >= totalCredits;
   const isGenerating  = phase === "images" || phase === "videos";
   const isDone        = phase === "done";
@@ -336,12 +346,21 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
     setValidationError("");
   };
 
+  const handleSelectVideoModel = (modelId) => {
+    if (isGenerating) return;
+    if (!allowedModels.includes(modelId)) {
+      setUpgradeModelId(modelId);
+      return;
+    }
+    setVideoModel(modelId);
+  };
+
   const handleGenerate = () => {
     if (!hasEnough) { setNoCreditsOpen(true); return; }
     const invalid = visibleScenes.find((s) => !s.footballer.trim() || !s.nationality.trim());
     if (invalid) { setValidationError("Fill in a footballer and nationality for every scene."); return; }
     setValidationError("");
-    onGenerate({ sceneInputs: visibleScenes, sceneCount });
+    onGenerate({ sceneInputs: visibleScenes, sceneCount, videoModel });
   };
 
   return (
@@ -399,6 +418,56 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
       {/* ── SCROLLABLE BODY — hidden on mobile once done/failed, and on desktop too when browsing a past generation ── */}
       <div className={`${showStatus ? (showStatusOnDesktop ? "hidden" : "hidden lg:block") : ""} lg:flex-1 lg:min-h-0 lg:overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full`}>
         <div className="px-5 pt-4 pb-[160px] lg:pb-5 flex flex-col gap-3">
+
+          {/* Video model — pill selector, plan-gated */}
+          <div>
+            <p className="text-white/30 text-[10px] font-semibold uppercase tracking-widest mb-2">Video Model</p>
+            <div className="flex items-center gap-2 bg-[#0e1012] border border-white/10 rounded-xl p-1">
+              {Object.values(VIDEO_MODELS).map((model) => {
+                const active = videoModel === model.id;
+                const locked = !allowedModels.includes(model.id);
+
+                if (locked) {
+                  return (
+                    <button
+                      key={model.id}
+                      onClick={() => handleSelectVideoModel(model.id)}
+                      title={`${model.label} requires the ${PLAN_LABELS[VIDEO_MODEL_MIN_PLAN[model.id]]} plan`}
+                      className="relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 overflow-hidden text-white/25 hover:text-white/40 transition-all"
+                    >
+                      <span className="pointer-events-none absolute inset-0 animate-shimmer" />
+                      <Lock className="w-3 h-3 shrink-0" />
+                      <span className="text-[12px] font-bold tracking-wide">{model.label}</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide bg-gradient-to-r from-[#F5C042]/25 to-[#F59E0B]/25 text-[#F5C042] border border-[#F5C042]/30">
+                        {PLAN_LABELS[VIDEO_MODEL_MIN_PLAN[model.id]]}
+                      </span>
+                    </button>
+                  );
+                }
+
+                return (
+                  <button
+                    key={model.id}
+                    onClick={() => handleSelectVideoModel(model.id)}
+                    className={`relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 transition-all ${
+                      active
+                        ? "bg-gradient-to-r from-[#F59E0B] to-[#FBBF24] text-black shadow-lg shadow-[#F59E0B]/20"
+                        : "text-white/40 hover:text-white/70"
+                    }`}
+                  >
+                    <span className={`text-[12px] font-bold tracking-wide ${active ? "text-black" : ""}`}>{model.label}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                      active ? "bg-black/15 text-black" : "bg-white/[0.05] text-white/30"
+                    }`}>{model.tag}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25">
+              <Volume2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-300">Audio included</span>
+            </div>
+          </div>
 
           {/* Scene count */}
           <div>
@@ -462,6 +531,13 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
       onClose={() => setNoCreditsOpen(false)}
       creditsNeeded={totalCredits}
       creditBalance={creditBalance}
+    />
+
+    <FootballerUpgradeModal
+      open={!!upgradeModelId}
+      onClose={() => setUpgradeModelId(null)}
+      modelId={upgradeModelId}
+      requiredPlan={upgradeModelId ? VIDEO_MODEL_MIN_PLAN[upgradeModelId] : null}
     />
     </>
   );

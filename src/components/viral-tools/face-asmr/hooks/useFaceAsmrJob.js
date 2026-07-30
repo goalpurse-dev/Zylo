@@ -71,7 +71,7 @@ export default function useFaceAsmrJob() {
   const patchScene = (index, patch) =>
     setScenes((prev) => prev.map((s) => (s.index === index ? { ...s, ...patch } : s)));
 
-  const start = useCallback(async ({ scenes: inputScenes, backgroundId }) => {
+  const start = useCallback(async ({ scenes: inputScenes, backgroundId, videoModel }) => {
     if (activeRef.current) return;
 
     activeRef.current = true;
@@ -102,7 +102,7 @@ export default function useFaceAsmrJob() {
 
       let job;
       try {
-        job = await animateFaceClip({ imageUrl });
+        job = await animateFaceClip({ imageUrl, videoModel });
         if (!isCurrentRun()) { activeVideos--; return; }
       } catch (err) {
         console.error(`[FaceAsmr] video job failed to start (scene ${sceneIndex})`, err);

@@ -1,7 +1,9 @@
 import { supabase } from "../../../../lib/supabaseClient";
 import { createImageJobSimple, createVideoJobSimple } from "../../../../lib/jobs";
-import { getProviderLink } from "../../../../lib/providers";
 import { getFruitStoryStyle } from "../config/fruitStoryStyles";
+import { getAllowedVideoModels as sharedGetAllowedVideoModels, PLAN_LABELS } from "../../../../lib/planGating";
+
+export { PLAN_LABELS };
 
 // supabase-js's functions.invoke() sets error.message to the fixed string
 // "Edge Function returned a non-2xx status code" on any non-2xx response —
@@ -27,24 +29,79 @@ async function resolveFunctionErrorMessage(error, fallback) {
 /* ─── Model key mappings ─── */
 export const FRUIT_IMAGE_MODEL_TO_TOOLKEY = {
   "zyvo-v2": "image:fruit-v2",  // GPT Image 2    — 2 credits/image
-  "zyvo-v3": "image:fruit-v3",  // GPT Image 2 medium
 };
 
-export const FRUIT_VIDEO_MODEL_TO_TOOLKEY = {
-  "zyvo-video-v1": "video:veo31lite",
+// Three video tiers, gated by plan — same pattern as Clay Rescue. All three
+// now include audio. Video credits below are tuned so the BLENDED per-scene
+// margin (1 image @ 2cr/$0.010423 + 1 video clip) lands at ~50%, not just the
+// video's own margin — the image's higher margin (~74%) pulls the combined
+// number up, so video-only credits sit a bit below a flat 2x cost markup.
+export const FRUIT_VIDEO_MODELS = {
+  "fruit-v2": {
+    id: "fruit-v2",
+    label: "V2",
+    tag: "Cheapest",
+    description: "480p — includes audio",
+    toolKey: "video:seedance15pro",
+    duration: 5,
+    // ⚠️ Cost is an ESTIMATE, not measured — no-sound 480p was $0.0607656/5s
+    // (measured). Scaled by this same model's 720p sound/no-sound ratio
+    // (5.25/2.5 ≈ 2.1x) to ~$0.1276/5s. 12cr → blended per-scene margin ~50.7%.
+    // Please run one real 480p+audio Seedance 1.5 Pro test and report the
+    // invoice cost so this can be corrected like the others were.
+    credits: 12,
+    withSound: true,
+    dims: {
+      "9:16": { width: 496, height: 864 },
+      "16:9": { width: 864, height: 496 },
+      "1:1":  { width: 680, height: 680 },
+    },
+  },
+  "fruit-v3": {
+    id: "fruit-v3",
+    label: "V3",
+    tag: "+ Audio",
+    description: "720p — includes audio",
+    toolKey: "video:viduq3turbo720",
+    duration: 5,
+    credits: 17,            // measured $0.17875/5s → blended per-scene margin ~50.2%
+    withSound: true,
+    dims: {
+      "9:16": { width: 720, height: 1280 },
+      "16:9": { width: 1280, height: 720 },
+      "1:1":  { width: 960, height: 960 },
+    },
+  },
+  "fruit-v4": {
+    id: "fruit-v4",
+    label: "V4",
+    tag: "Best quality",
+    description: "Full resolution — includes audio",
+    toolKey: "video:fruitveo31lite",
+    duration: 6,
+    credits: 29,            // $0.30/6s clip cost → blended per-scene margin ~49.9%
+    withSound: true,
+    dims: {
+      "9:16": { width: 1080, height: 1920 },
+      "16:9": { width: 1920, height: 1080 },
+      "1:1":  { width: 1080, height: 1080 },
+    },
+  },
+};
+export const DEFAULT_FRUIT_VIDEO_MODEL = "fruit-v2";
+
+// Plan gating — which video models each plan tier can use.
+export const FRUIT_VIDEO_MODEL_MIN_PLAN = {
+  "fruit-v2": "starter",
+  "fruit-v3": "pro",
+  "fruit-v4": "generative",
 };
 
-const VIDEO_WITH_SOUND = {
-  "zyvo-video-v1": true,
-};
+export function getAllowedFruitVideoModels(planCode) {
+  return sharedGetAllowedVideoModels(planCode, FRUIT_VIDEO_MODEL_MIN_PLAN);
+}
 
 export const MAX_FRUIT_VOICEOVER_CHARS = 95;
-
-// Credits per 6-second animated clip by model
-// Veo 3.1 Lite: $0.05/s × 6s × 2 markup / $0.02 per credit = 30
-export const FRUIT_VIDEO_CREDITS_PER_CLIP = {
-  "zyvo-video-v1": 30,
-};
 export const MAX_FRUIT_VOICEOVER_LINE_CHARS = 80;
 export const MIN_FRUIT_VIDEO_PROMPT_CHARS = 80;
 const MAX_RUNWARE_VIDEO_PROMPT_CHARS = 1450;
@@ -87,11 +144,6 @@ const FRUIT_MODEL_DIMS = {
     "16:9": { width: 1280, height: 720,  size: "1280x720"  },
     "1:1":  { width: 720,  height: 720,  size: "720x720"   },
   },
-  "zyvo-v3": {
-    "9:16": { width: 1088, height: 1920, size: "1088x1920" },
-    "16:9": { width: 1920, height: 1088, size: "1920x1088" },
-    "1:1":  { width: 1088, height: 1088, size: "1088x1088" },
-  },
 };
 
 export function getFruitV2CreditsPerImage(selectedCharacters) {
@@ -100,16 +152,8 @@ export function getFruitV2CreditsPerImage(selectedCharacters) {
 }
 
 export function getFruitImageCreditsPerImage(modelId, selectedCharacters) {
-  if (modelId === "zyvo-v2") return getFruitV2CreditsPerImage(selectedCharacters);
-  if (modelId === "zyvo-v3") return 8;
-  return 2;
+  return getFruitV2CreditsPerImage(selectedCharacters);
 }
-
-const ASPECT_VIDEO_DIMS = {
-  "9:16": { width: 1080, height: 1920 },
-  "16:9": { width: 1920, height: 1080 },
-  "1:1":  { width: 1080, height: 1080 },
-};
 
 const STORY_LENGTH_DURATION_SEC = {
   "15s": 6, "30s": 6, "45s": 6, "60s": 6,
@@ -1389,8 +1433,10 @@ function buildCharacterPromptText({ slot, selected, castEntry, label }) {
     `Reference Image ${slot} = ${label}.\n` +
     `This character is ${roleDesc}.\n` +
     `${fruitNote} ${appearanceNote} ${visualIdentityNote} ${clothingNote}\n`.trim() + "\n" +
-    "PRESERVE EXACTLY: fruit type, face, body shape, outfit, accessories, color palette, and overall identity.\n" +
-    "This identity is LOCKED for the entire story - never confuse this character with any other."
+    "PRESERVE EXACTLY FROM THIS REFERENCE: fruit type, face, body shape, outfit, accessories, color palette, and overall identity.\n" +
+    "This identity is LOCKED for the entire story - never confuse this character with any other.\n" +
+    "DO NOT COPY FROM THIS REFERENCE: pose, body position, arm/hand placement, facial expression, camera angle, or background. " +
+    "This reference is a neutral identity photo, not this scene's action — the pose, expression, framing and environment for THIS image come entirely from the scene description below, not from this reference."
   );
 }
 
@@ -1401,18 +1447,22 @@ function buildSceneRefSlots({ scene, form, castBible = [], previousSceneImageUrl
   const seenUrls = new Set();
 
   const addCharacterSlot = ({ wantedId, castEntry, selected, matchedBy = "cast" }) => {
-    const finalUrl = toPublicAssetUrl(getSelectedImage(selected));
+    // Primary source now: the character's own generated portrait (see
+    // generateCharacterPortrait) — one solo reference image per cast member,
+    // made BEFORE any scene runs. `selected` (a manually-picked character
+    // with its own image) is legacy/optional and only used if present.
+    const finalUrl = toPublicAssetUrl(getSelectedImage(selected)) || castEntry?.portraitUrl || null;
     console.log("[AI FRUIT refs] character lookup", {
       sceneNumber: scene.sceneNumber,
       sceneCharacterId: wantedId,
       castEntry,
       sourceCharacterId: castEntry?.sourceCharacterId,
       selectedFound: !!selected,
-      selectedImage: getSelectedImage(selected),
+      portraitUrl: castEntry?.portraitUrl ?? null,
       finalUrl,
     });
 
-    if (!selected || !finalUrl || seenUrls.has(finalUrl)) return false;
+    if (!finalUrl || seenUrls.has(finalUrl)) return false;
     if (matchedBy !== "cast") {
       console.warn("[AI FRUIT refs] fallback character ref match used", {
         sceneNumber: scene.sceneNumber,
@@ -1476,15 +1526,18 @@ function buildSceneRefSlots({ scene, form, castBible = [], previousSceneImageUrl
 
   const characterRefs = refSlots.filter((slot) => slot.type === "character");
   if (!characterRefs.length) {
-    console.error("[AI FRUIT] BLOCKED SCENE: missing character refs", {
+    // Expected now for a fully AI-invented (synthetic) cast — those
+    // characters have no reference image by design. The planner already
+    // bakes their full visual description into scene.imagePrompt as text
+    // (see the planner's "[AI-GENERATED, no ref image]" instruction), so
+    // the scene can still generate — just without an image anchor.
+    console.warn("[AI FRUIT] no image-backed character refs for scene — proceeding text-only", {
       sceneNumber: scene.sceneNumber,
       sceneTitle: scene.title,
       characterIdsInScene: scene.characterIdsInScene,
       charactersInScene: scene.charactersInScene,
-      castBible,
-      selectedCharacters,
+      selectedCharCount: selectedCharacters.length,
     });
-    throw new Error(`Missing character references for scene ${scene.sceneNumber}`);
   }
 
   if (previousSceneImageUrl && shouldUsePreviousSceneRef(prevScene, scene)) {
@@ -1599,7 +1652,12 @@ function buildMasterImagePrompt({
       referencePromptText + "\n\n" +
       `SCENE CAST - ONLY these characters may visually appear: ${castLine}.\n` +
       "Any character NOT in the scene cast above must be completely absent from this image.\n" +
-      "Do NOT add random background characters or extras."
+      "Do NOT add random background characters or extras.\n\n" +
+      "⚠ CRITICAL — REFERENCE IMAGES ARE FOR IDENTITY ONLY: the character reference images are neutral identity photos, " +
+      "each one from a DIFFERENT, unrelated moment. Do NOT reproduce their pose, framing, camera angle, or background in this image. " +
+      "Every scene in this story must look visually DISTINCT from every other scene — different pose, different body position, " +
+      "different camera angle, different framing — driven entirely by THIS scene's specific action and camera direction below, " +
+      "never by what the reference image happens to show."
     );
   }
 
@@ -1617,7 +1675,8 @@ function buildMasterImagePrompt({
       `- Do NOT show: ${forbiddenLabels.length ? forbiddenLabels.join(", ") : "any other recurring character"}.\n` +
       "- No extra background main characters not in the scene cast.\n" +
       "- Do not merge identities or change one character into another.\n" +
-      "- Keep all recurring characters visually identical to their reference images."
+      "- Keep each recurring character's FACE, FRUIT TYPE, and OUTFIT identical to their reference image — but their pose, " +
+      "expression, and body position in THIS image must match THIS scene's action, not the reference image's pose."
     );
   }
 
@@ -1664,6 +1723,22 @@ function buildMasterImagePrompt({
   return parts.join("\n\n");
 }
 
+/* ─── generateFruitStoryIdeas ───
+   Step 1 of the real creator workflow — 15 one-line viral idea options,
+   generated fresh each call. Purely ideation, no story/character/scene
+   generation happens here; the user picks one (or edits it) before
+   continuing to planFruitStory. ── */
+export async function generateFruitStoryIdeas() {
+  const { data, error } = await supabase.functions.invoke("fruit-story-ideas", {
+    body: {},
+  });
+
+  if (error) throw new Error(await resolveFunctionErrorMessage(error, "Idea generation failed"));
+  if (!data?.ok) throw new Error(data?.error || "Idea generation failed");
+
+  return data.ideas; // string[]
+}
+
 /* ─── planFruitStory ─── */
 export async function planFruitStory(payload) {
   const { data, error } = await supabase.functions.invoke("fruit-story-planner", {
@@ -1674,6 +1749,74 @@ export async function planFruitStory(payload) {
   if (!data?.ok) throw new Error(data?.error || "Story planning failed");
 
   return data; // { title, hook, storySummary, storyDNA, cast[], scenes[] }
+}
+
+/* ─── Character portraits ───────────────────────────────────────────────
+   Mirrors the manual creator workflow: before any scene image is generated,
+   each cast member gets ONE solo reference portrait built from their locked
+   visual identity (fruit type, appearance, clothing, etc — all already
+   returned by the planner). Every scene image is then generated WITH that
+   character's portrait as an image reference, instead of relying on text
+   description alone. ──────────────────────────────────────────────────── */
+function buildCharacterPortraitPrompt(member) {
+  const name = member.displayName || member.name || "the character";
+  const fruit = member.fruitType || "fruit";
+  const genderNoun =
+    member.genderPresentation === "feminine-presenting" ? "woman"
+    : member.genderPresentation === "masculine-presenting" ? "man"
+    : "person";
+
+  // Deliberately NEUTRAL pose/expression — this portrait becomes the image
+  // reference for every scene the character appears in. A dramatic pose or
+  // emotion baked in here (e.g. "arms crossed, pointing accusingly") gets
+  // copied into every scene by the image model regardless of that scene's
+  // actual action, which is what caused different scenes to render as
+  // near-duplicates of each other. Identity (face/fruit/outfit) must be
+  // locked; pose/expression must come from each scene's own direction.
+  return sanitizeImagePromptForGPT([
+    `Place ${name} alone against a simple plain neutral studio background, centered, nothing else in frame.`,
+    `${name} is an anthropomorphic fruit-human ${genderNoun} with a realistic ${fruit} as their head, glossy detailed fruit skin, while the rest of the body has natural adult human proportions.`,
+    member.visualIdentity ? `Locked visual identity: ${member.visualIdentity}.` : "",
+    member.appearance ? `Appearance: ${member.appearance}.` : "",
+    member.clothing ? `Wearing: ${member.clothing}. This exact outfit, these exact colors and proportions must stay identical in every future scene.` : "",
+    "Neutral relaxed standing pose, arms loosely at sides, calm neutral facial expression — this is an identity reference photo, not a dramatic story moment.",
+    "Frame as a three-quarter mid-shot at eye level, soft even studio lighting, shallow depth of field.",
+    "Feature-film-quality stylized 3D animation, hyper-detailed materials, realistic fabric, expressive facial rigging, polished cinematic rendering, fruit head only with a fully human-shaped body.",
+    "No text, no letters, no captions, no watermark, no logo, no other characters in frame.",
+  ].filter(Boolean).join(" "));
+}
+
+export async function generateCharacterPortrait({ member, form }) {
+  const imageToolKey = form.sceneImageModel ?? "zyvo-v2";
+  const toolKey = FRUIT_IMAGE_MODEL_TO_TOOLKEY[imageToolKey] ?? "image:fruit-v2";
+  const aspect  = form.sceneAspect ?? "9:16";
+  const dimMap  = FRUIT_MODEL_DIMS[imageToolKey] ?? FRUIT_MODEL_DIMS["zyvo-v2"];
+  const dims    = dimMap[aspect] ?? dimMap["9:16"];
+  const creditsPerImage = getFruitImageCreditsPerImage(imageToolKey, []);
+  const isFruitImageModel = toolKey === "image:fruit-v2";
+
+  const job = await createImageJobSimple({
+    subject:      buildCharacterPortraitPrompt(member),
+    toolKey,
+    size:         dims.size,
+    width:        dims.width,
+    height:       dims.height,
+    project_id:   form.project_id ?? null,
+    refImages:    [],
+    expectedRefSlotCount: 0,
+    chargeCreditsOverride: creditsPerImage,
+    providerHint: {
+      engine:   "runware",
+      mode:     "t2i",
+      edgeFn:   "/functions/v1/runware-image",
+      airTag:   "openai:gpt-image@2",
+      settings: isFruitImageModel
+        ? { quality: "low", fruitModel: imageToolKey, skipResponse: true, deliveryMethod: "async", outputQuality: 85 }
+        : {},
+    },
+  });
+
+  return job;
 }
 
 /* ─── generateSceneImage ─── */
@@ -1691,7 +1834,7 @@ export async function generateSceneImage({
   const dimMap   = FRUIT_MODEL_DIMS[imageToolKey] ?? FRUIT_MODEL_DIMS["zyvo-v2"];
   const dims     = dimMap[aspect] ?? dimMap["9:16"];
   const creditsPerImage = getFruitImageCreditsPerImage(imageToolKey, form.selectedCharacters);
-  const quality = imageToolKey === "zyvo-v3" ? "medium" : "low";
+  const quality = "low";
 
   const { refSlots, referenceImages } = buildSceneRefSlots({
     scene,
@@ -1710,15 +1853,15 @@ export async function generateSceneImage({
 
   const characterRefSlots = refSlots.filter((slot) => slot.type === "character");
   if (characterRefSlots.length === 0) {
-    console.error("[AI FRUIT] BLOCKED SCENE: missing character refs", {
+    // Expected for a fully AI-invented (synthetic) cast — see the matching
+    // note in buildSceneRefSlots. masterPrompt already carries the full
+    // text description of each synthetic character from scene.imagePrompt.
+    console.warn("[AI FRUIT] generating scene text-only (no image-backed character refs)", {
       sceneNumber: scene.sceneNumber,
       sceneTitle: scene.title,
       characterIdsInScene: scene.characterIdsInScene,
       charactersInScene: scene.charactersInScene,
-      castBible,
-      selectedCharacters: form.selectedCharacters ?? [],
     });
-    throw new Error(`Missing character references for scene ${scene.sceneNumber}`);
   }
 
   const promptMentions = {
@@ -1778,7 +1921,7 @@ export async function generateSceneImage({
     throw new Error("AI Fruit character references must use direct raw image URLs.");
   }
 
-  const isFruitImageModel = toolKey === "image:fruit-v2" || toolKey === "image:fruit-v3";
+  const isFruitImageModel = toolKey === "image:fruit-v2";
   const providerHintSettings = isFruitImageModel
     ? {
         quality,
@@ -1832,7 +1975,6 @@ export async function generateSceneImage({
   return job;
 }
 
-/* ─── animateScene ─── */
 export async function regenerateSceneImage({
   scene,
   form,
@@ -1853,41 +1995,6 @@ export async function regenerateSceneImage({
     prevScene,
     castBible,
   });
-}
-
-export async function animateScene({ scene, form, videoToolKey }) {
-  if (!scene.imageUrl) {
-    throw new Error(`Scene ${scene.sceneNumber} has no image yet — generate images first`);
-  }
-
-  const toolKey     = FRUIT_VIDEO_MODEL_TO_TOOLKEY[videoToolKey] ?? "video:veo31lite";
-  const isVeo       = toolKey === "video:veo31fast" || toolKey === "video:veo31lite";
-  const withSound   = VIDEO_WITH_SOUND[videoToolKey] ?? true;
-  const aspect      = form.sceneAspect ?? "9:16";
-  const dims        = ASPECT_VIDEO_DIMS[aspect] ?? ASPECT_VIDEO_DIMS["9:16"];
-  const durationSec = scene.durationSeconds ?? STORY_LENGTH_DURATION_SEC[form.storyLength] ?? 5;
-  const rawPrompt   = buildRunwareVideoPrompt(scene.videoPrompt, scene, form);
-  const prompt      = isVeo ? sanitizePromptForVeo(rawPrompt) : rawPrompt;
-
-  const link          = getProviderLink(toolKey);
-  const creditsPerSec = withSound
-    ? (link?.soundCreditsPerSecond ?? link?.baseCreditsPerSecond ?? 11)
-    : (link?.baseCreditsPerSecond ?? 11);
-  const calculatedCredits = Math.ceil(creditsPerSec * durationSec);
-
-  const job = await createVideoJobSimple({
-    subject:           prompt,
-    toolKey,
-    width:             dims.width,
-    height:            dims.height,
-    durationSec,
-    initImageUrls:     [scene.imageUrl],
-    calculatedCredits,
-    project_id:        form.project_id ?? null,
-    withSound,
-  });
-
-  return job;
 }
 
 // GPT Image 2 safety filter — replaces words that trigger safety_violations=[sexual].
@@ -1977,19 +2084,20 @@ function sanitizePromptForVeo(prompt) {
     .replace(/\bfury\b/gi,          "disbelief");
 }
 
-export async function animateClip({ clip, startScene, endScene, form, videoToolKey }) {
+export async function animateClip({ clip, startScene, endScene, form, videoModel }) {
   const initImageUrls = [clip?.startImageUrl || startScene?.imageUrl].filter(Boolean);
 
   if (!clip?.startImageUrl || initImageUrls.length === 0) {
     throw new Error(`Clip ${clip?.clipNumber ?? ""} is missing a scene image`);
   }
 
-  const toolKey     = FRUIT_VIDEO_MODEL_TO_TOOLKEY[videoToolKey] ?? "video:veo31lite";
-  const isVeo       = toolKey === "video:veo31fast" || toolKey === "video:veo31lite";
-  const withSound   = VIDEO_WITH_SOUND[videoToolKey] ?? true;
+  const model       = FRUIT_VIDEO_MODELS[videoModel] ?? FRUIT_VIDEO_MODELS[DEFAULT_FRUIT_VIDEO_MODEL];
+  const toolKey     = model.toolKey;
+  const isVeo       = toolKey === "video:fruitveo31lite";
+  const withSound   = model.withSound;
   const aspect      = form.sceneAspect ?? "9:16";
-  const dims        = ASPECT_VIDEO_DIMS[aspect] ?? ASPECT_VIDEO_DIMS["9:16"];
-  const durationSec = 6;
+  const dims        = model.dims[aspect] ?? model.dims["9:16"];
+  const durationSec = model.duration;
   const fullPrompt  = buildFruitVideoPrompt({ clip, startScene, endScene, form });
   const rawPrompt   = buildRunwareVideoPrompt(fullPrompt, startScene, form);
   const prompt      = isVeo ? sanitizePromptForVeo(rawPrompt) : rawPrompt;
@@ -2003,12 +2111,6 @@ export async function animateClip({ clip, startScene, endScene, form, videoToolK
     referenceImages: initImageUrls,
   });
 
-  const link            = getProviderLink(toolKey);
-  const creditsPerSec   = withSound
-    ? (link?.soundCreditsPerSecond ?? link?.baseCreditsPerSecond ?? 8)
-    : (link?.baseCreditsPerSecond ?? 8);
-  const calculatedCredits = Math.ceil(creditsPerSec * durationSec);
-
   return createVideoJobSimple({
     subject:           prompt,
     toolKey,
@@ -2016,7 +2118,7 @@ export async function animateClip({ clip, startScene, endScene, form, videoToolK
     height:            dims.height,
     durationSec,
     initImageUrls,
-    calculatedCredits,
+    calculatedCredits: model.credits,
     project_id:        form.project_id ?? null,
     withSound,
   });

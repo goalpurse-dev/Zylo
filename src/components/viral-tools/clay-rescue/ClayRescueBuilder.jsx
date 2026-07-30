@@ -1,13 +1,17 @@
 import { useState } from "react";
-import { ChevronRight, Lightbulb } from "lucide-react";
+import { ChevronRight, Lightbulb, VolumeX, Volume2, Lock } from "lucide-react";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import {
   LENGTH_OPTIONS,
-  VIDEO_CREDITS_NO_SOUND,
-  VIDEO_CREDITS_SOUND,
+  VIDEO_MODELS,
+  DEFAULT_VIDEO_MODEL,
+  VIDEO_MODEL_MIN_PLAN,
+  PLAN_LABELS,
+  getAllowedVideoModels,
   calcCredits,
 } from "./api/clayRescueApi";
 import NoCreditsModal from "../shared/NoCreditsModal";
+import ClayRescueUpgradeModal from "./ClayRescueUpgradeModal";
 
 const PROBLEM_SUGGESTIONS = ["Flood", "Homeless", "Fire", "Storm", "Volcano", "Trapped", "Blizzard", "Quicksand", "Earthquake", "Landslide"];
 const FIX_SUGGESTIONS     = ["Sponge", "Blanket", "Water bucket", "Umbrella", "Ladder", "Rope", "Bridge plank", "Fan", "Bandage", "Scarf"];
@@ -137,16 +141,20 @@ function SceneCard({ index, scene, onChange, aiMode }) {
   );
 }
 
-export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
+export default function ClayRescueBuilder({ onGenerate, onReset, phase, planCode }) {
   const [selectedLength, setSelectedLength] = useState("30s");
   const [scenes, setScenes]                 = useState(() => makeScenes(4));
   const [aiMode, setAiMode]                 = useState(true);
-  const [withSound, setWithSound]           = useState(true);
+  const [videoModel, setVideoModel]         = useState(DEFAULT_VIDEO_MODEL);
   const [validationError, setValidationError] = useState("");
   const [noCreditsOpen, setNoCreditsOpen]   = useState(false);
+  const [upgradeModelId, setUpgradeModelId] = useState(null);
   const creditBalance = useProfileCredits();
 
-  const totalCredits = calcCredits(scenes.length, withSound);
+  const allowedModels = getAllowedVideoModels(planCode);
+
+  const totalCredits = calcCredits(scenes.length, videoModel);
+  const selectedVideoModel = VIDEO_MODELS[videoModel] ?? VIDEO_MODELS[DEFAULT_VIDEO_MODEL];
   const hasEnough    = creditBalance >= totalCredits;
   const isGenerating = phase === "images" || phase === "videos";
   const isDone       = phase === "done";
@@ -183,7 +191,7 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
       if (invalid) { setValidationError("Fill in a problem and fix for every scene."); return; }
     }
     setValidationError("");
-    onGenerate({ sceneInputs, selectedLength, aiMode, withSound });
+    onGenerate({ sceneInputs, selectedLength, aiMode, videoModel });
   };
 
   return (
@@ -233,7 +241,7 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
       </div>
 
       {/* ── SCROLLABLE BODY ── */}
-      <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full">
+      <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full">
         <div className="px-5 pt-4 pb-[160px] lg:pb-5 flex flex-col gap-3">
 
           {/* AI toggle */}
@@ -260,57 +268,83 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
             </div>
           </button>
 
-          {/* Sound toggle — compact row, visually distinct from AI card above */}
-          <div className="flex items-center justify-between px-1 py-0.5">
-            <div className="flex items-center gap-2">
-              <span className={`text-[15px] leading-none transition ${withSound ? "opacity-100" : "opacity-30"}`}>
-                {withSound ? "🔊" : "🔇"}
-              </span>
-              <div>
-                <span className={`text-[12px] font-semibold transition ${withSound ? "text-white/80" : "text-white/35"}`}>
-                  AI Sound
-                </span>
-                <span className="ml-2 text-[11px] text-white/25">
-                  {withSound
-                    ? `${VIDEO_CREDITS_SOUND} cr/clip · Seedance 2.0 · 6s`
-                    : `${VIDEO_CREDITS_NO_SOUND} cr/clip · silent · 7s`}
-                </span>
-              </div>
+          {/* Video model — pill selector. V2 has no audio, V3/V4 (Vidu) always include audio. */}
+          <div>
+            <p className="text-white/30 text-[10px] font-semibold uppercase tracking-widest mb-2">Video Model</p>
+            <div className="flex items-center gap-2 bg-[#0e1012] border border-white/[0.07] rounded-xl p-1">
+              {Object.values(VIDEO_MODELS).map((model) => {
+                const active = videoModel === model.id;
+                const locked = !allowedModels.includes(model.id);
+
+                if (locked) {
+                  return (
+                    <button
+                      key={model.id}
+                      onClick={() => setUpgradeModelId(model.id)}
+                      title={`${model.label} requires the ${PLAN_LABELS[VIDEO_MODEL_MIN_PLAN[model.id]]} plan`}
+                      className="relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 overflow-hidden text-white/25 hover:text-white/40 transition-all"
+                    >
+                      <span className="pointer-events-none absolute inset-0 animate-shimmer" />
+                      <Lock className="w-3 h-3 shrink-0" />
+                      <span className="text-[12px] font-bold tracking-wide">{model.label}</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide bg-gradient-to-r from-[#F5C042]/25 to-[#F59E0B]/25 text-[#F5C042] border border-[#F5C042]/30">
+                        {PLAN_LABELS[VIDEO_MODEL_MIN_PLAN[model.id]]}
+                      </span>
+                    </button>
+                  );
+                }
+
+                return (
+                  <button
+                    key={model.id}
+                    onClick={() => setVideoModel(model.id)}
+                    className={`relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 transition-all ${
+                      active
+                        ? "bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white shadow-lg shadow-[#7A3BFF]/20"
+                        : "text-white/40 hover:text-white/70"
+                    }`}
+                  >
+                    <span className={`text-[12px] font-bold tracking-wide ${active ? "text-white" : ""}`}>{model.label}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                      active ? "bg-white/20 text-white" : "bg-white/[0.05] text-white/30"
+                    }`}>{model.tag}</span>
+                  </button>
+                );
+              })}
             </div>
-            <button
-              onClick={() => setWithSound((v) => !v)}
-              className={`relative shrink-0 rounded-full transition-colors duration-200 focus:outline-none ${withSound ? "bg-[#7A3BFF]" : "bg-white/[0.12]"}`}
-              style={{ width: 34, height: 18 }}
-              aria-label={withSound ? "Turn sound off" : "Turn sound on"}
-            >
-              <div className={`absolute top-[3px] w-3 h-3 rounded-full bg-white shadow transition-all duration-200 ${withSound ? "left-[17px]" : "left-[3px]"}`} />
-            </button>
+            {selectedVideoModel.withSound ? (
+              <div className="mt-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25">
+                <Volume2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-300">Audio included</span>
+              </div>
+            ) : (
+              <div className="mt-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/25">
+                <VolumeX className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                <span className="text-[11px] font-bold uppercase tracking-wide text-red-300">No audio generated</span>
+              </div>
+            )}
           </div>
 
           {/* Video length */}
           <div>
             <p className="text-white/30 text-[10px] font-semibold uppercase tracking-widest mb-2">Video Length</p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-2 bg-[#0e1012] border border-white/[0.07] rounded-xl p-1">
               {LENGTH_OPTIONS.map((opt) => {
                 const active = selectedLength === opt.value;
-                if (active) {
-                  return (
-                    <div key={opt.value} className="p-[1px] rounded-lg" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, rgba(168,85,247,0.95) 100%)" }}>
-                      <button onClick={() => handleLengthChange(opt.value)}
-                        className="relative block w-full px-4 py-2 rounded-[7px] bg-[#0D0F11] text-white text-[13px] font-bold text-center">
-                        <div className="absolute inset-0 pointer-events-none rounded-[7px]" style={{ boxShadow: "inset 0px 2px 5px rgba(255,255,255,0.15)" }} />
-                        <div className="absolute inset-0 pointer-events-none rounded-[7px]" style={{ background: "linear-gradient(to top, rgba(168,85,247,0.35) 0%, transparent 50%)" }} />
-                        <span className="relative">{opt.label}</span>
-                        <span className="relative text-white/40 text-[11px] font-normal ml-1.5">{opt.scenes} scenes</span>
-                      </button>
-                    </div>
-                  );
-                }
                 return (
-                  <button key={opt.value} onClick={() => handleLengthChange(opt.value)}
-                    className="px-4 py-2 rounded-lg text-[13px] font-semibold text-white/40 hover:text-white/80 bg-white/[0.05] hover:bg-white/[0.09] transition">
-                    {opt.label}
-                    <span className="text-white/25 text-[11px] font-normal ml-1.5">{opt.scenes} scenes</span>
+                  <button
+                    key={opt.value}
+                    onClick={() => handleLengthChange(opt.value)}
+                    className={`relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 transition-all ${
+                      active
+                        ? "bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white shadow-lg shadow-[#7A3BFF]/20"
+                        : "text-white/40 hover:text-white/70"
+                    }`}
+                  >
+                    <span className={`text-[12px] font-bold tracking-wide ${active ? "text-white" : ""}`}>{opt.label}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                      active ? "bg-white/20 text-white" : "bg-white/[0.05] text-white/30"
+                    }`}>{opt.scenes} scenes</span>
                   </button>
                 );
               })}
@@ -352,7 +386,18 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
           {isGenerating ? (
             <><span className="w-4 h-4 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />Generating…</>
           ) : isDone ? "✓  All Done — Generate New" : (
-            <>Generate Clay Rescue <ChevronRight className="w-4 h-4" /></>
+            <>
+              Generate Clay Rescue
+              {!selectedVideoModel.withSound && (
+                <span className="relative inline-flex items-center justify-center" title="No audio generated">
+                  <VolumeX className="w-4 h-4 text-white/90" />
+                  <span className="absolute inset-0 -rotate-45">
+                    <span className="absolute left-1/2 top-1/2 h-[2px] w-[18px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500" />
+                  </span>
+                </span>
+              )}
+              <ChevronRight className="w-4 h-4" />
+            </>
           )}
           {!isDone && (
             <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[14px] font-bold ${
@@ -371,6 +416,13 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase }) {
       onClose={() => setNoCreditsOpen(false)}
       creditsNeeded={totalCredits}
       creditBalance={creditBalance}
+    />
+
+    <ClayRescueUpgradeModal
+      open={!!upgradeModelId}
+      onClose={() => setUpgradeModelId(null)}
+      modelId={upgradeModelId}
+      requiredPlan={upgradeModelId ? VIDEO_MODEL_MIN_PLAN[upgradeModelId] : null}
     />
     </>
   );

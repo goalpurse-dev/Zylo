@@ -36,13 +36,13 @@ function buildEmail(user) {
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Massive Zyvo update coming soon</title>
+  <title>New viral templates every week on Zyvo</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#f4f4f5;">
-    Schedule, publish, and track every social post from one place. Zyvo Publish is coming very soon.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+    We've shipped new viral-ready templates every week since you last visited — here's what's new.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f5;">
@@ -66,52 +66,45 @@ function buildEmail(user) {
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Niko here — I wanted you to be among the first to know that a massive Zyvo update is coming very soon.
+            Niko here, founder of Zyvo. It's been a little while since you last visited us — and we've kept building the whole time.
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            <strong>We're getting ready to bring Zyvo Publish to production.</strong>
-          </p>
-
-          <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Soon, you'll be able to create your content and handle the rest of your social workflow without leaving Zyvo. No more downloading every video, opening several apps, and uploading the same post over and over.
+            <strong>Every week, we ship new viral-ready templates</strong> — fresh scene styles, story formats, and trending effects, all ready to generate in one click.
           </p>
 
           <!-- Feature card -->
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
             <tr>
               <td style="padding:22px 24px;background:#faf8ff;border-radius:12px;border:1px solid #ede9fe;">
-                <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#7A3BFF;letter-spacing:0.08em;text-transform:uppercase;">Everything in one place</p>
+                <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#7A3BFF;letter-spacing:0.08em;text-transform:uppercase;">Recently added</p>
                 <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                  <tr><td style="padding:7px 0;font-size:14px;color:#374151;">Schedule posts ahead of time</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
-                  <tr><td style="padding:7px 0;font-size:14px;color:#374151;">Publish to all connected socials in one click</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
-                  <tr><td style="padding:7px 0;font-size:14px;color:#374151;">Track views, engagement, and performance</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
+                  <tr><td style="padding:7px 0;font-size:14px;color:#374151;">2AM Worlds — the late-night AI photo trend</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
+                  <tr><td style="padding:7px 0;font-size:14px;color:#374151;">AI Fruit Story — character-driven viral drama</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
+                  <tr><td style="padding:7px 0;font-size:14px;color:#374151;">Face ASMR — the trending sensory format</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
+                  <tr><td style="padding:7px 0;font-size:14px;color:#374151;">Clay Rescue — viral stop-motion rescue clips</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
                 </table>
               </td>
             </tr>
           </table>
 
-          <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Connect your accounts once, then schedule or publish across TikTok, Instagram, and YouTube from a single dashboard. After your content goes live, you'll be able to see how it performs without jumping between analytics pages.
-          </p>
-
           <p style="margin:0 0 24px;font-size:15px;line-height:1.75;color:#374151;">
-            We're putting the finishing touches on the production rollout now. We'll let you know as soon as Zyvo Publish is ready for you.
+            Pick a template, add your idea, and Zyvo generates export-ready content in seconds — no editing experience needed. New formats land every week, so there's always something fresh to try.
           </p>
 
           <!-- CTA -->
           <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
             <tr>
               <td style="border-radius:10px;background:linear-gradient(135deg,#7A3BFF,#9f5fff);">
-                <a href="https://tryzyvo.com/workspace"
+                <a href="https://tryzyvo.com/workspace/home"
                    style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.2px;">
-                  Open your Zyvo workspace →
+                  See what's new →
                 </a>
               </td>
             </tr>
           </table>
 
-          <p style="margin:8px 0 24px;font-size:13px;color:#9ca3af;">Reply and tell me which social platform you want us to support next — it goes straight to me.</p>
+          <p style="margin:8px 0 24px;font-size:13px;color:#9ca3af;">Reply and tell me which format you'd like to see next — it goes straight to me.</p>
 
           <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">
             — Niko<br/>
@@ -123,7 +116,7 @@ function buildEmail(user) {
         <!-- footer -->
         <tr><td style="padding:20px 40px 24px;border-top:1px solid #f3f4f6;">
           <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.7;">
-            You're receiving this because you have a Zyvo account.<br/>
+            You're receiving this because you started a checkout or created an account at tryzyvo.com.<br/>
             <a href="https://tryzyvo.com/settings" style="color:#9ca3af;text-decoration:underline;">Unsubscribe</a>
             &nbsp;·&nbsp;
             <a href="https://tryzyvo.com" style="color:#9ca3af;text-decoration:underline;">tryzyvo.com</a>
@@ -148,8 +141,9 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "Massive Zyvo update coming soon 🚀",
+      subject: "New viral templates just dropped on Zyvo",
       html: buildEmail(user),
+      reply_to: "niko@tryzyvo.com",
     });
 
     if (!error) return true;
@@ -167,16 +161,16 @@ async function sendEmail(user) {
 
 export default async function handler(req, res) {
   try {
-    console.log("🚀 Starting Zyvo Publish teaser email campaign...");
-    console.log(`   dry_run=${DRY_RUN}  target=all_users`);
+    console.log("🚀 Starting Zyvo abandoned-checkout win-back campaign...");
+    console.log(`   dry_run=${DRY_RUN}  target=abandoned_checkouts`);
 
-    let allUsers = [];
+    let allRows = [];
     let from = 0;
     let hasMore = true;
 
     while (hasMore) {
       const { data, error } = await supabase
-        .from("profiles")
+        .from("abandoned_checkouts")
         .select("email")
         .not("email", "is", null)
         .range(from, from + BATCH_SIZE - 1);
@@ -187,12 +181,22 @@ export default async function handler(req, res) {
       }
 
       if (data?.length) {
-        allUsers.push(...data);
+        allRows.push(...data);
       }
 
       hasMore = !!data && data.length === BATCH_SIZE;
       from += BATCH_SIZE;
     }
+
+    // abandoned_checkouts.email is unique in practice, but de-dupe defensively
+    // so nobody ends up with two copies of the same campaign in their inbox.
+    const seen = new Set();
+    const allUsers = allRows.filter((u) => {
+      const key = u.email.toLowerCase().trim();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 
     console.log(`📊 Total users to email: ${allUsers.length}`);
 
@@ -213,11 +217,15 @@ export default async function handler(req, res) {
 
       if (ok) {
         sent++;
+        // Tracked on `profiles`, not `abandoned_checkouts` — that table's
+        // last_email_sent_at/recovery_stage drive the separate cart-recovery
+        // drip in send-abandoned-emails.js, and touching it here would reset
+        // that timer for anyone still mid-sequence.
         await supabase
           .from("profiles")
           .update({
             last_email_sent_at: new Date().toISOString(),
-            last_email_type: "publish_massive_update_teaser",
+            last_email_type: "abandoned_checkout_winback_templates",
           })
           .eq("email", user.email);
       } else {

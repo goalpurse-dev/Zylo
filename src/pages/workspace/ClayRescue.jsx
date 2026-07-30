@@ -126,8 +126,8 @@ export default function ClayRescue() {
   const [finalVideoUrl, setFinalVideoUrl] = useState(null);
   const persistedScenesRef = useRef("");
   const persistedFinalVideoRef = useRef("");
-  const latestLengthRef    = useRef("15s");
-  const latestWithSoundRef = useRef(true);
+  const latestLengthRef     = useRef("15s");
+  const latestVideoModelRef = useRef("clay-v2");
 
   const loadRecentGenerations = useCallback(async () => {
     if (!user) { setRecentGenerations([]); return; }
@@ -194,7 +194,7 @@ export default function ClayRescue() {
     return () => { cancelled = true; };
   }, [activeGenerationId, finalVideoUrl]);
 
-  const handleGenerate = ({ sceneInputs, selectedLength, aiMode, withSound }) => {
+  const handleGenerate = ({ sceneInputs, selectedLength, aiMode, videoModel }) => {
     if (needsUpgrade) { showPaywall(); return; }
     setViewingRecentId(null);
     setActiveGenerationId(null);
@@ -202,10 +202,10 @@ export default function ClayRescue() {
     persistedFinalVideoRef.current = "";
     persistedScenesRef.current = "";
     latestLengthRef.current = selectedLength;
-    latestWithSoundRef.current = withSound ?? true;
+    latestVideoModelRef.current = videoModel ?? "clay-v2";
     setMobilePanel("results");
     document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
-    start({ sceneInputs, aiMode, withSound });
+    start({ sceneInputs, aiMode, videoModel });
   };
 
   const handleOpenRecent = async (generation) => {
@@ -260,7 +260,7 @@ export default function ClayRescue() {
         })
         .catch((e) => console.error("[ClayRescue] clear stale final video failed:", e.message));
     }
-    retryScene(index, latestWithSoundRef.current);
+    retryScene(index, latestVideoModelRef.current);
   };
 
   const handleFinalVideoSaved = useCallback((url) => {
@@ -272,6 +272,7 @@ export default function ClayRescue() {
       onGenerate={handleGenerate}
       onReset={handleBackToDefault}
       phase={phase}
+      planCode={planCode}
     />
   );
 

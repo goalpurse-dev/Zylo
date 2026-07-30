@@ -6,6 +6,7 @@ import { useProfileCredits } from "../../hooks/useProfileCredits";
 import { supabase } from "../../lib/supabaseClient";
 import AuthModal from "../AuthModal.jsx";
 import CreatorRewardsModal from "../CreatorRewardsModal.jsx";
+import CreditSpendPopup from "./CreditSpendPopup.jsx";
 
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -204,28 +205,31 @@ export default function TopRow({ onMenuClick, title }) {
             <>
               {/* Credits + Upgrade grouped */}
               <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => navigate("/workspace/pricing")}
-                  className="flex items-center gap-1.5 rounded-full border border-lime-400/20 bg-gradient-to-r from-lime-300/[0.10] to-lime-500/[0.07] px-3 py-1.5 shadow-[inset_0_1px_0_rgba(217,249,157,0.04)] transition hover:border-lime-400/35 hover:from-lime-300/[0.14] hover:to-lime-500/[0.10]"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="h-4 w-4 shrink-0 bg-lime-300"
-                    style={{
-                      WebkitMaskImage: `url(${Credit})`,
-                      maskImage: `url(${Credit})`,
-                      WebkitMaskPosition: "center",
-                      maskPosition: "center",
-                      WebkitMaskRepeat: "no-repeat",
-                      maskRepeat: "no-repeat",
-                      WebkitMaskSize: "contain",
-                      maskSize: "contain",
-                    }}
-                  />
-                  <span className="text-sm font-semibold text-lime-300">
-                    {formattedCredits}
-                  </span>
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => navigate("/workspace/pricing")}
+                    className="flex items-center gap-1.5 rounded-full border border-lime-400/20 bg-gradient-to-r from-lime-300/[0.10] to-lime-500/[0.07] px-3 py-1.5 shadow-[inset_0_1px_0_rgba(217,249,157,0.04)] transition hover:border-lime-400/35 hover:from-lime-300/[0.14] hover:to-lime-500/[0.10]"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="h-4 w-4 shrink-0 bg-lime-300"
+                      style={{
+                        WebkitMaskImage: `url(${Credit})`,
+                        maskImage: `url(${Credit})`,
+                        WebkitMaskPosition: "center",
+                        maskPosition: "center",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskSize: "contain",
+                        maskSize: "contain",
+                      }}
+                    />
+                    <span className="text-sm font-semibold text-lime-300">
+                      {formattedCredits}
+                    </span>
+                  </button>
+                  <CreditSpendPopup />
+                </div>
 
                 {/* Upgrade right next to credits — free users only */}
                 {planCode === "free" && (

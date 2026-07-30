@@ -71,7 +71,7 @@ export default function useMicroCameraAnimalJob() {
   const patchScene = (index, patch) =>
     setScenes((prev) => prev.map((s) => (s.index === index ? { ...s, ...patch } : s)));
 
-  const start = useCallback(async ({ animalInput, sceneCount = 3 }) => {
+  const start = useCallback(async ({ animalInput, sceneCount = 3, videoModel }) => {
     if (activeRef.current) return;
 
     activeRef.current = true;
@@ -156,7 +156,7 @@ export default function useMicroCameraAnimalJob() {
     // ── Submit ALL video jobs simultaneously ──
     const videoJobSettled = await Promise.allSettled(
       imageResults.map(({ url, promptIdx }) =>
-        animateSceneClip({ imageUrl: url, videoPrompt: videoPrompts[promptIdx] })
+        animateSceneClip({ imageUrl: url, videoPrompt: videoPrompts[promptIdx], videoModel })
       )
     );
 

@@ -439,6 +439,43 @@ function buildSyntheticAffairPartner(existingChars: CharInput[]): CharInput & { 
   };
 }
 
+/* ─── FULL SYNTHETIC CAST (no characters uploaded at all) ────────────────
+ * The idea-generator flow no longer asks users to pick characters up front
+ * — GPT invents the whole cast from the story idea instead. These are
+ * imageless (synthetic) characters, same as buildSyntheticAffairPartner
+ * above: no reference image, described in full detail in every scene.
+ * Names/fruits are intentionally generic so inferNarrativeRole()'s
+ * index-based fallback (0=victim/protagonist, 1=cheater/antagonist,
+ * 2=affair_partner) assigns roles the same way it already does for
+ * user-picked casts — no separate role-assignment logic needed here.
+ * ─────────────────────────────────────────────────────────────────────── */
+const SYNTHETIC_CAST_POOL = [
+  { fruit: "orange",     name: "Orange" },
+  { fruit: "banana",     name: "Banana" },
+  { fruit: "strawberry", name: "Strawberry" },
+  { fruit: "peach",      name: "Peach" },
+  { fruit: "mango",      name: "Mango" },
+  { fruit: "apple",      name: "Apple" },
+  { fruit: "kiwi",       name: "Kiwi" },
+  { fruit: "pear",       name: "Pear" },
+  { fruit: "grape",      name: "Grape" },
+  { fruit: "cherry",     name: "Cherry" },
+  { fruit: "pineapple",  name: "Pineapple" },
+  { fruit: "watermelon", name: "Watermelon" },
+];
+
+function buildSyntheticCast(preset: StoryPreset): (CharInput & { synthetic: true })[] {
+  const count = (preset === "cheating" || preset === "cheats-back") ? 3 : 2;
+  const shuffled = [...SYNTHETIC_CAST_POOL].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count).map((pick, index) => ({
+    id:          `ai_cast_${pick.fruit}_${index}`,
+    name:        pick.name,
+    role:        "",
+    description: `${pick.name} — AI-generated character invented for this story. ${pick.fruit} fruit character. Visually distinct from every other character in the cast. No reference image — must be described in full, consistent visual detail (fruit head texture, human body proportions, skin tone, clothing, expression style) in every scene's imagePrompt, and that description must stay identical across all scenes.`,
+    synthetic:   true,
+  }));
+}
+
 // Lightweight fallback — only used when GPT doesn't assign a role from the images.
 // Primary role assignment happens via GPT-4o Vision looking at the actual character images.
 function inferNarrativeRole(c: CharInput, index: number, preset: StoryPreset): string {
@@ -509,6 +546,14 @@ function buildCanonicalCast(selectedCharacters: CharInput[], preset: StoryPreset
         ? "masculine-presenting"
         : "unspecified";
 
+    // Default templates below are only a fallback — GPT's own appearance/
+    // clothing/personality/visualIdentity from the plan response take
+    // priority in mergeCastWithPlanner(). Still, this fallback must not
+    // reference "the reference image" for a synthetic (no-image) character,
+    // which is now the common case since characters are AI-invented from
+    // the story idea rather than uploaded.
+    const hasRefImage = c.synthetic !== true;
+
     return {
       id:                 cleanId,
       sourceCharacterId:  c.id ?? cleanId,
@@ -520,9 +565,15 @@ function buildCanonicalCast(selectedCharacters: CharInput[], preset: StoryPreset
       fruitType,
       genderPresentation,
       identityLock: `${fruitType} fruit character — same face, same peel color, same body shape, same outfit and accessories, identity locked across every scene`,
-      visualIdentity: `${displayName} is a ${fruitType} fruit-human character; preserve exact appearance, colors, outfit, and face from the reference image`,
-      appearance: `${displayName}: ${fruitType} fruit-human character, ${genderPresentation}`,
-      clothing: `consistent outfit and accessories from the ${referenceLabel} reference image`,
+      visualIdentity: hasRefImage
+        ? `${displayName} is a ${fruitType} fruit-human character; preserve exact appearance, colors, outfit, and face from the reference image`
+        : `${displayName} is a ${fruitType} fruit-human character with an invented, consistent design — same face, peel color, body shape, outfit and accessories in every scene`,
+      appearance: hasRefImage
+        ? `${displayName}: ${fruitType} fruit-human character, ${genderPresentation}`
+        : `${displayName}: ${fruitType} fruit-human character, ${genderPresentation} — invent a specific, memorable look (exact peel/skin color, hairstyle, one signature accessory) and keep it identical in every scene`,
+      clothing: hasRefImage
+        ? `consistent outfit and accessories from the ${referenceLabel} reference image`
+        : `invent a specific, consistent outfit for ${displayName} and reuse it identically in every scene`,
       narrativeFunction,
       relationships: cheating
         ? "locked cheating-drama relationship map; betrayed partner, cheater, and affair partner are always visually and narratively distinct"
@@ -557,7 +608,7 @@ function mergeCastWithPlanner(canonicalCast: any[], plannedCast: any[] = []) {
       role:          base.role,
       referenceLabel: base.referenceLabel,
       label:         base.label,
-      visualIdentity: base.visualIdentity,
+      visualIdentity: match?.visualIdentity || base.visualIdentity,
     };
   });
 }
@@ -1097,21 +1148,26 @@ Deno.serve(async (req) => {
   console.log(`[fruit-story-planner] request received — storyIdea="${(storyIdea ?? "").slice(0,60)}" sceneCount=${sceneCount} chars=${selectedCharacters?.length}`);
 
   if (!storyIdea?.trim())  return fail("storyIdea is required");
-  if (!Array.isArray(selectedCharacters) || selectedCharacters.length < 2) {
-    return fail("At least 2 characters are required");
-  }
 
   const preset     = detectPreset({ storyPreset, storyIdea, conflict });
   const isCheating = preset === "cheating" || preset === "cheats-back";
 
-  // For cheating stories with only 2 uploaded characters, auto-generate a third
+  // Characters are no longer picked manually by the user — when none are
+  // supplied, invent the whole cast (imageless, described in full detail
+  // every scene, same mechanism as the synthetic affair-partner below).
+  const baseCharacters: CharInput[] = Array.isArray(selectedCharacters) && selectedCharacters.length > 0
+    ? selectedCharacters
+    : buildSyntheticCast(preset);
+
+  // For cheating stories with only 2 characters, auto-generate a third
   // affair-partner character so the story makes visual sense. GPT will decide
-  // which of the two uploaded characters is the cheater vs. the victim based on
-  // visual energy, then incorporate the synthetic affair partner into all affair scenes.
-  const effectiveCharacters: CharInput[] = (isCheating && selectedCharacters.length < 3)
-    ? [...selectedCharacters, buildSyntheticAffairPartner(selectedCharacters)]
-    : selectedCharacters;
-  const syntheticAffairAdded = effectiveCharacters.length > selectedCharacters.length;
+  // which of the two characters is the cheater vs. the victim based on
+  // visual energy (or, for a fully synthetic cast, from their descriptions),
+  // then incorporate the synthetic affair partner into all affair scenes.
+  const effectiveCharacters: CharInput[] = (isCheating && baseCharacters.length < 3)
+    ? [...baseCharacters, buildSyntheticAffairPartner(baseCharacters)]
+    : baseCharacters;
+  const syntheticAffairAdded = effectiveCharacters.length > baseCharacters.length;
 
   const beats         = getBeatsForPresetAndCount(preset, sceneCount);
   const canonicalCast = buildCanonicalCast(effectiveCharacters, preset);
@@ -1153,6 +1209,18 @@ Deno.serve(async (req) => {
     .replace("{{EMOTIONAL_TONE}}",  dna.emotionalTone)
     .replace("{{PACING_STYLE}}",    dna.pacingStyle);
 
+  /* ── Build vision message: attach character reference images so GPT can SEE them ──
+   * Computed BEFORE userPrompt below so the no-images case can inject a
+   * corrective note overriding SYSTEM_BASE's static "images are attached"
+   * assumption, which now goes stale on every default (idea-only) run. */
+  const charImageParts = selectedCharacters
+    .map((c: any) => c.publicRefUrl ?? c.imageUrl ?? c.image ?? null)
+    .filter((url: string | null): url is string => typeof url === "string" && url.startsWith("http"))
+    .map((url: string) => ({
+      type: "image_url",
+      image_url: { url, detail: "low" },
+    }));
+
   const userPrompt = [
     `Story idea: ${storyIdea.trim()}`,
     `Story preset: ${storyPreset ?? preset}`,
@@ -1161,12 +1229,20 @@ Deno.serve(async (req) => {
     `Characters: ${charNames}`,
     `Locked cast: ${canonicalCast.map((c) => `${c.id}=${c.referenceLabel}/${c.narrativeRole}/${c.fruitType}`).join(", ")}`,
     ``,
+    ...(charImageParts.length === 0 ? [
+      `⚠ NO CHARACTER REFERENCE IMAGES ARE ATTACHED TO THIS MESSAGE. Every character in the locked cast is being invented by you from scratch — ignore any earlier instruction in this prompt about "looking at" attached images, since none exist here.`,
+      `→ For each cast member, invent a specific, vivid, and VISUALLY DISTINCT identity: exact fruit type, exact skin/rind color and texture, hairstyle, outfit, one signature accessory — chosen to fit their narrativeRole and this story idea (e.g. the cheater might read as sleek/aggressive, the victim as soft/sympathetic).`,
+      `→ Write that exact same visual description into visualIdentity, appearance, and clothing, and copy it identically into every imagePrompt that character appears in. Never redescribe, restyle, or let a character's look drift between scenes — treat the first description you write as permanently locked.`,
+      ``,
+    ] : []),
     `Required scene beat flow (follow this EXACTLY):`,
     beatFlow,
     ``,
     ...(syntheticAffairAdded ? [
-      `⚠ AFFAIR PARTNER AUTO-GENERATED: Only 2 characters were uploaded. A third affair-partner character (${canonicalCast.find((c) => c.narrativeRole === "affair_partner")?.displayName ?? "Affair Partner"}) has been automatically added. This character has NO reference image.`,
-      `→ YOU decide who is the CHEATER vs. the VICTIM based on visual energy from the 2 uploaded reference images (aggressive/dominant/secretive = cheater; hurt/emotional/trusting = victim).`,
+      `⚠ AFFAIR PARTNER AUTO-GENERATED: A third affair-partner character (${canonicalCast.find((c) => c.narrativeRole === "affair_partner")?.displayName ?? "Affair Partner"}) has been automatically added to complete this cheating story. This character has NO reference image.`,
+      charImageParts.length > 0
+        ? `→ YOU decide who is the CHEATER vs. the VICTIM based on visual energy from the uploaded reference images (aggressive/dominant/secretive = cheater; hurt/emotional/trusting = victim).`
+        : `→ None of the characters have reference images. Decide who is the CHEATER vs. the VICTIM based on which invented identity best fits a dominant/secretive role versus a sympathetic/betrayed role, matching the story idea.`,
       `→ Describe the affair partner in FULL visual detail in every imagePrompt they appear in. Keep this description IDENTICAL across all scenes.`,
       `→ The affair partner MUST appear in: the affair_scene (alone with cheater) and the discovery scene.`,
       ``,
@@ -1187,15 +1263,6 @@ Deno.serve(async (req) => {
     JSON_SCHEMA,
   ].join("\n");
 
-  /* ── Build vision message: attach character reference images so GPT can SEE them ── */
-  const charImageParts = selectedCharacters
-    .map((c: any) => c.publicRefUrl ?? c.imageUrl ?? c.image ?? null)
-    .filter((url: string | null): url is string => typeof url === "string" && url.startsWith("http"))
-    .map((url: string) => ({
-      type: "image_url",
-      image_url: { url, detail: "low" },
-    }));
-
   const userMessageContent = charImageParts.length > 0
     ? [{ type: "text", text: userPrompt }, ...charImageParts]
     : userPrompt;
@@ -1214,6 +1281,10 @@ Deno.serve(async (req) => {
         temperature:     0.55,
         response_format: { type: "json_object" },
       }),
+      // No timeout previously — a slow/stuck OpenAI response left the client
+      // stuck on "Planning your story…" forever with no error. Bounded so a
+      // hang becomes a proper error the client can show and retry from.
+      signal: AbortSignal.timeout(55_000),
     });
 
     console.log(`[fruit-story-planner] OpenAI status=${aiRes.status}`);

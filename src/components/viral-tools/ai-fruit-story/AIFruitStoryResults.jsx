@@ -5,6 +5,8 @@ import {
 import { supabase } from "../../../lib/supabaseClient";
 import { getCreationDisplayStatus } from "../../../lib/queueStatusUtils";
 
+const TERMINAL_STATUS = new Set(["succeeded", "failed", "canceled"]);
+
 const HEARTS = [
   { id: 1, left: "82%", delay: "0s",   duration: "4.2s", size: "18px", drift: "8px"   },
   { id: 2, left: "86%", delay: "0.6s", duration: "4.8s", size: "16px", drift: "-10px" },
@@ -127,7 +129,6 @@ export default function AIFruitStoryResults({
   onRetryFailedClips,
   mobileRecentTab   = false,
 }) {
-  const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
   const [regenSceneIndex, setRegenSceneIndex] = useState(null);
   const [regenPrompt, setRegenPrompt] = useState("");
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -138,10 +139,6 @@ export default function AIFruitStoryResults({
   const derivedVideoClips = useMemo(() => {
     return videoClips.length ? videoClips : buildVideoClipsFromScenes(scenes);
   }, [scenes, videoClips]);
-
-  useEffect(() => {
-    setSelectedSceneIndex(0);
-  }, [stepIndex, sceneCount, sceneAspect]);
 
   const openRegenerateModal = (index) => {
     const scene = scenes[index];
@@ -219,327 +216,148 @@ export default function AIFruitStoryResults({
     );
   }
 
-  /* ── Step 1: scene image results ── */
-  if (stepIndex === 1) {
-    const isGenerating = phase === "planning" || phase === "generating-scenes";
-    const hasScenes    = scenes.length > 0;
+  /* ── Step 1: combined scene + video results — one card per scene, image
+   *    transitions into its video clip as soon as that clip is ready.
+   *    Images and videos now run concurrently, so status is derived from
+   *    the scenes themselves rather than a single mutually-exclusive phase
+   *    string (mirrors the same derivation useFruitStoryJob uses). ── */
+  const isPlanning = phase === "planning";
+  // Character portraits are generated after planning but before any scene
+  // exists yet — `hasScenes` is still false here, so this needs its own
+  // busy flag rather than falling through to the "idle" derivation below.
+  const isGeneratingCharacters = phase === "generating-characters";
+  const hasScenes = scenes.length > 0;
+  const imagesDoneCount = scenes.filter((s) => TERMINAL_STATUS.has(s.imageStatus ?? "queued")).length;
+  const videosStartedCount = scenes.filter((s) => s.videoJobId).length;
+  const videosDoneCount = scenes.filter((s) => s.videoJobId && TERMINAL_STATUS.has(s.videoStatus ?? "idle")).length;
+  const videosSucceededCount = scenes.filter((s) => s.videoUrl).length;
+  const isGeneratingImages = hasScenes && imagesDoneCount < scenes.length;
+  const isAnimating = videosStartedCount > 0 && videosDoneCount < videosStartedCount;
+  const isBusy = isPlanning || isGeneratingCharacters || isGeneratingImages || isAnimating;
+  const isStoryDone = hasScenes && !isBusy && videosSucceededCount > 0;
 
-    return (
-      <div className="flex min-h-[calc(100vh-110px)] pb-24 lg:min-h-full lg:pb-4">
-        <div className="flex min-h-[calc(100vh-130px)] w-full flex-col rounded-[28px] border border-white/10 bg-[#111315] p-4 shadow-2xl shadow-black/30 sm:p-5 lg:min-h-full">
-          <div className="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-bold text-white">Scene Results</h2>
-              <p className="mt-1 text-sm text-white/45">
-                {isGenerating
-                  ? "Generating your scenes…"
-                  : hasScenes
-                  ? "Your generated scenes appear below."
-                  : "Generate your scenes on the left."}
-                </p>
-            </div>
-            <div className="flex flex-shrink-0 items-center gap-1.5">
-              <AspectBadge value={sceneAspect} />
-            </div>
-          </div>
+  const statusLine = isPlanning
+    ? "Planning your story…"
+    : isGeneratingCharacters
+    ? "Designing your characters…"
+    : isGeneratingImages && isAnimating
+    ? "Generating scenes and clips…"
+    : isGeneratingImages
+    ? "Generating your scenes…"
+    : isAnimating
+    ? "Animating your clips…"
+    : isStoryDone
+    ? "Your fruit story is ready."
+    : hasScenes
+    ? "Your fruit story appears below."
+    : "Generate your story on the left.";
 
-          {!hasScenes && !isGenerating ? (
-            <EmptyState
-              icon="🎨"
-              title="No scenes yet"
-              body="Once generated, your scene images will show here."
-            />
-          ) : (
-            <div
-              className={`grid gap-4 ${
-                sceneAspect === "16:9" ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"
-              }`}
-            >
-              {scenes.map((scene, index) => (
-                <SceneImageCard
-                  key={scene.id || scene.sceneNumber}
-                  scene={scene}
-                  index={index}
-                  aspect={sceneAspect}
-                  active={selectedSceneIndex === index}
-                  onClick={() => setSelectedSceneIndex(index)}
-                  onRegenerate={onRegenerateScene ? () => openRegenerateModal(index) : null}
-                />
-              ))}
+  const findClipNumberForScene = (scene) =>
+    derivedVideoClips.find((clip) => clip.startSceneNumber === Number(scene.sceneNumber))?.clipNumber ?? null;
 
-              {/* Placeholder skeleton cards if still generating and fewer scenes than expected */}
-              {isGenerating &&
-                Array.from({ length: Math.max(0, sceneCount - scenes.length) }).map((_, i) => (
-                  <SceneSkeleton key={`sk-${i}`} index={scenes.length + i} aspect={sceneAspect} />
-                ))}
-            </div>
-          )}
-        </div>
-        {regenScene && (
-          <RegenerateSceneModal
-            scene={regenScene}
-            prompt={regenPrompt}
-            onPromptChange={setRegenPrompt}
-            onCancel={closeRegenerateModal}
-            onSubmit={submitRegenerate}
-            isSubmitting={isRegenerating}
-          />
-        )}
-      </div>
-    );
-  }
-
-  /* Step 2: animation results */
-  const isAnimating = phase === "animating";
-  const hasScenes   = scenes.length > 0;
-  const clipCount   = derivedVideoClips.length;
-  const hasVideoOutputs =
-    phase === "animating" ||
-    phase === "done" ||
-    derivedVideoClips.some((clip) => clip.videoJobId || clip.videoUrl || (clip.videoStatus && clip.videoStatus !== "idle"));
-  const readyScenes = scenes.filter((scene) => scene?.imageUrl);
+  const failedClips = derivedVideoClips.filter((c) => !c.videoUrl && c.videoStatus === "failed");
+  const allFailed = failedClips.length > 0 && failedClips.length === derivedVideoClips.length && derivedVideoClips.length > 0;
 
   return (
     <div className="flex min-h-[calc(100vh-110px)] pb-24 lg:min-h-full lg:pb-4">
       <div className="flex min-h-[calc(100vh-130px)] w-full flex-col rounded-[28px] border border-white/10 bg-[#111315] p-4 shadow-2xl shadow-black/30 sm:p-5 lg:min-h-full">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-white">{hasVideoOutputs ? "Videos" : "Scenes"}</h2>
-            <p className="mt-1 text-sm text-white/45">
-              {hasVideoOutputs
-                ? isAnimating ? "Rendering your animation outputs..." : "Final video previews appear here."
-                : readyScenes.length > 0 ? "Generated scene images ready to animate." : "Generate scenes first."}
-            </p>
+            <h2 className="text-xl font-bold text-white">Story Results</h2>
+            <p className="mt-1 text-sm text-white/45">{statusLine}</p>
           </div>
           <div className="flex flex-shrink-0 items-center gap-1.5">
             <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-white/45 whitespace-nowrap">
-              {hasVideoOutputs ? `${clipCount} videos` : `${readyScenes.length} scenes`}
+              {scenes.length} scenes
             </span>
             <AspectBadge value={sceneAspect} />
           </div>
         </div>
 
-        {!hasScenes ? (
-          <EmptyState
-            icon="Video"
-            title="No scenes yet"
-            body="Generated scene images will appear here."
-          />
-        ) : hasVideoOutputs ? (
-          <>
-            {(() => {
-              const failedClips = derivedVideoClips.filter((c) => !c.videoUrl && c.videoStatus === "failed");
-              const allFailed   = failedClips.length > 0 && failedClips.length === derivedVideoClips.length;
-              return (
-                <>
-                  {allFailed && (
-                    <div className="mb-3 rounded-2xl border border-red-400/25 bg-red-500/10 p-4 text-center">
-                      <p className="mb-1 text-sm font-bold text-red-300">All videos failed to generate</p>
-                      <p className="mb-3 text-xs text-red-200/60">This is usually a provider issue. Hit the button below to retry everything.</p>
-                      <button
-                        onClick={() => onRetryFailedClips?.(null)}
-                        className="inline-flex items-center gap-2 rounded-xl bg-red-500/80 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-red-500"
-                      >
-                        🔄 Regenerate All Videos
-                      </button>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {derivedVideoClips.map((clip) => (
-                      <VideoOutputCard
-                        key={clip.clipNumber}
-                        clip={clip}
-                        aspect={sceneAspect}
-                        onRetry={!allFailed && !clip.videoUrl && clip.videoStatus === "failed"
-                          ? () => onRetryFailedClips?.([clip.clipNumber])
-                          : null}
-                      />
-                    ))}
-                  </div>
-                </>
-              );
-            })()}
-          </>
-        ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {readyScenes.map((scene, index) => (
-              <AnimationScenePreviewCard
-                key={scene.id || scene.sceneNumber || index}
-                scene={scene}
-                index={index}
-                aspect={sceneAspect}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-/* ─── Scene image card ─── */
-function getAspectClass(aspect) {
-  return aspect === "16:9" ? "aspect-[16/9]" :
-    aspect === "1:1" ? "aspect-square" :
-    "aspect-[9/16]";
-}
-
-function AnimationScenePreviewCard({ scene, index, aspect }) {
-  const imageSrc = getDisplayImageSrc(scene);
-  return (
-    <div className="rounded-[18px] border border-white/10 bg-white/[0.03] p-3">
-      <div className="mb-2 text-sm font-bold text-white">Scene {scene.sceneNumber || index + 1}</div>
-      <div className={`relative mx-auto max-h-[260px] max-w-[190px] overflow-hidden rounded-[16px] border border-white/10 bg-[#0d0f10] ${getAspectClass(aspect)}`}>
-        {imageSrc ? (
-          <img
-            src={imageSrc}
-            alt={`Scene ${scene.sceneNumber || index + 1}`}
-            className="h-full w-full object-cover"
-            referrerPolicy="no-referrer"
-            crossOrigin="anonymous"
-            loading="lazy"
-            decoding="async"
-          />
-        ) : (
-          <ScenePlaceholder index={index} progress={scene.imageProgress ?? 0} />
-        )}
-      </div>
-    </div>
-  );
-}
-
-function VideoOutputCard({ clip, aspect, onRetry }) {
-  const [expanded, setExpanded] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const videoRef = useRef(null);
-
-  const isBusy = !clip.videoUrl && (
-    clip.videoStatus === "queued" ||
-    clip.videoStatus === "running" ||
-    clip.videoStatus === "processing" ||
-    clip.videoStatus === "idle"
-  );
-  const isFailed = !clip.videoUrl && clip.videoStatus === "failed";
-  const progress = clip.videoProgress ?? 0;
-
-  const handleMouseEnter = () => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(() => {});
-      setIsPlaying(true);
-    }
-  };
-  const handleMouseLeave = () => {
-    if (videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.currentTime = 0;
-      setIsPlaying(false);
-    }
-  };
-  const handleCardClick = () => {
-    if (clip.videoUrl) setExpanded(true);
-  };
-
-  return (
-    <>
-      <div className="rounded-[18px] border border-white/10 bg-white/[0.03] p-3">
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <div className="text-sm font-bold text-white">{clip.outputLabel || `Video ${clip.clipNumber}`}</div>
-          <ClipStatusBadge status={clip.videoStatus} />
-        </div>
-        <div
-          className={`group relative mx-auto max-h-[260px] max-w-[190px] overflow-hidden rounded-[16px] border border-white/10 bg-[#0d0f10] ${getAspectClass(aspect)} ${clip.videoUrl ? "cursor-pointer" : ""}`}
-          onMouseEnter={clip.videoUrl ? handleMouseEnter : undefined}
-          onMouseLeave={clip.videoUrl ? handleMouseLeave : undefined}
-          onClick={handleCardClick}
-        >
-          {clip.videoUrl ? (
-            <>
-              <video
-                ref={videoRef}
-                src={clip.videoUrl}
-                className="h-full w-full object-cover"
-                playsInline
-                muted
-                loop
-                preload="metadata"
-              />
-              {/* Play overlay — visible when not playing, fades on hover */}
-              <div className={`pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25 transition-opacity duration-200 ${isPlaying ? "opacity-0" : "opacity-100"}`}>
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm ring-1 ring-white/20">
-                  <svg className="ml-0.5 h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </div>
-              </div>
-              {/* Expand button */}
-              <button
-                onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
-                className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white opacity-0 backdrop-blur-sm ring-1 ring-white/15 transition hover:bg-black/75 group-hover:opacity-100"
-              >
-                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                </svg>
-              </button>
-            </>
-          ) : isFailed ? (
-            <div className="flex h-full min-h-[220px] flex-col items-center justify-center gap-3 bg-red-500/10 p-4 text-center">
-              <p className="text-xs font-semibold text-red-200">Generation failed</p>
-              {onRetry && (
-                <button
-                  onClick={onRetry}
-                  className="rounded-lg bg-red-500/70 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-red-500"
-                >
-                  Retry
-                </button>
-              )}
+        {hasScenes && isBusy && (
+          <div className="mb-4 rounded-2xl border border-purple-400/20 bg-purple-500/10 p-3.5">
+            <div className="mb-2.5 flex items-center gap-2">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-purple-400" />
+              <span className="text-sm font-semibold text-purple-200">{statusLine}</span>
             </div>
-          ) : isBusy ? (
-            <VideoLoadingMockup progress={progress} />
-          ) : (
-            <VideoLoadingMockup progress={0} />
-          )}
-        </div>
-        {clip.videoUrl && (
-          <a
-            href={clip.videoUrl}
-            download={`ai-fruit-video-${clip.clipNumber}.mp4`}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-2 block rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-center text-xs font-semibold text-white/75 transition hover:bg-white/[0.09]"
-          >
-            Download
-          </a>
+            <div className="grid grid-cols-2 gap-3">
+              <StoryProgressStat label="Images" done={imagesDoneCount} total={scenes.length} />
+              <StoryProgressStat label="Clips" done={videosDoneCount} total={Math.max(videosStartedCount, scenes.length)} />
+            </div>
+          </div>
+        )}
+
+        {isStoryDone && (
+          <div className="mb-4 flex items-center gap-2 rounded-2xl border border-green-400/20 bg-green-500/10 p-3">
+            <span className="text-lg">✓</span>
+            <span className="text-sm font-semibold text-green-200">
+              {videosSucceededCount} of {scenes.length} clips generated successfully.
+            </span>
+          </div>
+        )}
+
+        {!hasScenes && !isBusy ? (
+          <EmptyState
+            icon="🎬"
+            title="No story yet"
+            body="Once generated, your scenes and clips will show here."
+          />
+        ) : (
+          <>
+            {allFailed && (
+              <div className="mb-3 rounded-2xl border border-red-400/25 bg-red-500/10 p-4 text-center">
+                <p className="mb-1 text-sm font-bold text-red-300">All videos failed to generate</p>
+                <p className="mb-3 text-xs text-red-200/60">This is usually a provider issue. Hit the button below to retry everything.</p>
+                <button
+                  onClick={() => onRetryFailedClips?.(null)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-500/80 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-red-500"
+                >
+                  🔄 Regenerate All Videos
+                </button>
+              </div>
+            )}
+            <div
+              className={`grid gap-4 ${
+                sceneAspect === "16:9" ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"
+              }`}
+            >
+              {scenes.map((scene, index) => (
+                <SceneVideoCard
+                  key={scene.id || scene.sceneNumber}
+                  scene={scene}
+                  index={index}
+                  aspect={sceneAspect}
+                  onRegenerateImage={
+                    onRegenerateScene && !scene.videoUrl ? () => openRegenerateModal(index) : null
+                  }
+                  onRetryVideo={
+                    !allFailed && !scene.videoUrl && scene.videoStatus === "failed"
+                      ? () => onRetryFailedClips?.([findClipNumberForScene(scene)].filter(Boolean))
+                      : null
+                  }
+                />
+              ))}
+
+              {/* Placeholder skeleton cards if still generating and fewer scenes than expected */}
+              {isGeneratingImages &&
+                Array.from({ length: Math.max(0, sceneCount - scenes.length) }).map((_, i) => (
+                  <SceneSkeleton key={`sk-${i}`} index={scenes.length + i} aspect={sceneAspect} />
+                ))}
+            </div>
+          </>
         )}
       </div>
-
-      {/* Expanded lightbox modal */}
-      {expanded && clip.videoUrl && (
-        <div
-          className="fixed inset-0 z-[250] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
-          onClick={() => setExpanded(false)}
-        >
-          <div
-            className="relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <video
-              src={clip.videoUrl}
-              className="max-h-[88vh] max-w-[88vw] rounded-[18px] shadow-2xl"
-              controls
-              autoPlay
-              playsInline
-            />
-            <button
-              onClick={() => setExpanded(false)}
-              className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm ring-1 ring-white/20 transition hover:bg-white/25"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
+      {regenScene && (
+        <RegenerateSceneModal
+          scene={regenScene}
+          prompt={regenPrompt}
+          onPromptChange={setRegenPrompt}
+          onCancel={closeRegenerateModal}
+          onSubmit={submitRegenerate}
+          isSubmitting={isRegenerating}
+        />
       )}
-    </>
+    </div>
   );
 }
 
@@ -603,187 +421,7 @@ function RegenerateSceneModal({
   );
 }
 
-function SceneImageCard({ scene, index, aspect, active, onClick, onRegenerate }) {
-  const aspectClass =
-    aspect === "16:9" ? "aspect-[16/9]" :
-    aspect === "1:1"  ? "aspect-square"  :
-                        "aspect-[9/16]";
-
-  const imageSrc = getDisplayImageSrc(scene);
-
-  console.log("[fruit render]", {
-    sceneNumber: scene.sceneNumber,
-    imageStatus: scene.imageStatus,
-    imageUrl: scene.imageUrl,
-    imageJobResultUrl: scene.imageJob?.result_url,
-    output: scene.imageJob?.output,
-    resolvedImageSrc: imageSrc,
-    imageUrlType: typeof scene.imageUrl,
-  });
-
-  const isBusy =
-    scene.imageStatus === "queued" ||
-    scene.imageStatus === "running" ||
-    scene.imageStatus === "processing";
-  const isDone = !!imageSrc || scene.imageStatus === "succeeded";
-  const isFailed = !imageSrc && scene.imageStatus === "failed";
-  const progress = scene.imageProgress ?? 0;
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={onClick}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onClick?.();
-        }
-      }}
-      aria-label={`Scene ${index + 1} ${isDone ? "ready" : isBusy ? "generating" : isFailed ? "failed" : ""}`.trim()}
-      className={`w-full rounded-[24px] border p-4 text-left transition ${
-        active
-          ? "border-purple-300/40 bg-[linear-gradient(135deg,rgba(255,255,255,0.06)_0%,rgba(216,180,254,0.08)_50%,rgba(124,58,237,0.18)_100%)] shadow-[0_0_24px_rgba(124,58,237,0.10)]"
-          : "border-white/10 bg-white/[0.03] hover:bg-white/[0.05]"
-      }`}
-    >
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div className="text-sm font-semibold text-white">Scene {index + 1}</div>
-        <div className="flex items-center gap-2">
-          {scene.needsReanimation && (
-            <span className="rounded-full border border-orange-300/25 bg-orange-500/10 px-2.5 py-1 text-[10px] font-semibold text-orange-200">
-              Needs re-animation
-            </span>
-          )}
-          {active && (
-            <span className="rounded-full border border-purple-300/25 bg-purple-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-purple-100">
-              Selected
-            </span>
-          )}
-          {isFailed && (
-            <span className="rounded-full border border-red-400/25 bg-red-500/10 px-2.5 py-1 text-[10px] font-semibold text-red-300">
-              Failed
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className={`relative overflow-hidden rounded-[20px] border border-white/10 bg-[#0d0f10] ${aspectClass}`}>
-        {imageSrc ? (
-          <img
-            src={imageSrc}
-            alt={`Scene ${index + 1}`}
-            className="h-full w-full object-cover"
-            referrerPolicy="no-referrer"
-            crossOrigin="anonymous"
-            loading="lazy"
-            decoding="async"
-            onError={(e) => {
-              console.error("[fruit] image failed to load", {
-                sceneNumber: scene.sceneNumber,
-                rawImageUrl: scene.imageUrl,
-                resolvedImageSrc: imageSrc,
-                scene,
-              });
-              e.currentTarget.style.display = "none";
-            }}
-          />
-        ) : (
-          <ScenePlaceholder index={index} progress={progress} />
-        )}
-
-        {isFailed && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-            <div className="text-center">
-              <div className="text-2xl">⚠️</div>
-              <div className="mt-1 text-xs font-semibold text-red-300">Failed</div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {scene.title && (
-        <p className="mt-3 text-xs leading-relaxed text-white/45">{scene.title}</p>
-      )}
-      <div className="mt-3 flex items-center justify-end">
-        {onRegenerate && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRegenerate();
-            }}
-            className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-white/75 transition hover:bg-white/[0.10]"
-          >
-            Regenerate
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Scene video card ─── */
-function ClipStatusBadge({ status }) {
-  const label =
-    status === "succeeded" ? "Done" :
-    status === "running" || status === "processing" || status === "queued" ? "Animating" :
-    status === "failed" ? "Failed" :
-    "Ready";
-  const tone =
-    status === "succeeded" ? "border-green-400/25 bg-green-500/10 text-green-200" :
-    status === "failed" ? "border-red-400/25 bg-red-500/10 text-red-300" :
-    status === "running" || status === "processing" || status === "queued" ? "border-purple-400/25 bg-purple-500/10 text-purple-200" :
-    "border-white/10 bg-white/[0.05] text-white/55";
-
-  return (
-    <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${tone}`}>
-      {label}
-    </span>
-  );
-}
-
-function VideoLoadingMockup({ progress }) {
-  return (
-    <div className="relative flex h-full w-full flex-col justify-end overflow-hidden bg-[#090a0c] p-4">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(168,85,247,0.18),transparent_38%)]" />
-      <div className="absolute inset-x-6 top-6 h-2 overflow-hidden rounded-full bg-white/[0.05]">
-        <div className="shimmer-bar h-full w-1/2 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-      </div>
-      <div className="relative z-10 mx-auto mb-auto mt-auto flex flex-col items-center gap-3">
-        <div className="flex h-14 w-14 items-center justify-center rounded-[18px] border border-white/10 bg-white/[0.06] shadow-[0_0_32px_rgba(124,58,237,0.20)]">
-          <span className="text-xl font-black text-white">Z</span>
-        </div>
-        <div className="text-[11px] font-black uppercase tracking-[0.18em] text-white/35">
-          Animating
-        </div>
-        <div className="flex items-center gap-1.5">
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              className="h-1.5 w-1.5 rounded-full bg-purple-300/70"
-              style={{ animation: `dotPulse 1.2s ease-in-out ${i * 0.18}s infinite` }}
-            />
-          ))}
-        </div>
-      </div>
-      <div className="relative z-10">
-        <div className="mb-1.5 flex items-center justify-between text-[10px] font-semibold text-white/55">
-          <span>Building video</span>
-          <span>{progress}%</span>
-        </div>
-        <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-white via-[#D8B4FE] to-[#7C3AED] transition-all duration-500"
-            style={{ width: `${Math.max(6, progress)}%` }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SceneVideoCard({ scene, index, aspect }) {
+function SceneVideoCard({ scene, index, aspect, onRegenerateImage, onRetryVideo }) {
   const aspectClass =
     aspect === "16:9" ? "aspect-[16/9]" :
     aspect === "1:1"  ? "aspect-square"  :
@@ -791,6 +429,7 @@ function SceneVideoCard({ scene, index, aspect }) {
 
   const displayImageSrc = getDisplayImageSrc(scene);
 
+  const isImageFailed = !displayImageSrc && scene.imageStatus === "failed";
   const isBusy   = !scene.videoUrl && (
     scene.videoStatus === "queued" ||
     scene.videoStatus === "running" ||
@@ -815,7 +454,7 @@ function SceneVideoCard({ scene, index, aspect }) {
               Needs re-animation
             </span>
           )}
-          {isFailed && (
+          {(isFailed || isImageFailed) && (
             <span className="rounded-full border border-red-400/25 bg-red-500/10 px-2.5 py-1 text-[10px] font-semibold text-red-300">
               Failed
             </span>
@@ -868,18 +507,38 @@ function SceneVideoCard({ scene, index, aspect }) {
             {!isBusy && !isFailed && <PlayOverlay />}
           </>
         ) : (
-          <ScenePlaceholder index={index} />
+          <ScenePlaceholder index={index} progress={scene.imageProgress ?? 0} />
         )}
 
-        {isFailed && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-            <div className="text-center">
+        {(isFailed || isImageFailed) && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 p-4 text-center">
+            <div>
               <div className="text-2xl">⚠️</div>
               <div className="mt-1 text-xs font-semibold text-red-300">Failed</div>
             </div>
+            {isFailed && onRetryVideo && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onRetryVideo(); }}
+                className="rounded-lg bg-red-500/80 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-red-500"
+              >
+                Retry video
+              </button>
+            )}
           </div>
         )}
       </div>
+
+      {onRegenerateImage && (
+        <div className="mt-3 flex items-center justify-end">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onRegenerateImage(); }}
+            className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-white/75 transition hover:bg-white/[0.10]"
+          >
+            Regenerate image
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -1042,6 +701,25 @@ function AspectBadge({ value }) {
     <span className="shrink-0 rounded-full border border-purple-400/30 bg-purple-500/15 px-3 py-1 text-xs font-bold text-purple-200">
       {value}
     </span>
+  );
+}
+
+/* ─── Compact progress stat — used in the combined loading header ─── */
+function StoryProgressStat({ label, done, total }) {
+  const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+  return (
+    <div>
+      <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/60">
+        <span>{label}</span>
+        <span className="tabular-nums text-white/40">{done}/{total}</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-white via-[#D8B4FE] to-[#7C3AED] transition-all duration-500"
+          style={{ width: `${Math.max(done > 0 ? 6 : 0, percent)}%` }}
+        />
+      </div>
+    </div>
   );
 }
 

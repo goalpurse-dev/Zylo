@@ -5,6 +5,7 @@ import { getProviderLink, type ToolKey } from "./providers";
 import { getPlanPriority } from "./queuePriority";
 
 import { CREATION_TYPES } from "./creations";
+import { emitCreditSpend } from "./creditPopEvents";
 
 /* ======================= Types ======================= */
 
@@ -82,8 +83,7 @@ export type ImageToolKey =
   | "image:nano-pro"
   | "image:seedream4.0"
   | "image:nano.2"
-  | "image:fruit-v2"
-  | "image:fruit-v3";
+  | "image:fruit-v2";
 
 
   
@@ -601,6 +601,8 @@ const job = await simulateJob({
 // Free usage is logged in runware-image after finish_job_success,
 // so quota is only consumed when the image actually succeeds.
 
+emitCreditSpend(credits);
+
 return job;
 }
 
@@ -710,7 +712,7 @@ const settings = {
   },
 };
 
-return await simulateJob({
+const job = await simulateJob({
   type: "video",
   tool_key: params.toolKey,
   project_id: params.project_id ?? null,
@@ -721,6 +723,10 @@ return await simulateJob({
   plan_code: resolvedPlanCode,
   provider:  "runware",
 });
+
+emitCreditSpend(credits);
+
+return job;
 
 }
 
@@ -817,13 +823,17 @@ export async function createProductPhotoJob(params: {
   // ------------------------------------------------------------------
   // 6️⃣ Create job + trigger worker
   // ------------------------------------------------------------------
-  return await simulateJob({
+  const job = await simulateJob({
     type: "image",
     project_id: null,
     prompt: preview,
     settings,
     input,
   });
+
+  emitCreditSpend(CREDIT_COST);
+
+  return job;
 }
 
 

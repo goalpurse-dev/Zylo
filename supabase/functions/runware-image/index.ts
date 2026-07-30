@@ -451,7 +451,7 @@ const SUPPORTED_DIMENSIONS: Record<string, [number, number][]> = {
     [1376, 768], [2752, 1536], [5504, 3072],
     [1548, 672], [1584, 672], [3168, 1344], [6336, 2688],
   ],
-  // GPT Image 2 — backs both image:fruit-v2 and image:fruit-v3
+  // GPT Image 2 — backs image:fruit-v2
   "openai:gpt-image@2": [
     [1024, 1024], [2048, 2048],
     [1248, 832], [2496, 1664], [832, 1248], [1664, 2496],
@@ -642,14 +642,12 @@ async function processRunwareImageJob(body: any): Promise<void> {
   const fruitModel = settings?.provider_hint?.settings?.fruitModel ?? null;
   const isFruitModel =
     settings?.tool_key === "image:fruit-v2" ||
-    settings?.tool_key === "image:fruit-v3" ||
-    fruitModel === "zyvo-v2" ||
-    fruitModel === "zyvo-v3";
+    fruitModel === "zyvo-v2";
   const openAiSettings = settings?.provider_hint?.settings ?? {};
   const openAiQuality =
     settings?.quality ||
     openAiSettings?.quality ||
-    (settings?.tool_key === "image:fruit-v3" || fruitModel === "zyvo-v3" ? "medium" : "low");
+    "low";
   const requestedWidth = Number(settings?.width ?? 1024);
   const requestedHeight = Number(settings?.height ?? 1024);
   const { width: safeWidth, height: safeHeight } = snapToSupportedDimensions(

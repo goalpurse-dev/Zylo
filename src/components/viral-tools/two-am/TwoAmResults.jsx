@@ -4,7 +4,7 @@ import { Download, MoonStar, RefreshCw, X } from "lucide-react";
 import TwoAmSceneCard from "./TwoAmSceneCard";
 import TwoAmDemoCarousel from "./TwoAmDemoCarousel";
 import TwoAmLoadingCard from "./TwoAmLoadingCard";
-import { TWO_AM_TOTAL_CREDITS } from "./api/twoAmApi";
+import { IMAGE_QUALITY_TIERS, TWO_AM_IMAGE_COUNT, TWO_AM_TOTAL_CREDITS } from "./api/twoAmApi";
 import { downloadFile, downloadImagesAsZip } from "./utils/twoAmHelpers";
 
 export default function TwoAmResults({ phase, plannerStage, scenes, generation, error, recentGenerations, onOpenRecent, onRegenerate, onAnotherNight, recentOnly = false }) {
@@ -13,6 +13,9 @@ export default function TwoAmResults({ phase, plannerStage, scenes, generation, 
   const active = phase === "planning" || phase === "generating";
   const hasResults = scenes.some((scene) => scene.imageUrl);
   const lockDesktopPreview = phase === "idle" && !hasResults;
+  const totalCredits = generation?.reservedCredits ?? TWO_AM_TOTAL_CREDITS;
+  const perImageCredits = IMAGE_QUALITY_TIERS[generation?.settings?.quality]?.creditsPerImage
+    ?? Math.round(totalCredits / TWO_AM_IMAGE_COUNT);
 
   const downloadOne = async (scene, index) => {
     try { await downloadFile(scene.imageUrl, `2am-${String(index + 1).padStart(2, "0")}.jpg`); } catch (caught) { console.error(caught); }
@@ -102,12 +105,12 @@ export default function TwoAmResults({ phase, plannerStage, scenes, generation, 
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
-            {scenes.map((scene, index) => <TwoAmSceneCard key={scene.id || index} scene={scene} index={index} onDownload={downloadOne} onRegenerate={onRegenerate} onExpand={setExpanded} />)}
+            {scenes.map((scene, index) => <TwoAmSceneCard key={scene.id || index} scene={scene} index={index} creditsPerImage={perImageCredits} onDownload={downloadOne} onRegenerate={onRegenerate} onExpand={setExpanded} />)}
           </div>
         )}
 
         {phase === "error" && error && (
-          <div className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/[0.08] px-4 py-3 text-center text-[11px] font-semibold text-red-300">{error === "INSUFFICIENT_CREDITS" ? `You need ${TWO_AM_TOTAL_CREDITS} credits to create this slideshow.` : error}</div>
+          <div className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/[0.08] px-4 py-3 text-center text-[11px] font-semibold text-red-300">{error === "INSUFFICIENT_CREDITS" ? `You need ${totalCredits} credits to create this slideshow.` : error}</div>
         )}
       </div>
 

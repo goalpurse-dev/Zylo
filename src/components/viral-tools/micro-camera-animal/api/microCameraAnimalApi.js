@@ -1,25 +1,81 @@
 import { createImageJobSimple, createVideoJobSimple } from "../../../../lib/jobs";
 import { supabase } from "../../../../lib/supabaseClient";
+import { getAllowedVideoModels as sharedGetAllowedVideoModels, PLAN_LABELS } from "../../../../lib/planGating";
+
+export { PLAN_LABELS };
 
 /* ── Constants ──────────────────────────────────────────────── */
 export const IMAGE_TOOL_KEY = "image:fruit-v2";
-export const VIDEO_TOOL_KEY = "video:seedance15pro";
 export const IMAGE_CREDITS  = 2;
-export const VIDEO_CREDITS  = 6;
 export const REF_CREDITS    = 2;
-export const VIDEO_DURATION = 5;
 export const IMAGE_W        = 768;
 export const IMAGE_H        = 1376;
-export const VIDEO_W        = 496;
-export const VIDEO_H        = 864;
+
+// V2 unchanged (Seedance 1.5 Pro, no audio — Micro Camera doesn't need
+// sound). V3/V4 use MiniMax Hailuo 2.3 Fast instead of Vidu: MiniMax is
+// cheaper and this template only ever needs ONE reference image with no
+// audio, which is exactly what MiniMax is good for (Vidu is reserved for
+// tools that need audio). Video credits tuned so the BLENDED per-scene
+// margin (1 image @ 2cr/$0.010423 + 1 video clip) lands at ~50%.
+export const VIDEO_MODELS = {
+  "micro-v2": {
+    id: "micro-v2",
+    label: "V2",
+    tag: "Cheapest",
+    description: "480p — NO AUDIO GENERATED",
+    toolKey: "video:seedance15pro",
+    width: 496,
+    height: 864,
+    duration: 5,
+    credits: 6,             // unchanged — measured $0.0607656/5s
+    withSound: false,
+  },
+  "micro-v3": {
+    id: "micro-v3",
+    label: "V3",
+    tag: "Higher quality",
+    description: "720p — NO AUDIO GENERATED",
+    toolKey: "video:microcamminimax720",
+    width: 768,
+    height: 1366,
+    duration: 6,
+    credits: 18,            // measured $0.19/6s → blended per-scene margin ~49.9%
+    withSound: false,
+  },
+  "micro-v4": {
+    id: "micro-v4",
+    label: "V4",
+    tag: "Best quality",
+    description: "1080p — NO AUDIO GENERATED",
+    toolKey: "video:microcamminimax1080",
+    width: 1080,
+    height: 1920,
+    duration: 6,
+    credits: 32,            // measured $0.33/6s → blended per-scene margin ~49.9%
+    withSound: false,
+  },
+};
+export const DEFAULT_VIDEO_MODEL = "micro-v2";
+
+// Plan gating — which video models each plan tier can use.
+export const VIDEO_MODEL_MIN_PLAN = {
+  "micro-v2": "starter",
+  "micro-v3": "pro",
+  "micro-v4": "generative",
+};
+
+export function getAllowedVideoModels(planCode) {
+  return sharedGetAllowedVideoModels(planCode, VIDEO_MODEL_MIN_PLAN);
+}
 
 export const LENGTH_OPTIONS = [
   { value: "15s", label: "15 sec", scenes: 3 },
   { value: "30s", label: "30 sec", scenes: 6 },
 ];
 
-export function calcCredits(sceneCount) {
-  return REF_CREDITS + sceneCount * (IMAGE_CREDITS + VIDEO_CREDITS);
+export function calcCredits(sceneCount, videoModelId = DEFAULT_VIDEO_MODEL) {
+  const videoCredits = (VIDEO_MODELS[videoModelId] ?? VIDEO_MODELS[DEFAULT_VIDEO_MODEL]).credits;
+  return REF_CREDITS + sceneCount * (IMAGE_CREDITS + videoCredits);
 }
 
 // Which prompt indices to use per scene count.
@@ -671,17 +727,18 @@ export async function generateSceneImage({ prompt, referenceUrl }) {
 }
 
 /* ── Animate scene clip ─────────────────────────────────────── */
-export async function animateSceneClip({ imageUrl, videoPrompt }) {
+export async function animateSceneClip({ imageUrl, videoPrompt, videoModel = DEFAULT_VIDEO_MODEL }) {
   if (!imageUrl) throw new Error("animateSceneClip: missing imageUrl");
+  const model = VIDEO_MODELS[videoModel] ?? VIDEO_MODELS[DEFAULT_VIDEO_MODEL];
   return createVideoJobSimple({
     subject: videoPrompt,
-    toolKey: VIDEO_TOOL_KEY,
-    width: VIDEO_W,
-    height: VIDEO_H,
-    durationSec: VIDEO_DURATION,
+    toolKey: model.toolKey,
+    width: model.width,
+    height: model.height,
+    durationSec: model.duration,
     initImageUrls: [imageUrl],
-    calculatedCredits: VIDEO_CREDITS,
-    withSound: false,
+    calculatedCredits: model.credits,
+    withSound: model.withSound,
   });
 }
 

@@ -152,7 +152,7 @@ export default function MicroCameraAnimal() {
     return () => { cancelled = true; };
   }, [phase, jobScenes, viewingRecentId, user, animalLabel]);
 
-  const handleGenerate = ({ animalInput, selectedLength }) => {
+  const handleGenerate = ({ animalInput, selectedLength, videoModel }) => {
     if (needsUpgrade) { showPaywall(); return; }
     const sceneCount = selectedLength === "30s" ? 6 : 3;
     setViewingRecentId(null);
@@ -160,7 +160,7 @@ export default function MicroCameraAnimal() {
     latestLengthRef.current = selectedLength;
     setMobilePanel("results");
     document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
-    start({ animalInput, sceneCount });
+    start({ animalInput, sceneCount, videoModel });
   };
 
   const handleOpenRecent = (generation) => {
@@ -181,6 +181,7 @@ export default function MicroCameraAnimal() {
       onGenerate={handleGenerate}
       onReset={handleBackToDefault}
       phase={phase}
+      planCode={planCode}
     />
   );
 

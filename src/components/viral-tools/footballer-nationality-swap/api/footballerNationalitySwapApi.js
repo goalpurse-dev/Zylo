@@ -1,5 +1,8 @@
 import { createImageJobSimple, createVideoJobSimple } from "../../../../lib/jobs";
 import { supabase } from "../../../../lib/supabaseClient";
+import { getAllowedVideoModels as sharedGetAllowedVideoModels, PLAN_LABELS } from "../../../../lib/planGating";
+
+export { PLAN_LABELS };
 
 /* ── Constants ──────────────────────────────────────────────── */
 export const IMAGE_TOOL_KEY = "image:fruit-v2";
@@ -9,28 +12,76 @@ export const IMAGE_FALLBACK_TOOL_KEY = "image:nano.2";
 export const IMAGE_FALLBACK_RES      = "1k";
 export const IMAGE_FALLBACK_W        = 384;
 export const IMAGE_FALLBACK_H        = 688;
-// Primary video engine — Seedance 2.0 Fast @ 480p. Veo 3.1 Lite was tried
-// first but its Vertex AI content filter rejected essentially every
-// real-footballer-likeness + speech request outright (confirmed via job
-// logs — every attempt, including a softened prompt, got rejected). Seedance
-// isn't hitting that wall. NOTE: Seedance 2.0 Fast has no confirmed audio
-// support (its Runware schema has no audio field at all, unlike 1.5 Pro) —
-// if it ships silent, that'll need re-checking against a real generation.
-export const VIDEO_TOOL_KEY   = "video:seedance20fast";
-export const VIDEO_W          = 496;
-export const VIDEO_H          = 864;
-export const VIDEO_CREDITS    = 37; // 2x markup on measured $0.364092 actual cost (480p)
-// Fallback engine — Seedance 1.5 Pro @ 720p, WITH confirmed native audio via
-// providerSettings.bytedance.audio (see animateFootballerClip below).
-export const VIDEO_FALLBACK_TOOL_KEY = "video:seedance15pro";
-export const VIDEO_FALLBACK_W        = 720;
-export const VIDEO_FALLBACK_H        = 1280;
-export const VIDEO_FALLBACK_CREDITS  = 32; // 2x markup on measured $0.3151728 actual cost (720p, audio on)
 export const IMAGE_CREDITS    = 2;                 // ~$0.013 cost x2 = ~2 credits
 export const IMAGE_FALLBACK_CREDITS = 4;           // Nano Banana 2 @ 1k — same ballpark
-export const VIDEO_DURATION   = 6;
+export const VIDEO_DURATION   = 6;                 // baked into the prompt copy ("6-second vertical...")
 export const IMAGE_W          = 768;
 export const IMAGE_H          = 1376;
+
+// Veo 3.1 Lite was tried first but its Vertex AI content filter rejected
+// essentially every real-footballer-likeness + speech request outright
+// (confirmed via job logs). Seedance/Vidu don't hit that wall. Three
+// user-facing tiers, all with confirmed working audio. V3/V4 are swapped
+// from resolution order because Seedance 720p ($0.3151728/6s) turned out
+// pricier than Vidu 1080p (~$0.2535/6s) — tiers are priced ascending, not
+// resolution-ascending:
+//   V2 — Seedance 1.5 Pro 480p  (cheapest)
+//   V3 — Vidu Q3 Turbo 1080p    (Pro)
+//   V4 — Seedance 1.5 Pro 720p  (Generative)
+export const VIDEO_MODELS = {
+  "footballer-v2": {
+    id: "footballer-v2",
+    label: "V2",
+    tag: "Cheapest",
+    description: "480p — includes audio",
+    toolKey: "video:seedance15pro",
+    width: 496,
+    height: 864,
+    duration: VIDEO_DURATION,
+    // Confirmed via real invoice: $0.1215312/5s @ 496x864 w/ audio → scaled
+    // to this tool's 6s clip length: ~$0.14584/6s → 14cr.
+    credits: 14,
+    withSound: true,
+  },
+  "footballer-v3": {
+    id: "footballer-v3",
+    label: "V3",
+    tag: "Higher quality",
+    description: "1080p — includes audio",
+    toolKey: "video:footballerviduq3turbo1080",
+    width: 1080,
+    height: 1920,
+    duration: VIDEO_DURATION,
+    // Scaled linearly from the confirmed 5s rate ($0.21125/5s → $0.04225/s)
+    // to this tool's 6s clip length: ~$0.2535/6s → 24cr.
+    credits: 24,
+    withSound: true,
+  },
+  "footballer-v4": {
+    id: "footballer-v4",
+    label: "V4",
+    tag: "Best quality",
+    description: "720p — includes audio",
+    toolKey: "video:footballerseedance720",
+    width: 720,
+    height: 1280,
+    duration: VIDEO_DURATION,
+    credits: 31,            // measured $0.3151728/6s → blended per-scene margin ~50.7%
+    withSound: true,
+  },
+};
+export const DEFAULT_VIDEO_MODEL = "footballer-v2";
+
+// Plan gating — which video models each plan tier can use.
+export const VIDEO_MODEL_MIN_PLAN = {
+  "footballer-v2": "starter",
+  "footballer-v3": "pro",
+  "footballer-v4": "generative",
+};
+
+export function getAllowedVideoModels(planCode) {
+  return sharedGetAllowedVideoModels(planCode, VIDEO_MODEL_MIN_PLAN);
+}
 
 export const SCENE_COUNT_OPTIONS = [3, 4, 5];
 export const DEFAULT_SCENE_COUNT = 3;
@@ -68,8 +119,9 @@ const VIDEO_STYLE_AMBIENCE = {
   "training-ground":  "soft outdoor wind and a distant ball bounce",
 };
 
-export function calcCredits(sceneCount) {
-  return sceneCount * (IMAGE_CREDITS + VIDEO_CREDITS);
+export function calcCredits(sceneCount, videoModelId = DEFAULT_VIDEO_MODEL) {
+  const videoCredits = (VIDEO_MODELS[videoModelId] ?? VIDEO_MODELS[DEFAULT_VIDEO_MODEL]).credits;
+  return sceneCount * (IMAGE_CREDITS + videoCredits);
 }
 
 /* ── Prompt builders ──────────────────────────────────────────
@@ -226,34 +278,20 @@ export async function generateFootballerImage({ imagePrompt, provider = "openai"
 }
 
 /* ── Video generation ─────────────────────────────────────────── */
-// `provider` picks the engine — "seedance2" (default, primary, Seedance 2.0
-// Fast @ 480p) or "seedance15" (fallback, Seedance 1.5 Pro @ 720p, confirmed
-// native audio via providerSettings.bytedance.audio).
-export async function animateFootballerClip({ imageUrl, videoPrompt, provider = "seedance2" }) {
+export async function animateFootballerClip({ imageUrl, videoPrompt, videoModel = DEFAULT_VIDEO_MODEL }) {
   if (!imageUrl) throw new Error("animateFootballerClip: missing imageUrl");
 
-  if (provider === "seedance15") {
-    return createVideoJobSimple({
-      subject:           videoPrompt,
-      toolKey:           VIDEO_FALLBACK_TOOL_KEY,
-      width:             VIDEO_FALLBACK_W,
-      height:            VIDEO_FALLBACK_H,
-      durationSec:       VIDEO_DURATION,
-      initImageUrls:     [imageUrl],
-      calculatedCredits: VIDEO_FALLBACK_CREDITS,
-      withSound:         true, // Seedance 1.5 Pro — providerSettings.bytedance.audio: true
-    });
-  }
+  const model = VIDEO_MODELS[videoModel] ?? VIDEO_MODELS[DEFAULT_VIDEO_MODEL];
 
   return createVideoJobSimple({
     subject:           videoPrompt,
-    toolKey:           VIDEO_TOOL_KEY,
-    width:             VIDEO_W,
-    height:            VIDEO_H,
-    durationSec:       VIDEO_DURATION,
+    toolKey:           model.toolKey,
+    width:             model.width,
+    height:            model.height,
+    durationSec:       model.duration,
     initImageUrls:     [imageUrl],
-    calculatedCredits: VIDEO_CREDITS,
-    withSound:         true, // no confirmed schema support on Seedance 2.0 Fast — harmless either way
+    calculatedCredits: model.credits,
+    withSound:         model.withSound,
   });
 }
 

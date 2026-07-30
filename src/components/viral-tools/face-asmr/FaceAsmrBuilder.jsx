@@ -1,10 +1,19 @@
-import { useEffect, useState } from "react";
-import { Upload, X, ChevronRight, ChevronLeft } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Upload, X, ChevronRight, ChevronLeft, Lock, VolumeX, Volume2 } from "lucide-react";
 import ReferenceImageModal from "../../reference-images/ReferenceImageModal.jsx";
 import { useReferenceImages } from "../../reference-images/useReferenceImages";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
-import { generateFaceAsmrCharacterNames, IMAGE_FALLBACK_CREDITS, VIDEO_CREDITS } from "./api/faceAsmrApi";
+import {
+  generateFaceAsmrCharacterNames,
+  IMAGE_FALLBACK_CREDITS,
+  VIDEO_MODELS,
+  DEFAULT_VIDEO_MODEL,
+  VIDEO_MODEL_MIN_PLAN,
+  PLAN_LABELS,
+  getAllowedVideoModels,
+} from "./api/faceAsmrApi";
 import NoCreditsModal from "../shared/NoCreditsModal";
+import FaceAsmrUpgradeModal from "./FaceAsmrUpgradeModal";
 
 const LENGTH_OPTIONS = [
   { value: "15s", label: "15 sec", scenes: 3 },
@@ -150,21 +159,42 @@ function SceneCard({ index, scene, onChange, onOpenPicker, anyUploaded }) {
   );
 }
 
-export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes, selectedLength, setSelectedLength, forcedStep, savedDone = false, phase = "idle" }) {
+export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes, selectedLength, setSelectedLength, forcedStep, savedDone = false, phase = "idle", planCode }) {
   const [step, setStep] = useState(0);
   const [selectedBg, setSelectedBg] = useState("white-marble");
+  const [videoModel, setVideoModel] = useState(DEFAULT_VIDEO_MODEL);
+  const [upgradeModelId, setUpgradeModelId] = useState(null);
   const [validationError, setValidationError] = useState("");
   const [noCreditsOpen, setNoCreditsOpen] = useState(false);
   const creditBalance = useProfileCredits();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editingSceneIdx, setEditingSceneIdx] = useState(null);
   const [aiWriting, setAiWriting] = useState(false);
+  const bodyScrollRef = useRef(null);
 
   const { images, selected, addImage, toggleSelect, setSelected } = useReferenceImages(1);
 
   useEffect(() => {
     if (typeof forcedStep === "number") setStep(forcedStep);
   }, [forcedStep]);
+
+  // The scrollable body div persists across steps (same DOM node, new
+  // content), so it keeps whatever scrollTop the user left step 0 at instead
+  // of resetting to the top of step 1 — reset it explicitly on step change.
+  useEffect(() => {
+    bodyScrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  }, [step]);
+
+  const allowedModels = getAllowedVideoModels(planCode);
+  const selectedVideoModel = VIDEO_MODELS[videoModel] ?? VIDEO_MODELS[DEFAULT_VIDEO_MODEL];
+
+  const handleSelectVideoModel = (modelId) => {
+    if (!allowedModels.includes(modelId)) {
+      setUpgradeModelId(modelId);
+      return;
+    }
+    setVideoModel(modelId);
+  };
 
   const handleUpload = (e) => {
     const file = e.target.files?.[0];
@@ -254,7 +284,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
   const allFilled     = filledCount === activeScenes.length;
   const partialFilled = filledCount > 0 && !allFilled;
 
-  const totalCost        = (IMAGE_FALLBACK_CREDITS + VIDEO_CREDITS) * sceneCount;
+  const totalCost        = (IMAGE_FALLBACK_CREDITS + selectedVideoModel.credits) * sceneCount;
   const hasEnoughCredits = creditBalance >= totalCost;
   const isGenerating     = phase === "images" || phase === "videos";
   const isDone           = phase === "done";
@@ -349,13 +379,13 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
             <div className="h-px bg-white/[0.06] mx-5" />
 
             {/* ── Row 4: AI write button ── */}
-            <div className="px-5 py-2 lg:py-3">
+            <div className="px-5 py-1.5 lg:py-2">
               <button
                 onClick={handleAiWrite}
                 disabled={aiWriting}
-                className="flex w-full items-center justify-center gap-2.5 py-2.5 lg:py-3.5 rounded-xl border border-[#7A3BFF]/30 bg-[#7A3BFF]/10 hover:bg-[#7A3BFF]/20 hover:border-[#7A3BFF]/60 text-white text-[14px] font-bold tracking-tight transition shadow-[inset_0_0_12px_rgba(122,59,255,0.15)] disabled:cursor-wait disabled:opacity-70"
+                className="flex w-full items-center justify-center gap-1.5 py-1.5 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/20 text-white/75 hover:text-white text-[12px] font-semibold transition disabled:cursor-wait disabled:opacity-60"
               >
-                <img src="/icons/ailogo.png" alt="" className="w-7 h-7 object-contain shrink-0" />
+                <img src="/icons/ailogo.png" alt="" className="w-3.5 h-3.5 object-contain shrink-0 opacity-80" />
                 {aiWriting ? "Writing famous people..." : "Let AI write the characters"}
               </button>
             </div>
@@ -372,23 +402,13 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
           </>
         )}
 
-        {step === 1 && !savedDone && (
-          <>
-            <div className="h-px bg-white/[0.06] mx-5" />
-            <div className="px-5 py-3.5">
-              <p className="text-white/40 text-[11px] font-semibold uppercase tracking-widest mb-1">Background Surface</p>
-              <p className="text-white/60 text-[13px]">Choose the surface your ASMR video plays on.</p>
-            </div>
-          </>
-        )}
-
         <div className="h-px bg-white/[0.06]" />
       </div>
 
       {/* ══ SCROLLABLE BODY ══
            Outer div: constrained height + scroll.
            Inner div: grows freely — cards never shrink.        */}
-      <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full">
+      <div ref={bodyScrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full">
         <div className="px-5 pt-3 pb-[160px] lg:pt-4 lg:pb-4 flex flex-col gap-2 lg:gap-3">
 
           {/* Step 0 — scene cards */}
@@ -420,6 +440,70 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
           )}
 
           {step === 1 && !savedDone && (
+            <>
+              {/* Video model — pill selector, plan-gated. Lives in the normal
+                  scrollable content, not sticky. */}
+              <div className="mb-1">
+                <p className="text-white/40 text-[11px] font-semibold uppercase tracking-widest mb-1.5">Video Model</p>
+                <div className="flex items-center gap-2 bg-[#0e1012] border border-white/[0.07] rounded-xl p-1">
+                  {Object.values(VIDEO_MODELS).map((model) => {
+                    const active = videoModel === model.id;
+                    const locked = !allowedModels.includes(model.id);
+
+                    if (locked) {
+                      return (
+                        <button
+                          key={model.id}
+                          onClick={() => handleSelectVideoModel(model.id)}
+                          title={`${model.label} requires the ${PLAN_LABELS[VIDEO_MODEL_MIN_PLAN[model.id]]} plan`}
+                          className="relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 overflow-hidden text-white/25 hover:text-white/40 transition-all"
+                        >
+                          <span className="pointer-events-none absolute inset-0 animate-shimmer" />
+                          <Lock className="w-3 h-3 shrink-0" />
+                          <span className="text-[12px] font-bold tracking-wide">{model.label}</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide bg-gradient-to-r from-[#F5C042]/25 to-[#F59E0B]/25 text-[#F5C042] border border-[#F5C042]/30">
+                            {PLAN_LABELS[VIDEO_MODEL_MIN_PLAN[model.id]]}
+                          </span>
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <button
+                        key={model.id}
+                        onClick={() => handleSelectVideoModel(model.id)}
+                        className={`relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 transition-all ${
+                          active
+                            ? "bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white shadow-lg shadow-[#7A3BFF]/20"
+                            : "text-white/40 hover:text-white/70"
+                        }`}
+                      >
+                        <span className={`text-[12px] font-bold tracking-wide ${active ? "text-white" : ""}`}>{model.label}</span>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                          active ? "bg-white/20 text-white" : "bg-white/[0.05] text-white/30"
+                        }`}>{model.tag}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {selectedVideoModel.withSound ? (
+                  <div className="mt-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25">
+                    <Volume2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-300">Audio included</span>
+                  </div>
+                ) : (
+                  <div className="mt-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/25">
+                    <VolumeX className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-red-300">No audio generated</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-2">
+                <p className="text-white/40 text-[11px] font-semibold uppercase tracking-widest mb-1">Background Surface</p>
+                <p className="text-white/60 text-[13px] mb-2">Choose the surface your ASMR video plays on.</p>
+              </div>
             <div className="grid grid-cols-2 gap-2">
               {BACKGROUNDS.map((bg) => (
                 <button
@@ -448,6 +532,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
                 </button>
               ))}
             </div>
+            </>
           )}
 
         </div>
@@ -502,7 +587,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
-              onClick={() => { if (isGenerating) return; if (!hasEnoughCredits) { setNoCreditsOpen(true); return; } onGenerate({ length: selectedLength, scenes: activeScenes, background: selectedBg, backgroundLabel: bgLabel }); }}
+              onClick={() => { if (isGenerating) return; if (!hasEnoughCredits) { setNoCreditsOpen(true); return; } onGenerate({ length: selectedLength, scenes: activeScenes, background: selectedBg, backgroundLabel: bgLabel, videoModel }); }}
               disabled={isGenerating}
               className={`flex-1 py-2.5 lg:py-3.5 rounded-xl font-bold text-[15px] transition flex items-center justify-center gap-2.5 ${
                 isDone
@@ -547,6 +632,13 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
       onClose={() => setNoCreditsOpen(false)}
       creditsNeeded={totalCost}
       creditBalance={creditBalance}
+    />
+
+    <FaceAsmrUpgradeModal
+      open={!!upgradeModelId}
+      onClose={() => setUpgradeModelId(null)}
+      modelId={upgradeModelId}
+      requiredPlan={upgradeModelId ? VIDEO_MODEL_MIN_PLAN[upgradeModelId] : null}
     />
     </>
   );

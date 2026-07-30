@@ -9,8 +9,38 @@ const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
 const OPENAI_RESPONSES = "https://api.openai.com/v1/responses";
 const OPENAI_RESEARCH_TIMEOUT_MS = 25_000;
 const OPENAI_PLAN_TIMEOUT_MS = 20_000;
-const TWO_AM_IMAGE_WIDTH = 1536;
-const TWO_AM_IMAGE_HEIGHT = 2752;
+
+// V2/V3/V4 quality tiers — same Nano Banana 2 engine at 1K/2K/4K (9:16).
+// Must mirror src/components/viral-tools/two-am/api/twoAmApi.js's
+// IMAGE_QUALITY_TIERS (Deno functions can't import from src/lib at runtime).
+// The requested tier is clamped to the caller's actual plan_code below —
+// this edge function is the trusted enforcement point since it resolves
+// plan_code from the DB itself, not from client input.
+const QUALITY_TIERS: Record<string, { toolKey: string; width: number; height: number; creditsPerImage: number; minPlan: string }> = {
+  "twoam-v2": { toolKey: "image:twoam1k", width: 384, height: 688, creditsPerImage: 5, minPlan: "starter" },
+  "twoam-v3": { toolKey: "image:twoam2k", width: 768, height: 1376, creditsPerImage: 7, minPlan: "pro" },
+  "twoam-v4": { toolKey: "image:twoam4k", width: 1536, height: 2752, creditsPerImage: 10, minPlan: "generative" },
+};
+const DEFAULT_QUALITY = "twoam-v2";
+const PLAN_TIER_ORDER = ["free", "starter", "pro", "generative"];
+
+function planTierIndex(planCode: string) {
+  const idx = PLAN_TIER_ORDER.indexOf(String(planCode ?? "").toLowerCase().trim());
+  return idx === -1 ? 0 : idx;
+}
+
+// Clamps the client-requested tier down to the highest one the user's plan
+// actually allows — mirrors the pattern used for every other viral tool's
+// V2/V3/V4 video tiers this quarter (UI lock is cosmetic only; this is the
+// real gate).
+function resolveQualityTier(requested: string, planCode: string) {
+  const userTier = planTierIndex(planCode);
+  const candidate = QUALITY_TIERS[requested] ? requested : DEFAULT_QUALITY;
+  if (planTierIndex(QUALITY_TIERS[candidate].minPlan) <= userTier) return candidate;
+  // Requested tier isn't allowed — fall back to the highest tier that is.
+  const order = ["twoam-v4", "twoam-v3", "twoam-v2"];
+  return order.find((id) => planTierIndex(QUALITY_TIERS[id].minPlan) <= userTier) ?? DEFAULT_QUALITY;
+}
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -451,19 +481,30 @@ Deno.serve(async (req) => {
 
   const body = await req.json().catch(() => ({}));
   const prompt = String(body.prompt ?? "").trim().slice(0, 240);
+
+  // Resolve plan_code up front (trusted — from the DB, not the client) so the
+  // requested quality tier can be clamped before any credits are reserved.
+  const { data: earlyProfile } = await admin.from("profiles").select("plan_code").eq("id", user.id).single();
+  const planCode = String(earlyProfile?.plan_code ?? "free").toLowerCase();
+  const resolvedQuality = resolveQualityTier(String(body?.settings?.quality ?? ""), planCode);
+  const tier = QUALITY_TIERS[resolvedQuality];
+
   const settings = {
     style: ["auto", "anime", "realistic", "dreamcore", "cinematic"].includes(body?.settings?.style) ? body.settings.style : "auto",
     nostalgia: Math.max(0, Math.min(1, Number(body?.settings?.nostalgia ?? 0.7))),
     customInstructions: String(body?.settings?.customInstructions ?? "").trim().slice(0, 800),
+    quality: resolvedQuality,
   };
   const customSceneDirectives = parseCustomSceneDirectives(settings.customInstructions);
   if (prompt.length < 2) return json({ error: "Tell us where you are at 2AM." }, 400);
 
   const seed = crypto.randomUUID();
+  const totalCost = tier.creditsPerImage * 6;
   const { data: generation, error: reserveError } = await userClient.rpc("begin_two_am_generation", {
     p_prompt: prompt,
     p_settings: settings,
     p_random_seed: seed,
+    p_cost: totalCost,
   });
   if (reserveError) {
     const insufficient = String(reserveError.message).includes("INSUFFICIENT_CREDITS");
@@ -622,20 +663,21 @@ Deno.serve(async (req) => {
     }, { onConflict: "normalized_key" });
   }
 
-  // Child jobs are created by this trusted function only after the 42-credit
-  // parent reservation succeeds. Their zero charge cannot be selected by a
-  // browser caller and therefore cannot become a free-generation bypass.
-  const { data: profile } = await admin.from("profiles").select("plan_code").eq("id", user.id).single();
-  const planCode = String(profile?.plan_code ?? "free").toLowerCase();
+  // Child jobs are created by this trusted function only after the
+  // per-tier credit reservation succeeds. Their zero charge cannot be
+  // selected by a browser caller and therefore cannot become a
+  // free-generation bypass. tool_key is the dedicated per-tier key (not the
+  // shared image:nano.2) so job-worker's plan gate on twoam2k/4k covers this
+  // path too, as defense in depth alongside the clamp above.
   const jobRows = scenes.map((scene: any) => ({
     id: crypto.randomUUID(),
     user_id: user.id,
     type: "image",
-    tool_key: "image:nano.2",
+    tool_key: tier.toolKey,
     prompt: scene.prompt,
     settings: {
-      tool_key: "image:nano.2",
-      size: `${TWO_AM_IMAGE_WIDTH}x${TWO_AM_IMAGE_HEIGHT}`,
+      tool_key: tier.toolKey,
+      size: `${tier.width}x${tier.height}`,
       credits: 0,
       priceUSD: 0,
       creation_type: "photo",
@@ -654,8 +696,8 @@ Deno.serve(async (req) => {
       creation_type: "photo",
       negative: "text, letters, watermark, logo, caption, blurry, low-res, artifact",
       brand: { id: null, use_palette: false },
-      width: TWO_AM_IMAGE_WIDTH,
-      height: TWO_AM_IMAGE_HEIGHT,
+      width: tier.width,
+      height: tier.height,
     },
     status: "queued",
     progress: 0,

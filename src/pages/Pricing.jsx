@@ -3,6 +3,17 @@ import { Link } from "react-router-dom";
 import { startCheckout, openBillingPortal } from "../lib/payments";
 import { supabase } from "../lib/supabaseClient";
 import { Check, ChevronDown, Shield } from "lucide-react";
+import {
+  PRICING_PLANS,
+  PLAN_ORDER,
+  V2_OUTPUT_COSTS,
+  TOOL_ORDER,
+  calculateCompleteOutputs,
+  outputsForPlan,
+  headlineOutputsForPlan,
+  HEADLINE_TOOL_KEY,
+  HEADLINE_OPTION_LABEL,
+} from "../lib/pricingOutputs";
 
 /* ─── Stripe IDs ─────────────────────────────────────────────────────────── */
 const PRICE_IDS = {
@@ -31,9 +42,6 @@ const TIERS = [
     features: [
       { section: "Credits" },
       { text: "750 credits / month", star: true },
-      { text: "~25 AI videos with sound / mo" },
-      { text: "~93 silent AI videos / mo" },
-      { text: "~375 AI images / mo" },
 
       { section: "Tools & Models" },
       { text: "Clay Rescue" },
@@ -41,7 +49,7 @@ const TIERS = [
       { text: "AI Fruit Story" },
       { text: "Micro Camera Animal" },
       { text: "Video & Image Generator" },
-      { text: "All AI models & templates" },
+      { text: `${PRICING_PLANS.starter.modelAccess.join(" + ")} models only`, star: true },
 
       { section: "Publishing" },
       { text: "1 social post published / day", tag: "Soon" },
@@ -57,6 +65,7 @@ const TIERS = [
     id: "pro",
     name: "Pro",
     monthly: 42,
+    strikethrough: 54, // shown crossed-out next to the monthly price only
     yearlyPerMonth: 35,
     blurb: "What 80% of viral creators use",
     popular: true,
@@ -67,9 +76,6 @@ const TIERS = [
     features: [
       { section: "Credits" },
       { text: "1,600 credits / month", star: true },
-      { text: "~53 AI videos with sound / mo" },
-      { text: "~200 silent AI videos / mo" },
-      { text: "~800 AI images / mo" },
 
       { section: "Tools & Models" },
       { text: "Clay Rescue" },
@@ -77,7 +83,7 @@ const TIERS = [
       { text: "AI Fruit Story" },
       { text: "Micro Camera Animal" },
       { text: "Video & Image Generator" },
-      { text: "All AI models & templates" },
+      { text: `${PRICING_PLANS.pro.modelAccess.join(" + ")} models`, star: true },
 
       { section: "Publishing" },
       { text: "3 social posts published / day", tag: "Soon" },
@@ -103,9 +109,6 @@ const TIERS = [
     features: [
       { section: "Credits" },
       { text: "3,200 credits / month", star: true },
-      { text: "~106 AI videos with sound / mo" },
-      { text: "~400 silent AI videos / mo" },
-      { text: "~1,600 AI images / mo" },
 
       { section: "Tools & Models" },
       { text: "Clay Rescue" },
@@ -113,7 +116,7 @@ const TIERS = [
       { text: "AI Fruit Story" },
       { text: "Micro Camera Animal" },
       { text: "Video & Image Generator" },
-      { text: "All AI models & templates" },
+      { text: `${PRICING_PLANS.generative.modelAccess.join(" + ")} models — every tier unlocked`, star: true },
 
       { section: "Publishing" },
       { text: "8 social posts published / day", tag: "Soon" },
@@ -155,15 +158,6 @@ const TESTIMONIALS = [
   { text: "I cancel every tool that doesn't pay for itself. Zyvo pays 10x.", name: "Priya S.", role: "Digital marketer" },
 ];
 
-const RECENT_SIGNUPS = [
-  { name: "Sarah M.", action: "upgraded to Pro" },
-  { name: "Marcus T.", action: "just signed up" },
-  { name: "Lena K.", action: "upgraded to Pro" },
-  { name: "James R.", action: "upgraded to Generative" },
-  { name: "Priya S.", action: "just signed up" },
-  { name: "Tom H.", action: "upgraded to Pro" },
-];
-
 const AVATAR_GRADIENTS = [
   ["#7C3AED","#A855F7"],
   ["#6D28D9","#8B5CF6"],
@@ -188,9 +182,15 @@ const PARTICLE_CONFIG = [
 const COMPARISON_DATA = [
   { section: "Credits & Usage" },
   { label: "Credits / month", values: ["750", "1,600", "3,200"], highlight: true },
-  { label: "AI videos (with sound) / mo", values: ["~25", "~53", "~106"] },
-  { label: "Silent AI videos / mo", values: ["~93", "~200", "~400"] },
-  { label: "AI images / mo", values: ["~375", "~800", "~1,600"] },
+  { label: "AI Fruit Story V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => outputsForPlan(id, "fruitStory", 1).toLocaleString()) },
+  { label: "Clay Rescue V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => outputsForPlan(id, "clayRescue", 0).toLocaleString()) },
+  { label: "Face ASMR V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => outputsForPlan(id, "faceAsmr", 1).toLocaleString()) },
+  { label: "Micro Camera Animal V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => outputsForPlan(id, "microCamera", 1).toLocaleString()) },
+  { label: "Zyvo V2 images / mo", values: PLAN_ORDER.map((id) => outputsForPlan(id, "imageGenerator", 0).toLocaleString()) },
+  { section: "Video/Image Model Access" },
+  { label: "V2 — standard quality", values: [true, true, true] },
+  { label: "V3 — sharper, higher resolution", values: [false, true, true] },
+  { label: "V4 — top-tier, max resolution", values: [false, false, true] },
   { section: "Tools" },
   { label: "Clay Rescue", values: [true, true, true] },
   { label: "Face ASMR", values: [true, true, true] },
@@ -252,36 +252,6 @@ function Particles() {
           style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size,
             background: p.color, animation: `particleFloat ${p.dur}s ease-in-out ${p.del}s infinite`, opacity: 0.18 }} />
       ))}
-    </div>
-  );
-}
-
-/* ─── Signup toast — desktop only ────────────────────────────────────────── */
-function SignupToast() {
-  const [idx, setIdx] = useState(0);
-  const [visible, setVisible] = useState(false);
-  const [toastKey, setToastKey] = useState(0);
-  useEffect(() => { const t = setTimeout(() => setVisible(true), 8000); return () => clearTimeout(t); }, []);
-  useEffect(() => {
-    if (!visible) return;
-    const id = setInterval(() => { setIdx(i => (i + 1) % RECENT_SIGNUPS.length); setToastKey(k => k + 1); }, 3500);
-    return () => clearInterval(id);
-  }, [visible]);
-  if (!visible) return null;
-  const s = RECENT_SIGNUPS[idx];
-  const [gradFrom, gradTo] = AVATAR_GRADIENTS[idx % AVATAR_GRADIENTS.length];
-  return (
-    <div key={toastKey} className="hidden md:flex fixed bottom-6 left-5 z-50 items-center gap-3 px-4 py-3 rounded-2xl signup-toast-enter"
-      style={{ background: "rgba(13,15,28,0.94)", backdropFilter: "blur(12px)",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06)" }}>
-      <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
-        style={{ background: `linear-gradient(135deg, ${gradFrom}, ${gradTo})` }}>{s.name[0]}</div>
-      <div>
-        <div className="text-white text-xs font-semibold leading-tight">
-          {s.name} <span className="text-white/40 font-normal">{s.action}</span>
-        </div>
-        <div className="text-white/25 text-[10px]">just now</div>
-      </div>
     </div>
   );
 }
@@ -353,6 +323,57 @@ function BillingToggle({ billing, setBilling }) {
   );
 }
 
+/* ─── Headline claim — exact AI Fruit Story V2 30s count, per plan ────────── */
+function HeadlineClaim({ planId, accent }) {
+  const count = headlineOutputsForPlan(planId);
+  return (
+    <div className="mb-4 rounded-xl px-3.5 py-3" style={{ background: `${accent}12`, border: `1px solid ${accent}30` }}>
+      <p className="text-[13px] font-bold leading-snug text-white">
+        Up to <span style={{ color: accent }}>{count}</span> complete {HEADLINE_OPTION_LABEL} AI Fruit Story videos / month
+      </p>
+      <p className="mt-1 text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.32)" }}>
+        Based on AI Fruit Story V2 at {V2_OUTPUT_COSTS[HEADLINE_TOOL_KEY].options.find(o => o.label === HEADLINE_OPTION_LABEL).credits} credits per 30-second video. Other tools and lengths use different amounts of credits.
+      </p>
+    </div>
+  );
+}
+
+/* ─── Example monthly output — 3-4 tools, exact counts, links to full table ── */
+const EXAMPLE_OUTPUT_ROWS = [
+  { key: "fruitStory",  idx: 1, label: "complete 30s AI Fruit Story V2 videos" },
+  { key: "clayRescue",  idx: 0, label: "complete 30s Clay Rescue V2 videos" },
+  { key: "faceAsmr",    idx: 1, label: "complete 30s Face ASMR V2 videos" },
+  { key: "microCamera", idx: 1, label: "complete 30s Micro Camera Animal V2 videos" },
+];
+
+function ExampleOutputs({ planId, accent }) {
+  return (
+    <div className="mb-5">
+      <span className="text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: "rgba(255,255,255,0.25)" }}>
+        Example monthly output
+      </span>
+      <ul className="mt-2 space-y-1.5">
+        {EXAMPLE_OUTPUT_ROWS.map((row) => (
+          <li key={row.key} className="flex items-center gap-2 text-[13px]">
+            <Check className="w-3.5 h-3.5 shrink-0" style={{ color: `${accent}90` }} />
+            <span style={{ color: "rgba(255,255,255,0.55)" }}>
+              {outputsForPlan(planId, row.key, row.idx).toLocaleString()} {row.label}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <button
+        type="button"
+        onClick={() => document.getElementById("output-estimates")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+        className="mt-2.5 text-[11px] font-semibold underline decoration-dotted underline-offset-2"
+        style={{ color: accent }}
+      >
+        See all output estimates
+      </button>
+    </div>
+  );
+}
+
 /* ─── Desktop plan card ───────────────────────────────────────────────────── */
 function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade, animClass }) {
   const isYearly = billing === "yearly";
@@ -401,7 +422,7 @@ function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade, animClas
           <div className="text-white/35 text-xs">{tier.blurb}</div>
         </div>
         <div className="mb-1 flex items-end gap-2">
-          {tier.strikethrough && <span className="text-sm text-white/20 line-through mb-1.5">{fmt(tier.strikethrough)}</span>}
+          {!isYearly && tier.strikethrough && <span className="text-sm text-white/20 line-through mb-1.5">{fmt(tier.strikethrough)}</span>}
           <span className="text-[52px] font-extrabold leading-none tracking-tighter text-white">{priceStr}</span>
           <span className="text-white/30 text-sm mb-2">/mo</span>
         </div>
@@ -415,6 +436,7 @@ function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade, animClas
           {tier.id === "pro" && "≈ $1.40 per day"}
           {tier.id === "generative" && "≈ $2.83 per day"}
         </div>
+        <HeadlineClaim planId={tier.id} accent={tier.accent} />
         {isPopular && (
           <div className="flex items-center gap-2 mb-4">
             <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 blink-dot" />
@@ -439,6 +461,7 @@ function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade, animClas
           </div>
         )}
         <div className="mb-5 h-px bg-white/[0.05]" />
+        <ExampleOutputs planId={tier.id} accent={tier.accent} />
         <ul className="space-y-2.5 flex-1">
           {tier.features.map((f, i) => f.section ? (
             <li key={i} className={`${i > 0 ? "pt-2 mt-1 border-t border-white/[0.05]" : ""}`}>
@@ -523,7 +546,10 @@ function MobilePlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade }) 
         </div>
 
         {/* Price */}
-        <div className="flex items-baseline gap-1 mb-0.5">
+        <div className="flex items-baseline gap-1.5 mb-0.5">
+          {!isYearly && tier.strikethrough && (
+            <span className="text-base text-white/20 line-through">{fmt(tier.strikethrough)}</span>
+          )}
           <span className="text-[38px] font-extrabold leading-none text-white">{priceStr}</span>
           <span className="text-sm text-white/40">/mo</span>
         </div>
@@ -533,6 +559,9 @@ function MobilePlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade }) 
             <span style={{ color: "#4ADE80" }}>Save {Math.round((1 - tier.yearlyPerMonth / tier.monthly) * 100)}%</span>
           </div>
         ) : <div className="mb-4" />}
+
+        <HeadlineClaim planId={tier.id} accent={tier.accent} />
+        <ExampleOutputs planId={tier.id} accent={tier.accent} />
 
         {/* Top 3 features */}
         <ul className="space-y-2.5 mb-4">
@@ -722,6 +751,88 @@ function ComparisonTable() {
   );
 }
 
+/* ─── What can you create? — full per-tool output table, tab-selectable ───── */
+function WhatCanYouCreateSection() {
+  const [activeTool, setActiveTool] = useState(TOOL_ORDER[0]);
+  const tool = V2_OUTPUT_COSTS[activeTool];
+
+  return (
+    <div id="output-estimates" className="mb-14 scroll-mt-24">
+      <h3 className="text-2xl font-bold text-white text-center mb-1">What can you create with your credits?</h3>
+      <p className="text-center text-sm mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
+        Exact estimates based on Zyvo V2. Counts are rounded down to complete generations.
+      </p>
+
+      <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+        {TOOL_ORDER.map((key) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setActiveTool(key)}
+            className="px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200"
+            style={activeTool === key
+              ? { background: "linear-gradient(135deg, #7C3AED, #A855F7)", color: "#fff" }
+              : { background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.45)", border: "1px solid rgba(255,255,255,0.07)" }}
+          >
+            {V2_OUTPUT_COSTS[key].name}
+          </button>
+        ))}
+      </div>
+
+      <div className="rounded-[20px] overflow-hidden overflow-x-auto" style={{ background: "#0D0F1C" }}>
+        <table className="w-full min-w-[480px]">
+          <thead>
+            <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              <th className="p-4 text-left w-[38%]">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold" style={{ color: "rgba(255,255,255,0.7)" }}>{tool.name}</span>
+                  {tool.hasAudio !== undefined && (
+                    <span
+                      className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                      style={tool.hasAudio
+                        ? { background: "rgba(74,222,128,0.15)", color: "#4ADE80" }
+                        : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)" }}
+                    >
+                      {tool.hasAudio ? "Includes audio" : "No audio (V2)"}
+                    </span>
+                  )}
+                </div>
+              </th>
+              {PLAN_ORDER.map((id) => (
+                <th key={id} className="p-4 text-center">
+                  <div className="text-xs font-bold" style={{ color: id === "pro" ? "#A855F7" : "rgba(255,255,255,0.5)" }}>
+                    {PRICING_PLANS[id].name}
+                  </div>
+                  <div className="text-[9px] mt-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>
+                    {PRICING_PLANS[id].credits.toLocaleString()} cr/mo
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {tool.options.map((opt, i) => (
+              <tr key={opt.label} style={{ borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.04)" }}>
+                <td className="px-4 py-3">
+                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{opt.label}</span>
+                  <span className="ml-2 text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>({opt.credits} cr)</span>
+                </td>
+                {PLAN_ORDER.map((id) => (
+                  <td key={id} className="px-2 py-3 text-center">
+                    <span className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.8)" }}>
+                      {calculateCompleteOutputs(PRICING_PLANS[id].credits, opt.credits).toLocaleString()}
+                    </span>
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Page ────────────────────────────────────────────────────────────────── */
 export default function Pricing() {
   const [billing, setBilling] = useState("yearly");
@@ -823,14 +934,20 @@ export default function Pricing() {
           <p className="text-white/40 text-base max-w-lg mx-auto mb-8">
             Every plan includes the Viral Video Builder — generate images, videos, and scripts that stop the scroll.
           </p>
-          <div className="flex items-center justify-center gap-10 pricing-hero-sub">
-            {[{ stat: liveCount, label: "AI creations made" }, { stat: "800+", label: "Active creators" }, { stat: "4.9★", label: "Average rating" }]
-              .map(({ stat, label }) => (
-                <div key={label} className="flex flex-col items-center">
-                  <span className="text-white font-bold text-2xl">{stat}</span>
-                  <span className="text-white/25 text-xs mt-0.5">{label}</span>
-                </div>
-              ))}
+          <div className="flex justify-center pricing-hero-sub">
+            <div className="inline-flex items-center gap-6 rounded-2xl px-6 py-3"
+              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              {[{ stat: "800+", label: "Active creators" }, { stat: "4.9★", label: "Average rating" }]
+                .map(({ stat, label }, i) => (
+                  <React.Fragment key={label}>
+                    {i > 0 && <span className="w-px h-8 shrink-0" style={{ background: "rgba(255,255,255,0.08)" }} />}
+                    <div className="flex flex-col items-center">
+                      <span className="text-white font-bold text-xl">{stat}</span>
+                      <span className="text-white/30 text-[11px] mt-0.5">{label}</span>
+                    </div>
+                  </React.Fragment>
+                ))}
+            </div>
           </div>
         </div>
 
@@ -875,6 +992,11 @@ export default function Pricing() {
             Current plan: <span style={{ color: "rgba(255,255,255,0.4)", fontWeight: 600 }}>{planLabel}</span>
           </p>
         )}
+
+        {/* What can you create with your credits? — exact per-tool output table */}
+        <div className="mt-8">
+          <WhatCanYouCreateSection />
+        </div>
 
         {/* Compare plans — above reviews */}
         <div className="mt-8">
@@ -965,7 +1087,6 @@ export default function Pricing() {
 
       </div>
 
-      <SignupToast />
       <ConfirmModal
         open={!!askTier}
         targetLabel={askTier?.name}

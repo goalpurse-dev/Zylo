@@ -3,7 +3,7 @@ import TwoAmLoadingCard from "./TwoAmLoadingCard";
 import { TWO_AM_CREDITS_PER_IMAGE } from "./api/twoAmApi";
 import { displayImageUrl } from "./utils/twoAmHelpers";
 
-export default function TwoAmSceneCard({ scene, index, onDownload, onRegenerate, onExpand }) {
+export default function TwoAmSceneCard({ scene, index, creditsPerImage = TWO_AM_CREDITS_PER_IMAGE, onDownload, onRegenerate, onExpand }) {
   const loading = scene.status === "queued" || scene.status === "generating";
   const progress = Math.max(0, Math.min(100, Math.round(Number(scene.progress ?? 0))));
   return (
@@ -45,7 +45,7 @@ export default function TwoAmSceneCard({ scene, index, onDownload, onRegenerate,
         {scene.imageUrl && (
           <div className="absolute inset-x-2.5 bottom-2.5 flex translate-y-1 items-center justify-center gap-1.5 opacity-100 transition sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100">
             <button type="button" onClick={() => onDownload(scene, index)} title="Download" className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 bg-black/80 text-white/75 transition hover:bg-black hover:text-white"><Download className="h-4 w-4" /></button>
-            <button type="button" onClick={() => onRegenerate(index)} disabled={loading} title={`Regenerate scene (${TWO_AM_CREDITS_PER_IMAGE} credits)`} className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 bg-black/80 text-white/75 transition hover:bg-black hover:text-white disabled:opacity-40"><RefreshCw className="h-4 w-4" /></button>
+            <button type="button" onClick={() => onRegenerate(index)} disabled={loading} title={`Regenerate scene (${creditsPerImage} credits)`} className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 bg-black/80 text-white/75 transition hover:bg-black hover:text-white disabled:opacity-40"><RefreshCw className="h-4 w-4" /></button>
             <button type="button" onClick={() => onExpand(scene)} title="Expand" className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 bg-black/80 text-white/75 transition hover:bg-black hover:text-white"><Expand className="h-4 w-4" /></button>
           </div>
         )}

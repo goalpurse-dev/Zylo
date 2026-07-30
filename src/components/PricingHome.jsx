@@ -227,7 +227,7 @@ export default function Pricing() {
         {/* Trust row + See more */}
 <div className="mt-8 text-center">
   <div className="text-xs text-zinc-500">
-    14-day money-back guarantee · Secure checkout · No hidden fees
+    Unused credits refunded within 7 days · Secure checkout · No hidden fees
   </div>
 
   <Link

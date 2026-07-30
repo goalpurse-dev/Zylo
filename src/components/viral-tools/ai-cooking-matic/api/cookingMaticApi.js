@@ -9,10 +9,16 @@ export const SCENE_COUNT     = 10;
 export const IMAGE_W         = 720;
 export const IMAGE_H         = 1280;
 
-// Video phase — Seedance 1.5 Pro, no sound, 6s clips
+// Video phase — Seedance 1.5 Pro, no sound, 6s clips.
+// Retuned to ~50% blended margin (was 15cr, ~55% margin): no-sound cost is
+// ~$0.15/clip (estimated — scaled from the measured 720p+sound rate,
+// $0.052529/s, by the sound/no-sound credit ratio 2.5/5.25; still unverified
+// by a real no-sound invoice). Each clip = 2 images (4cr) + 1 video, so this
+// uses the same 2-images/output formula as Clay Rescue:
+// videoCredits = round(100 * videoCostUSD - 1.9154) = round(100*0.15 - 1.9154) = 13.
 export const VIDEO_TOOL_KEY         = "video:seedance15pro";
 export const VIDEO_DURATION         = 6;
-export const VIDEO_CREDITS_PER_CLIP = 15;   // 2.5 cr/s × 6s
+export const VIDEO_CREDITS_PER_CLIP = 13;   // ~2.17 cr/s × 6s
 export const VIDEO_CLIP_COUNT       = 5;
 
 // Which image pair [A, B] feeds each clip
@@ -26,11 +32,18 @@ export const CLIP_PAIRS = [
 
 export const VISUAL_CREDITS =
   SCENE_COUNT * IMAGE_CREDITS +          // 20 — images
-  VIDEO_CLIP_COUNT * VIDEO_CREDITS_PER_CLIP; // 75 — videos
+  VIDEO_CLIP_COUNT * VIDEO_CREDITS_PER_CLIP; // 65 — videos
 
 // ── Vibes ─────────────────────────────────────────────────────────────────────
 export const VOICE_CREDITS_PER_TAKE = 3;
-export const COOKING_SERVICE_BASE_CREDITS = 10;
+// Base service credits — covers the OpenAI GPT-4o(-mini) vision call in
+// cooking-script-captions (generates the clip-aligned voiceover script AND
+// its on-screen caption timing from the actual rendered frames) plus
+// per-request overhead. Bumped 10 -> 12 since that OpenAI/caption cost
+// wasn't previously priced in on top of the visual (image+video) credits.
+// The ElevenLabs voice *audio* itself is billed separately per take via
+// VOICE_CREDITS_PER_TAKE below.
+export const COOKING_SERVICE_BASE_CREDITS = 12;
 export const COOKING_VOICE_LIMITS = {
   starter: 2,
   affiliate: 2,
