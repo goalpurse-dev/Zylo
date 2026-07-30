@@ -6,9 +6,11 @@ import FaceAsmrPaywall from "../../components/viral-tools/face-asmr/FaceAsmrPayw
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
 import useFootballerNationalitySwapJob from "../../components/viral-tools/footballer-nationality-swap/hooks/useFootballerNationalitySwapJob";
+import CreditRefundToast from "../../components/viral-tools/footballer-nationality-swap/CreditRefundToast";
 import {
   createFootballerNationalitySwapGeneration,
   listFootballerNationalitySwapGenerations,
+  VIDEO_MODELS,
 } from "../../components/viral-tools/footballer-nationality-swap/api/footballerNationalitySwapApi";
 
 const MAX_RECENT      = 8;
@@ -111,6 +113,26 @@ export default function FootballerNationalitySwap() {
   const [currentFullVideoUrl, setCurrentFullVideoUrl] = useState(null);
   const savedGenerationRef = useRef(null);
   const latestSceneCountRef = useRef(3);
+  const latestVideoModelRef = useRef("footballer-v2");
+  const [creditToasts, setCreditToasts] = useState([]);
+  const toastIdRef = useRef(0);
+
+  // Fires when a tier fails outright and the hook automatically steps down
+  // to a cheaper one — surfaces the "V3 failed, trying V2" message plus the
+  // credit-refund celebration popup (the actual refund already happened
+  // server-side; this just shows it).
+  const handleDowngrade = useCallback(({ fromModel, toModel, refundedCredits }) => {
+    const fromLabel = VIDEO_MODELS[fromModel]?.label ?? fromModel;
+    const toLabel = VIDEO_MODELS[toModel]?.label ?? toModel;
+    const id = ++toastIdRef.current;
+    setCreditToasts((prev) => [
+      ...prev,
+      { id, refundedCredits, message: `${fromLabel} failed — trying ${toLabel}` },
+    ]);
+    setTimeout(() => {
+      setCreditToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  }, []);
 
   const loadRecentGenerations = useCallback(async () => {
     if (!user) { setRecentGenerations([]); return; }
@@ -150,16 +172,17 @@ export default function FootballerNationalitySwap() {
     return () => { cancelled = true; };
   }, [phase, jobScenes, viewingRecentId, user]);
 
-  const handleGenerate = ({ sceneInputs, sceneCount }) => {
+  const handleGenerate = ({ sceneInputs, sceneCount, videoModel }) => {
     if (needsUpgrade) { showPaywall(); return; }
     setViewingRecentId(null);
     savedGenerationRef.current = null;
     latestSceneCountRef.current = sceneCount;
+    latestVideoModelRef.current = videoModel ?? "footballer-v2";
     setCurrentGenerationId(null);
     setCurrentFullVideoUrl(null);
     setMobilePanel("results");
     document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
-    start({ sceneInputs });
+    start({ sceneInputs, videoModel, onDowngrade: handleDowngrade });
   };
 
   const handleOpenRecent = (generation) => {
@@ -195,6 +218,7 @@ export default function FootballerNationalitySwap() {
       onReset={handleBackToDefault}
       phase={phase}
       viewingRecent={viewingRecentId !== null}
+      planCode={planCode}
     />
   );
 
@@ -208,7 +232,7 @@ export default function FootballerNationalitySwap() {
       viewingRecent={viewingRecentId !== null}
       onOpenRecent={handleOpenRecent}
       onRequestAuth={showPaywall}
-      onRetryScene={(index) => retryScene(index)}
+      onRetryScene={(index) => retryScene(index, latestVideoModelRef.current, handleDowngrade)}
       onReset={handleBackToDefault}
       generationId={currentGenerationId}
       fullVideoUrl={currentFullVideoUrl}
@@ -218,6 +242,8 @@ export default function FootballerNationalitySwap() {
 
   return (
     <>
+      <CreditRefundToast toasts={creditToasts} />
+
       {/* Desktop layout */}
       <div className="hidden lg:flex w-full h-full overflow-hidden p-3 gap-3 bg-[#0B0D0F]">
         <div className="flex flex-col w-[420px] xl:w-[460px] shrink-0 h-full">

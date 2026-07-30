@@ -224,7 +224,7 @@ export default function FaceAsmr() {
     latestRunMetaRef.current = { lengthId: selectedLength, backgroundId: params.background };
     setMobilePanel("results");
     document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
-    start({ scenes: params.scenes, backgroundId: params.background });
+    start({ scenes: params.scenes, backgroundId: params.background, videoModel: params.videoModel });
   };
 
   const handleBuilderBack = () => {
@@ -259,6 +259,7 @@ export default function FaceAsmr() {
       forcedStep={viewingRecentId !== null ? 1 : 0}
       savedDone={viewingRecentId !== null}
       phase={phase}
+      planCode={planCode}
     />
   );
 

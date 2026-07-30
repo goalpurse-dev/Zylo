@@ -306,6 +306,80 @@ export async function launchRunwareVideo(
     return { jobId: String(providerJobId) };
   }
 
+  /* ── Vidu Q3 Turbo (direct Runware, not Atlas Cloud) ── */
+  if (args.airTag === "vidu:4@2") {
+    const refs = rawRefs.slice(0, 2);
+    const task: Record<string, unknown> = {
+      taskType:       "videoInference",
+      model:          "vidu:4@2",
+      positivePrompt: safePositivePrompt,
+      width:          args.width  ?? 1080,
+      height:         args.height ?? 1920,
+      duration:       args.durationSec,
+      numberResults:  1,
+      includeCost:    true,
+      outputType:     "URL",
+      outputFormat:   "MP4",
+      outputQuality:  95,
+      deliveryMethod: "async",
+      providerSettings: {
+        vidu: { audio: args.withSound ?? true },
+      },
+      taskUUID,
+    };
+
+    if (refs.length > 0) {
+      // frameImages must be plain URL strings, not { image, frame } objects
+      task.inputs = { frameImages: refs };
+    }
+
+    rwLog("info", "launch_request", { jobId: args.jobId, model: "vidu-q3-turbo", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
+    const { res, text, json } = await postJson([task], args.jobId);
+    if (!res.ok) throw new Error(`Runware Vidu Q3 Turbo launch failed (${res.status}): ${text}`);
+    const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
+    rwLog("info", "launch_success", { jobId: args.jobId, model: "vidu-q3-turbo", providerJobId });
+    return { jobId: String(providerJobId) };
+  }
+
+  /* ── MiniMax Hailuo 2.3 Fast (direct Runware) ──
+   * No audio support. Confirmed-working payload uses explicit width/height
+   * (not the "768p"/"1080p" resolution-string shape used elsewhere for
+   * MiniMax) and plain-string frameImages, capped at 1 ref image. Only 6s
+   * and 10s durations are supported by the model — clamp to whichever is
+   * closer since callers here only ever request 6s.
+   */
+  if (args.airTag === "minimax:4@2") {
+    const refs = rawRefs.slice(0, 1);
+    const durationSec = Number(args.durationSec) >= 8 ? 10 : 6;
+    const task: Record<string, unknown> = {
+      taskType:       "videoInference",
+      model:          "minimax:4@2",
+      positivePrompt: safePositivePrompt,
+      width:          args.width  ?? 768,
+      height:         args.height ?? 1366,
+      duration:       durationSec,
+      fps:            25,
+      numberResults:  1,
+      includeCost:    true,
+      outputType:     "URL",
+      outputFormat:   "MP4",
+      outputQuality:  95,
+      deliveryMethod: "async",
+      taskUUID,
+    };
+
+    if (refs.length > 0) {
+      task.inputs = { frameImages: refs };
+    }
+
+    rwLog("info", "launch_request", { jobId: args.jobId, model: "minimax-hailuo-2.3-fast", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
+    const { res, text, json } = await postJson([task], args.jobId);
+    if (!res.ok) throw new Error(`Runware MiniMax launch failed (${res.status}): ${text}`);
+    const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
+    rwLog("info", "launch_success", { jobId: args.jobId, model: "minimax-hailuo-2.3-fast", providerJobId });
+    return { jobId: String(providerJobId) };
+  }
+
   const task: Record<string, unknown> = {
     taskType: "videoInference",
     taskUUID,
@@ -326,7 +400,6 @@ export async function launchRunwareVideo(
 
   const isKlingPro = args.airTag === "klingai:kling-video@3-pro";
   const isKling = args.airTag.startsWith("klingai:");
-  const isMiniMax = args.airTag.includes("minimax");
 
   /* ================= FILTER REFERENCE IMAGES ================= */
 
@@ -355,14 +428,7 @@ export async function launchRunwareVideo(
 
   /* ================= SIZE HANDLING ================= */
 
-  if (isMiniMax) {
-    // MiniMax / Hailou accepts only "768p" or "1080p".
-    task.resolution = args.resolution === "1080p" ? "1080p" : "768p";
-
-    // MiniMax should not receive width/height.
-    delete task.width;
-    delete task.height;
-  } else if (isKlingPro) {
+  if (isKlingPro) {
     // Kling Pro with refs: frameImages already set, no explicit dimensions needed.
     // Kling Pro without refs: use explicit dimensions.
     if (!hasInputs) {

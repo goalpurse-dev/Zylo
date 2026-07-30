@@ -7,6 +7,7 @@ import useTwoAmGeneration from "../../components/viral-tools/two-am/hooks/useTwo
 import { listTwoAmGenerations } from "../../components/viral-tools/two-am/api/twoAmApi";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
+import { consumeSeoDraft } from "../../lib/seoDraft";
 
 const RECENT_CACHE_PREFIX = "zyvo:two-am:recent:v1:";
 const RECENT_CACHE_MAX_AGE = 24 * 60 * 60 * 1000;
@@ -65,6 +66,7 @@ export default function TwoAm() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const [mobilePanel, setMobilePanel] = useState("create");
+  const [draftPrompt] = useState(() => consumeSeoDraft("two-am"));
   const [recentGenerations, setRecentGenerations] = useState(() => readRecentCache(user?.id));
   const [generatorResetKey, setGeneratorResetKey] = useState(0);
   const { phase, plannerStage, scenes, generation, error, start, regenerateScene, showGeneration, reset } = useTwoAmGeneration();
@@ -176,7 +178,7 @@ export default function TwoAm() {
       {/* Desktop keeps the familiar side-by-side template workspace. */}
       <main className="hidden w-full gap-3 bg-[#0B0D0F] p-3 lg:flex lg:h-full lg:flex-row lg:overflow-hidden">
         <div className="h-full w-[420px] shrink-0 xl:w-[460px]">
-          <TwoAmGenerator key={`desktop-${generatorResetKey}`} phase={phase} onGenerate={handleGenerate} onRequestAuth={requestAuth} />
+          <TwoAmGenerator key={`desktop-${generatorResetKey}`} phase={phase} initialPrompt={draftPrompt} planCode={planCode} onGenerate={handleGenerate} onRequestAuth={requestAuth} />
         </div>
         <div
           id="two-am-results"
@@ -225,7 +227,7 @@ export default function TwoAm() {
 
         <div className="px-3 pb-3">
           {mobilePanel === "create" ? (
-            <TwoAmGenerator key={`mobile-${generatorResetKey}`} phase={phase} onGenerate={handleGenerate} onRequestAuth={requestAuth} />
+            <TwoAmGenerator key={`mobile-${generatorResetKey}`} phase={phase} initialPrompt={draftPrompt} planCode={planCode} onGenerate={handleGenerate} onRequestAuth={requestAuth} />
           ) : (
             <TwoAmResults
               phase={phase}

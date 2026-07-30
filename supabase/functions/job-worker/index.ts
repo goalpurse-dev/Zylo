@@ -43,7 +43,65 @@ const SERVICE_ROLE_KEY =
   Deno.env.get("SERVICE_ROLE_KEY") ??
   "";
 
+/* ============================ PLAN GATING ============================
+   Some tool_keys are exclusive to higher subscription tiers (e.g. Clay
+   Rescue's V3/V4 video models). The UI already hides/locks these for
+   ineligible plans, but that is cosmetic only — this is the actual
+   enforcement point, since job-worker is the single trusted dispatcher
+   every job (from every client, however it was submitted) must pass
+   through before a provider is ever called or credits are charged.
+   ======================================================================= */
+
+const PLAN_TIER_ORDER = ["free", "starter", "pro", "generative"];
+
+// tool_key -> minimum required plan tier
+const PLAN_GATED_TOOLS: Record<string, string> = {
+  "video:viduq3turbo720":            "pro",         // Clay Rescue V3, AI Fruit Story V3, Face ASMR V3
+  "video:viduq3turbo1080":           "generative",  // Clay Rescue V4, Face ASMR V4
+  "video:fruitveo31lite":            "generative",  // AI Fruit Story V4
+  "video:microcamminimax720":        "pro",         // Micro Camera Animal V3
+  "video:microcamminimax1080":       "generative",  // Micro Camera Animal V4
+  // Footballer V3/V4 were swapped (720p Seedance turned out pricier than
+  // 1080p Vidu, so the cheaper one has to be V3) — dedicated keys, gated to
+  // match the TIER not the resolution.
+  "video:footballerviduq3turbo1080": "pro",         // Footballer Nationality Swap V3 (now Vidu 1080p)
+  "video:footballerseedance720":     "generative",  // Footballer Nationality Swap V4 (now Seedance 720p)
+  "image:twoam2k":                   "pro",         // 2AM Worlds V3
+  "image:twoam4k":                   "generative",  // 2AM Worlds V4
+};
+
+function planTierIndex(planCode: string | null | undefined): number {
+  const code = String(planCode ?? "").toLowerCase().trim();
+  const idx = PLAN_TIER_ORDER.indexOf(code);
+  return idx === -1 ? 0 : idx; // unknown/guest codes are treated as the lowest tier
+}
+
+async function isToolAllowedForUser(
+  sbAdmin: SB,
+  userId: string,
+  toolKey: string,
+): Promise<{ allowed: boolean; userPlan: string; requiredPlan?: string }> {
+  const requiredPlan = PLAN_GATED_TOOLS[toolKey];
+  if (!requiredPlan) return { allowed: true, userPlan: "" };
+
+  const { data: profile } = await sbAdmin
+    .from("profiles")
+    .select("plan_code")
+    .eq("id", userId)
+    .maybeSingle();
+
+  const userPlan = String((profile as any)?.plan_code ?? "free").toLowerCase().trim();
+
+  // Affiliates get full access regardless of tier ordering.
+  if (userPlan === "affiliate") return { allowed: true, userPlan };
+
+  const allowed = planTierIndex(userPlan) >= planTierIndex(requiredPlan);
+  return { allowed, userPlan, requiredPlan };
+}
+
 /* ============================ MAIN ============================ */
+
+type SB = ReturnType<typeof createClient>;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -234,6 +292,23 @@ Deno.serve(async (req) => {
     if (!provider || provider.provider !== "runware") {
       logEvent("error", "unsupported_provider", { jobId, toolKey: job.tool_key, userId: job.user_id });
       return fail(req, "Unsupported provider", 400);
+    }
+
+    // Plan gate — checked here (server-side, trusted DB read) so it can't be
+    // bypassed by calling this function directly or skipping the client UI.
+    // Runs before any charge or provider call, so a blocked request never
+    // costs the user credits.
+    const planCheck = await isToolAllowedForUser(sbAdmin, String(job.user_id), String(job.tool_key));
+    if (!planCheck.allowed) {
+      logEvent("warn", "plan_gate_blocked", {
+        jobId, toolKey: job.tool_key, userId: job.user_id,
+        userPlan: planCheck.userPlan, requiredPlan: planCheck.requiredPlan,
+      });
+      await sbAdmin.from("jobs").update({
+        status: "failed",
+        error: `PLAN_UPGRADE_REQUIRED: ${job.tool_key} requires the ${planCheck.requiredPlan} plan`,
+      }).eq("id", jobId);
+      return fail(req, `This model requires the ${planCheck.requiredPlan} plan`, 403);
     }
 
     // mark started

@@ -4,10 +4,8 @@ import ToolGenerationLayout from "../viral/shared/ToolGenerationLayout";
 import AIFruitStoryBuilder from "../../components/viral-tools/ai-fruit-story/AIFruitStoryBuilder";
 import AIFruitStoryResults from "../../components/viral-tools/ai-fruit-story/AIFruitStoryResults";
 import FruitStoryPaywall from "../../components/viral-tools/ai-fruit-story/FruitStoryPaywall";
-import NoCreditsModal from "../../components/viral-tools/shared/NoCreditsModal";
 import useFruitStoryJob from "../../components/viral-tools/ai-fruit-story/hooks/useFruitStoryJob";
-import { isFruitVideoPromptReady, sceneCountToLength, FRUIT_VIDEO_CREDITS_PER_CLIP } from "../../components/viral-tools/ai-fruit-story/api/fruitStoryApi";
-import { useProfileCredits } from "../../hooks/useProfileCredits";
+import { sceneCountToLength, DEFAULT_FRUIT_VIDEO_MODEL } from "../../components/viral-tools/ai-fruit-story/api/fruitStoryApi";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -21,7 +19,6 @@ function setCachedPlan(userId, code) {
 
 export default function AIFruitStory() {
   const navigate = useNavigate();
-  const creditBalance = useProfileCredits();
   const [stepIndex,       setStepIndex]       = useState(0);
   const [mobilePanel,     setMobilePanel]     = useState("builder");
   const [mobileTab,       setMobileTab]       = useState("generate"); // "generate" | "recent"
@@ -33,7 +30,6 @@ export default function AIFruitStory() {
     if (!user) return "guest";
     return getCachedPlan(user.id) ?? null;
   });
-  const [noCreditsOpen, setNoCreditsOpen] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(() => {
     if (authLoading) return false;
     if (!user) return true;
@@ -45,9 +41,9 @@ export default function AIFruitStory() {
   });
 
   const [form, setForm] = useState({
-    storyPreset:        "cheating",
-    storyIdea:          "A fruit finds out their partner is cheating and plans an emotional reveal.",
-    conflict:           "Cheating betrayal",
+    storyPreset:        "custom",
+    storyIdea:          "",
+    conflict:           "",
     selectedCharacters: [],
     mainFruit:          "Orange",
     villainFruit:       "Banana",
@@ -57,7 +53,7 @@ export default function AIFruitStory() {
     sceneCount:         5,
     sceneAspect:        "9:16",
     sceneImageModel:    "zyvo-v2",
-    animationModel:     "zyvo-video-v2",
+    animationModel:     DEFAULT_FRUIT_VIDEO_MODEL,
   });
 
   const {
@@ -74,11 +70,7 @@ export default function AIFruitStory() {
     isAnimating,
     scenesDone,
     startSceneGeneration,
-    startAnimation,
     retryFailedClips,
-    ensureVideoPrompts,
-    updateSceneVideoPrompt,
-    regenerateSceneVideoPrompt,
     regenerateScene,
     loadGeneration,
     deleteGeneration,
@@ -126,9 +118,9 @@ export default function AIFruitStory() {
     return () => { mounted = false; };
   }, [user, authLoading]);
 
-  // Auto-switch to results on mobile when animation finishes
+  // Auto-switch to results on mobile when the story finishes
   useEffect(() => {
-    if (phase === "done" && stepIndex === 2 && window.innerWidth < 1024) {
+    if (phase === "done" && stepIndex === 1 && window.innerWidth < 1024) {
       setMobilePanel("results");
       scrollTop();
     }
@@ -141,34 +133,11 @@ export default function AIFruitStory() {
   };
   const needsUpgrade = planCode === "free" || planCode === "guest" || planCode === null;
 
-  const isBusy             = isPlanning || isGeneratingScenes || isAnimating;
-  const hasEnoughCharacters = (form.selectedCharacters || []).length >= 2;
-  const hasScenesReady     = scenesDone || scenes.some((scene) => scene.imageUrl);
-  const expectedSceneCount = Number(form.sceneCount || scenes.length || 0);
-
-  // Total credit cost for animating all ready scenes (must be after expectedSceneCount)
-  const animationClipCount  = scenes.slice(0, expectedSceneCount).filter(s => s.imageUrl).length;
-  const creditsPerClip      = FRUIT_VIDEO_CREDITS_PER_CLIP[form.animationModel ?? "zyvo-video-v1"] ?? 30;
-  const totalAnimationCost  = animationClipCount * creditsPerClip;
-  const hasEnoughCredits    = creditBalance >= totalAnimationCost;
-  const allRequiredScenesReady =
-    expectedSceneCount > 0 &&
-    scenes.length >= expectedSceneCount &&
-    scenes
-      .slice(0, expectedSceneCount)
-      .every((scene) => scene.imageStatus === "succeeded" && !!scene.imageUrl);
-  const videoPromptsReady =
-    allRequiredScenesReady &&
-    scenes
-      .slice(0, expectedSceneCount)
-      .every((scene) => isFruitVideoPromptReady(scene.videoPrompt));
-  const isFirstStep        = stepIndex === 0;
-
-  useEffect(() => {
-    if (stepIndex === 2 && allRequiredScenesReady) {
-      ensureVideoPrompts(false);
-    }
-  }, [stepIndex, allRequiredScenesReady, ensureVideoPrompts]);
+  const isBusy       = isPlanning || isGeneratingScenes || isAnimating;
+  // Characters are AI-invented from the story idea now — no manual picker,
+  // so step 0 just needs a non-empty idea to advance.
+  const hasStoryIdea = !!form.storyIdea?.trim();
+  const isFirstStep  = stepIndex === 0;
 
   const handleGenerateScenes = (overrides = {}) => {
     if (isBusy) return;
@@ -177,15 +146,6 @@ export default function AIFruitStory() {
     startSceneGeneration(overrides);
     setMobileTab("generate");
     showMobileResults();
-  };
-
-  const handleAnimateScenes = () => {
-    if (!hasEnoughCredits) { setNoCreditsOpen(true); return; }
-    startAnimation();
-    if (window.innerWidth < 1024) {
-      setMobilePanel("results");
-    }
-    document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
   };
 
   function showMobileResults() {
@@ -213,14 +173,9 @@ export default function AIFruitStory() {
 
     setLoadedFromRecent(true);
 
-    // Images still generating → go to Scenes step to watch progress.
-    // Everything else (images done, animating, completed) → go straight to
-    // Animate step so the user reviews prompts and clicks Animate themselves.
-    const stillGenerating = row.status === "generating_images";
     const hasVideos = (row.scenes ?? []).some(s => s.videoUrl);
-    const targetStep = stillGenerating ? 1 : 2;
 
-    setStepIndex(targetStep);
+    setStepIndex(1);
     setMobileTab("generate");
     scrollTop();
     setTimeout(() => setMobilePanel(hasVideos ? "results" : "builder"), 100);
@@ -233,7 +188,7 @@ export default function AIFruitStory() {
 
   const goMobileBack = () => {
     if (isFirstStep || isBusy) return;
-    // If videos are done, Back always goes straight to step 1 to start over
+    // If the story is done, Back always goes straight to step 1 to start over
     if (phase === "done") {
       setStepIndex(0);
       setMobilePanel("builder");
@@ -249,44 +204,17 @@ export default function AIFruitStory() {
   const goMobileNext = () => {
     if (isBusy) return;
     if (stepIndex === 0) {
-      if (!hasEnoughCharacters) { setMobilePanel("builder"); return; }
+      if (!hasStoryIdea) { setMobilePanel("builder"); return; }
       if (needsUpgrade) { showPaywall(); return; }
       setStepIndex(1); setMobilePanel("builder"); scrollTop(); return;
     }
-    if (stepIndex === 1) {
-      if (!allRequiredScenesReady) return;
-      setStepIndex(2); setMobilePanel("builder"); scrollTop(); return;
-    }
-    if (stepIndex === 2) {
-      if (!allRequiredScenesReady || isAnimating || !videoPromptsReady) return;
-      if (phase === "done") { setMobilePanel("results"); scrollTop(); return; }
-      handleAnimateScenes();
-    }
   };
-
-  const mobilePrimaryLabel =
-    stepIndex === 0 ? "Next Step" :
-    stepIndex === 1 ? "Next: Animate" :
-    isAnimating ? `Animating${totalProgress > 0 ? ` ${totalProgress}%` : ""}` :
-    phase === "done" ? "Watch Videos" : "Animate Clips";
-
-  const mobilePrimaryDisabled =
-    isBusy ||
-    (stepIndex === 0 && !hasEnoughCharacters) ||
-    (stepIndex === 1 && !allRequiredScenesReady) ||
-    // On step 3: if done, Finish is always enabled. Otherwise check scenes + prompts (credits show a modal).
-    (stepIndex === 2 && phase !== "done" && (!allRequiredScenesReady || !videoPromptsReady));
 
   const builderPanel = (
     <AIFruitStoryBuilder
       form={form}
       setForm={setForm}
       onGenerateScenes={handleGenerateScenes}
-      onAnimateScenes={handleAnimateScenes}
-      onSceneVideoPromptChange={updateSceneVideoPrompt}
-      onRegenerateSceneVideoPrompt={regenerateSceneVideoPrompt}
-      onRegenerateVideoPrompts={() => ensureVideoPrompts(true)}
-      onEnsureVideoPrompts={ensureVideoPrompts}
       onReset={() => { reset(); setMobilePanel("builder"); setStepIndex(0); }}
       phase={phase}
       isPlanning={isPlanning}
@@ -294,16 +222,13 @@ export default function AIFruitStory() {
       isAnimating={isAnimating}
       scenesDone={scenesDone}
       scenes={scenes}
-      videoClips={videoClips}
       totalProgress={totalProgress}
       error={error}
       stepIndex={stepIndex}
       setStepIndex={setStepIndex}
       hideMobileFooter
       isContinuationMode={loadedFromRecent}
-      hasEnoughCredits={hasEnoughCredits}
-      totalAnimationCost={totalAnimationCost}
-      creditBalance={creditBalance}
+      planCode={planCode}
     />
   );
 
@@ -337,12 +262,6 @@ export default function AIFruitStory() {
       }}
       isGuest={paywallGuest}
       dismissable={!needsUpgrade}
-    />
-    <NoCreditsModal
-      open={noCreditsOpen}
-      onClose={() => setNoCreditsOpen(false)}
-      creditsNeeded={totalAnimationCost}
-      creditBalance={creditBalance}
     />
     <ToolGenerationLayout
       left={
@@ -404,13 +323,10 @@ export default function AIFruitStory() {
             <MobileFruitStoryFooter
               isFirstStep={isFirstStep}
               isBusy={isBusy}
-              canUsePrimary={!mobilePrimaryDisabled}
-              primaryLabel={mobilePrimaryLabel}
+              canUsePrimary={!isBusy && hasStoryIdea}
               onBack={goMobileBack}
               onPrimary={goMobileNext}
-              isAnimateAction={stepIndex === 2 && !isAnimating && phase !== "done"}
-              creditCost={stepIndex === 2 && !isAnimating && phase !== "done" ? totalAnimationCost : 0}
-              hasEnoughCredits={hasEnoughCredits}
+              showPrimary={stepIndex === 0}
             />
           </div>
 
@@ -431,23 +347,11 @@ export default function AIFruitStory() {
 }
 
 function MobileFruitStoryFooter({
-  isFirstStep, isBusy, canUsePrimary, primaryLabel,
-  onBack, onPrimary,
-  isAnimateAction = false, creditCost = 0, hasEnoughCredits = true,
+  isFirstStep, isBusy, canUsePrimary,
+  onBack, onPrimary, showPrimary,
 }) {
-  const isDone = primaryLabel === "Watch Videos";
-  const showCreditWarning = creditCost > 0 && !hasEnoughCredits && !isDone;
-
   return (
     <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-0 right-0 z-[95] lg:hidden">
-      {/* Low-credit warning strip */}
-      {showCreditWarning && (
-        <div className="mx-4 mb-1.5 flex items-center justify-between gap-2 rounded-[12px] border border-red-400/20 bg-red-500/10 px-3 py-2">
-          <span className="text-[11px] font-semibold text-red-300">Need {creditCost} credits</span>
-          <a href="/workspace/pricing" className="text-[11px] font-bold text-red-200 underline">Add Credits →</a>
-        </div>
-      )}
-
       <div className="border-t border-white/[0.08] bg-[#101213]/96 px-4 pb-2 pt-2.5 backdrop-blur-xl">
         <div className="flex items-center gap-2">
 
@@ -465,41 +369,20 @@ function MobileFruitStoryFooter({
             ←
           </button>
 
-          {/* Primary action */}
-          <button
-            type="button"
-            onClick={onPrimary}
-            disabled={!canUsePrimary}
-            className={`relative flex h-11 flex-1 items-center justify-center gap-2 overflow-hidden rounded-[14px] text-[14px] font-black transition-all active:scale-[0.98] ${
-              isDone
-                ? "bg-[#16a34a] text-white"
-                : !canUsePrimary
-                ? "cursor-not-allowed bg-white/[0.06] text-white/25"
-                : isAnimateAction
-                ? "text-white"
-                : "bg-white text-black"
-            }`}
-            style={canUsePrimary && isAnimateAction && !isDone ? {
-              background: "linear-gradient(135deg, #A855F7, #7A3BFF)",
-              boxShadow: "0 4px 16px rgba(122,59,255,0.4)",
-            } : {}}
-          >
-            {isDone ? (
-              <><span>✓</span><span>Videos Ready</span></>
-            ) : (
-              <>
-                <span>{primaryLabel}</span>
-                {creditCost > 0 && canUsePrimary && (
-                  <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                    isAnimateAction ? "bg-white/20 text-white" : "bg-black/10 text-black/60"
-                  }`}>
-                    <img src="/icons/whitecredit.png" alt="" className={`h-3 w-3 ${!isAnimateAction ? "invert" : ""}`} />
-                    {creditCost}
-                  </span>
-                )}
-              </>
-            )}
-          </button>
+          {showPrimary && (
+            <button
+              type="button"
+              onClick={onPrimary}
+              disabled={!canUsePrimary}
+              className={`relative flex h-11 flex-1 items-center justify-center gap-2 overflow-hidden rounded-[14px] text-[14px] font-black transition-all active:scale-[0.98] ${
+                !canUsePrimary
+                  ? "cursor-not-allowed bg-white/[0.06] text-white/25"
+                  : "bg-white text-black"
+              }`}
+            >
+              Next Step
+            </button>
+          )}
 
         </div>
       </div>

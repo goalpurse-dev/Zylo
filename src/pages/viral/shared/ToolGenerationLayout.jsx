@@ -13,12 +13,12 @@ export default function ToolGenerationLayout({ left, right }) {
               : "mx-auto grid w-full max-w-[560px] grid-cols-1"
           }
         >
-          <aside className="min-w-0 lg:sticky lg:top-4 lg:h-[calc(100dvh-96px)]">
+          <aside className="min-w-0 lg:sticky lg:top-4 lg:h-[calc(100dvh-96px)] lg:overflow-hidden">
             {left}
           </aside>
 
           {hasRightPanel && (
-            <main className="hidden min-w-0 lg:block lg:overflow-y-auto lg:max-h-[calc(100dvh-96px)]">{right}</main>
+            <main className="hidden min-w-0 lg:block lg:overflow-y-auto lg:overscroll-contain lg:max-h-[calc(100dvh-96px)]">{right}</main>
           )}
         </div>
       </div>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
+import { readFirstTouch } from "../lib/firstTouch";
 import Logo from "../assets/Logo.png";
 
 function GoogleIcon() {
@@ -44,7 +45,21 @@ export default function AuthModal({ mode: initialMode, onClose }) {
     setError("");
     setSuccess("");
     if (isSignup) {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const firstTouch = readFirstTouch();
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: firstTouch
+          ? {
+              data: {
+                first_touch_landing_page: firstTouch.landingPage,
+                first_touch_utm_source: firstTouch.utm_source,
+                first_touch_utm_medium: firstTouch.utm_medium,
+                first_touch_utm_campaign: firstTouch.utm_campaign,
+              },
+            }
+          : undefined,
+      });
       if (error) setError(error.message);
       else if (data.session) onClose(); // confirmations off — signed in immediately
       else setSuccess("Check your email to confirm your account.");

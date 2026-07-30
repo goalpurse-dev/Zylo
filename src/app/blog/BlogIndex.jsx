@@ -86,6 +86,7 @@ const CAT_PILL = {
   "Go Viral":           "bg-purple-100 text-purple-700",
   "Viral Script":       "bg-violet-100 text-violet-700",
   "Publishing & Analytics": "bg-fuchsia-100 text-fuchsia-700",
+  "2AM Worlds":         "bg-lime-100 text-lime-700",
 };
 
 const ALL_BLOGS = [
@@ -183,9 +184,15 @@ const ALL_BLOGS = [
   { to: "/blog/ai-image-generator-for-dark-visuals",               title: "AI Image Generator for Dark, Moody & Cinematic Visuals",  desc: "Discover dark, moody & cinematic visual styles and how to use them.",                            date: "Mar 14, 2026", category: "AI Image Generator", img: IG18 },
   { to: "/blog/ai-product-photography-high-end",                   title: "How to Create High-End Product Images Using AI",          desc: "Create high-end product images using Zyvo AI.",                                                  date: "Mar 15, 2026", category: "AI Image Generator", img: IG19 },
   { to: "/blog/ai-visual-styles-most-engagement",                  title: "Visual Styles That Get the Most Engagement (AI Edition)", desc: "Which visual styles get the most engagement — revealed.",                                        date: "Mar 15, 2026", category: "AI Image Generator", img: IG20 },
+
+  // ═══════════════ 2AM Worlds ═══════════════
+  { to: "/blog/what-is-the-2am-worlds-ai-trend",         title: "What Is the 2AM Worlds AI Trend?",              desc: "Where the 2AM Worlds trend came from and how Zyvo's AI generator recreates it.",                 date: "Jul 27, 2026", category: "2AM Worlds", img: "/template/2am-world/pokemon (7).png" },
+  { to: "/blog/best-2am-world-ai-prompts",               title: "50 2AM World AI Prompt Ideas",                  desc: "Fifty ready-to-use 2AM World prompts, from anime cities to quiet beach towns.",                  date: "Jul 27, 2026", category: "2AM Worlds", img: "/template/2am-world/ninjago (5).png" },
+  { to: "/blog/how-to-create-2am-pokemon-ai-images",     title: "How to Create 2AM Pokémon AI Images",           desc: "A practical walkthrough for generating nostalgic, late-night Pokémon-inspired AI scenes.",       date: "Jul 27, 2026", category: "2AM Worlds", img: "/template/2am-world/pokemon (5).png" },
+  { to: "/blog/how-to-create-2am-ninjago-ai-images",     title: "How to Create 2AM Ninjago AI Images",           desc: "How to turn Ninjago characters and locations into a cinematic 2AM AI image set.",                date: "Jul 27, 2026", category: "2AM Worlds", img: "/template/2am-world/ninjago (3).png" },
 ];
 
-const CATEGORIES = ["All", "Publishing & Analytics", "Viral Script", "Go Viral", "AI Image Generator", "Product Photos"];
+const CATEGORIES = ["All", "2AM Worlds", "Publishing & Analytics", "Viral Script", "Go Viral", "AI Image Generator", "Product Photos"];
 
 export default function BlogIndex() {
   useEffect(() => {

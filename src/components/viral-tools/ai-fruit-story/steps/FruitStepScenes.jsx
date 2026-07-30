@@ -1,122 +1,26 @@
 import React, { useMemo, useState } from "react";
-import Credit from "/icons/whitecredit.png";
-import { getFruitImageCreditsPerImage, getFruitSceneCountForLength } from "../api/fruitStoryApi";
-import { useProfileCredits } from "../../../../hooks/useProfileCredits";
-import NoCreditsModal from "../../shared/NoCreditsModal";
-
-// Style is fixed internally — not exposed to the user.
-// "cinematic" is the premium TikTok fruit drama default used by the planner.
-const DEFAULT_STYLE_ID = "cinematic";
-
-const READY_BORDER = {
-  borderTop: "1px solid rgba(255,255,255,0.28)",
-  borderBottom: "1px solid rgba(122,59,255,0.90)",
-  borderLeft: "1px solid rgba(184,150,255,0.30)",
-  borderRight: "1px solid rgba(184,150,255,0.30)",
-};
+import { Lock, VolumeX, Volume2 } from "lucide-react";
+import {
+  getFruitSceneCountForLength,
+  FRUIT_VIDEO_MODELS,
+  DEFAULT_FRUIT_VIDEO_MODEL,
+  FRUIT_VIDEO_MODEL_MIN_PLAN,
+  PLAN_LABELS,
+  getAllowedFruitVideoModels,
+} from "../api/fruitStoryApi";
+import FruitStoryUpgradeModal from "../FruitStoryUpgradeModal";
 
 const STORY_LENGTHS = [
-  {
-    id: "15s",
-    label: "15s",
-    scenes: getFruitSceneCountForLength("15s"),
-  },
-  {
-    id: "30s",
-    label: "30s",
-    scenes: getFruitSceneCountForLength("30s"),
-  },
-  {
-    id: "45s",
-    label: "45s",
-    scenes: getFruitSceneCountForLength("45s"),
-  },
-  {
-    id: "60s",
-    label: "60s",
-    scenes: getFruitSceneCountForLength("60s"),
-  },
+  { id: "15s", label: "15s", scenes: getFruitSceneCountForLength("15s") },
+  { id: "30s", label: "30s", scenes: getFruitSceneCountForLength("30s") },
+  { id: "45s", label: "45s", scenes: getFruitSceneCountForLength("45s") },
+  { id: "60s", label: "60s", scenes: getFruitSceneCountForLength("60s") },
 ];
+
 const SIZE_OPTIONS = [
-  {
-    id: "9:16",
-    label: "9:16",
-    description: "Vertical",
-  },
-  {
-    id: "16:9",
-    label: "16:9",
-    description: "Wide",
-  },
+  { id: "9:16", label: "9:16", description: "Vertical" },
+  { id: "16:9", label: "16:9", description: "Wide" },
 ];
-
-const IMAGE_MODELS = [
-  {
-    id: "zyvo-v2",
-    label: "Zyvo V2",
-    description: "Fast, clean, and affordable scene generation.",
-    tag: "Fast",
-    creditsPerImage: 2,
-  },
-  {
-    id: "zyvo-v3",
-    label: "Zyvo V3",
-    description: "Higher-resolution GPT Image 2 scenes with stronger detail.",
-    tag: "Best quality",
-    creditsPerImage: 8,
-  },
-];
-
-const GenerateScenesButton = React.memo(function GenerateScenesButton({
-  onClick,
-  estimatedCredits,
-  isGenerating = false,
-  scenesGenerated = false,
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={isGenerating}
-      className={`
-        relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-xl py-4
-        transition-all duration-200
-        ${isGenerating
-          ? "cursor-not-allowed bg-white/10"
-          : "bg-gradient-to-b from-[#A855F7] to-[#7A3BFF] hover:brightness-110 active:scale-[0.99]"
-        }
-      `}
-      style={isGenerating ? {} : READY_BORDER}
-    >
-      <div className="absolute inset-1 rounded-xl">
-        <div className="mode-glow" />
-      </div>
-
-      <div className="generate-shine" />
-
-      <span className="relative z-10 flex items-center gap-3 text-[15px] font-medium text-white">
-        {isGenerating ? (
-          <>
-            <span className="h-2 w-2 animate-pulse rounded-full bg-white/60" />
-            <span>Generating Scenes...</span>
-          </>
-        ) : (
-          <>
-            <span>{scenesGenerated ? "Regenerate Scenes" : "Generate Scenes"}</span>
-            <span className="flex items-center gap-1 text-white/90">
-              <img
-                src={Credit}
-                alt="credits"
-                className="h-5 w-auto scale-125 object-contain brightness-125 contrast-125"
-              />
-              <span>{estimatedCredits}</span>
-            </span>
-          </>
-        )}
-      </span>
-    </button>
-  );
-});
 
 function ActiveGlow({ children, className = "" }) {
   return (
@@ -140,25 +44,28 @@ function ActiveGlow({ children, className = "" }) {
 export default function FruitStepScenes({
   form,
   setForm,
-  onGenerateScenes,
   scenesGenerated,
   isGenerating = false,
   isContinuationMode = false,
+  planCode,
+  imageCredits = 0,
+  videoCredits = 0,
+  totalCredits = 0,
 }) {
-  const creditBalance = useProfileCredits();
-  const [noCreditsOpen, setNoCreditsOpen] = useState(false);
+  const [upgradeModelId, setUpgradeModelId] = useState(null);
 
   const selectedLengthId = form.storyLength || "30s";
-  const selectedModelId = form.sceneImageModel || "zyvo-v2";
+  const selectedVideoModelId = form.animationModel || DEFAULT_FRUIT_VIDEO_MODEL;
   const selectedAspect = form.sceneAspect || "9:16";
+
+  const allowedModels = getAllowedFruitVideoModels(planCode);
 
   const selectedLength =
     STORY_LENGTHS.find((item) => item.id === selectedLengthId) ||
     STORY_LENGTHS[1];
 
-  const selectedModel =
-    IMAGE_MODELS.find((item) => item.id === selectedModelId) ||
-    IMAGE_MODELS[0];
+  const selectedVideoModel =
+    FRUIT_VIDEO_MODELS[selectedVideoModelId] ?? FRUIT_VIDEO_MODELS[DEFAULT_FRUIT_VIDEO_MODEL];
 
   const selectedLengthIndex = Math.max(
     0,
@@ -170,42 +77,24 @@ export default function FruitStepScenes({
     return (selectedLengthIndex / (STORY_LENGTHS.length - 1)) * 100;
   }, [selectedLengthIndex]);
 
-const creditsPerImage = getFruitImageCreditsPerImage(selectedModel.id, form.selectedCharacters);
-const sceneCredits = selectedLength.scenes * creditsPerImage;
-const clipCount = selectedLength.scenes;
-const restoredSceneCount = Number(form.sceneCount || selectedLength.scenes);
-const restoredClipCount = restoredSceneCount;
+  const clipCount = selectedLength.scenes;
+  const restoredSceneCount = Number(form.sceneCount || selectedLength.scenes);
 
   const updateFormValue = (key, value) => {
+    if (isGenerating) return;
     setForm((prev) => ({
       ...prev,
       [key]: value,
     }));
   };
 
-  const handleGenerate = () => {
+  const handleSelectVideoModel = (modelId) => {
     if (isGenerating) return;
-    if (creditBalance < sceneCredits) { setNoCreditsOpen(true); return; }
-
-    setForm((prev) => ({
-      ...prev,
-      storyLength:     selectedLength.id,
-      sceneCount:      selectedLength.scenes,
-      sceneImageModel: selectedModel.id,
-      sceneAspect:     selectedAspect,
-      style:           DEFAULT_STYLE_ID,
-      sceneCredits,
-      creditsPerImage,
-    }));
-
-    onGenerateScenes?.({
-      storyLength:     selectedLength.id,
-      sceneCount:      selectedLength.scenes,
-      sceneImageModel: selectedModel.id,
-      sceneAspect:     selectedAspect,
-      style:           DEFAULT_STYLE_ID,
-      creditsPerImage,
-    });
+    if (!allowedModels.includes(modelId)) {
+      setUpgradeModelId(modelId);
+      return;
+    }
+    updateFormValue("animationModel", modelId);
   };
 
   if (isContinuationMode && scenesGenerated && !isGenerating) {
@@ -214,9 +103,9 @@ const restoredClipCount = restoredSceneCount;
         <div className="rounded-[24px] border border-green-300/20 bg-green-500/10 p-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h3 className="text-base font-black text-white">Scenes Ready</h3>
+              <h3 className="text-base font-black text-white">Story Ready</h3>
               <p className="mt-1 text-sm leading-relaxed text-white/55">
-                Your story scenes are already generated. Continue to animate them.
+                Your fruit story images and clips are already generated.
               </p>
             </div>
             <span className="rounded-full border border-green-300/25 bg-green-500/15 px-3 py-1 text-xs font-semibold text-green-200">
@@ -230,10 +119,10 @@ const restoredClipCount = restoredSceneCount;
             Loaded story
           </div>
           <div className="mt-2 text-lg font-black text-white">
-            {restoredSceneCount} scenes -&gt; {restoredClipCount} animation clips
+            {restoredSceneCount} scenes -&gt; {restoredSceneCount} animation clips
           </div>
           <p className="mt-2 text-sm leading-relaxed text-white/45">
-            Scene images are restored from Recent Generations. Use Next: Animate to create talking clips.
+            Scenes and clips are restored from Recent Generations.
           </p>
         </div>
       </div>
@@ -346,6 +235,69 @@ const restoredClipCount = restoredSceneCount;
         </div>
       </div>
 
+      {/* VIDEO MODEL — pill selector, plan-gated */}
+      <div>
+        <h3 className="text-sm font-semibold text-white">Video model</h3>
+        <p className="mt-1 text-xs text-white/40">
+          This model animates each scene into a clip.
+        </p>
+
+        <div className="mt-3 flex items-center gap-2 bg-[#0e1012] border border-white/[0.07] rounded-xl p-1">
+          {Object.values(FRUIT_VIDEO_MODELS).map((model) => {
+            const active = selectedVideoModelId === model.id;
+            const locked = !allowedModels.includes(model.id);
+
+            if (locked) {
+              return (
+                <button
+                  key={model.id}
+                  onClick={() => handleSelectVideoModel(model.id)}
+                  title={`${model.label} requires the ${PLAN_LABELS[FRUIT_VIDEO_MODEL_MIN_PLAN[model.id]]} plan`}
+                  className="relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 overflow-hidden text-white/25 hover:text-white/40 transition-all"
+                >
+                  <span className="pointer-events-none absolute inset-0 animate-shimmer" />
+                  <Lock className="w-3 h-3 shrink-0" />
+                  <span className="text-[12px] font-bold tracking-wide">{model.label}</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide bg-gradient-to-r from-[#F5C042]/25 to-[#F59E0B]/25 text-[#F5C042] border border-[#F5C042]/30">
+                    {PLAN_LABELS[FRUIT_VIDEO_MODEL_MIN_PLAN[model.id]]}
+                  </span>
+                </button>
+              );
+            }
+
+            return (
+              <button
+                key={model.id}
+                onClick={() => handleSelectVideoModel(model.id)}
+                disabled={isGenerating}
+                className={`relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 transition-all ${
+                  active
+                    ? "bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white shadow-lg shadow-[#7A3BFF]/20"
+                    : "text-white/40 hover:text-white/70"
+                }`}
+              >
+                <span className={`text-[12px] font-bold tracking-wide ${active ? "text-white" : ""}`}>{model.label}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                  active ? "bg-white/20 text-white" : "bg-white/[0.05] text-white/30"
+                }`}>{model.tag}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {selectedVideoModel.withSound ? (
+          <div className="mt-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25">
+            <Volume2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-300">Audio included</span>
+          </div>
+        ) : (
+          <div className="mt-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/25">
+            <VolumeX className="w-3.5 h-3.5 text-red-400 shrink-0" />
+            <span className="text-[11px] font-bold uppercase tracking-wide text-red-300">No audio generated</span>
+          </div>
+        )}
+      </div>
+
       {/* SIZE */}
       <div>
         <h3 className="text-sm font-semibold text-white">Size</h3>
@@ -395,108 +347,36 @@ const restoredClipCount = restoredSceneCount;
         </div>
       </div>
 
-      {/* IMAGE MODEL */}
-      <div>
-        <h3 className="text-sm font-semibold text-white">Image model</h3>
-        <p className="mt-1 text-xs text-white/40">
-          This model generates each fruit story scene.
-        </p>
-
-        <div className="mt-3 grid gap-3">
-          {IMAGE_MODELS.map((model) => {
-            const active = selectedModelId === model.id;
-
-            if (active) {
-              return (
-                <ActiveGlow key={model.id} className="rounded-[20px]">
-                  <button
-                    type="button"
-                    onClick={() => updateFormValue("sceneImageModel", model.id)}
-                    className="w-full rounded-[20px] p-4 text-left"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="text-sm font-semibold text-white">
-                          {model.label}
-                        </div>
-                        <p className="mt-1 text-xs text-white/60">
-                          {model.description}
-                        </p>
-                      </div>
-
-                      <span className="shrink-0 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white/80">
-                        {model.tag}
-                      </span>
-                    </div>
-                  </button>
-                </ActiveGlow>
-              );
-            }
-
-            return (
-              <button
-                key={model.id}
-                type="button"
-                onClick={() => updateFormValue("sceneImageModel", model.id)}
-                className="rounded-[20px] border border-white/10 bg-white/[0.03] p-4 text-left transition hover:border-white/15 hover:bg-white/[0.06]"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-white">
-                      {model.label}
-                    </div>
-                    <p className="mt-1 text-xs text-white/45">
-                      {model.description}
-                    </p>
-                  </div>
-
-                  <span className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white/35">
-                    {model.tag}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* COST + BUTTON */}
+      {/* COST SUMMARY — read-only; the Generate button itself lives in the sticky footer */}
       <div className="rounded-[24px] border border-white/10 bg-[#151719] p-4">
-        <div className="mb-3">
-          <div className="text-sm font-semibold text-white">
-            Scene generation cost
-          </div>
-          <p className="mt-1 text-xs text-white/40">
-            {selectedLength.scenes} images / {clipCount} clips • {selectedAspect} •{" "}
-            {selectedModel.label} • {sceneCredits} credits
-          </p>
+        <div className="text-sm font-semibold text-white">
+          Full story cost
         </div>
-
-        <GenerateScenesButton
-          onClick={handleGenerate}
-          estimatedCredits={sceneCredits}
-          isGenerating={isGenerating}
-          scenesGenerated={scenesGenerated}
-        />
+        <p className="mt-1 text-xs text-white/40">
+          {selectedLength.scenes} images ({imageCredits}cr) + {clipCount} clips ({videoCredits}cr) • {selectedAspect} • {selectedVideoModel.label}
+        </p>
+        <div className="mt-2 text-2xl font-black text-white">
+          {totalCredits} <span className="text-sm font-semibold text-white/40">credits</span>
+        </div>
       </div>
 
       {scenesGenerated && (
         <div className="rounded-2xl border border-green-400/20 bg-green-500/10 p-3">
           <div className="text-sm font-semibold text-green-200">
-            Scenes generated
+            Story generated
           </div>
           <p className="mt-1 text-xs text-green-100/60">
-            Your scene images are ready. Click Next to animate them.
+            Your scene images and video clips are ready below.
           </p>
         </div>
       )}
     </div>
 
-    <NoCreditsModal
-      open={noCreditsOpen}
-      onClose={() => setNoCreditsOpen(false)}
-      creditsNeeded={sceneCredits}
-      creditBalance={creditBalance}
+    <FruitStoryUpgradeModal
+      open={!!upgradeModelId}
+      onClose={() => setUpgradeModelId(null)}
+      modelId={upgradeModelId}
+      requiredPlan={upgradeModelId ? FRUIT_VIDEO_MODEL_MIN_PLAN[upgradeModelId] : null}
     />
     </>
   );

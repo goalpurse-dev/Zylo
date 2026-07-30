@@ -8,10 +8,22 @@ import {
   fetchFootballerIdentity,
   generateFootballerImage,
   animateFootballerClip,
+  VIDEO_MODELS,
 } from "../api/footballerNationalitySwapApi";
 
 const TERMINAL = new Set(["succeeded", "failed", "canceled"]);
 const isTerminal = (s) => TERMINAL.has(s);
+
+// If a tier fails outright (both prompt stages exhausted), automatically
+// step down to the next cheaper tier and retry rather than failing the whole
+// scene — the failed tier's charge gets refunded server-side (every failure
+// branch in runware-video/index.ts refunds), so the user only ever pays for
+// whichever tier actually succeeds.
+const MODEL_DOWNGRADE_CHAIN = {
+  "footballer-v4": "footballer-v3",
+  "footballer-v3": "footballer-v2",
+  "footballer-v2": null,
+};
 
 // Stagger between scene starts so we don't hammer the API simultaneously
 const SCENE_STAGGER_MS = 300;
@@ -127,49 +139,69 @@ async function generateImageWithFallback({ si, patch, isCurrentRun, onRetrying }
   return null;
 }
 
-// Primary is Seedance 2.0 Fast @ 480p (cheap, not hitting the content-filter
-// wall Veo did — see providers.ts). Fallback is Seedance 1.5 Pro @ 720p,
-// which has confirmed native audio via providerSettings.bytedance.audio.
-//   1. Seedance 2.0 Fast, exact prompt   2. Seedance 2.0 Fast, friendlier prompt
-//   3. Seedance 1.5 Pro, exact prompt    4. Seedance 1.5 Pro, friendlier prompt
-async function generateVideoWithFallback({ imageUrl, spokenLine, expression, videoStyle, patch, isCurrentRun }) {
+// Each tier gets two prompt attempts (exact wording, then a softer
+// rephrase in case moderation tripped on the exact wording). If BOTH
+// attempts on a tier fail, step down to the next cheaper tier via
+// MODEL_DOWNGRADE_CHAIN and try again there, all the way down to V2.
+// The failed tier's charge is refunded automatically server-side (every
+// failure branch in runware-video/index.ts calls refundJobCredits), so this
+// never double-charges — the user only pays for whichever tier lands.
+async function generateVideoWithFallback({ imageUrl, spokenLine, expression, videoStyle, videoModel, patch, isCurrentRun, onDowngrade }) {
   const primaryPrompt  = buildVideoPrompt({ spokenLine, expression, videoStyle });
   const friendlyPrompt = buildFriendlyVideoPrompt({ spokenLine, expression, videoStyle });
 
-  const stages = [
-    { provider: "seedance2",  prompt: primaryPrompt,  label: "seedance2.0/primary-prompt" },
-    { provider: "seedance2",  prompt: friendlyPrompt, label: "seedance2.0/friendly-prompt" },
-    { provider: "seedance15", prompt: primaryPrompt,  label: "seedance1.5/primary-prompt" },
-    { provider: "seedance15", prompt: friendlyPrompt, label: "seedance1.5/friendly-prompt" },
-  ];
+  let currentModel = videoModel;
 
-  for (const stage of stages) {
-    if (!isCurrentRun()) throw new Error("cancelled");
-    patch({ videoStatus: "queued" });
+  while (currentModel) {
+    const stages = [
+      { prompt: primaryPrompt,  label: `${currentModel}/primary-prompt` },
+      { prompt: friendlyPrompt, label: `${currentModel}/friendly-prompt` },
+    ];
 
-    let job, result;
-    try {
-      job = await animateFootballerClip({ imageUrl, videoPrompt: stage.prompt, provider: stage.provider });
+    let succeededUrl = null;
+
+    for (const stage of stages) {
       if (!isCurrentRun()) throw new Error("cancelled");
-      patch({ videoJobId: job.id, videoStatus: "running" });
-      result = await waitForJob(job.id, 6 * 60 * 1000);
-    } catch (err) {
-      if (err.message === "cancelled") throw err;
-      console.warn(`[Footballer] video stage "${stage.label}" failed to start`, err);
+      patch({ videoStatus: "queued" });
+
+      let job, result;
+      try {
+        job = await animateFootballerClip({ imageUrl, videoPrompt: stage.prompt, videoModel: currentModel });
+        if (!isCurrentRun()) throw new Error("cancelled");
+        patch({ videoJobId: job.id, videoStatus: "running" });
+        result = await waitForJob(job.id, 6 * 60 * 1000);
+      } catch (err) {
+        if (err.message === "cancelled") throw err;
+        console.warn(`[Footballer] video stage "${stage.label}" failed to start`, err);
+      }
+      if (!isCurrentRun()) throw new Error("cancelled");
+
+      const url = result?.status === "succeeded" ? resolveUrl(result) : null;
+      if (url) { succeededUrl = url; break; }
+
+      // Timed out rather than a clean failure — cancel so a late success at
+      // the provider can't charge credits after we've already moved on.
+      if (result === null && job?.id) cancelJob(job.id).catch(() => {});
+
+      console.warn(`[Footballer] video stage "${stage.label}" produced no video, trying next stage`);
     }
-    if (!isCurrentRun()) throw new Error("cancelled");
 
-    const url = result?.status === "succeeded" ? resolveUrl(result) : null;
-    if (url) return url;
+    if (succeededUrl) return succeededUrl;
 
-    // Timed out rather than a clean failure — cancel so a late success at
-    // the provider can't charge credits after we've already moved on.
-    if (result === null && job?.id) cancelJob(job.id).catch(() => {});
+    const failedModel = currentModel;
+    const nextModel = MODEL_DOWNGRADE_CHAIN[failedModel] ?? null;
 
-    console.warn(`[Footballer] video stage "${stage.label}" produced no video, trying next stage`);
+    if (!nextModel) {
+      console.error(`[Footballer] ${failedModel} exhausted with no cheaper tier left to fall back to`);
+      break;
+    }
+
+    const refundedCredits = VIDEO_MODELS[failedModel]?.credits ?? 0;
+    console.warn(`[Footballer] ${failedModel} failed both prompt stages — falling back to ${nextModel}`);
+    onDowngrade?.({ fromModel: failedModel, toModel: nextModel, refundedCredits });
+    currentModel = nextModel;
   }
 
-  console.error("[Footballer] all 4 video stages exhausted (seedance2.0/seedance1.5 × primary/friendly prompt)");
   patch({ videoStatus: "failed", videoError: "Video failed — try again" });
   return null;
 }
@@ -192,7 +224,7 @@ export default function useFootballerNationalitySwapJob() {
       return next;
     });
 
-  const start = useCallback(async ({ sceneInputs }) => {
+  const start = useCallback(async ({ sceneInputs, videoModel, onDowngrade }) => {
     if (activeRef.current) return;
     activeRef.current = true;
     cancelRef.current = false;
@@ -272,9 +304,10 @@ export default function useFootballerNationalitySwapJob() {
         let videoUrl;
         try {
           videoUrl = await generateVideoWithFallback({
-            imageUrl, spokenLine, expression, videoStyle,
+            imageUrl, spokenLine, expression, videoStyle, videoModel,
             patch: (patch) => patchScene(index, patch),
             isCurrentRun,
+            onDowngrade,
           });
         } catch (err) {
           if (err.message !== "cancelled") console.warn(`[Footballer] video cascade threw for scene ${index}`, err);
@@ -306,7 +339,7 @@ export default function useFootballerNationalitySwapJob() {
    * - identityStatus/imageStatus failed → redo identity + image + video
    * - videoStatus failed (but image ok) → redo video only using existing imageUrl
    */
-  const retryScene = useCallback(async (sceneIndex) => {
+  const retryScene = useCallback(async (sceneIndex, videoModel, onDowngrade) => {
     const scene = scenesRef.current.find((s) => s.index === sceneIndex);
     if (!scene) return;
 
@@ -330,8 +363,10 @@ export default function useFootballerNationalitySwapJob() {
         spokenLine: scene.spokenLine,
         expression: scene.expression,
         videoStyle: scene.videoStyle,
+        videoModel,
         patch: patchOne,
         isCurrentRun: () => true,
+        onDowngrade,
       });
       if (videoUrl) {
         patchOne({ videoStatus: "succeeded", videoUrl, videoError: null });
@@ -368,8 +403,10 @@ export default function useFootballerNationalitySwapJob() {
         spokenLine: identity?.spokenLine ?? scene.spokenLine,
         expression: scene.expression,
         videoStyle: scene.videoStyle,
+        videoModel,
         patch: patchOne,
         isCurrentRun: () => true,
+        onDowngrade,
       });
       if (videoUrl) {
         patchOne({ videoStatus: "succeeded", videoUrl, videoError: null });

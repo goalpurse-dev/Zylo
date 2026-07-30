@@ -109,7 +109,11 @@ export default function useTwoAmGeneration() {
       clearInterval(stageTimer);
       if (!current()) return;
       const mapped = mapTwoAmGeneration(plan.generation);
-      mapped.settings = settings;
+      // Keep the server's settings (mapped.settings already reflects
+      // plan.generation.settings) rather than overwriting with the client's
+      // requested settings — two-am-planner clamps settings.quality down to
+      // whatever the user's plan actually allows, and the regenerate path
+      // relies on that clamped value being the one stored here.
       mapped.scenes = plan.scenes.map((scene) => ({ ...scene, progress: 0 }));
       generationRef.current = mapped;
       setGeneration(mapped);
@@ -148,7 +152,7 @@ export default function useTwoAmGeneration() {
       generationRef.current = finishedGeneration;
       setGeneration(finishedGeneration);
       setPhase(completed ? "done" : "error");
-      if (!completed) setError(`The image provider could not create this night. Your ${TWO_AM_TOTAL_CREDITS} credits were refunded.`);
+      if (!completed) setError(`The image provider could not create this night. Your ${mapped.reservedCredits ?? TWO_AM_TOTAL_CREDITS} credits were refunded.`);
     } catch (caught) {
       clearInterval(stageTimer);
       if (!current()) return;
@@ -272,7 +276,7 @@ export default function useTwoAmGeneration() {
     activeRef.current = false;
     setPhase(mapped.status === "failed" ? "error" : "done");
     if (mapped.status === "failed") {
-      setError(`The image provider could not create this night. Your ${TWO_AM_TOTAL_CREDITS} credits were refunded.`);
+      setError(`The image provider could not create this night. Your ${mapped.reservedCredits ?? TWO_AM_TOTAL_CREDITS} credits were refunded.`);
     }
   }, [replaceScenes]);
 

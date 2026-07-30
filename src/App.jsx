@@ -159,6 +159,8 @@ const PublishLanding = lazy(() => import("./pages/landing/PublishLanding.jsx"));
 const StatsLanding = lazy(() => import("./pages/landing/StatsLanding.jsx"));
 const ConnectionsLanding = lazy(() => import("./pages/landing/ConnectionsLanding.jsx"));
 const CreatorGrowthGuide = lazy(() => import("./app/blog/CreatorGrowthGuide.jsx"));
+const SeoLandingPage = lazy(() => import("./pages/seo/SeoLandingPage.jsx"));
+const TwoAmBlogGuide = lazy(() => import("./app/blog/TwoAmBlogGuide.jsx"));
 const FaceAsmrMakerBlog = lazy(() => import("./app/blog/imagegenerator/face-asmr-maker.jsx"));
 const ViralFaceAsmrVideos = lazy(() => import("./app/blog/imagegenerator/viral-face-asmr-videos.jsx"));
 const AsmrVideoIdeasTiktok = lazy(() => import("./app/blog/imagegenerator/asmr-video-ideas-tiktok-2026.jsx"));
@@ -457,6 +459,9 @@ return (
          <Route path="/publish" element={<PublishLanding />} />
          <Route path="/stats" element={<StatsLanding />} />
          <Route path="/connections" element={<ConnectionsLanding />} />
+         <Route path="/2am-worlds-ai-generator" element={<SeoLandingPage slug="2am-worlds-ai-generator" />} />
+         <Route path="/2am-in-pokemon-ai-generator" element={<SeoLandingPage slug="2am-in-pokemon-ai-generator" />} />
+         <Route path="/2am-in-ninjago-ai-generator" element={<SeoLandingPage slug="2am-in-ninjago-ai-generator" />} />
          <Route path="/blog/face-asmr-maker" element={<FaceAsmrMakerBlog />} />
          <Route path="/blog/viral-face-asmr-videos" element={<ViralFaceAsmrVideos />} />
          <Route path="/blog/asmr-video-ideas-tiktok-2026" element={<AsmrVideoIdeasTiktok />} />
@@ -475,6 +480,10 @@ return (
          <Route path="/blog/social-media-automation-for-creators" element={<CreatorGrowthGuide slug="social-media-automation-for-creators" />} />
          <Route path="/blog/youtube-analytics-for-creators" element={<CreatorGrowthGuide slug="youtube-analytics-for-creators" />} />
          <Route path="/blog/short-form-video-metrics-that-matter" element={<CreatorGrowthGuide slug="short-form-video-metrics-that-matter" />} />
+         <Route path="/blog/what-is-the-2am-worlds-ai-trend" element={<TwoAmBlogGuide slug="what-is-the-2am-worlds-ai-trend" />} />
+         <Route path="/blog/best-2am-world-ai-prompts" element={<TwoAmBlogGuide slug="best-2am-world-ai-prompts" />} />
+         <Route path="/blog/how-to-create-2am-pokemon-ai-images" element={<TwoAmBlogGuide slug="how-to-create-2am-pokemon-ai-images" />} />
+         <Route path="/blog/how-to-create-2am-ninjago-ai-images" element={<TwoAmBlogGuide slug="how-to-create-2am-ninjago-ai-images" />} />
 
 
 

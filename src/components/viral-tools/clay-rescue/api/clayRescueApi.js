@@ -1,28 +1,74 @@
 import { createImageJobSimple, createVideoJobSimple } from "../../../../lib/jobs";
 import { supabase } from "../../../../lib/supabaseClient";
+import { getAllowedVideoModels as sharedGetAllowedVideoModels } from "../../../../lib/planGating";
 
 /* ── Constants ──────────────────────────────────────────────── */
 export const IMAGE_TOOL_KEY  = "image:fruit-v2";
-// Sound ON  → Seedance 2.0 Fast (audio is always included by the model)
-// Sound OFF → Seedance 1.5 Pro (no audio, much cheaper)
-export const VIDEO_TOOL_KEY         = "video:seedance20fast"; // with sound
-export const VIDEO_TOOL_KEY_SILENT  = "video:seedance15pro"; // without sound
-export const IMAGE_CREDITS          = 2;                     // ~$0.013 cost × 2 = ~2 credits
-export const VIDEO_CREDITS_SOUND    = 37;                    // measured $0.364092 / 6s, rounded up
-export const VIDEO_CREDITS_NO_SOUND = 18;                    // Seedance 1.5 Pro: ceil(2.5 cr/s × 7s)
-export const VIDEO_CREDITS          = VIDEO_CREDITS_SOUND;   // legacy alias
-export const VIDEO_DURATION         = 7;                     // Seedance (silent) — 7s supported
-export const VIDEO_DURATION_SOUND   = 6;                     // Seedance 2.0 Fast
+export const IMAGE_CREDITS   = 2;   // ~$0.010423 cost — 2 images per scene (problem + fix)
 export const IMAGE_W         = 768;
 export const IMAGE_H         = 1376;
-export const VIDEO_W_SOUND   = 496;  // Seedance 2.0 Fast 480p portrait
-export const VIDEO_H_SOUND   = 864;
-export const VIDEO_W         = 720;  // Seedance 1.5 Pro silent fallback
-export const VIDEO_H         = 1280;
+
+// V2 = Seedance 1.5 Pro, no audio. V3/V4 = Vidu Q3 Turbo, which always
+// includes audio — only V2 needs the "NO AUDIO GENERATED" flag.
+// Video credits are tuned so the BLENDED per-scene margin (2 images @
+// 2cr/$0.010423 each + 1 video clip) lands at ~50%, not just the video's own
+// margin — the images' higher margin (~74% each) pulls the combined number
+// up, so video-only credits sit a bit below a flat 2x cost markup.
+export const VIDEO_MODELS = {
+  "clay-v2": {
+    id: "clay-v2",
+    label: "V2",
+    tag: "Cheapest",
+    description: "480p — NO AUDIO GENERATED",
+    toolKey: "video:seedance15pro",
+    width: 496,
+    height: 864,
+    duration: 5,
+    credits: 4,            // measured $0.0607656/5s → blended per-scene margin ~49.0%
+    withSound: false,
+  },
+  "clay-v3": {
+    id: "clay-v3",
+    label: "V3",
+    tag: "+ Audio",
+    description: "720p — includes audio",
+    toolKey: "video:viduq3turbo720",
+    width: 720,
+    height: 1280,
+    duration: 5,
+    credits: 16,           // measured $0.17875/5s → blended per-scene margin ~50.1%
+    withSound: true,
+  },
+  "clay-v4": {
+    id: "clay-v4",
+    label: "V4",
+    tag: "Best quality",
+    description: "1080p — includes audio",
+    toolKey: "video:viduq3turbo1080",
+    width: 1080,
+    height: 1920,
+    duration: 5,
+    credits: 19,           // measured $0.21125/5s → blended per-scene margin ~49.5%
+    withSound: true,
+  },
+};
+export const DEFAULT_VIDEO_MODEL = "clay-v2";
+
+// Plan gating — which video models each plan tier can use.
+export const VIDEO_MODEL_MIN_PLAN = {
+  "clay-v2": "starter",
+  "clay-v3": "pro",
+  "clay-v4": "generative",
+};
+export { PLAN_LABELS } from "../../../../lib/planGating";
+
+export function getAllowedVideoModels(planCode) {
+  return sharedGetAllowedVideoModels(planCode, VIDEO_MODEL_MIN_PLAN);
+}
 
 export const LENGTH_OPTIONS = [
-  { value: "30s", label: "30 sec", scenes: 4 },  // 7s × 4 = 28s
-  { value: "45s", label: "45 sec", scenes: 6 },  // 7s × 6 = 42s
+  { value: "30s", label: "30 sec", scenes: 4 },
+  { value: "45s", label: "45 sec", scenes: 6 },
 ];
 
 function buildCausalVideoPrompt({ problem, fix, fixAction, resolvedState, reaction }) {
@@ -118,8 +164,8 @@ const EXTRA_AI_SCENARIOS = [
 
 // Added to AI_SCENARIOS after the base scenario bank is declared.
 
-export function calcCredits(sceneCount, withSound = true) {
-  const videoCredits = withSound ? VIDEO_CREDITS_SOUND : VIDEO_CREDITS_NO_SOUND;
+export function calcCredits(sceneCount, videoModelId = DEFAULT_VIDEO_MODEL) {
+  const videoCredits = (VIDEO_MODELS[videoModelId] ?? VIDEO_MODELS[DEFAULT_VIDEO_MODEL]).credits;
   return sceneCount * (IMAGE_CREDITS * 2 + videoCredits);
 }
 
@@ -596,20 +642,21 @@ export async function generateFixImage({ fixImagePrompt, problemImageUrl }) {
 }
 
 /* ── Video generation ───────────────────────────────────────── */
-export async function animateSceneClip({ fixImageUrl, problemImageUrl, videoPrompt, withSound = true }) {
+export async function animateSceneClip({ fixImageUrl, problemImageUrl, videoPrompt, videoModel = DEFAULT_VIDEO_MODEL }) {
   if (!fixImageUrl) throw new Error("animateSceneClip: missing fixImageUrl");
   const initImageUrls = problemImageUrl
     ? [problemImageUrl, fixImageUrl]
     : [fixImageUrl];
+  const model = VIDEO_MODELS[videoModel] ?? VIDEO_MODELS[DEFAULT_VIDEO_MODEL];
   return createVideoJobSimple({
     subject:           videoPrompt,
-    toolKey:           withSound ? VIDEO_TOOL_KEY : VIDEO_TOOL_KEY_SILENT,
-    width:             withSound ? VIDEO_W_SOUND : VIDEO_W,
-    height:            withSound ? VIDEO_H_SOUND : VIDEO_H,
-    durationSec:       withSound ? VIDEO_DURATION_SOUND : VIDEO_DURATION,
+    toolKey:           model.toolKey,
+    width:             model.width,
+    height:            model.height,
+    durationSec:       model.duration,
     initImageUrls,
-    calculatedCredits: withSound ? VIDEO_CREDITS_SOUND : VIDEO_CREDITS_NO_SOUND,
-    withSound:         withSound,
+    calculatedCredits: model.credits,
+    withSound:         model.withSound,
   });
 }
 
@@ -715,7 +762,7 @@ export async function recoverClayRescueGenerationVideos(generation) {
     .eq("user_id", userData.user.id)
     .eq("type", "video")
     .eq("status", "succeeded")
-    .in("tool_key", ["video:veo31lite", "video:seedance20fast", "video:seedance15pro"])
+    .in("tool_key", ["video:veo31lite", "video:seedance20fast", "video:seedance15pro", "video:viduq3turbo720", "video:viduq3turbo1080"])
     .not("result_url", "is", null)
     .order("created_at", { ascending: false })
     .limit(100);

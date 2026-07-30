@@ -1,11 +1,25 @@
 // src/lib/auth.js (helpers stay here)
 import { supabase } from "./supabaseClient";
+import { readFirstTouch } from "./firstTouch";
+
+function firstTouchSignUpOptions() {
+  const firstTouch = readFirstTouch();
+  if (!firstTouch) return undefined;
+  return {
+    data: {
+      first_touch_landing_page: firstTouch.landingPage,
+      first_touch_utm_source: firstTouch.utm_source,
+      first_touch_utm_medium: firstTouch.utm_medium,
+      first_touch_utm_campaign: firstTouch.utm_campaign,
+    },
+  };
+}
 
 /** Create account with email + password (friendlier errors) */
 // src/lib/auth.js
 export async function signUpWithEmailPassword(email, password) {
 
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabase.auth.signUp({ email, password, options: firstTouchSignUpOptions() });
 
   if (error) throw error;
 

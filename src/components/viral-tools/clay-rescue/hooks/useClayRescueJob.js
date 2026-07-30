@@ -76,7 +76,7 @@ export default function useClayRescueJob() {
       return next;
     });
 
-  const start = useCallback(async ({ sceneInputs, aiMode = true, withSound = true }) => {
+  const start = useCallback(async ({ sceneInputs, aiMode = true, videoModel }) => {
     if (activeRef.current) return;
     activeRef.current = true;
     cancelRef.current = false;
@@ -183,7 +183,7 @@ export default function useClayRescueJob() {
     // ── Submit ALL video jobs simultaneously ──
     const videoJobSettled = await Promise.allSettled(
       imageResults.map(({ problemUrl, fixUrl, videoPrompt }) =>
-        animateSceneClip({ fixImageUrl: fixUrl, problemImageUrl: problemUrl, videoPrompt, withSound })
+        animateSceneClip({ fixImageUrl: fixUrl, problemImageUrl: problemUrl, videoPrompt, videoModel })
       )
     );
 
@@ -242,7 +242,7 @@ export default function useClayRescueJob() {
    * - imageStatus === "failed"  → redo image A → image B → video
    * - videoStatus === "failed" (but image ok) → redo video only using existing imageUrl
    */
-  const retryScene = useCallback(async (sceneIndex, withSound = true) => {
+  const retryScene = useCallback(async (sceneIndex, videoModel) => {
     // Read from ref so we always get the latest state, never a stale closure
     const scene = scenesRef.current.find((s) => s.index === sceneIndex);
     if (!scene) return;
@@ -272,7 +272,7 @@ export default function useClayRescueJob() {
           fixImageUrl:     scene.imageUrl,
           problemImageUrl: scene.problemUrl ?? null,
           videoPrompt,
-          withSound,
+          videoModel,
         });
         patchOne({ videoJobId: videoJob.id, videoStatus: "running" });
       } catch (e) {
@@ -334,7 +334,7 @@ export default function useClayRescueJob() {
       let videoJob;
       try {
         videoJob = await animateSceneClip({
-          fixImageUrl: fixUrl, problemImageUrl: problemUrl, videoPrompt, withSound,
+          fixImageUrl: fixUrl, problemImageUrl: problemUrl, videoPrompt, videoModel,
         });
         patchOne({ videoJobId: videoJob.id, videoStatus: "running" });
       } catch (e) {

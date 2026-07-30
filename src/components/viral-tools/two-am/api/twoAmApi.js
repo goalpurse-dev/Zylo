@@ -1,12 +1,64 @@
 import { createImageJobSimple } from "../../../../lib/jobs";
 import { supabase } from "../../../../lib/supabaseClient";
+import { getAllowedVideoModels as sharedGetAllowedQualityTiers, PLAN_LABELS } from "../../../../lib/planGating";
+
+export { PLAN_LABELS };
 
 export const TWO_AM_IMAGE_COUNT = 6;
-export const TWO_AM_CREDITS_PER_IMAGE = 7;
-export const TWO_AM_TOTAL_CREDITS = 42;
-export const TWO_AM_TOOL_KEY = "image:nano.2";
-export const TWO_AM_IMAGE_WIDTH = 1536;
-export const TWO_AM_IMAGE_HEIGHT = 2752;
+
+// V2/V3/V4 quality tiers — same Nano Banana 2 engine at 1K/2K/4K (9:16).
+// Dedicated tool_keys (not the shared image:nano.2 used by the standalone
+// Image Generator) so job-worker's plan gate on V3/V4 can't leak into that
+// ungated tool. Real width/height per Runware's 9:16 resolution table —
+// V3(2K)/V4(4K) previously shared one hardcoded 1536x2752 size (actually
+// the 4K pixel dimensions) while only charging the 2K credit price; this
+// fixes that mismatch by giving each tier its true resolution.
+export const IMAGE_QUALITY_TIERS = {
+  "twoam-v2": {
+    id: "twoam-v2", label: "V2", tag: "Fastest",
+    description: "1K — quick generation",
+    toolKey: "image:twoam1k", width: 384, height: 688, creditsPerImage: 5,
+  },
+  "twoam-v3": {
+    id: "twoam-v3", label: "V3", tag: "Balanced",
+    description: "2K — sharper detail",
+    toolKey: "image:twoam2k", width: 768, height: 1376, creditsPerImage: 7,
+  },
+  "twoam-v4": {
+    id: "twoam-v4", label: "V4", tag: "Max detail",
+    description: "4K — maximum detail",
+    toolKey: "image:twoam4k", width: 1536, height: 2752, creditsPerImage: 10,
+  },
+};
+export const DEFAULT_IMAGE_QUALITY = "twoam-v2";
+
+// Plan gating — which quality tiers each plan tier can use. Enforced for
+// real inside the two-am-planner edge function (server already resolves
+// plan_code from the DB) and, for the single-scene regenerate path which
+// goes through the normal client -> job-worker pipeline, via job-worker's
+// PLAN_GATED_TOOLS map on the dedicated twoam2k/4k tool_keys above.
+export const IMAGE_QUALITY_MIN_PLAN = {
+  "twoam-v2": "starter",
+  "twoam-v3": "pro",
+  "twoam-v4": "generative",
+};
+
+export function getAllowedImageQualities(planCode) {
+  return sharedGetAllowedQualityTiers(planCode, IMAGE_QUALITY_MIN_PLAN);
+}
+
+export function totalCreditsForQuality(qualityId) {
+  const tier = IMAGE_QUALITY_TIERS[qualityId] ?? IMAGE_QUALITY_TIERS[DEFAULT_IMAGE_QUALITY];
+  return tier.creditsPerImage * TWO_AM_IMAGE_COUNT;
+}
+
+// Legacy fixed constants — kept for any stale imports, now mirroring the
+// default (V2) tier rather than the old hardcoded 2K/42-credit setup.
+export const TWO_AM_CREDITS_PER_IMAGE = IMAGE_QUALITY_TIERS[DEFAULT_IMAGE_QUALITY].creditsPerImage;
+export const TWO_AM_TOTAL_CREDITS = totalCreditsForQuality(DEFAULT_IMAGE_QUALITY);
+export const TWO_AM_TOOL_KEY = IMAGE_QUALITY_TIERS[DEFAULT_IMAGE_QUALITY].toolKey;
+export const TWO_AM_IMAGE_WIDTH = IMAGE_QUALITY_TIERS[DEFAULT_IMAGE_QUALITY].width;
+export const TWO_AM_IMAGE_HEIGHT = IMAGE_QUALITY_TIERS[DEFAULT_IMAGE_QUALITY].height;
 
 export async function createTwoAmPlan({ prompt, settings }) {
   const { data, error } = await supabase.functions.invoke("two-am-planner", {
@@ -94,14 +146,18 @@ export function buildRegenerationPrompt({ worldBible, scene, randomSeed, setting
 }
 
 export async function regenerateTwoAmScene({ worldBible, scene, randomSeed, settings }) {
+  // Regenerate at the SAME tier the generation was created at (server-clamped
+  // and stored in settings.quality by two-am-planner) — not whatever the
+  // picker currently shows, so a scene can't be re-rolled at a higher tier
+  // than the one actually paid for.
+  const tier = IMAGE_QUALITY_TIERS[settings?.quality] ?? IMAGE_QUALITY_TIERS[DEFAULT_IMAGE_QUALITY];
   return createImageJobSimple({
     subject: buildRegenerationPrompt({ worldBible, scene, randomSeed, settings }),
-    toolKey: TWO_AM_TOOL_KEY,
-    resolution: "2k",
-    size: `${TWO_AM_IMAGE_WIDTH}x${TWO_AM_IMAGE_HEIGHT}`,
-    width: TWO_AM_IMAGE_WIDTH,
-    height: TWO_AM_IMAGE_HEIGHT,
-    chargeCreditsOverride: TWO_AM_CREDITS_PER_IMAGE,
+    toolKey: tier.toolKey,
+    size: `${tier.width}x${tier.height}`,
+    width: tier.width,
+    height: tier.height,
+    chargeCreditsOverride: tier.creditsPerImage,
   });
 }
 
@@ -166,5 +222,6 @@ export function mapTwoAmGeneration(row) {
     scenes: row.scenes ?? [],
     status: row.status,
     createdAt: row.created_at,
+    reservedCredits: row.reserved_credits ?? null,
   };
 }

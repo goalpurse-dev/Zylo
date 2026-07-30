@@ -2,14 +2,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { watchJob, getJob } from "../../../../lib/jobs";
 import {
   planFruitStory,
+  generateCharacterPortrait,
   generateSceneImage,
   regenerateSceneImage,
   animateClip,
+  FRUIT_VIDEO_MODELS,
+  DEFAULT_FRUIT_VIDEO_MODEL,
   buildVideoClipsFromScenes,
   buildSceneVideoPrompt,
   buildSceneVideoPromptWithDialogue,
   generateVisionVideoPrompts,
-  isFruitVideoPromptReady,
   dialogueToVoiceover,
   normalizeClipDialogue,
   normalizeClipVoiceover,
@@ -173,6 +175,7 @@ export default function useFruitStoryJob({ form }) {
   const generationRunIdRef = useRef(null);
   const inFlightSceneKeysRef = useRef(new Set());
   const inFlightClipKeysRef = useRef(new Set());
+  const autoAnimateTriggeredRef = useRef(false);
 
   useEffect(() => { formRef.current       = form;         }, [form]);
   useEffect(() => { scenesRef.current     = scenes;       }, [scenes]);
@@ -189,7 +192,12 @@ export default function useFruitStoryJob({ form }) {
 
   useEffect(() => () => clearWatchers(), [clearWatchers]);
 
-  /* ─── Auto-transition: generating-scenes → scenes-done ─── */
+  /* ─── Auto-transition: generating-scenes → scenes-done ───
+   * Images and videos now run concurrently (each scene's video starts the
+   * moment that scene's image succeeds — see startSceneVideo), so this just
+   * marks "every image job has reached a terminal state" for persistence and
+   * as a catch-up trigger below. It no longer gates video start.
+   */
   useEffect(() => {
     if (phase !== "generating-scenes" || scenes.length === 0) return;
     const allDone = scenes.every((s) => isTerminal(s.imageStatus ?? "queued"));
@@ -200,33 +208,36 @@ export default function useFruitStoryJob({ form }) {
     }
   }, [phase, scenes]);
 
-  /* ─── Auto-transition: animating → done ─── */
+  /* ─── Auto-transition: → done ───
+   * Fires whenever every image is terminal AND every scene that has an image
+   * also has a terminal video status (or never got a video job at all, e.g.
+   * an image that failed). Independent of the exact phase string so it still
+   * fires correctly now that video generation overlaps image generation.
+   */
   useEffect(() => {
-    if (phase !== "animating" || scenes.length === 0) return;
-    const clipScenes = scenes.filter((s) => s.videoClipNumber || s.videoJobId || s.videoUrl);
-    if (clipScenes.length === 0) return;
-    const allDone = clipScenes.every((s) => isTerminal(s.videoStatus ?? "idle"));
-    if (allDone) {
-      setPhase("done");
-      void updateGenerationScenes(generationRef.current, scenesForDB(scenes), "completed");
-    }
+    if (phase === "idle" || phase === "planning" || phase === "failed" || phase === "done") return;
+    if (scenes.length === 0) return;
+    const imagesDone = scenes.every((s) => isTerminal(s.imageStatus ?? "queued"));
+    if (!imagesDone) return;
+    const clipScenes = scenes.filter((s) => s.imageUrl && (s.videoClipNumber || s.videoJobId || s.videoUrl));
+    const videosDone = clipScenes.every((s) => isTerminal(s.videoStatus ?? "idle"));
+    if (!videosDone) return;
+    setPhase("done");
+    void updateGenerationScenes(generationRef.current, scenesForDB(scenes), "completed");
   }, [phase, scenes]);
 
-  /* ─── totalProgress ─── */
+  /* ─── totalProgress ─── combined image + video progress per scene, so the
+   * bar reflects both stages happening at once instead of jumping 0→100
+   * twice. */
   const totalProgress = useMemo(() => {
     if (scenes.length === 0) return 0;
-    if (phase === "generating-scenes" || phase === "scenes-done") {
-      const sum = scenes.reduce((acc, s) => acc + (s.imageProgress ?? 0), 0);
-      return Math.round(sum / scenes.length);
-    }
-    if (phase === "animating" || phase === "done") {
-      const active = scenes.filter((s) => s.videoClipNumber || s.videoJobId || s.videoUrl);
-      if (active.length === 0) return 0;
-      const sum = active.reduce((acc, s) => acc + (s.videoProgress ?? 0), 0);
-      return Math.round(sum / active.length);
-    }
-    return 0;
-  }, [phase, scenes]);
+    const sum = scenes.reduce((acc, s) => {
+      const imagePart = s.imageStatus === "succeeded" ? 50 : (s.imageProgress ?? 0) / 2;
+      const videoPart = s.videoJobId ? (s.videoProgress ?? 0) / 2 : 0;
+      return acc + imagePart + videoPart;
+    }, 0);
+    return Math.round(sum / scenes.length);
+  }, [scenes]);
 
   /* ─── applySceneImageUpdate ─── */
   const applySceneImageUpdate = useCallback(
@@ -322,6 +333,118 @@ export default function useFruitStoryJob({ form }) {
     });
     watchersRef.current[key] = unsub;
   }, []);
+
+  /* ─── startSceneVideo ───────────────────────────────────────────────────
+   * Animates ONE scene as soon as its image is ready, instead of waiting for
+   * every scene's image to finish first. Builds that scene's video prompt
+   * (fast text pass, then a best-effort vision pass) and launches the clip.
+   * Safe to call concurrently for multiple scenes — inFlightClipKeysRef and
+   * the videoJobId/videoUrl checks in callers prevent double-starts.
+   * ────────────────────────────────────────────────────────────────────── */
+  const startSceneVideo = useCallback(async (scene, f, castBible, videoModel) => {
+    const key = `clip:${scene.sceneNumber}`;
+    if (inFlightClipKeysRef.current.has(key)) return;
+    inFlightClipKeysRef.current.add(key);
+
+    try {
+      // Phase 1: fast text-based prompt — unblocks launch immediately
+      let workingScene = { ...scene, videoPrompt: buildSceneVideoPrompt({ scene, form: f }) };
+      setScenes((prev) => prev.map((s) =>
+        s.sceneNumber === scene.sceneNumber ? { ...s, videoPrompt: workingScene.videoPrompt } : s,
+      ));
+
+      // Phase 2: vision-enhance this one scene (best-effort, keeps text prompt on failure)
+      try {
+        const visionData = await generateVisionVideoPrompts({
+          scenes: [workingScene],
+          form: { ...f, castBible },
+        });
+        const v = visionData?.scenes?.[0];
+        if (v?.dialogue?.length) {
+          workingScene = {
+            ...workingScene,
+            videoPrompt: buildSceneVideoPromptWithDialogue({ scene: workingScene, form: f, dialogue: v.dialogue }),
+          };
+          setScenes((prev) => prev.map((s) =>
+            s.sceneNumber === scene.sceneNumber ? { ...s, videoPrompt: workingScene.videoPrompt } : s,
+          ));
+        }
+      } catch (err) {
+        console.warn(`[AI FRUIT] vision prompt failed for scene ${scene.sceneNumber}, keeping text prompt`, err);
+      }
+
+      const modelInfo = FRUIT_VIDEO_MODELS[videoModel] ?? FRUIT_VIDEO_MODELS[DEFAULT_FRUIT_VIDEO_MODEL];
+      const clip = {
+        clipNumber:         scene.sceneNumber,
+        outputLabel:        `Video ${scene.sceneNumber}`,
+        displaySceneNumber: scene.sceneNumber,
+        startSceneNumber:   scene.sceneNumber,
+        startImageUrl:      scene.imageUrl,
+        duration:            modelInfo.duration,
+        startPrompt:         workingScene.videoPrompt,
+        videoPrompt:         workingScene.videoPrompt,
+        dialogue:            normalizeClipDialogue(workingScene.videoDialogue ?? []),
+        voiceover:           normalizeClipVoiceover(workingScene.videoVoiceover ?? ""),
+      };
+
+      setVideoClips((prev) => prev.some((c) => c.clipNumber === clip.clipNumber)
+        ? prev.map((c) => (c.clipNumber === clip.clipNumber ? { ...c, ...clip } : c))
+        : [...prev, clip]);
+
+      let job, lastErr;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          job = await animateClip({ clip, startScene: workingScene, form: f, videoModel });
+          break;
+        } catch (err) {
+          lastErr = err;
+          const isTimeout = /idle.?timeout|504/i.test(err?.message ?? "");
+          if (isTimeout && attempt < 2) {
+            await new Promise((r) => setTimeout(r, (attempt + 1) * 8000));
+          } else {
+            throw err;
+          }
+        }
+      }
+      if (!job) throw lastErr;
+
+      setVideoClips((prev) => prev.map((c) =>
+        c.clipNumber === clip.clipNumber ? { ...c, videoJobId: job.id, videoStatus: job.status, videoProgress: 0 } : c,
+      ));
+      setScenes((prev) => {
+        const next = prev.map((s) =>
+          s.sceneNumber === scene.sceneNumber
+            ? {
+                ...s,
+                videoClipNumber: clip.clipNumber,
+                videoJobId:      job.id,
+                videoStatus:     job.status,
+                videoProgress:   0,
+                videoPrompt:     workingScene.videoPrompt,
+                videoVoiceover:  clip.voiceover ?? "",
+                videoDialogue:   clip.dialogue ?? [],
+              }
+            : s,
+        );
+        void updateGenerationScenes(generationRef.current, scenesForDB(next));
+        return next;
+      });
+
+      watchVideoJob(scene.sceneNumber, job.id);
+    } catch (e) {
+      console.error(`[AI FRUIT] scene ${scene.sceneNumber} video failed to start:`, e?.message ?? e);
+      setVideoClips((prev) => prev.map((c) =>
+        c.clipNumber === scene.sceneNumber ? { ...c, videoStatus: "failed", error: e.message ?? "Failed to start animation job" } : c,
+      ));
+      setScenes((prev) => prev.map((s) =>
+        s.sceneNumber === scene.sceneNumber
+          ? { ...s, videoStatus: "failed", error: e.message ?? "Failed to start animation job" }
+          : s,
+      ));
+    } finally {
+      inFlightClipKeysRef.current.delete(key);
+    }
+  }, [watchVideoJob]);
 
   /* ─── loadRecentGenerations ─── */
   const loadRecentGenerations = useCallback(async () => {
@@ -429,7 +552,7 @@ export default function useFruitStoryJob({ form }) {
 
   /* ─── startSceneGeneration ─── */
   const startSceneGeneration = useCallback(async (overrides = {}) => {
-    if (phaseRef.current === "planning" || phaseRef.current === "generating-scenes") {
+    if (phaseRef.current === "planning" || phaseRef.current === "generating-characters" || phaseRef.current === "generating-scenes") {
       console.warn("[AI FRUIT] startSceneGeneration ignored because already running");
       return;
     }
@@ -440,6 +563,7 @@ export default function useFruitStoryJob({ form }) {
         : `run-${Date.now()}`;
     generationRunIdRef.current = generationRunId;
     inFlightSceneKeysRef.current.clear();
+    autoAnimateTriggeredRef.current = false;
 
     clearWatchers();
     setError(null);
@@ -469,6 +593,30 @@ export default function useFruitStoryJob({ form }) {
     }
 
     const castBible = plan.cast ?? [];
+
+    /* 1.5 Generate one solo reference portrait per cast member BEFORE any
+     *     scene runs — mirrors the manual creator workflow's "character
+     *     design" step. Portraits are independent of each other, so they
+     *     run in parallel. A failed/timed-out portrait is non-fatal: that
+     *     character's scenes just fall back to text-only description
+     *     (buildSceneRefSlots already handles a missing portraitUrl).
+     */
+    phaseRef.current = "generating-characters";
+    setPhase("generating-characters");
+
+    await Promise.allSettled(
+      castBible.map(async (member) => {
+        try {
+          const job = await generateCharacterPortrait({ member, form: f });
+          const finished = await waitForJobCompletion(job.id);
+          const url = finished?.status === "succeeded" ? resolveJobResultUrl(finished) : null;
+          if (url) member.portraitUrl = url;
+        } catch (e) {
+          console.error("[useFruitStoryJob] character portrait failed:", member?.id, e?.message);
+        }
+      }),
+    );
+
     castBibleRef.current = castBible;
 
     /* 2. Initialise scene state */
@@ -606,6 +754,10 @@ export default function useFruitStoryJob({ form }) {
             imageUrl: resultUrl,
             environment: scene.environment,
           };
+          // Fire-and-forget: animate this scene right now instead of waiting
+          // for every other scene's image to finish first. Runs concurrently
+          // with the next scene's (sequential) image generation.
+          void startSceneVideo(previousCompletedScene, f, castBible, f.animationModel ?? DEFAULT_FRUIT_VIDEO_MODEL);
         } else {
           previousCompletedScene = null;
         }
@@ -624,7 +776,7 @@ export default function useFruitStoryJob({ form }) {
 
     // Refresh recent generations list after all scenes have been submitted
     void loadRecentGenerations();
-  }, [clearWatchers, watchImageJob, loadRecentGenerations]);
+  }, [clearWatchers, watchImageJob, loadRecentGenerations, startSceneVideo]);
 
   const updateClipVoiceover = useCallback((clipNumber, value) => {
     const nextDialogue = Array.isArray(value)
@@ -643,254 +795,35 @@ export default function useFruitStoryJob({ form }) {
     });
   }, []);
 
-  /* ─── startAnimation ─── */
-  const syncScenesWithVideoPrompts = useCallback((updater) => {
-    setScenes((prev) => {
-      const next = typeof updater === "function" ? updater(prev) : prev;
-      setVideoClips(buildVideoClipsFromScenes(next));
-      void updateGenerationScenes(generationRef.current, scenesForDB(next));
-      return next;
-    });
-  }, []);
-
-  const ensureVideoPrompts = useCallback(async (force = false) => {
-    const f = formRef.current;
-    const currentScenes = scenesRef.current;
-
-    const scenesNeedingPrompts = currentScenes.filter((scene) => {
-      if (!scene?.imageUrl) return false;
-      const existing = String(scene.videoPrompt ?? "").trim();
-      return force || !isFruitVideoPromptReady(existing);
-    });
-
-    if (scenesNeedingPrompts.length === 0) return;
-
-    // Phase 1: generate text-based prompts immediately so the UI is unblocked
-    syncScenesWithVideoPrompts((prev) => prev.map((scene) => {
-      if (!scene?.imageUrl) return scene;
-      const existing = String(scene.videoPrompt ?? "").trim();
-      if (!force && isFruitVideoPromptReady(existing)) return scene;
-      return { ...scene, videoPrompt: buildSceneVideoPrompt({ scene, form: f }) };
-    }));
-
-    // Phase 2: enhance with vision — analyse actual images and generate image-aware dialogue
-    try {
-      const castBible = castBibleRef.current ?? [];
-      const visionData = await generateVisionVideoPrompts({
-        scenes: scenesNeedingPrompts,
-        form: { ...f, castBible },
-      });
-      if (Array.isArray(visionData?.scenes)) {
-        syncScenesWithVideoPrompts((prev) => prev.map((scene) => {
-          const v = visionData.scenes.find((r) => Number(r.sceneNumber) === Number(scene.sceneNumber));
-          if (!v?.dialogue?.length) return scene;
-          return {
-            ...scene,
-            videoPrompt: buildSceneVideoPromptWithDialogue({ scene, form: f, dialogue: v.dialogue }),
-          };
-        }));
-      }
-    } catch (err) {
-      console.warn("[AI FRUIT] vision prompts failed, keeping text prompts", err);
-    }
-  }, [syncScenesWithVideoPrompts]);
-
-  const updateSceneVideoPrompt = useCallback((sceneNumber, value) => {
-    syncScenesWithVideoPrompts((prev) => prev.map((scene) =>
-      Number(scene.sceneNumber) === Number(sceneNumber)
-        ? { ...scene, videoPrompt: value }
-        : scene,
-    ));
-  }, [syncScenesWithVideoPrompts]);
-
-  const regenerateSceneVideoPrompt = useCallback(async (sceneNumber) => {
-    const f = formRef.current;
-    const targetScene = scenesRef.current.find((s) => Number(s.sceneNumber) === Number(sceneNumber));
-
-    // Phase 1: immediate text-based prompt
-    syncScenesWithVideoPrompts((prev) => prev.map((scene) =>
-      Number(scene.sceneNumber) === Number(sceneNumber)
-        ? { ...scene, videoPrompt: buildSceneVideoPrompt({ scene, form: f }) }
-        : scene,
-    ));
-
-    if (!targetScene?.imageUrl) return;
-
-    // Phase 2: vision-enhance for this one scene
-    try {
-      const castBible = castBibleRef.current ?? [];
-      const visionData = await generateVisionVideoPrompts({
-        scenes: [targetScene],
-        form: { ...f, castBible },
-      });
-      const v = visionData?.scenes?.[0];
-      if (!v?.dialogue?.length) return;
-      syncScenesWithVideoPrompts((prev) => prev.map((scene) =>
-        Number(scene.sceneNumber) === Number(sceneNumber)
-          ? { ...scene, videoPrompt: buildSceneVideoPromptWithDialogue({ scene, form: f, dialogue: v.dialogue }) }
-          : scene,
-      ));
-    } catch (err) {
-      console.warn("[AI FRUIT] vision regen failed, keeping text prompt", err);
-    }
-  }, [syncScenesWithVideoPrompts]);
-
+  /* ─── startAnimation ───────────────────────────────────────────────────
+   * Catch-up pass: animates every scene that already has an image but no
+   * video yet. In the normal live flow this is a no-op — startSceneVideo
+   * already fired per scene inside startSceneGeneration's loop — but it
+   * matters for restoring a saved generation (images done, videos never
+   * started) and as a safety net if a per-scene launch was ever missed.
+   * ────────────────────────────────────────────────────────────────────── */
   const startAnimation = useCallback(async () => {
-    if (phaseRef.current === "animating") {
-      console.warn("[AI FRUIT] startAnimation ignored because already animating");
-      return;
-    }
-
     const currentScenes = scenesRef.current;
     const f             = formRef.current;
+    const castBible     = castBibleRef.current ?? [];
+    const videoModel    = f.animationModel ?? DEFAULT_FRUIT_VIDEO_MODEL;
 
-    const expectedSceneCount = Number(f.sceneCount ?? currentScenes.length ?? 0);
-    const orderedScenes = [...currentScenes]
-      .slice(0, expectedSceneCount || currentScenes.length)
+    const needsVideo = [...currentScenes]
+      .filter((scene) => scene.imageUrl && !scene.videoJobId && !scene.videoUrl && scene.videoStatus !== "failed")
       .sort((a, b) => Number(a.sceneNumber ?? 0) - Number(b.sceneNumber ?? 0));
-    const missing = orderedScenes.filter((scene) => !scene.imageUrl || scene.imageStatus === "failed");
-    if (orderedScenes.length < 2 || missing.length > 0) {
-      setError("Generate all scene images before animating clips.");
-      return;
-    }
 
-    const scenesWithPrompts = orderedScenes.map((scene) => {
-      if (isFruitVideoPromptReady(scene.videoPrompt)) return scene;
-      return { ...scene, videoPrompt: buildSceneVideoPrompt({ scene, form: f }) };
-    });
-    const missingPrompt = scenesWithPrompts.find((scene) => !isFruitVideoPromptReady(scene.videoPrompt));
-    if (missingPrompt) {
-      setError("Generate prompts first.");
-      return;
-    }
+    if (needsVideo.length === 0) return;
 
-    setScenes((prev) => {
-      const bySceneNumber = new Map(scenesWithPrompts.map((scene) => [Number(scene.sceneNumber), scene]));
-      const next = prev.map((scene) => bySceneNumber.get(Number(scene.sceneNumber)) ?? scene);
-      void updateGenerationScenes(generationRef.current, scenesForDB(next));
-      return next;
-    });
-
-    const draftedClips = buildVideoClipsFromScenes(scenesWithPrompts);
-    const existingClips = videoClipsRef.current ?? [];
-    const clips = draftedClips.map((clip) => {
-      const existing = existingClips.find((item) => Number(item.clipNumber) === Number(clip.clipNumber));
-      return {
-        ...clip,
-        startPrompt: clip.startPrompt ?? existing?.startPrompt,
-        videoPrompt: clip.videoPrompt ?? existing?.videoPrompt,
-        dialogue: normalizeClipDialogue(existing?.dialogue ?? clip.dialogue),
-        voiceover: normalizeClipVoiceover(existing?.voiceover ?? clip.voiceover),
-      };
-    });
-    if (!clips.length) { setError("At least two scene images are required to animate clips."); return; }
-    const invalidPrompt = clips.find((clip) => !isFruitVideoPromptReady(clip.videoPrompt));
-    if (invalidPrompt) {
-      setError(`Video ${invalidPrompt.clipNumber} is missing a prompt.`);
-      return;
-    }
-
-    phaseRef.current = "animating";
-    setPhase("animating");
     setError(null);
-    setVideoClips(clips);
-
-    const videoToolKey = f.animationModel ?? "zyvo-video-v1";
-
-    // Save animation model to DB
-    void updateFruitStoryGeneration(generationRef.current, {
-      animation_model: videoToolKey,
-      status:          "animating",
-    });
-
-    const isVeo = videoToolKey === "zyvo-video-v3";
-    // Wan needs a stagger too — submitting 7 clips at once overwhelms capacity
+    const isVeo = videoModel === "fruit-v4";
+    // Stagger submissions — higher-tier models hit IDLE_TIMEOUT when clips pile up
     const staggerMs = isVeo ? 5000 : 3000;
-    let clipIndex = 0;
 
-    for (const clip of clips) {
-      const key = `clip:${clip.clipNumber}`;
-      if (inFlightClipKeysRef.current.has(key) || clip.videoStatus === "running" || clip.videoJobId) {
-        console.warn("[AI FRUIT] duplicate animation clip blocked", {
-          clipNumber: clip.clipNumber,
-          key,
-        });
-        continue;
-      }
-      inFlightClipKeysRef.current.add(key);
-
-      // Stagger ALL submissions — both Veo and Wan hit IDLE_TIMEOUT when clips pile up
-      if (clipIndex > 0) {
-        await new Promise((r) => setTimeout(r, staggerMs));
-      }
-      clipIndex++;
-
-      const startScene = scenesWithPrompts.find((scene) => Number(scene.sceneNumber) === clip.startSceneNumber);
-      try {
-        // Retry up to 3 times on IDLE_TIMEOUT with increasing back-off
-        let job;
-        let lastErr;
-        for (let attempt = 0; attempt < 3; attempt++) {
-          try {
-            job = await animateClip({ clip, startScene, form: f, videoToolKey });
-            break;
-          } catch (err) {
-            lastErr = err;
-            const isTimeout = /idle.?timeout|504/i.test(err?.message ?? "");
-            if (isTimeout && attempt < 2) {
-              const waitMs = (attempt + 1) * 8000; // 8s, then 16s
-              console.warn(`[AI FRUIT] IDLE_TIMEOUT on clip ${clip.clipNumber}, retry ${attempt + 1}/2 in ${waitMs / 1000}s…`);
-              await new Promise((r) => setTimeout(r, waitMs));
-            } else {
-              throw err;
-            }
-          }
-        }
-        if (!job) throw lastErr;
-
-        setVideoClips((prev) => prev.map((item) =>
-          item.clipNumber === clip.clipNumber
-            ? { ...item, videoJobId: job.id, videoStatus: job.status, videoProgress: 0 }
-            : item,
-        ));
-
-        setScenes((prev) => {
-          const next = prev.map((s) =>
-            Number(s.sceneNumber) === clip.startSceneNumber
-              ? {
-                  ...s,
-                  videoClipNumber: clip.clipNumber,
-                  videoEndSceneNumber: null,
-                  videoJobId: job.id,
-                  videoStatus: job.status,
-                  videoProgress: 0,
-                  videoPrompt: clip.startPrompt || clip.videoPrompt || s.videoPrompt || "",
-                  videoVoiceover: clip.voiceover ?? "",
-                  videoDialogue: clip.dialogue ?? [],
-                }
-              : s,
-          );
-          void updateGenerationScenes(generationRef.current, scenesForDB(next));
-          return next;
-        });
-
-        watchVideoJob(clip.startSceneNumber, job.id);
-      } catch (e) {
-        setVideoClips((prev) => prev.map((item) =>
-          item.clipNumber === clip.clipNumber
-            ? { ...item, videoStatus: "failed", error: e.message ?? "Failed to start animation job" }
-            : item,
-        ));
-        setScenes((prev) => prev.map((s) =>
-          Number(s.sceneNumber) === clip.startSceneNumber
-            ? { ...s, videoStatus: "failed", error: e.message ?? "Failed to start animation job" }
-            : s,
-        ));
-      } finally {
-        inFlightClipKeysRef.current.delete(key);
-      }
+    for (const [index, scene] of needsVideo.entries()) {
+      if (index > 0) await new Promise((r) => setTimeout(r, staggerMs));
+      void startSceneVideo(scene, f, castBible, videoModel);
     }
-  }, [watchVideoJob]);
+  }, [startSceneVideo]);
 
   /* ─── regenerateScene ─── */
   const regenerateScene = useCallback(async (sceneIndex, customPrompt) => {
@@ -967,7 +900,7 @@ export default function useFruitStoryJob({ form }) {
     setPhase("animating");
     setError(null);
 
-    const videoToolKey = f.animationModel ?? "zyvo-video-v1";
+    const videoModel = f.animationModel ?? DEFAULT_FRUIT_VIDEO_MODEL;
 
     for (const clip of toRetry) {
       const key = `clip:${clip.clipNumber}`;
@@ -983,7 +916,7 @@ export default function useFruitStoryJob({ form }) {
         let lastErr;
         for (let attempt = 0; attempt < 3; attempt++) {
           try {
-            job = await animateClip({ clip, startScene, form: f, videoToolKey });
+            job = await animateClip({ clip, startScene, form: f, videoModel });
             break;
           } catch (err) {
             lastErr = err;
@@ -1024,8 +957,23 @@ export default function useFruitStoryJob({ form }) {
     setError(null);
     setGenerationId(null);
     castBibleRef.current = [];
+    autoAnimateTriggeredRef.current = false;
     void loadRecentGenerations();
   }, [clearWatchers, loadRecentGenerations]);
+
+  /* ─── Catch-up: scenes-done → make sure every succeeded scene has a video ───
+   * In the live flow, each scene's video already started the moment that
+   * scene's image succeeded (see startSceneVideo call inside
+   * startSceneGeneration). This only matters for restoring a saved
+   * generation whose images finished but videos never started — startAnimation
+   * itself is a no-op for scenes that already have a videoJobId/videoUrl.
+   */
+  useEffect(() => {
+    if (phase !== "scenes-done" || autoAnimateTriggeredRef.current) return;
+    if (scenes.length === 0) return;
+    autoAnimateTriggeredRef.current = true;
+    void startAnimation();
+  }, [phase, scenes, startAnimation]);
 
   return {
     phase,
@@ -1037,9 +985,16 @@ export default function useFruitStoryJob({ form }) {
     recentGenerations,
     isLoadingRecent,
 
-    isPlanning:         phase === "planning",
-    isGeneratingScenes: phase === "generating-scenes",
-    isAnimating:        phase === "animating",
+    // "generating-characters" (portrait generation) happens after planning
+    // but before any scene exists — bucketed with isPlanning so every
+    // consumer's busy/disabled state stays correct without having to know
+    // about the new phase individually.
+    isPlanning: phase === "planning" || phase === "generating-characters",
+    // Images and videos now run concurrently, so these are derived straight
+    // from scene state instead of a single mutually-exclusive phase string —
+    // both can be true at once while a story is generating.
+    isGeneratingScenes: scenes.length > 0 && scenes.some((s) => !isTerminal(s.imageStatus ?? "queued")),
+    isAnimating:        scenes.length > 0 && scenes.some((s) => s.videoJobId && !isTerminal(s.videoStatus ?? "idle")),
     isDone:             phase === "done",
     scenesDone:         phase === "scenes-done" || phase === "animating" || phase === "done",
 
@@ -1047,9 +1002,6 @@ export default function useFruitStoryJob({ form }) {
     startAnimation,
     retryFailedClips,
     updateClipVoiceover,
-    ensureVideoPrompts,
-    updateSceneVideoPrompt,
-    regenerateSceneVideoPrompt,
     regenerateScene,
     loadGeneration,
     deleteGeneration,
