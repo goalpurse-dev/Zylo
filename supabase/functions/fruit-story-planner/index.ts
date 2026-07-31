@@ -583,6 +583,12 @@ function buildCanonicalCast(selectedCharacters: CharInput[], preset: StoryPreset
         : narrativeRole === "affair_partner"        ? "visually distinct from the betrayed partner; never visually or narratively interchangeable"
         : narrativeRole === "kid"                   ? "innocent child character; never role-swapped into an adult"
         : "supporting character with a stable personality and story function",
+      agePresentation: "adult",
+      emotionalArc: narrativeRole === "victim"       ? "begins uneasy and unaware, ends confronting the truth with strength"
+        : narrativeRole === "cheater"               ? "begins confident and secretive, ends cornered and exposed"
+        : narrativeRole === "affair_partner"        ? "begins hidden and evasive, ends exposed and confronted"
+        : narrativeRole === "kid"                   ? "begins innocent and confused, ends comforted once the truth settles"
+        : "experiences the story's emotional turn alongside the main characters",
       synthetic: c.synthetic === true,
     };
   });
@@ -604,6 +610,8 @@ function mergeCastWithPlanner(canonicalCast: any[], plannedCast: any[] = []) {
       appearance:    match?.appearance    || base.appearance,
       clothing:      match?.clothing      || base.clothing,
       personality:   match?.personality   || base.personality,
+      agePresentation: match?.agePresentation || base.agePresentation,
+      emotionalArc:    match?.emotionalArc    || base.emotionalArc,
       narrativeRole: base.narrativeRole,
       role:          base.role,
       referenceLabel: base.referenceLabel,
@@ -1065,11 +1073,13 @@ const JSON_SCHEMA = `{
       "narrativeRole": "victim | cheater | affair_partner | kid | friend | boss | villain | sibling | parent | protagonist | antagonist | supporting",
       "fruitType": "orange | banana | strawberry | apple | lemon | peach | mango | pineapple | broccoli",
       "genderPresentation": "feminine-presenting | masculine-presenting | unspecified",
+      "agePresentation": "age presentation in 2-4 words, e.g. 'early thirties', 'late twenties', 'middle-aged'",
       "visualIdentity": "stable visual description locked for the whole story",
       "appearance": "detailed visual appearance",
       "clothing": "consistent outfit description",
       "narrativeFunction": "locked story function, 1 sentence",
-      "personality": "brief personality note, 1 sentence"
+      "personality": "brief personality note, 1 sentence",
+      "emotionalArc": "how this character's emotional state evolves from the first scene to the last, 1 sentence"
     }
   ],
   "scenes": [
@@ -1258,6 +1268,7 @@ Deno.serve(async (req) => {
     `8. Every imagePrompt MUST end with: "NO text, NO captions, NO subtitles, NO speech bubbles, NO watermarks, NO typography."`,
     `9. forbiddenCharacters MUST list all cast IDs NOT in characterIdsInScene`,
     `10. This is ONE continuous story — scene N must visually reference what happened in scene N-1`,
+    `11. For each cast member, also fill agePresentation (e.g. "early thirties") and emotionalArc — one sentence on how THAT character specifically feels/behaves at the start of the story versus how they feel/behave by the last scene. These get sent straight into the video generation prompt, so make them specific and story-accurate, not generic.`,
     ``,
     `Return ONLY valid JSON matching this schema exactly:`,
     JSON_SCHEMA,

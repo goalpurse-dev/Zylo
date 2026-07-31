@@ -603,8 +603,22 @@ function inferFruitVoiceStyle(nameOrId, roleText = "") {
   return "expressive fruit-character voice with clear TikTok-drama emotion";
 }
 
+function toCharacterProfile(castEntry) {
+  if (!castEntry) return null;
+  return {
+    fruitType:          castEntry.fruitType ?? "",
+    genderPresentation: castEntry.genderPresentation ?? "",
+    agePresentation:    castEntry.agePresentation ?? "",
+    personality:        castEntry.personality ?? "",
+    narrativeRole:      castEntry.narrativeRole ?? "",
+    narrativeFunction:  castEntry.narrativeFunction ?? "",
+    emotionalArc:       castEntry.emotionalArc ?? "",
+  };
+}
+
 function getSceneCharacterNames(scene, form = {}) {
   const selected = Array.isArray(form.selectedCharacters) ? form.selectedCharacters : [];
+  const castBible = Array.isArray(form.castBible) ? form.castBible : [];
   const ids = [
     ...(Array.isArray(scene?.characterIdsInScene) ? scene.characterIdsInScene : []),
     ...(Array.isArray(scene?.charactersInScene) ? scene.charactersInScene : []),
@@ -612,11 +626,16 @@ function getSceneCharacterNames(scene, form = {}) {
   const uniqueIds = [...new Set(ids.map((id) => String(id ?? "").trim()).filter(Boolean))];
 
   if (uniqueIds.length === 0 && selected.length > 0) {
-    return selected.slice(0, 2).map((char) => ({
-      id: char.id ?? char.characterId ?? char.slug ?? char.name,
-      name: readableCharacterName(char.name ?? char.label ?? char.id ?? char.characterId),
-      role: char.role ?? char.id ?? "",
-    }));
+    return selected.slice(0, 2).map((char) => {
+      const castEntry = getCastEntryById(castBible, char.id ?? char.characterId ?? char.slug)
+        ?? findCastEntryByLabel(castBible, char.name ?? char.label);
+      return {
+        id: char.id ?? char.characterId ?? char.slug ?? char.name,
+        name: readableCharacterName(char.name ?? char.label ?? char.id ?? char.characterId),
+        role: castEntry?.narrativeRole ?? char.role ?? char.id ?? "",
+        profile: toCharacterProfile(castEntry),
+      };
+    });
   }
 
   return uniqueIds.map((id) => {
@@ -630,10 +649,14 @@ function getSceneCharacterNames(scene, form = {}) {
       normalizeText(deriveCharLabel(char)) === wanted ||
       normalizeText(deriveCastId(char)) === wanted
     );
+    const castEntry = getCastEntryById(castBible, id)
+      ?? findCastEntryByLabel(castBible, id)
+      ?? (match ? (getCastEntryById(castBible, match.id) ?? findCastEntryByLabel(castBible, match.name ?? match.label)) : null);
     return {
       id,
-      name: readableCharacterName(match?.name ?? match?.label ?? match?.id ?? id),
-      role: match?.role ?? match?.id ?? id,
+      name: readableCharacterName(match?.name ?? match?.label ?? castEntry?.displayName ?? castEntry?.referenceLabel ?? match?.id ?? id),
+      role: castEntry?.narrativeRole ?? match?.role ?? match?.id ?? id,
+      profile: toCharacterProfile(castEntry),
     };
   });
 }
@@ -882,6 +905,34 @@ function deriveAmbience(scene) {
   return "Light room ambience only.";
 }
 
+// One compact line per visible character — fruit type, gender/age presentation,
+// personality, story role, and emotional arc — so the video model actually knows
+// WHO it's animating, not just what they're saying. Mirrors the "Main Characters"
+// block from the manual ChatGPT workflow this pipeline is modeled on.
+function formatCharacterProfileLine(char, max) {
+  const p = char?.profile;
+  if (!p) return null;
+  const name = sanitizeSpeakerName(char.name || char.id);
+  const idBits = [p.fruitType && `${p.fruitType} fruit character`, p.genderPresentation, p.agePresentation]
+    .filter(Boolean)
+    .join(", ");
+  const roleLabel = p.narrativeRole ? p.narrativeRole.replace(/_/g, " ") : "";
+  const line = [
+    idBits ? `${name} (${idBits})` : name,
+    p.personality ? `Personality: ${p.personality}.` : "",
+    roleLabel ? `Role: ${roleLabel}.` : "",
+    p.emotionalArc ? `Arc: ${p.emotionalArc}.` : "",
+  ].filter(Boolean).join(" ");
+  return line ? cleanSectionText(line, name, max) : null;
+}
+
+function buildCharacterProfileBlock(characters, max) {
+  const lines = characters.slice(0, 2)
+    .map((char) => formatCharacterProfileLine(char, max))
+    .filter(Boolean);
+  return lines.length ? lines.join("\n") : null;
+}
+
 function buildPerCharacterEmotionBlock(characters, scene, max) {
   const emotionBase = (scene?.emotionDirection || scene?.emotionalBeat || "").toLowerCase();
   if (!characters.length) {
@@ -1030,11 +1081,13 @@ function buildStrictFruitVideoPrompt({ scenePrompt = "", scene = {}, form = {}, 
   const storyContextLine = scene.storyPurpose || scene.scenePurpose
     ? cleanSectionText(scene.storyPurpose || scene.scenePurpose, "", isProviderPrompt ? 80 : 100)
     : null;
+  const characterProfileBlock = buildCharacterProfileBlock(characters, isProviderPrompt ? 130 : 170);
 
   const prompt = [
     opening,
     pacingLine,
     identityLock,
+    ...(characterProfileBlock ? ["Cast:", characterProfileBlock] : []),
     ...(storyContextLine ? [`Story beat: ${storyContextLine}`] : []),
     "",
     "SPOKEN DIALOGUE - SAY EXACTLY THESE ENGLISH WORDS ONLY:",
