@@ -46,7 +46,7 @@ export const VIDEO_MODELS = {
   "footballer-v3": {
     id: "footballer-v3",
     label: "V3",
-    tag: "Higher quality",
+    tag: "Premium",
     description: "1080p — includes audio",
     toolKey: "video:footballerviduq3turbo1080",
     width: 1080,
@@ -60,7 +60,7 @@ export const VIDEO_MODELS = {
   "footballer-v4": {
     id: "footballer-v4",
     label: "V4",
-    tag: "Best quality",
+    tag: "Professional",
     description: "720p — includes audio",
     toolKey: "video:footballerseedance720",
     width: 720,

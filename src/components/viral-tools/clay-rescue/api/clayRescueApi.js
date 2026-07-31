@@ -30,7 +30,7 @@ export const VIDEO_MODELS = {
   "clay-v3": {
     id: "clay-v3",
     label: "V3",
-    tag: "+ Audio",
+    tag: "Premium",
     description: "720p — includes audio",
     toolKey: "video:viduq3turbo720",
     width: 720,
@@ -42,7 +42,7 @@ export const VIDEO_MODELS = {
   "clay-v4": {
     id: "clay-v4",
     label: "V4",
-    tag: "Best quality",
+    tag: "Professional",
     description: "1080p — includes audio",
     toolKey: "video:viduq3turbo1080",
     width: 1080,

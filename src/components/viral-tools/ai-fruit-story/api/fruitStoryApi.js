@@ -60,7 +60,7 @@ export const FRUIT_VIDEO_MODELS = {
   "fruit-v3": {
     id: "fruit-v3",
     label: "V3",
-    tag: "+ Audio",
+    tag: "Premium",
     description: "720p — includes audio",
     toolKey: "video:viduq3turbo720",
     duration: 5,
@@ -75,7 +75,7 @@ export const FRUIT_VIDEO_MODELS = {
   "fruit-v4": {
     id: "fruit-v4",
     label: "V4",
-    tag: "Best quality",
+    tag: "Professional",
     description: "Full resolution — includes audio",
     toolKey: "video:fruitveo31lite",
     duration: 6,
