@@ -4,6 +4,7 @@ import FruitStepScenes from "./steps/FruitStepScenes";
 import Credit from "/icons/whitecredit.png";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import NoCreditsModal from "../shared/NoCreditsModal";
+import { emitCreditSpend } from "../../../lib/creditPopEvents";
 import {
   getFruitSceneCountForLength,
   getFruitImageCreditsPerImage,
@@ -186,6 +187,7 @@ export default function AIFruitStoryBuilder({
       creditsPerImage,
     };
     setForm((prev) => ({ ...prev, ...overrides, sceneCredits: imageCredits }));
+    emitCreditSpend(totalCredits);
     onGenerateScenes?.(overrides);
   };
 

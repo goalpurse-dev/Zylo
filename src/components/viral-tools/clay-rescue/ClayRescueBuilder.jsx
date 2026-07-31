@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronRight, Lightbulb, VolumeX, Volume2, Lock } from "lucide-react";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
+import { emitCreditSpend } from "../../../lib/creditPopEvents";
 import {
   LENGTH_OPTIONS,
   VIDEO_MODELS,
@@ -191,6 +192,7 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase, planCode
       if (invalid) { setValidationError("Fill in a problem and fix for every scene."); return; }
     }
     setValidationError("");
+    emitCreditSpend(totalCredits);
     onGenerate({ sceneInputs, selectedLength, aiMode, videoModel });
   };
 

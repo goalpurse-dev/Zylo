@@ -600,8 +600,10 @@ const job = await simulateJob({
 
 // Free usage is logged in runware-image after finish_job_success,
 // so quota is only consumed when the image actually succeeds.
-
-emitCreditSpend(credits);
+// Note: the "-N credits" pop is NOT fired here — it fires once per
+// Generate click (with the full up-front total) from each workspace
+// page's handleGenerate, not once per underlying job. See emitCreditSpend
+// callers in src/pages/workspace/*.jsx.
 
 return job;
 }
@@ -724,7 +726,7 @@ const job = await simulateJob({
   provider:  "runware",
 });
 
-emitCreditSpend(credits);
+// Note: the "-N credits" pop is NOT fired here — see createImageJobSimple.
 
 return job;
 

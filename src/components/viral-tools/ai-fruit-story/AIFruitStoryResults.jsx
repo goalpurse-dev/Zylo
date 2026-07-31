@@ -302,6 +302,16 @@ export default function AIFruitStoryResults({
             title="No story yet"
             body="Once generated, your scenes and clips will show here."
           />
+        ) : !hasScenes && isBusy ? (
+          <div
+            className={`grid gap-4 ${
+              sceneAspect === "16:9" ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"
+            }`}
+          >
+            {Array.from({ length: sceneCount }).map((_, i) => (
+              <ScenePlaceholderCard key={i} index={i} aspect={sceneAspect} />
+            ))}
+          </div>
         ) : (
           <>
             {allFailed && (
@@ -421,6 +431,31 @@ function RegenerateSceneModal({
   );
 }
 
+// Shown the instant Generate is clicked, before the planner has even
+// returned scene data — so the results panel never sits blank while
+// "Planning your story…"/"Designing your characters…" run in the background.
+function ScenePlaceholderCard({ index, aspect }) {
+  const aspectClass =
+    aspect === "16:9" ? "aspect-[16/9]" :
+    aspect === "1:1"  ? "aspect-square"  :
+                        "aspect-[9/16]";
+
+  return (
+    <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4 text-left">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="text-sm font-semibold text-white">Scene {index + 1}</div>
+        <span className="h-2 w-2 animate-pulse rounded-full bg-purple-400" />
+      </div>
+      <div className={`relative overflow-hidden rounded-[16px] bg-white/[0.04] ${aspectClass}`}>
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-white/[0.03] via-white/[0.06] to-white/[0.03]" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="h-6 w-6 animate-spin rounded-full border-2 border-white/15 border-t-purple-300" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SceneVideoCard({ scene, index, aspect, onRegenerateImage, onRetryVideo }) {
   const aspectClass =
     aspect === "16:9" ? "aspect-[16/9]" :
@@ -478,10 +513,11 @@ function SceneVideoCard({ scene, index, aspect, onRegenerateImage, onRetryVideo 
         {scene.videoUrl ? (
           <video
             src={scene.videoUrl}
+            poster={displayImageSrc || undefined}
             className="h-full w-full object-cover"
             controls
             playsInline
-            preload="none"
+            preload="metadata"
           />
         ) : displayImageSrc ? (
           <>
@@ -504,7 +540,7 @@ function SceneVideoCard({ scene, index, aspect, onRegenerateImage, onRetryVideo 
               }}
             />
             {isBusy && <VideoProgressOverlay progress={progress} />}
-            {!isBusy && !isFailed && <PlayOverlay />}
+            {!isBusy && !isFailed && !scene.videoUrl && <QueuedToAnimateOverlay />}
           </>
         ) : (
           <ScenePlaceholder index={index} progress={scene.imageProgress ?? 0} />
@@ -686,11 +722,18 @@ function ScenePlaceholder({ index, progress = 0 }) {
   return <ZyvoLoadingCard index={index} progress={progress} />;
 }
 
-function PlayOverlay() {
+// Shown in the brief window after a scene's image finishes but before its
+// video job's status has propagated to "queued/running" yet. Video
+// generation is fully automatic (see startSceneVideo in useFruitStoryJob) —
+// this used to be a static ▶ play-button icon, which wrongly implied the
+// user had to click something to start it. This is a passive status
+// indicator only, never actionable.
+function QueuedToAnimateOverlay() {
   return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/10">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-black/45 text-sm text-white backdrop-blur-md">
-        ▶
+    <div className="pointer-events-none absolute inset-0 flex items-end bg-gradient-to-t from-black/55 via-black/10 to-transparent p-4">
+      <div className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/45 px-3 py-1.5 text-[10px] font-semibold text-white/70 backdrop-blur-md">
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-300" />
+        Preparing to animate…
       </div>
     </div>
   );
