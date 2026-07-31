@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronRight, Lock, VolumeX } from "lucide-react";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
+import { emitCreditSpend } from "../../../lib/creditPopEvents";
 import {
   LENGTH_OPTIONS,
   calcCredits,
@@ -95,6 +96,7 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase, p
       return;
     }
     setValidationError("");
+    emitCreditSpend(totalCredits);
     onGenerate({ animalInput: trimmed, selectedLength, videoModel });
   };
 

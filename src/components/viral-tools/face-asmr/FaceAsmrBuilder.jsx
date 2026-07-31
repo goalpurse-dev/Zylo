@@ -3,6 +3,7 @@ import { Upload, X, ChevronRight, ChevronLeft, Lock, VolumeX, Volume2 } from "lu
 import ReferenceImageModal from "../../reference-images/ReferenceImageModal.jsx";
 import { useReferenceImages } from "../../reference-images/useReferenceImages";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
+import { emitCreditSpend } from "../../../lib/creditPopEvents";
 import {
   generateFaceAsmrCharacterNames,
   IMAGE_FALLBACK_CREDITS,
@@ -587,7 +588,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
-              onClick={() => { if (isGenerating) return; if (!hasEnoughCredits) { setNoCreditsOpen(true); return; } onGenerate({ length: selectedLength, scenes: activeScenes, background: selectedBg, backgroundLabel: bgLabel, videoModel }); }}
+              onClick={() => { if (isGenerating) return; if (!hasEnoughCredits) { setNoCreditsOpen(true); return; } emitCreditSpend(totalCost); onGenerate({ length: selectedLength, scenes: activeScenes, background: selectedBg, backgroundLabel: bgLabel, videoModel }); }}
               disabled={isGenerating}
               className={`flex-1 py-2.5 lg:py-3.5 rounded-xl font-bold text-[15px] transition flex items-center justify-center gap-2.5 ${
                 isDone

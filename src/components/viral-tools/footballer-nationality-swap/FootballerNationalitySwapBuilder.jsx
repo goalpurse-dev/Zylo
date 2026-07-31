@@ -2,6 +2,7 @@ import { useState, useEffect, useId } from "react";
 import { ChevronRight, ChevronDown, Settings2, CheckCircle2, XCircle, Lock, Volume2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
+import { emitCreditSpend } from "../../../lib/creditPopEvents";
 import {
   SCENE_COUNT_OPTIONS,
   DEFAULT_SCENE_COUNT,
@@ -360,6 +361,7 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
     const invalid = visibleScenes.find((s) => !s.footballer.trim() || !s.nationality.trim());
     if (invalid) { setValidationError("Fill in a footballer and nationality for every scene."); return; }
     setValidationError("");
+    emitCreditSpend(totalCredits);
     onGenerate({ sceneInputs: visibleScenes, sceneCount, videoModel });
   };
 

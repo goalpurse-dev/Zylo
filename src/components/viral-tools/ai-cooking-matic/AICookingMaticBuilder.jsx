@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Search, X, Sparkles } from "lucide-react";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import NoCreditsModal from "../shared/NoCreditsModal";
+import { emitCreditSpend } from "../../../lib/creditPopEvents";
 import { VIBES, DISH_CATEGORIES, ALL_DISHES } from "./api/cookingMaticApi";
 
 function randomPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -46,10 +47,12 @@ export default function AICookingMaticBuilder({
     if (!hasEnoughCredits) { setNoCreditsOpen(true); return; }
     setValidationError("");
     if (aiChooses) {
+      emitCreditSpend(TOTAL_CREDITS);
       onGenerate({ dishName: randomPick(ALL_DISHES), vibeId: selectedVibe });
     } else {
       const trimmed = dishInput.trim();
       if (!trimmed) { setValidationError("Enter a dish name."); return; }
+      emitCreditSpend(TOTAL_CREDITS);
       onGenerate({ dishName: trimmed, vibeId: selectedVibe });
     }
   };

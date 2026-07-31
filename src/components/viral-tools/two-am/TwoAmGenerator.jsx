@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Lock, WandSparkles } from "lucide-react";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import NoCreditsModal from "../shared/NoCreditsModal";
+import { emitCreditSpend } from "../../../lib/creditPopEvents";
 import {
   DEFAULT_IMAGE_QUALITY,
   IMAGE_QUALITY_MIN_PLAN,
@@ -79,6 +80,7 @@ export default function TwoAmGenerator({ phase, initialPrompt = "", planCode = "
     if (onRequestAuth?.()) return;
     if (creditBalance < totalCredits) { setNoCreditsOpen(true); return; }
     setValidationError("");
+    emitCreditSpend(totalCredits);
     onGenerate({ prompt: prompt.trim(), settings: { ...settings, quality } });
   };
 
