@@ -341,10 +341,15 @@ export default function useFruitStoryJob({ form }) {
    * Safe to call concurrently for multiple scenes — inFlightClipKeysRef and
    * the videoJobId/videoUrl checks in callers prevent double-starts.
    * ────────────────────────────────────────────────────────────────────── */
-  const startSceneVideo = useCallback(async (scene, f, castBible, videoModel) => {
+  const startSceneVideo = useCallback(async (scene, formArg, castBible, videoModel) => {
     const key = `clip:${scene.sceneNumber}`;
     if (inFlightClipKeysRef.current.has(key)) return;
     inFlightClipKeysRef.current.add(key);
+
+    // Carry the cast bible on the form so every video prompt builder can embed
+    // each visible character's fruit type/gender/age/personality/role/arc —
+    // not just their name and dialogue.
+    const f = { ...formArg, castBible };
 
     try {
       // Phase 1: fast text-based prompt — unblocks launch immediately
@@ -357,7 +362,7 @@ export default function useFruitStoryJob({ form }) {
       try {
         const visionData = await generateVisionVideoPrompts({
           scenes: [workingScene],
-          form: { ...f, castBible },
+          form: f,
         });
         const v = visionData?.scenes?.[0];
         if (v?.dialogue?.length) {
