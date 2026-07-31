@@ -1540,20 +1540,19 @@ function buildSceneRefSlots({ scene, form, castBible = [], previousSceneImageUrl
     });
   }
 
-  if (previousSceneImageUrl && shouldUsePreviousSceneRef(prevScene, scene)) {
-    const slot = REF_LABELS[refSlots.length] ?? String(refSlots.length + 1);
-    refSlots.push({
-      slot,
-      type: "continuity",
-      url: previousSceneImageUrl,
-      promptText:
-        `Reference Image ${slot} = Previous scene continuity reference.\n` +
-        "Use this image ONLY for: room layout, background environment, lighting style, camera angle, and scene atmosphere continuity.\n" +
-        "Do NOT use this continuity reference to add previous-scene characters into this scene.\n" +
-        "Do NOT copy characters from this reference that are not in the current scene cast.\n" +
-        "If this scene takes place in a new location, create the new environment fresh - do NOT inherit the previous background.",
-    });
-  }
+  // Previous-scene-image continuity reference intentionally removed. GPT
+  // Image 2's reference handling is edit-style — it anchors to the whole
+  // input composition, not just "background/lighting" the way the prompt
+  // text asked for. Passing in a scene that already has both characters in
+  // a specific dramatic pose was very likely why every subsequent scene in
+  // a single-location story kept reproducing that same pose almost
+  // verbatim, compounding on top of the character-portrait reference.
+  // Environment continuity between scenes now relies entirely on the
+  // text-only backgroundDetail/environment fields the planner already
+  // writes per scene (see SCENE BEAT CONTEXT in buildMasterImagePrompt),
+  // not on handing the model a finished frame to copy from.
+  void previousSceneImageUrl;
+  void prevScene;
 
   const referenceImages = refSlots.map((slot) => slot.url);
   console.log("[AI FRUIT refs] FINAL REF SLOTS", {
