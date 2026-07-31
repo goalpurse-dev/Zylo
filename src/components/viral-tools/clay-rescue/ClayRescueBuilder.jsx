@@ -284,9 +284,8 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase, planCode
                       key={model.id}
                       onClick={() => setUpgradeModelId(model.id)}
                       title={`${model.label} requires the ${PLAN_LABELS[VIDEO_MODEL_MIN_PLAN[model.id]]} plan`}
-                      className="relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 overflow-hidden text-white/25 hover:text-white/40 transition-all"
+                      className="relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-white/25 hover:text-white/40 transition-all"
                     >
-                      <span className="pointer-events-none absolute inset-0 animate-shimmer" />
                       <Lock className="w-3 h-3 shrink-0" />
                       <span className="text-[12px] font-bold tracking-wide">{model.label}</span>
                       <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide bg-gradient-to-r from-[#F5C042]/25 to-[#F59E0B]/25 text-[#F5C042] border border-[#F5C042]/30">
@@ -303,12 +302,12 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase, planCode
                     className={`relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 transition-all ${
                       active
                         ? "bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white shadow-lg shadow-[#7A3BFF]/20"
-                        : "text-white/40 hover:text-white/70"
+                        : "border border-white/[0.14] bg-white/[0.05] text-white/80 hover:border-white/25 hover:bg-white/[0.09] hover:text-white"
                     }`}
                   >
                     <span className={`text-[12px] font-bold tracking-wide ${active ? "text-white" : ""}`}>{model.label}</span>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-                      active ? "bg-white/20 text-white" : "bg-white/[0.05] text-white/30"
+                      active ? "bg-white/20 text-white" : "bg-white/[0.14] text-white/70"
                     }`}>{model.tag}</span>
                   </button>
                 );

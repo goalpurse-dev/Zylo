@@ -33,7 +33,7 @@ export const VIDEO_MODELS = {
   "micro-v3": {
     id: "micro-v3",
     label: "V3",
-    tag: "Higher quality",
+    tag: "Premium",
     description: "720p — NO AUDIO GENERATED",
     toolKey: "video:microcamminimax720",
     width: 768,
@@ -45,7 +45,7 @@ export const VIDEO_MODELS = {
   "micro-v4": {
     id: "micro-v4",
     label: "V4",
-    tag: "Best quality",
+    tag: "Professional",
     description: "1080p — NO AUDIO GENERATED",
     toolKey: "video:microcamminimax1080",
     width: 1080,
