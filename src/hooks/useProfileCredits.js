@@ -1,8 +1,26 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./../lib/supabaseClient";
+import { onCreditSpend, onCreditRefund } from "../lib/creditPopEvents";
 
 export function useProfileCredits() {
   const [credits, setCredits] = useState(0);
+
+  // Applies the full "-N" the moment the spend popup fires, instead of
+  // waiting for the underlying jobs to charge one at a time server-side —
+  // a 5-scene generation used to visibly drain the counter as -2 -2 -2 -6
+  // -6 -6 while the popup already said the full total up front. This is
+  // purely optimistic: every real server-side charge/refund still lands via
+  // realtime/poll below and overwrites this with the authoritative value,
+  // so it can never drift permanently even if the real total differs.
+  useEffect(() => {
+    const unsubSpend = onCreditSpend(({ amount }) => {
+      setCredits((prev) => Math.max(0, prev - amount));
+    });
+    const unsubRefund = onCreditRefund(({ amount }) => {
+      setCredits((prev) => prev + amount);
+    });
+    return () => { unsubSpend(); unsubRefund(); };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
