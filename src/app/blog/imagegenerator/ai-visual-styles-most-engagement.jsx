@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import RelatedArticles from "../../../app/blog/RelatedArticles";
 import Footer from "../../../components/workspace/footer.jsx";
@@ -28,34 +28,6 @@ const related = [
 ];
 
 export default function VisualStylesAI() {
-
-  useEffect(() => {
-
-    document.title =
-      "Visual Styles That Get the Most Engagement (AI Edition)";
-
-    let meta = document.querySelector("meta[name='description']");
-    if (meta) {
-      meta.setAttribute(
-        "content",
-        "Discover the AI visual styles that generate the most engagement on social media. Learn which styles creators use to create viral AI images."
-      );
-    }
-
-    let canonical = document.querySelector("link[rel='canonical']");
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.setAttribute("rel", "canonical");
-      document.head.appendChild(canonical);
-    }
-
-    canonical.setAttribute(
-      "href",
-      "https://zyvo.ai/blog/ai-visual-styles-most-engagement"
-    );
-
-  }, []);
-
   return (
     <div className="w-full bg-white text-gray-800">
 
@@ -101,7 +73,7 @@ export default function VisualStylesAI() {
         </article>
 
         <div className="w-full aspect-[4/3]rounded-3xl flex items-center justify-center text-gray-400 order-2 md:order-1">
-        <img className="rounded-md" src="/blog/AIImageGeneratorVsTraditionalDesign/product2.png"></img>
+        <img className="rounded-md" src="/blog/AIImageGeneratorVsTraditionalDesign/product2.png" alt="Cinematic AI-generated visual with dramatic lighting" loading="lazy" width="1200" height="900"></img>
         </div>
 
       </section>
@@ -111,7 +83,7 @@ export default function VisualStylesAI() {
       <section className="max-w-6xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-16 items-center">
 
          <div className="w-full aspect-[4/3]rounded-3xl flex items-center justify-center text-gray-400 order-2 md:order-1">
-        <img className="rounded-md" src="/thumbs/3dcartoon.png"></img>
+        <img className="rounded-md" src="/thumbs/3dcartoon.png" alt="Playful 3D cartoon-style AI visual" loading="lazy" width="1200" height="900"></img>
         </div>
 
         <article className="order-1 md:order-2">
@@ -158,7 +130,7 @@ export default function VisualStylesAI() {
         </article>
 
             <div className="w-full aspect-[4/3]rounded-3xl flex items-center justify-center text-gray-400 order-2 md:order-1">
-        <img className="rounded-md" src="/thumbs/3d.webp"></img>
+        <img className="rounded-md" src="/thumbs/3d.webp" alt="Soft aesthetic AI visual with balanced color and lighting" loading="lazy" width="1200" height="900"></img>
         </div>
 
       </section>

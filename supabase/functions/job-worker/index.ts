@@ -4,6 +4,11 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getProviderLink } from "../../../src/lib/providers.ts";
 import { logEvent as persistLog, type LogLevel } from "../_shared/systemLog.ts";
+import {
+  ProviderReferenceError,
+  friendlyReferenceMessage,
+  materializeReferencePayload,
+} from "../_shared/referenceImages.ts";
 
 function logEvent(level: LogLevel, event: string, ctx: Record<string, unknown> = {}) {
   const icon = level === "error" ? "🔴" : level === "warn" ? "🟠" : "🟢";
@@ -68,6 +73,10 @@ const PLAN_GATED_TOOLS: Record<string, string> = {
   "video:footballerseedance720":     "generative",  // Footballer Nationality Swap V4 (now Seedance 720p)
   "image:twoam2k":                   "pro",         // 2AM Worlds V3
   "image:twoam4k":                   "generative",  // 2AM Worlds V4
+  "image:cartoondrive4kpro":         "pro",         // Cartoon Drive By V3 image
+  "image:cartoondrive4kmax":         "generative",  // Cartoon Drive By V4 image
+  "video:cartoondriveseedance720":   "pro",         // Cartoon Drive By V3 video
+  "video:cartoondriveseedance1080":  "generative",  // Cartoon Drive By V4 video
 };
 
 function planTierIndex(planCode: string | null | undefined): number {
@@ -103,6 +112,12 @@ async function isToolAllowedForUser(
 
 type SB = ReturnType<typeof createClient>;
 
+async function failAndRefundJob(sb: SB, jobId: string, code: string, message: string) {
+  return sb.rpc("fail_and_refund_generation_job", {
+    p_job_id: jobId, p_error_code: code, p_error: message, p_provider_task_id: null,
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders(req) });
@@ -128,6 +143,12 @@ Deno.serve(async (req) => {
       recoverExistingProvider?: boolean;
     };
     const recoverExistingProvider = body.recoverExistingProvider === true;
+    const workerId = `jw-${crypto.randomUUID()}`;
+
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (body.jobId && (!UUID_RE.test(body.jobId) || body.jobId === "00000000-0000-0000-0000-000000000000")) {
+      return fail(req, "Invalid jobId", 400);
+    }
 
     const sbAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
       auth: { persistSession: false },
@@ -152,6 +173,19 @@ Deno.serve(async (req) => {
     const IMAGE_MAX = Number(Deno.env.get("RUNWARE_IMAGE_MAX_CONCURRENT") ?? 8);
     const VIDEO_MAX = Number(Deno.env.get("RUNWARE_VIDEO_MAX_CONCURRENT") ?? 8);
     const TOTAL_MAX = Number(Deno.env.get("RUNWARE_TOTAL_MAX_CONCURRENT") ?? 15);
+    const leaseMustOutlive = new Date().toISOString();
+    const heartbeatMustBeNewerThan = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+    // Status alone is not proof that provider work is still active. Legacy
+    // crashes can leave rows in running/processing forever, which previously
+    // filled every concurrency slot and prevented the queue from recovering.
+    const countLiveJobs = (type: "image" | "video") => sbAdmin
+      .from("jobs")
+      .select("id", { count: "exact", head: true })
+      .eq("type", type)
+      .in("status", ["running", "processing"])
+      .gt("lease_expires_at", leaseMustOutlive)
+      .gt("heartbeat_at", heartbeatMustBeNewerThan);
 
     /* ---------- pick job ---------- */
     let jobId = body.jobId;
@@ -172,13 +206,44 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Explicit handoffs are the normal browser path. They must obey the same
+    // provider concurrency limits as cron-picked jobs; otherwise every new job
+    // bypasses the guard simply because its id is known.
+    if (jobId && !recoverExistingProvider) {
+      const [{ data: requested }, { count: activeImages }, { count: activeVideos }] = await Promise.all([
+        sbAdmin.from("jobs").select("type,status").eq("id", jobId).maybeSingle(),
+        countLiveJobs("image"),
+        countLiveJobs("video"),
+      ]);
+      const totalActive = (activeImages ?? 0) + (activeVideos ?? 0);
+      const typeFull = requested?.type === "image"
+        ? (activeImages ?? 0) >= IMAGE_MAX
+        : (activeVideos ?? 0) >= VIDEO_MAX;
+      if (requested?.status === "queued" && (totalActive >= TOTAL_MAX || typeFull)) {
+        logEvent("warn", "concurrency_limit_reached", {
+          jobId, type: requested.type, activeImages, activeVideos, totalActive, totalMax: TOTAL_MAX,
+        });
+        EdgeRuntime.waitUntil((async () => {
+          await new Promise((resolve) => setTimeout(resolve, 15_000));
+          await fetch(`${SUPABASE_URL}/functions/v1/job-worker`, {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "authorization": `Bearer ${SERVICE_ROLE_KEY}`,
+              "apikey": SERVICE_ROLE_KEY,
+            },
+            body: JSON.stringify({ jobId }),
+          }).catch(() => null);
+        })());
+        return json(req, { ok: true, message: "concurrency limit reached", status: "queued" }, 202);
+      }
+    }
+
     if (!jobId) {
       // Count currently active jobs to enforce concurrency limits
       const [{ count: activeImages }, { count: activeVideos }] = await Promise.all([
-        sbAdmin.from("jobs").select("id", { count: "exact", head: true })
-          .eq("type", "image").in("status", ["queued", "running", "processing"]),
-        sbAdmin.from("jobs").select("id", { count: "exact", head: true })
-          .eq("type", "video").in("status", ["queued", "running", "processing"]),
+        countLiveJobs("image"),
+        countLiveJobs("video"),
       ]);
 
       const totalActive = (activeImages ?? 0) + (activeVideos ?? 0);
@@ -221,22 +286,15 @@ Deno.serve(async (req) => {
       jobId = data.id;
     }
 
-    // Atomically transition queued -> running. The queued-status predicate is
-    // the duplicate-dispatch guard: only one concurrent worker can update and
-    // receive the row. When this worker picks an unspecified job, the query
-    // above has already enforced retry_after. Explicit job IDs are newly
-    // created handoffs or authorized recovery calls, so repeating retry_after
-    // here is unnecessary. It also causes PostgREST to qualify the filter as
-    // jobs.retry_after in the UPDATE CTE on some deployments, producing a
-    // false "column jobs.retry_after does not exist" error even after the
-    // column migration has been applied.
-    let { data: job, error: jobErr } = await sbAdmin
-      .from("jobs")
-      .update({ status: "running" })
-      .eq("id", jobId)
-      .eq("status", "queued")
-      .select("id,user_id,type,input,settings,tool_key,status,progress,prompt")
-      .maybeSingle();
+    // Claims and recovery leases are database-atomic. Recovery is permitted
+    // only after both lease expiry and a stale heartbeat, and only when a
+    // durable provider task id already exists.
+    const claimRpc = recoverExistingProvider ? "adopt_expired_generation_job" : "claim_generation_job";
+    const claimArgs = recoverExistingProvider
+      ? { p_job_id: jobId, p_worker_id: workerId, p_lease_seconds: 180 }
+      : { p_job_id: jobId, p_worker_id: workerId, p_lease_seconds: 180 };
+    const { data: claimedRows, error: jobErr } = await sbAdmin.rpc(claimRpc, claimArgs);
+    let job: any = Array.isArray(claimedRows) ? claimedRows[0] : claimedRows;
 
     if (jobErr) {
       logEvent("error", "job_claim_failed", { jobId, message: jobErr.message });
@@ -245,52 +303,36 @@ Deno.serve(async (req) => {
     if (!job) {
       const { data: existing } = await sbAdmin
         .from("jobs")
-        .select("id,user_id,type,input,settings,tool_key,status,progress,prompt")
+        .select("id,user_id,type,input,settings,tool_key,status,progress,prompt,provider_task_id,submission_state,lease_expires_at")
         .eq("id", jobId)
         .maybeSingle();
       const status = existing?.status ?? "missing";
 
-      const canRecover = Boolean(
-        recoverExistingProvider &&
-        existing &&
-        (
-          (existing.type === "video" && ["running", "processing", "failed"].includes(String(existing.status))) ||
-          (existing.type === "image" && ["running", "processing"].includes(String(existing.status)))
-        ) &&
-        (existing.settings as any)?.provider_job_id
-      );
-
-      if (canRecover) {
-        job = existing;
-        logEvent("info", "provider_poll_recovery_accepted", {
-          jobId,
-          status,
-          providerJobId: String((existing.settings as any).provider_job_id),
-        });
-      } else {
-        logEvent("info", "duplicate_dispatch_prevented", { jobId, status });
-        return json(req, {
-          ok: true,
-          id: jobId,
-          message: "job already claimed or not ready",
-          status,
-        });
-      }
+      logEvent("info", "duplicate_dispatch_prevented", { jobId, status, recovery: recoverExistingProvider });
+      return json(req, {
+        ok: true,
+        id: jobId,
+        message: "job already claimed, lease is live, or reconciliation is required",
+        status,
+      });
     }
 
     if (job.type !== "image" && job.type !== "video") {
       logEvent("error", "unsupported_job_type", { jobId, type: job.type });
+      await failAndRefundJob(sbAdmin, jobId, "UNSUPPORTED_JOB_TYPE", `Unsupported job type: ${job.type}`);
       return fail(req, `Unsupported job type: ${job.type}`, 400);
     }
 
     if (!job.tool_key) {
       logEvent("error", "missing_tool_key", { jobId, userId: job.user_id });
+      await failAndRefundJob(sbAdmin, jobId, "MISSING_TOOL_KEY", "Missing tool_key on job row");
       return fail(req, "Missing tool_key on job row", 400);
     }
 
     const provider = getProviderLink(job.tool_key);
-    if (!provider || provider.provider !== "runware") {
+    if (!provider || !["runware", "atlascloud"].includes(provider.provider)) {
       logEvent("error", "unsupported_provider", { jobId, toolKey: job.tool_key, userId: job.user_id });
+      await failAndRefundJob(sbAdmin, jobId, "UNSUPPORTED_PROVIDER", "Unsupported provider");
       return fail(req, "Unsupported provider", 400);
     }
 
@@ -304,11 +346,41 @@ Deno.serve(async (req) => {
         jobId, toolKey: job.tool_key, userId: job.user_id,
         userPlan: planCheck.userPlan, requiredPlan: planCheck.requiredPlan,
       });
-      await sbAdmin.from("jobs").update({
-        status: "failed",
-        error: `PLAN_UPGRADE_REQUIRED: ${job.tool_key} requires the ${planCheck.requiredPlan} plan`,
-      }).eq("id", jobId);
+      await failAndRefundJob(sbAdmin, jobId, "PLAN_UPGRADE_REQUIRED",
+        `PLAN_UPGRADE_REQUIRED: ${job.tool_key} requires the ${planCheck.requiredPlan} plan`);
       return fail(req, `This model requires the ${planCheck.requiredPlan} plan`, 403);
+    }
+
+    // The client normalizes references before insertion, but the database is
+    // not a trust boundary. Validate every known reference field again before
+    // charging or constructing any provider request.
+    let providerInput: any = job.input ?? {};
+    let validatedReferenceImages: string[] = [];
+    try {
+      const materialized = await materializeReferencePayload(
+        sbAdmin,
+        job.input ?? {},
+        String(job.user_id),
+      );
+      providerInput = materialized.value;
+      validatedReferenceImages = materialized.references;
+      logEvent("info", "references_validated", {
+        jobId, userId: job.user_id, toolKey: job.tool_key, refCount: validatedReferenceImages.length,
+      });
+    } catch (error) {
+      const code = error instanceof ProviderReferenceError
+        ? error.code
+        : "REFERENCE_IMAGE_NOT_ACCESSIBLE";
+      logEvent("warn", "reference_validation_rejected", {
+        jobId, userId: job.user_id, toolKey: job.tool_key, code,
+      });
+      const { data: failed, error: failureError } = await failAndRefundJob(
+        sbAdmin, jobId, code, friendlyReferenceMessage(code),
+      );
+      logEvent(failureError ? "error" : "info", "atomic_failure_result", {
+        jobId, userId: job.user_id, accepted: failed === true, code,
+      });
+      return json(req, { ok: false, code, error: friendlyReferenceMessage(code) }, 400);
     }
 
     // mark started
@@ -323,20 +395,16 @@ Deno.serve(async (req) => {
 
     // Priority: ref_images (fruit story / explicit refs) → init_image_url (style ref) → empty
     // IMPORTANT: check length > 0, not just Array.isArray — empty arrays must fall through.
-    const refFromField = Array.isArray(job.input?.ref_images) && job.input.ref_images.length > 0
-      ? (job.input.ref_images as string[])
+    const refFromField = Array.isArray(providerInput?.ref_images) && providerInput.ref_images.length > 0
+      ? (providerInput.ref_images as string[])
       : null;
-    const referenceImages: string[] =
-      refFromField ??
-      (job.input?.init_image_url ? [job.input.init_image_url] : []);
+    const referenceImages: string[] = validatedReferenceImages;
 
     console.log("[job-worker] referenceImages forwarding", {
       jobId,
-      source:          refFromField ? "ref_images" : job.input?.init_image_url ? "init_image_url" : "none",
+      source:          refFromField ? "ref_images" : providerInput?.init_image_url ? "init_image_url" : "none",
       count:           referenceImages.length,
       hasRefImages:    !!refFromField,
-      inputRefImages:  refFromField ?? [],
-      firstUrl:        referenceImages[0]?.slice(0, 80) ?? null,
     });
 
     // Use provider.edgeFn as the source of truth
@@ -348,26 +416,32 @@ Deno.serve(async (req) => {
     const payload =
   job.type === "image"
     ? {
+        ...(providerInput ?? {}),
         jobId,
         airTag: provider.airTag,
-        prompt: job.prompt ?? job.input?.subject ?? "",
+        prompt: job.prompt ?? providerInput?.subject ?? "",
         referenceImages,
         settings: {
           ...(job.settings ?? {}),
-          width: job.input?.width,
-          height: job.input?.height,
+          width: providerInput?.width,
+          height: providerInput?.height,
         },
         recoverExistingProvider,
+        workerId,
       }
     : {
+        ...(providerInput ?? {}),
         jobId,
         airTag: provider.airTag,
-        prompt: job.prompt ?? job.input?.subject ?? "",
-        width: job.input?.width,
-        height: job.input?.height,
-        durationSec: job.input?.durationSec,
+        prompt: job.prompt ?? providerInput?.subject ?? "",
+        width: providerInput?.width,
+        height: providerInput?.height,
+        durationSec: providerInput?.durationSec,
         referenceImages,
-        withSound: job.input?.withSound ?? false,
+        withSound: providerInput?.withSound ?? false,
+        workerId,
+        recoverExistingProvider,
+        existingProviderTaskId: job.provider_task_id ?? (job.settings as any)?.provider_job_id ?? null,
       };
 
     logEvent("info", "accepting_handoff", {
@@ -402,12 +476,12 @@ Deno.serve(async (req) => {
         logEvent("error", "handoff_fetch_threw", { jobId, userId: job.user_id, edgeFn: provider.edgeFn, message: String(fetchErr) });
         // Mark the job failed — runware-image never received the request
         try {
-          await sbAdmin.rpc("finish_job_failed", {
-            p_id:    jobId,
-            p_error: `Handoff fetch error: ${String(fetchErr)}`,
+          await sbAdmin.rpc("mark_generation_reconciliation_required", {
+            p_job_id: jobId,
+            p_reason: `Provider handoff response was ambiguous: ${String(fetchErr).slice(0, 250)}`,
           });
         } catch (rpcErr) {
-          logEvent("error", "finish_job_failed_threw", { jobId, message: String(rpcErr) });
+          logEvent("error", "reconciliation_mark_threw", { jobId, message: String(rpcErr) });
         }
         return;
       }
@@ -419,7 +493,7 @@ Deno.serve(async (req) => {
       if (r.ok) {
         logEvent("info", "handoff_accepted", { jobId, status: r.status });
       } else {
-        logEvent("error", "handoff_failed", { jobId, userId: job.user_id, status: r.status, body: txt.slice(0, 200) });
+        logEvent("error", "handoff_failed", { jobId, userId: job.user_id, status: r.status });
 
         // 402 / insufficientCredits from Runware often means concurrency / rate-limit,
         // NOT a real empty balance. Re-queue with back-off instead of marking failed.
@@ -457,10 +531,8 @@ Deno.serve(async (req) => {
           if (attempts >= maxAttempts) {
             // Exhausted retries — mark as permanently failed
             try {
-              await sbAdmin.rpc("finish_job_failed", {
-                p_id:    jobId,
-                p_error: `Provider busy after ${attempts} attempts: ${txt.slice(0, 150)}`,
-              });
+              await failAndRefundJob(sbAdmin, jobId, "PROVIDER_BUSY",
+                "The provider is busy and couldn't complete this generation. Please try again.");
             } catch (rpcErr) {
               logEvent("error", "finish_job_failed_threw", { jobId, message: String(rpcErr) });
             }
@@ -482,10 +554,8 @@ Deno.serve(async (req) => {
         } else {
           // Non-retryable error — mark failed immediately
           try {
-            await sbAdmin.rpc("finish_job_failed", {
-              p_id:    jobId,
-              p_error: `Handoff rejected (${r.status}): ${txt.slice(0, 150)}`,
-            });
+            await failAndRefundJob(sbAdmin, jobId, "PROVIDER_HANDOFF_REJECTED",
+              "The provider couldn't complete this generation. Please try again.");
           } catch (rpcErr) {
             logEvent("error", "finish_job_failed_threw", { jobId, message: String(rpcErr) });
           }

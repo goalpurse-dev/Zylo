@@ -28,7 +28,7 @@ export default function Footer() {
                 Image Generator
               </Link>
 
-               <Link to="/workspace/image-generator" className="text-[12px] hover:underline">
+               <Link to="/workspace/video-generator" className="text-[12px] hover:underline">
                 Video Generator
               </Link>
             
@@ -52,7 +52,7 @@ export default function Footer() {
               <div className="flex flex-col mt-10">
                 <h3 className="cursor-default text-[22px] font-extrabold text-white">Help</h3>
 
-                <Link to="/contact" className="text-[12px] mt-2 hover:underline">
+                <Link to="/support/contact" className="text-[12px] mt-2 hover:underline">
                   Contact Us
                 </Link>
                 <Link to="/support" className="text-[12px] mt-2 hover:underline">
@@ -74,16 +74,16 @@ export default function Footer() {
         <div className="border-t border-white/10 bg-[#0E1016] h-[100px] flex items-center">
 
           <div className="flex gap-2 ml-4 w-[150px]">
-            <img src={Instagram} className="h-3 w-3" />
-            <img src={X} className="h-3 w-3" />
-            <img src={Youtube} className="h-3 w-3" />
-            <img src={Pinterest} className="h-3 w-3" />
-            <img src={Reddit} className="h-3 w-3" />
+            <img src={Instagram} alt="" aria-hidden="true" className="h-3 w-3" />
+            <img src={X} alt="" aria-hidden="true" className="h-3 w-3" />
+            <img src={Youtube} alt="" aria-hidden="true" className="h-3 w-3" />
+            <img src={Pinterest} alt="" aria-hidden="true" className="h-3 w-3" />
+            <img src={Reddit} alt="" aria-hidden="true" className="h-3 w-3" />
           </div>
 
           <div className="flex flex-1 justify-center gap-4 text-[#868687] text-[12px]">
-            <Link className="hover:underline">Privacy Policy</Link>
-            <Link className="hover:underline">Terms & Conditions</Link>
+            <Link to="/support/policies/privacy" className="hover:underline">Privacy Policy</Link>
+            <Link to="/support/policies/tos" className="hover:underline">Terms & Conditions</Link>
           </div>
         </div>
       </div>
@@ -101,7 +101,7 @@ export default function Footer() {
                <Link to="/workspace/image-generator" className="hover:underline">
                 Image Generator
               </Link>
-               <Link to="/workspace/image-generator" className="hover:underline">
+               <Link to="/workspace/video-generator" className="hover:underline">
                 Video Generator
               </Link>
              
@@ -120,7 +120,7 @@ export default function Footer() {
             <div className="flex flex-col gap-3">
               <h3 className="cursor-default text-xl font-extrabold text-white">Help</h3>
 
-              <Link to="/contact" className="hover:underline">
+              <Link to="/support/contact" className="hover:underline">
                 Contact Us
               </Link>
               <Link to="/support" className="hover:underline">
@@ -140,16 +140,16 @@ export default function Footer() {
         <div className="border-t border-white/10 h-[100px] flex items-center bg-[#0E1016]">
 
           <div className="flex gap-3 ml-6 w-[150px]">
-            <img src={Instagram} className="h-4 w-4 md:h-5 md:w-5" />
-            <img src={X} className="h-4 w-4 md:h-5 md:w-5" />
-            <img src={Youtube} className="h-4 w-4 md:h-5 md:w-5" />
-            <img src={Pinterest} className="h-4 w-4 md:h-5 md:w-5" />
-            <img src={Reddit} className="h-4 w-4 md:h-5 md:w-5" />
+            <img src={Instagram} alt="" aria-hidden="true" className="h-4 w-4 md:h-5 md:w-5" />
+            <img src={X} alt="" aria-hidden="true" className="h-4 w-4 md:h-5 md:w-5" />
+            <img src={Youtube} alt="" aria-hidden="true" className="h-4 w-4 md:h-5 md:w-5" />
+            <img src={Pinterest} alt="" aria-hidden="true" className="h-4 w-4 md:h-5 md:w-5" />
+            <img src={Reddit} alt="" aria-hidden="true" className="h-4 w-4 md:h-5 md:w-5" />
           </div>
 
           <div className="flex flex-1 justify-center gap-4 text-[#868687]">
-            <Link className="hover:underline">Privacy Policy</Link>
-            <Link className="hover:underline">Terms & Conditions</Link>
+            <Link to="/support/policies/privacy" className="hover:underline">Privacy Policy</Link>
+            <Link to="/support/policies/tos" className="hover:underline">Terms & Conditions</Link>
           </div>
 
           <div className="w-[150px]" />

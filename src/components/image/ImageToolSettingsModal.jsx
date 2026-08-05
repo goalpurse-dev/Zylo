@@ -698,7 +698,8 @@ function UploadBox({ fileInputRef, url, onPick, dashed = false, required = false
   function onFile(e) {
     const f = e.target.files?.[0];
     if (!f) return;
-    const blob = URL.createObjectURL(f); // preview URL; swap for real uploader if needed
+    if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
+    const blob = URL.createObjectURL(f); // preview only; createJob normalizes before persistence
     onPick?.(blob);
   }
   return (

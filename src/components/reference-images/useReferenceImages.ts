@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const MAX_STORED_IMAGES = 20;
 
@@ -10,6 +10,7 @@ export type ReferenceImage = {
 export function useReferenceImages(maxSelectable: number) {
   const [images, setImages] = useState<ReferenceImage[]>([]);
   const [selected, setSelected] = useState<ReferenceImage[]>([]);
+  const imagesRef = useRef(images);
 
   // add uploaded image
   const addImage = (img: ReferenceImage) => {
@@ -38,6 +39,13 @@ export function useReferenceImages(maxSelectable: number) {
   useEffect(() => {
     setSelected((prev) => prev.slice(0, maxSelectable));
   }, [maxSelectable]);
+
+  useEffect(() => { imagesRef.current = images; }, [images]);
+  useEffect(() => () => {
+    imagesRef.current.forEach((image) => {
+      if (image.url.startsWith("blob:")) URL.revokeObjectURL(image.url);
+    });
+  }, []);
 
   return {
     images,

@@ -255,6 +255,17 @@ export default function HowToCreateViralAIVideos() {
           </div>
         </section>
 
+        <aside className="mb-12 max-w-3xl rounded-2xl border border-purple-200 bg-purple-50 p-6">
+          <h2 className="mb-2 text-[22px] font-semibold text-[#110829]">Try a guided character-story workflow</h2>
+          <p className="text-[15px] leading-relaxed text-[#4A4A55]">
+            If you want a structured multi-scene example, explore the{" "}
+            <Link to="/ai-fruit-story-maker" className="font-semibold text-[#7A3BFF] hover:underline">
+              AI Fruit Story maker
+            </Link>{" "}
+            and its character, dialogue, and vertical-video workflow.
+          </p>
+        </aside>
+
         {/* CTA */}
         <section className="mb-32 bg-[#110829] rounded-3xl p-12 text-center">
           <h2 className="text-[32px] font-bold text-white mb-4">Start creating viral AI videos today</h2>

@@ -270,7 +270,7 @@ export default function WhyCleanProductPhotosBuildTrust() {
 
           <div className="mt-6 flex gap-4">
             <a
-              href="/workspace/productphoto"
+              href="/workspace/image-generator"
               className="rounded-xl bg-[#7A3BFF] px-6 py-3 text-white font-semibold hover:opacity-90 transition"
             >
               Try Product Photos

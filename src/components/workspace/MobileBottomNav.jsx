@@ -163,6 +163,7 @@ export default function MobileBottomNav({ hidden }) {
   const NAV_HEIGHT = 78;
   const createActive =
     location.pathname.startsWith("/workspace/two-am") ||
+    location.pathname.startsWith("/workspace/cartoon-drive-by") ||
     location.pathname.startsWith("/workspace/ai-fruit-story") ||
     location.pathname.startsWith("/workspace/face-asmr") ||
     location.pathname.startsWith("/workspace/micro-camera-animal") ||

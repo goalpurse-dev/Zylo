@@ -8,6 +8,7 @@ import { uploadForExternalFetch } from "../../../lib/storage";
 import { CAPTION_PRESETS, TEXT_SPEEDS } from "./CaptionPreviewPanel";
 import { stitchCookingVideo } from "./videoEditor/ffmpegStitcher";
 import { updateCookingMaticFullVideo } from "./api/cookingMaticApi";
+import { saveMediaToDevice } from "../../../lib/downloadMedia";
 
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -1720,9 +1721,9 @@ export function FinalStep({ clips, dishLabel, voiceData, captionData, existingVi
                   {saveError && <p className="mt-2 text-[10px] font-semibold text-amber-300">{saveError}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <a href={finalVideoUrl} download={fileName} className="flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-[12px] font-black text-black transition hover:bg-white/90">
+                  <button type="button" onClick={() => saveMediaToDevice({ url: finalVideoUrl, filename: fileName, title: "Cooking Matic video" })} className="flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-[12px] font-black text-black transition hover:bg-white/90">
                     <Download className="h-4 w-4" /> Download
-                  </a>
+                  </button>
                   <button type="button" onClick={onPublish} disabled={saveStatus !== "saved"} className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 px-4 py-3 text-[12px] font-black text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40">
                     <Send className="h-4 w-4" /> Publish
                   </button>

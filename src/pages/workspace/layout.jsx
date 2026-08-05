@@ -7,6 +7,7 @@ import TopPromoBanner from "../../components/workspace/TopPromoBanner";
 import MobileBottomNav from "../../components/workspace/MobileBottomNav";
 import WelcomeScreen from "../../components/WelcomeScreen";
 import CreatorRewardsModal from "../../components/CreatorRewardsModal";
+import WorkspaceRouteSeo from "../../components/seo/WorkspaceRouteSeo.jsx";
 
 // ── Promo banner ──────────────────────────────────────────────
 export default function WorkspaceLayout() {
@@ -104,9 +105,6 @@ useEffect(() => {
   /* ================= TITLE ================= */
   const titleMap = {
     "/workspace": "Home",
-    "/workspace/productphoto": "Product Photos",
-    "/workspace/myproduct": "Product",
-    "/workspace/library": "Bg Library",
     "/workspace/creations": "Creations",
     "/workspace/creations/viral-videos": "Viral Videos",
     "/workspace/pricing": "Pricing",
@@ -120,6 +118,7 @@ useEffect(() => {
     "/workspace/clay-rescue":        "Clay Rescue",
     "/workspace/ai-cooking-matic":   "AI Cooking Matic",
     "/workspace/two-am":             "2AM In...",
+    "/workspace/cartoon-drive-by":   "Cartoon Drive By",
     "/workspace/publishv":           "Publish",
     "/workspace/stats":              "Stats",
     "/workspace/connections":        "Connections",
@@ -146,6 +145,7 @@ useEffect(() => {
 
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#090A0A]">
+      <WorkspaceRouteSeo />
       <div ref={noticeRef} className="relative z-[70] w-full shrink-0">
         <TopPromoBanner />
       </div>

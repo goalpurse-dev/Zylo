@@ -4,6 +4,7 @@ import { DownloadIcon, VideoIcon, Maximize2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CREATION_TYPES } from "../../lib/creations";
 import { useAuth } from "../../context/AuthContext";
+import { saveMediaToDevice, shareMediaFile } from "../../lib/downloadMedia";
 
 /* =============================== CONFIG =============================== */
 
@@ -418,16 +419,11 @@ const isFailed =
 
   <button
     onClick={async () => {
-      const res = await fetch(fullImageSrc || rawImageSrc);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "zyvo-image.webp";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      await saveMediaToDevice({
+        url: fullImageSrc || rawImageSrc,
+        filename: "zyvo-image.webp",
+        title: "My Zyvo image",
+      });
     }}
     className="flex items-center justify-center w-7 h-7 rounded-md bg-white/15 hover:bg-white/25 text-white/90 hover:text-white transition active:scale-95"
     title="Download"
@@ -489,13 +485,11 @@ const isFailed =
           <button
             onClick={async () => {
               try {
-                const res = await fetch(fullImageSrc || rawImageSrc);
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url; a.download = "zyvo-image.webp";
-                document.body.appendChild(a); a.click(); a.remove();
-                URL.revokeObjectURL(url);
+                await saveMediaToDevice({
+                  url: fullImageSrc || rawImageSrc,
+                  filename: "zyvo-image.webp",
+                  title: "My Zyvo image",
+                });
               } catch { window.open(rawImageSrc, "_blank"); }
             }}
             className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#7A3BFF] hover:bg-[#6A32E0] text-white font-semibold text-sm transition active:scale-95 shadow-[0_0_20px_rgba(122,59,255,0.4)]"
@@ -529,7 +523,11 @@ const isFailed =
           {/* SHARE */}
           {"share" in navigator && (
             <button
-              onClick={() => navigator.share({ url: rawImageSrc, title: "My Zyvo image" }).catch(() => {})}
+              onClick={() => shareMediaFile({
+                url: fullImageSrc || rawImageSrc,
+                filename: "zyvo-image.webp",
+                title: "My Zyvo image",
+              }).catch(() => {})}
               className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition active:scale-95"
             >
               Share

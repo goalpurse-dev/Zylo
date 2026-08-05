@@ -226,7 +226,7 @@ export default function AIFruitStory() {
       error={error}
       stepIndex={stepIndex}
       setStepIndex={setStepIndex}
-      hideMobileFooter
+      hideMobileFooter={isFirstStep}
       isContinuationMode={loadedFromRecent}
       planCode={planCode}
     />
@@ -320,14 +320,16 @@ export default function AIFruitStory() {
               />
             )}
 
-            <MobileFruitStoryFooter
-              isFirstStep={isFirstStep}
-              isBusy={isBusy}
-              canUsePrimary={!isBusy && hasStoryIdea}
-              onBack={goMobileBack}
-              onPrimary={goMobileNext}
-              showPrimary={stepIndex === 0}
-            />
+            {isFirstStep && (
+              <MobileFruitStoryFooter
+                isFirstStep={isFirstStep}
+                isBusy={isBusy}
+                canUsePrimary={!isBusy && hasStoryIdea}
+                onBack={goMobileBack}
+                onPrimary={goMobileNext}
+                showPrimary={stepIndex === 0}
+              />
+            )}
           </div>
 
           {/* ── Desktop ── */}

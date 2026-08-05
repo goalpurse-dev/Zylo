@@ -6,6 +6,7 @@ import Face2 from "../../assets/blog/image-generator/human2.png";
 import Face3 from "../../assets/blog/image-generator/human3.png";
 import Face4 from "../../assets/blog/image-generator/human4.png";
 import Face5 from "../../assets/blog/image-generator/human5.png";
+import { saveMediaToDevice } from "../../lib/downloadMedia";
 
 const PLACEHOLDER_FACES = [Face1, Face2, Face3, Face4, Face5];
 
@@ -411,12 +412,11 @@ function ResultState({ resultUrl, onReset }) {
   const download = async () => {
     setDl(true);
     try {
-      const res  = await fetch(resultUrl);
-      const blob = await res.blob();
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement("a");
-      a.href = url; a.download = `lipsync-${Date.now()}.mp4`; a.click();
-      URL.revokeObjectURL(url);
+      await saveMediaToDevice({
+        url: resultUrl,
+        filename: `lipsync-${Date.now()}.mp4`,
+        title: "My lip-sync video",
+      });
     } catch { /**/ } finally { setDl(false); }
   };
 

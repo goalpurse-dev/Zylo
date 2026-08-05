@@ -4,19 +4,10 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Loader2, Sparkles, RotateCcw, Download, Share2, X, Maximize2, Wand2 } from "lucide-react";
 import useClayRescueEditor from "./videoEditor/useClayRescueEditor";
 import ClayRescueTimeline from "./videoEditor/ClayRescueTimeline";
+import { saveMediaToDevice } from "../../../lib/downloadMedia";
 
 async function downloadFile(url, filename) {
-  try {
-    const res  = await fetch(url);
-    const blob = await res.blob();
-    const a    = document.createElement("a");
-    a.href     = URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  } catch {
-    window.open(url, "_blank");
-  }
+  return saveMediaToDevice({ url, filename, title: "Clay Rescue scene" });
 }
 
 /* ── Lightbox viewer ── */

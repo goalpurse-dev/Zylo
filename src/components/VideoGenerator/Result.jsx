@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Download, X, Share2, Loader2 } from "lucide-
 import { useNavigate } from "react-router-dom";
 import { CREATION_TYPES } from "../../lib/creations";
 import { useAuth } from "../../context/AuthContext";
+import { saveMediaToDevice, shareMediaFile } from "../../lib/downloadMedia";
 
 /* =============================== CONFIG =============================== */
 
@@ -32,25 +33,12 @@ function isRateLimitError(job) {
 
 async function downloadVideo(url) {
   const proxyBase = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/video-proxy`;
-  try {
-    const res = await fetch(proxyBase, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url }),
-    });
-    if (!res.ok) throw new Error("proxy failed");
-    const blob = await res.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = "zyvo-video.mp4";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(blobUrl);
-  } catch {
-    window.open(url, "_blank");
-  }
+  return saveMediaToDevice({
+    url,
+    filename: "zyvo-video.mp4",
+    title: "My Zyvo video",
+    proxyUrl: proxyBase,
+  });
 }
 
 /* =============================== VIEWER MODAL =============================== */
@@ -128,7 +116,12 @@ function Viewer({ video, onClose }) {
         {/* SHARE (native share API) */}
         {"share" in navigator && (
           <button
-            onClick={() => navigator.share({ url: video.result_url, title: "My Zyvo video" }).catch(() => {})}
+            onClick={() => shareMediaFile({
+              url: video.result_url,
+              filename: "zyvo-video.mp4",
+              title: "My Zyvo video",
+              proxyUrl: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/video-proxy`,
+            }).catch(() => {})}
             className="
               flex items-center gap-2 px-5 py-3 rounded-2xl
               bg-white/10 hover:bg-white/20

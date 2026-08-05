@@ -9,6 +9,7 @@ import {
   deleteCreation,
 } from "../lib/creations";
 import { Download, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { saveMediaToDevice } from "../lib/downloadMedia";
 
 /* ---------- Rows config ---------- */
 const creationRows = [
@@ -215,15 +216,15 @@ function HScrollRow({ typeKey, label, data, showPrompts, onDelete, alwaysShow = 
 /* -------------------- Viewer modal -------------------- */
 function ViewerModal({ open, onClose, item }) {
   if (!open || !item) return null;
-  const isVideo = item.type === CREATION_TYPES.VIDEO;
+  const isVideo = item.type === CREATION_TYPES.VIDEO || item.type === CREATION_TYPES.PRODUCT_AD ||
+    /\.(?:mp4|webm|mov)(?:$|\?)/i.test(item.file_url ?? "");
 
   const download = () => {
-    const a = document.createElement("a");
-    a.href = item.file_url;
-    a.download = "";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    return saveMediaToDevice({
+      url: item.file_url,
+      filename: isVideo ? "zyvo-video.mp4" : "zyvo-image.webp",
+      title: isVideo ? "My Zyvo video" : "My Zyvo image",
+    });
   };
 
   return (

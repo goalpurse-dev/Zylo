@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabaseClient";
 import { ArrowLeft, Copy, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { upsertCreation, CREATION_TYPES } from "../lib/creations";
+import { saveMediaToDevice } from "../lib/downloadMedia";
 
 const BRAND = "#1677FF";
 const PAGE_BG = "#0c1218";
@@ -96,12 +97,11 @@ export default function JobProgress() {
   const canDownload = isDone && mediaUrl;
   const onDownload = () => {
     if (!canDownload) return;
-    const a = document.createElement("a");
-    a.href = mediaUrl;
-    a.download = "";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    return saveMediaToDevice({
+      url: mediaUrl,
+      filename: isImage ? "zyvo-image.webp" : "zyvo-video.mp4",
+      title: isImage ? "My Zyvo image" : "My Zyvo video",
+    });
   };
 
   const copyPrompt = async () => {
@@ -429,4 +429,3 @@ function mapJobToCreationType(j) {
     </>
   );
 }
- 

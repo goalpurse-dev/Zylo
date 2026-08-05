@@ -66,6 +66,7 @@ function FilePicker({ value, onPick, accept = "image/*", placeholder = "Click to
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (!f) return;
+          if (value?.startsWith("blob:")) URL.revokeObjectURL(value);
           const url = URL.createObjectURL(f);
           onPick?.(url, f);
         }}

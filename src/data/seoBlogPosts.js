@@ -4,6 +4,46 @@
 
 export const seoBlogPosts = [
   {
+    slug: "ai-world-generator-guide",
+    published: true,
+    title: "How to Create Cinematic Worlds With an AI World Generator",
+    desc: "Turn one idea into a consistent sequence of cinematic world images with a reusable prompt formula.",
+    date: "Aug 3, 2026",
+    category: "2AM Worlds",
+    image: "/blog-assets/ai-world-generator-guide-2026.webp",
+    landingPageSlug: "2am-worlds-ai-generator",
+  },
+  {
+    slug: "ai-world-generator-prompts",
+    published: true,
+    title: "50 AI World Generator Prompts for Cinematic Images",
+    desc: "Copy detailed prompts for nostalgic, fantasy, science-fiction, cozy and liminal worlds.",
+    date: "Aug 3, 2026",
+    category: "2AM Worlds",
+    image: "/blog-assets/50-ai-world-generator-prompts.webp",
+    landingPageSlug: "2am-worlds-ai-generator",
+  },
+  {
+    slug: "how-to-make-ai-nostalgia-videos",
+    published: true,
+    title: "How to Make AI Nostalgia Videos in 2026",
+    desc: "Build an emotional short-form nostalgia video from six connected AI images.",
+    date: "Aug 3, 2026",
+    category: "2AM Worlds",
+    image: "/blog-assets/how-to-make-ai-nostalgia-videos-2026.webp",
+    landingPageSlug: "2am-worlds-ai-generator",
+  },
+  {
+    slug: "ai-worlds-at-2am-ideas",
+    published: true,
+    title: "25 Incredible AI Worlds at 2AM",
+    desc: "Explore 25 cinematic worlds after midnight with a copyable prompt for every idea.",
+    date: "Aug 3, 2026",
+    category: "2AM Worlds",
+    image: "/blog-assets/25-ai-worlds-at-2am-ideas.webp",
+    landingPageSlug: "2am-worlds-ai-generator",
+  },
+  {
     slug: "what-is-the-2am-worlds-ai-trend",
     title: "What Is the 2AM Worlds AI Trend?",
     desc: "Where the 2AM Worlds trend came from and how Zyvo's AI generator recreates it.",
@@ -39,4 +79,8 @@ export const seoBlogPosts = [
 
 export function getSeoBlogPost(slug) {
   return seoBlogPosts.find((post) => post.slug === slug) || null;
+}
+
+export function getPublishedSeoBlogPosts() {
+  return seoBlogPosts.filter((post) => post.published !== false);
 }

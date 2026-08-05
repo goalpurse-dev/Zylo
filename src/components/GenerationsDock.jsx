@@ -22,6 +22,7 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { upsertCreation, CREATION_TYPES } from "../lib/creations";
 import GenerationLimitToast from "./GenerationLimitToast";
+import { saveMediaToDevice } from "../lib/downloadMedia";
 
 
 /* ---------- config ---------- */
@@ -564,14 +565,14 @@ function GenerationItem({ id }) {
       .catch(() => {});
   }, [user?.id, isDone, mediaUrl, job, promptText, savedToLibrary]);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!canDownload) return;
-    const a = document.createElement("a");
-    a.href = mediaUrl;
-    a.download = "";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    const image = job?.type === "image";
+    await saveMediaToDevice({
+      url: mediaUrl,
+      filename: image ? "zyvo-image.webp" : "zyvo-video.mp4",
+      title: image ? "My Zyvo image" : "My Zyvo video",
+    });
   };
 
   const handleDownloadAudio = () => {

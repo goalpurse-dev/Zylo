@@ -167,7 +167,7 @@ export default function AIProductPhotosShopify() {
             visitors into customers — without expensive photoshoots.
           </p>
           <a
-            href="/workspace/productphoto"
+            href="/workspace/image-generator"
             className="inline-block bg-[#7A3BFF] text-white px-8 py-3 rounded-md font-semibold hover:opacity-90"
           >
             Try AI Product Photos

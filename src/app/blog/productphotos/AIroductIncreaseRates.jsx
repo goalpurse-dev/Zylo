@@ -231,7 +231,7 @@ export default function HowAiProductPhotosIncreaseConversionRates() {
           </p>
 
           <a
-            href="/workspace/productphoto"
+            href="/workspace/image-generator"
             className="inline-block bg-[#7A3BFF] text-white px-6 py-2 rounded-md shadow-md hover:opacity-90"
           >
             Try Zyvo Product Photos

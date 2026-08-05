@@ -4,6 +4,7 @@
 // deno-lint-ignore-file no-explicit-any
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validateReferencePayload } from "../_shared/referenceImages.ts";
 
 /* ================= ENV ================= */
 
@@ -73,14 +74,34 @@ function computeProgress(startMs: number) {
 type SB = ReturnType<typeof createClient>;
 
 async function safeUpdateJob(sb: SB, jobId: string, patch: Record<string, unknown>) {
+  if (patch.status === "failed") {
+    const { error } = await sb.rpc("fail_and_refund_generation_job", {
+      p_job_id: jobId,
+      p_error_code: String(patch.error_code ?? "PROVIDER_GENERATION_FAILED"),
+      p_error: String(patch.error ?? "The provider couldn't complete this generation. Please try again."),
+      p_provider_task_id: null,
+    });
+    if (error) console.error("[atlascloud-video] atomic failure error:", error.message);
+    return;
+  }
+  if (patch.status === "succeeded") {
+    const { error } = await sb.rpc("complete_generation_job", {
+      p_job_id: jobId, p_url: String(patch.result_url ?? ""), p_output: null, p_provider_task_id: null,
+    });
+    if (error) console.error("[atlascloud-video] atomic completion error:", error.message);
+    return;
+  }
   const { error } = await sb.from("jobs").update(patch).eq("id", jobId);
   if (error) console.error("[atlascloud-video] DB update error:", error.message);
 }
 
 async function safeRpc(sb: SB, fn: string, args: Record<string, unknown>) {
-  const { error } = await sb.rpc(fn, args);
+  const { data, error } = await sb.rpc(fn, args);
   if (error) console.error(`[atlascloud-video] RPC ${fn} error:`, error.message);
+  return { data, error };
 }
+
+class AtlasDefinitiveSubmissionError extends Error {}
 
 /* ================= CREDITS ================= */
 
@@ -154,7 +175,14 @@ async function launchAtlasVideo(params: {
     input,
   };
 
-  console.log("[atlascloud-video] LAUNCH PAYLOAD:", JSON.stringify(body, null, 2));
+  console.log("[atlascloud-video] launch_request", JSON.stringify({
+    model: params.modelSlug,
+    durationSec: params.durationSec,
+    width: params.width,
+    height: params.height,
+    hasReference: Boolean(params.refImage),
+    withSound: params.withSound,
+  }));
 
   const res = await fetch(ATLAS_GENERATE, {
     method:  "POST",
@@ -166,15 +194,15 @@ async function launchAtlasVideo(params: {
   });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => "(unreadable)");
-    throw new Error(`Atlas Cloud submit failed (${res.status}): ${text.slice(0, 300)}`);
+    await res.text().catch(() => "");
+    throw new AtlasDefinitiveSubmissionError(`Atlas Cloud submit failed (${res.status})`);
   }
 
   const data = await res.json();
   const predictionId = data?.id ?? data?.prediction_id ?? data?.requestId;
 
   if (!predictionId) {
-    throw new Error(`Atlas Cloud returned no prediction ID. Response: ${JSON.stringify(data).slice(0, 200)}`);
+    throw new Error("Atlas Cloud returned no prediction ID after accepting the request");
   }
 
   return String(predictionId);
@@ -203,7 +231,7 @@ async function pollAtlas(predictionId: string): Promise<{ url?: string; status: 
       null;
 
     if (!url) {
-      throw new Error(`Atlas Cloud completed but no video URL found. Response: ${JSON.stringify(data).slice(0, 200)}`);
+      throw new Error("Atlas Cloud completed but returned no video URL");
     }
 
     return { url: String(url), status };
@@ -233,6 +261,10 @@ Deno.serve(async (req) => {
   try {
     if (req.method !== "POST") return err(req, "Method not allowed", 405);
 
+    if (!SERVICE_KEY || req.headers.get("x-job-worker-key") !== SERVICE_KEY) {
+      return err(req, "Unauthorized worker handoff", 401);
+    }
+
     if (!SUPABASE_URL || !SERVICE_KEY) {
       return err(req, "Missing Supabase env", 500);
     }
@@ -252,6 +284,9 @@ Deno.serve(async (req) => {
       referenceImages,
       airTag,
       withSound,
+      workerId,
+      recoverExistingProvider,
+      existingProviderTaskId,
     } = body ?? {};
 
     currentJobId = jobId ?? null;
@@ -265,6 +300,7 @@ Deno.serve(async (req) => {
     const rawRefs: string[] = Array.isArray(referenceImages)
       ? referenceImages.filter(Boolean).map(String)
       : [];
+    validateReferencePayload({ referenceImages: rawRefs });
 
     const refImage   = rawRefs[0] ?? undefined;
     const modelSlug  = resolveModelSlug(String(airTag), !!refImage);
@@ -276,9 +312,14 @@ Deno.serve(async (req) => {
 
     /* ─── Submit to Atlas Cloud ─── */
 
-    let predictionId: string;
-    try {
-      predictionId = await launchAtlasVideo({
+    let predictionId = recoverExistingProvider ? String(existingProviderTaskId ?? "") : "";
+    if (!predictionId) {
+      const { data: reserved } = await safeRpc(sb, "mark_provider_submitting", {
+        p_job_id: String(jobId), p_worker_id: String(workerId),
+      });
+      if (reserved !== true) return err(req, "Provider submission is already reserved", 409);
+      try {
+        predictionId = await launchAtlasVideo({
         modelSlug,
         prompt:      String(prompt),
         durationSec: Number(durationSec ?? 5),
@@ -286,31 +327,26 @@ Deno.serve(async (req) => {
         height:      Number(height),
         refImage,
         withSound:   !!withSound,
+        });
+      } catch (e: any) {
+        if (e instanceof AtlasDefinitiveSubmissionError) {
+          await safeUpdateJob(sb, String(jobId), { status: "failed", error: e.message });
+        } else {
+          await safeRpc(sb, "mark_generation_reconciliation_required", {
+            p_job_id: String(jobId), p_reason: "Atlas submission response was ambiguous; do not resubmit",
+          });
+        }
+        return err(req, e.message, 502);
+      }
+
+      await safeRpc(sb, "record_provider_submission", {
+        p_job_id: String(jobId), p_worker_id: String(workerId), p_provider_task_id: predictionId,
       });
-    } catch (e: any) {
-      await safeUpdateJob(sb, String(jobId), {
-        status: "failed",
-        error:  e.message,
-      });
-      return err(req, e.message, 502);
     }
 
     console.log("[atlascloud-video] prediction ID:", predictionId);
 
     /* ─── Save prediction ID ─── */
-
-    const { data: settingsRow } = await sb
-      .from("jobs")
-      .select("settings")
-      .eq("id", String(jobId))
-      .single();
-
-    await safeUpdateJob(sb, String(jobId), {
-      settings: {
-        ...(settingsRow?.settings ?? {}),
-        provider_job_id: predictionId,
-      },
-    });
 
     /* ─── Poll for result ─── */
 
@@ -332,9 +368,9 @@ Deno.serve(async (req) => {
         console.error("[atlascloud-video] Poll error:", e);
 
         if (consecutivePollErrors >= MAX_CONSECUTIVE_POLL_ERRORS) {
-          await safeUpdateJob(sb, String(jobId), {
-            status: "failed",
-            error:  "Provider polling failed repeatedly",
+          await safeRpc(sb, "mark_generation_reconciliation_required", {
+            p_job_id: String(jobId),
+            p_reason: "Atlas polling failed repeatedly; provider task must be reconciled",
           });
           return ok(req, { ok: false });
         }
@@ -342,7 +378,10 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      console.log("[atlascloud-video] POLL:", JSON.stringify(poll));
+      console.log("[atlascloud-video] poll_status", JSON.stringify({ status: poll.status, hasUrl: Boolean(poll.url) }));
+      if (i % 5 === 0) await safeRpc(sb, "heartbeat_generation_job", {
+        p_job_id: String(jobId), p_worker_id: String(workerId), p_lease_seconds: 180,
+      });
 
       if (poll.url) {
         await safeUpdateJob(sb, String(jobId), {
@@ -351,8 +390,6 @@ Deno.serve(async (req) => {
           result_url: poll.url,
           charged:    true,
         });
-
-        await chargeJobCredits(sb, String(jobId));
 
         return ok(req, { ok: true, result_url: poll.url });
       }
@@ -374,9 +411,9 @@ Deno.serve(async (req) => {
 
     /* ─── Final timeout ─── */
 
-    await safeUpdateJob(sb, String(jobId), {
-      status: "failed",
-      error:  "Final timeout after 8 minutes",
+    await safeRpc(sb, "mark_generation_reconciliation_required", {
+      p_job_id: String(jobId),
+      p_reason: "Atlas polling window expired; provider task must be reconciled",
     });
 
     return ok(req, { ok: false, error: "Timeout" });
@@ -385,10 +422,14 @@ Deno.serve(async (req) => {
     console.error("[atlascloud-video] FULL ERROR:", e);
 
     if (currentJobId) {
-      await safeUpdateJob(sb, currentJobId, {
-        status: "failed",
-        error:  e instanceof Error ? e.message : String(e),
-      });
+      const { data: state } = await sb.from("jobs").select("submission_state").eq("id", currentJobId).maybeSingle();
+      if (state?.submission_state === "pending") {
+        await safeUpdateJob(sb, currentJobId, { status: "failed", error: e instanceof Error ? e.message : String(e) });
+      } else {
+        await safeRpc(sb, "mark_generation_reconciliation_required", {
+          p_job_id: currentJobId, p_reason: "Atlas worker crashed after provider submission became possible",
+        });
+      }
     }
 
     return err(req, e instanceof Error ? e.message : String(e), 500);

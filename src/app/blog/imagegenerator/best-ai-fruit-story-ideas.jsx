@@ -6,18 +6,18 @@ import RelatedArticles from "../RelatedArticles";
 const related = [
   {
     title: "How to Go Viral on TikTok with AI Fruit Drama Videos (2026)",
-    description: "The complete TikTok strategy for AI fruit drama — hooks, posting schedule, and how to build 50k followers.",
+    description: "A practical TikTok strategy for AI fruit drama, including hooks, publishing cadence, and audience testing.",
     date: "15.05.2026",
     slug: "/blog/how-to-go-viral-tiktok-fruit-drama",
   },
   {
     title: "AI Fruit Story Maker: Create Viral Fruit Drama Videos in 2026",
-    description: "How Zyvo's AI Fruit Story maker works and how to generate a full video in under 5 minutes.",
+    description: "How Zyvo's AI Fruit Story maker turns a prompt into a multi-scene vertical video workflow.",
     date: "14.05.2026",
-    slug: "/blog/ai-fruit-story-maker",
+    slug: "/ai-fruit-story-maker",
   },
   {
-    title: "Viral AI Fruit Drama Videos: The Format Getting 4.7M Views/Week",
+    title: "AI Fruit Drama Videos: Story Structure and Workflow",
     description: "Inside the AI fruit drama format — what makes it work and why it dominates TikTok.",
     date: "14.05.2026",
     slug: "/blog/viral-ai-fruit-drama-videos",
@@ -108,7 +108,7 @@ export default function BestAIFruitStoryIdeas() {
             Best AI Fruit Story Ideas for Maximum TikTok Views (2026)
           </h1>
           <p className="text-[19px] text-[#4A4A55] leading-relaxed">
-            20+ proven fruit drama ideas that consistently blow up on TikTok and Instagram Reels — complete with the exact prompt to use and an explanation of why each one works psychologically. All ready to generate with Zyvo's AI Fruit Story maker in under 5 minutes.
+            Explore 20+ fruit-drama ideas for TikTok and Instagram Reels, with adaptable prompts and an explanation of the storytelling principle behind each one.
           </p>
           <p className="text-[13px] text-[#999] mt-5">May 15, 2026 · 12 min read · Content Ideas</p>
         </header>
@@ -139,7 +139,7 @@ export default function BestAIFruitStoryIdeas() {
           <div className="rounded-2xl border border-purple-200 bg-purple-50 p-6 mb-10">
             <p className="text-[15px] text-[#7A3BFF] font-semibold mb-2">How to use these ideas</p>
             <p className="text-[14px] text-[#374151] leading-relaxed">
-              Copy any prompt below and paste it directly into <Link to="/ai-fruit-story-maker" className="text-[#7A3BFF] hover:underline font-semibold">Zyvo's AI Fruit Story builder</Link>. The AI will take your prompt, plan the full story arc, generate all scenes, and animate talking characters — ready to post in under 5 minutes. No editing needed.
+              Copy any prompt below and paste it directly into <Link to="/ai-fruit-story-maker" className="text-[#7A3BFF] hover:underline font-semibold">Zyvo's AI Fruit Story builder</Link>. The tool uses your prompt to plan the story arc, generate the scenes, and animate talking characters. Generation time varies by settings and queue conditions.
             </p>
           </div>
 
@@ -189,13 +189,13 @@ export default function BestAIFruitStoryIdeas() {
           <section>
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Generate Any of These Ideas in Minutes</h2>
             <p className="text-[17px] leading-relaxed mb-6">
-              Every prompt above works directly in Zyvo's <Link to="/ai-fruit-story-maker" className="text-[#7A3BFF] hover:underline font-semibold">AI Fruit Story maker</Link>. Pick an idea, paste it in, choose your characters, and the AI handles the rest — script, scenes, animation, talking characters, ready to post. Under 5 minutes per video.
+              Every prompt above works directly in Zyvo's <Link to="/ai-fruit-story-maker" className="text-[#7A3BFF] hover:underline font-semibold">AI Fruit Story maker</Link>. Pick an idea, adapt the prompt, choose your characters, and use the workspace to generate the script, scenes, animation, and talking characters.
             </p>
             <Link
               to="/ai-fruit-story-maker"
               className="inline-block bg-gradient-to-r from-[#7A3BFF] to-[#A855F7] text-white font-bold text-[15px] px-8 py-4 rounded-[14px] hover:opacity-90 transition"
             >
-              Generate Your Fruit Story Now → Free to Start
+              Open the Paid AI Fruit Story Tool →
             </Link>
           </section>
 

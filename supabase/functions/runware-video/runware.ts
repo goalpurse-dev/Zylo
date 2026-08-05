@@ -12,6 +12,7 @@ type RunwareLaunchArgs = {
   withSound?: boolean;
   /** Our internal job id — purely for log correlation, never sent to Runware. */
   jobId?: string;
+  providerTaskId?: string;
 };
 
 export type RunwareLaunchResult = { jobId: string };
@@ -87,7 +88,7 @@ async function postJson(body: unknown, jobId?: string) {
     rwLog("error", "runware_http_error", {
       jobId,
       status: res.status,
-      body: text.slice(0, 2000),
+      providerCode: String(json?.errors?.[0]?.code ?? json?.error?.code ?? "unknown"),
     });
   }
 
@@ -147,7 +148,7 @@ function safeRunwarePositivePrompt(positivePrompt: unknown, max = 1450): string 
 export async function launchRunwareVideo(
   args: RunwareLaunchArgs,
 ): Promise<RunwareLaunchResult> {
-  const taskUUID = crypto.randomUUID();
+  const taskUUID = args.providerTaskId || args.jobId || crypto.randomUUID();
   const rawRefs = (args.referenceImages ?? []).filter(Boolean).map(String);
   const safePositivePrompt = safeRunwarePositivePrompt(args.subject);
 
@@ -179,7 +180,7 @@ export async function launchRunwareVideo(
 
     rwLog("info", "launch_request", { jobId: args.jobId, model: "veo-3.1-lite", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
     const { res, text, json } = await postJson([task], args.jobId);
-    if (!res.ok) throw new Error(`Runware launch failed (${res.status}): ${text}`);
+    if (!res.ok) throw new Error(`Runware launch failed (${res.status})`);
     const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
     rwLog("info", "launch_success", { jobId: args.jobId, model: "veo-3.1-lite", providerJobId });
     return { jobId: String(providerJobId) };
@@ -203,7 +204,7 @@ export async function launchRunwareVideo(
 
     rwLog("info", "launch_request", { jobId: args.jobId, model: "wan-2.6-flash", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
     const { res, text, json } = await postJson([task], args.jobId);
-    if (!res.ok) throw new Error(`Runware launch failed (${res.status}): ${text}`);
+    if (!res.ok) throw new Error(`Runware launch failed (${res.status})`);
     const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
     rwLog("info", "launch_success", { jobId: args.jobId, model: "wan-2.6-flash", providerJobId });
     return { jobId: String(providerJobId) };
@@ -234,7 +235,7 @@ export async function launchRunwareVideo(
 
     rwLog("info", "launch_request", { jobId: args.jobId, model: "google-3@3", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
     const { res, text, json } = await postJson([task], args.jobId);
-    if (!res.ok) throw new Error(`Runware launch failed (${res.status}): ${text}`);
+    if (!res.ok) throw new Error(`Runware launch failed (${res.status})`);
     const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
     rwLog("info", "launch_success", { jobId: args.jobId, model: "google-3@3", providerJobId });
     return { jobId: String(providerJobId) };
@@ -255,6 +256,9 @@ export async function launchRunwareVideo(
       outputFormat:  "MP4",
       outputQuality: 95,
       deliveryMethod: "async",
+      settings: {
+        audio: args.withSound ?? false,
+      },
       taskUUID,
     };
 
@@ -265,9 +269,41 @@ export async function launchRunwareVideo(
 
     rwLog("info", "launch_request", { jobId: args.jobId, model: "seedance-2.0-fast", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
     const { res, text, json } = await postJson([task], args.jobId);
-    if (!res.ok) throw new Error(`Runware Seedance 2.0 Fast launch failed (${res.status}): ${text}`);
+    if (!res.ok) throw new Error(`Runware Seedance 2.0 Fast launch failed (${res.status})`);
     const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
     rwLog("info", "launch_success", { jobId: args.jobId, model: "seedance-2.0-fast", providerJobId });
+    return { jobId: String(providerJobId) };
+  }
+
+  /* ── Seedance 2.0 (standard, supports 720p and 1080p) ── */
+  if (args.airTag === "bytedance:seedance@2.0") {
+    const task: Record<string, unknown> = {
+      taskType:       "videoInference",
+      model:          "bytedance:seedance@2.0",
+      positivePrompt: safePositivePrompt,
+      width:          args.width ?? 720,
+      height:         args.height ?? 1280,
+      duration:       args.durationSec,
+      numberResults:  1,
+      includeCost:    true,
+      outputType:     "URL",
+      outputFormat:   "MP4",
+      outputQuality:  95,
+      deliveryMethod: "async",
+      settings: {
+        audio: args.withSound ?? false,
+      },
+      taskUUID,
+    };
+
+    const refs = rawRefs.slice(0, 2);
+    if (refs.length > 0) task.inputs = { frameImages: refs };
+
+    rwLog("info", "launch_request", { jobId: args.jobId, model: "seedance-2.0", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
+    const { res, json } = await postJson([task], args.jobId);
+    if (!res.ok) throw new Error(`Runware Seedance 2.0 launch failed (${res.status})`);
+    const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
+    rwLog("info", "launch_success", { jobId: args.jobId, model: "seedance-2.0", providerJobId });
     return { jobId: String(providerJobId) };
   }
 
@@ -300,7 +336,7 @@ export async function launchRunwareVideo(
 
     rwLog("info", "launch_request", { jobId: args.jobId, model: "seedance-1.5-pro", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
     const { res, text, json } = await postJson([task], args.jobId);
-    if (!res.ok) throw new Error(`Runware Seedance launch failed (${res.status}): ${text}`);
+    if (!res.ok) throw new Error(`Runware Seedance launch failed (${res.status})`);
     const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
     rwLog("info", "launch_success", { jobId: args.jobId, model: "seedance-1.5-pro", providerJobId });
     return { jobId: String(providerJobId) };
@@ -335,7 +371,7 @@ export async function launchRunwareVideo(
 
     rwLog("info", "launch_request", { jobId: args.jobId, model: "vidu-q3-turbo", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
     const { res, text, json } = await postJson([task], args.jobId);
-    if (!res.ok) throw new Error(`Runware Vidu Q3 Turbo launch failed (${res.status}): ${text}`);
+    if (!res.ok) throw new Error(`Runware Vidu Q3 Turbo launch failed (${res.status})`);
     const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
     rwLog("info", "launch_success", { jobId: args.jobId, model: "vidu-q3-turbo", providerJobId });
     return { jobId: String(providerJobId) };
@@ -374,7 +410,7 @@ export async function launchRunwareVideo(
 
     rwLog("info", "launch_request", { jobId: args.jobId, model: "minimax-hailuo-2.3-fast", width: task.width, height: task.height, duration: task.duration, promptPreview: safePositivePrompt.slice(0, 140) });
     const { res, text, json } = await postJson([task], args.jobId);
-    if (!res.ok) throw new Error(`Runware MiniMax launch failed (${res.status}): ${text}`);
+    if (!res.ok) throw new Error(`Runware MiniMax launch failed (${res.status})`);
     const providerJobId = json?.data?.[0]?.taskUUID || json?.data?.[0]?.id || taskUUID;
     rwLog("info", "launch_success", { jobId: args.jobId, model: "minimax-hailuo-2.3-fast", providerJobId });
     return { jobId: String(providerJobId) };
@@ -463,7 +499,7 @@ export async function launchRunwareVideo(
   const { res, text, json } = await postJson([task], args.jobId);
 
   if (!res.ok) {
-    throw new Error(`Runware launch failed (${res.status}): ${text}`);
+    throw new Error(`Runware launch failed (${res.status})`);
   }
 
   const providerJobId =

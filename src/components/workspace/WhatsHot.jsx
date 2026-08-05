@@ -1,15 +1,26 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowUpRight, TrendingUp } from "lucide-react";
+import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
+import cartoonDriveVideo from "../../assets/home/latest/video9.16-fast.mp4";
 
 /* ─── Data ─────────────────────────────────────────────────── */
 const items = [
+  {
+    title:  "Cartoon Drive By",
+    views:  "7.4M",
+    image:  cartoonDrivePreview,
+    video:  cartoonDriveVideo,
+    accent: "#A3E635",
+    rank:   1,
+    path:   "/workspace/cartoon-drive-by",
+  },
   {
     title:  "2AM Worlds",
     views:  "6.2M",
     image:  "/template/2am-world/preview.png",
     accent: "#BEF264",
-    rank:   1,
+    rank:   2,
     path:   "/workspace/two-am",
   },
   {
@@ -17,7 +28,7 @@ const items = [
     views:  "5.1M",
     image:  "/clayrescue/smallpreview.webp",
     accent: "#A855F7",
-    rank:   2,
+    rank:   3,
     path:   "/workspace/clay-rescue",
   },
   {
@@ -25,7 +36,7 @@ const items = [
     views:  "4.7M",
     image:  "/viral-builder/ai-fruit/presets/cheating.webp",
     accent: "#A855F7",
-    rank:   3,
+    rank:   4,
     path:   "/workspace/ai-fruit-story",
   },
   {
@@ -33,16 +44,8 @@ const items = [
     views:  "2.8M",
     image:  "/viral-builder/micro-camera/preview1.png",
     accent: "#7A3BFF",
-    rank:   4,
-    path:   "/workspace/micro-camera-animal",
-  },
-  {
-    title:  "Viral Skeleton",
-    views:  "3.2M",
-    image:  "/home/viral-templates/skeleton.webp",
-    accent: "#FF6B35",
     rank:   5,
-    path:   "/workspace/skeleton-shorts",
+    path:   "/workspace/micro-camera-animal",
   },
   {
     title:  "Face ASMR",
@@ -141,14 +144,26 @@ function HotCard({ item, navigate }) {
       className="group relative isolate flex w-full flex-col gap-1 rounded-[16px] border border-white/[0.07] bg-[#101312] p-1 text-left transition-colors duration-200 hover:border-lime-300/30 hover:bg-[#151915]"
     >
       <div className="relative aspect-[343/195] w-full overflow-hidden rounded-xl bg-black">
-        <img
-          src={item.image}
-          alt={item.title}
-          loading="lazy"
-          fetchPriority="low"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
-        />
+        {item.video ? (
+          <video
+            src={item.video}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+          />
+        ) : (
+          <img
+            src={item.image}
+            alt={item.title}
+            loading="lazy"
+            fetchPriority="low"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+          />
+        )}
 
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
 

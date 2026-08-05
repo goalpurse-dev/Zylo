@@ -40,15 +40,7 @@ export function displayImageUrl(url, width = 720) {
 }
 
 export async function downloadFile(url, filename) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error("Download failed");
-  const blob = await response.blob();
-  const objectUrl = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = objectUrl;
-  link.download = filename;
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+  return saveMediaToDevice({ url, filename, title: "2AM scene" });
 }
 
 // Tiny standards-compliant ZIP writer using the uncompressed STORE method.
@@ -85,3 +77,4 @@ export async function downloadImagesAsZip(scenes, label = "2am-slideshow") {
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
+import { saveMediaToDevice } from "../../../../lib/downloadMedia";

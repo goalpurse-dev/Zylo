@@ -155,7 +155,7 @@ export default function HowVisualBrandingImpactsOnlineSales() {
               <Link to="/signup" className="text-[#7A3BFF] font-medium">
                 Increase perceived value →
               </Link>
-              <Link to="/workspace/productphoto  " className="text-[#7A3BFF] font-medium">
+              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium">
                 Upgrade product photos →
               </Link>
             </div>
@@ -193,7 +193,7 @@ export default function HowVisualBrandingImpactsOnlineSales() {
               <Link to="/workspace/library" className="text-[#7A3BFF] font-medium">
                 See visual branding tools →
               </Link>
-              <Link to="/workspace/productphoto" className="text-[#7A3BFF] font-medium">
+              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium">
                 Start building your brand →
               </Link>
             </div>

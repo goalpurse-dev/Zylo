@@ -20,7 +20,7 @@ const related = [
     title: "AI Fruit Story Maker: How to Create Viral Fruit Drama Videos",
     description: "How Zyvo generates cinematic fruit drama scenes built for short-form retention.",
     date: "14.05.2026",
-    slug: "/blog/ai-fruit-story-maker",
+    slug: "/ai-fruit-story-maker",
   },
 ];
 

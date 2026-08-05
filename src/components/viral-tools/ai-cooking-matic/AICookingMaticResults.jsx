@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { Check, Download, X, ChevronLeft, ChevronRight, AlertCircle, UtensilsCrossed, RotateCcw, Play, Pause, Music2, Sparkles } from "lucide-react";
 import { CLIP_PAIRS, SCENE_LABELS, VIBES } from "./api/cookingMaticApi";
 import CaptionPreviewPanel from "./CaptionPreviewPanel";
+import { saveMediaToDevice } from "../../../lib/downloadMedia";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function timeAgo(dateStr) {
@@ -22,13 +23,7 @@ function formatAudioDuration(seconds) {
 }
 
 function downloadImage(url, filename) {
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.target = "_blank";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  return saveMediaToDevice({ url, filename, title: "Cooking Matic image" });
 }
 
 // ── Lightbox ──────────────────────────────────────────────────────────────────
@@ -322,15 +317,11 @@ function ClipCard({ clip, posterUrl, onRedo }) {
               </button>
             )}
             <button
-              onClick={() => {
-                const a = document.createElement("a");
-                a.href = videoUrl;
-                a.download = `cooking-clip-${index + 1}.mp4`;
-                a.target = "_blank";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-              }}
+              onClick={() => saveMediaToDevice({
+                url: videoUrl,
+                filename: `cooking-clip-${index + 1}.mp4`,
+                title: "Cooking Matic clip",
+              })}
               className="flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur-md transition hover:bg-black/80"
               title="Save"
             >

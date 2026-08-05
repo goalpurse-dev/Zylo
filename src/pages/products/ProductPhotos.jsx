@@ -90,6 +90,9 @@ export default function ProductPhotos() {
       uploadedProductFile ? URL.createObjectURL(uploadedProductFile) : null,
     [uploadedProductFile],
   );
+  useEffect(() => () => {
+    if (uploadedPreview) URL.revokeObjectURL(uploadedPreview);
+  }, [uploadedPreview]);
   const [uploadedProductUrl, setUploadedProductUrl] = useState(null);
 
   const [selectedBg, setSelectedBg] = useState(null);

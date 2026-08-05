@@ -2,7 +2,6 @@ import { MODELS } from "./modelsConfig";
 import { UI_MODEL_TO_TOOLKEY } from "./modelMapper";
 import { buildFinalImagePrompt } from "./promptBuilder";
 import { createImageJobSimple } from "../jobs";
-import { uploadBlobRefsToPublicUrls } from "./uploadRefs";
 import { IMAGE_STYLES } from "./styles";
 import { IMAGE_SIZES } from "./sizes";
 
@@ -29,9 +28,7 @@ export async function generateImageFromUI(params: {
   });
 
   // ✅ upload refs (unchanged)
-  const uploadedRefs = params.refImages?.length
-    ? await uploadBlobRefsToPublicUrls(params.refImages)
-    : [];
+  const uploadedRefs = params.refImages ?? [];
 
   // ✅ fallback size (old system)
   const sizeConfig =
