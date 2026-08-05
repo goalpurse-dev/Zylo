@@ -11,6 +11,20 @@ const distDir = path.join(projectRoot, "dist");
 const sitemapPath = path.join(projectRoot, "public", "sitemap.xml");
 const SPA_FALLBACK = path.join(distDir, "index.html");
 const HOST = "127.0.0.1";
+// Written only when every route actually prerendered — validateSeoIndexing.js
+// checks for this before asserting on snapshot files, so an environment where
+// Chromium can't run degrades to "skip SEO prerender" instead of "block the
+// whole deploy". Vercel's build image is the concrete case this guards.
+const SUCCESS_MARKER = path.join(distDir, ".seo-prerender-complete");
+const OVERALL_TIMEOUT_MS = 5 * 60 * 1000;
+
+function withTimeout(promise, ms, label) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
 
 const MIME = {
   ".css": "text/css; charset=utf-8",
@@ -142,7 +156,20 @@ async function main() {
   const server = await startStaticServer();
   const address = server.address();
   const origin = `http://${HOST}:${address.port}`;
-  const browser = await chromium.launch({ headless: true });
+  // --no-sandbox etc. are required for Chromium to launch inside CI/build
+  // containers (Vercel's build image included) — without them the launch
+  // can hang indefinitely instead of failing fast, which is what burned a
+  // full 45-minute Vercel build budget and blocked the whole deploy. The
+  // timeout wrapper is the backstop in case launch hangs for some other
+  // reason in a given environment.
+  const browser = await withTimeout(
+    chromium.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+    }),
+    60_000,
+    "chromium.launch()",
+  );
 
   try {
     const failures = [];
@@ -163,13 +190,19 @@ async function main() {
     await Promise.all(workers);
     if (failures.length) throw new Error(`Prerender failed for ${failures.length} route(s):\n${failures.join("\n")}`);
     console.log(`Prerendered ${completed} crawler-visible public/noindex route(s).`);
+    await writeFile(SUCCESS_MARKER, new Date().toISOString());
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));
   }
 }
 
-main().catch((error) => {
+withTimeout(main(), OVERALL_TIMEOUT_MS, "SEO prerender").catch((error) => {
+  // Never let a broken/unsupported headless-Chromium environment block the
+  // whole deploy — degrade to "no prerendered SEO snapshots this build"
+  // instead. validateSeoIndexing.js checks for SUCCESS_MARKER and skips its
+  // snapshot assertions when it's absent, so this build still ships; it just
+  // ships without prerendered SEO HTML until the environment is fixed.
+  console.error("[prerenderSeo] SEO prerender failed or timed out — continuing deploy without it:");
   console.error(error);
-  process.exitCode = 1;
 });

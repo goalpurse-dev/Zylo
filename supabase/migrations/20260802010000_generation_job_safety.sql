@@ -1,6 +1,12 @@
 -- Production-safety hardening for provider dispatch, leases, terminal state,
 -- and credit idempotency. This migration is additive for mixed deployments.
 
+-- LOCK TABLE only has meaning inside a transaction — without an explicit
+-- BEGIN, the migration runner applies statements outside of one, so the
+-- lock (and the point of taking it before the ALTERs below) is rejected
+-- outright by Postgres (25P01).
+BEGIN;
+
 -- Queue workers touch generation_queue before creating/updating jobs. Acquire
 -- the DDL locks in that same order so a live worker cannot deadlock this
 -- migration by holding one relation while waiting on the other.
@@ -363,3 +369,5 @@ GRANT EXECUTE ON FUNCTION public.claim_generation_job(text,uuid,integer), public
 GRANT EXECUTE ON FUNCTION public.charge_job_credits(uuid), public.refund_job_credits(uuid) TO service_role;
 
 NOTIFY pgrst, 'reload schema';
+
+COMMIT;

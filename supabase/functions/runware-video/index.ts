@@ -50,7 +50,7 @@ const SERVICE_KEY =
 // We must mark the job "failed" *before* Supabase kills the function mid-poll,
 // otherwise the job stays stuck in "running" and the frontend never gets a
 // terminal state to trigger the retry button.
-const MAX_RUNTIME_MS = 320 * 1000; // 320s — leaves ~80s buffer before Supabase kills it
+const MAX_RUNTIME_MS = 350 * 1000; // 350s — leaves ~50s buffer before Supabase kills it
 
 const POLL_INTERVAL_MS = 4000;     // slightly longer interval to save CPU budget
 const MAX_POLLS = Math.ceil(MAX_RUNTIME_MS / POLL_INTERVAL_MS);
@@ -319,18 +319,37 @@ function isContentPolicyFailure(poll: { error?: string; code?: string }): boolea
   return CONTENT_POLICY_KEYWORDS.some((kw) => msg.includes(kw));
 }
 
+const COPYRIGHT_KEYWORDS = ["copyright", "trademark", "intellectual property", "ip infringement", "licensed character"];
+
+function isCopyrightFailure(providerMessage?: string): boolean {
+  const msg = String(providerMessage || "").toLowerCase();
+  return COPYRIGHT_KEYWORDS.some((kw) => msg.includes(kw));
+}
+
 async function sanitizePromptWithOpenAI(
   originalPrompt: string,
   attempt: number,
   jobId?: string,
+  providerMessage?: string,
 ): Promise<string> {
   if (!OPENAI_KEY) {
     logEvent("warn", "sanitize_skipped_no_key", { jobId });
     return originalPrompt;
   }
 
-  const strictness =
-    attempt >= 2
+  // Copyright rejections need a different rewrite than safety rejections —
+  // stripping "violent/unsafe" wording does nothing for a prompt that got
+  // flagged for naming a specific trademarked character, franchise, or
+  // place (e.g. "Pokemon Center"). Describe the same silhouette/shape/color
+  // in generic, real-world visual terms instead of naming the IP.
+  const strictness = isCopyrightFailure(providerMessage)
+    ? "The rejection was for referencing copyrighted or trademarked material (a specific character, franchise, brand, or fictional place). " +
+      "Find every such named reference and replace ONLY that reference with a purely descriptive, generic real-world visual " +
+      "equivalent — its shape, color, materials, and silhouette — without naming the IP, character, or franchise anywhere. " +
+      "For example, replace \"Pokemon Center\" with something like \"a rounded building with a large red-and-white " +
+      "ball-shaped dome on the roof\". Keep the description vivid and specific about what it visually looks like, just " +
+      "never name the source. Leave every other part of the prompt (camera direction, motion, lighting, everything else) unchanged."
+    : attempt >= 2
       ? "Be very conservative: strip out anything that could remotely be read as violent, dangerous, harmful to a person, sexual, or otherwise sensitive, even if it seems like a stretch. Keep only the safest possible interpretation of the scene."
       : "Remove or soften wording likely to trigger an automated content-safety filter (references to real harm, weapons, blood, distress, or anything that could be misread as violent or unsafe), while keeping the scene's core action and characters recognizable.";
 
@@ -653,7 +672,7 @@ async function processVideoJob(body: any) {
             maxRetries: MAX_CONTENT_RETRIES,
           });
 
-          currentPrompt = await sanitizePromptWithOpenAI(currentPrompt, contentRetryCount, String(jobId));
+          currentPrompt = await sanitizePromptWithOpenAI(currentPrompt, contentRetryCount, String(jobId), poll?.error);
 
           await safeUpdateJob(sb, String(jobId), {
             status: "running",
@@ -701,6 +720,82 @@ async function processVideoJob(body: any) {
   });
 }
 
+/* ================= RECONCILE =================
+   Runs when a job's own polling window (or the whole invocation) ran out
+   before the provider actually finished — most often a content-policy
+   retry whose relaunch pushed total time past MAX_RUNTIME_MS. The job is
+   still charged and still generating on the provider's side at that point;
+   without this, it's stuck showing "running" forever even though the video
+   (or a real failure) already exists. A single direct poll against the
+   stored provider_task_id tells us the true state, and reuses the exact
+   same complete/fail RPCs the normal flow uses — those are already
+   idempotent against an already-terminal job, so calling this against a
+   job that resolved on its own in the meantime is always safe.
+================================================= */
+
+async function reconcileVideoJob(jobId: string, workerId: string) {
+  const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+
+  const { data: job } = await sb
+    .from("jobs")
+    .select("status,provider_task_id")
+    .eq("id", jobId)
+    .maybeSingle();
+
+  if (!job) {
+    logEvent("warn", "reconcile_job_missing", { jobId });
+    return { status: "missing" };
+  }
+
+  if (!["running", "processing"].includes(String(job.status))) {
+    // Already terminal (or was never dispatched) — nothing to reconcile.
+    logEvent("info", "reconcile_skip_not_running", { jobId, status: job.status });
+    return { status: job.status };
+  }
+
+  const providerTaskId = String(job.provider_task_id ?? "").trim();
+  if (!providerTaskId) {
+    logEvent("warn", "reconcile_no_provider_task", { jobId });
+    return { status: "no_provider_task" };
+  }
+
+  await safeRpc(sb, "heartbeat_generation_job", { p_job_id: jobId, p_worker_id: workerId, p_lease_seconds: 180 });
+
+  let poll: any;
+  try {
+    poll = await pollRunware(providerTaskId, jobId);
+  } catch (e) {
+    logEvent("error", "reconcile_poll_exception", { jobId, message: (e as Error)?.message ?? String(e) });
+    return { status: "poll_failed" };
+  }
+
+  if (poll?.url) {
+    logEvent("info", "reconcile_found_success", { jobId });
+    const storedUrl = await persistVideoResult(sb, jobId, poll.url);
+    await safeUpdateJob(sb, jobId, { status: "succeeded", result_url: storedUrl });
+    return { status: "succeeded", resultUrl: storedUrl };
+  }
+
+  const providerStatus = String(poll?.status || "").toLowerCase();
+  if (providerStatus === "failed") {
+    const contentPolicyHit = isContentPolicyFailure(poll);
+    logEvent("warn", "reconcile_found_failure", { jobId, contentPolicyHit, providerError: poll?.error });
+    await safeUpdateJob(sb, jobId, {
+      status: "failed",
+      error_code: contentPolicyHit ? "PROVIDER_SAFETY_REJECTION" : "PROVIDER_GENERATION_FAILED",
+      error: contentPolicyHit
+        ? "The provider couldn't generate this request because of its safety rules. Try changing the prompt or image."
+        : "The provider couldn't complete this generation. Please try again.",
+    });
+    return { status: "failed" };
+  }
+
+  // Genuinely still in progress on the provider's side — leave it alone,
+  // whoever called this (client retry or a periodic sweep) can check again.
+  logEvent("info", "reconcile_still_running", { jobId, providerStatus: providerStatus || "unknown" });
+  return { status: "running" };
+}
+
 /* ================= HANDLER =================
    Returns 202 immediately and runs generation in the background via
    EdgeRuntime.waitUntil. Kling/MiniMax videos take 3-5 minutes — far
@@ -727,10 +822,20 @@ Deno.serve(async (req) => {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { jobId, prompt, width, height, durationSec, airTag } = body ?? {};
+  const { jobId, prompt, width, height, durationSec, airTag, action, workerId } = body ?? {};
 
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   if (!jobId || !UUID_RE.test(String(jobId)) || jobId === "00000000-0000-0000-0000-000000000000") return err(req, "Invalid jobId");
+
+  // Single direct check against the provider, not a new generation attempt —
+  // see reconcileVideoJob for why this exists. Callable by the client when
+  // its own wait times out, or by a periodic sweep for jobs the user isn't
+  // even watching anymore.
+  if (action === "reconcile") {
+    const result = await reconcileVideoJob(String(jobId), String(workerId ?? "reconcile"));
+    return ok(req, { ok: true, ...result });
+  }
+
   if (!prompt) return err(req, "Missing prompt");
   if (!durationSec) return err(req, "Missing durationSec");
   if (!airTag) return err(req, "Missing airTag");
