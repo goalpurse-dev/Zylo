@@ -205,7 +205,13 @@ const insertPayload = {
   status:       "queued" as JobStatus,
   progress:     0,
   charge_credits: (payload.settings as any)?.credits ?? null,
-  charged:      (payload.settings as any)?.charged ?? false,
+  // Always starts uncharged — only the charge_job_credits/deduct_credits RPCs
+  // (called server-side at launch/completion) are allowed to flip this to
+  // true. settings.charged just records "credit check passed at creation
+  // time," not "credits were actually deducted" — copying it here made every
+  // video job look pre-charged before a cent moved, so the launch-time charge
+  // call in runware-video/index.ts silently skipped itself every time.
+  charged:      false,
   priority:     resolvedJobPriority,
   plan_code:    resolvedJobPlanCode,
   provider:     payload.provider    ?? "runware",
@@ -340,6 +346,23 @@ export async function cancelJob(id: string): Promise<void> {
     .eq("user_id", userData?.user?.id ?? "")
     .in("status", ["queued", "running"]);
   if (error) throw error;
+}
+
+// Asks job-worker to check the provider directly for a job that's still
+// "running" but whose own polling window may have run out server-side —
+// most often a content-policy retry that took longer than one worker
+// invocation could cover. This is a status check, not a new dispatch: if
+// the provider already finished, the job gets completed/refunded properly;
+// if it's still genuinely going, nothing changes. Only wired up for video
+// jobs today (see runware-video's "reconcile" action).
+export async function reconcileVideoJob(jobId: string): Promise<JobRow | null> {
+  try {
+    await supabase.functions.invoke("job-worker", { body: { jobId, action: "reconcile" } });
+  } catch {
+    // Best-effort — fall through to re-reading the row either way.
+  }
+  const { data } = await supabase.from("jobs").select("*").eq("id", jobId).maybeSingle();
+  return (data as JobRow) ?? null;
 }
 
 /* ======================= REALTIME + POLL PROGRESS ======================= */
