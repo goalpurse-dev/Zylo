@@ -1,5 +1,6 @@
 import { supabase } from "./supabaseClient";
 import { getPlanPriority } from "./queuePriority";
+import { cleanupUploadedReferences, normalizeReferencePayload } from "./referenceImages";
 
 /* ─── Types ─── */
 
@@ -51,17 +52,28 @@ export interface QueueJobInput {
 export async function createGenerationQueueJob(
   job: QueueJobInput
 ): Promise<GenerationQueueRow> {
+  if (!String(job.payload?.prompt ?? "").trim()) throw new Error("MISSING_PROMPT");
+  const input = job.payload?.input ?? {};
+  if (!(Number(input.width) > 0 && Number(input.height) > 0) && !input.resolution && !job.payload?.settings?.size) {
+    throw new Error("MISSING_DIMENSIONS");
+  }
   const priority = getPlanPriority(job.planCode);
+  const queueId = crypto.randomUUID();
+  const normalized = await normalizeReferencePayload(job.payload, {
+    userId: job.userId,
+    jobId: queueId,
+  });
 
   const { data, error } = await supabase
     .from("generation_queue")
     .insert({
+      id:                   queueId,
       user_id:              job.userId,
       parent_generation_id: job.parentGenerationId ?? null,
       provider:             job.provider ?? "runware",
       model:                job.model,
       task_type:            job.taskType,
-      payload:              job.payload,
+      payload:              normalized.value,
       plan_code:            job.planCode ?? "free",
       priority,
       status:               "queued",
@@ -72,7 +84,10 @@ export async function createGenerationQueueJob(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    await cleanupUploadedReferences(normalized.uploads);
+    throw error;
+  }
   return data as GenerationQueueRow;
 }
 

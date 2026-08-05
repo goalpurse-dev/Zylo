@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { assertProductPhotoPayload } from "./payloads.ts";
+import { validateReferencePayload } from "../_shared/referenceImages.ts";
 
 /* ============== CORS ============== */
 function cors(req: Request): Headers {
@@ -206,6 +207,7 @@ Deno.serve(async (req) => {
 
     const body: any = await req.json();
     assertProductPhotoPayload(body);
+    validateReferencePayload({ refs: body.refs });
 
     const sbAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
       auth: { persistSession: false },

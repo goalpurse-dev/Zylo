@@ -1,25 +1,52 @@
 {
-  "redirects": [
-    {
-      "source": "/image-generator",
-      "destination": "/workspace/image-generator",
-      "permanent": true
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/"
-    }
-  ],
- "crons": [
-  {
-    "path": "/api/send-abandoned-emails",
-    "schedule": "0 12 * * *"
-  }
-]
+    "redirects":  [
+                      {
+                          "source":  "/blog/ai-visual-styles-most-engagementd",
+                          "destination":  "/blog/ai-visual-styles-most-engagement",
+                          "permanent":  true
+                      },
+                      {
+                          "source":  "/blog/how-visual-branding-seperates-winners-from-losers",
+                          "destination":  "/blog/how-visual-branding-separates-winners-from-losers",
+                          "permanent":  true
+                      },
+                      {
+                          "source":  "/blog/product-images-that-conver-full-guide",
+                          "destination":  "/blog/product-images-that-convert-full-guide",
+                          "permanent":  true
+                      },
+                      {
+                          "source":  "/workspace/library",
+                          "destination":  "/workspace/creations",
+                          "permanent":  true
+                      },
+                      {
+                          "source":  "/image-generator",
+                          "destination":  "/workspace/image-generator",
+                          "permanent":  true
+                      },
+                      {
+                          "source":  "/blog/ai-fruit-story-maker",
+                          "destination":  "/ai-fruit-story-maker",
+                          "permanent":  true
+                      }
+                  ],
+    "cleanUrls":  true,
+    "trailingSlash":  false,
+    "rewrites":  [
+                     {
+                         "source":  "/api/(.*)",
+                         "destination":  "/api/$1"
+                     },
+                     {
+                         "source":  "/(.*)",
+                         "destination":  "/"
+                     }
+                 ],
+    "crons":  [
+                  {
+                      "path":  "/api/send-abandoned-emails",
+                      "schedule":  "0 12 * * *"
+                  }
+              ]
 }

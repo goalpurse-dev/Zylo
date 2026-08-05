@@ -179,6 +179,17 @@ export default function HowToMakeViralAITikTokVideos() {
           </div>
         </section>
 
+        <aside className="mb-12 max-w-3xl rounded-2xl border border-purple-200 bg-purple-50 p-6">
+          <h2 className="mb-2 text-[22px] font-semibold text-[#110829]">Build a repeatable AI fruit-video series</h2>
+          <p className="text-[15px] leading-relaxed text-[#4A4A55]">
+            For a guided prompt-to-scenes workflow, visit the{" "}
+            <Link to="/ai-fruit-story-maker" className="font-semibold text-[#7A3BFF] hover:underline">
+              AI fruit video generator
+            </Link>{" "}
+            and adapt one story premise across several episodes.
+          </p>
+        </aside>
+
         <section className="mb-32 bg-[#110829] rounded-3xl p-12 text-center">
           <h2 className="text-[32px] font-bold text-white mb-4">Generate your first viral TikTok today</h2>
           <p className="text-[17px] text-white/60 mb-8 max-w-xl mx-auto">

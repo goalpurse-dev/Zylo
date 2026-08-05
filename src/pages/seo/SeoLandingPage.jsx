@@ -5,7 +5,6 @@ import { getSeoBlogPost } from "../../data/seoBlogPosts.js";
 import { useSEO } from "../../hooks/useSEO.js";
 import { trackSeoEvent } from "../../lib/seoAnalytics.js";
 import { captureFirstTouch } from "../../lib/firstTouch.js";
-import PublicContentHeader from "../../components/seo/PublicContentHeader.jsx";
 import SeoBreadcrumbs from "../../components/seo/SeoBreadcrumbs.jsx";
 import SeoGeneratorHero from "../../components/seo/SeoGeneratorHero.jsx";
 import SeoIntro from "../../components/seo/SeoIntro.jsx";
@@ -118,7 +117,6 @@ export default function SeoLandingPage({ slug }) {
 
   return (
     <div className="min-h-screen bg-[#0B0D0F] text-white">
-      <PublicContentHeader templateId={config.templateId} slug={config.slug} />
       <SeoBreadcrumbs items={config.breadcrumb} />
 
       <main className="mx-auto max-w-[1200px] px-4 pb-6 pt-8 sm:px-6">

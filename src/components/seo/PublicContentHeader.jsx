@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { Menu, X } from "lucide-react";
 import Logo from "../../assets/Logo.png";
@@ -21,14 +21,13 @@ export default function PublicContentHeader({ templateId, slug }) {
   const [authModal, setAuthModal] = useState(null); // "login" | "signup" | null
   const menuButtonRef = useRef(null);
   const drawerRef = useRef(null);
+  const wasMobileOpen = useRef(false);
 
   const createPath = CREATE_TOOLS.find((tool) => tool.id === templateId)?.path || "/workspace/home";
 
   const navItems = [
-    { label: "Home", onClick: () => navigate("/workspace/home") },
-    { label: "Workspace", onClick: () => navigate("/workspace/home") },
-    { label: "Create", onClick: () => navigate(createPath) },
-    { label: "Pricing", onClick: () => navigate("/workspace/pricing") },
+    { label: "Home", to: "/workspace/home" },
+    { label: "Create", to: createPath },
   ];
 
   const openAuth = (mode) => {
@@ -56,41 +55,36 @@ export default function PublicContentHeader({ templateId, slug }) {
   // don't do this, so it's added fresh here).
   useEffect(() => {
     if (mobileOpen) {
+      wasMobileOpen.current = true;
       drawerRef.current?.querySelector("a,button")?.focus();
-    } else {
+    } else if (wasMobileOpen.current) {
       menuButtonRef.current?.focus();
+      wasMobileOpen.current = false;
     }
   }, [mobileOpen]);
-
-  const go = (onClick) => {
-    setMobileOpen(false);
-    onClick();
-  };
 
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-white/[0.07] bg-[#0B0D0F]/90 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:px-6">
-          <button
-            type="button"
-            onClick={() => navigate("/workspace/home")}
-            className="flex shrink-0 items-center gap-2"
+          <Link
+            to="/workspace/home"
+            className="flex shrink-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9F5CFF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0D0F]"
             aria-label="Zyvo home"
           >
             <img src={Logo} alt="" className="h-8 w-8 object-contain" />
             <span className="text-[18px] font-black tracking-[-0.03em] text-white">Zyvo</span>
-          </button>
+          </Link>
 
           <nav className="hidden items-center gap-7 lg:flex">
             {navItems.map((item) => (
-              <button
+              <Link
                 key={item.label}
-                type="button"
-                onClick={item.onClick}
-                className="text-[14px] font-medium text-white/60 transition hover:text-white"
+                to={item.to}
+                className="rounded text-[14px] font-medium text-white/60 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9F5CFF]"
               >
                 {item.label}
-              </button>
+              </Link>
             ))}
           </nav>
 
@@ -198,14 +192,14 @@ export default function PublicContentHeader({ templateId, slug }) {
 
               <nav className="flex flex-col gap-1">
                 {navItems.map((item) => (
-                  <button
+                  <Link
                     key={item.label}
-                    type="button"
-                    onClick={() => go(item.onClick)}
-                    className="min-h-[44px] rounded-xl px-3 py-3 text-left text-[15px] font-semibold text-white/85 transition hover:bg-white/[0.06]"
+                    to={item.to}
+                    onClick={() => setMobileOpen(false)}
+                    className="min-h-[44px] rounded-xl px-3 py-3 text-left text-[15px] font-semibold text-white/85 transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9F5CFF]"
                   >
                     {item.label}
-                  </button>
+                  </Link>
                 ))}
               </nav>
 
@@ -213,13 +207,13 @@ export default function PublicContentHeader({ templateId, slug }) {
 
               <div className="flex flex-col gap-2.5">
                 {user ? (
-                  <button
-                    type="button"
-                    onClick={() => go(() => navigate("/workspace/home"))}
+                  <Link
+                    to="/workspace/home"
+                    onClick={() => setMobileOpen(false)}
                     className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] px-4 py-3 text-[15px] font-semibold text-white"
                   >
                     Go to Workspace
-                  </button>
+                  </Link>
                 ) : (
                   <>
                     <button

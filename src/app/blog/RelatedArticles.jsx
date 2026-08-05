@@ -8,9 +8,9 @@ export default function RelatedArticles({ articles = [] }) {
     <>
       {/* Title */}
       <div className="flex justify-center mt-4 max-w-4xl mx-auto">
-        <h1 className="text-[#110829] font-semibold text-[18px]">
-          Related Articles
-        </h1>
+      <h2 className="text-[#110829] font-semibold text-[18px]">
+        Related Articles
+      </h2>
       </div>
 
       {/* Grid */}

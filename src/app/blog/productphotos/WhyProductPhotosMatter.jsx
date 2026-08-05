@@ -82,7 +82,7 @@ export default function BlogPost() {
         <section className="rounded-2xl border border-black/10 bg-[#F7F5FA] p-5">
           <div className="aspect-[16/9] w-full rounded-xl border border-dashed border-black/20 bg-white/60 flex items-center justify-center">
            <img src={BeforeAfter3} alt="Before and after AI product photo example" className="max-h-full max-w-full" />
-         
+
           </div>
           <p className="mt-3 text-sm text-black/60">
             Tip: Use a slider or a bold before/after visual here.
@@ -173,9 +173,9 @@ export default function BlogPost() {
           <div className="mt-6 space-y-6">
             <div className="rounded-2xl border border-black/10 p-5">
               <div className="h-[600px] rounded-xl border border-dashed border-black/20 bg-[#F7F5FA] flex items-center justify-center">
-              
+
                  <img src={Good2} alt="High converting AI product photo example" className="max-h-full max-w-full" />
-               
+
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
                 <button className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:opacity-90">
@@ -192,13 +192,13 @@ export default function BlogPost() {
 
             <div className="rounded-2xl border border-black/10 p-5">
               <div className="aspect-[16/9] rounded-xl border border-dashed border-black/20 bg-[#F7F5FA] flex items-center justify-center">
-                <img src={BgExample} alt="Lifestyle background example" className="max-h-full max-w-full" />    
+                <img src={BgExample} alt="Lifestyle background example" className="max-h-full max-w-full" />
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
                 <Link className="rounded-full bg-[#7A3BFF] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-                  to="/workspace/productphotos"
+                  to="/workspace/image-generator"
                 >
-                    
+
                   Generate a lifestyle shot
                 </Link>
                 <Link
@@ -216,8 +216,8 @@ export default function BlogPost() {
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
                 <Link
-                  to="/workspace/productphoto" 
-                  
+                  to="/workspace/image-generator"
+
                   className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:opacity-90"
                 >
                   Turn my photo into studio quality
@@ -280,7 +280,7 @@ export default function BlogPost() {
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link
-             to="/workspace/productphoto"
+             to="/workspace/image-generator"
               className="inline-flex items-center justify-center rounded-2xl bg-[#7A3BFF] px-6 py-3 text-base font-semibold hover:opacity-90"
             >
               Generate my product photos →
@@ -307,10 +307,10 @@ export default function BlogPost() {
         </div>
         <div className="mb-10">
         <RelatedArticles articles={related} />
-        
+
         </div>
 
-            
+
       </footer >
     </article>
   );

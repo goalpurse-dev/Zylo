@@ -2,9 +2,20 @@ import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { Pin, X } from "lucide-react";
+import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
+import { getWorkspaceRouteSeoPolicy } from "../../data/routeSeoPolicy.js";
 
 // ─── Add new tools here as they launch ───────────────────────────────────────
 export const CREATE_TOOLS = [
+  {
+    id: "cartoon-drive-by",
+    label: "Cartoon Drive By",
+    sublabel: "",
+    path: "/workspace/cartoon-drive-by",
+    preview: cartoonDrivePreview,
+    previewPosition: "object-center",
+    color: "#bef264",
+  },
   {
     id: "ai-fruit-story",
     label: "AI Fruit Story",
@@ -68,7 +79,10 @@ export const CREATE_TOOLS = [
     color: "#bef264",
   },
   // { id: "ai-voice-story", label: "AI Voice Story", ... },
-];
+].map((tool) => ({
+  ...tool,
+  seoVisibility: getWorkspaceRouteSeoPolicy(tool.path)?.seoVisibility || "noindex",
+}));
 
 export const PUBLISH_TOOLS = [
   {

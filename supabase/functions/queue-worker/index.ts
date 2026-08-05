@@ -75,16 +75,14 @@ function isRetryableConcurrencyError(errorBody: any): boolean {
 type Counts = { total: number; image: number; video: number };
 
 async function getRunwareProcessingCounts(sb: any): Promise<Counts> {
-  const [{ count: total }, { count: image }, { count: video }] = await Promise.all([
+  const [{ count: image }, { count: video }] = await Promise.all([
     sb.from("jobs").select("id", { count: "exact", head: true })
-      .eq("status", "running").eq("type", "image").or("type.eq.video"),
+      .eq("type", "image").in("status", ["running", "processing"]),
     sb.from("jobs").select("id", { count: "exact", head: true })
-      .eq("type", "image").in("status", ["queued", "running", "processing"]),
-    sb.from("jobs").select("id", { count: "exact", head: true })
-      .eq("type", "video").in("status", ["queued", "running", "processing"]),
+      .eq("type", "video").in("status", ["running", "processing"]),
   ]);
   return {
-    total: (total ?? 0) + (image ?? 0),  // approximate: combine image+video running
+    total: (image ?? 0) + (video ?? 0),
     image: image ?? 0,
     video: video ?? 0,
   };
@@ -95,6 +93,71 @@ function canStartJob(taskType: string, counts: Counts): boolean {
   if (taskType === "image") return counts.image < RUNWARE_IMAGE_MAX;
   if (taskType === "video") return counts.video < RUNWARE_VIDEO_MAX;
   return false;
+}
+
+async function recoverStaleJobs(sb: any): Promise<void> {
+  const now = new Date().toISOString();
+  const heartbeatBefore = new Date(Date.now() - 30_000).toISOString();
+  const { data: staleJobs } = await sb.from("jobs")
+    .select("id,user_id,status,type,settings,attempts,max_attempts,updated_at,heartbeat_at,lease_expires_at,provider_task_id,submission_state")
+    .in("status", ["running", "processing"])
+    .lt("lease_expires_at", now)
+    .lt("heartbeat_at", heartbeatBefore)
+    .limit(50);
+
+  for (const job of staleJobs ?? []) {
+    const providerJobId = String(job.provider_task_id ?? job.settings?.provider_job_id ?? "").trim();
+    if (providerJobId && job.submission_state === "submitted") {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/job-worker`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "authorization": `Bearer ${SERVICE_KEY}`, "apikey": SERVICE_KEY },
+        body: JSON.stringify({ jobId: job.id, recoverExistingProvider: true }),
+      }).catch(() => null);
+      logEvent(response?.ok ? "info" : "warn", "stale_queue_job_recovered", {
+        jobId: job.id, userId: job.user_id, mode: "provider_poll", status: response?.status ?? null,
+      });
+      continue;
+    }
+
+    if (job.submission_state === "pending" && !providerJobId) {
+      const { data: requeued } = await sb.rpc("requeue_expired_unsubmitted_job", {
+        p_job_id: job.id,
+        p_retry_after: new Date(Date.now() + retryDelayMs(Number(job.attempts ?? 0))).toISOString(),
+      });
+      logEvent("warn", "stale_queue_job_recovered", {
+        jobId: job.id, userId: job.user_id, mode: requeued ? "safe_requeue_before_submission" : "lease_changed",
+      });
+      continue;
+    }
+
+    await sb.rpc("mark_generation_reconciliation_required", {
+      p_job_id: job.id,
+      p_reason: providerJobId ? "provider task reserved but submission acknowledgement is uncertain" : "submission state is uncertain",
+    });
+    logEvent("error", "stale_queue_job_quarantined", {
+      jobId: job.id, userId: job.user_id, submissionState: job.submission_state, hasProviderTaskId: Boolean(providerJobId),
+    });
+  }
+}
+
+async function recoverExpiredQueueClaims(sb: any): Promise<void> {
+  const { data: rows } = await sb.from("generation_queue")
+    .select("id,user_id,job_id,locked_by")
+    .eq("status", "processing").is("job_id", null)
+    .lt("lease_expires_at", new Date().toISOString())
+    .lt("heartbeat_at", new Date(Date.now() - 30_000).toISOString()).limit(50);
+  for (const row of rows ?? []) {
+    const { data: existingJob } = await sb.from("jobs").select("id").eq("id", row.id).maybeSingle();
+    if (existingJob) {
+      await sb.from("generation_queue").update({ job_id: existingJob.id, updated_at: new Date().toISOString() })
+        .eq("id", row.id).eq("status", "processing").is("job_id", null);
+    } else {
+      await sb.from("generation_queue").update({
+        status: "queued", locked_at: null, locked_by: null, heartbeat_at: null, lease_expires_at: null,
+        retry_after: new Date().toISOString(), updated_at: new Date().toISOString(),
+      }).eq("id", row.id).eq("status", "processing").is("job_id", null).lt("lease_expires_at", new Date().toISOString());
+    }
+  }
 }
 
 /* ─── PHASE 1: Sync completed/failed jobs → queue rows ─── */
@@ -135,34 +198,21 @@ async function syncCompletedJobs(sb: any): Promise<void> {
 
     } else if (job.status === "failed" || job.status === "canceled") {
       const attempts     = Number(row.attempts ?? 0) + 1;
-      const maxAttempts  = Number(row.max_attempts ?? 5);
       const errorPayload = { message: job.error ?? "Provider job failed", job_status: job.status };
 
-      // Detect 402 / rate-limit errors by parsing the stored error message
-      const retryable = isRetryableConcurrencyError({ errors: [{ message: job.error ?? "" }] });
-
-      if (retryable && attempts < maxAttempts) {
-        const delay       = retryDelayMs(attempts - 1);
-        const retryAfter  = new Date(Date.now() + delay).toISOString();
-        await sb.rpc("requeue_generation_queue_job", {
-          p_id:          row.id,
-          p_attempts:    attempts,
-          p_retry_after: retryAfter,
-          p_error:       errorPayload,
-        });
-        logEvent("warn", "queue_job_requeued", { queueJobId: row.id, jobId: row.job_id, attempts, maxAttempts, delayMs: delay });
-      } else {
-        logEvent("error", "queue_job_failed", { queueJobId: row.id, jobId: row.job_id, attempts, maxAttempts, jobStatus: job.status, error: job.error });
-        await sb.from("generation_queue").update({
-          status:    "failed",
-          attempts,
-          error:     errorPayload,
-          failed_at: new Date().toISOString(),
-          locked_at: null,
-          locked_by: null,
-          updated_at: new Date().toISOString(),
-        }).eq("id", row.id);
-      }
+      // A terminal jobs row is the logical generation boundary. Retrying by
+      // creating another row would defeat provider/credit idempotency; users
+      // can explicitly create a new logical job instead.
+      logEvent("error", "queue_job_failed", { queueJobId: row.id, jobId: row.job_id, attempts, jobStatus: job.status, error: job.error });
+      await sb.from("generation_queue").update({
+        status:    "failed",
+        attempts,
+        error:     errorPayload,
+        failed_at: new Date().toISOString(),
+        locked_at: null,
+        locked_by: null,
+        updated_at: new Date().toISOString(),
+      }).eq("id", row.id);
     }
   }
 }
@@ -270,6 +320,7 @@ async function createAndFireJob(sb: any, qJob: any): Promise<string> {
   const { data: job, error } = await sb
     .from("jobs")
     .insert({
+      id:             qJob.id,
       user_id:        qJob.user_id,
       type:           qJob.task_type,
       tool_key:       p.tool_key,
@@ -306,8 +357,8 @@ async function createAndFireJob(sb: any, qJob: any): Promise<string> {
   });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    logEvent("error", "job_worker_handoff_failed", { jobId: job.id, queueJobId: qJob.id, status: res.status, body: text.slice(0, 200) });
+    await res.text().catch(() => "");
+    logEvent("error", "job_worker_handoff_failed", { jobId: job.id, queueJobId: qJob.id, status: res.status });
     // Job row still exists at status "queued" — nothing currently re-triggers
     // job-worker for it automatically, so without a later sweep it stays stuck.
   }
@@ -333,6 +384,8 @@ Deno.serve(async (req) => {
   });
 
   try {
+    await recoverStaleJobs(sb);
+    await recoverExpiredQueueClaims(sb);
     // Phase 1: Sync completed/failed jobs → update queue rows
     await syncCompletedJobs(sb);
 

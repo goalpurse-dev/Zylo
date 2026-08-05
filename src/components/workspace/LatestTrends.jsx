@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Flame, Play } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import trendVideoOne from "../../assets/home/latest/video9.16-fast.mp4";
 import trendVideoTwo from "../../assets/home/latest/videoo9.16-fast.mp4";
@@ -11,25 +12,25 @@ const TRENDS = [
     id: "trend-video-one",
     kind: "video",
     src: trendVideoOne,
-    label: "Lost Worlds IRL",
+    label: "Cartoon Drive By",
   },
   {
     id: "trend-video-two",
     kind: "video",
     src: trendVideoTwo,
-    label: "Lost Worlds IRL",
+    label: "Cartoon Drive By",
   },
   {
     id: "trend-video-three",
     kind: "video",
     src: trendVideoThree,
-    label: "Lost Worlds IRL",
+    label: "Cartoon Drive By",
   },
   {
     id: "trend-image-one",
     kind: "image",
     src: trendImage,
-    label: "Lost Worlds IRL",
+    label: "Cartoon Drive By",
   },
 ];
 
@@ -80,12 +81,14 @@ function TrendVideo({ src, label }) {
   );
 }
 
-function TrendCard({ trend }) {
+function TrendCard({ trend, onOpen }) {
   const isVideo = trend.kind === "video";
 
   return (
-    <article
-      className="group relative aspect-[9/16] min-h-0 overflow-hidden rounded-[14px] border border-white/[0.11] bg-[#101014] shadow-[0_22px_65px_rgba(0,0,0,.38)] transition duration-500 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_30px_85px_rgba(0,0,0,.55)]"
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group relative aspect-[9/16] min-h-0 w-full overflow-hidden rounded-[14px] border border-white/[0.11] bg-[#101014] text-left shadow-[0_22px_65px_rgba(0,0,0,.38)] transition duration-500 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_30px_85px_rgba(0,0,0,.55)]"
     >
       {isVideo ? (
         <TrendVideo src={trend.src} label={trend.label} />
@@ -104,11 +107,12 @@ function TrendCard({ trend }) {
       </div>
 
       <div className="pointer-events-none absolute inset-0 rounded-[14px] ring-1 ring-inset ring-white/[0.06]" />
-    </article>
+    </button>
   );
 }
 
 export default function LatestTrends() {
+  const navigate = useNavigate();
   const carouselRef = useRef(null);
   const [activeTrend, setActiveTrend] = useState(0);
   const [isCarouselPaused, setIsCarouselPaused] = useState(false);
@@ -185,23 +189,33 @@ export default function LatestTrends() {
       <div className="pointer-events-none absolute right-[8%] top-24 h-72 w-72 rounded-full bg-lime-300/[0.045] blur-[100px]" />
 
       <div className="relative mx-auto max-w-[1380px]">
-        <div className="mb-5 md:mb-6">
-          <div className="mb-2 flex flex-wrap items-center gap-2.5">
-            <span className="text-[18px] leading-none select-none">🔥</span>
-            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-lime-300">
-              Most Viral Templates
-            </p>
-            <span className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/15 px-2.5 py-0.5">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-70" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-500" />
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3 md:mb-6">
+          <div>
+            <div className="mb-2 flex flex-wrap items-center gap-2.5">
+              <span className="text-[18px] leading-none select-none">🔥</span>
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-lime-300">
+                Most Viral Templates
+              </p>
+              <span className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/15 px-2.5 py-0.5">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-70" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-500" />
+                </span>
+                <span className="text-[9px] font-bold tracking-widest text-red-400">LIVE</span>
               </span>
-              <span className="text-[9px] font-bold tracking-widest text-red-400">LIVE</span>
-            </span>
+            </div>
+            <h2 id="latest-trends-title" className="text-[28px] font-black tracking-[-0.045em] text-white sm:text-[34px] md:text-[42px]">
+              Cartoon Drive By
+            </h2>
           </div>
-          <h2 id="latest-trends-title" className="text-[28px] font-black tracking-[-0.045em] text-white sm:text-[34px] md:text-[42px]">
-            Lost Worlds IRL
-          </h2>
+
+          <button
+            type="button"
+            onClick={() => navigate("/workspace/cartoon-drive-by")}
+            className="flex shrink-0 items-center gap-1.5 rounded-full bg-lime-300 px-4 py-2.5 text-[13px] font-black text-black transition hover:bg-lime-200 active:scale-95"
+          >
+            Try Template →
+          </button>
         </div>
 
         <div
@@ -218,7 +232,7 @@ export default function LatestTrends() {
               data-trend-card
               className="w-[clamp(145px,52vw,210px)] shrink-0 snap-center sm:w-auto sm:max-w-none"
             >
-              <TrendCard trend={trend} />
+              <TrendCard trend={trend} onOpen={() => navigate("/workspace/cartoon-drive-by")} />
             </div>
           ))}
         </div>

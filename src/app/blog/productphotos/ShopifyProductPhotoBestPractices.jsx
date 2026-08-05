@@ -167,7 +167,7 @@ export default function ShopifyProductPhotoBestPractices() {
           </p>
 
           <Link
-            to="/workspace/productphoto"
+            to="/workspace/image-generator"
             className="inline-block bg-[#7A3BFF] text-white px-6 py-3 rounded-md font-semibold hover:opacity-90 transition"
           >
             Try Zyvo Product Photos →

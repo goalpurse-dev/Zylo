@@ -2,17 +2,24 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logEvent as persistLog, type LogLevel } from "../_shared/systemLog.ts";
+import {
+  ProviderReferenceError,
+  assertProviderAccessibleImageUrl,
+} from "../_shared/referenceImages.ts";
 
 function logEvent(level: LogLevel, event: string, ctx: Record<string, unknown> = {}) {
+  const safeCtx = JSON.parse(JSON.stringify(ctx, (_key, value) =>
+    typeof value === "string" ? value.replace(/https?:\/\/[^\s"']+/gi, "[redacted-url]") : value
+  ));
   const icon = level === "error" ? "🔴" : level === "warn" ? "🟠" : "🟢";
   const line = `${icon} [runware-image] ${event}`;
-  const detail = JSON.stringify({ ts: new Date().toISOString(), ...ctx });
+  const detail = JSON.stringify({ ts: new Date().toISOString(), ...safeCtx });
 
   if (level === "error") console.error(line, detail);
   else if (level === "warn") console.warn(line, detail);
   else console.log(line, detail);
 
-  void persistLog("runware-image", level, event, ctx);
+  void persistLog("runware-image", level, event, safeCtx);
 }
 
 /* ===================== ENV ===================== */
@@ -47,6 +54,26 @@ function makeSb() {
   return createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 }
 
+function stableImageFailure(raw: unknown): { code: string; message: string } {
+  const value = String(raw ?? "");
+  if (value === "REFERENCE_IMAGE_NOT_ACCESSIBLE" || value === "REFERENCE_IMAGE_EXPIRED") {
+    return {
+      code: value,
+      message: value === "REFERENCE_IMAGE_EXPIRED"
+        ? "This reference image is no longer available. Please select it again."
+        : "This reference image isn't accessible. Please select it again.",
+    };
+  }
+  if (value === "INSUFFICIENT_CREDITS") return { code: value, message: "You don't have enough credits for this generation." };
+  if (/safety|moderation|content.?policy|invalidprovidercontent/i.test(value)) {
+    return {
+      code: "PROVIDER_SAFETY_REJECTION",
+      message: "The provider couldn't generate this request because of its safety rules. Try changing the prompt or image.",
+    };
+  }
+  return { code: "PROVIDER_GENERATION_FAILED", message: "The provider couldn't complete this generation. Please try again." };
+}
+
 /**
  * Safe RPC — never chain .catch() on sb.rpc() in Supabase Edge Runtime.
  * Always await + try/catch + destructure { data, error }.
@@ -57,7 +84,18 @@ async function safeRpc(
   args: Record<string, unknown> = {},
 ): Promise<{ data: unknown; error: unknown }> {
   try {
-    const { data, error } = await sb.rpc(name, args);
+    let safeArgs = args;
+    if (name === "finish_job_failed" && args.p_id) {
+      const failure = stableImageFailure(args.p_error);
+      name = "fail_and_refund_generation_job";
+      safeArgs = {
+        p_job_id: args.p_id,
+        p_error_code: failure.code,
+        p_error: failure.message,
+        p_provider_task_id: args.p_provider_task_id ?? null,
+      };
+    }
+    const { data, error } = await sb.rpc(name, safeArgs);
     if (error) {
       logEvent("error", "rpc_failed", { jobId: args?.p_id, rpc: name, message: error.message });
       return { data: null, error };
@@ -359,45 +397,13 @@ async function uploadImageToRunware(publicUrl: string): Promise<string> {
 
   if (!result.ok || !result.json?.data?.[0]?.imageURL) {
     logEvent("error", "image_upload_failed", {
-      sourceUrl: publicUrl,
+      sourceHost: (() => { try { return new URL(publicUrl).host; } catch { return "invalid"; } })(),
       status: result.status,
       body: result.text.slice(0, 500),
     });
     throw new Error(`imageUpload failed (${result.status}): ${result.text.slice(0, 200)}`);
   }
   return result.json.data[0].imageURL;
-}
-
-async function chargeJobCredits(
-  sb: ReturnType<typeof createClient>,
-  jobId: string,
-): Promise<boolean> {
-  const { data: job } = await sb
-    .from("jobs").select("user_id").eq("id", jobId).single();
-  if (!job?.user_id) return false;
-
-  const { data: profile } = await sb
-    .from("profiles").select("plan_code").eq("id", job.user_id).single();
-
-  const isFree = (profile?.plan_code || "free").toLowerCase() === "free";
-
-  if (isFree) {
-    const { error } = await sb.from("image_generations").insert({ user_id: job.user_id });
-    if (error) logEvent("error", "free_usage_log_failed", { jobId, userId: job.user_id, message: error.message });
-    return true;
-  } else {
-    const { data, error } = await safeRpc(sb, "charge_job_credits", { p_job_id: jobId });
-    if (error || data !== true) {
-      logEvent("error", "credit_charge_failed", { jobId, userId: job.user_id, message: String(error ?? "insufficient credits") });
-      return false;
-    }
-    return true;
-  }
-}
-
-async function refundJobCredits(sb: ReturnType<typeof createClient>, jobId: string) {
-  const { error } = await safeRpc(sb, "refund_job_credits", { p_job_id: jobId });
-  if (error) logEvent("error", "credit_refund_failed", { jobId, message: String(error) });
 }
 
 /* ===================== BACKGROUND JOB PROCESSOR =====================
@@ -530,28 +536,34 @@ async function completeRunwareImageJob(
   toolKey: string,
   sourceUrl: string,
   providerOutput: any,
+  providerTaskId: string | null,
   context: Record<string, unknown> = {},
 ): Promise<void> {
   await safeRpc(sb, "bump_job_progress", { p_id: jobId, p_progress: 95 });
   const storedUrl = await persistImageResult(sb, jobId, sourceUrl);
   await safeRpc(sb, "bump_job_progress", { p_id: jobId, p_progress: 98 });
 
-  const charged = await chargeJobCredits(sb, jobId);
-  if (!charged) {
-    await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: "INSUFFICIENT_CREDITS" });
-    return;
-  }
-
-  const { error } = await safeRpc(sb, "finish_job_success", {
-    p_id: jobId,
+  const { data: completed, error } = await safeRpc(sb, "complete_generation_job", {
+    p_job_id: jobId,
     p_url: storedUrl,
     p_output: providerOutput,
+    p_provider_task_id: providerTaskId,
   });
-  if (error) await refundJobCredits(sb, jobId);
+  if (completed === true) {
+    const { data: completedJob } = await sb.from("jobs").select("user_id").eq("id", jobId).single();
+    if (completedJob?.user_id) {
+      const { data: profile } = await sb.from("profiles").select("plan_code").eq("id", completedJob.user_id).single();
+      if (String(profile?.plan_code ?? "free").toLowerCase() === "free") {
+        const { error: usageError } = await sb.from("image_generations").insert({ user_id: completedJob.user_id });
+        if (usageError) logEvent("error", "free_usage_log_failed", { jobId, userId: completedJob.user_id, message: usageError.message });
+      }
+    }
+  }
   logEvent("info", "job_succeeded", {
     jobId,
     toolKey,
     ...context,
+    accepted: completed === true,
     finishError: error ? String(error) : null,
   });
 }
@@ -561,6 +573,7 @@ async function recoverExistingRunwareImageJob(
   jobId: string,
   toolKey: string,
   providerId: string,
+  workerId: string,
 ): Promise<void> {
   const startedAt = Date.now();
   const recoveryWindowMs = 2 * 60 * 1000;
@@ -574,7 +587,7 @@ async function recoverExistingRunwareImageJob(
       const detailResponse = detailEntry?.response ?? detailEntry ?? null;
       const recoveredUrl = extractImageUrl(detailResponse);
       if (recoveredUrl) {
-        await completeRunwareImageJob(sb, jobId, toolKey, recoveredUrl, detailResponse, {
+        await completeRunwareImageJob(sb, jobId, toolKey, recoveredUrl, detailResponse, providerId, {
           recoveredAfterReconnect: true,
           attempt,
         });
@@ -593,7 +606,7 @@ async function recoverExistingRunwareImageJob(
       const pollResult = await pollRunwareResponse(providerId);
       const recoveredUrl = extractImageUrl(pollResult.json);
       if (recoveredUrl) {
-        await completeRunwareImageJob(sb, jobId, toolKey, recoveredUrl, pollResult.json, {
+        await completeRunwareImageJob(sb, jobId, toolKey, recoveredUrl, pollResult.json, providerId, {
           recoveredAfterReconnect: true,
           attempt,
         });
@@ -615,6 +628,7 @@ async function recoverExistingRunwareImageJob(
       });
     }
 
+    await safeRpc(sb, "heartbeat_generation_job", { p_job_id: jobId, p_worker_id: workerId, p_lease_seconds: 180 });
     await safeRpc(sb, "bump_job_progress", { p_id: jobId, p_progress: 98 });
     await sleep(2500);
   }
@@ -632,6 +646,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
     referenceImages = [],
     settings        = {},
     recoverExistingProvider = false,
+    workerId,
   } = body;
 
   const sb = makeSb();
@@ -659,7 +674,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
   const existingProviderId = String(settings?.provider_job_id || "");
 
   if (recoverExistingProvider && existingProviderId) {
-    await recoverExistingRunwareImageJob(sb, jobId, airTag, existingProviderId);
+    await recoverExistingRunwareImageJob(sb, jobId, airTag, existingProviderId, String(workerId));
     return;
   }
 
@@ -667,24 +682,31 @@ async function processRunwareImageJob(body: any): Promise<void> {
   console.log("[runware-image] received referenceImages", {
     jobId,
     count:   referenceImages.length,
-    entries: referenceImages,
   });
 
   const runwareRefs: string[] = [];
+  try {
+    referenceImages.forEach((url: string) => assertProviderAccessibleImageUrl(url));
+  } catch (e) {
+    const code = e instanceof ProviderReferenceError ? e.code : "REFERENCE_IMAGE_NOT_ACCESSIBLE";
+    logEvent("error", "reference_validation_rejected", { jobId, code });
+    await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: code });
+    return;
+  }
   for (const url of referenceImages) {
     if (typeof url !== "string" || !url.trim()) {
       console.warn("[runware-image] ref skipped — not a string:", String(url).slice(0, 80));
       continue;
     }
     if (!url.startsWith("https://")) {
-      logEvent("error", "ref_not_https", { jobId, url: url.slice(0, 200) });
+      logEvent("error", "ref_not_https", { jobId });
       continue;
     }
     try {
       const rwUrl = await uploadImageToRunware(url);
       runwareRefs.push(rwUrl);
     } catch (e) {
-      logEvent("error", "ref_upload_failed", { jobId, url: url.slice(0, 200), message: String((e as any)?.message ?? e) });
+      logEvent("error", "ref_upload_failed", { jobId, message: String((e as any)?.message ?? e) });
     }
   }
 
@@ -698,6 +720,14 @@ async function processRunwareImageJob(body: any): Promise<void> {
   void safeRpc(sb, "bump_job_progress", { p_id: jobId, p_progress: 10 });
 
   /* ── Build Runware task ── */
+  if (referenceImages.length !== runwareRefs.length) {
+    logEvent("error", "required_references_lost", {
+      jobId, toolKey: airTag, expected: referenceImages.length, uploaded: runwareRefs.length,
+    });
+    await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: "REFERENCE_IMAGE_NOT_ACCESSIBLE" });
+    return;
+  }
+
   if (isFruitModel && referenceImages.length > 0 && runwareRefs.length === 0) {
     const message = "All fruit story references failed to upload";
     logEvent("error", "all_refs_failed", { jobId, toolKey: airTag, refCount: referenceImages.length });
@@ -761,23 +791,16 @@ async function processRunwareImageJob(body: any): Promise<void> {
   // running -> processing atomically reserves provider submission. Duplicate
   // Edge invocations cannot submit again because only one can transition the
   // row from running.
-  const providerSettings = {
-    ...settings,
-    provider_job_id: providerTaskId,
-    provider_delivery_method: "async",
-  };
-  const { data: reservation, error: reservationError } = await sb
-    .from("jobs")
-    .update({ status: "processing", settings: providerSettings })
-    .eq("id", jobId)
-    .eq("status", "running")
-    .select("id")
-    .maybeSingle();
+  const { data: reservation, error: reservationError } = await safeRpc(sb, "reserve_provider_submission", {
+    p_job_id: jobId,
+    p_worker_id: String(workerId),
+    p_provider_task_id: providerTaskId,
+  });
 
   if (reservationError) {
-    throw new Error(`Could not reserve provider submission: ${reservationError.message}`);
+    throw new Error(`Could not reserve provider submission: ${String((reservationError as any)?.message ?? reservationError)}`);
   }
-  if (!reservation) {
+  if (reservation !== true) {
     logEvent("warn", "duplicate_submission_suppressed", {
       jobId,
       toolKey: airTag,
@@ -821,6 +844,12 @@ async function processRunwareImageJob(body: any): Promise<void> {
     createResult?.json?.data?.[0]?.id ??
     providerTaskId;
 
+  await safeRpc(sb, "record_provider_submission", {
+    p_job_id: jobId,
+    p_worker_id: String(workerId),
+    p_provider_task_id: String(providerId),
+  });
+
   logEvent("info", "task_accepted", { jobId, toolKey: airTag, providerId });
 
   // 15% — task accepted by Runware
@@ -829,7 +858,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
   /* ── Instant success (sync models return URL in create response) ── */
   const immediate = extractImageUrl(createResult?.json);
   if (immediate) {
-    await completeRunwareImageJob(sb, jobId, airTag, immediate, createResult?.json, {
+    await completeRunwareImageJob(sb, jobId, airTag, immediate, createResult?.json, String(providerId), {
       instant: true,
     });
     return;
@@ -870,9 +899,12 @@ async function processRunwareImageJob(body: any): Promise<void> {
         : 15 + Math.round(reportedProgress * 0.75),
     );
     await safeRpc(sb, "bump_job_progress", { p_id: jobId, p_progress: progress });
+    if (i % 5 === 0) await safeRpc(sb, "heartbeat_generation_job", {
+      p_job_id: jobId, p_worker_id: String(workerId), p_lease_seconds: 180,
+    });
 
     if (url) {
-      await completeRunwareImageJob(sb, jobId, airTag, url, pollResult.json, {
+      await completeRunwareImageJob(sb, jobId, airTag, url, pollResult.json, String(providerId), {
         instant: false,
         poll: i,
       });
@@ -896,7 +928,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
     // A submit response can be lost just before Runware registers the async
     // task. Give that reserved task ID a short recovery window rather than
     // failing the database job on the first taskNotFound poll.
-    if (errorCode === "taskNotFound" && elapsed < 30_000) {
+    if (errorCode === "taskNotFound") {
       continue;
     }
 
@@ -920,7 +952,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
     const detailResponse = detailEntry?.response ?? null;
     const recoveredUrl = extractImageUrl(detailResponse);
     if (recoveredUrl) {
-      await completeRunwareImageJob(sb, jobId, airTag, recoveredUrl, detailResponse, {
+      await completeRunwareImageJob(sb, jobId, airTag, recoveredUrl, detailResponse, String(providerId), {
         instant: false,
         recoveredFromTaskDetails: true,
       });
@@ -935,9 +967,9 @@ async function processRunwareImageJob(body: any): Promise<void> {
   }
 
   logEvent("error", "job_failed", { jobId, toolKey: airTag, reason: "timeout", elapsedMs: Date.now() - start });
-  await safeRpc(sb, "finish_job_failed", {
-    p_id:    jobId,
-    p_error: "Image generation timed out after 5 minutes. Please try again.",
+  await safeRpc(sb, "mark_generation_reconciliation_required", {
+    p_job_id: jobId,
+    p_reason: "Runware image polling window expired; provider task must be reconciled",
   });
 }
 
@@ -985,10 +1017,14 @@ Deno.serve(async (req) => {
         // this catch is a final safety net for unexpected throws
         try {
           const sb = makeSb();
-          await safeRpc(sb, "finish_job_failed", {
-            p_id:    jobId!,
-            p_error: `Unexpected error: ${message}`,
-          });
+          const { data: state } = await sb.from("jobs").select("submission_state").eq("id", jobId!).maybeSingle();
+          if (state?.submission_state === "pending") {
+            await safeRpc(sb, "finish_job_failed", { p_id: jobId!, p_error: `Unexpected error: ${message}` });
+          } else {
+            await safeRpc(sb, "mark_generation_reconciliation_required", {
+              p_job_id: jobId!, p_reason: "Image worker crashed after provider submission became possible",
+            });
+          }
         } catch { /* ignore */ }
       }),
     );

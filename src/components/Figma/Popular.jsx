@@ -145,7 +145,7 @@ export default function Popular() {
     title="Product Photos"
     image="/assets/tools/productphoto.webp"
     hoverImage="/assets/tools/productphoto1.webp"
-    to="/workspace/productphoto"
+    to="/workspace/image-generator"
   />
 
   <PopularCard

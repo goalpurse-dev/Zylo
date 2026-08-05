@@ -33,20 +33,20 @@ export default function footer() {
         <div className="flex flex-col gap-3  mt-10 mr-4">
         <h3 className="text-[22px] font-inter font-extrabold  cursor-default ">Zylo</h3>
         <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap cursor-pointer hover:underline "
-        to="productphoto"
-        >Product Photos</Link> 
+        to="/workspace/image-generator"
+        >Image Generator</Link>
 
         <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap cursor-pointer hover:underline"
-        to="myproduct"
-        >Own Product</Link>
+        to="/workspace/video-generator"
+        >Video Generator</Link>
 
 
         <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap  cursor-pointer hover:underline"
-        to="library"
-        >Background Library</Link>
+        to="/workspace/creations"
+        >Creations Library</Link>
        
         <Link className="text-[12px] font-normal font-inter sm:whitespace-nowrap cursor-pointer hover:underline"
-        to="creations"
+        to="/workspace/creations"
         >Creations</Link>
         
         </div>
@@ -139,16 +139,16 @@ export default function footer() {
         <div className="flex flex-col gap-3  ">
         <h3 className="text-xl font-inter font-extrabold mt-10 cursor-default ">Zylo</h3>
         <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline "
-        to="/workspace/productphoto"
-        >Product Photos</Link> 
+        to="/workspace/image-generator"
+        >Image Generator</Link>
 
         <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="/workspace/myproduct"
-        >Own Product</Link>
+        to="/workspace/video-generator"
+        >Video Generator</Link>
 
         <Link className="text-smn font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="/workspace/library"
-        >Background Library</Link>
+        to="/workspace/creations"
+        >Creations Library</Link>
 
         <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
         to="/workspace/creations"

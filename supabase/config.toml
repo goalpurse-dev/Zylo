@@ -55,5 +55,11 @@ verify_jwt = false
 [functions.runware-video]
 verify_jwt = false
 
+[functions.runware-video-atlascloud]
+verify_jwt = false
+
 [functions.two-am-planner]
 verify_jwt = true
+
+[functions.cleanup-generation-references]
+verify_jwt = false

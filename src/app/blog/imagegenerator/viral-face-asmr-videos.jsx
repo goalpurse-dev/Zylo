@@ -17,10 +17,10 @@ const related = [
     slug: "/blog/how-to-make-viral-ai-tiktok-videos",
   },
   {
-    title: "Best AI Tools for Faceless TikTok Videos (2026)",
-    description: "The exact tools creators use to run faceless TikTok channels doing millions of views with zero on-camera presence.",
-    date: "26.04.2026",
-    slug: "/blog/best-ai-tools-faceless-tiktok-videos",
+    title: "Best Face ASMR Video Ideas for 2026",
+    description: "Explore Face ASMR concepts, hooks, and visual variations for your next short-form video.",
+    date: "24.05.2026",
+    slug: "/blog/best-face-asmr-video-ideas-2026",
   },
 ];
 

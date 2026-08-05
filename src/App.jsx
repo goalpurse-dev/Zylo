@@ -45,13 +45,8 @@ const TextToVoice = lazy(() => import("./pages/tools/TextToVoice"));
 const Workspace = lazy(() => import("./pages/workspace/home.jsx"));
 
 // 🔥 ALSO lazy these workspace pages (important for performance)
-const ProductPhoto = lazy(() => import("./pages/workspace/productphoto.jsx"));
-const Library1 = lazy(() => import("./pages/workspace/library.jsx"));
 const WorkspaceLayout = lazy(() => import("./pages/workspace/layout.jsx"));
 const Creations = lazy(() => import("./pages/workspace/creations.jsx"));
-const Myproduct = lazy(() => import("./pages/workspace/myproduct.jsx"));
-const Step2 = lazy(() => import("./pages/workspace/step2.jsx"));
-const Step3 = lazy(() => import("./pages/workspace/step3.jsx"));
 
 const ImageGenTest = lazy(() => import("./pages/image-gen-test.jsx"));
 import { GenerationsProvider } from "./components/GenerationsDock";
@@ -136,7 +131,6 @@ const HowToMakeViralAITikTokVideos = lazy(() => import("./app/blog/imagegenerato
 const BestAIToolsFacelessTikTokVideos = lazy(() => import("./app/blog/imagegenerator/best-ai-tools-faceless-tiktok-videos.jsx"));
 const AIContentCreationToolsInstagram = lazy(() => import("./app/blog/imagegenerator/ai-content-creation-tools-instagram-viral.jsx"));
 const BestAIImageGeneratorsSocialMedia2026 = lazy(() => import("./app/blog/imagegenerator/best-ai-image-generators-social-media-2026.jsx"));
-const AIFruitStoryMakerBlog = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-maker.jsx"));
 const ViralAIFruitDramaVideos = lazy(() => import("./app/blog/imagegenerator/viral-ai-fruit-drama-videos.jsx"));
 const HowToGoViralTikTokFruitDrama = lazy(() => import("./app/blog/imagegenerator/how-to-go-viral-tiktok-fruit-drama.jsx"));
 const BestAIFruitStoryIdeas = lazy(() => import("./app/blog/imagegenerator/best-ai-fruit-story-ideas.jsx"));
@@ -150,8 +144,11 @@ import EmailConsentModal from "./components/EmailConsentModal";
 import WelcomeModal from "./components/WelcomeModal";
 import { supabase } from "./lib/supabaseClient";
 import NotFoundRedirect from "./components/NotFoundRedirect";
+import PublicContentLayout from "./components/seo/PublicContentLayout.jsx";
+import WorkspaceRouteSeo from "./components/seo/WorkspaceRouteSeo.jsx";
 import PublicGallery from "./components/public-gallery/gallery";
 const AIFruitStoryLanding = lazy(() => import("./pages/landing/AIFruitStoryLanding.jsx"));
+const CartoonDriveByLanding = lazy(() => import("./pages/landing/CartoonDriveByLanding.jsx"));
 const FaceAsmrLanding = lazy(() => import("./pages/landing/FaceAsmrLanding.jsx"));
 const MicroCameraAnimalLanding = lazy(() => import("./pages/landing/MicroCameraAnimalLanding.jsx"));
 const ClayRescueLanding = lazy(() => import("./pages/landing/ClayRescueLanding.jsx"));
@@ -200,6 +197,7 @@ const ClayRescuePage         = lazy(() => import("./pages/workspace/ClayRescue.j
 const AICookingMaticPage     = lazy(() => import("./pages/workspace/AICookingMatic.jsx"));
 const FootballerNationalitySwapPage = lazy(() => import("./pages/workspace/FootballerNationalitySwap.jsx"));
 const TwoAmPage               = lazy(() => import("./pages/workspace/TwoAm.jsx"));
+const CartoonDriveByPage       = lazy(() => import("./pages/workspace/CartoonDriveBy.jsx"));
 const PublishPage            = lazy(() => import("./pages/workspace/publish.jsx"));
 const StatsPage              = lazy(() => import("./pages/workspace/stats.jsx"));
 const ConnectionsPage        = lazy(() => import("./pages/workspace/connections.jsx"));
@@ -367,6 +365,11 @@ return (
 
           {/* Blogs */}
 
+        <Route path="/workspace/image-gen-test" element={<><WorkspaceRouteSeo /><ImageGenTest/></>} />
+        <Route path="/public-gallery" element={<PublicGallery />} />
+
+        <Route element={<PublicContentLayout />}>
+
         <Route path="/blog" element={<BlogIndex />} />
 
         <Route path="/blog/product-photos-with-ai-for-shopify" element={<ProductPhotosShopify />} />
@@ -388,7 +391,8 @@ return (
         <Route path="/blog/ecommerce-visual-consistency-explained" element={<EcommerceVisualConsistencyExplained />} />
         <Route path="/blog/ai-productphotos-for-dropshipping" element={<AiProductPhotosForDropshipping />} />
         <Route path="/blog/how-visual-quality-impacts-seo" element={<HowVisualQualityImpactsSeo />} />
-        <Route path="/blog/product-images-that-conver-full-guide" element={<ProductImagesThatConverGuide/>} />
+        <Route path="/blog/product-images-that-conver-full-guide" element={<Navigate to="/blog/product-images-that-convert-full-guide" replace />} />
+        <Route path="/blog/product-images-that-convert-full-guide" element={<ProductImagesThatConverGuide/>} />
         <Route path="/blog/ai-tools-every-shopify-store-owner-should-know" element={<AiToolsEveryShopifyStoreOwnerKnow/>} />
         <Route path="/blog/how-to-launch-products-faster-with-ai" element={<HowToLaunchProductsFasterWithAi/>} />
         <Route path="/blog/studio-quality-product-photos" element={<StudioQualityProductPhotos/>} />
@@ -398,7 +402,8 @@ return (
         <Route path="/blog/product-photography-trends-for-ecommerce" element={<ProductPhotographyTrendsForEcommerce/>} />
         <Route path="/blog/ai-product-photos-for-fashion-stores" element={<AIProductPhotosForFashionStores/>} />
         <Route path="/blog/ai-product-photos-for-beaty-and-skincare" element={<AIProductPhotosForBeatyAndSkincare/>} />
-        <Route path="/blog/how-visual-branding-seperates-winners-from-losers" element={<HowVisualBrandingSeperatesWinnersFromLosers/>} />
+        <Route path="/blog/how-visual-branding-seperates-winners-from-losers" element={<Navigate to="/blog/how-visual-branding-separates-winners-from-losers" replace />} />
+        <Route path="/blog/how-visual-branding-separates-winners-from-losers" element={<HowVisualBrandingSeperatesWinnersFromLosers/>} />
         <Route path="/blog/viral-ai-images-tiktok" element={<ViralAiImagesTiktok/>} />
         <Route path="/blog/creators-blowingup-with-ai" element={<CreatorsBlowingUpWithAi/>} />
         <Route path="/blog/i-test-viral-prompts" element={<ITestViralPromts/>} />
@@ -429,6 +434,7 @@ return (
         <Route path="/blog/ai-image-generator-for-dark-visuals" element={<DarkMoodyCinematicImages/>} />
         <Route path="/blog/ai-product-photography-high-end" element={<AIProductPhotography/>} />
         <Route path="/blog/ai-visual-styles-most-engagement" element={<VisualStylesAI/>} />
+        <Route path="/blog/ai-visual-styles-most-engagementd" element={<Navigate to="/blog/ai-visual-styles-most-engagement" replace />} />
         <Route path="/blog/how-to-go-viral-with-ai" element={<HowToGoViralWithAI/>} />
         <Route path="/blog/ai-video-new-viral-currency" element={<AIVideoNewViralCurrency/>} />
         <Route path="/blog/ai-product-photo-generator" element={<AIProductPhotoGenerator/>} />
@@ -443,16 +449,13 @@ return (
         <Route path="/blog/best-ai-tools-faceless-tiktok-videos" element={<BestAIToolsFacelessTikTokVideos/>} />
         <Route path="/blog/ai-content-creation-tools-instagram-viral" element={<AIContentCreationToolsInstagram/>} />
         <Route path="/blog/best-ai-image-generators-social-media-2026" element={<BestAIImageGeneratorsSocialMedia2026/>} />
-        <Route path="/blog/ai-fruit-story-maker" element={<AIFruitStoryMakerBlog/>} />
+        <Route path="/blog/ai-fruit-story-maker" element={<Navigate to="/ai-fruit-story-maker" replace />} />
         <Route path="/blog/viral-ai-fruit-drama-videos" element={<ViralAIFruitDramaVideos/>} />
         <Route path="/blog/how-to-go-viral-tiktok-fruit-drama" element={<HowToGoViralTikTokFruitDrama/>} />
         <Route path="/blog/best-ai-fruit-story-ideas" element={<BestAIFruitStoryIdeas/>} />
 
-
-
-        <Route path="/workspace/image-gen-test" element={<ImageGenTest/>} />
-         <Route path="/public-gallery" element={<PublicGallery />} />
          <Route path="/ai-fruit-story-maker" element={<AIFruitStoryLanding />} />
+         <Route path="/cartoon-drive-by-video-maker" element={<CartoonDriveByLanding />} />
          <Route path="/face-asmr-maker" element={<FaceAsmrLanding />} />
          <Route path="/micro-camera-animal-maker" element={<MicroCameraAnimalLanding />} />
          <Route path="/clay-rescue-maker" element={<ClayRescueLanding />} />
@@ -484,6 +487,12 @@ return (
          <Route path="/blog/best-2am-world-ai-prompts" element={<TwoAmBlogGuide slug="best-2am-world-ai-prompts" />} />
          <Route path="/blog/how-to-create-2am-pokemon-ai-images" element={<TwoAmBlogGuide slug="how-to-create-2am-pokemon-ai-images" />} />
          <Route path="/blog/how-to-create-2am-ninjago-ai-images" element={<TwoAmBlogGuide slug="how-to-create-2am-ninjago-ai-images" />} />
+         <Route path="/blog/ai-world-generator-guide" element={<TwoAmBlogGuide slug="ai-world-generator-guide" />} />
+         <Route path="/blog/ai-world-generator-prompts" element={<TwoAmBlogGuide slug="ai-world-generator-prompts" />} />
+         <Route path="/blog/how-to-make-ai-nostalgia-videos" element={<TwoAmBlogGuide slug="how-to-make-ai-nostalgia-videos" />} />
+         <Route path="/blog/ai-worlds-at-2am-ideas" element={<TwoAmBlogGuide slug="ai-worlds-at-2am-ideas" />} />
+
+        </Route>
 
 
 
@@ -506,13 +515,9 @@ return (
   />
 
   {/* PUBLIC ROUTES */}
-  <Route path="/workspace/productphotoo" element={<ProductPhoto />} />
-  <Route path="/workspace/libraryo" element={<Library1 />} />
+  <Route path="/workspace/library" element={<Navigate to="/workspace/creations" replace />} />
   <Route path="/workspace/creations" element={<Creations />} />
   <Route path="/workspace/creations/viral-videos" element={<Creations />} />
-  <Route path="/workspace/myproducto" element={<Myproduct />} />
-  <Route path="/workspace/step2o" element={<Step2 />} />
-  <Route path="/workspace/step3o" element={<Step3 />} />
   <Route path="/workspace/pricing" element={<Pricing />} />
   <Route path="/workspace/image-generator" element={<Image />} />
   <Route path="/workspace/video-generator" element={<Video />} />
@@ -527,6 +532,7 @@ return (
   <Route path="/workspace/ai-cooking-matic" element={<AICookingMaticPage />} />
   <Route path="/workspace/footballer-nationality-swap" element={<FootballerNationalitySwapPage />} />
   <Route path="/workspace/two-am" element={<TwoAmPage />} />
+  <Route path="/workspace/cartoon-drive-by" element={<CartoonDriveByPage />} />
   <Route path="/workspace/publish"          element={<Navigate to="/workspace/home" replace />} />
   <Route path="/workspace/publishv"         element={<PublishPage />} />
   <Route path="/workspace/stats"            element={<StatsPage />} />

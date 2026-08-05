@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../../../app/blog/RelatedArticles";
 
@@ -24,10 +23,6 @@ const related = [
 ];
 
 export default function HowVisualBrandingSeparatesWinnersFromLosers() {
-  useEffect(() => {
-    document.title = "How Visual Branding Separates Winners from Losers";
-  }, []);
-
   return (
     <article className="w-full bg-[#F7F5FA] text-[#110829] overflow-x-hidden">
 
@@ -268,7 +263,7 @@ export default function HowVisualBrandingSeparatesWinnersFromLosers() {
 
           <div className="mt-6 flex flex-wrap gap-4">
             <a
-              href="/workspace/productphoto"
+              href="/workspace/image-generator"
               className="rounded-xl bg-[#7A3BFF] px-6 py-3 text-white font-semibold hover:opacity-90 transition"
             >
               Try Product Photos

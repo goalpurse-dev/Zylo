@@ -6,6 +6,7 @@ import { getPlanPriority } from "./queuePriority";
 
 import { CREATION_TYPES } from "./creations";
 import { emitCreditSpend } from "./creditPopEvents";
+import { cleanupUploadedReferences, normalizeReferencePayload } from "./referenceImages";
 
 /* ======================= Types ======================= */
 
@@ -169,21 +170,38 @@ export async function createJob(
   const { data: userData, error: uerr } = await supabase.auth.getUser();
   if (uerr || !userData?.user) throw new Error("Must be signed in");
 
+  if (payload.id === "00000000-0000-0000-0000-000000000000") throw new Error("INVALID_JOB_ID");
+  if ((payload.type === "image" || payload.type === "video") && !String(payload.prompt ?? "").trim()) {
+    throw new Error("MISSING_PROMPT");
+  }
+  const dimensions = payload.input as any;
+  if ((payload.type === "image" || payload.type === "video") &&
+      !(Number(dimensions?.width) > 0 && Number(dimensions?.height) > 0) &&
+      !dimensions?.resolution && !(payload.settings as any)?.size) {
+    throw new Error("MISSING_DIMENSIONS");
+  }
+
 // Ensure plan_code and priority are always derived from the same resolved source.
 // If only one is passed (e.g. legacy callers), derive the missing one so they
 // can never disagree in the DB.
 const resolvedJobPlanCode = (payload.plan_code ?? "free").toLowerCase().trim();
 const resolvedJobPriority = payload.priority ?? getPlanPriority(resolvedJobPlanCode);
 
+const jobId = payload.id ?? crypto.randomUUID();
+const normalized = await normalizeReferencePayload(
+  { input: payload.input ?? {}, settings: payload.settings ?? {} },
+  { userId: userData.user.id, jobId },
+);
+
 const insertPayload = {
-  ...(payload.id ? { id: payload.id } : {}),
+  id:           jobId,
   user_id:      userData.user.id,
   type:         payload.type,
   tool_key:     payload.tool_key     ?? null,
   project_id:   payload.project_id   ?? null,
   prompt:       payload.prompt        ?? null,
-  settings:     payload.settings      ?? {},
-  input:        payload.input          ?? {},
+  settings:     normalized.value.settings,
+  input:        normalized.value.input,
   status:       "queued" as JobStatus,
   progress:     0,
   charge_credits: (payload.settings as any)?.credits ?? null,
@@ -203,7 +221,10 @@ const insertPayload = {
     .select("*")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    await cleanupUploadedReferences(normalized.uploads);
+    throw error;
+  }
   return data as JobRow;
 }
 

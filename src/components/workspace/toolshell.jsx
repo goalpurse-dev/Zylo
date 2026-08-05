@@ -72,6 +72,7 @@ export default function ToolShell({ onClose }) {
   const anyPanelOpen = createOpen || workspaceOpen;
   const createActive = createOpen || (!anyPanelOpen && (
     isActive("/workspace/two-am") ||
+    isActive("/workspace/cartoon-drive-by") ||
     isActive("/workspace/ai-fruit-story") ||
     isActive("/workspace/face-asmr") ||
     isActive("/workspace/micro-camera-animal") ||

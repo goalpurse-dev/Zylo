@@ -20,6 +20,9 @@ export type ToolKey =
   | "image:twoam1k"
   | "image:twoam2k"
   | "image:twoam4k"
+  | "image:cartoondrive2k"
+  | "image:cartoondrive4kpro"
+  | "image:cartoondrive4kmax"
 
 
 
@@ -41,6 +44,8 @@ export type ToolKey =
   | "video:footballerviduq3turbo1080"
   | "video:seedance15pro"
   | "video:seedance20fast"
+  | "video:cartoondriveseedance720"
+  | "video:cartoondriveseedance1080"
 
 
 
@@ -183,6 +188,39 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
   edgeFn: "/functions/v1/runware-image",
   // ⚠️ ESTIMATE — scaled from the confirmed 2K cost above by credit ratio
   // (10/7). Please run a real 4K invoice test to confirm.
+  costUSD: 0.09890,
+  retailUSD: 0.20,
+  credits: 10,
+  margin: m(0.09890, 0.20),
+},
+"image:cartoondrive2k": {
+  provider: "runware",
+  generator: "Nano Banana 2",
+  airTag: "google:4@3",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-image",
+  costUSD: 0.06923,
+  retailUSD: 0.14,
+  credits: 7,
+  margin: m(0.06923, 0.14),
+},
+"image:cartoondrive4kpro": {
+  provider: "runware",
+  generator: "Nano Banana 2",
+  airTag: "google:4@3",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-image",
+  costUSD: 0.09890,
+  retailUSD: 0.20,
+  credits: 10,
+  margin: m(0.09890, 0.20),
+},
+"image:cartoondrive4kmax": {
+  provider: "runware",
+  generator: "Nano Banana 2",
+  airTag: "google:4@3",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-image",
   costUSD: 0.09890,
   retailUSD: 0.20,
   credits: 10,
@@ -449,10 +487,8 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
   },
 
   /**
-   * Seedance 2.0 Fast — audio is always included even though its Runware
-   * schema has no audio toggle. Measured $0.364092/6s @ 480p (496x864).
-   * Clay Rescue uses this for its sound-on path; its sound-off path remains
-   * on Seedance 1.5 Pro.
+   * Seedance 2.0 Fast — native audio is optional through Runware's
+   * settings.audio flag. Measured $0.364092/6s @ 480p (496x864).
    */
   "video:seedance20fast": {
     provider:   "runware",
@@ -463,7 +499,31 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     costPerSecondUSD:     0.060682,   // $0.364092 / 6s, measured @ 480p (496x864)
     baseResolution:       "480p",
     retailMultiplier:     2,
-    baseCreditsPerSecond: 7,          // generic video-generator retail rate; audio is always included
+    baseCreditsPerSecond: 7,
+  },
+
+  "video:cartoondriveseedance720": {
+    provider:   "runware",
+    generator:  "Seedance 2.0",
+    airTag:     "bytedance:seedance@2.0",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
+    costPerSecondUSD:     0.16,
+    baseResolution:       "720p",
+    retailMultiplier:     2,
+    baseCreditsPerSecond: 16,
+  },
+
+  "video:cartoondriveseedance1080": {
+    provider:   "runware",
+    generator:  "Seedance 2.0",
+    airTag:     "bytedance:seedance@2.0",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
+    costPerSecondUSD:     0.40,
+    baseResolution:       "1080p",
+    retailMultiplier:     2,
+    baseCreditsPerSecond: 40,
   },
 
   "video:veo31fast": {

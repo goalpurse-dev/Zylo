@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import { Download } from "lucide-react";
 import {
   buildVideoClipsFromScenes,
 } from "./api/fruitStoryApi";
 import { supabase } from "../../../lib/supabaseClient";
 import { getCreationDisplayStatus } from "../../../lib/queueStatusUtils";
+import { saveMediaToDevice } from "../../../lib/downloadMedia";
 
 const TERMINAL_STATUS = new Set(["succeeded", "failed", "canceled"]);
 
@@ -305,7 +307,7 @@ export default function AIFruitStoryResults({
         ) : !hasScenes && isBusy ? (
           <div
             className={`grid gap-4 ${
-              sceneAspect === "16:9" ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"
+              sceneAspect === "16:9" ? "grid-cols-1" : "grid-cols-2"
             }`}
           >
             {Array.from({ length: sceneCount }).map((_, i) => (
@@ -328,7 +330,7 @@ export default function AIFruitStoryResults({
             )}
             <div
               className={`grid gap-4 ${
-                sceneAspect === "16:9" ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"
+                sceneAspect === "16:9" ? "grid-cols-1" : "grid-cols-2"
               }`}
             >
               {scenes.map((scene, index) => (
@@ -495,16 +497,21 @@ function SceneVideoCard({ scene, index, aspect, onRegenerateImage, onRetryVideo 
             </span>
           )}
           {scene.videoUrl && (
-            <a
-              href={scene.videoUrl}
-              download={`scene-${index + 1}.mp4`}
-              target="_blank"
-              rel="noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-semibold text-white/75 transition hover:bg-white/[0.09]"
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                void saveMediaToDevice({
+                  url: scene.videoUrl,
+                  filename: `fruit-story-scene-${index + 1}.mp4`,
+                  title: "AI Fruit Story scene",
+                });
+              }}
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-white/75 transition hover:bg-white/[0.09]"
+              title="Download"
             >
-              Download
-            </a>
+              <Download className="h-3.5 w-3.5" />
+            </button>
           )}
         </div>
       </div>
@@ -885,6 +892,16 @@ function GenerationCard({ generation, onContinue, onDelete }) {
       <div className="flex items-center gap-2">
         <button
           type="button"
+          onClick={() => {
+            if (window.confirm("Delete this saved generation?")) onDelete?.(generation.id);
+          }}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] border border-white/10 bg-white/[0.03] text-white/40 transition hover:border-red-400/30 hover:bg-red-500/10 hover:text-red-300"
+          title="Delete"
+        >
+          ×
+        </button>
+        <button
+          type="button"
           onClick={() => onContinue?.(generation.id)}
           disabled={!canAnimate}
           className={`flex-1 rounded-[12px] py-2.5 text-sm font-bold transition ${
@@ -894,16 +911,6 @@ function GenerationCard({ generation, onContinue, onDelete }) {
           }`}
         >
           Continue →
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            if (window.confirm("Delete this saved generation?")) onDelete?.(generation.id);
-          }}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] border border-white/10 bg-white/[0.03] text-white/40 transition hover:border-red-400/30 hover:bg-red-500/10 hover:text-red-300"
-          title="Delete"
-        >
-          ×
         </button>
       </div>
     </div>

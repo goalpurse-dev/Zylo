@@ -1,29 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <!-- HOME -->
-  <url>
-    <loc>https://www.tryzyvo.com/</loc>
-    <priority>1.0</priority>
-  </url>
-
-  <!-- BLOG INDEX -->
   <url>
     <loc>https://www.tryzyvo.com/blog</loc>
     <priority>0.9</priority>
   </url>
 
-  <url>
-    <loc>https://www.tryzyvo.com/workspace/image-generator</loc>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://www.tryzyvo.com/workspace/video-generator</loc>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- BLOG POSTS -->
   <url>
     <loc>https://www.tryzyvo.com/blog/product-photos-with-ai-for-shopify</loc>
     <priority>0.8</priority>
@@ -120,11 +102,6 @@
   </url>
 
   <url>
-    <loc>https://www.tryzyvo.com/blog/product-images-that-conver-full-guide</loc>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
     <loc>https://www.tryzyvo.com/blog/ai-tools-every-shopify-store-owner-should-know</loc>
     <priority>0.8</priority>
   </url>
@@ -166,11 +143,6 @@
 
   <url>
     <loc>https://www.tryzyvo.com/blog/ai-product-photos-for-beaty-and-skincare</loc>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://www.tryzyvo.com/blog/how-visual-branding-seperates-winners-from-losers</loc>
     <priority>0.8</priority>
   </url>
 
@@ -320,11 +292,6 @@
   </url>
 
   <url>
-    <loc>https://www.tryzyvo.com/blog/ai-visual-styles-most-engagementd</loc>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
     <loc>https://www.tryzyvo.com/blog/how-to-go-viral-with-ai</loc>
     <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
@@ -350,39 +317,6 @@
     <lastmod>2026-04-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
-  </url>
-
-  <!-- PUBLIC WORKSPACE PAGES -->
-  <url>
-    <loc>https://www.tryzyvo.com/workspace/viral-script</loc>
-    <lastmod>2026-04-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://www.tryzyvo.com/workspace/productphoto</loc>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://www.tryzyvo.com/workspace/library</loc>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://www.tryzyvo.com/workspace/creations</loc>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://www.tryzyvo.com/workspace/myproduct</loc>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://www.tryzyvo.com/workspace/pricing</loc>
-    <priority>0.7</priority>
   </url>
 
   <url>
@@ -441,7 +375,6 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- FACE ASMR LANDING -->
   <url>
     <loc>https://www.tryzyvo.com/face-asmr-maker</loc>
     <lastmod>2026-05-24</lastmod>
@@ -449,7 +382,6 @@
     <priority>1.0</priority>
   </url>
 
-  <!-- FACE ASMR BLOG POSTS -->
   <url>
     <loc>https://www.tryzyvo.com/blog/face-asmr-maker</loc>
     <lastmod>2026-05-24</lastmod>
@@ -464,20 +396,11 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- AI FRUIT STORY LANDING -->
   <url>
     <loc>https://www.tryzyvo.com/ai-fruit-story-maker</loc>
     <lastmod>2026-05-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-  </url>
-
-  <!-- AI FRUIT STORY BLOG POSTS -->
-  <url>
-    <loc>https://www.tryzyvo.com/blog/ai-fruit-story-maker</loc>
-    <lastmod>2026-05-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
   </url>
 
   <url>
@@ -508,7 +431,6 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- FACE ASMR EXTRA BLOG -->
   <url>
     <loc>https://www.tryzyvo.com/blog/best-face-asmr-video-ideas-2026</loc>
     <lastmod>2026-05-27</lastmod>
@@ -516,7 +438,6 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- MICRO CAMERA ANIMAL LANDING -->
   <url>
     <loc>https://www.tryzyvo.com/micro-camera-animal-maker</loc>
     <lastmod>2026-05-27</lastmod>
@@ -524,7 +445,6 @@
     <priority>1.0</priority>
   </url>
 
-  <!-- MICRO CAMERA ANIMAL BLOG POSTS -->
   <url>
     <loc>https://www.tryzyvo.com/blog/micro-camera-animal-maker</loc>
     <lastmod>2026-05-27</lastmod>
@@ -539,7 +459,6 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- CLAY RESCUE LANDING -->
   <url>
     <loc>https://www.tryzyvo.com/clay-rescue-maker</loc>
     <lastmod>2026-06-01</lastmod>
@@ -547,7 +466,6 @@
     <priority>1.0</priority>
   </url>
 
-  <!-- SOCIAL MEDIA PUBLISHING -->
   <url>
     <loc>https://www.tryzyvo.com/publish</loc>
     <lastmod>2026-07-20</lastmod>
@@ -569,7 +487,6 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- CLAY RESCUE BLOG POSTS -->
   <url>
     <loc>https://www.tryzyvo.com/blog/clay-rescue-ai-video-maker</loc>
     <lastmod>2026-06-01</lastmod>
@@ -584,7 +501,6 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- CREATOR GROWTH SUITE -->
   <url>
     <loc>https://www.tryzyvo.com/stats</loc>
     <lastmod>2026-07-20</lastmod>
@@ -641,7 +557,6 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- 2AM WORLDS LANDING PAGES -->
   <url>
     <loc>https://www.tryzyvo.com/2am-worlds-ai-generator</loc>
     <lastmod>2026-07-27</lastmod>
@@ -663,7 +578,6 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- 2AM WORLDS BLOG POSTS -->
   <url>
     <loc>https://www.tryzyvo.com/blog/what-is-the-2am-worlds-ai-trend</loc>
     <lastmod>2026-07-27</lastmod>
@@ -690,6 +604,97 @@
     <lastmod>2026-07-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/ai-visual-styles-most-engagement</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/ai-content-creation-tools-instagram-viral</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/best-ai-image-generators-social-media-2026</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/asmr-video-ideas-tiktok-2026</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/how-to-start-asmr-channel-with-ai</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/ai-world-generator-guide</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/ai-world-generator-prompts</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/how-to-make-ai-nostalgia-videos</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/ai-worlds-at-2am-ideas</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/product-images-that-convert-full-guide</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/how-visual-branding-separates-winners-from-losers</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/cartoon-drive-by-video-maker</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/workspace/pricing</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
 
 </urlset>

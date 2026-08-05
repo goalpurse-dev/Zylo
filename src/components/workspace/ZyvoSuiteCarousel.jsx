@@ -5,17 +5,18 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 
 const SUITE_ITEMS = [
+  { name: "Cartoon Drive By", desc: "Drive past lost cartoon worlds in real life", badge: "NEW", image: cartoonDrivePreview, path: "/workspace/cartoon-drive-by" },
+  { name: "2AM Worlds", desc: "TikTok slideshows of worlds at 2AM", badge: "NEW", image: "/template/2am-world/preview.png", path: "/workspace/two-am" },
   { name: "AI Fruit Story", desc: "Characters, stories, viral content & more", badge: "NEW", image: "/viral-builder/ai-fruit/presets/kicked-out.webp", path: "/workspace/ai-fruit-story" },
   { name: "Face ASMR", desc: "Viral face reveal ASMR videos", badge: "TRENDING", image: "/face/neypreview.png", path: "/workspace/face-asmr" },
   { name: "Nationality Swap", desc: "Reimagine football stars around the world", badge: "NEW", image: "/template/nationality-swap/preview.png", path: "/workspace/footballer-nationality-swap" },
   { name: "Micro Camera", desc: "Animal bodycam goes underground", badge: "NEW", image: "/viral-builder/micro-camera/preview1.png", path: "/workspace/micro-camera-animal" },
   { name: "Video Generator", desc: "Create cinematic videos in seconds", badge: null, image: "/home/videogen.png", path: "/workspace/video-generator" },
-  { name: "Viral Skeleton", desc: "Scroll-stopping skeleton content", badge: "TRENDING", image: "/home/skeleton.png", path: "/workspace/skeleton-shorts" },
   { name: "Clay Rescue", desc: "Giant hands save tiny clay worlds", badge: "NEW", image: "/clayrescue/smallpreview.webp", path: "/workspace/clay-rescue" },
   { name: "AI Cooking Matic", desc: "Viral cooking videos on autopilot", badge: "NEW", image: "/templates/AICOOKING/thumbnail.png", path: "/workspace/ai-cooking-matic" },
-  { name: "2AM Worlds", desc: "TikTok slideshows of worlds at 2AM", badge: "NEW", image: "/template/2am-world/preview.png", path: "/workspace/two-am" },
 ];
 
 const CARD_WIDTH = 224;

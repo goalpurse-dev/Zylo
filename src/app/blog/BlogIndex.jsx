@@ -3,6 +3,7 @@ import Footer from "../../components/workspace/footer.jsx";
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { Calendar } from "lucide-react";
+import { getPublishedSeoBlogPosts } from "../../data/seoBlogPosts.js";
 
 // ── Product Photos images ──────────────────────────────────────────────────
 import PP1  from "../../assets/blog/productphoto/example1.png";
@@ -110,7 +111,7 @@ const ALL_BLOGS = [
   { to: "/blog/ecommerce-visual-consistency-explained",            title: "Ecommerce Visual Consistency Explained",                 desc: "How to stay consistent with visuals across your store.",                                         date: "Jan 22, 2026", category: "Product Photos",     img: PP17 },
   { to: "/blog/ai-productphotos-for-dropshipping",                 title: "AI Product Photos for Dropshipping Stores",              desc: "How product photos help dropshipping stores sell more.",                                         date: "Jan 23, 2026", category: "Product Photos",     img: PP18 },
   { to: "/blog/how-visual-quality-impacts-seo",                    title: "How Visual Quality Impacts SEO",                         desc: "Learn how important visual quality is for search rankings.",                                     date: "Jan 23, 2026", category: "Product Photos",     img: PP19 },
-  { to: "/blog/product-images-that-conver-full-guide",             title: "Product Images That Convert: A Complete Guide",          desc: "Full guide on what kind of product images convert best.",                                        date: "Jan 24, 2026", category: "Product Photos",     img: PP20 },
+  { to: "/blog/product-images-that-convert-full-guide",            title: "Product Images That Convert: A Complete Guide",          desc: "Full guide on what kind of product images convert best.",                                        date: "Jan 24, 2026", category: "Product Photos",     img: PP20 },
   { to: "/blog/ai-tools-every-shopify-store-owner-should-know",    title: "AI Tools Every Shopify Store Owner Should Know",         desc: "Every Shopify store owner must know these AI tools.",                                            date: "Jan 24, 2026", category: "Product Photos",     img: PP21 },
   { to: "/blog/how-to-launch-products-faster-with-ai",             title: "How to Launch Products Faster with AI",                  desc: "Complete guide on how to launch products faster with AI.",                                       date: "Jan 24, 2026", category: "Product Photos",     img: PP22 },
   { to: "/blog/studio-quality-product-photos",                     title: "Studio-Quality Product Photos Without a Studio",         desc: "How to create studio-quality photos without a studio.",                                          date: "Jan 25, 2026", category: "Product Photos",     img: PP23 },
@@ -120,7 +121,7 @@ const ALL_BLOGS = [
   { to: "/blog/product-photography-trends-for-ecommerce",          title: "Product Photography Trends for Ecommerce",               desc: "Learn what kind of trends help ecommerce brands grow.",                                          date: "Jan 28, 2026", category: "Product Photos",     img: PP27 },
   { to: "/blog/ai-product-photos-for-fashion-stores",              title: "AI Product Photos for Fashion Stores",                   desc: "Learn how AI product photos help fashion stores grow faster.",                                   date: "Jan 28, 2026", category: "Product Photos",     img: PP28 },
   { to: "/blog/ai-product-photos-for-beaty-and-skincare",          title: "AI Product Photos for Beauty & Skincare Brands",         desc: "Learn how AI product photos work for beauty & skincare brands.",                                 date: "Jan 29, 2026", category: "Product Photos",     img: PP29 },
-  { to: "/blog/how-visual-branding-seperates-winners-from-losers", title: "How Visual Branding Separates Winners from Losers",      desc: "Learn how visuals separate winning brands from the rest.",                                       date: "Jan 29, 2026", category: "Product Photos",     img: PP30 },
+  { to: "/blog/how-visual-branding-separates-winners-from-losers", title: "How Visual Branding Separates Winners from Losers",      desc: "Learn how visuals separate winning brands from the rest.",                                       date: "Jan 29, 2026", category: "Product Photos",     img: PP30 },
 
   { to: "/blog/ai-product-photo-generator",           title: "Best AI Product Photo Generator in 2026 (Free + Ecommerce Guide)",    desc: "Generate studio-quality product photos, remove backgrounds, and create social media content — free to start.",     date: "Apr 18, 2026", category: "Product Photos",     img: PP6  },
   { to: "/blog/zyvo-vs-midjourney-product-photos",    title: "Zyvo vs Midjourney for Product Photos: Which AI Tool Wins in 2026?",  desc: "An honest comparison covering quality, background removal, pricing, and ecommerce suitability.",                   date: "Apr 18, 2026", category: "Product Photos",     img: PP3  },
@@ -138,7 +139,10 @@ const ALL_BLOGS = [
   { to: "/blog/viral-face-asmr-videos",                  title: "Why Face ASMR Videos Go Viral on TikTok in 2026",                                    desc: "The psychology behind ASMR virality, the face recognition scroll-stop, and the exact strategy creators use to build audiences fast.",   date: "May 24, 2026", category: "Go Viral",           img: GV10 },
   { to: "/blog/asmr-video-ideas-tiktok-2026",            title: "Best ASMR Video Ideas for TikTok in 2026 (That Actually Go Viral)",                  desc: "The 10 ASMR video concepts generating the most views in 2026 — face combos, texture strategies, and execution tips for each.",         date: "May 25, 2026", category: "Go Viral",           img: GV11 },
   { to: "/blog/how-to-start-asmr-channel-with-ai",       title: "How to Start an ASMR Channel with AI in 2026 (No Camera or Mic Needed)",             desc: "The complete playbook to launch an ASMR TikTok channel using AI — no equipment, no editing, daily posting from a single photo upload.", date: "May 25, 2026", category: "Go Viral",           img: GV12 },
-  { to: "/blog/clay-rescue-ai-video-maker",              title: "Clay Rescue AI Video Maker: Create Viral Giant Hand Rescue Videos",                  desc: "How to create tiny clay rescue videos with clear disasters, visible giant hand fixes, and emotional clay people reactions.",            date: "Jun 1, 2026",  category: "Go Viral",           img: "/clayrescue/smallpreview.webp" },
+  { to: "/blog/viral-ai-fruit-drama-videos", title: "AI Fruit Drama Videos: Story Structure and Workflow", desc: "Understand the conflict, pacing, and scene progression behind short-form fruit-drama videos.", date: "May 14, 2026", category: "Go Viral", img: "/viral-builder/ai-fruit/presets/cheating.webp" },
+  { to: "/blog/how-to-go-viral-tiktok-fruit-drama", title: "How to Improve AI Fruit Drama Videos for TikTok", desc: "Test clearer hooks, story angles, publishing cadence, and audience feedback without relying on growth guarantees.", date: "May 15, 2026", category: "Go Viral", img: "/viral-builder/ai-fruit/presets/secret-twin.webp" },
+  { to: "/blog/best-ai-fruit-story-ideas", title: "AI Fruit Story Ideas and Prompt Examples", desc: "Explore adaptable prompts for reveal, family, friendship, comeback, and mystery plots.", date: "May 15, 2026", category: "Go Viral", img: "/viral-builder/ai-fruit/presets/baby.webp" },
+  { to: "/blog/ai-fruit-story-character-ideas", title: "AI Fruit Story Character Ideas and Storylines", desc: "Try eight fruit-character pairings with clear conflicts and adaptable story hooks.", date: "May 27, 2026", category: "Go Viral", img: "/viral-builder/ai-fruit/presets/cheats-back.webp" },  { to: "/blog/clay-rescue-ai-video-maker",              title: "Clay Rescue AI Video Maker: Create Viral Giant Hand Rescue Videos",                  desc: "How to create tiny clay rescue videos with clear disasters, visible giant hand fixes, and emotional clay people reactions.",            date: "Jun 1, 2026",  category: "Go Viral",           img: "/clayrescue/smallpreview.webp" },
   { to: "/blog/why-giant-hand-rescue-videos-go-viral",   title: "Why Giant Hand Rescue Videos Go Viral on TikTok in 2026",                            desc: "The retention psychology behind miniature disasters, simple visible fixes, and celebration payoffs in Clay Rescue videos.",             date: "Jun 1, 2026",  category: "Go Viral",           img: "/clayrescue/landing1.png" },
   { to: "/blog/schedule-auto-publish-ai-videos",         title: "How to Schedule & Auto-Publish AI Videos in 2026 (One-Click Guide)",                 desc: "Plan up to 28 days ahead and publish AI videos to Instagram, TikTok, and YouTube from one workspace.",                                 date: "Jul 2, 2026",  category: "Publishing & Analytics", img: PUB1 },
   { to: "/blog/social-media-scheduler-for-creators",     title: "Social Media Scheduler for Creators: The Complete 2026 Guide",                      desc: "Choose a creator-focused scheduler and build a repeatable short-form video publishing workflow.",                                      date: "Jul 20, 2026", category: "Publishing & Analytics", img: PUB3 },
@@ -186,10 +190,14 @@ const ALL_BLOGS = [
   { to: "/blog/ai-visual-styles-most-engagement",                  title: "Visual Styles That Get the Most Engagement (AI Edition)", desc: "Which visual styles get the most engagement — revealed.",                                        date: "Mar 15, 2026", category: "AI Image Generator", img: IG20 },
 
   // ═══════════════ 2AM Worlds ═══════════════
-  { to: "/blog/what-is-the-2am-worlds-ai-trend",         title: "What Is the 2AM Worlds AI Trend?",              desc: "Where the 2AM Worlds trend came from and how Zyvo's AI generator recreates it.",                 date: "Jul 27, 2026", category: "2AM Worlds", img: "/template/2am-world/pokemon (7).png" },
-  { to: "/blog/best-2am-world-ai-prompts",               title: "50 2AM World AI Prompt Ideas",                  desc: "Fifty ready-to-use 2AM World prompts, from anime cities to quiet beach towns.",                  date: "Jul 27, 2026", category: "2AM Worlds", img: "/template/2am-world/ninjago (5).png" },
-  { to: "/blog/how-to-create-2am-pokemon-ai-images",     title: "How to Create 2AM Pokémon AI Images",           desc: "A practical walkthrough for generating nostalgic, late-night Pokémon-inspired AI scenes.",       date: "Jul 27, 2026", category: "2AM Worlds", img: "/template/2am-world/pokemon (5).png" },
-  { to: "/blog/how-to-create-2am-ninjago-ai-images",     title: "How to Create 2AM Ninjago AI Images",           desc: "How to turn Ninjago characters and locations into a cinematic 2AM AI image set.",                date: "Jul 27, 2026", category: "2AM Worlds", img: "/template/2am-world/ninjago (3).png" },
+  ...getPublishedSeoBlogPosts().map((post) => ({
+    to: `/blog/${post.slug}`,
+    title: post.title,
+    desc: post.desc,
+    date: post.date,
+    category: post.category,
+    img: post.image || `/template/2am-world/${post.slug.includes("ninjago") ? "ninjago (3).png" : "pokemon (7).png"}`,
+  })),
 ];
 
 const CATEGORIES = ["All", "2AM Worlds", "Publishing & Analytics", "Viral Script", "Go Viral", "AI Image Generator", "Product Photos"];
@@ -210,6 +218,7 @@ export default function BlogIndex() {
 
   const categoryCounts = {
     All:                  ALL_BLOGS.length,
+    "2AM Worlds":        ALL_BLOGS.filter((b) => b.category === "2AM Worlds").length,
     "Viral Script":       ALL_BLOGS.filter((b) => b.category === "Viral Script").length,
     "Go Viral":           ALL_BLOGS.filter((b) => b.category === "Go Viral").length,
     "Publishing & Analytics": ALL_BLOGS.filter((b) => b.category === "Publishing & Analytics").length,

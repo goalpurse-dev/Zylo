@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { validateReferencePayload } from "../_shared/referenceImages.ts";
 
 /* ============================================================
    SUPABASE + ENV KEYS
@@ -462,6 +463,11 @@ async function processAdVideo(jobId: string) {
 
     ttsUrl = await buildSceneTTS(scenes, selectedVoice);
   }
+
+  validateReferencePayload({
+    productCutoutUrl: productCutout,
+    avatarUrl: voiceMode === "avatar" ? avatarUrl : null,
+  });
 
   /* -------------------- BASE VIDEO (NO MUX) -------------------- */
   let finalVideoUrl: string;

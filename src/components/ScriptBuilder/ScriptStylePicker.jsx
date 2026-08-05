@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Loader2,
 } from "lucide-react";
@@ -12,6 +12,9 @@ function ImageToScriptIdea({ onResult }) {
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState(null);
+  useEffect(() => () => {
+    if (preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
+  }, [preview]);
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0];

@@ -15,7 +15,7 @@ const TOOLS = [
     title: "Viral Video Generator",
     description:
       "Create viral videos without expensive costs.",
-    to: "/workspace/productphoto",
+    to: "/workspace/image-generator",
     glow: "rgba(56,189,248,0.6)",
     preview: "/assets/previews/rome.mp4",
   },

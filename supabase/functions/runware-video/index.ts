@@ -3,6 +3,11 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { launchRunwareVideo, pollRunware } from "./runware.ts";
 import { logEvent as persistLog } from "../_shared/systemLog.ts";
+import {
+  ProviderReferenceError,
+  friendlyReferenceMessage,
+  validateReferencePayload,
+} from "../_shared/referenceImages.ts";
 
 /* ================= CORS ================= */
 
@@ -64,15 +69,18 @@ const PROGRESS_MAX_RUNNING = 95;
 type LogLevel = "info" | "warn" | "error";
 
 function logEvent(level: LogLevel, event: string, ctx: Record<string, unknown> = {}) {
+  const safeCtx = JSON.parse(JSON.stringify(ctx, (_key, value) =>
+    typeof value === "string" ? value.replace(/https?:\/\/[^\s"']+/gi, "[redacted-url]") : value
+  ));
   const icon = level === "error" ? "🔴" : level === "warn" ? "🟠" : "🟢";
   const line = `${icon} [runware-video] ${event}`;
-  const detail = JSON.stringify({ ts: new Date().toISOString(), ...ctx });
+  const detail = JSON.stringify({ ts: new Date().toISOString(), ...safeCtx });
 
   if (level === "error") console.error(line, detail);
   else if (level === "warn") console.warn(line, detail);
   else console.log(line, detail);
 
-  void persistLog("runware-video", level, event, ctx);
+  void persistLog("runware-video", level, event, safeCtx);
 }
 
 // Safety net for genuinely unexpected crashes (a bug, not a provider
@@ -126,6 +134,26 @@ async function safeUpdateJob(
   jobId: string,
   patch: Record<string, unknown>,
 ) {
+  if (patch.status === "failed") {
+    const { error } = await sb.rpc("fail_and_refund_generation_job", {
+      p_job_id: jobId,
+      p_error_code: String(patch.error_code ?? "PROVIDER_GENERATION_FAILED"),
+      p_error: String(patch.error ?? "The provider couldn't complete this generation. Please try again."),
+      p_provider_task_id: null,
+    });
+    if (error) console.error("[runware-video] atomic failure error:", error.message);
+    return;
+  }
+  if (patch.status === "succeeded") {
+    const { error } = await sb.rpc("complete_generation_job", {
+      p_job_id: jobId,
+      p_url: String(patch.result_url ?? ""),
+      p_output: null,
+      p_provider_task_id: null,
+    });
+    if (error) console.error("[runware-video] atomic completion error:", error.message);
+    return;
+  }
   const { error } = await sb.from("jobs").update(patch).eq("id", jobId);
 
   if (error) {
@@ -138,11 +166,18 @@ async function safeRpc(
   fn: string,
   args: Record<string, unknown>,
 ) {
-  const { error } = await sb.rpc(fn, args);
+  const { data, error } = await sb.rpc(fn, args);
 
   if (error) {
     console.error(`[runware-video] RPC ${fn} error:`, error.message);
   }
+  return { data, error };
+}
+
+function providerTaskIdForAttempt(jobId: string, attempt: number): string {
+  if (attempt === 0) return jobId;
+  const hex = Math.min(255, attempt).toString(16).padStart(2, "0");
+  return `${jobId.slice(0, -2)}${hex}`;
 }
 
 function extensionFromContentType(contentType: string | null, fallback = "mp4") {
@@ -249,16 +284,6 @@ async function chargeJobCredits(sb: SB, jobId: string): Promise<boolean> {
 // Reverses chargeJobCredits when a launched job ultimately fails to deliver —
 // the user shouldn't pay for a video they never received. Mirrors the
 // fallback pattern used in stripe-webhook's atomicAddCredits.
-async function refundJobCredits(sb: SB, jobId: string) {
-  const { data, error } = await sb.rpc("refund_job_credits", { p_job_id: jobId });
-
-  if (error) {
-    logEvent("error", "credit_refund_rpc_failed", { jobId, message: error.message });
-  } else if (data === true) {
-    logEvent("info", "credit_refund_success", { jobId });
-  }
-}
-
 /* ================= CONTENT-POLICY RETRY ================= */
 
 // When a provider (most often Vertex AI behind Veo) rejects a prompt for
@@ -376,6 +401,7 @@ async function processVideoJob(body: any) {
     referenceImages,
     airTag,
     withSound,
+    workerId,
   } = body ?? {};
 
   const airTagStr = String(airTag);
@@ -425,7 +451,7 @@ async function processVideoJob(body: any) {
   const existingSettings = existingJobState?.settings ?? {};
   let resumableProviderJobId = String(existingSettings?.provider_job_id ?? "").trim() || null;
 
-  function buildLaunchPayload(promptText: string) {
+  function buildLaunchPayload(promptText: string, providerTaskId: string) {
     const p: any = {
       subject: promptText,
       durationSec: Number(durationSec ?? 5),
@@ -433,6 +459,7 @@ async function processVideoJob(body: any) {
       airTag: airTagStr,
       withSound: !!withSound,
       jobId: String(jobId),
+      providerTaskId,
     };
 
     if (isMiniMax) {
@@ -454,7 +481,8 @@ async function processVideoJob(body: any) {
 
   attempts:
   for (;;) {
-    const launchPayload = buildLaunchPayload(currentPrompt);
+    const reservedProviderTaskId = providerTaskIdForAttempt(String(jobId), contentRetryCount);
+    const launchPayload = buildLaunchPayload(currentPrompt, reservedProviderTaskId);
 
     logEvent("info", "attempt_start", {
       jobId,
@@ -492,23 +520,36 @@ async function processVideoJob(body: any) {
         elapsedMs: Date.now() - startMs,
       });
     } else {
-      providerJobId = await launchWithRetry(sb, String(jobId), launchPayload);
+      const reservationRpc = contentRetryCount > 0
+        ? "replace_provider_submission_for_retry"
+        : "reserve_provider_submission";
+      const { data: reserved } = await safeRpc(sb, reservationRpc, {
+        p_job_id: String(jobId), p_worker_id: String(workerId), p_provider_task_id: reservedProviderTaskId,
+      });
+      if (reserved !== true) {
+        logEvent("warn", "duplicate_submission_suppressed", { jobId, providerJobId: reservedProviderTaskId });
+        return;
+      }
+      try {
+        providerJobId = await launchWithRetry(sb, String(jobId), launchPayload);
+      } catch (launchError) {
+        const launchMessage = String((launchError as any)?.message ?? launchError);
+        if (/launch failed \(\d{3}\)/i.test(launchMessage)) {
+          await safeUpdateJob(sb, String(jobId), {
+            status: "failed", error_code: "PROVIDER_SUBMISSION_REJECTED", error: launchMessage,
+          });
+        } else {
+          await safeRpc(sb, "mark_generation_reconciliation_required", {
+            p_job_id: String(jobId), p_reason: "Runware submission response was ambiguous; do not resubmit",
+          });
+        }
+        return;
+      }
 
       /* ================= SAVE PROVIDER ID ================= */
 
-      const { data: settingsRow } = await sb
-        .from("jobs")
-        .select("settings")
-        .eq("id", String(jobId))
-        .single();
-
-      await safeUpdateJob(sb, String(jobId), {
-        settings: {
-          ...(settingsRow?.settings ?? {}),
-          provider_job_id: providerJobId,
-          content_retry_count: contentRetryCount,
-          ...(contentRetryCount > 0 ? { sanitized_prompt: currentPrompt } : {}),
-        },
+      await safeRpc(sb, "record_provider_submission", {
+        p_job_id: String(jobId), p_worker_id: String(workerId), p_provider_task_id: providerJobId,
       });
     }
 
@@ -538,11 +579,10 @@ async function processVideoJob(body: any) {
 
         if (consecutivePollErrors >= MAX_CONSECUTIVE_POLL_ERRORS) {
           logEvent("error", "job_failed", { jobId, reason: "poll_errors_exhausted", elapsedMs: Date.now() - startMs });
-          await safeUpdateJob(sb, String(jobId), {
-            status: "failed",
-            error: "Provider polling failed repeatedly",
+          await safeRpc(sb, "mark_generation_reconciliation_required", {
+            p_job_id: String(jobId),
+            p_reason: "Runware video polling failed repeatedly; provider task must be reconciled",
           });
-          if (charged) await refundJobCredits(sb, String(jobId));
           return;
         }
 
@@ -561,6 +601,9 @@ async function processVideoJob(body: any) {
           elapsedMs: Date.now() - startMs,
         });
         lastLoggedStatus = statusKey;
+        await safeRpc(sb, "heartbeat_generation_job", {
+          p_job_id: String(jobId), p_worker_id: String(workerId), p_lease_seconds: 180,
+        });
       }
 
       if (poll?.url) {
@@ -630,12 +673,12 @@ async function processVideoJob(body: any) {
 
         await safeUpdateJob(sb, String(jobId), {
           status: "failed",
+          error_code: contentPolicyHit ? "PROVIDER_SAFETY_REJECTION" : "PROVIDER_GENERATION_FAILED",
           error:
-            contentRetryCount > 0
-              ? `Video rejected by the provider's content filter after ${contentRetryCount} rewritten attempt${contentRetryCount > 1 ? "s" : ""}. Try a different description.`
-              : poll?.error ?? "Provider failed",
+            contentPolicyHit
+              ? "The provider couldn't generate this request because of its safety rules. Try changing the prompt or image."
+              : "The provider couldn't complete this generation. Please try again.",
         });
-        if (charged) await refundJobCredits(sb, String(jobId));
         return;
       }
 
@@ -652,11 +695,10 @@ async function processVideoJob(body: any) {
 
   logEvent("error", "job_failed", { jobId, reason: "timeout", contentRetryCount, elapsedMs: Date.now() - startMs });
 
-  await safeUpdateJob(sb, String(jobId), {
-    status: "failed",
-    error: "Video generation timed out — click Retry video to try again",
+  await safeRpc(sb, "mark_generation_reconciliation_required", {
+    p_job_id: String(jobId),
+    p_reason: "Runware video polling window expired; provider task must be reconciled",
   });
-  if (charged) await refundJobCredits(sb, String(jobId));
 }
 
 /* ================= HANDLER =================
@@ -687,7 +729,8 @@ Deno.serve(async (req) => {
   const body = await req.json().catch(() => ({}));
   const { jobId, prompt, width, height, durationSec, airTag } = body ?? {};
 
-  if (!jobId) return err(req, "Missing jobId");
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!jobId || !UUID_RE.test(String(jobId)) || jobId === "00000000-0000-0000-0000-000000000000") return err(req, "Invalid jobId");
   if (!prompt) return err(req, "Missing prompt");
   if (!durationSec) return err(req, "Missing durationSec");
   if (!airTag) return err(req, "Missing airTag");
@@ -702,6 +745,17 @@ Deno.serve(async (req) => {
   if (!isMiniMax && !isKling && !isVeoLite && !isSeedance20 && (!width || !height)) {
     logEvent("warn", "request_rejected_missing_dimensions", { jobId, airTag: airTagStr, width, height });
     return err(req, "Missing dimensions");
+  }
+
+  try {
+    validateReferencePayload({ referenceImages: body.referenceImages ?? [] });
+  } catch (error) {
+    const code = error instanceof ProviderReferenceError ? error.code : "REFERENCE_IMAGE_NOT_ACCESSIBLE";
+    logEvent("warn", "reference_validation_rejected", { jobId, airTag: airTagStr, code });
+    return new Response(JSON.stringify({ ok: false, code, error: friendlyReferenceMessage(code) }), {
+      status: 400,
+      headers: cors(req),
+    });
   }
 
   logEvent("info", "request_accepted", { jobId, airTag: airTagStr });
@@ -720,11 +774,14 @@ Deno.serve(async (req) => {
         const sb = createClient(SUPABASE_URL, SERVICE_KEY, {
           auth: { persistSession: false },
         });
-        await safeUpdateJob(sb, String(jobId), {
-          status: "failed",
-          error: e instanceof Error ? e.message : String(e),
-        });
-        await refundJobCredits(sb, String(jobId));
+        const { data: state } = await sb.from("jobs").select("submission_state").eq("id", String(jobId)).maybeSingle();
+        if (state?.submission_state === "pending") {
+          await safeUpdateJob(sb, String(jobId), { status: "failed", error: e instanceof Error ? e.message : String(e) });
+        } else {
+          await safeRpc(sb, "mark_generation_reconciliation_required", {
+            p_job_id: String(jobId), p_reason: "Video worker crashed after provider submission became possible",
+          });
+        }
       } catch (inner) {
         logEvent("error", "crash_handler_itself_failed", {
           jobId,

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { getCurrentBrand } from "../../lib/brandSession";
 import { createProductPhotoJob } from "../../lib/jobs";
@@ -21,6 +21,8 @@ export default function WithProductStep2({
   const [seed, setSeed] = useState("");
   const [loading, setLoading] = useState(false);
   const [refFiles, setRefFiles] = useState([]);
+  const refPreviews = useMemo(() => refFiles.map((file) => URL.createObjectURL(file)), [refFiles]);
+  useEffect(() => () => refPreviews.forEach((url) => URL.revokeObjectURL(url)), [refPreviews]);
 
   const canCreate = prompt.trim().length >= 3 && !loading;
 
@@ -151,13 +153,13 @@ export default function WithProductStep2({
 
       {refFiles.length > 0 && (
         <div className="flex gap-2 flex-wrap">
-          {refFiles.map((f, i) => (
+          {refFiles.map((_file, i) => (
             <div
               key={i}
               className="relative h-20 w-16 overflow-hidden rounded-lg border border-white/10 bg-black"
             >
               <img
-                src={URL.createObjectURL(f)}
+                src={refPreviews[i]}
                 alt=""
                 className="h-full w-full object-cover"
               />
