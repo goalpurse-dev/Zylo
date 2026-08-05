@@ -222,7 +222,7 @@ function SceneCard({ scene, index }) {
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="relative group rounded-2xl overflow-hidden bg-[#0d0f11] border border-white/[0.08] shadow-[0_8px_40px_rgba(0,0,0,0.6)] w-full aspect-[9/16]"
+      className="relative isolate group rounded-2xl overflow-hidden bg-[#0d0f11] border border-white/[0.08] shadow-[0_8px_40px_rgba(0,0,0,0.6)] w-full aspect-[9/16]"
     >
       {imgDone && scene.imageUrl && (
         <motion.img
