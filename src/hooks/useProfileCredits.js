@@ -21,10 +21,25 @@ export function useProfileCredits() {
   const applyServerBalance = (serverVal) => {
     if (typeof serverVal !== "number") return;
     const delta = serverVal - serverBalanceRef.current;
+    if (delta === 0) return;
+
+    // The 10s poll and the realtime channel can resolve out of order — a
+    // poll request issued BEFORE a charge landed can still resolve AFTER a
+    // realtime event that already reflected the drop, arriving late with
+    // the stale pre-charge balance. While a spend is still outstanding
+    // (pendingRef < 0), treat an apparent INCREASE as exactly that kind of
+    // stale/out-of-order read rather than a real refund, and ignore it —
+    // otherwise it cancels the pending spend and the display bounces back
+    // to the pre-spend balance before dripping down job-by-job as the real
+    // charges land on top of the now-reset state. Mirror guard for an
+    // outstanding optimistic refund.
+    if (pendingRef.current < 0 && delta > 0) return;
+    if (pendingRef.current > 0 && delta < 0) return;
+
     if (delta < 0) {
       // A real charge landed — absorb up to |delta| of outstanding pending spend.
       pendingRef.current = Math.min(0, pendingRef.current - delta);
-    } else if (delta > 0) {
+    } else {
       // A real grant/refund landed — absorb up to delta of outstanding pending refund.
       pendingRef.current = Math.max(0, pendingRef.current - delta);
     }
