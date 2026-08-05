@@ -205,4 +205,14 @@ withTimeout(main(), OVERALL_TIMEOUT_MS, "SEO prerender").catch((error) => {
   // ships without prerendered SEO HTML until the environment is fixed.
   console.error("[prerenderSeo] SEO prerender failed or timed out — continuing deploy without it:");
   console.error(error);
+}).finally(() => {
+  // main() can throw before reaching its own try/finally (e.g. chromium.launch()
+  // failing right after startStaticServer() opens its listening socket) —
+  // whenever that happens the open server keeps Node's event loop alive
+  // forever, so the .catch() above logs its message but the process never
+  // actually exits. That's what burned a full 45-minute Vercel build budget
+  // on every deploy where the build image can't launch Chromium. Exiting
+  // explicitly guarantees this script terminates no matter what got left
+  // open, instead of relying on every failure path to clean up perfectly.
+  process.exit(0);
 });
