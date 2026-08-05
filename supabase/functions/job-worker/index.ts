@@ -141,6 +141,7 @@ Deno.serve(async (req) => {
     const body = (await req.json().catch(() => ({}))) as {
       jobId?: string;
       recoverExistingProvider?: boolean;
+      action?: string;
     };
     const recoverExistingProvider = body.recoverExistingProvider === true;
     const workerId = `jw-${crypto.randomUUID()}`;
@@ -204,6 +205,33 @@ Deno.serve(async (req) => {
       if (!ownedJob || ownedJob.user_id !== authenticatedUserId) {
         return fail(req, "Job not found", 404);
       }
+    }
+
+    // A single direct "is this actually done yet?" check, not a new dispatch —
+    // used when a client's own wait times out on a job that's still charged
+    // and generating server-side (most often a content-policy retry whose
+    // relaunch pushed the provider worker's own polling window past its
+    // limit). Ownership is already verified above for non-service callers.
+    // Proxies to the provider function's own reconcile handler using this
+    // worker's service-role access, since the browser never holds that key.
+    if (jobId && body.action === "reconcile") {
+      const { data: job } = await sbAdmin.from("jobs").select("tool_key").eq("id", jobId).maybeSingle();
+      const provider = job?.tool_key ? getProviderLink(job.tool_key) : null;
+      if (!provider || provider.edgeFn !== "/functions/v1/runware-video") {
+        return json(req, { ok: true, status: "unsupported" });
+      }
+      const res = await fetch(`${SUPABASE_URL}${provider.edgeFn}`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "authorization": `Bearer ${SERVICE_ROLE_KEY}`,
+          "apikey": SERVICE_ROLE_KEY,
+          "x-job-worker-key": SERVICE_ROLE_KEY,
+        },
+        body: JSON.stringify({ jobId, action: "reconcile", workerId: `reconcile-${crypto.randomUUID()}` }),
+      }).catch(() => null);
+      const payload = res ? await res.json().catch(() => ({ ok: false })) : { ok: false };
+      return json(req, payload);
     }
 
     // Explicit handoffs are the normal browser path. They must obey the same

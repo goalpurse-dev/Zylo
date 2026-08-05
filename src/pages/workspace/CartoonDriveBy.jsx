@@ -1,13 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CartoonDriveByBuilder from "../../components/viral-tools/cartoon-drive-by/CartoonDriveByBuilder";
 import CartoonDriveByResults from "../../components/viral-tools/cartoon-drive-by/CartoonDriveByResults";
 import FaceAsmrPaywall from "../../components/viral-tools/face-asmr/FaceAsmrPaywall";
 import useCartoonDriveByJob from "../../components/viral-tools/cartoon-drive-by/hooks/useCartoonDriveByJob";
-import {
-  createCartoonDriveByGeneration,
-  listCartoonDriveByGenerations,
-} from "../../components/viral-tools/cartoon-drive-by/api/cartoonDriveByApi";
+import { listCartoonDriveByGenerations } from "../../components/viral-tools/cartoon-drive-by/api/cartoonDriveByApi";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
 import demoVideo from "../../assets/home/latest/video9.16-fast.mp4";
@@ -81,8 +78,7 @@ export default function CartoonDriveBy() {
   const [recentGenerations, setRecentGenerations] = useState([]);
   const [viewingRecentId, setViewingRecentId] = useState(null);
   const [formValues, setFormValues] = useState(DEFAULT_FORM_VALUES);
-  const savedSignatureRef = useRef("");
-  const { phase, result, error, start, reset, showGeneration } = useCartoonDriveByJob();
+  const { phase, result, error, generationId, start, reset, showGeneration } = useCartoonDriveByJob();
 
   useEffect(() => {
     if (authLoading) return;
@@ -137,26 +133,19 @@ export default function CartoonDriveBy() {
 
   useEffect(() => { void loadRecents(); }, [loadRecents]);
 
+  // The generation row is now created up front and updated as it progresses
+  // (see useCartoonDriveByJob), so a run survives a reset or a closed tab
+  // instead of only ever being saved on successful completion. Just keep
+  // Recent Creations in sync with the DB at each meaningful transition.
   useEffect(() => {
-    if (!user || viewingRecentId || phase !== "done" || !result.videoUrl) return;
-    const signature = `${result.world}:${result.qualityId}:${result.videoUrl}`;
-    if (savedSignatureRef.current === signature) return;
-    savedSignatureRef.current = signature;
-    let cancelled = false;
-    createCartoonDriveByGeneration(result).then((saved) => {
-      if (cancelled) return;
-      setRecentGenerations((current) => [saved, ...current.filter((item) => item.id !== saved.id)].slice(0, MAX_RECENT));
-    }).catch((err) => {
-      if (savedSignatureRef.current === signature) savedSignatureRef.current = "";
-      console.error("[CartoonDriveBy] save failed", err);
-    });
-    return () => { cancelled = true; };
-  }, [phase, result, user, viewingRecentId]);
+    if (!user || viewingRecentId || !generationId) return;
+    if (phase !== "image" && phase !== "done" && phase !== "error") return;
+    void loadRecents();
+  }, [phase, generationId, user, viewingRecentId, loadRecents]);
 
   const handleGenerate = (input) => {
     if (needsUpgrade) { showPaywall(); return; }
     setViewingRecentId(null);
-    savedSignatureRef.current = "";
     setMobilePanel("results");
     document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
     start(input);

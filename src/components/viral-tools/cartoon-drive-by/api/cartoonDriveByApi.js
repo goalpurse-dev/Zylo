@@ -140,10 +140,11 @@ export function buildVideoPrompt({ world, vehicle = "car", mood = "golden-dusk",
 
   return [
     `Animate this image into one continuous 10-second photorealistic vertical drive-by shot ${vehicleCopy.capture}. The distant destination is based on: ${String(world ?? "").trim()}. Preserve the original ${mood} lighting, the exact vehicle interior and the exact visual identity of the still image.`,
-    `0-2 seconds: the ${vehicle} moves steadily forward. Nearby ${vehicleCopy.foreground} sweep quickly sideways. The distant landmark is only beginning to enter the window view.`,
-    "2-5 seconds: the landmark drifts naturally into clearer view across the far horizon. Keep it distant and stable while foreground layers move much faster.",
-    "5-8 seconds: hold the strongest readable view through the window. The landmark remains nearly stationary because of distance; glass reflections, atmospheric haze and sunlight move subtly.",
-    "8-10 seconds: the vehicle continues forward and the landmark slides toward the rear edge of the window, beginning to disappear from view. End on natural forward motion suitable for a clean loop.",
+    "The distant landmark must stay clearly visible and readable in the window for the entire 10 seconds, from the very first frame to the very last — it never fully enters from off-screen and never exits or disappears from view. Because it is far away on the horizon, its position in the frame stays nearly constant throughout; only its clarity and lighting shift subtly.",
+    `0-2 seconds: the landmark is already visible on the distant horizon. The ${vehicle} moves steadily forward. Nearby ${vehicleCopy.foreground} sweep quickly sideways.`,
+    "2-5 seconds: the landmark remains clearly visible and stable across the far horizon while foreground layers continue moving much faster.",
+    "5-8 seconds: hold the strongest, most readable view of the landmark through the window. It remains nearly stationary because of distance; glass reflections, atmospheric haze and sunlight move subtly.",
+    "8-10 seconds: the landmark is still clearly visible in the same part of the window. The vehicle continues its natural forward motion, suitable for a clean loop, without the landmark leaving frame.",
     `Maintain physically correct parallax, realistic horizontal foreground motion blur, ${vehicleCopy.motion}, soft window reflections, cinematic haze, fine film grain and consistent geometry. Keep ${vehicleCopy.framing} stable and physically correct throughout. ${vehicleCopy.exclusions}. The camera never leaves the vehicle and never cuts.`,
     "No zoom toward the landmark, no drone movement, no scene change, no morphing buildings, no added characters, no text, captions, logos, UI or watermark.",
     audioDirection,
@@ -192,10 +193,9 @@ function normalizeRow(row) {
   };
 }
 
-export async function createCartoonDriveByGeneration({ world, vehicle, mood, qualityId, imageUrl, videoUrl }) {
+export async function createCartoonDriveByGeneration({ world, vehicle, mood, qualityId, imageUrl, videoUrl, status }) {
   const { data: userData, error: authErr } = await supabase.auth.getUser();
   if (authErr || !userData?.user) throw new Error("Must be signed in");
-  if (!imageUrl && !videoUrl) throw new Error("No result to save");
 
   const { data, error } = await supabase
     .from("cartoon_drive_by_generations")
@@ -205,10 +205,32 @@ export async function createCartoonDriveByGeneration({ world, vehicle, mood, qua
       vehicle: vehicle || "car",
       mood: mood || "golden-dusk",
       quality_id: qualityId || DEFAULT_QUALITY_TIER,
-      status: "completed",
+      status: status || (videoUrl ? "completed" : "generating"),
       image_url: imageUrl ?? null,
       video_url: videoUrl ?? null,
     })
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return normalizeRow(data);
+}
+
+// Patches the in-flight row created at the start of a run — keeps a
+// generation restorable from Recent Creations even if the tab closes or the
+// user resets mid-run, instead of only ever saving on successful completion.
+export async function updateCartoonDriveByGeneration(id, { imageUrl, videoUrl, status } = {}) {
+  if (!id) return null;
+  const patch = {};
+  if (imageUrl !== undefined) patch.image_url = imageUrl;
+  if (videoUrl !== undefined) patch.video_url = videoUrl;
+  if (status !== undefined) patch.status = status;
+  if (Object.keys(patch).length === 0) return null;
+
+  const { data, error } = await supabase
+    .from("cartoon_drive_by_generations")
+    .update(patch)
+    .eq("id", id)
     .select("*")
     .single();
 
