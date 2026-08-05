@@ -265,11 +265,46 @@ async function launchWithRetry(
 
 /* ================= CREDITS ================= */
 
+// Server-side price floor for tools with a known fixed price per exact
+// video signature (width/height/duration/sound). We saw a real, otherwise
+// unexplained case where a Micro Camera job was charged 13 credits when
+// every code path we could inspect — the deployed client bundle, every DB
+// trigger, every RPC — computes 6 for that exact signature. Whatever
+// produced 13 wasn't reproducible from the server side, so rather than
+// leave that gap open indefinitely, the server now corrects charge_credits
+// back to the known-correct price for these specific signatures right
+// before charging, regardless of what the client declared.
+const KNOWN_VIDEO_PRICES: Array<{
+  toolKey: string; width: number; height: number; durationSec: number; withSound: boolean; credits: number;
+}> = [
+  { toolKey: "video:seedance15pro",       width: 496,  height: 864,  durationSec: 5, withSound: false, credits: 6 },
+  { toolKey: "video:microcamminimax720",  width: 768,  height: 1366, durationSec: 6, withSound: false, credits: 18 },
+  { toolKey: "video:microcamminimax1080", width: 1080, height: 1920, durationSec: 6, withSound: false, credits: 32 },
+];
+
+async function correctKnownVideoPricing(sb: SB, jobId: string) {
+  const { data: job } = await sb.from("jobs").select("tool_key,input,charge_credits").eq("id", jobId).maybeSingle();
+  if (!job) return;
+  const input = (job.input ?? {}) as Record<string, unknown>;
+  const match = KNOWN_VIDEO_PRICES.find((p) =>
+    p.toolKey === job.tool_key &&
+    Number(input.width) === p.width &&
+    Number(input.height) === p.height &&
+    Number(input.durationSec) === p.durationSec &&
+    Boolean(input.withSound) === p.withSound
+  );
+  if (match && Number(job.charge_credits) !== match.credits) {
+    logEvent("warn", "price_corrected", { jobId, was: job.charge_credits, correctedTo: match.credits });
+    await sb.from("jobs").update({ charge_credits: match.credits }).eq("id", jobId);
+  }
+}
+
 // Returns true if the charge went through (or there was nothing to charge),
 // false if the user's balance couldn't cover it. Called at LAUNCH time —
 // Runware starts billing the instant the job launches, not when polling
 // later confirms completion, so the ledger needs to move at the same moment.
 async function chargeJobCredits(sb: SB, jobId: string): Promise<boolean> {
+  await correctKnownVideoPricing(sb, jobId);
   const { data, error } = await sb.rpc("charge_job_credits", { p_job_id: jobId });
 
   if (error || data !== true) {
