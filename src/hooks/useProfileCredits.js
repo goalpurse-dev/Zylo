@@ -1,23 +1,45 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "./../lib/supabaseClient";
 import { onCreditSpend, onCreditRefund } from "../lib/creditPopEvents";
 
 export function useProfileCredits() {
   const [credits, setCredits] = useState(0);
 
-  // Applies the full "-N" the moment the spend popup fires, instead of
-  // waiting for the underlying jobs to charge one at a time server-side —
-  // a 5-scene generation used to visibly drain the counter as -2 -2 -2 -6
-  // -6 -6 while the popup already said the full total up front. This is
-  // purely optimistic: every real server-side charge/refund still lands via
-  // realtime/poll below and overwrites this with the authoritative value,
-  // so it can never drift permanently even if the real total differs.
+  // Displayed value = last known server balance + pending (unconfirmed
+  // optimistic spend/refund deltas). We never just overwrite the display
+  // with whatever the server says — the realtime subscription fires on
+  // ANY update to the profiles row, not only credit_balance changes, and
+  // polling can land in the gap before a job's real charge has actually
+  // committed server-side. Either one reporting the still-unchanged old
+  // balance used to stomp the optimistic "-N" back to its pre-spend value
+  // for a moment. Instead, only an ACTUAL change in the server balance
+  // reconciles (shrinks) the pending amount, so an unrelated/stale update
+  // that reports the same balance we already knew about is a no-op.
+  const serverBalanceRef = useRef(0);
+  const pendingRef = useRef(0);
+
+  const applyServerBalance = (serverVal) => {
+    if (typeof serverVal !== "number") return;
+    const delta = serverVal - serverBalanceRef.current;
+    if (delta < 0) {
+      // A real charge landed — absorb up to |delta| of outstanding pending spend.
+      pendingRef.current = Math.min(0, pendingRef.current - delta);
+    } else if (delta > 0) {
+      // A real grant/refund landed — absorb up to delta of outstanding pending refund.
+      pendingRef.current = Math.max(0, pendingRef.current - delta);
+    }
+    serverBalanceRef.current = serverVal;
+    setCredits(Math.max(0, serverVal + pendingRef.current));
+  };
+
   useEffect(() => {
     const unsubSpend = onCreditSpend(({ amount }) => {
-      setCredits((prev) => Math.max(0, prev - amount));
+      pendingRef.current -= amount;
+      setCredits(Math.max(0, serverBalanceRef.current + pendingRef.current));
     });
     const unsubRefund = onCreditRefund(({ amount }) => {
-      setCredits((prev) => prev + amount);
+      pendingRef.current += amount;
+      setCredits(Math.max(0, serverBalanceRef.current + pendingRef.current));
     });
     return () => { unsubSpend(); unsubRefund(); };
   }, []);
@@ -36,7 +58,7 @@ export function useProfileCredits() {
         .eq("id", uid)
         .single();
       if (mounted && data?.credit_balance != null) {
-        setCredits(data.credit_balance);
+        applyServerBalance(data.credit_balance);
       }
     };
 
@@ -60,8 +82,7 @@ export function useProfileCredits() {
           { event: "UPDATE", schema: "public", table: "profiles" },
           (payload) => {
             if (!mounted || payload.new?.id !== uid) return;
-            const next = payload.new?.credit_balance;
-            if (typeof next === "number") setCredits(next);
+            applyServerBalance(payload.new?.credit_balance);
           }
         )
         .subscribe();
