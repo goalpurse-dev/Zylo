@@ -20,7 +20,14 @@ export function planTierIndex(planCode) {
  */
 export function getAllowedVideoModels(planCode, minPlanMap) {
   const code = String(planCode ?? "").toLowerCase().trim();
-  if (code === "affiliate") return Object.keys(minPlanMap);
+  // Affiliates get every template, but only its entry-level ("v2") tier —
+  // every tool's *-v2 model is gated to "starter" by convention, so this
+  // mirrors job-worker's PLAN_GATED_TOOLS enforcement, where every v2
+  // tool_key is simply absent from the map (unconditionally allowed) and
+  // every v3/v4 tool_key requires pro/generative, both above affiliate.
+  if (code === "affiliate") {
+    return Object.keys(minPlanMap).filter((id) => minPlanMap[id] === "starter");
+  }
 
   const userTier = planTierIndex(code);
   return Object.keys(minPlanMap).filter(

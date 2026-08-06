@@ -101,9 +101,12 @@ async function isToolAllowedForUser(
 
   const userPlan = String((profile as any)?.plan_code ?? "free").toLowerCase().trim();
 
-  // Affiliates get full access regardless of tier ordering.
-  if (userPlan === "affiliate") return { allowed: true, userPlan };
-
+  // Affiliates get every template (every tool_key not in PLAN_GATED_TOOLS —
+  // i.e. every v2 tier — is unconditionally allowed above, before this
+  // function is even reached), but not the paid v3/v4 tiers: "affiliate"
+  // isn't in PLAN_TIER_ORDER, so planTierIndex falls back to 0 (same as
+  // "free"), which is below every requiredPlan in PLAN_GATED_TOOLS
+  // (pro/generative) — no special case needed here.
   const allowed = planTierIndex(userPlan) >= planTierIndex(requiredPlan);
   return { allowed, userPlan, requiredPlan };
 }
