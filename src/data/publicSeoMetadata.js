@@ -114,7 +114,15 @@ export const PUBLIC_SEO_METADATA = {
   "/blog/ai-fruit-story-character-ideas": blog(
     "AI Fruit Story Character Ideas and Storylines",
     "Explore eight AI fruit character pairings with adaptable workplace, relationship, family, comeback, and romance story hooks.",
-  ),  "/blog/viral-ai-fruit-drama-videos": blog(
+  ),  "/blog/ai-fruit-story-talking-dialogue-tips": blog(
+    "How to Write Talking Dialogue for AI Fruit Story Videos",
+    "Learn how Zyvo's mouth-synced talking characters work and five dialogue-writing techniques that make AI fruit drama videos hit harder.",
+  ),
+  "/blog/ai-fruit-story-vs-traditional-animation": blog(
+    "AI Fruit Story vs Traditional Animation",
+    "Compare AI Fruit Story against traditional animation across speed, cost, skill, and character consistency for viral TikTok drama videos.",
+  ),
+  "/blog/viral-ai-fruit-drama-videos": blog(
     "How to Create Viral AI Fruit Drama Videos",
     "Learn how AI fruit drama videos combine recognizable characters, conflict, scene progression, and vertical short-form presentation.",
   ),

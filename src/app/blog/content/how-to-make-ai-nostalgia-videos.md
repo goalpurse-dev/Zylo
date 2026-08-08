@@ -319,5 +319,6 @@ No. Strong structure, consistency, formatting, and a clear hook can improve the 
 - How to Create Cinematic Worlds With AI → /blog/ai-world-generator-guide
 - 50 AI World Generator Prompts → /blog/ai-world-generator-prompts
 - 25 Incredible AI Worlds at 2AM → /blog/ai-worlds-at-2am-ideas
+- How to Go Viral on TikTok With AI World Slideshows → /blog/how-to-go-viral-tiktok-ai-worlds
 
 ---

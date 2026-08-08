@@ -697,4 +697,32 @@
     <priority>0.9</priority>
   </url>
 
+  <url>
+    <loc>https://www.tryzyvo.com/blog/ai-fruit-story-talking-dialogue-tips</loc>
+    <lastmod>2026-08-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/ai-fruit-story-vs-traditional-animation</loc>
+    <lastmod>2026-08-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/how-to-go-viral-tiktok-ai-worlds</loc>
+    <lastmod>2026-08-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.tryzyvo.com/blog/liminal-space-ai-generator</loc>
+    <lastmod>2026-08-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
 </urlset>

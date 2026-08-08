@@ -134,6 +134,8 @@ const BestAIImageGeneratorsSocialMedia2026 = lazy(() => import("./app/blog/image
 const ViralAIFruitDramaVideos = lazy(() => import("./app/blog/imagegenerator/viral-ai-fruit-drama-videos.jsx"));
 const HowToGoViralTikTokFruitDrama = lazy(() => import("./app/blog/imagegenerator/how-to-go-viral-tiktok-fruit-drama.jsx"));
 const BestAIFruitStoryIdeas = lazy(() => import("./app/blog/imagegenerator/best-ai-fruit-story-ideas.jsx"));
+const AIFruitStoryTalkingDialogueTips = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-talking-dialogue-tips.jsx"));
+const AIFruitStoryVsTraditionalAnimation = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-vs-traditional-animation.jsx"));
 const ViralScore = lazy(() => import("./pages/viral/ViralScore.jsx"));
 const LipSync    = lazy(() => import("./pages/viral/LipSync.jsx"));
 
@@ -453,6 +455,8 @@ return (
         <Route path="/blog/viral-ai-fruit-drama-videos" element={<ViralAIFruitDramaVideos/>} />
         <Route path="/blog/how-to-go-viral-tiktok-fruit-drama" element={<HowToGoViralTikTokFruitDrama/>} />
         <Route path="/blog/best-ai-fruit-story-ideas" element={<BestAIFruitStoryIdeas/>} />
+        <Route path="/blog/ai-fruit-story-talking-dialogue-tips" element={<AIFruitStoryTalkingDialogueTips/>} />
+        <Route path="/blog/ai-fruit-story-vs-traditional-animation" element={<AIFruitStoryVsTraditionalAnimation/>} />
 
          <Route path="/ai-fruit-story-maker" element={<AIFruitStoryLanding />} />
          <Route path="/cartoon-drive-by-video-maker" element={<CartoonDriveByLanding />} />
@@ -483,6 +487,8 @@ return (
          <Route path="/blog/social-media-automation-for-creators" element={<CreatorGrowthGuide slug="social-media-automation-for-creators" />} />
          <Route path="/blog/youtube-analytics-for-creators" element={<CreatorGrowthGuide slug="youtube-analytics-for-creators" />} />
          <Route path="/blog/short-form-video-metrics-that-matter" element={<CreatorGrowthGuide slug="short-form-video-metrics-that-matter" />} />
+         <Route path="/blog/how-to-go-viral-tiktok-ai-worlds" element={<TwoAmBlogGuide slug="how-to-go-viral-tiktok-ai-worlds" />} />
+         <Route path="/blog/liminal-space-ai-generator" element={<TwoAmBlogGuide slug="liminal-space-ai-generator" />} />
          <Route path="/blog/what-is-the-2am-worlds-ai-trend" element={<TwoAmBlogGuide slug="what-is-the-2am-worlds-ai-trend" />} />
          <Route path="/blog/best-2am-world-ai-prompts" element={<TwoAmBlogGuide slug="best-2am-world-ai-prompts" />} />
          <Route path="/blog/how-to-create-2am-pokemon-ai-images" element={<TwoAmBlogGuide slug="how-to-create-2am-pokemon-ai-images" />} />

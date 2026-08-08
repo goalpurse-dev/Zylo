@@ -97,6 +97,8 @@ export const seoLandingPages = [
       "what-is-the-2am-worlds-ai-trend",
       "best-2am-world-ai-prompts",
       "how-to-create-2am-pokemon-ai-images",
+      "how-to-go-viral-tiktok-ai-worlds",
+      "liminal-space-ai-generator",
     ],
     breadcrumb: [{ label: "Home", to: "/workspace/home" }, { label: "2AM Worlds", to: `/${HUB_SLUG}` }],
   },

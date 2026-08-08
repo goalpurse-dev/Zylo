@@ -12,6 +12,8 @@ import aiWorldGeneratorGuide from "./content/ai-world-generator-guide.md?raw";
 import aiWorldGeneratorPrompts from "./content/ai-world-generator-prompts.md?raw";
 import aiNostalgiaVideos from "./content/how-to-make-ai-nostalgia-videos.md?raw";
 import aiWorldsAt2amIdeas from "./content/ai-worlds-at-2am-ideas.md?raw";
+import howToGoViralTikTokAiWorlds from "./content/how-to-go-viral-tiktok-ai-worlds.md?raw";
+import liminalSpaceAiGenerator from "./content/liminal-space-ai-generator.md?raw";
 
 const PREVIEW = (name) => `/template/2am-world/${name}`;
 
@@ -106,6 +108,45 @@ const GUIDES = {
     },
     ctaHref: "/2am-worlds-ai-generator",
     cta: "Create your world after midnight",
+  },
+  "how-to-go-viral-tiktok-ai-worlds": {
+    title: "How to Go Viral on TikTok With AI World Slideshows",
+    seoTitle: "How to Go Viral on TikTok With AI World Slideshows (2026)",
+    description: "Learn the hook, pacing, caption, and posting-cadence strategy behind AI world slideshows that get watched to the end and pushed further on TikTok.",
+    keywords: "how to go viral tiktok ai images, viral ai slideshow ideas, ai tiktok image trend, ai slideshow generator, ai world slideshow tiktok",
+    category: "2AM Worlds",
+    date: "August 8, 2026",
+    datePublished: "2026-08-08",
+    dateModified: "2026-08-08",
+    author: "Zyvo Team",
+    readTime: "10 min read",
+    hero: "/blog-assets/snowy-train-at-2am.webp",
+    heroWidth: 1200,
+    heroHeight: 1800,
+    heroAlt: "A cinematic AI-generated world scene used to illustrate a TikTok slideshow hook frame",
+    markdown: howToGoViralTikTokAiWorlds,
+    ctaHref: "/2am-worlds-ai-generator",
+    cta: "Build tomorrow's world in minutes",
+  },
+  "liminal-space-ai-generator": {
+    title: "Liminal Space AI Generator: Create Eerie 2AM Liminal Worlds",
+    seoTitle: "Liminal Space AI Generator: Create Eerie 2AM Liminal Worlds",
+    description: "What makes a space feel liminal, a repeatable prompt formula, ten ready-to-use prompts, and how liminal spaces differ from the Backrooms.",
+    keywords: "liminal space ai generator, ai liminal space images, backrooms ai generator, dreamcore ai generator, liminal space prompts",
+    category: "2AM Worlds",
+    date: "August 8, 2026",
+    datePublished: "2026-08-08",
+    dateModified: "2026-08-08",
+    author: "Zyvo Team",
+    readTime: "9 min read",
+    hero: "/blog-assets/liminal-hotel-at-2am.webp",
+    heroWidth: 1200,
+    heroHeight: 1800,
+    heroAlt: "An elegant liminal hotel corridor at 2AM with no one in sight, an example of the liminal space aesthetic",
+    markdown: liminalSpaceAiGenerator,
+    promptCards: true,
+    ctaHref: "/2am-worlds-ai-generator",
+    cta: "Create your own eerie 2AM liminal world",
   },
   "what-is-the-2am-worlds-ai-trend": {
     title: "What Is the 2AM Worlds AI Trend?",
