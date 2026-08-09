@@ -58,6 +58,18 @@ export default function AIFruitStoryVsTraditionalAnimation() {
           <p className="text-[13px] text-[#999] mt-5">Aug 8, 2026 · 7 min read · Comparison</p>
         </header>
 
+        <figure className="mb-16 max-w-4xl overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
+          <img
+            src="/blog-assets/ai-fruit-story-vs-animation-hero.png"
+            alt="Split-screen comparison of an AI-generated fruit character appearing instantly versus a traditional animator's desk"
+            width={1024}
+            height={576}
+            className="aspect-[16/9] w-full rounded-[22px] object-cover"
+            loading="eager"
+            fetchPriority="high"
+          />
+        </figure>
+
         <div className="prose-custom max-w-3xl space-y-10 text-[#374151]">
 
           <section>

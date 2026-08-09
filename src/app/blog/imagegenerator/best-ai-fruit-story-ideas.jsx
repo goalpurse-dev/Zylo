@@ -113,6 +113,18 @@ export default function BestAIFruitStoryIdeas() {
           <p className="text-[13px] text-[#999] mt-5">May 15, 2026 · 12 min read · Content Ideas</p>
         </header>
 
+        <figure className="mb-16 max-w-4xl overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
+          <img
+            src="/blog-assets/ai-fruit-story-ideas-hero.png"
+            alt="Cute stylized 3D cartoon fruit characters brainstorming around a table under a glowing idea lightbulb"
+            width={1024}
+            height={576}
+            className="aspect-[16/9] w-full rounded-[22px] object-cover"
+            loading="eager"
+            fetchPriority="high"
+          />
+        </figure>
+
         {/* Characters showcase */}
         <div className="mb-16 flex flex-wrap justify-center gap-3">
           {[

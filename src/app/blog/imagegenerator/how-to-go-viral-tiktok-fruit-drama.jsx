@@ -56,6 +56,18 @@ export default function HowToGoViralTikTokFruitDrama() {
           <p className="text-[13px] text-[#999] mt-5">May 15, 2026 · 10 min read · TikTok Strategy</p>
         </header>
 
+        <figure className="mb-16 max-w-4xl overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
+          <img
+            src="/blog-assets/ai-fruit-story-tiktok-strategy-hero.png"
+            alt="A cute stylized 3D cartoon orange character reacting to a viral video with heart and view-count icons floating around"
+            width={1024}
+            height={576}
+            className="aspect-[16/9] w-full rounded-[22px] object-cover"
+            loading="eager"
+            fetchPriority="high"
+          />
+        </figure>
+
         {/* Visual header — preset grid */}
         <div className="mb-16 grid grid-cols-2 gap-3 sm:grid-cols-4 max-w-3xl">
           {[

@@ -99,6 +99,8 @@ export const seoLandingPages = [
       "how-to-create-2am-pokemon-ai-images",
       "how-to-go-viral-tiktok-ai-worlds",
       "liminal-space-ai-generator",
+      "how-to-create-2am-anime-ai-images",
+      "how-to-create-2am-naruto-ai-images",
     ],
     breadcrumb: [{ label: "Home", to: "/workspace/home" }, { label: "2AM Worlds", to: `/${HUB_SLUG}` }],
   },

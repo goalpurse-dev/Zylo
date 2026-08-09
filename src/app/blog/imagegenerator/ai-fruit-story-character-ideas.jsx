@@ -131,11 +131,17 @@ export default function AIFruitStoryCharacterIdeas() {
           <p className="text-[13px] text-[#999] mt-5">May 27, 2026 · 10 min read · Content Strategy</p>
         </header>
 
-        {/* Hero image */}
-        <div className="mb-16 grid grid-cols-2 gap-3 rounded-2xl overflow-hidden" style={{ height: 280 }}>
-          <img src="/viral-builder/ai-fruit/presets/cheating.webp"   alt="ai fruit story viral drama video" className="w-full h-full object-cover" loading="lazy" />
-          <img src="/viral-builder/ai-fruit/presets/kicked-out.webp" alt="fruit character storyline tiktok"  className="w-full h-full object-cover" loading="lazy" />
-        </div>
+        <figure className="mb-16 max-w-4xl overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
+          <img
+            src="/blog-assets/ai-fruit-story-characters-hero.png"
+            alt="A lineup of five distinct stylized 3D cartoon fruit characters, each with its own expressive personality"
+            width={1024}
+            height={576}
+            className="aspect-[16/9] w-full rounded-[22px] object-cover"
+            loading="eager"
+            fetchPriority="high"
+          />
+        </figure>
 
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_300px]">
           <article className="prose prose-lg max-w-none">

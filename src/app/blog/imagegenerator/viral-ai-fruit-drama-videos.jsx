@@ -56,6 +56,18 @@ export default function ViralAIFruitDramaVideos() {
           <p className="text-[13px] text-[#999] mt-5">May 14, 2026 · 8 min read · TikTok Strategy</p>
         </header>
 
+        <figure className="mb-16 max-w-4xl overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
+          <img
+            src="/blog-assets/ai-fruit-story-drama-hero.png"
+            alt="Two stylized 3D cartoon fruit characters in a dramatic confrontation over evidence on a smartphone"
+            width={1024}
+            height={576}
+            className="aspect-[16/9] w-full rounded-[22px] object-cover"
+            loading="eager"
+            fetchPriority="high"
+          />
+        </figure>
+
         {/* Characters showcase */}
         <div className="mb-16 flex gap-3 overflow-x-auto pb-2">
           {[

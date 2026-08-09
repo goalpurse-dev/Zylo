@@ -103,29 +103,62 @@ export const PUBLIC_SEO_METADATA = {
     "Top AI Image Generator Features That Matter",
     "Compare the AI image generator features that affect real creative workflows, including control, quality, consistency, and export options.",
   ),
-  "/blog/best-ai-fruit-story-ideas": blog(
-    "AI Fruit Story Ideas and Prompt Examples",
-    "Explore adaptable AI fruit story ideas and prompts for reveal, family, friendship, comeback, and mystery plots.",
-  ),
-  "/blog/how-to-go-viral-tiktok-fruit-drama": blog(
-    "How to Improve AI Fruit Drama Videos for TikTok",
-    "Use clearer opening hooks, testable story structures, sustainable publishing cadence, and audience feedback to improve AI fruit drama videos.",
-  ),
-  "/blog/ai-fruit-story-character-ideas": blog(
-    "AI Fruit Story Character Ideas and Storylines",
-    "Explore eight AI fruit character pairings with adaptable workplace, relationship, family, comeback, and romance story hooks.",
-  ),  "/blog/ai-fruit-story-talking-dialogue-tips": blog(
-    "How to Write Talking Dialogue for AI Fruit Story Videos",
-    "Learn how Zyvo's mouth-synced talking characters work and five dialogue-writing techniques that make AI fruit drama videos hit harder.",
-  ),
-  "/blog/ai-fruit-story-vs-traditional-animation": blog(
-    "AI Fruit Story vs Traditional Animation",
-    "Compare AI Fruit Story against traditional animation across speed, cost, skill, and character consistency for viral TikTok drama videos.",
-  ),
-  "/blog/viral-ai-fruit-drama-videos": blog(
-    "How to Create Viral AI Fruit Drama Videos",
-    "Learn how AI fruit drama videos combine recognizable characters, conflict, scene progression, and vertical short-form presentation.",
-  ),
+  "/blog/best-ai-fruit-story-ideas": {
+    ...blog(
+      "AI Fruit Story Ideas and Prompt Examples",
+      "Explore adaptable AI fruit story ideas and prompts for reveal, family, friendship, comeback, and mystery plots.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-ideas-hero.png`,
+  },
+  "/blog/how-to-go-viral-tiktok-fruit-drama": {
+    ...blog(
+      "How to Improve AI Fruit Drama Videos for TikTok",
+      "Use clearer opening hooks, testable story structures, sustainable publishing cadence, and audience feedback to improve AI fruit drama videos.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-tiktok-strategy-hero.png`,
+  },
+  "/blog/ai-fruit-story-character-ideas": {
+    ...blog(
+      "AI Fruit Story Character Ideas and Storylines",
+      "Explore eight AI fruit character pairings with adaptable workplace, relationship, family, comeback, and romance story hooks.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-characters-hero.png`,
+  },
+  "/blog/ai-fruit-story-talking-dialogue-tips": {
+    ...blog(
+      "How to Write Talking Dialogue for AI Fruit Story Videos",
+      "Learn how Zyvo's mouth-synced talking characters work and five dialogue-writing techniques that make AI fruit drama videos hit harder.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-dialogue-hero.png`,
+  },
+  "/blog/ai-fruit-story-vs-traditional-animation": {
+    ...blog(
+      "AI Fruit Story vs Traditional Animation",
+      "Compare AI Fruit Story against traditional animation across speed, cost, skill, and character consistency for viral TikTok drama videos.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-vs-animation-hero.png`,
+  },
+  "/blog/ai-fruit-story-prompt-formula": {
+    ...blog(
+      "How to Write the Perfect AI Fruit Story Prompt",
+      "A repeatable 6-part prompt formula for AI Fruit Story, with weak-vs-strong examples and a formula variant for each drama type.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-prompt-formula-thumb.png`,
+  },
+  "/blog/ai-fruit-story-instagram-youtube-shorts": {
+    ...blog(
+      "How to Post AI Fruit Story Videos on Instagram and YouTube Shorts",
+      "Platform-by-platform differences and a repeatable cross-posting workflow for AI Fruit Story videos on TikTok, Reels, and Shorts.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-shorts-reels-thumb.png`,
+  },
+  "/blog/viral-ai-fruit-drama-videos": {
+    ...blog(
+      "How to Create Viral AI Fruit Drama Videos",
+      "Learn how AI fruit drama videos combine recognizable characters, conflict, scene progression, and vertical short-form presentation.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-drama-hero.png`,
+  },
   "/blog/viral-animal-bodycam-videos": blog(
     "How to Create Viral Animal Bodycam Videos",
     "Learn how to structure fictional animal bodycam concepts with a clear premise, immersive point of view, and short-form pacing.",

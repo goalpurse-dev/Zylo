@@ -77,6 +77,18 @@ export default function AIFruitStoryTalkingDialogueTips() {
           <p className="text-[13px] text-[#999] mt-5">Aug 8, 2026 · 8 min read · Feature Guide</p>
         </header>
 
+        <figure className="mb-16 max-w-4xl overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
+          <img
+            src="/blog-assets/ai-fruit-story-dialogue-hero.png"
+            alt="A stylized 3D cartoon fruit character mid-speech with a speech bubble and sound wave icons"
+            width={1024}
+            height={576}
+            className="aspect-[16/9] w-full rounded-[22px] object-cover"
+            loading="eager"
+            fetchPriority="high"
+          />
+        </figure>
+
         {/* Characters showcase */}
         <div className="mb-16 flex flex-wrap justify-center gap-3">
           {[

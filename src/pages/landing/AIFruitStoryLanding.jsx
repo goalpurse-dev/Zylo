@@ -330,6 +330,8 @@ export default function AIFruitStoryLanding() {
               ["Character Ideas & Storylines", "/blog/ai-fruit-story-character-ideas"],
               ["Talking Character Dialogue Tips", "/blog/ai-fruit-story-talking-dialogue-tips"],
               ["AI vs Traditional Animation", "/blog/ai-fruit-story-vs-traditional-animation"],
+              ["Prompt Formula + Examples", "/blog/ai-fruit-story-prompt-formula"],
+              ["Post to Reels & Shorts Too", "/blog/ai-fruit-story-instagram-youtube-shorts"],
             ].map(([label, to]) => (
               <Link key={to} to={to} className="rounded-[16px] border border-white/[0.08] bg-white/[0.03] px-5 py-5 text-sm font-bold text-white/75 transition hover:border-purple-400/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400">
                 {label} →
