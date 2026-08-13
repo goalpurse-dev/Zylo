@@ -4,8 +4,8 @@ import RelatedArticles from "../RelatedArticles";
 
 const related = [
   {
-    title: "AI Fruit Story Ideas and Prompt Examples",
-    description: "20+ proven AI fruit story ideas with adaptable prompts and an explanation of why each works.",
+    title: "50 AI Fruit Story Prompts and Viral Drama Ideas",
+    description: "Fifty fruit-drama prompts with adaptable ideas and an explanation of why each works.",
     date: "15.05.2026",
     slug: "/blog/best-ai-fruit-story-ideas",
   },
@@ -20,6 +20,12 @@ const related = [
     description: "How mouth-synced talking characters work, plus five dialogue techniques.",
     date: "08.08.2026",
     slug: "/blog/ai-fruit-story-talking-dialogue-tips",
+  },
+  {
+    title: "The Wildest AI Fruit Story Plot Twists (And How to Write Your Own)",
+    description: "Five twist structures that outperform a straightforward reveal, with real examples.",
+    date: "10.08.2026",
+    slug: "/blog/ai-fruit-story-plot-twists",
   },
 ];
 

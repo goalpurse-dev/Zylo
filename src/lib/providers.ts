@@ -23,6 +23,9 @@ export type ToolKey =
   | "image:cartoondrive2k"
   | "image:cartoondrive4kpro"
   | "image:cartoondrive4kmax"
+  | "image:bts2k"
+  | "image:bts4kpro"
+  | "image:bts4kmax"
 
 
 
@@ -216,6 +219,46 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
   margin: m(0.09890, 0.20),
 },
 "image:cartoondrive4kmax": {
+  provider: "runware",
+  generator: "Nano Banana 2",
+  airTag: "google:4@3",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-image",
+  costUSD: 0.09890,
+  retailUSD: 0.20,
+  credits: 10,
+  margin: m(0.09890, 0.20),
+},
+
+/* -------------------------------------------------------
+   BEHIND THE SCENES DEDICATED MODELS
+   Same underlying models as Cartoon Drive By (Nano Banana 2 /
+   Seedance 2.0) but kept under their own tool_keys so spend and
+   usage are attributed to this template separately.
+   ------------------------------------------------------- */
+"image:bts2k": {
+  provider: "runware",
+  generator: "Nano Banana 2",
+  airTag: "google:4@3",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-image",
+  costUSD: 0.06923,
+  retailUSD: 0.14,
+  credits: 7,
+  margin: m(0.06923, 0.14),
+},
+"image:bts4kpro": {
+  provider: "runware",
+  generator: "Nano Banana 2",
+  airTag: "google:4@3",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-image",
+  costUSD: 0.09890,
+  retailUSD: 0.20,
+  credits: 10,
+  margin: m(0.09890, 0.20),
+},
+"image:bts4kmax": {
   provider: "runware",
   generator: "Nano Banana 2",
   airTag: "google:4@3",
@@ -524,6 +567,50 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     baseResolution:       "1080p",
     retailMultiplier:     2,
     baseCreditsPerSecond: 40,
+  },
+
+  /**
+   * Behind the Scenes dedicated tiers — same Seedance 2.0 model as
+   * Cartoon Drive By's V3/V4 tiers, kept under separate tool_keys so
+   * spend/usage is attributed to this template separately. Behind the
+   * Scenes always generates WITH sound (crew chatter / set noise is core
+   * to the concept), unlike Cartoon Drive By's silent tiers — so unlike
+   * the cartoondrive* entries, these carry a soundCreditsPerSecond.
+   * Seedance 2.0's real audio surcharge hasn't been invoiced yet; this
+   * mirrors the ~2x no-sound→with-sound ratio measured on Seedance 1.5
+   * Pro (video:seedance15pro: 2.5 → 5.25/s) as a conservative estimate.
+   * Replace with the real measured rate once a live invoice comes in.
+   */
+  "video:btsseedance720": {
+    provider:   "runware",
+    generator:  "Seedance 2.0",
+    airTag:     "bytedance:seedance@2.0",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
+    // Measured from a real 8s WITH-AUDIO invoice: $1.26801 / 8s = $0.15850/s,
+    // essentially identical to the no-sound baseCreditsPerSecond rate below —
+    // unlike Seedance 1.5 Pro, Seedance 2.0 carries no meaningful audio
+    // surcharge on Runware. Corrected down from an earlier unmeasured 2x guess.
+    costPerSecondUSD:     0.16,
+    baseResolution:       "720p",
+    retailMultiplier:     2,
+    baseCreditsPerSecond: 16,
+    soundCreditsPerSecond: 16,
+  },
+  "video:btsseedance1080": {
+    provider:   "runware",
+    generator:  "Seedance 2.0",
+    airTag:     "bytedance:seedance@2.0",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
+    // No 1080p WITH-AUDIO invoice yet — extrapolated no-surcharge from the
+    // measured 720p data point above (same model, same audio path). Revisit
+    // if a real 1080p+audio invoice ever comes in noticeably different.
+    costPerSecondUSD:     0.40,
+    baseResolution:       "1080p",
+    retailMultiplier:     2,
+    baseCreditsPerSecond: 40,
+    soundCreditsPerSecond: 40,
   },
 
   "video:veo31fast": {

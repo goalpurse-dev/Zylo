@@ -105,8 +105,8 @@ export const PUBLIC_SEO_METADATA = {
   ),
   "/blog/best-ai-fruit-story-ideas": {
     ...blog(
-      "AI Fruit Story Ideas and Prompt Examples",
-      "Explore adaptable AI fruit story ideas and prompts for reveal, family, friendship, comeback, and mystery plots.",
+      "50 AI Fruit Story Prompts and Viral Drama Ideas",
+      "50 fruit story AI prompts across reveal, family, friendship, comeback, workplace, and wedding-drama plots — copy and paste straight into the generator.",
     ),
     image: `${SITE_URL}/blog-assets/ai-fruit-story-ideas-hero.png`,
   },
@@ -152,6 +152,83 @@ export const PUBLIC_SEO_METADATA = {
     ),
     image: `${SITE_URL}/blog-assets/ai-fruit-story-shorts-reels-thumb.png`,
   },
+  "/blog/ai-fruit-story-plot-twists": {
+    ...blog(
+      "The Wildest AI Fruit Story Plot Twists (And How to Write Your Own)",
+      "Five twist structures that outperform a straightforward reveal, with real examples and a repeatable method for building your own shocking twist.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-plot-twist-hero.png`,
+  },
+  "/blog/ai-fruit-story-couples": {
+    ...blog(
+      "The Most Iconic AI Fruit Story Couples (And How to Ship Your Own)",
+      "Four pairing dynamics worth building a series around, and a practical method for designing your own AI Fruit Story pairing.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-couples-hero.png`,
+  },
+  "/blog/ai-fruit-story-duets-stitches": {
+    ...blog(
+      "How to Use TikTok Duets and Stitches to Make Your AI Fruit Story Go Viral",
+      "How to structure an AI Fruit Story video so it's built to get duetted and stitched, plus what makes a clip reaction-friendly.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-duets-hero.png`,
+  },
+  "/blog/ai-fruit-story-series-universe": {
+    ...blog(
+      "How to Build an AI Fruit Story Series (Turn One Video Into a Cinematic Universe)",
+      "Four pillars of a fruit story universe — recurring cast, consistent world, cross-video threads — and a simple way to start your first series.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-universe-hero.png`,
+  },
+  "/blog/ai-fruit-story-mistakes": {
+    ...blog(
+      "10 Mistakes Killing Your AI Fruit Story Views (And How to Fix Each One)",
+      "The ten most common structural mistakes in AI Fruit Story videos, with a specific fix for each one.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-mistakes-hero.png`,
+  },
+  "/blog/best-time-to-post-ai-content": {
+    ...blog(
+      "Best Time to Post AI Content to Go Viral in 2026",
+      "Platform-by-platform posting windows for TikTok, Reels, and Shorts, why early engagement matters more than the clock, and how AI content removes the scheduling bottleneck.",
+    ),
+    image: `${SITE_URL}/blog-assets/best-time-to-post-ai-content-hero.png`,
+  },
+  "/blog/ai-content-hooks-captions-that-go-viral": {
+    ...blog(
+      "How to Write Hooks and Captions for AI Content That Goes Viral",
+      "Five hook formulas, a caption structure that keeps viewers watching, and a hashtag strategy for AI-generated images and videos.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-content-hooks-captions-hero.png`,
+  },
+  "/blog/cartoon-drive-by-explained": {
+    ...blog(
+      "What Is a Cartoon Drive-By Video? (And How to Make One)",
+      "Why the cartoon drive-by format works, what makes the parallax motion feel real, and how to generate one with Zyvo.",
+    ),
+    image: `${SITE_URL}/blog-assets/cartoon-drive-by-explained-hero.png`,
+  },
+  "/blog/cartoon-drive-by-video-ideas": {
+    ...blog(
+      "15 Cartoon Drive-By Video Ideas (With Prompts You Can Copy)",
+      "Fifteen fictional destinations across car, train, bus, and plane viewpoints, each with a ready-to-use prompt.",
+    ),
+    image: `${SITE_URL}/blog-assets/cartoon-drive-by-video-ideas-hero.png`,
+  },
+  "/blog/footballer-nationality-swap-explained": {
+    ...blog(
+      "What Is Footballer Nationality Swap? (And How It Works)",
+      "Why the format works, what actually gets generated, and how to create a Nationality Swap clip in Zyvo.",
+    ),
+    image: `${SITE_URL}/blog-assets/footballer-nationality-swap-explained-hero.png`,
+  },
+  "/blog/footballer-nationality-swap-tips": {
+    ...blog(
+      "5 Tips for the Most Believable Footballer Nationality Swap Video",
+      "Jersey contrast, expression, background style, spoken-line length, and sequencing — five choices that make the clip land.",
+    ),
+    image: `${SITE_URL}/blog-assets/footballer-nationality-swap-tips-hero.png`,
+  },
   "/blog/viral-ai-fruit-drama-videos": {
     ...blog(
       "How to Create Viral AI Fruit Drama Videos",
@@ -186,6 +263,12 @@ export const PUBLIC_SEO_METADATA = {
     description: "Turn a cartoon or game-inspired destination into a fictional 10-second vertical drive-by video with realistic motion, atmosphere, and parallax.",
     type: "website",
     image: `${SITE_URL}/og-image.png`,
+  },
+  "/footballer-nationality-swap-ai": {
+    title: "Footballer Nationality Swap AI – Create Viral Media-Day Videos | Zyvo",
+    description: "Picture any footballer representing a different nation. Generate a photorealistic jersey swap and a talking media-day introduction clip with Zyvo.",
+    type: "website",
+    image: `${SITE_URL}/template/nationality-swap/preview.png`,
   },
 };
 

@@ -36,13 +36,13 @@ function buildEmail(user) {
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>New viral templates every week on Zyvo</title>
+  <title>We've been busy — new templates + a stronger Zyvo</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#f4f4f5;">
-    We've shipped new viral-ready templates every week since you last visited — here's what's new.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+    New templates dropped, and we fixed the stuff that used to slow you down. Worth another look.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f5;">
@@ -66,30 +66,31 @@ function buildEmail(user) {
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Niko here, founder of Zyvo. It's been a little while since you last visited us — and we've kept building the whole time.
+            Niko here, founder of Zyvo. It's been a while since you've been in — and honestly, the Zyvo you left isn't the one that's here now.
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            <strong>Every week, we ship new viral-ready templates</strong> — fresh scene styles, story formats, and trending effects, all ready to generate in one click.
+            <strong>Two things changed:</strong> we dropped a batch of new viral-ready templates, and we went back and made the flows you already know noticeably stronger — faster generations, more reliable renders, less friction end to end.
           </p>
 
           <!-- Feature card -->
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
             <tr>
               <td style="padding:22px 24px;background:#faf8ff;border-radius:12px;border:1px solid #ede9fe;">
-                <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#7A3BFF;letter-spacing:0.08em;text-transform:uppercase;">Recently added</p>
+                <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#7A3BFF;letter-spacing:0.08em;text-transform:uppercase;">New since your last visit</p>
                 <table width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr><td style="padding:7px 0;font-size:14px;color:#374151;">2AM Worlds — the late-night AI photo trend</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
                   <tr><td style="padding:7px 0;font-size:14px;color:#374151;">AI Fruit Story — character-driven viral drama</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
                   <tr><td style="padding:7px 0;font-size:14px;color:#374151;">Face ASMR — the trending sensory format</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
                   <tr><td style="padding:7px 0;font-size:14px;color:#374151;">Clay Rescue — viral stop-motion rescue clips</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
+                  <tr><td style="padding:7px 0;font-size:14px;color:#374151;">Existing flows — faster & more reliable</td><td align="right" style="padding:7px 0;font-size:14px;font-weight:700;color:#7A3BFF;">✓</td></tr>
                 </table>
               </td>
             </tr>
           </table>
 
           <p style="margin:0 0 24px;font-size:15px;line-height:1.75;color:#374151;">
-            Pick a template, add your idea, and Zyvo generates export-ready content in seconds — no editing experience needed. New formats land every week, so there's always something fresh to try.
+            Pick a template, add your idea, and Zyvo generates export-ready content in seconds — no editing experience needed. Whatever gave you trouble before is probably fixed now.
           </p>
 
           <!-- CTA -->
@@ -104,7 +105,7 @@ function buildEmail(user) {
             </tr>
           </table>
 
-          <p style="margin:8px 0 24px;font-size:13px;color:#9ca3af;">Reply and tell me which format you'd like to see next — it goes straight to me.</p>
+          <p style="margin:8px 0 24px;font-size:13px;color:#9ca3af;">Reply and tell me what made you stop — it goes straight to me, and it helps us fix the right things.</p>
 
           <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">
             — Niko<br/>
@@ -116,7 +117,7 @@ function buildEmail(user) {
         <!-- footer -->
         <tr><td style="padding:20px 40px 24px;border-top:1px solid #f3f4f6;">
           <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.7;">
-            You're receiving this because you started a checkout or created an account at tryzyvo.com.<br/>
+            You're receiving this because you created an account at tryzyvo.com.<br/>
             <a href="https://tryzyvo.com/settings" style="color:#9ca3af;text-decoration:underline;">Unsubscribe</a>
             &nbsp;·&nbsp;
             <a href="https://tryzyvo.com" style="color:#9ca3af;text-decoration:underline;">tryzyvo.com</a>
@@ -141,7 +142,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "New viral templates just dropped on Zyvo",
+      subject: "We've been busy — new templates + a stronger Zyvo",
       html: buildEmail(user),
       reply_to: "niko@tryzyvo.com",
     });
@@ -161,17 +162,22 @@ async function sendEmail(user) {
 
 export default async function handler(req, res) {
   try {
-    console.log("🚀 Starting Zyvo abandoned-checkout win-back campaign...");
-    console.log(`   dry_run=${DRY_RUN}  target=abandoned_checkouts`);
+    console.log("🚀 Starting Zyvo site-wide re-engagement campaign...");
+    console.log(`   dry_run=${DRY_RUN}  target=profiles (email_updates=true)`);
 
     let allRows = [];
     let from = 0;
     let hasMore = true;
 
     while (hasMore) {
+      // Full user base, not just abandoned_checkouts — but only people who
+      // haven't opted out of marketing email (email_updates=true), same gate
+      // used by the other broad-blast campaigns (send-hard-convert-email.js,
+      // send-convert-email.js). Skipping this would email unsubscribed users.
       const { data, error } = await supabase
-        .from("abandoned_checkouts")
+        .from("profiles")
         .select("email")
+        .eq("email_updates", true)
         .not("email", "is", null)
         .range(from, from + BATCH_SIZE - 1);
 
@@ -188,8 +194,7 @@ export default async function handler(req, res) {
       from += BATCH_SIZE;
     }
 
-    // abandoned_checkouts.email is unique in practice, but de-dupe defensively
-    // so nobody ends up with two copies of the same campaign in their inbox.
+    // De-dupe defensively so nobody ends up with two copies in their inbox.
     const seen = new Set();
     const allUsers = allRows.filter((u) => {
       const key = u.email.toLowerCase().trim();
@@ -217,15 +222,15 @@ export default async function handler(req, res) {
 
       if (ok) {
         sent++;
-        // Tracked on `profiles`, not `abandoned_checkouts` — that table's
-        // last_email_sent_at/recovery_stage drive the separate cart-recovery
-        // drip in send-abandoned-emails.js, and touching it here would reset
-        // that timer for anyone still mid-sequence.
+        // Distinct last_email_type so this broad re-engagement send doesn't
+        // collide with other campaigns' own dedupe checks (e.g. the
+        // "attempt_email" skip in send-hard-convert-email.js), and doesn't
+        // reset the abandoned-checkout drip's recovery_stage timer.
         await supabase
           .from("profiles")
           .update({
             last_email_sent_at: new Date().toISOString(),
-            last_email_type: "abandoned_checkout_winback_templates",
+            last_email_type: "reengagement_winback_templates_v2",
           })
           .eq("email", user.email);
       } else {

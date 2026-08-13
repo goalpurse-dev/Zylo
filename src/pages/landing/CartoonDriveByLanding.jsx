@@ -140,6 +140,20 @@ export default function CartoonDriveByLanding() {
           </div>
         </section>
 
+        <section className="mx-auto max-w-[1100px] px-4 pb-4 sm:px-6">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-lime-200 mb-4">Guides</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Link to="/blog/cartoon-drive-by-explained" className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 transition hover:border-lime-300/30">
+              <h3 className="text-base font-bold text-white">What Is a Cartoon Drive-By Video?</h3>
+              <p className="mt-2 text-sm leading-6 text-white/50">Why the format works and how to generate one.</p>
+            </Link>
+            <Link to="/blog/cartoon-drive-by-video-ideas" className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 transition hover:border-lime-300/30">
+              <h3 className="text-base font-bold text-white">15 Cartoon Drive-By Video Ideas</h3>
+              <p className="mt-2 text-sm leading-6 text-white/50">Fifteen ready-to-use prompts across every vehicle viewpoint.</p>
+            </Link>
+          </div>
+        </section>
+
         <section className="px-4 pb-20 sm:px-6">
           <div className="mx-auto max-w-[1000px] rounded-[28px] border border-lime-200/15 bg-[linear-gradient(135deg,rgba(190,242,100,0.12),rgba(122,59,255,0.15))] px-6 py-12 text-center sm:px-10">
             <h2 className="text-3xl font-black tracking-[-0.035em]">Drive past a world you remember</h2>

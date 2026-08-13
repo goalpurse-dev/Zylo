@@ -78,7 +78,8 @@ export default function ToolShell({ onClose }) {
     isActive("/workspace/micro-camera-animal") ||
     isActive("/workspace/clay-rescue") ||
     isActive("/workspace/ai-cooking-matic") ||
-    isActive("/workspace/footballer-nationality-swap")
+    isActive("/workspace/footballer-nationality-swap") ||
+    isActive("/workspace/behind-the-scenes")
   ));
   const workspaceActive = workspaceOpen || (!anyPanelOpen && (
     isActive("/workspace/image-generator") || isActive("/workspace/video-generator")

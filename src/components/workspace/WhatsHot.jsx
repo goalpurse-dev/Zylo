@@ -7,12 +7,20 @@ import cartoonDriveVideo from "../../assets/home/latest/video9.16-fast.mp4";
 /* ─── Data ─────────────────────────────────────────────────── */
 const items = [
   {
+    title:  "Behind the Scenes",
+    views:  "8.1M",
+    image:  "/behind-the-scenes/poster.webp",
+    accent: "#BEF264",
+    rank:   1,
+    path:   "/workspace/behind-the-scenes",
+  },
+  {
     title:  "Cartoon Drive By",
     views:  "7.4M",
     image:  cartoonDrivePreview,
     video:  cartoonDriveVideo,
     accent: "#A3E635",
-    rank:   1,
+    rank:   2,
     path:   "/workspace/cartoon-drive-by",
   },
   {
@@ -20,7 +28,7 @@ const items = [
     views:  "6.2M",
     image:  "/template/2am-world/preview.png",
     accent: "#BEF264",
-    rank:   2,
+    rank:   3,
     path:   "/workspace/two-am",
   },
   {
@@ -28,7 +36,7 @@ const items = [
     views:  "5.1M",
     image:  "/clayrescue/smallpreview.webp",
     accent: "#A855F7",
-    rank:   3,
+    rank:   4,
     path:   "/workspace/clay-rescue",
   },
   {
@@ -36,7 +44,7 @@ const items = [
     views:  "4.7M",
     image:  "/viral-builder/ai-fruit/presets/cheating.webp",
     accent: "#A855F7",
-    rank:   4,
+    rank:   5,
     path:   "/workspace/ai-fruit-story",
   },
   {
@@ -44,7 +52,7 @@ const items = [
     views:  "2.8M",
     image:  "/viral-builder/micro-camera/preview1.png",
     accent: "#7A3BFF",
-    rank:   5,
+    rank:   6,
     path:   "/workspace/micro-camera-animal",
   },
   {
@@ -52,7 +60,7 @@ const items = [
     views:  "2.1M",
     image:  "/face/neypreview.png",
     accent: "#EC4899",
-    rank:   6,
+    rank:   7,
     path:   "/workspace/face-asmr",
   },
   {
@@ -60,16 +68,8 @@ const items = [
     views:  "1.8M",
     image:  "/home/viral-templates/cook.webp",
     accent: "#FFB020",
-    rank:   7,
-    path:   "/workspace/ai-cooking-matic",
-  },
-  {
-    title:  "Nationality Swap",
-    views:  "1.4M",
-    image:  "/home/viral-templates/nationalityswap.webp",
-    accent: "#22D3EE",
     rank:   8,
-    path:   "/workspace/footballer-nationality-swap",
+    path:   "/workspace/ai-cooking-matic",
   },
 ];
 

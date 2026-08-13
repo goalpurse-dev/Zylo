@@ -78,6 +78,15 @@ export const CREATE_TOOLS = [
     previewPosition: "object-center",
     color: "#bef264",
   },
+  {
+    id: "behind-the-scenes",
+    label: "Behind the Scenes",
+    sublabel: "",
+    path: "/workspace/behind-the-scenes",
+    preview: "/behind-the-scenes/poster.webp",
+    previewPosition: "object-center",
+    color: "#bef264",
+  },
   // { id: "ai-voice-story", label: "AI Voice Story", ... },
 ].map((tool) => ({
   ...tool,

@@ -11,8 +11,8 @@ const related = [
     slug: "/ai-fruit-story-maker",
   },
   {
-    title: "Best AI Fruit Story Ideas for Maximum TikTok Views",
-    description: "Adaptable fruit-drama ideas and prompts to test on TikTok.",
+    title: "50 AI Fruit Story Prompts and Viral Drama Ideas",
+    description: "Fifty adaptable fruit-drama prompts and ideas to test on TikTok.",
     date: "15.05.2026",
     slug: "/blog/best-ai-fruit-story-ideas",
   },

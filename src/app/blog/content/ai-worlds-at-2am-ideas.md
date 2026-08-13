@@ -253,5 +253,10 @@ Yes. Create a dedicated vertical 2:3 composition for Pinterest and link the Pin 
 - 50 AI World Generator Prompts → /blog/ai-world-generator-prompts
 - How to Make AI Nostalgia Videos → /blog/how-to-make-ai-nostalgia-videos
 - Liminal Space AI Generator → /blog/liminal-space-ai-generator
+- 2AM in Minecraft: The Viral AI World Every Player Will Recognize → /blog/2am-minecraft-ai-images
+- 2AM in GTA: The Viral Open-World Vice City AI World → /blog/2am-gta-ai-images
+- 2AM in One Piece: The Straw Hat Crew's Late-Night AI World → /blog/2am-one-piece-ai-images
+- 2AM in Studio Ghibli: The Viral Painterly AI World Trend → /blog/2am-studio-ghibli-ai-images
+- 2AM in Fortnite: The Viral Battle Royale AI World → /blog/2am-fortnite-ai-images
 
 ---

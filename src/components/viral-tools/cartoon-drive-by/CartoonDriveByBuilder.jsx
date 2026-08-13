@@ -3,6 +3,7 @@ import { ChevronRight, Clock3, Lock, Sparkles, Volume2, VolumeX } from "lucide-r
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import { emitCreditSpend } from "../../../lib/creditPopEvents";
 import NoCreditsModal from "../shared/NoCreditsModal";
+import CartoonDriveByUpgradeModal from "./CartoonDriveByUpgradeModal";
 import {
   DEFAULT_QUALITY_TIER,
   PLAN_LABELS,
@@ -45,6 +46,7 @@ export default function CartoonDriveByBuilder({
   const qualityId = values?.qualityId ?? DEFAULT_QUALITY_TIER;
   const [validationError, setValidationError] = useState("");
   const [noCreditsOpen, setNoCreditsOpen] = useState(false);
+  const [upgradeTierId, setUpgradeTierId] = useState(null);
   const creditBalance = useProfileCredits();
   const allowedTiers = getAllowedQualityTiers(planCode);
   const selectedTier = QUALITY_TIERS[qualityId] ?? QUALITY_TIERS[DEFAULT_QUALITY_TIER];
@@ -58,11 +60,17 @@ export default function CartoonDriveByBuilder({
   };
 
   const selectQuality = (id) => {
-    if (!allowedTiers.includes(id)) {
+    if (allowedTiers.includes(id)) {
+      updateValue("qualityId", id);
+      return;
+    }
+    // No tier at all is allowed for this plan (guest/free) — that's the
+    // account-level paywall's job, not this tier-specific upgrade nudge.
+    if (allowedTiers.length === 0) {
       onRequestUpgrade?.();
       return;
     }
-    updateValue("qualityId", id);
+    setUpgradeTierId(id);
   };
 
   const handleGenerate = () => {
@@ -72,7 +80,8 @@ export default function CartoonDriveByBuilder({
       return;
     }
     if (!allowedTiers.includes(qualityId)) {
-      onRequestUpgrade?.();
+      if (allowedTiers.length === 0) onRequestUpgrade?.();
+      else setUpgradeTierId(qualityId);
       return;
     }
     if (creditBalance < totalCredits) {
@@ -235,6 +244,12 @@ export default function CartoonDriveByBuilder({
       </div>
 
       <NoCreditsModal open={noCreditsOpen} onClose={() => setNoCreditsOpen(false)} creditsNeeded={totalCredits} creditBalance={creditBalance} />
+      <CartoonDriveByUpgradeModal
+        open={!!upgradeTierId}
+        onClose={() => setUpgradeTierId(null)}
+        modelId={upgradeTierId}
+        requiredPlan={upgradeTierId ? QUALITY_TIER_MIN_PLAN[upgradeTierId] : null}
+      />
     </section>
   );
 }

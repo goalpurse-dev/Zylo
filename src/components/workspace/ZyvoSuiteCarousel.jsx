@@ -8,6 +8,7 @@ import {
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 
 const SUITE_ITEMS = [
+  { name: "Behind the Scenes", desc: "Miniature cities destroyed by real practical FX", badge: "NEW", image: "/behind-the-scenes/poster.webp", path: "/workspace/behind-the-scenes" },
   { name: "Cartoon Drive By", desc: "Drive past lost cartoon worlds in real life", badge: "NEW", image: cartoonDrivePreview, path: "/workspace/cartoon-drive-by" },
   { name: "2AM Worlds", desc: "TikTok slideshows of worlds at 2AM", badge: "NEW", image: "/template/2am-world/preview.png", path: "/workspace/two-am" },
   { name: "AI Fruit Story", desc: "Characters, stories, viral content & more", badge: "NEW", image: "/viral-builder/ai-fruit/presets/kicked-out.webp", path: "/workspace/ai-fruit-story" },
@@ -186,9 +187,11 @@ function SuiteCard({ item, offset, active, onClick }) {
 
 export default function ZyvoSuiteCarousel() {
   const navigate = useNavigate();
-  const [phase, setPhase] = useState(Math.floor(SUITE_ITEMS.length / 2));
+  // Start centered on the first item (Behind the Scenes) so it's the one
+  // visible immediately, instead of the middle item, before rotation drifts.
+  const [phase, setPhase] = useState(0);
   const [showMobileMore, setShowMobileMore] = useState(false);
-  const phaseRef = useRef(Math.floor(SUITE_ITEMS.length / 2));
+  const phaseRef = useRef(0);
   const desktopSectionRef = useRef(null);
 
   const orderedItems = useMemo(

@@ -19,6 +19,7 @@ const vercelPath = path.join(projectRoot, "vercel.json");
 const REQUIRED_PUBLIC_PAGES = [
   "/ai-fruit-story-maker",
   "/cartoon-drive-by-video-maker",
+  "/footballer-nationality-swap-ai",
   "/face-asmr-maker",
   "/micro-camera-animal-maker",
   "/clay-rescue-maker",

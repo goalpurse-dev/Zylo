@@ -77,6 +77,10 @@ const PLAN_GATED_TOOLS: Record<string, string> = {
   "image:cartoondrive4kmax":         "generative",  // Cartoon Drive By V4 image
   "video:cartoondriveseedance720":   "pro",         // Cartoon Drive By V3 video
   "video:cartoondriveseedance1080":  "generative",  // Cartoon Drive By V4 video
+  "image:bts4kpro":                  "pro",         // Behind the Scenes V3 image
+  "image:bts4kmax":                  "generative",  // Behind the Scenes V4 image
+  "video:btsseedance720":            "pro",         // Behind the Scenes V3 video
+  "video:btsseedance1080":           "generative",  // Behind the Scenes V4 video
 };
 
 function planTierIndex(planCode: string | null | undefined): number {

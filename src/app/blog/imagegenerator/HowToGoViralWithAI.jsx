@@ -11,22 +11,22 @@ import { useEffect } from "react";
 
 const related = [
   {
+    title: "Best Time to Post AI Content to Go Viral in 2026",
+    description: "Platform-by-platform posting windows and how AI content removes the scheduling bottleneck",
+    date: "11.08.2026",
+    slug: "/blog/best-time-to-post-ai-content",
+  },
+  {
+    title: "How to Write Hooks and Captions for AI Content That Goes Viral",
+    description: "Five hook formulas, a caption structure that keeps viewers watching, and a hashtag strategy",
+    date: "11.08.2026",
+    slug: "/blog/ai-content-hooks-captions-that-go-viral",
+  },
+  {
     title: "Why Your Posts Don't Go Viral (And How AI Images Fix That)",
     description: "Learn why your posts don't go viral and how to fix it with AI",
     date: "10.02.2026",
     slug: "/blog/why-your-posts-dont-go-viral",
-  },
-  {
-    title: "The Secret Prompts Behind Viral AI Images",
-    description: "Learn the secret prompts that make AI images go viral",
-    date: "05.02.2026",
-    slug: "/blog/the-secret-prompts-behind-viral-ai-images",
-  },
-  {
-    title: "How Creators Are Blowing Up Using AI Image Generators",
-    description: "Learn to make images that current creators are using to blow up",
-    date: "01.02.2026",
-    slug: "/blog/creators-blowingup-with-ai",
   },
 ];
 

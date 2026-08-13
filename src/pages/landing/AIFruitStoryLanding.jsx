@@ -10,10 +10,10 @@
  *    *   "make ai fruit drama videos"
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Copy, CopyCheck } from "lucide-react";
 import Footer from "../../components/workspace/footer.jsx";
 
 const PRESETS = [
@@ -43,14 +43,61 @@ const HOW_STEPS = [
   { n: "04", title: "Animate and review", desc: "Animate the generated scenes, review the result, and download the video when generation is complete." },
 ];
 
+const GENERATOR_STEPS = [
+  { n: "01", title: "Understand your premise", desc: "The fruit story AI reads your one-sentence idea and identifies the characters, the conflict, and the tone before planning anything else." },
+  { n: "02", title: "Plan the story arc", desc: "Hook, escalation, and payoff scenes are mapped out automatically so the finished video has a real dramatic shape, not just a sequence of images." },
+  { n: "03", title: "Write the dialogue", desc: "Natural English dialogue is generated scene by scene, matched to each character's role in the story." },
+  { n: "04", title: "Generate the scenes", desc: "Each beat becomes a cinematic 3D image, with your selected characters keeping a consistent visual identity across every scene." },
+  { n: "05", title: "Animate the video", desc: "Scenes are animated with mouth-synced dialogue into one finished vertical video, ready to review and download." },
+];
+
+const FRUIT_STORY_PROMPTS = [
+  "A mango café owner discovers a rival stand opened across the street — run by their childhood best friend.",
+  "An orange parent finds a mysterious old photo and follows the clue through three locations to a long-lost twin.",
+  "A banana gets blamed for ruining a family party and spends the video gathering evidence to clear their name.",
+  "A pineapple has been secretly paying off a rival's debt for months — until the rival finds the bank statements.",
+  "A strawberry returns to the house they were kicked out of six months ago — as its new owner.",
+  "A peach discovers their partner has been taking night classes in secret, convinced it means something else.",
+  "Two roommate fruits split rent unevenly for a year until one finally finds the shared spreadsheet.",
+  "A grandparent fruit reveals a shocking family secret at what was supposed to be an ordinary dinner.",
+];
+
 const FAQS = [
-  { q: "What is an AI Fruit Story?", a: "An AI Fruit Story is a short-form fictional drama video in which stylized 3D fruit characters act out a simple conflict, reveal, or surprise across multiple scenes." },
+  { q: "What is an AI Fruit Story?", a: "An AI Fruit Story is a short-form fictional drama video created by Zyvo's fruit story AI, in which stylized 3D fruit characters act out a simple conflict, reveal, or surprise across multiple scenes." },
   { q: "How long does it take to make a fruit drama video?", a: "Generation time varies with story length, scene count, selected models, and queue conditions. Zyvo shows progress in the workspace while the story is being created." },
   { q: "Do I need editing or design skills?", a: "No timeline editing or design software is required for the core workflow. You provide the idea, choose characters and settings, then review the generated scenes and video." },
   { q: "Can I make 1-minute long fruit videos?", a: "Yes. The tool supports a 60-second option with up to 10 scenes, subject to the settings available in the workspace." },
   { q: "What drama styles can I create?", a: "You can start with cheating-reveal, baby-surprise, secret-twin, revenge, and kicked-out presets, or describe a custom fictional story." },
   { q: "Do the characters speak in the videos?", a: "Yes. Animated scenes can include AI-generated English dialogue with mouth-synced character animation." },
 ];
+
+function PromptCard({ prompt }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // clipboard may be unavailable — copy button simply won't confirm
+    }
+  };
+
+  return (
+    <div className="rounded-[18px] border border-purple-400/15 bg-purple-500/[0.05] p-5">
+      <p className="text-[13px] leading-relaxed text-white/60">{prompt}</p>
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-bold text-white/70 transition hover:border-purple-400/40 hover:text-white"
+      >
+        {copied ? <CopyCheck size={12} className="text-purple-300" /> : <Copy size={12} />}
+        {copied ? "Copied" : "Copy prompt"}
+      </button>
+    </div>
+  );
+}
 
 export default function AIFruitStoryLanding() {
   const navigate  = useNavigate();
@@ -140,7 +187,7 @@ export default function AIFruitStoryLanding() {
         <div className="mx-auto max-w-4xl px-4 md:px-6">
           <h2 className="text-center text-[28px] font-black tracking-tight sm:text-[36px]">What Is the Zyvo AI Fruit Story Maker?</h2>
           <p className="mx-auto mt-4 max-w-3xl text-center text-[15px] leading-relaxed text-white/50">
-            Zyvo&apos;s AI Fruit Story Maker is a guided video workflow for creating fictional vertical stories with consistent fruit characters. It combines story planning, dialogue, scene generation, and animation in one workspace; the public page explains the tool, while generation happens on the paid application route.
+            Zyvo&apos;s AI Fruit Story Maker is a guided video workflow for creating fictional vertical stories with consistent fruit characters. Under the hood, a dedicated fruit story AI handles the story planning, dialogue, scene generation, and animation in one workspace; the public page explains the tool, while generation happens on the paid application route.
           </p>
         </div>
       </section>
@@ -218,18 +265,49 @@ export default function AIFruitStoryLanding() {
         </div>
       </section>
 
-      <section className="border-y border-white/[0.07] bg-[#0c0c0f] py-14 md:py-16">
-        <div className="mx-auto max-w-5xl px-4 md:px-6">
-          <h2 className="text-center text-[26px] font-black tracking-tight sm:text-[34px]">AI Fruit Story Prompt Examples</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-center text-[14px] text-white/45">Use these as structural examples, then adapt the characters, setting, conflict, and ending.</p>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {[
-              "A proud mango café owner discovers that a close friend has opened a rival shop across the street, ending with an unexpected partnership.",
-              "An orange parent finds a mysterious family photo, follows the clue through three locations, and meets a long-lost twin.",
-              "A banana is blamed for ruining a celebration, gathers evidence across several scenes, and reveals who caused the mistake.",
-            ].map((prompt) => (
-              <div key={prompt} className="rounded-[18px] border border-purple-400/15 bg-purple-500/[0.05] p-5 text-[13px] leading-relaxed text-white/60">{prompt}</div>
+      {/* ── HOW THE FRUIT STORY AI GENERATOR WORKS — H2 ── */}
+      <section className="border-y border-white/[0.07] bg-[#0c0c0f] py-16 md:py-20">
+        <div className="mx-auto max-w-4xl px-4 md:px-6">
+          <div className="mb-12 text-center">
+            <h2 className="mb-3 text-[28px] font-black tracking-tight sm:text-[36px]">
+              How the Fruit Story AI Generator Works
+            </h2>
+            <p className="text-[15px] text-white/40">What actually happens behind the scenes between your prompt and the finished video.</p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {GENERATOR_STEPS.map((s, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, delay: i * 0.06 }}
+                className="rounded-[20px] border border-white/[0.07] bg-white/[0.03] p-6"
+              >
+                <div className="mb-3 text-[28px] font-black text-white/[0.08] leading-none">{s.n}</div>
+                <h3 className="mb-2 text-[14px] font-bold text-white">{s.title}</h3>
+                <p className="text-[13px] leading-relaxed text-white/45">{s.desc}</p>
+              </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── AI FRUIT STORY PROMPTS — H2 ── */}
+      <section className="py-14 md:py-16">
+        <div className="mx-auto max-w-5xl px-4 md:px-6">
+          <h2 className="text-center text-[26px] font-black tracking-tight sm:text-[34px]">AI Fruit Story Prompts</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-[14px] text-white/45">Copy any prompt below and paste it straight into the generator, or adapt the characters, setting, conflict, and ending.</p>
+          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {FRUIT_STORY_PROMPTS.map((prompt) => (
+              <PromptCard key={prompt} prompt={prompt} />
+            ))}
+          </div>
+          <div className="mt-8 text-center">
+            <Link to="/blog/best-ai-fruit-story-ideas" className="text-[13px] font-semibold text-purple-300 hover:underline">
+              See 50 more AI Fruit Story prompts and viral drama ideas →
+            </Link>
           </div>
         </div>
       </section>
@@ -324,7 +402,7 @@ export default function AIFruitStoryLanding() {
           <h2 className="text-center text-[26px] font-black tracking-tight sm:text-[34px]">More AI Fruit Story Guides</h2>
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             {[
-              ["AI Fruit Story Ideas", "/blog/best-ai-fruit-story-ideas"],
+              ["50 Prompts & Viral Drama Ideas", "/blog/best-ai-fruit-story-ideas"],
               ["Fruit Drama Video Guide", "/blog/viral-ai-fruit-drama-videos"],
               ["TikTok Fruit Drama Strategy", "/blog/how-to-go-viral-tiktok-fruit-drama"],
               ["Character Ideas & Storylines", "/blog/ai-fruit-story-character-ideas"],
@@ -332,6 +410,11 @@ export default function AIFruitStoryLanding() {
               ["AI vs Traditional Animation", "/blog/ai-fruit-story-vs-traditional-animation"],
               ["Prompt Formula + Examples", "/blog/ai-fruit-story-prompt-formula"],
               ["Post to Reels & Shorts Too", "/blog/ai-fruit-story-instagram-youtube-shorts"],
+              ["Wildest Plot Twists", "/blog/ai-fruit-story-plot-twists"],
+              ["Iconic Couples & Pairings", "/blog/ai-fruit-story-couples"],
+              ["Duets & Stitches Guide", "/blog/ai-fruit-story-duets-stitches"],
+              ["Build a Series/Universe", "/blog/ai-fruit-story-series-universe"],
+              ["10 Mistakes to Avoid", "/blog/ai-fruit-story-mistakes"],
             ].map(([label, to]) => (
               <Link key={to} to={to} className="rounded-[16px] border border-white/[0.08] bg-white/[0.03] px-5 py-5 text-sm font-bold text-white/75 transition hover:border-purple-400/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400">
                 {label} →

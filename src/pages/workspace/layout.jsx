@@ -119,6 +119,7 @@ useEffect(() => {
     "/workspace/ai-cooking-matic":   "AI Cooking Matic",
     "/workspace/two-am":             "2AM In...",
     "/workspace/cartoon-drive-by":   "Cartoon Drive By",
+    "/workspace/behind-the-scenes":  "Behind the Scenes",
     "/workspace/publishv":           "Publish",
     "/workspace/stats":              "Stats",
     "/workspace/connections":        "Connections",

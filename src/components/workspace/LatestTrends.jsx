@@ -37,15 +37,33 @@ const TRENDS = [
 function TrendVideo({ src, label }) {
   const videoRef = useRef(null);
   const [isReady, setIsReady] = useState(false);
+  const [shouldLoad, setShouldLoad] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return undefined;
 
+    // Load only once the card is nearly in view — with several videos in
+    // this carousel, preloading all of them up front saturates bandwidth
+    // and makes every video appear stuck/slow to start.
+    const loadObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setShouldLoad(true);
+      },
+      { rootMargin: "200px" },
+    );
+    loadObserver.observe(video);
+    return () => loadObserver.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !shouldLoad) return undefined;
+
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reducedMotion) return undefined;
 
-    const observer = new IntersectionObserver(
+    const playObserver = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) video.play().catch(() => {});
         else video.pause();
@@ -53,9 +71,9 @@ function TrendVideo({ src, label }) {
       { threshold: 0.35 },
     );
 
-    observer.observe(video);
-    return () => observer.disconnect();
-  }, []);
+    playObserver.observe(video);
+    return () => playObserver.disconnect();
+  }, [shouldLoad]);
 
   return (
     <div className="absolute inset-0 bg-[#101014]">
@@ -68,11 +86,11 @@ function TrendVideo({ src, label }) {
 
       <video
         ref={videoRef}
-        src={src}
+        src={shouldLoad ? src : undefined}
         muted
         loop
         playsInline
-        preload="auto"
+        preload={shouldLoad ? "auto" : "none"}
         aria-label={label}
         onLoadedData={() => setIsReady(true)}
         className={`h-full w-full object-cover transition duration-700 ${isReady ? "scale-100 opacity-100" : "scale-[1.03] opacity-0"}`}

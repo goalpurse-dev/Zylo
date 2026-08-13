@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { Copy, CopyCheck } from "lucide-react";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
 
@@ -21,6 +22,12 @@ const related = [
     description: "Inside the AI fruit drama format — what makes it work and why it dominates TikTok.",
     date: "14.05.2026",
     slug: "/blog/viral-ai-fruit-drama-videos",
+  },
+  {
+    title: "The Wildest AI Fruit Story Plot Twists (And How to Write Your Own)",
+    description: "Five twist structures that outperform a straightforward reveal, with real examples.",
+    date: "10.08.2026",
+    slug: "/blog/ai-fruit-story-plot-twists",
   },
 ];
 
@@ -81,13 +88,110 @@ const IDEAS = [
   },
 ];
 
-export default function BestAIFruitStoryIdeas() {
-  useEffect(() => {
-    document.title = "Best AI Fruit Story Ideas for Maximum TikTok Views (2026) | Zyvo";
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", "20+ proven AI fruit story ideas that consistently go viral on TikTok — cheating reveals, baby surprises, secret twins, revenge comebacks. Each idea includes why it works and how to generate it with AI.");
-  }, []);
+const QUICK_PROMPTS = [
+  {
+    category: "Workplace & Business Drama",
+    color: "#7A3BFF",
+    prompts: [
+      "Boss Mango promotes an outsider over Gangster Pineapple, who's been loyal for years — until everyone learns why.",
+      "Hot Peach discovers her business partner has been quietly recording their calls for months.",
+      "Orange Kid gets fired for a mistake that was actually Banana Dad's fault the whole time.",
+      "Strawberry Mom opens a shop across from her former boss, using everything she learned working for him.",
+      "Ananas Girl finds out her coworker has been taking credit for her ideas in every meeting.",
+      "Gangster Pineapple quits on the spot — then the whole team quits with him the next morning.",
+    ],
+  },
+  {
+    category: "Friendship Betrayal",
+    color: "#22C55E",
+    prompts: [
+      "Orange Mom finds out her best friend has been dating her ex the entire time she was comforting her about the breakup.",
+      "Hot Peach lends Banana Dad money for an emergency — then sees him post about a vacation the next week.",
+      "Strawberry Mom's childhood friend reveals she's been telling everyone their secrets for years.",
+      "Boss Mango throws a surprise party for his best friend, who forgot his birthday completely.",
+      "Ananas Girl is left out of a group trip photo everyone else was invited to.",
+      "Gangster Pineapple finds out his 'ride or die' friend never actually showed up when it mattered.",
+    ],
+  },
+  {
+    category: "Family Secrets",
+    color: "#EAB308",
+    prompts: [
+      "Orange Kid finds an old letter proving Grandpa Mango isn't who the family thought he was.",
+      "Strawberry Mom discovers she has a half-sibling nobody in the family ever mentioned.",
+      "Banana Dad's mother reveals she's been secretly funding the family business for a decade.",
+      "Hot Peach finds out her 'inheritance' was never real — it was her aunt's money the whole time.",
+      "Boss Mango's father shows up after fifteen years, right before a family wedding.",
+      "Ananas Girl uncovers a decades-old family feud nobody wanted to explain to her.",
+    ],
+  },
+  {
+    category: "Roommate Chaos",
+    color: "#3B82F6",
+    prompts: [
+      "Gangster Pineapple's roommate has been using his shampoo, his charger, and now his car — without asking.",
+      "Orange Kid comes home to find their roommate threw a party they weren't invited to, in their own apartment.",
+      "Hot Peach discovers her roommate has been subletting her room on weekends without telling her.",
+      "Banana Dad's new roommate turns out to be his childhood rival from summer camp.",
+      "Strawberry Mom finds her roommate's 'guest' has basically been living there for two months.",
+      "Boss Mango and his roommate finally confront each other about the world's messiest kitchen.",
+    ],
+  },
+  {
+    category: "Money & Debt",
+    color: "#F97316",
+    prompts: [
+      "Ananas Girl lends her savings to a friend who suddenly stops answering her calls.",
+      "Orange Mom discovers Banana Dad has a secret credit card with a shocking balance.",
+      "Hot Peach's business partner has been skimming from the register for months.",
+      "Gangster Pineapple wins big and has to decide whether to tell his family or keep it quiet.",
+      "Strawberry Mom finds out her 'investment' from a friend was actually just her own money moved around.",
+      "Boss Mango co-signs a loan for a friend who immediately disappears.",
+    ],
+  },
+  {
+    category: "Wedding & Engagement Drama",
+    color: "#EC4899",
+    prompts: [
+      "Orange Kid's fiancé's ex shows up uninvited to the engagement dinner.",
+      "Hot Peach finds out her wedding planner double-booked her venue with another couple.",
+      "Banana Dad discovers his best man has feelings for the bride, days before the wedding.",
+      "Strawberry Mom's future mother-in-law tries to rewrite the entire guest list without asking.",
+      "Gangster Pineapple proposes at the worst possible moment — during his ex's toast.",
+      "Ananas Girl's sister reveals a secret right as the vows are about to start.",
+    ],
+  },
+];
 
+function QuickPromptCard({ prompt }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // clipboard may be unavailable — copy button simply won't confirm
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-[#ECE8F2] bg-white p-4">
+      <p className="text-[13px] leading-relaxed text-[#374151]">{prompt}</p>
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-[#ECE8F2] bg-[#F7F5FA] px-2.5 py-1 text-[11px] font-bold text-[#7A3BFF] transition hover:bg-purple-100"
+      >
+        {copied ? <CopyCheck size={11} /> : <Copy size={11} />}
+        {copied ? "Copied" : "Copy"}
+      </button>
+    </div>
+  );
+}
+
+export default function BestAIFruitStoryIdeas() {
   return (
     <div className="w-full bg-[#F7F5FA]">
       <div className="mx-auto max-w-6xl px-6 py-24">
@@ -97,7 +201,7 @@ export default function BestAIFruitStoryIdeas() {
           <span className="mx-2">/</span>
           <Link to="/blog" className="hover:text-[#7A3BFF]">Go Viral</Link>
           <span className="mx-2">/</span>
-          <span>Best AI Fruit Story Ideas</span>
+          <span>50 AI Fruit Story Prompts</span>
         </nav>
 
         <header className="mb-16 max-w-4xl">
@@ -105,12 +209,12 @@ export default function BestAIFruitStoryIdeas() {
             Content Ideas
           </span>
           <h1 className="text-[42px] font-bold text-[#110829] leading-tight mb-6">
-            Best AI Fruit Story Ideas for Maximum TikTok Views (2026)
+            50 AI Fruit Story Prompts and Viral Drama Ideas
           </h1>
           <p className="text-[19px] text-[#4A4A55] leading-relaxed">
-            Explore 20+ fruit-drama ideas for TikTok and Instagram Reels, with adaptable prompts and an explanation of the storytelling principle behind each one.
+            Fifty fruit-drama prompts for TikTok and Instagram Reels — fourteen full ideas with the storytelling principle behind each, plus thirty-six quick-fire prompts across six more drama categories.
           </p>
-          <p className="text-[13px] text-[#999] mt-5">May 15, 2026 · 12 min read · Content Ideas</p>
+          <p className="text-[13px] text-[#999] mt-5">May 15, 2026 · 14 min read · Content Ideas</p>
         </header>
 
         <figure className="mb-16 max-w-4xl overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
@@ -177,6 +281,26 @@ export default function BestAIFruitStoryIdeas() {
               </div>
             </section>
           ))}
+
+          <section className="mt-10">
+            <h2 className="text-[26px] font-bold text-[#110829] mb-3">36 More Quick-Fire Prompts</h2>
+            <p className="text-[15px] leading-relaxed mb-6">
+              Fourteen down, thirty-six to go. These are shorter — pick one, adapt the characters, and paste it straight into the generator.
+            </p>
+            {QUICK_PROMPTS.map((category, ci) => (
+              <div key={ci} className="mb-10">
+                <h3 className="text-[18px] font-bold text-[#110829] mb-4 flex items-center gap-2.5">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: category.color }} />
+                  {category.category}
+                </h3>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {category.prompts.map((prompt) => (
+                    <QuickPromptCard key={prompt} prompt={prompt} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </section>
 
           <section className="mt-10">
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">What Makes a Fruit Drama Idea Go Viral</h2>

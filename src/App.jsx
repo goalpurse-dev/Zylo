@@ -138,6 +138,17 @@ const AIFruitStoryTalkingDialogueTips = lazy(() => import("./app/blog/imagegener
 const AIFruitStoryVsTraditionalAnimation = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-vs-traditional-animation.jsx"));
 const AIFruitStoryPromptFormula = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-prompt-formula.jsx"));
 const AIFruitStoryInstagramYouTubeShorts = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-instagram-youtube-shorts.jsx"));
+const AIFruitStoryPlotTwists = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-plot-twists.jsx"));
+const AIFruitStoryCouples = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-couples.jsx"));
+const AIFruitStoryDuetsStitches = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-duets-stitches.jsx"));
+const AIFruitStorySeriesUniverse = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-series-universe.jsx"));
+const AIFruitStoryMistakes = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-mistakes.jsx"));
+const BestTimeToPostAiContent = lazy(() => import("./app/blog/imagegenerator/best-time-to-post-ai-content.jsx"));
+const AiContentHooksCaptionsThatGoViral = lazy(() => import("./app/blog/imagegenerator/ai-content-hooks-captions-that-go-viral.jsx"));
+const CartoonDriveByExplained = lazy(() => import("./app/blog/imagegenerator/cartoon-drive-by-explained.jsx"));
+const CartoonDriveByVideoIdeas = lazy(() => import("./app/blog/imagegenerator/cartoon-drive-by-video-ideas.jsx"));
+const FootballerNationalitySwapExplained = lazy(() => import("./app/blog/imagegenerator/footballer-nationality-swap-explained.jsx"));
+const FootballerNationalitySwapTips = lazy(() => import("./app/blog/imagegenerator/footballer-nationality-swap-tips.jsx"));
 const ViralScore = lazy(() => import("./pages/viral/ViralScore.jsx"));
 const LipSync    = lazy(() => import("./pages/viral/LipSync.jsx"));
 
@@ -153,6 +164,7 @@ import WorkspaceRouteSeo from "./components/seo/WorkspaceRouteSeo.jsx";
 import PublicGallery from "./components/public-gallery/gallery";
 const AIFruitStoryLanding = lazy(() => import("./pages/landing/AIFruitStoryLanding.jsx"));
 const CartoonDriveByLanding = lazy(() => import("./pages/landing/CartoonDriveByLanding.jsx"));
+const FootballerNationalitySwapLanding = lazy(() => import("./pages/landing/FootballerNationalitySwapLanding.jsx"));
 const FaceAsmrLanding = lazy(() => import("./pages/landing/FaceAsmrLanding.jsx"));
 const MicroCameraAnimalLanding = lazy(() => import("./pages/landing/MicroCameraAnimalLanding.jsx"));
 const ClayRescueLanding = lazy(() => import("./pages/landing/ClayRescueLanding.jsx"));
@@ -202,6 +214,7 @@ const AICookingMaticPage     = lazy(() => import("./pages/workspace/AICookingMat
 const FootballerNationalitySwapPage = lazy(() => import("./pages/workspace/FootballerNationalitySwap.jsx"));
 const TwoAmPage               = lazy(() => import("./pages/workspace/TwoAm.jsx"));
 const CartoonDriveByPage       = lazy(() => import("./pages/workspace/CartoonDriveBy.jsx"));
+const BehindTheScenesPage      = lazy(() => import("./pages/workspace/BehindTheScenes.jsx"));
 const PublishPage            = lazy(() => import("./pages/workspace/publish.jsx"));
 const StatsPage              = lazy(() => import("./pages/workspace/stats.jsx"));
 const ConnectionsPage        = lazy(() => import("./pages/workspace/connections.jsx"));
@@ -461,9 +474,21 @@ return (
         <Route path="/blog/ai-fruit-story-vs-traditional-animation" element={<AIFruitStoryVsTraditionalAnimation/>} />
         <Route path="/blog/ai-fruit-story-prompt-formula" element={<AIFruitStoryPromptFormula/>} />
         <Route path="/blog/ai-fruit-story-instagram-youtube-shorts" element={<AIFruitStoryInstagramYouTubeShorts/>} />
+        <Route path="/blog/ai-fruit-story-plot-twists" element={<AIFruitStoryPlotTwists/>} />
+        <Route path="/blog/ai-fruit-story-couples" element={<AIFruitStoryCouples/>} />
+        <Route path="/blog/ai-fruit-story-duets-stitches" element={<AIFruitStoryDuetsStitches/>} />
+        <Route path="/blog/ai-fruit-story-series-universe" element={<AIFruitStorySeriesUniverse/>} />
+        <Route path="/blog/ai-fruit-story-mistakes" element={<AIFruitStoryMistakes/>} />
+        <Route path="/blog/best-time-to-post-ai-content" element={<BestTimeToPostAiContent/>} />
+        <Route path="/blog/ai-content-hooks-captions-that-go-viral" element={<AiContentHooksCaptionsThatGoViral/>} />
+        <Route path="/blog/cartoon-drive-by-explained" element={<CartoonDriveByExplained/>} />
+        <Route path="/blog/cartoon-drive-by-video-ideas" element={<CartoonDriveByVideoIdeas/>} />
+        <Route path="/blog/footballer-nationality-swap-explained" element={<FootballerNationalitySwapExplained/>} />
+        <Route path="/blog/footballer-nationality-swap-tips" element={<FootballerNationalitySwapTips/>} />
 
          <Route path="/ai-fruit-story-maker" element={<AIFruitStoryLanding />} />
          <Route path="/cartoon-drive-by-video-maker" element={<CartoonDriveByLanding />} />
+         <Route path="/footballer-nationality-swap-ai" element={<FootballerNationalitySwapLanding />} />
          <Route path="/face-asmr-maker" element={<FaceAsmrLanding />} />
          <Route path="/micro-camera-animal-maker" element={<MicroCameraAnimalLanding />} />
          <Route path="/clay-rescue-maker" element={<ClayRescueLanding />} />
@@ -495,6 +520,11 @@ return (
          <Route path="/blog/liminal-space-ai-generator" element={<TwoAmBlogGuide slug="liminal-space-ai-generator" />} />
          <Route path="/blog/how-to-create-2am-anime-ai-images" element={<TwoAmBlogGuide slug="how-to-create-2am-anime-ai-images" />} />
          <Route path="/blog/how-to-create-2am-naruto-ai-images" element={<TwoAmBlogGuide slug="how-to-create-2am-naruto-ai-images" />} />
+         <Route path="/blog/2am-minecraft-ai-images" element={<TwoAmBlogGuide slug="2am-minecraft-ai-images" />} />
+         <Route path="/blog/2am-gta-ai-images" element={<TwoAmBlogGuide slug="2am-gta-ai-images" />} />
+         <Route path="/blog/2am-one-piece-ai-images" element={<TwoAmBlogGuide slug="2am-one-piece-ai-images" />} />
+         <Route path="/blog/2am-studio-ghibli-ai-images" element={<TwoAmBlogGuide slug="2am-studio-ghibli-ai-images" />} />
+         <Route path="/blog/2am-fortnite-ai-images" element={<TwoAmBlogGuide slug="2am-fortnite-ai-images" />} />
          <Route path="/blog/what-is-the-2am-worlds-ai-trend" element={<TwoAmBlogGuide slug="what-is-the-2am-worlds-ai-trend" />} />
          <Route path="/blog/best-2am-world-ai-prompts" element={<TwoAmBlogGuide slug="best-2am-world-ai-prompts" />} />
          <Route path="/blog/how-to-create-2am-pokemon-ai-images" element={<TwoAmBlogGuide slug="how-to-create-2am-pokemon-ai-images" />} />
@@ -545,6 +575,7 @@ return (
   <Route path="/workspace/footballer-nationality-swap" element={<FootballerNationalitySwapPage />} />
   <Route path="/workspace/two-am" element={<TwoAmPage />} />
   <Route path="/workspace/cartoon-drive-by" element={<CartoonDriveByPage />} />
+  <Route path="/workspace/behind-the-scenes" element={<BehindTheScenesPage />} />
   <Route path="/workspace/publish"          element={<Navigate to="/workspace/home" replace />} />
   <Route path="/workspace/publishv"         element={<PublishPage />} />
   <Route path="/workspace/stats"            element={<StatsPage />} />

@@ -16,8 +16,8 @@ const related = [
     slug: "/blog/viral-ai-fruit-drama-videos",
   },
   {
-    title: "AI Fruit Story Ideas and Prompt Examples",
-    description: "20+ proven AI fruit story ideas with adaptable prompts and an explanation of why each works.",
+    title: "50 AI Fruit Story Prompts and Viral Drama Ideas",
+    description: "Fifty fruit-drama prompts with adaptable ideas and an explanation of why each works.",
     date: "15.05.2026",
     slug: "/blog/best-ai-fruit-story-ideas",
   },
