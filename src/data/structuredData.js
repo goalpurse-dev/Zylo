@@ -1,0 +1,90 @@
+import { SITE_URL } from "./publicSeoMetadata.js";
+
+// Plain JS (no React/JSX) so it can be imported both by the client
+// (PublicContentLayout.jsx, via its useEffect-driven useSEO() injection) and
+// by scripts/generateSeoHtml.js directly in plain Node at build time —
+// single source of truth for JSON-LD in both places.
+export function structuredDataFor(pathname, metadata, canonical) {
+  if (!metadata) return null;
+  const breadcrumb = {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/workspace/home` },
+      ...(pathname.startsWith("/blog/")
+        ? [{ "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` }]
+        : []),
+      { "@type": "ListItem", position: pathname.startsWith("/blog/") ? 3 : 2, name: metadata.title.replace(/ \| Zyvo$/, ""), item: canonical },
+    ],
+  };
+  let page = pathname.startsWith("/blog/")
+    ? { "@type": "BlogPosting", headline: metadata.title.replace(/ \| Zyvo$/, ""), description: metadata.description, mainEntityOfPage: canonical, publisher: { "@type": "Organization", name: "Zyvo", url: SITE_URL } }
+    : { "@type": "WebPage", name: metadata.title, description: metadata.description, url: canonical };
+  const graph = [page, breadcrumb];
+
+  if (pathname === "/ai-fruit-story-maker") {
+    page = {
+      "@type": "SoftwareApplication",
+      name: "Zyvo AI Fruit Story Generator",
+      description: metadata.description,
+      url: canonical,
+      applicationCategory: "MultimediaApplication",
+      operatingSystem: "Web",
+    };
+    graph[0] = page;
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["What is an AI Fruit Story?", "An AI Fruit Story is a short-form fictional drama video created by Zyvo's fruit story AI, in which stylized 3D fruit characters act out a simple conflict, reveal, or surprise across multiple scenes."],
+        ["How long does it take to make a fruit drama video?", "Generation time varies with story length, scene count, selected models, and queue conditions. Zyvo shows progress in the workspace while the story is being created."],
+        ["Do I need editing or design skills?", "No timeline editing or design software is required for the core workflow. You provide the idea, choose characters and settings, then review the generated scenes and video."],
+        ["Can I make 1-minute long fruit videos?", "Yes. The tool supports a 60-second option with up to 10 scenes, subject to the settings available in the workspace."],
+        ["What drama styles can I create?", "You can start with cheating-reveal, baby-surprise, secret-twin, revenge, and kicked-out presets, or describe a custom fictional story."],
+        ["Do the characters speak in the videos?", "Yes. Animated scenes can include AI-generated English dialogue with mouth-synced character animation."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
+  if (pathname === "/cartoon-drive-by-video-maker") {
+    page = {
+      "@type": "SoftwareApplication",
+      name: "Zyvo Cartoon Drive-By Video Maker",
+      description: metadata.description,
+      url: canonical,
+      applicationCategory: "MultimediaApplication",
+      operatingSystem: "Web",
+    };
+    graph[0] = page;
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["What is a cartoon drive-by video?", "It is a fictional, stylized travel shot that passes a cartoon- or game-inspired destination from inside a moving vehicle. It is an entertainment format, not a depiction of violence."],
+        ["How long is the generated video?", "The current Cartoon Drive-By workflow creates a continuous 10-second video in a vertical 9:16 format."],
+        ["Which vehicles can I choose?", "The current tool supports car, train, bus, and plane viewpoints, with motion and framing adjusted for the selected vehicle."],
+        ["Can I create a video for TikTok or Reels?", "Yes. The tool is designed around a 9:16 vertical frame suitable for TikTok, Instagram Reels, and YouTube Shorts."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
+  if (pathname === "/footballer-nationality-swap-ai") {
+    page = {
+      "@type": "SoftwareApplication",
+      name: "Zyvo Footballer Nationality Swap",
+      description: metadata.description,
+      url: canonical,
+      applicationCategory: "MultimediaApplication",
+      operatingSystem: "Web",
+    };
+    graph[0] = page;
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["What is Nationality Swap?", "It's an entertainment format that reimagines a footballer as if they represented a different nation — a new jersey, a localized name card, and a short talking introduction clip in that nation's language."],
+        ["Is this affiliated with real players, clubs, or federations?", "No. Nationality Swap generates original, fan-made AI content for entertainment purposes. It is not affiliated with, endorsed by, or produced in partnership with any footballer, club, or national football federation."],
+        ["How long is the generated video?", "Each scene is a 6-second vertical talking clip. You can generate 3 to 5 scenes and stitch them into one continuous video."],
+        ["Can I choose the video quality?", "Yes. Three tiers are available — 480p, 720p, and 1080p — all with generated audio."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
+  return { "@context": "https://schema.org", "@graph": graph };
+}

@@ -42,7 +42,13 @@
       "Bash(grep -Ei \"\\\\.css$\")",
       "Bash(grep -n \"path=\\\\\"/\\\\|Route\" src/App.jsx)",
       "Bash(npm run *)",
-      "Bash(curl -s -o /dev/null -w \"HTTP_STATUS:%{http_code}\\\\nREDIRECT_URL:%{redirect_url}\\\\nFINAL_URL:%{url_effective}\\\\n\" \"https://www.tryzyvo.com/blog/how-to-go-viral-with-ai\")"
+      "Bash(curl -s -o /dev/null -w \"HTTP_STATUS:%{http_code}\\\\nREDIRECT_URL:%{redirect_url}\\\\nFINAL_URL:%{url_effective}\\\\n\" \"https://www.tryzyvo.com/blog/how-to-go-viral-with-ai\")",
+      "Bash(rm scripts/prerenderSeo.js)",
+      "Bash(npm uninstall *)",
+      "Bash(rm -rf dist dist-ssr)",
+      "Bash(rm -f _test_all_routes.mjs)",
+      "Bash(echo \"build exit: $?\")",
+      "Bash(node scripts/auditSeoUrls.js)"
     ]
   }
 }

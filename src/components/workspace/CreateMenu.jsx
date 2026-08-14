@@ -160,6 +160,15 @@ function DesktopPanel({ open, onClose, title, subtitle, sectionLabel, grid, chil
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  // Always mounted (open/closed is a CSS opacity/transform transition, not
+  // a mount/unmount) so createPortal runs unconditionally on the client —
+  // fine there, but React's server renderer hard-rejects any createPortal
+  // call outright ("Portals are not currently supported by the server
+  // renderer"), independent of whether `document` exists. import.meta.env.SSR
+  // is only ever true in the build-time SEO HTML generator's dedicated SSR
+  // bundle, never the real client bundle, so real users are unaffected.
+  if (import.meta.env.SSR) return null;
+
   return createPortal(
     <>
       {open && <div className="zyvo-panel-dismiss-layer fixed bottom-0 right-0 z-[149]" onClick={onClose} />}

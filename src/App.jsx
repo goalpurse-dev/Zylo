@@ -1,11 +1,19 @@
 import React, { Suspense, lazy } from "react";
 import {
-  BrowserRouter as Router,
+  BrowserRouter,
+  StaticRouter,
   Routes,
   Route,
   Navigate,
   useLocation,
 } from "react-router-dom";
+// StaticRouter is only ever instantiated when import.meta.env.SSR is true —
+// i.e. only inside the build-time SEO HTML generator (scripts/generateSeoHtml.js),
+// never in the real client bundle. Vite statically resolves import.meta.env.SSR
+// to `false` for every normal build, so this whole branch is dead code there
+// and gets tree-shaken out — real users always get exactly the same
+// BrowserRouter they always did.
+const Router = import.meta.env.SSR ? StaticRouter : BrowserRouter;
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
@@ -240,10 +248,11 @@ function GuestOnly({ children }) {
   return children;
 }
 
-export default function App() {
+export default function App({ ssrPath } = {}) {
+ const routerProps = import.meta.env.SSR ? { location: ssrPath } : {};
  return (
 <AuthProvider>
-  <Router>
+  <Router {...routerProps}>
    <ScrollToTop /> {/* 🔥 THIS LINE */}
 
     <GenerationsProvider>

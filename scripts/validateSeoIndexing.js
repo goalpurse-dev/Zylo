@@ -6,12 +6,12 @@ import { getNoindexWorkspaceRoutes, getPublicWorkspaceRoutes } from "../src/data
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relative) => readFileSync(path.join(root, relative), "utf8");
-// prerenderSeo.js only writes this when every route actually rendered.
-// prerenderSeo.js now exits non-zero on failure, so in the normal `npm run
-// build` chain (prerenderSeo.js && validateSeoIndexing.js) this script won't
-// even be reached if prerendering failed — but it's asserted again here too,
-// so a standalone `npm run seo:check` (or any future decoupling of that
-// chain) can't silently pass without the prerendered snapshots it depends on.
+// generateSeoHtml.js only writes this when every route actually generated.
+// It exits non-zero on failure, so in the normal `npm run build` chain
+// (generateSeoHtml.js && validateSeoIndexing.js) this script won't even be
+// reached if generation failed — but it's asserted again here too, so a
+// standalone `npm run seo:check` (or any future decoupling of that chain)
+// can't silently pass without the generated snapshots it depends on.
 const prerenderSucceeded = existsSync(path.join(root, "dist", ".seo-prerender-complete"));
 const sitemap = read("public/sitemap.xml");
 const redirects = JSON.parse(read("vercel.json")).redirects || [];
@@ -107,9 +107,9 @@ assert(!/path=["']\/workspace\/productphoto/i.test(app), "retired Product Photo 
 
 assert(
   prerenderSucceeded,
-  "SEO prerender snapshots are missing (dist/.seo-prerender-complete not found) — this build would ship every " +
-  "public route as the bare SPA shell with no server-rendered title/canonical/H1/content. Fix prerenderSeo.js's " +
-  "environment (most likely: Playwright's Chromium browser isn't installed) rather than shipping without it.",
+  "SEO HTML snapshots are missing (dist/.seo-prerender-complete not found) — this build would ship every " +
+  "public route as the bare SPA shell with no server-rendered title/canonical/H1/content. Check that " +
+  "`vite build --ssr src/entry-server.jsx` and scripts/generateSeoHtml.js both ran and succeeded.",
 );
 
 console.log(`SEO indexing validation passed: ${sitemapUrls.length} public sitemap URL(s), ${getNoindexWorkspaceRoutes().length} prerendered noindex route(s).`);
