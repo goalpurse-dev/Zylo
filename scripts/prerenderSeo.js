@@ -47,25 +47,67 @@ function sitemapPaths() {
     .filter((pathname) => pathname !== "/");
 }
 
+// A request is treated as a *static asset* (Vite's /assets/* chunks, favicon,
+// images, fonts, ...) rather than a client-side *page route* if its last path
+// segment has a file extension. Assets must never fall through to the SPA
+// shell — a missing chunk silently served as index.html is exactly what
+// produced "Uncaught SyntaxError: Unexpected token '<'" in Chromium (it
+// requested JS, got an HTML document instead) and cascaded into every queued
+// route failing once the page's own script tag threw. Page routes (no
+// extension, e.g. /blog/foo) still fall back to the SPA shell/snapshot as
+// before — that fallback is legitimate for routes, never for assets.
+function isAssetPath(relative) {
+  if (relative.startsWith("assets/")) return true;
+  const lastSegment = relative.split("/").pop() || "";
+  return /\.[a-zA-Z0-9]+$/.test(lastSegment);
+}
+
 function resolveRequestFile(urlPath) {
   const decoded = decodeURIComponent(urlPath.split("?")[0]);
-  const relative = decoded.replace(/^\/+/, "");
+  const relative = decoded.replace(/^\/+/, "") || "index.html";
+  const asset = isAssetPath(relative);
+
+  if (asset) {
+    const file = path.join(distDir, relative);
+    const found = existsSync(file) && statSync(file).isFile();
+    return { file: found ? file : null, asset: true, usedFallback: false };
+  }
+
   const candidates = [
     path.join(distDir, `${relative}.html`),
     path.join(distDir, relative, "index.html"),
-    path.join(distDir, relative),
   ];
-  return candidates.find((candidate) => existsSync(candidate) && statSync(candidate).isFile()) || SPA_FALLBACK;
+  const found = candidates.find((candidate) => existsSync(candidate) && statSync(candidate).isFile());
+  return { file: found || SPA_FALLBACK, asset: false, usedFallback: !found };
 }
 
-function startStaticServer() {
+function startStaticServer({ verbose = false } = {}) {
   const server = createServer(async (request, response) => {
+    const requestPath = request.url || "/";
+    const { file, asset, usedFallback } = resolveRequestFile(requestPath);
+
+    if (!file) {
+      // Asset genuinely missing on disk — 404, never the SPA shell. This is
+      // the exact case that used to silently return HTML for a JS request.
+      if (verbose) console.log(`[static] 404 ${requestPath} (asset not found under dist/)`);
+      response.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
+      response.end(`Not found: ${requestPath}`);
+      return;
+    }
+
     try {
-      const file = resolveRequestFile(request.url || "/");
       const body = await readFile(file);
-      response.writeHead(200, { "content-type": MIME[path.extname(file)] || "application/octet-stream" });
+      const contentType = MIME[path.extname(file)] || "application/octet-stream";
+      if (verbose) {
+        console.log(
+          `[static] 200 ${requestPath} -> ${path.relative(distDir, file)} ` +
+          `(${contentType}${asset ? "" : usedFallback ? ", SPA fallback" : ", snapshot"})`
+        );
+      }
+      response.writeHead(200, { "content-type": contentType });
       response.end(body);
     } catch (error) {
+      if (verbose) console.log(`[static] 500 ${requestPath}: ${error.message}`);
       response.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
       response.end(String(error));
     }
@@ -85,7 +127,7 @@ async function writeSnapshot(pathname, html) {
   await Promise.all([writeFile(htmlFile, html), writeFile(indexFile, html)]);
 }
 
-async function renderPath(browser, origin, pathname, seoVisibility) {
+async function renderPath(browser, origin, pathname, seoVisibility, { verbose = false } = {}) {
   const context = await browser.newContext({
     viewport: { width: 1365, height: 900 },
     serviceWorkers: "block",
@@ -97,6 +139,29 @@ async function renderPath(browser, origin, pathname, seoVisibility) {
     if (url.origin === origin || ["data:", "blob:"].includes(url.protocol)) route.continue();
     else route.abort();
   });
+
+  if (verbose) {
+    // pageerror is the critical signal for this class of bug: a JS asset
+    // served as HTML surfaces here as "Uncaught SyntaxError: Unexpected
+    // token '<'" the moment the browser tries to parse/execute it.
+    page.on("pageerror", (err) => console.log(`[page:${pathname}] pageerror: ${err.message}`));
+    page.on("requestfailed", (req) => console.log(`[page:${pathname}] requestfailed: ${req.url()} — ${req.failure()?.errorText}`));
+    page.on("console", (msg) => {
+      if (msg.type() === "error" || msg.type() === "warning") console.log(`[page:${pathname}] console.${msg.type()}: ${msg.text()}`);
+    });
+    page.on("response", (res) => {
+      // Filtered for signal: log non-ok responses, plus any JS/CSS asset
+      // response whose content-type doesn't match — exactly what a
+      // wrongly-fallback-served asset looks like from the network tab.
+      const url = res.url();
+      const contentType = res.headers()["content-type"] || "";
+      const looksLikeScriptOrStyle = /\.(js|css)(\?|$)/.test(url);
+      const contentTypeMismatch = looksLikeScriptOrStyle && !/(javascript|css)/.test(contentType);
+      if (!res.ok() || contentTypeMismatch) {
+        console.log(`[page:${pathname}] response: ${res.status()} ${url} (content-type: ${contentType || "none"})`);
+      }
+    });
+  }
 
   try {
     await page.goto(`${origin}${pathname}`, { waitUntil: "domcontentloaded", timeout: 30_000 });
@@ -174,10 +239,14 @@ async function resolveLaunchOptions() {
 
 async function main() {
   if (!existsSync(SPA_FALLBACK)) throw new Error("dist/index.html is missing; run this script after vite build");
+  // Verbose static-server + page-event logging is automatic on Vercel (where
+  // we don't get a local terminal to attach a debugger to) and opt-in
+  // elsewhere via PRERENDER_VERBOSE=1, so local runs stay quiet by default.
+  const verbose = Boolean(process.env.VERCEL) || process.env.PRERENDER_VERBOSE === "1";
   const jobsByPath = new Map(sitemapPaths().map((pathname) => [pathname, { pathname, seoVisibility: "public" }]));
   getNoindexWorkspaceRoutes().forEach(({ path: pathname }) => jobsByPath.set(pathname, { pathname, seoVisibility: "noindex" }));
   const jobs = [...jobsByPath.values()];
-  const server = await startStaticServer();
+  const server = await startStaticServer({ verbose });
   const address = server.address();
   const origin = `http://${HOST}:${address.port}`;
   // --no-sandbox etc. are required for Chromium to launch inside CI/build
@@ -193,28 +262,50 @@ async function main() {
     "chromium.launch()",
   );
 
+  // If the browser process itself dies mid-run (crash, OOM, killed), every
+  // in-flight and queued renderPath() call would previously fail one at a
+  // time with "Target page, context or browser has been closed" — 163
+  // near-identical, uninformative failures that bury the real cause. Track
+  // disconnection explicitly so the queue stops immediately and the error
+  // that's actually useful (why the browser died) is what surfaces.
+  //
+  // Playwright fires 'disconnected' on ANY browser shutdown, including our
+  // own deliberate browser.close() once every route is done — `shuttingDown`
+  // distinguishes "we closed it on purpose after finishing" from "it died on
+  // us mid-run", so a normal successful run doesn't print a false crash alarm.
+  let shuttingDown = false;
+  let browserDisconnected = null;
+  browser.on("disconnected", () => {
+    if (shuttingDown) return;
+    browserDisconnected = new Error("Chromium disconnected/crashed mid-prerender (browser.on('disconnected') fired unexpectedly)");
+    console.error(`[prerenderSeo] ${browserDisconnected.message}`);
+  });
+
   try {
     const failures = [];
     let completed = 0;
     const queue = [...jobs];
     const workers = Array.from({ length: Math.min(4, queue.length) }, async () => {
-      while (queue.length) {
+      while (queue.length && !browserDisconnected) {
         const { pathname, seoVisibility } = queue.shift();
         try {
-          await renderPath(browser, origin, pathname, seoVisibility);
+          await renderPath(browser, origin, pathname, seoVisibility, { verbose });
           completed += 1;
           console.log(`  prerendered ${pathname} (${seoVisibility})`);
         } catch (error) {
+          if (browserDisconnected) break; // this failure is just fallout from the disconnect, not a real per-route bug
           failures.push(`${pathname}: ${error.message}`);
         }
       }
     });
     await Promise.all(workers);
+    if (browserDisconnected) throw browserDisconnected;
     if (failures.length) throw new Error(`Prerender failed for ${failures.length} route(s):\n${failures.join("\n")}`);
     console.log(`Prerendered ${completed} crawler-visible public/noindex route(s).`);
     await writeFile(SUCCESS_MARKER, new Date().toISOString());
   } finally {
-    await browser.close();
+    shuttingDown = true;
+    if (!browserDisconnected) await browser.close().catch(() => {});
     await new Promise((resolve) => server.close(resolve));
   }
 }
