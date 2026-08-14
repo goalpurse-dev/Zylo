@@ -148,6 +148,30 @@ async function renderPath(browser, origin, pathname, seoVisibility) {
   }
 }
 
+// Vercel's build image is Amazon Linux, which has neither `apt-get` (so
+// `playwright install --with-deps` can't run there — it detects the
+// unsupported OS, falls back to Ubuntu's apt-get anyway, and hard-fails with
+// exit 127) nor the shared libraries (libnspr4.so, libnss3.so, ...) that a
+// plain `playwright install chromium` download needs to actually launch.
+// @sparticuz/chromium ships a Chromium build compiled specifically for
+// Lambda-like environments with every required .so bundled alongside the
+// binary, so it never touches the OS package manager at all. It's Linux-only
+// (won't run on Windows/macOS), so this path is only taken when VERCEL is
+// set — local/dev builds keep using the plain `playwright install chromium`
+// download exactly as before.
+async function resolveLaunchOptions() {
+  const baseArgs = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"];
+  if (process.env.VERCEL) {
+    const { default: sparticuzChromium } = await import("@sparticuz/chromium");
+    return {
+      headless: true,
+      executablePath: await sparticuzChromium.executablePath(),
+      args: [...sparticuzChromium.args, ...baseArgs],
+    };
+  }
+  return { headless: true, args: baseArgs };
+}
+
 async function main() {
   if (!existsSync(SPA_FALLBACK)) throw new Error("dist/index.html is missing; run this script after vite build");
   const jobsByPath = new Map(sitemapPaths().map((pathname) => [pathname, { pathname, seoVisibility: "public" }]));
@@ -162,11 +186,9 @@ async function main() {
   // full 45-minute Vercel build budget and blocked the whole deploy. The
   // timeout wrapper is the backstop in case launch hangs for some other
   // reason in a given environment.
+  const launchOptions = await resolveLaunchOptions();
   const browser = await withTimeout(
-    chromium.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
-    }),
+    chromium.launch(launchOptions),
     60_000,
     "chromium.launch()",
   );
