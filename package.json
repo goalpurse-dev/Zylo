@@ -8,11 +8,13 @@
     "test": "node --test tests/*.test.mjs",
     "prebuild": "node scripts/generateSitemap.js",
     "build": "vite build",
-    "postbuild": "node scripts/prerenderSeo.js && node scripts/validateSeoIndexing.js",
+    "postbuild": "playwright install chromium && node scripts/prerenderSeo.js && node scripts/validateSeoIndexing.js",
     "lint": "eslint .",
     "preview": "vite preview",
     "sitemap:generate": "node scripts/generateSitemap.js",
-    "seo:check": "node scripts/validateSeoIndexing.js"
+    "seo:check": "node scripts/validateSeoIndexing.js",
+    "seo:audit": "node scripts/auditSeoUrls.js",
+    "seo:audit:live": "node scripts/auditSeoUrls.js --live"
   },
   "dependencies": {
     "@fal-ai/client": "^1.10.0",

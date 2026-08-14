@@ -16,9 +16,9 @@ export default function Footer() {
       {/* MOBILE */}
       <div className="block sm:hidden">
 
-        <div className="w-full h-[370px] p-2 bg-[#0E1016]">
+        <div className="w-full h-auto p-2 bg-[#0E1016] pb-6">
 
-          <div className="flex flex-row justify-center gap-8">
+          <div className="flex flex-row flex-wrap justify-center gap-8">
 
             {/* Zylo */}
             <div className="flex flex-col gap-3 mt-10 mr-4">
@@ -31,9 +31,36 @@ export default function Footer() {
                <Link to="/workspace/video-generator" className="text-[12px] hover:underline">
                 Video Generator
               </Link>
-            
+
               <Link to="/workspace/creations" className="text-[12px] hover:underline">
                 Creations
+              </Link>
+            </div>
+
+            {/* Templates */}
+            <div className="flex flex-col gap-3 mt-10 mr-4">
+              <h3 className="cursor-default text-[22px] font-extrabold text-white">Templates</h3>
+
+              <Link to="/2am-worlds-ai-generator" className="text-[12px] hover:underline">
+                2AM Worlds
+              </Link>
+              <Link to="/cartoon-drive-by-video-maker" className="text-[12px] hover:underline">
+                Cartoon Drive-By
+              </Link>
+              <Link to="/footballer-nationality-swap-ai" className="text-[12px] hover:underline">
+                Nationality Swap
+              </Link>
+              <Link to="/ai-fruit-story-maker" className="text-[12px] hover:underline">
+                AI Fruit Story
+              </Link>
+              <Link to="/face-asmr-maker" className="text-[12px] hover:underline">
+                Face ASMR
+              </Link>
+              <Link to="/clay-rescue-maker" className="text-[12px] hover:underline">
+                Clay Rescue
+              </Link>
+              <Link to="/micro-camera-animal-maker" className="text-[12px] hover:underline">
+                Micro Camera Animal
               </Link>
             </div>
 
@@ -91,9 +118,9 @@ export default function Footer() {
       {/* SM AND UP */}
       <div className="hidden sm:block bg-[#0E1016]">
 
-        <div className="w-full h-[370px] lg:h-[400px] p-2">
+        <div className="w-full h-auto p-2 pb-10">
 
-          <div className="flex justify-center gap-40 mt-14">
+          <div className="flex flex-wrap justify-center gap-16 lg:gap-24 mt-14">
 
             <div className="flex flex-col gap-3">
               <h3 className="cursor-default text-xl font-extrabold text-white">Tools</h3>
@@ -104,9 +131,35 @@ export default function Footer() {
                <Link to="/workspace/video-generator" className="hover:underline">
                 Video Generator
               </Link>
-             
+
               <Link to="/workspace/creations" className="hover:underline">
                 Creations
+              </Link>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <h3 className="cursor-default text-xl font-extrabold text-white">Templates</h3>
+
+              <Link to="/2am-worlds-ai-generator" className="hover:underline">
+                2AM Worlds
+              </Link>
+              <Link to="/cartoon-drive-by-video-maker" className="hover:underline">
+                Cartoon Drive-By
+              </Link>
+              <Link to="/footballer-nationality-swap-ai" className="hover:underline">
+                Nationality Swap
+              </Link>
+              <Link to="/ai-fruit-story-maker" className="hover:underline">
+                AI Fruit Story
+              </Link>
+              <Link to="/face-asmr-maker" className="hover:underline">
+                Face ASMR
+              </Link>
+              <Link to="/clay-rescue-maker" className="hover:underline">
+                Clay Rescue
+              </Link>
+              <Link to="/micro-camera-animal-maker" className="hover:underline">
+                Micro Camera Animal
               </Link>
             </div>
 

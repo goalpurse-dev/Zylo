@@ -866,12 +866,16 @@ export default function Pricing() {
       <div className="md:hidden">
         {/* Mobile header + billing toggle — centered */}
         <div className="px-5 pt-10 pb-6 flex flex-col items-center text-center" style={{ background: "#07080F" }}>
-          <h1 className="text-[26px] font-extrabold tracking-tight text-white mb-1.5">
+          {/* Mobile/desktop are separate DOM trees toggled by breakpoint (both
+              always render), so only one of the two can be a real <h1> —
+              this one intentionally isn't, to keep exactly one H1 per page
+              for crawlers regardless of viewport. */}
+          <div className="text-[26px] font-extrabold tracking-tight text-white mb-1.5">
             Go viral.{" "}
             <span style={{ background: "linear-gradient(90deg,#A855F7,#C084FC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
               Or it's free.
             </span>
-          </h1>
+          </div>
           <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
             Every plan includes the Viral Video Builder.
           </p>

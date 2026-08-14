@@ -30,10 +30,10 @@ const related = [
 
 
 export default function BlogPost() {
-  const TITLE = "How AI Product Photos Increase Conversion Rates";
+  const TITLE = "Why Product Photos Matter for Ecommerce Success";
   const TARGET_KEYWORD = "AI product photos";
   const META_DESCRIPTION =
-    "Learn how AI product photos boost trust, improve click-throughs, and increase conversion rates with studio-quality visuals—without expensive shoots.";
+    "Your product image is your ad's landing page. See why product photo quality drives buyer trust and conversion more than the ad that got the click.";
 
   return (
     <article className="min-h-screen bg-white">

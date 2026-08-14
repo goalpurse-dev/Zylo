@@ -197,22 +197,26 @@ async function main() {
   }
 }
 
-withTimeout(main(), OVERALL_TIMEOUT_MS, "SEO prerender").catch((error) => {
-  // Never let a broken/unsupported headless-Chromium environment block the
-  // whole deploy — degrade to "no prerendered SEO snapshots this build"
-  // instead. validateSeoIndexing.js checks for SUCCESS_MARKER and skips its
-  // snapshot assertions when it's absent, so this build still ships; it just
-  // ships without prerendered SEO HTML until the environment is fixed.
-  console.error("[prerenderSeo] SEO prerender failed or timed out — continuing deploy without it:");
+// Previously this caught failures and always exited 0, so a broken/missing
+// Chromium in the build environment (e.g. Playwright's browser binary not
+// installed) silently shipped production with zero prerendered SEO HTML —
+// every route fell through Vercel's SPA catch-all rewrite to the bare
+// index.html shell. That regression went undetected for a real deploy
+// window because "the build succeeded" looked fine in CI. Failing loudly
+// here is intentional: Vercel keeps serving the last good deployment when a
+// build fails, which is strictly safer than silently publishing a shell-only
+// site. The bounded timeout below still guarantees this exits promptly
+// instead of hanging the build budget, so failing loudly does not reintroduce
+// the original 45-minute-hang problem this used to guard against.
+withTimeout(main(), OVERALL_TIMEOUT_MS, "SEO prerender").then(() => {
+  process.exit(0);
+}).catch((error) => {
+  console.error("[prerenderSeo] SEO prerender failed or timed out — failing the build so this can't ship silently:");
   console.error(error);
-}).finally(() => {
   // main() can throw before reaching its own try/finally (e.g. chromium.launch()
   // failing right after startStaticServer() opens its listening socket) —
-  // whenever that happens the open server keeps Node's event loop alive
-  // forever, so the .catch() above logs its message but the process never
-  // actually exits. That's what burned a full 45-minute Vercel build budget
-  // on every deploy where the build image can't launch Chromium. Exiting
-  // explicitly guarantees this script terminates no matter what got left
-  // open, instead of relying on every failure path to clean up perfectly.
-  process.exit(0);
+  // whenever that happens the open server keeps Node's event loop alive, so
+  // exiting explicitly guarantees this script terminates instead of relying
+  // on every failure path to clean up perfectly.
+  process.exit(1);
 });

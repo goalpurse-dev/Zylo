@@ -6,11 +6,12 @@ import { getNoindexWorkspaceRoutes, getPublicWorkspaceRoutes } from "../src/data
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relative) => readFileSync(path.join(root, relative), "utf8");
-// prerenderSeo.js only writes this when every route actually rendered. If a
-// build environment can't run headless Chromium (the Vercel build-image
-// hang that blocked deploys), prerenderSeo.js now degrades gracefully
-// instead of failing the build — so this script must degrade too, or it
-// would just become the new thing hard-blocking every deploy.
+// prerenderSeo.js only writes this when every route actually rendered.
+// prerenderSeo.js now exits non-zero on failure, so in the normal `npm run
+// build` chain (prerenderSeo.js && validateSeoIndexing.js) this script won't
+// even be reached if prerendering failed — but it's asserted again here too,
+// so a standalone `npm run seo:check` (or any future decoupling of that
+// chain) can't silently pass without the prerendered snapshots it depends on.
 const prerenderSucceeded = existsSync(path.join(root, "dist", ".seo-prerender-complete"));
 const sitemap = read("public/sitemap.xml");
 const redirects = JSON.parse(read("vercel.json")).redirects || [];
@@ -104,11 +105,11 @@ if (prerenderSucceeded) {
 const app = read("src/App.jsx");
 assert(!/path=["']\/workspace\/productphoto/i.test(app), "retired Product Photo route remains in App.jsx");
 
-if (prerenderSucceeded) {
-  console.log(`SEO indexing validation passed: ${sitemapUrls.length} public sitemap URL(s), ${getNoindexWorkspaceRoutes().length} prerendered noindex route(s).`);
-} else {
-  console.warn(
-    `[validateSeoIndexing] SEO prerender snapshots are missing this build — skipped per-page meta-tag checks ` +
-    `(sitemap/redirect/route-policy checks still ran). Verify prerenderSeo.js succeeds in this environment.`
-  );
-}
+assert(
+  prerenderSucceeded,
+  "SEO prerender snapshots are missing (dist/.seo-prerender-complete not found) — this build would ship every " +
+  "public route as the bare SPA shell with no server-rendered title/canonical/H1/content. Fix prerenderSeo.js's " +
+  "environment (most likely: Playwright's Chromium browser isn't installed) rather than shipping without it.",
+);
+
+console.log(`SEO indexing validation passed: ${sitemapUrls.length} public sitemap URL(s), ${getNoindexWorkspaceRoutes().length} prerendered noindex route(s).`);

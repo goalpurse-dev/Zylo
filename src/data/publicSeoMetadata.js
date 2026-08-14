@@ -71,6 +71,10 @@ export const PUBLIC_SEO_METADATA = {
     "How to Make Viral AI TikTok Videos",
     "Plan and create AI TikTok videos with better hooks, visual consistency, pacing, and repeatable content formats.",
   ),
+  "/blog/why-product-photos-matter-for-ecommerce-success": blog(
+    "Why Product Photos Matter for Ecommerce Success",
+    "Your product image is your ad's landing page. See why product photo quality drives buyer trust and conversion more than the ad that got the click.",
+  ),
   "/blog/how-visual-branding-separates-winners-from-losers": blog(
     "How Visual Branding Separates Winners From Losers",
     "Learn how visual consistency, product presentation, hierarchy, and brand recognition shape trust and ecommerce conversions.",
