@@ -1,6 +1,7 @@
 import { createServer } from "node:http";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync, readFileSync, statSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
@@ -16,7 +17,19 @@ const HOST = "127.0.0.1";
 // Chromium can't run degrades to "skip SEO prerender" instead of "block the
 // whole deploy". Vercel's build image is the concrete case this guards.
 const SUCCESS_MARKER = path.join(distDir, ".seo-prerender-complete");
-const OVERALL_TIMEOUT_MS = 5 * 60 * 1000;
+// Deliberately generous: batching now launches a fresh Chromium every
+// BATCH_SIZE routes (11 launches for 163 routes at the default batch size),
+// each of which costs real time on top of rendering itself. Reliability, not
+// speed, is the goal here, so this is sized to comfortably fit a slow,
+// conservative run rather than a fast one.
+const OVERALL_TIMEOUT_MS = Number(process.env.PRERENDER_TIMEOUT_MS) || 10 * 60 * 1000;
+// One browser renders at most this many routes before being fully closed and
+// relaunched fresh. Small and sequential on purpose — a single browser
+// rendering all 163 routes back-to-back accumulated enough memory/resource
+// pressure to crash Chromium partway through the run on Vercel. If this
+// value is still unstable there, lower it further via env var with no code
+// change needed.
+const BATCH_SIZE = Number(process.env.PRERENDER_BATCH_SIZE) || 15;
 
 function withTimeout(promise, ms, label) {
   let timer;
@@ -24,6 +37,23 @@ function withTimeout(promise, ms, label) {
     timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
   });
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
+function chunk(array, size) {
+  const out = [];
+  for (let i = 0; i < array.length; i += size) out.push(array.slice(i, i + size));
+  return out;
+}
+
+function logMemory(label) {
+  const mem = process.memoryUsage();
+  const freeMB = Math.round(os.freemem() / 1024 / 1024);
+  const totalMB = Math.round(os.totalmem() / 1024 / 1024);
+  console.log(
+    `[prerender] memory @ ${label}: node rss=${Math.round(mem.rss / 1024 / 1024)}MB ` +
+    `heapUsed=${Math.round(mem.heapUsed / 1024 / 1024)}MB ` +
+    `system free=${freeMB}MB/${totalMB}MB`
+  );
 }
 
 const MIME = {
@@ -127,6 +157,16 @@ async function writeSnapshot(pathname, html) {
   await Promise.all([writeFile(htmlFile, html), writeFile(indexFile, html)]);
 }
 
+// Resource types/URL patterns that are never needed to produce the rendered
+// SEO HTML (title/canonical/H1/body text) but can meaningfully add to memory
+// and open-connection pressure across a long prerender run: video/audio
+// elements, WebSocket connections (this is what neutralizes Supabase
+// realtime without touching any app code), and Vercel's own analytics/speed
+// insights beacons (same-origin, so they'd otherwise sail through the
+// existing cross-origin block below).
+const BLOCKED_RESOURCE_TYPES = new Set(["media", "websocket"]);
+const BLOCKED_URL_PATTERNS = [/^\/_vercel\/(insights|speed-insights)\//, /\.(mp4|webm|mov|m4v)(\?|$)/i];
+
 async function renderPath(browser, origin, pathname, seoVisibility, { verbose = false } = {}) {
   const context = await browser.newContext({
     viewport: { width: 1365, height: 900 },
@@ -134,16 +174,34 @@ async function renderPath(browser, origin, pathname, seoVisibility, { verbose = 
   });
   await context.addCookies([{ name: "zyvo_cookie_consent", value: "declined", url: origin }]);
   const page = await context.newPage();
+
+  // Lets application code opt into skipping prerender-irrelevant work
+  // (analytics init, auth/session polling, expensive animations, ...) by
+  // checking `window.__ZYVO_PRERENDER__` — set before any app JS runs.
+  // Nothing currently reads it; it's here so that opt-in can be added
+  // page-by-page later without touching this script again.
+  await page.addInitScript(() => { window.__ZYVO_PRERENDER__ = true; });
+
   await page.route("**/*", (route) => {
-    const url = new URL(route.request().url());
-    if (url.origin === origin || ["data:", "blob:"].includes(url.protocol)) route.continue();
-    else route.abort();
+    const request = route.request();
+    const url = new URL(request.url());
+    if (!(url.origin === origin || ["data:", "blob:"].includes(url.protocol))) return route.abort();
+    if (BLOCKED_RESOURCE_TYPES.has(request.resourceType())) return route.abort();
+    if (BLOCKED_URL_PATTERNS.some((pattern) => pattern.test(url.pathname))) return route.abort();
+    route.continue();
   });
 
+  // page 'crash' is Playwright's dedicated signal for "this specific page's
+  // renderer process died" (e.g. OOM), distinct from the whole browser
+  // disconnecting — attached unconditionally since it's the clearest
+  // available signal for isolating a single bad route (see item 7/8: was it
+  // one route, or the whole browser).
+  page.on("crash", () => console.error(`[prerenderSeo] page CRASHED while rendering ${pathname}`));
+
   if (verbose) {
-    // pageerror is the critical signal for this class of bug: a JS asset
-    // served as HTML surfaces here as "Uncaught SyntaxError: Unexpected
-    // token '<'" the moment the browser tries to parse/execute it.
+    // pageerror is the critical signal for the earlier asset-routing class of
+    // bug: a JS asset served as HTML surfaces here as "Uncaught SyntaxError:
+    // Unexpected token '<'" the moment the browser tries to parse/execute it.
     page.on("pageerror", (err) => console.log(`[page:${pathname}] pageerror: ${err.message}`));
     page.on("requestfailed", (req) => console.log(`[page:${pathname}] requestfailed: ${req.url()} — ${req.failure()?.errorText}`));
     page.on("console", (msg) => {
@@ -209,7 +267,13 @@ async function renderPath(browser, origin, pathname, seoVisibility, { verbose = 
     await writeSnapshot(pathname, html);
     return result;
   } finally {
-    await context.close();
+    // Explicit page.close() before context.close() per item 3 — context.close()
+    // alone closes its pages too, but this makes teardown of both listeners
+    // and the page's own resources unambiguous rather than implicit, and
+    // neither call is allowed to mask whatever error/return value came out of
+    // the try block above.
+    await page.close().catch(() => {});
+    await context.close().catch(() => {});
   }
 }
 
@@ -237,6 +301,62 @@ async function resolveLaunchOptions() {
   return { headless: true, args: baseArgs };
 }
 
+// Renders one batch of routes with a single, freshly-launched browser and
+// exactly one page/context alive at a time (no worker pool — item 2:
+// reliability over the ~20 seconds parallelism used to save). The browser is
+// fully closed at the end of the batch regardless of outcome, so a long
+// prerender run never keeps one Chromium process alive across all 163
+// routes — that accumulation is what crashed it on Vercel.
+async function renderBatch(batchJobs, origin, verbose, progress) {
+  const launchOptions = await resolveLaunchOptions();
+  // --no-sandbox etc. are required for Chromium to launch inside CI/build
+  // containers (Vercel's build image included) — without them the launch
+  // can hang indefinitely instead of failing fast, which is what burned a
+  // full 45-minute Vercel build budget and blocked the whole deploy. The
+  // timeout wrapper is the backstop in case launch hangs for some other
+  // reason in a given environment.
+  const browser = await withTimeout(chromium.launch(launchOptions), 60_000, "chromium.launch()");
+
+  // Playwright fires 'disconnected' on ANY browser shutdown, including our
+  // own deliberate browser.close() at the end of a successful batch —
+  // `shuttingDown` distinguishes "we closed it on purpose" from "it died on
+  // us mid-batch", so a normal run doesn't print a false crash alarm.
+  let shuttingDown = false;
+  let browserDisconnected = null;
+  let currentPathname = null;
+  browser.on("disconnected", () => {
+    if (shuttingDown) return;
+    browserDisconnected = new Error(
+      `Chromium disconnected/crashed while rendering ${currentPathname ?? "(between routes)"} ` +
+      `— ${progress.completed}/${progress.total} route(s) completed before this`
+    );
+    console.error(`[prerenderSeo] ${browserDisconnected.message}`);
+  });
+
+  const failures = [];
+  try {
+    for (const { pathname, seoVisibility } of batchJobs) {
+      if (browserDisconnected) break;
+      currentPathname = pathname;
+      progress.completed += 1;
+      console.log(`[prerender] ${progress.completed}/${progress.total} ${pathname}`);
+      try {
+        await renderPath(browser, origin, pathname, seoVisibility, { verbose });
+      } catch (error) {
+        if (browserDisconnected) break; // fallout from the disconnect, not a real per-route bug
+        failures.push(`${pathname}: ${error.message}`);
+      }
+      if (progress.completed % 10 === 0) logMemory(`${progress.completed}/${progress.total}`);
+    }
+  } finally {
+    shuttingDown = true;
+    await browser.close().catch(() => {});
+  }
+
+  if (browserDisconnected) throw browserDisconnected;
+  return failures;
+}
+
 async function main() {
   if (!existsSync(SPA_FALLBACK)) throw new Error("dist/index.html is missing; run this script after vite build");
   // Verbose static-server + page-event logging is automatic on Vercel (where
@@ -249,63 +369,31 @@ async function main() {
   const server = await startStaticServer({ verbose });
   const address = server.address();
   const origin = `http://${HOST}:${address.port}`;
-  // --no-sandbox etc. are required for Chromium to launch inside CI/build
-  // containers (Vercel's build image included) — without them the launch
-  // can hang indefinitely instead of failing fast, which is what burned a
-  // full 45-minute Vercel build budget and blocked the whole deploy. The
-  // timeout wrapper is the backstop in case launch hangs for some other
-  // reason in a given environment.
-  const launchOptions = await resolveLaunchOptions();
-  const browser = await withTimeout(
-    chromium.launch(launchOptions),
-    60_000,
-    "chromium.launch()",
-  );
-
-  // If the browser process itself dies mid-run (crash, OOM, killed), every
-  // in-flight and queued renderPath() call would previously fail one at a
-  // time with "Target page, context or browser has been closed" — 163
-  // near-identical, uninformative failures that bury the real cause. Track
-  // disconnection explicitly so the queue stops immediately and the error
-  // that's actually useful (why the browser died) is what surfaces.
-  //
-  // Playwright fires 'disconnected' on ANY browser shutdown, including our
-  // own deliberate browser.close() once every route is done — `shuttingDown`
-  // distinguishes "we closed it on purpose after finishing" from "it died on
-  // us mid-run", so a normal successful run doesn't print a false crash alarm.
-  let shuttingDown = false;
-  let browserDisconnected = null;
-  browser.on("disconnected", () => {
-    if (shuttingDown) return;
-    browserDisconnected = new Error("Chromium disconnected/crashed mid-prerender (browser.on('disconnected') fired unexpectedly)");
-    console.error(`[prerenderSeo] ${browserDisconnected.message}`);
-  });
 
   try {
+    const batches = chunk(jobs, BATCH_SIZE);
+    const progress = { completed: 0, total: jobs.length };
     const failures = [];
-    let completed = 0;
-    const queue = [...jobs];
-    const workers = Array.from({ length: Math.min(4, queue.length) }, async () => {
-      while (queue.length && !browserDisconnected) {
-        const { pathname, seoVisibility } = queue.shift();
-        try {
-          await renderPath(browser, origin, pathname, seoVisibility, { verbose });
-          completed += 1;
-          console.log(`  prerendered ${pathname} (${seoVisibility})`);
-        } catch (error) {
-          if (browserDisconnected) break; // this failure is just fallout from the disconnect, not a real per-route bug
-          failures.push(`${pathname}: ${error.message}`);
-        }
-      }
-    });
-    await Promise.all(workers);
-    if (browserDisconnected) throw browserDisconnected;
+
+    console.log(`[prerender] ${jobs.length} route(s) in ${batches.length} batch(es) of up to ${BATCH_SIZE}, one page at a time`);
+    logMemory("start");
+
+    for (const [batchIndex, batchJobs] of batches.entries()) {
+      console.log(`[prerender] batch ${batchIndex + 1}/${batches.length} — launching Chromium (${batchJobs.length} route(s))`);
+      // A browser crash stops the whole run rather than silently moving on to
+      // the next batch and hoping it doesn't happen again (item 9: stay
+      // fail-fast) — renderBatch throws its attributed disconnect error
+      // straight through here instead of swallowing it.
+      const batchFailures = await renderBatch(batchJobs, origin, verbose, progress);
+      failures.push(...batchFailures);
+      console.log(`[prerender] batch ${batchIndex + 1}/${batches.length} complete — Chromium closed`);
+    }
+
     if (failures.length) throw new Error(`Prerender failed for ${failures.length} route(s):\n${failures.join("\n")}`);
-    console.log(`Prerendered ${completed} crawler-visible public/noindex route(s).`);
+    console.log(`Prerendered ${progress.completed} crawler-visible public/noindex route(s).`);
+    logMemory("end");
     await writeFile(SUCCESS_MARKER, new Date().toISOString());
   } finally {
-    shuttingDown = true;
-    if (!browserDisconnected) await browser.close().catch(() => {});
     await new Promise((resolve) => server.close(resolve));
   }
 }
