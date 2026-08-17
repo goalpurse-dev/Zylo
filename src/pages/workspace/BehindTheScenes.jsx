@@ -17,6 +17,7 @@ const DEFAULT_FORM_VALUES = {
   disaster: "wave",
   vantage: "tank-edge",
   qualityId: "bts-v2",
+  episodeId: null,
 };
 
 function getCachedPlan(userId) {

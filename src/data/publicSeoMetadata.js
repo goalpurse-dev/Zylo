@@ -274,6 +274,68 @@ export const PUBLIC_SEO_METADATA = {
     type: "website",
     image: `${SITE_URL}/template/nationality-swap/preview.png`,
   },
+  "/behind-the-scenes-video-maker": {
+    title: "Behind the Scenes AI Video Maker – Miniature Disaster Movie Set Videos | Zyvo",
+    description: "Generate AI movie-set footage of a giant practical disaster hitting a handcrafted miniature city, with a full-size effects crew for scale. Image plus 8-second video with sound.",
+    type: "website",
+    image: `${SITE_URL}/behind-the-scenes/poster.webp`,
+  },
+  "/blog/behind-the-scenes-trend-explained": {
+    ...blog(
+      "What Is the \"Behind the Scenes\" AI Video Trend?",
+      "Why the miniature movie-set disaster format works, what you actually get from one generation, and how to make your first episode.",
+    ),
+    image: `${SITE_URL}/blog-assets/behind-the-scenes-trend-explained-hero.png`,
+  },
+  "/blog/behind-the-scenes-how-its-made": {
+    ...blog(
+      "Why AI \"Movie Set\" Miniature Disaster Videos Look So Real",
+      "The five locked ingredients — materials, blue wall, crew scale, visible rigging, amateur framing — that sell the illusion every time.",
+    ),
+    image: `${SITE_URL}/blog-assets/behind-the-scenes-how-its-made-hero.png`,
+  },
+  "/blog/behind-the-scenes-video-ideas": {
+    ...blog(
+      "30 Behind the Scenes AI Video Ideas You Can Generate Right Now",
+      "18 curated place-and-disaster combos across every module, ready to copy into the generator.",
+    ),
+    image: `${SITE_URL}/blog-assets/behind-the-scenes-video-ideas-hero.png`,
+  },
+  "/blog/behind-the-scenes-camera-vantage": {
+    ...blog(
+      "Tank Edge, Gantry, or Crane Follow? Choosing the Right Camera Angle",
+      "What each of the three camera vantages does to a Behind the Scenes shot, and when to use each one.",
+    ),
+    image: `${SITE_URL}/blog-assets/behind-the-scenes-camera-vantage-hero.png`,
+  },
+  "/blog/behind-the-scenes-series": {
+    ...blog(
+      "How to Turn One Behind the Scenes Video Into a Series",
+      "Four pillars of a consistent season, and a simple way to start your first one.",
+    ),
+    image: `${SITE_URL}/blog-assets/behind-the-scenes-series-hero.png`,
+  },
+  "/blog/whats-hot-right-now-ai-trends": {
+    ...blog(
+      "What's Hot Right Now: 8 AI Video Trends Creators Are Riding in 2026",
+      "What each current AI video format is, why it's working, and where to generate your first one.",
+    ),
+    image: `${SITE_URL}/blog-assets/whats-hot-right-now-ai-trends-hero.png`,
+  },
+  "/blog/how-to-spot-viral-ai-trend": {
+    ...blog(
+      "How to Spot the Next Viral AI Trend Before It Blows Up",
+      "Five signals that show up before a format explodes, and what to do once you've spotted one.",
+    ),
+    image: `${SITE_URL}/blog-assets/how-to-spot-viral-ai-trend-hero.png`,
+  },
+  "/blog/imperfect-ai-videos-winning": {
+    ...blog(
+      "Why \"Imperfect\" AI Videos Are Beating Polished Content Right Now",
+      "The authenticity trick behind the biggest AI video formats of 2026, and how to apply it to your own content.",
+    ),
+    image: `${SITE_URL}/blog-assets/imperfect-ai-videos-winning-hero.png`,
+  },
 };
 
 export function getPublicSeoMetadata(pathname) {

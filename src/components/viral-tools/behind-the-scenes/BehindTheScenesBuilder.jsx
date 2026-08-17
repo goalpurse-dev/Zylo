@@ -61,12 +61,18 @@ export default function BehindTheScenesBuilder({
 
   const updateValue = (key, value) => {
     if (historyMode) return;
-    onValuesChange?.({ ...values, [key]: value });
+    const next = { ...values, [key]: value };
+    // Manually editing place or disaster means the user is customizing
+    // beyond a selected bespoke episode preset — fall back to the generic
+    // disaster+place assembly instead of silently keeping the old preset's
+    // hand-written scene.
+    if ((key === "place" || key === "disaster") && values?.episodeId) next.episodeId = null;
+    onValuesChange?.(next);
   };
 
   const applyIdea = (idea) => {
     if (historyMode) return;
-    onValuesChange?.({ ...values, place: idea.place, disaster: idea.disaster, vantage: idea.vantage });
+    onValuesChange?.({ ...values, place: idea.place, disaster: idea.disaster, vantage: idea.vantage, episodeId: idea.id });
     setValidationError("");
   };
 
@@ -101,7 +107,7 @@ export default function BehindTheScenesBuilder({
     }
     setValidationError("");
     emitCreditSpend(totalCredits, "Behind the Scenes");
-    onGenerate({ place: cleanPlace, disaster, vantage, qualityId });
+    onGenerate({ place: cleanPlace, disaster, vantage, qualityId, episodeId: values?.episodeId ?? null });
   };
 
   return (

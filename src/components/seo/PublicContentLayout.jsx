@@ -12,6 +12,7 @@ const TEMPLATE_PREFIXES = [
   { prefixes: ["/clay-rescue-maker", "/blog/clay-rescue", "/blog/why-giant-hand-rescue"], id: "clay-rescue" },
   { prefixes: ["/cartoon-drive-by-video-maker", "/blog/cartoon-drive-by"], id: "cartoon-drive-by" },
   { prefixes: ["/footballer-nationality-swap-ai", "/blog/footballer-nationality-swap"], id: "footballer-nationality-swap" },
+  { prefixes: ["/behind-the-scenes-video-maker", "/blog/behind-the-scenes"], id: "behind-the-scenes" },
   { prefixes: ["/2am-", "/blog/what-is-the-2am", "/blog/best-2am", "/blog/how-to-create-2am", "/blog/ai-world", "/blog/how-to-make-ai-nostalgia"], id: "two-am" },
 ];
 

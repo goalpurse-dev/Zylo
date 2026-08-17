@@ -23,10 +23,10 @@ const related = [
     slug: "/blog/ai-content-hooks-captions-that-go-viral",
   },
   {
-    title: "Why Your Posts Don't Go Viral (And How AI Images Fix That)",
-    description: "Learn why your posts don't go viral and how to fix it with AI",
-    date: "10.02.2026",
-    slug: "/blog/why-your-posts-dont-go-viral",
+    title: "What's Hot Right Now: 8 AI Video Trends Creators Are Riding in 2026",
+    description: "What each current AI video format is, why it's working, and where to generate one",
+    date: "16.08.2026",
+    slug: "/blog/whats-hot-right-now-ai-trends",
   },
 ];
 

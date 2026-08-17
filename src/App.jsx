@@ -173,6 +173,15 @@ import PublicGallery from "./components/public-gallery/gallery";
 const AIFruitStoryLanding = lazy(() => import("./pages/landing/AIFruitStoryLanding.jsx"));
 const CartoonDriveByLanding = lazy(() => import("./pages/landing/CartoonDriveByLanding.jsx"));
 const FootballerNationalitySwapLanding = lazy(() => import("./pages/landing/FootballerNationalitySwapLanding.jsx"));
+const BehindTheScenesLanding = lazy(() => import("./pages/landing/BehindTheScenesLanding.jsx"));
+const BehindTheScenesTrendExplained = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-trend-explained.jsx"));
+const BehindTheScenesHowItsMade = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-how-its-made.jsx"));
+const BehindTheScenesVideoIdeas = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-video-ideas.jsx"));
+const BehindTheScenesCameraVantage = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-camera-vantage.jsx"));
+const BehindTheScenesSeries = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-series.jsx"));
+const WhatsHotRightNowAiTrends = lazy(() => import("./app/blog/imagegenerator/whats-hot-right-now-ai-trends.jsx"));
+const HowToSpotViralAiTrend = lazy(() => import("./app/blog/imagegenerator/how-to-spot-viral-ai-trend.jsx"));
+const ImperfectAiVideosWinning = lazy(() => import("./app/blog/imagegenerator/imperfect-ai-videos-winning.jsx"));
 const FaceAsmrLanding = lazy(() => import("./pages/landing/FaceAsmrLanding.jsx"));
 const MicroCameraAnimalLanding = lazy(() => import("./pages/landing/MicroCameraAnimalLanding.jsx"));
 const ClayRescueLanding = lazy(() => import("./pages/landing/ClayRescueLanding.jsx"));
@@ -498,6 +507,15 @@ return (
          <Route path="/ai-fruit-story-maker" element={<AIFruitStoryLanding />} />
          <Route path="/cartoon-drive-by-video-maker" element={<CartoonDriveByLanding />} />
          <Route path="/footballer-nationality-swap-ai" element={<FootballerNationalitySwapLanding />} />
+         <Route path="/behind-the-scenes-video-maker" element={<BehindTheScenesLanding />} />
+        <Route path="/blog/behind-the-scenes-trend-explained" element={<BehindTheScenesTrendExplained/>} />
+        <Route path="/blog/behind-the-scenes-how-its-made" element={<BehindTheScenesHowItsMade/>} />
+        <Route path="/blog/behind-the-scenes-video-ideas" element={<BehindTheScenesVideoIdeas/>} />
+        <Route path="/blog/behind-the-scenes-camera-vantage" element={<BehindTheScenesCameraVantage/>} />
+        <Route path="/blog/behind-the-scenes-series" element={<BehindTheScenesSeries/>} />
+        <Route path="/blog/whats-hot-right-now-ai-trends" element={<WhatsHotRightNowAiTrends/>} />
+        <Route path="/blog/how-to-spot-viral-ai-trend" element={<HowToSpotViralAiTrend/>} />
+        <Route path="/blog/imperfect-ai-videos-winning" element={<ImperfectAiVideosWinning/>} />
          <Route path="/face-asmr-maker" element={<FaceAsmrLanding />} />
          <Route path="/micro-camera-animal-maker" element={<MicroCameraAnimalLanding />} />
          <Route path="/clay-rescue-maker" element={<ClayRescueLanding />} />

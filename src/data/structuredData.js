@@ -86,5 +86,26 @@ export function structuredDataFor(pathname, metadata, canonical) {
     });
   }
 
+  if (pathname === "/behind-the-scenes-video-maker") {
+    page = {
+      "@type": "SoftwareApplication",
+      name: "Zyvo Behind the Scenes",
+      description: metadata.description,
+      url: canonical,
+      applicationCategory: "MultimediaApplication",
+      operatingSystem: "Web",
+    };
+    graph[0] = page;
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["What is Behind the Scenes?", "It's a format that recreates the look of amateur phone footage shot on a real blockbuster movie set — a handcrafted miniature city, a full-size effects crew, and a giant practical disaster hitting the model. Every image and video is AI-generated."],
+        ["Is this real footage from an actual movie set?", "No. Behind the Scenes generates original, fan-made AI content styled to look like practical-effects filmmaking. It is not real footage, not affiliated with any studio or production, and not a depiction of an actual film shoot."],
+        ["How many disaster types can I choose from?", "30 — 8 elemental disasters (wave, eruption, explosion, tornado, flood, meteor, firestorm, blizzard) plus 12 extended modules covering giant creatures, aircraft chases, vehicle chases, structural collapse, and more."],
+        ["What do I actually get from one generation?", "A photorealistic movie-set still image, then an 8-second animated video built from it — always with sound: crew chatter, rig and machine noise, and the disaster's impact."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
   return { "@context": "https://schema.org", "@graph": graph };
 }

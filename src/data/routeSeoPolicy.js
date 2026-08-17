@@ -21,7 +21,7 @@ export const WORKSPACE_ROUTE_SEO_POLICIES = [
   { path: "/workspace/footballer-nationality-swap", seoVisibility: "noindex", routeType: "paid-template", title: "Zyvo Footballer Nationality Swap" },
   { path: "/workspace/two-am", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/2am-worlds-ai-generator", title: "Zyvo 2AM Worlds" },
   { path: "/workspace/cartoon-drive-by", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/cartoon-drive-by-video-maker", title: "Zyvo Cartoon Drive-By" },
-  { path: "/workspace/behind-the-scenes", seoVisibility: "noindex", routeType: "paid-template", title: "Zyvo Behind the Scenes" },
+  { path: "/workspace/behind-the-scenes", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/behind-the-scenes-video-maker", title: "Zyvo Behind the Scenes" },
   { path: "/workspace/publishv", seoVisibility: "noindex", routeType: "private-app", publicLanding: "/publish", title: "Zyvo Publish" },
   { path: "/workspace/stats", seoVisibility: "noindex", routeType: "private-app", publicLanding: "/stats", title: "Zyvo Stats" },
   { path: "/workspace/connections", seoVisibility: "noindex", routeType: "private-app", publicLanding: "/connections", title: "Zyvo Connections" },

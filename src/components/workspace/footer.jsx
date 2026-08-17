@@ -62,6 +62,9 @@ export default function Footer() {
               <Link to="/micro-camera-animal-maker" className="text-[12px] hover:underline">
                 Micro Camera Animal
               </Link>
+              <Link to="/behind-the-scenes-video-maker" className="text-[12px] hover:underline">
+                Behind the Scenes
+              </Link>
             </div>
 
             {/* Pricing + Help */}
@@ -160,6 +163,9 @@ export default function Footer() {
               </Link>
               <Link to="/micro-camera-animal-maker" className="hover:underline">
                 Micro Camera Animal
+              </Link>
+              <Link to="/behind-the-scenes-video-maker" className="hover:underline">
+                Behind the Scenes
               </Link>
             </div>
 

@@ -20,6 +20,7 @@ const REQUIRED_PUBLIC_PAGES = [
   "/ai-fruit-story-maker",
   "/cartoon-drive-by-video-maker",
   "/footballer-nationality-swap-ai",
+  "/behind-the-scenes-video-maker",
   "/face-asmr-maker",
   "/micro-camera-animal-maker",
   "/clay-rescue-maker",
