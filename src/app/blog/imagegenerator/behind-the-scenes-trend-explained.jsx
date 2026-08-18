@@ -11,16 +11,28 @@ const related = [
     slug: "/blog/behind-the-scenes-how-its-made",
   },
   {
-    title: "30 Behind the Scenes AI Video Ideas You Can Generate Right Now",
+    title: "18 Behind the Scenes AI Video Ideas You Can Generate Right Now",
     description: "Curated place-and-disaster combos across every module, ready to copy into the generator.",
     date: "16.08.2026",
     slug: "/blog/behind-the-scenes-video-ideas",
+  },
+  {
+    title: "8 Behind the Scenes Disaster Types Explained",
+    description: "What each disaster module feels like, and which places suit it best.",
+    date: "16.08.2026",
+    slug: "/blog/behind-the-scenes-disaster-types",
+  },
+  {
+    title: "Behind the Scenes vs Clay Rescue: Which Miniature AI Video Format Should You Try?",
+    description: "Same scale-contrast trick, opposite emotional arc — how to pick.",
+    date: "16.08.2026",
+    slug: "/blog/behind-the-scenes-vs-clay-rescue",
   },
 ];
 
 const STEPS = [
   { icon: Sparkles, title: "Pick a place", text: "Describe the miniature city or town — anything from a neon harbor to a mountain village." },
-  { icon: Clapperboard, title: "Pick a disaster", text: "Choose from 30 practical-effects modules, from giant waves to giant robots." },
+  { icon: Clapperboard, title: "Pick a disaster", text: "Choose from 20 practical-effects modules, from giant waves to giant robots." },
   { icon: Camera, title: "Zyvo builds the shot", text: "A movie-set image generates first, then animates into an 8-second video with full sound." },
 ];
 
@@ -76,7 +88,7 @@ export default function BehindTheScenesTrendExplained() {
           <section>
             <h2 className="text-[26px] font-black text-white mb-4 tracking-[-0.01em]">What You Actually Get</h2>
             <p className="text-[16px] leading-relaxed">
-              Each generation produces a photorealistic movie-set still first, then animates it into an 8-second video — always with sound, since crew chatter and practical set noise are core to the concept. Pick a place, pick one of 30 disaster modules, pick a camera vantage, and Zyvo assembles the rest.
+              Each generation produces a photorealistic movie-set still first, then animates it into an 8-second video — always with sound, since crew chatter and practical set noise are core to the concept. Pick a place, pick one of 20 disaster modules, pick a camera vantage, and Zyvo assembles the rest.
             </p>
           </section>
 
@@ -114,7 +126,7 @@ export default function BehindTheScenesTrendExplained() {
             <p className="text-[16px] leading-relaxed mb-6">
               Pick a place, pick a disaster, and let Zyvo build and animate the shot. Or browse{" "}
               <Link to="/blog/behind-the-scenes-video-ideas" className="text-lime-200 hover:underline font-semibold">
-                30 ready-to-use episode ideas
+                18 ready-to-use episode ideas
               </Link>{" "}
               first.
             </p>

@@ -21,6 +21,12 @@ const related = [
     date: "11.08.2026",
     slug: "/blog/ai-fruit-story-mistakes",
   },
+  {
+    title: "8 AI Fruit Story Fan Theories That Are Probably True",
+    description: "Playful lore theories connecting the recurring cast into one shared universe.",
+    date: "17.08.2026",
+    slug: "/blog/ai-fruit-story-fan-theories",
+  },
 ];
 
 const PILLARS = [

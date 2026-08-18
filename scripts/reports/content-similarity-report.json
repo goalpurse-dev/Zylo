@@ -1,0 +1,154 @@
+{
+  "generatedAt": "2026-08-18T16:19:25.909Z",
+  "articlesAudited": 156,
+  "thinContent": [
+    {
+      "url": "/blog/product-photos-with-ai-for-shopify",
+      "wordCount": 187
+    },
+    {
+      "url": "/blog/shopify-product-photo-best-practices",
+      "wordCount": 228
+    },
+    {
+      "url": "/blog/category/tutorials",
+      "wordCount": 223
+    }
+  ],
+  "duplicateTitles": [],
+  "duplicateDescriptions": [],
+  "highConfidenceDuplicates": [
+    {
+      "a": "/blog/AI-product-photos-increase-conversion-rates",
+      "b": "/blog/ai-vs-traditional-product-photography",
+      "shingleScore": 0.5630397236614854,
+      "unigramScore": 0.9249146757679181
+    }
+  ],
+  "lowerConfidenceReviewCandidates": [
+    {
+      "a": "/blog/how-to-create-2am-pokemon-ai-images",
+      "b": "/blog/how-to-create-2am-ninjago-ai-images",
+      "shingleScore": 0.29683698296836986,
+      "unigramScore": 0.6298342541436464
+    },
+    {
+      "a": "/blog/how-to-create-luxury-ai-images",
+      "b": "/blog/ai-product-photography-high-end",
+      "shingleScore": 0.24078624078624078,
+      "unigramScore": 0.5555555555555556
+    },
+    {
+      "a": "/blog/why-3d-ai-images-perform-better",
+      "b": "/blog/which-ai-image-style-works-best",
+      "shingleScore": 0.17555555555555555,
+      "unigramScore": 0.5157894736842106
+    },
+    {
+      "a": "/blog/ai-world-generator-prompts",
+      "b": "/blog/ai-worlds-at-2am-ideas",
+      "shingleScore": 0.11058122205663189,
+      "unigramScore": 0.500823723228995
+    },
+    {
+      "a": "/blog/AI-product-photos-increase-conversion-rates",
+      "b": "/blog/best-ai-tools-for-ecommerce",
+      "shingleScore": 0.18777292576419213,
+      "unigramScore": 0.48424068767908307
+    },
+    {
+      "a": "/blog/which-ai-image-style-works-best",
+      "b": "/blog/ai-visual-styles-most-engagement",
+      "shingleScore": 0.08240534521158129,
+      "unigramScore": 0.4708994708994709
+    },
+    {
+      "a": "/blog/best-ai-tools-for-ecommerce",
+      "b": "/blog/ai-vs-traditional-product-photography",
+      "shingleScore": 0.16005665722379603,
+      "unigramScore": 0.4596100278551532
+    },
+    {
+      "a": "/blog/ai-image-generator-for-dark-visuals",
+      "b": "/blog/ai-visual-styles-most-engagement",
+      "shingleScore": 0.2133676092544987,
+      "unigramScore": 0.45604395604395603
+    },
+    {
+      "a": "/blog/converting-product-images-for-shopify-stores",
+      "b": "/blog/product-images-that-convert-full-guide",
+      "shingleScore": 0.14666666666666667,
+      "unigramScore": 0.45394736842105265
+    },
+    {
+      "a": "/blog/why-3d-ai-images-perform-better",
+      "b": "/blog/ai-visual-styles-most-engagement",
+      "shingleScore": 0.07236842105263158,
+      "unigramScore": 0.44680851063829785
+    },
+    {
+      "a": "/blog/top-ai-image-styles-that-go-viral-on-social-media",
+      "b": "/blog/ai-visual-styles-most-engagement",
+      "shingleScore": 0.06320541760722348,
+      "unigramScore": 0.44559585492227977
+    },
+    {
+      "a": "/blog/how-to-create-luxury-ai-images",
+      "b": "/blog/ai-image-generator-for-dark-visuals",
+      "shingleScore": 0.21359223300970873,
+      "unigramScore": 0.44385026737967914
+    },
+    {
+      "a": "/blog/how-to-create-movie-style-visuals",
+      "b": "/blog/why-3d-ai-images-perform-better",
+      "shingleScore": 0.16079295154185022,
+      "unigramScore": 0.4365482233502538
+    },
+    {
+      "a": "/blog/top-ai-image-styles-that-go-viral-on-social-media",
+      "b": "/blog/which-ai-image-style-works-best",
+      "shingleScore": 0.08723404255319149,
+      "unigramScore": 0.4320388349514563
+    },
+    {
+      "a": "/blog/how-to-create-luxury-ai-images",
+      "b": "/blog/ai-visual-styles-most-engagement",
+      "shingleScore": 0.21227621483375958,
+      "unigramScore": 0.42780748663101603
+    },
+    {
+      "a": "/blog/top-ai-image-styles-that-go-viral-on-social-media",
+      "b": "/blog/why-3d-ai-images-perform-better",
+      "shingleScore": 0.07531380753138076,
+      "unigramScore": 0.4236453201970443
+    },
+    {
+      "a": "/blog/how-to-create-movie-style-visuals",
+      "b": "/blog/ai-image-generator-for-dark-visuals",
+      "shingleScore": 0.0759493670886076,
+      "unigramScore": 0.422680412371134
+    },
+    {
+      "a": "/blog/2am-gta-ai-images",
+      "b": "/blog/2am-fortnite-ai-images",
+      "shingleScore": 0.1553784860557769,
+      "unigramScore": 0.41586538461538464
+    },
+    {
+      "a": "/blog/2am-one-piece-ai-images",
+      "b": "/blog/2am-fortnite-ai-images",
+      "shingleScore": 0.13837095191364082,
+      "unigramScore": 0.41509433962264153
+    },
+    {
+      "a": "/blog/2am-minecraft-ai-images",
+      "b": "/blog/2am-gta-ai-images",
+      "shingleScore": 0.13233923578751164,
+      "unigramScore": 0.41217798594847777
+    }
+  ],
+  "mergeCandidates": [
+    "/blog/AI-product-photos-increase-conversion-rates",
+    "/blog/ai-vs-traditional-product-photography"
+  ]
+}

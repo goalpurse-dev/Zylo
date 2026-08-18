@@ -14,7 +14,9 @@
     "sitemap:generate": "node scripts/generateSitemap.js",
     "seo:check": "node scripts/validateSeoIndexing.js",
     "seo:audit": "node scripts/auditSeoUrls.js",
-    "seo:audit:live": "node scripts/auditSeoUrls.js --live"
+    "seo:audit:live": "node scripts/auditSeoUrls.js --live",
+    "seo:watchlist": "node scripts/auditSeoUrls.js --watchlist",
+    "seo:similarity": "node scripts/auditContentSimilarity.js"
   },
   "dependencies": {
     "@fal-ai/client": "^1.10.0",

@@ -16,7 +16,10 @@ export function structuredDataFor(pathname, metadata, canonical) {
       { "@type": "ListItem", position: pathname.startsWith("/blog/") ? 3 : 2, name: metadata.title.replace(/ \| Zyvo$/, ""), item: canonical },
     ],
   };
-  let page = pathname.startsWith("/blog/")
+  const isCollectionPage = pathname === "/blog" || pathname.startsWith("/blog/category/");
+  let page = isCollectionPage
+    ? { "@type": pathname === "/blog" ? "Blog" : "CollectionPage", name: metadata.title.replace(/ \| Zyvo$/, ""), description: metadata.description, url: canonical }
+    : pathname.startsWith("/blog/")
     ? { "@type": "BlogPosting", headline: metadata.title.replace(/ \| Zyvo$/, ""), description: metadata.description, mainEntityOfPage: canonical, publisher: { "@type": "Organization", name: "Zyvo", url: SITE_URL } }
     : { "@type": "WebPage", name: metadata.title, description: metadata.description, url: canonical };
   const graph = [page, breadcrumb];
@@ -101,8 +104,54 @@ export function structuredDataFor(pathname, metadata, canonical) {
       mainEntity: [
         ["What is Behind the Scenes?", "It's a format that recreates the look of amateur phone footage shot on a real blockbuster movie set — a handcrafted miniature city, a full-size effects crew, and a giant practical disaster hitting the model. Every image and video is AI-generated."],
         ["Is this real footage from an actual movie set?", "No. Behind the Scenes generates original, fan-made AI content styled to look like practical-effects filmmaking. It is not real footage, not affiliated with any studio or production, and not a depiction of an actual film shoot."],
-        ["How many disaster types can I choose from?", "30 — 8 elemental disasters (wave, eruption, explosion, tornado, flood, meteor, firestorm, blizzard) plus 12 extended modules covering giant creatures, aircraft chases, vehicle chases, structural collapse, and more."],
+        ["How many disaster types can I choose from?", "20 — 8 elemental disasters (wave, eruption, explosion, tornado, flood, meteor, firestorm, blizzard) plus 12 extended modules covering giant creatures, aircraft chases, vehicle chases, structural collapse, and more."],
         ["What do I actually get from one generation?", "A photorealistic movie-set still image, then an 8-second animated video built from it — always with sound: crew chatter, rig and machine noise, and the disaster's impact."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
+  if (pathname === "/image-generator") {
+    page = {
+      "@type": "SoftwareApplication",
+      name: "Zyvo AI Image Generator",
+      description: metadata.description,
+      url: canonical,
+      applicationCategory: "MultimediaApplication",
+      operatingSystem: "Web",
+    };
+    graph[0] = page;
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["What styles can I generate?", "Cinematic, 3D, anime, realistic, and product-focused styles, all from a single text prompt."],
+        ["Can I use this for product photos?", "Yes. The generator includes AI background removal and clean-background product presets built for ecommerce and Shopify listings."],
+        ["Is it free to start?", "Yes, Zyvo's image generator has a free entry point, with paid tiers for higher volume and resolution."],
+        ["What sizes and platforms is this built for?", "Output works for TikTok, Instagram Reels, and YouTube thumbnails and covers, as well as square and landscape formats for product listings and ads."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
+  if (pathname === "/blog/what-is-ai-fruit-story") {
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["What is an AI Fruit Story?", "An AI Fruit Story is a short-form fictional drama video made with AI, where stylized 3D cartoon fruit characters act out a conflict, reveal, or plot twist across multiple scenes — built entirely from a text prompt."],
+        ["Why is this format going viral right now?", "It combines the visual novelty of fruit characters delivering soap-opera drama with a low barrier to entry and recognizable story structures viewers already understand from short-form drama content."],
+        ["How is an AI Fruit Story actually made?", "You describe a premise or pick a preset, and the generator builds characters, scenes, dialogue, and mouth-synced animation from that single input — no manual rigging, scripting, or editing timeline required."],
+        ["Do the fruit characters actually talk?", "Yes. Generated scenes can include AI-written English dialogue with mouth-synced character animation."],
+        ["Is AI Fruit Story free to try?", "Zyvo's AI Fruit Story maker has a free entry point with paid tiers for longer videos and more scenes."],
+        ["What platforms is this content made for?", "The vertical, short-form format is built for TikTok, Instagram Reels, and YouTube Shorts."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
+  if (pathname === "/blog/ai-fruit-story-examples") {
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["Can I recreate these exact examples?", "Yes. Every example is a real built-in preset in Zyvo's AI Fruit Story maker — select the matching preset and generate your own version with your own characters."],
+        ["Do I need to write dialogue myself?", "No. Each preset ships with its own opening exchange, which the generator expands into a full multi-scene story automatically."],
+        ["Which preset should I start with?", "The cheating-reveal preset is the most widely used starting point because its stakes are understood in one line, making it the easiest to test the format with."],
       ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
     });
   }

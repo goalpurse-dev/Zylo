@@ -7,7 +7,7 @@ export const WORKSPACE_ROUTE_SEO_POLICIES = [
   { path: "/workspace/home", seoVisibility: "noindex", routeType: "private-app", title: "Zyvo Workspace" },
   { path: "/workspace/creations", seoVisibility: "noindex", routeType: "private-app", title: "Zyvo Creations" },
   { path: "/workspace/creations/viral-videos", seoVisibility: "noindex", routeType: "private-app", title: "Zyvo Viral Video Creations" },
-  { path: "/workspace/image-generator", seoVisibility: "noindex", routeType: "credit-application", title: "Zyvo AI Image Generator" },
+  { path: "/workspace/image-generator", seoVisibility: "noindex", routeType: "credit-application", publicLanding: "/image-generator", title: "Zyvo AI Image Generator" },
   { path: "/workspace/video-generator", seoVisibility: "noindex", routeType: "credit-application", title: "Zyvo AI Video Generator" },
   { path: "/workspace/viral-script", seoVisibility: "noindex", routeType: "credit-application", title: "Zyvo Viral Script Generator" },
   { path: "/workspace/viral-score", seoVisibility: "noindex", routeType: "credit-application", title: "Zyvo Viral Score" },

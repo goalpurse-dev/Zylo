@@ -16,6 +16,18 @@ const related = [
     date: "16.08.2026",
     slug: "/blog/behind-the-scenes-series",
   },
+  {
+    title: "8 Behind the Scenes Disaster Types Explained",
+    description: "What each disaster module feels like, and which places suit it best.",
+    date: "16.08.2026",
+    slug: "/blog/behind-the-scenes-disaster-types",
+  },
+  {
+    title: "12 Extended Behind the Scenes Modules: Kaiju, Robots, and Full Movie-Shoot Chaos",
+    description: "Beyond the elemental 8 — giant creatures, aircraft chases, giant robots, and more.",
+    date: "16.08.2026",
+    slug: "/blog/behind-the-scenes-extended-modules",
+  },
 ];
 
 const IDEAS = [
@@ -69,7 +81,7 @@ export default function BehindTheScenesVideoIdeas() {
             Episode Ideas
           </span>
           <h1 className="text-[38px] sm:text-[46px] font-black leading-[1.05] tracking-[-0.02em] mb-6">
-            30 Behind the Scenes AI Video Ideas You Can Generate Right Now
+            18 Behind the Scenes AI Video Ideas You Can Generate Right Now
           </h1>
           <p className="text-[18px] text-white/58 leading-relaxed">
             18 curated place-and-disaster combos to start with — pulled straight from the same episode-idea pool built into the generator. Pick one, or mix your own place with any disaster module.
@@ -98,7 +110,7 @@ export default function BehindTheScenesVideoIdeas() {
         <section className="mt-16 max-w-3xl">
           <h2 className="text-[26px] font-black text-white mb-4 tracking-[-0.01em]">Beyond These 18</h2>
           <p className="text-[16px] leading-relaxed text-white/68 mb-4">
-            These pair 12 of the 30 disaster modules with a place — but every module works with any place description. Swap the setting, keep the disaster, and you have a new episode instantly. The generator's own "Trending episode ideas" and "Surprise Me" shortcuts do exactly this automatically if you'd rather not pick manually.
+            These pair 12 of the 20 disaster modules with a place — but every module works with any place description. Swap the setting, keep the disaster, and you have a new episode instantly. The generator's own "Trending episode ideas" and "Surprise Me" shortcuts do exactly this automatically if you'd rather not pick manually.
           </p>
           <p className="text-[16px] leading-relaxed text-white/68">
             For a repeatable format, see{" "}

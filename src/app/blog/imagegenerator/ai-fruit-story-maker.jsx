@@ -5,22 +5,34 @@ import RelatedArticles from "../RelatedArticles";
 
 const related = [
   {
-    title: "How to Make Viral AI TikTok Videos in 2026 (Step-by-Step)",
-    description: "The complete step-by-step guide to making viral AI TikTok videos. Scripting, AI video generation, posting strategy.",
-    date: "26.04.2026",
-    slug: "/blog/how-to-make-viral-ai-tiktok-videos",
+    title: "What Is AI Fruit Story? The Complete Guide to TikTok's Viral Cartoon Drama Trend",
+    description: "What it is, how it's made, why it's going viral, and how to make your own.",
+    date: "18.08.2026",
+    slug: "/blog/what-is-ai-fruit-story",
   },
   {
-    title: "Best AI Tools for Faceless TikTok Videos (2026)",
-    description: "The exact tools creators use to run faceless TikTok channels doing millions of views with zero on-camera presence.",
-    date: "26.04.2026",
-    slug: "/blog/best-ai-tools-faceless-tiktok-videos",
+    title: "6 Real AI Fruit Story Examples You Can Recreate in Minutes",
+    description: "Real preset screenshots from the generator, with the exact opening lines used in each.",
+    date: "18.08.2026",
+    slug: "/blog/ai-fruit-story-examples",
   },
   {
-    title: "What Viral AI Fruit Drama Videos Actually Look Like",
-    description: "Inside the format getting 4.7 million views per week — and the AI tool that builds the full video from one sentence.",
-    date: "14.05.2026",
-    slug: "/blog/viral-ai-fruit-drama-videos",
+    title: "The Most Unhinged AI Fruit Story Plots We've Ever Generated",
+    description: "Ten genuinely deranged fruit-drama premises, ranked by chaos level, free to steal.",
+    date: "17.08.2026",
+    slug: "/blog/ai-fruit-story-unhinged-plots",
+  },
+  {
+    title: "Which AI Fruit Story Character Are You? Take the Quiz",
+    description: "Five questions, one very specific fruit personality waiting on the other side.",
+    date: "17.08.2026",
+    slug: "/blog/ai-fruit-story-quiz",
+  },
+  {
+    title: "8 AI Fruit Story Fan Theories That Are Probably True",
+    description: "Playful lore theories connecting the recurring cast into one shared universe.",
+    date: "17.08.2026",
+    slug: "/blog/ai-fruit-story-fan-theories",
   },
 ];
 

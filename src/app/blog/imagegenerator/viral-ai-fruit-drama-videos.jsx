@@ -22,6 +22,12 @@ const related = [
     date: "26.04.2026",
     slug: "/blog/best-ai-tools-faceless-tiktok-videos",
   },
+  {
+    title: "What Is AI Fruit Story? The Complete Guide to TikTok's Viral Cartoon Drama Trend",
+    description: "What it is, how it's made, why it's going viral, and how to make your own.",
+    date: "18.08.2026",
+    slug: "/blog/what-is-ai-fruit-story",
+  },
 ];
 
 export default function ViralAIFruitDramaVideos() {

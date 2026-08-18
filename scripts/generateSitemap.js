@@ -27,6 +27,15 @@ const REQUIRED_PUBLIC_PAGES = [
   "/publish",
   "/stats",
   "/connections",
+  "/image-generator",
+  "/blog/category/ai-video",
+  "/blog/category/ai-images",
+  "/blog/category/viral-ideas",
+  "/blog/category/2am-worlds",
+  "/blog/category/fruit-stories",
+  "/blog/category/product-photos",
+  "/blog/category/tutorials",
+  "/blog/category/growth-analytics",
 ];
 
 function todayIso() {

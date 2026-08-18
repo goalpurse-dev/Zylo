@@ -55,7 +55,7 @@ export default function AIProductPhotosForDropshippingStores() {
       document.head.appendChild(canonical);
     }
     canonical.href =
-      "https://www.tryzyvo.com/blog/ai-product-photos-for-dropshipping-stores";
+      "https://www.tryzyvo.com/blog/ai-productphotos-for-dropshipping";
   }, []);
 
   return (

@@ -21,6 +21,12 @@ const related = [
     date: "10.08.2026",
     slug: "/blog/ai-fruit-story-couples",
   },
+  {
+    title: "If AI Fruit Story Characters Had a Group Chat",
+    description: "What the cast's messages would look like between episodes. Completely unofficial.",
+    date: "17.08.2026",
+    slug: "/blog/ai-fruit-story-group-chat",
+  },
 ];
 
 export default function AIFruitStoryDuetsStitches() {

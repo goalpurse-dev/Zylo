@@ -22,6 +22,12 @@ const related = [
     date: "27.05.2026",
     slug: "/blog/viral-animal-bodycam-videos",
   },
+  {
+    title: "Which AI Fruit Story Character Are You? Take the Quiz",
+    description: "Five questions, one very specific fruit personality waiting on the other side.",
+    date: "17.08.2026",
+    slug: "/blog/ai-fruit-story-quiz",
+  },
 ];
 
 const COMBOS = [

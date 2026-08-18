@@ -29,6 +29,18 @@ const related = [
     date: "10.08.2026",
     slug: "/blog/ai-fruit-story-plot-twists",
   },
+  {
+    title: "The Most Unhinged AI Fruit Story Plots We've Ever Generated",
+    description: "Ten genuinely deranged fruit-drama premises, ranked by chaos level, free to steal.",
+    date: "17.08.2026",
+    slug: "/blog/ai-fruit-story-unhinged-plots",
+  },
+  {
+    title: "6 Real AI Fruit Story Examples You Can Recreate in Minutes",
+    description: "Real preset screenshots from the generator, with the exact opening lines used in each.",
+    date: "18.08.2026",
+    slug: "/blog/ai-fruit-story-examples",
+  },
 ];
 
 const IDEAS = [

@@ -16,6 +16,18 @@ const related = [
     date: "16.08.2026",
     slug: "/blog/behind-the-scenes-camera-vantage",
   },
+  {
+    title: "10 Mistakes Killing Your Behind the Scenes Video Views",
+    description: "The ten most common structural mistakes, with a fix for each.",
+    date: "16.08.2026",
+    slug: "/blog/behind-the-scenes-mistakes",
+  },
+  {
+    title: "12 Extended Behind the Scenes Modules: Kaiju, Robots, and Full Movie-Shoot Chaos",
+    description: "Beyond the elemental 8 — giant creatures, aircraft chases, giant robots, and more.",
+    date: "16.08.2026",
+    slug: "/blog/behind-the-scenes-extended-modules",
+  },
 ];
 
 const INGREDIENTS = [

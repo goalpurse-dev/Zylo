@@ -21,11 +21,6 @@
                           "permanent":  true
                       },
                       {
-                          "source":  "/image-generator",
-                          "destination":  "/workspace/image-generator",
-                          "permanent":  true
-                      },
-                      {
                           "source":  "/blog/ai-fruit-story-maker",
                           "destination":  "/ai-fruit-story-maker",
                           "permanent":  true

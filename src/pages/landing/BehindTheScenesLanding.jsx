@@ -11,7 +11,7 @@ const STEPS = [
   {
     icon: Clapperboard,
     title: "Pick a disaster",
-    text: "Choose from 30 practical-effects modules — giant waves, eruptions, tornadoes, kaiju, giant robots, aircraft chases, structural collapse, and more.",
+    text: "Choose from 20 practical-effects modules — giant waves, eruptions, tornadoes, kaiju, giant robots, aircraft chases, structural collapse, and more.",
   },
   {
     icon: Camera,
@@ -42,7 +42,7 @@ const VANTAGES = [
 ];
 
 const FEATURES = [
-  "30 practical-effects disaster modules",
+  "20 practical-effects disaster modules",
   "3 camera vantages per shot",
   "Full sound design — crew, rigs, impact",
   "Up to 4K image, 1080p video",
@@ -61,7 +61,7 @@ const FAQS = [
   },
   {
     q: "How many disaster types can I choose from?",
-    a: "30 — 8 elemental disasters (wave, eruption, explosion, tornado, flood, meteor, firestorm, blizzard) plus 12 extended modules covering giant creatures, aircraft chases, vehicle chases, structural collapse, and more.",
+    a: "20 — 8 elemental disasters (wave, eruption, explosion, tornado, flood, meteor, firestorm, blizzard) plus 12 extended modules covering giant creatures, aircraft chases, vehicle chases, structural collapse, and more.",
   },
   {
     q: "What do I actually get from one generation?",
@@ -164,7 +164,7 @@ export default function BehindTheScenesLanding() {
 
         <section className="mx-auto max-w-[1100px] px-4 py-16 sm:px-6 md:py-24">
           <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-lime-200">30 disaster modules</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-lime-200">20 disaster modules</p>
             <h2 className="mt-3 text-3xl font-black tracking-[-0.035em] sm:text-4xl">Pick your chaos</h2>
             <p className="mt-4 text-white/48">Every module is a fully rigged practical effect — never CGI in the concept, always sold through visible crew, cables, and set gear.</p>
           </div>
@@ -218,9 +218,13 @@ export default function BehindTheScenesLanding() {
             {[
               ["What Is the \"Behind the Scenes\" Trend?", "Why the format works and how to make your first episode.", "/blog/behind-the-scenes-trend-explained"],
               ["Why It Looks So Real", "The five locked ingredients that sell the illusion.", "/blog/behind-the-scenes-how-its-made"],
-              ["30 Video Ideas", "Curated place-and-disaster combos, ready to copy.", "/blog/behind-the-scenes-video-ideas"],
+              ["18 Video Ideas", "Curated place-and-disaster combos, ready to copy.", "/blog/behind-the-scenes-video-ideas"],
               ["Choosing a Camera Angle", "Tank Edge, Gantry, or Crane Follow — when to use each.", "/blog/behind-the-scenes-camera-vantage"],
               ["Build a Series", "Four pillars of a consistent season.", "/blog/behind-the-scenes-series"],
+              ["8 Disaster Types Explained", "What each module feels like, and which places suit it best.", "/blog/behind-the-scenes-disaster-types"],
+              ["10 Mistakes to Avoid", "The ten most common structural mistakes, with a fix for each.", "/blog/behind-the-scenes-mistakes"],
+              ["12 Extended Modules", "Kaiju, robots, and full movie-shoot chaos.", "/blog/behind-the-scenes-extended-modules"],
+              ["Behind the Scenes vs Clay Rescue", "Same scale-contrast trick, opposite emotional arc.", "/blog/behind-the-scenes-vs-clay-rescue"],
             ].map(([title, text, href]) => (
               <Link key={href} to={href} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 transition hover:border-lime-300/30">
                 <h3 className="text-base font-bold text-white">{title}</h3>

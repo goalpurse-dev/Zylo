@@ -21,6 +21,12 @@ const related = [
     date: "15.05.2026",
     slug: "/blog/best-ai-fruit-story-ideas",
   },
+  {
+    title: "The Most Iconic AI Fruit Story Lines Ever Written (Ranked)",
+    description: "Eight lines the format lives and dies on, and why each one works.",
+    date: "17.08.2026",
+    slug: "/blog/ai-fruit-story-best-lines",
+  },
 ];
 
 const TECHNIQUES = [

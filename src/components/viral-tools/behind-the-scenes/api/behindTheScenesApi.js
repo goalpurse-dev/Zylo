@@ -1166,8 +1166,8 @@ export function buildImagePrompt({ place, disaster = DEFAULT_DISASTER, vantage =
 // Normalizes generic (disaster-module) and bespoke (fully hand-written
 // episode) content into one shape so buildVideoPrompt only has to
 // assemble the template once. Bespoke episodes fold their action start
-// into `actionChain` already (it opens with the "Action!" trigger), so
-// `actionStartLine`/`exclusionsLine` are empty for them — the generic
+// into `actionChain` already (it opens with a "Action!" trigger clause),
+// so `actionStart`/`exclusionsLine` are empty for them — the generic
 // path supplies both.
 function resolveVideoContent({ disaster, episodeId }) {
   const bespoke = episodeId ? BESPOKE_EPISODES[episodeId] : null;
@@ -1175,7 +1175,7 @@ function resolveVideoContent({ disaster, episodeId }) {
     return {
       fxLine: "",
       primarySubject: bespoke.primarySubject,
-      actionStartLine: "",
+      actionStart: "",
       actionChain: bespoke.actionChain,
       videoHero: bespoke.videoHero,
       aftermath: bespoke.aftermath,
@@ -1189,7 +1189,7 @@ function resolveVideoContent({ disaster, episodeId }) {
   return {
     fxLine: fx.fx,
     primarySubject: fx.primarySubject,
-    actionStartLine: ` Within a fraction of a second, ${fx.actionStart}.`,
+    actionStart: fx.actionStart,
     actionChain: fx.actionChain,
     videoHero: fx.videoHero,
     aftermath: fx.aftermath,
@@ -1201,51 +1201,89 @@ function resolveVideoContent({ disaster, episodeId }) {
 }
 
 // Single-take structure: everything happens in ONE unbroken phone
-// recording, frame 0 locked to the hero image, "Action!" fires almost
-// immediately (no establishing pause), and one continuous causal chain
-// of events escalates to a hero payoff around 5.5-7s before an aftermath
-// that stays visually active through the last frame. The five stages
-// below (start/chain/hero/aftermath) are internal reasoning only — they
-// get compiled into flowing prose, never exposed to the model as
-// separate labeled shots, so nothing reads as a cut between scenes.
+// recording, frame 0 locked to the hero image, one continuous causal
+// chain of events escalates to a hero payoff around 5.5-7s before an
+// aftermath that stays visually active through the last frame. Order
+// matters here — the "Action!" audio cue sits at the very top, its own
+// isolated block, ahead of even the camera/frame-zero locks, because
+// burying it mid-prompt after several unrelated instructions measurably
+// hurts compliance. It's also DELIBERATELY separated in time from the FX
+// trigger (word finishes ~0.25s, rig fires ~0.25-0.5s) instead of both
+// firing simultaneously — asking a video model for speech and a visual
+// effect at the exact same instant tends to make it drop the speech in
+// favor of the visually dominant event. And the audio-details block later
+// explicitly distinguishes this line from "no narration" so the two
+// instructions can't be read as contradicting each other.
 export function buildVideoPrompt({ place, disaster = DEFAULT_DISASTER, vantage = DEFAULT_VANTAGE, withSound = false, episodeId }) {
   const subject = String(place ?? "").trim();
   const cam = vantageModule(vantage);
   const content = resolveVideoContent({ disaster, episodeId });
   const movement = cam.movement.replaceAll("{{subject}}", content.primarySubject);
-  // The "Action!" call is the single least reliable line in this whole
-  // prompt — video-audio models are far better at ambient/machine/impact
-  // sound than at rendering one specific spoken word on cue. Two things
-  // measurably raise the odds: stating it as a strict non-optional
-  // requirement (not a soft description), and placing the audio cue
-  // directly beside the matching visual beat instead of burying it at
-  // the very end of the prompt, after several paragraphs of unrelated
-  // instructions have diluted it.
-  const actionAudio = withSound
-    ? ` This exact moment MUST include an audible male director's voice off-camera clearly shouting the single word "Action!" — this spoken cue is REQUIRED and non-negotiable, not optional background noise. It is immediately followed by ${content.soundMachine}, building straight into ${content.soundImpact} at the hero payoff.`
-    : "";
-  const audioDirection = withSound
+
+  const actionCueLock = withSound
     ? [
-        "AUDIO IS PRESENT FROM FRAME ONE, never silence.",
+        `CRITICAL OPENING CUE — HIGHEST PRIORITY: this is ONE continuous uncut behind-the-scenes phone recording. The FIRST clearly audible event of the video MUST be an off-camera director, physically present inside the soundstage, loudly shouting exactly one word: "Action!" This is live diegetic production audio captured by the same phone microphone recording the shoot — NOT narration and NOT voice-over.`,
+        `The director says "Action!" once, clearly and naturally, at approximately 0.00-0.25 seconds. Only AFTER the word finishes does the practical FX rig fire, at approximately 0.25-0.50 seconds — mandatory synchronization: the director's voice causes the trigger, which causes the physical action. "Action!" then the FX fires then continuous physical action follows.`,
+        `Do NOT omit "Action!". Do NOT delay it until later in the clip. Do NOT begin the main effect before "Action!" is heard. Do NOT replace it with other dialogue. Do NOT add a countdown or "3, 2, 1". Do NOT add a slate or clapperboard. Do NOT show on-screen text reading "Action!" — the word is spoken off-camera and heard only through the phone microphone.`,
+      ].join(" ")
+    : null;
+
+  const cameraLock = `SINGLE-TAKE / CAMERA LOCK: this is ONE continuous uncut behind-the-scenes phone recording lasting the entire ${VIDEO_DURATION} seconds — it never cuts and never switches viewpoint. No second angle, no reverse angle, no insert, no cutaway, no montage, no transition, no zoom, no orbit, no cinematic dolly move, no artificial crane move. ${movement}`;
+
+  const frameZero = `REFERENCE IMAGE = FRAME ZERO: treat the supplied hero image as the literal first frame of this recording — the rebuild of "${subject}". Preserve the exact miniature${content.fxLine ? `, ${content.fxLine}` : ""}, architecture, crew positions, equipment, lighting, blue chroma wall, tracking crosses, foreground objects, camera height, lens perspective and spatial relationships. Do not reinterpret the camera angle or relocate the camera.`;
+
+  const sceneContinuity = withSound
+    ? `SCENE CONTINUITY: immediately after "Action!" and the FX rig firing, one continuous physical chain reaction unfolds naturally in the same frame — nothing resets, nothing cuts, and each event physically causes the next.`
+    : `SCENE CONTINUITY: there is no establishing pause — the practical rig engages within the first fraction of a second, and one continuous physical chain reaction unfolds naturally in the same frame. Nothing resets, nothing cuts, and each event physically causes the next.`;
+
+  const actionChainBlock = `ACTION CHAIN (roughly 0.5-5.5 seconds): ${content.actionStart ? `${content.actionStart}, then ` : ""}${content.actionChain}.`;
+
+  const heroPayoff = `HERO PAYOFF (around 5.5-7.0 seconds): the event reaches its single biggest moment — ${content.videoHero}. The effect rises dramatically above the tiny miniature while the enormous soundstage stays visible, reinforcing that this is a practical model being filmed by full-size crew. Crew visibly react physically at this moment — for example ${content.cameraReaction}. Do not introduce new people beyond the established crew.`;
+
+  const aftermath = `AFTERMATH (roughly 7.0-8.0 seconds): the main impact has passed but the same physical event stays active — ${content.aftermath}. Nothing resets and the camera does not change angle.`;
+
+  const environment = `ENVIRONMENT / STYLE: the miniature stays predominantly in the lower third of frame. The gigantic blue chroma wall and cavernous soundstage remain visible above it, and full-size crew remain visible beside the miniature as the scale reference.${content.exclusionsLine} Composition and equipment stay consistent throughout: ${cam.framing}.`;
+
+  // Crew dialogue is generated dynamically by the model from THIS episode's
+  // own actionChain/videoHero content above, not from a fixed per-disaster
+  // line — a giant-wave impact and an eerie slow eruption shouldn't sound
+  // the same. Deliberately doesn't classify intensity in our own data;
+  // the instruction below asks the model to infer it from what it was
+  // just told happens, which scales to all disaster/bespoke content
+  // without needing per-episode tagging.
+  const adaptiveReactions = withSound
+    ? [
+        `ADAPTIVE LIVE CREW REACTIONS: crew dialogue and vocal intensity MUST be generated specifically from this episode's actual events described above — never apply the same reaction pattern to every video. Infer the natural reaction profile from what happens here: is it sudden or gradual, expected or unexpectedly huge, tense, spectacular, chaotic, eerie, funny or controlled — and at what exact physical moment would real crew instinctively react, whether that means shouting, laughing, warning each other, going quiet, or simply watching.`,
+        `After "Action!", all further crew dialogue is episode-dependent — choose the intensity entirely from the episode, never randomly. LOW for quiet, tense or atmospheric moments: little or no dialogue, letting machinery, wind, water or creature movement dominate, at most one quiet "whoa..." or distant murmur. MEDIUM for impressive but controlled effects: one or two short spontaneous reactions at meaningful moments, like "Whoa!", "Here it comes!", "Look at that!", or natural laughter. HIGH for sudden impacts, near misses, major collapses or creature attacks: several crew reacting instinctively with overlapping short phrases like "Whoa!", "Oh!", "Back up!", "Keep rolling!". EXTREME only for exceptionally huge moments: brief chaotic overlapping yelling, shocked laughter, warnings and excitement peaking exactly with the hero payoff, then naturally decaying.`,
+        `Dialogue must describe or respond to what is actually happening, never generic filler: something approaching gets "Here it comes" or "Hold it...", something suddenly enormous gets "Whoa!" or "Look at that!", something passing dangerously close gets "Back up!" or "Watch out!", a shot that must keep going gets "Keep rolling!" or "Stay on it!", an unexpected success gets "Yes!" or laughter. An eerie, slow or mesmerizing episode may instead leave crew almost completely silent.`,
+        `Timing must follow physics — crew see or hear the event, then react, never before. For example: "Action!" → the effect releases → crew see it building → a reaction → the effect hits → a bigger reaction → the biggest moment → a final exclamation. Never have crew react before the effect happens.`,
+        `These reactions are live diegetic production audio captured incidentally by the same phone microphone — not narration, voice-over, exposition or scripted dialogue. Keep them messy and human: overlapping voices, interrupted words, laughter, gasps, shouting from farther away, and dialogue partially masked by machinery are all natural, and some episodes should have almost no dialogue after "Action!" at all. Never force every phrase into every video, never make crew take orderly conversational turns, never reuse identical dialogue across episodes, never make everyone shout continuously, and never let reactions compete with or overpower the main practical effect.`,
+      ].join(" ")
+    : null;
+
+  const audioDetails = withSound
+    ? [
+        `AUDIO DETAILS: immediately following the "Action!" cue described above, ${content.soundMachine}, building straight into ${content.soundImpact} at the hero payoff.`,
         "Crew reactions, machinery and environmental sound stay naturally audible through the end, decaying gradually in the final 1.5 seconds — fading machinery, settling debris, crew chatter and radio calls, never total silence until the very last frame.",
-        "Diegetic production audio only: no additional dialogue or narration beyond the single \"Action!\" call, no music, score or soundtrack — exactly like a phone recording accidental audio.",
+        "No music and no voice-over narration. The off-camera director's live diegetic \"Action!\" production cue described above is NOT narration and MUST remain audible.",
       ].join(" ")
     : "NO AUDIO GENERATED. Create a completely silent video with no audio track.";
 
+  const negatives = "ABSOLUTELY AVOID: montage, multi-shot sequence, cinematic coverage, reverse angle, second camera, cutaway, insert shot, scene transition, time jump, camera teleportation, dramatic zoom, orbiting camera, architecture morphing, newly appearing characters, changing set layout, CGI-style transformation, text, captions, logos, UI or watermark.";
+
   return [
-    `SINGLE UNBROKEN TAKE. ONE PHONE CAMERA. ONE PHYSICAL SET. The entire ${VIDEO_DURATION}-second video is one continuous amateur behind-the-scenes phone recording of the exact set shown in the reference image — the rebuild of "${subject}".`,
-    `FRAME 0 MUST MATCH THE REFERENCE IMAGE. Treat the supplied hero image as the literal first frame of this recording. Preserve the exact miniature${content.fxLine ? `, ${content.fxLine}` : ""}, architecture, crew positions, equipment, lighting, blue chroma wall, tracking crosses, foreground objects, camera height, lens perspective and spatial relationships. Do not reinterpret the camera angle or relocate the camera.`,
-    "NO CUTS. NO EDITS. NO SECOND SHOT. NO SECOND ANGLE. NO CUTAWAY. NO INSERT. NO TIME JUMP. NO TRANSITION. NO TELEPORTING CAMERA. NO RESET. Everything happens continuously in front of this same phone camera.",
-    movement,
-    `ACTION BEGINS IMMEDIATELY — there is no establishing pause. At the very first moment of the clip, the practical rig is already engaging as the crew triggers it.${actionAudio}${content.actionStartLine}`,
-    `From roughly 0.3-5.5 seconds, one continuous physical chain reaction unfolds naturally in the same frame: ${content.actionChain}. Each event physically causes the next — there are no separate scenes or disconnected beats, and the practical effect keeps growing across the miniature while the camera stays at the same physical position.`,
-    `Around 5.5-7.0 seconds, the event reaches its single biggest payoff: ${content.videoHero}. The effect rises dramatically above the tiny miniature while the enormous soundstage stays visible, reinforcing that this is a practical model being filmed by full-size crew. The only human reaction: ${content.cameraReaction}. Do not introduce new people.`,
-    `From roughly 7.0-8.0 seconds, the main impact has passed but the same physical event stays active: ${content.aftermath}. Nothing resets and the camera does not change angle.`,
-    audioDirection,
-    `The miniature stays predominantly in the lower third of frame. The gigantic blue chroma wall and cavernous soundstage remain visible above it, and full-size crew remain visible beside the miniature as the scale reference.${content.exclusionsLine}`,
-    `Composition and equipment stay consistent throughout: ${cam.framing}.`,
-    "ABSOLUTELY AVOID: montage, multi-shot sequence, cinematic coverage, reverse angle, second camera, cutaway, insert shot, scene transition, time jump, camera teleportation, dramatic zoom, orbiting camera, architecture morphing, newly appearing characters, changing set layout, CGI-style transformation, text, captions, logos, UI or watermark.",
-  ].join("\n");
+    actionCueLock,
+    cameraLock,
+    frameZero,
+    sceneContinuity,
+    actionChainBlock,
+    heroPayoff,
+    aftermath,
+    environment,
+    adaptiveReactions,
+    audioDetails,
+    negatives,
+  ].filter(Boolean).join("\n");
 }
 
 export async function generateBehindTheScenesImage({ place, disaster, vantage, qualityId = DEFAULT_QUALITY_TIER, episodeId }) {

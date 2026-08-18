@@ -16,6 +16,18 @@ const related = [
     date: "16.08.2026",
     slug: "/blog/behind-the-scenes-series",
   },
+  {
+    title: "10 Mistakes Killing Your Behind the Scenes Video Views",
+    description: "The ten most common structural mistakes, with a fix for each.",
+    date: "16.08.2026",
+    slug: "/blog/behind-the-scenes-mistakes",
+  },
+  {
+    title: "Behind the Scenes vs Clay Rescue: Which Miniature AI Video Format Should You Try?",
+    description: "Same scale-contrast trick, opposite emotional arc — how to pick.",
+    date: "16.08.2026",
+    slug: "/blog/behind-the-scenes-vs-clay-rescue",
+  },
 ];
 
 const VANTAGES = [

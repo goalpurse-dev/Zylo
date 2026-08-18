@@ -6,9 +6,54 @@ const blog = (title, description) => ({ title: `${title} | Zyvo`, description, t
 // Keeping this list route-based prevents legacy page effects from carrying
 // metadata across React Router navigations.
 export const PUBLIC_SEO_METADATA = {
+  "/image-generator": {
+    title: "AI Image Generator – Cinematic, 3D, Anime & Product Images | Zyvo",
+    description: "Generate cinematic, 3D, anime, realistic, and product-ready images from a single prompt with Zyvo's AI image generator — free to start.",
+    type: "website",
+  },
   "/blog": {
-    title: "Zyvo Blog – AI Content Creation Guides",
-    description: "Practical guides for creating AI images, product photos, short-form videos, and social content with Zyvo.",
+    title: "Zyvo Blog – AI Creation Ideas, Tutorials & Viral Strategies",
+    description: "Explore Zyvo guides, AI content ideas, viral strategies, tutorials and creator growth resources.",
+    type: "website",
+  },
+  "/blog/category/ai-video": {
+    title: "AI Video Guides & Tutorials | Zyvo Blog",
+    description: "Guides on Zyvo's AI video tools — Behind the Scenes, Clay Rescue, Face ASMR, Cartoon Drive-By, Footballer Nationality Swap, and more.",
+    type: "website",
+  },
+  "/blog/category/ai-images": {
+    title: "AI Image Generation Guides | Zyvo Blog",
+    description: "Prompt techniques, style breakdowns, and trend guides for AI image generation with Zyvo.",
+    type: "website",
+  },
+  "/blog/category/viral-ideas": {
+    title: "Viral Content Ideas & Strategy | Zyvo Blog",
+    description: "Strategy, trend-spotting, and growth guides for going viral with AI content on TikTok, Reels, and Shorts.",
+    type: "website",
+  },
+  "/blog/category/2am-worlds": {
+    title: "2AM Worlds Guides & Prompts | Zyvo Blog",
+    description: "Everything on the 2AM Worlds AI trend — prompt formulas, world ideas, and platform-specific creator guides.",
+    type: "website",
+  },
+  "/blog/category/fruit-stories": {
+    title: "AI Fruit Story Guides & Ideas | Zyvo Blog",
+    description: "Prompt formulas, character ideas, plot twists, and entertaining guides for Zyvo's AI Fruit Story maker.",
+    type: "website",
+  },
+  "/blog/category/product-photos": {
+    title: "AI Product Photography Guides | Zyvo Blog",
+    description: "Guides on creating AI product photos for ecommerce, Shopify, dropshipping, and social media.",
+    type: "website",
+  },
+  "/blog/category/tutorials": {
+    title: "Zyvo Tutorials & How-To Guides | Zyvo Blog",
+    description: "Step-by-step tutorials for creating, generating, and publishing AI content with Zyvo.",
+    type: "website",
+  },
+  "/blog/category/growth-analytics": {
+    title: "Creator Growth & Analytics Guides | Zyvo Blog",
+    description: "Publishing, scheduling, and analytics guides to help creators grow consistently with Zyvo.",
     type: "website",
   },
   "/blog/ai-image-generator-for-content-creators": blog(
@@ -191,6 +236,69 @@ export const PUBLIC_SEO_METADATA = {
     ),
     image: `${SITE_URL}/blog-assets/ai-fruit-story-mistakes-hero.png`,
   },
+  "/blog/ai-fruit-story-unhinged-plots": {
+    ...blog(
+      "The Most Unhinged AI Fruit Story Plots We've Ever Generated",
+      "Ten genuinely deranged AI fruit-drama premises, ranked by chaos level, that you're fully welcome to steal word for word.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-unhinged-plots-hero.png`,
+  },
+  "/blog/ai-fruit-story-quiz": {
+    ...blog(
+      "Which AI Fruit Story Character Are You? Take the Quiz",
+      "A five-question quiz matching you to one of five recurring AI Fruit Story characters, with story ideas for your result.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-quiz-hero.png`,
+  },
+  "/blog/ai-fruit-story-drama-tier-list": {
+    ...blog(
+      "Every AI Fruit Story Drama Type, Ranked From Petty to Unhinged",
+      "A tier-list ranking of every AI fruit-drama plot type, from reliable comfort-food conflict to full meltdown.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-tier-list-hero.png`,
+  },
+  "/blog/ai-fruit-story-craziest-generation": {
+    ...blog(
+      "We Generated the Most Unhinged AI Fruit Story Possible — Here's What Happened",
+      "A scene-by-scene breakdown of one deliberately chaotic AI Fruit Story prompt, and why it still landed cleanly.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-craziest-generation-hero.png`,
+  },
+  "/blog/ai-fruit-story-fan-theories": {
+    ...blog(
+      "8 AI Fruit Story Fan Theories That Are Probably True",
+      "Playful lore theories connecting the recurring AI Fruit Story cast into one shared cinematic universe.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-fan-theories-hero.png`,
+  },
+  "/blog/ai-fruit-story-best-lines": {
+    ...blog(
+      "The Most Iconic AI Fruit Story Lines Ever Written (Ranked)",
+      "Eight of the format's most quotable lines, who said them, and the structural reason each one works.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-best-lines-hero.png`,
+  },
+  "/blog/ai-fruit-story-group-chat": {
+    ...blog(
+      "If AI Fruit Story Characters Had a Group Chat",
+      "A comedic look at what the cast's messages would look like between episodes, plus why the bit works as a bonus content format.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-group-chat-hero.png`,
+  },
+  "/blog/what-is-ai-fruit-story": {
+    ...blog(
+      "What Is AI Fruit Story? The Complete Guide to TikTok's Viral Cartoon Drama Trend",
+      "What AI Fruit Story is, how the generator actually builds a story from one prompt, why the format is going viral, and how to make your own — with a full FAQ.",
+    ),
+    image: `${SITE_URL}/blog-assets/what-is-ai-fruit-story-hero.png`,
+  },
+  "/blog/ai-fruit-story-examples": {
+    ...blog(
+      "6 Real AI Fruit Story Examples You Can Recreate in Minutes",
+      "Real preset screenshots from Zyvo's AI Fruit Story generator, with the exact opening dialogue used in each and what makes every preset work.",
+    ),
+    image: `${SITE_URL}/viral-builder/ai-fruit/presets/cheating.webp`,
+  },
   "/blog/best-time-to-post-ai-content": {
     ...blog(
       "Best Time to Post AI Content to Go Viral in 2026",
@@ -296,7 +404,7 @@ export const PUBLIC_SEO_METADATA = {
   },
   "/blog/behind-the-scenes-video-ideas": {
     ...blog(
-      "30 Behind the Scenes AI Video Ideas You Can Generate Right Now",
+      "18 Behind the Scenes AI Video Ideas You Can Generate Right Now",
       "18 curated place-and-disaster combos across every module, ready to copy into the generator.",
     ),
     image: `${SITE_URL}/blog-assets/behind-the-scenes-video-ideas-hero.png`,
@@ -335,6 +443,34 @@ export const PUBLIC_SEO_METADATA = {
       "The authenticity trick behind the biggest AI video formats of 2026, and how to apply it to your own content.",
     ),
     image: `${SITE_URL}/blog-assets/imperfect-ai-videos-winning-hero.png`,
+  },
+  "/blog/behind-the-scenes-disaster-types": {
+    ...blog(
+      "8 Behind the Scenes Disaster Types Explained",
+      "What each of the eight original disaster modules feels like, and which places suit each one best.",
+    ),
+    image: `${SITE_URL}/blog-assets/behind-the-scenes-disaster-types-hero.png`,
+  },
+  "/blog/behind-the-scenes-mistakes": {
+    ...blog(
+      "10 Mistakes Killing Your Behind the Scenes Video Views",
+      "The ten most common structural mistakes in Behind the Scenes episodes, with a specific fix for each one.",
+    ),
+    image: `${SITE_URL}/blog-assets/behind-the-scenes-mistakes-hero.png`,
+  },
+  "/blog/behind-the-scenes-extended-modules": {
+    ...blog(
+      "12 Extended Behind the Scenes Modules: Kaiju, Robots, and Full Movie-Shoot Chaos",
+      "Beyond the 8 elemental disasters — giant creatures, aircraft chases, giant robots, and more, explained.",
+    ),
+    image: `${SITE_URL}/blog-assets/behind-the-scenes-extended-modules-hero.png`,
+  },
+  "/blog/behind-the-scenes-vs-clay-rescue": {
+    ...blog(
+      "Behind the Scenes vs Clay Rescue: Which Miniature AI Video Format Should You Try?",
+      "Same scale-contrast trick, opposite emotional arc — how to decide which format fits your niche.",
+    ),
+    image: `${SITE_URL}/blog-assets/behind-the-scenes-vs-clay-rescue-hero.png`,
   },
 };
 

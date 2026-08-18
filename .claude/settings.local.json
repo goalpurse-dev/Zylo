@@ -48,7 +48,9 @@
       "Bash(rm -rf dist dist-ssr)",
       "Bash(rm -f _test_all_routes.mjs)",
       "Bash(echo \"build exit: $?\")",
-      "Bash(node scripts/auditSeoUrls.js)"
+      "Bash(node scripts/auditSeoUrls.js)",
+      "Bash(node _migrate_blog_registry.mjs)",
+      "Bash(node -e ' *)"
     ]
   }
 }

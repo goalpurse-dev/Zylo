@@ -30,10 +30,40 @@ const liveArg = args.find((arg) => arg.startsWith("--live"));
 const LIVE = Boolean(liveArg);
 const BASE_URL = liveArg?.includes("=") ? liveArg.split("=")[1] : "https://www.tryzyvo.com";
 const THIN_CONTENT_WORDS = 150;
+const WATCHLIST = args.includes("--watchlist");
+
+// The 28 URLs GSC reported as "Crawled - currently not indexed" in the August
+// 2026 audit (26 blog articles + /sitemap.xml + /image-generator). Used by
+// --watchlist to filter the report to just this set.
+const GSC_WATCHLIST = [
+  "/blog/ai-visual-styles-most-engagement", "/sitemap.xml", "/blog/visual-optimization-for-mobile-ecommerce",
+  "/blog/ai-product-photography-for-small-businesses", "/blog/ai-product-photos-for-fashion-stores",
+  "/blog/ai-background-removal-for-product-photos", "/blog/how-to-create-minimalist-images-using-ai",
+  "/blog/how-to-go-viral-with-ai", "/blog/product-photos-for-shopify-store", "/blog/best-ai-product-backgrounds-to-use",
+  "/blog/product-photography-trends-for-ecommerce", "/blog/viral-ai-images-tiktok", "/blog/why-ai-images-outperform-real-photos",
+  "/blog/how-ai-helps-ecommerce-brands-scale-faster", "/blog/how-to-generate-high-quality-images-with-ai",
+  "/blog/all-image-styles-everyone-obsessed-with", "/blog/how-to-launch-products-faster-with-ai",
+  "/blog/scroll-stopping-images-no-design-skills", "/blog/product-photography-mistakes-ecommerce-brands-make",
+  "/blog/how-better-images-reduce-bounce-rate", "/blog/how-to-scale-ecommerce-content-creation-with-ai",
+  "/blog/why-product-photos-matter-for-ecommerce-success", "/blog/the-secret-prompts-behind-viral-ai-images",
+  "/blog/why-3d-ai-images-perform-better", "/blog/all-ai-image-trends-you-need-to-jump-on",
+  "/blog/ai-product-photos-for-beaty-and-skincare", "/blog/ai-productphotos-for-dropshipping", "/image-generator",
+];
 
 function readSitemapPaths() {
   const xml = readFileSync(path.join(root, "public", "sitemap.xml"), "utf8");
   return [...xml.matchAll(/<loc>https:\/\/www\.tryzyvo\.com([^<]*)<\/loc>/g)].map((m) => m[1] || "/");
+}
+
+function readRobotsDisallowRules() {
+  const file = path.join(root, "public", "robots.txt");
+  if (!existsSync(file)) return [];
+  const text = readFileSync(file, "utf8");
+  return [...text.matchAll(/^Disallow:\s*(\S+)/gim)].map((m) => m[1]).filter((rule) => rule && rule !== "");
+}
+
+function isDisallowedByRobots(pathname, rules) {
+  return rules.some((rule) => pathname.startsWith(rule));
 }
 
 /* ───────────────────────── internal link graph ───────────────────────── */
@@ -174,8 +204,10 @@ async function main() {
     process.exit(1);
   }
 
-  const paths = readSitemapPaths();
+  let paths = readSitemapPaths();
+  if (WATCHLIST) paths = paths.filter((p) => GSC_WATCHLIST.includes(p));
   const linkGraph = buildLinkGraph();
+  const robotsRules = readRobotsDisallowRules();
   const rows = [];
   const titleOwners = new Map();
   const descriptionOwners = new Map();
@@ -185,6 +217,7 @@ async function main() {
     const signals = page.html ? extractSignals(page.html) : {};
     const canonicalSelf = signals.canonical === `https://www.tryzyvo.com${pathname}`;
     const inboundLinks = linkGraph.get(pathname) || 0;
+    const robotsDisallowed = isDisallowedByRobots(pathname, robotsRules);
 
     const row = {
       url: pathname,
@@ -198,9 +231,11 @@ async function main() {
       h1Count: signals.h1Count ?? 0,
       wordCount: signals.wordCount ?? 0,
       inboundLinks,
+      robotsDisallowed,
       failures: [],
     };
 
+    if (robotsDisallowed) row.failures.push("blocked by robots.txt Disallow rule");
     if (page.redirectTo) row.failures.push("REDIRECTED — not directly indexable at this URL");
     else if (page.status !== 200) row.failures.push(`HTTP ${page.status || "no response"}`);
     if (!row.canonicalSelf) row.failures.push(`canonical mismatch (got: ${signals.canonical || "none"})`);
@@ -227,7 +262,7 @@ async function main() {
   const passing = rows.filter((r) => r.failures.length === 0);
 
   console.log(`\n${"=".repeat(70)}`);
-  console.log(`SEO URL AUDIT — ${LIVE ? `live (${BASE_URL})` : "local dist/ build"}`);
+  console.log(`SEO URL AUDIT — ${LIVE ? `live (${BASE_URL})` : "local dist/ build"}${WATCHLIST ? " — GSC watchlist only" : ""}`);
   console.log(`${"=".repeat(70)}`);
   console.log(`${rows.length} URL(s) checked — ${passing.length} clean, ${failing.length} with findings.\n`);
 
@@ -265,6 +300,26 @@ async function main() {
   const hardFailures = rows.filter((r) =>
     r.failures.some((f) => f.startsWith("HTTP") || f.startsWith("REDIRECTED") || f.startsWith("canonical mismatch") || f.startsWith("missing <title>") || f.startsWith("missing H1"))
   );
+  // /sitemap.xml itself is not an HTML page and is deliberately not part of
+  // the sitemap's own <loc> list, so it never goes through the loop above.
+  // Per GSC, "Crawled - currently not indexed" for the sitemap file itself is
+  // expected/fine — sitemaps are for crawler discovery, not search results —
+  // so this only verifies validity/discovery, not indexability.
+  if (WATCHLIST || paths.length === 0) {
+    console.log(`\n${"-".repeat(70)}\n/sitemap.xml VALIDITY\n${"-".repeat(70)}`);
+    const sitemapPage = LIVE ? await fetchLive("/sitemap.xml") : readDist("/sitemap.xml");
+    const xml = LIVE ? sitemapPage.html : (existsSync(path.join(root, "public", "sitemap.xml")) ? readFileSync(path.join(root, "public", "sitemap.xml"), "utf8") : "");
+    const wellFormed = /^<\?xml/.test(xml.trim()) && /<urlset/.test(xml) && /<\/urlset>/.test(xml);
+    const urlCount = [...xml.matchAll(/<loc>/g)].length;
+    console.log(`status: ${LIVE ? sitemapPage.status : (existsSync(path.join(root, "public", "sitemap.xml")) ? 200 : "MISSING")}`);
+    console.log(`well-formed XML: ${wellFormed}`);
+    console.log(`URL count: ${urlCount}`);
+    if (!wellFormed) {
+      console.log("⚠ sitemap.xml is missing or malformed");
+      process.exitCode = 1;
+    }
+  }
+
   if (hardFailures.length) {
     console.log(`\n${hardFailures.length} URL(s) have hard technical failures — see ⚠ marks above.`);
     process.exit(1);

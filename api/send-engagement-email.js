@@ -36,13 +36,13 @@ function buildEmail(user) {
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>We've been busy — new templates + a stronger Zyvo</title>
+  <title>Zyvo just had a glow-up (you need to see this)</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 
   <!-- preview text -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;color:#f4f4f5;">
-    New templates dropped, and we fixed the stuff that used to slow you down. Worth another look.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
+    New viral templates, faster renders, way less friction. This is not the Zyvo you left.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f5;">
@@ -66,11 +66,11 @@ function buildEmail(user) {
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            Niko here, founder of Zyvo. It's been a while since you've been in — and honestly, the Zyvo you left isn't the one that's here now.
+            Niko here, founder of Zyvo. It's been a while since you've been in — and honestly, the Zyvo you left is barely the same product anymore. We've been rebuilding this thing nonstop, and it shows.
           </p>
 
           <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#374151;">
-            <strong>Two things changed:</strong> we dropped a batch of new viral-ready templates, and we went back and made the flows you already know noticeably stronger — faster generations, more reliable renders, less friction end to end.
+            <strong>Here's what changed:</strong> a whole new lineup of viral-ready templates, and we went back and rebuilt the flows you already know from the ground up — faster generations, more reliable renders, way less friction end to end. It's the fastest, sharpest version of Zyvo we've ever shipped.
           </p>
 
           <!-- Feature card -->
@@ -142,7 +142,7 @@ async function sendEmail(user) {
     const { error } = await resend.emails.send({
       from: "Niko from Zyvo <niko@tryzyvo.com>",
       to: user.email,
-      subject: "We've been busy — new templates + a stronger Zyvo",
+      subject: "Zyvo just had a glow-up (you need to see this)",
       html: buildEmail(user),
       reply_to: "niko@tryzyvo.com",
     });
@@ -163,21 +163,22 @@ async function sendEmail(user) {
 export default async function handler(req, res) {
   try {
     console.log("🚀 Starting Zyvo site-wide re-engagement campaign...");
-    console.log(`   dry_run=${DRY_RUN}  target=profiles (email_updates=true)`);
+    console.log(`   dry_run=${DRY_RUN}  target=profiles (plan_code=free, email_updates=true)`);
 
     let allRows = [];
     let from = 0;
     let hasMore = true;
 
     while (hasMore) {
-      // Full user base, not just abandoned_checkouts — but only people who
-      // haven't opted out of marketing email (email_updates=true), same gate
-      // used by the other broad-blast campaigns (send-hard-convert-email.js,
-      // send-convert-email.js). Skipping this would email unsubscribed users.
+      // Free-plan users only — but only people who haven't opted out of
+      // marketing email (email_updates=true), same gate used by the other
+      // broad-blast campaigns (send-hard-convert-email.js, send-convert-email.js).
+      // Skipping this would email unsubscribed users.
       const { data, error } = await supabase
         .from("profiles")
         .select("email")
         .eq("email_updates", true)
+        .eq("plan_code", "free")
         .not("email", "is", null)
         .range(from, from + BATCH_SIZE - 1);
 

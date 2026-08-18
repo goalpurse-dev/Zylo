@@ -21,6 +21,12 @@ const related = [
     date: "14.05.2026",
     slug: "/blog/viral-ai-fruit-drama-videos",
   },
+  {
+    title: "Every AI Fruit Story Drama Type, Ranked From Petty to Unhinged",
+    description: "A completely unserious tier list of every fruit-drama plot type.",
+    date: "17.08.2026",
+    slug: "/blog/ai-fruit-story-drama-tier-list",
+  },
 ];
 
 const TWISTS = [
