@@ -42,12 +42,22 @@ function sitemapPaths() {
     .filter((p) => p !== "/");
 }
 
+// Decodes entities React's server renderer produces for text nodes (it
+// escapes &, <, >, ", and ' for safety). Must run BEFORE the &amp; -> &
+// unescape below, and must cover ' specifically — otherwise a title/H1
+// derived from rendered HTML still contains a literal "&#x27;"/"&#39;"
+// substring, which escapeAttr() then re-escapes into "&amp;#x27;" when the
+// derived value is written back into the <title>/meta tags.
 function stripTags(html) {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/g, " ")
+    .replace(/&#x27;|&#39;/gi, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
     .replace(/&amp;/g, "&")
     .replace(/\s+/g, " ")
     .trim();

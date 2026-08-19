@@ -299,6 +299,48 @@ export const PUBLIC_SEO_METADATA = {
     ),
     image: `${SITE_URL}/viral-builder/ai-fruit/presets/cheating.webp`,
   },
+  "/blog/ai-image-generator-prompt-formula": {
+    ...blog(
+      "How to Write the Perfect AI Image Generator Prompt (Formula + Examples)",
+      "A repeatable 6-part prompt formula for AI image generation, with weak-vs-strong examples for cinematic, product, and anime styles.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-image-generator-prompt-formula-hero.png`,
+  },
+  "/blog/ai-image-generator-examples": {
+    ...blog(
+      "AI Image Generator Examples: 8 Real Styles You Can Create Right Now",
+      "Real output across Zyvo's cinematic, 3D, and realistic AI image styles, and what each one is actually good at.",
+    ),
+    image: `${SITE_URL}/legacy-blog-assets/astronaut.jpg`,
+  },
+  "/blog/ai-fruit-story-pricing": {
+    ...blog(
+      "Is AI Fruit Story Free? Pricing, Credits, and What You Actually Get",
+      "AI Fruit Story runs on credits, not a flat per-video price — character portraits, scene images, and scene video, explained.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-pricing-hero.png`,
+  },
+  "/blog/ai-fruit-story-time": {
+    ...blog(
+      "How Long Does It Take to Make an AI Fruit Story Video?",
+      "The honest breakdown of what actually takes time in AI Fruit Story — writing the premise, character generation, scenes, and animated dialogue.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-time-hero.png`,
+  },
+  "/blog/ai-fruit-story-cliffhangers": {
+    ...blog(
+      "AI Fruit Story Cliffhanger Endings: How to Make Viewers Come Back for Part 2",
+      "Four cliffhanger structures that consistently drive part-2 demand, and the one rule that decides whether a cliffhanger feels earned or cheap.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-fruit-story-cliffhanger-hero.png`,
+  },
+  "/blog/ai-image-generator-mistakes": {
+    ...blog(
+      "10 AI Image Generator Mistakes to Avoid (And How to Fix Each One)",
+      "The most common reasons AI-generated images come back looking generic, and the specific prompt change that fixes each one.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-image-generator-mistakes-hero.png`,
+  },
   "/blog/best-time-to-post-ai-content": {
     ...blog(
       "Best Time to Post AI Content to Go Viral in 2026",

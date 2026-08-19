@@ -131,6 +131,18 @@ export function structuredDataFor(pathname, metadata, canonical) {
     });
   }
 
+  if (pathname === "/blog/ai-fruit-story-pricing") {
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["Is AI Fruit Story actually free?", "Zyvo's AI Fruit Story maker has a free entry point using your account's credit balance. Longer stories with more scenes and full video animation cost more credits than a short one."],
+        ["How is the cost calculated?", "Cost is credit-based: a one-time character portrait cost per character, an image cost per scene, and a video cost per scene if you animate it."],
+        ["What happens if I run out of credits mid-story?", "The generator checks your credit balance before starting and lets you know if you don't have enough to complete the story you've configured, so you're never charged partway through."],
+        ["Does adding more characters cost more?", "Yes — each additional character needs its own consistent portrait generated once, which adds to the total cost before scene generation starts."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
   if (pathname === "/blog/what-is-ai-fruit-story") {
     graph.push({
       "@type": "FAQPage",

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-18T16:19:25.909Z",
-  "articlesAudited": 156,
+  "generatedAt": "2026-08-19T11:15:56.505Z",
+  "articlesAudited": 166,
   "thinContent": [
     {
       "url": "/blog/product-photos-with-ai-for-shopify",
@@ -39,10 +39,22 @@
       "unigramScore": 0.5555555555555556
     },
     {
+      "a": "/blog/2am-in-hogwarts-ai-images",
+      "b": "/blog/2am-in-bikini-bottom-ai-images",
+      "shingleScore": 0.21091290661070305,
+      "unigramScore": 0.5268817204301075
+    },
+    {
       "a": "/blog/why-3d-ai-images-perform-better",
       "b": "/blog/which-ai-image-style-works-best",
       "shingleScore": 0.17555555555555555,
       "unigramScore": 0.5157894736842106
+    },
+    {
+      "a": "/blog/2am-fortnite-ai-images",
+      "b": "/blog/2am-in-bikini-bottom-ai-images",
+      "shingleScore": 0.17586912065439672,
+      "unigramScore": 0.5065274151436031
     },
     {
       "a": "/blog/ai-world-generator-prompts",
@@ -55,6 +67,12 @@
       "b": "/blog/best-ai-tools-for-ecommerce",
       "shingleScore": 0.18777292576419213,
       "unigramScore": 0.48424068767908307
+    },
+    {
+      "a": "/blog/2am-fortnite-ai-images",
+      "b": "/blog/2am-in-hogwarts-ai-images",
+      "shingleScore": 0.15789473684210525,
+      "unigramScore": 0.4725
     },
     {
       "a": "/blog/which-ai-image-style-works-best",
@@ -127,24 +145,6 @@
       "b": "/blog/ai-image-generator-for-dark-visuals",
       "shingleScore": 0.0759493670886076,
       "unigramScore": 0.422680412371134
-    },
-    {
-      "a": "/blog/2am-gta-ai-images",
-      "b": "/blog/2am-fortnite-ai-images",
-      "shingleScore": 0.1553784860557769,
-      "unigramScore": 0.41586538461538464
-    },
-    {
-      "a": "/blog/2am-one-piece-ai-images",
-      "b": "/blog/2am-fortnite-ai-images",
-      "shingleScore": 0.13837095191364082,
-      "unigramScore": 0.41509433962264153
-    },
-    {
-      "a": "/blog/2am-minecraft-ai-images",
-      "b": "/blog/2am-gta-ai-images",
-      "shingleScore": 0.13233923578751164,
-      "unigramScore": 0.41217798594847777
     }
   ],
   "mergeCandidates": [

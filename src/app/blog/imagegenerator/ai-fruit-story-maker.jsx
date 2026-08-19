@@ -34,6 +34,18 @@ const related = [
     date: "17.08.2026",
     slug: "/blog/ai-fruit-story-fan-theories",
   },
+  {
+    title: "Is AI Fruit Story Free? Pricing, Credits, and What You Actually Get",
+    description: "Character portraits, scene images, and scene video — what a story actually costs.",
+    date: "19.08.2026",
+    slug: "/blog/ai-fruit-story-pricing",
+  },
+  {
+    title: "How Long Does It Take to Make an AI Fruit Story Video?",
+    description: "The honest breakdown of what actually takes time, from premise to finished video.",
+    date: "19.08.2026",
+    slug: "/blog/ai-fruit-story-time",
+  },
 ];
 
 export default function AIFruitStoryMaker() {

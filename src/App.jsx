@@ -161,6 +161,12 @@ const AIFruitStoryBestLines = lazy(() => import("./app/blog/imagegenerator/ai-fr
 const AIFruitStoryGroupChat = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-group-chat.jsx"));
 const WhatIsAIFruitStory = lazy(() => import("./app/blog/imagegenerator/what-is-ai-fruit-story.jsx"));
 const AIFruitStoryExamples = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-examples.jsx"));
+const AIFruitStoryPricing = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-pricing.jsx"));
+const AIImageGeneratorPromptFormula = lazy(() => import("./app/blog/imagegenerator/ai-image-generator-prompt-formula.jsx"));
+const AIImageGeneratorExamples = lazy(() => import("./app/blog/imagegenerator/ai-image-generator-examples.jsx"));
+const AIFruitStoryTime = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-time.jsx"));
+const AIFruitStoryCliffhangers = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-cliffhangers.jsx"));
+const AIImageGeneratorMistakes = lazy(() => import("./app/blog/imagegenerator/ai-image-generator-mistakes.jsx"));
 const BestTimeToPostAiContent = lazy(() => import("./app/blog/imagegenerator/best-time-to-post-ai-content.jsx"));
 const AiContentHooksCaptionsThatGoViral = lazy(() => import("./app/blog/imagegenerator/ai-content-hooks-captions-that-go-viral.jsx"));
 const CartoonDriveByExplained = lazy(() => import("./app/blog/imagegenerator/cartoon-drive-by-explained.jsx"));
@@ -529,6 +535,12 @@ return (
         <Route path="/blog/ai-fruit-story-group-chat" element={<AIFruitStoryGroupChat/>} />
         <Route path="/blog/what-is-ai-fruit-story" element={<WhatIsAIFruitStory/>} />
         <Route path="/blog/ai-fruit-story-examples" element={<AIFruitStoryExamples/>} />
+        <Route path="/blog/ai-fruit-story-pricing" element={<AIFruitStoryPricing/>} />
+        <Route path="/blog/ai-image-generator-prompt-formula" element={<AIImageGeneratorPromptFormula/>} />
+        <Route path="/blog/ai-image-generator-examples" element={<AIImageGeneratorExamples/>} />
+        <Route path="/blog/ai-fruit-story-time" element={<AIFruitStoryTime/>} />
+        <Route path="/blog/ai-fruit-story-cliffhangers" element={<AIFruitStoryCliffhangers/>} />
+        <Route path="/blog/ai-image-generator-mistakes" element={<AIImageGeneratorMistakes/>} />
         <Route path="/blog/best-time-to-post-ai-content" element={<BestTimeToPostAiContent/>} />
         <Route path="/blog/ai-content-hooks-captions-that-go-viral" element={<AiContentHooksCaptionsThatGoViral/>} />
         <Route path="/blog/cartoon-drive-by-explained" element={<CartoonDriveByExplained/>} />
@@ -589,6 +601,10 @@ return (
          <Route path="/blog/2am-one-piece-ai-images" element={<TwoAmBlogGuide slug="2am-one-piece-ai-images" />} />
          <Route path="/blog/2am-studio-ghibli-ai-images" element={<TwoAmBlogGuide slug="2am-studio-ghibli-ai-images" />} />
          <Route path="/blog/2am-fortnite-ai-images" element={<TwoAmBlogGuide slug="2am-fortnite-ai-images" />} />
+         <Route path="/blog/2am-in-hogwarts-ai-images" element={<TwoAmBlogGuide slug="2am-in-hogwarts-ai-images" />} />
+         <Route path="/blog/2am-in-bikini-bottom-ai-images" element={<TwoAmBlogGuide slug="2am-in-bikini-bottom-ai-images" />} />
+         <Route path="/blog/2am-cyberpunk-city-ai-images" element={<TwoAmBlogGuide slug="2am-cyberpunk-city-ai-images" />} />
+         <Route path="/blog/2am-worlds-tier-list" element={<TwoAmBlogGuide slug="2am-worlds-tier-list" />} />
          <Route path="/blog/what-is-the-2am-worlds-ai-trend" element={<TwoAmBlogGuide slug="what-is-the-2am-worlds-ai-trend" />} />
          <Route path="/blog/best-2am-world-ai-prompts" element={<TwoAmBlogGuide slug="best-2am-world-ai-prompts" />} />
          <Route path="/blog/how-to-create-2am-pokemon-ai-images" element={<TwoAmBlogGuide slug="how-to-create-2am-pokemon-ai-images" />} />
