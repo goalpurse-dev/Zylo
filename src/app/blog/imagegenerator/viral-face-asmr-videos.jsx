@@ -22,6 +22,12 @@ const related = [
     date: "24.05.2026",
     slug: "/blog/best-face-asmr-video-ideas-2026",
   },
+  {
+    title: "What Is Face ASMR? The AI Trend Turning Any Face Into a Satisfying Texture",
+    description: "What Face ASMR is, how the texture transformation works, and how to make your own.",
+    date: "20.08.2026",
+    slug: "/blog/what-is-face-asmr",
+  },
 ];
 
 export default function ViralFaceAsmrVideos() {

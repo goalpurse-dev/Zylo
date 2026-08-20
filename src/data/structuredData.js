@@ -143,6 +143,89 @@ export function structuredDataFor(pathname, metadata, canonical) {
     });
   }
 
+  if (pathname === "/blog/what-is-micro-camera-animal") {
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["What is Micro Camera Animal?", "Micro Camera Animal is an AI video format that shows a tiny research-style camera mounted on a real animal — an ant, earthworm, beetle, termite, spider, cricket, or mole — then follows that animal's POV through its own underground world."],
+        ["Is this real footage?", "No. Every image and video is AI-generated, styled to look like ultra-realistic wildlife research documentation — no real animal is filmed or fitted with any camera."],
+        ["Which animals can I choose from?", "Seven animals: ant, earthworm, ground beetle, termite, spider, cricket, and mole — each with its own underground world."],
+        ["What does one generation actually include?", "A researcher attaching the micro-camera to the animal, followed by a POV journey through progressively deeper parts of its underground environment."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
+  if (pathname === "/blog/what-is-clay-rescue") {
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["What is Clay Rescue?", "Clay Rescue is an AI video format where a giant, realistic human hand rescues tiny stop-motion-style clay people from an everyday object turned disaster, using a simple tool, never touching the clay people directly."],
+        ["Is this real stop-motion animation?", "No. Every scene is AI-generated, styled to look like claymation — no physical clay figures or stop-motion filming are involved."],
+        ["Why doesn't the hand ever touch the clay people?", "It's a deliberate rule — the hand solves the problem indirectly, which keeps the tone gentle and makes the rescue feel like genuine problem-solving."],
+        ["What happens after the rescue?", "Only once the danger is fully gone do the clay people react — cheering, celebrating, relieved. Crisis, fix, celebration, in that order, every time."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
+  if (pathname === "/blog/what-is-face-asmr") {
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["What is Face ASMR?", "Face ASMR is an AI video format that transforms an uploaded face photo into a surreal, glossy texture material and turns it into a satisfying, ASMR-style short video."],
+        ["Whose photo can I use?", "You upload your own photo, and Zyvo transforms it into the texture material — designed for using your own likeness."],
+        ["What makes it 'ASMR'?", "The satisfying-texture visual style — glossy, gooey, smooth surfaces reacting to implied touch — is the same visual language behind traditional ASMR slime and texture content."],
+        ["Do I need any editing experience?", "No — you upload a photo and Zyvo handles the texture transformation. No editing or design software is required."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
+  if (pathname === "/blog/what-is-zyvo") {
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["What is Zyvo?", "Zyvo is an AI content creation platform for short-form video and image generation — a single workspace covering image generation, viral video templates, scripting, and publishing."],
+        ["Is Zyvo free to use?", "Zyvo has a free entry point across its tools, with paid plans and credits for higher-volume generation, longer videos, and premium templates."],
+        ["Do I need any design or editing skills?", "No — every tool is built around describing what you want in plain language. No timeline editing, animation, or design software is required."],
+        ["What platforms is Zyvo's content built for?", "Every tool outputs vertical, short-form-ready content built for TikTok, Instagram Reels, and YouTube Shorts."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
+  if (pathname === "/blog/is-zyvo-free") {
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["Is Zyvo actually free?", "Zyvo has a free entry point across its tools, using your account's credit balance. Paid plans and additional credits unlock higher volume and longer, more complex generations."],
+        ["How does the credit system work?", "Every generation costs credits based on the tool, the number of scenes or images, and whether the output is animated."],
+        ["What happens if I don't have enough credits?", "The generator lets you know before starting if your balance isn't enough to complete the generation — you won't be charged partway through."],
+        ["Do unused credits expire?", "Check your account and plan details in Zyvo's workspace for the most current information on credit balances and plan-specific terms."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
+  if (pathname === "/blog/how-to-get-started-with-zyvo") {
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["Do I need any design or video editing experience?", "No. Every Zyvo tool is built around describing what you want in plain language — no timeline editing, animation, or design software is required."],
+        ["Which tool should I try first?", "Start with the general AI image generator to get a feel for prompting, or pick whichever format-specific tool matches content you already enjoy watching."],
+        ["Can I try Zyvo without paying?", "Yes — every tool has a free entry point using your account's credit balance."],
+        ["How do I publish what I generate?", "Zyvo's workspace includes a publishing tool for scheduling and posting directly to TikTok, Instagram, and YouTube."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
+  if (pathname === "/blog/zyvo-vs-other-ai-tools") {
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["Is Zyvo better than a general-purpose AI generator?", "For proven, specific formats, Zyvo's format-specific tools remove the prompt-engineering work needed for consistent results. For fully custom, one-off work outside any established format, a general-purpose generator may offer more flexibility."],
+        ["Does Zyvo support general image generation too?", "Yes — the AI image generator supports cinematic, 3D, anime, realistic, and product styles from a single prompt, in addition to the format-specific video tools."],
+        ["Can I publish directly from Zyvo?", "Yes — Zyvo's workspace includes a publishing tool for scheduling and posting to TikTok, Instagram, and YouTube."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
   if (pathname === "/blog/what-is-ai-fruit-story") {
     graph.push({
       "@type": "FAQPage",

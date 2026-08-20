@@ -423,6 +423,7 @@ const GUIDES = {
       ["/blog/2am-in-hogwarts-ai-images", "2AM in Hogwarts", "A torchlit magical school courtyard, reimagined at 2AM."],
       ["/blog/2am-in-bikini-bottom-ai-images", "2AM in Bikini Bottom", "A colorful underwater cartoon town, reimagined at 2AM."],
       ["/blog/2am-worlds-tier-list", "2AM Worlds Tier List", "Every world in the catalog, ranked by contrast and recognizability."],
+      ["/blog/what-is-zyvo", "What Is Zyvo?", "Every Zyvo tool in one place, and how they fit together."],
     ],
     ctaHref: "/2am-worlds-ai-generator",
     cta: "Create your own 2AM world",

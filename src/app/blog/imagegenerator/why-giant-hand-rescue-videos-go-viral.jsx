@@ -22,6 +22,12 @@ const related = [
     date: "24.04.2026",
     slug: "/blog/how-to-create-viral-ai-videos",
   },
+  {
+    title: "What Is Clay Rescue? The Viral Giant-Hand Rescue AI Trend Explained",
+    description: "How a giant hand rescues tiny clay people from everyday disasters without ever touching them.",
+    date: "20.08.2026",
+    slug: "/blog/what-is-clay-rescue",
+  },
 ];
 
 export default function WhyGiantHandRescueVideosGoViral() {

@@ -167,6 +167,16 @@ const AIImageGeneratorExamples = lazy(() => import("./app/blog/imagegenerator/ai
 const AIFruitStoryTime = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-time.jsx"));
 const AIFruitStoryCliffhangers = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-cliffhangers.jsx"));
 const AIImageGeneratorMistakes = lazy(() => import("./app/blog/imagegenerator/ai-image-generator-mistakes.jsx"));
+const WhatIsMicroCameraAnimal = lazy(() => import("./app/blog/imagegenerator/what-is-micro-camera-animal.jsx"));
+const MicroCameraAnimalVideoIdeas = lazy(() => import("./app/blog/imagegenerator/micro-camera-animal-video-ideas.jsx"));
+const WhatIsClayRescue = lazy(() => import("./app/blog/imagegenerator/what-is-clay-rescue.jsx"));
+const WhatIsFaceAsmr = lazy(() => import("./app/blog/imagegenerator/what-is-face-asmr.jsx"));
+const WhatIsZyvo = lazy(() => import("./app/blog/imagegenerator/what-is-zyvo.jsx"));
+const IsZyvoFree = lazy(() => import("./app/blog/imagegenerator/is-zyvo-free.jsx"));
+const HowToGetStartedWithZyvo = lazy(() => import("./app/blog/imagegenerator/how-to-get-started-with-zyvo.jsx"));
+const ZyvoVsOtherAiTools = lazy(() => import("./app/blog/imagegenerator/zyvo-vs-other-ai-tools.jsx"));
+const ClayRescueVideoIdeas = lazy(() => import("./app/blog/imagegenerator/clay-rescue-video-ideas.jsx"));
+const ClayRescueMistakes = lazy(() => import("./app/blog/imagegenerator/clay-rescue-mistakes.jsx"));
 const BestTimeToPostAiContent = lazy(() => import("./app/blog/imagegenerator/best-time-to-post-ai-content.jsx"));
 const AiContentHooksCaptionsThatGoViral = lazy(() => import("./app/blog/imagegenerator/ai-content-hooks-captions-that-go-viral.jsx"));
 const CartoonDriveByExplained = lazy(() => import("./app/blog/imagegenerator/cartoon-drive-by-explained.jsx"));
@@ -541,6 +551,16 @@ return (
         <Route path="/blog/ai-fruit-story-time" element={<AIFruitStoryTime/>} />
         <Route path="/blog/ai-fruit-story-cliffhangers" element={<AIFruitStoryCliffhangers/>} />
         <Route path="/blog/ai-image-generator-mistakes" element={<AIImageGeneratorMistakes/>} />
+        <Route path="/blog/what-is-micro-camera-animal" element={<WhatIsMicroCameraAnimal/>} />
+        <Route path="/blog/micro-camera-animal-video-ideas" element={<MicroCameraAnimalVideoIdeas/>} />
+        <Route path="/blog/what-is-clay-rescue" element={<WhatIsClayRescue/>} />
+        <Route path="/blog/what-is-face-asmr" element={<WhatIsFaceAsmr/>} />
+        <Route path="/blog/what-is-zyvo" element={<WhatIsZyvo/>} />
+        <Route path="/blog/is-zyvo-free" element={<IsZyvoFree/>} />
+        <Route path="/blog/how-to-get-started-with-zyvo" element={<HowToGetStartedWithZyvo/>} />
+        <Route path="/blog/zyvo-vs-other-ai-tools" element={<ZyvoVsOtherAiTools/>} />
+        <Route path="/blog/clay-rescue-video-ideas" element={<ClayRescueVideoIdeas/>} />
+        <Route path="/blog/clay-rescue-mistakes" element={<ClayRescueMistakes/>} />
         <Route path="/blog/best-time-to-post-ai-content" element={<BestTimeToPostAiContent/>} />
         <Route path="/blog/ai-content-hooks-captions-that-go-viral" element={<AiContentHooksCaptionsThatGoViral/>} />
         <Route path="/blog/cartoon-drive-by-explained" element={<CartoonDriveByExplained/>} />

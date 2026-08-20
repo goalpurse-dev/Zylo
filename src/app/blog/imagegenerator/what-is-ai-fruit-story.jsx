@@ -21,6 +21,12 @@ const related = [
     date: "08.08.2026",
     slug: "/blog/ai-fruit-story-vs-traditional-animation",
   },
+  {
+    title: "What Is Zyvo? The AI Content Creation Platform Explained",
+    description: "Every Zyvo tool in one place, and how they fit together.",
+    date: "20.08.2026",
+    slug: "/blog/what-is-zyvo",
+  },
 ];
 
 const FAQS = [

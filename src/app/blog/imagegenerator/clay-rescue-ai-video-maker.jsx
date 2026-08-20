@@ -5,22 +5,28 @@ import RelatedArticles from "../RelatedArticles";
 
 const related = [
   {
+    title: "What Is Clay Rescue? The Viral Giant-Hand Rescue AI Trend Explained",
+    description: "How a giant hand rescues tiny clay people from everyday disasters, without ever touching them.",
+    date: "20.08.2026",
+    slug: "/blog/what-is-clay-rescue",
+  },
+  {
+    title: "20 Clay Rescue Video Ideas You Can Generate Right Now",
+    description: "Twenty real crisis-and-fix pairs, ready to generate today.",
+    date: "21.08.2026",
+    slug: "/blog/clay-rescue-video-ideas",
+  },
+  {
+    title: "10 Mistakes Killing Your Clay Rescue Video Views",
+    description: "The ten most common structural mistakes, with a specific fix for each one.",
+    date: "21.08.2026",
+    slug: "/blog/clay-rescue-mistakes",
+  },
+  {
     title: "Why Giant Hand Rescue Videos Go Viral on TikTok in 2026",
     description: "The retention psychology behind tiny-world disasters, simple visible fixes, and clay people reactions.",
     date: "01.06.2026",
     slug: "/blog/why-giant-hand-rescue-videos-go-viral",
-  },
-  {
-    title: "Micro Camera Animal Maker: How It Works & Why It Goes Viral",
-    description: "How AI creates convincing animal POV videos and why the bodycam format keeps viewers watching.",
-    date: "27.05.2026",
-    slug: "/blog/micro-camera-animal-maker",
-  },
-  {
-    title: "AI Fruit Story Maker: How to Create Viral Fruit Drama Videos",
-    description: "How Zyvo generates cinematic fruit drama scenes built for short-form retention.",
-    date: "14.05.2026",
-    slug: "/ai-fruit-story-maker",
   },
 ];
 

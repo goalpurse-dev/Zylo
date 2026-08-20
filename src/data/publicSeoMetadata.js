@@ -341,6 +341,76 @@ export const PUBLIC_SEO_METADATA = {
     ),
     image: `${SITE_URL}/blog-assets/ai-image-generator-mistakes-hero.png`,
   },
+  "/blog/what-is-micro-camera-animal": {
+    ...blog(
+      "What Is Micro Camera Animal? The Viral Insect's-Eye-View AI Trend",
+      "What Micro Camera Animal is, how it's made, and how to generate your own — a full guide to the AI wildlife-POV trend.",
+    ),
+    image: `${SITE_URL}/blog-assets/what-is-micro-camera-animal-hero.png`,
+  },
+  "/blog/micro-camera-animal-video-ideas": {
+    ...blog(
+      "15 Micro Camera Animal Video Ideas You Can Generate Right Now",
+      "Seven real animals, each with its own underground world, with real video ideas for every one.",
+    ),
+    image: `${SITE_URL}/blog-assets/micro-camera-animal-ideas-hero.png`,
+  },
+  "/blog/what-is-clay-rescue": {
+    ...blog(
+      "What Is Clay Rescue? The Viral Giant-Hand Rescue AI Trend Explained",
+      "How a giant hand rescues tiny clay people from everyday disasters without ever touching them — the full format explained.",
+    ),
+    image: `${SITE_URL}/blog-assets/what-is-clay-rescue-hero.png`,
+  },
+  "/blog/what-is-face-asmr": {
+    ...blog(
+      "What Is Face ASMR? The AI Trend Turning Any Face Into a Satisfying Texture",
+      "What Face ASMR is, how the texture transformation works, and how to make your own satisfying AI video.",
+    ),
+    image: `${SITE_URL}/blog-assets/what-is-face-asmr-hero.png`,
+  },
+  "/blog/what-is-zyvo": {
+    ...blog(
+      "What Is Zyvo? The AI Content Creation Platform Explained",
+      "Every Zyvo tool in one place — image generation, viral video templates, scripting, and publishing — and how they fit together.",
+    ),
+    image: `${SITE_URL}/blog-assets/what-is-zyvo-hero.png`,
+  },
+  "/blog/is-zyvo-free": {
+    ...blog(
+      "Is Zyvo Free? Pricing, Plans, and Credits Explained",
+      "How Zyvo's credit system works across every tool, what determines generation cost, and how to get the most from a free account.",
+    ),
+    image: `${SITE_URL}/blog-assets/is-zyvo-free-hero.png`,
+  },
+  "/blog/how-to-get-started-with-zyvo": {
+    ...blog(
+      "How to Get Started with Zyvo: A Complete Beginner's Guide",
+      "From account creation to your first finished video in five steps — no editing software or design experience required.",
+    ),
+    image: `${SITE_URL}/blog-assets/how-to-get-started-zyvo-hero.png`,
+  },
+  "/blog/zyvo-vs-other-ai-tools": {
+    ...blog(
+      "Zyvo vs Other AI Content Tools: What Makes It Different",
+      "The real structural difference between Zyvo's format-specific tools and a generic AI prompt box, and when each approach makes sense.",
+    ),
+    image: `${SITE_URL}/blog-assets/zyvo-vs-other-tools-hero.png`,
+  },
+  "/blog/clay-rescue-video-ideas": {
+    ...blog(
+      "20 Clay Rescue Video Ideas You Can Generate Right Now",
+      "Twenty real crisis-and-fix pairs for Clay Rescue videos, ready to generate today.",
+    ),
+    image: `${SITE_URL}/blog-assets/clay-rescue-ideas-honey.png`,
+  },
+  "/blog/clay-rescue-mistakes": {
+    ...blog(
+      "10 Mistakes Killing Your Clay Rescue Video Views",
+      "The ten most common structural mistakes in Clay Rescue videos, with a specific fix for each one.",
+    ),
+    image: `${SITE_URL}/blog-assets/clay-rescue-mistakes-hero.png`,
+  },
   "/blog/best-time-to-post-ai-content": {
     ...blog(
       "Best Time to Post AI Content to Go Viral in 2026",

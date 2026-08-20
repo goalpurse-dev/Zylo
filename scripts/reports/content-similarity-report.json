@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-19T11:15:56.505Z",
-  "articlesAudited": 166,
+  "generatedAt": "2026-08-20T12:36:11.195Z",
+  "articlesAudited": 176,
   "thinContent": [
     {
       "url": "/blog/product-photos-with-ai-for-shopify",
@@ -11,8 +11,8 @@
       "wordCount": 228
     },
     {
-      "url": "/blog/category/tutorials",
-      "wordCount": 223
+      "url": "/blog/how-to-get-started-with-zyvo",
+      "wordCount": 242
     }
   ],
   "duplicateTitles": [],
@@ -67,6 +67,12 @@
       "b": "/blog/best-ai-tools-for-ecommerce",
       "shingleScore": 0.18777292576419213,
       "unigramScore": 0.48424068767908307
+    },
+    {
+      "a": "/blog/ai-fruit-story-pricing",
+      "b": "/blog/is-zyvo-free",
+      "shingleScore": 0.0659090909090909,
+      "unigramScore": 0.4769736842105263
     },
     {
       "a": "/blog/2am-fortnite-ai-images",
@@ -139,12 +145,6 @@
       "b": "/blog/why-3d-ai-images-perform-better",
       "shingleScore": 0.07531380753138076,
       "unigramScore": 0.4236453201970443
-    },
-    {
-      "a": "/blog/how-to-create-movie-style-visuals",
-      "b": "/blog/ai-image-generator-for-dark-visuals",
-      "shingleScore": 0.0759493670886076,
-      "unigramScore": 0.422680412371134
     }
   ],
   "mergeCandidates": [
