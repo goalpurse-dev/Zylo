@@ -10,6 +10,12 @@ const related = [
     date: "11.08.2026",
     slug: "/blog/cartoon-drive-by-explained",
   },
+  {
+    title: "6 Mistakes Killing Your Cartoon Drive-By Video Views",
+    description: "The most common reasons results come back generic, and the fix for each one.",
+    date: "21.08.2026",
+    slug: "/blog/cartoon-drive-by-mistakes",
+  },
 ];
 
 const IDEAS = [

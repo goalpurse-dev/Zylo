@@ -17,6 +17,12 @@ const related = [
     slug: "/blog/behind-the-scenes-mistakes",
   },
   {
+    title: "Behind the Scenes Disaster Tier List: All 20 Modules Ranked",
+    description: "All 8 elemental disasters and 12 extended modules, ranked by how reliably they hook a viewer.",
+    date: "21.08.2026",
+    slug: "/blog/behind-the-scenes-tier-list",
+  },
+  {
     title: "12 Extended Behind the Scenes Modules: Kaiju, Robots, and Full Movie-Shoot Chaos",
     description: "Beyond the elemental 8 — giant creatures, aircraft chases, giant robots, and more.",
     date: "16.08.2026",

@@ -16,10 +16,16 @@ const related = [
     slug: "/blog/what-is-clay-rescue",
   },
   {
-    title: "What Is Zyvo? The AI Content Creation Platform Explained",
-    description: "Every Zyvo tool in one place, and how they fit together.",
-    date: "20.08.2026",
-    slug: "/blog/what-is-zyvo",
+    title: "Clay Rescue vs Micro Camera Animal: Wholesome Rescue or Quiet Documentary?",
+    description: "Both formats work in miniature, but one has a hero and the other has none at all.",
+    date: "21.08.2026",
+    slug: "/blog/clay-rescue-vs-micro-camera-animal",
+  },
+  {
+    title: "8 Mistakes Killing Your Micro Camera Animal Video Views",
+    description: "The most common structural mistakes, with a specific fix for each one.",
+    date: "21.08.2026",
+    slug: "/blog/micro-camera-animal-mistakes",
   },
 ];
 

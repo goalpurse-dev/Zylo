@@ -15,6 +15,12 @@ const related = [
     date: "16.08.2026",
     slug: "/blog/how-to-spot-viral-ai-trend",
   },
+  {
+    title: "Is Behind the Scenes Real? How AI Movie-Set Videos Fool Millions of Viewers",
+    description: "None of it is real footage. Here's exactly why it convinces so many people anyway.",
+    date: "21.08.2026",
+    slug: "/blog/behind-the-scenes-is-it-real",
+  },
 ];
 
 const REASONS = [

@@ -27,6 +27,12 @@ const related = [
     date: "20.08.2026",
     slug: "/blog/what-is-zyvo",
   },
+  {
+    title: "The Complete Zyvo Content Workflow: From Idea to Published Post",
+    description: "Generate, connect, publish, measure — how every Zyvo tool fits into one loop.",
+    date: "21.08.2026",
+    slug: "/blog/zyvo-content-workflow",
+  },
 ];
 
 const FAQS = [

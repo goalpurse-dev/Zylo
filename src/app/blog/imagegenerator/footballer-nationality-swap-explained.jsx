@@ -10,6 +10,24 @@ const related = [
     date: "13.08.2026",
     slug: "/blog/footballer-nationality-swap-tips",
   },
+  {
+    title: "15 Footballer Nationality Swap Video Ideas You Can Try",
+    description: "Fifteen structural concepts, from rival-nation swaps to full world-tour sequences.",
+    date: "21.08.2026",
+    slug: "/blog/footballer-nationality-swap-ideas",
+  },
+  {
+    title: "10 Mistakes Killing Your Footballer Nationality Swap Video Views",
+    description: "The structural choices that quietly hold results back, with a fix for each.",
+    date: "21.08.2026",
+    slug: "/blog/footballer-nationality-swap-mistakes",
+  },
+  {
+    title: "AI Fruit Story vs Footballer Nationality Swap: Scripted Drama or One-Line Cameo?",
+    description: "Both formats build content around a talking character, at opposite paces.",
+    date: "21.08.2026",
+    slug: "/blog/fruit-story-vs-footballer-nationality-swap",
+  },
 ];
 
 const STEPS = [

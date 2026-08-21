@@ -66,5 +66,8 @@ Start with an S or A tier world if you want the strongest immediate contrast, or
 - 25 Incredible AI Worlds at 2AM → /blog/ai-worlds-at-2am-ideas
 - 50 2AM World AI Prompt Ideas → /blog/best-2am-world-ai-prompts
 - What Is the 2AM Worlds AI Trend? → /blog/what-is-the-2am-worlds-ai-trend
+- 2AM in a Medieval Castle Kingdom → /blog/2am-medieval-kingdom-ai-images
+- 2AM Worlds Halloween Special: 10 Spooky World Ideas → /blog/2am-worlds-halloween-special
+- How to Pick Your First 2AM World: A Beginner's Decision Guide → /blog/how-to-pick-your-first-2am-world
 
 ---

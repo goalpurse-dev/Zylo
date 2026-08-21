@@ -22,10 +22,34 @@ const related = [
     slug: "/blog/zyvo-vs-other-ai-tools",
   },
   {
-    title: "What Is AI Fruit Story? The Complete Guide to TikTok's Viral Cartoon Drama Trend",
-    description: "What it is, how it's made, why it's going viral, and how to make your own.",
-    date: "18.08.2026",
-    slug: "/blog/what-is-ai-fruit-story",
+    title: "Best AI Video Generators for TikTok in 2026",
+    description: "What actually separates a good AI video generator from a disappointing one.",
+    date: "21.08.2026",
+    slug: "/blog/best-ai-video-generators-tiktok",
+  },
+  {
+    title: "Every Zyvo AI Video Format Compared: Which One Should You Try Next?",
+    description: "Six format-specific AI video tools, side by side.",
+    date: "21.08.2026",
+    slug: "/blog/every-zyvo-video-format-compared",
+  },
+  {
+    title: "Which Zyvo Template Should You Start With? A Quick Decision Guide",
+    description: "Match what you want to make to the right Zyvo tool in under two minutes.",
+    date: "21.08.2026",
+    slug: "/blog/which-zyvo-template",
+  },
+  {
+    title: "The Ultimate Zyvo Template Comparison: All 9 Tools Side by Side",
+    description: "Every Zyvo tool, its real output format, and what it's actually best for.",
+    date: "21.08.2026",
+    slug: "/blog/zyvo-template-comparison",
+  },
+  {
+    title: "The Complete Zyvo Content Workflow: From Idea to Published Post",
+    description: "Generate, connect, publish, measure — how every Zyvo tool fits into one loop.",
+    date: "21.08.2026",
+    slug: "/blog/zyvo-content-workflow",
   },
 ];
 

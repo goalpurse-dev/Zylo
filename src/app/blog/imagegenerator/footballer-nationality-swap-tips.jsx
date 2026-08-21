@@ -10,6 +10,18 @@ const related = [
     date: "13.08.2026",
     slug: "/blog/footballer-nationality-swap-explained",
   },
+  {
+    title: "15 Footballer Nationality Swap Video Ideas You Can Try",
+    description: "Fifteen structural concepts, from rival-nation swaps to full world-tour sequences.",
+    date: "21.08.2026",
+    slug: "/blog/footballer-nationality-swap-ideas",
+  },
+  {
+    title: "How Long Does a Footballer Nationality Swap Video Take to Make?",
+    description: "From naming a player to a finished, stitched sequence — what actually takes time.",
+    date: "21.08.2026",
+    slug: "/blog/footballer-nationality-swap-time",
+  },
 ];
 
 const TIPS = [

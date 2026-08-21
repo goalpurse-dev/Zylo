@@ -21,6 +21,12 @@ const related = [
     date: "11.08.2026",
     slug: "/blog/ai-fruit-story-mistakes",
   },
+  {
+    title: "AI Fruit Story Series Finale Ideas: How to End a Storyline",
+    description: "Five ending structures that give a series a satisfying close instead of just stopping.",
+    date: "21.08.2026",
+    slug: "/blog/ai-fruit-story-finale-ideas",
+  },
 ];
 
 const CLIFFHANGERS = [

@@ -166,6 +166,10 @@ const AIImageGeneratorPromptFormula = lazy(() => import("./app/blog/imagegenerat
 const AIImageGeneratorExamples = lazy(() => import("./app/blog/imagegenerator/ai-image-generator-examples.jsx"));
 const AIFruitStoryTime = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-time.jsx"));
 const AIFruitStoryCliffhangers = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-cliffhangers.jsx"));
+const AIFruitStoryHalloween = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-halloween.jsx"));
+const AIFruitStoryFinaleIdeas = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-finale-ideas.jsx"));
+const AIFruitStoryVs2amWorlds = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-vs-2am-worlds.jsx"));
+const AIFruitStoryCharacterNames = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-character-names.jsx"));
 const AIImageGeneratorMistakes = lazy(() => import("./app/blog/imagegenerator/ai-image-generator-mistakes.jsx"));
 const WhatIsMicroCameraAnimal = lazy(() => import("./app/blog/imagegenerator/what-is-micro-camera-animal.jsx"));
 const MicroCameraAnimalVideoIdeas = lazy(() => import("./app/blog/imagegenerator/micro-camera-animal-video-ideas.jsx"));
@@ -177,12 +181,29 @@ const HowToGetStartedWithZyvo = lazy(() => import("./app/blog/imagegenerator/how
 const ZyvoVsOtherAiTools = lazy(() => import("./app/blog/imagegenerator/zyvo-vs-other-ai-tools.jsx"));
 const ClayRescueVideoIdeas = lazy(() => import("./app/blog/imagegenerator/clay-rescue-video-ideas.jsx"));
 const ClayRescueMistakes = lazy(() => import("./app/blog/imagegenerator/clay-rescue-mistakes.jsx"));
+const MicroCameraAnimalMistakes = lazy(() => import("./app/blog/imagegenerator/micro-camera-animal-mistakes.jsx"));
+const FaceAsmrMistakes = lazy(() => import("./app/blog/imagegenerator/face-asmr-mistakes.jsx"));
+const CartoonDriveByMistakes = lazy(() => import("./app/blog/imagegenerator/cartoon-drive-by-mistakes.jsx"));
+const FootballerNationalitySwapIdeas = lazy(() => import("./app/blog/imagegenerator/footballer-nationality-swap-ideas.jsx"));
+const WhichZyvoTemplate = lazy(() => import("./app/blog/imagegenerator/which-zyvo-template.jsx"));
+const ClayRescueSeries = lazy(() => import("./app/blog/imagegenerator/clay-rescue-series.jsx"));
+const MicroCameraAnimalSeries = lazy(() => import("./app/blog/imagegenerator/micro-camera-animal-series.jsx"));
+const CartoonDriveByVs2amWorlds = lazy(() => import("./app/blog/imagegenerator/cartoon-drive-by-vs-2am-worlds.jsx"));
+const FootballerNationalitySwapTime = lazy(() => import("./app/blog/imagegenerator/footballer-nationality-swap-time.jsx"));
+const FaceAsmrPrivacy = lazy(() => import("./app/blog/imagegenerator/face-asmr-privacy.jsx"));
+const WhatIsZyvoPublish = lazy(() => import("./app/blog/imagegenerator/what-is-zyvo-publish.jsx"));
+const WhatIsZyvoStats = lazy(() => import("./app/blog/imagegenerator/what-is-zyvo-stats.jsx"));
+const WhatIsZyvoConnections = lazy(() => import("./app/blog/imagegenerator/what-is-zyvo-connections.jsx"));
+const ZyvoContentWorkflow = lazy(() => import("./app/blog/imagegenerator/zyvo-content-workflow.jsx"));
+const ZyvoTemplateComparison = lazy(() => import("./app/blog/imagegenerator/zyvo-template-comparison.jsx"));
 const BestTimeToPostAiContent = lazy(() => import("./app/blog/imagegenerator/best-time-to-post-ai-content.jsx"));
 const AiContentHooksCaptionsThatGoViral = lazy(() => import("./app/blog/imagegenerator/ai-content-hooks-captions-that-go-viral.jsx"));
 const CartoonDriveByExplained = lazy(() => import("./app/blog/imagegenerator/cartoon-drive-by-explained.jsx"));
 const CartoonDriveByVideoIdeas = lazy(() => import("./app/blog/imagegenerator/cartoon-drive-by-video-ideas.jsx"));
 const FootballerNationalitySwapExplained = lazy(() => import("./app/blog/imagegenerator/footballer-nationality-swap-explained.jsx"));
 const FootballerNationalitySwapTips = lazy(() => import("./app/blog/imagegenerator/footballer-nationality-swap-tips.jsx"));
+const FootballerNationalitySwapMistakes = lazy(() => import("./app/blog/imagegenerator/footballer-nationality-swap-mistakes.jsx"));
+const FootballerNationalitySwapSeries = lazy(() => import("./app/blog/imagegenerator/footballer-nationality-swap-series.jsx"));
 const ViralScore = lazy(() => import("./pages/viral/ViralScore.jsx"));
 const LipSync    = lazy(() => import("./pages/viral/LipSync.jsx"));
 
@@ -213,6 +234,17 @@ const BehindTheScenesDisasterTypes = lazy(() => import("./app/blog/imagegenerato
 const BehindTheScenesMistakes = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-mistakes.jsx"));
 const BehindTheScenesExtendedModules = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-extended-modules.jsx"));
 const BehindTheScenesVsClayRescue = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-vs-clay-rescue.jsx"));
+const BehindTheScenesVsMicroCameraAnimal = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-vs-micro-camera-animal.jsx"));
+const BehindTheScenesTime = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-time.jsx"));
+const BehindTheScenesTierList = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-tier-list.jsx"));
+const BehindTheScenesHalloween = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-halloween.jsx"));
+const BehindTheScenesIsItReal = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-is-it-real.jsx"));
+const BehindTheScenesBeginnersGuide = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-beginners-guide.jsx"));
+const EveryZyvoVideoFormatCompared = lazy(() => import("./app/blog/imagegenerator/every-zyvo-video-format-compared.jsx"));
+const ClayRescueVsMicroCameraAnimal = lazy(() => import("./app/blog/imagegenerator/clay-rescue-vs-micro-camera-animal.jsx"));
+const FruitStoryVsFootballerNationalitySwap = lazy(() => import("./app/blog/imagegenerator/fruit-story-vs-footballer-nationality-swap.jsx"));
+const MultiFormatWeeklyCalendar = lazy(() => import("./app/blog/imagegenerator/multi-format-weekly-calendar.jsx"));
+const CrossPromoteZyvoFormats = lazy(() => import("./app/blog/imagegenerator/cross-promote-zyvo-formats.jsx"));
 const FaceAsmrLanding = lazy(() => import("./pages/landing/FaceAsmrLanding.jsx"));
 const MicroCameraAnimalLanding = lazy(() => import("./pages/landing/MicroCameraAnimalLanding.jsx"));
 const ClayRescueLanding = lazy(() => import("./pages/landing/ClayRescueLanding.jsx"));
@@ -232,6 +264,18 @@ const ViralAnimalBodycamVideos = lazy(() => import("./app/blog/imagegenerator/vi
 const ClayRescueMakerBlog = lazy(() => import("./app/blog/imagegenerator/clay-rescue-ai-video-maker.jsx"));
 const GiantHandRescueVideosBlog = lazy(() => import("./app/blog/imagegenerator/why-giant-hand-rescue-videos-go-viral.jsx"));
 const AIFruitStoryCharacterIdeas = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-character-ideas.jsx"));
+const BestAiVideoGeneratorsTiktok = lazy(() => import("./app/blog/imagegenerator/best-ai-video-generators-tiktok.jsx"));
+const BestFreeAiToolsCreators = lazy(() => import("./app/blog/imagegenerator/best-free-ai-tools-creators.jsx"));
+const HowToMakeMoneyAiContent = lazy(() => import("./app/blog/imagegenerator/how-to-make-money-ai-content.jsx"));
+const IsAiContentWorthIt = lazy(() => import("./app/blog/imagegenerator/is-ai-content-worth-it.jsx"));
+const VerticalVideoFormatsGuide = lazy(() => import("./app/blog/imagegenerator/vertical-video-formats-guide.jsx"));
+const CartoonDriveBySeries = lazy(() => import("./app/blog/imagegenerator/cartoon-drive-by-series.jsx"));
+const TiktokAlgorithmExplained = lazy(() => import("./app/blog/imagegenerator/tiktok-algorithm-explained.jsx"));
+const InstagramReelsAlgorithmExplained = lazy(() => import("./app/blog/imagegenerator/instagram-reels-algorithm-explained.jsx"));
+const ContentSlumpRecovery = lazy(() => import("./app/blog/imagegenerator/content-slump-recovery.jsx"));
+const HowOftenShouldYouPost = lazy(() => import("./app/blog/imagegenerator/how-often-should-you-post.jsx"));
+const RepurposeOneVideoTenPieces = lazy(() => import("./app/blog/imagegenerator/repurpose-one-video-ten-pieces.jsx"));
+const FacelessYoutubeChannelIdeas = lazy(() => import("./app/blog/imagegenerator/faceless-youtube-channel-ideas.jsx"));
 const ScheduleAutoPublishAIVideosBlog = lazy(() => import("./app/blog/imagegenerator/schedule-auto-publish-ai-videos.jsx"));
 const OneClickPublishingPlaybookBlog = lazy(() => import("./app/blog/imagegenerator/one-click-publishing-playbook.jsx"));
 {/* Viral */}
@@ -550,6 +594,10 @@ return (
         <Route path="/blog/ai-image-generator-examples" element={<AIImageGeneratorExamples/>} />
         <Route path="/blog/ai-fruit-story-time" element={<AIFruitStoryTime/>} />
         <Route path="/blog/ai-fruit-story-cliffhangers" element={<AIFruitStoryCliffhangers/>} />
+        <Route path="/blog/ai-fruit-story-halloween" element={<AIFruitStoryHalloween/>} />
+        <Route path="/blog/ai-fruit-story-finale-ideas" element={<AIFruitStoryFinaleIdeas/>} />
+        <Route path="/blog/ai-fruit-story-vs-2am-worlds" element={<AIFruitStoryVs2amWorlds/>} />
+        <Route path="/blog/ai-fruit-story-character-names" element={<AIFruitStoryCharacterNames/>} />
         <Route path="/blog/ai-image-generator-mistakes" element={<AIImageGeneratorMistakes/>} />
         <Route path="/blog/what-is-micro-camera-animal" element={<WhatIsMicroCameraAnimal/>} />
         <Route path="/blog/micro-camera-animal-video-ideas" element={<MicroCameraAnimalVideoIdeas/>} />
@@ -561,12 +609,36 @@ return (
         <Route path="/blog/zyvo-vs-other-ai-tools" element={<ZyvoVsOtherAiTools/>} />
         <Route path="/blog/clay-rescue-video-ideas" element={<ClayRescueVideoIdeas/>} />
         <Route path="/blog/clay-rescue-mistakes" element={<ClayRescueMistakes/>} />
+        <Route path="/blog/micro-camera-animal-mistakes" element={<MicroCameraAnimalMistakes/>} />
+        <Route path="/blog/face-asmr-mistakes" element={<FaceAsmrMistakes/>} />
+        <Route path="/blog/cartoon-drive-by-mistakes" element={<CartoonDriveByMistakes/>} />
+        <Route path="/blog/footballer-nationality-swap-ideas" element={<FootballerNationalitySwapIdeas/>} />
+        <Route path="/blog/which-zyvo-template" element={<WhichZyvoTemplate/>} />
+        <Route path="/blog/clay-rescue-series" element={<ClayRescueSeries/>} />
+        <Route path="/blog/micro-camera-animal-series" element={<MicroCameraAnimalSeries/>} />
+        <Route path="/blog/cartoon-drive-by-vs-2am-worlds" element={<CartoonDriveByVs2amWorlds/>} />
+        <Route path="/blog/footballer-nationality-swap-time" element={<FootballerNationalitySwapTime/>} />
+        <Route path="/blog/face-asmr-privacy" element={<FaceAsmrPrivacy/>} />
+        <Route path="/blog/what-is-zyvo-publish" element={<WhatIsZyvoPublish/>} />
+        <Route path="/blog/what-is-zyvo-stats" element={<WhatIsZyvoStats/>} />
+        <Route path="/blog/what-is-zyvo-connections" element={<WhatIsZyvoConnections/>} />
+        <Route path="/blog/zyvo-content-workflow" element={<ZyvoContentWorkflow/>} />
+        <Route path="/blog/zyvo-template-comparison" element={<ZyvoTemplateComparison/>} />
         <Route path="/blog/best-time-to-post-ai-content" element={<BestTimeToPostAiContent/>} />
         <Route path="/blog/ai-content-hooks-captions-that-go-viral" element={<AiContentHooksCaptionsThatGoViral/>} />
         <Route path="/blog/cartoon-drive-by-explained" element={<CartoonDriveByExplained/>} />
         <Route path="/blog/cartoon-drive-by-video-ideas" element={<CartoonDriveByVideoIdeas/>} />
         <Route path="/blog/footballer-nationality-swap-explained" element={<FootballerNationalitySwapExplained/>} />
         <Route path="/blog/footballer-nationality-swap-tips" element={<FootballerNationalitySwapTips/>} />
+        <Route path="/blog/footballer-nationality-swap-mistakes" element={<FootballerNationalitySwapMistakes/>} />
+        <Route path="/blog/footballer-nationality-swap-series" element={<FootballerNationalitySwapSeries/>} />
+        <Route path="/blog/cartoon-drive-by-series" element={<CartoonDriveBySeries/>} />
+        <Route path="/blog/tiktok-algorithm-explained" element={<TiktokAlgorithmExplained/>} />
+        <Route path="/blog/instagram-reels-algorithm-explained" element={<InstagramReelsAlgorithmExplained/>} />
+        <Route path="/blog/content-slump-recovery" element={<ContentSlumpRecovery/>} />
+        <Route path="/blog/how-often-should-you-post" element={<HowOftenShouldYouPost/>} />
+        <Route path="/blog/repurpose-one-video-ten-pieces" element={<RepurposeOneVideoTenPieces/>} />
+        <Route path="/blog/faceless-youtube-channel-ideas" element={<FacelessYoutubeChannelIdeas/>} />
 
          <Route path="/ai-fruit-story-maker" element={<AIFruitStoryLanding />} />
          <Route path="/image-generator" element={<ImageGeneratorLanding />} />
@@ -585,6 +657,17 @@ return (
         <Route path="/blog/behind-the-scenes-mistakes" element={<BehindTheScenesMistakes/>} />
         <Route path="/blog/behind-the-scenes-extended-modules" element={<BehindTheScenesExtendedModules/>} />
         <Route path="/blog/behind-the-scenes-vs-clay-rescue" element={<BehindTheScenesVsClayRescue/>} />
+        <Route path="/blog/behind-the-scenes-vs-micro-camera-animal" element={<BehindTheScenesVsMicroCameraAnimal/>} />
+        <Route path="/blog/behind-the-scenes-time" element={<BehindTheScenesTime/>} />
+        <Route path="/blog/behind-the-scenes-tier-list" element={<BehindTheScenesTierList/>} />
+        <Route path="/blog/behind-the-scenes-halloween" element={<BehindTheScenesHalloween/>} />
+        <Route path="/blog/behind-the-scenes-is-it-real" element={<BehindTheScenesIsItReal/>} />
+        <Route path="/blog/behind-the-scenes-beginners-guide" element={<BehindTheScenesBeginnersGuide/>} />
+        <Route path="/blog/every-zyvo-video-format-compared" element={<EveryZyvoVideoFormatCompared/>} />
+        <Route path="/blog/clay-rescue-vs-micro-camera-animal" element={<ClayRescueVsMicroCameraAnimal/>} />
+        <Route path="/blog/fruit-story-vs-footballer-nationality-swap" element={<FruitStoryVsFootballerNationalitySwap/>} />
+        <Route path="/blog/multi-format-weekly-calendar" element={<MultiFormatWeeklyCalendar/>} />
+        <Route path="/blog/cross-promote-zyvo-formats" element={<CrossPromoteZyvoFormats/>} />
          <Route path="/face-asmr-maker" element={<FaceAsmrLanding />} />
          <Route path="/micro-camera-animal-maker" element={<MicroCameraAnimalLanding />} />
          <Route path="/clay-rescue-maker" element={<ClayRescueLanding />} />
@@ -604,6 +687,11 @@ return (
          <Route path="/blog/clay-rescue-ai-video-maker" element={<ClayRescueMakerBlog />} />
          <Route path="/blog/why-giant-hand-rescue-videos-go-viral" element={<GiantHandRescueVideosBlog />} />
          <Route path="/blog/ai-fruit-story-character-ideas" element={<AIFruitStoryCharacterIdeas />} />
+         <Route path="/blog/best-ai-video-generators-tiktok" element={<BestAiVideoGeneratorsTiktok />} />
+         <Route path="/blog/best-free-ai-tools-creators" element={<BestFreeAiToolsCreators />} />
+         <Route path="/blog/how-to-make-money-ai-content" element={<HowToMakeMoneyAiContent />} />
+         <Route path="/blog/is-ai-content-worth-it" element={<IsAiContentWorthIt />} />
+         <Route path="/blog/vertical-video-formats-guide" element={<VerticalVideoFormatsGuide />} />
          <Route path="/blog/schedule-auto-publish-ai-videos" element={<ScheduleAutoPublishAIVideosBlog />} />
          <Route path="/blog/one-click-publishing-playbook" element={<OneClickPublishingPlaybookBlog />} />
          <Route path="/blog/social-media-scheduler-for-creators" element={<CreatorGrowthGuide slug="social-media-scheduler-for-creators" />} />
@@ -633,6 +721,12 @@ return (
          <Route path="/blog/ai-world-generator-prompts" element={<TwoAmBlogGuide slug="ai-world-generator-prompts" />} />
          <Route path="/blog/how-to-make-ai-nostalgia-videos" element={<TwoAmBlogGuide slug="how-to-make-ai-nostalgia-videos" />} />
          <Route path="/blog/ai-worlds-at-2am-ideas" element={<TwoAmBlogGuide slug="ai-worlds-at-2am-ideas" />} />
+         <Route path="/blog/2am-wild-west-ai-images" element={<TwoAmBlogGuide slug="2am-wild-west-ai-images" />} />
+         <Route path="/blog/2am-atlantis-ai-images" element={<TwoAmBlogGuide slug="2am-atlantis-ai-images" />} />
+         <Route path="/blog/2am-space-station-ai-images" element={<TwoAmBlogGuide slug="2am-space-station-ai-images" />} />
+         <Route path="/blog/2am-medieval-kingdom-ai-images" element={<TwoAmBlogGuide slug="2am-medieval-kingdom-ai-images" />} />
+         <Route path="/blog/2am-worlds-halloween-special" element={<TwoAmBlogGuide slug="2am-worlds-halloween-special" />} />
+         <Route path="/blog/how-to-pick-your-first-2am-world" element={<TwoAmBlogGuide slug="how-to-pick-your-first-2am-world" />} />
 
         </Route>
 

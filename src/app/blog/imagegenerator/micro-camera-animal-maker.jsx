@@ -22,6 +22,12 @@ const related = [
     date: "14.05.2026",
     slug: "/ai-fruit-story-maker",
   },
+  {
+    title: "Behind the Scenes vs Micro Camera Animal: Documentary-Style AI Video Compared",
+    description: "Both formats build a video around scale and perspective, but the feeling they create is nothing alike.",
+    date: "21.08.2026",
+    slug: "/blog/behind-the-scenes-vs-micro-camera-animal",
+  },
 ];
 
 export default function MicroCameraAnimalMakerBlog() {

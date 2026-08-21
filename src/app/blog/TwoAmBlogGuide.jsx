@@ -25,6 +25,11 @@ import twoAmHogwarts from "./content/2am-in-hogwarts-ai-images.md?raw";
 import twoAmBikiniBottom from "./content/2am-in-bikini-bottom-ai-images.md?raw";
 import twoAmCyberpunkCity from "./content/2am-cyberpunk-city-ai-images.md?raw";
 import twoAmWorldsTierList from "./content/2am-worlds-tier-list.md?raw";
+import twoAmWildWest from "./content/2am-wild-west-ai-images.md?raw";
+import twoAmAtlantis from "./content/2am-atlantis-ai-images.md?raw";
+import twoAmSpaceStation from "./content/2am-space-station-ai-images.md?raw";
+import twoAmMedievalKingdom from "./content/2am-medieval-kingdom-ai-images.md?raw";
+import twoAmWorldsHalloweenSpecial from "./content/2am-worlds-halloween-special.md?raw";
 
 const PREVIEW = (name) => `/template/2am-world/${name}`;
 
@@ -423,7 +428,12 @@ const GUIDES = {
       ["/blog/2am-in-hogwarts-ai-images", "2AM in Hogwarts", "A torchlit magical school courtyard, reimagined at 2AM."],
       ["/blog/2am-in-bikini-bottom-ai-images", "2AM in Bikini Bottom", "A colorful underwater cartoon town, reimagined at 2AM."],
       ["/blog/2am-worlds-tier-list", "2AM Worlds Tier List", "Every world in the catalog, ranked by contrast and recognizability."],
+      ["/blog/2am-wild-west-ai-images", "2AM in a Wild West Town", "A dusty frontier saloon town, reimagined at 2AM."],
+      ["/blog/2am-worlds-halloween-special", "2AM Worlds Halloween Special", "Ten spooky 2AM World ideas, ready to generate."],
+      ["/blog/how-to-pick-your-first-2am-world", "How to Pick Your First 2AM World", "A simple decision guide for picking your first world."],
       ["/blog/what-is-zyvo", "What Is Zyvo?", "Every Zyvo tool in one place, and how they fit together."],
+      ["/blog/cartoon-drive-by-vs-2am-worlds", "Cartoon Drive-By vs 2AM Worlds", "Motion versus stillness — how each format reframes a fictional world."],
+      ["/blog/zyvo-template-comparison", "Compare Every Zyvo Tool", "All 9 Zyvo templates, side by side, in one reference table."],
     ],
     ctaHref: "/2am-worlds-ai-generator",
     cta: "Create your own 2AM world",
@@ -470,6 +480,9 @@ const GUIDES = {
       ["/2am-worlds-ai-generator", "Open the 2AM Worlds Generator", "Enter any of these prompts or write your own."],
       ["/blog/how-to-create-2am-anime-ai-images", "How to Create 2AM Anime AI Images", "Five anime sub-styles and a repeatable prompt formula."],
       ["/blog/how-to-create-2am-naruto-ai-images", "How to Create 2AM Naruto AI Images", "Prompt the Hidden Leaf Village at 2AM by location or character."],
+      ["/blog/2am-atlantis-ai-images", "2AM in an Underwater Atlantis City", "A glowing sunken city, reimagined at 2AM."],
+      ["/blog/2am-space-station-ai-images", "2AM on a Space Station", "A quiet orbital station, reimagined at 2AM."],
+      ["/blog/2am-medieval-kingdom-ai-images", "2AM in a Medieval Castle Kingdom", "A torch-lit castle kingdom, reimagined at 2AM."],
     ],
     ctaHref: "/2am-worlds-ai-generator",
     cta: "Try one of these prompts",
@@ -557,6 +570,157 @@ const GUIDES = {
     ],
     ctaHref: "/2am-in-ninjago-ai-generator",
     cta: "Create a 2AM Ninjago world",
+  },
+
+  "2am-wild-west-ai-images": {
+    title: "2AM in a Wild West Town",
+    seoTitle: "2AM in a Wild West Town: AI Images (2026)",
+    description: "Turn a dusty frontier town into a cinematic 2AM AI image set — three ready-to-use prompts, tips, and a repeatable formula.",
+    keywords: "2am wild west ai images, wild west ai generator, western ai images",
+    category: "2AM Worlds",
+    date: "August 21, 2026",
+    datePublished: "2026-08-21",
+    dateModified: "2026-08-21",
+    author: "Zyvo Team",
+    readTime: "6 min read",
+    hero: "/blog-assets/2am-wild-west-hero.png",
+    heroWidth: 1024,
+    heroHeight: 576,
+    heroAlt: "A cinematic AI-generated Wild West frontier town street at 2AM under a full moon",
+    markdown: twoAmWildWest,
+    ctaHref: "/2am-worlds-ai-generator",
+    cta: "Create your own Wild West world",
+  },
+
+  "2am-atlantis-ai-images": {
+    title: "2AM in an Underwater Atlantis City",
+    seoTitle: "2AM in an Underwater Atlantis City: AI Images (2026)",
+    description: "Turn a sunken city into a glowing 2AM AI image set — three ready-to-use prompts, tips, and a repeatable formula.",
+    keywords: "2am atlantis ai images, underwater city ai generator, atlantis ai images",
+    category: "2AM Worlds",
+    date: "August 21, 2026",
+    datePublished: "2026-08-21",
+    dateModified: "2026-08-21",
+    author: "Zyvo Team",
+    readTime: "6 min read",
+    hero: "/blog-assets/2am-atlantis-hero.png",
+    heroWidth: 1024,
+    heroHeight: 576,
+    heroAlt: "A cinematic AI-generated glowing underwater Atlantis city at 2AM",
+    markdown: twoAmAtlantis,
+    ctaHref: "/2am-worlds-ai-generator",
+    cta: "Create your own Atlantis world",
+  },
+
+  "2am-space-station-ai-images": {
+    title: "2AM on a Space Station",
+    seoTitle: "2AM on a Space Station: AI Images (2026)",
+    description: "Turn a quiet orbital station into a cinematic 2AM AI image set — three ready-to-use prompts, tips, and a repeatable formula.",
+    keywords: "2am space station ai images, space station ai generator, sci-fi ai images",
+    category: "2AM Worlds",
+    date: "August 21, 2026",
+    datePublished: "2026-08-21",
+    dateModified: "2026-08-21",
+    author: "Zyvo Team",
+    readTime: "6 min read",
+    hero: "/blog-assets/2am-space-station-hero.png",
+    heroWidth: 1024,
+    heroHeight: 576,
+    heroAlt: "A cinematic AI-generated quiet space station interior at 2AM with Earth visible through a window",
+    markdown: twoAmSpaceStation,
+    ctaHref: "/2am-worlds-ai-generator",
+    cta: "Create your own space station world",
+  },
+
+  "2am-medieval-kingdom-ai-images": {
+    title: "2AM in a Medieval Castle Kingdom",
+    seoTitle: "2AM in a Medieval Castle Kingdom: AI Images (2026)",
+    description: "Turn a torch-lit castle kingdom into a cinematic 2AM AI image set — three ready-to-use prompts, tips, and a repeatable formula.",
+    keywords: "2am medieval kingdom ai images, medieval castle ai generator, fantasy kingdom ai images",
+    category: "2AM Worlds",
+    date: "August 21, 2026",
+    datePublished: "2026-08-21",
+    dateModified: "2026-08-21",
+    author: "Zyvo Team",
+    readTime: "6 min read",
+    hero: "/blog-assets/2am-medieval-kingdom-hero.png",
+    heroWidth: 1024,
+    heroHeight: 576,
+    heroAlt: "A cinematic AI-generated torch-lit medieval castle kingdom at 2AM",
+    markdown: twoAmMedievalKingdom,
+    ctaHref: "/2am-worlds-ai-generator",
+    cta: "Create your own medieval kingdom",
+  },
+
+  "2am-worlds-halloween-special": {
+    title: "2AM Worlds Halloween Special: 10 Spooky World Ideas",
+    seoTitle: "2AM Worlds Halloween Special: 10 Spooky AI World Ideas",
+    description: "Ten Halloween-themed 2AM World ideas, ready to generate — pumpkins, mist, and a full moon layered onto the format's existing eerie atmosphere.",
+    keywords: "2am worlds halloween, halloween ai images, spooky ai world generator",
+    category: "2AM Worlds",
+    date: "August 21, 2026",
+    datePublished: "2026-08-21",
+    dateModified: "2026-08-21",
+    author: "Zyvo Team",
+    readTime: "6 min read",
+    hero: "/blog-assets/2am-worlds-halloween-hero.png",
+    heroWidth: 1024,
+    heroHeight: 576,
+    heroAlt: "A cinematic AI-generated spooky Halloween village street at 2AM with glowing pumpkins and mist",
+    markdown: twoAmWorldsHalloweenSpecial,
+    ctaHref: "/2am-worlds-ai-generator",
+    cta: "Build your own spooky 2AM world",
+  },
+
+  "how-to-pick-your-first-2am-world": {
+    title: "How to Pick Your First 2AM World: A Beginner's Decision Guide",
+    seoTitle: "How to Pick Your First 2AM World: Beginner's Guide (2026)",
+    description: "Overwhelmed by 20+ 2AM World options? A simple decision guide to picking your first one based on what you already enjoy.",
+    keywords: "2am worlds for beginners, which 2am world to try first, 2am worlds guide",
+    category: "2AM Worlds",
+    date: "August 21, 2026",
+    readTime: "5 min read",
+    hero: "/blog-assets/ai-world-generator-guide-2026.webp",
+    heroWidth: 1600,
+    heroHeight: 900,
+    heroAlt: "Six cinematic AI-generated world scenes arranged as a visual story after midnight",
+    intro: [
+      "The 2AM Worlds catalog has grown to dozens of options — games, anime, cities, fantasy kingdoms, even Halloween specials. That's great once you know what you like, and a little paralyzing on your first try. Here's a simple way to pick.",
+    ],
+    sections: [
+      {
+        title: "Start with what you already recognize",
+        paragraphs: [
+          "The fastest way in is picking a world you already have an emotional connection to — a game you played, a show you watched, a city you'd love to visit. Recognition does most of the work; you don't need to plan the perfect prompt.",
+        ],
+        bullets: ["Loved a specific game as a kid? Try Minecraft, Pokémon, or GTA.", "Prefer anime? Try Naruto, One Piece, or Studio Ghibli.", "No strong reference? Try a mood instead — cyberpunk city, medieval kingdom, or a wild west town."],
+      },
+      {
+        title: "If you're not sure, go by mood",
+        paragraphs: [
+          "If nothing specific comes to mind, pick by feeling instead of reference. Cozy and nostalgic points toward a small town or countryside setting. Moody and cinematic points toward a cyberpunk city or liminal space. Adventurous points toward a fantasy kingdom or wild west town.",
+        ],
+      },
+      {
+        title: "Then build a habit, not just one post",
+        paragraphs: [
+          "Once a first world lands well, the 2AM Worlds tier list and 50-prompt list are good next stops for picking your second and third — most creators who stick with the format end up cycling through several worlds rather than sticking to just one.",
+        ],
+      },
+    ],
+    faqs: [
+      ["Do I need to know a lot about the world I pick?", "No — a short reference or even a general mood is enough for Zyvo's generator to work with."],
+      ["What if my first world doesn't come out how I imagined?", "Every generation is a fresh interpretation — try again with a more specific detail or a different mood word."],
+      ["Should I stick to one world or try several?", "Most creators who build a following in this format eventually cycle through several worlds — starting with one is just the first step."],
+    ],
+    links: [
+      ["/2am-worlds-ai-generator", "Try the 2AM Worlds Generator", "Pick a world and generate your first cinematic set."],
+      ["/blog/2am-worlds-tier-list", "2AM Worlds Tier List", "Every world in the catalog, ranked by contrast and recognizability."],
+      ["/blog/best-2am-world-ai-prompts", "50 2AM World AI Prompt Ideas", "Fifty ready-to-use prompts across games, anime, cities, and nostalgia."],
+      ["/blog/what-is-the-2am-worlds-ai-trend", "What Is the 2AM Worlds AI Trend?", "Where the trend came from and why it works."],
+    ],
+    ctaHref: "/2am-worlds-ai-generator",
+    cta: "Create your first 2AM world",
   },
 };
 

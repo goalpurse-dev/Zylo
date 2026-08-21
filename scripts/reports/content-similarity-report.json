@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-20T12:36:11.195Z",
-  "articlesAudited": 176,
+  "generatedAt": "2026-08-21T20:53:16.838Z",
+  "articlesAudited": 226,
   "thinContent": [
     {
       "url": "/blog/product-photos-with-ai-for-shopify",
@@ -40,9 +40,33 @@
     },
     {
       "a": "/blog/2am-in-hogwarts-ai-images",
+      "b": "/blog/2am-medieval-kingdom-ai-images",
+      "shingleScore": 0.1559536354056902,
+      "unigramScore": 0.5424657534246575
+    },
+    {
+      "a": "/blog/2am-wild-west-ai-images",
+      "b": "/blog/2am-medieval-kingdom-ai-images",
+      "shingleScore": 0.21010332950631458,
+      "unigramScore": 0.5331491712707183
+    },
+    {
+      "a": "/blog/what-is-zyvo",
+      "b": "/blog/which-zyvo-template",
+      "shingleScore": 0.20047169811320756,
+      "unigramScore": 0.5317919075144508
+    },
+    {
+      "a": "/blog/2am-in-hogwarts-ai-images",
       "b": "/blog/2am-in-bikini-bottom-ai-images",
       "shingleScore": 0.21091290661070305,
       "unigramScore": 0.5268817204301075
+    },
+    {
+      "a": "/blog/footballer-nationality-swap-tips",
+      "b": "/blog/footballer-nationality-swap-mistakes",
+      "shingleScore": 0.11713286713286714,
+      "unigramScore": 0.5228070175438596
     },
     {
       "a": "/blog/why-3d-ai-images-perform-better",
@@ -63,10 +87,40 @@
       "unigramScore": 0.500823723228995
     },
     {
+      "a": "/blog/2am-wild-west-ai-images",
+      "b": "/blog/2am-space-station-ai-images",
+      "shingleScore": 0.21984216459977451,
+      "unigramScore": 0.4881889763779528
+    },
+    {
+      "a": "/blog/zyvo-template-comparison",
+      "b": "/blog/every-zyvo-video-format-compared",
+      "shingleScore": 0.15875912408759124,
+      "unigramScore": 0.4875
+    },
+    {
+      "a": "/blog/2am-atlantis-ai-images",
+      "b": "/blog/2am-space-station-ai-images",
+      "shingleScore": 0.19688542825361513,
+      "unigramScore": 0.48429319371727747
+    },
+    {
       "a": "/blog/AI-product-photos-increase-conversion-rates",
       "b": "/blog/best-ai-tools-for-ecommerce",
       "shingleScore": 0.18777292576419213,
       "unigramScore": 0.48424068767908307
+    },
+    {
+      "a": "/blog/2am-space-station-ai-images",
+      "b": "/blog/2am-medieval-kingdom-ai-images",
+      "shingleScore": 0.20642201834862386,
+      "unigramScore": 0.48010610079575594
+    },
+    {
+      "a": "/blog/best-ai-video-generators-tiktok",
+      "b": "/blog/best-free-ai-tools-creators",
+      "shingleScore": 0.14468085106382977,
+      "unigramScore": 0.4788273615635179
     },
     {
       "a": "/blog/ai-fruit-story-pricing",
@@ -75,76 +129,22 @@
       "unigramScore": 0.4769736842105263
     },
     {
+      "a": "/blog/2am-in-bikini-bottom-ai-images",
+      "b": "/blog/2am-atlantis-ai-images",
+      "shingleScore": 0.13917525773195877,
+      "unigramScore": 0.47368421052631576
+    },
+    {
       "a": "/blog/2am-fortnite-ai-images",
       "b": "/blog/2am-in-hogwarts-ai-images",
       "shingleScore": 0.15789473684210525,
       "unigramScore": 0.4725
     },
     {
-      "a": "/blog/which-ai-image-style-works-best",
-      "b": "/blog/ai-visual-styles-most-engagement",
-      "shingleScore": 0.08240534521158129,
-      "unigramScore": 0.4708994708994709
-    },
-    {
-      "a": "/blog/best-ai-tools-for-ecommerce",
-      "b": "/blog/ai-vs-traditional-product-photography",
-      "shingleScore": 0.16005665722379603,
-      "unigramScore": 0.4596100278551532
-    },
-    {
-      "a": "/blog/ai-image-generator-for-dark-visuals",
-      "b": "/blog/ai-visual-styles-most-engagement",
-      "shingleScore": 0.2133676092544987,
-      "unigramScore": 0.45604395604395603
-    },
-    {
-      "a": "/blog/converting-product-images-for-shopify-stores",
-      "b": "/blog/product-images-that-convert-full-guide",
-      "shingleScore": 0.14666666666666667,
-      "unigramScore": 0.45394736842105265
-    },
-    {
-      "a": "/blog/why-3d-ai-images-perform-better",
-      "b": "/blog/ai-visual-styles-most-engagement",
-      "shingleScore": 0.07236842105263158,
-      "unigramScore": 0.44680851063829785
-    },
-    {
-      "a": "/blog/top-ai-image-styles-that-go-viral-on-social-media",
-      "b": "/blog/ai-visual-styles-most-engagement",
-      "shingleScore": 0.06320541760722348,
-      "unigramScore": 0.44559585492227977
-    },
-    {
-      "a": "/blog/how-to-create-luxury-ai-images",
-      "b": "/blog/ai-image-generator-for-dark-visuals",
-      "shingleScore": 0.21359223300970873,
-      "unigramScore": 0.44385026737967914
-    },
-    {
-      "a": "/blog/how-to-create-movie-style-visuals",
-      "b": "/blog/why-3d-ai-images-perform-better",
-      "shingleScore": 0.16079295154185022,
-      "unigramScore": 0.4365482233502538
-    },
-    {
-      "a": "/blog/top-ai-image-styles-that-go-viral-on-social-media",
-      "b": "/blog/which-ai-image-style-works-best",
-      "shingleScore": 0.08723404255319149,
-      "unigramScore": 0.4320388349514563
-    },
-    {
-      "a": "/blog/how-to-create-luxury-ai-images",
-      "b": "/blog/ai-visual-styles-most-engagement",
-      "shingleScore": 0.21227621483375958,
-      "unigramScore": 0.42780748663101603
-    },
-    {
-      "a": "/blog/top-ai-image-styles-that-go-viral-on-social-media",
-      "b": "/blog/why-3d-ai-images-perform-better",
-      "shingleScore": 0.07531380753138076,
-      "unigramScore": 0.4236453201970443
+      "a": "/blog/2am-atlantis-ai-images",
+      "b": "/blog/2am-medieval-kingdom-ai-images",
+      "shingleScore": 0.1949828962371722,
+      "unigramScore": 0.47214854111405835
     }
   ],
   "mergeCandidates": [

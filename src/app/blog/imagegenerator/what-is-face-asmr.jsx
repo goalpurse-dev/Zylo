@@ -10,16 +10,16 @@ const related = [
     slug: "/blog/viral-face-asmr-videos",
   },
   {
-    title: "Best ASMR Video Ideas for TikTok in 2026 (That Actually Go Viral)",
-    description: "The 10 ASMR video concepts generating the most views, with execution tips for each.",
-    date: "25.05.2026",
-    slug: "/blog/asmr-video-ideas-tiktok-2026",
+    title: "Is Face ASMR Safe? Photo Privacy Basics Before You Upload",
+    description: "What to know about uploading a personal photo, and where to find the full privacy specifics.",
+    date: "21.08.2026",
+    slug: "/blog/face-asmr-privacy",
   },
   {
-    title: "What Is Zyvo? The AI Content Creation Platform Explained",
-    description: "Every Zyvo tool in one place, and how they fit together.",
-    date: "20.08.2026",
-    slug: "/blog/what-is-zyvo",
+    title: "6 Mistakes Killing Your Face ASMR Video Quality",
+    description: "The most common reasons results come back unclear, and the source-photo fix for each.",
+    date: "21.08.2026",
+    slug: "/blog/face-asmr-mistakes",
   },
 ];
 

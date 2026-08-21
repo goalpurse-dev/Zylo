@@ -10,6 +10,18 @@ const related = [
     date: "11.08.2026",
     slug: "/blog/cartoon-drive-by-video-ideas",
   },
+  {
+    title: "6 Mistakes Killing Your Cartoon Drive-By Video Views",
+    description: "The most common reasons results come back generic, and the fix for each one.",
+    date: "21.08.2026",
+    slug: "/blog/cartoon-drive-by-mistakes",
+  },
+  {
+    title: "Cartoon Drive-By vs 2AM Worlds: Which Atmospheric AI Format Should You Try?",
+    description: "Motion versus stillness — how each format reframes a fictional world.",
+    date: "21.08.2026",
+    slug: "/blog/cartoon-drive-by-vs-2am-worlds",
+  },
 ];
 
 const STEPS = [

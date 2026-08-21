@@ -5,6 +5,18 @@ import RelatedArticles from "../RelatedArticles";
 
 const related = [
   {
+    title: "Behind the Scenes vs Micro Camera Animal: Documentary-Style AI Video Compared",
+    description: "Both formats build a video around scale and perspective, but the feeling they create is nothing alike.",
+    date: "21.08.2026",
+    slug: "/blog/behind-the-scenes-vs-micro-camera-animal",
+  },
+  {
+    title: "How Long Does a Behind the Scenes Video Take to Make?",
+    description: "From picking a disaster module to a finished 8-second clip with sound.",
+    date: "21.08.2026",
+    slug: "/blog/behind-the-scenes-time",
+  },
+  {
     title: "Why AI 'Movie Set' Miniature Disaster Videos Look So Real",
     description: "The scale-contrast trick, the locked style bible, and why practical framing sells the illusion.",
     date: "16.08.2026",

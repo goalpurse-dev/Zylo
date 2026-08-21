@@ -16,10 +16,10 @@ const related = [
     slug: "/blog/what-is-clay-rescue",
   },
   {
-    title: "Why Giant Hand Rescue Videos Go Viral on TikTok in 2026",
-    description: "The retention psychology behind miniature disasters and celebration payoffs.",
-    date: "01.06.2026",
-    slug: "/blog/why-giant-hand-rescue-videos-go-viral",
+    title: "How to Turn One Clay Rescue Video Into a Series",
+    description: "Four pillars of a Clay Rescue series, and a simple way to start your first season.",
+    date: "21.08.2026",
+    slug: "/blog/clay-rescue-series",
   },
 ];
 

@@ -10,10 +10,10 @@ const related = [
     slug: "/blog/what-is-micro-camera-animal",
   },
   {
-    title: "What Is Clay Rescue? The Viral Giant-Hand Rescue AI Trend Explained",
-    description: "How a giant hand rescues tiny clay people from everyday disasters, without ever touching them.",
-    date: "20.08.2026",
-    slug: "/blog/what-is-clay-rescue",
+    title: "8 Mistakes Killing Your Micro Camera Animal Video Views",
+    description: "The most common structural mistakes, with a specific fix for each one.",
+    date: "21.08.2026",
+    slug: "/blog/micro-camera-animal-mistakes",
   },
   {
     title: "What Is Zyvo? The AI Content Creation Platform Explained",

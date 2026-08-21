@@ -16,6 +16,12 @@ const related = [
     date: "16.08.2026",
     slug: "/blog/behind-the-scenes-video-ideas",
   },
+  {
+    title: "Behind the Scenes Halloween Special: 10 Horror Movie-Set Disaster Ideas",
+    description: "Fog, jack-o'-lanterns, and a monster silhouette push the format into horror-movie-set territory.",
+    date: "21.08.2026",
+    slug: "/blog/behind-the-scenes-halloween",
+  },
 ];
 
 const MODULES = [

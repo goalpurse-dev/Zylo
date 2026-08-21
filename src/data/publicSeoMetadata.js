@@ -411,6 +411,111 @@ export const PUBLIC_SEO_METADATA = {
     ),
     image: `${SITE_URL}/blog-assets/clay-rescue-mistakes-hero.png`,
   },
+  "/blog/micro-camera-animal-mistakes": {
+    ...blog(
+      "8 Mistakes Killing Your Micro Camera Animal Video Views",
+      "The most common structural mistakes in Micro Camera Animal videos, with a specific fix for each one.",
+    ),
+    image: `${SITE_URL}/blog-assets/micro-camera-animal-mistakes-hero.png`,
+  },
+  "/blog/face-asmr-mistakes": {
+    ...blog(
+      "6 Mistakes Killing Your Face ASMR Video Quality",
+      "The most common reasons Face ASMR generations come back unclear, and the source-photo fix for each one.",
+    ),
+    image: `${SITE_URL}/blog-assets/face-asmr-mistakes-hero.png`,
+  },
+  "/blog/cartoon-drive-by-mistakes": {
+    ...blog(
+      "6 Mistakes Killing Your Cartoon Drive-By Video Views",
+      "The most common reasons Cartoon Drive-By videos come back generic, and the specific fix for each one.",
+    ),
+    image: `${SITE_URL}/blog-assets/cartoon-drive-by-mistakes-hero.png`,
+  },
+  "/blog/footballer-nationality-swap-ideas": {
+    ...blog(
+      "15 Footballer Nationality Swap Video Ideas You Can Try",
+      "Fifteen structural concepts for Footballer Nationality Swap videos, from rival-nation swaps to full world-tour sequences.",
+    ),
+    image: `${SITE_URL}/blog-assets/footballer-swap-ideas-hero.png`,
+  },
+  "/blog/which-zyvo-template": {
+    ...blog(
+      "Which Zyvo Template Should You Start With? A Quick Decision Guide",
+      "Match what you want to make to the right Zyvo tool in under two minutes.",
+    ),
+    image: `${SITE_URL}/blog-assets/which-zyvo-template-hero.png`,
+  },
+  "/blog/clay-rescue-series": {
+    ...blog(
+      "How to Turn One Clay Rescue Video Into a Series",
+      "Four pillars of a Clay Rescue series — a recurring village, a rotating cast, varied crises — and a simple way to start your first season.",
+    ),
+    image: `${SITE_URL}/blog-assets/clay-rescue-series-hero.png`,
+  },
+  "/blog/micro-camera-animal-series": {
+    ...blog(
+      "How to Turn One Micro Camera Animal Video Into a Series",
+      "Four pillars of a Micro Camera Animal season, and a simple way to structure a progressive-depth story arc.",
+    ),
+    image: `${SITE_URL}/blog-assets/micro-camera-animal-series-hero.png`,
+  },
+  "/blog/cartoon-drive-by-vs-2am-worlds": {
+    ...blog(
+      "Cartoon Drive-By vs 2AM Worlds: Which Atmospheric AI Format Should You Try?",
+      "Motion versus stillness — how Cartoon Drive-By and 2AM Worlds each reframe a fictional world, and how to decide which fits your idea.",
+    ),
+    image: `${SITE_URL}/blog-assets/cartoon-vs-2am-worlds-hero.png`,
+  },
+  "/blog/footballer-nationality-swap-time": {
+    ...blog(
+      "How Long Does a Footballer Nationality Swap Video Take to Make?",
+      "From naming a player to a finished, stitched sequence — what actually takes time, step by step.",
+    ),
+    image: `${SITE_URL}/blog-assets/footballer-swap-time-hero.png`,
+  },
+  "/blog/face-asmr-privacy": {
+    ...blog(
+      "Is Face ASMR Safe? Photo Privacy Basics Before You Upload",
+      "What to know about uploading a personal photo to Face ASMR, and where to find the full privacy specifics.",
+    ),
+    image: `${SITE_URL}/blog-assets/face-asmr-privacy-hero.png`,
+  },
+  "/blog/what-is-zyvo-publish": {
+    ...blog(
+      "What Is Zyvo Publish? Scheduling and Posting Explained",
+      "One dashboard for Instagram, TikTok, and YouTube — plan up to 28 days ahead and publish without switching apps.",
+    ),
+    image: `${SITE_URL}/blog-assets/what-is-zyvo-publish-hero.png`,
+  },
+  "/blog/what-is-zyvo-stats": {
+    ...blog(
+      "What Is Zyvo Stats? Understanding Your YouTube Analytics",
+      "A focused analytics dashboard tracking views, watch time, subscriber growth, and video performance.",
+    ),
+    image: `${SITE_URL}/blog-assets/what-is-zyvo-stats-hero.png`,
+  },
+  "/blog/what-is-zyvo-connections": {
+    ...blog(
+      "What Is Zyvo Connections? Managing Your Social Accounts",
+      "The connection layer behind Publish and Stats — bring Instagram, TikTok, and YouTube into one workspace.",
+    ),
+    image: `${SITE_URL}/blog-assets/what-is-zyvo-connections-hero.png`,
+  },
+  "/blog/zyvo-content-workflow": {
+    ...blog(
+      "The Complete Zyvo Content Workflow: From Idea to Published Post",
+      "Generate, connect, publish, measure — how every Zyvo tool fits into one repeatable content loop.",
+    ),
+    image: `${SITE_URL}/blog-assets/zyvo-content-workflow-hero.png`,
+  },
+  "/blog/zyvo-template-comparison": {
+    ...blog(
+      "The Ultimate Zyvo Template Comparison: All 9 Tools Side by Side",
+      "Every Zyvo tool, its real output format, and what it's actually best for, in one reference table.",
+    ),
+    image: `${SITE_URL}/blog-assets/zyvo-template-comparison-hero.png`,
+  },
   "/blog/best-time-to-post-ai-content": {
     ...blog(
       "Best Time to Post AI Content to Go Viral in 2026",
@@ -583,6 +688,216 @@ export const PUBLIC_SEO_METADATA = {
       "Same scale-contrast trick, opposite emotional arc — how to decide which format fits your niche.",
     ),
     image: `${SITE_URL}/blog-assets/behind-the-scenes-vs-clay-rescue-hero.png`,
+  },
+  "/blog/behind-the-scenes-vs-micro-camera-animal": {
+    ...blog(
+      "Behind the Scenes vs Micro Camera Animal: Documentary-Style AI Video Compared",
+      "Both formats build a video around scale and perspective, but the feeling they create is nothing alike.",
+    ),
+    image: `${SITE_URL}/blog-assets/bts-vs-micro-camera-hero.png`,
+  },
+  "/blog/ai-fruit-story-halloween": {
+    ...blog(
+      "AI Fruit Story Halloween Special: 10 Spooky Drama Ideas",
+      "Ten Halloween-themed premises that layer costumes, candy, and haunted-house tension onto proven fruit-drama structure.",
+    ),
+    image: `${SITE_URL}/blog-assets/fruit-story-halloween-hero.png`,
+  },
+  "/blog/ai-fruit-story-finale-ideas": {
+    ...blog(
+      "AI Fruit Story Series Finale Ideas: How to End a Storyline",
+      "Five ending structures that give a series a satisfying close instead of just stopping.",
+    ),
+    image: `${SITE_URL}/blog-assets/fruit-story-finale-hero.png`,
+  },
+  "/blog/ai-fruit-story-vs-2am-worlds": {
+    ...blog(
+      "AI Fruit Story vs 2AM Worlds: Which Format Should You Start With?",
+      "Two of Zyvo's most different formats compared — character drama versus atmosphere.",
+    ),
+    image: `${SITE_URL}/blog-assets/fruit-story-vs-2am-worlds-hero.png`,
+  },
+  "/blog/ai-fruit-story-character-names": {
+    ...blog(
+      "40 AI Fruit Story Character Names, Grouped by Fruit",
+      "A naming shortcut for your next fruit-drama cast — four names for each of ten fruit types.",
+    ),
+    image: `${SITE_URL}/blog-assets/fruit-story-names-hero.png`,
+  },
+  "/blog/best-ai-video-generators-tiktok": {
+    ...blog(
+      "Best AI Video Generators for TikTok in 2026",
+      "What actually separates a good AI video generator from a disappointing one, and how to evaluate any tool.",
+    ),
+    image: `${SITE_URL}/blog-assets/best-ai-video-generators-hero.png`,
+  },
+  "/blog/best-free-ai-tools-creators": {
+    ...blog(
+      "Best Free AI Tools for Content Creators in 2026",
+      "What to look for in a free tier before committing time to it, across the four categories every creator needs.",
+    ),
+    image: `${SITE_URL}/blog-assets/best-free-ai-tools-hero.png`,
+  },
+  "/blog/how-to-make-money-ai-content": {
+    ...blog(
+      "How to Make Money With AI-Generated Content in 2026",
+      "Four real monetization paths for AI-generated short-form content, and why consistent volume matters most.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-content-money-hero.png`,
+  },
+  "/blog/is-ai-content-worth-it": {
+    ...blog(
+      "Is AI Content Creation Worth It in 2026? An Honest Breakdown",
+      "Where AI generation clearly wins, where it clearly doesn't, and the real trade-off underneath the hype.",
+    ),
+    image: `${SITE_URL}/blog-assets/is-ai-content-worth-it-hero.png`,
+  },
+  "/blog/vertical-video-formats-guide": {
+    ...blog(
+      "The Complete Guide to Vertical Video Formats for TikTok, Reels & Shorts",
+      "The exact aspect ratios, resolutions, and safe zones each platform expects, plus pacing rules that hold attention.",
+    ),
+    image: `${SITE_URL}/blog-assets/vertical-video-formats-hero.png`,
+  },
+  "/blog/footballer-nationality-swap-mistakes": {
+    ...blog(
+      "10 Mistakes Killing Your Footballer Nationality Swap Video Views",
+      "The structural choices that quietly hold results back, with a specific fix for each one.",
+    ),
+    image: `${SITE_URL}/blog-assets/footballer-swap-time-stadium.png`,
+  },
+  "/blog/footballer-nationality-swap-series": {
+    ...blog(
+      "How to Turn One Footballer Nationality Swap Video Into a Series",
+      "A simple structure for turning single clips into an ongoing world-tour format.",
+    ),
+    image: `${SITE_URL}/blog-assets/footballer-swap-ideas-jerseys.png`,
+  },
+  "/blog/cartoon-drive-by-series": {
+    ...blog(
+      "How to Turn One Cartoon Drive-By Video Into a Series",
+      "A themed destination lineup turns one drive-by into a series people follow for the next stop.",
+    ),
+    image: `${SITE_URL}/blog-assets/cartoon-drive-by-explained-hero.png`,
+  },
+  "/blog/tiktok-algorithm-explained": {
+    ...blog(
+      "TikTok Algorithm Explained: What Actually Gets Your Videos Seen in 2026",
+      "What consistently correlates with reach on TikTok, and three common myths worth retiring.",
+    ),
+    image: `${SITE_URL}/blog-assets/what-is-zyvo-stats-growth.png`,
+  },
+  "/blog/instagram-reels-algorithm-explained": {
+    ...blog(
+      "Instagram Reels Algorithm Explained: How Reach Actually Works in 2026",
+      "Four real differences between Reels and TikTok distribution, and how to plan for each.",
+    ),
+    image: `${SITE_URL}/blog-assets/what-is-zyvo-connections-hero.png`,
+  },
+  "/blog/content-slump-recovery": {
+    ...blog(
+      "How to Recover From a Content Slump (Without Losing Your Audience)",
+      "What actually gets posting moving again after a gap — it isn't motivation.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-content-money-growth.png`,
+  },
+  "/blog/how-often-should-you-post": {
+    ...blog(
+      "How Often Should You Post? A Realistic Answer for 2026",
+      "The right posting frequency depends on where your account actually is right now.",
+    ),
+    image: `${SITE_URL}/blog-assets/what-is-zyvo-publish-schedule.png`,
+  },
+  "/blog/repurpose-one-video-ten-pieces": {
+    ...blog(
+      "How to Repurpose One AI Video Into 10 Pieces of Content",
+      "Four ways to split one multi-scene generation into a full week of posts.",
+    ),
+    image: `${SITE_URL}/blog-assets/zyvo-content-workflow-hero.png`,
+  },
+  "/blog/faceless-youtube-channel-ideas": {
+    ...blog(
+      "Faceless YouTube Channel Ideas Using AI in 2026",
+      "Six AI-generated formats that never require appearing on camera.",
+    ),
+    image: `${SITE_URL}/blog-assets/best-ai-video-generators-hero.png`,
+  },
+  "/blog/how-to-pick-your-first-2am-world": {
+    ...blog(
+      "How to Pick Your First 2AM World: A Beginner's Decision Guide",
+      "A simple decision guide to picking your first 2AM World based on what you already enjoy.",
+    ),
+    image: `${SITE_URL}/blog-assets/ai-world-generator-guide-2026.webp`,
+  },
+  "/blog/behind-the-scenes-time": {
+    ...blog(
+      "How Long Does a Behind the Scenes Video Take to Make?",
+      "From picking a disaster module to a finished 8-second clip with sound — what actually takes time.",
+    ),
+    image: `${SITE_URL}/blog-assets/behind-the-scenes-time-hero.png`,
+  },
+  "/blog/behind-the-scenes-tier-list": {
+    ...blog(
+      "Behind the Scenes Disaster Tier List: All 20 Modules Ranked",
+      "All 8 elemental disasters and 12 extended modules, ranked by how reliably they hook a viewer.",
+    ),
+    image: `${SITE_URL}/blog-assets/behind-the-scenes-tier-list-hero.png`,
+  },
+  "/blog/behind-the-scenes-halloween": {
+    ...blog(
+      "Behind the Scenes Halloween Special: 10 Horror Movie-Set Disaster Ideas",
+      "Fog, jack-o'-lanterns, and a fog-shrouded monster silhouette push the format into horror-movie-set territory.",
+    ),
+    image: `${SITE_URL}/blog-assets/behind-the-scenes-halloween-hero.png`,
+  },
+  "/blog/behind-the-scenes-is-it-real": {
+    ...blog(
+      "Is Behind the Scenes Real? How AI Movie-Set Videos Fool Millions of Viewers",
+      "None of it is real footage. Here's exactly why it convinces so many people anyway.",
+    ),
+    image: `${SITE_URL}/blog-assets/behind-the-scenes-is-it-real-hero.png`,
+  },
+  "/blog/behind-the-scenes-beginners-guide": {
+    ...blog(
+      "How to Pick Your First Behind the Scenes Disaster Type: A Beginner's Guide",
+      "20 disaster modules is a lot of choice for a first try — here's a simple way to pick.",
+    ),
+    image: `${SITE_URL}/blog-assets/behind-the-scenes-beginners-guide-hero.png`,
+  },
+  "/blog/every-zyvo-video-format-compared": {
+    ...blog(
+      "Every Zyvo AI Video Format Compared: Which One Should You Try Next?",
+      "Six format-specific AI video tools, side by side — what each one actually outputs.",
+    ),
+    image: `${SITE_URL}/blog-assets/every-format-compared-hero.png`,
+  },
+  "/blog/clay-rescue-vs-micro-camera-animal": {
+    ...blog(
+      "Clay Rescue vs Micro Camera Animal: Wholesome Rescue or Quiet Documentary?",
+      "Both formats work in miniature, but one has a hero and the other has none at all.",
+    ),
+    image: `${SITE_URL}/blog-assets/clay-rescue-vs-micro-camera-hero.png`,
+  },
+  "/blog/fruit-story-vs-footballer-nationality-swap": {
+    ...blog(
+      "AI Fruit Story vs Footballer Nationality Swap: Scripted Drama or One-Line Cameo?",
+      "Both formats build content around a talking character, at opposite paces.",
+    ),
+    image: `${SITE_URL}/blog-assets/fruit-story-vs-footballer-hero.png`,
+  },
+  "/blog/multi-format-weekly-calendar": {
+    ...blog(
+      "Building a Multi-Format Weekly Content Calendar With Zyvo",
+      "A sample week that spreads several Zyvo formats across different moods.",
+    ),
+    image: `${SITE_URL}/blog-assets/multi-format-calendar-hero.png`,
+  },
+  "/blog/cross-promote-zyvo-formats": {
+    ...blog(
+      "How to Cross-Promote Between Zyvo Formats: Turn One Audience Into Many",
+      "How a fan of one format becomes a viewer of another, without any new content.",
+    ),
+    image: `${SITE_URL}/blog-assets/cross-promote-formats-hero.png`,
   },
 };
 

@@ -5,6 +5,12 @@ import RelatedArticles from "../RelatedArticles";
 
 const related = [
   {
+    title: "How to Pick Your First Behind the Scenes Disaster Type: A Beginner's Guide",
+    description: "20 disaster modules is a lot of choice for a first try — here's a simple way to pick.",
+    date: "21.08.2026",
+    slug: "/blog/behind-the-scenes-beginners-guide",
+  },
+  {
     title: "18 Behind the Scenes AI Video Ideas You Can Generate Right Now",
     description: "Curated place-and-disaster combos across every module.",
     date: "16.08.2026",
