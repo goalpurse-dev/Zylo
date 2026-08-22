@@ -1,10 +1,13 @@
-import { createElement, useEffect } from "react";
+﻿import { createElement, useEffect } from "react";
 import { Link } from "react-router-dom";
 import publishCalendarVisual from "../../assets/blog/publish/publish-landing-hero-wide.png";
 import publishAnalyticsVisual from "../../assets/blog/publish/analytics-landing-hero-wide.png";
 import publishHubVisual from "../../assets/blog/publish/publish-hub-square.png";
 import calendarVisual from "../../assets/blog/publish/calendar-28-days-square.png";
 import uploadOnceVisual from "../../assets/blog/publish/upload-once-square.png";
+import publishSleepingVisual from "../../assets/blog/publish/publish-while-sleeping-vertical.png";
+import manualVsAutomatedVisual from "../../assets/blog/publish/manual-vs-automated-wide.png";
+import multiPlatformDistributionVisual from "../../assets/blog/publish/multi-platform-distribution-wide.png";
 import {
   ArrowRight,
   CalendarDays,
@@ -59,6 +62,16 @@ const FAQS = [
     answer:
       "Zyvo shows the status of each platform job as it moves from queued to preparing, processing, publishing, and published. Your past publications stay together with their captions, dates, and links.",
   },
+  {
+    question: "Does every TikTok post go live immediately?",
+    answer:
+      "Depending on your account and the post settings, a TikTok video can either publish directly or be sent to your TikTok Drafts for a final review before it goes live — Zyvo shows you which one happened.",
+  },
+  {
+    question: "What happens if a post fails?",
+    answer:
+      "Zyvo marks the job as failed and tells you which platform it happened on, so you can review and retry it instead of wondering whether it silently went live.",
+  },
 ];
 
 const PLATFORM_STYLES = {
@@ -96,220 +109,6 @@ function PlatformIcon({ platform, className = "h-5 w-5" }) {
   if (platform === "instagram") return <InstagramIcon className={className} />;
   if (platform === "tiktok") return <TikTokIcon className={className} />;
   return <YouTubeIcon className={className} />;
-}
-
-/*
-function PlatformBadge({ platform, label, detail, selected = false }) {
-  return (
-    <div
-      className={`flex items-center gap-3 rounded-2xl border px-3.5 py-3 transition ${
-        selected
-          ? "border-violet-400/35 bg-violet-400/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,.06)]"
-          : "border-white/[0.07] bg-white/[0.025]"
-      }`}
-    >
-      <span
-        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white ${PLATFORM_STYLES[platform]}`}
-      >
-        <PlatformIcon platform={platform} className="h-4.5 w-4.5" />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-[12px] font-bold text-white">{label}</span>
-        <span className="block truncate text-[10px] text-white/35">{detail}</span>
-      </span>
-      <span
-        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-          selected
-            ? "border-violet-300 bg-violet-500 text-white"
-            : "border-white/15 bg-white/[0.03] text-transparent"
-        }`}
-      >
-        <Check className="h-3 w-3" strokeWidth={3} />
-      </span>
-    </div>
-  );
-}
-*/
-
-function _PublishDashboardMockup() {
-  return (
-    <div className="relative mx-auto w-full max-w-6xl">
-      <div className="absolute -inset-8 rounded-[52px] bg-violet-500/15 blur-[90px]" />
-      <div className="relative overflow-hidden rounded-[24px] border border-white/[0.12] bg-[#090a0d] p-1.5 shadow-[0_40px_110px_rgba(0,0,0,.58)] sm:rounded-[32px] sm:p-2">
-        <img
-          src={publishCalendarVisual}
-          alt="Zyvo Publish calendar showing scheduled videos for Instagram, TikTok, and YouTube"
-          className="aspect-[1376/768] w-full rounded-[19px] object-cover sm:rounded-[25px]"
-          loading="eager"
-          fetchPriority="high"
-        />
-        <div className="pointer-events-none absolute inset-1.5 rounded-[19px] ring-1 ring-inset ring-white/[0.05] sm:inset-2 sm:rounded-[25px]" />
-      </div>
-    </div>
-  );
-
-  /*
-  return (
-    <div className="relative mx-auto w-full max-w-[620px]">
-      <div className="absolute -inset-6 rounded-[48px] bg-violet-500/15 blur-3xl" />
-      <div className="relative overflow-hidden rounded-[24px] border border-white/[0.12] bg-[#0a0b0e] shadow-[0_40px_110px_rgba(0,0,0,.62)] sm:rounded-[30px]">
-        <div className="flex h-12 items-center justify-between border-b border-white/[0.07] px-4 sm:h-14 sm:px-5">
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-          </div>
-          <div className="flex items-center gap-1.5 rounded-full border border-emerald-400/15 bg-emerald-400/[0.07] px-2.5 py-1 text-[9px] font-bold text-emerald-300 sm:text-[10px]">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
-            3 accounts connected
-          </div>
-        </div>
-
-        <div className="grid sm:grid-cols-[1.08fr_.92fr]">
-          <div className="border-b border-white/[0.07] p-4 sm:border-b-0 sm:border-r sm:p-5">
-            <div className="mb-4 flex items-start justify-between">
-              <div>
-                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-violet-300">Publish new content</p>
-                <p className="mt-1 text-[15px] font-extrabold text-white sm:text-[17px]">One post. Three channels.</p>
-              </div>
-              <span className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 text-[9px] text-white/35">Draft saved</span>
-            </div>
-
-            <div className="mb-3 grid grid-cols-3 gap-2">
-              <PlatformBadge platform="instagram" label="Instagram" detail="@zyvo" selected />
-              <PlatformBadge platform="tiktok" label="TikTok" detail="@zyvo" selected />
-              <PlatformBadge platform="youtube" label="YouTube" detail="Zyvo" selected />
-            </div>
-
-            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-3">
-              <div className="flex gap-3">
-                <div className="relative aspect-[9/16] w-[62px] shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#312e81] via-[#7c3aed] to-[#f472b6] sm:w-[76px]">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_68%_20%,rgba(255,255,255,.5),transparent_24%)]" />
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/35 backdrop-blur">
-                      <Play className="h-3.5 w-3.5 fill-white text-white" />
-                    </span>
-                  </span>
-                  <span className="absolute bottom-2 left-2 rounded-md bg-black/45 px-1.5 py-0.5 text-[8px] font-bold text-white/80">0:18</span>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-bold text-white/65">Caption</span>
-                    <span className="flex items-center gap-1 text-[8px] font-semibold text-violet-300">
-                      <Sparkles className="h-2.5 w-2.5" />
-                      AI caption
-                    </span>
-                  </div>
-                  <div className="mt-2 rounded-lg border border-white/[0.06] bg-black/25 p-2.5 text-[9px] leading-relaxed text-white/45">
-                    The tiny rescue that changed everything. Wait for the final scene...
-                    <span className="mt-1 block text-violet-300/80">#aivideo #shorts #viral</span>
-                  </div>
-                  <div className="mt-2 flex items-center gap-1.5">
-                    <span className="h-1.5 w-16 rounded-full bg-violet-400/70" />
-                    <span className="h-1.5 w-10 rounded-full bg-white/10" />
-                    <span className="h-1.5 w-6 rounded-full bg-white/10" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-3 flex gap-2">
-              <div className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] py-2.5 text-[10px] font-bold text-white/55">
-                <CalendarDays className="h-3.5 w-3.5" />
-                Schedule
-              </div>
-              <div className="flex flex-[1.2] items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#7146ff] to-[#9b6cff] py-2.5 text-[10px] font-extrabold text-white shadow-[0_10px_30px_rgba(113,70,255,.3)]">
-                <Send className="h-3.5 w-3.5" />
-                Post to all 3
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/[0.012] p-4 sm:p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30">Upcoming</p>
-                <p className="mt-1 text-[13px] font-bold text-white">Posting queue</p>
-              </div>
-              <span className="rounded-lg border border-violet-400/20 bg-violet-400/[0.07] px-2 py-1 text-[9px] font-bold text-violet-300">
-                28 days
-              </span>
-            </div>
-
-            <div className="mt-4 grid grid-cols-7 gap-1.5">
-              {[
-                ["M", "20"],
-                ["T", "21"],
-                ["W", "22"],
-                ["T", "23"],
-                ["F", "24"],
-                ["S", "25"],
-                ["S", "26"],
-              ].map(([day, date], index) => (
-                <div
-                  key={`${day}-${date}`}
-                  className={`rounded-lg border py-2 text-center ${
-                    index === 2
-                      ? "border-violet-400/45 bg-violet-400/[0.13]"
-                      : "border-white/[0.06] bg-white/[0.025]"
-                  }`}
-                >
-                  <span className="block text-[7px] font-bold text-white/25">{day}</span>
-                  <span className={`mt-0.5 block text-[9px] font-bold ${index === 2 ? "text-violet-200" : "text-white/55"}`}>{date}</span>
-                  <span className={`mx-auto mt-1 block h-1 w-1 rounded-full ${[0, 2, 4, 6].includes(index) ? "bg-emerald-300" : "bg-transparent"}`} />
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4 space-y-2">
-              {[
-                { time: "09:00", title: "Tiny world rescue", platforms: ["instagram", "tiktok", "youtube"], accent: "bg-violet-500" },
-                { time: "14:30", title: "AI fruit plot twist", platforms: ["instagram", "tiktok"], accent: "bg-pink-500" },
-                { time: "18:00", title: "Micro camera reveal", platforms: ["youtube"], accent: "bg-cyan-400" },
-              ].map((post) => (
-                <div key={`${post.time}-${post.title}`} className="flex items-center gap-2.5 rounded-xl border border-white/[0.07] bg-white/[0.025] p-2.5">
-                  <span className={`h-9 w-1 rounded-full ${post.accent}`} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[9px] font-bold text-white/70">{post.title}</span>
-                    <span className="mt-0.5 flex items-center gap-1 text-[8px] text-white/30">
-                      <Clock3 className="h-2.5 w-2.5" />
-                      {post.time}
-                    </span>
-                  </span>
-                  <span className="flex -space-x-1">
-                    {post.platforms.map((platform) => (
-                      <span
-                        key={platform}
-                        className={`flex h-5 w-5 items-center justify-center rounded-md text-white ring-2 ring-[#0b0c0f] ${PLATFORM_STYLES[platform]}`}
-                      >
-                        <PlatformIcon platform={platform} className="h-2.5 w-2.5" />
-                      </span>
-                    ))}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-3 flex items-center gap-2 rounded-xl border border-emerald-300/10 bg-emerald-300/[0.05] p-2.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
-              <span className="text-[8px] font-medium text-emerald-100/65">Next post is ready to publish</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="pointer-events-none absolute -bottom-5 left-5 hidden items-center gap-2 rounded-xl border border-white/10 bg-[#101116]/90 px-3 py-2 shadow-2xl backdrop-blur-xl sm:flex">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-400/10 text-emerald-300">
-          <CheckCircle2 className="h-4 w-4" />
-        </span>
-        <span>
-          <span className="block text-[9px] font-bold text-white">Published successfully</span>
-          <span className="block text-[8px] text-white/30">Instagram · TikTok · YouTube</span>
-        </span>
-      </div>
-    </div>
-  );
-  */
 }
 
 function FeatureCard({ icon: Icon, eyebrow, title, children, className = "" }) {
@@ -366,13 +165,13 @@ export default function PublishLanding() {
     upsertMeta("name", "description", description);
     upsertMeta("name", "keywords", "social media scheduler, social media publishing tool, schedule social media posts, Instagram scheduler, TikTok scheduler, YouTube scheduler, cross post social media, video scheduling tool");
     upsertMeta("name", "robots", "index, follow, max-image-preview:large");
-    upsertMeta("property", "og:title", "Zyvo Publish — Social Media Scheduler for Short-Form Video");
+    upsertMeta("property", "og:title", "Zyvo Publish â€” Social Media Scheduler for Short-Form Video");
     upsertMeta("property", "og:description", description);
     upsertMeta("property", "og:type", "website");
     upsertMeta("property", "og:url", CANONICAL_URL);
     upsertMeta("property", "og:image", "https://www.tryzyvo.com/og-image.png");
     upsertMeta("name", "twitter:card", "summary_large_image");
-    upsertMeta("name", "twitter:title", "Zyvo Publish — Schedule Once, Post Everywhere");
+    upsertMeta("name", "twitter:title", "Zyvo Publish â€” Schedule Once, Post Everywhere");
     upsertMeta("name", "twitter:description", description);
     upsertMeta("name", "twitter:image", "https://www.tryzyvo.com/og-image.png");
 
@@ -500,68 +299,93 @@ export default function PublishLanding() {
           </div>
 
           <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
-            <div className="mx-auto max-w-4xl text-center">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-300/20 bg-violet-400/[0.08] px-3.5 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,.06)]">
-                <Sparkles className="h-3.5 w-3.5 text-violet-300" />
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-violet-200">New · Zyvo Publish</span>
-              </div>
+            <div className="grid items-center gap-12 lg:grid-cols-[1.12fr_0.88fr] lg:gap-16">
+              <div>
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-300/20 bg-violet-400/[0.08] px-3.5 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,.06)]">
+                  <Sparkles className="h-3.5 w-3.5 text-violet-300" />
+                  <span className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-violet-200">New Â· Zyvo Publish</span>
+                </div>
 
-              <h1 className="text-balance text-[42px] font-black leading-[0.98] tracking-[-0.055em] text-white sm:text-[62px] lg:text-[78px]">
-                Schedule once.
-                <span className="block bg-gradient-to-r from-[#b7a4ff] via-[#d9b8ff] to-[#ffb4d9] bg-clip-text text-transparent">
-                  Show up everywhere.
-                </span>
-              </h1>
-
-              <p className="mx-auto mt-7 max-w-2xl text-[16px] leading-7 text-white/50 sm:text-[18px]">
-                The social media scheduler built for video creators. Plan posts up to{" "}
-                <strong className="font-bold text-white/80">28 days ahead</strong> and publish to{" "}
-                <strong className="font-bold text-white/80">Instagram, TikTok, and YouTube</strong>{" "}
-                from one focused workspace.
-              </p>
-
-              <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <Link
-                  to="/workspace/publish"
-                  className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#7448ff] to-[#9d6bff] px-7 py-4 text-[14px] font-extrabold text-white shadow-[0_18px_55px_rgba(116,72,255,.35)] transition hover:-translate-y-0.5 hover:brightness-110 sm:w-auto"
-                >
-                  Start publishing free
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-                <Link
-                  to="/blog/schedule-auto-publish-ai-videos"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.035] px-7 py-4 text-[14px] font-bold text-white/65 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white sm:w-auto"
-                >
-                  See the publishing guide
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
-              </div>
-
-              <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] font-medium text-white/35">
-                {["Free to start", "No credit card required", "Connect in minutes"].map((item) => (
-                  <span key={item} className="flex items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5 text-emerald-300/80" />
-                    {item}
+                <h1 className="text-balance text-[42px] font-black leading-[0.98] tracking-[-0.055em] text-white sm:text-[62px] lg:text-[68px]">
+                  Schedule once.
+                  <span className="block bg-gradient-to-r from-[#b7a4ff] via-[#d9b8ff] to-[#ffb4d9] bg-clip-text text-transparent">
+                    Show up everywhere.
                   </span>
-                ))}
-              </div>
-            </div>
+                </h1>
 
-            <div className="mt-12 text-center sm:mt-16">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/25">Publish short-form video across</p>
-              <div className="mt-5 flex flex-wrap items-center justify-center gap-3 sm:gap-5">
-                {[
-                  { platform: "instagram", label: "Instagram Reels" },
-                  { platform: "tiktok", label: "TikTok" },
-                  { platform: "youtube", label: "YouTube Shorts" },
-                ].map(({ platform, label }) => (
-                  <div key={platform} className="flex items-center gap-2.5 rounded-2xl border border-white/[0.07] bg-white/[0.025] px-4 py-2.5">
-                    <span className={`flex h-8 w-8 items-center justify-center rounded-[10px] text-white ${PLATFORM_STYLES[platform]}`}>
-                      <PlatformIcon platform={platform} className="h-3.5 w-3.5" />
+                <p className="mt-7 max-w-xl text-[16px] leading-7 text-white/50 sm:text-[18px]">
+                  The social media scheduler built for video creators. Plan posts up to{" "}
+                  <strong className="font-bold text-white/80">28 days ahead</strong> and publish to{" "}
+                  <strong className="font-bold text-white/80">Instagram, TikTok, and YouTube</strong>{" "}
+                  from one focused workspace.
+                </p>
+
+                <div className="mt-9 flex flex-col items-start gap-3 sm:flex-row">
+                  <Link
+                    to="/workspace/publish"
+                    className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#7448ff] to-[#9d6bff] px-7 py-4 text-[14px] font-extrabold text-white shadow-[0_18px_55px_rgba(116,72,255,.35)] transition hover:-translate-y-0.5 hover:brightness-110 sm:w-auto"
+                  >
+                    Start publishing free
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                  <Link
+                    to="/blog/schedule-auto-publish-ai-videos"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.035] px-7 py-4 text-[14px] font-bold text-white/65 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white sm:w-auto"
+                  >
+                    See the publishing guide
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
+                </div>
+
+                <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-medium text-white/35">
+                  {["Free to start", "No credit card required", "Connect in minutes"].map((item) => (
+                    <span key={item} className="flex items-center gap-1.5">
+                      <Check className="h-3.5 w-3.5 text-emerald-300/80" />
+                      {item}
                     </span>
-                    <span className="text-[12px] font-bold text-white/65">{label}</span>
+                  ))}
+                </div>
+
+                <div className="mt-10">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/25">Publish short-form video across</p>
+                  <div className="mt-5 flex flex-wrap items-center gap-3 sm:gap-4">
+                    {[
+                      { platform: "instagram", label: "Instagram Reels" },
+                      { platform: "tiktok", label: "TikTok" },
+                      { platform: "youtube", label: "YouTube Shorts" },
+                    ].map(({ platform, label }) => (
+                      <div key={platform} className="flex items-center gap-2.5 rounded-2xl border border-white/[0.07] bg-white/[0.025] px-4 py-2.5">
+                        <span className={`flex h-8 w-8 items-center justify-center rounded-[10px] text-white ${PLATFORM_STYLES[platform]}`}>
+                          <PlatformIcon platform={platform} className="h-3.5 w-3.5" />
+                        </span>
+                        <span className="text-[12px] font-bold text-white/65">{label}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+              </div>
+
+              <div className="relative mx-auto w-full max-w-[380px] lg:max-w-none">
+                <div className="absolute -inset-10 rounded-full bg-violet-500/15 blur-[90px]" />
+                <div className="relative overflow-hidden rounded-[28px] border border-white/[0.12] bg-[#090a0d] p-1.5 shadow-[0_40px_110px_rgba(0,0,0,.58)] sm:rounded-[34px] sm:p-2">
+                  <img
+                    src={publishSleepingVisual}
+                    alt="A desk at night with a phone showing content flowing up into Instagram, TikTok, and YouTube panels on the wall, representing publishing while you sleep"
+                    className="aspect-[3/4] w-full rounded-[22px] object-cover sm:rounded-[27px]"
+                    loading="eager"
+                    fetchPriority="high"
+                  />
+                  <div className="pointer-events-none absolute inset-1.5 rounded-[22px] ring-1 ring-inset ring-white/[0.05] sm:inset-2 sm:rounded-[27px]" />
+                </div>
+                <div className="pointer-events-none absolute -bottom-5 left-1/2 hidden -translate-x-1/2 items-center gap-2 rounded-xl border border-white/10 bg-[#101116]/90 px-3 py-2 shadow-2xl backdrop-blur-xl sm:flex">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-400/10 text-emerald-300">
+                    <CheckCircle2 className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="block text-[9px] font-bold text-white">Queued while you're offline</span>
+                    <span className="block text-[8px] text-white/30">Instagram Â· TikTok Â· YouTube</span>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -630,6 +454,14 @@ export default function PublishLanding() {
                   Open the Publish workspace
                   <ArrowRight className="h-4 w-4" />
                 </Link>
+                <figure className="mt-10 hidden overflow-hidden rounded-[22px] border border-white/[0.1] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(0,0,0,.4)] lg:block">
+                  <img
+                    src={publishCalendarVisual}
+                    alt="Zyvo Publish calendar showing scheduled videos for Instagram, TikTok, and YouTube"
+                    className="aspect-[1376/768] w-full rounded-[17px] object-cover"
+                    loading="lazy"
+                  />
+                </figure>
               </div>
 
               <div className="space-y-4">
@@ -690,7 +522,16 @@ export default function PublishLanding() {
               </p>
             </div>
 
-            <div className="mx-auto mt-12 grid max-w-5xl gap-4 md:grid-cols-2">
+            <figure className="relative mx-auto mt-10 max-w-5xl overflow-hidden rounded-[24px] border border-white/[0.1] bg-[#090a0d] p-1.5 shadow-[0_30px_90px_rgba(0,0,0,.38)] sm:rounded-[30px] sm:p-2">
+              <img
+                src={manualVsAutomatedVisual}
+                alt="A cluttered desk of scattered manual reminders and clocks next to a clean automated pipeline flowing into Instagram, TikTok, and YouTube"
+                className="aspect-[688/384] w-full rounded-[19px] object-cover sm:rounded-[23px]"
+                loading="lazy"
+              />
+            </figure>
+
+            <div className="mx-auto mt-8 grid max-w-5xl gap-4 md:grid-cols-2">
               <div className="rounded-[28px] border border-white/[0.07] bg-white/[0.02] p-6 sm:p-8">
                 <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/25">Posting manually</p>
                 <ul className="mt-6 space-y-4">
@@ -744,6 +585,20 @@ export default function PublishLanding() {
 
         <section className="py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <div className="mx-auto mb-12 max-w-3xl text-center">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-violet-300">Built per platform</p>
+              <h2 className="mt-4 text-[34px] font-black leading-[1.05] tracking-[-0.04em] sm:text-[46px]">
+                Every platform has its own rules. Zyvo handles them separately.
+              </h2>
+            </div>
+            <figure className="relative mx-auto mb-12 max-w-4xl overflow-hidden rounded-[24px] border border-white/[0.1] bg-[#090a0d] p-1.5 shadow-[0_30px_90px_rgba(0,0,0,.38)] sm:rounded-[30px] sm:p-2">
+              <img
+                src={multiPlatformDistributionVisual}
+                alt="A single content pipeline branching out into separate Instagram, TikTok, and YouTube panels"
+                className="aspect-[688/384] w-full rounded-[19px] object-cover sm:rounded-[23px]"
+                loading="lazy"
+              />
+            </figure>
             <div className="grid gap-5 lg:grid-cols-3">
               {[
                 {
@@ -798,7 +653,8 @@ export default function PublishLanding() {
               </Link>
             </div>
 
-            <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <p className="mt-12 text-[11px] font-bold uppercase tracking-[0.18em] text-white/25">Publishing &amp; growth guides</p>
+            <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <InternalLinkCard
                 to="/blog/schedule-auto-publish-ai-videos"
                 eyebrow="8 min guide"
@@ -821,6 +677,83 @@ export default function PublishLanding() {
                 cta="Read guide"
               />
               <InternalLinkCard
+                to="/blog/what-is-zyvo-publish"
+                eyebrow="Explained"
+                title="What is Zyvo Publish?"
+                description="A deeper look at the scheduling and posting tool, written for creators comparing options."
+                cta="Read guide"
+              />
+              <InternalLinkCard
+                to="/blog/28-day-social-media-content-calendar"
+                eyebrow="Content planning"
+                title="Build a 28-day content calendar"
+                description="A practical structure for planning a month of posts at once instead of deciding daily."
+                cta="Read guide"
+              />
+              <InternalLinkCard
+                to="/blog/how-often-should-you-post"
+                eyebrow="Growth"
+                title="How often should you actually post?"
+                description="A realistic answer based on where your account is right now, not a generic daily rule."
+                cta="Read guide"
+              />
+              <InternalLinkCard
+                to="/blog/content-slump-recovery"
+                eyebrow="Growth"
+                title="Recover from a content slump"
+                description="What actually gets posting moving again after a gap — it isn't motivation."
+                cta="Read guide"
+              />
+              <InternalLinkCard
+                to="/blog/repurpose-one-video-ten-pieces"
+                eyebrow="Tutorial"
+                title="Turn one video into 10 pieces of content"
+                description="Four ways to split a single multi-scene generation into a full week of posts."
+                cta="Read guide"
+              />
+              <InternalLinkCard
+                to="/blog/multi-format-weekly-calendar"
+                eyebrow="Growth"
+                title="Build a multi-format weekly lineup"
+                description="A sample week that spreads several Zyvo formats across different moods, ready to schedule."
+                cta="Read guide"
+              />
+              <InternalLinkCard
+                to="/blog/cross-promote-zyvo-formats"
+                eyebrow="Growth"
+                title="Turn one audience into many"
+                description="How a viewer of one format becomes a viewer of another, without making any new content."
+                cta="Read guide"
+              />
+              <InternalLinkCard
+                to="/blog/tiktok-algorithm-explained"
+                eyebrow="Algorithm"
+                title="What actually gets TikTok videos seen"
+                description="What consistently correlates with reach, and three myths worth retiring."
+                cta="Read guide"
+              />
+              <InternalLinkCard
+                to="/blog/instagram-reels-algorithm-explained"
+                eyebrow="Algorithm"
+                title="How Reels reach actually works"
+                description="Four real differences between Reels and TikTok distribution, and how to plan for each."
+                cta="Read guide"
+              />
+              <InternalLinkCard
+                to="/blog/how-to-cross-post-instagram-tiktok-youtube"
+                eyebrow="Tutorial"
+                title="Cross-post without tripling your work"
+                description="One video, three platforms, prepared once instead of uploaded three separate times."
+                cta="Read guide"
+              />
+              <InternalLinkCard
+                to="/blog/short-form-video-metrics-that-matter"
+                eyebrow="Analytics"
+                title="The metrics that actually matter"
+                description="Views, watch time, retention, and engagement — read together instead of in isolation."
+                cta="Read guide"
+              />
+              <InternalLinkCard
                 to="/stats"
                 eyebrow="Creator analytics"
                 title="Measure what happens after publishing"
@@ -834,6 +767,10 @@ export default function PublishLanding() {
                 description="Keep publishing destinations organized and ready before you prepare the next post."
                 cta="Explore Connections"
               />
+            </div>
+
+            <p className="mt-14 text-[11px] font-bold uppercase tracking-[0.18em] text-white/25">Or start with a new video</p>
+            <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <InternalLinkCard
                 to="/workspace/video-generator"
                 eyebrow="AI video tool"
@@ -869,6 +806,19 @@ export default function PublishLanding() {
                 eyebrow="Viral video format"
                 title="Create a Clay Rescue video"
                 description="Generate tiny-world rescue stories with a satisfying visual problem and payoff."
+              />
+              <InternalLinkCard
+                to="/behind-the-scenes-video-maker"
+                eyebrow="Viral video format"
+                title="Create a Behind the Scenes video"
+                description="A giant practical disaster hitting a handcrafted miniature city, shot like real movie-set footage."
+              />
+              <InternalLinkCard
+                to="/blog/every-zyvo-video-format-compared"
+                eyebrow="Comparison hub"
+                title="Every Zyvo video format compared"
+                description="Six format-specific AI video tools, side by side, with what each one actually outputs."
+                cta="Compare formats"
               />
             </div>
           </div>
@@ -931,7 +881,7 @@ export default function PublishLanding() {
                   View plans
                 </Link>
               </div>
-              <p className="mt-5 text-[10px] font-medium text-white/25">Free to start · No credit card required</p>
+              <p className="mt-5 text-[10px] font-medium text-white/25">Free to start Â· No credit card required</p>
             </div>
           </div>
         </section>
@@ -973,7 +923,7 @@ export default function PublishLanding() {
         </div>
         <div className="border-t border-white/[0.05]">
           <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-5 text-[10px] text-white/20 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <span>© 2026 Zyvo. All rights reserved.</span>
+            <span>Â© 2026 Zyvo. All rights reserved.</span>
             <span>Built for creators who keep showing up.</span>
           </div>
         </div>

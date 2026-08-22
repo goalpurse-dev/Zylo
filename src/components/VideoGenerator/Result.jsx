@@ -43,7 +43,7 @@ async function downloadVideo(url) {
 
 /* =============================== VIEWER MODAL =============================== */
 
-function Viewer({ video, onClose }) {
+function Viewer({ video, onClose, prevVideo, nextVideo, onPrev, onNext }) {
   const [downloading, setDownloading] = useState(false);
 
   const handleDownload = async () => {
@@ -52,12 +52,16 @@ function Viewer({ video, onClose }) {
     setDownloading(false);
   };
 
-  // Close on Escape
+  // Close on Escape, step through results with arrow keys
   useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft" && prevVideo) onPrev?.();
+      if (e.key === "ArrowRight" && nextVideo) onNext?.();
+    };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, prevVideo, nextVideo, onPrev, onNext]);
 
   return createPortal(
     <div
@@ -77,18 +81,58 @@ function Viewer({ video, onClose }) {
         </button>
       </div>
 
-      {/* VIDEO */}
-      <div className="flex-1 flex items-center justify-center px-4 min-h-0">
-        <video
-          key={video.id}
-          src={video.result_url}
-          controls
-          autoPlay
-          playsInline
-          preload="none"
-          className="max-w-full max-h-full rounded-2xl object-contain"
-          style={{ maxHeight: "calc(100dvh - 160px)" }}
-        />
+      {/* VIDEO + CAROUSEL NAV */}
+      <div className="relative flex-1 flex items-center justify-center px-4 min-h-0">
+        <div className="flex items-center justify-center gap-5 min-h-0">
+          {/* Left peek — faded neighbor, click to jump */}
+          {prevVideo && (
+            <div
+              className="hidden lg:block shrink-0 w-[120px] opacity-50 transition hover:opacity-80 cursor-pointer"
+              onClick={onPrev}
+            >
+              <VideoThumb item={prevVideo} isActive={false} onClick={onPrev} sizeClass="w-[120px]" />
+            </div>
+          )}
+
+          <video
+            key={video.id}
+            src={video.result_url}
+            controls
+            autoPlay
+            playsInline
+            preload="none"
+            className="max-w-full max-h-full rounded-2xl object-contain"
+            style={{ maxHeight: "calc(100dvh - 160px)" }}
+          />
+
+          {/* Right peek — faded neighbor, click to jump */}
+          {nextVideo && (
+            <div
+              className="hidden lg:block shrink-0 w-[120px] opacity-50 transition hover:opacity-80 cursor-pointer"
+              onClick={onNext}
+            >
+              <VideoThumb item={nextVideo} isActive={false} onClick={onNext} sizeClass="w-[120px]" />
+            </div>
+          )}
+        </div>
+
+        {/* Arrows — always available, step to the previous/next result */}
+        <button
+          type="button"
+          onClick={onPrev}
+          disabled={!prevVideo}
+          className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-20 rounded-full border border-white/10 bg-black/55 p-2.5 sm:p-3 backdrop-blur-md transition hover:bg-black/80 disabled:cursor-not-allowed disabled:opacity-20 disabled:hover:bg-black/55"
+        >
+          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        </button>
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={!nextVideo}
+          className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 rounded-full border border-white/10 bg-black/55 p-2.5 sm:p-3 backdrop-blur-md transition hover:bg-black/80 disabled:cursor-not-allowed disabled:opacity-20 disabled:hover:bg-black/55"
+        >
+          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        </button>
       </div>
 
       {/* BOTTOM ACTIONS */}
@@ -141,7 +185,7 @@ function Viewer({ video, onClose }) {
 
 /* =============================== VIDEO THUMB =============================== */
 
-function VideoThumb({ item, isActive, onClick }) {
+function VideoThumb({ item, isActive, onClick, sizeClass = "w-[100px] sm:w-[120px]" }) {
   const isDone = !!item.result_url;
   const isFailed = item.status === "failed";
   const isRateLimit = isFailed && isRateLimitError(item);
@@ -176,7 +220,7 @@ function VideoThumb({ item, isActive, onClick }) {
       type="button"
       onClick={onClick}
       className={`
-        relative flex-shrink-0 aspect-[9/16] w-[100px] sm:w-[120px]
+        relative flex-shrink-0 aspect-[9/16] ${sizeClass}
         rounded-xl overflow-hidden border transition-all bg-black
         ${isFailed
           ? isActive
@@ -279,6 +323,185 @@ function VideoThumb({ item, isActive, onClick }) {
         </div>
       )}
     </button>
+  );
+}
+
+/* =============================== PREVIEW PANE =============================== */
+
+function PreviewPane({ video, previewProgress, onFullscreen, onDownload, variant = "default" }) {
+  if (!video) return null;
+  const ringId = `previewRing_${variant}_${video.id}`;
+
+  return (
+    <div className={`w-full rounded-2xl overflow-hidden bg-black/30 border ${video.status === "failed" ? "border-amber-500/20" : "border-white/5"}`}>
+      {video.result_url ? (
+        <div className="relative">
+          <video
+            key={video.id}
+            src={video.result_url}
+            muted playsInline autoPlay loop preload="none"
+            className="w-full max-h-[40vh] object-contain"
+          />
+          {/* Open fullscreen + download strip */}
+          <div className="absolute bottom-0 inset-x-0 flex items-center justify-between px-4 py-3 bg-gradient-to-t from-black/80 to-transparent">
+            <p className="text-white/60 text-xs truncate max-w-[60%]">
+              {video.prompt || "Generated video"}
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={onFullscreen}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-medium transition active:scale-95"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                </svg>
+                Fullscreen
+              </button>
+              <button
+                onClick={() => onDownload(video.result_url)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#7A3BFF] hover:bg-[#6a30e0] text-white text-xs font-medium transition active:scale-95"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Download
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : video.status === "failed" ? (
+        <div className="relative flex flex-col items-center justify-center gap-4 py-14 overflow-hidden bg-[#0d0806] rounded-2xl min-h-[220px]">
+          {/* Amber ambient glow */}
+          <div
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              width: "55%", paddingBottom: "55%", top: "-10%", left: "22%",
+              background: "radial-gradient(circle, rgba(245,158,11,0.12), transparent)",
+              filter: "blur(40px)",
+            }}
+          />
+          {/* Warning icon */}
+          <div className="relative z-10 w-14 h-14 rounded-full bg-amber-500/15 border border-amber-500/35 flex items-center justify-center">
+            <svg className="w-7 h-7 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
+            </svg>
+          </div>
+          {/* Label */}
+          <div className="relative z-10 flex flex-col items-center gap-1">
+            <p className="text-amber-400 text-[13px] font-semibold tracking-wide">
+              {isRateLimitError(video) ? "Rate Limited by Provider" : "Generation Failed"}
+            </p>
+            <p className="text-white/35 text-[11px] text-center max-w-[260px] leading-snug">
+              {isRateLimitError(video)
+                ? "Runware is throttling requests based on balance. The system will retry automatically."
+                : "Something went wrong. Try generating again."}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="relative flex flex-col items-center justify-center gap-5 py-14 overflow-hidden bg-[#060912] rounded-2xl min-h-[220px]">
+
+          {/* Ambient orb */}
+          <div
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              width: "55%", paddingBottom: "55%", top: "-10%", left: "22%",
+              background: "radial-gradient(circle, rgba(122,59,255,0.17), transparent)",
+              filter: "blur(40px)",
+              animation: "pulse 2.8s ease-in-out infinite",
+            }}
+          />
+
+          {/* Video waveform bars */}
+          <div className="relative z-10 flex items-end gap-[3px] h-7">
+            {[0.4, 0.75, 1, 0.6, 0.9, 0.5, 1, 0.7, 0.85, 0.45].map((h, i) => (
+              <div
+                key={i}
+                className="w-[3px] rounded-full"
+                style={{
+                  height: `${h * 100}%`,
+                  background: "linear-gradient(to top, #7A3BFF, #C077FF)",
+                  opacity: 0.7,
+                  animation: `waveBar 1.1s ease-in-out ${i * 0.1}s infinite alternate`,
+                  transformOrigin: "bottom",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Progress ring */}
+          <div className="relative w-[60px] h-[60px] z-10">
+            <svg className="w-full h-full" style={{ transform: "rotate(-90deg)" }} viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id={ringId} x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#7A3BFF" />
+                  <stop offset="100%" stopColor="#C077FF" />
+                </linearGradient>
+              </defs>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
+              <circle
+                cx="50" cy="50" r="40"
+                fill="none"
+                stroke={`url(#${ringId})`}
+                strokeWidth="6"
+                strokeLinecap="round"
+                strokeDasharray="251.3"
+                strokeDashoffset={251.3 * (1 - previewProgress / 100)}
+                style={{ transition: "stroke-dashoffset 0.5s cubic-bezier(0.4,0,0.2,1)" }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-white/80 text-[13px] font-semibold tabular-nums">{previewProgress}%</span>
+            </div>
+            <div
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                inset: "-6px",
+                background: "radial-gradient(circle, rgba(122,59,255,0.2), transparent 70%)",
+                filter: "blur(6px)",
+                animation: "pulse 2s ease-in-out infinite",
+              }}
+            />
+          </div>
+
+          {/* Status + dots */}
+          <div className="relative z-10 flex flex-col items-center gap-1.5">
+            <p className="text-white/45 text-[11px] font-medium tracking-[0.1em] uppercase">
+              {previewProgress < 5
+                ? "Queuing"
+                : previewProgress < 30
+                ? "Generating frames"
+                : previewProgress < 70
+                ? "Rendering video"
+                : previewProgress < 95
+                ? "Finalizing"
+                : "Almost done"}
+            </p>
+            <div className="flex gap-[4px]">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="block w-[4px] h-[4px] rounded-full bg-[#7A3BFF]/55 animate-bounce"
+                  style={{ animationDelay: `${i * 150}ms`, animationDuration: "1.1s" }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="relative z-10 w-52 h-[2px] bg-white/[0.06] rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${Math.max(2, previewProgress)}%`,
+                background: "linear-gradient(90deg, #7A3BFF, #C077FF)",
+                transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)",
+                boxShadow: "0 0 8px rgba(122,59,255,0.6)",
+              }}
+            />
+          </div>
+
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -466,6 +689,13 @@ export default function Result({ results = [] }) {
     [videoResults, activeVideoId]
   );
 
+  /* neighboring results — power the desktop carousel arrows/peeks */
+  const activeIndex = videoResults.findIndex((v) => v.id === activeVideoId);
+  const prevVideo = activeIndex > 0 ? videoResults[activeIndex - 1] : null;
+  const nextVideo = activeIndex >= 0 && activeIndex < videoResults.length - 1 ? videoResults[activeIndex + 1] : null;
+  const goPrev = () => { if (prevVideo) setActiveVideoId(prevVideo.id); };
+  const goNext = () => { if (nextVideo) setActiveVideoId(nextVideo.id); };
+
   /* =============================== AUTO SELECT =============================== */
 
   useEffect(() => {
@@ -602,180 +832,25 @@ export default function Result({ results = [] }) {
 
       {/* ================= SELECTED PREVIEW (in-page, desktop friendly) ================= */}
       {activeVideo && (
-        <div className={`w-full rounded-2xl overflow-hidden bg-black/30 border ${activeVideo.status === "failed" ? "border-amber-500/20" : "border-white/5"}`}>
-          {activeVideo.result_url ? (
-            <div className="relative">
-              <video
-                key={activeVideo.id}
-                src={activeVideo.result_url}
-                muted playsInline autoPlay loop preload="none"
-                className="w-full max-h-[40vh] object-contain"
-              />
-              {/* Open fullscreen + download strip */}
-              <div className="absolute bottom-0 inset-x-0 flex items-center justify-between px-4 py-3 bg-gradient-to-t from-black/80 to-transparent">
-                <p className="text-white/60 text-xs truncate max-w-[60%]">
-                  {activeVideo.prompt || "Generated video"}
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setViewerOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-medium transition active:scale-95"
-                  >
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-                    </svg>
-                    Fullscreen
-                  </button>
-                  <button
-                    onClick={() => downloadVideo(activeVideo.result_url)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#7A3BFF] hover:bg-[#6a30e0] text-white text-xs font-medium transition active:scale-95"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Download
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : activeVideo.status === "failed" ? (
-            <div className="relative flex flex-col items-center justify-center gap-4 py-14 overflow-hidden bg-[#0d0806] rounded-2xl min-h-[220px]">
-              {/* Amber ambient glow */}
-              <div
-                className="absolute rounded-full pointer-events-none"
-                style={{
-                  width: "55%", paddingBottom: "55%", top: "-10%", left: "22%",
-                  background: "radial-gradient(circle, rgba(245,158,11,0.12), transparent)",
-                  filter: "blur(40px)",
-                }}
-              />
-              {/* Warning icon */}
-              <div className="relative z-10 w-14 h-14 rounded-full bg-amber-500/15 border border-amber-500/35 flex items-center justify-center">
-                <svg className="w-7 h-7 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
-                </svg>
-              </div>
-              {/* Label */}
-              <div className="relative z-10 flex flex-col items-center gap-1">
-                <p className="text-amber-400 text-[13px] font-semibold tracking-wide">
-                  {isRateLimitError(activeVideo) ? "Rate Limited by Provider" : "Generation Failed"}
-                </p>
-                <p className="text-white/35 text-[11px] text-center max-w-[260px] leading-snug">
-                  {isRateLimitError(activeVideo)
-                    ? "Runware is throttling requests based on balance. The system will retry automatically."
-                    : "Something went wrong. Try generating again."}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="relative flex flex-col items-center justify-center gap-5 py-14 overflow-hidden bg-[#060912] rounded-2xl min-h-[220px]">
-
-              {/* Ambient orb */}
-              <div
-                className="absolute rounded-full pointer-events-none"
-                style={{
-                  width: "55%", paddingBottom: "55%", top: "-10%", left: "22%",
-                  background: "radial-gradient(circle, rgba(122,59,255,0.17), transparent)",
-                  filter: "blur(40px)",
-                  animation: "pulse 2.8s ease-in-out infinite",
-                }}
-              />
-
-              {/* Video waveform bars */}
-              <div className="relative z-10 flex items-end gap-[3px] h-7">
-                {[0.4, 0.75, 1, 0.6, 0.9, 0.5, 1, 0.7, 0.85, 0.45].map((h, i) => (
-                  <div
-                    key={i}
-                    className="w-[3px] rounded-full"
-                    style={{
-                      height: `${h * 100}%`,
-                      background: "linear-gradient(to top, #7A3BFF, #C077FF)",
-                      opacity: 0.7,
-                      animation: `waveBar 1.1s ease-in-out ${i * 0.1}s infinite alternate`,
-                      transformOrigin: "bottom",
-                    }}
-                  />
-                ))}
-              </div>
-
-              {/* Progress ring */}
-              <div className="relative w-[60px] h-[60px] z-10">
-                <svg className="w-full h-full" style={{ transform: "rotate(-90deg)" }} viewBox="0 0 100 100">
-                  <defs>
-                    <linearGradient id="previewRing" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#7A3BFF" />
-                      <stop offset="100%" stopColor="#C077FF" />
-                    </linearGradient>
-                  </defs>
-                  <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
-                  <circle
-                    cx="50" cy="50" r="40"
-                    fill="none"
-                    stroke="url(#previewRing)"
-                    strokeWidth="6"
-                    strokeLinecap="round"
-                    strokeDasharray="251.3"
-                    strokeDashoffset={251.3 * (1 - previewProgress / 100)}
-                    style={{ transition: "stroke-dashoffset 0.5s cubic-bezier(0.4,0,0.2,1)" }}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-white/80 text-[13px] font-semibold tabular-nums">{previewProgress}%</span>
-                </div>
-                <div
-                  className="absolute rounded-full pointer-events-none"
-                  style={{
-                    inset: "-6px",
-                    background: "radial-gradient(circle, rgba(122,59,255,0.2), transparent 70%)",
-                    filter: "blur(6px)",
-                    animation: "pulse 2s ease-in-out infinite",
-                  }}
-                />
-              </div>
-
-              {/* Status + dots */}
-              <div className="relative z-10 flex flex-col items-center gap-1.5">
-                <p className="text-white/45 text-[11px] font-medium tracking-[0.1em] uppercase">
-                  {previewProgress < 5
-                    ? "Queuing"
-                    : previewProgress < 30
-                    ? "Generating frames"
-                    : previewProgress < 70
-                    ? "Rendering video"
-                    : previewProgress < 95
-                    ? "Finalizing"
-                    : "Almost done"}
-                </p>
-                <div className="flex gap-[4px]">
-                  {[0, 1, 2].map((i) => (
-                    <span
-                      key={i}
-                      className="block w-[4px] h-[4px] rounded-full bg-[#7A3BFF]/55 animate-bounce"
-                      style={{ animationDelay: `${i * 150}ms`, animationDuration: "1.1s" }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Progress bar */}
-              <div className="relative z-10 w-52 h-[2px] bg-white/[0.06] rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${Math.max(2, previewProgress)}%`,
-                    background: "linear-gradient(90deg, #7A3BFF, #C077FF)",
-                    transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)",
-                    boxShadow: "0 0 8px rgba(122,59,255,0.6)",
-                  }}
-                />
-              </div>
-
-            </div>
-          )}
-        </div>
+        <PreviewPane
+          video={activeVideo}
+          previewProgress={previewProgress}
+          onFullscreen={() => setViewerOpen(true)}
+          onDownload={downloadVideo}
+          variant="inline"
+        />
       )}
 
       {/* ================= VIEWER MODAL ================= */}
       {viewerOpen && activeVideo?.result_url && (
-        <Viewer video={activeVideo} onClose={() => setViewerOpen(false)} />
+        <Viewer
+          video={activeVideo}
+          onClose={() => setViewerOpen(false)}
+          prevVideo={prevVideo}
+          nextVideo={nextVideo}
+          onPrev={goPrev}
+          onNext={goNext}
+        />
       )}
     </div>
   );

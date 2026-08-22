@@ -327,7 +327,7 @@ useEffect(() => {
 }
 
   return (
-    <div className="w-full flex-1 flex flex-col gap-2.5 relative bg-[#0b0c0e] border border-white/[0.06] shadow-[0_10px_40px_rgba(0,0,0,0.4)] rounded-2xl p-4 md:p-5 pb-[80px] md:pb-5">
+    <div className="w-full flex-1 flex flex-col gap-2.5 relative bg-[#0b0c0e] border border-white/[0.06] shadow-[0_10px_40px_rgba(0,0,0,0.4)] rounded-2xl p-4 md:p-5">
 
       {/* BLUR OVERLAY */}
 {isAnyModalOpen &&
@@ -465,27 +465,27 @@ useEffect(() => {
 {canAddImages && (
   <button
     onClick={() => setOpenReferenceModal(true)}
-    className="group flex items-center gap-3 w-full rounded-xl border border-white/[0.07] bg-[#0e1012] px-4 py-2.5 text-left hover:border-white/15 transition-all active:scale-[0.99]"
+    className="group flex items-center gap-3 w-full rounded-xl border border-white/[0.07] bg-[#0e1012] px-4 py-3 text-left hover:border-white/15 transition-all active:scale-[0.99]"
   >
     {/* Mini stacked previews */}
-    <div className="flex items-center shrink-0" style={{ width: selected.length > 0 ? 40 : 28 }}>
+    <div className="flex items-center shrink-0" style={{ width: selected.length > 0 ? 72 : 44 }}>
       {selected.length > 0
         ? selected.slice(0, 2).map((img, i) => (
-            <div key={img.id} className="w-7 h-7 rounded-md overflow-hidden border border-white/10" style={{ marginLeft: i > 0 ? -8 : 0, zIndex: 2 - i }}>
+            <div key={img.id} className="w-12 h-12 rounded-lg overflow-hidden border border-white/10" style={{ marginLeft: i > 0 ? -18 : 0, zIndex: 2 - i }}>
               <img src={img.url} className="w-full h-full object-cover" />
             </div>
           ))
-        : <div className="w-7 h-7 rounded-md border border-white/[0.08] bg-white/[0.04] flex items-center justify-center">
-            <svg className="w-3.5 h-3.5 text-white/30" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 20.25h18V6.75A2.25 2.25 0 0018.75 4.5H5.25A2.25 2.25 0 003 6.75v13.5z" /></svg>
+        : <div className="w-11 h-11 rounded-lg border border-white/[0.08] bg-white/[0.04] flex items-center justify-center">
+            <svg className="w-4 h-4 text-white/30" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 20.25h18V6.75A2.25 2.25 0 0018.75 4.5H5.25A2.25 2.25 0 003 6.75v13.5z" /></svg>
           </div>
       }
     </div>
     <div className="flex-1 min-w-0">
-      <span className="text-[13px] text-white/60 group-hover:text-white/80 transition">
+      <span className="block truncate text-[13px] text-white/60 group-hover:text-white/80 transition">
         {selected.length > 0 ? `${selected.length} reference${selected.length > 1 ? "s" : ""} · click to edit` : "Add images or videos"}
       </span>
     </div>
-    <span className="text-[10px] text-white/25 shrink-0">Optional</span>
+    <span className="shrink-0 whitespace-nowrap text-[10px] text-white/25">Optional</span>
   </button>
 )}
 
@@ -846,9 +846,16 @@ className={`
 )}
 
 {/* GENERATE + RESET
-     mt-auto pushes this to the bottom of the flex-col container.
-     The container has pb-[80px] so this clears the mobile nav. */}
-<div className="mt-auto flex items-center gap-3 pt-1">
+     mt-auto pushes this to the bottom of the flex-col container when content
+     is short; sticky keeps it pinned to the bottom of the scroll viewport
+     (mobile and desktop both scroll this panel) once content overflows.
+     bottom offset on mobile clears the fixed MobileBottomNav (78px + safe
+     area) that would otherwise sit on top of the button; desktop has no
+     such nav so it sticks flush to the column's own bottom edge.
+     z-[60] — must beat the Size/Duration settings wrapper below (z-50),
+     otherwise that box stacks above this sticky footer and visually
+     covers it whenever their boxes overlap while scrolling. */}
+<div className="sticky bottom-[calc(78px_+_env(safe-area-inset-bottom))] lg:bottom-0 z-[60] mt-auto flex items-center gap-3 border-t border-white/[0.08] bg-[#0b0c0e]/95 py-3 backdrop-blur-xl">
   {/* Reset — bare text */}
   <button
     onClick={() => {
