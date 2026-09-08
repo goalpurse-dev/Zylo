@@ -36,8 +36,8 @@ export async function fetchReferenceAssets(visualWorldVersionId) {
   return data ?? [];
 }
 
-export async function startVisualWorld(projectId, { regenerate = false } = {}) {
-  const { data, error } = await supabase.functions.invoke("start-long-form-visual-world", { body: { projectId, regenerate } });
+export async function startVisualWorld(projectId, { regenerate = false, rendererToolKey, styleKey, excludedViews } = {}) {
+  const { data, error } = await supabase.functions.invoke("start-long-form-visual-world", { body: { projectId, regenerate, rendererToolKey, styleKey, excludedViews } });
   if (error) {
     const context = error.context;
     let payload = null;
@@ -49,4 +49,14 @@ export async function startVisualWorld(projectId, { regenerate = false } = {}) {
     return { ok: false, status: context?.status ?? 500, code: payload?.code ?? null, message: payload?.error ?? "We couldn't build your Visual World right now." };
   }
   return { ok: true, project: data.project, visualWorld: data.visualWorld };
+}
+
+// Regenerates ONE reference asset — never the whole Visual World (see
+// regenerate-long-form-reference-asset). Fire-and-forget from the caller's
+// perspective; the asset's own status/job_id transitions are watched via
+// the normal fetchReferenceAssets poll, same as everything else here.
+export async function regenerateReferenceAsset(assetId) {
+  const { data, error } = await supabase.functions.invoke("regenerate-long-form-reference-asset", { body: { assetId } });
+  if (error) return { ok: false };
+  return { ok: data?.ok === true };
 }

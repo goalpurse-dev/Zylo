@@ -45,6 +45,19 @@ Deno.serve(async (req) => {
   const body = await req.json().catch(() => ({}));
   const projectId = String(body?.projectId ?? "").trim();
   const regenerate = body?.regenerate === true;
+  // Renderer/style abstraction (Part 1): the client selects from a small,
+  // server-validated allowlist — never trust an arbitrary tool_key from the
+  // request. Only image:flux.base is enabled for this cheap-test pass;
+  // Studio/Director are real values the schema already supports but are
+  // rejected here until their real Runware models are configured (never
+  // invented — see advance-long-form-visual-world's own comment on this).
+  const ALLOWED_RENDERER_TOOL_KEYS = ["image:flux.base"];
+  const ALLOWED_STYLE_KEYS = ["zyvo_illustrated_documentary"];
+  const rendererToolKey = ALLOWED_RENDERER_TOOL_KEYS.includes(body?.rendererToolKey) ? body.rendererToolKey : "image:flux.base";
+  const styleKey = ALLOWED_STYLE_KEYS.includes(body?.styleKey) ? body.styleKey : "zyvo_illustrated_documentary";
+  // Optional advanced overrides (Part 10) — planned views the user
+  // unchecked before generation, as "entityId:angle" keys. Never required.
+  const excludedViews = Array.isArray(body?.excludedViews) ? body.excludedViews.filter((v: unknown) => typeof v === "string").slice(0, 200) : [];
   if (!projectId) return err(req, "Missing projectId", 400);
 
   const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
@@ -101,7 +114,17 @@ Deno.serve(async (req) => {
 
   const { data: inserted, error: insertError } = await admin
     .from("long_form_visual_world_versions")
-    .insert({ project_id: projectId, visual_plan_version_id: visualPlanVersionId, script_version_id: scriptVersionId, version: nextVersion, status: "planning", stage: "planning" })
+    .insert({
+      project_id: projectId,
+      visual_plan_version_id: visualPlanVersionId,
+      script_version_id: scriptVersionId,
+      version: nextVersion,
+      status: "planning",
+      stage: "planning",
+      renderer_tool_key: rendererToolKey,
+      style_key: styleKey,
+      excluded_views: excludedViews,
+    })
     .select("id, status, stage")
     .single();
 

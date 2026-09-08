@@ -276,15 +276,20 @@ async function stagePlanning(admin: any, row: VisualWorldRow, project: any, visu
   // Create one PENDING long_form_reference_assets row per required view —
   // real child rows, never a JSONB array (see the migration's own
   // reasoning) — so each image gets its own independent job/retry/status/
-  // cost from the moment it exists.
+  // cost from the moment it exists. Views the user explicitly unchecked
+  // before generation (Part 10 — "entityId:angle" keys) are skipped here,
+  // never created as asset rows at all.
+  const excludedViewKeys = new Set((row.excluded_views ?? []) as string[]);
   const assetRows = planEntities.flatMap((entity: any) =>
-    entity.requiredViews.map((view: any) => ({
-      visual_world_version_id: row.id,
-      entity_id: entity.entityId,
-      reference_type: view.referenceType,
-      angle_or_view: view.angle,
-      status: "pending",
-    }))
+    entity.requiredViews
+      .filter((view: any) => !excludedViewKeys.has(`${entity.entityId}:${view.angle}`))
+      .map((view: any) => ({
+        visual_world_version_id: row.id,
+        entity_id: entity.entityId,
+        reference_type: view.referenceType,
+        angle_or_view: view.angle,
+        status: "pending",
+      }))
   );
 
   // Part 16 — estimate the cost of actually rendering this plan across all
@@ -334,7 +339,12 @@ async function stageGenerating(admin: any, row: VisualWorldRow, project: any) {
   if (asset.job_id) {
     const { data: job } = await admin.from("jobs").select("status, result_url, output").eq("id", asset.job_id).maybeSingle();
     if (job && (job.status === "succeeded" || job.status === "failed")) {
-      const costUsd = Number(job.output?.cost ?? job.output?.[0]?.cost ?? 0) || null;
+      // Confirmed via a real 4-image test run: runware-image persists the
+      // raw Runware response as job.output, and the real cost lives at
+      // output.data[0].cost (an array under "data", NOT a bare .cost or a
+      // top-level array) — verified against real completed jobs before
+      // trusting this path.
+      const costUsd = Number(job.output?.data?.[0]?.cost ?? 0) || null;
       await admin
         .from("long_form_reference_assets")
         .update({
@@ -378,16 +388,22 @@ async function stageGenerating(admin: any, row: VisualWorldRow, project: any) {
     forbiddenElements: entitySpec?.forbiddenElements,
   });
 
+  // Renderer abstraction (Part 1): the version row carries the exact
+  // Runware tool_key it was created with — never a hardcoded constant here
+  // — so different versions can use different render tiers once more
+  // models are configured, without touching this dispatch logic.
+  const rendererToolKey = row.renderer_tool_key || V2_TOOL_KEY;
+
   const { data: profile } = await admin.from("profiles").select("plan_code").eq("id", project.user_id).maybeSingle();
   const jobId = crypto.randomUUID();
   const insertPayload = {
     id: jobId,
     user_id: project.user_id,
     type: "image",
-    tool_key: V2_TOOL_KEY,
+    tool_key: rendererToolKey,
     project_id: null,
     prompt,
-    settings: { tool_key: V2_TOOL_KEY, credits: 0, priceUSD: 0, creation_type: "photo" },
+    settings: { tool_key: rendererToolKey, credits: 0, priceUSD: 0, creation_type: "photo" },
     input: { tool: "image", subject: prompt, style: null, creation_type: "photo", negative: null, brand: { id: null, use_palette: false }, init_image_url: null, width: REFERENCE_WIDTH, height: REFERENCE_HEIGHT },
     status: "queued",
     progress: 0,
@@ -409,7 +425,7 @@ async function stageGenerating(admin: any, row: VisualWorldRow, project: any) {
     body: JSON.stringify({ jobId }),
   }).catch((e) => console.error("[advance-long-form-visual-world] job-worker dispatch failed", e));
 
-  await admin.from("long_form_reference_assets").update({ job_id: jobId, render_model: V2_TOOL_KEY, prompt_snapshot: prompt, updated_at: new Date().toISOString() }).eq("id", asset.id);
+  await admin.from("long_form_reference_assets").update({ job_id: jobId, render_model: rendererToolKey, prompt_snapshot: prompt, updated_at: new Date().toISOString() }).eq("id", asset.id);
   await admin.from("long_form_visual_world_versions").update({ worker_lock_until: null }).eq("id", row.id);
 }
 
