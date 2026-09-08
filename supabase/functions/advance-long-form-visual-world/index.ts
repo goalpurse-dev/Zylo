@@ -32,11 +32,13 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ZYVO_STYLE_SPEC, deriveRequiredViews, compileReferencePrompt, estimateReferenceCosts } from "../_shared/visualWorldStyle.ts";
+import { ensureReferenceJob, referenceJobResult } from "../_shared/visualWorldJobs.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
 const ADVANCE_SECRET = Deno.env.get("LONG_FORM_VISUAL_WORLD_ADVANCE_SECRET") ?? "";
+const RECOVERY_SECRET = Deno.env.get("LONG_FORM_RESEARCH_ADVANCE_SECRET") ?? "";
 const OPENAI_RESPONSES = "https://api.openai.com/v1/responses";
 const OPENAI_MODEL = "gpt-5-mini";
 const SELF_URL = `${SUPABASE_URL}/functions/v1/advance-long-form-visual-world`;
@@ -58,9 +60,6 @@ const MAX_REFERENCE_PLAN_COST_USD = Number(Deno.env.get("LONG_FORM_MAX_REFERENCE
 // provider registry — inventing their Runware AIR tags from memory was
 // explicitly out of bounds, so V1 renders through this verified entry
 // until the real tags are supplied/confirmed.
-const V2_TOOL_KEY = "image:flux.base";
-const REFERENCE_WIDTH = 1024;
-const REFERENCE_HEIGHT = 1024;
 
 const GPT5_MINI_INPUT_PER_M = 0.25;
 const GPT5_MINI_OUTPUT_PER_M = 2.0;
@@ -316,125 +315,53 @@ async function stagePlanning(admin: any, row: VisualWorldRow, project: any, visu
 }
 
 async function stageGenerating(admin: any, row: VisualWorldRow, project: any) {
-  // Claim ONE reference asset that's either pending or "running" with an
-  // expired lease (its job creation step disappeared before finishing) —
-  // same crash-safety contract as everywhere else in this system.
-  const { data: claimed } = await admin.rpc("claim_long_form_reference_asset_for_version", { p_visual_world_version_id: row.id });
-  const asset = claimed?.[0];
-
-  if (!asset) {
-    // Nothing left to claim. Check whether every asset has actually
-    // reached a terminal state (succeeded/failed) — if some are still
-    // "running" under a LIVE lease, another invocation may be mid-flight;
-    // do nothing this call.
-    const { data: assets } = await admin.from("long_form_reference_assets").select("status").eq("visual_world_version_id", row.id);
-    const allTerminal = (assets ?? []).every((a: any) => a.status === "succeeded" || a.status === "failed");
-    if (!allTerminal) return; // no-op; self-chain/cron will retry
-    await admin.from("long_form_visual_world_versions").update({ stage: "finalizing", stage_attempt: 0, worker_lock_until: null }).eq("id", row.id);
-    return;
-  }
-
-  // Asset already has a job in flight from an earlier claim — check on it
-  // rather than submitting a second paid generation for the same asset.
-  if (asset.job_id) {
-    const { data: job } = await admin.from("jobs").select("status, result_url, output").eq("id", asset.job_id).maybeSingle();
-    if (job && (job.status === "succeeded" || job.status === "failed")) {
-      // Confirmed via a real 4-image test run: runware-image persists the
-      // raw Runware response as job.output, and the real cost lives at
-      // output.data[0].cost (an array under "data", NOT a bare .cost or a
-      // top-level array) — verified against real completed jobs before
-      // trusting this path.
-      const costUsd = Number(job.output?.data?.[0]?.cost ?? 0) || null;
-      await admin
-        .from("long_form_reference_assets")
-        .update({
-          status: job.status === "succeeded" ? "succeeded" : "failed",
-          result_url: job.status === "succeeded" ? job.result_url : null,
-          cost_usd: costUsd,
-          last_error_code: job.status === "failed" ? "PROVIDER_GENERATION_FAILED" : null,
-          last_error_at: job.status === "failed" ? new Date().toISOString() : null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", asset.id);
-      if (costUsd) {
-        const meta = { ...(row.meta ?? {}), referenceImageCostUsd: (row.meta?.referenceImageCostUsd ?? 0) + costUsd };
-        meta.estimatedTotalCostUsd = Number(((meta.estimatedModelCostUsd ?? 0) + meta.referenceImageCostUsd).toFixed(4));
-        await admin.from("long_form_visual_world_versions").update({ meta, worker_lock_until: null }).eq("id", row.id);
-      } else {
-        await admin.from("long_form_visual_world_versions").update({ worker_lock_until: null }).eq("id", row.id);
-      }
-      return;
+  const { data: saved, error: readError } = await admin.from("long_form_reference_assets").select("*").eq("visual_world_version_id", row.id);
+  if (readError) throw readError;
+  const replaced = new Set((saved ?? []).map((a: any) => a.replaces_asset_id).filter(Boolean));
+  const current = (saved ?? []).filter((a: any) => !replaced.has(a.id));
+  // Free reconciliation does not claim assets or increment paid attempts.
+  for (const asset of current.filter((a: any) => a.job_id && ["pending", "running"].includes(a.status))) {
+    const { data: job, error } = await admin.from("jobs").select("status,result_url,output,created_at,updated_at").eq("id", asset.job_id).maybeSingle();
+    if (error) throw error;
+    const result = referenceJobResult(job);
+    if (result) {
+      const { error: updateError } = await admin.from("long_form_reference_assets").update({ ...result, updated_at: new Date().toISOString() }).eq("id", asset.id).eq("job_id", asset.job_id);
+      if (updateError) throw updateError;
+      Object.assign(asset, result);
     }
-    // Still in flight under Runware/job-worker's own crash-safe retry —
-    // release the row-level lease and let the next tick check again.
-    await admin.from("long_form_visual_world_versions").update({ worker_lock_until: null }).eq("id", row.id);
-    return;
   }
-
-  // No job yet for this asset — create one, mirroring
-  // generate-long-form-preview's exact zero-credit insert shape (same
-  // jobs/job-worker/runware-image pipeline every Zyvo image tool uses).
-  const referencePlan = row.reference_plan;
-  const entitySpec = (referencePlan?.entities ?? []).find((e: any) => e.entityId === asset.entity_id);
-  const view = (entitySpec?.requiredViews ?? []).find((v: any) => v.angle === asset.angle_or_view) ?? { referenceType: asset.reference_type, angle: asset.angle_or_view, purpose: "" };
-
-  const prompt = compileReferencePrompt({
-    styleSpec: row.style_spec ?? ZYVO_STYLE_SPEC,
-    visualStyleNotes: referencePlan?.visualStyleNotes,
-    entityName: entitySpec?.entityName ?? asset.entity_id,
-    canonicalSpec: entitySpec?.canonicalSpec ?? "",
-    view,
-    factualConstraints: entitySpec?.factualConstraints,
-    forbiddenElements: entitySpec?.forbiddenElements,
-  });
-
-  // Renderer abstraction (Part 1): the version row carries the exact
-  // Runware tool_key it was created with — never a hardcoded constant here
-  // — so different versions can use different render tiers once more
-  // models are configured, without touching this dispatch logic.
-  const rendererToolKey = row.renderer_tool_key || V2_TOOL_KEY;
-
-  const { data: profile } = await admin.from("profiles").select("plan_code").eq("id", project.user_id).maybeSingle();
-  const jobId = crypto.randomUUID();
-  const insertPayload = {
-    id: jobId,
-    user_id: project.user_id,
-    type: "image",
-    tool_key: rendererToolKey,
-    project_id: null,
-    prompt,
-    settings: { tool_key: rendererToolKey, credits: 0, priceUSD: 0, creation_type: "photo" },
-    input: { tool: "image", subject: prompt, style: null, creation_type: "photo", negative: null, brand: { id: null, use_palette: false }, init_image_url: null, width: REFERENCE_WIDTH, height: REFERENCE_HEIGHT },
-    status: "queued",
-    progress: 0,
-    charge_credits: 0, // internal Long Form asset — never a user credit charge, same server-side-only decision as generate-long-form-preview
-    charged: false,
-    priority: 9,
-    plan_code: (profile?.plan_code ?? "free").toLowerCase(),
-    provider: "runware",
-    attempts: 0,
-    max_attempts: 5,
-    retry_after: new Date().toISOString(),
-  };
-  const { error: jobInsertError } = await admin.from("jobs").insert(insertPayload);
-  if (jobInsertError) throw new Error(`Could not create reference asset job: ${jobInsertError.message}`);
-
-  fetch(`${SUPABASE_URL}/functions/v1/job-worker`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${SERVICE_KEY}`, apikey: SERVICE_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({ jobId }),
-  }).catch((e) => console.error("[advance-long-form-visual-world] job-worker dispatch failed", e));
-
-  await admin.from("long_form_reference_assets").update({ job_id: jobId, render_model: rendererToolKey, prompt_snapshot: prompt, updated_at: new Date().toISOString() }).eq("id", asset.id);
-  await admin.from("long_form_visual_world_versions").update({ worker_lock_until: null }).eq("id", row.id);
+  const { data: claimed, error: claimError } = await admin.rpc("claim_long_form_reference_asset_for_version", { p_visual_world_version_id: row.id });
+  if (claimError) throw claimError;
+  const asset = claimed?.[0];
+  if (asset) {
+    const entity = row.reference_plan?.entities?.find((e: any) => e.entityId === asset.entity_id);
+    if (!entity) throw new Error("REFERENCE_SPEC_MISSING");
+    const view = entity.requiredViews.find((v: any) => v.angle === asset.angle_or_view);
+    if (!view) throw new Error("REFERENCE_VIEW_MISSING");
+    const prompt = asset.prompt_snapshot || compileReferencePrompt({ styleSpec: row.style_spec ?? ZYVO_STYLE_SPEC, visualStyleNotes: row.reference_plan?.visualStyleNotes, entityName: entity.entityName, canonicalSpec: entity.canonicalSpec, view, factualConstraints: entity.factualConstraints, forbiddenElements: entity.forbiddenElements });
+    const { data: profile } = await admin.from("profiles").select("plan_code").eq("id", project.user_id).maybeSingle();
+    const jobId = await ensureReferenceJob(admin, asset, row, project, prompt, profile?.plan_code ?? "free");
+    // This is only a latency optimization: the jobs sweep owns recovery.
+    const dispatch = fetch(`${SUPABASE_URL}/functions/v1/job-worker`, { method: "POST", headers: { Authorization: `Bearer ${SERVICE_KEY}`, apikey: SERVICE_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ jobId }) }).catch((e) => console.error("Reference job dispatch failed", e));
+    const rt = (globalThis as any).EdgeRuntime;
+    if (rt?.waitUntil) rt.waitUntil(dispatch);
+    else await dispatch;
+  }
+  const { data: refreshed, error: refreshError } = await admin.from("long_form_reference_assets").select("id,status,replaces_asset_id").eq("visual_world_version_id", row.id);
+  if (refreshError) throw refreshError;
+  const oldIds = new Set((refreshed ?? []).map((a: any) => a.replaces_asset_id).filter(Boolean));
+  const allTerminal = (refreshed ?? []).filter((a: any) => !oldIds.has(a.id)).every((a: any) => ["succeeded", "failed"].includes(a.status));
+  const { error: checkpointError } = await admin.from("long_form_visual_world_versions").update({ status: "generating", stage: allTerminal ? "finalizing" : "generating", stage_attempt: 0, worker_lock_until: allTerminal || asset ? null : new Date(Date.now() + 10000).toISOString() }).eq("id", row.id);
+  if (checkpointError) throw checkpointError;
 }
-
 // Zero-cost — programmatic board layout + final cost rollup + terminal
 // status. Never fabricates a "finished gap round"; just reflects whatever
 // asset rows actually reached succeeded/failed.
 async function stageFinalizing(admin: any, row: VisualWorldRow, project: any) {
-  const { data: assets } = await admin.from("long_form_reference_assets").select("*").eq("visual_world_version_id", row.id);
-  const rows = assets ?? [];
+  const { data: assets, error } = await admin.from("long_form_reference_assets").select("*").eq("visual_world_version_id", row.id);
+  if (error) throw error;
+  const replaced = new Set((assets ?? []).map((a: any) => a.replaces_asset_id).filter(Boolean));
+  const rows = (assets ?? []).filter((a: any) => !replaced.has(a.id));
   const succeeded = rows.filter((a: any) => a.status === "succeeded");
   const failed = rows.filter((a: any) => a.status === "failed");
 
@@ -449,7 +376,7 @@ async function stageFinalizing(admin: any, row: VisualWorldRow, project: any) {
       .map((e: any) => ({ entityId: e.entityId, entityName: e.entityName, category: e.entityCategory, views: byEntity.get(e.entityId) })),
   };
 
-  const totalReferenceCost = rows.reduce((sum: number, a: any) => sum + (a.cost_usd ?? 0), 0);
+  const totalReferenceCost = (assets ?? []).reduce((sum: number, a: any) => sum + Number(a.cost_usd ?? 0), 0);
   const meta = { ...(row.meta ?? {}), totalAssets: rows.length, succeededAssets: succeeded.length, failedAssets: failed.length, referenceImageCostUsd: totalReferenceCost };
   meta.estimatedTotalCostUsd = Number(((meta.estimatedModelCostUsd ?? 0) + totalReferenceCost).toFixed(4));
 
@@ -460,14 +387,14 @@ async function stageFinalizing(admin: any, row: VisualWorldRow, project: any) {
 
   await admin.from("long_form_visual_world_versions").update({ status, reference_board_meta: referenceBoardMeta, meta, worker_lock_until: null, updated_at: new Date().toISOString() }).eq("id", row.id);
   if (status !== "failed") {
-    await admin.from("long_form_projects").update({ current_visual_world_version_id: row.id, updated_at: new Date().toISOString() }).eq("id", project.id);
+    await admin.from("long_form_projects").update({ current_visual_world_version_id: row.id, updated_at: new Date().toISOString() }).eq("id", project.id).eq("current_visual_plan_version_id", row.visual_plan_version_id);
   }
 }
 
 /* ============================ Failure handling — claim-time attempt, no double-increment ============================ */
 
 async function dispatchNext(id: string) {
-  await fetch(SELF_URL, { method: "POST", headers: { "Content-Type": "application/json", "x-cron-secret": ADVANCE_SECRET }, body: JSON.stringify({ visualWorldVersionId: id }) });
+  await fetch(SELF_URL, { method: "POST", headers: { Authorization: `Bearer ${SERVICE_KEY}`, apikey: SERVICE_KEY, "Content-Type": "application/json", "x-cron-secret": ADVANCE_SECRET }, body: JSON.stringify({ visualWorldVersionId: id }) });
 }
 
 async function handleStageFailure(admin: any, row: VisualWorldRow, error: unknown) {
@@ -492,14 +419,20 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   const secret = req.headers.get("x-cron-secret");
-  if (!ADVANCE_SECRET || secret !== ADVANCE_SECRET) return json({ error: "Unauthorized" }, 401);
+  const recoveryOnly = Boolean(RECOVERY_SECRET && req.headers.get("x-recovery-secret") === RECOVERY_SECRET);
+  if ((!ADVANCE_SECRET || secret !== ADVANCE_SECRET) && !recoveryOnly) return json({ error: "Unauthorized" }, 401);
   if (VISUAL_WORLD_PAUSED) return json({ paused: true, claimed: false });
-  if (!OPENAI_KEY) return json({ error: "Visual World is not configured" }, 500);
 
   const body = await req.json().catch(() => ({}));
   const targetId = body?.visualWorldVersionId ? String(body.visualWorldVersionId) : null;
 
   const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+
+  if (recoveryOnly) {
+    if (!targetId) return json({ error: "Target required" }, 400);
+    const { data: target } = await admin.from("long_form_visual_world_versions").select("stage").eq("id", targetId).maybeSingle();
+    if (!target || !["generating", "finalizing"].includes(target.stage)) return json({ claimed: false });
+  }
 
   const { data: claimedRows } = targetId
     ? await admin.rpc("claim_long_form_visual_world_stage_by_id", { p_id: targetId })
@@ -519,6 +452,7 @@ Deno.serve(async (req) => {
   try {
     switch (row.stage) {
       case "planning":
+        if (recoveryOnly || !OPENAI_KEY) throw new Error("Reference planning is not configured");
         await stagePlanning(admin, row, project, visualPlanRow);
         break;
       case "generating":

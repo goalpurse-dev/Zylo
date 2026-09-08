@@ -32,7 +32,7 @@ function backgroundDispatch(promise: Promise<unknown>) {
   if (rt?.waitUntil) rt.waitUntil(guarded);
 }
 async function dispatchFirstStage(visualWorldVersionId: string) {
-  await fetch(ADVANCE_URL, { method: "POST", headers: { "Content-Type": "application/json", "x-cron-secret": ADVANCE_SECRET }, body: JSON.stringify({ visualWorldVersionId }) });
+  await fetch(ADVANCE_URL, { method: "POST", headers: { Authorization: `Bearer ${SERVICE_KEY}`, apikey: SERVICE_KEY, "Content-Type": "application/json", "x-cron-secret": ADVANCE_SECRET }, body: JSON.stringify({ visualWorldVersionId }) });
 }
 
 Deno.serve(async (req) => {
@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
   // Studio/Director are real values the schema already supports but are
   // rejected here until their real Runware models are configured (never
   // invented — see advance-long-form-visual-world's own comment on this).
-  const ALLOWED_RENDERER_TOOL_KEYS = ["image:flux.base"];
+  const ALLOWED_RENDERER_TOOL_KEYS = ["image:flux.base", "image:flux2.klein9bkv"];
   const ALLOWED_STYLE_KEYS = ["zyvo_illustrated_documentary"];
   const rendererToolKey = ALLOWED_RENDERER_TOOL_KEYS.includes(body?.rendererToolKey) ? body.rendererToolKey : "image:flux.base";
   const styleKey = ALLOWED_STYLE_KEYS.includes(body?.styleKey) ? body.styleKey : "zyvo_illustrated_documentary";

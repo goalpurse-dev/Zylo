@@ -1,0 +1,1303 @@
+✔ media MIME prefers a trustworthy response content type (1.4642ms)
+✔ media MIME falls back to the requested filename (0.2668ms)
+✔ server-side rendering is not classified as a mobile save environment (0.502ms)
+✔ blob reference is replaced before submission (4.2806ms)
+✔ normalized database payload contains no blob URL (9.4071ms)
+✔ backend rejects blob before provider construction (1.3459ms)
+✔ multiple references preserve order (11.6279ms)
+✔ start and end frame positions are retained (0.5366ms)
+✔ upload failure prevents job creation and deduction (0.464ms)
+✔ invalid backend reference fails before provider call (0.2549ms)
+✔ Nano cannot silently continue after losing a required reference (2.5158ms)
+✔ failed reference refund is exactly-once (1.7217ms)
+✔ retry cannot create a second charge or refund (2.8475ms)
+✔ safety rejection has stable friendly status and refund (2.4486ms)
+✔ valid HTTPS references are returned without storage upload (1.9149ms)
+✔ expired signed reference returns stable code (1.0706ms)
+✔ stale running jobs are recovered and excluded from queued concurrency (2.3765ms)
+✔ job worker concurrency only counts live leased jobs (1.2242ms)
+✔ generation safety migration only uses valid job_status enum values (1.0928ms)
+✔ generation safety migration locks queue before jobs (1.1753ms)
+✔ explicit job handoffs are not blocked by client clock skew (1.2693ms)
+✔ zero UUID payload is rejected before claim or queue insertion (1.3831ms)
+✔ temporary uploads use a separate private bucket and persist a storage reference (1.6276ms)
+✔ private storage references are signed only for provider dispatch (1.0437ms)
+✔ private reference ownership is enforced before signing (0.3619ms)
+✔ mixed rollout keeps legacy HTTPS references provider-compatible (0.2745ms)
+✔ signed reference URL is never persisted back to job input (2.9486ms)
+✔ stale recovery requires both lease expiry and heartbeat staleness (0.9487ms)
+✔ uncertain submissions are quarantined and never auto-refunded (0.9516ms)
+✔ Runware task IDs are stable across transport retries (1.8056ms)
+✔ provider polling refreshes job heartbeats (1.4977ms)
+✔ completion and failure are atomic terminal operations (0.9327ms)
+✔ queue-to-job creation has a deterministic identity (0.9543ms)
+✔ cleanup uses a managed secret and private bucket (2.3643ms)
+✔ provider polling timeouts enter reconciliation instead of refunding (1.1646ms)
+✔ every provider handoff endpoint authenticates the worker (3.3696ms)
+✔ provider logs do not serialize signed reference payloads (1.7458ms)
+✔ legacy credit markers are backfilled into the immutable ledger (0.9711ms)
+✔ paid and private workspace routes use one central noindex policy (3.5014ms)
+✔ sitemap excludes noindex, redirects, duplicates, and query URLs (3.2166ms)
+✔ AI Fruit has one public canonical target and a noindex paid application (1.0994ms)
+✔ retired Product Photo routes and navigational targets stay removed (1.9226ms)
+✔ 30 Days collage cache preserves semantic reference order (3.271ms)
+✖ 30 Days visual children are reservation-backed zero-charge jobs (2.6861ms)
+✔ 30 Days billing migration removes client prices and count-based refunds (0.9785ms)
+✔ 30 Days tiers use database-backed image and video engines (1.9628ms)
+✔ 30 Days uses four milestone days with two independently billed scenes each (4.7228ms)
+✔ 30 Days results render only real planner scenes and diagnose reservation failures (1.2707ms)
+✖ 30 Days fallback, TTS ceiling, and navigation are wired (4.04ms)
+✔ 30 Days matches the lime template shell, keeps Generate visible, and reuses Lego community previews (1.5784ms)
+✖ 30 Days quality tiers stay in one row and failed clips have a paid video-only retry (3.5969ms)
+✖ 30 Days enforces a viewer-insert protagonist from idea through QA and narration (4.5317ms)
+✖ 30 Days persists and propagates all five visual styles (2.9531ms)
+✔ 30 Days idea generation runs an eight-candidate viral tournament (0.8622ms)
+✔ 30 Days video dispatch forces sound off and protects paid retry prices (2.3359ms)
+✖ 30 Days automatically builds and persists a rendered-clip-synced TTS draft (2.8278ms)
+✔ Series mode is additive and the style cards use dark green unselected states (4.5104ms)
+✔ Series persistence uses normalized tables, ownership RLS, indexes, and lazy episode history (1.0936ms)
+✔ Master planner stores flexible arcs and future secrets without writing 30 scripts (1.3924ms)
+✔ Episode planner enforces seven-scene mini-stories, critic repair, and spoiler gates (1.8809ms)
+✔ Series billing is progressive, server-priced, retry-aware, and never reserves 30 episodes (1.2615ms)
+✔ Series narration is clip-synced, episode-sized, continuous, and spoiler-aware (1.3692ms)
+✔ Episode planner requires the immediately previous structured state and persists full continuity memory (1.0715ms)
+✔ Pokémon Days 3-4 proposed narration is concrete, first-person, and day-continuous (0.5279ms)
+✔ Ninjago Day 1, Day 2, and Day 3 fixture preserves YOU, relationships, and ordered continuity (1.5439ms)
+✔ Pokémon Days 1-2, 3-4, and 5-6 fixture keeps the trainer and accumulated team (0.457ms)
+✔ Series v2 persists a canonical resolution boundary without silently narrowing the property (1.7655ms)
+✔ entity-driven references preserve the active companion form and never substitute labels (1.3193ms)
+✔ assignSceneReferences rejects a requiredEntity that is not active for the scene day (0.349ms)
+✔ episode scenes align to required entity introduction days inside the episode (0.4643ms)
+✔ assignSceneReferences resolves an entity's own given name, not just its type or entityId (0.2424ms)
+✔ assignSceneReferences resolves a persistent reference id back to its bound entity (0.2623ms)
+✔ buildInitialEntityRegistry extracts a leading given name before its species/type clause (1.0931ms)
+✔ assignSceneReferences normalizes the 'you'/'YOU' protagonist alias to entityId protagonist (0.2491ms)
+✔ assignSceneReferences resolves a generic category word to the single matching entity, but not when ambiguous (0.3859ms)
+✔ story state is merged by explicit deltas so omitted entities survive (0.5517ms)
+✔ roadmap gates keep major reveals locked until their eligible window (0.5011ms)
+✔ video prompts explicitly hand each clip's end state into the next scene (0.3897ms)
+✔ Pokémon legacy repair creates generic persistent entity memory (2.6526ms)
+✔ Ninjago legacy repair creates generic persistent entity memory (0.4541ms)
+✔ Hogwarts legacy repair creates generic persistent entity memory (0.47ms)
+✔ browser completion cannot submit planner prose as canon (1.1052ms)
+✔ Series scene images are story-first and treat references as identity-only (1.5421ms)
+✖ Series creates one undivided image per scene and never auto-generates a QA variation (4.9643ms)
+✔ V4 scene stills use Nano Banana 2K instead of the costly 4K variant (0.9648ms)
+✔ Series filters environment references by the exact scene location (0.9486ms)
+✔ Series completion can recover an episode through the generation's immutable forward link (0.4494ms)
+✔ pre-animation QA rejects wrong identities and near-duplicate earlier scenes (1.2277ms)
+✖ episode planner hard-gates stagnant locations, repeated cameras, and unbound named characters (1.8206ms)
+✔ episode planner preserves colliding new entity references and synthesizes any required missing identity (1.2518ms)
+✔ episode planner registers named visible characters omitted from the entity delta (0.9779ms)
+✔ only the latest Series episode can be deleted and deletion never refunds credits (2.5853ms)
+✔ persistent Series references have safe delete, duplicate cleanup, and one-slot regeneration (2.8591ms)
+✔ persistent Series reference edits use the displayed image as one source and replace only after success (1.3321ms)
+✔ persistent Series reference edits retain a selectable original-to-edit history (1.2748ms)
+✔ Series narration rejects internal statuses and generates episode-specific hooks (0.938ms)
+✔ two-day episodes earn a balanced calendar transition instead of cutting Day 2 off (1.0858ms)
+✔ Series episode selection and narration persistence are keyed to the episode record (1.0782ms)
+✔ new episode planning never labels the result panel with the previous episode (0.6469ms)
+✔ an episode's first scene is visually anchored to the previous episode's actual last frame, not just text continuity (1.9462ms)
+✔ fixture exercises every category and storyboard camera anchors (2.7498ms)
+✔ only usable successes count as ready; replacements do not double-count (0.4049ms)
+✔ four deterministic prompts: identity, full body/profile, reusable set, no labels (12.6883ms)
+✔ reference job stays free, uses FLUX Base, and keeps stable durable identity (2.4011ms)
+✔ uncertain enqueue response retries same asset/job through one atomic RPC (1.3915ms)
+✔ reconciliation observes terminal jobs without creating or claiming paid work (0.4719ms)
+✔ saved smoke audit is exactly four successful zero-credit results, no claimed asset-link proof (2.7494ms)
+ℹ tests 107
+ℹ suites 0
+ℹ pass 99
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 371.4981
+
+✖ failing tests:
+
+test at tests\thirtyDays.test.mjs:14:1
+✖ 30 Days visual children are reservation-backed zero-charge jobs (2.6861ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  3 !== 2
+  
+      at TestContext.<anonymous> (file:///C:/Users/Public/Zylo/tests/thirtyDays.test.mjs:16:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 3,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\thirtyDays.test.mjs:105:1
+✖ 30 Days fallback, TTS ceiling, and navigation are wired (4.04ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /TOTAL_WORDS_IDEAL_MIN = 80/. Input:
+  
+  '// thirty-days-script/index.ts\n' +
+    '// AI watches the actual rendered scene clips, then writes one continuous\n' +
+    "// short-form story grounded in what's literally on screen. Eight cue fragments\n" +
+    '// preserve clip-level sync without turning the narration into eight summaries.\n' +
+    '// POST { generationId, universe, premise, hook, scenes: [{index, day, title}],\n' +
+    '//        clips: [{index, videoUrl, durationSec}], clipPrompts: [{index, prompt}],\n' +
+    '//        clipFrames: [{clip, sampleIndex, timeSec, imageUrl}] }\n' +
+    '// Returns { hook, narration, clips, words, segments, clipSegments, fallback }\n' +
+    '\n' +
+    'import "jsr:@supabase/functions-js/edge-runtime.d.ts";\n' +
+    'import { createClient } from "https://esm.sh/@supabase/supabase-js@2";\n' +
+    'import { verifyEpisodeFromRenderedScenes } from "../_shared/thirtyDaysSeriesEngine.js";\n' +
+    '\n' +
+    'const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY")!;\n' +
+    'const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;\n' +
+    'const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;\n' +
+    'const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;\n' +
+    '\n' +
+    'const CORS = {\n' +
+    '  "access-control-allow-origin": "*",\n' +
+    '  "access-control-allow-methods": "POST, OPTIONS",\n' +
+    '  "access-control-allow-headers": "authorization, content-type, apikey, x-client-info",\n' +
+    '  "content-type": "application/json",\n' +
+    '};\n' +
+    '\n' +
+    'type SceneCtx = { index?: number; day?: number; dayScene?: number; title?: string; beatType?: string; protagonistAction?: string; storyDevelopment?: string; mainAction?: string; visualEvent?: string; visualObservation?: string; startState?: string; endState?: string; continuityFromPrevious?: string; setupForNext?: string; timeOfDay?: string };\n' +
+    'type ClipCtx  = { index?: number; videoUrl?: string | null; durationSec?: number };\n' +
+    'type ClipPrompt = { index: number; prompt: string };\n' +
+    'type ClipFrame = { clip?: number; sampleIndex?: number; timeSec?: number; imageUrl?: string | null };\n' +
+    'type ScriptClip = { clip: number; text: string };\n' +
+    'type ScriptClaim = { claim: string; supportedByPreviousStory: boolean; supportedByCurrentPlan: boolean; supportedByVisuals: boolean };\n' +
+    'type SeriesNarrationScene = { scene: number; day: number; narration: string };\n' +
+    'type SeriesEpisodeScript = {\n' +
+    '  episode_title: string;\n' +
+    '  hook: string;\n' +
+    '  day_split_after_scene: number;\n' +
+    '  scenes: SeriesNarrationScene[];\n' +
+    '  cliffhanger_thread: string;\n' +
+    '};\n' +
+    '\n' +
+    'const CLIP_COUNT = 8;\n' +
+    'const LEGACY_CLIP_COUNT = 7;\n' +
+    'const SAMPLES_PER_CLIP = 3;\n' +
+    '// Hook + narration TOTAL word budget — not narration alone. A 44s Ninjago\n' +
+    '// test clip proved denser scripts crowd out the visuals; keep this tight.\n' +
+    'const HOOK_MIN_WORDS = 7;\n' +
+    'const HOOK_MAX_WORDS = 10;\n' +
+    '// The word budget is derived from the ACTUAL rendered visual duration, never\n' +
+    '// a fixed number — provider clip length legitimately drifts 5.0-6.0s per\n' +
+    '// clip (see probeClipDuration), so a fixed 80-100 word target (tuned for\n' +
+    '// ~35s of clips) silently produced narration far shorter than a 42s episode,\n' +
+    "// leaving a long silent tail the 0.85-1.15 playback-rate stretch can't hide.\n" +
+    "// These rates are calibrated to this app's actual ElevenLabs settings\n" +
+    '// (eleven_flash_v2_5, speed 0.92) at roughly 125-155 words per minute.\n' +
+    'const WORDS_PER_SEC_MIN = 2.05;\n' +
+    'const WORDS_PER_SEC_MAX = 2.55;\n' +
+    'const TOTAL_WORDS_ABSOLUTE_FLOOR = 50;\n' +
+    'const TOTAL_WORDS_ABSOLUTE_CEILING = 170;\n' +
+    '\n' +
+    'function wordBudgetFor(visualDurationSec: number) {\n' +
+    '  const min = Math.max(TOTAL_WORDS_ABSOLUTE_FLOOR, Math.round(visualDurationSec * WORDS_PER_SEC_MIN));\n' +
+    '  const max = Math.min(TOTAL_WORDS_ABSOLUTE_CEILING, Math.max(min + 12, Math.round(visualDurationSec * WORDS_PER_SEC_MAX)));\n' +
+    '  const ceiling = Math.min(TOTAL_WORDS_ABSOLUTE_CEILING + 10, max + 8);\n' +
+    '  return { min, max, ceiling };\n' +
+    '}\n' +
+    '\n' +
+    'function wordCount(value: string) {\n' +
+    '  return value.trim().split(/\\s+/).filter(Boolean).length;\n' +
+    '}\n' +
+    '\n' +
+    'function firstWords(value: string, limit: number) {\n' +
+    '  return value.trim().split(/\\s+/).filter(Boolean).slice(0, Math.max(0, limit)).join(" ");\n' +
+    '}\n' +
+    '\n' +
+    'function cleanLine(value: unknown) {\n' +
+    '  return String(value ?? "").replace(/\\s+/g, " ").trim();\n' +
+    '}\n' +
+    '\n' +
+    'const SERIES_BANNED_PHRASE = /\\b(?:I felt|I sensed|the atmosphere thickened|the stakes felt higher|a surge of hope|I could sense|little did I know)\\b/i;\n' +
+    'const SERIES_STOCK_LEAD = /^(?:With the pressure building|Before I could catch my breath|I had to move fast|Everything shifted when|That was the moment|With no time to waste|By the end)\\b/i;\n' +
+    'const SERIES_DANGLING_WORD = /\\b(?:and|the|a|of|to|with|so|but|that|as)[.!?]?$/i;\n' +
+    'const SERIES_RESOLUTION = /\\b(?:finally|at last|we were safe|it was over|the danger was gone|everything was over)\\b/i;\n' +
+    'const SERIES_PRESENT_TENSE = /\\bI\\s+(?:am|feel|sense|look|throw|run|see|hear|touch|ask|tell|lead|try|kneel|whisper|nod|reach|step|explain)\\b/i;\n' +
+    'const SERIES_CLIFFHANGER_ACTION = /\\b(?:arrived|appeared|opened|emerged|approached|cracked|vanished|missing|shadow|footsteps|alarm|warning|called my name|froze|stopped|screamed|shattered|roared|moved|grabbed|collapsed|went dark|lit up|answered|was watching|stood behind)\\b/i;\n' +
+    'const TITLE_STOP_WORDS = new Set(["a", "an", "and", "at", "for", "from", "in", "into", "of", "on", "the", "to", "under", "with"]);\n' +
+    'const DAY_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twenty-one", "twenty-two", "twenty-three", "twenty-four", "twenty-five", "twenty-six", "twenty-seven", "twenty-eight", "twenty-nine", "thirty"];\n' +
+    '\n' +
+    'function normalizedText(value: unknown) {\n' +
+    '  return cleanLine(value).toLowerCase().replace(/[^a-z0-9é]+/gi, " ").trim();\n' +
+    '}\n' +
+    '\n' +
+    'function narrationOutsideDialogue(value: unknown) {\n' +
+    '  return cleanLine(value)\n' +
+    '    .replace(/[“"][^”"]*[”"]/g, " ")\n' +
+    '    .replace(/\\s+/g, " ")\n' +
+    '    .trim();\n' +
+    '}\n' +
+    '\n' +
+    'function titleWords(value: unknown) {\n' +
+    '  return normalizedText(value).split(/\\s+/).filter((word) => word.length > 2 && !TITLE_STOP_WORDS.has(word));\n' +
+    '}\n' +
+    '\n' +
+    'function mentionsDay(value: unknown, day: number) {\n' +
+    '  const word = DAY_WORDS[day] || String(day);\n' +
+    '  return new RegExp(`\\\\bday\\\\s+(?:${day}|${word.replace("-", "[- ]")})\\\\b`, "i").test(cleanLine(value));\n' +
+    '}\n' +
+    '\n' +
+    'function beginsWithDayCue(value: unknown, day: number) {\n' +
+    '  const word = DAY_WORDS[day] || String(day);\n' +
+    '  return new RegExp(`^day\\\\s+(?:${day}|${word.replace("-", "[- ]")})[.!?]`, "i").test(cleanLine(value));\n' +
+    '}\n' +
+    '\n' +
+    'function previousNarrationLines(priorEpisodes: any[]) {\n' +
+    '  return priorEpisodes.flatMap((episode) => {\n' +
+    '    const storedClips = episode?.narration_take?.captionScript?.scenes || episode?.narration_take?.captionScript?.clips;\n' +
+    '    if (Array.isArray(storedClips)) return storedClips.map((item: any) => cleanLine(item?.narration || item?.text)).filter(Boolean);\n' +
+    '    return String(episode?.narration || "").split(/\\n+/).map(cleanLine).filter(Boolean);\n' +
+    '  });\n' +
+    '}\n' +
+    '\n' +
+    'function validateSeriesEpisodeScript(candidate: SeriesEpisodeScript, input: {\n' +
+    '  startDay: number;\n' +
+    '  endDay: number;\n' +
+    '  previousTitles: string[];\n' +
+    '  previousHooks: string[];\n' +
+    '  previousLines: string[];\n' +
+    '  previousNarration: string;\n' +
+    '}) {\n' +
+    '  const issues: string[] = [];\n' +
+    '  const title = cleanLine(candidate?.episode_title);\n' +
+    '  const hook = cleanLine(candidate?.hook);\n' +
+    '  const scenes = Array.isArray(candidate?.scenes) ? candidate.scenes : [];\n' +
+    '  const titleTokens = titleWords(title);\n' +
+    '  const previousTitleTokens = new Set(input.previousTitles.flatMap(titleWords));\n' +
+    '  const hookWords = wordCount(hook);\n' +
+    '\n' +
+    '  if (wordCount(title) < 2 || wordCount(title) > 5) issues.push("episode_title must contain 2-5 words.");\n' +
+    '   if (titleTokens.some((word) => previousTitleTokens.has(word))) issues.push("episode_title reuses a significant word from an earlier title.");\n' +
+    '  if (hookWords < 3 || hookWords >= 12) issues.push("hook must be under 12 words and still express a concrete conflict.");\n' +
+    `  if (/^what if\\b/i.test(hook)) issues.push('hook must not begin with "What if".');\n` +
+    '  if (!mentionsDay(hook, input.startDay)) issues.push(`hook must naturally identify Day ${input.startDay}.`);\n' +
+    '  if (input.previousHooks.some((previous) => normalizedText(previous) === normalizedText(hook))) issues.push("hook duplicates an earlier episode hook.");\n' +
+    '  if (![3, 4].includes(Number(candidate?.day_split_after_scene))) issues.push("day_split_after_scene must be 3 or 4.");\n' +
+    '  if (scenes.length !== 7) issues.push("exactly seven narrated scenes are required.");\n' +
+    '\n' +
+    '  const seenScenes = new Set<number>();\n' +
+    '  const previousLineSet = new Set(input.previousLines.map(normalizedText));\n' +
+    '  for (const [index, scene] of scenes.entries()) {\n' +
+    '    const expectedScene = index + 1;\n' +
+    '    const narration = cleanLine(scene?.narration);\n' +
+    '    const proseOutsideDialogue = narrationOutsideDialogue(narration);\n' +
+    '    const words = wordCount(narration);\n' +
+    '    if (Number(scene?.scene) !== expectedScene || seenScenes.has(Number(scene?.scene))) issues.push(`scene ${expectedScene} has an invalid scene number.`);\n' +
+    '    seenScenes.add(Number(scene?.scene));\n' +
+    '    if (words < 10 || words > 18) issues.push(`scene ${expectedScene} must contain 10-18 words; received ${words}.`);\n' +
+    '    if (!/[.!?]$/.test(narration)) issues.push(`scene ${expectedScene} must end with complete punctuation.`);\n' +
+    '    if (SERIES_DANGLING_WORD.test(narration)) issues.push(`scene ${expectedScene} ends in a dangling word or clause.`);\n' +
+    '    if (SERIES_BANNED_PHRASE.test(narration)) issues.push(`scene ${expectedScene} contains a banned phrase.`);\n' +
+    '    if (SERIES_STOCK_LEAD.test(narration)) issues.push(`scene ${expectedScene} begins with a removed stock transition.`);\n' +
+    '    if (SERIES_PRESENT_TENSE.test(proseOutsideDialogue)) issues.push(`scene ${expectedScene} breaks first-person past tense.`);\n' +
+    '    if (/\\b(?:you|your|yours|yourself)\\b/i.test(proseOutsideDialogue)) issues.push(`scene ${expectedScene} addresses the viewer instead of using first person.`);\n' +
+    '    if (previousLineSet.has(normalizedText(narration))) issues.push(`scene ${expectedScene} duplicates narration from an earlier episode.`);\n' +
+    '    const expectedDay = input.startDay === input.endDay || expectedScene <= Number(candidate.day_split_after_scene) ? input.startDay : input.endDay;\n' +
+    '    if (Number(scen'... 86814 more characters
+  
+      at TestContext.<anonymous> (file:///C:/Users/Public/Zylo/tests/thirtyDays.test.mjs:111:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '// thirty-days-script/index.ts\n// AI watches the actual rendered scene clips, then writes one continuous\n// short-form story grounded in what\'s literally on screen. Eight cue fragments\n// preserve clip-level sync without turning the narration into eight summaries.\n// POST { generationId, universe, premise, hook, scenes: [{index, day, title}],\n//        clips: [{index, videoUrl, durationSec}], clipPrompts: [{index, prompt}],\n//        clipFrames: [{clip, sampleIndex, timeSec, imageUrl}] }\n// Returns { hook, narration, clips, words, segments, clipSegments, fallback }\n\nimport "jsr:@supabase/functions-js/edge-runtime.d.ts";\nimport { createClient } from "https://esm.sh/@supabase/supabase-js@2";\nimport { verifyEpisodeFromRenderedScenes } from "../_shared/thirtyDaysSeriesEngine.js";\n\nconst OPENAI_KEY = Deno.env.get("OPENAI_API_KEY")!;\nconst SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;\nconst SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;\nconst SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;\n\nconst CORS = {\n  "access-control-allow-origin": "*",\n  "access-control-allow-methods": "POST, OPTIONS",\n  "access-control-allow-headers": "authorization, content-type, apikey, x-client-info",\n  "content-type": "application/json",\n};\n\ntype SceneCtx = { index?: number; day?: number; dayScene?: number; title?: string; beatType?: string; protagonistAction?: string; storyDevelopment?: string; mainAction?: string; visualEvent?: string; visualObservation?: string; startState?: string; endState?: string; continuityFromPrevious?: string; setupForNext?: string; timeOfDay?: string };\ntype ClipCtx  = { index?: number; videoUrl?: string | null; durationSec?: number };\ntype ClipPrompt = { index: number; prompt: string };\ntype ClipFrame = { clip?: number; sampleIndex?: number; timeSec?: number; imageUrl?: string | null };\ntype ScriptClip = { clip: number; text: string };\ntype ScriptClaim = { claim: string; supportedByPreviousStory: boolean; supportedByCurrentPlan: boolean; supportedByVisuals: boolean };\ntype SeriesNarrationScene = { scene: number; day: number; narration: string };\ntype SeriesEpisodeScript = {\n  episode_title: string;\n  hook: string;\n  day_split_after_scene: number;\n  scenes: SeriesNarrationScene[];\n  cliffhanger_thread: string;\n};\n\nconst CLIP_COUNT = 8;\nconst LEGACY_CLIP_COUNT = 7;\nconst SAMPLES_PER_CLIP = 3;\n// Hook + narration TOTAL word budget — not narration alone. A 44s Ninjago\n// test clip proved denser scripts crowd out the visuals; keep this tight.\nconst HOOK_MIN_WORDS = 7;\nconst HOOK_MAX_WORDS = 10;\n// The word budget is derived from the ACTUAL rendered visual duration, never\n// a fixed number — provider clip length legitimately drifts 5.0-6.0s per\n// clip (see probeClipDuration), so a fixed 80-100 word target (tuned for\n// ~35s of clips) silently produced narration far shorter than a 42s episode,\n// leaving a long silent tail the 0.85-1.15 playback-rate stretch can\'t hide.\n// These rates are calibrated to this app\'s actual ElevenLabs settings\n// (eleven_flash_v2_5, speed 0.92) at roughly 125-155 words per minute.\nconst WORDS_PER_SEC_MIN = 2.05;\nconst WORDS_PER_SEC_MAX = 2.55;\nconst TOTAL_WORDS_ABSOLUTE_FLOOR = 50;\nconst TOTAL_WORDS_ABSOLUTE_CEILING = 170;\n\nfunction wordBudgetFor(visualDurationSec: number) {\n  const min = Math.max(TOTAL_WORDS_ABSOLUTE_FLOOR, Math.round(visualDurationSec * WORDS_PER_SEC_MIN));\n  const max = Math.min(TOTAL_WORDS_ABSOLUTE_CEILING, Math.max(min + 12, Math.round(visualDurationSec * WORDS_PER_SEC_MAX)));\n  const ceiling = Math.min(TOTAL_WORDS_ABSOLUTE_CEILING + 10, max + 8);\n  return { min, max, ceiling };\n}\n\nfunction wordCount(value: string) {\n  return value.trim().split(/\\s+/).filter(Boolean).length;\n}\n\nfunction firstWords(value: string, limit: number) {\n  return value.trim().split(/\\s+/).filter(Boolean).slice(0, Math.max(0, limit)).join(" ");\n}\n\nfunction cleanLine(value: unknown) {\n  return String(value ?? "").replace(/\\s+/g, " ").trim();\n}\n\nconst SERIES_BANNED_PHRASE = /\\b(?:I felt|I sensed|the atmosphere thickened|the stakes felt higher|a surge of hope|I could sense|little did I know)\\b/i;\nconst SERIES_STOCK_LEAD = /^(?:With the pressure building|Before I could catch my breath|I had to move fast|Everything shifted when|That was the moment|With no time to waste|By the end)\\b/i;\nconst SERIES_DANGLING_WORD = /\\b(?:and|the|a|of|to|with|so|but|that|as)[.!?]?$/i;\nconst SERIES_RESOLUTION = /\\b(?:finally|at last|we were safe|it was over|the danger was gone|everything was over)\\b/i;\nconst SERIES_PRESENT_TENSE = /\\bI\\s+(?:am|feel|sense|look|throw|run|see|hear|touch|ask|tell|lead|try|kneel|whisper|nod|reach|step|explain)\\b/i;\nconst SERIES_CLIFFHANGER_ACTION = /\\b(?:arrived|appeared|opened|emerged|approached|cracked|vanished|missing|shadow|footsteps|alarm|warning|called my name|froze|stopped|screamed|shattered|roared|moved|grabbed|collapsed|went dark|lit up|answered|was watching|stood behind)\\b/i;\nconst TITLE_STOP_WORDS = new Set(["a", "an", "and", "at", "for", "from", "in", "into", "of", "on", "the", "to", "under", "with"]);\nconst DAY_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twenty-one", "twenty-two", "twenty-three", "twenty-four", "twenty-five", "twenty-six", "twenty-seven", "twenty-eight", "twenty-nine", "thirty"];\n\nfunction normalizedText(value: unknown) {\n  return cleanLine(value).toLowerCase().replace(/[^a-z0-9é]+/gi, " ").trim();\n}\n\nfunction narrationOutsideDialogue(value: unknown) {\n  return cleanLine(value)\n    .replace(/[“"][^”"]*[”"]/g, " ")\n    .replace(/\\s+/g, " ")\n    .trim();\n}\n\nfunction titleWords(value: unknown) {\n  return normalizedText(value).split(/\\s+/).filter((word) => word.length > 2 && !TITLE_STOP_WORDS.has(word));\n}\n\nfunction mentionsDay(value: unknown, day: number) {\n  const word = DAY_WORDS[day] || String(day);\n  return new RegExp(`\\\\bday\\\\s+(?:${day}|${word.replace("-", "[- ]")})\\\\b`, "i").test(cleanLine(value));\n}\n\nfunction beginsWithDayCue(value: unknown, day: number) {\n  const word = DAY_WORDS[day] || String(day);\n  return new RegExp(`^day\\\\s+(?:${day}|${word.replace("-", "[- ]")})[.!?]`, "i").test(cleanLine(value));\n}\n\nfunction previousNarrationLines(priorEpisodes: any[]) {\n  return priorEpisodes.flatMap((episode) => {\n    const storedClips = episode?.narration_take?.captionScript?.scenes || episode?.narration_take?.captionScript?.clips;\n    if (Array.isArray(storedClips)) return storedClips.map((item: any) => cleanLine(item?.narration || item?.text)).filter(Boolean);\n    return String(episode?.narration || "").split(/\\n+/).map(cleanLine).filter(Boolean);\n  });\n}\n\nfunction validateSeriesEpisodeScript(candidate: SeriesEpisodeScript, input: {\n  startDay: number;\n  endDay: number;\n  previousTitles: string[];\n  previousHooks: string[];\n  previousLines: string[];\n  previousNarration: string;\n}) {\n  const issues: string[] = [];\n  const title = cleanLine(candidate?.episode_title);\n  const hook = cleanLine(candidate?.hook);\n  const scenes = Array.isArray(candidate?.scenes) ? candidate.scenes : [];\n  const titleTokens = titleWords(title);\n  const previousTitleTokens = new Set(input.previousTitles.flatMap(titleWords));\n  const hookWords = wordCount(hook);\n\n  if (wordCount(title) < 2 || wordCount(title) > 5) issues.push("episode_title must contain 2-5 words.");\n   if (titleTokens.some((word) => previousTitleTokens.has(word))) issues.push("episode_title reuses a significant word from an earlier title.");\n  if (hookWords < 3 || hookWords >= 12) issues.push("hook must be under 12 words and still express a concrete conflict.");\n  if (/^what if\\b/i.test(hook)) issues.push(\'hook must not begin with "What if".\');\n  if (!mentionsDay(hook, input.startDay)) issues.push(`hook must naturally identify Day ${input.startDay}.`);\n  if (input.previousHooks.some((previous) => normalizedText(previous) === normalizedText(hook))) issues.push("hook duplicates an earlier episode hook.");\n  if (![3, 4].includes(Number(candidate?.day_split_after_scene))) issues.push("day_split_after_scene must be 3 or 4.");\n  if (scenes.length !== 7) issues.push("exactly seven narrated scenes are required.");\n\n  const seenScenes = new Set<number>();\n  const previousLineSet = new Set(input.previousLines.map(normalizedText));\n  for (const [index, scene] of scenes.entries()) {\n    const expectedScene = index + 1;\n    const narration = cleanLine(scene?.narration);\n    const proseOutsideDialogue = narrationOutsideDialogue(narration);\n    const words = wordCount(narration);\n    if (Number(scene?.scene) !== expectedScene || seenScenes.has(Number(scene?.scene))) issues.push(`scene ${expectedScene} has an invalid scene number.`);\n    seenScenes.add(Number(scene?.scene));\n    if (words < 10 || words > 18) issues.push(`scene ${expectedScene} must contain 10-18 words; received ${words}.`);\n    if (!/[.!?]$/.test(narration)) issues.push(`scene ${expectedScene} must end with complete punctuation.`);\n    if (SERIES_DANGLING_WORD.test(narration)) issues.push(`scene ${expectedScene} ends in a dangling word or clause.`);\n    if (SERIES_BANNED_PHRASE.test(narration)) issues.push(`scene ${expectedScene} contains a banned phrase.`);\n    if (SERIES_STOCK_LEAD.test(narration)) issues.push(`scene ${expectedScene} begins with a removed stock transition.`);\n    if (SERIES_PRESENT_TENSE.test(proseOutsideDialogue)) issues.push(`scene ${expectedScene} breaks first-person past tense.`);\n    if (/\\b(?:you|your|yours|yourself)\\b/i.test(proseOutsideDialogue)) issues.push(`scene ${expectedScene} addresses the viewer instead of using first person.`);\n    if (previousLineSet.has(normalizedText(narration))) issues.push(`scene ${expectedScene} duplicates narration from an earlier episode.`);\n    const expectedDay = input.startDay === input.endDay || expectedScene <= Number(candidate.day_split_after_scene) ? input.startDay : input.endDay;\n    if (Number(scen'... 86814 more characters,
+    expected: /TOTAL_WORDS_IDEAL_MIN = 80/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests\thirtyDays.test.mjs:143:1
+✖ 30 Days quality tiers stay in one row and failed clips have a paid video-only retry (3.5969ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /paidRetry: true/. Input:
+  
+  'import { useCallback, useRef, useState } from "react";\n' +
+    'import { cancelJob, getJob, watchJob } from "../../../../lib/jobs";\n' +
+    'import {\n' +
+    '  animateScene,\n' +
+    '  beginThirtyDaysGeneration,\n' +
+    '  checkThirtyDaysReferenceQA,\n' +
+    '  checkThirtyDaysSceneQA,\n' +
+    '  editReferenceImage,\n' +
+    '  fetchThirtyDaysIdea,\n' +
+    '  generateReferenceImage,\n' +
+    '  generateSceneImage,\n' +
+    '  recordThirtyDaysSceneQA,\n' +
+    '  recoverThirtyDaysGeneration,\n' +
+    '  selectSceneReferenceIds,\n' +
+    '  settleThirtyDaysGeneration,\n' +
+    '  SCENE_COUNT,\n' +
+    '  syncThirtyDaysAssets,\n' +
+    '  updateThirtyDaysProgress,\n' +
+    '} from "../api/thirtyDaysApi";\n' +
+    'import { buildReferenceCollage, createCollageCache } from "../utils/referenceCollage";\n' +
+    'import { commitSeriesReferenceEdit, commitSeriesReferenceRegeneration, getPreviousEpisodeEndingImage, reopenSeriesVideoRetry, reopenSeriesImageRetry, reopenReferenceRetry } from "../api/thirtyDaysSeriesApi";\n' +
+    '\n' +
+    'const TERMINAL = new Set(["succeeded", "failed", "canceled"]);\n' +
+    'const JOB_TIMEOUT_MS = 12 * 60 * 1000;\n' +
+    '\n' +
+    'function resultUrl(job) {\n' +
+    '  const raw = job?.result_url || job?.resultUrl || job?.output?.result_url || job?.output?.resultUrl ||\n' +
+    '    job?.output?.imageURL || job?.output?.imageUrl || job?.output?.image_url ||\n' +
+    '    job?.output?.videoURL || job?.output?.videoUrl || job?.output?.video_url ||\n' +
+    '    job?.output?.data?.[0]?.url || job?.output?.results?.[0]?.url;\n' +
+    '  return typeof raw === "string" && /^https:\\/\\//i.test(raw) && !raw.includes("localhost") ? raw.trim() : null;\n' +
+    '}\n' +
+    '\n' +
+    'function waitForJob(jobId, onChange, timeoutMs = JOB_TIMEOUT_MS) {\n' +
+    '  return new Promise((resolve) => {\n' +
+    '    let done = false;\n' +
+    '    let unsubscribe;\n' +
+    '    const finish = (row) => {\n' +
+    '      if (done) return;\n' +
+    '      done = true;\n' +
+    '      clearTimeout(timer);\n' +
+    '      try { unsubscribe?.(); } catch { /* already removed */ }\n' +
+    '      resolve(row);\n' +
+    '    };\n' +
+    '    const timer = setTimeout(async () => {\n' +
+    '      await cancelJob(jobId).catch(() => {});\n' +
+    '      const row = await getJob(jobId).catch(() => null);\n' +
+    '      finish(row);\n' +
+    '    }, timeoutMs);\n' +
+    '    unsubscribe = watchJob(jobId, (row) => {\n' +
+    '      onChange?.(row);\n' +
+    '      if (TERMINAL.has(row?.status)) finish(row);\n' +
+    '    });\n' +
+    '  });\n' +
+    '}\n' +
+    '\n' +
+    'async function terminalJob(jobId, onChange) {\n' +
+    '  const existing = await getJob(jobId).catch(() => null);\n' +
+    '  if (existing && TERMINAL.has(existing.status)) return existing;\n' +
+    '  return waitForJob(jobId, onChange);\n' +
+    '}\n' +
+    '\n' +
+    '// Shared by the main generation pass and the explicit scene-image retry button.\n' +
+    '// One invocation creates at most ONE provider image. QA is recorded as an\n' +
+    '// observation, but never silently buys/submits a second variation: the user\n' +
+    '// asked for one scene image, and any replacement must come from the visible\n' +
+    '// manual retry action.\n' +
+    'async function generateSceneImageWithEscalation({\n' +
+    '  generationId, scene, worldBible, referencesById, collageUrl, cameraMode, quality,\n' +
+    '  sceneIndex, expectedSceneCount, startAttempt = 0, patchScene, persist, setProgressLabel, liveScene, liveScenes,\n' +
+    '  previousEpisodeEndingImageUrl = null,\n' +
+    '}) {\n' +
+    '  let imageJobId = liveScene()?.imageJobId;\n' +
+    '  let imageUrl = liveScene()?.imageUrl;\n' +
+    '  try {\n' +
+    '    if (!imageUrl || liveScene()?.imageStatus !== "succeeded") {\n' +
+    '      if (!imageJobId || ["failed", "canceled"].includes(liveScene()?.imageStatus)) {\n' +
+    '        const job = await generateSceneImage({\n' +
+    '          generationId, scene, worldBible, referencesById, collageUrl, cameraMode, quality,\n' +
+    '          softenLevel: 0, repairNote: "", previousEpisodeEndingImageUrl,\n' +
+    '        });\n' +
+    '        imageJobId = job.id;\n' +
+    '        patchScene(sceneIndex, { imageJobId, imageStatus: "queued", qaAttempts: startAttempt, error: null });\n' +
+    '        await persist("scenes");\n' +
+    '      }\n' +
+    '\n' +
+    '      const terminal = await terminalJob(imageJobId, (row) => {\n' +
+    '        patchScene(sceneIndex, { imageStatus: row.status, imageProgress: Number(row.progress || 0) });\n' +
+    '        setProgressLabel?.(`Creating Scene ${sceneIndex + 1} / ${expectedSceneCount}`);\n' +
+    '      });\n' +
+    '      imageUrl = terminal?.status === "succeeded" ? resultUrl(terminal) : null;\n' +
+    '      await syncThirtyDaysAssets(generationId);\n' +
+    '      if (!imageUrl) throw new Error(terminal?.error || "Scene image generation failed");\n' +
+    '    }\n' +
+    '\n' +
+    '    patchScene(sceneIndex, { imageUrl, imageStatus: "succeeded", imageProgress: 100, error: null });\n' +
+    '    const previousSceneImages = (liveScenes?.() || [])\n' +
+    '      .filter((item) => Number(item.index) < Number(scene.index) && item.imageUrl)\n' +
+    '      .sort((a, b) => Number(a.index) - Number(b.index))\n' +
+    '      .map((item) => ({ sceneIndex: Number(item.index), imageUrl: item.imageUrl }));\n' +
+    '    let qa = await checkThirtyDaysSceneQA({ generationId, imageUrl, scene, worldBible, referencesById, previousSceneImages });\n' +
+    '    // Any checked QA rejection is a real stop before animation. Previously a\n' +
+    '    // model could return usable=false for an obvious bad still without also\n' +
+    '    // setting one of the optional category flags, and that image still went\n' +
+    '    // straight into video generation.\n' +
+    '    // Identity and POV notes from low-detail vision are advisory: custom\n' +
+    '    // character names (Nova/Eevee) and viewer-insert hands regularly trigger\n' +
+    '    // false mismatches. Only objectively broken canvases block animation.\n' +
+    '    let hardQaFailure = qa?.usable === false || qa?.hasReadableText === true || qa?.multiPanel === true;\n' +
+    '    let qaLooksGood = qa?.usable !== false && qa?.nearDuplicate !== true && !hardQaFailure;\n' +
+    '    let qaStatus = qa?.reason === "qa_unavailable" ? "unavailable" : hardQaFailure ? "failed" : "passed";\n' +
+    '    let qaReason = qa?.nearDuplicate\n' +
+    '      ? `qa_warning:near_duplicate:${qa?.similarityReason || "repeats an earlier scene"}`\n' +
+    '      : qaLooksGood ? (qa?.reason || qaStatus) : `qa_warning:${qa?.reason || "visual mismatch"}`;\n' +
+    '    const hardReason = qa?.hasReadableText ? "onscreen_text"\n' +
+    '      : qa?.multiPanel ? "multi_panel" : null;\n' +
+    '    try {\n' +
+    '      await recordThirtyDaysSceneQA({ generationId, sceneIndex, jobId: imageJobId, usable: !hardQaFailure, reason: qaStatus === "unavailable" ? "qa_unavailable" : hardQaFailure ? `hard_qa:${hardReason}:${qa?.reason || "unusable still"}` : qaReason });\n' +
+    '    } catch (qaAuditError) {\n' +
+    '      // The image provider succeeded; only the optional QA ledger has not\n' +
+    '      // caught up with its job row yet. Never discard a good still or block\n' +
+    '      // its animation over that race — the server worker will reconcile the\n' +
+    '      // audit later. Treat this precisely like a temporary QA outage.\n' +
+    '      console.warn("[thirty-days] scene QA audit unavailable; continuing:", qaAuditError);\n' +
+    '      qa = { usable: true, reason: "qa_unavailable", status: "unavailable", nearDuplicate: false, identityChecks: [], observedEvent: "" };\n' +
+    '      hardQaFailure = false;\n' +
+    '      qaLooksGood = true;\n' +
+    '      qaStatus = "unavailable";\n' +
+    '      qaReason = "qa_unavailable";\n' +
+    '    }\n' +
+    '    patchScene(sceneIndex, {\n' +
+    '      qaStatus, qaReason: qaReason || null, qaAttempts: startAttempt + 1,\n' +
+    '      visualObservation: qa?.observedEvent || null,\n' +
+    '      identityChecks: Array.isArray(qa?.identityChecks) ? qa.identityChecks : [],\n' +
+    '      duplicateOfSceneIndex: qa?.duplicateOfSceneIndex ?? null,\n' +
+    '      compositionSimilarityReason: qa?.similarityReason || null,\n' +
+    '    });\n' +
+    '    await persist("scenes");\n' +
+    '    if (hardQaFailure) {\n' +
+    '      patchScene(sceneIndex, { imageStatus: "failed", videoStatus: "failed", error: `Image rejected: ${hardReason}. Use Regenerate image to replace it.` });\n' +
+    '      await persist("scenes");\n' +
+    '      return { imageUrl: null };\n' +
+    '    }\n' +
+    '    return { imageUrl };\n' +
+    '  } catch (caught) {\n' +
+    '    const message = String(caught?.message || caught || "Scene image generation failed");\n' +
+    '    patchScene(sceneIndex, { imageStatus: "failed", videoStatus: "failed", error: message });\n' +
+    '    await persist("scenes");\n' +
+    '    return { imageUrl: null };\n' +
+    '  }\n' +
+    '}\n' +
+    '\n' +
+    "// A single call covers up to 3 attempts, escalating how much of the LLM's\n" +
+    '// own wording survives into the video prompt each time. A provider content\n' +
+    '// filter rejecting the exact same prompt again is a near-certain repeat\n' +
+    "// failure, so retrying identically wastes the user's wait; softening what's\n" +
+    '// actually sent gives each attempt a real, different chance. Shared between\n' +
+    '// the first generation pass and the manual retry button so both behave the\n' +
+    '// same way and never need more than one user click.\n' +
+    'async function animateSceneWithEscalation({ generationId, scene, nextScene, imageUrl, quality, paidRetry, cameraMode, sceneIndex, patchScene, setProgressLabel, labelPrefix }) {\n' +
+    '  let lastError = "Animation failed";\n' +
+    '  for (let softenLevel = 0; softenLevel < 3; softenLevel += 1) {\n' +
+    '    if (softenLevel > 0) {\n' +
+    '      setProgressLabel?.(`${labelPrefix} — content filter blocked it, trying a ${softenLevel === 1 ? "softer" : "much gentler"} version…`);\n' +
+    '      patchScene(sceneIndex, { videoStatus: "retrying", videoError: null });\n' +
+    '    }\n' +
+    '    try {\n' +
+    '      const job = await animateScene({ generationId, scene, nextScene, imageUrl, quality, paidRetry, softenLevel, cameraMode });\n' +
+    '      patchScene(sceneIndex, { videoJobId: job.id, videoStatus: "queued", videoError: null });\n' +
+    '      const terminal = await terminalJob(job.id, (row) => {\n' +
+    '        patchScene(sceneIndex, { videoStatus: row.status, videoProgress: Number(row.progress || 0) });\n' +
+    '      });\n' +
+    '      const videoUrl = terminal?.status === "succeeded" ? resultUrl(terminal) : null;\n' +
+    '      if (videoUrl) return { videoUrl, jobId: job.id };\n' +
+    '      lastError = terminal?.error || lastError;\n' +
+    '    } catch (caught) {\n' +
+    '      lastError = String(caught?.message || caught || lastError);\n' +
+    '    }\n' +
+    '  }\n' +
+    '  return { videoUrl: null, error: lastError };\n' +
+    '}\n' +
+    '\n' +
+    '// Same escalation shape as animateSceneWithEscalation, for references. A\n' +
+    '// reference generation failure — even a generic provider "standardError",\n' +
+    '// not just a content-policy rejection — gets fresh attempts with softer\n' +
+    '// wording rather than repeating the identical request. Setup references are\n' +
+    '// covered by the still-open series reservation the whole time setup is\n' +
+    '// incomplete, so a retry here needs no reopen/reservation step at all —\n' +
+    "// it's just a normal regeneration call.\n" +
+    'async function generateReferenceWithEscalation({ generationId, reference, worldBible, quality, referenceId, patchReference, setProgressLabel, labelP'... 33136 more characters
+  
+      at TestContext.<anonymous> (file:///C:/Users/Public/Zylo/tests/thirtyDays.test.mjs:164:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'import { useCallback, useRef, useState } from "react";\nimport { cancelJob, getJob, watchJob } from "../../../../lib/jobs";\nimport {\n  animateScene,\n  beginThirtyDaysGeneration,\n  checkThirtyDaysReferenceQA,\n  checkThirtyDaysSceneQA,\n  editReferenceImage,\n  fetchThirtyDaysIdea,\n  generateReferenceImage,\n  generateSceneImage,\n  recordThirtyDaysSceneQA,\n  recoverThirtyDaysGeneration,\n  selectSceneReferenceIds,\n  settleThirtyDaysGeneration,\n  SCENE_COUNT,\n  syncThirtyDaysAssets,\n  updateThirtyDaysProgress,\n} from "../api/thirtyDaysApi";\nimport { buildReferenceCollage, createCollageCache } from "../utils/referenceCollage";\nimport { commitSeriesReferenceEdit, commitSeriesReferenceRegeneration, getPreviousEpisodeEndingImage, reopenSeriesVideoRetry, reopenSeriesImageRetry, reopenReferenceRetry } from "../api/thirtyDaysSeriesApi";\n\nconst TERMINAL = new Set(["succeeded", "failed", "canceled"]);\nconst JOB_TIMEOUT_MS = 12 * 60 * 1000;\n\nfunction resultUrl(job) {\n  const raw = job?.result_url || job?.resultUrl || job?.output?.result_url || job?.output?.resultUrl ||\n    job?.output?.imageURL || job?.output?.imageUrl || job?.output?.image_url ||\n    job?.output?.videoURL || job?.output?.videoUrl || job?.output?.video_url ||\n    job?.output?.data?.[0]?.url || job?.output?.results?.[0]?.url;\n  return typeof raw === "string" && /^https:\\/\\//i.test(raw) && !raw.includes("localhost") ? raw.trim() : null;\n}\n\nfunction waitForJob(jobId, onChange, timeoutMs = JOB_TIMEOUT_MS) {\n  return new Promise((resolve) => {\n    let done = false;\n    let unsubscribe;\n    const finish = (row) => {\n      if (done) return;\n      done = true;\n      clearTimeout(timer);\n      try { unsubscribe?.(); } catch { /* already removed */ }\n      resolve(row);\n    };\n    const timer = setTimeout(async () => {\n      await cancelJob(jobId).catch(() => {});\n      const row = await getJob(jobId).catch(() => null);\n      finish(row);\n    }, timeoutMs);\n    unsubscribe = watchJob(jobId, (row) => {\n      onChange?.(row);\n      if (TERMINAL.has(row?.status)) finish(row);\n    });\n  });\n}\n\nasync function terminalJob(jobId, onChange) {\n  const existing = await getJob(jobId).catch(() => null);\n  if (existing && TERMINAL.has(existing.status)) return existing;\n  return waitForJob(jobId, onChange);\n}\n\n// Shared by the main generation pass and the explicit scene-image retry button.\n// One invocation creates at most ONE provider image. QA is recorded as an\n// observation, but never silently buys/submits a second variation: the user\n// asked for one scene image, and any replacement must come from the visible\n// manual retry action.\nasync function generateSceneImageWithEscalation({\n  generationId, scene, worldBible, referencesById, collageUrl, cameraMode, quality,\n  sceneIndex, expectedSceneCount, startAttempt = 0, patchScene, persist, setProgressLabel, liveScene, liveScenes,\n  previousEpisodeEndingImageUrl = null,\n}) {\n  let imageJobId = liveScene()?.imageJobId;\n  let imageUrl = liveScene()?.imageUrl;\n  try {\n    if (!imageUrl || liveScene()?.imageStatus !== "succeeded") {\n      if (!imageJobId || ["failed", "canceled"].includes(liveScene()?.imageStatus)) {\n        const job = await generateSceneImage({\n          generationId, scene, worldBible, referencesById, collageUrl, cameraMode, quality,\n          softenLevel: 0, repairNote: "", previousEpisodeEndingImageUrl,\n        });\n        imageJobId = job.id;\n        patchScene(sceneIndex, { imageJobId, imageStatus: "queued", qaAttempts: startAttempt, error: null });\n        await persist("scenes");\n      }\n\n      const terminal = await terminalJob(imageJobId, (row) => {\n        patchScene(sceneIndex, { imageStatus: row.status, imageProgress: Number(row.progress || 0) });\n        setProgressLabel?.(`Creating Scene ${sceneIndex + 1} / ${expectedSceneCount}`);\n      });\n      imageUrl = terminal?.status === "succeeded" ? resultUrl(terminal) : null;\n      await syncThirtyDaysAssets(generationId);\n      if (!imageUrl) throw new Error(terminal?.error || "Scene image generation failed");\n    }\n\n    patchScene(sceneIndex, { imageUrl, imageStatus: "succeeded", imageProgress: 100, error: null });\n    const previousSceneImages = (liveScenes?.() || [])\n      .filter((item) => Number(item.index) < Number(scene.index) && item.imageUrl)\n      .sort((a, b) => Number(a.index) - Number(b.index))\n      .map((item) => ({ sceneIndex: Number(item.index), imageUrl: item.imageUrl }));\n    let qa = await checkThirtyDaysSceneQA({ generationId, imageUrl, scene, worldBible, referencesById, previousSceneImages });\n    // Any checked QA rejection is a real stop before animation. Previously a\n    // model could return usable=false for an obvious bad still without also\n    // setting one of the optional category flags, and that image still went\n    // straight into video generation.\n    // Identity and POV notes from low-detail vision are advisory: custom\n    // character names (Nova/Eevee) and viewer-insert hands regularly trigger\n    // false mismatches. Only objectively broken canvases block animation.\n    let hardQaFailure = qa?.usable === false || qa?.hasReadableText === true || qa?.multiPanel === true;\n    let qaLooksGood = qa?.usable !== false && qa?.nearDuplicate !== true && !hardQaFailure;\n    let qaStatus = qa?.reason === "qa_unavailable" ? "unavailable" : hardQaFailure ? "failed" : "passed";\n    let qaReason = qa?.nearDuplicate\n      ? `qa_warning:near_duplicate:${qa?.similarityReason || "repeats an earlier scene"}`\n      : qaLooksGood ? (qa?.reason || qaStatus) : `qa_warning:${qa?.reason || "visual mismatch"}`;\n    const hardReason = qa?.hasReadableText ? "onscreen_text"\n      : qa?.multiPanel ? "multi_panel" : null;\n    try {\n      await recordThirtyDaysSceneQA({ generationId, sceneIndex, jobId: imageJobId, usable: !hardQaFailure, reason: qaStatus === "unavailable" ? "qa_unavailable" : hardQaFailure ? `hard_qa:${hardReason}:${qa?.reason || "unusable still"}` : qaReason });\n    } catch (qaAuditError) {\n      // The image provider succeeded; only the optional QA ledger has not\n      // caught up with its job row yet. Never discard a good still or block\n      // its animation over that race — the server worker will reconcile the\n      // audit later. Treat this precisely like a temporary QA outage.\n      console.warn("[thirty-days] scene QA audit unavailable; continuing:", qaAuditError);\n      qa = { usable: true, reason: "qa_unavailable", status: "unavailable", nearDuplicate: false, identityChecks: [], observedEvent: "" };\n      hardQaFailure = false;\n      qaLooksGood = true;\n      qaStatus = "unavailable";\n      qaReason = "qa_unavailable";\n    }\n    patchScene(sceneIndex, {\n      qaStatus, qaReason: qaReason || null, qaAttempts: startAttempt + 1,\n      visualObservation: qa?.observedEvent || null,\n      identityChecks: Array.isArray(qa?.identityChecks) ? qa.identityChecks : [],\n      duplicateOfSceneIndex: qa?.duplicateOfSceneIndex ?? null,\n      compositionSimilarityReason: qa?.similarityReason || null,\n    });\n    await persist("scenes");\n    if (hardQaFailure) {\n      patchScene(sceneIndex, { imageStatus: "failed", videoStatus: "failed", error: `Image rejected: ${hardReason}. Use Regenerate image to replace it.` });\n      await persist("scenes");\n      return { imageUrl: null };\n    }\n    return { imageUrl };\n  } catch (caught) {\n    const message = String(caught?.message || caught || "Scene image generation failed");\n    patchScene(sceneIndex, { imageStatus: "failed", videoStatus: "failed", error: message });\n    await persist("scenes");\n    return { imageUrl: null };\n  }\n}\n\n// A single call covers up to 3 attempts, escalating how much of the LLM\'s\n// own wording survives into the video prompt each time. A provider content\n// filter rejecting the exact same prompt again is a near-certain repeat\n// failure, so retrying identically wastes the user\'s wait; softening what\'s\n// actually sent gives each attempt a real, different chance. Shared between\n// the first generation pass and the manual retry button so both behave the\n// same way and never need more than one user click.\nasync function animateSceneWithEscalation({ generationId, scene, nextScene, imageUrl, quality, paidRetry, cameraMode, sceneIndex, patchScene, setProgressLabel, labelPrefix }) {\n  let lastError = "Animation failed";\n  for (let softenLevel = 0; softenLevel < 3; softenLevel += 1) {\n    if (softenLevel > 0) {\n      setProgressLabel?.(`${labelPrefix} — content filter blocked it, trying a ${softenLevel === 1 ? "softer" : "much gentler"} version…`);\n      patchScene(sceneIndex, { videoStatus: "retrying", videoError: null });\n    }\n    try {\n      const job = await animateScene({ generationId, scene, nextScene, imageUrl, quality, paidRetry, softenLevel, cameraMode });\n      patchScene(sceneIndex, { videoJobId: job.id, videoStatus: "queued", videoError: null });\n      const terminal = await terminalJob(job.id, (row) => {\n        patchScene(sceneIndex, { videoStatus: row.status, videoProgress: Number(row.progress || 0) });\n      });\n      const videoUrl = terminal?.status === "succeeded" ? resultUrl(terminal) : null;\n      if (videoUrl) return { videoUrl, jobId: job.id };\n      lastError = terminal?.error || lastError;\n    } catch (caught) {\n      lastError = String(caught?.message || caught || lastError);\n    }\n  }\n  return { videoUrl: null, error: lastError };\n}\n\n// Same escalation shape as animateSceneWithEscalation, for references. A\n// reference generation failure — even a generic provider "standardError",\n// not just a content-policy rejection — gets fresh attempts with softer\n// wording rather than repeating the identical request. Setup references are\n// covered by the still-open series reservation the whole time setup is\n// incomplete, so a retry here needs no reopen/reservation step at all —\n// it\'s just a normal regeneration call.\nasync function generateReferenceWithEscalation({ generationId, reference, worldBible, quality, referenceId, patchReference, setProgressLabel, labelP'... 33136 more characters,
+    expected: /paidRetry: true/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests\thirtyDays.test.mjs:174:1
+✖ 30 Days enforces a viewer-insert protagonist from idea through QA and narration (4.5317ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /visibly present \(or unmistakably implied/. Input:
+  
+  '// thirty-days-scene-qa/index.ts\n' +
+    '// Lightweight vision QA gate for a just-generated scene still, run BEFORE the\n' +
+    '// video-animation credit spend. Not a deep art critique — just: does this\n' +
+    '// broadly match the planned scene (protagonist/key characters present,\n' +
+    '// correct environment, no catastrophic style drift, usable for animation)?\n' +
+    '// POST { generationId, imageUrl, scene: {title, location, characters, visualEvent}, worldBible: {franchise, characters, creatures} }\n' +
+    '// Returns { usable: boolean, reason: string }\n' +
+    '\n' +
+    'import "jsr:@supabase/functions-js/edge-runtime.d.ts";\n' +
+    'import { createClient } from "https://esm.sh/@supabase/supabase-js@2";\n' +
+    '\n' +
+    'const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY")!;\n' +
+    'const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;\n' +
+    'const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;\n' +
+    '\n' +
+    'const CORS = {\n' +
+    '  "access-control-allow-origin": "*",\n' +
+    '  "access-control-allow-methods": "POST, OPTIONS",\n' +
+    '  "access-control-allow-headers": "authorization, content-type, apikey, x-client-info",\n' +
+    '  "content-type": "application/json",\n' +
+    '};\n' +
+    '\n' +
+    'Deno.serve(async (req) => {\n' +
+    '  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });\n' +
+    '  if (req.method !== "POST") return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: CORS });\n' +
+    '\n' +
+    '  let body: {\n' +
+    '    generationId?: string;\n' +
+    '    imageUrl?: string;\n' +
+    '    scene?: { index?: number; title?: string; location?: string; characters?: string[]; visualEvent?: string; mainAction?: string; reaction?: string; camera?: string; shotType?: string; protagonistAction?: string };\n' +
+    '    worldBible?: {\n' +
+    '      franchise?: string; characters?: string[]; creatures?: string[];\n' +
+    '      visualStyle?: string; styleMode?: string; styleDirective?: string;\n' +
+    '      viewerProtagonist?: { identity?: string; visualIdentity?: string };\n' +
+    '    };\n' +
+    '    requiredEntities?: string[];\n' +
+    '    forbiddenEntities?: string[];\n' +
+    '    requiredProps?: string[];\n' +
+    '    expectedReferences?: Array<{ entityId?: string; referenceId?: string; label?: string; visualLock?: string; imageUrl?: string }>;\n' +
+    '    previousSceneImages?: Array<{ sceneIndex?: number; imageUrl?: string }>;\n' +
+    '  } = {};\n' +
+    '  try { body = await req.json(); } catch { /* empty body handled below */ }\n' +
+    '\n' +
+    '  const generationId = String(body.generationId ?? "").trim();\n' +
+    '  const imageUrl = String(body.imageUrl ?? "").trim();\n' +
+    '  if (!generationId || !imageUrl.startsWith("https://")) {\n' +
+    '    return new Response(JSON.stringify({ error: "Missing generationId or imageUrl" }), { status: 400, headers: CORS });\n' +
+    '  }\n' +
+    '\n' +
+    "  // Ownership check via RLS — no credit/rate-limit RPC for this: it's a\n" +
+    '  // cheap, low-detail, single-image, defensive quality gate, not a paid\n' +
+    '  // user-facing feature that needs its own reservation ledger.\n' +
+    '  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {\n' +
+    '    global: { headers: { Authorization: req.headers.get("authorization") ?? "" } },\n' +
+    '    auth: { persistSession: false },\n' +
+    '  });\n' +
+    '  const { data: owned, error: ownershipError } = await supabase\n' +
+    '    .from("thirty_days_generations")\n' +
+    '    .select("id,scenes")\n' +
+    '    .eq("id", generationId)\n' +
+    '    .maybeSingle();\n' +
+    '  if (ownershipError || !owned) {\n' +
+    '    return new Response(JSON.stringify({ error: "Creation access denied" }), { status: 403, headers: CORS });\n' +
+    '  }\n' +
+    '\n' +
+    '  const scene = body.scene ?? {};\n' +
+    '  const worldBible = body.worldBible ?? {};\n' +
+    '  const expectedCharacters = (scene.characters ?? []).filter(Boolean).slice(0, 8);\n' +
+    '  const expectedReferences = (body.expectedReferences ?? []).filter((reference) => reference.imageUrl?.startsWith("https://")).slice(0, 4);\n' +
+    '  const storedPrevious = (Array.isArray(owned.scenes) ? owned.scenes : [])\n' +
+    '    .filter((item: any) => Number(item?.index) < Number(scene.index ?? 0) && String(item?.imageUrl || "").startsWith("https://"))\n' +
+    '    .map((item: any) => ({ sceneIndex: Number(item.index), imageUrl: String(item.imageUrl) }));\n' +
+    '  const previousByIndex = new Map([...storedPrevious, ...(body.previousSceneImages ?? [])]\n' +
+    '    .filter((item) => item.imageUrl?.startsWith("https://"))\n' +
+    '    .map((item) => [Number(item.sceneIndex), item]));\n' +
+    '  const previousScenes = [...previousByIndex.values()].sort((a, b) => Number(a.sceneIndex) - Number(b.sceneIndex)).slice(-3);\n' +
+    '\n' +
+    '  const prompt = [\n' +
+    '    `You are a fast quality gate for an AI-generated scene image, about to be spent on video animation credits. Do NOT deeply critique the art. Just answer: is this image broadly usable?`,\n' +
+    '    `Franchise: ${worldBible.franchise || "(unspecified)"}.`,\n' +
+    '    `Planned scene ${Number(scene.index ?? 0) + 1}: "${scene.title || ""}" at "${scene.location || ""}". Main action: ${scene.mainAction || scene.visualEvent || "(unspecified)"}. Reaction: ${scene.reaction || "(unspecified)"}. Camera/framing: ${scene.camera || scene.shotType || "(unspecified)"}.`,\n' +
+    '    `Mandatory viewer protagonist: ${worldBible.viewerProtagonist?.identity || "YOU, the viewer-insert protagonist"}. Visual lock: ${worldBible.viewerProtagonist?.visualIdentity || "the supplied protagonist/POV reference"}. Required action: ${scene.protagonistAction || "actively participates in this scene"}.`,\n' +
+    '    `Required visual style mode: ${worldBible.styleMode || "auto / Franchise Accurate"}. Style interpretation: ${worldBible.styleDirective || worldBible.visualStyle || "preserve the franchise\'s native visual language"}.`,\n' +
+    '    expectedCharacters.length ? `Expected characters/creatures that should be identifiable if present in this scene: ${expectedCharacters.join(", ")}.` : "",\n' +
+    '    body.requiredEntities?.length ? `Required entity IDs: ${body.requiredEntities.join(", ")}. Each must match its separately supplied identity reference, canonical type/form, and visual lock.` : "",\n' +
+    '    body.forbiddenEntities?.length ? `Forbidden entity IDs: ${body.forbiddenEntities.join(", ")}. Fail if any appear.` : "",\n' +
+    '    body.requiredProps?.length ? `Required props: ${body.requiredProps.join(", ")}.` : "",\n' +
+    '    expectedReferences.length ? `Identity reference order after the generated scene: ${expectedReferences.map((reference, index) => `image ${index + 2} = ${reference.entityId} / ${reference.label}; lock: ${reference.visualLock}`).join(" | ")}.` : "",\n' +
+    '    previousScenes.length ? `Previous episode-scene comparison images follow the identity references: ${previousScenes.map((item, index) => `comparison image ${index + 1} = earlier scene ${Number(item.sceneIndex) + 1}`).join("; ")}. They are only for DUPLICATE detection, never identity guidance.` : "",\n' +
+    '    `Check the exact protagonist and every recurring entity against its source image. A wrong species/form/person is a catastrophic identity failure, not a minor imperfection. Also check forbidden entities, main action, props, and environment.`,\n' +
+    "    `CAST-INTEGRITY GATE: set identityDrift=true and usable=false if any character masquerades as another, has another character's clothing/body/species/role, a creature or mascot is turned into a humanlike stand-in, an unplanned character appears, or a required character's exact form is wrong. Allow only a transformation/costume change explicitly required by the planned scene.`,\n" +
+    '    `SINGLE-FRAME GATE: the result must be one continuous full-frame shot. A comic page, manga page, storyboard, contact sheet, split screen, collage, grid, inset, sequential panels, or multiple variations inside one image is unusable.`,\n' +
+    '    `CANVAS GATE: set multiPanel=true and usable=false ONLY if visible borders, dividers, insets, or separate framed images divide the canvas horizontally/vertically, stack it into strips, or combine an establishing view and an action view. Multiple characters, creatures, objects, or actions inside ONE uninterrupted location are NOT panels. Never infer panels merely because several subjects appear in the same frame.`,\n' +
+    '    `ZERO-TEXT GATE: set hasReadableText=true and usable=false if the generated scene contains any title/day/location card, subtitle, caption, dialogue, speech bubble, lower third, label, logo, watermark, UI/HUD, or other readable/pseudo-readable letters or numbers. Ignore only unavoidable tiny canonical symbols that are part of an identity reference, never scene narration or interface text.`,\n' +
+    '    `POV GATE: when camera/framing is first-person or POV, set povViolation=true and usable=false if an outside view of the protagonist, a new stand-in protagonist, or a third-person camera appears.`,\n' +
+    '    `DUPLICATE GATE: compare the generated scene with every earlier-scene comparison image. Set nearDuplicate=true and usable=false if it substantially repeats the same background/location view, pose, subject placement, camera angle, staging, lighting motif, and composition so it reads like a copy rather than the next story shot. Shared character identity alone is NOT duplication. Continuity in the same location is allowed only when framing, action, and staging visibly progress.`,\n' +
+    '    `Return structured results. observedEvent must be a concrete factual description of what the generated image actually shows; never copy an unobserved plan claim.`,\n' +
+    '  ].filter(Boolean).join("\\n");\n' +
+    '\n' +
+    '  try {\n' +
+    '    const res = await fetch("https://api.openai.com/v1/chat/completions", {\n' +
+    '      method: "POST",\n' +
+    '      headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },\n' +
+    '      body: JSON.stringify({\n' +
+    '        model: "gpt-4o-mini",\n' +
+    '        messages: [{\n' +
+    '          role: "user",\n' +
+    '          content: [\n' +
+    '            { type: "text", text: prompt },\n' +
+    '            { type: "image_url", image_url: { url: imageUrl, detail: "low" } },\n' +
+    '            ...expectedReferences.map((reference) => ({ type: "image_url", image_url: { url: reference.imageUrl, detail: "low" } })),\n' +
+    '            ...previousScenes.map((item) => ({ type: "image_url", image_url: { url: item.imageUrl, detail: "low" } })),\n' +
+    '          ],\n' +
+    '        }],\n' +
+    '        response_format: {\n' +
+    '          type: "json_schema",\n' +
+    '          json_schema: {\n' +
+    '            name: "thirty_days_scene_qa",\n' +
+    '            strict: true,\n' +
+    '            schema: {\n' +
+    '              type: "object",\n' +
+    '              properties: {\n' +
+    '                usable: { type: "boolean" }, reason: { ty'... 4118 more characters
+  
+      at TestContext.<anonymous> (file:///C:/Users/Public/Zylo/tests/thirtyDays.test.mjs:202:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '// thirty-days-scene-qa/index.ts\n// Lightweight vision QA gate for a just-generated scene still, run BEFORE the\n// video-animation credit spend. Not a deep art critique — just: does this\n// broadly match the planned scene (protagonist/key characters present,\n// correct environment, no catastrophic style drift, usable for animation)?\n// POST { generationId, imageUrl, scene: {title, location, characters, visualEvent}, worldBible: {franchise, characters, creatures} }\n// Returns { usable: boolean, reason: string }\n\nimport "jsr:@supabase/functions-js/edge-runtime.d.ts";\nimport { createClient } from "https://esm.sh/@supabase/supabase-js@2";\n\nconst OPENAI_KEY = Deno.env.get("OPENAI_API_KEY")!;\nconst SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;\nconst SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;\n\nconst CORS = {\n  "access-control-allow-origin": "*",\n  "access-control-allow-methods": "POST, OPTIONS",\n  "access-control-allow-headers": "authorization, content-type, apikey, x-client-info",\n  "content-type": "application/json",\n};\n\nDeno.serve(async (req) => {\n  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });\n  if (req.method !== "POST") return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: CORS });\n\n  let body: {\n    generationId?: string;\n    imageUrl?: string;\n    scene?: { index?: number; title?: string; location?: string; characters?: string[]; visualEvent?: string; mainAction?: string; reaction?: string; camera?: string; shotType?: string; protagonistAction?: string };\n    worldBible?: {\n      franchise?: string; characters?: string[]; creatures?: string[];\n      visualStyle?: string; styleMode?: string; styleDirective?: string;\n      viewerProtagonist?: { identity?: string; visualIdentity?: string };\n    };\n    requiredEntities?: string[];\n    forbiddenEntities?: string[];\n    requiredProps?: string[];\n    expectedReferences?: Array<{ entityId?: string; referenceId?: string; label?: string; visualLock?: string; imageUrl?: string }>;\n    previousSceneImages?: Array<{ sceneIndex?: number; imageUrl?: string }>;\n  } = {};\n  try { body = await req.json(); } catch { /* empty body handled below */ }\n\n  const generationId = String(body.generationId ?? "").trim();\n  const imageUrl = String(body.imageUrl ?? "").trim();\n  if (!generationId || !imageUrl.startsWith("https://")) {\n    return new Response(JSON.stringify({ error: "Missing generationId or imageUrl" }), { status: 400, headers: CORS });\n  }\n\n  // Ownership check via RLS — no credit/rate-limit RPC for this: it\'s a\n  // cheap, low-detail, single-image, defensive quality gate, not a paid\n  // user-facing feature that needs its own reservation ledger.\n  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {\n    global: { headers: { Authorization: req.headers.get("authorization") ?? "" } },\n    auth: { persistSession: false },\n  });\n  const { data: owned, error: ownershipError } = await supabase\n    .from("thirty_days_generations")\n    .select("id,scenes")\n    .eq("id", generationId)\n    .maybeSingle();\n  if (ownershipError || !owned) {\n    return new Response(JSON.stringify({ error: "Creation access denied" }), { status: 403, headers: CORS });\n  }\n\n  const scene = body.scene ?? {};\n  const worldBible = body.worldBible ?? {};\n  const expectedCharacters = (scene.characters ?? []).filter(Boolean).slice(0, 8);\n  const expectedReferences = (body.expectedReferences ?? []).filter((reference) => reference.imageUrl?.startsWith("https://")).slice(0, 4);\n  const storedPrevious = (Array.isArray(owned.scenes) ? owned.scenes : [])\n    .filter((item: any) => Number(item?.index) < Number(scene.index ?? 0) && String(item?.imageUrl || "").startsWith("https://"))\n    .map((item: any) => ({ sceneIndex: Number(item.index), imageUrl: String(item.imageUrl) }));\n  const previousByIndex = new Map([...storedPrevious, ...(body.previousSceneImages ?? [])]\n    .filter((item) => item.imageUrl?.startsWith("https://"))\n    .map((item) => [Number(item.sceneIndex), item]));\n  const previousScenes = [...previousByIndex.values()].sort((a, b) => Number(a.sceneIndex) - Number(b.sceneIndex)).slice(-3);\n\n  const prompt = [\n    `You are a fast quality gate for an AI-generated scene image, about to be spent on video animation credits. Do NOT deeply critique the art. Just answer: is this image broadly usable?`,\n    `Franchise: ${worldBible.franchise || "(unspecified)"}.`,\n    `Planned scene ${Number(scene.index ?? 0) + 1}: "${scene.title || ""}" at "${scene.location || ""}". Main action: ${scene.mainAction || scene.visualEvent || "(unspecified)"}. Reaction: ${scene.reaction || "(unspecified)"}. Camera/framing: ${scene.camera || scene.shotType || "(unspecified)"}.`,\n    `Mandatory viewer protagonist: ${worldBible.viewerProtagonist?.identity || "YOU, the viewer-insert protagonist"}. Visual lock: ${worldBible.viewerProtagonist?.visualIdentity || "the supplied protagonist/POV reference"}. Required action: ${scene.protagonistAction || "actively participates in this scene"}.`,\n    `Required visual style mode: ${worldBible.styleMode || "auto / Franchise Accurate"}. Style interpretation: ${worldBible.styleDirective || worldBible.visualStyle || "preserve the franchise\'s native visual language"}.`,\n    expectedCharacters.length ? `Expected characters/creatures that should be identifiable if present in this scene: ${expectedCharacters.join(", ")}.` : "",\n    body.requiredEntities?.length ? `Required entity IDs: ${body.requiredEntities.join(", ")}. Each must match its separately supplied identity reference, canonical type/form, and visual lock.` : "",\n    body.forbiddenEntities?.length ? `Forbidden entity IDs: ${body.forbiddenEntities.join(", ")}. Fail if any appear.` : "",\n    body.requiredProps?.length ? `Required props: ${body.requiredProps.join(", ")}.` : "",\n    expectedReferences.length ? `Identity reference order after the generated scene: ${expectedReferences.map((reference, index) => `image ${index + 2} = ${reference.entityId} / ${reference.label}; lock: ${reference.visualLock}`).join(" | ")}.` : "",\n    previousScenes.length ? `Previous episode-scene comparison images follow the identity references: ${previousScenes.map((item, index) => `comparison image ${index + 1} = earlier scene ${Number(item.sceneIndex) + 1}`).join("; ")}. They are only for DUPLICATE detection, never identity guidance.` : "",\n    `Check the exact protagonist and every recurring entity against its source image. A wrong species/form/person is a catastrophic identity failure, not a minor imperfection. Also check forbidden entities, main action, props, and environment.`,\n    `CAST-INTEGRITY GATE: set identityDrift=true and usable=false if any character masquerades as another, has another character\'s clothing/body/species/role, a creature or mascot is turned into a humanlike stand-in, an unplanned character appears, or a required character\'s exact form is wrong. Allow only a transformation/costume change explicitly required by the planned scene.`,\n    `SINGLE-FRAME GATE: the result must be one continuous full-frame shot. A comic page, manga page, storyboard, contact sheet, split screen, collage, grid, inset, sequential panels, or multiple variations inside one image is unusable.`,\n    `CANVAS GATE: set multiPanel=true and usable=false ONLY if visible borders, dividers, insets, or separate framed images divide the canvas horizontally/vertically, stack it into strips, or combine an establishing view and an action view. Multiple characters, creatures, objects, or actions inside ONE uninterrupted location are NOT panels. Never infer panels merely because several subjects appear in the same frame.`,\n    `ZERO-TEXT GATE: set hasReadableText=true and usable=false if the generated scene contains any title/day/location card, subtitle, caption, dialogue, speech bubble, lower third, label, logo, watermark, UI/HUD, or other readable/pseudo-readable letters or numbers. Ignore only unavoidable tiny canonical symbols that are part of an identity reference, never scene narration or interface text.`,\n    `POV GATE: when camera/framing is first-person or POV, set povViolation=true and usable=false if an outside view of the protagonist, a new stand-in protagonist, or a third-person camera appears.`,\n    `DUPLICATE GATE: compare the generated scene with every earlier-scene comparison image. Set nearDuplicate=true and usable=false if it substantially repeats the same background/location view, pose, subject placement, camera angle, staging, lighting motif, and composition so it reads like a copy rather than the next story shot. Shared character identity alone is NOT duplication. Continuity in the same location is allowed only when framing, action, and staging visibly progress.`,\n    `Return structured results. observedEvent must be a concrete factual description of what the generated image actually shows; never copy an unobserved plan claim.`,\n  ].filter(Boolean).join("\\n");\n\n  try {\n    const res = await fetch("https://api.openai.com/v1/chat/completions", {\n      method: "POST",\n      headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },\n      body: JSON.stringify({\n        model: "gpt-4o-mini",\n        messages: [{\n          role: "user",\n          content: [\n            { type: "text", text: prompt },\n            { type: "image_url", image_url: { url: imageUrl, detail: "low" } },\n            ...expectedReferences.map((reference) => ({ type: "image_url", image_url: { url: reference.imageUrl, detail: "low" } })),\n            ...previousScenes.map((item) => ({ type: "image_url", image_url: { url: item.imageUrl, detail: "low" } })),\n          ],\n        }],\n        response_format: {\n          type: "json_schema",\n          json_schema: {\n            name: "thirty_days_scene_qa",\n            strict: true,\n            schema: {\n              type: "object",\n              properties: {\n                usable: { type: "boolean" }, reason: { ty'... 4118 more characters,
+    expected: /visibly present \(or unmistakably implied/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests\thirtyDays.test.mjs:209:1
+✖ 30 Days persists and propagates all five visual styles (2.9531ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /preserving franchise identity/. Input:
+  
+  '// thirty-days-scene-qa/index.ts\n' +
+    '// Lightweight vision QA gate for a just-generated scene still, run BEFORE the\n' +
+    '// video-animation credit spend. Not a deep art critique — just: does this\n' +
+    '// broadly match the planned scene (protagonist/key characters present,\n' +
+    '// correct environment, no catastrophic style drift, usable for animation)?\n' +
+    '// POST { generationId, imageUrl, scene: {title, location, characters, visualEvent}, worldBible: {franchise, characters, creatures} }\n' +
+    '// Returns { usable: boolean, reason: string }\n' +
+    '\n' +
+    'import "jsr:@supabase/functions-js/edge-runtime.d.ts";\n' +
+    'import { createClient } from "https://esm.sh/@supabase/supabase-js@2";\n' +
+    '\n' +
+    'const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY")!;\n' +
+    'const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;\n' +
+    'const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;\n' +
+    '\n' +
+    'const CORS = {\n' +
+    '  "access-control-allow-origin": "*",\n' +
+    '  "access-control-allow-methods": "POST, OPTIONS",\n' +
+    '  "access-control-allow-headers": "authorization, content-type, apikey, x-client-info",\n' +
+    '  "content-type": "application/json",\n' +
+    '};\n' +
+    '\n' +
+    'Deno.serve(async (req) => {\n' +
+    '  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });\n' +
+    '  if (req.method !== "POST") return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: CORS });\n' +
+    '\n' +
+    '  let body: {\n' +
+    '    generationId?: string;\n' +
+    '    imageUrl?: string;\n' +
+    '    scene?: { index?: number; title?: string; location?: string; characters?: string[]; visualEvent?: string; mainAction?: string; reaction?: string; camera?: string; shotType?: string; protagonistAction?: string };\n' +
+    '    worldBible?: {\n' +
+    '      franchise?: string; characters?: string[]; creatures?: string[];\n' +
+    '      visualStyle?: string; styleMode?: string; styleDirective?: string;\n' +
+    '      viewerProtagonist?: { identity?: string; visualIdentity?: string };\n' +
+    '    };\n' +
+    '    requiredEntities?: string[];\n' +
+    '    forbiddenEntities?: string[];\n' +
+    '    requiredProps?: string[];\n' +
+    '    expectedReferences?: Array<{ entityId?: string; referenceId?: string; label?: string; visualLock?: string; imageUrl?: string }>;\n' +
+    '    previousSceneImages?: Array<{ sceneIndex?: number; imageUrl?: string }>;\n' +
+    '  } = {};\n' +
+    '  try { body = await req.json(); } catch { /* empty body handled below */ }\n' +
+    '\n' +
+    '  const generationId = String(body.generationId ?? "").trim();\n' +
+    '  const imageUrl = String(body.imageUrl ?? "").trim();\n' +
+    '  if (!generationId || !imageUrl.startsWith("https://")) {\n' +
+    '    return new Response(JSON.stringify({ error: "Missing generationId or imageUrl" }), { status: 400, headers: CORS });\n' +
+    '  }\n' +
+    '\n' +
+    "  // Ownership check via RLS — no credit/rate-limit RPC for this: it's a\n" +
+    '  // cheap, low-detail, single-image, defensive quality gate, not a paid\n' +
+    '  // user-facing feature that needs its own reservation ledger.\n' +
+    '  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {\n' +
+    '    global: { headers: { Authorization: req.headers.get("authorization") ?? "" } },\n' +
+    '    auth: { persistSession: false },\n' +
+    '  });\n' +
+    '  const { data: owned, error: ownershipError } = await supabase\n' +
+    '    .from("thirty_days_generations")\n' +
+    '    .select("id,scenes")\n' +
+    '    .eq("id", generationId)\n' +
+    '    .maybeSingle();\n' +
+    '  if (ownershipError || !owned) {\n' +
+    '    return new Response(JSON.stringify({ error: "Creation access denied" }), { status: 403, headers: CORS });\n' +
+    '  }\n' +
+    '\n' +
+    '  const scene = body.scene ?? {};\n' +
+    '  const worldBible = body.worldBible ?? {};\n' +
+    '  const expectedCharacters = (scene.characters ?? []).filter(Boolean).slice(0, 8);\n' +
+    '  const expectedReferences = (body.expectedReferences ?? []).filter((reference) => reference.imageUrl?.startsWith("https://")).slice(0, 4);\n' +
+    '  const storedPrevious = (Array.isArray(owned.scenes) ? owned.scenes : [])\n' +
+    '    .filter((item: any) => Number(item?.index) < Number(scene.index ?? 0) && String(item?.imageUrl || "").startsWith("https://"))\n' +
+    '    .map((item: any) => ({ sceneIndex: Number(item.index), imageUrl: String(item.imageUrl) }));\n' +
+    '  const previousByIndex = new Map([...storedPrevious, ...(body.previousSceneImages ?? [])]\n' +
+    '    .filter((item) => item.imageUrl?.startsWith("https://"))\n' +
+    '    .map((item) => [Number(item.sceneIndex), item]));\n' +
+    '  const previousScenes = [...previousByIndex.values()].sort((a, b) => Number(a.sceneIndex) - Number(b.sceneIndex)).slice(-3);\n' +
+    '\n' +
+    '  const prompt = [\n' +
+    '    `You are a fast quality gate for an AI-generated scene image, about to be spent on video animation credits. Do NOT deeply critique the art. Just answer: is this image broadly usable?`,\n' +
+    '    `Franchise: ${worldBible.franchise || "(unspecified)"}.`,\n' +
+    '    `Planned scene ${Number(scene.index ?? 0) + 1}: "${scene.title || ""}" at "${scene.location || ""}". Main action: ${scene.mainAction || scene.visualEvent || "(unspecified)"}. Reaction: ${scene.reaction || "(unspecified)"}. Camera/framing: ${scene.camera || scene.shotType || "(unspecified)"}.`,\n' +
+    '    `Mandatory viewer protagonist: ${worldBible.viewerProtagonist?.identity || "YOU, the viewer-insert protagonist"}. Visual lock: ${worldBible.viewerProtagonist?.visualIdentity || "the supplied protagonist/POV reference"}. Required action: ${scene.protagonistAction || "actively participates in this scene"}.`,\n' +
+    '    `Required visual style mode: ${worldBible.styleMode || "auto / Franchise Accurate"}. Style interpretation: ${worldBible.styleDirective || worldBible.visualStyle || "preserve the franchise\'s native visual language"}.`,\n' +
+    '    expectedCharacters.length ? `Expected characters/creatures that should be identifiable if present in this scene: ${expectedCharacters.join(", ")}.` : "",\n' +
+    '    body.requiredEntities?.length ? `Required entity IDs: ${body.requiredEntities.join(", ")}. Each must match its separately supplied identity reference, canonical type/form, and visual lock.` : "",\n' +
+    '    body.forbiddenEntities?.length ? `Forbidden entity IDs: ${body.forbiddenEntities.join(", ")}. Fail if any appear.` : "",\n' +
+    '    body.requiredProps?.length ? `Required props: ${body.requiredProps.join(", ")}.` : "",\n' +
+    '    expectedReferences.length ? `Identity reference order after the generated scene: ${expectedReferences.map((reference, index) => `image ${index + 2} = ${reference.entityId} / ${reference.label}; lock: ${reference.visualLock}`).join(" | ")}.` : "",\n' +
+    '    previousScenes.length ? `Previous episode-scene comparison images follow the identity references: ${previousScenes.map((item, index) => `comparison image ${index + 1} = earlier scene ${Number(item.sceneIndex) + 1}`).join("; ")}. They are only for DUPLICATE detection, never identity guidance.` : "",\n' +
+    '    `Check the exact protagonist and every recurring entity against its source image. A wrong species/form/person is a catastrophic identity failure, not a minor imperfection. Also check forbidden entities, main action, props, and environment.`,\n' +
+    "    `CAST-INTEGRITY GATE: set identityDrift=true and usable=false if any character masquerades as another, has another character's clothing/body/species/role, a creature or mascot is turned into a humanlike stand-in, an unplanned character appears, or a required character's exact form is wrong. Allow only a transformation/costume change explicitly required by the planned scene.`,\n" +
+    '    `SINGLE-FRAME GATE: the result must be one continuous full-frame shot. A comic page, manga page, storyboard, contact sheet, split screen, collage, grid, inset, sequential panels, or multiple variations inside one image is unusable.`,\n' +
+    '    `CANVAS GATE: set multiPanel=true and usable=false ONLY if visible borders, dividers, insets, or separate framed images divide the canvas horizontally/vertically, stack it into strips, or combine an establishing view and an action view. Multiple characters, creatures, objects, or actions inside ONE uninterrupted location are NOT panels. Never infer panels merely because several subjects appear in the same frame.`,\n' +
+    '    `ZERO-TEXT GATE: set hasReadableText=true and usable=false if the generated scene contains any title/day/location card, subtitle, caption, dialogue, speech bubble, lower third, label, logo, watermark, UI/HUD, or other readable/pseudo-readable letters or numbers. Ignore only unavoidable tiny canonical symbols that are part of an identity reference, never scene narration or interface text.`,\n' +
+    '    `POV GATE: when camera/framing is first-person or POV, set povViolation=true and usable=false if an outside view of the protagonist, a new stand-in protagonist, or a third-person camera appears.`,\n' +
+    '    `DUPLICATE GATE: compare the generated scene with every earlier-scene comparison image. Set nearDuplicate=true and usable=false if it substantially repeats the same background/location view, pose, subject placement, camera angle, staging, lighting motif, and composition so it reads like a copy rather than the next story shot. Shared character identity alone is NOT duplication. Continuity in the same location is allowed only when framing, action, and staging visibly progress.`,\n' +
+    '    `Return structured results. observedEvent must be a concrete factual description of what the generated image actually shows; never copy an unobserved plan claim.`,\n' +
+    '  ].filter(Boolean).join("\\n");\n' +
+    '\n' +
+    '  try {\n' +
+    '    const res = await fetch("https://api.openai.com/v1/chat/completions", {\n' +
+    '      method: "POST",\n' +
+    '      headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },\n' +
+    '      body: JSON.stringify({\n' +
+    '        model: "gpt-4o-mini",\n' +
+    '        messages: [{\n' +
+    '          role: "user",\n' +
+    '          content: [\n' +
+    '            { type: "text", text: prompt },\n' +
+    '            { type: "image_url", image_url: { url: imageUrl, detail: "low" } },\n' +
+    '            ...expectedReferences.map((reference) => ({ type: "image_url", image_url: { url: reference.imageUrl, detail: "low" } })),\n' +
+    '            ...previousScenes.map((item) => ({ type: "image_url", image_url: { url: item.imageUrl, detail: "low" } })),\n' +
+    '          ],\n' +
+    '        }],\n' +
+    '        response_format: {\n' +
+    '          type: "json_schema",\n' +
+    '          json_schema: {\n' +
+    '            name: "thirty_days_scene_qa",\n' +
+    '            strict: true,\n' +
+    '            schema: {\n' +
+    '              type: "object",\n' +
+    '              properties: {\n' +
+    '                usable: { type: "boolean" }, reason: { ty'... 4118 more characters
+  
+      at TestContext.<anonymous> (file:///C:/Users/Public/Zylo/tests/thirtyDays.test.mjs:223:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '// thirty-days-scene-qa/index.ts\n// Lightweight vision QA gate for a just-generated scene still, run BEFORE the\n// video-animation credit spend. Not a deep art critique — just: does this\n// broadly match the planned scene (protagonist/key characters present,\n// correct environment, no catastrophic style drift, usable for animation)?\n// POST { generationId, imageUrl, scene: {title, location, characters, visualEvent}, worldBible: {franchise, characters, creatures} }\n// Returns { usable: boolean, reason: string }\n\nimport "jsr:@supabase/functions-js/edge-runtime.d.ts";\nimport { createClient } from "https://esm.sh/@supabase/supabase-js@2";\n\nconst OPENAI_KEY = Deno.env.get("OPENAI_API_KEY")!;\nconst SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;\nconst SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;\n\nconst CORS = {\n  "access-control-allow-origin": "*",\n  "access-control-allow-methods": "POST, OPTIONS",\n  "access-control-allow-headers": "authorization, content-type, apikey, x-client-info",\n  "content-type": "application/json",\n};\n\nDeno.serve(async (req) => {\n  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });\n  if (req.method !== "POST") return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: CORS });\n\n  let body: {\n    generationId?: string;\n    imageUrl?: string;\n    scene?: { index?: number; title?: string; location?: string; characters?: string[]; visualEvent?: string; mainAction?: string; reaction?: string; camera?: string; shotType?: string; protagonistAction?: string };\n    worldBible?: {\n      franchise?: string; characters?: string[]; creatures?: string[];\n      visualStyle?: string; styleMode?: string; styleDirective?: string;\n      viewerProtagonist?: { identity?: string; visualIdentity?: string };\n    };\n    requiredEntities?: string[];\n    forbiddenEntities?: string[];\n    requiredProps?: string[];\n    expectedReferences?: Array<{ entityId?: string; referenceId?: string; label?: string; visualLock?: string; imageUrl?: string }>;\n    previousSceneImages?: Array<{ sceneIndex?: number; imageUrl?: string }>;\n  } = {};\n  try { body = await req.json(); } catch { /* empty body handled below */ }\n\n  const generationId = String(body.generationId ?? "").trim();\n  const imageUrl = String(body.imageUrl ?? "").trim();\n  if (!generationId || !imageUrl.startsWith("https://")) {\n    return new Response(JSON.stringify({ error: "Missing generationId or imageUrl" }), { status: 400, headers: CORS });\n  }\n\n  // Ownership check via RLS — no credit/rate-limit RPC for this: it\'s a\n  // cheap, low-detail, single-image, defensive quality gate, not a paid\n  // user-facing feature that needs its own reservation ledger.\n  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {\n    global: { headers: { Authorization: req.headers.get("authorization") ?? "" } },\n    auth: { persistSession: false },\n  });\n  const { data: owned, error: ownershipError } = await supabase\n    .from("thirty_days_generations")\n    .select("id,scenes")\n    .eq("id", generationId)\n    .maybeSingle();\n  if (ownershipError || !owned) {\n    return new Response(JSON.stringify({ error: "Creation access denied" }), { status: 403, headers: CORS });\n  }\n\n  const scene = body.scene ?? {};\n  const worldBible = body.worldBible ?? {};\n  const expectedCharacters = (scene.characters ?? []).filter(Boolean).slice(0, 8);\n  const expectedReferences = (body.expectedReferences ?? []).filter((reference) => reference.imageUrl?.startsWith("https://")).slice(0, 4);\n  const storedPrevious = (Array.isArray(owned.scenes) ? owned.scenes : [])\n    .filter((item: any) => Number(item?.index) < Number(scene.index ?? 0) && String(item?.imageUrl || "").startsWith("https://"))\n    .map((item: any) => ({ sceneIndex: Number(item.index), imageUrl: String(item.imageUrl) }));\n  const previousByIndex = new Map([...storedPrevious, ...(body.previousSceneImages ?? [])]\n    .filter((item) => item.imageUrl?.startsWith("https://"))\n    .map((item) => [Number(item.sceneIndex), item]));\n  const previousScenes = [...previousByIndex.values()].sort((a, b) => Number(a.sceneIndex) - Number(b.sceneIndex)).slice(-3);\n\n  const prompt = [\n    `You are a fast quality gate for an AI-generated scene image, about to be spent on video animation credits. Do NOT deeply critique the art. Just answer: is this image broadly usable?`,\n    `Franchise: ${worldBible.franchise || "(unspecified)"}.`,\n    `Planned scene ${Number(scene.index ?? 0) + 1}: "${scene.title || ""}" at "${scene.location || ""}". Main action: ${scene.mainAction || scene.visualEvent || "(unspecified)"}. Reaction: ${scene.reaction || "(unspecified)"}. Camera/framing: ${scene.camera || scene.shotType || "(unspecified)"}.`,\n    `Mandatory viewer protagonist: ${worldBible.viewerProtagonist?.identity || "YOU, the viewer-insert protagonist"}. Visual lock: ${worldBible.viewerProtagonist?.visualIdentity || "the supplied protagonist/POV reference"}. Required action: ${scene.protagonistAction || "actively participates in this scene"}.`,\n    `Required visual style mode: ${worldBible.styleMode || "auto / Franchise Accurate"}. Style interpretation: ${worldBible.styleDirective || worldBible.visualStyle || "preserve the franchise\'s native visual language"}.`,\n    expectedCharacters.length ? `Expected characters/creatures that should be identifiable if present in this scene: ${expectedCharacters.join(", ")}.` : "",\n    body.requiredEntities?.length ? `Required entity IDs: ${body.requiredEntities.join(", ")}. Each must match its separately supplied identity reference, canonical type/form, and visual lock.` : "",\n    body.forbiddenEntities?.length ? `Forbidden entity IDs: ${body.forbiddenEntities.join(", ")}. Fail if any appear.` : "",\n    body.requiredProps?.length ? `Required props: ${body.requiredProps.join(", ")}.` : "",\n    expectedReferences.length ? `Identity reference order after the generated scene: ${expectedReferences.map((reference, index) => `image ${index + 2} = ${reference.entityId} / ${reference.label}; lock: ${reference.visualLock}`).join(" | ")}.` : "",\n    previousScenes.length ? `Previous episode-scene comparison images follow the identity references: ${previousScenes.map((item, index) => `comparison image ${index + 1} = earlier scene ${Number(item.sceneIndex) + 1}`).join("; ")}. They are only for DUPLICATE detection, never identity guidance.` : "",\n    `Check the exact protagonist and every recurring entity against its source image. A wrong species/form/person is a catastrophic identity failure, not a minor imperfection. Also check forbidden entities, main action, props, and environment.`,\n    `CAST-INTEGRITY GATE: set identityDrift=true and usable=false if any character masquerades as another, has another character\'s clothing/body/species/role, a creature or mascot is turned into a humanlike stand-in, an unplanned character appears, or a required character\'s exact form is wrong. Allow only a transformation/costume change explicitly required by the planned scene.`,\n    `SINGLE-FRAME GATE: the result must be one continuous full-frame shot. A comic page, manga page, storyboard, contact sheet, split screen, collage, grid, inset, sequential panels, or multiple variations inside one image is unusable.`,\n    `CANVAS GATE: set multiPanel=true and usable=false ONLY if visible borders, dividers, insets, or separate framed images divide the canvas horizontally/vertically, stack it into strips, or combine an establishing view and an action view. Multiple characters, creatures, objects, or actions inside ONE uninterrupted location are NOT panels. Never infer panels merely because several subjects appear in the same frame.`,\n    `ZERO-TEXT GATE: set hasReadableText=true and usable=false if the generated scene contains any title/day/location card, subtitle, caption, dialogue, speech bubble, lower third, label, logo, watermark, UI/HUD, or other readable/pseudo-readable letters or numbers. Ignore only unavoidable tiny canonical symbols that are part of an identity reference, never scene narration or interface text.`,\n    `POV GATE: when camera/framing is first-person or POV, set povViolation=true and usable=false if an outside view of the protagonist, a new stand-in protagonist, or a third-person camera appears.`,\n    `DUPLICATE GATE: compare the generated scene with every earlier-scene comparison image. Set nearDuplicate=true and usable=false if it substantially repeats the same background/location view, pose, subject placement, camera angle, staging, lighting motif, and composition so it reads like a copy rather than the next story shot. Shared character identity alone is NOT duplication. Continuity in the same location is allowed only when framing, action, and staging visibly progress.`,\n    `Return structured results. observedEvent must be a concrete factual description of what the generated image actually shows; never copy an unobserved plan claim.`,\n  ].filter(Boolean).join("\\n");\n\n  try {\n    const res = await fetch("https://api.openai.com/v1/chat/completions", {\n      method: "POST",\n      headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },\n      body: JSON.stringify({\n        model: "gpt-4o-mini",\n        messages: [{\n          role: "user",\n          content: [\n            { type: "text", text: prompt },\n            { type: "image_url", image_url: { url: imageUrl, detail: "low" } },\n            ...expectedReferences.map((reference) => ({ type: "image_url", image_url: { url: reference.imageUrl, detail: "low" } })),\n            ...previousScenes.map((item) => ({ type: "image_url", image_url: { url: item.imageUrl, detail: "low" } })),\n          ],\n        }],\n        response_format: {\n          type: "json_schema",\n          json_schema: {\n            name: "thirty_days_scene_qa",\n            strict: true,\n            schema: {\n              type: "object",\n              properties: {\n                usable: { type: "boolean" }, reason: { ty'... 4118 more characters,
+    expected: /preserving franchise identity/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests\thirtyDays.test.mjs:260:1
+✖ 30 Days automatically builds and persists a rendered-clip-synced TTS draft (2.8278ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Second-by-second sync/. Input:
+  
+  'import { useEffect, useMemo, useRef, useState } from "react";\n' +
+    'import { Play, RefreshCw, Volume2 } from "lucide-react";\n' +
+    'import {\n' +
+    '  VOICES,\n' +
+    '  SCENE_COUNT,\n' +
+    '  captureThirtyDaysFrames,\n' +
+    '  fetchThirtyDaysScript,\n' +
+    '  generateThirtyDaysVoice,\n' +
+    '  getVoice,\n' +
+    '  previewThirtyDaysVoice,\n' +
+    '  probeClipDuration,\n' +
+    '  saveNarrationToGeneration,\n' +
+    '  saveThirtyDaysNarrationDraft,\n' +
+    '  thirtyDaysVoicePlaybackRate,\n' +
+    '} from "./api/thirtyDaysApi";\n' +
+    '\n' +
+    'function base64Blob(value, mimeType = "audio/mpeg") {\n' +
+    '  const binary = atob(value);\n' +
+    '  const bytes = new Uint8Array(binary.length);\n' +
+    '  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);\n' +
+    '  return new Blob([bytes], { type: mimeType });\n' +
+    '}\n' +
+    '\n' +
+    'function buildAudioClipTimings(alignedWords, plannedClipSegments) {\n' +
+    '  if (!Array.isArray(alignedWords) || !Array.isArray(plannedClipSegments) || !plannedClipSegments.length) return [];\n' +
+    '  let cursor = 0;\n' +
+    '  let previousEnd = 0;\n' +
+    '  const timings = plannedClipSegments.map((segment, index) => {\n' +
+    '    const plannedWordCount = String(segment?.text || "").trim().split(/\\s+/).filter(Boolean).length;\n' +
+    '    const spokenWords = alignedWords.slice(cursor, cursor + plannedWordCount);\n' +
+    '    cursor += plannedWordCount;\n' +
+    '    const sourceStart = index === 0 ? 0 : Number(spokenWords[0]?.start ?? previousEnd);\n' +
+    '    const sourceEnd = Number(spokenWords.at(-1)?.end ?? sourceStart);\n' +
+    '    previousEnd = Math.max(previousEnd, sourceEnd);\n' +
+    '    return {\n' +
+    '      clip: Number(segment?.clip || index + 1),\n' +
+    '      sourceStart: Number(sourceStart.toFixed(3)),\n' +
+    '      sourceEnd: Number(sourceEnd.toFixed(3)),\n' +
+    '      targetDuration: Number(Math.max(0.2, Number(segment?.end) - Number(segment?.start)).toFixed(3)),\n' +
+    '    };\n' +
+    '  });\n' +
+    '  return timings.length === plannedClipSegments.length && timings.every((item) => item.sourceEnd > item.sourceStart) ? timings : [];\n' +
+    '}\n' +
+    '\n' +
+    'function narrationFingerprint(value) {\n' +
+    '  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();\n' +
+    '}\n' +
+    '\n' +
+    'export default function ThirtyDaysVoiceStep({ generation, seriesContext = null, autoGenerate = true, onDraftReady, onReady, onBack }) {\n' +
+    '  const clips = useMemo(() => [...(generation?.scenes || [])].filter((scene) => scene.videoUrl).sort((a, b) => a.index - b.index), [generation]);\n' +
+    '  const expectedSceneCount = generation?.scenes?.length || SCENE_COUNT;\n' +
+    '  const hasInternalStatus = (value) => /\\b(?:qa[_ -]?unavailable|qa[_ -]?warning|qa[_ -]?failed|verified usable|identity[_ -]?drift|pov[_ -]?violation|near[_ -]?duplicate)\\b/i.test(String(value || ""));\n' +
+    '  const hasImageDescription = (value) => /\\b(?:the image (?:shows|depicts)|the (?:scene|frame) (?:shows|depicts)|a (?:wide|close|medium) shot|a LEGO scene depicting|scene depicting|rendered (?:scene|image)|minifigures?, including)\\b/i.test(String(value || ""));\n' +
+    '  const hasBrokenSeriesNarration = (value) => {\n' +
+    '    const text = String(value || "");\n' +
+    "    const captionConnectors = text.match(/\\b(?:that's when|a little later|the next morning|but then|because of that|finally)\\b/gi)?.length || 0;\n" +
+    "    return /\\b(?:i both|i all|my faces)\\b|\\bfocusing on\\s*[.!?]|\\bas\\s+[A-Z][A-Za-z'-]{2,}\\s*[.!?]/i.test(text)\n" +
+    '      || captionConnectors >= 5;\n' +
+    '  };\n' +
+    '  const savedNarrationText = [generation?.narrationTake?.hook, generation?.narrationTake?.narration, generation?.narrationTake?.script].filter(Boolean).join(" ");\n' +
+    '  // Old drafts can contain vision-QA prose, broken grammar, or a chain of\n' +
+    '  // seven captions rather than narration. Reopening replaces them automatically.\n' +
+    '  const savedDraft = generation?.narrationTake?.draft && !hasInternalStatus(savedNarrationText) && !hasImageDescription(savedNarrationText) && !hasBrokenSeriesNarration(savedNarrationText) ? generation.narrationTake : null;\n' +
+    '  const [visualDuration, setVisualDuration] = useState(0);\n' +
+    '  const [hook, setHook] = useState(savedDraft?.hook || generation?.hook || "");\n' +
+    '  // A completed episode can legitimately have no saved narration yet. Keep\n' +
+    '  // this controlled textarea/string-only: `null` here used to crash the\n' +
+    "  // Generate button's narration.trim() while merely reopening an episode.\n" +
+    '  const [narration, setNarration] = useState(savedDraft?.narration || (!hasInternalStatus(generation?.narrationScript) && !hasImageDescription(generation?.narrationScript) && !hasBrokenSeriesNarration(generation?.narrationScript) ? (generation?.narrationScript || "") : ""));\n' +
+    '  const [scriptTiming, setScriptTiming] = useState(savedDraft?.captionScript || null);\n' +
+    '  const [voiceId, setVoiceId] = useState(savedDraft?.voiceId || VOICES[0].id);\n' +
+    '  const [status, setStatus] = useState(savedDraft ? "AI-synced narration ready" : "Watching the finished clips…");\n' +
+    '  const [error, setError] = useState("");\n' +
+    '  const [busy, setBusy] = useState(false);\n' +
+    '  const [scriptBusy, setScriptBusy] = useState(false);\n' +
+    '  // This workspace stays mounted while a creator selects a different series\n' +
+    '  // episode. A boolean made the first episode permanently "initialized" and\n' +
+    '  // silently skipped automatic narration for every episode opened after it.\n' +
+    '  const autoDraftReadyGenerationIdRef = useRef(null);\n' +
+    '  const autoDraftInFlightGenerationIdRef = useRef(null);\n' +
+    '  const previewUrlRef = useRef(null);\n' +
+    '\n' +
+    '  useEffect(() => () => { if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current); }, []);\n' +
+    '  useEffect(() => {\n' +
+    '    if (!generation?.id || clips.length !== expectedSceneCount\n' +
+    '      || autoDraftReadyGenerationIdRef.current === generation.id\n' +
+    '      || autoDraftInFlightGenerationIdRef.current === generation.id) return;\n' +
+    '    autoDraftInFlightGenerationIdRef.current = generation.id;\n' +
+    '    let cancelled = false;\n' +
+    '    (async () => {\n' +
+    '      try {\n' +
+    '        const durations = await Promise.all(clips.map((clip) => probeClipDuration(clip.videoUrl)));\n' +
+    '        const duration = durations.reduce((sum, value) => sum + value, 0);\n' +
+    '        if (cancelled) return;\n' +
+    '        setVisualDuration(duration);\n' +
+    '        if (seriesContext?.mode === "series" && !autoGenerate) {\n' +
+    '          autoDraftReadyGenerationIdRef.current = generation.id;\n' +
+    '          setStatus(savedDraft ? "Stored episode narration loaded" : "Narration not generated yet");\n' +
+    '          return;\n' +
+    '        }\n' +
+    '        if (savedDraft?.captionScript?.clipSegments?.length === expectedSceneCount) {\n' +
+    '          autoDraftReadyGenerationIdRef.current = generation.id;\n' +
+    '          setStatus("AI-synced narration ready");\n' +
+    '          return;\n' +
+    '        }\n' +
+    '        setStatus("Writing narration from the actual clips…");\n' +
+    '        const clipFrames = await captureThirtyDaysFrames(clips);\n' +
+    '        const script = await fetchThirtyDaysScript({\n' +
+    '          generationId: generation.id,\n' +
+    '          universe: generation.universe,\n' +
+    '          premise: generation.premise,\n' +
+    '          hook: generation.hook,\n' +
+    '          scenes: generation.scenes,\n' +
+    '          clips: clips.map((clip, index) => ({ ...clip, durationSec: durations[index] })),\n' +
+    '          clipPrompts: generation.scenes.map((scene) => ({ index: scene.index, prompt: scene.videoPrompt })),\n' +
+    '          clipFrames,\n' +
+    '          visualDurationSec: duration,\n' +
+    '          voiceId,\n' +
+    '          seriesContext,\n' +
+    '        });\n' +
+    '        if (cancelled) return;\n' +
+    '        setHook(script.hook || generation.hook || "");\n' +
+    '        setNarration(script.narration || "");\n' +
+    '        setScriptTiming(script);\n' +
+    '        const saved = await saveThirtyDaysNarrationDraft({\n' +
+    '          generationId: generation.id,\n' +
+    '          hook: script.hook || generation.hook || "",\n' +
+    '          narration: script.narration || "",\n' +
+    '          voiceId,\n' +
+    '          captionScript: script,\n' +
+    '        });\n' +
+    '        if (cancelled) return;\n' +
+    '        onDraftReady?.(saved);\n' +
+    '        autoDraftReadyGenerationIdRef.current = generation.id;\n' +
+    '        setStatus("AI-synced narration ready");\n' +
+    '      } catch (caught) {\n' +
+    '        if (!cancelled) { setError(String(caught?.message || caught)); setStatus("Script needs attention"); }\n' +
+    '      } finally {\n' +
+    '        if (autoDraftInFlightGenerationIdRef.current === generation.id) autoDraftInFlightGenerationIdRef.current = null;\n' +
+    '      }\n' +
+    '    })();\n' +
+    '    return () => { cancelled = true; };\n' +
+    '  }, [autoGenerate, clips, expectedSceneCount, generation, onDraftReady, savedDraft, seriesContext, voiceId]);\n' +
+    '\n' +
+    '  const regeneratePrompt = async () => {\n' +
+    '    if (!generation?.id || clips.length !== expectedSceneCount || busy || scriptBusy) return;\n' +
+    '    setScriptBusy(true);\n' +
+    '    setError("");\n' +
+    '    setStatus("Regenerating the story from the finished clips…");\n' +
+    '    try {\n' +
+    '      const durations = await Promise.all(clips.map((clip) => probeClipDuration(clip.videoUrl)));\n' +
+    '      const duration = durations.reduce((sum, value) => sum + value, 0);\n' +
+    '      setVisualDuration(duration);\n' +
+    '      const clipFrames = await captureThirtyDaysFrames(clips);\n' +
+    '      const script = await fetchThirtyDaysScript({\n' +
+    '        generationId: generation.id,\n' +
+    '        universe: generation.universe,\n' +
+    '        premise: generation.premise,\n' +
+    '        hook: generation.hook,\n' +
+    '        scenes: generation.scenes,\n' +
+    '        clips: clips.map((clip, index) => ({ ...clip, durationSec: durations[index] })),\n' +
+    '        clipPrompts: generation.scenes.map((scene) => ({ index: scene.index, prompt: scene.videoPrompt })),\n' +
+    '        clipFrames,\n' +
+    '        visualDurationSec: duration,\n' +
+    '        forceRegenerate: true,\n' +
+    '        previousNarration: narration,\n' +
+    '        voiceId,\n' +
+    '        seriesContext,\n' +
+    '      });\n' +
+    '      const nextHook = script.hook || generation.hook || "";\n' +
+    '      const nextNarration = script.narration || "";\n' +
+    '      if (!nextNarration.trim() || narrationFingerprint(nextNarration) === narrationFingerprint(narration)) {\n' +
+    '        throw new Error("A fresh narration draft was not returned. Your current narration was kept unchanged—please try Regenerate prompt again.");\n' +
+    '      }\n' +
+    '      setHook(nextHook);\n' +
+    '      setNarration(nextNarration);\n' +
+    '      setScriptTiming(script);\n' +
+    '      const saved = await saveThirtyDaysNarrationDraft({\n' +
+    '        generationId: generation.id,\n' +
+    '        hook: nextHook,\n' +
+    '        narration: nextNarration,\n' +
+    '        voiceId,\n' +
+    '        captionScript: script,\n' +
+    '      });\n' +
+    '      onDraftReady?.(saved);\n' +
+    '      setStatus("New AI-synced narration ready");\n' +
+    '    } catch (caught) {\n' +
+    '      setError(String(caught?.message || caught));\n' +
+    '      '... 9367 more characters
+  
+      at TestContext.<anonymous> (file:///C:/Users/Public/Zylo/tests/thirtyDays.test.mjs:283:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'import { useEffect, useMemo, useRef, useState } from "react";\nimport { Play, RefreshCw, Volume2 } from "lucide-react";\nimport {\n  VOICES,\n  SCENE_COUNT,\n  captureThirtyDaysFrames,\n  fetchThirtyDaysScript,\n  generateThirtyDaysVoice,\n  getVoice,\n  previewThirtyDaysVoice,\n  probeClipDuration,\n  saveNarrationToGeneration,\n  saveThirtyDaysNarrationDraft,\n  thirtyDaysVoicePlaybackRate,\n} from "./api/thirtyDaysApi";\n\nfunction base64Blob(value, mimeType = "audio/mpeg") {\n  const binary = atob(value);\n  const bytes = new Uint8Array(binary.length);\n  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);\n  return new Blob([bytes], { type: mimeType });\n}\n\nfunction buildAudioClipTimings(alignedWords, plannedClipSegments) {\n  if (!Array.isArray(alignedWords) || !Array.isArray(plannedClipSegments) || !plannedClipSegments.length) return [];\n  let cursor = 0;\n  let previousEnd = 0;\n  const timings = plannedClipSegments.map((segment, index) => {\n    const plannedWordCount = String(segment?.text || "").trim().split(/\\s+/).filter(Boolean).length;\n    const spokenWords = alignedWords.slice(cursor, cursor + plannedWordCount);\n    cursor += plannedWordCount;\n    const sourceStart = index === 0 ? 0 : Number(spokenWords[0]?.start ?? previousEnd);\n    const sourceEnd = Number(spokenWords.at(-1)?.end ?? sourceStart);\n    previousEnd = Math.max(previousEnd, sourceEnd);\n    return {\n      clip: Number(segment?.clip || index + 1),\n      sourceStart: Number(sourceStart.toFixed(3)),\n      sourceEnd: Number(sourceEnd.toFixed(3)),\n      targetDuration: Number(Math.max(0.2, Number(segment?.end) - Number(segment?.start)).toFixed(3)),\n    };\n  });\n  return timings.length === plannedClipSegments.length && timings.every((item) => item.sourceEnd > item.sourceStart) ? timings : [];\n}\n\nfunction narrationFingerprint(value) {\n  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();\n}\n\nexport default function ThirtyDaysVoiceStep({ generation, seriesContext = null, autoGenerate = true, onDraftReady, onReady, onBack }) {\n  const clips = useMemo(() => [...(generation?.scenes || [])].filter((scene) => scene.videoUrl).sort((a, b) => a.index - b.index), [generation]);\n  const expectedSceneCount = generation?.scenes?.length || SCENE_COUNT;\n  const hasInternalStatus = (value) => /\\b(?:qa[_ -]?unavailable|qa[_ -]?warning|qa[_ -]?failed|verified usable|identity[_ -]?drift|pov[_ -]?violation|near[_ -]?duplicate)\\b/i.test(String(value || ""));\n  const hasImageDescription = (value) => /\\b(?:the image (?:shows|depicts)|the (?:scene|frame) (?:shows|depicts)|a (?:wide|close|medium) shot|a LEGO scene depicting|scene depicting|rendered (?:scene|image)|minifigures?, including)\\b/i.test(String(value || ""));\n  const hasBrokenSeriesNarration = (value) => {\n    const text = String(value || "");\n    const captionConnectors = text.match(/\\b(?:that\'s when|a little later|the next morning|but then|because of that|finally)\\b/gi)?.length || 0;\n    return /\\b(?:i both|i all|my faces)\\b|\\bfocusing on\\s*[.!?]|\\bas\\s+[A-Z][A-Za-z\'-]{2,}\\s*[.!?]/i.test(text)\n      || captionConnectors >= 5;\n  };\n  const savedNarrationText = [generation?.narrationTake?.hook, generation?.narrationTake?.narration, generation?.narrationTake?.script].filter(Boolean).join(" ");\n  // Old drafts can contain vision-QA prose, broken grammar, or a chain of\n  // seven captions rather than narration. Reopening replaces them automatically.\n  const savedDraft = generation?.narrationTake?.draft && !hasInternalStatus(savedNarrationText) && !hasImageDescription(savedNarrationText) && !hasBrokenSeriesNarration(savedNarrationText) ? generation.narrationTake : null;\n  const [visualDuration, setVisualDuration] = useState(0);\n  const [hook, setHook] = useState(savedDraft?.hook || generation?.hook || "");\n  // A completed episode can legitimately have no saved narration yet. Keep\n  // this controlled textarea/string-only: `null` here used to crash the\n  // Generate button\'s narration.trim() while merely reopening an episode.\n  const [narration, setNarration] = useState(savedDraft?.narration || (!hasInternalStatus(generation?.narrationScript) && !hasImageDescription(generation?.narrationScript) && !hasBrokenSeriesNarration(generation?.narrationScript) ? (generation?.narrationScript || "") : ""));\n  const [scriptTiming, setScriptTiming] = useState(savedDraft?.captionScript || null);\n  const [voiceId, setVoiceId] = useState(savedDraft?.voiceId || VOICES[0].id);\n  const [status, setStatus] = useState(savedDraft ? "AI-synced narration ready" : "Watching the finished clips…");\n  const [error, setError] = useState("");\n  const [busy, setBusy] = useState(false);\n  const [scriptBusy, setScriptBusy] = useState(false);\n  // This workspace stays mounted while a creator selects a different series\n  // episode. A boolean made the first episode permanently "initialized" and\n  // silently skipped automatic narration for every episode opened after it.\n  const autoDraftReadyGenerationIdRef = useRef(null);\n  const autoDraftInFlightGenerationIdRef = useRef(null);\n  const previewUrlRef = useRef(null);\n\n  useEffect(() => () => { if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current); }, []);\n  useEffect(() => {\n    if (!generation?.id || clips.length !== expectedSceneCount\n      || autoDraftReadyGenerationIdRef.current === generation.id\n      || autoDraftInFlightGenerationIdRef.current === generation.id) return;\n    autoDraftInFlightGenerationIdRef.current = generation.id;\n    let cancelled = false;\n    (async () => {\n      try {\n        const durations = await Promise.all(clips.map((clip) => probeClipDuration(clip.videoUrl)));\n        const duration = durations.reduce((sum, value) => sum + value, 0);\n        if (cancelled) return;\n        setVisualDuration(duration);\n        if (seriesContext?.mode === "series" && !autoGenerate) {\n          autoDraftReadyGenerationIdRef.current = generation.id;\n          setStatus(savedDraft ? "Stored episode narration loaded" : "Narration not generated yet");\n          return;\n        }\n        if (savedDraft?.captionScript?.clipSegments?.length === expectedSceneCount) {\n          autoDraftReadyGenerationIdRef.current = generation.id;\n          setStatus("AI-synced narration ready");\n          return;\n        }\n        setStatus("Writing narration from the actual clips…");\n        const clipFrames = await captureThirtyDaysFrames(clips);\n        const script = await fetchThirtyDaysScript({\n          generationId: generation.id,\n          universe: generation.universe,\n          premise: generation.premise,\n          hook: generation.hook,\n          scenes: generation.scenes,\n          clips: clips.map((clip, index) => ({ ...clip, durationSec: durations[index] })),\n          clipPrompts: generation.scenes.map((scene) => ({ index: scene.index, prompt: scene.videoPrompt })),\n          clipFrames,\n          visualDurationSec: duration,\n          voiceId,\n          seriesContext,\n        });\n        if (cancelled) return;\n        setHook(script.hook || generation.hook || "");\n        setNarration(script.narration || "");\n        setScriptTiming(script);\n        const saved = await saveThirtyDaysNarrationDraft({\n          generationId: generation.id,\n          hook: script.hook || generation.hook || "",\n          narration: script.narration || "",\n          voiceId,\n          captionScript: script,\n        });\n        if (cancelled) return;\n        onDraftReady?.(saved);\n        autoDraftReadyGenerationIdRef.current = generation.id;\n        setStatus("AI-synced narration ready");\n      } catch (caught) {\n        if (!cancelled) { setError(String(caught?.message || caught)); setStatus("Script needs attention"); }\n      } finally {\n        if (autoDraftInFlightGenerationIdRef.current === generation.id) autoDraftInFlightGenerationIdRef.current = null;\n      }\n    })();\n    return () => { cancelled = true; };\n  }, [autoGenerate, clips, expectedSceneCount, generation, onDraftReady, savedDraft, seriesContext, voiceId]);\n\n  const regeneratePrompt = async () => {\n    if (!generation?.id || clips.length !== expectedSceneCount || busy || scriptBusy) return;\n    setScriptBusy(true);\n    setError("");\n    setStatus("Regenerating the story from the finished clips…");\n    try {\n      const durations = await Promise.all(clips.map((clip) => probeClipDuration(clip.videoUrl)));\n      const duration = durations.reduce((sum, value) => sum + value, 0);\n      setVisualDuration(duration);\n      const clipFrames = await captureThirtyDaysFrames(clips);\n      const script = await fetchThirtyDaysScript({\n        generationId: generation.id,\n        universe: generation.universe,\n        premise: generation.premise,\n        hook: generation.hook,\n        scenes: generation.scenes,\n        clips: clips.map((clip, index) => ({ ...clip, durationSec: durations[index] })),\n        clipPrompts: generation.scenes.map((scene) => ({ index: scene.index, prompt: scene.videoPrompt })),\n        clipFrames,\n        visualDurationSec: duration,\n        forceRegenerate: true,\n        previousNarration: narration,\n        voiceId,\n        seriesContext,\n      });\n      const nextHook = script.hook || generation.hook || "";\n      const nextNarration = script.narration || "";\n      if (!nextNarration.trim() || narrationFingerprint(nextNarration) === narrationFingerprint(narration)) {\n        throw new Error("A fresh narration draft was not returned. Your current narration was kept unchanged—please try Regenerate prompt again.");\n      }\n      setHook(nextHook);\n      setNarration(nextNarration);\n      setScriptTiming(script);\n      const saved = await saveThirtyDaysNarrationDraft({\n        generationId: generation.id,\n        hook: nextHook,\n        narration: nextNarration,\n        voiceId,\n        captionScript: script,\n      });\n      onDraftReady?.(saved);\n      setStatus("New AI-synced narration ready");\n    } catch (caught) {\n      setError(String(caught?.message || caught));\n      '... 9367 more characters,
+    expected: /Second-by-second sync/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests\thirtyDaysSeries.test.mjs:408:1
+✖ Series creates one undivided image per scene and never auto-generates a QA variation (4.9643ms)
+  AssertionError [ERR_ASSERTION]: The input was expected to not match the regular expression /scene\.qaRepaired/. Input:
+  
+  '// deno-lint-ignore-file no-explicit-any\n' +
+    '// thirty-days-generation-advance/index.ts\n' +
+    '//\n' +
+    '// Background worker for 30 Days Series. Everything about this template was\n' +
+    '// previously client-driven: the browser tab polled/sequenced every\n' +
+    '// reference and scene job itself, so closing the tab mid-generation left\n' +
+    '// data intact (nothing is lost) but nothing FURTHER happened until the user\n' +
+    '// reopened the app. This function is invoked periodically by pg_cron (see\n' +
+    '// 20260827130000_thirty_days_background_advance.sql) and nudges forward any\n' +
+    "// series generation that's gone quiet for 90+ seconds, independent of\n" +
+    '// whether any browser tab is open.\n' +
+    '//\n' +
+    "// Deliberately incremental, not a full replay of the client's rich\n" +
+    '// escalation logic: each tick does cheap status checks on everything already\n' +
+    '// in flight (and immediately reacts — records success/failure, runs QA, one\n' +
+    '// repair attempt) but submits at most ONE brand-new job per generation per\n' +
+    '// tick. A 7-scene episode takes on the order of a dozen ticks (roughly a\n' +
+    '// dozen minutes at the recommended 1-minute schedule) to fully materialize —\n' +
+    "// that's an acceptable trade for a function that must stay fast and never\n" +
+    '// time out. Two known, disclosed simplifications versus the live client\n' +
+    '// path: (1) no multi-panel reference collage — a scene image uses its first\n' +
+    '// resolved reference directly, since collage compositing needs a browser\n' +
+    '// canvas; (2) no content-policy softenLevel escalation ladder — one QA\n' +
+    '// repair attempt covers franchise-identity drift, but a raw provider safety\n' +
+    '// rejection is left for the user to retry manually when they reopen the app.\n' +
+    '// Narration/final-video stitching is NOT part of this worker at all: an\n' +
+    '// episode is considered done once all 7 scene videos succeed (narration is\n' +
+    '// optional, added later by the user — see complete_thirty_days_series_episode).\n' +
+    'import "jsr:@supabase/functions-js/edge-runtime.d.ts";\n' +
+    'import { createClient } from "https://esm.sh/@supabase/supabase-js@2";\n' +
+    'import { buildVideoContinuityPrompt, verifyEpisodeFromRenderedScenes } from "../_shared/thirtyDaysSeriesEngine.js";\n' +
+    '\n' +
+    'const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;\n' +
+    'const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;\n' +
+    'const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY")!;\n' +
+    'const ADVANCE_SECRET = Deno.env.get("THIRTY_DAYS_ADVANCE_SECRET") ?? "";\n' +
+    'const MAX_GENERATIONS_PER_TICK = 5;\n' +
+    'const TERMINAL = new Set(["succeeded", "failed", "canceled"]);\n' +
+    '\n' +
+    'const reply = (body: any, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });\n' +
+    '\n' +
+    '/* ============================ Prompt building ============================ */\n' +
+    '// Ported from src/components/viral-tools/thirty-days/api/thirtyDaysApi.js —\n' +
+    "// duplicated rather than shared since edge functions can't import browser\n" +
+    '// client code (it depends on the browser supabase client + DOM/canvas).\n' +
+    '\n' +
+    'const CONTENT_SANITIZE_MAP: [RegExp, string][] = [\n' +
+    '  [/\\bkill(?:ing|ed|s)?\\b/gi, "defeat"],\n' +
+    '  [/\\bblood(?:y)?\\b/gi, "battle-worn"],\n' +
+    '  [/\\bviolent(?:ly)?\\b/gi, "intense"],\n' +
+    '  [/\\battack(?:ing|ed|s)?\\b/gi, "confront"],\n' +
+    '  [/\\bweapon(?:s)?\\b/gi, "gear"],\n' +
+    '  [/\\bnaked\\b/gi, "unarmored"],\n' +
+    '  [/\\bseduct\\w*\\b/gi, "persuade"],\n' +
+    '  [/\\bsensual(?:ly)?\\b/gi, "graceful"],\n' +
+    '  [/\\bintimate(?:ly)?\\b/gi, "close"],\n' +
+    '  [/\\bstrip(?:ped|ping)?\\b/gi, "unequip"],\n' +
+    '];\n' +
+    'function sanitizePrompt(text: string) {\n' +
+    '  return CONTENT_SANITIZE_MAP.reduce((value, [pattern, replacement]) => value.replace(pattern, replacement), String(text || ""));\n' +
+    '}\n' +
+    '\n' +
+    'const REF_ROLE_COPY: Record<string, string> = {\n' +
+    '  protagonist: "the mandatory viewer-insert YOU protagonist entering this world, full-body reference portrait, neutral standing pose, calm expression, clean neutral studio background",\n' +
+    `  pov_hands: "the mandatory first-person YOU identity: point-of-view hands, arms, clothing/body cues in this world's rendering style, neutral background",\n` +
+    `  core_cast_style: "a reference sheet establishing the recognizable named cast and this franchise's exact rendering style, clean neutral background",\n` +
+    '  environment_primary: "a wide reference image of the primary iconic location, no characters, clean unobstructed view",\n' +
+    '  environment_secondary: "a wide reference image of the secondary location, no characters, clean unobstructed view",\n' +
+    '  antagonist: "a full-body reference portrait of the antagonist/threat, neutral pose, clean neutral background",\n' +
+    '  companion: "a full-body reference portrait of the companion character, neutral pose, clean neutral background",\n' +
+    `  artifact: "a clean product-style reference image of the story's key object, centered, neutral background",\n` +
+    '  vehicle: "a clean three-quarter reference image of the vehicle, centered, neutral background",\n' +
+    '};\n' +
+    '\n' +
+    'function buildReferencePrompt(reference: any, worldBible: any, repairNote = "") {\n' +
+    '  const roleCopy = REF_ROLE_COPY[reference.role] || "a clean reference image for this story";\n' +
+    '  const franchiseCorrection = repairNote\n' +
+    '    ? [`CRITICAL CORRECTION (a previous attempt at this exact reference was rejected for looking generic/off-brand): ${repairNote}`,\n' +
+    '       `This MUST unmistakably read as the real ${worldBible?.franchise || "named franchise"} — real character identities, colors, and locations, and the franchise\'s real construction/rendering system. Do not invent a substitute.`]\n' +
+    '    : [];\n' +
+    '  const text = [\n' +
+    '    ...franchiseCorrection,\n' +
+    '    `Single-subject reference image: ${roleCopy}.`,\n' +
+    '    `SUBJECT: ${reference.label}. ${reference.prompt}`,\n' +
+    '    `VISUAL LOCK (must stay identical every time this subject is reused): ${reference.visualLock}`,\n' +
+    '    worldBible?.franchise ? `FRANCHISE: ${worldBible.franchise}${worldBible?.medium ? ` — real medium/construction: ${worldBible.medium}` : ""}.` : "",\n' +
+    '    worldBible?.hardVisualRules?.length ? `FRANCHISE STYLE RULES: ${worldBible.hardVisualRules.join(" ")}` : "",\n' +
+    '    worldBible?.negativeRules?.length ? `AVOID: ${worldBible.negativeRules.join(" ")}` : "",\n' +
+    '    worldBible?.visualStyle ? `RENDERING STYLE: ${worldBible.visualStyle}.` : "",\n' +
+    '    worldBible?.styleDirective ? `SELECTED STYLE INTERPRETATION (${worldBible.styleMode || "auto"}): ${worldBible.styleDirective}` : "",\n' +
+    '    "No text, no captions, no watermark, no logo. This is a clean reference asset, not a finished movie frame.",\n' +
+    '  ].filter(Boolean).join("\\n");\n' +
+    '  return sanitizePrompt(text);\n' +
+    '}\n' +
+    '\n' +
+    'function buildCollageExplanation(referenceIds: string[], referencesById: Map<string, any>) {\n' +
+    '  const refs = referenceIds.map((id) => referencesById.get(id)).filter(Boolean);\n' +
+    '  if (refs.length <= 1) {\n' +
+    '    const only = refs[0];\n' +
+    '    return only ? `The supplied source is identity material for ${only.label}: ${only.visualLock}. Preserve the subject only. Ignore the source layout completely and do not copy its pose, background, camera angle, crop, composition, or lighting.` : "";\n' +
+    '  }\n' +
+    '  const panelLines = refs.map((ref: any, index: number) =>\n' +
+    '    `Source identity ${index + 1} is for ${ref.label} (${String(ref.role).replace(/_/g, " ")}) — preserve only the subject\'s locked traits: ${ref.visualLock}. Do NOT copy its pose, background, camera, composition, or lighting.`\n' +
+    '  );\n' +
+    '  return [\n' +
+    '    `The supplied source image contains identity material only, not a layout or shot to imitate. Study each required subject separately, then discard the source layout and build the new shot entirely from the scene story.`,\n' +
+    '    ...panelLines,\n' +
+    '  ].join("\\n");\n' +
+    '}\n' +
+    '\n' +
+    'function selectSceneReferenceIds(scene: any, referencesById: Map<string, any>) {\n' +
+    '  const words = (value: any) => new Set(String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").split(/\\s+/).filter((word) => word.length >= 3));\n' +
+    '  const locationWords = words(scene.location);\n' +
+    '  const characterWords = words((scene.characters || []).join(" "));\n' +
+    '  const propWords = words((scene.requiredProps || []).join(" "));\n' +
+    '  const requiredEntities = new Set(["protagonist", ...(scene.requiredEntities || [])]);\n' +
+    '  const overlaps = (source: Set<string>, target: Set<string>) => [...source].some((word) => target.has(word));\n' +
+    '  return (scene.referenceIds || []).filter((id: string) => {\n' +
+    '    const ref = referencesById.get(id);\n' +
+    '    if (!ref) return false;\n' +
+    '    const identityWords = words(`${ref.label || ""} ${ref.visualLock || ""}`);\n' +
+    '    if (String(ref.role).startsWith("environment")) return overlaps(identityWords, locationWords);\n' +
+    '    if (requiredEntities.has(ref.entityId) || id === "you" || ["protagonist", "pov_hands"].includes(ref.role)) return true;\n' +
+    '    if (["artifact", "vehicle"].includes(ref.role)) return overlaps(identityWords, propWords);\n' +
+    '    if (["companion", "antagonist", "core_cast_style"].includes(ref.role)) return overlaps(identityWords, characterWords);\n' +
+    '    return false;\n' +
+    '  }).slice(0, 4);\n' +
+    '}\n' +
+    '\n' +
+    'function buildSceneImagePrompt({ scene, worldBible, referencesById, cameraMode, repairNote = "", previousEpisodeEndingImageUrl = null }: any) {\n' +
+    '  const collageExplanation = buildCollageExplanation(selectSceneReferenceIds(scene, referencesById), referencesById);\n' +
+    "  // Mirrors thirtyDaysApi.js's buildSceneImagePrompt (browser) — only\n" +
+    "  // meaningful for an episode's first scene, and only when a previous\n" +
+    "  // episode's actual last frame is available to anchor it against.\n" +
+    '  const continuityNote = previousEpisodeEndingImageUrl && Number(scene.index) === 0\n' +
+    "    ? `PREVIOUS EPISODE'S EXACT ENDING (a separate reference image, attached after the identity references): this is the literal last rendered frame of the previous episode. This new scene continues from that exact moment — match the character positions, action-in-progress, framing, and environment as closely as the story requires; do not reset to a fresh establishing shot. Use it for continuity of physical state only, never for character identity (the identity references above are still authoritative for that).`\n" +
+    '    : "";\n' +
+    '  const cameraLine = cameraMode === "first_person"\n' +
+    `    ? "Camera: strict first-person POV — the viewer's own hands/body only, matching the pov_hands reference exactly. Never show the protagonist from outside."\n` +
+    '    : scene.shotType === "pov" ? "Camera: first'... 36354 more characters
+  
+      at TestContext.<anonymous> (file:///C:/Users/Public/Zylo/tests/thirtyDaysSeries.test.mjs:428:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '// deno-lint-ignore-file no-explicit-any\n// thirty-days-generation-advance/index.ts\n//\n// Background worker for 30 Days Series. Everything about this template was\n// previously client-driven: the browser tab polled/sequenced every\n// reference and scene job itself, so closing the tab mid-generation left\n// data intact (nothing is lost) but nothing FURTHER happened until the user\n// reopened the app. This function is invoked periodically by pg_cron (see\n// 20260827130000_thirty_days_background_advance.sql) and nudges forward any\n// series generation that\'s gone quiet for 90+ seconds, independent of\n// whether any browser tab is open.\n//\n// Deliberately incremental, not a full replay of the client\'s rich\n// escalation logic: each tick does cheap status checks on everything already\n// in flight (and immediately reacts — records success/failure, runs QA, one\n// repair attempt) but submits at most ONE brand-new job per generation per\n// tick. A 7-scene episode takes on the order of a dozen ticks (roughly a\n// dozen minutes at the recommended 1-minute schedule) to fully materialize —\n// that\'s an acceptable trade for a function that must stay fast and never\n// time out. Two known, disclosed simplifications versus the live client\n// path: (1) no multi-panel reference collage — a scene image uses its first\n// resolved reference directly, since collage compositing needs a browser\n// canvas; (2) no content-policy softenLevel escalation ladder — one QA\n// repair attempt covers franchise-identity drift, but a raw provider safety\n// rejection is left for the user to retry manually when they reopen the app.\n// Narration/final-video stitching is NOT part of this worker at all: an\n// episode is considered done once all 7 scene videos succeed (narration is\n// optional, added later by the user — see complete_thirty_days_series_episode).\nimport "jsr:@supabase/functions-js/edge-runtime.d.ts";\nimport { createClient } from "https://esm.sh/@supabase/supabase-js@2";\nimport { buildVideoContinuityPrompt, verifyEpisodeFromRenderedScenes } from "../_shared/thirtyDaysSeriesEngine.js";\n\nconst SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;\nconst SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;\nconst OPENAI_KEY = Deno.env.get("OPENAI_API_KEY")!;\nconst ADVANCE_SECRET = Deno.env.get("THIRTY_DAYS_ADVANCE_SECRET") ?? "";\nconst MAX_GENERATIONS_PER_TICK = 5;\nconst TERMINAL = new Set(["succeeded", "failed", "canceled"]);\n\nconst reply = (body: any, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });\n\n/* ============================ Prompt building ============================ */\n// Ported from src/components/viral-tools/thirty-days/api/thirtyDaysApi.js —\n// duplicated rather than shared since edge functions can\'t import browser\n// client code (it depends on the browser supabase client + DOM/canvas).\n\nconst CONTENT_SANITIZE_MAP: [RegExp, string][] = [\n  [/\\bkill(?:ing|ed|s)?\\b/gi, "defeat"],\n  [/\\bblood(?:y)?\\b/gi, "battle-worn"],\n  [/\\bviolent(?:ly)?\\b/gi, "intense"],\n  [/\\battack(?:ing|ed|s)?\\b/gi, "confront"],\n  [/\\bweapon(?:s)?\\b/gi, "gear"],\n  [/\\bnaked\\b/gi, "unarmored"],\n  [/\\bseduct\\w*\\b/gi, "persuade"],\n  [/\\bsensual(?:ly)?\\b/gi, "graceful"],\n  [/\\bintimate(?:ly)?\\b/gi, "close"],\n  [/\\bstrip(?:ped|ping)?\\b/gi, "unequip"],\n];\nfunction sanitizePrompt(text: string) {\n  return CONTENT_SANITIZE_MAP.reduce((value, [pattern, replacement]) => value.replace(pattern, replacement), String(text || ""));\n}\n\nconst REF_ROLE_COPY: Record<string, string> = {\n  protagonist: "the mandatory viewer-insert YOU protagonist entering this world, full-body reference portrait, neutral standing pose, calm expression, clean neutral studio background",\n  pov_hands: "the mandatory first-person YOU identity: point-of-view hands, arms, clothing/body cues in this world\'s rendering style, neutral background",\n  core_cast_style: "a reference sheet establishing the recognizable named cast and this franchise\'s exact rendering style, clean neutral background",\n  environment_primary: "a wide reference image of the primary iconic location, no characters, clean unobstructed view",\n  environment_secondary: "a wide reference image of the secondary location, no characters, clean unobstructed view",\n  antagonist: "a full-body reference portrait of the antagonist/threat, neutral pose, clean neutral background",\n  companion: "a full-body reference portrait of the companion character, neutral pose, clean neutral background",\n  artifact: "a clean product-style reference image of the story\'s key object, centered, neutral background",\n  vehicle: "a clean three-quarter reference image of the vehicle, centered, neutral background",\n};\n\nfunction buildReferencePrompt(reference: any, worldBible: any, repairNote = "") {\n  const roleCopy = REF_ROLE_COPY[reference.role] || "a clean reference image for this story";\n  const franchiseCorrection = repairNote\n    ? [`CRITICAL CORRECTION (a previous attempt at this exact reference was rejected for looking generic/off-brand): ${repairNote}`,\n       `This MUST unmistakably read as the real ${worldBible?.franchise || "named franchise"} — real character identities, colors, and locations, and the franchise\'s real construction/rendering system. Do not invent a substitute.`]\n    : [];\n  const text = [\n    ...franchiseCorrection,\n    `Single-subject reference image: ${roleCopy}.`,\n    `SUBJECT: ${reference.label}. ${reference.prompt}`,\n    `VISUAL LOCK (must stay identical every time this subject is reused): ${reference.visualLock}`,\n    worldBible?.franchise ? `FRANCHISE: ${worldBible.franchise}${worldBible?.medium ? ` — real medium/construction: ${worldBible.medium}` : ""}.` : "",\n    worldBible?.hardVisualRules?.length ? `FRANCHISE STYLE RULES: ${worldBible.hardVisualRules.join(" ")}` : "",\n    worldBible?.negativeRules?.length ? `AVOID: ${worldBible.negativeRules.join(" ")}` : "",\n    worldBible?.visualStyle ? `RENDERING STYLE: ${worldBible.visualStyle}.` : "",\n    worldBible?.styleDirective ? `SELECTED STYLE INTERPRETATION (${worldBible.styleMode || "auto"}): ${worldBible.styleDirective}` : "",\n    "No text, no captions, no watermark, no logo. This is a clean reference asset, not a finished movie frame.",\n  ].filter(Boolean).join("\\n");\n  return sanitizePrompt(text);\n}\n\nfunction buildCollageExplanation(referenceIds: string[], referencesById: Map<string, any>) {\n  const refs = referenceIds.map((id) => referencesById.get(id)).filter(Boolean);\n  if (refs.length <= 1) {\n    const only = refs[0];\n    return only ? `The supplied source is identity material for ${only.label}: ${only.visualLock}. Preserve the subject only. Ignore the source layout completely and do not copy its pose, background, camera angle, crop, composition, or lighting.` : "";\n  }\n  const panelLines = refs.map((ref: any, index: number) =>\n    `Source identity ${index + 1} is for ${ref.label} (${String(ref.role).replace(/_/g, " ")}) — preserve only the subject\'s locked traits: ${ref.visualLock}. Do NOT copy its pose, background, camera, composition, or lighting.`\n  );\n  return [\n    `The supplied source image contains identity material only, not a layout or shot to imitate. Study each required subject separately, then discard the source layout and build the new shot entirely from the scene story.`,\n    ...panelLines,\n  ].join("\\n");\n}\n\nfunction selectSceneReferenceIds(scene: any, referencesById: Map<string, any>) {\n  const words = (value: any) => new Set(String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").split(/\\s+/).filter((word) => word.length >= 3));\n  const locationWords = words(scene.location);\n  const characterWords = words((scene.characters || []).join(" "));\n  const propWords = words((scene.requiredProps || []).join(" "));\n  const requiredEntities = new Set(["protagonist", ...(scene.requiredEntities || [])]);\n  const overlaps = (source: Set<string>, target: Set<string>) => [...source].some((word) => target.has(word));\n  return (scene.referenceIds || []).filter((id: string) => {\n    const ref = referencesById.get(id);\n    if (!ref) return false;\n    const identityWords = words(`${ref.label || ""} ${ref.visualLock || ""}`);\n    if (String(ref.role).startsWith("environment")) return overlaps(identityWords, locationWords);\n    if (requiredEntities.has(ref.entityId) || id === "you" || ["protagonist", "pov_hands"].includes(ref.role)) return true;\n    if (["artifact", "vehicle"].includes(ref.role)) return overlaps(identityWords, propWords);\n    if (["companion", "antagonist", "core_cast_style"].includes(ref.role)) return overlaps(identityWords, characterWords);\n    return false;\n  }).slice(0, 4);\n}\n\nfunction buildSceneImagePrompt({ scene, worldBible, referencesById, cameraMode, repairNote = "", previousEpisodeEndingImageUrl = null }: any) {\n  const collageExplanation = buildCollageExplanation(selectSceneReferenceIds(scene, referencesById), referencesById);\n  // Mirrors thirtyDaysApi.js\'s buildSceneImagePrompt (browser) — only\n  // meaningful for an episode\'s first scene, and only when a previous\n  // episode\'s actual last frame is available to anchor it against.\n  const continuityNote = previousEpisodeEndingImageUrl && Number(scene.index) === 0\n    ? `PREVIOUS EPISODE\'S EXACT ENDING (a separate reference image, attached after the identity references): this is the literal last rendered frame of the previous episode. This new scene continues from that exact moment — match the character positions, action-in-progress, framing, and environment as closely as the story requires; do not reset to a fresh establishing shot. Use it for continuity of physical state only, never for character identity (the identity references above are still authoritative for that).`\n    : "";\n  const cameraLine = cameraMode === "first_person"\n    ? "Camera: strict first-person POV — the viewer\'s own hands/body only, matching the pov_hands reference exactly. Never show the protagonist from outside."\n    : scene.shotType === "pov" ? "Camera: first'... 36354 more characters,
+    expected: /scene\.qaRepaired/,
+    operator: 'doesNotMatch',
+    diff: 'simple'
+  }
+
+test at tests\thirtyDaysSeries.test.mjs:480:1
+✖ episode planner hard-gates stagnant locations, repeated cameras, and unbound named characters (1.8206ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /EPISODE_LOCATION_STAGNATION/. Input:
+  
+  '// deno-lint-ignore-file no-explicit-any\n' +
+    'import "jsr:@supabase/functions-js/edge-runtime.d.ts";\n' +
+    'import { createClient } from "https://esm.sh/@supabase/supabase-js@2";\n' +
+    'import {\n' +
+    '  EPISODE_PLAN_VERSION,\n' +
+    '  activeReferenceForEntity,\n' +
+    '  alignSceneDayToEntityIntroductions,\n' +
+    '  assignSceneReferences,\n' +
+    '  availableRoadmapBeats,\n' +
+    '  pacingForDay,\n' +
+    '  repairLegacySeries,\n' +
+    '  slug,\n' +
+    '  validateConsumedBeats,\n' +
+    '} from "../_shared/thirtyDaysSeriesEngine.js";\n' +
+    '\n' +
+    'const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;\n' +
+    'const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;\n' +
+    'const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY")!;\n' +
+    'const OPENAI_CHAT = "https://api.openai.com/v1/chat/completions";\n' +
+    'const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" };\n' +
+    'const reply = (body: any, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json" } });\n' +
+    'const SCORE_KEYS = ["hook", "visualVariety", "stakes", "emotionalProgression", "franchiseRecognition", "protagonistInvolvement", "miniPayoff", "cliffhanger", "continuity", "comprehension", "sceneVariety"];\n' +
+    'const WORLD_BIBLE_SCHEMA = { type: "object", additionalProperties: false,\n' +
+    '  required: ["world", "franchise", "visualStyle", "hardVisualRules", "negativeRules", "viewerProtagonist", "characters", "locations"],\n' +
+    '  properties: {\n' +
+    '    world: { type: "string" }, franchise: { type: "string" }, visualStyle: { type: "string" },\n' +
+    '    hardVisualRules: { type: "array", items: { type: "string" } }, negativeRules: { type: "array", items: { type: "string" } },\n' +
+    '    viewerProtagonist: { type: "object", additionalProperties: false,\n' +
+    '      required: ["identity", "visualIdentity", "goal", "emotionalAnchor"],\n' +
+    '      properties: { identity: { type: "string" }, visualIdentity: { type: "string" }, goal: { type: "string" }, emotionalAnchor: { type: "string" } } },\n' +
+    '    characters: { type: "array", items: { type: "string" } }, locations: { type: "array", items: { type: "string" } },\n' +
+    '  } };\n' +
+    '\n' +
+    'const REF_SCHEMA = { type: "object", additionalProperties: false, required: ["id", "entityId", "version", "activeFromDay", "supersedes", "role", "label", "prompt", "visualLock"], properties: {\n' +
+    '  id: { type: "string" }, entityId: { type: "string" }, version: { type: "integer" }, activeFromDay: { type: "integer" }, supersedes: { type: ["string", "null"] },\n' +
+    '  role: { type: "string" }, label: { type: "string" }, prompt: { type: "string" }, visualLock: { type: "string" },\n' +
+    '} };\n' +
+    'const SHOT_TYPES = ["third_person", "pov", "over_shoulder", "wide_action", "close_up", "tracking"];\n' +
+    'const REFERENCE_SCOPE_SCHEMA = { type: "object", additionalProperties: false, required: ["referenceId", "onlyUse"], properties: {\n' +
+    '  referenceId: { type: "string" }, onlyUse: { type: "array", items: { type: "string" } },\n' +
+    '} };\n' +
+    'const SCENE_SCHEMA = { type: "object", additionalProperties: false,\n' +
+    '  required: ["index", "day", "title", "beatType", "location", "timeOfDay", "characters", "requiredEntities", "forbiddenEntities", "requiredProps", "referenceIds", "referenceScopeNotes", "shotType", "camera", "startState", "mainAction", "reaction", "endState", "continuityFromPrevious", "setupForNext", "protagonistAction", "storyDevelopment", "visualEvent", "imagePrompt", "videoPrompt"],\n' +
+    '  properties: {\n' +
+    '    index: { type: "integer", minimum: 0, maximum: 6 }, day: { type: "integer", minimum: 1, maximum: 30 }, title: { type: "string" },\n' +
+    '    beatType: { type: "string", enum: ["hook", "setup", "development", "complication", "turn", "payoff", "cliffhanger"] },\n' +
+    '    location: { type: "string" }, timeOfDay: { type: "string" }, characters: { type: "array", items: { type: "string" } },\n' +
+    '    requiredEntities: { type: "array", items: { type: "string" } }, forbiddenEntities: { type: "array", items: { type: "string" } }, requiredProps: { type: "array", items: { type: "string" } },\n' +
+    '    referenceIds: { type: "array", minItems: 1, maxItems: 4, items: { type: "string" } },\n' +
+    '    referenceScopeNotes: {\n' +
+    '      type: "array", items: REFERENCE_SCOPE_SCHEMA,\n' +
+    '      description: "For any referenceId in this scene whose OWN reference image depicts more characters than this scene\'s `characters` list needs (e.g. a shared cast-sheet reference), add {referenceId, onlyUse}. onlyUse names exactly which characters from that reference actually belong in this shot. Empty array when every referenced image is already scoped to just this scene\'s cast.",\n' +
+    '    },\n' +
+    `    shotType: { type: "string", enum: SHOT_TYPES, description: "Varies scene to scene within a third_person episode (mix third_person/over_shoulder/wide_action/close_up/tracking, with pov used only occasionally for impact) so the episode doesn't read as one repeated composition. Ignored/treated as pov for a strict first_person episode." },\n` +
+    `    startState: { type: "string", description: "What is concretely true — location, who's present, immediate physical situation — the instant this scene begins. Must equal (or be the direct, obvious continuation of) the PREVIOUS scene's endState." },\n` +
+    `    endState: { type: "string", description: "What is concretely true the instant this scene ends. The NEXT scene's startState must follow from this." },\n` +
+    '    mainAction: { type: "string" }, reaction: { type: "string" }, continuityFromPrevious: { type: "string" }, setupForNext: { type: "string" }, camera: { type: "string" },\n' +
+    '    protagonistAction: { type: "string" }, storyDevelopment: { type: "string" }, visualEvent: { type: "string" }, imagePrompt: { type: "string" }, videoPrompt: { type: "string" },\n' +
+    '  } };\n' +
+    "// OpenAI's strict structured-output mode rejects an open string-keyed map\n" +
+    '// (`additionalProperties` set to a schema instead of `false`) at any depth —\n' +
+    '// every "object" must declare its exact properties. relationshipChanges,\n' +
+    "// mysteryChanges, and each entity's relationships are genuinely open-ended\n" +
+    "// (any entityId/concept), so they're modeled here as arrays of closed\n" +
+    '// {key, value} pairs for the wire schema; normalizeEpisodePlan converts them\n' +
+    '// back to plain objects immediately after parsing so every downstream\n' +
+    '// consumer (mergeStoryState, the SQL merge RPC, TTS) keeps reading a plain\n' +
+    '// keyed object exactly as before.\n' +
+    'const KEY_VALUE_SCHEMA = (keyField: string, valueField: string) => ({\n' +
+    '  type: "array", items: { type: "object", additionalProperties: false,\n' +
+    '    required: [keyField, valueField], properties: { [keyField]: { type: "string" }, [valueField]: { type: "string" } } },\n' +
+    '});\n' +
+    'const STATE_DELTA_SCHEMA = { type: "object", additionalProperties: false,\n' +
+    '  required: ["entityChanges", "relationshipChanges", "inventoryChanges", "abilityChanges", "mysteryChanges", "roadmapBeatsConsumed", "locationChange", "newEvents"],\n' +
+    '  properties: {\n' +
+    '    entityChanges: { type: "array", items: { type: "object", additionalProperties: false,\n' +
+    '      required: ["entityId", "entityType", "canonicalType", "displayName", "introducedDay", "status", "currentForm", "visualIdentity", "referenceId", "abilities", "relationships"],\n' +
+    '      properties: { entityId: { type: "string" }, entityType: { type: "string" }, canonicalType: { type: "string" }, displayName: { type: "string" }, introducedDay: { type: "integer" }, status: { type: "string" }, currentForm: { type: "string" }, visualIdentity: { type: "string" }, referenceId: { type: ["string", "null"] }, abilities: { type: "array", items: { type: "string" } }, relationships: KEY_VALUE_SCHEMA("entityId", "relationship") } } },\n' +
+    '    relationshipChanges: KEY_VALUE_SCHEMA("entityId", "relationship"),\n' +
+    '    inventoryChanges: { type: "object", additionalProperties: false, required: ["added", "removed"], properties: { added: { type: "array", items: { type: "string" } }, removed: { type: "array", items: { type: "string" } } } },\n' +
+    '    abilityChanges: { type: "object", additionalProperties: false, required: ["learned", "lost"], properties: { learned: { type: "array", items: { type: "string" } }, lost: { type: "array", items: { type: "string" } } } },\n' +
+    '    mysteryChanges: KEY_VALUE_SCHEMA("mystery", "status"),\n' +
+    '    roadmapBeatsConsumed: { type: "array", items: { type: "string" } }, locationChange: { type: ["string", "null"] }, newEvents: { type: "array", items: { type: "string" } },\n' +
+    '  } };\n' +
+    'const SUMMARY_SCHEMA = { type: "object", additionalProperties: false,\n' +
+    '  required: ["daysCovered", "endingLocation", "protagonistState", "companions", "relationships", "items", "abilities", "events", "knownInformation", "relationshipChanges", "charactersIntroduced", "locationsVisited", "injuriesOrDamage", "itemsChanged", "powersChanged", "mysteriesIntroduced", "mysteriesResolved", "unresolvedMysteries", "cliffhanger", "nextEpisodeSetup", "visualStateChanges", "futurePromises"],\n' +
+    '  properties: {\n' +
+    '    daysCovered: { type: "array", items: { type: "integer" } }, endingLocation: { type: "string" }, protagonistState: { type: "string" },\n' +
+    '    companions: { type: "array", items: { type: "string" } }, relationships: { type: "array", items: { type: "string" } },\n' +
+    '    items: { type: "array", items: { type: "string" } }, abilities: { type: "array", items: { type: "string" } },\n' +
+    '    events: { type: "array", items: { type: "string" } }, knownInformation: { type: "array", items: { type: "string" } },\n' +
+    '    relationshipChanges: { type: "array", items: { type: "string" } }, charactersIntroduced: { type: "array", items: { type: "string" } }, locationsVisited: { type: "array", items: { type: "string" } },\n' +
+    '    injuriesOrDamage: { type: "array", items: { type: "string" } }, itemsChanged: { type: "array", items: { type: "string" } }, powersChanged: { type: "array", items: { type: "string" } },\n' +
+    '    mysteriesIntroduced: { type: "array", items: { type: "string" } }, mysteriesResolved: { type: "array", items: { type: "string" } },\n' +
+    '    unresolvedMysteries: { type: "array", items: { type: "string" } }, cliffhanger: { type: "string" }, nextEpisodeSetup: { type: "string" },\n' +
+    '    visualStateChanges: { type: "array", items: { type: "string" } }, futurePromises: { type'... 73240 more characters
+  
+      at TestContext.<anonymous> (file:///C:/Users/Public/Zylo/tests/thirtyDaysSeries.test.mjs:483:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '// deno-lint-ignore-file no-explicit-any\nimport "jsr:@supabase/functions-js/edge-runtime.d.ts";\nimport { createClient } from "https://esm.sh/@supabase/supabase-js@2";\nimport {\n  EPISODE_PLAN_VERSION,\n  activeReferenceForEntity,\n  alignSceneDayToEntityIntroductions,\n  assignSceneReferences,\n  availableRoadmapBeats,\n  pacingForDay,\n  repairLegacySeries,\n  slug,\n  validateConsumedBeats,\n} from "../_shared/thirtyDaysSeriesEngine.js";\n\nconst SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;\nconst SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;\nconst OPENAI_KEY = Deno.env.get("OPENAI_API_KEY")!;\nconst OPENAI_CHAT = "https://api.openai.com/v1/chat/completions";\nconst CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" };\nconst reply = (body: any, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json" } });\nconst SCORE_KEYS = ["hook", "visualVariety", "stakes", "emotionalProgression", "franchiseRecognition", "protagonistInvolvement", "miniPayoff", "cliffhanger", "continuity", "comprehension", "sceneVariety"];\nconst WORLD_BIBLE_SCHEMA = { type: "object", additionalProperties: false,\n  required: ["world", "franchise", "visualStyle", "hardVisualRules", "negativeRules", "viewerProtagonist", "characters", "locations"],\n  properties: {\n    world: { type: "string" }, franchise: { type: "string" }, visualStyle: { type: "string" },\n    hardVisualRules: { type: "array", items: { type: "string" } }, negativeRules: { type: "array", items: { type: "string" } },\n    viewerProtagonist: { type: "object", additionalProperties: false,\n      required: ["identity", "visualIdentity", "goal", "emotionalAnchor"],\n      properties: { identity: { type: "string" }, visualIdentity: { type: "string" }, goal: { type: "string" }, emotionalAnchor: { type: "string" } } },\n    characters: { type: "array", items: { type: "string" } }, locations: { type: "array", items: { type: "string" } },\n  } };\n\nconst REF_SCHEMA = { type: "object", additionalProperties: false, required: ["id", "entityId", "version", "activeFromDay", "supersedes", "role", "label", "prompt", "visualLock"], properties: {\n  id: { type: "string" }, entityId: { type: "string" }, version: { type: "integer" }, activeFromDay: { type: "integer" }, supersedes: { type: ["string", "null"] },\n  role: { type: "string" }, label: { type: "string" }, prompt: { type: "string" }, visualLock: { type: "string" },\n} };\nconst SHOT_TYPES = ["third_person", "pov", "over_shoulder", "wide_action", "close_up", "tracking"];\nconst REFERENCE_SCOPE_SCHEMA = { type: "object", additionalProperties: false, required: ["referenceId", "onlyUse"], properties: {\n  referenceId: { type: "string" }, onlyUse: { type: "array", items: { type: "string" } },\n} };\nconst SCENE_SCHEMA = { type: "object", additionalProperties: false,\n  required: ["index", "day", "title", "beatType", "location", "timeOfDay", "characters", "requiredEntities", "forbiddenEntities", "requiredProps", "referenceIds", "referenceScopeNotes", "shotType", "camera", "startState", "mainAction", "reaction", "endState", "continuityFromPrevious", "setupForNext", "protagonistAction", "storyDevelopment", "visualEvent", "imagePrompt", "videoPrompt"],\n  properties: {\n    index: { type: "integer", minimum: 0, maximum: 6 }, day: { type: "integer", minimum: 1, maximum: 30 }, title: { type: "string" },\n    beatType: { type: "string", enum: ["hook", "setup", "development", "complication", "turn", "payoff", "cliffhanger"] },\n    location: { type: "string" }, timeOfDay: { type: "string" }, characters: { type: "array", items: { type: "string" } },\n    requiredEntities: { type: "array", items: { type: "string" } }, forbiddenEntities: { type: "array", items: { type: "string" } }, requiredProps: { type: "array", items: { type: "string" } },\n    referenceIds: { type: "array", minItems: 1, maxItems: 4, items: { type: "string" } },\n    referenceScopeNotes: {\n      type: "array", items: REFERENCE_SCOPE_SCHEMA,\n      description: "For any referenceId in this scene whose OWN reference image depicts more characters than this scene\'s `characters` list needs (e.g. a shared cast-sheet reference), add {referenceId, onlyUse}. onlyUse names exactly which characters from that reference actually belong in this shot. Empty array when every referenced image is already scoped to just this scene\'s cast.",\n    },\n    shotType: { type: "string", enum: SHOT_TYPES, description: "Varies scene to scene within a third_person episode (mix third_person/over_shoulder/wide_action/close_up/tracking, with pov used only occasionally for impact) so the episode doesn\'t read as one repeated composition. Ignored/treated as pov for a strict first_person episode." },\n    startState: { type: "string", description: "What is concretely true — location, who\'s present, immediate physical situation — the instant this scene begins. Must equal (or be the direct, obvious continuation of) the PREVIOUS scene\'s endState." },\n    endState: { type: "string", description: "What is concretely true the instant this scene ends. The NEXT scene\'s startState must follow from this." },\n    mainAction: { type: "string" }, reaction: { type: "string" }, continuityFromPrevious: { type: "string" }, setupForNext: { type: "string" }, camera: { type: "string" },\n    protagonistAction: { type: "string" }, storyDevelopment: { type: "string" }, visualEvent: { type: "string" }, imagePrompt: { type: "string" }, videoPrompt: { type: "string" },\n  } };\n// OpenAI\'s strict structured-output mode rejects an open string-keyed map\n// (`additionalProperties` set to a schema instead of `false`) at any depth —\n// every "object" must declare its exact properties. relationshipChanges,\n// mysteryChanges, and each entity\'s relationships are genuinely open-ended\n// (any entityId/concept), so they\'re modeled here as arrays of closed\n// {key, value} pairs for the wire schema; normalizeEpisodePlan converts them\n// back to plain objects immediately after parsing so every downstream\n// consumer (mergeStoryState, the SQL merge RPC, TTS) keeps reading a plain\n// keyed object exactly as before.\nconst KEY_VALUE_SCHEMA = (keyField: string, valueField: string) => ({\n  type: "array", items: { type: "object", additionalProperties: false,\n    required: [keyField, valueField], properties: { [keyField]: { type: "string" }, [valueField]: { type: "string" } } },\n});\nconst STATE_DELTA_SCHEMA = { type: "object", additionalProperties: false,\n  required: ["entityChanges", "relationshipChanges", "inventoryChanges", "abilityChanges", "mysteryChanges", "roadmapBeatsConsumed", "locationChange", "newEvents"],\n  properties: {\n    entityChanges: { type: "array", items: { type: "object", additionalProperties: false,\n      required: ["entityId", "entityType", "canonicalType", "displayName", "introducedDay", "status", "currentForm", "visualIdentity", "referenceId", "abilities", "relationships"],\n      properties: { entityId: { type: "string" }, entityType: { type: "string" }, canonicalType: { type: "string" }, displayName: { type: "string" }, introducedDay: { type: "integer" }, status: { type: "string" }, currentForm: { type: "string" }, visualIdentity: { type: "string" }, referenceId: { type: ["string", "null"] }, abilities: { type: "array", items: { type: "string" } }, relationships: KEY_VALUE_SCHEMA("entityId", "relationship") } } },\n    relationshipChanges: KEY_VALUE_SCHEMA("entityId", "relationship"),\n    inventoryChanges: { type: "object", additionalProperties: false, required: ["added", "removed"], properties: { added: { type: "array", items: { type: "string" } }, removed: { type: "array", items: { type: "string" } } } },\n    abilityChanges: { type: "object", additionalProperties: false, required: ["learned", "lost"], properties: { learned: { type: "array", items: { type: "string" } }, lost: { type: "array", items: { type: "string" } } } },\n    mysteryChanges: KEY_VALUE_SCHEMA("mystery", "status"),\n    roadmapBeatsConsumed: { type: "array", items: { type: "string" } }, locationChange: { type: ["string", "null"] }, newEvents: { type: "array", items: { type: "string" } },\n  } };\nconst SUMMARY_SCHEMA = { type: "object", additionalProperties: false,\n  required: ["daysCovered", "endingLocation", "protagonistState", "companions", "relationships", "items", "abilities", "events", "knownInformation", "relationshipChanges", "charactersIntroduced", "locationsVisited", "injuriesOrDamage", "itemsChanged", "powersChanged", "mysteriesIntroduced", "mysteriesResolved", "unresolvedMysteries", "cliffhanger", "nextEpisodeSetup", "visualStateChanges", "futurePromises"],\n  properties: {\n    daysCovered: { type: "array", items: { type: "integer" } }, endingLocation: { type: "string" }, protagonistState: { type: "string" },\n    companions: { type: "array", items: { type: "string" } }, relationships: { type: "array", items: { type: "string" } },\n    items: { type: "array", items: { type: "string" } }, abilities: { type: "array", items: { type: "string" } },\n    events: { type: "array", items: { type: "string" } }, knownInformation: { type: "array", items: { type: "string" } },\n    relationshipChanges: { type: "array", items: { type: "string" } }, charactersIntroduced: { type: "array", items: { type: "string" } }, locationsVisited: { type: "array", items: { type: "string" } },\n    injuriesOrDamage: { type: "array", items: { type: "string" } }, itemsChanged: { type: "array", items: { type: "string" } }, powersChanged: { type: "array", items: { type: "string" } },\n    mysteriesIntroduced: { type: "array", items: { type: "string" } }, mysteriesResolved: { type: "array", items: { type: "string" } },\n    unresolvedMysteries: { type: "array", items: { type: "string" } }, cliffhanger: { type: "string" }, nextEpisodeSetup: { type: "string" },\n    visualStateChanges: { type: "array", items: { type: "string" } }, futurePromises: { type'... 73240 more characters,
+    expected: /EPISODE_LOCATION_STAGNATION/,
+    operator: 'match',
+    diff: 'simple'
+  }

@@ -1,0 +1,98 @@
+[
+  {
+    "id": "141c711f-d8b1-46b4-b1b7-aed320e1bfa8",
+    "prompt": "[STYLE LOCK]\nClean 2D illustrated documentary style — hand-drawn editorial character charm with controlled linework and a muted but readable palette. Not hyper-realistic, not childish preschool cartoon, not generic corporate flat vector art.\nLinework: Confident, slightly variable-weight ink linework — thicker silhouette edges, thinner interior detail lines. No sketchy cross-hatching, no photorealistic edge rendering.\nShading: Soft flat cel-shading, 2-3 tonal steps per surface (base, shadow, occasional highlight) — no painterly gradients, no hard outline on the shadow shapes themselves.\nTexture: A light, uniform paper/canvas grain overlay across the whole image — subtle enough to never read as noise or damage, present enough to avoid a flat vector-art look.\nPalette: Muted, desaturated but readable hues — avoid neon/oversaturated color. Favor 2-4 dominant hues plus neutrals per scene so the image reads instantly, even at thumbnail size.\nLighting: Directional, motivated lighting with a clear implied light source and soft shadow shapes — never flat/shadowless, never harsh studio-flash lighting.\nPerspective: Consistent one-to-two-point perspective per scene, eye-level or slightly low-angle by default for a grounded, cinematic feel — avoid extreme fisheye/dutch angles unless a beat specifically calls for drama.\nProject-specific mood: cold, muted blues and greys for a winter survival story\n\n[ENTITY IDENTITY]\nErik the farmer: A weathered Norse farmer in his mid-30s, broad-shouldered and stocky, with a short reddish-brown beard, weather-cracked skin, and pale blue eyes. Wears layered undyed wool tunic and trousers with a fur-lined outer cloak clasped at the shoulder, leather boots wrapped in wool leggings, appropriate to real Norse winter clothing.\n\n[REQUESTED VIEW]\nthree quarter neutral — Primary canonical identity anchor\n\n[PROPORTION / SHAPE RULES]\nNaturalistic, slightly simplified proportions (not chibi, not hyper-stylized anime) — believable adult proportions with clean, confident, instantly-readable silhouettes.\nSimple, expressive faces — economical linework for eyes/brows/mouth, clearly readable expression. Avoid hyper-detailed photographic facial rendering and avoid oversized preschool-cartoon eyes.\n\n[HISTORICAL OR FACTUAL CONSTRAINTS]\n- Vikings did not historically wear horned helmets\n- Wool and fur layering, not fantasy leather armor, was the real cold-weather strategy\n\n[BACKGROUND / REFERENCE-SHEET PRESENTATION]\nNeutral, uncluttered background appropriate for a canonical reference image — the subject must read clearly with nothing competing for attention.\n\n[FORBIDDEN ELEMENTS]\n- not hyper-realistic / photographic\n- not childish preschool cartoon\n- not generic corporate flat vector art\n- no 3D-render look\n- no anime/manga stylization\n- horned helmet\n- fantasy armor\n- weapons\n- text\n- labels\n- watermarks\n- UI elements\n- unrelated objects",
+    "provider": "runware",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/141c711f-d8b1-46b4-b1b7-aed320e1bfa8.png",
+    "created_at": "2026-09-08 14:45:17.630085+00",
+    "updated_at": "2026-09-08 14:45:24.672244+00",
+    "charge_credits": 0,
+    "output": {
+      "data": [
+        {
+          "cost": 0.0006,
+          "seed": 299089179,
+          "status": "success",
+          "imageURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/d972f37a-8f51-49ce-bd00-95e9ccf9de00.png",
+          "taskType": "imageInference",
+          "taskUUID": "141c711f-d8b1-46b4-b1b7-aed320e1bfa8",
+          "imageUUID": "d972f37a-8f51-49ce-bd00-95e9ccf9de00"
+        }
+      ]
+    },
+    "elapsed_seconds": "7.042159",
+    "linked_assets": 0
+  },
+  {
+    "id": "88ffadfc-e69d-46f7-8738-9bc2fa6d4484",
+    "prompt": "[STYLE LOCK]\nClean 2D illustrated documentary style — hand-drawn editorial character charm with controlled linework and a muted but readable palette. Not hyper-realistic, not childish preschool cartoon, not generic corporate flat vector art.\nLinework: Confident, slightly variable-weight ink linework — thicker silhouette edges, thinner interior detail lines. No sketchy cross-hatching, no photorealistic edge rendering.\nShading: Soft flat cel-shading, 2-3 tonal steps per surface (base, shadow, occasional highlight) — no painterly gradients, no hard outline on the shadow shapes themselves.\nTexture: A light, uniform paper/canvas grain overlay across the whole image — subtle enough to never read as noise or damage, present enough to avoid a flat vector-art look.\nPalette: Muted, desaturated but readable hues — avoid neon/oversaturated color. Favor 2-4 dominant hues plus neutrals per scene so the image reads instantly, even at thumbnail size.\nLighting: Directional, motivated lighting with a clear implied light source and soft shadow shapes — never flat/shadowless, never harsh studio-flash lighting.\nPerspective: Consistent one-to-two-point perspective per scene, eye-level or slightly low-angle by default for a grounded, cinematic feel — avoid extreme fisheye/dutch angles unless a beat specifically calls for drama.\nProject-specific mood: cold, muted blues and greys for a winter survival story\n\n[ENTITY IDENTITY]\nErik the farmer: A weathered Norse farmer in his mid-30s, broad-shouldered and stocky, with a short reddish-brown beard, weather-cracked skin, and pale blue eyes. Wears layered undyed wool tunic and trousers with a fur-lined outer cloak clasped at the shoulder, leather boots wrapped in wool leggings, appropriate to real Norse winter clothing.\n\n[REQUESTED VIEW]\nprofile — Side-view consistency anchor\n\n[PROPORTION / SHAPE RULES]\nNaturalistic, slightly simplified proportions (not chibi, not hyper-stylized anime) — believable adult proportions with clean, confident, instantly-readable silhouettes.\nSimple, expressive faces — economical linework for eyes/brows/mouth, clearly readable expression. Avoid hyper-detailed photographic facial rendering and avoid oversized preschool-cartoon eyes.\n\n[HISTORICAL OR FACTUAL CONSTRAINTS]\n- Vikings did not historically wear horned helmets\n\n[BACKGROUND / REFERENCE-SHEET PRESENTATION]\nNeutral, uncluttered background appropriate for a canonical reference image — the subject must read clearly with nothing competing for attention.\n\n[FORBIDDEN ELEMENTS]\n- not hyper-realistic / photographic\n- not childish preschool cartoon\n- not generic corporate flat vector art\n- no 3D-render look\n- no anime/manga stylization\n- horned helmet\n- fantasy armor\n- weapons\n- text\n- labels\n- watermarks\n- UI elements\n- unrelated objects",
+    "provider": "runware",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/88ffadfc-e69d-46f7-8738-9bc2fa6d4484.png",
+    "created_at": "2026-09-08 14:45:18.198361+00",
+    "updated_at": "2026-09-08 14:45:24.731994+00",
+    "charge_credits": 0,
+    "output": {
+      "data": [
+        {
+          "cost": 0.0006,
+          "seed": 1288540233,
+          "status": "success",
+          "imageURL": "https://im.runware.ai/image/os/a08dlim3/ws/3/ii/aeaacda4-6ef5-470c-9d7d-a579f7f96548.png",
+          "taskType": "imageInference",
+          "taskUUID": "88ffadfc-e69d-46f7-8738-9bc2fa6d4484",
+          "imageUUID": "aeaacda4-6ef5-470c-9d7d-a579f7f96548"
+        }
+      ]
+    },
+    "elapsed_seconds": "6.533633",
+    "linked_assets": 0
+  },
+  {
+    "id": "97a5ab84-4110-4fef-96c9-065fc5ee561d",
+    "prompt": "[STYLE LOCK]\nClean 2D illustrated documentary style — hand-drawn editorial character charm with controlled linework and a muted but readable palette. Not hyper-realistic, not childish preschool cartoon, not generic corporate flat vector art.\nLinework: Confident, slightly variable-weight ink linework — thicker silhouette edges, thinner interior detail lines. No sketchy cross-hatching, no photorealistic edge rendering.\nShading: Soft flat cel-shading, 2-3 tonal steps per surface (base, shadow, occasional highlight) — no painterly gradients, no hard outline on the shadow shapes themselves.\nTexture: A light, uniform paper/canvas grain overlay across the whole image — subtle enough to never read as noise or damage, present enough to avoid a flat vector-art look.\nPalette: Muted, desaturated but readable hues — avoid neon/oversaturated color. Favor 2-4 dominant hues plus neutrals per scene so the image reads instantly, even at thumbnail size.\nLighting: Directional, motivated lighting with a clear implied light source and soft shadow shapes — never flat/shadowless, never harsh studio-flash lighting.\nPerspective: Consistent one-to-two-point perspective per scene, eye-level or slightly low-angle by default for a grounded, cinematic feel — avoid extreme fisheye/dutch angles unless a beat specifically calls for drama.\nProject-specific mood: cold, muted blues and greys for a winter survival story\n\n[ENTITY IDENTITY]\nLonghouse: A real Norse longhouse interior: long timber-framed hall with a central stone-lined hearth pit, low turf-and-timber walls, wooden roof beams blackened by smoke, packed-earth floor partially covered in straw, simple wooden benches along the walls, dim warm firelight as the only light source.\n\n[REQUESTED VIEW]\nwide toward hearth — Storyboard camera anchor: longhouse_wide_hearth\n\n[PROPORTION / SHAPE RULES]\nNaturalistic, slightly simplified proportions (not chibi, not hyper-stylized anime) — believable adult proportions with clean, confident, instantly-readable silhouettes.\nSimple, expressive faces — economical linework for eyes/brows/mouth, clearly readable expression. Avoid hyper-detailed photographic facial rendering and avoid oversized preschool-cartoon eyes.\n\n[HISTORICAL OR FACTUAL CONSTRAINTS]\n- Real Norse longhouses had a central hearth, not a fireplace against a wall\n- No windows — light came primarily from the hearth and a smoke hole\n\n[BACKGROUND / REFERENCE-SHEET PRESENTATION]\nNeutral, uncluttered background appropriate for a canonical reference image — the subject must read clearly with nothing competing for attention.\n\n[FORBIDDEN ELEMENTS]\n- not hyper-realistic / photographic\n- not childish preschool cartoon\n- not generic corporate flat vector art\n- no 3D-render look\n- no anime/manga stylization\n- modern fireplace\n- windows\n- electric lighting\n- text\n- labels\n- watermarks\n- UI elements\n- unrelated objects",
+    "provider": "runware",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/97a5ab84-4110-4fef-96c9-065fc5ee561d.png",
+    "created_at": "2026-09-08 14:45:18.360168+00",
+    "updated_at": "2026-09-08 14:45:24.46854+00",
+    "charge_credits": 0,
+    "output": {
+      "data": [
+        {
+          "cost": 0.0006,
+          "seed": 1963697272,
+          "status": "success",
+          "imageURL": "https://im.runware.ai/image/os/a08dlim3/ws/3/ii/4573d657-a043-4a2a-ac15-8f193de222e6.png",
+          "taskType": "imageInference",
+          "taskUUID": "97a5ab84-4110-4fef-96c9-065fc5ee561d",
+          "imageUUID": "4573d657-a043-4a2a-ac15-8f193de222e6"
+        }
+      ]
+    },
+    "elapsed_seconds": "6.108372",
+    "linked_assets": 0
+  },
+  {
+    "id": "ba9887cc-6216-41c1-ba7d-763bb374bd6c",
+    "prompt": "[STYLE LOCK]\nClean 2D illustrated documentary style — hand-drawn editorial character charm with controlled linework and a muted but readable palette. Not hyper-realistic, not childish preschool cartoon, not generic corporate flat vector art.\nLinework: Confident, slightly variable-weight ink linework — thicker silhouette edges, thinner interior detail lines. No sketchy cross-hatching, no photorealistic edge rendering.\nShading: Soft flat cel-shading, 2-3 tonal steps per surface (base, shadow, occasional highlight) — no painterly gradients, no hard outline on the shadow shapes themselves.\nTexture: A light, uniform paper/canvas grain overlay across the whole image — subtle enough to never read as noise or damage, present enough to avoid a flat vector-art look.\nPalette: Muted, desaturated but readable hues — avoid neon/oversaturated color. Favor 2-4 dominant hues plus neutrals per scene so the image reads instantly, even at thumbnail size.\nLighting: Directional, motivated lighting with a clear implied light source and soft shadow shapes — never flat/shadowless, never harsh studio-flash lighting.\nPerspective: Consistent one-to-two-point perspective per scene, eye-level or slightly low-angle by default for a grounded, cinematic feel — avoid extreme fisheye/dutch angles unless a beat specifically calls for drama.\nProject-specific mood: cold, muted blues and greys for a winter survival story\n\n[ENTITY IDENTITY]\nViking longship: A real Norse longship: long, narrow, shallow-draft wooden clinker-built hull with overlapping planks, a single square sail (currently furled), a row of shields along the gunwale, a carved prow, hauled up on a rocky winter shoreline with snow visible.\n\n[REQUESTED VIEW]\nthree quarter hero — Primary canonical identity anchor\n\n[PROPORTION / SHAPE RULES]\nNaturalistic, slightly simplified proportions (not chibi, not hyper-stylized anime) — believable adult proportions with clean, confident, instantly-readable silhouettes.\nSimple, expressive faces — economical linework for eyes/brows/mouth, clearly readable expression. Avoid hyper-detailed photographic facial rendering and avoid oversized preschool-cartoon eyes.\n\n[HISTORICAL OR FACTUAL CONSTRAINTS]\n- Real longships used overlapping clinker-built planking, not smooth carvel hulls\n- The sail was square, not triangular\n\n[BACKGROUND / REFERENCE-SHEET PRESENTATION]\nNeutral, uncluttered background appropriate for a canonical reference image — the subject must read clearly with nothing competing for attention.\n\n[FORBIDDEN ELEMENTS]\n- not hyper-realistic / photographic\n- not childish preschool cartoon\n- not generic corporate flat vector art\n- no 3D-render look\n- no anime/manga stylization\n- triangular sail\n- smooth modern hull\n- dragon head unless documented for this specific ship type\n- text\n- labels\n- watermarks\n- UI elements\n- unrelated objects",
+    "provider": "runware",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/ba9887cc-6216-41c1-ba7d-763bb374bd6c.png",
+    "created_at": "2026-09-08 14:45:18.514073+00",
+    "updated_at": "2026-09-08 14:45:24.357075+00",
+    "charge_credits": 0,
+    "output": {
+      "data": [
+        {
+          "cost": 0.0006,
+          "seed": 2140115787,
+          "status": "success",
+          "imageURL": "https://im.runware.ai/image/os/a04d20/ws/3/ii/e8324b47-708a-4035-985e-ca931a5da295.png",
+          "taskType": "imageInference",
+          "taskUUID": "ba9887cc-6216-41c1-ba7d-763bb374bd6c",
+          "imageUUID": "e8324b47-708a-4035-985e-ca931a5da295"
+        }
+      ]
+    },
+    "elapsed_seconds": "5.843002",
+    "linked_assets": 0
+  }
+]

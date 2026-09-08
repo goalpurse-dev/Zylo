@@ -530,6 +530,17 @@ function safeImagePositivePrompt(prompt: unknown, max = 2000): string {
   return safe;
 }
 
+// Negative prompt is optional (unlike positive) — callers that don't set one
+// (or the default DEFAULT_NEGATIVE_IMAGE from createImageJobSimple) still get
+// a sane, trimmed string; an empty result just omits the field entirely below
+// rather than sending Runware a blank negativePrompt.
+function safeImageNegativePrompt(negative: unknown, max = 1000): string {
+  return String(negative || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+}
+
 async function completeRunwareImageJob(
   sb: ReturnType<typeof createClient>,
   jobId: string,
@@ -643,6 +654,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
     jobId,
     airTag,
     prompt,
+    negative,
     referenceImages = [],
     settings        = {},
     recoverExistingProvider = false,
@@ -671,6 +683,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
     airTag,
   );
   const safePrompt = safeImagePositivePrompt(prompt);
+  const safeNegative = safeImageNegativePrompt(negative);
   const existingProviderId = String(settings?.provider_job_id || "");
 
   if (recoverExistingProvider && existingProviderId) {
@@ -744,6 +757,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
     taskUUID:       providerTaskId,
     model:          airTag,
     positivePrompt: safePrompt,
+    ...(safeNegative ? { negativePrompt: safeNegative } : {}),
     width:          safeWidth,
     height:         safeHeight,
     numberResults:  1,

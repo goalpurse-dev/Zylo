@@ -67,6 +67,30 @@ export const VISUAL_WORLD_STYLES = {
 // regardless of what the client sends).
 export const VISUAL_WORLD_MODELS = {
   fast: { key: "fast", toolKey: "image:flux.base", label: "FLUX Base", helper: "Fastest · Lowest cost", available: true },
-  studio: { key: "studio", toolKey: null, label: "Studio", helper: "Coming soon", available: false },
-  director: { key: "director", toolKey: null, label: "Director", helper: "Coming soon", available: false },
+  // Verified against Runware's own docs before adding (see providers.ts) —
+  // both real, both selectable for this dev A/B pass. Kling/Seedream/Qwen/
+  // Recraft are deliberately not here yet.
+  klein9b: { key: "klein9b", toolKey: "image:flux2.klein9bkv", label: "FLUX.2 Klein 9B", helper: "Higher consistency · Still low cost", available: true },
 };
+
+export function viewLabel(angle = "") {
+  return ({ three_quarter_neutral: "3/4 view", three_quarter_hero: "3/4 view", profile: "Profile", face_closeup: "Face", wide_toward_hearth: "Hearth-facing wide", reverse_from_hearth: "Reverse wide" })[angle] ?? angle.replace(/_/g, " ");
+}
+
+// A replacement is a separate row. History remains queryable but contributes
+// neither duplicate slots nor duplicate ready counts to the current board.
+export function currentReferenceAssets(assets) {
+  const replaced = new Set(assets.map((asset) => asset.replaces_asset_id).filter(Boolean));
+  return assets.filter((asset) => !replaced.has(asset.id));
+}
+
+export function referenceProgress(assets) {
+  const current = currentReferenceAssets(assets);
+  return { total: current.length, ready: current.filter((a) => a.status === "succeeded" && a.result_url).length, failed: current.filter((a) => a.status === "failed").length, active: current.filter((a) => ["pending", "running"].includes(a.status)).length };
+}
+
+export function referenceEntities(visualPlan, visualWorld) {
+  const plan = visualWorld?.reference_plan?.entities ?? planReferenceViews(visualPlan?.entity_registry, visualPlan?.continuity_groups);
+  const excluded = new Set(visualWorld?.excluded_views ?? []);
+  return plan.map((entity) => ({ ...entity, requiredViews: entity.requiredViews.filter((view) => !excluded.has(`${entity.entityId}:${view.angle}`)) })).filter((entity) => entity.requiredViews.length);
+}

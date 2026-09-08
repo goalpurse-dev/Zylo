@@ -136,6 +136,13 @@ export function compileReferencePrompt(args: {
   // image visually bakes in the primary outfit.
 
   lines.push("", "[REQUESTED VIEW]", `${view.angle.replace(/_/g, " ")} — ${view.purpose}`);
+  if (view.referenceType === "character_reference") {
+    lines.push(view.angle === "face_closeup"
+      ? "Head and shoulders only, clear facial identity, neutral expression."
+      : "Full body head to toe, including both boots, fully inside the frame with generous margins. Neutral standing pose. No crop, no props.");
+    if (view.angle === "profile") lines.push("Strict side profile, facing left, nose silhouette clearly visible; not a three-quarter view. Preserve the same hair, beard, face, outfit and colors as the canonical identity.");
+    if (view.angle === "three_quarter_neutral") lines.push("Three-quarter view, body and face turned about 45 degrees toward the camera.");
+  }
 
   lines.push("", "[PROPORTION / SHAPE RULES]", styleSpec.bodyProportions, styleSpec.faceConstruction);
 
@@ -144,10 +151,12 @@ export function compileReferencePrompt(args: {
   lines.push(
     "",
     "[BACKGROUND / REFERENCE-SHEET PRESENTATION]",
-    "Neutral, uncluttered background appropriate for a canonical reference image — the subject must read clearly with nothing competing for attention."
+    view.referenceType === "location_reference"
+      ? "A reusable empty animation set from the requested storyboard camera anchor. Show continuous floor, walls, ceiling structure and fixed spatial landmarks in a coherent wide perspective. Preserve the canonical room layout. No people, no cutaway or floating room, no studio background."
+      : "Plain warm off-white background, clear subject silhouette, full subject visible with margins. No scenic distractions or dramatic cropping."
   );
 
-  const forbidden = [...styleSpec.negativeConstraints, ...(forbiddenElements ?? []), "text", "labels", "watermarks", "UI elements", "unrelated objects"];
+  const forbidden = [...styleSpec.negativeConstraints, ...(forbiddenElements ?? []), "text", "labels", "watermarks", "logos", "UI elements", "unrelated objects"];
   lines.push("", "[FORBIDDEN ELEMENTS]", ...forbidden.map((f) => `- ${f}`));
 
   return lines.join("\n");

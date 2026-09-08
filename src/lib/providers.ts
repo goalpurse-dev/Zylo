@@ -12,6 +12,7 @@ export type ToolKey =
   | "image:openai"
   | "image:flux.base"
   | "image:flux.max"
+  | "image:flux2.klein9bkv"
   | "image:Wan2.6-image"
   | "image:nano-pro"
   | "image:seedream4.0"
@@ -26,6 +27,9 @@ export type ToolKey =
   | "image:bts2k"
   | "image:bts4kpro"
   | "image:bts4kmax"
+  | "image:thirtydays1k"
+  | "image:thirtydays2k"
+  | "image:thirtydays4k"
 
 
 
@@ -49,6 +53,8 @@ export type ToolKey =
   | "video:seedance20fast"
   | "video:cartoondriveseedance720"
   | "video:cartoondriveseedance1080"
+  | "video:btsseedance720"
+  | "video:btsseedance1080"
 
 
 
@@ -270,6 +276,49 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
   margin: m(0.09890, 0.20),
 },
 
+/* -------------------------------------------------------
+   30 DAYS DEDICATED MODELS
+   Same Nano Banana 2 engine as the other dedicated tiers above,
+   kept under its own tool_keys so spend/usage is attributed to
+   this template separately. Unlike the other tools, 30 Days sends
+   a reference image (a collage of 1-3 reference portraits) on
+   every scene generation, not just text-to-image — this is the
+   first template to exercise Nano Banana 2's referenceImages path.
+   ------------------------------------------------------- */
+"image:thirtydays1k": {
+  provider: "runware",
+  generator: "Nano Banana 2",
+  airTag: "google:4@3",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-image",
+  costUSD: 0.04945,
+  retailUSD: 0.10,
+  credits: 5,
+  margin: m(0.04945, 0.10),
+},
+"image:thirtydays2k": {
+  provider: "runware",
+  generator: "Nano Banana 2",
+  airTag: "google:4@3",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-image",
+  costUSD: 0.06923,
+  retailUSD: 0.14,
+  credits: 7,
+  margin: m(0.06923, 0.14),
+},
+"image:thirtydays4k": {
+  provider: "runware",
+  generator: "Nano Banana 2",
+  airTag: "google:4@3",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-image",
+  costUSD: 0.09890,
+  retailUSD: 0.20,
+  credits: 10,
+  margin: m(0.09890, 0.20),
+},
+
   "image:seedream4.0": {
     provider: "runware",
     generator: "Seedream 4.0",
@@ -325,6 +374,29 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     retailUSD: 0.02,
     credits: 1,
     margin: m(0.0006, 0.02),
+  },
+
+  // Verified directly against Runware's own docs (runware.ai/docs/models/
+  // bfl-flux-2-klein-9b-kv) before adding this — never invented from memory.
+  // KV variant: caches reference-image key/value pairs after the first
+  // denoising step for faster multi-reference editing; supports up to 4
+  // reference images, negative prompts, 128-2048px (step 16) dimensions.
+  // Billed by compute time, NOT a flat per-image rate like flux.base — a
+  // real 1024x1024 text-to-image run measured $0.00169 (~2s) in Runware's
+  // own docs example; costUSD below is that reference point, not a fixed
+  // guarantee — always trust the real per-job output.data[0].cost over this
+  // estimate.
+  "image:flux2.klein9bkv": {
+    provider: "runware",
+    generator: "FLUX.2 [klein] 9B KV",
+    airTag: "runware:400@6",
+    secret: "RUNWARE_API_KEY",
+    edgeFn: "/functions/v1/runware-image",
+
+    costUSD: 0.00169,
+    retailUSD: 0.03,
+    credits: 2,
+    margin: m(0.00169, 0.03),
   },
 
 

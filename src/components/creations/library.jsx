@@ -197,6 +197,7 @@ export default function Library() {
           .eq("user_id", user.id)
           .eq("type", "image")
           .eq("status", "succeeded")
+          .is("settings->>long_form_internal", null)
           .not("result_url", "is", null)
           .order("created_at", { ascending: false })
           .limit(20)

@@ -105,12 +105,15 @@ export async function fetchUserLongFormProjects(userId) {
   const scriptIds = projects.map((p) => p.current_script_version_id).filter(Boolean);
   const researchIds = projects.map((p) => p.current_research_version_id).filter(Boolean);
   const visualPlanIds = projects.map((p) => p.current_visual_plan_version_id).filter(Boolean);
+  const visualWorldIds = projects.map((p) => p.current_visual_world_version_id).filter(Boolean);
   const discoverySessionIds = [...new Set(projects.map((p) => p.discovery_session_id).filter(Boolean))];
 
-  const [scriptsRes, researchRes, visualPlansRes, activeResearchRes, activeScriptRes, activeVisualPlanRes, discoverySessionsRes] = await Promise.all([
+  const [scriptsRes, researchRes, visualPlansRes, visualWorldsRes, activeResearchRes, activeScriptRes, activeVisualPlanRes, discoverySessionsRes] = await Promise.all([
     scriptIds.length ? supabase.from("long_form_script_versions").select("id, status").in("id", scriptIds) : Promise.resolve({ data: [] }),
     researchIds.length ? supabase.from("long_form_research_versions").select("id, status").in("id", researchIds) : Promise.resolve({ data: [] }),
     visualPlanIds.length ? supabase.from("long_form_visual_plan_versions").select("id, status, storyboard_summary").in("id", visualPlanIds) : Promise.resolve({ data: [] }),
+    // Cover priority tier 3 (Visual World board preview) — see below.
+    visualWorldIds.length ? supabase.from("long_form_visual_world_versions").select("id, reference_board_meta").in("id", visualWorldIds) : Promise.resolve({ data: [] }),
     // Active work is invisible to the current_*_version_id pointers above —
     // those are ONLY ever set once a stage reaches a non-failure terminal
     // state (see each stage's own stageFinalizing), so a project mid-run

@@ -81,6 +81,8 @@ const PLAN_GATED_TOOLS: Record<string, string> = {
   "image:bts4kmax":                  "generative",  // Behind the Scenes V4 image
   "video:btsseedance720":            "pro",         // Behind the Scenes V3 video
   "video:btsseedance1080":           "generative",  // Behind the Scenes V4 video
+  "image:thirtydays2k":              "pro",         // 30 Days V3 image
+  "image:thirtydays4k":              "generative",  // 30 Days V4 image
 };
 
 function planTierIndex(planCode: string | null | undefined): number {
@@ -384,6 +386,35 @@ Deno.serve(async (req) => {
       await failAndRefundJob(sbAdmin, jobId, "PLAN_UPGRADE_REQUIRED",
         `PLAN_UPGRADE_REQUIRED: ${job.tool_key} requires the ${planCheck.requiredPlan} plan`);
       return fail(req, `This model requires the ${planCheck.requiredPlan} plan`, 403);
+    }
+
+    // 30 Days reserves the full visual cost before child jobs are created.
+    // Those child jobs therefore carry charge_credits=0, but they are not
+    // "free" work: the service-role RPC below must atomically bind each job
+    // to an active, server-priced asset reservation before provider dispatch.
+    const billingReservation = (job.input as any)?.billing_reservation;
+    const isThirtyDaysDedicatedTool =
+      String(job.tool_key).startsWith("image:thirtydays") ||
+      String(job.tool_key).startsWith("video:thirtydays");
+    if (isThirtyDaysDedicatedTool && billingReservation?.template !== "thirty-days") {
+      await failAndRefundJob(sbAdmin, jobId, "BILLING_RESERVATION_REQUIRED", "Missing 30 Days asset reservation");
+      return fail(req, "Missing generation reservation", 403);
+    }
+    if (billingReservation?.template === "thirty-days") {
+      const generationId = String(billingReservation.generationId ?? "");
+      const assetKey = String(billingReservation.assetKey ?? "");
+      const { data: authorized, error: reservationError } = await sbAdmin.rpc(
+        "authorize_thirty_days_asset_job",
+        { p_generation_id: generationId, p_asset_key: assetKey, p_job_id: jobId },
+      );
+      if (reservationError || authorized !== true) {
+        logEvent("warn", "billing_reservation_rejected", {
+          jobId, userId: job.user_id, generationId, assetKey,
+          message: reservationError?.message ?? "reservation was not authorized",
+        });
+        await failAndRefundJob(sbAdmin, jobId, "INVALID_BILLING_RESERVATION", "Invalid or inactive 30 Days asset reservation");
+        return fail(req, "Invalid generation reservation", 403);
+      }
     }
 
     // The client normalizes references before insertion, but the database is

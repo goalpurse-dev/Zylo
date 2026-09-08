@@ -32,7 +32,8 @@ export async function fetchLastCompletedVisualWorld(project) {
 
 export async function fetchReferenceAssets(visualWorldVersionId) {
   if (!visualWorldVersionId) return [];
-  const { data } = await supabase.from("long_form_reference_assets").select("*").eq("visual_world_version_id", visualWorldVersionId).order("created_at", { ascending: true });
+  const { data, error } = await supabase.from("long_form_reference_assets").select("*").eq("visual_world_version_id", visualWorldVersionId).order("created_at", { ascending: true });
+  if (error) throw error;
   return data ?? [];
 }
 
@@ -57,6 +58,6 @@ export async function startVisualWorld(projectId, { regenerate = false, renderer
 // the normal fetchReferenceAssets poll, same as everything else here.
 export async function regenerateReferenceAsset(assetId) {
   const { data, error } = await supabase.functions.invoke("regenerate-long-form-reference-asset", { body: { assetId } });
-  if (error) return { ok: false };
-  return { ok: data?.ok === true };
+  if (error) return { ok: false, message: "Couldn't regenerate this reference. Please try again." };
+  return { ok: data?.ok === true, assetId: data?.assetId };
 }
