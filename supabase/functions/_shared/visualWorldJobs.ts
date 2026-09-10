@@ -1,22 +1,25 @@
-// Pure payload/reconciliation logic, shared with mocked lifecycle tests.
-// One provider job per independently durable asset, never per browser view.
-//
-// Renderer allowlist (Part 3/Part 4 of the FLUX.2 9B A/B milestone): exactly
-// two verified, already-registered Runware entries. Both use the same
-// 1024x1024 request shape for a fair, apples-to-apples cost/latency/quality
-// comparison — 9B's real capability (up to 2048px, reference-image input)
-// is intentionally not exercised yet, this is a plain text-to-image test.
-const ALLOWED_REFERENCE_RENDERER_TOOL_KEYS = ["image:flux.base", "image:flux2.klein9bkv"];
+import { referenceRendererPolicy } from "./referenceRendererPolicy.js";
 
-export function referenceJobPayload(asset: any, world: any, project: any, prompt: string, planCode: string, now = new Date().toISOString()) {
-  const toolKey = world.renderer_tool_key ?? "image:flux.base";
-  if (!ALLOWED_REFERENCE_RENDERER_TOOL_KEYS.includes(toolKey)) throw new Error("Unsupported reference renderer");
+export function referenceJobPayload(asset: any, world: any, project: any, prompt: string, planCode: string, referenceImageUrl?: string | null, now = new Date().toISOString()) {
+  const policy = referenceRendererPolicy(asset);
+  if (policy.requiresIdentityAnchor && (!referenceImageUrl || asset.input_reference_asset_ids?.length !== 1)) throw new Error("ACCEPTED_IDENTITY_ANCHOR_REQUIRED");
+  const toolKey = policy.toolKey;
   return {
     id: asset.id, user_id: project.user_id, type: "image", tool_key: toolKey, project_id: null, prompt,
     settings: { tool_key: toolKey, credits: 0, priceUSD: 0, creation_type: "photo", long_form_internal: true, long_form_reference_asset_id: asset.id },
-    input: { tool: "image", subject: prompt, style: null, creation_type: "photo", negative: null, brand: { id: null, use_palette: false }, init_image_url: null, width: 1024, height: 1024 },
+    input: {
+      tool: "image", subject: prompt, style: null, creation_type: "photo", negative: null, brand: { id: null, use_palette: false },
+      init_image_url: null, width: 1024, height: 1024,
+      // job-worker forwards this verbatim as runware-image's `referenceImages`
+      // (see materializeReferencePayload's REFERENCE_KEYS — "ref_images"
+      // normalizes to "refimages", already in that set) — an already-public
+      // URL (this Visual World's own prior successful asset) needs no
+      // storage-reference resolution, just the accessibility check every
+      // reference URL gets regardless of source.
+      ...(referenceImageUrl ? { ref_images: [referenceImageUrl] } : {}),
+    },
     status: "queued", progress: 0, charge_credits: 0, charged: false, priority: 9,
-    plan_code: planCode.toLowerCase(), provider: "runware", attempts: 0, max_attempts: 3, retry_after: now,
+    plan_code: planCode.toLowerCase(), provider: "runware", attempts: 0, max_attempts: policy.requiresIdentityAnchor ? 1 : 3, retry_after: now,
   };
 }
 
@@ -33,8 +36,8 @@ export function referenceJobResult(job: any) {
   };
 }
 
-export async function ensureReferenceJob(admin: any, asset: any, world: any, project: any, prompt: string, planCode: string) {
-  const payload = referenceJobPayload(asset, world, project, prompt, planCode);
+export async function ensureReferenceJob(admin: any, asset: any, world: any, project: any, prompt: string, planCode: string, referenceImageUrl?: string | null) {
+  const payload = referenceJobPayload(asset, world, project, prompt, planCode, referenceImageUrl);
   // Atomic SQL transaction links the immutable prompt and job before either
   // can become visible to job-worker. Repeating after a lost response is safe.
   const { data, error } = await admin.rpc("enqueue_long_form_reference_job", { p_asset_id: asset.id, p_job: payload, p_claim_attempt: asset.claim_attempts });

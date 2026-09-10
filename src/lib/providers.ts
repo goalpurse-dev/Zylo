@@ -13,6 +13,7 @@ export type ToolKey =
   | "image:flux.base"
   | "image:flux.max"
   | "image:flux2.klein9bkv"
+  | "image:qwen.image-edit-plus"
   | "image:Wan2.6-image"
   | "image:nano-pro"
   | "image:seedream4.0"
@@ -386,6 +387,13 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
   // own docs example; costUSD below is that reference point, not a fixed
   // guarantee — always trust the real per-job output.data[0].cost over this
   // estimate.
+  // Compute-time estimate, not a fixed price. Internal references override credits to zero.
+  // Verified: runware.ai/docs/models/alibaba-qwen-image-edit-plus (2026-09-10).
+  "image:qwen.image-edit-plus": {
+    provider: "runware", generator: "Qwen Image Edit Plus", airTag: "runware:108@22",
+    secret: "RUNWARE_API_KEY", edgeFn: "/functions/v1/runware-image",
+    costUSD: 0.0166, retailUSD: 0.04, credits: 2, margin: m(0.0166, 0.04),
+  },
   "image:flux2.klein9bkv": {
     provider: "runware",
     generator: "FLUX.2 [klein] 9B KV",
