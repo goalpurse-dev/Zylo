@@ -12,6 +12,8 @@ import { FOCUS, PRESS, cx } from "./styles";
  *            "error" turns it into "Couldn't load price — Retry".
  *   busy:    string label shown with a spinner while work runs (disabled)
  *   variant: "primary" (lime) | "secondary" (glass)
+ *   fullWidth: false for buttons sized by their label (Back, Done)
+ *   size:    "md" (footer actions) | "sm" (cards)
  */
 export default function PrimaryButton({
   children,
@@ -21,6 +23,8 @@ export default function PrimaryButton({
   variant = "primary",
   disabled = false,
   chevron = false,
+  fullWidth = true,
+  size = "md",
   type = "button",
   className = "",
   ...rest
@@ -44,7 +48,9 @@ export default function PrimaryButton({
       disabled={isDisabled && !(priceError && !isBusy)}
       aria-busy={isBusy || priceLoading || undefined}
       className={cx(
-        "flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-[14px] font-black transition lg:py-2.5",
+        "flex items-center justify-center gap-2 rounded-xl font-black transition",
+        size === "sm" ? "py-2.5 text-[12px] lg:py-2" : "py-3.5 text-[14px] lg:py-2.5",
+        fullWidth && "w-full",
         FOCUS,
         PRESS,
         look,

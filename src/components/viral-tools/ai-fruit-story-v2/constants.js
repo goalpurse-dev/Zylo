@@ -1,0 +1,69 @@
+// Copy and fixed options for AI Fruit Story v2 (text follows the approved prototype).
+
+export const SINGLE_STEPS = ["Story", "Settings", "Scenes", "Clips", "Final video"];
+
+/** Step index (0–4) shown on the StepBar for a story status. */
+export function stepForStatus(status) {
+  if (status === "final_ready" || status === "building") return 4;
+  if (status === "animating" || status === "clips_ready") return 3;
+  return 2;
+}
+
+export const STORY_METHODS = [
+  { value: "idea", label: "Pick an idea" },
+  { value: "prompt", label: "Describe it" },
+  { value: "script", label: "My own script" },
+];
+
+export const MODES = [
+  { value: "single", label: "Single video", sublabel: "One complete story" },
+  { value: "series", label: "Series", sublabel: "Episodes with cliffhangers" },
+];
+
+export const ASPECTS = [
+  { value: "9:16", label: "Tall 9:16" },
+  { value: "16:9", label: "Wide 16:9" },
+];
+
+export const SERIES_QUESTIONS = [
+  { title: "What's the series about?", sub: "One or two sentences is enough." },
+  { title: "Who's in it?", sub: "Pick 2 to 5 characters. A scene shows at most 3 at once." },
+  { title: "How does episode 1 open?", sub: "Drop viewers into the middle of the drama." },
+  { title: "How should they talk?", sub: "This sets the style of every line." },
+  { title: "How many episodes?", sub: "Shorter series keep viewers coming back." },
+];
+
+export const CONCEPT_SUGGESTIONS = ["A CEO and his intern", "A mother-in-law who never leaves", "Prison kingpin beef", "Two best friends, one boyfriend"];
+export const OPENERS = ["Caught at a fancy dinner", "Walked in on at the office", "A reply-all email", "A credit card bill read out loud", "Something else"];
+export const TONES = ["Loud and dramatic", "Petty and sarcastic", "Funny and chaotic", "Cold and quiet"];
+
+export const UPGRADE_COPY = {
+  v3: { title: "V3 is a Pro feature", body: "V3 animates every scene in sharper 720p video. It's available starting on the Pro plan." },
+  v4: { title: "V4 is a Generative feature", body: "V4 animates every scene in full 1080p with the most natural motion and voices. It's available on the Generative plan." },
+};
+
+/** "45 sec", "1 min", "1 min 30 sec" */
+export function formatLength(sec) {
+  const s = Math.round(sec);
+  if (s < 60) return `${s} sec`;
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return r ? `${m} min ${r} sec` : `${m} min`;
+}
+
+/** "just now", "5m ago", "2h ago", "3d ago" */
+export function timeAgo(iso) {
+  const t = new Date(iso).getTime();
+  if (Number.isNaN(t)) return "";
+  const sec = Math.max(0, (Date.now() - t) / 1000);
+  if (sec < 60) return "just now";
+  if (sec < 3600) return `${Math.floor(sec / 60)}m ago`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)}h ago`;
+  return `${Math.floor(sec / 86400)}d ago`;
+}
+
+/** Plain-language error text for a caught error (mock/real both throw Error with a message). */
+export function errorText(error, fallback) {
+  const message = error?.message && !/^[A-Z_]+$/.test(error.message) ? error.message : null;
+  return message ?? fallback;
+}

@@ -94,3 +94,9 @@ export function estimateStory({ lengthSec, tierId, prices, sceneCount }) {
     total: pictures == null || video == null ? null : pictures + video,
   };
 }
+
+/** Expected clip length for one line (4–6 s by word count). ESTIMATE; the backend decides. */
+export function estimateLineSec(line) {
+  const words = String(line).trim().split(/\s+/).filter(Boolean).length;
+  return words > 7 ? 6 : words > 4 ? 5 : 4;
+}

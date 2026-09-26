@@ -486,9 +486,12 @@ export function createMockAdapter({ timeScale = 1, fail = "", paint = paintScene
       if (!(count >= LIMITS.minEpisodes && count <= LIMITS.maxEpisodes)) throw new MockError("INVALID_EPISODES", `Choose ${LIMITS.minEpisodes} to ${LIMITS.maxEpisodes} episodes.`);
       await sleep(DEFAULT_TIMINGS.seriesPlan);
       if (takeFailure("plan")) throw new MockError("PLAN_FAILED", "We couldn't write the series plan.");
-      const words = text.replace(/[^\w\s']/g, "").split(/\s+/).filter(Boolean).slice(0, 4).join(" ");
-      const title = words ? words.charAt(0).toUpperCase() + words.slice(1) : "New series";
-      const logline = [text, opener ? `Opens with ${String(opener).toLowerCase()}.` : "", tone ? `Tone: ${String(tone).toLowerCase()}.` : ""].filter(Boolean).join(" ");
+      const firstSentence = text.split(/(?<=[.!?])\s/)[0].replace(/[.!?]+$/, "");
+      const short = firstSentence.length <= 40 ? firstSentence : `${firstSentence.split(/\s+/).slice(0, 6).join(" ")}…`;
+      const title = short.charAt(0).toUpperCase() + short.slice(1);
+      const sentence = /[.!?]$/.test(text) ? text : `${text}.`;
+      const logline = opener ? `${sentence} Episode 1 opens: ${String(opener).charAt(0).toLowerCase()}${String(opener).slice(1)}.` : sentence;
+      void tone; // Phase 3: the tone shapes every line; the mock plan doesn't use it.
       return clone(makeSeries({ title, logline, castIds, episodeCount: count }));
     },
 
