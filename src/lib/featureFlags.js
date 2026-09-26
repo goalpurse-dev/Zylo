@@ -1,6 +1,6 @@
 // Feature flags: a build-time global switch plus a per-user flag stored
 // server-side in public.user_feature_flags (readable by its owner only, never
-// writable from the browser; see supabase/migrations/20261012100000).
+// writable from the browser; see supabase/migrations/20261012150000_user_feature_flags.sql).
 //
 // A flag is on for a user only when BOTH are true:
 //   1. the global switch for that feature is on in this build, and

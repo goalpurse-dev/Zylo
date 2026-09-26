@@ -52,7 +52,7 @@ Errors: validation problems throw `Error` with a **plain-language `message`** (s
 
 ## 5. Rollout
 
-1. Apply `20261012100000_user_feature_flags.sql` (reviewed separately) and set `fruit_v2` for internal testers.
+1. `20261012150000_user_feature_flags.sql` is applied (2026-09-27). Set `fruit_v2` for more internal testers with SQL.
 2. Build with `VITE_FRUIT_V2=true`.
 3. Install the real adapter; remove the "Preview mode" banner path.
 4. When v2 replaces v1: delete `AIFruitStoryV1` and the gate in `src/pages/workspace/AIFruitStory.jsx`.
