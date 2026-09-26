@@ -12,8 +12,6 @@ export const IMAGE_FALLBACK_TOOL_KEY = "image:nano.2";
 export const IMAGE_FALLBACK_RES      = "1k";
 export const IMAGE_FALLBACK_W        = 384;
 export const IMAGE_FALLBACK_H        = 688;
-export const IMAGE_CREDITS    = 2;                 // ~$0.013 cost x2 = ~2 credits
-export const IMAGE_FALLBACK_CREDITS = 4;           // Nano Banana 2 @ 1k — same ballpark
 export const VIDEO_DURATION   = 6;                 // baked into the prompt copy ("6-second vertical...")
 export const IMAGE_W          = 768;
 export const IMAGE_H          = 1376;
@@ -40,7 +38,6 @@ export const VIDEO_MODELS = {
     duration: VIDEO_DURATION,
     // Confirmed via real invoice: $0.1215312/5s @ 496x864 w/ audio → scaled
     // to this tool's 6s clip length: ~$0.14584/6s → 14cr.
-    credits: 14,
     withSound: true,
   },
   "footballer-v3": {
@@ -54,7 +51,6 @@ export const VIDEO_MODELS = {
     duration: VIDEO_DURATION,
     // Scaled linearly from the confirmed 5s rate ($0.21125/5s → $0.04225/s)
     // to this tool's 6s clip length: ~$0.2535/6s → 24cr.
-    credits: 24,
     withSound: true,
   },
   "footballer-v4": {
@@ -66,11 +62,31 @@ export const VIDEO_MODELS = {
     width: 720,
     height: 1280,
     duration: VIDEO_DURATION,
-    credits: 31,            // measured $0.3151728/6s → blended per-scene margin ~50.7%
     withSound: true,
   },
 };
 export const DEFAULT_VIDEO_MODEL = "footballer-v2";
+
+// Prices come from the server (public.tool_prices) — the exact numbers each
+// job is charged. PRICE_ITEMS mirrors the job shapes this tool creates; pass
+// it to useToolPriceQuotes and hand the resulting prices to calcCredits.
+export const PRICE_ITEMS = [
+  { id: "image", tool_key: IMAGE_TOOL_KEY, input: { width: IMAGE_W, height: IMAGE_H } },
+  ...Object.entries(VIDEO_MODELS).map(([id, m]) => ({
+    id: `video:${id}`,
+    tool_key: m.toolKey,
+    input: { durationSec: m.duration, withSound: m.withSound, width: m.width, height: m.height },
+  })),
+];
+
+/** Total credits for a run (1 image + 1 clip per scene), or null until prices are quoted. */
+export function calcCredits(sceneCount, videoModelId = DEFAULT_VIDEO_MODEL, prices = {}) {
+  const modelId = VIDEO_MODELS[videoModelId] ? videoModelId : DEFAULT_VIDEO_MODEL;
+  const image = prices.image;
+  const video = prices[`video:${modelId}`];
+  if (image == null || video == null) return null;
+  return sceneCount * (image + video);
+}
 
 // Plan gating — which video models each plan tier can use.
 export const VIDEO_MODEL_MIN_PLAN = {
@@ -119,10 +135,6 @@ const VIDEO_STYLE_AMBIENCE = {
   "training-ground":  "soft outdoor wind and a distant ball bounce",
 };
 
-export function calcCredits(sceneCount, videoModelId = DEFAULT_VIDEO_MODEL) {
-  const videoCredits = (VIDEO_MODELS[videoModelId] ?? VIDEO_MODELS[DEFAULT_VIDEO_MODEL]).credits;
-  return sceneCount * (IMAGE_CREDITS + videoCredits);
-}
 
 /* ── Prompt builders ──────────────────────────────────────────
    The image model cannot render legible text reliably, so the
@@ -255,7 +267,6 @@ export async function generateFootballerImage({ imagePrompt, provider = "openai"
       height: IMAGE_FALLBACK_H,
       refImages: [],
       expectedRefSlotCount: 0,
-      chargeCreditsOverride: IMAGE_FALLBACK_CREDITS,
       project_id: null,
     });
   }
@@ -268,7 +279,6 @@ export async function generateFootballerImage({ imagePrompt, provider = "openai"
     height: IMAGE_H,
     refImages: [],
     expectedRefSlotCount: 0,
-    chargeCreditsOverride: IMAGE_CREDITS,
     project_id: null,
     providerHint: {
       engine: "runware", mode: "t2i", edgeFn: "/functions/v1/runware-image", airTag: "openai:gpt-image@2",
@@ -290,7 +300,6 @@ export async function animateFootballerClip({ imageUrl, videoPrompt, videoModel 
     height:            model.height,
     durationSec:       model.duration,
     initImageUrls:     [imageUrl],
-    calculatedCredits: model.credits,
     withSound:         model.withSound,
   });
 }

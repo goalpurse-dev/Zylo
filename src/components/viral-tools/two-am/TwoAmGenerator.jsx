@@ -3,11 +3,14 @@ import { Lock, WandSparkles } from "lucide-react";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import NoCreditsModal from "../shared/NoCreditsModal";
 import { emitCreditSpend } from "../../../lib/creditPopEvents";
+import useToolPriceQuotes from "../../../hooks/useToolPriceQuotes";
+import QuotedCredits from "../../pricing/QuotedCredits";
 import {
   DEFAULT_IMAGE_QUALITY,
   IMAGE_QUALITY_MIN_PLAN,
   IMAGE_QUALITY_TIERS,
   PLAN_LABELS,
+  PRICE_ITEMS,
   getAllowedImageQualities,
   totalCreditsForQuality,
 } from "./api/twoAmApi";
@@ -27,7 +30,9 @@ export default function TwoAmGenerator({ phase, initialPrompt = "", planCode = "
   const creditBalance = useProfileCredits();
   const busy = phase === "planning" || phase === "generating";
   const allowedQualities = getAllowedImageQualities(planCode);
-  const totalCredits = totalCreditsForQuality(quality);
+  const quotes = useToolPriceQuotes(PRICE_ITEMS);
+  const totalCredits = totalCreditsForQuality(quality, quotes.prices);
+  const hasEnoughCredits = totalCredits == null || creditBalance >= totalCredits;
 
   const handleSelectQuality = (tierId) => {
     if (allowedQualities.includes(tierId)) { setQuality(tierId); return; }
@@ -78,7 +83,9 @@ export default function TwoAmGenerator({ phase, initialPrompt = "", planCode = "
   const submit = () => {
     if (!prompt.trim()) { setValidationError("Enter a world, character, series or idea."); return; }
     if (onRequestAuth?.()) return;
-    if (creditBalance < totalCredits) { setNoCreditsOpen(true); return; }
+    if (quotes.status === "error") { quotes.retry(); return; }
+    if (totalCredits == null) return;
+    if (!hasEnoughCredits) { setNoCreditsOpen(true); return; }
     setValidationError("");
     emitCreditSpend(totalCredits);
     onGenerate({ prompt: prompt.trim(), settings: { ...settings, quality } });
@@ -186,12 +193,12 @@ export default function TwoAmGenerator({ phase, initialPrompt = "", planCode = "
 
         <footer className="fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-0 right-0 z-[95] border-t border-lime-300/[0.08] bg-[#0C0F0D]/95 px-5 pb-2 pt-3 backdrop-blur-xl lg:static lg:z-10 lg:shrink-0 lg:bg-transparent lg:px-5 lg:py-4 lg:backdrop-blur-0">
           {validationError && <p className="mb-2 text-center text-[11px] font-semibold text-red-400">{validationError}</p>}
-          {creditBalance < totalCredits && !busy && <p className="mb-2 text-center text-[10px] font-medium text-orange-300/80">You have {creditBalance} credits · {totalCredits} needed</p>}
-          <button type="button" disabled={busy} onClick={submit} className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl border border-lime-400/35 bg-gradient-to-r from-lime-300/[0.20] to-lime-500/[0.16] py-3.5 text-[14px] font-black text-white shadow-[inset_0_1px_0_rgba(217,249,157,.06),0_10px_30px_rgba(0,0,0,.16)] transition hover:border-lime-400/50 hover:from-lime-300/[0.26] hover:to-lime-500/[0.20] hover:shadow-[inset_0_1px_0_rgba(217,249,157,.08),0_12px_34px_rgba(132,204,22,.12)] disabled:cursor-not-allowed disabled:opacity-45">
+          {!hasEnoughCredits && !busy && <p className="mb-2 text-center text-[10px] font-medium text-orange-300/80">You have {creditBalance} credits · {totalCredits} needed</p>}
+          <button type="button" disabled={busy || quotes.status === "loading"} onClick={submit} className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl border border-lime-400/35 bg-gradient-to-r from-lime-300/[0.20] to-lime-500/[0.16] py-3.5 text-[14px] font-black text-white shadow-[inset_0_1px_0_rgba(217,249,157,.06),0_10px_30px_rgba(0,0,0,.16)] transition hover:border-lime-400/50 hover:from-lime-300/[0.26] hover:to-lime-500/[0.20] hover:shadow-[inset_0_1px_0_rgba(217,249,157,.08),0_12px_34px_rgba(132,204,22,.12)] disabled:cursor-not-allowed disabled:opacity-45">
             <span className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-lime-200/10 blur-md transition-transform duration-700 group-hover:translate-x-[420%]" />
             {busy ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-lime-300" />Creating your night...</> : <>
-              Generate 6 Images
-              <span className="ml-1 flex items-center gap-1.5 rounded-full border border-lime-400/20 bg-gradient-to-r from-lime-300/[0.10] to-lime-500/[0.07] px-2.5 py-1 text-[12px] font-semibold text-lime-300 shadow-[inset_0_1px_0_rgba(217,249,157,.04)]">
+              {quotes.status === "error" ? "Couldn't load price — Retry" : quotes.status === "loading" ? "Loading price…" : "Generate 6 Images"}
+              {quotes.status !== "error" && <span className="ml-1 flex items-center gap-1.5 rounded-full border border-lime-400/20 bg-gradient-to-r from-lime-300/[0.10] to-lime-500/[0.07] px-2.5 py-1 text-[12px] font-semibold text-lime-300 shadow-[inset_0_1px_0_rgba(217,249,157,.04)]">
                 <span
                   aria-hidden="true"
                   className="h-3.5 w-3.5 shrink-0 bg-lime-300"
@@ -206,13 +213,13 @@ export default function TwoAmGenerator({ phase, initialPrompt = "", planCode = "
                     maskSize: "contain",
                   }}
                 />
-                {totalCredits}
-              </span>
+                <QuotedCredits status={quotes.status} value={totalCredits} onRetry={quotes.retry} />
+              </span>}
             </>}
           </button>
         </footer>
       </section>
-      <NoCreditsModal open={noCreditsOpen} onClose={() => setNoCreditsOpen(false)} creditsNeeded={totalCredits} creditBalance={creditBalance} />
+      <NoCreditsModal open={noCreditsOpen} onClose={() => setNoCreditsOpen(false)} creditsNeeded={totalCredits ?? 0} creditBalance={creditBalance} />
       <TwoAmUpgradeModal
         open={upgradeTarget !== null}
         onClose={() => setUpgradeTarget(null)}

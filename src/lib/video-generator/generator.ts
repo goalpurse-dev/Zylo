@@ -1,22 +1,24 @@
 import { MODELS } from "./modelsConfig";
 import { UI_MODEL_TO_TOOLKEY } from "./modelMapper";
-import { DURATIONS } from "./durations";
-import { RESOLUTIONS } from "./resolutions";
 import { VIDEO_SIZES } from "./sizes";
 import { createVideoJobSimple } from "../jobs";
 import { buildVideoPrompt } from "./promptBuilder";
-import { calculateVideoCredits, calculateVideoCreditsRaw } from "./videoPricing";
 
-export async function generateVideoFromUI(params: {
+export type VideoJobParams = {
   modelKey: keyof typeof MODELS;
-  prompt: string;
   size: string;
   /** Either a key like "6s" or a raw number string like "8" (from slider) */
   duration: string;
   resolution: string;
-  refImages?: string[];
   withSound?: boolean;
-}) {
+};
+
+/**
+ * The priced shape of the job generateVideoFromUI creates: tool_key plus the
+ * inputs compute_tool_price reads. The UI quotes this exact shape, so the
+ * price shown is the price the jobs trigger charges.
+ */
+export function videoJobShape(params: VideoJobParams) {
   const model = MODELS[params.modelKey];
   if (!model) throw new Error("Invalid model");
 
@@ -33,11 +35,6 @@ export async function generateVideoFromUI(params: {
     ? Number(params.duration.slice(0, -1))
     : Number(params.duration);
 
-  // Credits: slider models use raw seconds; button models use the key
-  const totalCredits = isSeedanceSlider
-    ? Math.ceil(calculateVideoCreditsRaw(toolKey, durationSec, params.withSound ?? false))
-    : calculateVideoCredits(toolKey, params.duration, params.resolution, params.withSound ?? false);
-
   const sizeConfig = VIDEO_SIZES[params.size] ?? VIDEO_SIZES["16:9"];
   const dimensions =
     params.resolution === "1080p"
@@ -46,14 +43,9 @@ export async function generateVideoFromUI(params: {
         ? sizeConfig.width540
         : sizeConfig.width720;
 
-  const enhancedPrompt = buildVideoPrompt(params.prompt);
-
   const payload: any = {
-    subject:           enhancedPrompt,
     toolKey,
     durationSec,
-    initImageUrls:     params.refImages ?? [],
-    calculatedCredits: totalCredits,
     withSound:         params.withSound ?? false,
   };
 
@@ -87,8 +79,18 @@ export async function generateVideoFromUI(params: {
     payload.height = dimensions.h;
   }
 
+  return payload as { toolKey: string; durationSec: number; withSound: boolean; width?: number; height?: number; resolution?: string };
+}
+
+export async function generateVideoFromUI(params: VideoJobParams & {
+  prompt: string;
+  refImages?: string[];
+}) {
+  const shape = videoJobShape(params);
   return createVideoJobSimple({
-    ...payload,
-    resolution: payload.resolution,
-  });
+    ...shape,
+    subject:       buildVideoPrompt(params.prompt),
+    initImageUrls: params.refImages ?? [],
+    resolution:    shape.resolution,
+  } as any);
 }

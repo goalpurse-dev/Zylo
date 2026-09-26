@@ -10,6 +10,8 @@ const LOGOS = {
 
 
 
+// Prices are not kept here: the server prices every job (public.tool_prices)
+// and the UI shows its quote (src/lib/image-generator/pricing.ts).
 export const MODELS = {
 
 
@@ -23,7 +25,6 @@ export const MODELS = {
 
   img: LOGOS.nano,
 
-  credits: 7,
 
   traits: [
     "4K Ultra Detail",
@@ -48,21 +49,18 @@ export const MODELS = {
       label: "1K",
       description: "Fast generation",
       scale: "small",
-      credits: 5,
     },
     {
       key: "2k",
       label: "2K",
       description: "Balanced quality",
       scale: "medium",
-      credits: 7,
     },
     {
       key: "4k",
       label: "4K",
       description: "Maximum detail",
       scale: "large",
-      credits: 10,
     },
   ],
 },
@@ -71,7 +69,6 @@ export const MODELS = {
     label: "Nano Banana Pro",
     description: "advanced image model — built for maximum detail, photorealism, and studio-grade output across any style..",
     img: LOGOS.nano,
-    credits:  25,
     traits: ["Ultra Detail", "Max Precision", "Studio Quality"],
     supportedSizes: ["1:1-4k", "16:9-4k", "9:16-4k"],
     maxReferenceImages: 8,
@@ -83,7 +80,6 @@ export const MODELS = {
     label: "OpenAI Image",
     description: "Best quality general-purpose image generation.",
     img: LOGOS.openai,
-    credits: 10, // TEMP – fixed price
     traits: ["Highest quality", "Best", "General purpose"],
     supportedSizes: ["1:1",],
     maxReferenceImages: 6,
@@ -101,7 +97,6 @@ export const MODELS = {
     label: "Seedream 4.0",
     description: "High-quality image generation with fast processing and low cost.",
     img: LOGOS.seedance,
-    credits: 3,
     traits: ["Quality", "Fast processing", "Low cost"],
     supportedSizes: ["1:1", "16:9", "9:16", ],
     maxReferenceImages: 14,
@@ -113,7 +108,6 @@ export const MODELS = {
     label: "Nano Banana",
     description: "Fast, lightweight image generation with low latency.",
     img: LOGOS.nano,
-    credits: 4,
     traits: ["Fast", "Low cost", "General use"],
     supportedSizes: ["1:1", "16:9", "9:16"],
     maxReferenceImages: 3,
@@ -124,7 +118,6 @@ export const MODELS = {
     description:
       "High-impact cinematic realism with dramatic lighting and bold contrast.",
     img: LOGOS.juggernaut,
-    credits: 2,
     traits: ["Cinematic lighting", "High contrast", "Photorealistic", "Cars & portraits"],
     supportedSizes: ["1:1", "16:9", "9:16", ],
     maxReferenceImages: 0,
@@ -135,7 +128,6 @@ export const MODELS = {
     description:
       "Best Flux, super-quality image generation with clean composition.",
     img: LOGOS.flux,
-    credits: 7,
     traits: ["Fast", "Super quality", "Clean composition", "Advanced thinking"],
     supportedSizes: ["1:1", "16:9", "9:16", ],
     maxReferenceImages: 8,
@@ -146,7 +138,6 @@ export const MODELS = {
     description:
       "Fastest, medium-quality image generation with clean composition.",
      img: LOGOS.flux,
-    credits: 1,
     traits: ["Fast", "Medium quality", "Clean composition", "Concept generation"],
     supportedSizes: ["1:1", "16:9", "9:16", ],
     maxReferenceImages: 4,
@@ -157,7 +148,6 @@ export const MODELS = {
     description:
       "Ultra-fast realistic image generation with clean composition.",
     img: LOGOS.hidream,
-    credits: 1,
     traits: ["Very fast", "Clean realism", "Low cost", "Concept generation"],
     supportedSizes: ["1:1",  "16:9", "9:16"],
     maxReferenceImages: 0,

@@ -15,7 +15,6 @@ import {
   selectVoiceTakeForGeneration,
   saveCaptionDraftToVoiceTake,
   updateCookingMaticGenerationProgress,
-  getCookingTotalCredits,
   getCookingVoiceLimit,
   CLIP_VIDEO_PROMPTS,
   VIBES,
@@ -663,8 +662,8 @@ export default function AICookingMatic() {
           recentGenerations={recentGenerations}
           onLoadRecent={handleLoadRecent}
           showRecentTab={showRecentTab}
-          totalCredits={getCookingTotalCredits(planCode)}
-          voiceLimit={getCookingVoiceLimit(planCode)}
+          signedIn={Boolean(user)}
+          planCode={planCode}
           externalError={generationStartError}
         />
       );

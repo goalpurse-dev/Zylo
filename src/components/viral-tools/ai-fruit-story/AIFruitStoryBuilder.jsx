@@ -5,9 +5,12 @@ import Credit from "/icons/whitecredit.png";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import NoCreditsModal from "../shared/NoCreditsModal";
 import { emitCreditSpend } from "../../../lib/creditPopEvents";
+import useToolPriceQuotes from "../../../hooks/useToolPriceQuotes";
+import QuotedCredits from "../../pricing/QuotedCredits";
 import {
   getFruitSceneCountForLength,
-  getFruitImageCreditsPerImage,
+  buildFruitPriceItems,
+  FRUIT_PORTRAIT_BUDGET,
   FRUIT_VIDEO_MODELS,
   DEFAULT_FRUIT_VIDEO_MODEL,
 } from "./api/fruitStoryApi";
@@ -119,18 +122,22 @@ export default function AIFruitStoryBuilder({
   const sceneCountForLength = STORY_LENGTH_SCENE_COUNTS[selectedLengthId] ?? 5;
   const selectedVideoModelId = form.animationModel || DEFAULT_FRUIT_VIDEO_MODEL;
   const selectedVideoModel = FRUIT_VIDEO_MODELS[selectedVideoModelId] ?? FRUIT_VIDEO_MODELS[DEFAULT_FRUIT_VIDEO_MODEL];
-  // AI-invented casts default to the 2-character rate; the planner may add a
-  // synthetic third character for cheating-style stories, in which case the
-  // actual per-image cost can run slightly higher than this estimate.
-  const creditsPerImage = getFruitImageCreditsPerImage(IMAGE_MODEL_ID, form.selectedCharacters);
-  const imageCredits = sceneCountForLength * creditsPerImage;
-  const videoCredits = sceneCountForLength * selectedVideoModel.credits;
-  // Each cast member also gets one solo reference portrait before scenes
-  // start (2cr each, flat rate — see generateCharacterPortrait). Cast size
-  // isn't known until the planner runs, so estimate worst case: 3 characters
-  // (cheating-style stories synthesize a 3rd) = 6cr.
-  const characterPortraitCredits = 6;
-  const totalCredits = imageCredits + videoCredits + characterPortraitCredits;
+  // Prices come from the server (public.tool_prices) — the same numbers the
+  // jobs are charged. One quote covers every tier at the chosen aspect, so
+  // switching the video model never waits on the network.
+  const priceItems = useMemo(
+    () => buildFruitPriceItems(form.sceneAspect || "9:16", IMAGE_MODEL_ID),
+    [form.sceneAspect],
+  );
+  const quotes = useToolPriceQuotes(priceItems);
+  const imagePrice = quotes.price("image");
+  const clipPrice = quotes.price(`clip:${selectedVideoModel.id}`);
+  const pricesReady = quotes.status === "ready" && imagePrice != null && clipPrice != null;
+  const imageCredits = pricesReady ? sceneCountForLength * imagePrice : null;
+  const videoCredits = pricesReady ? sceneCountForLength * clipPrice : null;
+  // Each cast member also gets one solo reference portrait (see FRUIT_PORTRAIT_BUDGET).
+  const characterPortraitCredits = pricesReady ? FRUIT_PORTRAIT_BUDGET * imagePrice : null;
+  const totalCredits = pricesReady ? imageCredits + videoCredits + characterPortraitCredits : null;
 
   const showStoryIdeaError = () => {
     setStepError("Write or pick a story idea before continuing.");
@@ -169,6 +176,8 @@ export default function AIFruitStoryBuilder({
   const handleGenerateClick = () => {
     if (isBusy) return;
     if (phase === "done") { onReset?.(); return; }
+    if (quotes.status === "error") { quotes.retry(); return; }
+    if (!pricesReady) return;
     if (!hasStoryIdea) {
       setStepIndex(0);
       setStepError("Write or pick a story idea before generating your story.");
@@ -184,7 +193,6 @@ export default function AIFruitStoryBuilder({
       animationModel:  selectedVideoModelId,
       sceneAspect:     form.sceneAspect || "9:16",
       style:           DEFAULT_STYLE_ID,
-      creditsPerImage,
     };
     setForm((prev) => ({ ...prev, ...overrides, sceneCredits: imageCredits }));
     emitCreditSpend(totalCredits);
@@ -315,6 +323,7 @@ export default function AIFruitStoryBuilder({
             imageCredits={imageCredits}
             videoCredits={videoCredits}
             totalCredits={totalCredits}
+            quotes={quotes}
           />
         )}
       </div>
@@ -356,7 +365,7 @@ export default function AIFruitStoryBuilder({
               <button
                 type="button"
                 onClick={handleGenerateClick}
-                disabled={isBusy}
+                disabled={isBusy || (phase !== "done" && quotes.status === "loading")}
                 className={`relative flex h-12 flex-1 items-center justify-center gap-2.5 overflow-hidden rounded-2xl text-sm font-black transition-all active:scale-[0.99] ${
                   phase === "done"
                     ? "bg-gradient-to-b from-green-500/80 to-green-600/80 text-white"
@@ -372,12 +381,14 @@ export default function AIFruitStoryBuilder({
                     <span className="h-2 w-2 animate-pulse rounded-full bg-white/60" />
                     <span>Generating…{totalProgress > 0 ? ` ${totalProgress}%` : ""}</span>
                   </>
+                ) : quotes.status === "error" ? (
+                  <span>Couldn&apos;t load price — Retry</span>
                 ) : (
                   <>
-                    <span>{allScenesSucceeded ? "Regenerate Story" : "Generate Story"}</span>
+                    <span>{quotes.status === "loading" ? "Loading price…" : allScenesSucceeded ? "Regenerate Story" : "Generate Story"}</span>
                     <span className="flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-[13px] font-bold text-white">
                       <img src={Credit} alt="" className="h-3.5 w-3.5 object-contain" />
-                      {totalCredits}
+                      <QuotedCredits status={quotes.status} value={totalCredits} onRetry={quotes.retry} />
                     </span>
                   </>
                 )}

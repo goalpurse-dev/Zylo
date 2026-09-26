@@ -1,5 +1,6 @@
 import React from "react";
 import Credit from "/icons/whitecredit.png";
+import QuotedCredits from "../pricing/QuotedCredits";
 
 const READY_BORDER = {
   borderTop:    "1px solid rgba(255,255,255,0.28)",
@@ -9,13 +10,18 @@ const READY_BORDER = {
 };
 
 const GenerateButton = React.memo(
-  ({ onClick, disabled, isGenerating, estimatedCredits }) => {
-    const isReady = !disabled && !isGenerating;
+  // priceStatus (optional): "loading" | "ready" | "error" for a server-quoted
+  // estimatedCredits. Loading shows a skeleton and holds the button; error
+  // turns the button into "Couldn't load price — Retry" (onRetryPrice).
+  ({ onClick, disabled, isGenerating, estimatedCredits, priceStatus, onRetryPrice }) => {
+    const priceError = priceStatus === "error";
+    const priceLoading = priceStatus === "loading";
+    const isReady = priceError ? !isGenerating : !disabled && !isGenerating && !priceLoading;
 
     return (
       <button
         data-ftg="generate"
-        onClick={onClick}
+        onClick={priceError ? onRetryPrice : onClick}
         disabled={!isReady}
         className={`
           relative w-full py-4 rounded-xl
@@ -47,9 +53,11 @@ const GenerateButton = React.memo(
         <span className={`relative z-10 flex items-center gap-3 font-semibold text-[15px] ${isReady ? "text-white" : "text-white/35"}`}>
           {isGenerating ? (
             <span>Generating...</span>
+          ) : priceError ? (
+            <span>Couldn&apos;t load price — Retry</span>
           ) : (
             <>
-              <span>Generate</span>
+              <span>{priceLoading ? "Loading price…" : "Generate"}</span>
 
               <span className="flex items-center gap-1 text-white/90">
                 <img
@@ -57,7 +65,7 @@ const GenerateButton = React.memo(
                   alt="credits"
                   className="h-5 w-auto object-contain scale-125 brightness-125 contrast-125"
                 />
-                <span>{estimatedCredits}</span>
+                {priceStatus ? <QuotedCredits status={priceStatus} value={estimatedCredits} /> : <span>{estimatedCredits}</span>}
               </span>
             </>
           )}

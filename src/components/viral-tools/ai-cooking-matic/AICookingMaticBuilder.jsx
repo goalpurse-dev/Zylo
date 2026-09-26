@@ -3,7 +3,10 @@ import { Search, X, Sparkles } from "lucide-react";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import NoCreditsModal from "../shared/NoCreditsModal";
 import { emitCreditSpend } from "../../../lib/creditPopEvents";
-import { VIBES, DISH_CATEGORIES, ALL_DISHES } from "./api/cookingMaticApi";
+import { VIBES, DISH_CATEGORIES, ALL_DISHES, PRICE_ITEMS, calcVisualCredits, getCookingVoiceLimit } from "./api/cookingMaticApi";
+import useToolPriceQuotes from "../../../hooks/useToolPriceQuotes";
+import useCookingServiceQuote from "./hooks/useCookingServiceQuote";
+import QuotedCredits from "../../pricing/QuotedCredits";
 
 function randomPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
@@ -13,8 +16,8 @@ export default function AICookingMaticBuilder({
   recentGenerations = [],
   onLoadRecent,
   showRecentTab = true,
-  totalCredits = 111,
-  voiceLimit = 2,
+  signedIn = false,
+  planCode = null,
   externalError = "",
 }) {
   const creditBalance = useProfileCredits();
@@ -27,9 +30,27 @@ export default function AICookingMaticBuilder({
   const [validationError, setValidationError] = useState("");
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
-  const TOTAL_CREDITS = totalCredits;
+  // Visual jobs (images + clips) and the service fee are both quoted by the
+  // server, so the number shown is the number charged. Guests see no number
+  // (they can't be charged; Generate opens the paywall).
+  const visualQuotes = useToolPriceQuotes(PRICE_ITEMS);
+  const serviceQuote = useCookingServiceQuote(signedIn, planCode);
+  const visualCredits = calcVisualCredits(visualQuotes.prices);
+  const TOTAL_CREDITS = visualCredits != null && serviceQuote.value
+    ? visualCredits + serviceQuote.value.serviceCredits
+    : null;
+  const voiceLimit = serviceQuote.value?.voiceLimit ?? getCookingVoiceLimit(planCode);
+  const priceStatus = serviceQuote.status === "guest"
+    ? "guest"
+    : visualQuotes.status === "error" || serviceQuote.status === "error"
+      ? "error"
+      : TOTAL_CREDITS == null ? "loading" : "ready";
+  const retryPrice = () => {
+    if (visualQuotes.status === "error") visualQuotes.retry();
+    if (serviceQuote.status === "error") serviceQuote.retry();
+  };
 
-  const hasEnoughCredits = creditBalance >= totalCredits;
+  const hasEnoughCredits = TOTAL_CREDITS == null || creditBalance >= TOTAL_CREDITS;
   const isGenerating = phase === "images" || phase === "videos" || phase === "retrying";
   const activeSetupTab = showRecentTab ? setupTab : "generate";
 
@@ -44,15 +65,17 @@ export default function AICookingMaticBuilder({
     : DISH_CATEGORIES.map(c => ({ ...c, dishes: c.dishes.filter(d => d.toLowerCase().includes(dishInput.toLowerCase())) })).filter(c => c.dishes.length > 0);
 
   const handleGenerate = () => {
+    if (priceStatus === "error") { retryPrice(); return; }
+    if (priceStatus === "loading") return;
     if (!hasEnoughCredits) { setNoCreditsOpen(true); return; }
     setValidationError("");
     if (aiChooses) {
-      emitCreditSpend(TOTAL_CREDITS);
+      if (TOTAL_CREDITS != null) emitCreditSpend(TOTAL_CREDITS);
       onGenerate({ dishName: randomPick(ALL_DISHES), vibeId: selectedVibe });
     } else {
       const trimmed = dishInput.trim();
       if (!trimmed) { setValidationError("Enter a dish name."); return; }
-      emitCreditSpend(TOTAL_CREDITS);
+      if (TOTAL_CREDITS != null) emitCreditSpend(TOTAL_CREDITS);
       onGenerate({ dishName: trimmed, vibeId: selectedVibe });
     }
   };
@@ -250,23 +273,25 @@ export default function AICookingMaticBuilder({
             <a href="/workspace/pricing" className="text-red-200 text-[11px] font-bold underline shrink-0">Get Credits →</a>
           </div>
         )}
-        <button type="button" onClick={handleGenerate} disabled={isGenerating}
+        <button type="button" onClick={handleGenerate} disabled={isGenerating || priceStatus === "loading"}
           className={`w-full py-3 rounded-xl font-black text-[15px] flex items-center justify-center gap-2.5 transition-all ${
-            isGenerating
+            isGenerating || priceStatus === "loading"
               ? "bg-orange-600/20 text-white/35 cursor-not-allowed"
               : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:opacity-90 shadow-lg shadow-orange-900/30 active:scale-[0.98]"
           }`}
         >
           {isGenerating ? (
             <><span className="w-4 h-4 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />{phase === "videos" ? "Animating clips…" : "Generating scenes…"}</>
+          ) : priceStatus === "error" ? (
+            <>Couldn&apos;t load price — Retry</>
           ) : (
-            <><Sparkles className="w-4 h-4" />Generate<span className="flex items-center gap-1 px-2 py-0.5 bg-white/20 rounded-full text-[12px] font-bold"><img src="/icons/whitecredit.png" alt="" className="w-3 h-3 object-contain" />{TOTAL_CREDITS}</span></>
+            <><Sparkles className="w-4 h-4" />{priceStatus === "loading" ? "Loading price…" : "Generate"}{priceStatus !== "guest" && <span className="flex items-center gap-1 px-2 py-0.5 bg-white/20 rounded-full text-[12px] font-bold"><img src="/icons/whitecredit.png" alt="" className="w-3 h-3 object-contain" /><QuotedCredits status={priceStatus} value={TOTAL_CREDITS} onRetry={retryPrice} /></span>}</>
           )}
         </button>
         <p className="mt-2 text-center text-[10px] text-white/25">Includes scenes, clips, AI script tools and up to {voiceLimit} generated voice takes.</p>
       </div>} {/* close generate-tab footer */}
     </div>
-    <NoCreditsModal open={noCreditsOpen} onClose={() => setNoCreditsOpen(false)} creditsNeeded={TOTAL_CREDITS} creditBalance={creditBalance} />
+    <NoCreditsModal open={noCreditsOpen} onClose={() => setNoCreditsOpen(false)} creditsNeeded={TOTAL_CREDITS ?? 0} creditBalance={creditBalance} />
     </>
   );
 }

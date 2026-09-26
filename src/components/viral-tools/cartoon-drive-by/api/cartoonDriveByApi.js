@@ -14,11 +14,9 @@ export const QUALITY_TIERS = {
     imageResolution: "2k",
     imageWidth: 768,
     imageHeight: 1376,
-    imageCredits: 7,
     videoToolKey: "video:seedance15pro",
     videoWidth: 720,
     videoHeight: 1280,
-    videoCredits: 25,
     withSound: false,
   },
   "cartoon-drive-v3": {
@@ -30,11 +28,9 @@ export const QUALITY_TIERS = {
     imageResolution: "4k",
     imageWidth: 1536,
     imageHeight: 2752,
-    imageCredits: 10,
     videoToolKey: "video:cartoondriveseedance720",
     videoWidth: 720,
     videoHeight: 1280,
-    videoCredits: 160,
     withSound: false,
   },
   "cartoon-drive-v4": {
@@ -46,11 +42,9 @@ export const QUALITY_TIERS = {
     imageResolution: "4k",
     imageWidth: 1536,
     imageHeight: 2752,
-    imageCredits: 10,
     videoToolKey: "video:cartoondriveseedance1080",
     videoWidth: 1080,
     videoHeight: 1920,
-    videoCredits: 400,
     withSound: false,
   },
 };
@@ -68,9 +62,24 @@ export function getAllowedQualityTiers(planCode) {
   return sharedGetAllowedVideoModels(planCode, QUALITY_TIER_MIN_PLAN);
 }
 
-export function calcCredits(qualityId = DEFAULT_QUALITY_TIER) {
+// Prices come from the server (public.tool_prices) — see useToolPriceQuotes.
+// One image + one clip per tier, keyed "image:<tierId>" / "video:<tierId>".
+export const PRICE_ITEMS = Object.values(QUALITY_TIERS).flatMap((tier) => [
+  { id: `image:${tier.id}`, tool_key: tier.imageToolKey, input: { width: tier.imageWidth, height: tier.imageHeight } },
+  {
+    id: `video:${tier.id}`,
+    tool_key: tier.videoToolKey,
+    input: { durationSec: VIDEO_DURATION, withSound: tier.withSound, width: tier.videoWidth, height: tier.videoHeight },
+  },
+]);
+
+/** Image + clip for the tier, from quoted prices; null until loaded. */
+export function calcCredits(qualityId = DEFAULT_QUALITY_TIER, prices = {}) {
   const tier = QUALITY_TIERS[qualityId] ?? QUALITY_TIERS[DEFAULT_QUALITY_TIER];
-  return tier.imageCredits + tier.videoCredits;
+  const image = prices[`image:${tier.id}`];
+  const video = prices[`video:${tier.id}`];
+  if (image == null || video == null) return null;
+  return image + video;
 }
 
 const MOOD_COPY = {
@@ -162,7 +171,6 @@ export async function generateDriveByImage({ world, vehicle, mood, qualityId = D
     height: tier.imageHeight,
     refImages: [],
     expectedRefSlotCount: 0,
-    chargeCreditsOverride: tier.imageCredits,
     project_id: null,
   });
 }
@@ -177,7 +185,6 @@ export async function animateDriveBy({ imageUrl, world, vehicle, mood, qualityId
     height: tier.videoHeight,
     durationSec: VIDEO_DURATION,
     initImageUrls: [imageUrl],
-    calculatedCredits: tier.videoCredits,
     withSound: tier.withSound,
   });
 }

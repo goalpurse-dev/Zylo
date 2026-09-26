@@ -20,6 +20,8 @@ import ErrorToast from "../../components/ImageGenerator/ErrorToast";
 import { watchJob } from "../../lib/jobs";
 import { NANO_RESOLUTIONS } from "../../lib/image-generator/nanoResolutions";
 import PromptInput from "./PromptInput";
+import useToolPriceQuotes from "../../hooks/useToolPriceQuotes";
+import { IMAGE_PRICE_GRID, imagePriceItem } from "../../lib/image-generator/pricing";
 import GenerateButton from "./GenerateButton";
 import ModelSelector from "./ModelSelector";
 import StyleSelector from "./StyleSelector";
@@ -433,9 +435,15 @@ const isSelectorOpen = openModel || openStyle || openSize;
 
 
 const selectedModel = MODELS[selectedModelKey];
-const estimatedCredits = selectedModel?.supportsResolutions
-  ? selectedModel.resolutions.find(r => r.key === selectedResolution)?.credits ?? selectedModel.credits
-  : selectedModel?.credits ?? 0;
+// Server price quote for exactly the job this selection creates; the whole
+// option grid is quoted up front so switching model/size/resolution is instant.
+const priceItems = useMemo(
+  () => [...IMAGE_PRICE_GRID, imagePriceItem(selectedModelKey, selectedSize, selectedResolution, "current")],
+  [selectedModelKey, selectedSize, selectedResolution],
+);
+const priceQuotes = useToolPriceQuotes(priceItems);
+const estimatedCredits = priceQuotes.price("current");
+const priceStatus = priceQuotes.errors.current ? "error" : estimatedCredits != null ? "ready" : "loading";
   const textareaRef = useRef(null);
 
 const isDesktop = window.innerWidth >= 768;
@@ -536,6 +544,7 @@ const handleUpload = async (e) => {
 
 const handleGenerate = async () => {
   if (!prompt.trim()) return;
+  if (priceStatus !== "ready") { if (priceStatus === "error") priceQuotes.retry(); return; }
 
   // 🔥 FREE LIMIT GUARD
 // 🔥 FREE LIMIT GUARD (only for free plan)
@@ -567,7 +576,7 @@ if (profErr) {
   return;
 }
 
-const requiredCredits = Number(selectedModel?.credits ?? 0);
+const requiredCredits = estimatedCredits;
 const balance = Number(profile?.credit_balance ?? 0);
 
 // 🔥 Skip credit check for free plan
@@ -1418,6 +1427,8 @@ md:group-hover:brightness-110
           disabled={!prompt.trim()}
           isGenerating={isGenerating}
           estimatedCredits={estimatedCredits}
+          priceStatus={priceStatus}
+          onRetryPrice={priceQuotes.retry}
         />
       </div>
     </div>

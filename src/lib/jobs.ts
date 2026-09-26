@@ -7,6 +7,18 @@ import { getPlanPriority } from "./queuePriority";
 import { CREATION_TYPES } from "./creations";
 import { emitCreditSpend } from "./creditPopEvents";
 import { cleanupUploadedReferences, normalizeReferencePayload } from "./referenceImages";
+import { quoteToolPrice } from "./pricing/toolPriceQuotes";
+
+// The jobs pricing trigger charges public.tool_prices, so balance pre-checks
+// use the same server quote. The caller's figure is only a fallback if the
+// quote itself can't be fetched (the server still decides the real charge).
+async function serverPriceOr(toolKey: string, input: Record<string, unknown>, fallback: number): Promise<number> {
+  try {
+    return await quoteToolPrice(toolKey, input);
+  } catch {
+    return fallback;
+  }
+}
 
 /* ======================= Types ======================= */
 
@@ -484,6 +496,16 @@ if (typeof params.chargeCreditsOverride === "number" && params.chargeCreditsOver
   priceUSD = credits * 0.02;
 }
 
+{
+  const [sizeW, sizeH] = String(params.size ?? "").split("x").map((n) => parseInt(n, 10));
+  credits = await serverPriceOr(
+    params.toolKey,
+    { width: params.width ?? (Number.isFinite(sizeW) ? sizeW : undefined), height: params.height ?? (Number.isFinite(sizeH) ? sizeH : undefined) },
+    credits,
+  );
+  priceUSD = credits * 0.02;
+}
+
   // ✅ must be signed in
   const { data: userData, error: uerr } = await supabase.auth.getUser();
   if (uerr || !userData?.user) throw new Error("Must be signed in");
@@ -661,7 +683,8 @@ export async function createVideoJobSimple(params: {
   resolution?: string;
   durationSec: number;
   initImageUrls?: string[];
-  calculatedCredits: number;
+  /** Optional fallback only — the server price (tool_prices) is authoritative. */
+  calculatedCredits?: number;
   project_id?: string | null;
   withSound?: boolean;
   skipCreditCheck?: boolean;
@@ -669,7 +692,19 @@ export async function createVideoJobSimple(params: {
   const link = getProviderLink(params.toolKey);
 if (!link) throw new Error(`Video provider not configured`);
 
-const credits = params.skipCreditCheck ? 0 : params.calculatedCredits;
+const credits = params.skipCreditCheck
+  ? 0
+  : await serverPriceOr(
+      params.toolKey,
+      {
+        durationSec: params.durationSec,
+        withSound: params.withSound ?? false,
+        width: params.width,
+        height: params.height,
+        resolution: params.resolution,
+      },
+      params.calculatedCredits ?? 0,
+    );
 
 if (!params.skipCreditCheck && (!credits || credits <= 0)) {
   throw new Error("INVALID_VIDEO_CREDIT_CALCULATION");

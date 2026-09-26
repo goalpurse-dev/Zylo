@@ -16,8 +16,11 @@ import {
   PLAN_LABELS,
   getAllowedVideoModels,
   calcCredits,
+  PRICE_ITEMS,
 } from "./api/footballerNationalitySwapApi";
 import NoCreditsModal from "../shared/NoCreditsModal";
+import useToolPriceQuotes from "../../../hooks/useToolPriceQuotes";
+import QuotedCredits from "../../pricing/QuotedCredits";
 import FootballerUpgradeModal from "./FootballerUpgradeModal";
 
 const MAX_CHARS = 24;
@@ -326,8 +329,9 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
   const allowedModels = getAllowedVideoModels(planCode);
 
   const visibleScenes = scenes.slice(0, sceneCount);
-  const totalCredits  = calcCredits(sceneCount, videoModel);
-  const hasEnough     = creditBalance >= totalCredits;
+  const quotes = useToolPriceQuotes(PRICE_ITEMS);
+  const totalCredits  = calcCredits(sceneCount, videoModel, quotes.prices);
+  const hasEnough     = totalCredits == null || creditBalance >= totalCredits;
   const isGenerating  = phase === "images" || phase === "videos";
   const isDone        = phase === "done";
   const isError       = phase === "error";
@@ -357,6 +361,8 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
   };
 
   const handleGenerate = () => {
+    if (quotes.status === "error") { quotes.retry(); return; }
+    if (totalCredits == null) return;
     if (!hasEnough) { setNoCreditsOpen(true); return; }
     const invalid = visibleScenes.find((s) => !s.footballer.trim() || !s.nationality.trim());
     if (invalid) { setValidationError("Fill in a footballer and nationality for every scene."); return; }
@@ -501,7 +507,7 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
         )}
         <button
           onClick={isDone ? onReset : handleGenerate}
-          disabled={isGenerating}
+          disabled={isGenerating || (!isDone && quotes.status === "loading")}
           className={`w-full py-2.5 lg:py-3.5 rounded-xl font-bold text-[15px] flex items-center justify-center gap-2.5 transition-all duration-300 ${
             isDone
               ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25"
@@ -512,15 +518,19 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
         >
           {isGenerating ? (
             <><span className="w-4 h-4 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />Generating…</>
+          ) : quotes.status === "error" ? (
+            "Couldn't load price — Retry"
+          ) : quotes.status === "loading" ? (
+            "Loading price…"
           ) : isDone ? "✓  All Done — Generate New" : (
             <>Generate Nationality Swap <ChevronRight className="w-4 h-4" /></>
           )}
-          {!isDone && (
+          {!isDone && quotes.status !== "error" && (
             <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[14px] font-bold ${
               isGenerating ? "bg-white/5 text-white/20" : "bg-black/15 text-black"
             }`}>
               <img src={isGenerating ? "/icons/whitecredit.png" : "/icons/credit.png"} alt="" className="w-4 h-4 object-contain" />
-              {totalCredits}
+              <QuotedCredits status={quotes.status} value={totalCredits} onRetry={quotes.retry} />
             </span>
           )}
         </button>

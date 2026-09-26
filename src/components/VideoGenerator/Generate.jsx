@@ -21,7 +21,9 @@ import { supabase } from "../../lib/supabaseClient";
 import {watchJob } from "../../lib/jobs";
 import { KEY_LINKS } from "../../lib/providers";
 import { generateVideoFromUI } from "../../lib/video-generator/generator";
-import { calculateVideoCredits, calculateVideoCreditsRaw } from "../../lib/video-generator/videoPricing";
+import { videoPriceGrid, videoPriceItem } from "../../lib/video-generator/pricing";
+import useToolPriceQuotes from "../../hooks/useToolPriceQuotes";
+import QuotedCredits from "../../components/pricing/QuotedCredits";
 import VideoTemplate from "../../components/video-templates/VideoTemplate";
 import { createPortal } from "react-dom";
 import { useMemo } from "react";
@@ -103,12 +105,21 @@ const selectedModel = MODELS[selectedModelKey] ?? MODELS[V3_KEY];
     if (selectedModelKey === V3_KEY) setSelectedDuration("6s");
   }, [selectedModelKey]);
 
-const totalCredits = useMemo(() => {
-  if (usesDurationSlider) {
-    return Math.ceil(calculateVideoCreditsRaw(selectedModelKey, sliderDuration, modelHasSound ? withSound : false));
-  }
-  return calculateVideoCredits(selectedModelKey, selectedDuration, selectedResolution, modelHasSound ? withSound : false);
-}, [selectedModelKey, selectedDuration, sliderDuration, selectedResolution, withSound, modelHasSound, usesDurationSlider]);
+// Server price quote for exactly the job this selection creates; both active
+// models' option grids are quoted up front so changing options is instant.
+const priceItems = useMemo(() => [
+  ...videoPriceGrid([V2_KEY, V3_KEY]),
+  videoPriceItem({
+    modelKey:   selectedModelKey,
+    size:       selectedSize,
+    duration:   usesDurationSlider ? String(sliderDuration) : selectedDuration,
+    resolution: selectedResolution,
+    withSound:  modelHasSound ? withSound : false,
+  }, "current"),
+], [selectedModelKey, selectedSize, selectedDuration, sliderDuration, selectedResolution, withSound, modelHasSound, usesDurationSlider]);
+const priceQuotes = useToolPriceQuotes(priceItems);
+const totalCredits = priceQuotes.price("current");
+const priceStatus = priceQuotes.errors.current ? "error" : totalCredits != null ? "ready" : "loading";
 
 const maxRefImages = selectedModel.maxReferenceImages;
 const canAddImages = maxRefImages > 0;
@@ -285,7 +296,12 @@ useEffect(() => {
       return;
     }
 
-    // 🔥 CREDIT CHECK
+    // 🔥 CREDIT CHECK (against the server quote for this exact job)
+    if (totalCredits == null) {
+      if (priceStatus === "error") priceQuotes.retry();
+      setIsGenerating(false);
+      return;
+    }
     if (balance < totalCredits) {
       setToast({
         message: `You need ${totalCredits} credits to generate this video`,
@@ -878,6 +894,8 @@ className={`
       disabled={!prompt.trim() || isGenerating || missingRequiredImage}
       isGenerating={isGenerating}
       estimatedCredits={totalCredits}
+      priceStatus={priceStatus}
+      onRetryPrice={priceQuotes.retry}
     />
   </div>
 </div>
@@ -929,7 +947,7 @@ className={`
       transition-all duration-300    "
   >
     <span className="text-base cursor-default">◆</span>
-    <span className="cursor-default">Estimated cost: {totalCredits} credits</span>
+    <span className="cursor-default">Estimated cost: <QuotedCredits status={priceStatus} value={totalCredits} onRetry={priceQuotes.retry} /> credits</span>
   </div>
 </div>
 </>

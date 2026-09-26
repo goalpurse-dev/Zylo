@@ -3,6 +3,8 @@ import { ChevronRight, Clock3, Lock, Sparkles, Volume2, VolumeX } from "lucide-r
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import { emitCreditSpend } from "../../../lib/creditPopEvents";
 import NoCreditsModal from "../shared/NoCreditsModal";
+import useToolPriceQuotes from "../../../hooks/useToolPriceQuotes";
+import QuotedCredits from "../../pricing/QuotedCredits";
 import CartoonDriveByUpgradeModal from "./CartoonDriveByUpgradeModal";
 import {
   DEFAULT_QUALITY_TIER,
@@ -10,6 +12,7 @@ import {
   QUALITY_TIERS,
   QUALITY_TIER_MIN_PLAN,
   calcCredits,
+  PRICE_ITEMS,
   getAllowedQualityTiers,
 } from "./api/cartoonDriveByApi";
 
@@ -50,7 +53,8 @@ export default function CartoonDriveByBuilder({
   const creditBalance = useProfileCredits();
   const allowedTiers = getAllowedQualityTiers(planCode);
   const selectedTier = QUALITY_TIERS[qualityId] ?? QUALITY_TIERS[DEFAULT_QUALITY_TIER];
-  const totalCredits = useMemo(() => calcCredits(qualityId), [qualityId]);
+  const quotes = useToolPriceQuotes(PRICE_ITEMS);
+  const totalCredits = useMemo(() => calcCredits(qualityId, quotes.prices), [qualityId, quotes.prices]);
   const isGenerating = phase === "image" || phase === "video";
   const isDone = phase === "done" || phase === "error";
 
@@ -84,6 +88,8 @@ export default function CartoonDriveByBuilder({
       else setUpgradeTierId(qualityId);
       return;
     }
+    if (quotes.status === "error") { quotes.retry(); return; }
+    if (totalCredits == null) return;
     if (creditBalance < totalCredits) {
       setNoCreditsOpen(true);
       return;
@@ -216,12 +222,12 @@ export default function CartoonDriveByBuilder({
         <button
           type="button"
           onClick={historyMode ? onDone : isDone ? onReset : handleGenerate}
-          disabled={isGenerating}
+          disabled={isGenerating || (!historyMode && !isDone && quotes.status === "loading")}
           className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-[14px] font-black transition lg:py-2.5 ${isGenerating ? "cursor-not-allowed bg-lime-300/15 text-lime-300/40" : isDone ? "border border-white/10 bg-white/[0.05] text-white/70 hover:bg-white/[0.08]" : "bg-lime-300 text-[#11150D] hover:bg-lime-200"}`}
         >
           {historyMode ? "Done" : isGenerating ? (phase === "image" ? "Building the world..." : "Animating the drive-by...") : isDone ? "Create another" : <>
-            Generate
-            <span className="flex items-center gap-1 text-[13px] font-semibold">
+            {quotes.status === "error" ? "Couldn't load price — Retry" : quotes.status === "loading" ? "Loading price…" : "Generate"}
+            {quotes.status !== "error" && <span className="flex items-center gap-1 text-[13px] font-semibold">
               <span
                 aria-hidden="true"
                 className="h-4 w-4 shrink-0 bg-current"
@@ -236,14 +242,14 @@ export default function CartoonDriveByBuilder({
                   maskSize: "contain",
                 }}
               />
-              {totalCredits}
-            </span>
+              <QuotedCredits status={quotes.status} value={totalCredits} onRetry={quotes.retry} />
+            </span>}
             <ChevronRight className="h-4 w-4" />
           </>}
         </button>
       </div>
 
-      <NoCreditsModal open={noCreditsOpen} onClose={() => setNoCreditsOpen(false)} creditsNeeded={totalCredits} creditBalance={creditBalance} />
+      <NoCreditsModal open={noCreditsOpen} onClose={() => setNoCreditsOpen(false)} creditsNeeded={totalCredits ?? 0} creditBalance={creditBalance} />
       <CartoonDriveByUpgradeModal
         open={!!upgradeTierId}
         onClose={() => setUpgradeTierId(null)}

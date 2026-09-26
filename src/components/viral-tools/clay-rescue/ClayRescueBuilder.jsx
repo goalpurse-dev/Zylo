@@ -10,8 +10,11 @@ import {
   PLAN_LABELS,
   getAllowedVideoModels,
   calcCredits,
+  PRICE_ITEMS,
 } from "./api/clayRescueApi";
 import NoCreditsModal from "../shared/NoCreditsModal";
+import useToolPriceQuotes from "../../../hooks/useToolPriceQuotes";
+import QuotedCredits from "../../pricing/QuotedCredits";
 import ClayRescueUpgradeModal from "./ClayRescueUpgradeModal";
 
 const PROBLEM_SUGGESTIONS = ["Flood", "Homeless", "Fire", "Storm", "Volcano", "Trapped", "Blizzard", "Quicksand", "Earthquake", "Landslide"];
@@ -154,9 +157,10 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase, planCode
 
   const allowedModels = getAllowedVideoModels(planCode);
 
-  const totalCredits = calcCredits(scenes.length, videoModel);
+  const quotes = useToolPriceQuotes(PRICE_ITEMS);
+  const totalCredits = calcCredits(scenes.length, videoModel, quotes.prices);
   const selectedVideoModel = VIDEO_MODELS[videoModel] ?? VIDEO_MODELS[DEFAULT_VIDEO_MODEL];
-  const hasEnough    = creditBalance >= totalCredits;
+  const hasEnough    = totalCredits == null || creditBalance >= totalCredits;
   const isGenerating = phase === "images" || phase === "videos";
   const isDone       = phase === "done";
 
@@ -183,6 +187,8 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase, planCode
   };
 
   const handleGenerate = () => {
+    if (quotes.status === "error") { quotes.retry(); return; }
+    if (totalCredits == null) return;
     if (!hasEnough) { setNoCreditsOpen(true); return; }
     const sceneInputs = aiMode
       ? scenes.map((s) => ({ problem: s.problem, fix: s.fix })) // presets still used for AI prompts
@@ -375,7 +381,7 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase, planCode
         )}
         <button
           onClick={isDone ? onReset : handleGenerate}
-          disabled={isGenerating}
+          disabled={isGenerating || (!isDone && quotes.status === "loading")}
           className={`w-full py-2.5 lg:py-3.5 rounded-xl font-bold text-[15px] flex items-center justify-center gap-2.5 transition-all duration-300 ${
             isDone
               ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25"
@@ -386,6 +392,10 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase, planCode
         >
           {isGenerating ? (
             <><span className="w-4 h-4 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />Generating…</>
+          ) : quotes.status === "error" ? (
+            "Couldn't load price — Retry"
+          ) : quotes.status === "loading" ? (
+            "Loading price…"
           ) : isDone ? "✓  All Done — Generate New" : (
             <>
               Generate Clay Rescue
@@ -400,12 +410,12 @@ export default function ClayRescueBuilder({ onGenerate, onReset, phase, planCode
               <ChevronRight className="w-4 h-4" />
             </>
           )}
-          {!isDone && (
+          {!isDone && quotes.status !== "error" && (
             <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[14px] font-bold ${
               isGenerating ? "bg-white/5 text-white/20" : hasEnough ? "bg-white/20 text-white" : "bg-white/5 text-white/30"
             }`}>
               <img src="/icons/whitecredit.png" alt="" className="w-4 h-4 object-contain" />
-              {totalCredits}
+              <QuotedCredits status={quotes.status} value={totalCredits} onRetry={quotes.retry} />
             </span>
           )}
         </button>
