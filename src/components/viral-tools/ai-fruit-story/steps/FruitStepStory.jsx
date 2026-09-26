@@ -191,6 +191,7 @@ export default function FruitStepStory({ form, setForm }) {
           ) : (
             <textarea
               value={form.storyIdea}
+              maxLength={1000}
               onChange={(e) =>
                 setForm({
                   ...form,

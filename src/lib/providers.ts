@@ -46,6 +46,9 @@ export type ToolKey =
   | "video:viduq3turbo720"
   | "video:viduq3turbo1080"
   | "video:fruitveo31lite"
+  | "video:fruit-v2"
+  | "video:fruit-v3"
+  | "video:fruit-v4"
   | "video:microcamminimax720"
   | "video:microcamminimax1080"
   | "video:footballerseedance720"
@@ -739,6 +742,35 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     retailMultiplier:      2,
     soundCreditsPerSecond: 5,
     baseCreditsPerSecond:  3,
+  },
+
+  /**
+   * AI Fruit Story tier keys. Fruit-only, so the server can price them from
+   * public.tool_prices (see migration 20261007120000) without touching the
+   * shared keys other tools use. To move a tier to a new model, change only
+   * the airTag here and the matching tool_prices row — the key stays.
+   * Credits are NOT read from here; the database price is authoritative.
+   */
+  "video:fruit-v2": {           // currently Seedance 1.5 Pro, 480p + audio
+    provider:   "runware",
+    generator:  "Seedance 1.5 Pro",
+    airTag:     "bytedance:seedance@1.5-pro",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
+  },
+  "video:fruit-v3": {           // currently Vidu Q3 Turbo, 720p + audio
+    provider:   "runware",
+    generator:  "Vidu Q3 Turbo",
+    airTag:     "vidu:4@2",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
+  },
+  "video:fruit-v4": {           // currently Veo 3.1 Lite + audio
+    provider:   "runware",
+    generator:  "Veo 3.1 Lite",
+    airTag:     "google:veo@3.1-lite",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
   },
 
   /**

@@ -42,7 +42,7 @@ export const FRUIT_VIDEO_MODELS = {
     label: "V2",
     tag: "Cheapest",
     description: "480p — includes audio",
-    toolKey: "video:seedance15pro",
+    toolKey: "video:fruit-v2",   // Fruit-only key → Seedance 1.5 Pro; priced server-side (tool_prices)
     duration: 5,
     // ⚠️ Cost is an ESTIMATE, not measured — no-sound 480p was $0.0607656/5s
     // (measured). Scaled by this same model's 720p sound/no-sound ratio
@@ -62,7 +62,7 @@ export const FRUIT_VIDEO_MODELS = {
     label: "V3",
     tag: "Premium",
     description: "720p — includes audio",
-    toolKey: "video:viduq3turbo720",
+    toolKey: "video:fruit-v3",   // Fruit-only key → Vidu Q3 Turbo 720p; priced server-side (tool_prices)
     duration: 5,
     credits: 17,            // measured $0.17875/5s → blended per-scene margin ~50.2%
     withSound: true,
@@ -77,7 +77,7 @@ export const FRUIT_VIDEO_MODELS = {
     label: "V4",
     tag: "Professional",
     description: "Full resolution — includes audio",
-    toolKey: "video:fruitveo31lite",
+    toolKey: "video:fruit-v4",   // Fruit-only key → Veo 3.1 Lite; priced server-side (tool_prices)
     duration: 6,
     credits: 29,            // $0.30/6s clip cost → blended per-scene margin ~49.9%
     withSound: true,
@@ -2145,7 +2145,7 @@ export async function animateClip({ clip, startScene, endScene, form, videoModel
 
   const model       = FRUIT_VIDEO_MODELS[videoModel] ?? FRUIT_VIDEO_MODELS[DEFAULT_FRUIT_VIDEO_MODEL];
   const toolKey     = model.toolKey;
-  const isVeo       = toolKey === "video:fruitveo31lite";
+  const isVeo       = model.id === "fruit-v4";
   const withSound   = model.withSound;
   const aspect      = form.sceneAspect ?? "9:16";
   const dims        = model.dims[aspect] ?? model.dims["9:16"];
