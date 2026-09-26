@@ -171,7 +171,7 @@ export default function AIFruitStoryResults({
     // Mobile Recent tab: show only the panel
     if (mobileRecentTab) {
       return (
-        <div className="pb-24 lg:pb-4">
+        <div className="pb-[150px] lg:pb-4">
           <div className="rounded-[28px] border border-white/10 bg-[#111315] p-4 shadow-2xl shadow-black/30 sm:p-5">
             <RecentGenerationsPanel
               generations={recentGenerations}
@@ -185,7 +185,7 @@ export default function AIFruitStoryResults({
     }
 
     return (
-      <div className="pb-24 lg:pb-4">
+      <div className="pb-[150px] lg:pb-4">
         <div className="rounded-[28px] border border-white/10 bg-[#111315] p-4 shadow-2xl shadow-black/30 sm:p-5">
           <div className="mb-5">
             <h2 className="text-xl font-bold text-white">Video Preview</h2>
@@ -261,7 +261,7 @@ export default function AIFruitStoryResults({
   const allFailed = failedClips.length > 0 && failedClips.length === derivedVideoClips.length && derivedVideoClips.length > 0;
 
   return (
-    <div className="flex min-h-[calc(100vh-110px)] pb-24 lg:min-h-full lg:pb-4">
+    <div className="flex min-h-[calc(100vh-110px)] pb-[150px] lg:min-h-full lg:pb-4">
       <div className="flex min-h-[calc(100vh-130px)] w-full flex-col rounded-[28px] border border-white/10 bg-[#111315] p-4 shadow-2xl shadow-black/30 sm:p-5 lg:min-h-full">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
