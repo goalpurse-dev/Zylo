@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import FaceAsmrPaywall from "../face-asmr/FaceAsmrPaywall";
 import NoCreditsModal from "../shared/NoCreditsModal";
 import { ErrorBanner, FOCUS, PrimaryButton, SegmentedControl, StepBar, UpgradeDialog, cx } from "../../ui/zyvo";
-import { isMockBackend } from "./api/fruitStoryV2Api";
+import { isMockBackend, setFruitStoryV2Adapter } from "./api/fruitStoryV2Api";
+import { createMockAdapter } from "./api/mock/mockAdapter";
 import { MODES, SINGLE_STEPS, UPGRADE_COPY, stepForStatus } from "./constants";
 import BuilderPanel, { FootNote, StepHeading } from "./builder/BuilderPanel";
 import { PipelineActions, PipelineSummary } from "./builder/Pipeline";
@@ -32,6 +34,11 @@ import StoryBoard from "./workspace/StoryBoard";
  * (420/460px) and the result view sit side by side and scroll on their own.
  */
 export default function FruitStoryV2Page({ preview = null }) {
+  // Dev preview with ?fail=…: install a mock that fails those steps once.
+  // Runs during the first render, before any effect talks to the API.
+  useState(() => {
+    if (preview?.fail) setFruitStoryV2Adapter(createMockAdapter({ fail: preview.fail }));
+  });
   const navigate = useNavigate();
   const account = useAccount(preview);
   const characters = useCharacters();
@@ -121,7 +128,9 @@ export default function FruitStoryV2Page({ preview = null }) {
               </PrimaryButton>
             )}
           </div>
-          <FootNote>You only pay for video after you approve the pictures.</FootNote>
+          <FootNote tone={short ? "warn" : "muted"}>
+            {short ? `You need ${(est.total - account.balance).toLocaleString()} more credits for this video. Pick a shorter length or V2, or add credits.` : "You only pay for video after you approve the pictures."}
+          </FootNote>
         </>
       );
     }
@@ -202,7 +211,9 @@ export default function FruitStoryV2Page({ preview = null }) {
               </PrimaryButton>
             )}
           </div>
-          <FootNote>You only pay for video after you approve the pictures.</FootNote>
+          <FootNote tone={short ? "warn" : "muted"}>
+            {short ? `You need ${(est.total - account.balance).toLocaleString()} more credits for this episode. Pick a shorter length or V2, or add credits.` : "You only pay for video after you approve the pictures."}
+          </FootNote>
         </>
       );
     }
