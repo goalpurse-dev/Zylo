@@ -187,6 +187,10 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
   // of resetting to the top of step 1 — reset it explicitly on step change.
   useEffect(() => {
     bodyScrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    // Below lg the body is not its own scroller — the page (#workspace-scroll) is.
+    if (!window.matchMedia("(min-width: 1024px)").matches) {
+      document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
+    }
   }, [step]);
 
   const allowedModels = getAllowedVideoModels(planCode);
@@ -413,7 +417,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
       {/* ══ SCROLLABLE BODY ══
            Outer div: constrained height + scroll.
            Inner div: grows freely — cards never shrink.        */}
-      <div ref={bodyScrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full">
+      <div ref={bodyScrollRef} className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.25)_rgba(255,255,255,0.04)] [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-white/[0.04] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-thumb]:rounded-full">
         <div className="px-5 pt-3 pb-[160px] lg:pt-4 lg:pb-4 flex flex-col gap-2 lg:gap-3">
 
           {/* Step 0 — scene cards */}
