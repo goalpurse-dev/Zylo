@@ -1,8 +1,24 @@
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
-export default function NoCreditsModal({ open, onClose, creditsNeeded = 0, creditBalance = 0 }) {
+// Class sets per look. "default" is the original purple/orange styling used by
+// every existing tool; "lime" matches the lime tool family (Cartoon Drive By).
+const VARIANTS = {
+  default: {
+    panel: "relative w-full max-w-sm rounded-3xl border border-white/10 bg-[#111315] p-6 shadow-2xl",
+    iconTile: "mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500/15 border border-orange-500/20",
+    cta: "block w-full rounded-2xl bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] py-3 text-center text-[15px] font-bold text-white hover:opacity-90 transition",
+  },
+  lime: {
+    panel: "relative w-full max-w-sm rounded-3xl border border-lime-300/[0.13] bg-[#0C0F0D] p-6 shadow-2xl",
+    iconTile: "mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-lime-300/20 to-lime-500/20 border border-lime-300/30",
+    cta: "block w-full rounded-2xl bg-gradient-to-r from-lime-300 to-lime-500 py-3 text-center text-[15px] font-bold text-[#071006] hover:opacity-90 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0C0F0D]",
+  },
+};
+
+export default function NoCreditsModal({ open, onClose, creditsNeeded = 0, creditBalance = 0, variant = "default" }) {
   if (!open) return null;
+  const look = VARIANTS[variant] ?? VARIANTS.default;
 
   return createPortal(
     <div
@@ -10,7 +26,7 @@ export default function NoCreditsModal({ open, onClose, creditsNeeded = 0, credi
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-sm rounded-3xl border border-white/10 bg-[#111315] p-6 shadow-2xl"
+        className={look.panel}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -21,7 +37,7 @@ export default function NoCreditsModal({ open, onClose, creditsNeeded = 0, credi
         </button>
 
         {/* Icon */}
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500/15 border border-orange-500/20">
+        <div className={look.iconTile}>
           <img src="/icons/whitecredit.png" alt="" className="h-8 w-8 object-contain opacity-90" />
         </div>
 
@@ -39,7 +55,7 @@ export default function NoCreditsModal({ open, onClose, creditsNeeded = 0, credi
 
         <a
           href="/workspace/pricing"
-          className="block w-full rounded-2xl bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] py-3 text-center text-[15px] font-bold text-white hover:opacity-90 transition"
+          className={look.cta}
         >
           Get Credits
         </a>
