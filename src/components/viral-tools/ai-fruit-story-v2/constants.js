@@ -62,8 +62,14 @@ export function timeAgo(iso) {
   return `${Math.floor(sec / 86400)}d ago`;
 }
 
-/** Plain-language error text for a caught error (mock/real both throw Error with a message). */
+/**
+ * Plain-language error text for a caught error.
+ * System failures (code "…_FAILED", no message, or a bare CODE message) get
+ * the UI's own fallback, which says what happened and what to do next.
+ * Validation errors ("Pick 1 to 3 characters.") are shown as the backend wrote them.
+ */
 export function errorText(error, fallback) {
-  const message = error?.message && !/^[A-Z_]+$/.test(error.message) ? error.message : null;
-  return message ?? fallback;
+  const message = error?.message;
+  if (!message || /_FAILED$/.test(error?.code ?? "") || /^[A-Z_]+$/.test(message)) return fallback;
+  return message;
 }

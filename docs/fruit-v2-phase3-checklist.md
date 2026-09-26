@@ -22,7 +22,7 @@ Everything below is what the mock currently fakes.
 | `createSeriesPlan(input)` | **Free.** Validate concept ≤ 1000 chars, cast 2–5, episodes 3–10. Write title, logline and per-episode title / what happens / cliffhanger. Roles are fixed across episodes; the tone shapes every line. | Episode templates. |
 | `listRecent({type})` | Singles (with up to 3 scene thumbnails and status) and series summaries (episodeCount, madeCount). Newest first. | Seeded samples + session items. |
 
-Errors: throw `Error` with a **plain-language `message`** (shown to the user as-is). Codes in `error.code` are optional. See `constants.js#errorText`.
+Errors: validation problems throw `Error` with a **plain-language `message`** (shown to the user as-is, e.g. "Pick 1 to 3 characters."). System failures set `error.code` ending in `_FAILED` (e.g. `STORY_FAILED`); the UI then shows its own copy that says what to do next ("Nothing was charged. Try again."). See `constants.js#errorText`.
 
 ## 2. Pricing
 

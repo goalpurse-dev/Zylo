@@ -6,9 +6,13 @@
 //
 // Options:
 //   timeScale  multiply every delay (tests use a tiny value)
-//   fail       inject one failure per step, e.g. "scene3" (picture of scene 3),
+//   fail       inject failures per step, e.g. "scene3" (picture of scene 3),
 //              "clip2", "ideas", "story", "final", "plan". Each fires once, so
-//              the retry path works.
+//              the retry path works; "ideas*2" fires twice (React StrictMode
+//              runs mount effects twice in dev, so on-load calls need 2).
+//
+// System failures throw code "…_FAILED" (the UI shows its own copy with the
+// next step); validation errors throw a plain-language message shown as-is.
 //   paint      scene picture painter (default: canvas; null in node)
 
 import { LIMITS } from "../limits.js";
@@ -55,7 +59,12 @@ export function createMockAdapter({ timeScale = 1, fail = "", paint = paintScene
   const stories = new Map();
   const series = new Map();
   const listeners = new Map();
-  const pendingFailures = new Set(String(fail || "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean));
+  const pendingFailures = new Map(
+    String(fail || "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean).map((entry) => {
+      const [key, times] = entry.split("*");
+      return [key, Math.max(1, Number(times) || 1)];
+    }),
+  );
   let seq = 0;
   let seeding = null;
 
@@ -63,8 +72,9 @@ export function createMockAdapter({ timeScale = 1, fail = "", paint = paintScene
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, Math.max(0, ms * timeScale)));
   const later = (ms, fn) => setTimeout(fn, Math.max(0, ms * timeScale));
   const takeFailure = (key) => {
-    if (!pendingFailures.has(key)) return false;
-    pendingFailures.delete(key);
+    const left = pendingFailures.get(key);
+    if (!left) return false;
+    if (left <= 1) pendingFailures.delete(key); else pendingFailures.set(key, left - 1);
     return true;
   };
 
