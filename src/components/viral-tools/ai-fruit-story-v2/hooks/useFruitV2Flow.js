@@ -3,7 +3,8 @@ import * as api from "../api/fruitStoryV2Api";
 import { errorText } from "../constants";
 import { animateAllPrice, clipPrice, estimateLineSec, estimateStory, picturePrice, sceneCountForLength } from "../pricing/fruitV2Estimates";
 import useFruitV2Prices from "../pricing/useFruitV2Prices";
-import { storyStepBlocker, usableScript, wizardBlocker } from "../rules";
+import { storyStepBlocker, wizardBlocker } from "../rules";
+import { parseScript } from "../script/parseScript";
 import useStory from "./useStory";
 
 const NEW_SINGLE = {
@@ -12,7 +13,8 @@ const NEW_SINGLE = {
   ideaId: null,
   castIds: [],
   prompt: "",
-  script: [{ speakerId: "", line: "" }, { speakerId: "", line: "" }],
+  scriptText: "",
+  scriptAssignments: {}, // written name (lowercase) → library character id, chosen by the user
   tierId: "v2",
   lengthSec: 30,
   aspect: "9:16",
@@ -59,7 +61,7 @@ function useAsyncList(loader, deps, enabled = true) {
 /**
  * All v2 state and actions. The page renders from this; components stay dumb.
  */
-export default function useFruitV2Flow(account) {
+export default function useFruitV2Flow(account, characters = []) {
   const [mode, setMode] = useState("single");
   const [tab, setTabState] = useState("build");
   const [recentTab, setRecentTab] = useState("single");
@@ -67,6 +69,7 @@ export default function useFruitV2Flow(account) {
   const [series, setSeries] = useState(NEW_SERIES);
   const [ideaSeed, setIdeaSeed] = useState(0);
   const [library, setLibrary] = useState(null); // "single" | "series" | null
+  const [assigning, setAssigning] = useState(null); // script name being matched to a character
   const [sceneDialog, setSceneDialog] = useState(null); // { kind, sceneId }
   const [upgradeTier, setUpgradeTier] = useState(null);
   const [noCredits, setNoCredits] = useState(null); // { needed }
@@ -122,7 +125,11 @@ export default function useFruitV2Flow(account) {
 
   // ── Single video ───────────────────────────────────────────────────────
   const updateSingle = (patch) => { clearError(); setSingle((s) => ({ ...s, ...patch })); };
-  const scriptLines = usableScript(single.script);
+  const scriptParse = useMemo(
+    () => parseScript(single.scriptText, characters, single.scriptAssignments),
+    [single.scriptText, single.scriptAssignments, characters],
+  );
+  const scriptLines = scriptParse.script;
   const scriptScenes = single.method === "script"
     ? { count: scriptLines.length, lengthSec: Math.max(15, scriptLines.reduce((sum, r) => sum + estimateLineSec(r.line), 0)) }
     : null;
@@ -143,7 +150,8 @@ export default function useFruitV2Flow(account) {
         quality: single.tierId,
         lengthSec: single.lengthSec,
         aspect: single.aspect,
-        castIds: single.castIds,
+        // Script mode: the cast is whoever speaks in the script.
+        castIds: single.method === "script" ? scriptParse.speakerIds : single.castIds,
         ...(single.method === "idea" ? { ideaId: single.ideaId } : {}),
         ...(single.method === "prompt" ? { prompt: single.prompt.trim() } : {}),
         ...(single.method === "script" ? { script: scriptLines } : {}),
@@ -320,14 +328,21 @@ export default function useFruitV2Flow(account) {
     const has = libraryIds.includes(id);
     const next = has ? libraryIds.filter((c) => c !== id) : [...libraryIds, id];
     if (library === "series") updateDraft({ castIds: next });
-    else updateSingle({ castIds: next, script: has ? single.script.map((r) => (r.speakerId === id ? { ...r, speakerId: "" } : r)) : single.script });
+    else updateSingle({ castIds: next });
   };
 
-  const storyBlocker = useMemo(() => storyStepBlocker(single), [single]);
+  // Script tab: "Who is 'Mia'?" → pick one library character for that name.
+  const assignName = (nameKey, characterId) => {
+    updateSingle({ scriptAssignments: { ...single.scriptAssignments, [nameKey]: characterId } });
+    setAssigning(null);
+  };
+
+  const storyBlocker = useMemo(() => storyStepBlocker(single, scriptParse), [single, scriptParse]);
 
   return {
     mode, changeMode, tab, setTab, recentTab, setRecentTab,
-    single, updateSingle, singleEstimate, scriptScenes, storyBlocker, startSingle, newStory, openSingle,
+    single, updateSingle, singleEstimate, scriptScenes, scriptParse, storyBlocker, startSingle, newStory, openSingle,
+    assigning, startAssigning: setAssigning, cancelAssigning: () => setAssigning(null), assignName,
     ideas: { ...ideas, seed: ideaSeed }, newIdeas: () => { setIdeaSeed((n) => n + 1); updateSingle({ ideaId: null }); },
     series, seriesData, seriesStatus: activeSeries.status, retrySeries: activeSeries.retry, seriesList,
     updateDraft, newSeries, wizardNext, wizardBack, wizardBlocker: wizardBlocker(series.wizardStep, series.draft), createPlan,

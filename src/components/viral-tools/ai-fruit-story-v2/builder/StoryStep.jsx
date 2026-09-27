@@ -1,15 +1,16 @@
-import { Plus, RefreshCw, X } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { ErrorBanner, FOCUS, SectionLabel, SegmentedControl, cx } from "../../../ui/zyvo";
 import { LIMITS } from "../api/fruitStoryV2Api";
 import { STORY_METHODS } from "../constants";
 import { AvatarStack, CastChip } from "../shared/Avatar";
 import { StepHeading } from "./BuilderPanel";
+import ScriptEditor from "./ScriptEditor";
 
 const INPUT =
   "w-full rounded-2xl border border-white/[0.08] bg-[#111315] px-4 py-3 text-[14px] leading-relaxed text-white outline-none transition placeholder:text-white/20 focus:border-lime-300/35 focus:ring-1 focus:ring-lime-300/30";
 
 /** Step 1: pick an idea, describe a story, or write a script. */
-export default function StoryStep({ single, ideas, characters, onChange, onNewIdeas, onRetryIdeas, onOpenLibrary }) {
+export default function StoryStep({ single, ideas, characters, scriptParse, onChange, onNewIdeas, onRetryIdeas, onOpenLibrary, onAssignName }) {
   return (
     <>
       <StepHeading title="What's the drama?" subtitle="Pick a ready idea, describe your own, or paste a finished script." />
@@ -41,10 +42,13 @@ export default function StoryStep({ single, ideas, characters, onChange, onNewId
         </>
       )}
       {single.method === "script" && (
-        <>
-          <CastPicker castIds={single.castIds} byId={characters.byId} max={LIMITS.maxCastSingle} onRemove={(id) => onChange({ castIds: single.castIds.filter((c) => c !== id), script: single.script.map((r) => (r.speakerId === id ? { ...r, speakerId: "" } : r)) })} onAdd={onOpenLibrary} />
-          <ScriptEditor script={single.script} castIds={single.castIds} byId={characters.byId} onChange={(script) => onChange({ script })} />
-        </>
+        <ScriptEditor
+          text={single.scriptText}
+          parse={scriptParse}
+          byId={characters.byId}
+          onChange={(scriptText) => onChange({ scriptText })}
+          onAssign={onAssignName}
+        />
       )}
     </>
   );
@@ -125,56 +129,3 @@ export function CastPicker({ castIds, byId, max, min = 1, onRemove, onAdd, label
     </div>
   );
 }
-
-function ScriptEditor({ script, castIds, byId, onChange }) {
-  const update = (index, patch) => onChange(script.map((row, i) => (i === index ? { ...row, ...patch } : row)));
-  return (
-    <div>
-      <SectionLabel hint="Used exactly as written">2. Write the lines</SectionLabel>
-      <div className="flex flex-col gap-1.5">
-        {script.map((row, index) => (
-          <div key={index} className="grid grid-cols-[110px_1fr_32px] gap-1.5">
-            <select
-              value={row.speakerId}
-              onChange={(e) => update(index, { speakerId: e.target.value })}
-              aria-label={`Speaker for line ${index + 1}`}
-              className="rounded-xl border border-white/[0.08] bg-[#111315] px-2 text-[12px] font-bold text-white outline-none focus:border-lime-300/35 focus:ring-1 focus:ring-lime-300/30"
-            >
-              <option value="">Speaker</option>
-              {castIds.map((id) => <option key={id} value={id}>{byId(id)?.name.split(" ")[0] ?? id}</option>)}
-            </select>
-            <input
-              value={row.line}
-              maxLength={160}
-              onChange={(e) => update(index, { line: e.target.value })}
-              placeholder={`Line ${index + 1}`}
-              aria-label={`Line ${index + 1}`}
-              className="min-w-0 rounded-xl border border-white/[0.08] bg-[#111315] px-3 py-2.5 text-[13px] text-white outline-none transition placeholder:text-white/20 focus:border-lime-300/35 focus:ring-1 focus:ring-lime-300/30"
-            />
-            <button
-              type="button"
-              onClick={() => onChange(script.filter((_, i) => i !== index))}
-              disabled={script.length <= 2}
-              aria-label={`Remove line ${index + 1}`}
-              className={cx("grid place-items-center rounded-xl border border-white/[0.08] bg-white/[0.035] text-white/40 transition hover:text-white disabled:opacity-30", FOCUS)}
-            >
-              <X className="h-3.5 w-3.5" aria-hidden="true" />
-            </button>
-          </div>
-        ))}
-      </div>
-      <button
-        type="button"
-        onClick={() => onChange([...script, { speakerId: "", line: "" }])}
-        disabled={script.length >= 24}
-        className={cx("mt-2 inline-flex items-center gap-1 rounded-lg px-1 py-0.5 text-[11px] font-bold text-lime-300 transition hover:text-lime-200 disabled:opacity-40", FOCUS)}
-      >
-        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-        Add line
-      </button>
-      <p className="mt-2 text-[10px] leading-relaxed text-white/30">Each line becomes one scene. Keep lines short so they fit in one clip.</p>
-      {!castIds.length && <p className="mt-1 text-[10px] font-semibold text-orange-300/80">Add characters first, then pick who says each line.</p>}
-    </div>
-  );
-}
-

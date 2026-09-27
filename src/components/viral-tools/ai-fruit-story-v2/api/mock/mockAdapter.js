@@ -339,6 +339,21 @@ export function createMockAdapter({ timeScale = 1, fail = "", paint = paintScene
         return publicStory(newStory({ ...base, title: idea.title, castIds: idea.castIds }));
       }
 
+      if (input.source === "script") {
+        // The cast is whoever speaks; castIds is optional and derived when missing.
+        const lines = (input.script || []).map((r) => ({ speakerId: r.speakerId, line: String(r.line || "").trim() })).filter((r) => r.line);
+        if (lines.length < 2) throw new MockError("SCRIPT_TOO_SHORT", "Write at least two lines, each starting with who's talking.");
+        if (lines.some((r) => !characterById(r.speakerId))) throw new MockError("INVALID_SPEAKER", "Every line needs a speaker from the character library.");
+        const speakers = [...new Set(lines.map((r) => r.speakerId))];
+        if (speakers.length > LIMITS.maxCharactersPerScene) {
+          throw new MockError("TOO_MANY_SPEAKERS", `Use at most ${LIMITS.maxCharactersPerScene} different speakers. This script has ${speakers.length}.`);
+        }
+        const castIds = Array.isArray(input.castIds) && input.castIds.length ? input.castIds : speakers;
+        if (speakers.some((id) => !castIds.includes(id))) throw new MockError("INVALID_SPEAKER", "Every speaker must be in the cast.");
+        validateCast(castIds, 1, LIMITS.maxCastSingle);
+        return publicStory(newStory({ ...base, title: "My script", castIds, lines }));
+      }
+
       validateCast(input.castIds, 1, LIMITS.maxCastSingle);
       if (input.source === "prompt") {
         const prompt = String(input.prompt || "").trim();
@@ -346,13 +361,6 @@ export function createMockAdapter({ timeScale = 1, fail = "", paint = paintScene
         if (prompt.length > LIMITS.maxPromptChars) throw new MockError("PROMPT_TOO_LONG", `Keep the story under ${LIMITS.maxPromptChars} characters.`);
         const title = prompt.length > 48 ? `${prompt.slice(0, 47).trimEnd()}…` : prompt;
         return publicStory(newStory({ ...base, title, castIds: input.castIds }));
-      }
-
-      if (input.source === "script") {
-        const lines = (input.script || []).map((r) => ({ speakerId: r.speakerId, line: String(r.line || "").trim() })).filter((r) => r.speakerId && r.line);
-        if (lines.length < 2) throw new MockError("SCRIPT_TOO_SHORT", "Write at least two lines.");
-        if (lines.some((r) => !input.castIds.includes(r.speakerId))) throw new MockError("INVALID_SPEAKER", "Every line needs a speaker from your cast.");
-        return publicStory(newStory({ ...base, title: "My script", castIds: input.castIds, lines }));
       }
 
       throw new MockError("INVALID_SOURCE", "Pick an idea, describe a story, or write a script.");

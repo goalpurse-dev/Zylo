@@ -2,8 +2,12 @@ import { useMemo, useState } from "react";
 import { Check, Search } from "lucide-react";
 import { Dialog, ErrorBanner, FOCUS, PrimaryButton, cx } from "../../../ui/zyvo";
 
-/** Pick characters from the library (1–3 for a video, 2–5 for a series). */
-export default function CharacterLibraryDialog({ open, onClose, characters, selectedIds, max, onToggle }) {
+/**
+ * Pick characters from the library (1–3 for a video, 2–5 for a series).
+ * pickOne mode ("Who is 'Mia'?"): choosing a character calls onPick(id) and
+ * the caller closes the dialog.
+ */
+export default function CharacterLibraryDialog({ open, onClose, characters, selectedIds, max, onToggle, pickOne = false, onPick, title, description }) {
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
   const list = useMemo(() => {
@@ -12,6 +16,7 @@ export default function CharacterLibraryDialog({ open, onClose, characters, sele
   }, [characters.characters, query]);
 
   const toggle = (id) => {
+    if (pickOne) { onPick(id); return; }
     const on = selectedIds.includes(id);
     if (!on && selectedIds.length >= max) {
       setNotice(`You can pick up to ${max}. Remove one first.`);
@@ -26,14 +31,16 @@ export default function CharacterLibraryDialog({ open, onClose, characters, sele
       open={open}
       onClose={onClose}
       size="lg"
-      title="Character library"
-      description={`Choose up to ${max}. Each one looks the same in every scene.`}
-      footer={
+      title={title ?? "Character library"}
+      description={description ?? `Choose up to ${max}. Each one looks the same in every scene.`}
+      footer={pickOne ? (
+        <PrimaryButton variant="secondary" onClick={onClose} fullWidth={false} className="ml-auto px-6">Cancel</PrimaryButton>
+      ) : (
         <>
           <p className="mr-auto self-center text-[11px] font-semibold text-white/40" aria-live="polite">{selectedIds.length} of {max} chosen</p>
           <PrimaryButton onClick={onClose} fullWidth={false} className="px-6">Done</PrimaryButton>
         </>
-      }
+      )}
     >
       <label className="relative mb-3 block">
         <span className="sr-only">Search characters</span>
@@ -59,7 +66,7 @@ export default function CharacterLibraryDialog({ open, onClose, characters, sele
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {list.map((c) => {
             const on = selectedIds.includes(c.id);
-            const full = !on && selectedIds.length >= max;
+            const full = !pickOne && !on && selectedIds.length >= max;
             return (
               <button
                 key={c.id}

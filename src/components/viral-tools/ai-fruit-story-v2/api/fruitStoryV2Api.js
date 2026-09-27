@@ -106,8 +106,10 @@ import { createMockAdapter } from "./mock/mockAdapter.js";
  * @property {"idea"|"prompt"|"script"} source
  * @property {string} [ideaId]         source="idea"
  * @property {string} [prompt]         source="prompt", max 1000 chars
- * @property {ScriptLine[]} [script]   source="script", used exactly as written
- * @property {string[]} castIds        1–3 for single videos (idea: taken from the idea)
+ * @property {ScriptLine[]} [script]   source="script", used exactly as written: one scene per line,
+ *                                     2+ lines, at most 3 distinct speakers, all library characters
+ * @property {string[]} [castIds]      1–3 for single videos. Idea: taken from the idea. Script:
+ *                                     optional, the distinct speakers when omitted
  * @property {QualityTier} quality
  * @property {number} lengthSec        15–120 in 15s steps (script: derived from the lines)
  * @property {Aspect} aspect

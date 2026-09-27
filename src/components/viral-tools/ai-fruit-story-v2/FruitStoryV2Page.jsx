@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import FaceAsmrPaywall from "../face-asmr/FaceAsmrPaywall";
@@ -42,9 +42,12 @@ export default function FruitStoryV2Page({ preview = null }) {
   const navigate = useNavigate();
   const account = useAccount(preview);
   const characters = useCharacters();
-  const flow = useFruitV2Flow(account);
+  const flow = useFruitV2Flow(account, characters.characters);
   const { mode, single, series, story } = flow;
   const byId = characters.byId;
+  // Keep the last "Who is …?" name so the dialog title doesn't blank while it closes.
+  const lastAssigning = useRef(null);
+  if (flow.assigning) lastAssigning.current = flow.assigning;
   const mock = isMockBackend();
 
   const isEpisodeStory = mode === "series" && series.view === "episode" && Boolean(story);
@@ -82,10 +85,12 @@ export default function FruitStoryV2Page({ preview = null }) {
           single={single}
           ideas={flow.ideas}
           characters={characters}
+          scriptParse={flow.scriptParse}
           onChange={flow.updateSingle}
           onNewIdeas={flow.newIdeas}
           onRetryIdeas={flow.ideas.retry}
           onOpenLibrary={() => flow.openLibrary("single")}
+          onAssignName={flow.startAssigning}
         />
       );
       footer = (
@@ -342,6 +347,17 @@ export default function FruitStoryV2Page({ preview = null }) {
         selectedIds={flow.libraryIds}
         max={flow.libraryMax}
         onToggle={flow.toggleLibrary}
+      />
+      <CharacterLibraryDialog
+        open={Boolean(flow.assigning)}
+        onClose={flow.cancelAssigning}
+        characters={characters}
+        selectedIds={lastAssigning.current?.speakerId ? [lastAssigning.current.speakerId] : []}
+        max={1}
+        pickOne
+        onPick={(id) => flow.assignName(lastAssigning.current.key, id)}
+        title={`Who is "${lastAssigning.current?.name ?? ""}"?`}
+        description="Pick the library character who says these lines. They look the same in every scene."
       />
       <SceneActionDialog
         kind={flow.sceneDialog?.kind}
