@@ -16,7 +16,7 @@ const SizeSelector = React.memo(
 
           <ChevronRight
             className={`w-4 h-4 ${
-              openSize ? "rotate-90 text-purple-400" : ""
+              openSize ? "rotate-90 text-lime-400" : ""
             }`}
           />
         </div>

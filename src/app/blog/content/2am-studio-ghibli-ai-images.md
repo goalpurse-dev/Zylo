@@ -70,5 +70,6 @@ Yes — naming both a style ("painterly," "Ghibli-inspired") and a world or refe
 - 25 Incredible AI Worlds at 2AM → /blog/ai-worlds-at-2am-ideas
 - How to Create Cinematic Worlds With an AI World Generator → /blog/ai-world-generator-guide
 - What Is the 2AM Worlds AI Trend? → /blog/what-is-the-2am-worlds-ai-trend
+- Disney vs Ghibli: Which Animated AI Style Should You Use? → /blog/disney-vs-ghibli-ai-images
 
 ---

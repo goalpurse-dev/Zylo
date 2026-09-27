@@ -1,0 +1,233 @@
+import json,html,collections
+from pathlib import Path
+R=Path(__file__).parent
+def read(n):return json.loads((R/n).read_text(encoding='utf-8'))
+a=read('per-shot-audit.json');s=read('summary.json');edits=read('edit-audit.json');runs=read('stagnant-runs.json')
+def ids(code):return ', '.join(str(r['shot']) for r in a if code in r['issues']) or 'none observed'
+def table(headers,rows):return '| '+' | '.join(headers)+' |\n| '+' | '.join('---' for _ in headers)+' |\n'+'\n'.join('| '+' | '.join(str(v).replace('|','/').replace('\n',' ') for v in row)+' |' for row in rows)+'\n'
+def ts(v):return f'{int(v)//60:02}:{v%60:06.3f}'
+top=[130,132,32,18,133,134,19,45,113,56,57,58,59,61,62,70,71,98,126,63,54,55,60,123,124]
+topruns=[(63,66),(5,8),(114,117),(120,122),(109,113),(26,30),(76,78),(34,36),(67,69),(131,132)]
+report='''# Mars active-episode forensic audit
+
+Audit completed 2026-09-17. Diagnosis only. **The current episode is not publishable: 37 usable shots, 89 unacceptable images, and 10 missing outputs.** A successful render or a Ready badge is not evidence that a frame explains the narration.
+
+[Open the visual per-shot audit](audit-gallery.html) · [CSV](per-shot-audit.csv) · [Full JSON](per-shot-audit.json) · [Raw snapshot](snapshot.json) · [Measurements](measurements.json) · [Source/result edits](edit-audit.json) · [Window analysis](windows-3-5-8.json)
+
+“Good” means usable in an illustrated explainer, potentially with minor polish; it does not mean pixel-perfect or ready to rescue the surrounding sequence. Bad-image judgments are manual, not a newly run QA model. Dimensions and pixel equality are measured facts. Character identity assessments are visual judgments, not biometric identification. Borderline examples are called out rather than silently counted as cloning.
+
+## 1. Active run and population inspected
+
+- Project: `49a18b78-1d4b-4570-8113-5cd130687e1e`.
+- Active generation run: `7b045213-7d27-4a7a-a857-64d2a672a1b5`.
+- Active VisualPlan v4: `e65b6e53-489d-4b79-b6c0-b281699a2a18`.
+- Visual World: `973ec40c-82d2-42d8-9090-c6cf469dd3f4`.
+- Script: `63c3df8b-5c84-4e1b-8da4-922535064c0f`.
+- 136 current shots; 126 existing final image files inspected chronologically; 10 failed tasks have no image to inspect.
+- 66 GENERATE / 22 EDIT / 13 CROP / 7 REUSE / 28 PROGRAMMATIC_GRAPHIC.
+- Timeline: **00:00–13:31.200**, 811.2 seconds. These are plan-estimated timings, not a watched rendered video or audio-reconciled timings.
+
+Selection is one latest row per visual beat inside the active generation run and active VisualPlan, ordered by plan version, scene creation time, then scene ID. Historical attempts are excluded from all primary counts. Source images are used only for lineage diagnosis. The gallery identifies every selected scene UUID.
+
+The intended narration contract is `9a3826cd-9a2d-4b48-8275-0b5a8489950e`, explicitly named in v4 metadata. All 136 stored plans have a null contract-version column, and the project current-contract pointer is null. Claim keys such as `s8__c1` are reused across versions with different meanings, so this audit attaches claims to the intended version rather than guessing from the newest contract.
+
+## 2. Exact pixel-dimension report
+
+Tolerance: `abs((width / height) / (16 / 9) - 1) <= 0.01`.
+
+'''
+report+=table(['Population / class','Count'],[['Current shots',136],['Images with measurable output',126],['Valid 16:9 within 1%',123],['Strict mathematical 16:9 subset',22],['Invalid ratio',3],['No output; not counted valid or invalid',10],['Portrait',2],['Square',0],['3:2',0],['4:3',0],['Other invalid: extra-wide',1]])
+report+='\nEvery invalid output:\n\n'+table(['Shot / scene UUID','Final pixels','Ratio','Strategy / provider','Origin'],[[f"{n} / {a[n-1]['scene_id']}",f"{a[n-1]['width']}×{a[n-1]['height']}",f"{a[n-1]['ratio']:.8f}",'CROP / local compositor; Kling O3 source','Right-third crop retains full height' if n in [19,45] else 'Top-half crop retains full width'] for n in [19,45,113]])
+report+='''
+Measured dimension distribution: 91 × 2720×1536; 22 × 1536×864; 10 × 1360×768; 2 × 907×1536; 1 × 2720×768. The 2720/1536 and 1360/768 frames deviate by 0.390625%, so they pass the specified tolerance but are not mathematically exact 16:9.
+
+All **88 original provider result files** were also downloaded read-only: 66 Kling O3 outputs at 2720×1536 and 22 Qwen `runware:108@22` outputs at 1536×864. Every one matches its stored final decoded RGB pixels exactly. No resize, storage corruption or frontend-only distortion explains the three invalid frames. CROP is a local operation and has no separate provider output; its source lineage is included per shot. REUSE similarly has no new provider request. [Full raw dimensions](raw-dimensions.json).
+
+The dimensions match the old literal crop rectangles: roughly one-third width/full height, or full width/half height. The currently inspected worker contains a 16:9 crop guard, but those existing historical outputs remain invalid. This is not evidence that the current guard was executed on them.
+
+## 3. One scene per image
+
+**6 violations: Shots 18, 32, 131, 132, 133, 134.** None of their active beats explicitly requests COMPARISON, BEFORE_AFTER or MULTI_PANEL_GRAPHIC; their plans forbid multi-panel layout.
+
+- 102 generated/derived illustrations depict one spatially coherent scene.
+- 6 illustrations contain unintentional panels/reference-sheet layouts.
+- 12 nonblank programmatic frames have one graphic canvas, but fail quality/semantics separately.
+- 6 graphics are blank and contain no scene at all.
+- 10 tasks have no output.
+- Intentional multi-panel outputs: 0.
+
+Coherent illustrated cutaways are allowed: a view into a habitat is not automatically a montage. Shot 133 is different: it combines a cutaway with a separate lab scene and a headless reference-outfit fragment. Shot 132 preserves the storyboard layout from 131.
+
+## 4. Character count, cloning and identity
+
+**14 clear/probable-high-confidence physical-cast duplication cases:** '''+ids('CHARACTER_DUPLICATION')+'''. **One additional probable case, Shot 109**, is kept outside that count because its background face is small. **28 identity-drift cases** are tracked separately; they overlap with cloning.
+
+Shot 130 is decisive: **five protagonist-like men versus three distinct requested roles**. The same face family and uniform repeat around the table. The scene also depicts melting wax and ordinary-looking flames despite the synthetic-candle requirement.
+
+Six extra-character cases: '''+ids('EXTRA_CHARACTER')+'''. Ten missing-role cases: '''+ids('MISSING_CHARACTER')+'''. A missing role can coexist with extra people: extra protagonist copies do not supply the absent agricultural specialist or maintenance officer.
+
+Sheet drawings in 18/32 are counted as reference leakage, not additional physical crew. Repetition across panels in 131/132/134 is counted as composition leakage, not proof of several people in a single room. The three helmeted crew in 106 are not called clones. Shot 23 and the two rear heads in 103 lack enough facial information to prove cloning. Hands-only detail shots are not required to show a whole person. Shots 76–78 have three visible hands with unclear ownership: this is awkward anatomy/composition, not a confident count of three people.
+
+The per-shot records include requested character names, observed count/partial-body description, classification and uncertainty. This is why the totals are conservative rather than treating every repeated brown hairstyle as a duplicate.
+
+## 5. Reference usage and leakage
+
+**3 definite visible-reference leaks:** 18 and 32 show complete sheets; 133 contains a headless outfit fragment plus the reference-like split composition. **3 further board-associated composition leaks:** 131, 132, 134. Those outputs share the risky lineage, but literal pasting of the entire board is not proven for them.
+
+All 66 GENERATE and 22 EDIT jobs were checked for supplied image URLs. GENERATE routing: **35 composite-board jobs; 31 single/direct-reference jobs**. EDIT jobs use their source scene as the reference. The offending GENERATEs use Kling O3 with `reference-bundle-v1`: protagonist sheet plus habitat reference merged into one image. The prompt says not to reproduce the grid, but that prohibition does not reliably overcome the visual conditioning.
+
+'''+table(['Offender','Bundle / path','Observed result'],[['18','36a568c5-7d16-403d-9e94-fd2ea8b41428','Full sheet remains visible'],['32','a9c245e9-b8a0-4432-9378-fa31d141dcd5','Full sheet remains visible; QA approves'],['131, 133','5bcfad7b-ec84-47e5-88de-580726f5b8b9','Storyboard/split layout; outfit fragment in 133'],['134','7995ea09-4204-4446-b47b-0592ed1478bb','Three meal panels'],['132','Qwen EDIT from 131 output','Inherits panels and erases checklist']])+'''
+These bundles supply the protagonist and location, not a complete distinct cast. For example, 131’s prompt names the agricultural specialist without a dedicated reference and omits the maintenance-officer identity despite QA expecting it. The registry marks the maintenance officer `referenceNeeded:false`, while the protagonist sheet is repeatedly used. The same sheet itself contains white-suit views plus grey/teal outfit detail, increasing ambiguity. Location references are cutaway pods/cabinets rather than full usable interiors; the greenhouse reference can encourage a cabinet sitting on Martian ground. These are supported causal mechanisms, not proof that every similar face arose from precisely the same mechanism. [Bundle records](bundles.json).
+
+## 6. Qwen EDIT effectiveness
+
+**22 edits: 8 meaningful local changes, 14 failed or incomplete requested deltas.** The 8 include one partial/medium-confidence success, Shot 102. Local success does not make a bad source scene acceptable: 90 labels the wrong object; 115/117/119 retain duplicated characters.
+
+**2 predominantly lighting/color edits: 43 and 80. Strictly lighting-only edits: 0**, because both also erase screen content. They are tagged LIGHTING_ONLY_EDIT as the practical cosmetic-edit failure class, with that qualification recorded explicitly.
+
+'''+table(['Shot','Difference strength','Requested delta','Visible result'],[[e['shot'],e['difference_strength'],'Accomplished / partial for 102' if e['requested_delta_accomplished'] else 'Failed / incomplete',e['note']] for e in edits])+'''
+No edit delivers a material camera/composition change. Limited hand/pose changes occur in 7, 78, 102, 119 and 122; no clear head-direction or expression change is established. The [edit audit](edit-audit.json) records all eight requested axes individually. Many prompts expressly say to preserve pose/camera, so this is partly a planning limitation, not solely model refusal.
+
+A direct prompt contradiction recurs: an instruction requests exact readable UI, then the shared suffix says every screen must be blank or contain no legible labels. This explains why screen erasure is frequent and why asking Qwen to fix a label does not reliably fix it. The source/result pages (`edits-01.jpg` through `edits-21.jpg`) show every pair.
+
+## 7. Exact and near-duplicate sequence analysis
+
+Pixel-identical groups, comparing decoded RGB plus dimensions:
+
+'''+ '\n'.join('- '+', '.join(map(str,g)) for g in s['exact_groups'])+'''
+
+That is **8 groups, 20 participating shots, 12 repeats beyond each group's first image, and 8 exact adjacent transitions**. Blank-image equality is real but reported separately from illustrated holds.
+
+There are **16 manually confirmed stagnant/repeated-setup runs covering 50 shots**. Not every frame in a run is an identical image. For example, 26–30 contains two related setups, and 109–113 has exercise/standing/crop variants. These are editorial stagnation, not claimed hash matches.
+
+All rolling windows were evaluated: **134 three-shot windows / 132 five-shot windows / 129 eight-shot windows**. Respectively **29 / 53 / 78** contain a strict similar pair or at least a three-shot overlap with a reviewed stagnant run. These overlapping window counts must not be summed into a number of independent defects. The numeric screen uses dHash ≤10 and grayscale correlation ≥0.85, plus exact pixel equality; blank frames are handled by equality because correlation is undefined. Hashes are a screening aid, not proof of narrative redundancy. [All 395 windows](windows-3-5-8.json), [pair metrics](similarity.json), [all 16 runs](stagnant-runs.json).
+
+Across 135 timeline boundaries, the visual-change classification is 61 MAJOR, 10 MEANINGFUL, 39 MINOR, 2 COSMETIC_ONLY, 8 NONE, and 15 unavailable boundaries. Thus 71/120 inspectable transitions provide substantial visual novelty, but many novel images still fail meaning or identity. This is not a claim that 71 transitions are educationally successful.
+
+## 8. Blur and image quality
+
+**One clear degraded/blurred final: Shot 101.** Its edited hands and contours are visibly softer/smeared than the source, despite a sharpening instruction. This is not background depth-of-field. **10 corrupted-looking graphic outputs** are isolated from generative blur, and **9 bad crops** are separately recorded.
+
+The final assets are generally large enough; no low-resolution-looking global failure, additional major blur cluster or accidental upscale was established. Raw-provider/final equality argues against storage-induced compression damage. It does not prove that the provider performed no internal resizing. Mixed realism is clearest in 135: realistic face/food rendering sits beside flat cartoon faces. Shot 38 also departs from the intended character/style family.
+
+## 9. Text and gibberish
+
+**18 images have materially bad generated text:** '''+ids('TEXT_GIBBERISH_MAJOR')+'''. **10 additional images have minor incidental glyph defects:** '''+ids('TEXT_GIBBERISH_MINOR')+'''. These counts exclude corrupted programmatic lettering.
+
+Important correct text/examples include 3/4’s oxygen-water-power indicators, 6’s checklist, 27’s cartridge label, 75’s corrective-action log, and 108’s dose-accounting heading. Shot 90’s Serviceable wording is correct but on the wrong object. Shot 103’s CO2 NOMINAL is spelled correctly but its graph gives ambiguous recovery evidence. Correct spelling alone is not semantic correctness.
+
+“Expention Note” in 16/17, malformed exception/anomaly labels, and the suit-fault misspelling in 82/83 are central explanatory evidence and matter. Tiny background glyphs in 14/15/31/49 do not justify a hard fail. Six images erase/fail the required text/evidence: '''+ids('MISSING_REQUIRED_TEXT')+'''. No separate confirmed cohort of harmless readable words was classified as a hard failure merely for being readable.
+
+## 10. Programmatic graphics
+
+**All 28 graphic shots are currently unacceptable: 18 bad images plus 10 missing outputs.** Breakdown:
+
+'''+table(['Class','Count','Shots'],[['Blank',6,'63, 64, 65, 66, 72, 73'],['Clipped/color-fringed bitmap output',10,'54, 55, 60, 92, 93, 97, 123, 124, 125, 127'],['Readable but insufficient label-only graphic',2,'53, 96'],['Failed / no output',10,'56, 57, 58, 59, 61, 62, 70, 71, 98, 126']])+'''
+All 18 available graphic frames pass the ratio tolerance. They fail pixels, semantics or both. The six blank outputs have null overlay specs. The remaining stored plans use legacy BIG_TEXT/LABEL specs rather than a structured visual relationship. A title such as “Max EVA time” does not show the budget conversion; “ISRU staggered” does not show load staggering. Required diagrams/symbols/relationships are absent, regardless of whether a short title is readable.
+
+The current worker still routes old-shaped specs to the legacy renderer. Its empty-text branch returns an empty image without an issue, and deterministic success can be auto-approved. Current structured templates do not retroactively upgrade these stored plans. Ten missing tasks have `CLAIMS_EXHAUSTED`; that is the terminal symptom. The precise initial timeout/error for each of those tasks was not established from the retained scene evidence, so it is not attributed to an image provider or a specific loop without proof.
+
+## 11. Narration match
+
+**40 nongraphic shots have a material semantic mismatch**, plus the 28 failed/unusable graphic tasks. Counts overlap with identity/text/crop problems. These 68 shots do not communicate their assigned claim adequately in the current sequence.
+
+The most consequential failures are mechanism substitution: a worried face for scheduling drift (9–10), a repeated checklist for sol length (8), generic console screens for allocation priorities (67–69), a suit panel for a rover drill (81), a green door for repaired-suit availability (88–91), and an uninformative generic stability panel for automated containment (104–105). The closing systems resolution is asserted in narration but not demonstrated in 133/136.
+
+By contrast, valve handling, pruning, lamp adjustment, seal reseating and rock sampling are understandable actions. Those stronger shots show that the pipeline can produce useful illustrations when the subject/action is concrete and the framing actually isolates it.
+
+## 12. QA confusion table
+
+'''+table(['Current status + manual assessment','Count'],[['Ready + good',4],['Ready + bad',30],['Review + good',33],['Review + bad',59],['Failed / no image',10]])+'''
+**33 false positives and 30 false negatives**, using the user's definitions. Ready-good shots are 4, 13, 26 and 29. Ready is therefore unreliable in this snapshot: 30/34 Ready outputs are unacceptable. Review is also noisy: 33/92 are usable.
+
+The major calibration problems:
+
+1. All 18 graphic outputs are approved through deterministic trust despite blank/corrupted/insufficient content.
+2. REUSE checks source success, not source QA, and writes approved. Six of seven reused current sources are rejected: 4←3, 8←5, 29←28, 47←46, 68←67, 91←89. Some rejected sources are actually usable, but the unconditional approval is still unsound; changed narration also needs checking.
+3. Broad inherited cast requirements penalize useful object-only detail/establishing shots. Shot 3 is explicitly rejected for missing protagonist and readable text even though it communicates the three status icons correctly.
+4. Blanket generated-text policy confuses useful/incidental lettering with factual errors.
+5. Shot 32 is an unambiguous vision-QA false negative: its result says no sheet/no leakage while the left half is a sheet.
+6. Current code contains newer safeguards, but existing stored verdicts do not prove those checks were run. QA must be interpreted together with its actual result/version and source lineage.
+
+## 13. Top 25 worst shots
+
+Critical failures tie; this ranking emphasizes episode-breaking examples and every no-output task. Full UUIDs and all other failures remain in the per-shot dataset.
+
+'''+table(['Rank / shot','Start','Severity','Why'],[[f'{i+1} / {n}',a[n-1]['timestamp'],a[n-1]['severity'],a[n-1]['observation']] for i,n in enumerate(top)])+'''
+## 14. Top 10 stagnant sequences
+
+'''
+selected=[next(r for r in runs if r['shots'][0]==lo and r['shots'][-1]==hi) for lo,hi in topruns]
+report+=table(['Shots','Length / duration','Similarity / difference','Edits','What actually changes'],[[f"{r['shots'][0]}–{r['shots'][-1]}",f"{len(r['shots'])} / {r['duration_seconds']:.3f}s",r['similarity']+' / '+r['difference_strength'],r['edits'],r['note']] for r in selected])
+report+='''
+Small state changes can be narratively valid, such as adding a meal or alarm. The problem is asking them to carry long stretches of new claims while camera, cast and action remain substantially fixed. The 131–132 run has no useful improvement: screen erasure is a change, but not an explanatory delta.
+
+## 15. Overall episode quality
+
+The episode currently feels like an AI slideshow interrupted by broken title cards, rather than an intentional illustrated explainer. The hook begins with a misleading oxygen-like wake effect. The opening then spends 24.671 seconds on one checklist setup and another 17.838 seconds on worried faces while important time-management concepts go unexplained.
+
+The hands-on maintenance, pruning and EVA inserts are the strongest material. They use clear objects/actions and need less face-driven storytelling. The middle power-budget section is severely disrupted by blank, corrupt and absent graphics. The health/autonomy section repeats exercise, table and typing layouts while losing distinct crew identities. The ending—the intended emotional payoff—contains clones and storyboard panels.
+
+Graphics occupy **170.035 seconds, 21.0% of the planned episode**, and none currently works at the required standard. More graphics would not solve this; actual diagrams showing cause, comparison and allocation would. Characters are overused where mechanisms are needed, especially screens-with-people standing in for explanations. Only **206.725 seconds, 25.5% of runtime**, is currently assigned a usable image under this review. This is image-level usability, not approval of a complete edited video.
+
+## 16. Ten systemic root causes, ranked by practical impact
+
+Affected populations overlap. A structural exposure count is not a count of proven bad images. Improvement estimates are not additive.
+
+'''+table(['Priority','Root cause / affected population','Severity','Expected benefit','Complexity'],[
+[1,'Legacy graphic plan/renderer/acceptance contract: 28 tasks; 18 bad pixels and 10 missing','Critical','Recover the broken 21% graphic portion when content and lifecycle both work','Medium–high'],
+[2,'Reference routing and distinct-cast coverage: 31 shots with identity/composition/reference defects; 35 GENERATE jobs use boards','Critical','Prevent sheet/panel conditioning and replace repeated protagonist identities with intended roles','High'],
+[3,'Edit/text instruction contract contradicts itself: 22 EDITs exposed; 14 incomplete deltas; 18 major generated-text cases overall','Major–critical','Stop erasing required evidence and make small state changes readable','Medium'],
+[4,'Claim-to-visual planning substitutes generic scenes for mechanisms: 40 nongraphic mismatches','Major','Show time drift, allocation, failure and recovery as observable relationships','High'],
+[5,'Sequence strategy underprices repetition: 16 runs / 50 shots','Major','Use true reframing/action/visual-form change where edits/crops do not progress meaning','Medium–high'],
+[6,'QA calibrated to inherited requirements, not useful shot evidence: 33 false positives / 30 false negatives','Critical trust failure','Reduce needless review and expose bad Ready images; changes classification, not pixels','Medium–high'],
+[7,'Derivation trusts source success and loses semantic/geometry guarantees: 7 REUSE, 13 CROP; 9 bad crops, 3 invalid ratios','Critical for affected frames','Preserve valid final geometry, focal subject and current-claim fitness','Medium'],
+[8,'Location references model props/cutaways rather than usable spaces: 3 clear wrong-location shots, broader continuity exposure','Major','Avoid greenhouse-on-Mars-ground and reduce unrelated room changes','Medium'],
+[9,'Plan/contract/output version identity is not pinned end-to-end: all 136 plan contract pointers null','Critical latent risk','Make diagnosis, QA and replay evaluate the intended claim/version','Medium'],
+[10,'Output quality/style evidence is incomplete or stale: 1 clear blurred edit, 2 style-drift cases; existing verdicts predate safeguards','Major localized / systemic escape risk','Catch degraded hands, mixed realism and obsolete verdicts at the actual output boundary','Medium']])+'''
+Code evidence was read in the deployed worker (version 20), start endpoint (version 13), shared compiler/reference/QA/compositor files, and local UI. [Deployed excerpts](deployed-code-evidence.md). The UI's per-beat Map selection is order-dependent when multiple unreplaced rows exist; this is a reproducibility risk, not a proven cause of an individual image defect. The audit therefore uses an explicit latest-row ordering.
+
+The original renderer revision that made every corrupt graphic was not fully reconstructed. The visible output defect is proven; a specific byte-level corruption mechanism is not. Similarly, `CLAIMS_EXHAUSTED` proves exhaustion, not its initiating cause. These are the remaining forensic uncertainties, not reasons to call those outputs acceptable.
+
+## 17. Recommended fix order — no implementation performed
+
+1. First establish an immutable run/plan/contract/source manifest and acceptance fixtures from this audit. This is a prerequisite for judging fixes, not a new generation request.
+2. Fix the legacy graphic contract end-to-end: required semantic template, populated data, bounded rendering, final pixel validation, and truthful failure reporting. Do not assume the new template code upgrades old rows.
+3. Fix reference/cast routing: role-specific identity coverage, no sheet/board layout as scene conditioning, and safe scene-space location references.
+4. Resolve required-text ownership and edit contradictions; separate deterministic labels from image edits and prove the requested source→result delta.
+5. Correct mechanism planning and then sequence freshness; use different visual forms when a new claim cannot be explained by a small edit.
+6. Enforce crop/source/REUSE invariants and claim fitness at the final output boundary.
+7. Recalibrate QA on the good/bad examples here, including deterministic outputs and reused scenes. Validate image quality and version every verdict.
+8. Only after those checks, consider a separately authorized, bounded recovery of current failing shots. Do not bulk-regenerate the episode as a substitute for fixing the contracts.
+
+No code changes, retries or migrations were performed in this audit.
+
+## 18. Improvement estimate for the top three root causes
+
+**Code changes alone make zero existing images acceptable**: already stored pixels do not change. With subsequently authorized repair/re-rendering/recomposition, a conservative planning estimate is **40–50 additional usable shots**, raising the current 37 to roughly **77–87 of 136**.
+
+The estimate assumes 24–28 of the 28 graphic tasks become useful after both semantics and reliability are repaired; 12–16 additional cast/reference-dominated shots recover after residual semantic/crop defects are excluded; and 4–6 additional text/edit-dominated shots recover after overlap is removed. The ranges sum to 40–50. These are judgment-based scenario estimates, not measured model success rates or a guarantee. The remaining scene-planning, crop, repetition and QA problems prevent claiming that the top three fixes would finish the episode.
+
+## 19. Provider calls = 0
+
+No inference, generation, Qwen edit, Runware submission, or external QA-model call was made. Only existing image files were fetched from storage/CDN and decoded locally.
+
+## 20. Credits charged = 0
+
+No paid generation, retry, reservation or credit mutation was triggered by this audit.
+
+## 21. Production mutations = 0
+
+Supabase reads only. No scene changes, migrations, deploys, pushes or merges. Only local audit scripts, evidence and reports under `artifacts/mars-forensic` were written. The repository already contains unrelated modifications; this audit does not claim a clean checkout or create a commit. Frontend deployment: **NOT performed**; there is no connected Vercel route and no authorization to push main. A build is not relevant validation of this read-only image audit and was not rerun.
+
+**Deploy: nothing for this audit. Migration to run: none.**
+'''
+faults=table(['Fault','Count / scope'],[['Definite visible-reference leakage','3; 3 further board-associated composition leaks'],['Unintentional multi-scene composition',6],['Physical character cloning','14 + 1 additional probable'],['Identity drift',28],['Semantic mismatch','40 nongraphic + 28 unusable graphic tasks'],['Wrong location',3],['Failed visual delta',14],['Predominantly lighting/color edit','2; strictly lighting-only 0'],['Repeated/stagnant sequence','16 runs / 50 shots'],['Near-duplicate neighboring transitions',s['issues'].get('NEAR_DUPLICATE_NEIGHBOR',0)],['Blurry output',1],['Bad generated text','18 major + 10 minor'],['Bad graphics','18 bad images + 10 missing'],['Bad crops',9],['Invalid final aspect ratio',3]])
+report=report.replace('## 13. Top 25 worst shots','Fault totals below overlap; do not add them to obtain a scene count.\n\n'+faults+'\n## 13. Top 25 worst shots')
+report+='\n## Appendix: issue index\n\n'+table(['Issue','Count','Every tagged shot'],[[code,count,ids(code)] for code,count in sorted(s['issues'].items())])
+(R/'REPORT.md').write_text(report,encoding='utf-8')
+# Local, self-contained data viewer; all content is escaped, no external scripts or writes.
+data=json.dumps(a,ensure_ascii=False).replace('<','\\u003c')
+page='''<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mars forensic audit — 136 shots</title><style>body{font:16px system-ui;background:#10151b;color:#e5eaf0;max-width:1400px;margin:auto;padding:24px}h1{margin:0}header{position:sticky;top:0;background:#10151bf5;padding:16px 0;z-index:1}input,select{padding:10px;background:#232e3a;color:white;border:1px solid #637080;border-radius:6px}input{width:min(500px,60vw)}article{border:1px solid #465568;margin:20px 0;padding:18px;border-radius:10px}article.BAD{border-left:6px solid #ec776b}article.GOOD{border-left:6px solid #87ce9c}article.NO_OUTPUT{border-left:6px solid #e4bb5b}.body{display:grid;grid-template-columns:minmax(340px,1fr) 1fr;gap:20px}img{width:100%;height:auto;background:#222}p{line-height:1.5}a{color:#a8d4ff}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}.tags{font-size:12px;color:#edc78c}small{color:#aebbc9}.missing{padding:70px;text-align:center;background:#20242c}summary{cursor:pointer;padding:8px}button{padding:8px}@media(max-width:850px){.body{display:block}} </style></head><body><header><h1>Mars · forensic audit</h1><p>136 shots · 37 usable · 89 bad images · 10 missing. Diagnosis only; no production changes.</p><input id="search" placeholder="Search shot, issue, narration, UUID…"> <select id="filter"><option value="ALL">All shots</option><option>BAD</option><option>GOOD</option><option>NO_OUTPUT</option><option value="FALSE_NEGATIVE">Bad + Ready</option><option value="FALSE_POSITIVE">Good + Review</option><option value="EDIT">All Qwen edits</option></select><span id="count"></span> <a href="REPORT.md">Full report</a> · <a href="per-shot-audit.csv">CSV</a></header><main></main><script>const rows=DATA;const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));function show(){let q=document.querySelector('#search').value.toLowerCase(),f=document.querySelector('#filter').value;let rs=rows.filter(r=>(!q||JSON.stringify(r).toLowerCase().includes(q))&&(f==='ALL'||r.audit_verdict===f||f==='EDIT'&&r.strategy==='EDIT'||f==='FALSE_NEGATIVE'&&r.audit_verdict==='BAD'&&r.qa==='approved'||f==='FALSE_POSITIVE'&&r.audit_verdict==='GOOD'&&r.qa!=='approved'));document.querySelector('#count').textContent=' '+rs.length+' shown';document.querySelector('main').innerHTML=rs.map(r=>{let im=r.local_file?'images/'+r.local_file.split(/[\\\\/]/).pop():null;return `<article class="${esc(r.audit_verdict)}" id="shot-${r.shot}"><h2>Shot ${r.shot} · ${esc(r.timestamp)} · ${r.audit_verdict}</h2><small>${esc(r.scene_id)} · ${esc(r.strategy)} · current QA ${esc(r.qa||r.status)} · ${r.width||'—'}×${r.height||'—'} · ${esc(r.model||'local')}</small><div class="body"><div>${im?`<a href="${esc(im)}"><img loading="lazy" src="${esc(im)}" alt="Shot ${r.shot}"></a>`:'<div class="missing">NO OUTPUT</div>'}<p class="tags">${r.issues.map(esc).join(' · ')}</p></div><div><p><b>Finding:</b> ${esc(r.observation)}</p><p><b>Narration:</b> ${esc(r.narration)}</p><p><b>Required facts:</b> ${esc(r.required_visual_facts.join('; '))}</p><p><b>Cast:</b> ${esc(r.visible_character_count)}. Expected: ${esc(r.expected_characters.join('; '))}</p><p><b>Location:</b> ${esc(r.expected_location)}</p><p><b>Confidence:</b> ${esc(r.confidence)} ${esc(r.uncertainty)}</p><details><summary>References, QA and full record</summary><pre>${esc(JSON.stringify(r,null,2))}</pre></details></div></div></article>`}).join('')}document.querySelector('#search').addEventListener('input',show);document.querySelector('#filter').addEventListener('change',show);show();</script></body></html>'''.replace('DATA',data)
+(R/'audit-gallery.html').write_text(page,encoding='utf-8')
+print('Wrote REPORT.md and audit-gallery.html')

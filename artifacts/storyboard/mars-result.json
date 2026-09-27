@@ -1,0 +1,1532 @@
+{
+  "row": {
+    "id": "eb25a8ee-9785-4b16-9e48-0a44c723d2a0",
+    "meta": {
+      "model": "gpt-5-mini",
+      "callLedger": [
+        {
+          "stage": "planning",
+          "inputTokens": 8465,
+          "outputTokens": 7329,
+          "estimatedCostUsd": 0.0168
+        }
+      ],
+      "modelCalls": 1,
+      "validation": {
+        "errors": [],
+        "warnings": []
+      },
+      "inputTokens": 8465,
+      "repairCalls": 0,
+      "outputTokens": 7329,
+      "reasoningTokens": 192,
+      "providerCallLimit": 1,
+      "resumeWhilePaused": true,
+      "checkpointRecovery": "deterministic first-setup normalization; no provider call",
+      "originalValidation": {
+        "errors": [
+          {
+            "code": "reuse_before_setup",
+            "beatIds": [
+              "vb4"
+            ],
+            "message": "Beat vb4 reuses baseSetupKey \"airlock_suit_cam_A\" before any earlier beat established it."
+          }
+        ],
+        "warnings": []
+      },
+      "estimatedModelCostUsd": 0.0168,
+      "estimatedTotalCostUsd": 0.0168,
+      "providerCallsReserved": 1,
+      "deterministicAdjustments": [
+        {
+          "to": "NEW_SETUP",
+          "from": "REUSE_WITH_DELTA",
+          "beatId": "vb4",
+          "reason": "first_occurrence_establishes_setup",
+          "originalRenderMethod": "GENERATE",
+          "originalDeltaInstruction": "close-up on filter swap, then pull back to stamp the log; maintain same base geometry as later airlock shots."
+        }
+      ],
+      "continuationAuthorization": "single existing Mars storyboard continuation"
+    },
+    "stage": "finalizing",
+    "status": "ready",
+    "version": 1,
+    "created_at": "2026-09-09T15:43:28.045553+00:00",
+    "project_id": "49a18b78-1d4b-4570-8113-5cd130687e1e",
+    "visual_mode": "HYBRID",
+    "visual_plan": {
+      "visualMix": {
+        "mapDataPct": 10,
+        "explainerGraphicsPct": 35,
+        "storyIllustrationPct": 55
+      },
+      "visualMode": "HYBRID",
+      "visualBeats": [
+        {
+          "id": "vb1",
+          "shotSize": "CLOSE",
+          "chapterId": "c1",
+          "locationId": "l_habitat_bunk",
+          "visualType": "STORY_ILLUSTRATION",
+          "baseSetupKey": "hab_bunk_cam_A",
+          "renderMethod": "GENERATE",
+          "shotStrategy": "NEW_SETUP",
+          "sequenceIndex": 1,
+          "deltaInstruction": null,
+          "primaryEntityIds": [
+            "e_protagonist",
+            "o_tablet",
+            "o_solar_arrays"
+          ],
+          "continuityGroupId": "cg_habitat_morning",
+          "forbiddenElements": [
+            "No legible real-world brand logos or readable tablet text (TEXT_INFOGRAPHIC should handle exact labels)."
+          ],
+          "narrativeFunction": "hook / set scene",
+          "revealConstraints": [],
+          "estimatedEndSeconds": 45,
+          "narrationSegmentIds": [
+            "s1"
+          ],
+          "supportingEntityIds": [
+            "l_habitat_bunk"
+          ],
+          "estimatedStartSeconds": 0,
+          "factualVisualConstraints": [
+            {
+              "factIds": [
+                "m_f_sol_time",
+                "m_f_circadian_lighting",
+                "m_f_wake_checklist"
+              ],
+              "description": "Habitat lighting should suggest spectrum-tunable panels (warm morning glow) and tablet UI should show three icons labelled conceptually as air/water/power but not readable text."
+            }
+          ],
+          "informationToCommunicate": "Introduce a single waking protagonist and the habitat context (window view to Mars, bedside tablet showing system check icons) so the viewer immediately understands the sol rhythm and that the tablet drives the day's priorities."
+        },
+        {
+          "id": "vb2",
+          "shotSize": "MEDIUM",
+          "chapterId": "c1",
+          "locationId": "l_habitat_bunk",
+          "visualType": "PROGRAMMATIC_GRAPHIC",
+          "baseSetupKey": "hab_bunk_cam_A",
+          "renderMethod": "PROGRAMMATIC_GRAPHIC",
+          "shotStrategy": "TEXT_INFOGRAPHIC",
+          "sequenceIndex": 2,
+          "deltaInstruction": "switch to over-the-shoulder tablet view with three flagged items visually emphasized; do not put readable labels in generated image.",
+          "primaryEntityIds": [
+            "o_tablet"
+          ],
+          "continuityGroupId": "cg_habitat_morning",
+          "forbiddenElements": [
+            "No legible tablet text or exact numeric forecasts in generated image; use programmatic captioning later for numbers."
+          ],
+          "narrativeFunction": "morning checklist / open loop setup",
+          "revealConstraints": [
+            "Do not show the suit repair being completed yet; the suit problem must remain unresolved visually until its payoff beat."
+          ],
+          "estimatedEndSeconds": 115,
+          "narrationSegmentIds": [
+            "s2"
+          ],
+          "supportingEntityIds": [
+            "e_protagonist"
+          ],
+          "estimatedStartSeconds": 45,
+          "factualVisualConstraints": [
+            {
+              "factIds": [
+                "m_f_wake_checklist",
+                "m_f_power_dust",
+                "m_f_greenhouse_operations"
+              ],
+              "description": "Operational UI should prioritise life-support flags first and show dust forecast as probabilistic trend."
+            }
+          ],
+          "informationToCommunicate": "Show the tablet routing three amber flags (suit issue, greenhouse CO2, dust forecast) and imply queueing/prioritization; set open loops visually without revealing resolutions."
+        },
+        {
+          "id": "vb3",
+          "shotSize": "MEDIUM",
+          "chapterId": "c2",
+          "locationId": "l_habitat_bunk",
+          "visualType": "DIAGRAM",
+          "baseSetupKey": null,
+          "renderMethod": "PROGRAMMATIC_GRAPHIC",
+          "shotStrategy": "DIAGRAM",
+          "sequenceIndex": 3,
+          "deltaInstruction": null,
+          "primaryEntityIds": [],
+          "continuityGroupId": null,
+          "forbiddenElements": [
+            "Do not try to show detailed, real-world control-screen text in generated art; use graphic elements (icons, flow arrows) not readable labels."
+          ],
+          "narrativeFunction": "life-support overview",
+          "revealConstraints": [],
+          "estimatedEndSeconds": 195,
+          "narrationSegmentIds": [
+            "s3"
+          ],
+          "supportingEntityIds": [
+            "e_protagonist"
+          ],
+          "estimatedStartSeconds": 115,
+          "factualVisualConstraints": [
+            {
+              "factIds": [
+                "m_f_life_support_maintenance"
+              ],
+              "description": "Diagram should reflect closed loops (air → scrubbers → distribution; water recycling) consistent with life-support maintenance practices."
+            }
+          ],
+          "informationToCommunicate": "Convey that life support is a continuous set of loops (air, water, waste) that are largely automated but require routine human checks — show diagnostics screens, filters and a crew member making a quick manual inspection."
+        },
+        {
+          "id": "vb4",
+          "shotSize": "DETAIL",
+          "chapterId": "c2",
+          "locationId": "l_airlock",
+          "visualType": "OBJECT_DETAIL",
+          "baseSetupKey": "airlock_suit_cam_A",
+          "renderMethod": "GENERATE",
+          "shotStrategy": "NEW_SETUP",
+          "sequenceIndex": 4,
+          "deltaInstruction": null,
+          "primaryEntityIds": [
+            "e_technician",
+            "o_suit"
+          ],
+          "continuityGroupId": "cg_airlock_eva",
+          "forbiddenElements": [
+            "No readable manufacturer labels on suit parts; log stamp text not legible."
+          ],
+          "narrativeFunction": "partial answer / payoff for suit issue",
+          "revealConstraints": [],
+          "estimatedEndSeconds": 255,
+          "narrationSegmentIds": [
+            "s4"
+          ],
+          "supportingEntityIds": [
+            "e_eva_officer"
+          ],
+          "estimatedStartSeconds": 195,
+          "factualVisualConstraints": [
+            {
+              "factIds": [
+                "m_f_life_support_maintenance",
+                "m_f_wake_checklist",
+                "m_f_latency_autonomy"
+              ],
+              "description": "Preflight checks and a small manual replacement/inspection are standard; depict filter-like element being swapped and a physical log stamp/action."
+            }
+          ],
+          "informationToCommunicate": "Show the technician receiving the suit maintenance routing, running preflight diagnostics, swapping a dusty valve filter, stamping the log and clearing the suit — this visually pays off the morning suit open loop and establishes human-in-the-loop closure."
+        },
+        {
+          "id": "vb5",
+          "shotSize": "WIDE",
+          "chapterId": "c3",
+          "locationId": "l_greenhouse",
+          "visualType": "ENVIRONMENT",
+          "baseSetupKey": "greenhouse_cam_A",
+          "renderMethod": "GENERATE",
+          "shotStrategy": "NEW_SETUP",
+          "sequenceIndex": 5,
+          "deltaInstruction": null,
+          "primaryEntityIds": [
+            "l_greenhouse",
+            "e_greenhouse_tech"
+          ],
+          "continuityGroupId": "cg_greenhouse",
+          "forbiddenElements": [
+            "Avoid implying unrealistic high-density vertical farming rigs with heavy power footprints unless called out later; keep scale plausible."
+          ],
+          "narrativeFunction": "greenhouse routine explanation",
+          "revealConstraints": [],
+          "estimatedEndSeconds": 325,
+          "narrationSegmentIds": [
+            "s5"
+          ],
+          "supportingEntityIds": [
+            "o_isru_unit"
+          ],
+          "estimatedStartSeconds": 255,
+          "factualVisualConstraints": [
+            {
+              "factIds": [
+                "m_f_greenhouse_operations",
+                "m_f_greenhouse_production"
+              ],
+              "description": "Greenhouse should show multi-rack controlled-environment styling with visible sensor probes and LED arrays consistent with Veggie/APH-style systems."
+            }
+          ],
+          "informationToCommunicate": "Introduce the greenhouse as an autonomous-but-supervised system: show sensor racks, growing trays, and a tech performing a morning crop round combining sensors and small hands-on tasks (pruning/inspection)."
+        },
+        {
+          "id": "vb6",
+          "shotSize": "MEDIUM",
+          "chapterId": "c3",
+          "locationId": "l_greenhouse",
+          "visualType": "CUTAWAY",
+          "baseSetupKey": "greenhouse_cam_A",
+          "renderMethod": "COMPOSITE",
+          "shotStrategy": "REUSE_WITH_DELTA",
+          "sequenceIndex": 6,
+          "deltaInstruction": "insert cutaway overlay showing airflow/CO2 spike routing and tech isolating a rack; keep same spatial camera anchor as prior greenhouse wide shot.",
+          "primaryEntityIds": [
+            "e_greenhouse_tech",
+            "l_greenhouse"
+          ],
+          "continuityGroupId": "cg_greenhouse",
+          "forbiddenElements": [
+            "No specific numeric CO2 values shown in generated imagery; textual readouts handled by programmatic graphics."
+          ],
+          "narrativeFunction": "greenhouse problem resolution / payoff",
+          "revealConstraints": [],
+          "estimatedEndSeconds": 395,
+          "narrationSegmentIds": [
+            "s6"
+          ],
+          "supportingEntityIds": [
+            "o_isru_unit"
+          ],
+          "estimatedStartSeconds": 325,
+          "factualVisualConstraints": [
+            {
+              "factIds": [
+                "m_f_greenhouse_operations",
+                "m_f_greenhouse_production"
+              ],
+              "description": "Actions should match greenhouse control practice: scrubber ramp-up, isolating racks, and procedural documentation."
+            }
+          ],
+          "informationToCommunicate": "Visualize the CO2 spike handling: automated scrubbers ramping, airflow animation, a tech isolating a rack and venting it — demonstrate automation-first then human correction."
+        },
+        {
+          "id": "vb7",
+          "shotSize": "MEDIUM",
+          "chapterId": "c4",
+          "locationId": null,
+          "visualType": "DIAGRAM",
+          "baseSetupKey": null,
+          "renderMethod": "PROGRAMMATIC_GRAPHIC",
+          "shotStrategy": "DIAGRAM",
+          "sequenceIndex": 7,
+          "deltaInstruction": null,
+          "primaryEntityIds": [
+            "d_eva_budget_diagram"
+          ],
+          "continuityGroupId": null,
+          "forbiddenElements": [
+            "Avoid implying a single, universal numeric dose limit (policy varies); label diagram conceptually."
+          ],
+          "narrativeFunction": "explain EVA constraints / complication",
+          "revealConstraints": [],
+          "estimatedEndSeconds": 465,
+          "narrationSegmentIds": [
+            "s7"
+          ],
+          "supportingEntityIds": [],
+          "estimatedStartSeconds": 395,
+          "factualVisualConstraints": [
+            {
+              "factIds": [
+                "m_f_eva_budget",
+                "m_f_surface_doses",
+                "m_f_rad_modeling_tools"
+              ],
+              "description": "Diagram should encode the core equation t_allowed ≈ ΔD_allowed / Ḋ_suit conceptually without specific agency numeric policy."
+            }
+          ],
+          "informationToCommunicate": "Explain EVA constraints visually with a conceptual diagram: dose-rate → allowed time, batching tasks, and the idea of a nearby storm shelter as the contingency."
+        },
+        {
+          "id": "vb8",
+          "shotSize": "MEDIUM",
+          "chapterId": "c4",
+          "locationId": "l_airlock",
+          "visualType": "STORY_ILLUSTRATION",
+          "baseSetupKey": "airlock_suit_cam_A",
+          "renderMethod": "GENERATE",
+          "shotStrategy": "REUSE_WITH_DELTA",
+          "sequenceIndex": 8,
+          "deltaInstruction": "wider pullback to show team movement and airlock geometry after the detail filter shot; reuse same anchors.",
+          "primaryEntityIds": [
+            "e_eva_officer",
+            "e_technician",
+            "o_suit"
+          ],
+          "continuityGroupId": "cg_airlock_eva",
+          "forbiddenElements": [
+            "No specific policy numeric labels for allowable dose in generated art."
+          ],
+          "narrativeFunction": "EVA execution and risk management / payoff",
+          "revealConstraints": [],
+          "estimatedEndSeconds": 525,
+          "narrationSegmentIds": [
+            "s8"
+          ],
+          "supportingEntityIds": [
+            "o_dosimeter"
+          ],
+          "estimatedStartSeconds": 465,
+          "factualVisualConstraints": [
+            {
+              "factIds": [
+                "m_f_eva_budget",
+                "m_f_surface_doses"
+              ],
+              "description": "Show dosimeter/readout concept and compact checklist actions consistent with EVA preflight norms."
+            }
+          ],
+          "informationToCommunicate": "Show the assembled EVA team running compact pre-departure checks at the airlock, batching tasks, and the team member checking the SEP forecast with a hand-route to the storm shelter — payoff for suit repair and demonstration of exposure-managed pacing."
+        },
+        {
+          "id": "vb9",
+          "shotSize": "MEDIUM",
+          "chapterId": "c5",
+          "locationId": "l_ops_center",
+          "visualType": "PROGRAMMATIC_GRAPHIC",
+          "baseSetupKey": "ops_tablet_cam_A",
+          "renderMethod": "PROGRAMMATIC_GRAPHIC",
+          "shotStrategy": "TEXT_INFOGRAPHIC",
+          "sequenceIndex": 9,
+          "deltaInstruction": "tablet-centric view showing declining solar margin and battery icon; use programmatic overlays for numeric tradeoffs.",
+          "primaryEntityIds": [
+            "e_operations_officer",
+            "o_tablet",
+            "o_solar_arrays"
+          ],
+          "continuityGroupId": "cg_ops_center",
+          "forbiddenElements": [
+            "Do not place precise watt-hour numbers or real telemetry text in generated artwork."
+          ],
+          "narrativeFunction": "dust event setup / complication",
+          "revealConstraints": [],
+          "estimatedEndSeconds": 595,
+          "narrationSegmentIds": [
+            "s9"
+          ],
+          "supportingEntityIds": [
+            "o_isru_unit"
+          ],
+          "estimatedStartSeconds": 525,
+          "factualVisualConstraints": [
+            {
+              "factIds": [
+                "m_f_power_dust",
+                "m_f_isru"
+              ],
+              "description": "Visualization must reflect that dust reduces insolation and that power planners will triage tasks accordingly."
+            }
+          ],
+          "informationToCommunicate": "Show the dust forecast shifting and solar arrays' margin declining on operations displays; the viewer must see the immediate downstream effects (battery margin icon, queued ISRU decision) to understand urgency."
+        },
+        {
+          "id": "vb10",
+          "shotSize": "WIDE",
+          "chapterId": "c5",
+          "locationId": "l_ops_center",
+          "visualType": "COMPARISON",
+          "baseSetupKey": "ops_tablet_cam_A",
+          "renderMethod": "COMPOSITE",
+          "shotStrategy": "REUSE_WITH_DELTA",
+          "sequenceIndex": 10,
+          "deltaInstruction": "split-frame or sequential overlay: before (normal power) → after (dimmed racks, battery icon discharging, ISRU paused).",
+          "primaryEntityIds": [
+            "e_operations_officer",
+            "l_greenhouse"
+          ],
+          "continuityGroupId": "cg_ops_center",
+          "forbiddenElements": [
+            "No fabricated numeric power curves in generated art; use schematic arrows/icons; exact charts handled programmatically."
+          ],
+          "narrativeFunction": "contingency triage / payoff",
+          "revealConstraints": [],
+          "estimatedEndSeconds": 675,
+          "narrationSegmentIds": [
+            "s10"
+          ],
+          "supportingEntityIds": [
+            "o_isru_unit",
+            "o_tablet"
+          ],
+          "estimatedStartSeconds": 595,
+          "factualVisualConstraints": [
+            {
+              "factIds": [
+                "m_f_isru",
+                "m_f_cea_tradeoffs",
+                "m_f_power_dust"
+              ],
+              "description": "Portray realistic ISRU constraints: startup draws significant power; represent as decision (on/pulsed/off) rather than always-on."
+            }
+          ],
+          "informationToCommunicate": "Visually show the surgical triage: greenhouse lights dimming on noncritical racks, an ops officer confirming battery discharge into life-support, and ISRU either pulsed or postponed — communicate tradeoffs through staged actions."
+        },
+        {
+          "id": "vb11",
+          "shotSize": "MEDIUM",
+          "chapterId": "c6",
+          "locationId": "l_habitat_bunk",
+          "visualType": "CHARACTER",
+          "baseSetupKey": "hab_bunk_cam_A",
+          "renderMethod": "GENERATE",
+          "shotStrategy": "REUSE_WITH_DELTA",
+          "sequenceIndex": 11,
+          "deltaInstruction": "switch lighting profile to bright blue-enriched active mode while keeping same camera anchor to show continuity of day.",
+          "primaryEntityIds": [
+            "e_protagonist"
+          ],
+          "continuityGroupId": "cg_habitat_morning",
+          "forbiddenElements": [],
+          "narrativeFunction": "human needs / social scheduling",
+          "revealConstraints": [],
+          "estimatedEndSeconds": 735,
+          "narrationSegmentIds": [
+            "s11"
+          ],
+          "supportingEntityIds": [
+            "e_operations_officer"
+          ],
+          "estimatedStartSeconds": 675,
+          "factualVisualConstraints": [
+            {
+              "factIds": [
+                "m_f_circadian_lighting",
+                "m_f_latency_autonomy"
+              ],
+              "description": "Lighting profile should imply spectrum tuning consistent with circadian countermeasures."
+            }
+          ],
+          "informationToCommunicate": "Convey scheduled exercise and circadian lighting: show the protagonist in a small exercise zone under blue-enriched light, and board with a visible lighting spectrum change to imply entrainment strategy and asynchronous handoffs."
+        },
+        {
+          "id": "vb12",
+          "shotSize": "WIDE",
+          "chapterId": "c6",
+          "locationId": null,
+          "visualType": "STORY_ILLUSTRATION",
+          "baseSetupKey": "communal_table_cam_A",
+          "renderMethod": "GENERATE",
+          "shotStrategy": "NEW_SETUP",
+          "sequenceIndex": 12,
+          "deltaInstruction": null,
+          "primaryEntityIds": [
+            "e_communal_group"
+          ],
+          "continuityGroupId": "cg_communal_evening",
+          "forbiddenElements": [],
+          "narrativeFunction": "social payoff / consequence",
+          "revealConstraints": [],
+          "estimatedEndSeconds": 795,
+          "narrationSegmentIds": [
+            "s12"
+          ],
+          "supportingEntityIds": [
+            "e_protagonist",
+            "e_operations_officer"
+          ],
+          "estimatedStartSeconds": 735,
+          "factualVisualConstraints": [
+            {
+              "factIds": [
+                "m_f_circadian_lighting",
+                "m_f_life_support_maintenance"
+              ],
+              "description": "Rituals should look modest and practical (tea or shared food, log exchange), not theatrical."
+            }
+          ],
+          "informationToCommunicate": "Show the evening ritual: a small group sharing tea, exchanging short logs and situational items — illustrate how social routines distribute situational awareness and schedule burdens."
+        },
+        {
+          "id": "vb13",
+          "shotSize": "CLOSE",
+          "chapterId": "c7",
+          "locationId": "l_ops_center",
+          "visualType": "OBJECT_DETAIL",
+          "baseSetupKey": "ops_tablet_cam_A",
+          "renderMethod": "COMPOSITE",
+          "shotStrategy": "REUSE_WITH_DELTA",
+          "sequenceIndex": 13,
+          "deltaInstruction": "close-up on logging action and inventory list being checked; maintain same ops center framing.",
+          "primaryEntityIds": [
+            "e_operations_officer",
+            "o_tablet"
+          ],
+          "continuityGroupId": "cg_ops_center",
+          "forbiddenElements": [
+            "No legible inventory text in generated image."
+          ],
+          "narrativeFunction": "night checks / operational wrap",
+          "revealConstraints": [],
+          "estimatedEndSeconds": 865,
+          "narrationSegmentIds": [
+            "s13"
+          ],
+          "supportingEntityIds": [
+            "o_isru_unit"
+          ],
+          "estimatedStartSeconds": 795,
+          "factualVisualConstraints": [
+            {
+              "factIds": [
+                "m_f_life_support_maintenance",
+                "m_f_isru"
+              ],
+              "description": "Portray spare-part and ISRU status recording as standard operational practice."
+            }
+          ],
+          "informationToCommunicate": "Depict end-of-sol checks: archived logs, spare-part inventory, ISRU status being recorded — demonstrate procedural handoff that keeps morning checklists short and decisive."
+        },
+        {
+          "id": "vb14",
+          "shotSize": "WIDE",
+          "chapterId": "c7",
+          "locationId": null,
+          "visualType": "STORY_ILLUSTRATION",
+          "baseSetupKey": "communal_table_cam_A",
+          "renderMethod": "COMPOSITE",
+          "shotStrategy": "REUSE_WITH_DELTA",
+          "sequenceIndex": 14,
+          "deltaInstruction": "wide pullback composite incorporating habitat window with solar arrays, shelved suit in the background, and greenhouse visible through an internal viewport; lighting warm.",
+          "primaryEntityIds": [
+            "e_communal_group",
+            "e_protagonist",
+            "o_suit",
+            "l_greenhouse",
+            "o_solar_arrays"
+          ],
+          "continuityGroupId": "cg_communal_evening",
+          "forbiddenElements": [
+            "Avoid new technical surprises in the final shot; do not introduce unreadable-on-purpose telemetry in generated imagery."
+          ],
+          "narrativeFunction": "final payoff / insight",
+          "revealConstraints": [],
+          "estimatedEndSeconds": 895,
+          "narrationSegmentIds": [
+            "s14"
+          ],
+          "supportingEntityIds": [
+            "e_operations_officer",
+            "e_greenhouse_tech"
+          ],
+          "estimatedStartSeconds": 865,
+          "factualVisualConstraints": [
+            {
+              "factIds": [
+                "m_f_life_support_maintenance",
+                "m_f_circadian_lighting",
+                "m_f_power_dust"
+              ],
+              "description": "Final tableau should reflect resolved states: suit stowed, greenhouse CO2 under control, battery state within margins — all consistent with earlier factual constraints."
+            }
+          ],
+          "informationToCommunicate": "Close with a human tableau that resolves the three initial open loops visually (repaired suit stored, greenhouse breathing, batteries within margins) and the modest ritual — show the colony in balanced equilibrium where technical cycles and social routines create resilience."
+        }
+      ],
+      "visualPayoffs": [
+        {
+          "description": "Suit maintenance flagged in morning is fixed and cleared before EVA; visual payoff shows suit repaired and used safely.",
+          "setupBeatId": "vb2",
+          "payoffBeatId": "vb4"
+        },
+        {
+          "description": "Greenhouse CO2 amber flagged in morning is resolved by scrubbers and isolation; payoff shows tech isolating rack and CO2 trending down.",
+          "setupBeatId": "vb2",
+          "payoffBeatId": "vb6"
+        },
+        {
+          "description": "Dust forecast that threatens solar output forces power triage; payoff is the ops officer dimming greenhouse lights and reassigning battery power to essentials.",
+          "setupBeatId": "vb2",
+          "payoffBeatId": "vb10"
+        }
+      ],
+      "entityRegistry": [
+        {
+          "id": "e_protagonist",
+          "name": "Protagonist crewperson (room view)",
+          "category": "CHARACTER",
+          "importance": "HERO",
+          "referenceNeeded": true,
+          "referencePriority": "high"
+        },
+        {
+          "id": "e_eva_officer",
+          "name": "EVA officer / mission planner",
+          "category": "CHARACTER",
+          "importance": "RECURRING",
+          "referenceNeeded": true,
+          "referencePriority": "medium"
+        },
+        {
+          "id": "e_technician",
+          "name": "Suit technician",
+          "category": "CHARACTER",
+          "importance": "RECURRING",
+          "referenceNeeded": true,
+          "referencePriority": "medium"
+        },
+        {
+          "id": "e_greenhouse_tech",
+          "name": "Greenhouse technician",
+          "category": "CHARACTER",
+          "importance": "RECURRING",
+          "referenceNeeded": true,
+          "referencePriority": "medium"
+        },
+        {
+          "id": "e_operations_officer",
+          "name": "Operations officer (power/ISRU)",
+          "category": "CHARACTER",
+          "importance": "RECURRING",
+          "referenceNeeded": true,
+          "referencePriority": "medium"
+        },
+        {
+          "id": "e_communal_group",
+          "name": "Small crew group (3-4 people) sharing ritual",
+          "category": "CHARACTER",
+          "importance": "RECURRING",
+          "referenceNeeded": false,
+          "referencePriority": "low"
+        },
+        {
+          "id": "l_habitat_bunk",
+          "name": "Habitat bunk / windowed module (morning)",
+          "category": "LOCATION",
+          "importance": "HERO",
+          "referenceNeeded": true,
+          "referencePriority": "high"
+        },
+        {
+          "id": "l_greenhouse",
+          "name": "Greenhouse bay (controlled-environment rack)",
+          "category": "LOCATION",
+          "importance": "RECURRING",
+          "referenceNeeded": true,
+          "referencePriority": "high"
+        },
+        {
+          "id": "l_airlock",
+          "name": "Airlock and suit prep bay",
+          "category": "LOCATION",
+          "importance": "RECURRING",
+          "referenceNeeded": true,
+          "referencePriority": "medium"
+        },
+        {
+          "id": "l_ops_center",
+          "name": "Operations workstation / tablet screen environment",
+          "category": "LOCATION",
+          "importance": "RECURRING",
+          "referenceNeeded": true,
+          "referencePriority": "medium"
+        },
+        {
+          "id": "o_tablet",
+          "name": "Bedside checklist tablet (habitat UI)",
+          "category": "IMPORTANT_OBJECT",
+          "importance": "RECURRING",
+          "referenceNeeded": true,
+          "referencePriority": "high"
+        },
+        {
+          "id": "o_suit",
+          "name": "Extravehicular suit (disassembled / preflight)",
+          "category": "VEHICLE_MACHINE",
+          "importance": "RECURRING",
+          "referenceNeeded": true,
+          "referencePriority": "high"
+        },
+        {
+          "id": "o_dosimeter",
+          "name": "Personal dosimeter readout",
+          "category": "IMPORTANT_OBJECT",
+          "importance": "RECURRING",
+          "referenceNeeded": false,
+          "referencePriority": "low"
+        },
+        {
+          "id": "o_solar_arrays",
+          "name": "Distant solar arrays field",
+          "category": "VEHICLE_MACHINE",
+          "importance": "RECURRING",
+          "referenceNeeded": true,
+          "referencePriority": "medium"
+        },
+        {
+          "id": "o_isru_unit",
+          "name": "ISRU demonstrator / small plant",
+          "category": "VEHICLE_MACHINE",
+          "importance": "RECURRING",
+          "referenceNeeded": true,
+          "referencePriority": "medium"
+        },
+        {
+          "id": "d_eva_budget_diagram",
+          "name": "EVA dose budgeting diagram (conceptual)",
+          "category": "DIAGRAM_SUBJECT",
+          "importance": "INCIDENTAL",
+          "referenceNeeded": false,
+          "referencePriority": "low"
+        }
+      ],
+      "continuityGroups": [
+        {
+          "id": "cg_habitat_morning",
+          "label": "habitat_morning",
+          "locationId": "l_habitat_bunk",
+          "cameraAnchors": [
+            "bunk_close_window",
+            "tablet_overshoulder",
+            "habitat_pullback_mid"
+          ],
+          "importantProps": [
+            "o_tablet",
+            "o_solar_arrays"
+          ],
+          "inheritedState": [
+            {
+              "key": "timeOfDay",
+              "value": "morning"
+            },
+            {
+              "key": "lighting_profile",
+              "value": "morning_glow"
+            }
+          ],
+          "persistentEntityIds": [
+            "e_protagonist",
+            "o_tablet",
+            "o_solar_arrays"
+          ]
+        },
+        {
+          "id": "cg_greenhouse",
+          "label": "greenhouse_day",
+          "locationId": "l_greenhouse",
+          "cameraAnchors": [
+            "rack_overview_wide",
+            "tech_detail_hand",
+            "airflow_cutaway"
+          ],
+          "importantProps": [
+            "o_isru_unit"
+          ],
+          "inheritedState": [
+            {
+              "key": "co2_alarm_state",
+              "value": "amber_orange"
+            },
+            {
+              "key": "lights_state",
+              "value": "normal"
+            }
+          ],
+          "persistentEntityIds": [
+            "e_greenhouse_tech",
+            "l_greenhouse"
+          ]
+        },
+        {
+          "id": "cg_airlock_eva",
+          "label": "airlock_prep",
+          "locationId": "l_airlock",
+          "cameraAnchors": [
+            "suit_table_side",
+            "airlock_door_angle",
+            "tech_hands_detail"
+          ],
+          "importantProps": [
+            "o_suit",
+            "o_dosimeter"
+          ],
+          "inheritedState": [
+            {
+              "key": "suit_status",
+              "value": "repaired_cleared"
+            }
+          ],
+          "persistentEntityIds": [
+            "e_technician",
+            "e_eva_officer"
+          ]
+        },
+        {
+          "id": "cg_ops_center",
+          "label": "ops_center_power",
+          "locationId": "l_ops_center",
+          "cameraAnchors": [
+            "tablet_focus",
+            "ops_officer_midshot",
+            "power_map_insert"
+          ],
+          "importantProps": [
+            "o_tablet",
+            "o_solar_arrays",
+            "o_isru_unit"
+          ],
+          "inheritedState": [
+            {
+              "key": "dust_forecast",
+              "value": "updated_probable"
+            },
+            {
+              "key": "power_margin",
+              "value": "declining"
+            }
+          ],
+          "persistentEntityIds": [
+            "e_operations_officer"
+          ]
+        },
+        {
+          "id": "cg_communal_evening",
+          "label": "communal_evening",
+          "locationId": null,
+          "cameraAnchors": [
+            "table_group_wide",
+            "tea_closeup",
+            "log_exchange_overhear"
+          ],
+          "importantProps": [],
+          "inheritedState": [
+            {
+              "key": "lighting_profile",
+              "value": "warm_evening"
+            }
+          ],
+          "persistentEntityIds": [
+            "e_communal_group"
+          ]
+        }
+      ]
+    },
+    "last_error_at": "2026-09-09T16:11:23.284+00:00",
+    "stage_attempt": 1,
+    "entity_registry": [
+      {
+        "id": "e_protagonist",
+        "name": "Protagonist crewperson (room view)",
+        "category": "CHARACTER",
+        "importance": "HERO",
+        "referenceNeeded": true,
+        "referencePriority": "high"
+      },
+      {
+        "id": "e_eva_officer",
+        "name": "EVA officer / mission planner",
+        "category": "CHARACTER",
+        "importance": "RECURRING",
+        "referenceNeeded": true,
+        "referencePriority": "medium"
+      },
+      {
+        "id": "e_technician",
+        "name": "Suit technician",
+        "category": "CHARACTER",
+        "importance": "RECURRING",
+        "referenceNeeded": true,
+        "referencePriority": "medium"
+      },
+      {
+        "id": "e_greenhouse_tech",
+        "name": "Greenhouse technician",
+        "category": "CHARACTER",
+        "importance": "RECURRING",
+        "referenceNeeded": true,
+        "referencePriority": "medium"
+      },
+      {
+        "id": "e_operations_officer",
+        "name": "Operations officer (power/ISRU)",
+        "category": "CHARACTER",
+        "importance": "RECURRING",
+        "referenceNeeded": true,
+        "referencePriority": "medium"
+      },
+      {
+        "id": "e_communal_group",
+        "name": "Small crew group (3-4 people) sharing ritual",
+        "category": "CHARACTER",
+        "importance": "RECURRING",
+        "referenceNeeded": false,
+        "referencePriority": "low"
+      },
+      {
+        "id": "l_habitat_bunk",
+        "name": "Habitat bunk / windowed module (morning)",
+        "category": "LOCATION",
+        "importance": "HERO",
+        "referenceNeeded": true,
+        "referencePriority": "high"
+      },
+      {
+        "id": "l_greenhouse",
+        "name": "Greenhouse bay (controlled-environment rack)",
+        "category": "LOCATION",
+        "importance": "RECURRING",
+        "referenceNeeded": true,
+        "referencePriority": "high"
+      },
+      {
+        "id": "l_airlock",
+        "name": "Airlock and suit prep bay",
+        "category": "LOCATION",
+        "importance": "RECURRING",
+        "referenceNeeded": true,
+        "referencePriority": "medium"
+      },
+      {
+        "id": "l_ops_center",
+        "name": "Operations workstation / tablet screen environment",
+        "category": "LOCATION",
+        "importance": "RECURRING",
+        "referenceNeeded": true,
+        "referencePriority": "medium"
+      },
+      {
+        "id": "o_tablet",
+        "name": "Bedside checklist tablet (habitat UI)",
+        "category": "IMPORTANT_OBJECT",
+        "importance": "RECURRING",
+        "referenceNeeded": true,
+        "referencePriority": "high"
+      },
+      {
+        "id": "o_suit",
+        "name": "Extravehicular suit (disassembled / preflight)",
+        "category": "VEHICLE_MACHINE",
+        "importance": "RECURRING",
+        "referenceNeeded": true,
+        "referencePriority": "high"
+      },
+      {
+        "id": "o_dosimeter",
+        "name": "Personal dosimeter readout",
+        "category": "IMPORTANT_OBJECT",
+        "importance": "RECURRING",
+        "referenceNeeded": false,
+        "referencePriority": "low"
+      },
+      {
+        "id": "o_solar_arrays",
+        "name": "Distant solar arrays field",
+        "category": "VEHICLE_MACHINE",
+        "importance": "RECURRING",
+        "referenceNeeded": true,
+        "referencePriority": "medium"
+      },
+      {
+        "id": "o_isru_unit",
+        "name": "ISRU demonstrator / small plant",
+        "category": "VEHICLE_MACHINE",
+        "importance": "RECURRING",
+        "referenceNeeded": true,
+        "referencePriority": "medium"
+      },
+      {
+        "id": "d_eva_budget_diagram",
+        "name": "EVA dose budgeting diagram (conceptual)",
+        "category": "DIAGRAM_SUBJECT",
+        "importance": "INCIDENTAL",
+        "referenceNeeded": false,
+        "referencePriority": "low"
+      }
+    ],
+    "last_error_code": null,
+    "generation_model": "gpt-5-mini",
+    "stage_started_at": "2026-09-09T16:16:20.845881+00:00",
+    "continuity_groups": [
+      {
+        "id": "cg_habitat_morning",
+        "label": "habitat_morning",
+        "locationId": "l_habitat_bunk",
+        "cameraAnchors": [
+          "bunk_close_window",
+          "tablet_overshoulder",
+          "habitat_pullback_mid"
+        ],
+        "importantProps": [
+          "o_tablet",
+          "o_solar_arrays"
+        ],
+        "inheritedState": [
+          {
+            "key": "timeOfDay",
+            "value": "morning"
+          },
+          {
+            "key": "lighting_profile",
+            "value": "morning_glow"
+          }
+        ],
+        "persistentEntityIds": [
+          "e_protagonist",
+          "o_tablet",
+          "o_solar_arrays"
+        ]
+      },
+      {
+        "id": "cg_greenhouse",
+        "label": "greenhouse_day",
+        "locationId": "l_greenhouse",
+        "cameraAnchors": [
+          "rack_overview_wide",
+          "tech_detail_hand",
+          "airflow_cutaway"
+        ],
+        "importantProps": [
+          "o_isru_unit"
+        ],
+        "inheritedState": [
+          {
+            "key": "co2_alarm_state",
+            "value": "amber_orange"
+          },
+          {
+            "key": "lights_state",
+            "value": "normal"
+          }
+        ],
+        "persistentEntityIds": [
+          "e_greenhouse_tech",
+          "l_greenhouse"
+        ]
+      },
+      {
+        "id": "cg_airlock_eva",
+        "label": "airlock_prep",
+        "locationId": "l_airlock",
+        "cameraAnchors": [
+          "suit_table_side",
+          "airlock_door_angle",
+          "tech_hands_detail"
+        ],
+        "importantProps": [
+          "o_suit",
+          "o_dosimeter"
+        ],
+        "inheritedState": [
+          {
+            "key": "suit_status",
+            "value": "repaired_cleared"
+          }
+        ],
+        "persistentEntityIds": [
+          "e_technician",
+          "e_eva_officer"
+        ]
+      },
+      {
+        "id": "cg_ops_center",
+        "label": "ops_center_power",
+        "locationId": "l_ops_center",
+        "cameraAnchors": [
+          "tablet_focus",
+          "ops_officer_midshot",
+          "power_map_insert"
+        ],
+        "importantProps": [
+          "o_tablet",
+          "o_solar_arrays",
+          "o_isru_unit"
+        ],
+        "inheritedState": [
+          {
+            "key": "dust_forecast",
+            "value": "updated_probable"
+          },
+          {
+            "key": "power_margin",
+            "value": "declining"
+          }
+        ],
+        "persistentEntityIds": [
+          "e_operations_officer"
+        ]
+      },
+      {
+        "id": "cg_communal_evening",
+        "label": "communal_evening",
+        "locationId": null,
+        "cameraAnchors": [
+          "table_group_wide",
+          "tea_closeup",
+          "log_exchange_overhear"
+        ],
+        "importantProps": [],
+        "inheritedState": [
+          {
+            "key": "lighting_profile",
+            "value": "warm_evening"
+          }
+        ],
+        "persistentEntityIds": [
+          "e_communal_group"
+        ]
+      }
+    ],
+    "script_version_id": "687c6e63-b41c-4a68-8b63-f275275eacff",
+    "worker_lock_until": null,
+    "world_state_model": {
+      "cg_greenhouse": {
+        "lights_state": "normal",
+        "co2_alarm_state": "amber_orange"
+      },
+      "cg_ops_center": {
+        "power_margin": "declining",
+        "dust_forecast": "updated_probable"
+      },
+      "cg_airlock_eva": {
+        "suit_status": "repaired_cleared"
+      },
+      "cg_habitat_morning": {
+        "timeOfDay": "morning",
+        "lighting_profile": "morning_glow"
+      },
+      "cg_communal_evening": {
+        "lighting_profile": "warm_evening"
+      }
+    },
+    "storyboard_summary": {
+      "estimatedMaps": 0,
+      "estimatedEdits": 0,
+      "estimatedInserts": 0,
+      "totalVisualBeats": 14,
+      "estimatedDiagrams": 2,
+      "estimatedBaseSetups": 4,
+      "estimatedReuseEvents": 6,
+      "estimatedProgrammaticGraphics": 4
+    },
+    "workflow_started_at": "2026-09-09T16:09:49.874277+00:00",
+    "representative_preview_url": null,
+    "parent_visual_plan_version_id": null,
+    "representative_preview_job_id": null
+  },
+  "script": {
+    "title": "One Sol at Base Alpha: How a Mars Colony Actually Runs",
+    "chapters": [
+      {
+        "title": "Waking the Sol: Circadian Hacks and Morning Checks",
+        "chapterId": "c1",
+        "segmentIds": [
+          "s1",
+          "s2"
+        ]
+      },
+      {
+        "title": "Life‑Support Chores: The Invisible Work That Keeps Everyone Breathing",
+        "chapterId": "c2",
+        "segmentIds": [
+          "s3",
+          "s4"
+        ]
+      },
+      {
+        "title": "Greenhouse Rhythm: Planting, Monitoring, and the Meal Schedule",
+        "chapterId": "c3",
+        "segmentIds": [
+          "s5",
+          "s6"
+        ]
+      },
+      {
+        "title": "Surface Work and EVAs: Suits, Airlocks, and Radiation Windows",
+        "chapterId": "c4",
+        "segmentIds": [
+          "s7",
+          "s8"
+        ]
+      },
+      {
+        "title": "Power, ISRU, and a Dust Forecast That Changes the Day",
+        "chapterId": "c5",
+        "segmentIds": [
+          "s9",
+          "s10"
+        ]
+      },
+      {
+        "title": "Health, Exercise, and Social Time: The Human Side of the Schedule",
+        "chapterId": "c6",
+        "segmentIds": [
+          "s11",
+          "s12"
+        ]
+      },
+      {
+        "title": "Night Checks, Contingencies, and Closing the Sol",
+        "chapterId": "c7",
+        "segmentIds": [
+          "s13",
+          "s14"
+        ]
+      }
+    ],
+    "openLoops": [
+      {
+        "id": "ol_suit_issue",
+        "question": "Will the suit flagged for an afternoon EVA be ready and safe?",
+        "setupSegmentId": "s2",
+        "payoffSegmentId": "s4",
+        "expectedPayoffRegion": "life‑support / EVA preflight checks"
+      },
+      {
+        "id": "ol_greenhouse_co2",
+        "question": "Is the greenhouse CO2 excursion a systemic problem or a localized harvest glitch?",
+        "setupSegmentId": "s2",
+        "payoffSegmentId": "s6",
+        "expectedPayoffRegion": "greenhouse operations / control loops"
+      },
+      {
+        "id": "ol_dust_forecast",
+        "question": "Will the dust event force triage of power and delay high‑power tasks or ISRU runs?",
+        "setupSegmentId": "s2",
+        "payoffSegmentId": "s10",
+        "expectedPayoffRegion": "power management / ISRU scheduling"
+      }
+    ],
+    "actualWords": 1252,
+    "qualitySummary": {
+      "warningCount": 1,
+      "overallVerdict": "needs_revision",
+      "revisionSkipped": true
+    },
+    "researchWarnings": [
+      "Chapter \"Life‑Support Chores: The Invisible Work That Keeps Everyone Breathing\" could not be fully written from the available evidence.",
+      "Chapter \"Greenhouse Rhythm: Planting, Monitoring, and the Meal Schedule\" could not be fully written from the available evidence.",
+      "Chapter \"Power, ISRU, and a Dust Forecast That Changes the Day\" could not be fully written from the available evidence.",
+      "Chapter \"Night Checks, Contingencies, and Closing the Sol\" could not be fully written from the available evidence.",
+      "Overall research coverage was assessed as \"moderate\" — some sections use deliberately cautious language."
+    ],
+    "narrationSegments": [
+      {
+        "id": "s1",
+        "text": "The alarm is soft — not a birdsong, but a warm glow sliding across a narrow bunk as the habitat lighting shifts to 'morning'. Outside the modular window the world is Mars: red rock, a strip of horizon, and a distant line of solar arrays. On the bedside tablet a compact checklist shows three icons with green or amber rings: air, water, power. The tablet is not a convenience; on Mars the day is measured in sols — about 24 hours and 39 minutes — and the colony runs its clock to that rhythm. That extra forty minutes trickles into every schedule, so lighting, meals and exercise are tools to hold a consistent biological day instead of letting sleep drift.",
+        "factIds": [
+          "m_f_sol_time",
+          "m_f_circadian_lighting",
+          "m_f_wake_checklist"
+        ],
+        "chapterId": "c1",
+        "payoffIds": [],
+        "openLoopIds": [],
+        "sequenceIndex": 1,
+        "estimatedSeconds": 45,
+        "narrativeFunction": "hook / set scene"
+      },
+      {
+        "id": "s2",
+        "text": "The checklist is the operational heartbeat. The morning 'wake checklist' gates the day's work: did the air scrubbers stay within limits? Is water recycling nominal? What does the dust forecast look like? Automated monitors flag anything outside a safe range and route it to a human for follow‑up. Today, three amber flags appear: a maintenance note on a suit scheduled for an afternoon EVA, a greenhouse sensor reporting elevated CO2, and an updated dust forecast that could cut solar output later in the sol. The tablet doesn't panic; it parcels these problems into human‑action items so the crew can prioritize.",
+        "factIds": [
+          "m_f_wake_checklist",
+          "m_f_greenhouse_operations",
+          "m_f_power_dust"
+        ],
+        "chapterId": "c1",
+        "payoffIds": [],
+        "openLoopIds": [
+          "ol_suit_issue",
+          "ol_greenhouse_co2",
+          "ol_dust_forecast"
+        ],
+        "sequenceIndex": 2,
+        "estimatedSeconds": 70,
+        "narrativeFunction": "morning checklist / open loop setup"
+      },
+      {
+        "id": "s3",
+        "text": "First, the invisible work: life support. The colony depends on continuous loops — air, water, waste — and those loops live in diagnostics and quick hands‑on checks. Filters, scrubbers, humidity controllers and pump stations have sensors and automatic control, but scheduled manual checks, spare‑part tracking and human handoffs remain part of daily operations. That combination of automation plus human supervision keeps systems predictable enough to plan the rest of the day.",
+        "factIds": [
+          "m_f_life_support_maintenance",
+          "m_f_wake_checklist"
+        ],
+        "chapterId": "c2",
+        "payoffIds": [],
+        "openLoopIds": [],
+        "sequenceIndex": 3,
+        "estimatedSeconds": 80,
+        "narrativeFunction": "life-support overview"
+      },
+      {
+        "id": "s4",
+        "text": "The suit maintenance note routes to the EVA officer and a tech. Because Earth is minutes away in communications, the crew must act locally and quickly. The technician runs the suit's preflight diagnostics, exercises seals and replaces a dusty valve filter flagged by the diagnostics. A short hands‑on check, a stamp in the log, and the suit is cleared for the scheduled outing — an example of automated monitoring catching a problem and routing it to a human who fixes it before the EVA begins.",
+        "factIds": [
+          "m_f_wake_checklist",
+          "m_f_life_support_maintenance",
+          "m_f_latency_autonomy"
+        ],
+        "chapterId": "c2",
+        "payoffIds": [
+          "ol_suit_issue"
+        ],
+        "openLoopIds": [],
+        "sequenceIndex": 4,
+        "estimatedSeconds": 60,
+        "narrativeFunction": "partial answer / payoff for suit issue"
+      },
+      {
+        "id": "s5",
+        "text": "Across the habitat the greenhouse comes alive on its own clock. Sensors report CO2, humidity, temperature, light levels and nutrient chemistry; control loops handle many excursions automatically. Veggie‑ and APH‑style experiments, and terrestrial controlled‑environment agriculture, show which parameters matter and which tasks still need hands: seeding, pruning, harvesting, and contamination checks. In the morning a crop round usually mixes a quick sensor sweep with targeted small tasks.",
+        "factIds": [
+          "m_f_greenhouse_operations",
+          "m_f_greenhouse_production"
+        ],
+        "chapterId": "c3",
+        "payoffIds": [],
+        "openLoopIds": [],
+        "sequenceIndex": 5,
+        "estimatedSeconds": 70,
+        "narrativeFunction": "greenhouse routine explanation"
+      },
+      {
+        "id": "s6",
+        "text": "That CO2 amber on the tablet turns out to be a real but manageable issue. Control systems increase active scrubbing and tweak airflow distribution; the automated logs show the spike coincided with a late tray harvest in a denser crop bay. A greenhouse tech isolates the affected rack, vents and brings CO2 back toward setpoint, then documents the event and schedules a brief procedure change to avoid repeat crowding during harvests. It was automation first, then a human correction — exactly the human‑in‑the‑loop pattern the greenhouse literature recommends.",
+        "factIds": [
+          "m_f_greenhouse_operations",
+          "m_f_greenhouse_production"
+        ],
+        "chapterId": "c3",
+        "payoffIds": [
+          "ol_greenhouse_co2"
+        ],
+        "openLoopIds": [],
+        "sequenceIndex": 6,
+        "estimatedSeconds": 70,
+        "narrativeFunction": "greenhouse problem resolution / payoff"
+      },
+      {
+        "id": "s7",
+        "text": "Outside, surface work is a choreography of suits, airlocks and exposure budgets. Radiation and dose budgeting are built into every EVA plan: mission planners pick an allowed incremental dose and divide by the modeled suit dose rate to estimate allowable time, then batch and prioritize tasks to minimize cumulative exposure and reduce airlock cycles. Measured and modeled Martian surface dose rates provide the baseline and SEP (solar particle) forecasts are the wildcard; because agencies translate radiological risk differently, numeric allocations can vary, but the operational principle is the same — keep people safe by planning time and tasks around dose.",
+        "factIds": [
+          "m_f_eva_budget",
+          "m_f_surface_doses",
+          "m_f_rad_modeling_tools",
+          "m_f_rad_policy_disputed"
+        ],
+        "chapterId": "c4",
+        "payoffIds": [],
+        "openLoopIds": [],
+        "sequenceIndex": 7,
+        "estimatedSeconds": 70,
+        "narrativeFunction": "explain EVA constraints / complication"
+      },
+      {
+        "id": "s8",
+        "text": "By mid‑morning the repaired suit is assembled and the EVA team walks through a compact checklist: suit seals, life‑support indicators, dosimeter readouts and airlock procedures. Tasks are batched — sample runs, instrument swaps, and a quick rover maintenance stop — to make the most of the allowed surface time. A team member watches the SEP forecast and carries a contingency route back to a nearby storm shelter in case radiation spikes. The EVA goes out on plan, with exposure-managed pacing and a clear return window.",
+        "factIds": [
+          "m_f_eva_budget",
+          "m_f_surface_doses"
+        ],
+        "chapterId": "c4",
+        "payoffIds": [
+          "ol_suit_issue"
+        ],
+        "openLoopIds": [],
+        "sequenceIndex": 8,
+        "estimatedSeconds": 60,
+        "narrativeFunction": "EVA execution and risk management / payoff"
+      },
+      {
+        "id": "s9",
+        "text": "Late morning, the dust forecast shifts from caution to probable: models show lowered insolation for the afternoon and the solar arrays on the tablet begin to report declining margin. That triggers a predictable domino: battery cycling plans update, nonessential high‑power tasks get deprioritized, and ISRU plant managers assess whether a startup or continued run is safe given the tightening energy budget. Planners treat ISRU not as infinite power but as a planning asset with startup and operational constraints, so the team considers whether to use stored hydrogen/oxygen buffers or alter ISRU cadence to preserve life‑support power.",
+        "factIds": [
+          "m_f_power_dust",
+          "m_f_isru"
+        ],
+        "chapterId": "c5",
+        "payoffIds": [
+          "ol_dust_forecast"
+        ],
+        "openLoopIds": [],
+        "sequenceIndex": 9,
+        "estimatedSeconds": 70,
+        "narrativeFunction": "dust event setup / complication"
+      },
+      {
+        "id": "s10",
+        "text": "The triage is surgical: the operations officer orders greenhouse lights to dim on noncritical racks, moves planned high‑power maintenance to tomorrow, and calls for increased battery discharge into essential loads. Where ISRU can be brought online with modest power pulses to draw reserves and keep critical production (like oxygen reclamation) steady, controllers do so; where ISRU would consume large startup power that risks life‑support margins, it's postponed. These are the tradeoffs CEA and mission planners expect — choose automation and high‑yield production when power is abundant, accept lower throughput or more crew time when it's not.",
+        "factIds": [
+          "m_f_power_dust",
+          "m_f_isru",
+          "m_f_cea_tradeoffs"
+        ],
+        "chapterId": "c5",
+        "payoffIds": [
+          "ol_dust_forecast"
+        ],
+        "openLoopIds": [],
+        "sequenceIndex": 10,
+        "estimatedSeconds": 80,
+        "narrativeFunction": "contingency triage / payoff"
+      },
+      {
+        "id": "s11",
+        "text": "Mid‑afternoon is reserved for bodies and minds. The habitat lighting follows a spectrum schedule — bright, blue‑enriched light for active periods and dimmer, warmer light leading into sleep — because that combination is the practical countermeasure for entraining people to Mars' slightly longer day. Exercise is scheduled and nonnegotiable; it keeps muscles and bones functional and provides a social anchor. Because Earth is not instantly available for problem solving, the crew runs asynchronous handoffs: written checklists, logged diagnostics and defined autonomy thresholds so people can act without waiting for Earth to weigh in.",
+        "factIds": [
+          "m_f_circadian_lighting",
+          "m_f_latency_autonomy"
+        ],
+        "chapterId": "c6",
+        "payoffIds": [],
+        "openLoopIds": [],
+        "sequenceIndex": 11,
+        "estimatedSeconds": 60,
+        "narrativeFunction": "human needs / social scheduling"
+      },
+      {
+        "id": "s12",
+        "text": "Evening is where the colony remembers it's a community. A modest ritual gathers people: shared tea, a short log exchange about anomalies and plans for tomorrow, and a light social stretch. These small, recurring moments do real operational work — they spread situational awareness, distribute cultural load, and quietly arbitrate who will be available for night checks if an alarm trips. The technical schedule is only half of why the colony survives; routines and rituals stitch the technical pieces to daily life.",
+        "factIds": [
+          "m_f_circadian_lighting",
+          "m_f_life_support_maintenance"
+        ],
+        "chapterId": "c6",
+        "payoffIds": [],
+        "openLoopIds": [],
+        "sequenceIndex": 12,
+        "estimatedSeconds": 60,
+        "narrativeFunction": "social payoff / consequence"
+      },
+      {
+        "id": "s13",
+        "text": "Before sleep comes the sol‑closing ritual. Systems run end‑of‑day diagnostics, logs are archived and spare‑part inventories updated, and a short handoff packet is prepared for the overnight watch. ISRU status is recorded — was a reserve tapped, is a restart required tomorrow — and any maintenance windows are scheduled. These closing steps are why morning checklists can be short and decisive: the day ends with accountability, and tomorrow’s priorities are already queued.",
+        "factIds": [
+          "m_f_life_support_maintenance",
+          "m_f_isru"
+        ],
+        "chapterId": "c7",
+        "payoffIds": [],
+        "openLoopIds": [],
+        "sequenceIndex": 13,
+        "estimatedSeconds": 70,
+        "narrativeFunction": "night checks / operational wrap"
+      },
+      {
+        "id": "s14",
+        "text": "The sol closes not with heroics but with a small, human scene: systems in balance, one repaired suit put away, the greenhouse breathing easy, batteries within margins and a few people sharing a modest ritual before sleep. Across Mars, survival will be a mix of engineering cycles — air, water, power, food — environmental constraints like dust and radiation, and social routines that make the work sustainable. A day on Mars, it turns out, looks less like an adventure film and more like a disciplined, adaptable household where every chore ties back to keeping the place habitable.",
+        "factIds": [
+          "m_f_life_support_maintenance",
+          "m_f_circadian_lighting"
+        ],
+        "chapterId": "c7",
+        "payoffIds": [
+          "ol_suit_issue",
+          "ol_greenhouse_co2",
+          "ol_dust_forecast"
+        ],
+        "openLoopIds": [],
+        "sequenceIndex": 14,
+        "estimatedSeconds": 30,
+        "narrativeFunction": "final payoff / insight"
+      }
+    ],
+    "estimatedDurationSeconds": 895,
+    "insufficientEvidenceChapterIds": []
+  }
+}

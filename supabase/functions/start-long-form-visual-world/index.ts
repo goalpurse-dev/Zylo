@@ -77,6 +77,28 @@ Deno.serve(async (req) => {
   const scriptVersionId = visualPlanRow.script_version_id;
 
   if (!regenerate) {
+    // Trust the durable "currently valid world" pointer FIRST (Part 6 of
+    // the resume/navigation task, 2026-09-15) — a real gap found auditing
+    // Mars: a shot-density-only replan can bump current_visual_plan_
+    // version_id to a NEW plan row while the entity registry (and therefore
+    // the real, valid Visual World) is unchanged and correctly left
+    // pointing at the OLD plan version. Without this check, calling this
+    // endpoint for Mars today (e.g. a stale frontend's "Build Visual
+    // World") would find no row scoped to the NEW plan version and
+    // genuinely create a duplicate world for entities that already have
+    // one — never regenerating references, never charging, but still a
+    // real, avoidable duplicate row. Checking the pointer directly (never
+    // re-deriving it from a plan-version match) closes that gap regardless
+    // of which specific plan version the durable pointer's world was
+    // originally built against.
+    if (project.current_visual_world_version_id) {
+      const { data: pointed } = await admin.from("long_form_visual_world_versions").select("id, status, stage")
+        .eq("id", project.current_visual_world_version_id).maybeSingle();
+      if (pointed && pointed.status !== "failed") {
+        return ok(req, { project, visualWorld: pointed });
+      }
+    }
+
     const { data: existing } = await admin
       .from("long_form_visual_world_versions")
       .select("id, status, stage")
@@ -124,6 +146,10 @@ Deno.serve(async (req) => {
       renderer_tool_key: rendererToolKey,
       style_key: styleKey,
       excluded_views: excludedViews,
+      meta: regenerate && project.current_visual_world_version_id ? {
+        buildMode: "rebuild",
+        reuseSourceVisualWorldVersionId: project.current_visual_world_version_id,
+      } : {},
     })
     .select("id, status, stage")
     .single();

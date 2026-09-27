@@ -79,6 +79,16 @@ export const CREATE_TOOLS = [
     color: "#bef264",
   },
   {
+    id: "thirty-days",
+    label: "30 Days",
+    sublabel: "",
+    path: "/workspace/thirty-days",
+    // Temporary launch art; replace with a dedicated 30 Days preview asset.
+    preview: "/template/2am-world/preview.png",
+    previewPosition: "object-center",
+    color: "#c4b5fd",
+  },
+  {
     id: "behind-the-scenes",
     label: "Behind the Scenes",
     sublabel: "",
@@ -358,7 +368,7 @@ export function DesktopCreatePanel({ open, onClose, pinnedIds = [], onTogglePin,
   const go = (path) => { onClose(); navigate(path); };
 
   return (
-    <DesktopPanel open={open} onClose={onClose} title="Create" subtitle="Choose a tool to start" sectionLabel="Viral Tools" grid>
+    <DesktopPanel open={open} onClose={onClose} title="Short Form" subtitle="Choose a tool to start" sectionLabel="Viral Tools" grid>
       {CREATE_TOOLS.map((tool) => (
         <ToolGridItem key={tool.id} tool={tool} active={location.pathname.startsWith(tool.path)} onClick={() => go(tool.path)} pinned={pinnedIds.includes(tool.id)} onTogglePin={() => onTogglePin?.(tool.id)} pinDisabled={pinLimitReached && !pinnedIds.includes(tool.id)} />
       ))}
@@ -463,14 +473,14 @@ export default function MobileCreateMenu({ open, onClose, anchorBottom = 72 }) {
       {/* Backdrop */}
       <button
         type="button"
-        aria-label="Close Create menu"
+        aria-label="Close Short Form menu"
         onClick={onClose}
         className="absolute inset-0 bg-black/[0.74] backdrop-blur-[7px]"
       />
 
       {/* Fan items — positioned above the center of the nav */}
       <section
-        aria-label="Create menu"
+        aria-label="Short Form menu"
         className="absolute left-1/2 w-[calc(100%-28px)] max-w-[380px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-white/[0.11] bg-[#121416]/[0.98] p-3.5 shadow-[0_22px_70px_rgba(0,0,0,.62),inset_0_1px_0_rgba(255,255,255,.06)]"
         style={{
           bottom: `calc(${anchorBottom}px + env(safe-area-inset-bottom) + 14px)`,
@@ -480,12 +490,12 @@ export default function MobileCreateMenu({ open, onClose, anchorBottom = 72 }) {
         <div className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-lime-300/60 to-transparent" />
         <div className="mb-3 flex items-center justify-between px-1">
           <div>
-            <p className="text-[15px] font-bold tracking-[-0.02em] text-white">Create</p>
+            <p className="text-[15px] font-bold tracking-[-0.02em] text-white">Short Form</p>
             <p className="mt-0.5 text-[10px] font-medium text-white/35">Pick a tool and start creating</p>
           </div>
           <button
             type="button"
-            aria-label="Close Create menu"
+            aria-label="Close Short Form menu"
             onClick={onClose}
             className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.08] bg-white/[0.05] text-white/55 transition active:scale-90 active:text-white"
           >

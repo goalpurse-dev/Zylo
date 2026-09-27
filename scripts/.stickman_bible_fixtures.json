@@ -1,0 +1,1777 @@
+[
+  {
+    "key": "A_survival_history",
+    "ok": true,
+    "elapsedMs": 36597,
+    "stats": {
+      "llmCalls": 1,
+      "repairCalls": 0,
+      "inputTokens": 2539,
+      "outputTokens": 3474,
+      "estimatedModelCostUsd": 0.0076,
+      "latencyMs": 36597
+    },
+    "continuityMode": "HERO",
+    "heroExists": true,
+    "heroSubjectType": "human",
+    "heroReasoning": "The episode follows a single throughline: the elder female leader's decisions, teachings, and experience shape the group's survival and are the narrative engine. Scenes should repeatedly return to her perspective and actions rather than switching between many equally centered characters.",
+    "recurringCharacterCount": 1,
+    "colorApproach": "FULL_COLOR",
+    "monochromeJustification": "",
+    "primaryColors": [
+      "#CFE9FF",
+      "#FFFFFF",
+      "#8B5A2B",
+      "#D6A24A",
+      "#F4A942"
+    ],
+    "visualPremise": "A flat 2D stickman-doodle retelling of an ice‑age winter survival story: simple figures, primitive shelters, and a handful of recurring props shown as clear icons (hides, fire, food cache). Every scene reads as a clean, instructional vignette about practical survival tricks.",
+    "graphicCharacterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+    "extraValidationErrors": [],
+    "warnings": [],
+    "fullBible": {
+      "productionBibleVersion": 1,
+      "recipeId": "stickman_doodle_explainer",
+      "recipeVersion": "STICKMAN_DOODLE_EXPLAINER_V1",
+      "visualPremise": "A flat 2D stickman-doodle retelling of an ice‑age winter survival story: simple figures, primitive shelters, and a handful of recurring props shown as clear icons (hides, fire, food cache). Every scene reads as a clean, instructional vignette about practical survival tricks.",
+      "visualTone": "quietly resilient and instructional — calm, matter-of-fact warmth around the camp contrasts with cold, austere exteriors.",
+      "styleContract": {
+        "medium": "Flat-color 2D doodle/stickman illustration",
+        "illustrationStyle": "Simplified stickman/doodle explainer construction — circle heads, dot eyes, stick limbs, mitten hands — never a detailed or semi-realistic character",
+        "lineLanguage": "Uniform thin, clean black outlines of identical weight everywhere; no sketchiness, no variable line weight, no cross-hatching",
+        "shapeLanguage": "Simple geometric primitives — circles, rounded rectangles, straight or gently curved lines — never intricate or organic detail",
+        "detailLevel": "Minimal — enough to read instantly at a glance, never busy or cluttered",
+        "shadingPolicy": "None — flat solid fills only, no gradients, no soft shadow rendering, no highlights",
+        "texturePolicy": "None — flat, texture-free surfaces throughout",
+        "dimensionality": "2D flat, no 3D rendering, no depth shading, no perspective distortion beyond simple flat-layer staging",
+        "realismLevel": "Non-realistic, iconographic — identity is carried by a handful of discrete flat features, never facial realism",
+        "backgroundStrategy": "2-3 flat color layers (background/midground/foreground), never a fully rendered or photographic environment",
+        "forbiddenStyleTraits": [
+          "photorealistic or photographic rendering",
+          "3D render or CGI look",
+          "painterly or watercolor texture",
+          "anime or manga stylization",
+          "pencil-sketch or hand-drawn sketchiness",
+          "cel-shading with rendered shadows",
+          "gradient mesh or airbrushed shading",
+          "drop shadows or glow/bloom effects",
+          "realistic anatomy, fingers, or necks on stickman characters"
+        ],
+        "colorStrategy": "Use cool desaturated colors for all outdoor winter exteriors to communicate cold; reserve warm saturated ochres and browns for human figures, clothing, fire, and the food cache to emphasize human resilience and activity.",
+        "lightingStrategy": "Flat color fields only: exteriors are cool and even; interior cave scenes center a single warm zone around the fire pit (no gradients) and place characters in relative light/dark contrast by using lighter clothing colors facing the fire and darker silhouettes at the cave back."
+      },
+      "palette": {
+        "primaryColors": [
+          "#CFE9FF",
+          "#FFFFFF",
+          "#8B5A2B",
+          "#D6A24A",
+          "#F4A942"
+        ],
+        "supportingColors": [
+          "#BFC6C9",
+          "#C28A6B",
+          "#825A3D",
+          "#D9B27C",
+          "#2F3A44"
+        ],
+        "environmentPaletteRules": "Exteriors: primarily pale blue (#CFE9FF) sky, white snow, cool grey rocks (#2F3A44 desaturated). Interiors/around fire: use warm browns and ochres (hide browns, #D6A24A and #F4A942) for contrast. Figures' clothing must use the hide browns/ochres only.",
+        "contrastRules": "Always ensure at least one warm element (hide or fire) contrasts against cold background in any scene involving the group. Dark outlines remain black for all elements to maintain the stickman aesthetic.",
+        "colorApproach": "FULL_COLOR",
+        "monochromeJustification": ""
+      },
+      "continuityMode": "HERO",
+      "hero": {
+        "exists": true,
+        "subjectType": "human",
+        "semanticIdentity": "the elder female leader who carries and passes down winter survival knowledge",
+        "canonicalAppearance": "Elder woman leader: stickman-figure with a slightly hunched stance, warm medium-dark skin tone, thin uniform black outline, head marked with a single long grey braid that extends down to mid-back (braid width: 2x stickman head radius), two simple white hair streaks at the temple line, oval face with two small black dot eyes and a single short horizontal stroke for mouth; wears layered hide tunic (solid warm brown rectangle torso with jagged lower hem), fur-lined wrap across shoulders (solid ochre semicircle with a thin black outline), simple hide leggings (solid darker brown rectangles for upper legs, lighter brown lower legs), bare stickman hands and feet (no modern shoes). She carries no metal tools — instead a simple wooden staff: straight thin tan stick, length = 1.1x figure height, darker brown short band near top to indicate grip. Posture: often leaning slightly forward when teaching or pointing; when tending fire, she crouches (torso bent forward, one arm extended toward flame).",
+        "headFaceConstruction": "Oval head (roughly same diameter as other figures) with two dot eyes horizontally centered at upper third, a single short horizontal mouth stroke centered below eyes, no nose; grey braid emerges from back-right of head and falls straight down to mid-back, braid drawn as three parallel thin grey strokes merged into one taper near the end.",
+        "bodyConstruction": "Stickman limbs: thin black line arms and legs with slightly thicker torso shape as a flat solid clothing block (no inner anatomy). Torso is a rounded-rectangle hide tunic; a semicircular fur cape sits over shoulders when present. Crouching is indicated by bent line legs; staff held in one hand as a separate tan line.",
+        "skinTone": "warm medium‑dark (hex suggestion: #C28A6B) for face and visible hands/feet.",
+        "hair": "long grey braid (single braid), color cool mid‑grey (#BFC6C9), two small white streak lines at temples.",
+        "outfit": "Layered hide clothing: base tunic (warm brown #8B5A2B), fur-lined shoulder wrap (ochre #D6A24A), leggings mixed darker and lighter brown blocks, no woven patterns or modern seams, edges shown as simple jagged silhouette to suggest raw hide.",
+        "accessories": [
+          "wooden staff (tan #D9B27C with darker brown grip band #825A3D)",
+          "small hide pouch at belt (solid dark brown rectangle, tied with thin black line)"
+        ],
+        "persistentIdentifyingFeatures": [
+          "single long grey braid down mid-back",
+          "fur shoulder wrap (ochre semicircle) when outdoors",
+          "wooden staff carried in most scenes",
+          "slightly hunched forward posture when teaching",
+          "medium-dark skin tone"
+        ],
+        "bodyProportions": "Stickman proportions: head diameter = 1 unit, torso height = 1.5 units (rounded rectangle), leg length = 2 units, arm length = 1.5 units. Elder is same overall size as others but posture and clothing distinguish age.",
+        "emotionalExpressionLanguage": "Minimal dot-eye + short mouth stroke variations: straight for neutral, slight upward short curve for small smile, short downward curve for concern; brows are not used. Body posture conveys intensity: leaning forward = instructive/authoritative, relaxed shoulders = calm, crouched = tending fire.",
+        "forbiddenMutations": [
+          "No modern clothing details (buttons, zippers, woven fabric patterns).",
+          "Hair must never become short, loose, or a different color (no brown or black).",
+          "Never add facial hair, glasses, or jewelry.",
+          "Never equip her with metal tools, weapons, or modern footwear."
+        ],
+        "reasoning": "The episode follows a single throughline: the elder female leader's decisions, teachings, and experience shape the group's survival and are the narrative engine. Scenes should repeatedly return to her perspective and actions rather than switching between many equally centered characters."
+      },
+      "recurringCharacters": [
+        {
+          "id": "young_hunter",
+          "role": "eager inexperienced young hunter who nearly wanders off",
+          "canonicalAppearance": "Young hunter: stickman-figure with light warm skin tone (#E6B89B), short dark brown hair drawn as a single short curved stroke across the top of the head, two dot eyes and a small open 'O' mouth to indicate surprise when alarmed; wears a simple short hide jerkin (solid medium brown rectangle over torso) and a single cross-body belt (thin black stroke). Carries a short wooden spear (tan shaft with darker brown tip — drawn as solid brown triangle at end) held loosely when exploring. Stance: energetic, slightly forward-leaning when chasing prey; hands often reaching forward.",
+          "identifyingFeatures": [
+            "short dark brown hair stroke",
+            "open 'O' mouth expression in startled scenes",
+            "short spear (tan shaft with brown triangle tip)",
+            "cross-body belt thin black stroke"
+          ],
+          "appearsForNarrativeReason": "He demonstrates the risk of inexperienced movement in winter and provides the single concrete 'danger' beat that the elder corrects and teaches from; visually important across several beats (wandering, being called back, learning layering)."
+        }
+      ],
+      "world": {
+        "settingFamilies": [
+          "cave mouth / shallow rock shelter",
+          "snowy open plain with sparse rocks and low scrub",
+          "interior cave/fire pit closeup (small group around flame)"
+        ],
+        "architecture": "Primitive natural shelters only: rock overhangs, shallow caves, stacked brush windbreaks; represented as flat silhouette shapes (rock forms as solid cool grey organic blobs, brush as short black jagged lines). No constructed longhouses or later architecture.",
+        "geography": "Cold tundra/steppe with low scrub and occasional boulders; horizons are low and wide. Snow is indicated by flat solid white ground with sparse light blue (#DDEAF6) irregular patches for winddrift lines.",
+        "era": "Ice‑age hunter‑gatherer environment (Paleolithic-like) — visual cues are hides, wooden tools, stone arrangement; no metal, pottery, woven-fabric patterns, or modern artifacts.",
+        "recurringEnvironmentConstruction": "Three-layer composition: sky band at top (wide flat color), midground horizon with low rock/scrub silhouettes and boulders, foreground action area with figures and props. Interior cave beats compress to two layers: dark cave back (solid near-black), fire pit mid/foreground with warm glow rim (solid ochre circle) and figures positioned around it.",
+        "environmentalColorRules": "Exteriors dominated by cold palette (pale blue sky, white/blue snow, cool grey rocks); interiors centered on warm ochre and browns around the fire that contrast with the cold exterior. Keep background elements desaturated so figures and props read clearly.",
+        "weatherTimeConventions": "Snowing exterior scenes: small uniform white dots falling across scene; heavy snow: denser dots and flattened horizon. Dusk indicated by cool desaturated violet sky (#B8C4D6) and long simple elliptical shadows under figures. Daytime is pale blue sky (#CFE9FF).",
+        "historicalScientificConstraints": [
+          "No depiction of metal tools, woven patterned textiles, or modern sewn clothing.",
+          "Tools shown must be wood, stone, or raw hide construction."
+        ]
+      },
+      "objectLanguage": [
+        {
+          "id": "hide_wrap",
+          "canonicalDescription": "Hide wrap: a flat ochre-brown semicircular cloak with jagged lower edge, tied across chest with a thin black knot line; when wrapped for warmth it appears as two overlapping semicircles around shoulders and torso. Size: covers upper torso and upper thighs of a stick figure.",
+          "whyRecurring": "Central survival technology the elder teaches (layering hides) and a visible marker of experience and status; used in demonstrations and closeups."
+        },
+        {
+          "id": "fire_pit",
+          "canonicalDescription": "Fire pit: a small circular ochre flat disk (flame color #F4A942) with three short stacked dark brown lines underneath to suggest logs and a thin ring of small grey stones around it. Emitted 'glow' is a single larger translucent ochre disc behind the flame when seen from side. No flicker animation described — static flame shape.",
+          "whyRecurring": "Keeps the group alive and is the focal prop for scenes about maintaining fire, rationing heat, and interior social logistics."
+        },
+        {
+          "id": "food_cache",
+          "canonicalDescription": "Food cache: low pile of three flat shapes — one darker brown rectangle (dried meat bundle), one pale tan oblong (tubers), and one small grey oval (stored hide-wrapped bundle) tied with a thin black line. Placed near cave mouth, often beneath a small rock overhang.",
+          "whyRecurring": "Symbolizes autumn provisioning and rationing decisions the elder controls; referenced and shown in multiple beats (stocking, rationing, consuming)."
+        }
+      ],
+      "graphicLanguage": {
+        "backgroundBehavior": "Clean, uncluttered flat backgrounds (often light/white or the episode's own environment palette) — never assumed to be white-only; the Production Bible's graphic language decides per episode",
+        "lineStyle": "The exact same line weight and fill language as narrative scenes — a graphic must never look like a different visual universe from the story frames around it",
+        "arrowsConnectors": "Simple flat-filled arrow shapes and thin connector lines, same line language as everything else",
+        "characterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+        "whitespaceBehavior": "Generous but not empty — whitespace isolates the one idea a graphic communicates, it is never filler",
+        "colorUse": "Uses this episode's own palette (#CFE9FF, #FFFFFF, #8B5A2B, #D6A24A, #F4A942) as flat fills, consistent with narrative scenes — never a separate infographic color scheme.",
+        "diagramConventions": "When showing a how-to sequence (e.g., layering hides), use 2–3 horizontally arranged small vignettes with the hero centered in each, labeled by a short thin black stroke arrow pointing right. Do not use text blocks in the art; arrows only.",
+        "comparisonLayouts": "Side-by-side comparison uses two equal-width panels separated by a single thin black vertical line; left panel shows 'wrong' (young hunter lightly clothed against pale background) with cooler color dominance; right panel shows 'right' (elder demonstrating layered hides) with warm clothing accents and fire.",
+        "timelineConventions": "If time passage is shown, use 3 small square panels in a horizontal row: early autumn (small food cache icon, pale greenish-brown ground), deep winter (snow, figures around fire), spring arrival (small green sprout icon at horizon). Each panel uses the same framing and hero placement to show continuity.",
+        "mapConventions": "Simple top-down icon map if needed: cave mouth = small semicircle black icon, wind direction arrows = thin black lines with arrow head, hunting routes = dashed thin line in grey. No geographic scale needed.",
+        "symbolicMetaphorLanguage": "Use the fire pit as a literal and symbolic 'center' of survival (place it visually centered in teaching beats). Layering hides is shown concretely rather than metaphorically; do not use abstract symbols like gears or progress bars.",
+        "overlayTextBehavior": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "cameraLanguage": {
+        "allowedShotFamilies": [
+          "WIDE",
+          "MEDIUM",
+          "CLOSE_UP",
+          "OVERHEAD",
+          "POV",
+          "SPLIT_SCREEN",
+          "CUTAWAY",
+          "DIAGRAM_LAYOUT"
+        ],
+        "simplicityReadabilityRules": "Every frame must read clearly at thumbnail size — avoid busy multi-subject compositions unless the beat's own visual concept specifically requires comparing multiple subjects at once",
+        "framingConventions": "Establishing wide shots for setting the cold exterior (figures small in frame). Mid shots for group around cave mouth (figures roughly half-frame height). Closeups reserved for the elder demonstrating hide layering and for the food cache — closeups show only torso and hands with props.",
+        "visualHierarchyRules": "Always keep the elder visually dominant in scenes where she is instructing: place her slightly forward, larger by about 10% relative scale when central, and use warmer clothing colors. Secondary characters are drawn slightly behind or angled toward her.",
+        "whenEstablishingVsCloseupVsDiagram": "Use establishing shots for arrival of snow and travel; closeups for technical demonstrations (tying knots, layering hides, tending fire); diagrams for step sequencing of layering and rationing rules."
+      },
+      "textPolicy": {
+        "providerGeneratedTextDefault": "OFF",
+        "exactTextHandledDownstream": true,
+        "exceptionsPolicy": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "continuityRules": {
+        "neverDrift": [
+          "the recipe's own universal style (flat 2D, uniform outline, flat fills, no shading/gradients/texture)",
+          "Elder's braid must always be present and grey; never shorten or recolor.",
+          "No character or prop may display modern artifacts (metal, zipper, woven fabric patterns).",
+          "Fire pit shape and food cache icon must remain visually consistent across scenes."
+        ],
+        "allowedToVary": [
+          "Amount of visible clothing layers (e.g., more or fewer hide semicircles) to show teaching progress.",
+          "Snow density and sky color to indicate different weather/time beats."
+        ],
+        "episodeWideConsistencyRules": [
+          "When the elder is present she should usually carry the wooden staff unless clearly engaged with both hands (e.g., tying a wrap).",
+          "The food cache should appear near cave mouth in all shelter interior/exterior transitions."
+        ]
+      },
+      "factualVisualConstraints": [
+        "Tools and clothing must look like wood, stone, or raw hide — do not depict metal or woven textiles.",
+        "Shelter types limited to natural features (cave mouths, rock overhangs, brush windbreaks)."
+      ],
+      "negativeRules": [
+        "accidental 3D render or CGI look",
+        "photorealistic drift away from flat 2D",
+        "painterly, sketchy, or textured drift away from flat solid fills",
+        "random or unrequested generated typography",
+        "stickman construction mutating into a more detailed/realistic character mid-episode",
+        "shading, gradients, or texture appearing despite the flat-fill policy",
+        "Do not depict the elder as frail or immobile — she is experienced and active (no wheelchair, no extreme stoop).",
+        "Do not show firearms, metal knives, modern backpacks, or modern footwear.",
+        "Do not use photographic textures, gradients, or shading — stick to flat fills and thin black outlines."
+      ],
+      "projectId": "test-A_survival_history",
+      "generationProfileId": "test-profile-A_survival_history",
+      "scriptVersionId": "test-script-A_survival_history"
+    }
+  },
+  {
+    "key": "B_mechanism_no_protagonist",
+    "ok": true,
+    "elapsedMs": 33151,
+    "stats": {
+      "llmCalls": 1,
+      "repairCalls": 0,
+      "inputTokens": 2500,
+      "outputTokens": 2693,
+      "estimatedModelCostUsd": 0.006,
+      "latencyMs": 33151
+    },
+    "continuityMode": "NONE",
+    "heroExists": false,
+    "heroSubjectType": "none",
+    "heroReasoning": "The script is a general explainer about a system (Wi‑Fi) rather than the experience of a single person or a single device followed through a narrative. Visual continuity will be carried by recurring iconic objects and consistent graphical conventions, not a persistent protagonist.",
+    "recurringCharacterCount": 0,
+    "colorApproach": "FULL_COLOR",
+    "monochromeJustification": "",
+    "primaryColors": [
+      "teal (#007F7F)",
+      "magenta (#C84DA7)",
+      "midnight navy (#1E2340)"
+    ],
+    "visualPremise": "A flat 2D stickman-doodle explainer that visualizes invisible radio conversations inside an ordinary home: routers, phones, antennas and stylized radio waves rendered as simple graphic elements to make the unseen visible.",
+    "graphicCharacterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+    "extraValidationErrors": [],
+    "warnings": [],
+    "fullBible": {
+      "productionBibleVersion": 1,
+      "recipeId": "stickman_doodle_explainer",
+      "recipeVersion": "STICKMAN_DOODLE_EXPLAINER_V1",
+      "visualPremise": "A flat 2D stickman-doodle explainer that visualizes invisible radio conversations inside an ordinary home: routers, phones, antennas and stylized radio waves rendered as simple graphic elements to make the unseen visible.",
+      "visualTone": "clear, curious, and gently playful — friendly educational visuals that make abstract technical processes feel approachable and non-threatening.",
+      "styleContract": {
+        "medium": "Flat-color 2D doodle/stickman illustration",
+        "illustrationStyle": "Simplified stickman/doodle explainer construction — circle heads, dot eyes, stick limbs, mitten hands — never a detailed or semi-realistic character",
+        "lineLanguage": "Uniform thin, clean black outlines of identical weight everywhere; no sketchiness, no variable line weight, no cross-hatching",
+        "shapeLanguage": "Simple geometric primitives — circles, rounded rectangles, straight or gently curved lines — never intricate or organic detail",
+        "detailLevel": "Minimal — enough to read instantly at a glance, never busy or cluttered",
+        "shadingPolicy": "None — flat solid fills only, no gradients, no soft shadow rendering, no highlights",
+        "texturePolicy": "None — flat, texture-free surfaces throughout",
+        "dimensionality": "2D flat, no 3D rendering, no depth shading, no perspective distortion beyond simple flat-layer staging",
+        "realismLevel": "Non-realistic, iconographic — identity is carried by a handful of discrete flat features, never facial realism",
+        "backgroundStrategy": "2-3 flat color layers (background/midground/foreground), never a fully rendered or photographic environment",
+        "forbiddenStyleTraits": [
+          "photorealistic or photographic rendering",
+          "3D render or CGI look",
+          "painterly or watercolor texture",
+          "anime or manga stylization",
+          "pencil-sketch or hand-drawn sketchiness",
+          "cel-shading with rendered shadows",
+          "gradient mesh or airbrushed shading",
+          "drop shadows or glow/bloom effects",
+          "realistic anatomy, fingers, or necks on stickman characters"
+        ],
+        "colorStrategy": "Use color to encode function: teal visuals = router/transmission origin and 2.4 GHz band; magenta visuals = 5 GHz band or alternate frequency; yellow/green = data packets flowing; slate/cream = neutral environment. Limit saturation so functional colors pop but remain friendly.",
+        "lightingStrategy": "Flat even illumination (no shading). Use slightly darker background tints when the scene focuses on close-up device diagrams to make foreground elements pop. Do not introduce directional light or shadows."
+      },
+      "palette": {
+        "primaryColors": [
+          "teal (#007F7F)",
+          "magenta (#C84DA7)",
+          "midnight navy (#1E2340)"
+        ],
+        "supportingColors": [
+          "soft slate (#B8C0CC)",
+          "muted cream (#FFF6E5)",
+          "bright yellow (#FFD24C)",
+          "signal green (#6CE37B)"
+        ],
+        "environmentPaletteRules": "Backgrounds: muted cream or soft slate. Router: teal. Secondary band graphics: magenta. Data pills: yellow/green. Text/labels/icons: midnight navy for high contrast. Keep saturation moderate; avoid more than three saturated elements per frame.",
+        "contrastRules": "Always ensure radio wave arcs contrast against the background (use 40%+ opacity on primary color arcs). Device icons use solid fills; labels use midnight navy on light backgrounds or white on darker insets.",
+        "colorApproach": "FULL_COLOR",
+        "monochromeJustification": ""
+      },
+      "continuityMode": "NONE",
+      "hero": {
+        "exists": false,
+        "subjectType": "none",
+        "semanticIdentity": "",
+        "canonicalAppearance": "",
+        "headFaceConstruction": "",
+        "bodyConstruction": "",
+        "skinTone": "",
+        "hair": "",
+        "outfit": "",
+        "accessories": [],
+        "persistentIdentifyingFeatures": [],
+        "bodyProportions": "",
+        "emotionalExpressionLanguage": "",
+        "forbiddenMutations": [],
+        "reasoning": "The script is a general explainer about a system (Wi‑Fi) rather than the experience of a single person or a single device followed through a narrative. Visual continuity will be carried by recurring iconic objects and consistent graphical conventions, not a persistent protagonist."
+      },
+      "recurringCharacters": [],
+      "world": {
+        "settingFamilies": [
+          "home interior (living room / bedroom simplified setpiece)",
+          "device close-up (router or phone isolated on white background)",
+          "cutaway wall/obstacle graphic (simple rectangular wall slice to show obstruction)",
+          "abstract airspace/diagram (neutral flat background where waves, labels and schematic arrows live)"
+        ],
+        "architecture": "Very simplified domestic interiors: one flat wall plane, a floor line, one window or couch silhouette at most. All furniture serialized into single flat-shape icons (couch, table). No detailed rooms — just enough to imply 'home'.",
+        "geography": "Indoors only. Scenes that imply distance use horizontal spacing (router on left, phone on right) with floor baseline. No outdoor or city scenes required.",
+        "era": "Contemporary present day (consumer Wi‑Fi devices). No historical machines or future tech.",
+        "recurringEnvironmentConstruction": "Environments are built in 2–3 flat layers: neutral background color, midground single-plane furniture silhouettes, foreground objects/devices and labeled diagram elements. Use horizontal floor baseline to anchor devices and people when present.",
+        "environmentalColorRules": "Backgrounds use muted, low-saturation tints from the supporting palette so foreground devices and wave graphics contrast strongly. Walls/floors are never bright or saturated.",
+        "weatherTimeConventions": "",
+        "historicalScientificConstraints": [
+          "Do not depict radio waves as visible light beams or as particles; use stylized concentric arcs/dashed lines and translucency to indicate intangible signals.",
+          "Antennas should be simple stick or short bar elements; phones and routers are flat icon shapes consistent with contemporary consumer designs."
+        ]
+      },
+      "objectLanguage": [
+        {
+          "id": "router",
+          "canonicalDescription": "A flat, rounded-rectangle router icon: medium-width rounded rectangle (approx. 2.5 units wide by 1 unit tall) colored primary teal, with three short vertical antenna bars (thin black outline, 8–12% of router width each) on its back-left edge. On its front face place two small square indicator lights (yellow and green) as solid dots. No brand marks, no text. Anchored on a floor baseline or centered on a device-closeup white plate.",
+          "whyRecurring": "The router is the central transmitter in the explainer and appears in nearly every scene illustrating signal origin, strength, and encoding changes."
+        },
+        {
+          "id": "phone",
+          "canonicalDescription": "A flat smartphone icon: tall rounded rectangle (approx. 0.6:1 width:height) colored light slate, with a black thin outline and a small white rounded rectangle screen inset occupying 70% of the front face. No visible buttons; a tiny antenna notch is unnecessary. When showing 'device receiving', draw a single short curved antenna line on the phone's top-right edge to imply its antenna.",
+          "whyRecurring": "A phone represents the client device decoding Wi‑Fi and is used repeatedly to show signal strength and data flow to a consumer device."
+        },
+        {
+          "id": "antenna_element",
+          "canonicalDescription": "A minimal antenna symbol: a single thin vertical black line with a short filled circle cap at the top (4 px cap relative to 100 px art scale). Use this as the canonical antenna image on routers or as a standalone icon when illustrating transmission/receipt.",
+          "whyRecurring": "Used to visually denote transmitter/receiver endpoints in diagrams and close-ups."
+        },
+        {
+          "id": "radio_waves",
+          "canonicalDescription": "Concentric semi-transparent arcs or full concentric circles centered on the transmitting device: three rings total, each ring a 6–8 px stroke (flat solid color, no gradient) with 40% opacity. Primary active band uses primary color (teal) for 2.4 GHz and a secondary supporting color (magenta) for 5 GHz when both bands are shown. When illustrating interference/weak signal, render rings with dashed stroke pattern (short dashes) and decrease opacity to 20% for the outer rings.",
+          "whyRecurring": "These are the episode's central visual metaphor for invisible radio traffic and must be instantly recognizable and consistent across all scenes."
+        },
+        {
+          "id": "data_packets",
+          "canonicalDescription": "Small rounded rectangles (pill shapes) roughly 12 x 6 px, colored bright yellow for 'sending' and bright green for 'receiving', with a thin black outline. Packets can have a one-bit label: a tiny '0' or '1' in microtype (black). Use a subtle motion arrow to show direction when animating; static scenes can show a trail of pills aligned along the wave arcs.",
+          "whyRecurring": "Used when the narration explicitly refers to 'data encoded' or 'ones and zeros' traveling across the air."
+        }
+      ],
+      "graphicLanguage": {
+        "backgroundBehavior": "Clean, uncluttered flat backgrounds (often light/white or the episode's own environment palette) — never assumed to be white-only; the Production Bible's graphic language decides per episode",
+        "lineStyle": "The exact same line weight and fill language as narrative scenes — a graphic must never look like a different visual universe from the story frames around it",
+        "arrowsConnectors": "Simple flat-filled arrow shapes and thin connector lines, same line language as everything else",
+        "characterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+        "whitespaceBehavior": "Generous but not empty — whitespace isolates the one idea a graphic communicates, it is never filler",
+        "colorUse": "Uses this episode's own palette (teal (#007F7F), magenta (#C84DA7), midnight navy (#1E2340)) as flat fills, consistent with narrative scenes — never a separate infographic color scheme.",
+        "diagramConventions": "1) Use concentric arcs centered on transmitters to represent propagation. 2) Use dashed arcs to indicate weakened or degraded signal. 3) Use small pill-shaped 'data packets' placed along arcs with directional arrows to indicate flow. 4) Label frequency bands with small rounded rectangles (uppercase '2.4 GHz' or '5 GHz') in matching band color placed near the waveform origin.",
+        "comparisonLayouts": "Split-screen comparisons are shown as two equal vertical panels with identical baseline furniture silhouettes; left panel usually shows strong-signal graphics (solid arcs, saturated color), right panel shows weak-signal graphics (dashed arcs, lower opacity) with concise labels beneath each panel.",
+        "timelineConventions": "When showing sequence (e.g., encoding falling back to robust mode), use 3 horizontal panels left-to-right with small numeric step labels (1, 2, 3) in midnight navy circles and consistent device placement to emphasize change in wave styling and packet appearance.",
+        "mapConventions": "For simplified floor-plan distance illustrations, use a single horizontal baseline with router at left, phone at varying distances to the right. Distance is suggested by spacing only — do not draw perspective or scale measurements.",
+        "symbolicMetaphorLanguage": "Treat radio waves as transparent colored rings; treat data as small pills. Use walls/obstacles as flat vertical rectangles that visibly truncate or attenuate arcs where they cross, visually demonstrating obstruction without photorealism.",
+        "overlayTextBehavior": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "cameraLanguage": {
+        "allowedShotFamilies": [
+          "WIDE",
+          "MEDIUM",
+          "CLOSE_UP",
+          "OVERHEAD",
+          "POV",
+          "SPLIT_SCREEN",
+          "CUTAWAY",
+          "DIAGRAM_LAYOUT"
+        ],
+        "simplicityReadabilityRules": "Every frame must read clearly at thumbnail size — avoid busy multi-subject compositions unless the beat's own visual concept specifically requires comparing multiple subjects at once",
+        "framingConventions": "Establishing/home scenes: medium-wide frame showing router, couch and phone (or person) on a baseline. Device close-ups: centered tight frame with white plate and device plus arcs filling most of the frame. Diagrams: neutral background with centered transmitter and labeled arcs.",
+        "visualHierarchyRules": "Devices (router, phone) are always foreground primary elements. Radio-wave arcs are the secondary layer and must never be occluded by furniture silhouettes. Labels and packet icons sit on the topmost layer for legibility.",
+        "whenEstablishingVsCloseupVsDiagram": "Use establishing shots to show spatial relationships, closeups to explain device internals or indicator lights, and abstract diagrams to explain encoding, frequencies and time-slicing."
+      },
+      "textPolicy": {
+        "providerGeneratedTextDefault": "OFF",
+        "exactTextHandledDownstream": true,
+        "exceptionsPolicy": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "continuityRules": {
+        "neverDrift": [
+          "the recipe's own universal style (flat 2D, uniform outline, flat fills, no shading/gradients/texture)",
+          "Router must always use the canonical router description when shown.",
+          "Radio waves must always be concentric arcs with the prescribed opacity and colors (teal for 2.4 GHz, magenta for 5 GHz).",
+          "Data packets must always be pill shapes colored yellow for outgoing and green for incoming with tiny '0'/'1' micro-labels.",
+          "Devices must never display brand names, text other than the specified small labels, or photographic detail."
+        ],
+        "allowedToVary": [
+          "Number of wave rings (1–4) to indicate strength.",
+          "Opacity and dash pattern of arcs to indicate interference or weakness.",
+          "Scene background tint (cream or slate) depending on emphasis."
+        ],
+        "episodeWideConsistencyRules": [
+          "When illustrating 'slowing down encoding', change packet spacing and switch outer arcs to dashed + lower opacity rather than changing device appearance.",
+          "When showing multiple devices sharing the same airwaves, depict them with staggered short time-slice labels (tiny clock icons) rather than overlapping wave colors."
+        ]
+      },
+      "factualVisualConstraints": [
+        "Do not show radio waves as visible beams of light or laser-like lines; represent them as concentric arcs/circles to communicate a radiating field.",
+        "Do not include visual representations of 'bits' as literal ones and zeros flooding a room except as tiny micro-labeled pills; keep ones and zeros symbolic and minimal to avoid implying literal glowing digits in space.",
+        "Walls/obstacles should attenuate or truncate arcs where they intersect; do not depict walls as completely blocking unless explicitly labeling 'sealed Faraday-like enclosure'."
+      ],
+      "negativeRules": [
+        "accidental 3D render or CGI look",
+        "photorealistic drift away from flat 2D",
+        "painterly, sketchy, or textured drift away from flat solid fills",
+        "random or unrequested generated typography",
+        "stickman construction mutating into a more detailed/realistic character mid-episode",
+        "shading, gradients, or texture appearing despite the flat-fill policy",
+        "Never depict Wi‑Fi signals as colorless straight lines or as matter-like objects (e.g., streams of water, ropes).",
+        "Never add realistic device branding, model numbers, or UI screenshots.",
+        "Never imply radio waves are visible to human characters (no eyes glowing, no characters 'seeing' the waves)."
+      ],
+      "projectId": "test-B_mechanism_no_protagonist",
+      "generationProfileId": "test-profile-B_mechanism_no_protagonist",
+      "scriptVersionId": "test-script-B_mechanism_no_protagonist"
+    }
+  },
+  {
+    "key": "C_hypothetical_millionaire",
+    "ok": true,
+    "elapsedMs": 35702,
+    "stats": {
+      "llmCalls": 1,
+      "repairCalls": 0,
+      "inputTokens": 2519,
+      "outputTokens": 3303,
+      "estimatedModelCostUsd": 0.0072,
+      "latencyMs": 35702
+    },
+    "continuityMode": "HERO",
+    "heroExists": true,
+    "heroSubjectType": "human",
+    "heroReasoning": "The script follows a single throughline: 'You' wake up, discover the money, and then make a series of choices over days and weeks. Visual continuity should therefore track one persistent protagonist experiencing decisions and relationship beats rather than rotating generic archetypes.",
+    "recurringCharacterCount": 2,
+    "colorApproach": "FULL_COLOR",
+    "monochromeJustification": "",
+    "primaryColors": [
+      "#1F3A66",
+      "#F0D7BF",
+      "#3B3B3B"
+    ],
+    "visualPremise": "Flat 2D stickman-doodle world that follows one everyperson through a single-week to one-month micro-story about suddenly becoming a millionaire; scenes are intimate indoor moments and everyday public settings rendered as simple, readable vignettes.",
+    "graphicCharacterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+    "extraValidationErrors": [],
+    "warnings": [],
+    "fullBible": {
+      "productionBibleVersion": 1,
+      "recipeId": "stickman_doodle_explainer",
+      "recipeVersion": "STICKMAN_DOODLE_EXPLAINER_V1",
+      "visualPremise": "Flat 2D stickman-doodle world that follows one everyperson through a single-week to one-month micro-story about suddenly becoming a millionaire; scenes are intimate indoor moments and everyday public settings rendered as simple, readable vignettes.",
+      "visualTone": "lightly wry and observational — grounded, mildly anxious, and quietly reflective rather than flashy or glamorous.",
+      "styleContract": {
+        "medium": "Flat-color 2D doodle/stickman illustration",
+        "illustrationStyle": "Simplified stickman/doodle explainer construction — circle heads, dot eyes, stick limbs, mitten hands — never a detailed or semi-realistic character",
+        "lineLanguage": "Uniform thin, clean black outlines of identical weight everywhere; no sketchiness, no variable line weight, no cross-hatching",
+        "shapeLanguage": "Simple geometric primitives — circles, rounded rectangles, straight or gently curved lines — never intricate or organic detail",
+        "detailLevel": "Minimal — enough to read instantly at a glance, never busy or cluttered",
+        "shadingPolicy": "None — flat solid fills only, no gradients, no soft shadow rendering, no highlights",
+        "texturePolicy": "None — flat, texture-free surfaces throughout",
+        "dimensionality": "2D flat, no 3D rendering, no depth shading, no perspective distortion beyond simple flat-layer staging",
+        "realismLevel": "Non-realistic, iconographic — identity is carried by a handful of discrete flat features, never facial realism",
+        "backgroundStrategy": "2-3 flat color layers (background/midground/foreground), never a fully rendered or photographic environment",
+        "forbiddenStyleTraits": [
+          "photorealistic or photographic rendering",
+          "3D render or CGI look",
+          "painterly or watercolor texture",
+          "anime or manga stylization",
+          "pencil-sketch or hand-drawn sketchiness",
+          "cel-shading with rendered shadows",
+          "gradient mesh or airbrushed shading",
+          "drop shadows or glow/bloom effects",
+          "realistic anatomy, fingers, or necks on stickman characters"
+        ],
+        "colorStrategy": "Use full color sparingly and deliberately: mostly muted, desaturated backgrounds and neutral midground tones; primary colors (navy shirt, gold ticket, red notification) used as focal accents to guide viewer attention to the money/decisions.",
+        "lightingStrategy": "No complex lighting; convey mood through color saturation and body posture. Daytime scenes use pale backgrounds; evening or exhausted scenes slightly desaturate overall color fills and tilt protagonist posture to slouch."
+      },
+      "palette": {
+        "primaryColors": [
+          "#1F3A66",
+          "#F0D7BF",
+          "#3B3B3B"
+        ],
+        "supportingColors": [
+          "#7BAE8A",
+          "#D4A017",
+          "#DDEFF6",
+          "#FFFFFF",
+          "#D9534F"
+        ],
+        "environmentPaletteRules": "Backgrounds: DDEFF6 (pale sky) and warm cream off-whites; furniture: desaturated grays and beiges; accent objects (lottery gold, notification red) must use supporting colors to draw the eye.",
+        "contrastRules": "Characters use warm skin fills and navy clothing to stand out against pale, desaturated backgrounds. Important UI elements (balance number, notification badge) use high contrast dark charcoal or bright red to attract attention.",
+        "colorApproach": "FULL_COLOR",
+        "monochromeJustification": ""
+      },
+      "continuityMode": "HERO",
+      "hero": {
+        "exists": true,
+        "subjectType": "human",
+        "semanticIdentity": "second-person viewer avatar — 'you' the newly minted millionaire experiencing small everyday decisions and social beats.",
+        "canonicalAppearance": "Stickman 'You': a compact, upright stickman adult with a round head and simple facial features (two dot eyes and a short horizontal line mouth). Skin fill: warm light beige. Hair: short tidy dark-brown hair (single solid shape hugging the top-back of the head). Build: average stickman proportions (torso length twice head diameter, limbs thin lines of uniform stroke). Outfit: plain crewneck T-shirt in muted navy blue, slim straight pants in medium charcoal gray, simple low-top sneakers in white with a thin navy stripe. Posture: slightly forward-leaning when anxious/curious; relaxed upright when calm. Accessories: slim black smartphone clipped to the right hand in any scene where banking/notifications are relevant. Expression states: neutral (dot eyes, straight mouth), surprised (eyes wider dots, small circular O mouth), tentative smile (dots plus small upward curve mouth), fatigued (half-closed small horizontal eyes).",
+        "headFaceConstruction": "Round head (1.0x diameter), two evenly spaced dot eyes at mid-head height, short horizontal mouth line that can be swapped to O or small upward curve; single solid hair shape in dark brown covering top-back of head; no eyebrows.",
+        "bodyConstruction": "Simple stick torso (solid rounded rectangle), limbs are single thin lines with small rounded terminals at hands/feet; no fingers; shoes are white solid ovals with a thin navy stripe.",
+        "skinTone": "warm light beige (#F0D7BF)",
+        "hair": "short tidy dark-brown (#4B3526) single solid shape; hairline sits 10% down from top of head.",
+        "outfit": "muted navy crewneck T-shirt (#1F3A66), medium charcoal straight pants (#3B3B3B), white sneakers (#FFFFFF) with thin navy stripe (#1F3A66).",
+        "accessories": [
+          "black smartphone (solid rounded rectangle) — appears in right hand when relevant",
+          "thin simple band watch in silver (#C0C0C0) — optional, left wrist"
+        ],
+        "persistentIdentifyingFeatures": [
+          "short tidy dark-brown hair shape",
+          "muted navy crewneck T-shirt",
+          "white sneakers with navy stripe",
+          "black smartphone in right hand when interacting with money or notifications",
+          "warm light beige skin fill"
+        ],
+        "bodyProportions": "head diameter = 1 unit; torso height = 2 units; limbs length = 2.5 units; overall silhouette compact and slightly shorter-than-elongated (not lanky).",
+        "emotionalExpressionLanguage": "Limited stickman expressions only: neutral (straight mouth), surprise (O mouth, slightly larger eyes), tentative smile (small upward curve), fatigue/weariness (half-closed small horizontal eyes), small frown (short downward curve). Body language changes (shoulder slouch, hands in pockets, hand to chin) accompany expression states.",
+        "forbiddenMutations": [
+          "Hair must never be drawn as long, curly, or a different color than #4B3526.",
+          "T-shirt color must not change from muted navy (#1F3A66).",
+          "Do not add detailed facial features (no eyebrows, no noses, no ears).",
+          "Shoes must always be white with a thin navy stripe; never render as boots or sandals.",
+          "Never add heavy shading, gradients, or texture — only flat fills as per global style."
+        ],
+        "reasoning": "The script follows a single throughline: 'You' wake up, discover the money, and then make a series of choices over days and weeks. Visual continuity should therefore track one persistent protagonist experiencing decisions and relationship beats rather than rotating generic archetypes."
+      },
+      "recurringCharacters": [
+        {
+          "id": "closest_friend",
+          "role": "your closest friend who you tell early on and whose reactions affect your decisions",
+          "canonicalAppearance": "Stickman 'Closest Friend': a slightly taller stickman with a round head, light warm olive skin fill (#E6CFAF), short curly black hair represented as a compact scalloped black shape (#111111). Outfit: casual sage-green sweater (#7BAE8A) and light khaki pants (#D4C9A1). Expression set: friendly smile (small upward curve), concerned eyebrowless frown (small downward curve mouth), encouraging nod posture. Accessories: small coffee cup in right hand in social/café scenes.",
+          "identifyingFeatures": [
+            "short curly black hair shape (compact scallops)",
+            "sage-green sweater",
+            "light khaki pants",
+            "often holding a coffee cup when in social scenes"
+          ],
+          "appearsForNarrativeReason": "This character is visually important because the script describes telling 'your closest friend' and showing how that relationship shifts; they reappear to illustrate conversations and emotional consequences."
+        },
+        {
+          "id": "coworker_manager",
+          "role": "representative office colleague/manager encountered during the protagonist's continued attendance at work in the first week",
+          "canonicalAppearance": "Stickman 'Manager': slightly stockier stickman with warm tan skin (#E2B89A), short swept-back light brown hair (#6E4B38) (single solid shape), outfit: light gray button-down shirt (#DDE1E3) with a thin black tie (#000000) and darker gray slacks (#A7A9AC). Expression set: neutral attentive (straight mouth), surprised raised-voice (O mouth), supportive nod. Accessories: thin clipboard or folder held in left hand when in meeting/office scenes.",
+          "identifyingFeatures": [
+            "light gray button-down shirt with thin black tie",
+            "swept-back light brown hair shape",
+            "clipboard/folder prop when in office scenes"
+          ],
+          "appearsForNarrativeReason": "Repeatedly appears during the early-week scenes when the protagonist continues to attend work and sits through meetings; necessary to show ordinary work interactions contrasted with the protagonist's inner change."
+        }
+      ],
+      "world": {
+        "settingFamilies": [
+          "protagonist's small apartment (bedroom/kitchen combined)",
+          "office/meeting room",
+          "coffee shop/café",
+          "street/sidewalk outside apartment and office",
+          "banking app UI closeups / digital notification cards",
+          "financial advisor or bank branch interior (single simple variant)"
+        ],
+        "architecture": "everyday modern urban interiors simplified to a few flat planes: rectangular windows, plain furniture silhouettes, and one-line counters; nothing ornate or era-specific.",
+        "geography": "contemporary city block implied by sidewalk and café storefront; interiors are generic urban apartment and office, not location-specific.",
+        "era": "present-day contemporary.",
+        "recurringEnvironmentConstruction": "Three-layer flat construction: background wall/sky layer, midground key furniture/building shapes, foreground character and prop silhouettes. Keep elements minimal: 2–4 midground objects per scene.",
+        "environmentalColorRules": "Background walls use desaturated pastels (warm cream, pale gray-blue) so characters and primary props pop. Midground furniture uses muted neutrals; accent items (coffee cup, notification bubbles) use the palette's supporting colors.",
+        "weatherTimeConventions": "Daytime scenes: flat pale sky (#DDEFF6) with simple rectangular window brightness. Night/home scenes: slightly darker interior wall fill (#F0EDEB) — no dramatic contrast or lighting effects.",
+        "historicalScientificConstraints": []
+      },
+      "objectLanguage": [
+        {
+          "id": "smartphone_banking_ui",
+          "canonicalDescription": "Black smartphone (rounded rectangle) held in protagonist's right hand; screen shown as a white rounded rectangle inset with a simple banking-app mockup: top header bar in navy (#1F3A66) reading 'Bank' (no real logos), a large bold balance number in dark charcoal (#222222) showing '$1,000,000' (use comma and dollar sign), and two rounded buttons below labeled 'Transactions' and 'Transfer' in muted gray rounded pills. Notification badge (red circle #D9534F) may appear at the top-right with '1'.",
+          "whyRecurring": "The banking app moment is the catalyst and repeats as a visual motif for the protagonist checking/confirming the money and later weighing decisions."
+        },
+        {
+          "id": "lottery_ticket",
+          "canonicalDescription": "Small rectangular paper slip with a simple grid of numbers (3x4 small dark dots) and a top header stripe in gold (#D4A017) with the word 'TICKET' in all caps simple block letters; edges slightly rounded. Handheld prop often shown crumpled once the protagonist accepts the reality.",
+          "whyRecurring": "The forgotten lottery ticket is the concrete cause of the windfall and is referenced in early scenes (discovery, phone calls) and visually in the protagonist's wallet or pocket briefly."
+        }
+      ],
+      "graphicLanguage": {
+        "backgroundBehavior": "Clean, uncluttered flat backgrounds (often light/white or the episode's own environment palette) — never assumed to be white-only; the Production Bible's graphic language decides per episode",
+        "lineStyle": "The exact same line weight and fill language as narrative scenes — a graphic must never look like a different visual universe from the story frames around it",
+        "arrowsConnectors": "Simple flat-filled arrow shapes and thin connector lines, same line language as everything else",
+        "characterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+        "whitespaceBehavior": "Generous but not empty — whitespace isolates the one idea a graphic communicates, it is never filler",
+        "colorUse": "Uses this episode's own palette (#1F3A66, #F0D7BF, #3B3B3B) as flat fills, consistent with narrative scenes — never a separate infographic color scheme.",
+        "diagramConventions": "Simple 2–3 node flow diagrams when showing 'decisions to make' — rounded rectangles connected by single straight thin black lines and small stickman head icons to denote who decides.",
+        "comparisonLayouts": "Side-by-side two-panel splits: left = pre-money habitual life, right = post-money decision state. Use identical framing, swap only props/clothing posture and small accent color changes (post-money side has a gold ticket or banking UI).",
+        "timelineConventions": "Horizontal timeline with 3–5 evenly spaced dots labeled 'Day 0 (Discovery)', 'Week 1', 'Week 2', 'End of Month'. Use a thin black timeline line and small navy dot markers; place stickman icon above each dot with minimal caption.",
+        "mapConventions": "If needed, simple top-down city block sketch with solid color blocks for apartment, office, café — labeled with small sans-serif text.",
+        "symbolicMetaphorLanguage": "Concrete metaphors only: a scale with coins vs. documents for weighing choices; a branching path for decisions; stacks of simple flat coin disks to suggest money but never hyper-realistic currency.",
+        "overlayTextBehavior": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "cameraLanguage": {
+        "allowedShotFamilies": [
+          "WIDE",
+          "MEDIUM",
+          "CLOSE_UP",
+          "OVERHEAD",
+          "POV",
+          "SPLIT_SCREEN",
+          "CUTAWAY",
+          "DIAGRAM_LAYOUT"
+        ],
+        "simplicityReadabilityRules": "Every frame must read clearly at thumbnail size — avoid busy multi-subject compositions unless the beat's own visual concept specifically requires comparing multiple subjects at once",
+        "framingConventions": "Use medium shots for conversational beats (waist-up), closeups for phone/banking UI (device fills 60–80% of frame), and wide two-shots for apartment/office establishing moments. Maintain simple centered compositions for emotional clarity.",
+        "visualHierarchyRules": "Primary focus = protagonist; secondary = recurring character or object in scene. Use color contrast and scale to keep the protagonist visually dominant (slightly larger than others when sharing frame).",
+        "whenEstablishingVsCloseupVsDiagram": "Establishing: full-room wide to show daily routine. Closeup: banking-app, lottery ticket, phone calls. Diagram: when explaining 'number of decisions' — switch to clean, schematic panels."
+      },
+      "textPolicy": {
+        "providerGeneratedTextDefault": "OFF",
+        "exactTextHandledDownstream": true,
+        "exceptionsPolicy": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "continuityRules": {
+        "neverDrift": [
+          "the recipe's own universal style (flat 2D, uniform outline, flat fills, no shading/gradients/texture)",
+          "Protagonist T-shirt color must remain muted navy (#1F3A66) across all scenes.",
+          "Hair color and shape for protagonist must remain dark-brown single shape (#4B3526).",
+          "Banking UI must always display the full balance as '$1,000,000' exactly when depicted.",
+          "Smartphone must always appear as a black rounded rectangle when shown."
+        ],
+        "allowedToVary": [
+          "Protagonist posture and facial expression to reflect mood.",
+          "Small accessory usage (watch on left wrist appears only sometimes).",
+          "Background minor props (plants, lamp, mug) that do not conflict with palette rules."
+        ],
+        "episodeWideConsistencyRules": [
+          "When the lottery ticket appears, it must match the canonical lottery_ticket description.",
+          "All notification badges use the red supporting color (#D9534F).",
+          "Decision-diagram nodes use navy primary color for active choices and muted gray for inactive ones."
+        ]
+      },
+      "factualVisualConstraints": [],
+      "negativeRules": [
+        "accidental 3D render or CGI look",
+        "photorealistic drift away from flat 2D",
+        "painterly, sketchy, or textured drift away from flat solid fills",
+        "random or unrequested generated typography",
+        "stickman construction mutating into a more detailed/realistic character mid-episode",
+        "shading, gradients, or texture appearing despite the flat-fill policy",
+        "Do not depict extravagant luxury settings (mansions, flashy cars) — the story focuses on decision fatigue and everyday life, not immediate opulence.",
+        "Do not change protagonist gendered details or introduce identifying facial features beyond the canonical stickman head (no beards, no glasses) unless explicitly required by a later script revision.",
+        "Do not show real bank logos, real currency images, or brand trademarks on-screen."
+      ],
+      "projectId": "test-C_hypothetical_millionaire",
+      "generationProfileId": "test-profile-C_hypothetical_millionaire",
+      "scriptVersionId": "test-script-C_hypothetical_millionaire"
+    }
+  },
+  {
+    "key": "D_business_timeline",
+    "ok": true,
+    "elapsedMs": 35632,
+    "stats": {
+      "llmCalls": 1,
+      "repairCalls": 0,
+      "inputTokens": 2519,
+      "outputTokens": 3055,
+      "estimatedModelCostUsd": 0.0067,
+      "latencyMs": 35632
+    },
+    "continuityMode": "SUBJECT",
+    "heroExists": true,
+    "heroSubjectType": "object_character",
+    "heroReasoning": "The script traces the life-cycle of one entity: the Blockbuster company/brand. The narrative follows that non-human subject through a timeline (rise, key decision points, expansion burden, bankruptcy, near-total closure, one surviving tourist store). Visual continuity should therefore attach to a persistent representation of the company rather than a single employee or rotating human cast.",
+    "recurringCharacterCount": 0,
+    "colorApproach": "FULL_COLOR",
+    "monochromeJustification": "",
+    "primaryColors": [
+      "deep-blue (#003F87) — Blockbuster facade",
+      "bright-yellow (#FFD700) — Blockbuster stripe and late-fee tag",
+      "Netflix-red (#E50914) — mail-order DVD icon"
+    ],
+    "visualPremise": "A flat 2D stickman-doodle explainer that follows the Blockbuster brand/company as a single non-human subject through its rapid expansion, strategic choices, and collapse, using simple storefront and object icons to show cause-and-effect across time.",
+    "graphicCharacterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+    "extraValidationErrors": [],
+    "warnings": [],
+    "fullBible": {
+      "productionBibleVersion": 1,
+      "recipeId": "stickman_doodle_explainer",
+      "recipeVersion": "STICKMAN_DOODLE_EXPLAINER_V1",
+      "visualPremise": "A flat 2D stickman-doodle explainer that follows the Blockbuster brand/company as a single non-human subject through its rapid expansion, strategic choices, and collapse, using simple storefront and object icons to show cause-and-effect across time.",
+      "visualTone": "informative and slightly wry — clear, economical, occasionally ironic (e.g., triumphant expansion shots later contrasted with lonely final-store shots). Emotions are communicated via staging and composition rather than detailed facial realism.",
+      "styleContract": {
+        "medium": "Flat-color 2D doodle/stickman illustration",
+        "illustrationStyle": "Simplified stickman/doodle explainer construction — circle heads, dot eyes, stick limbs, mitten hands — never a detailed or semi-realistic character",
+        "lineLanguage": "Uniform thin, clean black outlines of identical weight everywhere; no sketchiness, no variable line weight, no cross-hatching",
+        "shapeLanguage": "Simple geometric primitives — circles, rounded rectangles, straight or gently curved lines — never intricate or organic detail",
+        "detailLevel": "Minimal — enough to read instantly at a glance, never busy or cluttered",
+        "shadingPolicy": "None — flat solid fills only, no gradients, no soft shadow rendering, no highlights",
+        "texturePolicy": "None — flat, texture-free surfaces throughout",
+        "dimensionality": "2D flat, no 3D rendering, no depth shading, no perspective distortion beyond simple flat-layer staging",
+        "realismLevel": "Non-realistic, iconographic — identity is carried by a handful of discrete flat features, never facial realism",
+        "backgroundStrategy": "2-3 flat color layers (background/midground/foreground), never a fully rendered or photographic environment",
+        "forbiddenStyleTraits": [
+          "photorealistic or photographic rendering",
+          "3D render or CGI look",
+          "painterly or watercolor texture",
+          "anime or manga stylization",
+          "pencil-sketch or hand-drawn sketchiness",
+          "cel-shading with rendered shadows",
+          "gradient mesh or airbrushed shading",
+          "drop shadows or glow/bloom effects",
+          "realistic anatomy, fingers, or necks on stickman characters"
+        ],
+        "colorStrategy": "Reserve strong saturated colors for narrative anchors: Blockbuster deep-blue + yellow for the company; Netflix red for the mail-order competitor; white cloud for streaming. Use desaturated neutrals for environment to keep visual emphasis on these anchors.",
+        "lightingStrategy": "Flat, consistent ‘daylight’ fill across most scenes. Slightly desaturate and darken background color blocks during decline/bankruptcy scenes to cue a more somber mood. No gradients or spotlight effects."
+      },
+      "palette": {
+        "primaryColors": [
+          "deep-blue (#003F87) — Blockbuster facade",
+          "bright-yellow (#FFD700) — Blockbuster stripe and late-fee tag",
+          "Netflix-red (#E50914) — mail-order DVD icon"
+        ],
+        "supportingColors": [
+          "neutral-light-gray (#F2F4F7) — backgrounds",
+          "muted-beige (#EFE8DE) — alternate background",
+          "white (#FFFFFF) — windows, cloud",
+          "black (#000000) — outlines and icons"
+        ],
+        "environmentPaletteRules": "Backgrounds use neutral-light-gray or muted-beige only. Primary colors (deep-blue, bright-yellow, Netflix-red) must appear as focal accents and should never be used as background fills. Keep maximum three accent colors per scene.",
+        "contrastRules": "Always ensure the storefront deep-blue and yellow stripe sit on a neutral background to guarantee clear legibility. Red mailer icons should never sit on a red or yellow background.",
+        "colorApproach": "FULL_COLOR",
+        "monochromeJustification": ""
+      },
+      "continuityMode": "SUBJECT",
+      "hero": {
+        "exists": true,
+        "subjectType": "object_character",
+        "semanticIdentity": "the Blockbuster company as a persistent visual subject (personified storefront/logo icon)",
+        "canonicalAppearance": "A simplified stickman-friendly Blockbuster storefront icon: a rectangular, single-story storefront silhouette with a thick horizontal yellow stripe across the top third and a solid deep-blue body below. The facade has two simple white rectangles indicating doors/windows centered on the lower blue panel. The icon is outlined in the universal thin black line and rendered in flat color fills only. When the subject is shown growing (expansion), replicate this storefront icon repeated in a grid or along a map; when showing decline, show isolated individual storefront icons shrinking in size or surrounded by empty lots.",
+        "headFaceConstruction": "Not applicable (object_character represented as a storefront icon; do not humanize with a face).",
+        "bodyConstruction": "Single rectangular storefront block with optional small base and roofline; no limbs. Use simple rectangular geometry only.",
+        "skinTone": "",
+        "hair": "",
+        "outfit": "",
+        "accessories": [
+          "small yellow price-tag flag (optional) to indicate 'late fees' context when needed",
+          "tiny luggage-style tourist sticker (optional) to indicate the surviving store as a curiosity"
+        ],
+        "persistentIdentifyingFeatures": [
+          "deep-blue rectangular facade",
+          "thick horizontal yellow stripe across the top third",
+          "two white door/window rectangles centered on the lower panel",
+          "thin black outline around the entire icon",
+          "flat color fills, no shading"
+        ],
+        "bodyProportions": "A single box with width about 2.5x its height when used as a standalone icon; scalable but preserve ratio.",
+        "emotionalExpressionLanguage": "Use staging (size, repetition, surrounded context) rather than facial cues: many identical storefront icons tightly packed = dominance/expansion; storefront icon boxed by red foreclosure signs or small debt icons = burden; single isolated storefront with small tourist figures nearby = curiosity.",
+        "forbiddenMutations": [
+          "Do not add human facial features to the storefront icon",
+          "Do not change the yellow stripe to any other color",
+          "Do not replace blue facade with another hue outside the approved palette",
+          "Do not add gradients, textures, or realistic photographic detail",
+          "Do not use any real Blockbuster trademark lettering; keep only the abstract color/stripe/storefront silhouette"
+        ],
+        "reasoning": "The script traces the life-cycle of one entity: the Blockbuster company/brand. The narrative follows that non-human subject through a timeline (rise, key decision points, expansion burden, bankruptcy, near-total closure, one surviving tourist store). Visual continuity should therefore attach to a persistent representation of the company rather than a single employee or rotating human cast."
+      },
+      "recurringCharacters": [],
+      "world": {
+        "settingFamilies": [
+          "urban main street storefront row / mall frontage",
+          "simple US town map or grid for expansion maps",
+          "office boardroom table (for the 2000 decision scene)",
+          "mailroom / mailbox + delivery path (for early Netflix mail-order scenes)",
+          "lonely final-store street corner with tourist postcard stall"
+        ],
+        "architecture": "Simplified small-town commercial architecture reduced to flat storefront blocks with 1-3 rectangular windows/doors and a flat roofline; all buildings share the universal thin outline and flat colors.",
+        "geography": "Generic American small-town and suburban commercial strips rendered as simple repeated storefront icons or stylized map grids; no specific city landmarks.",
+        "era": "Late 1990s through 2014 (visual cues: a mix of late-90s tech iconography like DVD envelopes, and later streaming cloud icons). Do not depict modern smartphone app stores as the only context — show transitional tech evolution.",
+        "recurringEnvironmentConstruction": "Build scenes in 2-3 flat layers: sky/background (solid color), midground simple map or street row, foreground recurring subject icons (storefronts, mail envelopes, tiny stick-figure customers) with occasional small symbolic props (cloud for streaming, stack of dollar signs for debt).",
+        "environmentalColorRules": "Backgrounds are muted desaturated tones (light gray-blue or pale beige) so the blue/yellow storefront icon and red mailer icon stand out. Use flat color blocks only.",
+        "weatherTimeConventions": "Daytime scenes default to neutral daylight (flat pale sky). Use dusk or greyer sky only to communicate decline/bankruptcy scenes (slightly darker desaturated blue-gray).",
+        "historicalScientificConstraints": []
+      },
+      "objectLanguage": [
+        {
+          "id": "mail_order_dvd_box (Netflix)",
+          "canonicalDescription": "A small flat red rectangle representing a mailed DVD packet: red envelope-shaped rectangle with a thin black outline and a centered small white rectangle suggesting an address label. When used to indicate the early Netflix offer, place it adjacent to a boardroom table or near a small storefront icon.",
+          "whyRecurring": "Represents the mail-order DVD startup that offers to sell itself; used repeatedly to show the early strategic choice and the contrast between low-overhead mail business vs. brick-and-mortar."
+        },
+        {
+          "id": "late_fee_price_tag",
+          "canonicalDescription": "A flat yellow rectangular price-tag icon with a single black dollar sign ($) centered; thin black outline. Use this to call out 'late fees' policy whenever the narration references that revenue source.",
+          "whyRecurring": "Symbolizes Blockbuster's reliance on late-fee revenue, a recurring narrative factor in their decision-making."
+        },
+        {
+          "id": "streaming_cloud",
+          "canonicalDescription": "A flat white cloud icon with a thin black outline and three stacked curved lobes; sometimes annotated with a tiny play-triangle icon inside (solid blue) to indicate streaming service capability.",
+          "whyRecurring": "Represents the technological shift toward streaming that undercut physical rental economics; used in later timeline beats."
+        },
+        {
+          "id": "last_store_tourist_sign",
+          "canonicalDescription": "A slightly weathered standalone storefront icon identical to the canonical Blockbuster storefront but with a small round orange sticker on the facade showing a simplified camera icon and the wordless label 'tourist'.",
+          "whyRecurring": "Used in closing scenes to show the single remaining Blockbuster surviving as a tourist curiosity rather than a functioning chain."
+        }
+      ],
+      "graphicLanguage": {
+        "backgroundBehavior": "Clean, uncluttered flat backgrounds (often light/white or the episode's own environment palette) — never assumed to be white-only; the Production Bible's graphic language decides per episode",
+        "lineStyle": "The exact same line weight and fill language as narrative scenes — a graphic must never look like a different visual universe from the story frames around it",
+        "arrowsConnectors": "Simple flat-filled arrow shapes and thin connector lines, same line language as everything else",
+        "characterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+        "whitespaceBehavior": "Generous but not empty — whitespace isolates the one idea a graphic communicates, it is never filler",
+        "colorUse": "Uses this episode's own palette (deep-blue (#003F87) — Blockbuster facade, bright-yellow (#FFD700) — Blockbuster stripe and late-fee tag, Netflix-red (#E50914) — mail-order DVD icon) as flat fills, consistent with narrative scenes — never a separate infographic color scheme.",
+        "diagramConventions": "Timelines use a horizontal band with incremental storefront icons placed along it. Growth is shown by increasing counts of storefront icons; decline by thinning spacing and shrinking icons. Use small labeled icons (price-tag, mailer, cloud) as callouts along the timeline.",
+        "comparisonLayouts": "When comparing physical vs digital economics, use a split-screen: left column shows a cluster of identical storefront icons with dollar-sign stacks underneath; right column shows a single mailer icon and a streaming-cloud icon with a small stack of dollars that visually remains lower (indicating lower overhead).",
+        "timelineConventions": "Left-to-right chronological flow. Mark year ticks (e.g., 1998, 2000, 2005, 2010, 2014) as small vertical lines with year labels in black sans. Place corresponding icons directly above ticks.",
+        "mapConventions": "Simple stylized map: a pale-beige grid with small storefront icons placed as dots; growth overlays use repeated icons radiating from a central hub.",
+        "symbolicMetaphorLanguage": "Use physical mass (many storefront boxes) to show burden and overhead; use a single light floating cloud to denote intangible streaming advantage; use a small sealed envelope to connote mail-order simplicity.",
+        "overlayTextBehavior": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "cameraLanguage": {
+        "allowedShotFamilies": [
+          "WIDE",
+          "MEDIUM",
+          "CLOSE_UP",
+          "OVERHEAD",
+          "POV",
+          "SPLIT_SCREEN",
+          "CUTAWAY",
+          "DIAGRAM_LAYOUT"
+        ],
+        "simplicityReadabilityRules": "Every frame must read clearly at thumbnail size — avoid busy multi-subject compositions unless the beat's own visual concept specifically requires comparing multiple subjects at once",
+        "framingConventions": "Establishing shots: wider framing showing many storefront icons or a simple town map. Closeups: single storefront icon or object icons (mailer, price-tag, cloud) centered and enlarged to show concept. Boardroom/decision scenes: medium shot of a simple table with the storefront icon and mailer icon placed opposite each other.",
+        "visualHierarchyRules": "Primary subject icons (Blockbuster storefront, mailer, cloud, late-fee tag) must occupy the visual foreground and use the strongest palette colors. Secondary elements (other buildings, people) use muted neutrals.",
+        "whenEstablishingVsCloseupVsDiagram": "Use establishing shots for the rise (many stores), closeups for the critical 2000 offer decision (mailer near a boardroom table), and timeline/diagram shots for cause-effect comparisons (cost stacks, expansion vs streaming)."
+      },
+      "textPolicy": {
+        "providerGeneratedTextDefault": "OFF",
+        "exactTextHandledDownstream": true,
+        "exceptionsPolicy": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "continuityRules": {
+        "neverDrift": [
+          "the recipe's own universal style (flat 2D, uniform outline, flat fills, no shading/gradients/texture)",
+          "The Blockbuster storefront icon's yellow stripe must never change color or placement",
+          "The deep-blue facade color must remain consistent (#003F87)",
+          "The mailer icon must remain red and rectangular with a white label",
+          "No shading, texture, or facial features added to object_subject"
+        ],
+        "allowedToVary": [
+          "Scale and count of storefront icons (to show expansion/contraction)",
+          "Background desaturation level to signal mood (normal vs decline)",
+          "Contextual stickers/icons applied to the canonical storefront (late-fee tag, tourist sticker) but not altering the core facade"
+        ],
+        "episodeWideConsistencyRules": [
+          "All scenes that represent 'Blockbuster' must use the canonical storefront icon; never substitute with a different building silhouette",
+          "All timeline year labels must use the same typographic scale and placement conventions"
+        ]
+      },
+      "factualVisualConstraints": [
+        "Do not depict modern full-screen mobile app UIs as the primary 2000-era competitor — represent Netflix initially as a mail-order DVD service (red mailer icon) and later as streaming/cloud icon for later years",
+        "When showing the 2000 offer, present it as a mailer or small startup box adjacent to a boardroom table rather than as an already-established streaming platform"
+      ],
+      "negativeRules": [
+        "accidental 3D render or CGI look",
+        "photorealistic drift away from flat 2D",
+        "painterly, sketchy, or textured drift away from flat solid fills",
+        "random or unrequested generated typography",
+        "stickman construction mutating into a more detailed/realistic character mid-episode",
+        "shading, gradients, or texture appearing despite the flat-fill policy",
+        "Do not attempt to recreate or render the actual Blockbuster wordmark or trademarked logo text; use the abstract storefront color/signature stripe treatment instead",
+        "Do not invent a single human protagonist (CEO or employee) as the visual hero — the continuity is the company",
+        "Do not show the surviving store as a thriving chain; always present it as a largely touristic curiosity when depicting the present-day scene"
+      ],
+      "projectId": "test-D_business_timeline",
+      "generationProfileId": "test-profile-D_business_timeline",
+      "scriptVersionId": "test-script-D_business_timeline"
+    }
+  },
+  {
+    "key": "E_geography_documentary",
+    "ok": true,
+    "elapsedMs": 39454,
+    "stats": {
+      "llmCalls": 1,
+      "repairCalls": 0,
+      "inputTokens": 2504,
+      "outputTokens": 3119,
+      "estimatedModelCostUsd": 0.0069,
+      "latencyMs": 39454
+    },
+    "continuityMode": "SUBJECT",
+    "heroExists": true,
+    "heroSubjectType": "object_character",
+    "heroReasoning": "The script follows the Amazon rainforest as the thing doing and experiencing the key processes (generating rainfall, recycling moisture, being impacted by deforestation and approaching a potential tipping point). Visual continuity should therefore track a single persistent non-human subject (the forest and its associated moisture features) rather than any single human protagonist or an ensemble.",
+    "recurringCharacterCount": 0,
+    "colorApproach": "FULL_COLOR",
+    "monochromeJustification": "",
+    "primaryColors": [
+      "#2E8B57",
+      "#4DA6FF",
+      "#FFFFFF",
+      "#D9F0FF",
+      "#C48A5B"
+    ],
+    "visualPremise": "Flat 2D stickman-doodle style but the persistent visual subject is the Amazon rainforest itself, shown as a large contiguous green canopy mass and the atmospheric moisture structures it produces (ribbons, clouds, and rain arrows).",
+    "graphicCharacterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+    "extraValidationErrors": [],
+    "warnings": [],
+    "fullBible": {
+      "productionBibleVersion": 1,
+      "recipeId": "stickman_doodle_explainer",
+      "recipeVersion": "STICKMAN_DOODLE_EXPLAINER_V1",
+      "visualPremise": "Flat 2D stickman-doodle style but the persistent visual subject is the Amazon rainforest itself, shown as a large contiguous green canopy mass and the atmospheric moisture structures it produces (ribbons, clouds, and rain arrows).",
+      "visualTone": "Urgent but explanatory \u000212 calm, clear educational visuals with occasional tense color shifts when depicting deforestation and tipping-point scenarios.",
+      "styleContract": {
+        "medium": "Flat-color 2D doodle/stickman illustration",
+        "illustrationStyle": "Simplified stickman/doodle explainer construction — circle heads, dot eyes, stick limbs, mitten hands — never a detailed or semi-realistic character",
+        "lineLanguage": "Uniform thin, clean black outlines of identical weight everywhere; no sketchiness, no variable line weight, no cross-hatching",
+        "shapeLanguage": "Simple geometric primitives — circles, rounded rectangles, straight or gently curved lines — never intricate or organic detail",
+        "detailLevel": "Minimal — enough to read instantly at a glance, never busy or cluttered",
+        "shadingPolicy": "None — flat solid fills only, no gradients, no soft shadow rendering, no highlights",
+        "texturePolicy": "None — flat, texture-free surfaces throughout",
+        "dimensionality": "2D flat, no 3D rendering, no depth shading, no perspective distortion beyond simple flat-layer staging",
+        "realismLevel": "Non-realistic, iconographic — identity is carried by a handful of discrete flat features, never facial realism",
+        "backgroundStrategy": "2-3 flat color layers (background/midground/foreground), never a fully rendered or photographic environment",
+        "forbiddenStyleTraits": [
+          "photorealistic or photographic rendering",
+          "3D render or CGI look",
+          "painterly or watercolor texture",
+          "anime or manga stylization",
+          "pencil-sketch or hand-drawn sketchiness",
+          "cel-shading with rendered shadows",
+          "gradient mesh or airbrushed shading",
+          "drop shadows or glow/bloom effects",
+          "realistic anatomy, fingers, or necks on stickman characters"
+        ],
+        "colorStrategy": "Use saturated Amazon Green for healthy forest scenes with abundant white moisture ribbons and cloud clusters. As deforestation is introduced, gradually replace right-side canopy with brown/yellow patches and reduce the number and opacity of white moisture ribbons. Tipping-point visuals add stark red flame icons and more brown coverage to create a visual alarm contrast.",
+        "lightingStrategy": "Flat even illumination across all scenes (no shading). Use visual mood changes through palette swaps only: healthy = bright saturated greens and abundant white moisture elements; stressed = muted browns/yellows and red accents for fire."
+      },
+      "palette": {
+        "primaryColors": [
+          "#2E8B57",
+          "#4DA6FF",
+          "#FFFFFF",
+          "#D9F0FF",
+          "#C48A5B"
+        ],
+        "supportingColors": [
+          "#EFD9A6",
+          "#E63946",
+          "#F2E7D1",
+          "#000000"
+        ],
+        "environmentPaletteRules": "Amazon canopy uses Amazon Green (#2E8B57). Moisture elements (ribbons, clouds, rain arrows) are white (#FFFFFF) on pale blue (#D9F0FF) sky. Rivers and distant-region markers use bright blue (#4DA6FF). Deforestation uses brown/yellow pair (#C48A5B / #EFD9A6). Flames are red (#E63946). All outlines are uniform black (#000000).",
+        "contrastRules": "Keep high contrast between canopy green and deforested brown/yellow. Moisture ribbons and clouds must remain white against the pale blue sky to be clearly legible. Do not reduce opacity below 80% for ribbons in healthy-state scenes.",
+        "colorApproach": "FULL_COLOR",
+        "monochromeJustification": ""
+      },
+      "continuityMode": "SUBJECT",
+      "hero": {
+        "exists": true,
+        "subjectType": "object_character",
+        "semanticIdentity": "The Amazon rainforest as a single contiguous ecological 'character' whose moisture recycling and health the episode follows.",
+        "canonicalAppearance": "A broad, contiguous canopy block representing the Amazon: a rounded irregular horizontal mass roughly twice as wide as tall, filled with a single flat green tone and a thin uniform black outline. The canopy surface is punctuated by 6 evenly spaced simple tree-top icons (small circular green blobs with tiny black trunks) arranged across the mass to imply scale. At the map scale the canopy sits above a pale tan ground baseline and sits left-of-center in continent-framing scenes. When healthy, the canopy color is 'Amazon Green' (#2E8B57). When degraded (deforestation), replace the rightmost third with a patchwork of flat brown (#C48A5B) and pale yellow stubble (#EFD9A6) shapes with the same thin black outline.",
+        "headFaceConstruction": "N/A \u000212 the subject has no face; avoid anthropomorphizing facial features.",
+        "bodyConstruction": "A single contiguous irregular rounded horizontal mass (see canonicalAppearance) with optional smaller inset canopy lobes to indicate river corridors.",
+        "skinTone": "N/A",
+        "hair": "N/A",
+        "outfit": "N/A",
+        "accessories": [],
+        "persistentIdentifyingFeatures": [
+          "Single broad green canopy mass with thin black outline",
+          "Six evenly spaced tree-top icons on the canopy surface",
+          "Location implied left-of-center on continent framing maps",
+          "Rightmost third can switch to brown/yellow patchwork when deforested",
+          "Moisture ribbons (semi-transparent white flat bands with arrowheads) emanating from canopy"
+        ],
+        "bodyProportions": "Canopy width roughly 2.0x its height in most shots; individual tree-top icons are ~1/10 canopy height.",
+        "emotionalExpressionLanguage": "No face-based emotion. Health states signaled only by color and surrounding atmospheric elements: lush = saturated green + abundant moisture ribbons and clouds; stressed = brown patches + fewer ribbons + scattered flame icons (small red tear-shaped marks).",
+        "forbiddenMutations": [
+          "Never give the forest a human face, limbs, or clothing.",
+          "Never change the canopy's base shape into a perfect rectangle or symmetric blob.",
+          "Never use gradients, textures, or shading on the canopy (flat color only).",
+          "Never change Amazon Green (#2E8B57) to any other green when depicting 'healthy'."
+        ],
+        "reasoning": "The script follows the Amazon rainforest as the thing doing and experiencing the key processes (generating rainfall, recycling moisture, being impacted by deforestation and approaching a potential tipping point). Visual continuity should therefore track a single persistent non-human subject (the forest and its associated moisture features) rather than any single human protagonist or an ensemble."
+      },
+      "recurringCharacters": [],
+      "world": {
+        "settingFamilies": [
+          "Amazon canopy map frame (continent-style map with forest mass)",
+          "Cross-section atmosphere diagram (ground, canopy, lower atmosphere, moisture ribbons)",
+          "Downstream distant-region map (Midwest/Europe simplified outlines)",
+          "Deforested agricultural patch closeup (field parcel shapes next to canopy)"
+        ],
+        "architecture": "Not applicable; scenes are geographic/diagrammatic rather than built environments. When human structures appear (farmland, roads), depict as simple flat brown rectangles and thin gray lines for roads.",
+        "geography": "Simplified continental outlines to imply South America and distant regions (Midwest, Europe) without detailed coastlines. The Amazon canopy mass sits in the northern-central portion of the South America outline.",
+        "era": "Contemporary present-day (no historical anachronisms).",
+        "recurringEnvironmentConstruction": "2-4 flat horizontal layers: (1) pale sky band at top, (2) atmosphere band where moisture ribbons and clouds appear, (3) canopy mass layer, (4) ground/baseline with rivers and agricultural patches. In cross-section diagrams, stack as: ground baseline, canopy block at ground level, thin atmosphere band above containing flat ribbons and cloud shapes.",
+        "environmentalColorRules": "Sky: very pale blue (#D9F0FF). Atmosphere band uses the same pale blue background so moisture ribbons and clouds are visible as white (#FFFFFF) with thin black outlines. Ground baseline pale tan (#F2E7D1). Rivers are flat blue (#4DA6FF). Agricultural patches use flat brown (#C48A5B) and pale yellow (#EFD9A6). Flames use flat red (#E63946).",
+        "weatherTimeConventions": "Diurnal cycles are not required; if used, daytime = pale blue sky; storm/rain events use dense white cloud clusters and white downward rain arrows. No night scenes are needed.",
+        "historicalScientificConstraints": [
+          "Do not depict the Amazon as an island or separate landmass; it must sit within the South American outline.",
+          "Moisture transport should be shown as atmospheric ribbons/arrows, not as literal rivers on the ground when representing 'flying rivers'."
+        ]
+      },
+      "objectLanguage": [
+        {
+          "id": "moisture_ribbon",
+          "canonicalDescription": "A flat white semi-opaque ribbon (two parallel white bands filled solid, thin black outline) with a small black arrowhead at the far end indicating direction. Ribbons originate visually at the canopy edge and extend over the continent; thickness equals ~1/8 canopy height at origin and tapers slightly. Use 1-3 concurrent ribbons to show abundant recycling; use 0-1 ribbons for weakened recycling.",
+          "whyRecurring": "The 'flying rivers' moisture ribbons are the episode's central recurring visual metaphor for the Amazon-generated atmospheric moisture and are used repeatedly to explain long-distance rainfall links."
+        },
+        {
+          "id": "cloud_cluster",
+          "canonicalDescription": "A cluster of 3 overlapping flat white cloud blobs with thin black outlines, positioned above moisture ribbons. Size relative to canopy: clusters are about 1/6 canopy height. For heavy rainfall, draw denser clusters directly downstream of ribbons.",
+          "whyRecurring": "Cloud clusters translate ribbons into precipitation visually and recur whenever the script explains rainfall generation or decline."
+        },
+        {
+          "id": "deforestation_patch",
+          "canonicalDescription": "A geometric patchwork occupying roughly one-third of the canopy's rightmost area comprised of flat brown (#C48A5B) rectangles and pale yellow (#EFD9A6) stubble shapes with thin black outlines. Edges are jagged, not smooth, to indicate fragmentation.",
+          "whyRecurring": "This object is the locked visual shorthand for land-clearing and is central to scenes about weakening moisture recycling and approaching tipping points."
+        },
+        {
+          "id": "downstream_map_marker",
+          "canonicalDescription": "A small flat blue droplet icon with a thin black outline and a short dashed black line connecting it to the moisture ribbon path; used to mark distant regions (e.g., American Midwest, Europe) receiving moisture influence.",
+          "whyRecurring": "Marks the remote areas affected by Amazon-generated moisture and is used in multiple scenes to trace climatic links."
+        }
+      ],
+      "graphicLanguage": {
+        "backgroundBehavior": "Clean, uncluttered flat backgrounds (often light/white or the episode's own environment palette) — never assumed to be white-only; the Production Bible's graphic language decides per episode",
+        "lineStyle": "The exact same line weight and fill language as narrative scenes — a graphic must never look like a different visual universe from the story frames around it",
+        "arrowsConnectors": "Simple flat-filled arrow shapes and thin connector lines, same line language as everything else",
+        "characterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+        "whitespaceBehavior": "Generous but not empty — whitespace isolates the one idea a graphic communicates, it is never filler",
+        "colorUse": "Uses this episode's own palette (#2E8B57, #4DA6FF, #FFFFFF, #D9F0FF, #C48A5B) as flat fills, consistent with narrative scenes — never a separate infographic color scheme.",
+        "diagramConventions": "Flow is always left-to-right when showing moisture transport from Amazon to downstream regions. Use flat arrows and ribbons, and annotate with short label text outside of the artwork area if needed. Keep iconography minimal: moisture ribbons + cloud clusters + rain arrows suffice.",
+        "comparisonLayouts": "Use side-by-side panels for 'healthy vs deforested' comparisons. Both panels share the same scale and position for the canopy mass to allow direct visual comparison. Align panels horizontally with identical continent outlines.",
+        "timelineConventions": "If depicting change over time, use 3-panel horizontal progression: (1) Healthy (full green + many ribbons), (2) Partial deforestation (brown patch + fewer ribbons), (3) Near tipping point (large brown area + sparse ribbons + flame icons).",
+        "mapConventions": "Continental outlines are simplified silhouettes in thin black outline and pale tan fill. Place the canopy block at the accurate general region inside the South America silhouette. Use dashed black lines to show moisture paths when mapping to distant regions.",
+        "symbolicMetaphorLanguage": "The moisture ribbons act as the primary metaphor for 'flying rivers.' Use them consistently rather than alternative metaphors (like pipes or people) to maintain clarity. Deforestation is symbolized only by the deforestation_patch object and occasional small red flame icons to indicate fire risk.",
+        "overlayTextBehavior": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "cameraLanguage": {
+        "allowedShotFamilies": [
+          "WIDE",
+          "MEDIUM",
+          "CLOSE_UP",
+          "OVERHEAD",
+          "POV",
+          "SPLIT_SCREEN",
+          "CUTAWAY",
+          "DIAGRAM_LAYOUT"
+        ],
+        "simplicityReadabilityRules": "Every frame must read clearly at thumbnail size — avoid busy multi-subject compositions unless the beat's own visual concept specifically requires comparing multiple subjects at once",
+        "framingConventions": "Establishing shots: continent-map frame with canopy left-of-center and moisture ribbons extending right. Closeups: canopy patch showing tree-top icons and deforestation_patch fills. Diagrams/cross-sections: tight horizontal crop centered on canopy and the immediate atmosphere above.",
+        "visualHierarchyRules": "Always prioritize the canopy mass visually (largest element) then moisture ribbons, then cloud clusters, then downstream markers. Avoid adding unrelated visual clutter.",
+        "whenEstablishingVsCloseupVsDiagram": "Use an establishing map frame to show long-distance links. Use cross-section diagrams for process explanation (evapotranspiration and cloud formation). Use closeups when illustrating deforestation parcels or fire icons."
+      },
+      "textPolicy": {
+        "providerGeneratedTextDefault": "OFF",
+        "exactTextHandledDownstream": true,
+        "exceptionsPolicy": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "continuityRules": {
+        "neverDrift": [
+          "the recipe's own universal style (flat 2D, uniform outline, flat fills, no shading/gradients/texture)",
+          "Amazon canopy green must remain #2E8B57 when depicting 'healthy'.",
+          "Moisture ribbons must always be white flat bands with a black outline and arrowhead; never become dashed or replaced by other shapes.",
+          "The deforestation patch must occupy roughly the rightmost third when present and must use the specified brown/yellow colors."
+        ],
+        "allowedToVary": [
+          "Number of moisture ribbons (0\u000213) to indicate strength of recycling.",
+          "Size of deforested area within the rightmost third to indicate severity.",
+          "Presence and number of flame icons to signal fire risk magnitude."
+        ],
+        "episodeWideConsistencyRules": [
+          "Flow direction for moisture always left (Amazon) to right (downstream) in horizontal layouts.",
+          "Comparisons must keep canopy position and scale constant between panels for immediate visual comparison."
+        ]
+      },
+      "factualVisualConstraints": [
+        "Do not depict moisture transport as ground rivers when explaining 'flying rivers' \u000212 always use atmospheric ribbons/arrows.",
+        "The Amazon must be shown within a simplified South America silhouette; do not place it on a generic green island or an unspecified landmass.",
+        "Do not show modern urban skylines as sources of the Amazon's moisture; long-distance effects should be shown as atmospheric connections only."
+      ],
+      "negativeRules": [
+        "accidental 3D render or CGI look",
+        "photorealistic drift away from flat 2D",
+        "painterly, sketchy, or textured drift away from flat solid fills",
+        "random or unrequested generated typography",
+        "stickman construction mutating into a more detailed/realistic character mid-episode",
+        "shading, gradients, or texture appearing despite the flat-fill policy",
+        "Never anthropomorphize the forest with faces or limbs.",
+        "Never show gradients, textures, or photographic elements; all forms must remain flat color with thin black outlines.",
+        "Never depict deforestation as a single neat clear-cut rectangle; use jagged patchwork to indicate fragmentation."
+      ],
+      "projectId": "test-E_geography_documentary",
+      "generationProfileId": "test-profile-E_geography_documentary",
+      "scriptVersionId": "test-script-E_geography_documentary"
+    }
+  },
+  {
+    "key": "F_emotional_narrative",
+    "ok": true,
+    "elapsedMs": 30366,
+    "stats": {
+      "llmCalls": 1,
+      "repairCalls": 0,
+      "inputTokens": 2488,
+      "outputTokens": 2970,
+      "estimatedModelCostUsd": 0.0066,
+      "latencyMs": 30366
+    },
+    "continuityMode": "HERO",
+    "heroExists": true,
+    "heroSubjectType": "human",
+    "heroReasoning": "The narration follows a single individual's emotional throughline across three years (how she interacts with and relates to the voicemail). Scenes should track her changing internal state rather than a collection of separate vignettes, so a persistent protagonist is required.",
+    "recurringCharacterCount": 1,
+    "colorApproach": "LIMITED_PALETTE",
+    "monochromeJustification": "",
+    "primaryColors": [
+      "muted teal (sweater hue)",
+      "warm light beige (skin/wall)",
+      "mid-gray (skirt/furniture)",
+      "soft amber (lamp/accent)",
+      "cool desaturated blue (night/rain accents)"
+    ],
+    "visualPremise": "A quiet, intimate 2D stickman-doodle world that follows one woman's small, interior journey as she lives with a single saved voicemail over three years; visuals are simple, close, and domestic.",
+    "graphicCharacterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+    "extraValidationErrors": [],
+    "warnings": [],
+    "fullBible": {
+      "productionBibleVersion": 1,
+      "recipeId": "stickman_doodle_explainer",
+      "recipeVersion": "STICKMAN_DOODLE_EXPLAINER_V1",
+      "visualPremise": "A quiet, intimate 2D stickman-doodle world that follows one woman's small, interior journey as she lives with a single saved voicemail over three years; visuals are simple, close, and domestic.",
+      "visualTone": "soft, intimate, reflective — gently melancholic early on, warming to quiet acceptance by the end.",
+      "styleContract": {
+        "medium": "Flat-color 2D doodle/stickman illustration",
+        "illustrationStyle": "Simplified stickman/doodle explainer construction — circle heads, dot eyes, stick limbs, mitten hands — never a detailed or semi-realistic character",
+        "lineLanguage": "Uniform thin, clean black outlines of identical weight everywhere; no sketchiness, no variable line weight, no cross-hatching",
+        "shapeLanguage": "Simple geometric primitives — circles, rounded rectangles, straight or gently curved lines — never intricate or organic detail",
+        "detailLevel": "Minimal — enough to read instantly at a glance, never busy or cluttered",
+        "shadingPolicy": "None — flat solid fills only, no gradients, no soft shadow rendering, no highlights",
+        "texturePolicy": "None — flat, texture-free surfaces throughout",
+        "dimensionality": "2D flat, no 3D rendering, no depth shading, no perspective distortion beyond simple flat-layer staging",
+        "realismLevel": "Non-realistic, iconographic — identity is carried by a handful of discrete flat features, never facial realism",
+        "backgroundStrategy": "2-3 flat color layers (background/midground/foreground), never a fully rendered or photographic environment",
+        "forbiddenStyleTraits": [
+          "photorealistic or photographic rendering",
+          "3D render or CGI look",
+          "painterly or watercolor texture",
+          "anime or manga stylization",
+          "pencil-sketch or hand-drawn sketchiness",
+          "cel-shading with rendered shadows",
+          "gradient mesh or airbrushed shading",
+          "drop shadows or glow/bloom effects",
+          "realistic anatomy, fingers, or necks on stickman characters"
+        ],
+        "colorStrategy": "Restrict to a limited set of muted colors to keep the episode intimate and cohesive; reserve slightly cooler blues for grief/nighttime and warm amber accents for moments of comfort and acceptance.",
+        "lightingStrategy": "Flat lighting (no gradients) but change implied light via local color planes: night scenes use a cool blue background plane and a small warm amber lamp shape for contrast; close-ups of the phone are neutral off-white to read UI clearly."
+      },
+      "palette": {
+        "primaryColors": [
+          "muted teal (sweater hue)",
+          "warm light beige (skin/wall)",
+          "mid-gray (skirt/furniture)",
+          "soft amber (lamp/accent)",
+          "cool desaturated blue (night/rain accents)"
+        ],
+        "supportingColors": [
+          "dark-brown (hair)",
+          "warm-gray (father hair)",
+          "off-white (phone screen background)",
+          "dark-slate (trousers, deep accents)",
+          "dark-blue (umbrella)"
+        ],
+        "environmentPaletteRules": "Use muted neutrals for backgrounds (warm light beige, off-white). Use primary colors for characters and key props. Mood shifts: earlier beats favor cool desaturated blue overlays on backgrounds; later beats add small warm-amber highlights near light sources.",
+        "contrastRules": "Foreground figures and the voicemail UI must have higher contrast against background planes (darker outlines and slightly stronger fill values) so they read clearly at small scale. Keep overall contrast soft — avoid stark black-on-white blocks except for thin outlines.",
+        "colorApproach": "LIMITED_PALETTE",
+        "monochromeJustification": ""
+      },
+      "continuityMode": "HERO",
+      "hero": {
+        "exists": true,
+        "subjectType": "human",
+        "semanticIdentity": "the woman who saved her father's voicemail (early-30s, introspective protagonist the episode follows)",
+        "canonicalAppearance": "Stick-figure woman: adult female stickman with a slightly rounded head, proportionally slim stick body; short straight hair ending just above the nape, flat solid color dark brown; simple thin black eyebrow line and tiny dot eyes, small curved line for mouth. Skin fill: warm light beige. Clothing: soft muted teal long-sleeve sweater (solid color block), simple mid-gray knee-length skirt, and flat black rounded-sole slip-on shoes. Posture: often slightly hunched or inward in earlier beats, more open-shouldered in later beats. Always drawn with the same proportions and clothing colors whenever she appears.",
+        "headFaceConstruction": "Rounded oval head (no shading), two small dot eyes horizontally centered, single thin curved eyebrow line above each eye when needed, small curved line mouth that can tilt up or down to show subtle emotion; hair is a single flat shape hugging the skull, straight across the nape.",
+        "bodyConstruction": "Thin straight torso line with simple block limbs (upper arms and legs as single flat-filled rectangles with thin black outline), hands as mitten-like simplified shapes (no fingers), feet as small rounded ovals for shoes.",
+        "skinTone": "warm light beige (single flat color fill with thin black outline)",
+        "hair": "flat solid dark brown (HEX-like: deep warm brown), straight short cut ending just above nape, smooth single-shape silhouette (no strands or texture).",
+        "outfit": "soft muted teal long-sleeve sweater (solid fill), mid-gray knee-length skirt (solid fill), flat black slip-on shoes; same outfit across all beats.",
+        "accessories": [
+          "simple rectangular smartphone (thin black outline, off-white screen when idle)",
+          "small plain silver band ring on left ring finger (single flat gray disk)"
+        ],
+        "persistentIdentifyingFeatures": [
+          "short straight dark-brown hair ending above the nape",
+          "soft muted teal long-sleeve sweater",
+          "mid-gray knee-length skirt",
+          "small silver band on left ring finger",
+          "slightly rounded head with dot eyes and simple curved mouth",
+          "postural arc: slightly hunched early, more open later"
+        ],
+        "bodyProportions": "head-to-body ratio ~1:3 (head noticeably larger relative to body for expressiveness), limbs thin and slightly longer than torso, skirt covers upper thigh area, shoes small rounded ovals.",
+        "emotionalExpressionLanguage": "expressions are small deltas: mouth curvature (subtle down-turn to up-turn), tiny eyebrow tilt, slight head tilt (left/right), and posture shifts (hunch vs. upright). Avoid exaggerated cartoon extremes; favor restrained micro-expressions.",
+        "forbiddenMutations": [
+          "hair must never be depicted longer than nape length or change color from dark brown",
+          "outfit colors must not change (teal sweater and mid-gray skirt)",
+          "no facial hair, heavy makeup, or detailed facial features beyond dots/lines",
+          "the ring must not be omitted when her left hand is visible",
+          "body proportions must remain consistent (no elongated limbs, no chibi or realistic redraws)"
+        ],
+        "reasoning": "The narration follows a single individual's emotional throughline across three years (how she interacts with and relates to the voicemail). Scenes should track her changing internal state rather than a collection of separate vignettes, so a persistent protagonist is required."
+      },
+      "recurringCharacters": [
+        {
+          "id": "father_memory",
+          "role": "the woman's father as he appears in memory and flashback visuals (gentle ordinary presence, not a current living character)",
+          "canonicalAppearance": "Stick-figure man in memory: adult male stickman with a slightly rounded head, short neat hair colored warm gray, two small dot eyes and a thin smiling mouth line. Clothing: plain warm beige button-up shirt (solid fill) and dark slate trousers (solid fill). Posture relaxed, often shown mid-gesture (reaching, holding an umbrella, or smiling). Drawn consistently whenever memory/flashback of him appears.",
+          "identifyingFeatures": [
+            "short warm-gray hair",
+            "warm beige button-up shirt",
+            "dark slate trousers",
+            "gentle smiling mouth line in memory frames"
+          ],
+          "appearsForNarrativeReason": "He is the voice in the voicemail and appears visually only in memory/flashback scenes across multiple beats to represent the ordinary smallness remembered; his consistent look anchors those memory shots."
+        }
+      ],
+      "world": {
+        "settingFamilies": [
+          "small apartment interior (bedroom/bedside and living area)",
+          "phone UI close-up (voicemail list / playing screen)",
+          "nighttime bed/soft lamp close interior",
+          "rainy window / umbrella-on-street memory"
+        ],
+        "architecture": "simple domestic interiors: low table, narrow bed with plain headboard, small bedside lamp, window with two-pane frame. All furniture is simple flat shapes with thin black outlines and solid color fills.",
+        "geography": "urban/suburban unspecified — interiors are compact and domestic; no wide landscapes required beyond glimpses through a rain-speckled window.",
+        "era": "contemporary present day (modern smartphone and simple contemporary casual clothing).",
+        "recurringEnvironmentConstruction": "Environments built in 2-3 flat layers: background wall/large plane, midground furniture or window, foreground figures and small props (phone in hand). Keep composition tight and intimate (medium shots, close-ups).",
+        "environmentalColorRules": "Walls and large planes use muted warm neutrals (off-white, warm beige). Furniture uses desaturated muted colors (soft teal, mid-gray, warm beige). Accents for emotional beats: slightly cooler blues for earlier melancholic moments and warmer amber for later acceptance moments.",
+        "weatherTimeConventions": "Night scenes use cool desaturated blue overlays for background planes; lamp-lit interiors use a small warm amber shape near the lamp to suggest local warmth. Rainy memory scenes show stylized vertical blue strokes on window pane and a flat dark-blue umbrella silhouette.",
+        "historicalScientificConstraints": []
+      },
+      "objectLanguage": [
+        {
+          "id": "voicemail_file",
+          "canonicalDescription": "Close-up smartphone voicemail UI: rectangular smartphone with off-white screen; at top a thin header bar with text 'Voicemail'; centered large play button (simple dark-gray circle with white triangle), below it a slim horizontal scrub bar with a small circular thumb; to the left of scrub bar white text '40s' and beneath small italic gray text 'Dad — 2 days before'. The phone is held in her right hand in most shots; when onscreen, the UI elements are flat shapes with thin black outlines.",
+          "whyRecurring": "The voicemail UI is the central object across the episode — it is what she interacts with repeatedly and visually anchors the passage of time and emotional change."
+        },
+        {
+          "id": "umbrella_memory_object",
+          "canonicalDescription": "Small flat dark-blue umbrella silhouette (curved canopy, straight handle) shown in flashback or as a tiny icon on the voicemail header; solid dark-blue fill with thin black outline.",
+          "whyRecurring": "The voicemail's content references an umbrella; the umbrella motif recurs visually to tie the audio to a concrete everyday memory."
+        }
+      ],
+      "graphicLanguage": {
+        "backgroundBehavior": "Clean, uncluttered flat backgrounds (often light/white or the episode's own environment palette) — never assumed to be white-only; the Production Bible's graphic language decides per episode",
+        "lineStyle": "The exact same line weight and fill language as narrative scenes — a graphic must never look like a different visual universe from the story frames around it",
+        "arrowsConnectors": "Simple flat-filled arrow shapes and thin connector lines, same line language as everything else",
+        "characterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+        "whitespaceBehavior": "Generous but not empty — whitespace isolates the one idea a graphic communicates, it is never filler",
+        "colorUse": "Uses this episode's own palette (muted teal (sweater hue), warm light beige (skin/wall), mid-gray (skirt/furniture), soft amber (lamp/accent), cool desaturated blue (night/rain accents)) as flat fills, consistent with narrative scenes — never a separate infographic color scheme.",
+        "diagramConventions": "When showing the passage of time, use a horizontal three-point timeline with three equal circles labeled 'Year 1', 'Year 2', 'Year 3' beneath small silhouette vignettes of the woman (same canonical appearance) showing posture changes. Lines and circles are thin black outlines with muted beige fills.",
+        "comparisonLayouts": "Use two-up panels when contrasting reactions (e.g., Year 1 vs Year 3): left panel cooler blue background and more closed posture, right panel warmer amber background and more open posture. Panels are equal size with thin dividing line.",
+        "timelineConventions": "The three-year progression is always linear left-to-right, with the voicemail icon present above each year's vignette to maintain continuity.",
+        "mapConventions": "",
+        "symbolicMetaphorLanguage": "Use small ordinary objects (umbrella, coffee mug, bedside lamp) as recurring metaphors for ordinary presence. The voicemail icon and umbrella are the primary metaphors.",
+        "overlayTextBehavior": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "cameraLanguage": {
+        "allowedShotFamilies": [
+          "WIDE",
+          "MEDIUM",
+          "CLOSE_UP",
+          "OVERHEAD",
+          "POV",
+          "SPLIT_SCREEN",
+          "CUTAWAY",
+          "DIAGRAM_LAYOUT"
+        ],
+        "simplicityReadabilityRules": "Every frame must read clearly at thumbnail size — avoid busy multi-subject compositions unless the beat's own visual concept specifically requires comparing multiple subjects at once",
+        "framingConventions": "Favor intimate medium shots and close-ups: chest-up or hands-with-phone close-ups. Use occasional two-shot memory frames (woman and father silhouette). Avoid wide panoramas; keep focus tight on human scale.",
+        "visualHierarchyRules": "Voicemail UI or the woman's face/hands are primary focal elements in any scene that includes them. Secondary elements (lamp, window, umbrella) stay small and unobtrusive.",
+        "whenEstablishingVsCloseupVsDiagram": "Use an establishing interior shot only at episode start (to set domestic context). Most beats are closeups on phone UI, chest/head shots, or small two-person memory frames. Diagrams (timeline) are separate interstitial screens."
+      },
+      "textPolicy": {
+        "providerGeneratedTextDefault": "OFF",
+        "exactTextHandledDownstream": true,
+        "exceptionsPolicy": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "continuityRules": {
+        "neverDrift": [
+          "the recipe's own universal style (flat 2D, uniform outline, flat fills, no shading/gradients/texture)",
+          "the woman's outfit and hair must not change color or basic shape across the episode",
+          "the voicemail UI layout and the displayed '40s' / 'Dad — 2 days before' text must remain consistent in every phone close-up",
+          "the umbrella motif must remain a dark-blue silhouette when used"
+        ],
+        "allowedToVary": [
+          "her posture and subtle facial micro-expressions to indicate emotional shifts",
+          "background plane color (cool blue vs warm amber) to indicate mood/time",
+          "scale of shots (close-up vs medium shot) as needed"
+        ],
+        "episodeWideConsistencyRules": [
+          "the voicemail file object appears visually identical each time it is shown",
+          "memory depictions of the father always use the 'father_memory' canonical appearance",
+          "timeline interstitials always use the three-year left-to-right layout with the same iconography"
+        ]
+      },
+      "factualVisualConstraints": [],
+      "negativeRules": [
+        "accidental 3D render or CGI look",
+        "photorealistic drift away from flat 2D",
+        "painterly, sketchy, or textured drift away from flat solid fills",
+        "random or unrequested generated typography",
+        "stickman construction mutating into a more detailed/realistic character mid-episode",
+        "shading, gradients, or texture appearing despite the flat-fill policy",
+        "Do not depict the father as present and living in the 'present' timeline shots (he appears only in labeled memory/flashback frames).",
+        "Do not change the voicemail duration text ('40s') or timestamp text ('2 days before') in phone UI.",
+        "Avoid melodramatic or exaggerated animation poses; keep expressions restrained and believable."
+      ],
+      "projectId": "test-F_emotional_narrative",
+      "generationProfileId": "test-profile-F_emotional_narrative",
+      "scriptVersionId": "test-script-F_emotional_narrative"
+    }
+  },
+  {
+    "key": "G_color_important",
+    "ok": true,
+    "elapsedMs": 31368,
+    "stats": {
+      "llmCalls": 1,
+      "repairCalls": 0,
+      "inputTokens": 2488,
+      "outputTokens": 2545,
+      "estimatedModelCostUsd": 0.0057,
+      "latencyMs": 31368
+    },
+    "continuityMode": "NONE",
+    "heroExists": false,
+    "heroSubjectType": "none",
+    "heroReasoning": "The script is a topic explainer about coral ecosystems and their pigments rather than a story that follows a single person or animal. Scenes will reuse generic role-archetypes (e.g., a generic narrator pointer or scientist icon) and recurring objects (coral, algae) rather than a persistent protagonist, so NONE preserves fidelity to the narration without inventing a hero.",
+    "recurringCharacterCount": 0,
+    "colorApproach": "FULL_COLOR",
+    "monochromeJustification": "",
+    "primaryColors": [
+      "sea blue (#46C2E6)",
+      "electric purple (#8A2BE2)",
+      "glowing green (#00C853)",
+      "deep orange (#FF7043)",
+      "sunlit sand (pale beige #F1E0C9)",
+      "skeleton gray (#EDEDED)"
+    ],
+    "visualPremise": "A flat 2D stickman-doodle explainer set entirely on and around a coral reef: stylized reef structures, close-up cross-sections of coral polyps, and simple microscopic/algal icons, all drawn with uniform thin black outlines and flat solid fills.",
+    "graphicCharacterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+    "extraValidationErrors": [],
+    "warnings": [],
+    "fullBible": {
+      "productionBibleVersion": 1,
+      "recipeId": "stickman_doodle_explainer",
+      "recipeVersion": "STICKMAN_DOODLE_EXPLAINER_V1",
+      "visualPremise": "A flat 2D stickman-doodle explainer set entirely on and around a coral reef: stylized reef structures, close-up cross-sections of coral polyps, and simple microscopic/algal icons, all drawn with uniform thin black outlines and flat solid fills.",
+      "visualTone": "bright, curious, and slightly urgent — wondrous colorfulness for healthy reef scenes; stark, clinical whiteness and calm desaturation for bleaching sequences.",
+      "styleContract": {
+        "medium": "Flat-color 2D doodle/stickman illustration",
+        "illustrationStyle": "Simplified stickman/doodle explainer construction — circle heads, dot eyes, stick limbs, mitten hands — never a detailed or semi-realistic character",
+        "lineLanguage": "Uniform thin, clean black outlines of identical weight everywhere; no sketchiness, no variable line weight, no cross-hatching",
+        "shapeLanguage": "Simple geometric primitives — circles, rounded rectangles, straight or gently curved lines — never intricate or organic detail",
+        "detailLevel": "Minimal — enough to read instantly at a glance, never busy or cluttered",
+        "shadingPolicy": "None — flat solid fills only, no gradients, no soft shadow rendering, no highlights",
+        "texturePolicy": "None — flat, texture-free surfaces throughout",
+        "dimensionality": "2D flat, no 3D rendering, no depth shading, no perspective distortion beyond simple flat-layer staging",
+        "realismLevel": "Non-realistic, iconographic — identity is carried by a handful of discrete flat features, never facial realism",
+        "backgroundStrategy": "2-3 flat color layers (background/midground/foreground), never a fully rendered or photographic environment",
+        "forbiddenStyleTraits": [
+          "photorealistic or photographic rendering",
+          "3D render or CGI look",
+          "painterly or watercolor texture",
+          "anime or manga stylization",
+          "pencil-sketch or hand-drawn sketchiness",
+          "cel-shading with rendered shadows",
+          "gradient mesh or airbrushed shading",
+          "drop shadows or glow/bloom effects",
+          "realistic anatomy, fingers, or necks on stickman characters"
+        ],
+        "colorStrategy": "Use vivid, highly saturated coral/algal colors to communicate 'healthy' vibrancy; juxtapose these with pale/white fills for bleached states in side-by-side comparisons. Use a single consistent cyan-blue for water across scenes so coral color differences read clearly.",
+        "lightingStrategy": "Flat, even daylight for every scene. No gradients or shading. Convey urgency through palette shifts (saturated -> desaturated) and through small graphic cues (temperature_bar turning orange-red)."
+      },
+      "palette": {
+        "primaryColors": [
+          "sea blue (#46C2E6)",
+          "electric purple (#8A2BE2)",
+          "glowing green (#00C853)",
+          "deep orange (#FF7043)",
+          "sunlit sand (pale beige #F1E0C9)",
+          "skeleton gray (#EDEDED)"
+        ],
+        "supportingColors": [
+          "desaturated water blue (#84D7EE)",
+          "muted gray-blue for labels (#6C8096)",
+          "stressed algal pale (#F5D9E8)",
+          "warning red-orange (#FF5722)"
+        ],
+        "environmentPaletteRules": "Reserve the saturated color set exclusively for healthy coral/algal pigments. Use skeleton gray and white only for bleached tissue. Background water remains within sea blue family and should never be a saturated coral color.",
+        "contrastRules": "Always maintain strong contrast between coral fill and water background (coral fills at least 40% perceived contrast). Labels and leader lines use muted gray-blue to avoid visual competition with coral colors.",
+        "colorApproach": "FULL_COLOR",
+        "monochromeJustification": ""
+      },
+      "continuityMode": "NONE",
+      "hero": {
+        "exists": false,
+        "subjectType": "none",
+        "semanticIdentity": "",
+        "canonicalAppearance": "",
+        "headFaceConstruction": "",
+        "bodyConstruction": "",
+        "skinTone": "",
+        "hair": "",
+        "outfit": "",
+        "accessories": [],
+        "persistentIdentifyingFeatures": [],
+        "bodyProportions": "",
+        "emotionalExpressionLanguage": "",
+        "forbiddenMutations": [],
+        "reasoning": "The script is a topic explainer about coral ecosystems and their pigments rather than a story that follows a single person or animal. Scenes will reuse generic role-archetypes (e.g., a generic narrator pointer or scientist icon) and recurring objects (coral, algae) rather than a persistent protagonist, so NONE preserves fidelity to the narration without inventing a hero."
+      },
+      "recurringCharacters": [],
+      "world": {
+        "settingFamilies": [
+          "reef-wide panorama (multiple coral clusters, fish silhouettes, water column)",
+          "reef close-up (single square meter view packed with coral shapes and tiny fish/invertebrates)",
+          "coral polyp cross-section diagram (cutaway showing coral tissue, algae inside, skeleton beneath)",
+          "microscope-style panel (circle or rounded square containing simplified algal cells and pigment granules)",
+          "temperature/stress comparison panel (side-by-side healthy vs warming/bleached)"
+        ],
+        "architecture": "Organic, irregular clusters of branching, boulder, and plate coral silhouettes assembled in 2-3 stacked flat layers (background seabed, midground coral mass, foreground detail like seaweed and small fish icons).",
+        "geography": "Shallow tropical reef seascape — clear blue water column with a visible water surface line in establishing shots; no land-mass detail required.",
+        "era": "present-day contemporary (no historical tech or anachronisms).",
+        "recurringEnvironmentConstruction": "Build environments in 2-3 flat layers: far background wash (sea blue), midground reef shapes (larger silhouettes), foreground details (distinct coral types, fish, bubbles). For cross-sections and microscope panels, use framed inset boxes that sit on top of the layered reef background.",
+        "environmentalColorRules": "Healthy reef scenes use saturated, high-chroma colors for corals and algal pigments; water column always a consistent medium cyan-blue (#46C2E6-ish) at full opacity for establishing shots. Bleaching scenes desaturate corals to near-white while keeping water color slightly muted and cooler.",
+        "weatherTimeConventions": "All reef scenes read as daylight with a uniform, cool-blue ambient (no night scenes). Use the same daylight indication across all beats so color comparisons remain clear.",
+        "historicalScientificConstraints": [
+          "Do not depict coral pigments as coming from the hard calcium skeleton — pigments are in the living tissue or algal cells.",
+          "Bleached coral should appear pale/white (loss of algal color) but retain the coral skeleton shape and texture outlines."
+        ]
+      },
+      "objectLanguage": [
+        {
+          "id": "coral_fragment",
+          "canonicalDescription": "A single coral cluster drawn as a compact group of 3–6 simplified stickman-style coral shapes (branching, plate, and boulder variants), each shape outlined thin-black and filled flat. For healthy versions, each individual coral shape is a saturated color (examples: electric purple #8A2BE2, glowing green #00C853, deep orange #FF7043). For bleached versions, the same shapes are filled pure white (#FFFFFF) with the black outline preserved.",
+          "whyRecurring": "The coral cluster is the visual anchor of the episode: used repeatedly for healthy-vs-bleached comparisons and for inset cross-section overlays showing algae presence/absence."
+        },
+        {
+          "id": "algal_cell_icon",
+          "canonicalDescription": "A simple rounded oval (microscope cell) with a thin black outline and a single internal circle representing a pigment body. Healthy algal icons are filled with saturated pigment colors (violet, green, orange variants). Stressed/low-pigment algal icons are pale or desaturated gray-tinted versions of the same hue.",
+          "whyRecurring": "Algae inside coral tissue are the proximal cause of visible color; they will be shown repeatedly in cross-sections and microscope panels to illustrate color sources and bleaching."
+        },
+        {
+          "id": "cross_section_overlay",
+          "canonicalDescription": "A rectangular inset with a thin black frame showing a cutaway: top layer labeled 'tissue' (light cream fill), medio layer containing numerous small algal_cell_icon shapes clustered inside the tissue area, and bottom layer labeled 'skeleton' (pale gray fill). Labels are short single-word tags placed outside the inset with thin black leader lines.",
+          "whyRecurring": "Used multiple times to make the biological mechanism explicit: where pigments live and how their loss changes visible reef color."
+        },
+        {
+          "id": "temperature_bar",
+          "canonicalDescription": "A horizontal thermometer-like bar segmented into three zones: cool (teal), normal (light blue), warm (orange-red). Each segment is flat-filled and labeled with short tags 'cool', 'normal', 'warm'. A simple small black pointer icon indicates current condition.",
+          "whyRecurring": "Used to visually link warming conditions to algal stress and bleaching events across comparison panels."
+        }
+      ],
+      "graphicLanguage": {
+        "backgroundBehavior": "Clean, uncluttered flat backgrounds (often light/white or the episode's own environment palette) — never assumed to be white-only; the Production Bible's graphic language decides per episode",
+        "lineStyle": "The exact same line weight and fill language as narrative scenes — a graphic must never look like a different visual universe from the story frames around it",
+        "arrowsConnectors": "Simple flat-filled arrow shapes and thin connector lines, same line language as everything else",
+        "characterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+        "whitespaceBehavior": "Generous but not empty — whitespace isolates the one idea a graphic communicates, it is never filler",
+        "colorUse": "Uses this episode's own palette (sea blue (#46C2E6), electric purple (#8A2BE2), glowing green (#00C853), deep orange (#FF7043), sunlit sand (pale beige #F1E0C9), skeleton gray (#EDEDED)) as flat fills, consistent with narrative scenes — never a separate infographic color scheme.",
+        "diagramConventions": "Diagrams are boxed in thin black frames with minimal labels (one- or two-word tags). Use icons (algal_cell_icon) repeated to indicate abundance. Arrows are simple black lines with single arrowheads; annotate arrows with a one-word cause/effect (e.g., 'photosynthesis' or 'expelled').",
+        "comparisonLayouts": "Always show healthy vs stressed/bleached as a horizontal split or side-by-side pair: left = healthy (vibrant colors), right = warm/stressed (paler algal icons, white coral). Maintain identical composition so color is the only variable.",
+        "timelineConventions": "If a temporal sequence is shown, use 3 evenly spaced panels left-to-right with short captions: 'healthy' -> 'warming' -> 'bleached'. Use the temperature_bar under each panel to reinforce the causal link.",
+        "mapConventions": "No geographic maps required; if a locator is used, show a tiny globe dot in the top corner — same simple flat style and sea-blue fill.",
+        "symbolicMetaphorLanguage": "Use the 'carnival' metaphor visually by occasionally grouping many small bright shapes tightly in healthy panels to suggest festivity; avoid literal carnival objects.",
+        "overlayTextBehavior": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "cameraLanguage": {
+        "allowedShotFamilies": [
+          "WIDE",
+          "MEDIUM",
+          "CLOSE_UP",
+          "OVERHEAD",
+          "POV",
+          "SPLIT_SCREEN",
+          "CUTAWAY",
+          "DIAGRAM_LAYOUT"
+        ],
+        "simplicityReadabilityRules": "Every frame must read clearly at thumbnail size — avoid busy multi-subject compositions unless the beat's own visual concept specifically requires comparing multiple subjects at once",
+        "framingConventions": "Establishing shots are medium-wide reef panoramas with negative space at the top for captions. Comparison shots are medium-close with the coral_fragment centered. Cross-section overlays are medium-close framed insets occupying ~25% of the frame.",
+        "visualHierarchyRules": "Primary focus: coral_fragment. Secondary: cross_section_overlay or temperature_bar. Tertiary: small fish or bubbles used as decorative motion elements but never compete with primary colors.",
+        "whenEstablishingVsCloseupVsDiagram": "Use establishing reef panoramas for opening and context; closeups and insets for mechanism explanation; diagrams are always boxed and placed on a plain water-color background to avoid clutter."
+      },
+      "textPolicy": {
+        "providerGeneratedTextDefault": "OFF",
+        "exactTextHandledDownstream": true,
+        "exceptionsPolicy": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "continuityRules": {
+        "neverDrift": [
+          "the recipe's own universal style (flat 2D, uniform outline, flat fills, no shading/gradients/texture)",
+          "Coral healthy colors must never be used for background water or labels.",
+          "Bleached coral must be white or near-white, never gray-brown or black.",
+          "Algal pigments must be depicted as inside tissue in cross-sections, not on outer skeleton surfaces.",
+          "Do not anthropomorphize corals (no faces or limbs)."
+        ],
+        "allowedToVary": [
+          "Exact hue choice among the saturated palette for different coral shapes.",
+          "Number and arrangement of algal_cell_icon shapes inside tissue to represent density differences."
+        ],
+        "episodeWideConsistencyRules": [
+          "All side-by-side comparisons must keep composition identical except for color and algal icon density.",
+          "Temperature_bar colors and positions must be consistent in every panel showing stress."
+        ]
+      },
+      "factualVisualConstraints": [
+        "Show pigments located in algal cells or coral tissue; do not show color coming from the calcium carbonate skeleton.",
+        "Bleaching visually = loss of algal color (white/pale tissue), not disappearance of coral structure."
+      ],
+      "negativeRules": [
+        "accidental 3D render or CGI look",
+        "photorealistic drift away from flat 2D",
+        "painterly, sketchy, or textured drift away from flat solid fills",
+        "random or unrequested generated typography",
+        "stickman construction mutating into a more detailed/realistic character mid-episode",
+        "shading, gradients, or texture appearing despite the flat-fill policy",
+        "Do not show corals with human or animal faces.",
+        "Do not depict bleached corals as missing or collapsed structures—only color/texture change.",
+        "Avoid using muddy brown/gray to represent healthy coral; only use saturated palette for healthy states."
+      ],
+      "projectId": "test-G_color_important",
+      "generationProfileId": "test-profile-G_color_important",
+      "scriptVersionId": "test-script-G_color_important"
+    }
+  },
+  {
+    "key": "H_monochrome_appropriate",
+    "ok": true,
+    "elapsedMs": 37179,
+    "stats": {
+      "llmCalls": 1,
+      "repairCalls": 0,
+      "inputTokens": 2510,
+      "outputTokens": 2743,
+      "estimatedModelCostUsd": 0.0061,
+      "latencyMs": 37179
+    },
+    "continuityMode": "NONE",
+    "heroExists": false,
+    "heroSubjectType": "none",
+    "heroReasoning": "The script narrates a citywide practice and the shared behaviors of many Londoners rather than following a single individual or a particular small group through a throughline. Scenes should use generic archetypes (a pedestrian, a warden, a family at home) drawn fresh as needed rather than a persistent hero.",
+    "recurringCharacterCount": 0,
+    "colorApproach": "LIMITED_PALETTE",
+    "monochromeJustification": "",
+    "primaryColors": [
+      "near-black (night) #0B0B0F",
+      "deep charcoal #262626",
+      "muted navy #1F2A44",
+      "off-white (painted curb, highlights) #F2F2F2",
+      "desaturated warm yellow (torch) #D9C88A"
+    ],
+    "visualPremise": "Flat 2D stickman doodle visuals showing London at dusk and night during WWII blackouts — empty streets, curtained windows, dim torchlight and small pools of visibility against broad areas of deliberate darkness.",
+    "graphicCharacterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+    "extraValidationErrors": [],
+    "warnings": [],
+    "fullBible": {
+      "productionBibleVersion": 1,
+      "recipeId": "stickman_doodle_explainer",
+      "recipeVersion": "STICKMAN_DOODLE_EXPLAINER_V1",
+      "visualPremise": "Flat 2D stickman doodle visuals showing London at dusk and night during WWII blackouts — empty streets, curtained windows, dim torchlight and small pools of visibility against broad areas of deliberate darkness.",
+      "visualTone": "eerie, restrained, and quietly tense — intimate human gestures within a city intentionally muted; moments of pragmatic resilience (painting curbs, carrying torches) puncture the anxiety with stoic resourcefulness.",
+      "styleContract": {
+        "medium": "Flat-color 2D doodle/stickman illustration",
+        "illustrationStyle": "Simplified stickman/doodle explainer construction — circle heads, dot eyes, stick limbs, mitten hands — never a detailed or semi-realistic character",
+        "lineLanguage": "Uniform thin, clean black outlines of identical weight everywhere; no sketchiness, no variable line weight, no cross-hatching",
+        "shapeLanguage": "Simple geometric primitives — circles, rounded rectangles, straight or gently curved lines — never intricate or organic detail",
+        "detailLevel": "Minimal — enough to read instantly at a glance, never busy or cluttered",
+        "shadingPolicy": "None — flat solid fills only, no gradients, no soft shadow rendering, no highlights",
+        "texturePolicy": "None — flat, texture-free surfaces throughout",
+        "dimensionality": "2D flat, no 3D rendering, no depth shading, no perspective distortion beyond simple flat-layer staging",
+        "realismLevel": "Non-realistic, iconographic — identity is carried by a handful of discrete flat features, never facial realism",
+        "backgroundStrategy": "2-3 flat color layers (background/midground/foreground), never a fully rendered or photographic environment",
+        "forbiddenStyleTraits": [
+          "photorealistic or photographic rendering",
+          "3D render or CGI look",
+          "painterly or watercolor texture",
+          "anime or manga stylization",
+          "pencil-sketch or hand-drawn sketchiness",
+          "cel-shading with rendered shadows",
+          "gradient mesh or airbrushed shading",
+          "drop shadows or glow/bloom effects",
+          "realistic anatomy, fingers, or necks on stickman characters"
+        ],
+        "colorStrategy": "Use mostly two to three dark tones per scene to sell the blackout; reserve one accent color per frame (torch yellow, painted curb off-white, or khaki armband) to denote human presence or safety cues. Avoid more than one accent in a single close composition to keep clarity.",
+        "lightingStrategy": "Very low-key, 'pools of light' approach: scenes are dominated by darkness with small local light sources (torch cones, narrow window leaks, reflective paint). No global illumination; when a torch is in frame, render its cone as a solid flat wedge that only lights immediate foreground elements."
+      },
+      "palette": {
+        "primaryColors": [
+          "near-black (night) #0B0B0F",
+          "deep charcoal #262626",
+          "muted navy #1F2A44",
+          "off-white (painted curb, highlights) #F2F2F2",
+          "desaturated warm yellow (torch) #D9C88A"
+        ],
+        "supportingColors": [
+          "muted khaki (warden armband) #8D7B59",
+          "brick-muted red (occasional coat) #7A3B3B",
+          "desaturated gray (vehicles, pavement) #555555"
+        ],
+        "environmentPaletteRules": "Large planes (sky, buildings, streets) stay in primary dark hues; human figures use slightly lighter silhouette tones so they read against backgrounds. Accent/supporting colors are used sparingly and only for functional elements (curbs, torches, armbands, a single coat).",
+        "contrastRules": "High contrast between small warm accents (torch, painted curb) and dark backgrounds to guide viewer attention. Maintain low overall saturation; avoid bright neon or chrome-like colors.",
+        "colorApproach": "LIMITED_PALETTE",
+        "monochromeJustification": ""
+      },
+      "continuityMode": "NONE",
+      "hero": {
+        "exists": false,
+        "subjectType": "none",
+        "semanticIdentity": "",
+        "canonicalAppearance": "",
+        "headFaceConstruction": "",
+        "bodyConstruction": "",
+        "skinTone": "",
+        "hair": "",
+        "outfit": "",
+        "accessories": [],
+        "persistentIdentifyingFeatures": [],
+        "bodyProportions": "",
+        "emotionalExpressionLanguage": "",
+        "forbiddenMutations": [],
+        "reasoning": "The script narrates a citywide practice and the shared behaviors of many Londoners rather than following a single individual or a particular small group through a throughline. Scenes should use generic archetypes (a pedestrian, a warden, a family at home) drawn fresh as needed rather than a persistent hero."
+      },
+      "recurringCharacters": [],
+      "world": {
+        "settingFamilies": [
+          "residential street at dusk/night with terraced houses and curtained windows",
+          "main street / thoroughfare with sparse blackout-safe signage and occasional vehicle silhouettes",
+          "interior of a modest flat with blackout curtains drawn across windows",
+          "street corner with an air-raid warden on patrol"
+        ],
+        "architecture": "Simplified mid-20th-century London terrace silhouettes: short rows of rectangular houses with simple pitched roofs, flat facades, and a few low lamp posts (which are unlit). Details kept minimal to suit the stickman style.",
+        "geography": "Urban, dense row-house neighborhoods and broader, busier thoroughfares; scenes should imply an eight-million-person city through layered street rows and repeating building silhouettes rather than explicit skyline landmarks.",
+        "era": "WWII-era London, late 1930s to 1940s; visual cues imply the period (blackout curtains, simple car/vehicle silhouettes) but avoid detailed, model-specific historical prop rendering.",
+        "recurringEnvironmentConstruction": "2-3 flat visual layers per scene: background building silhouettes, midground street and curb, foreground human figures or foreground detail (painted curb, torch light). Keep composition simple and readable in silhouette/flat color.",
+        "environmentalColorRules": "Backgrounds and large surfaces use deep muted tones to imply darkness; small props and human accessories use a limited set of accent colors to guide focus (torch beam, painted curb, warden armband). No gradients or textures.",
+        "weatherTimeConventions": "Dusk scenes: deep navy-blue sky band at top with a thin dusk strip when needed; night scenes: near-black skies. Time of night indicated by overall darkness level and presence/absence of a thin dusk band.",
+        "historicalScientificConstraints": [
+          "No visible electric streetlights, neon signs, or lit windows when portraying enforced blackout conditions (unless the scene explicitly shows pre-blackout or a violation).",
+          "Blackout curtains should occlude most window light; small beams leaking are acceptable only when the script calls out an infraction."
+        ]
+      },
+      "objectLanguage": [
+        {
+          "id": "blackout_curtain",
+          "canonicalDescription": "A heavy, opaque rectangle covering the full window area in flat deep charcoal (#262626), pinned edge-to-edge so no interior glow shows; when a breach is depicted, show a single narrow, vertical thin-offwhite sliver no wider than 1/12th of the window width.",
+          "whyRecurring": "The blackout curtain is the episode's primary visual shorthand for the enforced darkness and appears repeatedly in domestic interior and exterior shots."
+        },
+        {
+          "id": "painted_curb",
+          "canonicalDescription": "A narrow curb strip painted in flat off-white (#F2F2F2) along the edge of pavement; always shown as a single uninterrupted stripe following the pavement contour and sized so it reads clearly against the dark street.",
+          "whyRecurring": "Painted curbs are a recurring adaptation Londoners used to safely navigate in blackout conditions; they function as a visual motif for practical adaptation."
+        },
+        {
+          "id": "dim_torch",
+          "canonicalDescription": "A short handheld torch drawn as a small cylinder in muted dark gray with a short conical light wedge in very desaturated warm yellow (#D9C88A) limited to a narrow tight cone no wider than twice the holder's shoulder width; illuminate only immediate foreground, leaving surrounding space dark.",
+          "whyRecurring": "Torches (flashlights) are frequent props used to show human-scale visibility and the limited, localized light people relied on."
+        },
+        {
+          "id": "warden_armband",
+          "canonicalDescription": "A single flat band worn on the upper arm: muted khaki rectangle (#8D7B59) with a small white circle centered and a minimal black 'W' glyph; drawn proportionally so it is readable on a stickman arm at medium shots.",
+          "whyRecurring": "Air-raid wardens are a recurring institutional presence in blackout scenes; the armband identifies them quickly without creating a named recurring character."
+        }
+      ],
+      "graphicLanguage": {
+        "backgroundBehavior": "Clean, uncluttered flat backgrounds (often light/white or the episode's own environment palette) — never assumed to be white-only; the Production Bible's graphic language decides per episode",
+        "lineStyle": "The exact same line weight and fill language as narrative scenes — a graphic must never look like a different visual universe from the story frames around it",
+        "arrowsConnectors": "Simple flat-filled arrow shapes and thin connector lines, same line language as everything else",
+        "characterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+        "whitespaceBehavior": "Generous but not empty — whitespace isolates the one idea a graphic communicates, it is never filler",
+        "colorUse": "Uses this episode's own palette (near-black (night) #0B0B0F, deep charcoal #262626, muted navy #1F2A44, off-white (painted curb, highlights) #F2F2F2, desaturated warm yellow (torch) #D9C88A) as flat fills, consistent with narrative scenes — never a separate infographic color scheme.",
+        "diagramConventions": "Diagrams (e.g., showing a blackout map or pedestrian hazard statistics) should use the same limited palette, with the dark city area as the background and single-color callouts in off-white or desaturated yellow. Use simple icons (stickman pedestrian, car silhouette) consistent with the stickman style.",
+        "comparisonLayouts": "When comparing 'before' (lit city) vs 'after' (blackout), use split-screen or two stacked rows: left uses a slightly lighter navy background to imply dusk and small lit windows in muted warm tones; right uses the standard near-black background and blackout elements described above.",
+        "timelineConventions": "Linear timeline bars are thin off-white lines on dark backgrounds with small event markers in khaki; annotations use short terse labels in off-white.",
+        "mapConventions": "Top-down simplified city blocks in deep charcoal with painted-curb callouts in off-white; no geographic detail beyond block shapes and a few labeled street names only if the script requires them.",
+        "symbolicMetaphorLanguage": "Use recurring motifs like a painted curb stripe and a constrained torch cone to stand for safety and limited visibility. A small white circle (off-white) can be used repeatedly to mark 'safe spots' or the location of wardens.",
+        "overlayTextBehavior": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "cameraLanguage": {
+        "allowedShotFamilies": [
+          "WIDE",
+          "MEDIUM",
+          "CLOSE_UP",
+          "OVERHEAD",
+          "POV",
+          "SPLIT_SCREEN",
+          "CUTAWAY",
+          "DIAGRAM_LAYOUT"
+        ],
+        "simplicityReadabilityRules": "Every frame must read clearly at thumbnail size — avoid busy multi-subject compositions unless the beat's own visual concept specifically requires comparing multiple subjects at once",
+        "framingConventions": "Establishing wide shot: building rows and empty streets to convey scale. Mid shots: 3/4 view of a sidewalk with one or two figures and a painted curb. Closeups: hands pinning a blackout curtain, a torch beam on a face, an armband on an upper arm. Avoid extreme close-ups of faces; stickman faces remain minimal.",
+        "visualHierarchyRules": "Keep human action as the focal point: accent colors and small light cones should lead the eye. Large dark planes should never compete for attention unless the scene's point is the emptiness itself.",
+        "whenEstablishingVsCloseupVsDiagram": "Use establishing shots to show the city's disappearance into darkness; use mid-shots to show adaptations (painted curbs, torches); use closeups for personal details that exemplify the blackout's human effects (a folded curtain, a stern warden gesture). Diagrams are separate and use the diagram conventions above."
+      },
+      "textPolicy": {
+        "providerGeneratedTextDefault": "OFF",
+        "exactTextHandledDownstream": true,
+        "exceptionsPolicy": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+      },
+      "continuityRules": {
+        "neverDrift": [
+          "the recipe's own universal style (flat 2D, uniform outline, flat fills, no shading/gradients/texture)",
+          "Do not introduce any lit electric streetlights, neon signage, or lit windows when depicting enforced blackout scenes.",
+          "Do not use bright saturated colors (e.g., neon red, bright cyan) as accents.",
+          "Do not depict modern devices (smartphones, LED torches) or modern vehicle shapes."
+        ],
+        "allowedToVary": [
+          "Small variations in coat color among pedestrians (within the supporting colors) to suggest different individuals.",
+          "Different torch sizes and cone angles to indicate handheld vs pocket torch, but keep cone color and intensity consistent."
+        ],
+        "episodeWideConsistencyRules": [
+          "Blackout curtains must always be the same flat deep charcoal rectangle; any window leak is a single narrow sliver as specified.",
+          "Painted curbs must be the same off-white stripe and always clearly visible when present.",
+          "Torch cones always use the same desaturated warm yellow and illuminate only immediate foreground objects."
+        ]
+      },
+      "factualVisualConstraints": [
+        "Avoid depicting lit street lamps or illuminated shopfronts during blackout nights.",
+        "Air-raid wardens should be indicated by the armband and posture, not by modern uniforms or insignia."
+      ],
+      "negativeRules": [
+        "accidental 3D render or CGI look",
+        "photorealistic drift away from flat 2D",
+        "painterly, sketchy, or textured drift away from flat solid fills",
+        "random or unrequested generated typography",
+        "stickman construction mutating into a more detailed/realistic character mid-episode",
+        "shading, gradients, or texture appearing despite the flat-fill policy",
+        "Never show modern signage, adverts, or brand logos.",
+        "Never show a glowing smartphone screen or other anachronistic personal electronic light sources in blackout scenes.",
+        "Do not show high-detail facial features or photorealistic textures — keep all humans as the episode's stickman construction."
+      ],
+      "projectId": "test-H_monochrome_appropriate",
+      "generationProfileId": "test-profile-H_monochrome_appropriate",
+      "scriptVersionId": "test-script-H_monochrome_appropriate"
+    }
+  }
+]

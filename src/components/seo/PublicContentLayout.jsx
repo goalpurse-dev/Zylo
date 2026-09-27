@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import PublicContentHeader from "./PublicContentHeader.jsx";
-import { getPublicSeoMetadata, SITE_URL } from "../../data/publicSeoMetadata.js";
+import { getPublicSeoMetadata, canonicalFor, SITE_URL } from "../../data/publicSeoMetadata.js";
 import { structuredDataFor } from "../../data/structuredData.js";
 import { useSEO } from "../../hooks/useSEO.js";
 
@@ -71,7 +71,7 @@ function usePublicMetadataGuard(pathname, canonical) {
 export default function PublicContentLayout() {
   const { pathname } = useLocation();
   const metadata = getPublicSeoMetadata(pathname);
-  const canonical = `${SITE_URL}${pathname === "/" ? "/" : pathname}`;
+  const canonical = canonicalFor(pathname);
   const structuredData = useMemo(
     () => structuredDataFor(pathname, metadata, canonical),
     [canonical, metadata, pathname],

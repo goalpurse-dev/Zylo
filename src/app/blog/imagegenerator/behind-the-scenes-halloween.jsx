@@ -22,6 +22,12 @@ const related = [
     date: "21.08.2026",
     slug: "/blog/2am-worlds-halloween-special",
   },
+  {
+    title: "30 Days Halloween Special: 10 Spooky Universe Ideas",
+    description: "Ten Halloween-framed premises for any universe you already have in mind.",
+    date: "25.08.2026",
+    slug: "/blog/30-days-halloween-special",
+  },
 ];
 
 const IDEAS = [

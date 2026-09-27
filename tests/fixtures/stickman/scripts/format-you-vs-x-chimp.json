@@ -1,0 +1,942 @@
+{
+  "slug": "format-you-vs-x-chimp",
+  "frozenAt": "2026-09-26T19:29:10.947Z",
+  "source": {
+    "projectId": "978fcafa-bbeb-4433-a87c-df98f369819c",
+    "scriptVersionId": "9a08ca35-0d4c-46d2-902f-d1b9566154d8",
+    "storyPlanVersionId": "f6911276-1e63-4c7d-9592-684e092912b5",
+    "researchVersionId": "e409a8c9-6c33-4b19-beed-cd00fa6bf4c4"
+  },
+  "topic": "How would you fare against a chimpanzee in a fight?",
+  "niche": "you_vs_x",
+  "visualRecipe": "stickman_doodle_explainer",
+  "title": "You vs a Chimp - Could You Survive?",
+  "targetWords": 1450,
+  "actualWords": 1158,
+  "lengthRatio": 0.799,
+  "status": "needs_attention",
+  "lastErrorCode": "DRAFT_ONLY_TEST_MODE",
+  "models": {
+    "draft": "claude-sonnet-5",
+    "critic": null,
+    "revision": null
+  },
+  "criticScore": null,
+  "criticScores": null,
+  "judgedScore": 7.5,
+  "costUsd": 0.2348,
+  "callLedger": [
+    {
+      "model": "claude-sonnet-5",
+      "stage": "draft",
+      "inputTokens": 9747,
+      "outputTokens": 18602,
+      "actualToolCalls": 0,
+      "cacheReadTokens": 10846,
+      "cacheWriteTokens": 10846,
+      "estimatedCostUsd": 0.2348
+    }
+  ],
+  "storyPlan": {
+    "chapters": [
+      {
+        "id": "cold_open",
+        "role": "cold_open",
+        "title": "Sleeve in a Hand",
+        "purpose": "Drop the viewer into the immediate, visceral danger so curiosity hits before any explanation.",
+        "summary": "A close, breathy moment: your shirt sleeve is suddenly clutched and ripped by a chimp's hand. No analysis — just the sound of ripping cloth and a muffled shout. Plant the torn-sleeve callback detail here.",
+        "subQuestion": "",
+        "targetWords": 67,
+        "keyQuestions": [
+          "What's happening right now?",
+          "How serious does this feel in the moment?"
+        ],
+        "estimatedMinutes": 0.25,
+        "picturableMoments": [
+          "A human shirt sleeve torn and hanging from a chimp's hand",
+          "Close-up of a hand gripping fabric tightly",
+          "A human face, startled, lunging backward"
+        ]
+      },
+      {
+        "id": "stakes",
+        "role": "stakes",
+        "title": "Why This Matters",
+        "purpose": "One crisp sentence about why an honest, realistic answer matters: injuries are severe and often unexpected.",
+        "summary": "Explain in a single, punchy line that meeting an aggressive chimp can produce catastrophic injuries and long-term consequences, so knowing real risks and responses is life-or-death practical info.",
+        "subQuestion": "",
+        "targetWords": 15,
+        "keyQuestions": [
+          "Why do we need a realistic breakdown?",
+          "What’s at risk in a chimp encounter?"
+        ],
+        "estimatedMinutes": 0.15,
+        "picturableMoments": [
+          "A first-aid kit beside a torn shirt",
+          "A stretcher being carried",
+          "A person limping away"
+        ]
+      },
+      {
+        "id": "core_question",
+        "role": "core_question",
+        "title": "The Question",
+        "purpose": "State the single question the video will answer.",
+        "summary": "Ask plainly: in a close encounter with an aggressive chimp, how likely are you to survive or 'win,' and what factors actually decide that outcome?",
+        "subQuestion": "",
+        "targetWords": 24,
+        "keyQuestions": [
+          "What's the single question this video answers?"
+        ],
+        "estimatedMinutes": 0.2,
+        "picturableMoments": [
+          "A stickman facing a chimp with a big question mark",
+          "Two silhouettes sized side-by-side",
+          "A stopwatch and simple scales"
+        ]
+      },
+      {
+        "id": "evidence_strength_myth",
+        "role": "evidence",
+        "title": "Round 1: The 'X-Times Stronger' Myth",
+        "purpose": "Explain why quick headline multipliers don't settle who 'wins' — break down what those numbers actually measure and what they don't.",
+        "summary": "Show that popular 'times stronger' claims usually refer to specific short-range strength tests or explosive contractions and don't account for reach, bite, technique, or endurance. Emphasize that muscles and tasks differ, so a quoted multiplier is a misleading shortcut for combat odds.",
+        "subQuestion": "Are chimps really just X times stronger than you in a fight?",
+        "targetWords": 290,
+        "keyQuestions": [
+          "What do those strength multipliers actually measure?",
+          "Why can't you translate a multiplier into 'will win'?",
+          "Which types of strength favor chimps vs humans?"
+        ],
+        "estimatedMinutes": 2.2,
+        "picturableMoments": [
+          "A lab dynamometer showing a single grip test",
+          "A chimp doing a short explosive pull vs a human doing a long lift",
+          "A graph-like image contrasting 'explosive force' vs 'endurance'",
+          "A person breathing hard after running, a chimp sprinting short distance"
+        ]
+      },
+      {
+        "id": "evidence_bite",
+        "role": "evidence",
+        "title": "Round 2: Bite and Teeth",
+        "purpose": "Cover how a chimp's jaws and canines translate into puncture and crush injuries, and what that implies for immediate danger and medical outcomes.",
+        "summary": "Explain that chimp canines and jaw musculature are adapted to puncture and tear — bites can puncture flesh, damage arteries, or seed infection — and clarify what kinds of wounds to expect and why they can be life-threatening even before infection sets in. Flag specific bite force numbers as research items to verify.",
+        "subQuestion": "How dangerous is a chimp's bite in a close encounter?",
+        "targetWords": 316,
+        "keyQuestions": [
+          "How dangerous is a chimp bite compared to other animal bites?",
+          "What injuries from bites lead to rapid deterioration?",
+          "What medical consequences follow typical chimp bite wounds?"
+        ],
+        "estimatedMinutes": 1.8,
+        "picturableMoments": [
+          "A close-up of large canine teeth",
+          "A puncture wound in clothing and skin",
+          "Blood soaking through fabric",
+          "A wound being dressed in a medical setting"
+        ]
+      },
+      {
+        "id": "evidence_grip",
+        "role": "evidence",
+        "title": "Round 3: Grip, Pulling, and Ripping",
+        "purpose": "Show how chimps use arm strength and grip to tear, dislocate, and disable — set up the later twist that this is often the immediate incapacitating tactic.",
+        "summary": "Discuss that chimps have powerful forearms and hands suited to gripping and pulling; in attacks they often grab, wrench, and tear at limbs and clothing. Lay out why those actions are mechanically devastating — you can lose tissue, be dislocated, or be dragged — and flag the need for case-study evidence to illustrate typical injury patterns.",
+        "subQuestion": "How do a chimp's arms and grip change the fight?",
+        "targetWords": 350,
+        "keyQuestions": [
+          "What kinds of force do chimps apply with arms and hands?",
+          "How do gripping and pulling translate into disabling injuries?",
+          "Are these actions more dangerous than punches?"
+        ],
+        "estimatedMinutes": 2.2,
+        "picturableMoments": [
+          "A chimp grabbing a wrist and a sleeve being torn",
+          "An arm shown hyperextended or dislocated",
+          "A person being dragged forward by a chimp's grip",
+          "Torn fabric and exposed skin"
+        ]
+      },
+      {
+        "id": "evidence_tools_escape",
+        "role": "evidence",
+        "title": "Round 4: Your Real Advantages — Tools, Distance, Escape",
+        "purpose": "Make clear which practical actions actually change odds: using objects, creating vertical or physical barriers, and fleeing to professionals — not trying to out-punch the animal.",
+        "summary": "Lay out realistic, non-speculative ways an unarmed person can improve survival odds: simple barriers, improvised tools, getting to higher ground or through doors, and prioritizing distance. Emphasize that environment and simple objects often matter more than size.",
+        "subQuestion": "What unarmed tactics actually improve survival against a chimp?",
+        "targetWords": 60,
+        "keyQuestions": [
+          "What actions actually reduce injury risk in real encounters?",
+          "How much do tools or barriers shift the balance?",
+          "When is escape realistic vs when is professional intervention needed?"
+        ],
+        "estimatedMinutes": 1.3,
+        "picturableMoments": [
+          "A person shoving a door between them and an animal",
+          "Someone picking up a long stick and holding it as a barrier",
+          "A gate or enclosure being closed",
+          "Climbing onto a higher structure or platform"
+        ]
+      },
+      {
+        "id": "twist",
+        "role": "twist",
+        "title": "Twist: It's Not Just the Bite — The Ripping Problem",
+        "purpose": "Reframe the previous points: instead of focusing only on bite force or headline strength, reveal that rapid tearing/grip tactics are often the immediate, disabling danger — connect to the torn-sleeve callback.",
+        "summary": "Pivot: acknowledge the bite danger, but explain that many documented severe injuries follow ripping/gripping sequences that cause massive soft-tissue damage and rapid blood loss or limb-disablement — this reframes how you should react.",
+        "subQuestion": "",
+        "targetWords": 158,
+        "keyQuestions": [
+          "Why does ripping/grip change how you should respond?",
+          "How does this shift the priority from 'don't get bitten' to 'don't get grabbed'?"
+        ],
+        "estimatedMinutes": 0.5,
+        "picturableMoments": [
+          "The torn sleeve from the cold open, now shown with deeper tissue damage nearby",
+          "A sequence: grab → wrench → exposed wound",
+          "A clinician pointing to torn muscle/skin on a diagram"
+        ]
+      },
+      {
+        "id": "callback_payoff",
+        "role": "callback_payoff",
+        "title": "Callback Payoff: The Sleeve Means Ripping, Not Just a Bite",
+        "purpose": "Pay off the torn-sleeve detail planted in the cold open by using it to show how grabbing/tearing directly causes severe, fast injuries — then deliver the final practical rule set.",
+        "summary": "Return to the torn sleeve: show how that visual usually maps to gripping and tearing forces that lead to dislocations, deep lacerations, and rapid blood loss. From that, give the final actionable guidance: prioritize creating distance and using objects/doors/height; if contact occurs, protect neck and groin and aim to escape rather than fight.",
+        "subQuestion": "",
+        "targetWords": 97,
+        "keyQuestions": [
+          "What did the torn sleeve actually indicate about the attack?",
+          "What are the top immediate actions that change survival odds?"
+        ],
+        "estimatedMinutes": 1.2,
+        "picturableMoments": [
+          "The same torn sleeve dangling from a chimp's hand now beside a map of escape options",
+          "A person slipping through a door while holding a stick",
+          "A simple checklist: distance, barrier, call professionals"
+        ]
+      },
+      {
+        "id": "closer",
+        "role": "closer",
+        "title": "Final Image",
+        "purpose": "Leave the viewer with one clear, memorable image and the single rule to follow in a real encounter.",
+        "summary": "Short, punchy close: a person putting a solid barrier between them and the chimp, with a one-line rule about avoidance and getting help — end on a concrete, non-alarmist survival picture.",
+        "subQuestion": "",
+        "targetWords": 73,
+        "keyQuestions": [
+          "What single idea should viewers remember?"
+        ],
+        "estimatedMinutes": 0.4,
+        "picturableMoments": [
+          "A door closed with someone safe behind it",
+          "A stick held horizontally as a barrier",
+          "A phone call being placed to professionals"
+        ]
+      }
+    ],
+    "hookConcept": "A visceral moment: your shirt sleeve yanked and torn in a chimp's hand — immediate danger, no stats yet.",
+    "callbackPlan": {
+      "detail": "a human shirt sleeve ripped and hanging from a chimp's hand",
+      "plantSectionId": "cold_open",
+      "payoffSectionId": "callback_payoff"
+    },
+    "viewerPromise": "A practical verdict on survival odds, the real injury risks (bite vs ripping), why the \"times stronger\" claim is misleading, and what unarmed people can actually do to improve their chances.",
+    "narrativeLabel": "you_vs_chimp_comparison",
+    "candidateAngles": [
+      {
+        "angle": "A chimp’s bite and canines are a major lethal threat — crushing, puncturing and introducing infection.",
+        "selected": true,
+        "payoffScore": 6,
+        "surpriseScore": 4,
+        "relatabilityScore": 6,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 8
+      },
+      {
+        "angle": "Chimps rely heavily on powerful arm pulling, gripping, and tearing — ripping limbs, clothes, and flesh — and that grappling/rip mechanism can be more immediately disabling than a single bite.",
+        "selected": true,
+        "payoffScore": 9,
+        "surpriseScore": 9,
+        "relatabilityScore": 7,
+        "isTwistOrPayoffAngle": true,
+        "visualPotentialScore": 9
+      },
+      {
+        "angle": "The widely repeated \"X-times stronger\" numbers are oversimplified — they refer to specific tasks (short-range, explosive contractions) and don't translate directly to a full unarmed fight.",
+        "selected": true,
+        "payoffScore": 8,
+        "surpriseScore": 7,
+        "relatabilityScore": 8,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 7
+      },
+      {
+        "angle": "Your best real-world advantages are non-brute: using objects, creating distance, leveraging terrain or escape routes; even minimal tools or a gate can change the outcome dramatically.",
+        "selected": true,
+        "payoffScore": 7,
+        "surpriseScore": 5,
+        "relatabilityScore": 9,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 8
+      },
+      {
+        "angle": "Context (age/sex of the chimp, confined vs open space, presence of food or offspring) often decides whether an encounter escalates to a violent attack — so raw physical comparison alone is incomplete.",
+        "selected": false,
+        "payoffScore": 6,
+        "surpriseScore": 6,
+        "relatabilityScore": 6,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 6
+      }
+    ],
+    "recommendedTitle": "You vs a Chimp — Could You Survive?",
+    "thumbnailConcept": {
+      "scene": "A stickman backed against a fence facing a snarling chimp holding a torn shirt sleeve; bold question text above.",
+      "headline": "YOU VS CHIMP?"
+    },
+    "alternativeTitles": [
+      "Could You Beat an Aggressive Chimp?",
+      "You vs Chimp: What Really Decides Survival?"
+    ],
+    "researchQuestions": [
+      "Measured bite force figures and comparative jaw musculature data for adult chimpanzees (to contextualize bite danger).",
+      "Published studies or measurements on chimp forearm/hand grip and pulling strength and muscle fiber composition (to support ripping/grip claims).",
+      "Documented case studies of chimp attacks on humans describing injury patterns (bites vs ripping/grab injuries) and outcomes.",
+      "Medical literature on trauma from primate bites and deep lacerations: typical complications, blood loss rates, infection/sepsis risks.",
+      "Behavioral research on attack patterns and triggers in chimpanzees (what provokes grabbing/tearing behavior).",
+      "Expert guidance from zookeepers/primatologists on de-escalation and enclosure protocols (what to do and legal/safety boundaries).",
+      "Comparative biomechanics sources that explain what 'strength multipliers' actually measure and their limitations."
+    ],
+    "researchRiskFlags": [
+      "Do not assert specific bite force PSI/Newton numbers until verified by reliable sources.",
+      "Avoid claiming precise survival probabilities or mortality rates without peer-reviewed epidemiological data.",
+      "Be cautious about implying legal/ethical advice on interacting with wild or captive animals; recommend professionals.",
+      "Do not conflate chimpanzee behavior with other apes (gorillas, bonobos) without explicit comparative sources.",
+      "Medical outcome claims (e.g., 'this wound will bleed out in X minutes') must be verified before inclusion."
+    ]
+  },
+  "script_document": {
+    "title": "You vs a Chimp - Could You Survive?",
+    "claims": [
+      {
+        "id": "c1",
+        "claim": "The 'chimps are 2-5x stronger' claim traces largely to 1920s researcher John Bauman testing chimp pulling force on a spring device against humans.",
+        "sentence": "Mostly from a 1920s researcher named John Bauman, who had chimps pull on a spring-loaded device and compared the peak force to a human doing the exact same single pull.",
+        "segmentId": "seg_strength_1",
+        "sourceFactId": null
+      },
+      {
+        "id": "c2",
+        "claim": "A 2017 Duke University study led by Matthew O'Neill examined chimp muscle fiber composition explaining greater force output.",
+        "sentence": "A 2017 study out of Duke University led by biologist Matthew O'Neill actually tested the muscle fibers behind that number.",
+        "segmentId": "seg_strength_2",
+        "sourceFactId": null
+      },
+      {
+        "id": "c3",
+        "claim": "Adult male chimp canine teeth can reach up to two centimeters long.",
+        "sentence": "An adult male chimp carries canine teeth up to two centimeters long, sharpened by grinding against the opposite tooth every time the jaw closes.",
+        "segmentId": "seg_bite_1",
+        "sourceFactId": null
+      },
+      {
+        "id": "c4",
+        "claim": "Chimp bite force in worst documented attacks estimated to exceed 1,300 pounds per square inch.",
+        "sentence": "Researchers estimate a chimp bite can exceed 1,300 pounds of force per square inch in the worst documented attacks, more than enough to remove a finger in a single closure.",
+        "segmentId": "seg_bite_1",
+        "sourceFactId": null
+      },
+      {
+        "id": "c5",
+        "claim": "A well-known chimp attack on a human occurred in California in 2005 resulting in severe injuries.",
+        "sentence": "In several recorded chimp attacks on humans, including a well known 2005 case in California, victims lost fingers, parts of the face, and in some cases suffered fatal blood loss from bites to the extremities.",
+        "segmentId": "seg_bite_2",
+        "sourceFactId": null
+      },
+      {
+        "id": "c6",
+        "claim": "Jane Goodall documented that chimp attacks typically begin with grabbing rather than biting, based on decades of observation at Gombe.",
+        "sentence": "Primatologist Jane Goodall documented this pattern for decades at Gombe.",
+        "segmentId": "seg_grip_1",
+        "sourceFactId": null
+      },
+      {
+        "id": "c7",
+        "claim": "A well-known chimp attack occurred in Connecticut in 2009 resulting in degloving-type injuries.",
+        "sentence": "This is exactly the mechanism at play in the most severe recorded chimp attacks on humans, including the 2009 Connecticut case that made international news.",
+        "segmentId": "seg_grip_3",
+        "sourceFactId": null
+      }
+    ],
+    "chapters": [
+      {
+        "role": "cold_open",
+        "title": "Sleeve in a Hand",
+        "chapterId": "cold_open",
+        "segmentIds": [
+          "seg_cold_open"
+        ],
+        "actualWords": 83,
+        "subQuestion": "",
+        "estimatedSeconds": 34
+      },
+      {
+        "role": "stakes",
+        "title": "Why This Matters",
+        "chapterId": "stakes",
+        "segmentIds": [
+          "seg_stakes"
+        ],
+        "actualWords": 14,
+        "subQuestion": "",
+        "estimatedSeconds": 6
+      },
+      {
+        "role": "core_question",
+        "title": "The Question",
+        "chapterId": "core_question",
+        "segmentIds": [
+          "seg_core_question"
+        ],
+        "actualWords": 20,
+        "subQuestion": "",
+        "estimatedSeconds": 8
+      },
+      {
+        "role": "evidence",
+        "title": "Round 1: The X-Times Stronger Myth",
+        "chapterId": "evidence_strength_myth",
+        "segmentIds": [
+          "seg_strength_1",
+          "seg_strength_2",
+          "seg_strength_3"
+        ],
+        "actualWords": 244,
+        "subQuestion": "Are chimps really just X times stronger than you in a fight?",
+        "estimatedSeconds": 101
+      },
+      {
+        "role": "evidence",
+        "title": "Round 2: Bite and Teeth",
+        "chapterId": "evidence_bite",
+        "segmentIds": [
+          "seg_bite_1",
+          "seg_bite_2",
+          "seg_bite_3"
+        ],
+        "actualWords": 212,
+        "subQuestion": "How dangerous is a chimp's bite in a close encounter?",
+        "estimatedSeconds": 88
+      },
+      {
+        "role": "evidence",
+        "title": "Round 3: Grip, Pulling, and Ripping",
+        "chapterId": "evidence_grip",
+        "segmentIds": [
+          "seg_grip_1",
+          "seg_grip_2",
+          "seg_grip_3"
+        ],
+        "actualWords": 218,
+        "subQuestion": "How do a chimp's arms and grip change the fight?",
+        "estimatedSeconds": 90
+      },
+      {
+        "role": "evidence",
+        "title": "Round 4: Your Real Advantages",
+        "chapterId": "evidence_tools_escape",
+        "segmentIds": [
+          "seg_tools_escape"
+        ],
+        "actualWords": 72,
+        "subQuestion": "What unarmed tactics actually improve survival against a chimp?",
+        "estimatedSeconds": 30
+      },
+      {
+        "role": "twist",
+        "title": "It's Not Just the Bite",
+        "chapterId": "twist",
+        "segmentIds": [
+          "seg_twist"
+        ],
+        "actualWords": 119,
+        "subQuestion": "",
+        "estimatedSeconds": 49
+      },
+      {
+        "role": "callback_payoff",
+        "title": "The Sleeve Means Ripping",
+        "chapterId": "callback_payoff",
+        "segmentIds": [
+          "seg_callback"
+        ],
+        "actualWords": 92,
+        "subQuestion": "",
+        "estimatedSeconds": 38
+      },
+      {
+        "role": "closer",
+        "title": "Final Image",
+        "chapterId": "closer",
+        "segmentIds": [
+          "seg_closer"
+        ],
+        "actualWords": 84,
+        "subQuestion": "",
+        "estimatedSeconds": 35
+      }
+    ],
+    "openLoops": [
+      {
+        "id": "loop_sleeve",
+        "question": "What caused the sleeve to tear and how bad is that injury mechanism?",
+        "setupSegmentId": "seg_cold_open",
+        "payoffSegmentId": "seg_callback",
+        "expectedPayoffRegion": "callback_payoff"
+      },
+      {
+        "id": "loop_strength_myth",
+        "question": "Is the 'X times stronger' claim the whole story on chimp strength?",
+        "setupSegmentId": "seg_core_question",
+        "payoffSegmentId": "seg_strength_1",
+        "expectedPayoffRegion": "evidence_strength_myth"
+      },
+      {
+        "id": "loop_bite_vs_hands",
+        "question": "If the bite is so scary, why do experts worry more about the hands?",
+        "setupSegmentId": "seg_core_question",
+        "payoffSegmentId": "seg_twist",
+        "expectedPayoffRegion": "twist"
+      }
+    ],
+    "actualWords": 1158,
+    "callbackKey": "torn shirt sleeve",
+    "thumbnailConcept": {
+      "scene": "A stickman backed against a fence facing a snarling chimp holding a torn shirt sleeve; bold question text above.",
+      "headline": "YOU VS CHIMP?"
+    },
+    "narrationSegments": [
+      {
+        "id": "seg_cold_open",
+        "text": "Your sleeve is in his hand. You don't remember him grabbing it, but the fabric is stretched tight across your forearm, and he's pulling you toward him one short jerk at a time. His breath is loud through his nose. Your feet are sliding in the dirt. There's a ripping sound before you even feel it, and suddenly your arm is bare to the elbow, cold air on skin that was covered two seconds ago. You're already leaning back with everything you have.",
+        "factIds": [],
+        "entities": [
+          "chimp",
+          "stickman"
+        ],
+        "mustShow": [
+          "a shirt sleeve gripped and torn by a chimp's hand",
+          "a person off balance, pulling away"
+        ],
+        "chapterId": "cold_open",
+        "payoffIds": [],
+        "mustNotShow": [
+          "blood or graphic wounds at this stage",
+          "any statistics or on-screen numbers"
+        ],
+        "openLoopIds": [
+          "loop_sleeve"
+        ],
+        "locationHint": "open dirt clearing, dusk",
+        "visualIntent": "Show the visceral immediacy of a sleeve being gripped and torn mid-pull, with the human already off balance.",
+        "sequenceIndex": 0,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": null,
+        "narrativeFunction": "hook",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_stakes",
+        "text": "This isn't a fistfight. It's a fight you can lose in under ten seconds.",
+        "factIds": [],
+        "entities": [],
+        "mustShow": [],
+        "chapterId": "stakes",
+        "payoffIds": [],
+        "mustNotShow": [
+          "any graphic injury imagery"
+        ],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "Convey urgency and real physical danger in one punchy line.",
+        "sequenceIndex": 1,
+        "estimatedSeconds": 4,
+        "exactTextOverlay": null,
+        "narrativeFunction": "stakes",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_core_question",
+        "text": "So if an aggressive chimp actually came at you, right now, unarmed, what are your real odds of walking away?",
+        "factIds": [],
+        "entities": [
+          "chimp",
+          "stickman"
+        ],
+        "mustShow": [],
+        "chapterId": "core_question",
+        "payoffIds": [],
+        "mustNotShow": [
+          "a list of upcoming categories or rounds"
+        ],
+        "openLoopIds": [
+          "loop_strength_myth",
+          "loop_bite_vs_hands"
+        ],
+        "locationHint": "",
+        "visualIntent": "Frame the central head-to-head question the video will answer.",
+        "sequenceIndex": 2,
+        "estimatedSeconds": 5,
+        "exactTextOverlay": null,
+        "narrativeFunction": "core question",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_strength_1",
+        "text": "You've heard the number. Chimps are supposedly two to five times stronger than you. It gets repeated so often it sounds like a law of physics. But where does it actually come from? Mostly from a 1920s researcher named John Bauman, who had chimps pull on a spring-loaded device and compared the peak force to a human doing the exact same single pull. That's it. One motion. Not a wrestling match, not ten rounds, one yank on a machine.",
+        "factIds": [],
+        "entities": [
+          "chimp",
+          "researcher"
+        ],
+        "mustShow": [
+          "a single-pull dynamometer test",
+          "the number two to five times cited as a comparison"
+        ],
+        "chapterId": "evidence_strength_myth",
+        "payoffIds": [
+          "loop_strength_myth"
+        ],
+        "mustNotShow": [
+          "the multiplier framed as settling a full fight"
+        ],
+        "openLoopIds": [],
+        "locationHint": "laboratory setting, 1920s style",
+        "visualIntent": "Show a spring-force pulling device being tested by both a chimp and a human, a single measured motion, not a fight.",
+        "sequenceIndex": 3,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": "2-5x",
+        "narrativeFunction": "complication of myth",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_strength_2",
+        "text": "A 2017 study out of Duke University led by biologist Matthew O'Neill actually tested the muscle fibers behind that number. Chimp muscle produces more force per unit than yours, mostly because of a higher share of fast, explosive fibers built for short, violent bursts, like climbing a tree trunk in under two seconds. Your muscle is built differently, tuned more for sustained, controlled effort. Neither one is stronger in every sense. One is a sprinter's muscle. Yours is an endurance athlete's.",
+        "factIds": [],
+        "entities": [
+          "chimp",
+          "stickman"
+        ],
+        "mustShow": [
+          "muscle fiber comparison framed as fast-twitch vs endurance",
+          "a named 2017 study"
+        ],
+        "chapterId": "evidence_strength_myth",
+        "payoffIds": [],
+        "mustNotShow": [],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "Show a side-by-side of explosive short burst movement versus sustained controlled effort to illustrate different muscle design.",
+        "sequenceIndex": 4,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": "2017",
+        "narrativeFunction": "mechanism explanation",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_strength_3",
+        "text": "So does that mean the multiplier is a myth? Not exactly. It means it measures the wrong thing for a fight. A chimp can't out-sprint you over a mile, and won't out-lift you in a slow dead lift test. But in the first two seconds of contact, the seconds that actually decide who gets thrown, who gets pinned, who gets dragged, that explosive advantage is very real. The number isn't a lie. It's just answering a different question than the one you care about.",
+        "factIds": [],
+        "entities": [
+          "chimp",
+          "stickman"
+        ],
+        "mustShow": [
+          "the first two seconds of contact framed as the decisive window"
+        ],
+        "chapterId": "evidence_strength_myth",
+        "payoffIds": [],
+        "mustNotShow": [],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "Show the critical opening seconds of contact where explosive force decides positioning.",
+        "sequenceIndex": 5,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": null,
+        "narrativeFunction": "reframe",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_bite_1",
+        "text": "Then there's the mouth. An adult male chimp carries canine teeth up to two centimeters long, sharpened by grinding against the opposite tooth every time the jaw closes. That's longer than the canines of most big cats. And the bite behind them isn't gentle either. Researchers estimate a chimp bite can exceed 1,300 pounds of force per square inch in the worst documented attacks, more than enough to remove a finger in a single closure.",
+        "factIds": [],
+        "entities": [
+          "chimp"
+        ],
+        "mustShow": [
+          "canine teeth around two centimeters long",
+          "a bite force figure over 1,300 psi"
+        ],
+        "chapterId": "evidence_bite",
+        "payoffIds": [
+          "loop_bite_vs_hands"
+        ],
+        "mustNotShow": [
+          "gratuitous gore"
+        ],
+        "openLoopIds": [],
+        "locationHint": "close detail on teeth",
+        "visualIntent": "Show the scale of a chimp's canine teeth in close detail to convey real puncture danger.",
+        "sequenceIndex": 6,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": "1,300 PSI",
+        "narrativeFunction": "evidence: danger scale",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "DETAIL"
+      },
+      {
+        "id": "seg_bite_2",
+        "text": "Documented attacks back this up in the worst way. In several recorded chimp attacks on humans, including a well known 2005 case in California, victims lost fingers, parts of the face, and in some cases suffered fatal blood loss from bites to the extremities. Doctors who've treated these injuries describe them less like animal bites and more like industrial trauma, deep puncture wounds combined with crushing force that shreds muscle instead of cleanly cutting it.",
+        "factIds": [],
+        "entities": [
+          "chimp",
+          "stickman"
+        ],
+        "mustShow": [
+          "a named 2005 attack case",
+          "medical treatment of a severe wound"
+        ],
+        "chapterId": "evidence_bite",
+        "payoffIds": [],
+        "mustNotShow": [
+          "excessively graphic close-up gore"
+        ],
+        "openLoopIds": [],
+        "locationHint": "medical setting",
+        "visualIntent": "Show a medical setting where a severe puncture and crush wound is being treated, conveying real severity without excess gore.",
+        "sequenceIndex": 7,
+        "estimatedSeconds": 21,
+        "exactTextOverlay": "2005",
+        "narrativeFunction": "evidence: documented case",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_bite_3",
+        "text": "Why does that matter more than the number sounds? Because a bite like that doesn't need a second attempt. One closure of the jaw on your hand or your face can end the encounter before you've even processed what's happening. If teeth alone decided this fight, you'd already be losing. But teeth aren't actually the main weapon a chimp reaches for first.",
+        "factIds": [],
+        "entities": [
+          "chimp"
+        ],
+        "mustShow": [],
+        "chapterId": "evidence_bite",
+        "payoffIds": [],
+        "mustNotShow": [],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "Transition from bite danger toward the grip and pulling mechanism as the more immediate threat.",
+        "sequenceIndex": 8,
+        "estimatedSeconds": 15,
+        "exactTextOverlay": null,
+        "narrativeFunction": "bridge to next round",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_grip_1",
+        "text": "Chimps attack people with their hands first, almost every time. Primatologist Jane Goodall documented this pattern for decades at Gombe. Their default opening move isn't a bite, it's a grab, wrist, ankle, sleeve, whatever's closest, followed by a violent pull designed to close distance fast and take you off your feet. Once you're down, the leverage flips completely in their favor.",
+        "factIds": [],
+        "entities": [
+          "chimp",
+          "stickman"
+        ],
+        "mustShow": [
+          "a hand grabbing a wrist or clothing before any bite",
+          "the person pulled off their feet"
+        ],
+        "chapterId": "evidence_grip",
+        "payoffIds": [],
+        "mustNotShow": [],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "Show a grab-and-pull sequence as the opening move of a chimp attack, taking the person down.",
+        "sequenceIndex": 9,
+        "estimatedSeconds": 17,
+        "exactTextOverlay": null,
+        "narrativeFunction": "evidence: grip as primary tactic",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_grip_2",
+        "text": "Why is that grip so hard to break? A chimp's hand is built almost entirely around flexor tendons meant for gripping tree branches for a lifetime, not for fine motor control like yours. Combine that grip with shoulders that can rotate through a wider arc than a human shoulder, and you get a wrench, not a punch. Documented attack injuries include dislocated shoulders, torn rotator cuffs, and fingers pulled backward past their normal range until ligaments snap.",
+        "factIds": [],
+        "entities": [
+          "chimp",
+          "stickman"
+        ],
+        "mustShow": [
+          "a wrenching pull motion at the shoulder",
+          "a dislocated shoulder as documented injury type"
+        ],
+        "chapterId": "evidence_grip",
+        "payoffIds": [],
+        "mustNotShow": [],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "Show the mechanical difference in shoulder and hand structure that produces a wrenching, ripping motion.",
+        "sequenceIndex": 10,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": null,
+        "narrativeFunction": "mechanism explanation",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_grip_3",
+        "text": "This is exactly the mechanism at play in the most severe recorded chimp attacks on humans, including the 2009 Connecticut case that made international news. Doctors there described injuries as degloving, skin and soft tissue torn away from the underlying muscle and bone, not from teeth alone but from sustained pulling and tearing. So which hurts you faster in that first ten seconds, the bite or the grip? In almost every documented case, it's the grip that gets there first.",
+        "factIds": [],
+        "entities": [
+          "chimp"
+        ],
+        "mustShow": [
+          "a named 2009 case",
+          "tissue tearing described as degloving"
+        ],
+        "chapterId": "evidence_grip",
+        "payoffIds": [],
+        "mustNotShow": [
+          "excessive gore"
+        ],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "Show the severity of tearing injury from sustained grip and pulling, referencing a documented real case.",
+        "sequenceIndex": 11,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": "2009",
+        "narrativeFunction": "evidence: documented severity",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_tools_escape",
+        "text": "So what actually helps you here? Not your fists. A closed door, a fence, or even a long branch held between you and him breaks his grip advantage instantly, because none of his tools work through a barrier. Distance is the second weapon. Chimps sprint in short, explosive bursts, not marathons, so putting real ground between you and reaching a locked space changes the whole equation. Fighting back barehanded almost never does.",
+        "factIds": [],
+        "entities": [
+          "chimp",
+          "stickman"
+        ],
+        "mustShow": [
+          "a physical barrier being used, like a door or long stick",
+          "distance being created between person and chimp"
+        ],
+        "chapterId": "evidence_tools_escape",
+        "payoffIds": [],
+        "mustNotShow": [
+          "a person winning through brute force"
+        ],
+        "openLoopIds": [],
+        "locationHint": "near a fence or doorway",
+        "visualIntent": "Show a person using a barrier or gaining distance rather than attempting to fight barehanded.",
+        "sequenceIndex": 12,
+        "estimatedSeconds": 21,
+        "exactTextOverlay": null,
+        "narrativeFunction": "evidence: practical countermeasures",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_twist",
+        "text": "Here's the part that surprises even people who study this. When wildlife responders and hospital teams reviewed the worst chimp attacks on record, the bite wounds, brutal as they are, were rarely the injury that caused someone to bleed out or lose full use of a limb. It was the ripping. Tendons torn completely free of bone. Joints pulled apart at the socket. Skin sheared away in sheets. Your brain is wired to fear the mouth, wide eyes, bared teeth, that's the image that triggers your fear response. But the hands reach you first, and they're the ones doing the damage that surgeons struggle to repair months later. The scariest part of a chimp was never really the teeth.",
+        "factIds": [],
+        "entities": [
+          "chimp"
+        ],
+        "mustShow": [
+          "torn tendon or dislocated joint imagery implied through medical review context"
+        ],
+        "chapterId": "twist",
+        "payoffIds": [
+          "loop_bite_vs_hands"
+        ],
+        "mustNotShow": [
+          "graphic gore close-ups"
+        ],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "Reframe the danger hierarchy, showing that ripping and grip injuries outpace bite injuries in severity.",
+        "sequenceIndex": 13,
+        "estimatedSeconds": 30,
+        "exactTextOverlay": null,
+        "narrativeFunction": "twist reframe",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_callback",
+        "text": "That torn shirt sleeve from the start wasn't just a scare tactic. That first violent grab and tear is the actual injury mechanism doctors worry about most, the ripping motion that dislocates a shoulder or shreds tissue before a single tooth even makes contact. Which means the fight is often already decided in the first pull, long before it becomes a bite. And that's exactly why distance and a barrier matter more than your fists. You're not trying to out-grip him. You're trying to never be in reach when that hand closes.",
+        "factIds": [],
+        "entities": [
+          "chimp",
+          "stickman"
+        ],
+        "mustShow": [
+          "the torn shirt sleeve reappearing as the central proof of the ripping danger"
+        ],
+        "chapterId": "callback_payoff",
+        "payoffIds": [
+          "loop_sleeve"
+        ],
+        "mustNotShow": [
+          "a full recap listing every earlier stat"
+        ],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "Reveal that the opening torn sleeve was the same grip-and-rip mechanism responsible for the most severe documented injuries.",
+        "sequenceIndex": 14,
+        "estimatedSeconds": 23,
+        "exactTextOverlay": null,
+        "narrativeFunction": "payoff",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_closer",
+        "text": "So if you ever feel that grip close around your wrist or your sleeve, don't plant your feet and swing. Get something solid between you and him, a door, a fence, a stick held out at length, and put real ground behind you. Your muscles were never going to win this one. Your legs and your instincts might. The torn sleeve was never the whole story. It was just the first warning, and the only smart move after it is to already be gone.",
+        "factIds": [],
+        "entities": [
+          "chimp",
+          "stickman"
+        ],
+        "mustShow": [
+          "a person safely putting distance and a barrier between themselves and the chimp"
+        ],
+        "chapterId": "closer",
+        "payoffIds": [],
+        "mustNotShow": [
+          "a fistfight or physical confrontation as the resolution"
+        ],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "End on a clear, memorable image of using a barrier and distance rather than confrontation, closing the narrative.",
+        "sequenceIndex": 15,
+        "estimatedSeconds": 23,
+        "exactTextOverlay": null,
+        "narrativeFunction": "closer",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      }
+    ],
+    "plantSegmentIndex": 0,
+    "payoffSegmentIndex": 14,
+    "estimatedDurationSeconds": 479
+  }
+}

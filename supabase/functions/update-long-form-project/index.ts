@@ -1,13 +1,15 @@
 // update-long-form-project/index.ts
 //
 // Small, low-stakes edits layered on top of a generated Story Plan —
-// picking an alternative title, or editing/adding/removing a chapter.
-// These are NOT a regeneration: they mutate the CURRENT story plan version
-// in place (title selection lives on the project row itself; chapter edits
-// patch that version's story_plan JSONB), so "Regenerate Plan" remains the
-// only action that ever creates a new version.
+// picking an alternative title, editing/adding/removing a chapter, or
+// picking a Visual StylePreset (Style Picker milestone, Part 9). None of
+// these are a regeneration: title/style selection live on the project row
+// itself; chapter edits patch the current story plan version's story_plan
+// JSONB in place — "Regenerate Plan" remains the only action that ever
+// creates a new Story Plan version, and style selection never touches
+// Script/Research/Visual Plan at all (style is not Script-specific).
 //
-// POST { projectId, selectedTitle? , chapters? }
+// POST { projectId, selectedTitle? , chapters?, visualStylePreset? }
 // Returns { ok: true }
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
@@ -18,6 +20,20 @@ import { requireUser } from "../shared/auth.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const MAX_CHAPTERS = 12;
+
+// Server-side allowlist — never trust the client's raw string for a column
+// with no DB-level check constraint. Same 6 launch ids as
+// src/pages/workspace/long-form/stylePresets.js and
+// supabase/functions/_shared/visualWorldStyle.ts's STYLE_PRESETS — keep all
+// three in sync when a preset is added.
+const VALID_STYLE_PRESET_IDS = new Set([
+  "bold_cartoon_documentary:v1",
+  "simple_outline_explainer:v1",
+  "polished_vector_cartoon:v1",
+  "wojak_documentary_hybrid:v1",
+  "painterly_storybook_documentary:v1",
+  "documentary_collage:v1",
+]);
 
 function isValidChapters(chapters: unknown) {
   if (!Array.isArray(chapters) || chapters.length === 0 || chapters.length > MAX_CHAPTERS) return false;
@@ -80,6 +96,16 @@ Deno.serve(async (req) => {
     const nextStoryPlan = { ...version.story_plan, chapters: body.chapters };
     const { error } = await admin.from("long_form_story_plan_versions").update({ story_plan: nextStoryPlan }).eq("id", project.current_story_plan_version_id);
     if (error) return err(req, "Could not save chapters", 500);
+    didSomething = true;
+  }
+
+  if (typeof body?.visualStylePreset === "string") {
+    if (!VALID_STYLE_PRESET_IDS.has(body.visualStylePreset)) return err(req, "Unknown visual style", 400);
+    const { error } = await admin
+      .from("long_form_projects")
+      .update({ visual_style_preset: body.visualStylePreset, updated_at: new Date().toISOString() })
+      .eq("id", projectId);
+    if (error) return err(req, "Could not save visual style", 500);
     didSomething = true;
   }
 

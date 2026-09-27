@@ -1,0 +1,95 @@
+✔ ensureNarrationContract is called in stagePlanning BEFORE the Visual Director's own LLM call (1.0436ms)
+✔ ensureNarrationContract short-circuits to a no-op when a READY contract for the CURRENT script version already exists — never recompiles for a replan/retry (0.2683ms)
+✔ ensureNarrationContract falls back to any READY contract for the current script version even when the project's own pointer is null/stale — real Mars finding: a ready contract existed but the pointer was never set (0.1718ms)
+✔ REAL MARS SCENARIO: null project pointer + an existing ready contract for the script version -> reused and backfilled, zero OpenAI calls (1.5995ms)
+✔ ensureNarrationContract throws (routing through the exact same handleStageFailure retry/hold semantics as every other planning failure) when compilation fails, never silently continues (0.2314ms)
+✔ ensureNarrationContract persists the pointer to project.current_narration_contract_version_id on success — the exact wiring gap the real incident report identified (0.2475ms)
+✔ stageFinalizing fails the plan BEFORE it can reach 'ready' if any PROGRAMMATIC_GRAPHIC beat still has no bound narrationClaimId (0.2996ms)
+✔ the CAST BINDING instruction is present and generic (no project-specific example baked into the shared prompt) (0.5503ms)
+✔ fetchExistingCast reuses the project's own already-adopted VisualPlanVersion entity_registry — never a separate registry — and returns [] with nothing to reuse (0.2832ms)
+✔ existingCast is threaded into BOTH runVisualDirector call sites (initial + repair), never only one (0.5155ms)
+✔ detectGenericCastReplacements is non-blocking — its result is only ever merged into meta for reporting, never thrown (0.6406ms)
+✔ a cast-presence ledger (per-entity distinct chapter ids) is computed and persisted on the final ready plan (0.2421ms)
+✔ charge_long_form_episode_generation now checks every PROGRAMMATIC_GRAPHIC beat on the current plan has a bound narrationClaimId BEFORE pricing/debiting (0.1886ms)
+✔ the preflight check is read-only against the plan's own persisted visual_plan JSON — no provider call, no new compile simulation (0.2328ms)
+✔ the edge function maps the preflight failure to 422 with an actionable message, never the generic 500 (0.5795ms)
+✔ compileFullStyleLock includes every major field (linework/shading/texture/palette/proportions), not just a one-sentence summary (0.9876ms)
+✔ compileFullStyleLock still carries the negative constraints (Do not: ...) (0.1623ms)
+✔ compileScenePrompt (fresh GENERATE) uses the FULL style lock, not the compact one-sentence compileStyleLock (1.6659ms)
+✔ no literal schematic/blueprint/technical-drawing/infographic wording is baked into any scene or graphic prompt compiler as an instruction (2.1612ms)
+✔ SCENE_GENERATION_TIERS no longer carries a provider/model name field (0.5884ms)
+✔ GenerateWorkspace's TIER_BLURB no longer names any provider/model (0.7651ms)
+✔ the episode-generation activity feed never appends a provider/model name suffix (0.7758ms)
+✔ VisualWorldWorkspace's Generation Models panel shows Zyvo-branded labels, never the underlying provider name (0.5753ms)
+✖ F: repetition debt accumulates across weakly-differentiated derived shots (REUSE and non-HIGH-justified EDIT alike) and forces a fresh GENERATE once it crosses the limit (3.6858ms)
+✔ a HIGH-continuity EDIT chain-break does NOT itself accrue repetition debt, so it never trips the debt-based GENERATE break on its own (0.3627ms)
+✔ a legitimate HIGH-continuity state-change EDIT progression (e.g. machine ON -> dimming -> OFF) does not accrue repetition debt (0.2534ms)
+✔ the SAME three-EDIT sequence WITHOUT an explicit temporal progression is now capped after the first EDIT (V1 fix EDIT abuse rule) (0.1607ms)
+✔ D: a HIGH continuityRequirement with a state-change verb produces EDIT, not a forced fresh composition (0.174ms)
+✔ continuityRequirement NONE overrides a matching state-change verb — GENERATE, never EDIT, because cost/cheapness is never the deciding factor (0.1327ms)
+✔ E: a primarySubject change forces GENERATE even when the legacy visualType family and shotSize stayed identical (0.2134ms)
+✔ a visual-form change with non-HIGH continuity forces GENERATE (0.186ms)
+✔ a visual-form change IS allowed to continue when continuityRequirement is explicitly HIGH (e.g. a diagram gaining an annotation) (0.1991ms)
+✔ diversityReason/repetitionDebt/sameBaseRunLength/sameVisualFormRunLength are persisted on every beat (0.3329ms)
+✔ a beat with no primarySubject/continuityRequirement/contractVisualForm never triggers any of the new semantic branches (0.1967ms)
+✔ a second consecutive EDIT on the same setup is capped to a fresh GENERATE (V1 rule: base frame -> one EDIT, then a new composition) (2.2949ms)
+✔ an explicit before/during/after progression (contract temporalClaims) is allowed a real third EDIT-eligible beat without being capped (0.2221ms)
+✔ a contract claim reporting no real stateBefore/stateAfter distinction denies EDIT even when the verb regex matches (trivial delta) (0.2328ms)
+✔ a claim WITH a real stateBefore/stateAfter distinction behaves exactly like the pre-existing verb-only EDIT path (no regression) (0.1905ms)
+✔ a beat with no contract claim at all (hasContractStateChange/hasTemporalProgression both undefined) is completely unaffected — backward compatible (0.1855ms)
+✔ a 3rd consecutive standalone GRAPHIC beat is downgraded to a fresh photographic composition (max 2 consecutive graphics) (0.2731ms)
+✔ an intentionalVisualComparison beat is exempt from the graphic-cluster cap (the brief's own 'deliberately defined comparison/build sequence' exception) (0.2403ms)
+✔ the cluster count resets after a non-graphic beat interrupts it — a later pair of graphics is not blocked by an earlier, already-broken cluster (0.2132ms)
+✖ window size 4 is now checked — a real 4-beat same-baseSetupKey run gets broken at its midpoint (the exact reported Mars bug) (1.7742ms)
+✔ buildCompositionFingerprint now includes character binding (sorted) and locationId, per the brief's 'meaningful planning features' list (0.4086ms)
+✔ checkRollingWindowVariety is diagnostic-only — never appears in visualDensity's own errors/passed, only in varietyWarnings (1.0168ms)
+ℹ tests 45
+ℹ suites 0
+ℹ pass 43
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 251.2263
+
+✖ failing tests:
+
+test at tests\visualDirectorRenderStrategy.test.mjs:27:1
+✖ F: repetition debt accumulates across weakly-differentiated derived shots (REUSE and non-HIGH-justified EDIT alike) and forces a fresh GENERATE once it crosses the limit (3.6858ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'REUSE' !== 'EDIT'
+  
+      at TestContext.<anonymous> (file:///C:/Users/Public/Zylo/tests/visualDirectorRenderStrategy.test.mjs:38:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.start (node:internal/test_runner/test:1191:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'REUSE',
+    expected: 'EDIT',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\visualShotPlanningV1Reliability.test.mjs:108:1
+✖ window size 4 is now checked — a real 4-beat same-baseSetupKey run gets broken at its midpoint (the exact reported Mars bug) (1.7742ms)
+  AssertionError [ERR_ASSERTION]: exactly one beat in the 4-run must be forced fresh
+  
+  2 !== 1
+  
+      at TestContext.<anonymous> (file:///C:/Users/Public/Zylo/tests/visualShotPlanningV1Reliability.test.mjs:117:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

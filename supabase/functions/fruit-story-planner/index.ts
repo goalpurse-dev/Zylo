@@ -1,12 +1,15 @@
 // deno-lint-ignore-file no-explicit-any
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requirePaidFruitUser, consumeFruitRateLimit } from "../_shared/fruitStoryAccess.ts";
 
 /* ─── ENV ─── */
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_KEY  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const OPENAI_KEY   = Deno.env.get("OPENAI_API_KEY")!;
 const OPENAI_CHAT  = "https://api.openai.com/v1/chat/completions";
+
+/* ─── LIMITS ─── */
+const MAX_STORY_IDEA_CHARS  = 1000;
+const ALLOWED_SCENE_COUNTS  = new Set([3, 5, 7, 10]);   // 15s / 30s / 45s / 60s
+const RATE_LIMIT_PER_10_MIN = 20;
 
 const CORS = {
   "Access-Control-Allow-Origin":  "*",
@@ -1129,10 +1132,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
   if (req.method !== "POST")    return fail("Method not allowed", 405);
 
-  const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
-  const authHeader = req.headers.get("Authorization") ?? "";
-  const { data: { user }, error: authErr } = await sb.auth.getUser(authHeader.replace("Bearer ", ""));
-  if (authErr || !user) return fail("Unauthorized", 401);
+  const access = await requirePaidFruitUser(req, CORS);
+  if (!access.ok) return access.response;
+  const user = access.user;
 
   let body: any;
   try { body = await req.json(); } catch { return fail("Invalid JSON body"); }
@@ -1142,7 +1144,7 @@ Deno.serve(async (req) => {
     storyPreset,
     conflict,
     selectedCharacters = [],
-    sceneCount         = 5,
+    sceneCount: sceneCountRaw = 5,
     storyLength        = "30s",
     sceneAspect        = "9:16",
   } = body as {
@@ -1154,10 +1156,18 @@ Deno.serve(async (req) => {
     storyLength: string;
     sceneAspect: string;
   };
+  const sceneCount = Number(sceneCountRaw);
 
   console.log(`[fruit-story-planner] request received — storyIdea="${(storyIdea ?? "").slice(0,60)}" sceneCount=${sceneCount} chars=${selectedCharacters?.length}`);
 
-  if (!storyIdea?.trim())  return fail("storyIdea is required");
+  if (typeof storyIdea !== "string" || !storyIdea.trim()) return fail("storyIdea is required");
+  if (storyIdea.trim().length > MAX_STORY_IDEA_CHARS) {
+    return fail(`storyIdea must be at most ${MAX_STORY_IDEA_CHARS} characters`);
+  }
+  if (!ALLOWED_SCENE_COUNTS.has(sceneCount)) return fail("sceneCount must be 3, 5, 7 or 10");
+
+  const limited = await consumeFruitRateLimit(access.admin, user.id, "fruit-story-planner", RATE_LIMIT_PER_10_MIN, CORS);
+  if (limited) return limited;
 
   const preset     = detectPreset({ storyPreset, storyIdea, conflict });
   const isCheating = preset === "cheating" || preset === "cheats-back";

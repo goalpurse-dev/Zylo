@@ -1,0 +1,137 @@
+{
+  "_note": "Phase 3 handwritten canonical blocks for the frozen Myth vs Reality bible (tests/fixtures/stickman/beats/myth-vs-reality.recorded.json). A faithful clean-up of the bible's own prose into the new structured fields (bible schema: identity / settingBlocks / promptBlock): color names instead of hex codes, no internal ids or cross-references, only the style's allowed face modifiers. Future bibles produce these fields themselves.",
+  "cast": {
+    "viewer_viking": {
+      "displayName": "The viewer as a Viking raider",
+      "skinTone": "light warm beige",
+      "faceMarks": "",
+      "hair": "short straight dark brown hair with a fringe cut above the ears",
+      "outfit": "a short-sleeved muted forest-green tunic to mid-thigh, a dark brown belt, mud-brown trousers and dark brown boots",
+      "outfitShort": "a muted forest-green tunic and mud-brown trousers",
+      "sleeves": "short muted forest-green tunic sleeves",
+      "build": "medium height, neutral adult proportions",
+      "signature": "a round wooden shield strapped to the left arm"
+    },
+    "viking_warrior": {
+      "displayName": "A Viking warrior",
+      "skinTone": "light warm beige",
+      "faceMarks": "",
+      "hair": "short-cropped dark brown hair",
+      "outfit": "a knee-length muted ochre wool tunic, slate-grey trousers and a dark brown leather belt",
+      "outfitShort": "a muted ochre tunic and slate-grey trousers",
+      "sleeves": "long muted ochre wool sleeves",
+      "build": "stocky adult proportions",
+      "signature": "a round wooden shield and a short axe"
+    },
+    "bronze_age_priest": {
+      "displayName": "A Bronze Age priest",
+      "skinTone": "warm tan",
+      "faceMarks": "",
+      "hair": "smooth shoulder-length dark brown hair drawn as one rounded shape around the head",
+      "outfit": "a calf-length bronze-yellow robe with two dark brown bands near the hem and a thin bronze neck ring",
+      "outfitShort": "a calf-length bronze-yellow robe",
+      "sleeves": "wide bronze-yellow robe sleeves",
+      "build": "tall, upright formal stance",
+      "signature": "a slim ritual staff topped with a small bronze circle"
+    },
+    "19thc_theatre_designer": {
+      "displayName": "A 19th-century costume designer",
+      "skinTone": "pale peach",
+      "faceMarks": "",
+      "hair": "neat slicked-back medium brown hair with a side part",
+      "outfit": "a tailored deep charcoal frock coat, a white shirt collar and a slim burgundy cravat",
+      "outfitShort": "a deep charcoal frock coat",
+      "sleeves": "deep charcoal frock-coat sleeves with white cuffs",
+      "build": "slim adult proportions, theatrical upright posture",
+      "signature": "a rolled-up costume sketch"
+    },
+    "archaeologist": {
+      "displayName": "An archaeologist",
+      "skinTone": "light warm beige",
+      "faceMarks": "small rectangular black glasses",
+      "hair": "short tidy dark brown hair",
+      "outfit": "a short-sleeved khaki field shirt with a collar, olive-drab cargo trousers and a dark grey tool belt",
+      "outfitShort": "a khaki field shirt and olive-drab trousers",
+      "sleeves": "short khaki field-shirt sleeves",
+      "build": "medium adult proportions",
+      "signature": "a small trowel"
+    }
+  },
+  "settings": {
+    "imagined Viking battlefield / hillside charge": {
+      "name": "a Viking-age hillside battlefield",
+      "variants": {
+        "default": {
+          "background": "low rolling grey-green hills under a pale grey-blue sky",
+          "midground": "a distant line of round wooden shields forming a shieldwall",
+          "foreground": "a trampled grassy slope",
+          "palette": "muted moss green, earth brown, pale grey-blue and dull steel grey",
+          "signatureObjects": "round wooden shields and a low grassy hill crest",
+          "lighting": "cool diffused daylight with no strong shadows"
+        }
+      }
+    },
+    "archaeological digsite / bog find": {
+      "name": "an archaeological dig in a northern bog",
+      "variants": {
+        "default": {
+          "background": "a flat overcast grey sky above a low line of reeds",
+          "midground": "a rectangular excavation trench marked with a thin string grid",
+          "foreground": "dark peat soil with a bucket and a sieve",
+          "palette": "mossy green, dark peat brown and overcast grey",
+          "signatureObjects": "the string-grid trench, a bucket and a sieve",
+          "lighting": "soft overcast light, muted and even"
+        },
+        "ritual": {
+          "background": "a pale early-morning sky above distant low hills",
+          "midground": "still dark bog water edged with tall reeds",
+          "foreground": "a mossy bank with two small standing stones",
+          "palette": "mossy green, dark peat brown, pale blue-grey and bronze",
+          "signatureObjects": "the dark bog water, tall reeds and two standing stones",
+          "lighting": "pale cool dawn light"
+        }
+      }
+    },
+    "museum display case / gallery": {
+      "name": "a museum gallery",
+      "variants": {
+        "default": {
+          "background": "a plain off-white gallery wall",
+          "midground": "a row of low charcoal plinths, each with a clear glass box drawn as thin outlines",
+          "foreground": "a pale grey floor",
+          "palette": "off-white, cool light grey and charcoal",
+          "signatureObjects": "low charcoal plinths with glass boxes and small light grey label plaques",
+          "lighting": "even cool neutral gallery light"
+        }
+      }
+    },
+    "19th-century theatre stage and backstage costume table": {
+      "name": "a 19th-century opera theatre",
+      "variants": {
+        "default": {
+          "background": "tall deep burgundy stage curtains with gold trim",
+          "midground": "wooden stage boards in front of a simple painted mountain backdrop",
+          "foreground": "the dark edge of the orchestra pit",
+          "palette": "deep burgundy, gold, dark brown and warm black",
+          "signatureObjects": "burgundy curtains with gold trim and a painted mountain backdrop",
+          "lighting": "a warm golden stage wash from above"
+        },
+        "backstage": {
+          "background": "a dark wooden backstage wall with costumes hanging on hooks",
+          "midground": "a long costume table covered with fabric swatches and sketches",
+          "foreground": "worn wooden floorboards",
+          "palette": "dark brown, burgundy, gold and cream",
+          "signatureObjects": "the costume table, fabric swatches and hanging costumes",
+          "lighting": "warm yellow lamp light"
+        }
+      }
+    }
+  },
+  "props": {
+    "gjermundbu_helmet": "The Gjermundbu helmet: a rounded dull-grey iron combat helmet with a smooth dome and a spectacle-shaped guard framing the eyes and nose, with no horns and no horn attachments.",
+    "vexso_veksø_helmet": "The Veksø helmet: a thin decorative bronze cap with two long, gently curving bronze horns rising from its sides, each horn tipped with a small round bronze disc.",
+    "plain_iron_helm_fragment": "A Viking-age helmet fragment: a broken piece of a plain dull-grey iron dome, lying on a small tray.",
+    "museum_plinth_case": "A museum display case: a low charcoal plinth under a clear glass box drawn as thin outlines, with a small light grey label plaque.",
+    "theatre_horned_helmet": "A theatrical horned helmet: an oversized stage-costume helmet in darkened brass with huge horns curving up and outward and large round decorative disks where the horns attach."
+  }
+}

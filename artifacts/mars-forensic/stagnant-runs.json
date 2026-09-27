@@ -1,0 +1,228 @@
+[
+  {
+    "shots": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "start": 17.006,
+    "end": 41.677,
+    "duration_seconds": 24.671,
+    "similarity": "HIGH",
+    "difference_strength": "MINOR",
+    "edits": 2,
+    "note": "Checklist wording changes; same pose/camera; final reuse crosses into sol-length claim."
+  },
+  {
+    "shots": [
+      9,
+      10
+    ],
+    "start": 41.677,
+    "end": 59.515,
+    "duration_seconds": 17.838,
+    "similarity": "HIGH",
+    "difference_strength": "COSMETIC_ONLY",
+    "edits": 0,
+    "note": "Similar worried faces do not demonstrate scheduling approaches."
+  },
+  {
+    "shots": [
+      26,
+      27,
+      28,
+      29,
+      30
+    ],
+    "start": 142.717,
+    "end": 170.92,
+    "duration_seconds": 28.203,
+    "similarity": "MEDIUM",
+    "difference_strength": "MINOR",
+    "edits": 2,
+    "note": "Two related work/tablet setups; only a tag and log text change, then a reuse."
+  },
+  {
+    "shots": [
+      34,
+      35,
+      36
+    ],
+    "start": 185.62,
+    "end": 203.2,
+    "duration_seconds": 17.58,
+    "similarity": "HIGH",
+    "difference_strength": "MINOR",
+    "edits": 2,
+    "note": "Identical hands/port; only faulty log labels change."
+  },
+  {
+    "shots": [
+      63,
+      64,
+      65,
+      66
+    ],
+    "start": 358.244,
+    "end": 381.067,
+    "duration_seconds": 22.823,
+    "similarity": "EXACT",
+    "difference_strength": "NONE",
+    "edits": 0,
+    "note": "Four identical blank frames replace several different power concepts."
+  },
+  {
+    "shots": [
+      67,
+      68,
+      69
+    ],
+    "start": 381.067,
+    "end": 398.694,
+    "duration_seconds": 17.627,
+    "similarity": "HIGH",
+    "difference_strength": "MINOR",
+    "edits": 0,
+    "note": "One exact repeat plus a near-identical console variation; priorities remain unexplained."
+  },
+  {
+    "shots": [
+      76,
+      77,
+      78
+    ],
+    "start": 432.287,
+    "end": 449.34,
+    "duration_seconds": 17.053,
+    "similarity": "HIGH",
+    "difference_strength": "MINOR",
+    "edits": 2,
+    "note": "Bag and three-hand composition stays; requested valve/gasket changes absent."
+  },
+  {
+    "shots": [
+      79,
+      80
+    ],
+    "start": 449.34,
+    "end": 461.2,
+    "duration_seconds": 11.86,
+    "similarity": "HIGH",
+    "difference_strength": "COSMETIC_ONLY",
+    "edits": 1,
+    "note": "Orange grade and erased screen; incorrect outdoor cabinet remains."
+  },
+  {
+    "shots": [
+      86,
+      87
+    ],
+    "start": 494.4,
+    "end": 501.577,
+    "duration_seconds": 7.177,
+    "similarity": "HIGH",
+    "difference_strength": "MINOR",
+    "edits": 1,
+    "note": "Gauge color changes without a visible filter swap."
+  },
+  {
+    "shots": [
+      89,
+      90,
+      91
+    ],
+    "start": 510.517,
+    "end": 527.2,
+    "duration_seconds": 16.683,
+    "similarity": "HIGH",
+    "difference_strength": "MINOR",
+    "edits": 1,
+    "note": "OK changes to Serviceable, then returns to exact OK source; wrong target object."
+  },
+  {
+    "shots": [
+      100,
+      101,
+      102
+    ],
+    "start": 572.591,
+    "end": 586.442,
+    "duration_seconds": 13.851,
+    "similarity": "HIGH",
+    "difference_strength": "MINOR",
+    "edits": 2,
+    "note": "Same seal/hands; blur in one edit, green LEDs in another; small partial progress."
+  },
+  {
+    "shots": [
+      109,
+      110,
+      111,
+      112,
+      113
+    ],
+    "start": 625.2,
+    "end": 653.011,
+    "duration_seconds": 27.811,
+    "similarity": "MEDIUM",
+    "difference_strength": "MINOR",
+    "edits": 0,
+    "note": "Exercise and standing variants/crops retain repeated protagonist figures; little conceptual progress."
+  },
+  {
+    "shots": [
+      114,
+      115,
+      116,
+      117
+    ],
+    "start": 653.011,
+    "end": 680.292,
+    "duration_seconds": 27.281,
+    "similarity": "HIGH",
+    "difference_strength": "MINOR",
+    "edits": 2,
+    "note": "Same seated crew; plates and alarm added; exact source reused between them."
+  },
+  {
+    "shots": [
+      118,
+      119
+    ],
+    "start": 680.292,
+    "end": 692.84,
+    "duration_seconds": 12.548,
+    "similarity": "HIGH",
+    "difference_strength": "MEANINGFUL",
+    "edits": 1,
+    "note": "Tester is added, but same crouching composition and duplicated cast persist."
+  },
+  {
+    "shots": [
+      120,
+      121,
+      122
+    ],
+    "start": 692.84,
+    "end": 716.4,
+    "duration_seconds": 23.56,
+    "similarity": "HIGH",
+    "difference_strength": "MINOR",
+    "edits": 2,
+    "note": "Same typing/gym layout; small field/stylus changes fail to show signed log."
+  },
+  {
+    "shots": [
+      131,
+      132
+    ],
+    "start": 766.076,
+    "end": 780.578,
+    "duration_seconds": 14.502,
+    "similarity": "HIGH",
+    "difference_strength": "NONE",
+    "edits": 1,
+    "note": "Same storyboard panels; edit erases the checklist instead of isolating it."
+  }
+]

@@ -243,6 +243,50 @@ export default {
         if (!userId && s?.customer) userId = await userIdByCustomerId(String(s.customer));
         if (!userId) return respond(req, { ok: true, reason: "no-user" });
 
+        // ── Phase 4: abandoned-checkout conversion (own try/catch — must
+        // never interfere with credit granting / subscription bookkeeping
+        // below, in either direction). Matches on the exact Stripe session
+        // id only, never "latest unpaid row by email". ──────────────────────
+        try {
+          const { data: acRow } = await sb
+            .from("abandoned_checkouts")
+            .select("id, paid, status, recovery_stage, amount, currency")
+            .eq("stripe_session_id", s.id)
+            .maybeSingle();
+
+          if (acRow && !acRow.paid && acRow.status !== "converted") {
+            const wasEmailed = (acRow.recovery_stage ?? 0) > 0;
+            const { error: convErr } = await sb
+              .from("abandoned_checkouts")
+              .update({
+                paid: true,
+                status: "converted",
+                converted_at: new Date().toISOString(),
+                recovered: wasEmailed,
+                recovered_from_session_id: s.recovered_from ?? null,
+                processing_started_at: null,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", acRow.id)
+              .eq("paid", false); // optimistic guard vs. a concurrent sender write
+
+            if (convErr) {
+              console.error("[stripe-webhook] abandoned_checkouts conversion update failed:", convErr.message);
+            } else {
+              await sb.from("abandoned_checkout_events").insert({
+                checkout_id: acRow.id,
+                event_type: wasEmailed ? "recovered_purchase" : "checkout_converted_without_email",
+                stage: acRow.recovery_stage ?? 0,
+                amount: acRow.amount ?? s.amount_total ?? null,
+                currency: acRow.currency ?? s.currency ?? null,
+                metadata: { paid_amount_total: s.amount_total ?? null, recovered_from: s.recovered_from ?? null },
+              });
+            }
+          }
+        } catch (acErr) {
+          console.error("[stripe-webhook] abandoned-checkout conversion threw (non-fatal):", acErr);
+        }
+
         // One-time top-ups — only when payment_status is confirmed "paid"
         if (s?.mode === "payment" && s?.payment_status === "paid") {
           const items = await fetchCheckoutLineItems(s.id);
@@ -272,6 +316,46 @@ export default {
 
         // Any other checkout state (unpaid async, abandoned, etc.) — ignore
         return respond(req, { ok: true, reason: "checkout-no-action" });
+      }
+
+      /* ── checkout.session.expired ─────────────────────────────────────── */
+      //   Own try/catch so a DB hiccup here still returns 200 (nothing to
+      //   retry — expiry isn't idempotency-sensitive the way payments are).
+      if (type === "checkout.session.expired") {
+        const s = obj;
+        try {
+          const { data: acRow } = await sb
+            .from("abandoned_checkouts")
+            .select("id, paid, status")
+            .eq("stripe_session_id", s.id)
+            .maybeSingle();
+
+          if (acRow && !acRow.paid && acRow.status !== "converted" && acRow.status !== "superseded") {
+            const recoveryUrl: string | null = s?.after_expiration?.recovery?.url ?? null;
+            const { error: expErr } = await sb
+              .from("abandoned_checkouts")
+              .update({
+                expired_at: new Date().toISOString(),
+                status: "expired",
+                recovery_checkout_url: recoveryUrl,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", acRow.id);
+
+            if (expErr) {
+              console.error("[stripe-webhook] abandoned_checkouts expiry update failed:", expErr.message);
+            } else {
+              await sb.from("abandoned_checkout_events").insert({
+                checkout_id: acRow.id,
+                event_type: "expired",
+                metadata: { has_recovery_url: Boolean(recoveryUrl) },
+              });
+            }
+          }
+        } catch (acErr) {
+          console.error("[stripe-webhook] abandoned-checkout expiry handling threw (non-fatal):", acErr);
+        }
+        return respond(req, { ok: true });
       }
 
       /* ── invoice.payment_succeeded ────────────────────────────────────── */

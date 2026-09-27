@@ -18,9 +18,21 @@
 // POST {
 //   discoverySessionId, topic, source,
 //   selectedIdeaId?, selectedIdeaTitle?, selectedIdeaAngle?, narrativeArchetypeHint?,
-//   lengthMode, customLengthMinutes?, depthMode, customExplanationDepth?
+//   lengthMode, customLengthMinutes?, depthMode, customExplanationDepth?,
+//   initialStatus?
 // }
 // Returns { id, status, ...project fields already known to the client }
+//
+// 2026-10-03 "fixes round 3" pass, Section 1: `initialStatus` lets a caller
+// insert as 'draft' instead of the historical 'planning' default — the new
+// Production Setup flow (ProductionSetup.jsx) uses this so the project stays
+// invisible in "Your Long Form Videos" (fetchUserLongFormProjects filters
+// status='draft' out) until Generate's credit reservation actually succeeds,
+// at which point create-long-form-production-setup flips it to 'planning'
+// itself. Every existing caller (the legacy /long-form/new page) omits this
+// field entirely and gets the exact same 'planning' behavior as before —
+// zero change for them.
+const VALID_INITIAL_STATUSES = new Set(["planning", "draft"]);
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -33,7 +45,7 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const PROJECT_COLUMNS =
   "id, status, source, topic, selected_idea_id, selected_idea_title, selected_idea_angle, narrative_archetype_hint, " +
   "length_mode, custom_length_minutes, depth_mode, custom_explanation_depth, " +
-  "resolved_length_minutes, resolved_explanation_depth, target_words, " +
+  "resolved_length_minutes, resolved_explanation_depth, target_words, on_screen_text_density, " +
   "current_story_plan_version_id, discovery_session_id, created_at, updated_at";
 
 Deno.serve(async (req) => {
@@ -49,6 +61,13 @@ Deno.serve(async (req) => {
   const source = body?.source === "discovery" ? "discovery" : "custom";
   const lengthMode = body?.lengthMode === "custom" ? "custom" : "auto";
   const depthMode = body?.depthMode === "custom" ? "custom" : "auto";
+  // Part 2/3 (2026-09-15 content-grounding pass): chosen once, up front —
+  // the only point in the current flow that is genuinely BEFORE the
+  // storyboard compiles (see visualShotPlanning.js's refineVisualSequences,
+  // the sole consumer). Defaults to the column's own default (balanced) for
+  // any caller that omits it.
+  const onScreenTextDensity = ["minimal", "balanced", "frequent"].includes(body?.onScreenTextDensity) ? body.onScreenTextDensity : "balanced";
+  const initialStatus = VALID_INITIAL_STATUSES.has(body?.initialStatus) ? body.initialStatus : "planning";
 
   if (!discoverySessionId) return err(req, "Missing discoverySessionId", 400);
   if (!topic) return err(req, "Missing topic", 400);
@@ -91,7 +110,7 @@ Deno.serve(async (req) => {
       user_id: user.id,
       discovery_session_id: discoverySessionId,
       format: "2d_explainer",
-      status: "planning",
+      status: initialStatus,
       source,
       topic,
       selected_idea_id: selectedIdeaId,
@@ -102,6 +121,7 @@ Deno.serve(async (req) => {
       custom_length_minutes: customLengthMinutes,
       depth_mode: depthMode,
       custom_explanation_depth: customExplanationDepth,
+      on_screen_text_density: onScreenTextDensity,
     })
     .select(PROJECT_COLUMNS)
     .single();

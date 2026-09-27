@@ -21,6 +21,8 @@ const REQUIRED_PUBLIC_PAGES = [
   "/cartoon-drive-by-video-maker",
   "/footballer-nationality-swap-ai",
   "/behind-the-scenes-video-maker",
+  "/30-days-video-maker",
+  "/30-days-series-video-maker",
   "/face-asmr-maker",
   "/micro-camera-animal-maker",
   "/clay-rescue-maker",
@@ -40,6 +42,23 @@ const REQUIRED_PUBLIC_PAGES = [
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
+}
+
+// Belt-and-suspenders safety net on top of the existing route-based filtering
+// above (staticRoutes/noindexRoutes/redirectSources/draftBlogRoutes/url.search
+// checks) — this doesn't replace that logic, it's a final structural check
+// that can never pass a query string, hash, or wrong-host URL through no
+// matter how it got into entriesByPath.
+function isValidSitemapUrl(url) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname !== "www.tryzyvo.com") return false;
+    if (parsed.search) return false;
+    if (parsed.hash) return false;
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function staticRoutesFromApp(source) {
@@ -95,7 +114,6 @@ function main() {
     const pathname = url.pathname;
     if (
       !staticRoutes.has(pathname)
-      || pathname === "/"
       || draftBlogRoutes.has(pathname)
       || redirectSources.has(pathname)
       || noindexRoutes.has(pathname)
@@ -110,6 +128,7 @@ function main() {
   }
 
   const required = [
+    { path: "/", priority: "1.0", changefreq: "weekly" },
     ...[...staticRoutes]
       .filter((route) => (route === "/blog" || route.startsWith("/blog/")) && !draftBlogRoutes.has(route))
       .map((route) => ({
@@ -170,6 +189,8 @@ function main() {
   const finalPaths = [...entriesByPath.keys()];
   const invalidPaths = finalPaths.filter((pathname) => noindexRoutes.has(pathname) || redirectSources.has(pathname) || pathname.includes("?"));
   if (invalidPaths.length) throw new Error(`Sitemap contains non-indexable URL(s): ${invalidPaths.join(", ")}`);
+  const malformedUrls = [...entriesByPath.values()].map((entry) => entry.loc).filter((loc) => !isValidSitemapUrl(loc));
+  if (malformedUrls.length) throw new Error(`Sitemap contains malformed/wrong-host/query/hash URL(s): ${malformedUrls.join(", ")}`);
   console.log(`Sitemap reconciled: ${entriesByPath.size} URL(s), ${added.length} added, ${removed.length} stale/duplicate URL(s) removed.`);
   added.forEach((route) => console.log(`  + ${route}`));
   removed.forEach((route) => console.log(`  - ${route}`));

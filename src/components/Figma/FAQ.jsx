@@ -11,7 +11,7 @@ export default function Faq() {
 
     <div className=" flex justify-center ">
 
-     <h1 className="text-[30px] text-[#110829] font-bold">FAQ</h1>  
+     <h2 className="text-[30px] text-[#110829] font-bold">FAQ</h2>
 
     </div>
 

@@ -7,6 +7,18 @@ import { getPlanPriority } from "./queuePriority";
 import { CREATION_TYPES } from "./creations";
 import { emitCreditSpend } from "./creditPopEvents";
 import { cleanupUploadedReferences, normalizeReferencePayload } from "./referenceImages";
+import { quoteToolPrice } from "./pricing/toolPriceQuotes";
+
+// The jobs pricing trigger charges public.tool_prices, so balance pre-checks
+// use the same server quote. The caller's figure is only a fallback if the
+// quote itself can't be fetched (the server still decides the real charge).
+async function serverPriceOr(toolKey: string, input: Record<string, unknown>, fallback: number): Promise<number> {
+  try {
+    return await quoteToolPrice(toolKey, input);
+  } catch {
+    return fallback;
+  }
+}
 
 /* ======================= Types ======================= */
 
@@ -56,6 +68,12 @@ export interface JobRow {
   progress: number | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface BillingReservation {
+  template: "thirty-days";
+  generationId: string;
+  assetKey: string;
 }
 
 export const STOP_STATUSES: JobStatus[] = [
@@ -130,6 +148,7 @@ export interface ImageInput {
   init_image_url?: string | null;
   // tagging for library routing
   creation_type?: string | null;
+  billing_reservation?: BillingReservation;
 }
 
 export interface ImageSettings {
@@ -461,6 +480,14 @@ export async function createImageJobSimple(params: {
   refImages?: string[];
   expectedRefSlotCount?: number;
   chargeCreditsOverride?: number;
+  skipCreditCheck?: boolean;
+  billingReservation?: BillingReservation;
+
+  // Optional per-call override — falls back to DEFAULT_NEGATIVE_IMAGE so
+  // every existing caller's behavior is unchanged. Now actually reaches
+  // Runware (see runware-image's safeImageNegativePrompt); previously
+  // input.negative was set but silently dropped before the provider call.
+  negativePrompt?: string;
 }): Promise<JobRow> {
 
   const link = getProviderLink(params.toolKey);
@@ -481,6 +508,25 @@ if (link.resolutionPricing && params.resolution) {
 
 if (typeof params.chargeCreditsOverride === "number" && params.chargeCreditsOverride > 0) {
   credits = params.chargeCreditsOverride;
+  priceUSD = credits * 0.02;
+}
+
+if (params.skipCreditCheck) {
+  if (
+    params.billingReservation?.template !== "thirty-days" ||
+    !params.billingReservation.generationId ||
+    !params.billingReservation.assetKey
+  ) {
+    throw new Error("BILLING_RESERVATION_REQUIRED");
+  }
+  credits = 0;
+} else {
+  const [sizeW, sizeH] = String(params.size ?? "").split("x").map((n) => parseInt(n, 10));
+  credits = await serverPriceOr(
+    params.toolKey,
+    { width: params.width ?? (Number.isFinite(sizeW) ? sizeW : undefined), height: params.height ?? (Number.isFinite(sizeH) ? sizeH : undefined) },
+    credits,
+  );
   priceUSD = credits * 0.02;
 }
 
@@ -529,7 +575,7 @@ if (isFree) {
   // 💰 PAID PLAN → verify balance upfront, but don't deduct yet.
   // Actual deduction happens in runware-image after finish_job_success
   // so failed/timed-out jobs never consume credits.
-  if ((profile?.credit_balance ?? 0) < credits) {
+  if (!params.skipCreditCheck && (profile?.credit_balance ?? 0) < credits) {
     throw new Error("INSUFFICIENT_CREDITS");
   }
 }
@@ -571,7 +617,7 @@ height = height ?? 1024;
   subject: (params.subject || "").trim(),
   style: params.style ?? null,
   creation_type: CREATION_TYPES.PHOTO,
-  negative: DEFAULT_NEGATIVE_IMAGE,
+  negative: params.negativePrompt ?? DEFAULT_NEGATIVE_IMAGE,
   brand: { id: null, use_palette: false },
   init_image_url: initUrl,
   // Only store ref_images when non-empty so job-worker falls back to
@@ -585,6 +631,7 @@ height = height ?? 1024;
   width,
 
   height,
+  billing_reservation: params.billingReservation,
 };
 
 
@@ -661,15 +708,40 @@ export async function createVideoJobSimple(params: {
   resolution?: string;
   durationSec: number;
   initImageUrls?: string[];
-  calculatedCredits: number;
+  /** Optional fallback only — the server price (tool_prices) is authoritative. */
+  calculatedCredits?: number;
   project_id?: string | null;
   withSound?: boolean;
   skipCreditCheck?: boolean;
+  billingReservation?: BillingReservation;
 }) {
   const link = getProviderLink(params.toolKey);
 if (!link) throw new Error(`Video provider not configured`);
 
-const credits = params.skipCreditCheck ? 0 : params.calculatedCredits;
+const credits = params.skipCreditCheck
+  ? 0
+  : await serverPriceOr(
+      params.toolKey,
+      {
+        durationSec: params.durationSec,
+        withSound: params.withSound ?? false,
+        width: params.width,
+        height: params.height,
+        resolution: params.resolution,
+      },
+      params.calculatedCredits ?? 0,
+    );
+
+if (
+  params.skipCreditCheck &&
+  (
+    params.billingReservation?.template !== "thirty-days" ||
+    !params.billingReservation.generationId ||
+    !params.billingReservation.assetKey
+  )
+) {
+  throw new Error("BILLING_RESERVATION_REQUIRED");
+}
 
 if (!params.skipCreditCheck && (!credits || credits <= 0)) {
   throw new Error("INVALID_VIDEO_CREDIT_CALCULATION");
@@ -728,6 +800,7 @@ const input: any = {
   durationSec: params.durationSec,
   ref_images: params.initImageUrls ?? [],
   withSound: params.withSound ?? false,
+  billing_reservation: params.billingReservation,
 };
 
 // ✅ MiniMax

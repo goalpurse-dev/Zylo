@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, CloudCog, RotateCw, Sparkles, WifiOff } from "lucide-react";
 import { estimateRemainingMinutes, formatElapsed, formatEtaRange } from "./generationTiming";
+import GenerationProgressRail from "./GenerationProgressRail";
 
 // The shared "Zyvo Core" + stage checklist that powers every Long Form
 // generation screen (Story Plan, Research, targeted Research repair,
@@ -18,9 +19,17 @@ import { estimateRemainingMinutes, formatElapsed, formatEtaRange } from "./gener
 // whole product feels like one system, not four different loaders.
 const VARIANT_ICON = { story: Sparkles, research: Sparkles, script: Sparkles, visualPlan: Sparkles };
 
-function GenerationCore({ variant }) {
+// 2026-09-20 "truthful progress" fix — Task 1: "stop continuous loading
+// animations after completion" + "a brief completion checkmark". Previously
+// this core kept its infinite breathing/orbiting/spark animations running
+// unconditionally even once `isComplete` was true (the caller only ever
+// used `isComplete` to fill the progress rail to 100 — nothing here ever
+// stopped or celebrated). `.zg-core-wrap-complete` (below) freezes every
+// perpetual animation via CSS; the checkmark itself gets its own one-shot
+// entrance, never a looping animation of its own.
+function GenerationCore({ variant, isComplete = false }) {
   return (
-    <div className="zg-core-wrap">
+    <div className={`zg-core-wrap ${isComplete ? "zg-core-wrap-complete" : ""}`}>
       <div className="zg-glow" aria-hidden="true" />
       <svg className="zg-orbits" viewBox="0 0 120 120" aria-hidden="true">
         <circle className="zg-orbit-ring zg-orbit-ring-a" cx="60" cy="60" r="46" />
@@ -39,7 +48,7 @@ function GenerationCore({ variant }) {
         </g>
       </svg>
       <div className="zg-core-icon">
-        <Sparkles className="h-7 w-7" strokeWidth={1.8} />
+        {isComplete ? <CheckCircle2 className="zg-check-in h-7 w-7" strokeWidth={1.8} /> : <Sparkles className="h-7 w-7" strokeWidth={1.8} />}
       </div>
       {variant === "story" && (
         <svg className="zg-accent" viewBox="0 0 120 120" aria-hidden="true">
@@ -82,7 +91,7 @@ function GenerationCore({ variant }) {
 // is what the pre-existing StoryLoadingState already did honestly. Faking a
 // checkmark here would violate the one rule every other caller relies on:
 // only a truly persisted, completed backend stage ever gets one.
-function ProgressRail({ stageOrder, stageLabels, currentStageKey, rotateStages, rotatingIndex }) {
+function StageChecklist({ stageOrder, stageLabels, currentStageKey, rotateStages, rotatingIndex }) {
   const currentIndex = rotateStages ? rotatingIndex : stageOrder.indexOf(currentStageKey);
   return (
     <div className="zg-rail">
@@ -96,7 +105,11 @@ function ProgressRail({ stageOrder, stageLabels, currentStageKey, rotateStages, 
               <span className={`zg-rail-marker ${done ? "zg-rail-marker-done" : current ? "zg-rail-marker-active" : "zg-rail-marker-muted"}`}>
                 {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : <span className="zg-rail-dot" />}
               </span>
-              {!isLast && <span className={`zg-rail-line ${done ? "zg-rail-line-done" : ""}`} />}
+              {!isLast && (
+                <span
+                  className={`zg-rail-line ${done ? "zg-rail-line-done" : ""} ${idx === currentIndex - 1 ? "zg-rail-line-live" : ""}`}
+                />
+              )}
             </div>
             <span className={`zg-rail-label ${current ? "zg-rail-label-active" : done ? "zg-rail-label-done" : "zg-rail-label-muted"}`}>{stageLabels[key]}</span>
           </div>
@@ -124,10 +137,26 @@ export default function GenerationExperience({
   // rotation, same 2.6s cadence, single source of truth.
   stageMicroCopy,
   startedAt, // ISO string or ms timestamp — real, persisted, never reset on refresh
+  // 2026-09-20 "truthful progress" fix — the row's real, persisted
+  // stage_started_at (ISO string or ms timestamp, or null/undefined for a
+  // caller that doesn't have one yet). Distinct from BOTH `startedAt`
+  // (workflow-wide, never changes across the whole run) and this
+  // component's own polling/heartbeat: it only ever changes when the
+  // backend genuinely claims a NEW stage, so "time since" it is a true
+  // "last meaningful checkpoint" signal, not a reflection of how often the
+  // frontend happens to be asking. Optional — omitted entirely (not a
+  // fabricated "just now") when the caller has no such column.
+  stageStartedAt,
   failed = false,
   failedHeading = "We couldn't complete this step right now.",
   failedSubcopy,
   onRetry,
+  // 2026-09-21 emergency reliability fix: an infrastructure failure with
+  // real persisted progress should read as "resume," never "regenerate
+  // from scratch" — but every OTHER caller (research/script) already means
+  // a genuine retry-the-same-work by "Try Again," so this stays opt-in
+  // (default unchanged) rather than a global relabel.
+  retryLabel = "Try Again",
   reassuranceNote = "You can safely close this page — Zyvo keeps working and picks up right where it left off.",
   // 'offline' | 'syncing' | null — a CLIENT connection signal only, never a
   // backend status. The frontend is never authoritative for whether
@@ -136,10 +165,45 @@ export default function GenerationExperience({
   // stage/progress already on screen — it must never itself switch this
   // component into the `failed` branch above.
   connectionStatus = null,
+  // True only for the brief real-completion payoff window the caller holds
+  // open after the backend reports done (see research.jsx's `completing`
+  // state) — animates the rail's fill to 100 before the page switches to
+  // its ready reveal. Never set from a frontend guess.
+  isComplete = false,
+  // True ONLY for the window between the user's click and a durable,
+  // persisted workflow row actually existing — no real stage, no real
+  // startedAt exist yet, so this suppresses the progress rail AND the stage
+  // checklist entirely rather than showing fake Phase 1/Elapsed 00:00
+  // against data that isn't real yet (see script.jsx's `starting` phase,
+  // added after a bug let the UI claim generation had started before any
+  // ScriptVersion row existed). Once the caller has a real persisted row,
+  // it stops passing this and the normal stage UI takes over.
+  pending = false,
+  // The row's real, persisted worker_lock_until (ISO string or null) — NOT
+  // a frontend guess. A durable async worker (Research/Script/Visual Plan)
+  // takes a lease on its row for the duration of one stage attempt; while
+  // that lease is in the future, some worker may genuinely still be
+  // running. Once it's meaningfully in the past and the caller hasn't yet
+  // observed the stage/status change, the worker that held it is gone —
+  // this is what actually happened to a real Script (63c3df8b-...): a
+  // critic call timed out, the failure handler correctly wrote a short
+  // backoff lease, and then nothing ever came back to retry it, so the lease
+  // just expired and sat there while the UI kept saying "Taking a little
+  // longer than usual" for 30+ minutes. This component never dispatches
+  // anything on its own to fix that (see reassuranceNote) — it only stops
+  // pretending a dead worker looks like live progress. The backend recovery
+  // sweep (long-form-*-advance crons) is what actually resumes the row.
+  workerLockUntil = null,
 }) {
   const [now, setNow] = useState(() => Date.now());
   const [rotatingIndex, setRotatingIndex] = useState(0);
   const prefersReducedMotion = useMemo(() => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches, []);
+  // First moment `recovering` was observed true, so the "Resume now" escape
+  // hatch only appears after it's been persistently stale for a while —
+  // never on the first poll that happens to land just past the 20s grace
+  // above. Reset to null the instant recovering clears (a real claim landed),
+  // so a later, unrelated stall starts its own fresh countdown.
+  const recoveringSinceRef = useRef(null);
 
   useEffect(() => {
     if (failed) return;
@@ -163,8 +227,23 @@ export default function GenerationExperience({
         {failedSubcopy && <p className="zg-microcopy">{failedSubcopy}</p>}
         <button type="button" onClick={onRetry} className="zg-retry-btn">
           <RotateCw className="h-4 w-4" />
-          Try Again
+          {retryLabel}
         </button>
+        <GenerationStyles />
+      </div>
+    );
+  }
+
+  if (pending) {
+    return (
+      <div className="zg-container">
+        <GenerationCore variant={variant} />
+        <h1 className="zg-heading">{heading}</h1>
+        {microCopy && <p className="zg-microcopy">{microCopy}</p>}
+        <p className="zg-reassurance">
+          <CloudCog className="h-3.5 w-3.5 shrink-0" />
+          {reassuranceNote}
+        </p>
         <GenerationStyles />
       </div>
     );
@@ -174,36 +253,92 @@ export default function GenerationExperience({
   const elapsedSeconds = startedMs ? Math.max(0, (now - startedMs) / 1000) : 0;
   const elapsedMinutes = elapsedSeconds / 60;
 
+  // 20s grace past the lease's own expiry — generous enough that a normal
+  // in-flight call (lease still in the future) or the brief gap between one
+  // stage's lease clearing and the next stage's lease being taken never
+  // trips this, but small enough that a genuinely abandoned worker is
+  // surfaced quickly rather than after minutes.
+  const lockUntilMs = typeof workerLockUntil === "string" ? new Date(workerLockUntil).getTime() : workerLockUntil;
+  const recovering = !rotateStages && Boolean(lockUntilMs) && now - lockUntilMs > 20_000;
+
+  if (recovering && recoveringSinceRef.current === null) recoveringSinceRef.current = now;
+  if (!recovering) recoveringSinceRef.current = null;
+  // Real backend recovery (the long-form-*-advance cron sweeps) typically
+  // reclaims a dead worker within ~1 minute of its lease expiring — giving
+  // this 2 minutes of grace before offering "Resume now" means the button
+  // only ever appears once that normal window has already passed, not as a
+  // reflex the instant staleness is first detected.
+  const showResumeNow = recovering && recoveringSinceRef.current !== null && now - recoveringSinceRef.current > 120_000;
+
   const etaRange = estimateRemainingMinutes(variant, stageOrder, rotateStages ? stageOrder[0] : currentStageKey);
   const etaLabel = etaRange ? formatEtaRange(etaRange) : null;
-  const runningLong = !rotateStages && etaRange && elapsedMinutes > etaRange.high * 1.15;
+  // Only rotateStages (Story Plan) still needs this swap-the-microcopy
+  // overrun treatment — the real-stage rail below carries its own
+  // "Taking a little longer than usual" ETA-label swap instead, so the two
+  // don't end up saying the same thing twice on the same screen.
+  const runningLong = rotateStages && etaRange && elapsedMinutes > etaRange.high * 1.15;
 
-  const currentIndex = Math.max(0, stageOrder.indexOf(currentStageKey));
-  // "Phase X of Y" is only meaningful when currentStageKey reflects a real
-  // persisted position — in rotateStages mode there is no real phase to
-  // count, so it's omitted rather than shown against a rotating fake index.
-  const phaseLabel = rotateStages ? null : `Phase ${currentIndex + 1} of ${stageOrder.length}`;
   const activeMicroCopy = rotateStages ? stageMicroCopy?.[stageOrder[rotatingIndex]] : microCopy;
 
   return (
     <div className={`zg-container ${prefersReducedMotion ? "zg-reduced-motion" : ""}`}>
-      <GenerationCore variant={variant} />
+      <GenerationCore variant={variant} isComplete={isComplete} />
 
       <h1 className="zg-heading">{heading}</h1>
-      {activeMicroCopy && <p className="zg-microcopy">{runningLong ? "This one is taking a little longer than usual, but Zyvo is still working." : activeMicroCopy}</p>}
+      {recovering ? (
+        <p className="zg-microcopy">Last attempt was interrupted. Zyvo is safely resuming this step.</p>
+      ) : (
+        activeMicroCopy && <p className="zg-microcopy">{runningLong ? "This one is taking a little longer than usual, but Zyvo is still working." : activeMicroCopy}</p>
+      )}
 
-      <div className="zg-meta-row">
-        {phaseLabel && <span className="zg-meta-chip">{phaseLabel}</span>}
-        <span className="zg-meta-chip">Elapsed {formatElapsed(elapsedSeconds)}</span>
-        {etaLabel && <span className="zg-meta-chip">{rotateStages ? "Usually ready in" : "Estimated remaining"} {etaLabel}</span>}
-      </div>
+      {rotateStages ? (
+        <div className="zg-meta-row">
+          <span className="zg-meta-chip">Elapsed {formatElapsed(elapsedSeconds)}</span>
+          {etaLabel && <span className="zg-meta-chip">Usually ready in {etaLabel}</span>}
+        </div>
+      ) : (
+        <GenerationProgressRail
+          variant={variant}
+          stageOrder={stageOrder}
+          stageLabels={stageLabels}
+          currentStageKey={currentStageKey}
+          startedAt={startedAt}
+          stageStartedAt={stageStartedAt}
+          isOffline={connectionStatus === "offline"}
+          isComplete={isComplete}
+          reducedMotion={prefersReducedMotion}
+          recovering={recovering}
+        />
+      )}
 
-      <ProgressRail stageOrder={stageOrder} stageLabels={stageLabels} currentStageKey={currentStageKey} rotateStages={rotateStages} rotatingIndex={rotatingIndex} />
+      <StageChecklist stageOrder={stageOrder} stageLabels={stageLabels} currentStageKey={currentStageKey} rotateStages={rotateStages} rotatingIndex={rotatingIndex} />
 
       <p className="zg-reassurance">
         <CloudCog className="h-3.5 w-3.5 shrink-0" />
         {reassuranceNote}
       </p>
+
+      {recovering && (
+        <>
+          <p className="zg-connection-notice zg-connection-notice-syncing">
+            <RotateCw className="zg-sync-spin h-3.5 w-3.5 shrink-0" />
+            Recovering your narration…
+          </p>
+          {/* Backend recovery (the recovery-sweep cron) remains authoritative
+              and keeps trying regardless — this button only re-asks it via
+              the SAME idempotent resume path onRetry already uses elsewhere
+              (start-*-with-regenerate:false), which for a row that's still
+              actively owned by the backend is a safe no-op, and for a row
+              that has since reached a real terminal `failed` state actually
+              resumes it. It can never itself start a second worker or a new
+              version. */}
+          {showResumeNow && onRetry && (
+            <button type="button" onClick={onRetry} className="zg-resume-now-btn">
+              Resume now
+            </button>
+          )}
+        </>
+      )}
 
       {connectionStatus === "offline" && (
         <p className="zg-connection-notice">
@@ -247,6 +382,26 @@ function GenerationStyles() {
       .zg-core-icon { position: relative; z-index: 1; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; border: 1px solid rgba(190,242,100,0.28); background: rgba(190,242,100,0.07); color: #bef264; animation: zg-breathe-icon 3.6s ease-in-out infinite; }
       .zg-core-icon-failed { border-color: rgba(248,113,113,0.25); background: rgba(248,113,113,0.07); color: #fca5a5; margin-bottom: 18px; animation: none; }
 
+      /* 2026-09-20 "truthful progress" fix: once the backend has genuinely
+         finished, every perpetual animation on the core stops — a completed
+         workflow must never still look like it's thinking. The checkmark
+         gets one brief, non-looping entrance instead. */
+      .zg-core-wrap-complete .zg-glow,
+      .zg-core-wrap-complete .zg-orbit-dot,
+      .zg-core-wrap-complete .zg-orbit-dot-b,
+      .zg-core-wrap-complete .zg-spark,
+      .zg-core-wrap-complete .zg-spark-b,
+      .zg-core-wrap-complete .zg-core-icon,
+      .zg-core-wrap-complete .zg-story-path,
+      .zg-core-wrap-complete .zg-particle,
+      .zg-core-wrap-complete .zg-line,
+      .zg-core-wrap-complete .zg-frame {
+        animation: none !important;
+      }
+      .zg-core-wrap-complete .zg-glow { opacity: 0.75; }
+      .zg-core-wrap-complete .zg-core-icon { border-color: rgba(190,242,100,0.5); background: rgba(190,242,100,0.12); }
+      .zg-check-in { animation: zg-check-in 480ms cubic-bezier(0.22, 1, 0.36, 1); }
+
       .zg-accent, .zg-particles, .zg-lines, .zg-frames { position: absolute; inset: 0; pointer-events: none; }
       .zg-story-nodes circle { fill: rgba(190,242,100,0.6); }
       .zg-story-path { stroke: rgba(190,242,100,0.45); stroke-dasharray: 90; stroke-dashoffset: 90; animation: zg-draw 3.6s ease-in-out infinite; }
@@ -282,8 +437,11 @@ function GenerationStyles() {
       .zg-rail-marker-muted { border: 1px solid rgba(255,255,255,0.1); }
       .zg-rail-dot { width: 6px; height: 6px; border-radius: 9999px; background: rgba(255,255,255,0.18); }
       .zg-rail-marker-active .zg-rail-dot { background: #bef264; animation: zg-pulse-dot 1.6s ease-in-out infinite; }
-      .zg-rail-line { width: 1px; flex: 1; min-height: 14px; background: rgba(255,255,255,0.08); transition: background 0.5s; margin: 2px 0; }
+      .zg-rail-line { position: relative; width: 1px; flex: 1; min-height: 14px; background: rgba(255,255,255,0.08); transition: background 0.5s; margin: 2px 0; overflow: hidden; }
       .zg-rail-line-done { background: rgba(190,242,100,0.3); }
+      /* Very subtle — the one connector between the last completed stage and
+         the current one gets a soft light traveling down it, nothing more. */
+      .zg-rail-line-live::after { content: ""; position: absolute; left: 0; top: -12px; width: 100%; height: 12px; background: linear-gradient(180deg, transparent, rgba(190,242,100,0.55), transparent); animation: zg-rail-travel 2.2s ease-in-out infinite; }
       .zg-rail-label { padding: 2px 0 14px; font-size: 12.5px; font-weight: 500; transition: color 0.4s; }
       .zg-rail-label-active { color: #fff; }
       .zg-rail-label-done { color: rgba(255,255,255,0.5); }
@@ -298,6 +456,9 @@ function GenerationStyles() {
       .zg-connection-notice-syncing { color: rgba(125,211,252,0.75); }
       .zg-sync-spin { animation: zg-spin 1s linear infinite; }
 
+      .zg-resume-now-btn { margin-top: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); padding: 8px 16px; font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,0.7); transition: background 0.15s, color 0.15s; }
+      .zg-resume-now-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
       @keyframes zg-breathe { 0%, 100% { opacity: 0.6; transform: scale(0.96); } 50% { opacity: 1; transform: scale(1.05); } }
       @keyframes zg-breathe-icon { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
       @keyframes zg-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -306,8 +467,10 @@ function GenerationStyles() {
       @keyframes zg-draw { 0% { stroke-dashoffset: 90; opacity: 0; } 20% { opacity: 1; } 70% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
       @keyframes zg-travel { 0% { opacity: 0; transform: translate(0, 0) scale(0.6); } 15% { opacity: 1; } 90% { opacity: 0.8; } 100% { opacity: 0; transform: translate(30px, 32px) scale(1); } }
       @keyframes zg-line-in { 0%, 100% { opacity: 0; transform: translateX(-50%) scaleX(0.6); } 40%, 70% { opacity: 1; transform: translateX(-50%) scaleX(1); } }
+      @keyframes zg-rail-travel { 0% { top: -12px; opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
       @keyframes zg-frame-in { 0%, 100% { opacity: 0; transform: scale(0.9); } 40%, 70% { opacity: 1; transform: scale(1); } }
       @keyframes zg-pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+      @keyframes zg-check-in { 0% { opacity: 0; transform: scale(0.6); } 60% { opacity: 1; transform: scale(1.12); } 100% { opacity: 1; transform: scale(1); } }
 
       /* Viewport-lock compression: the generation screen must never scroll
          (see the page-level wrapper's h-full/overflow-hidden), so on a
@@ -344,9 +507,12 @@ function GenerationStyles() {
         .zg-glow, .zg-orbit-dot, .zg-orbit-dot-b, .zg-spark, .zg-spark-b, .zg-core-icon, .zg-story-path, .zg-particle, .zg-line, .zg-frame, .zg-rail-marker-active .zg-rail-dot {
           animation: none !important;
         }
+        .zg-rail-line-live::after { animation: none !important; content: none; }
         .zg-story-path { opacity: 0.45; stroke-dashoffset: 0; }
         .zg-particle, .zg-line, .zg-frame { opacity: 0.5; }
+        .zg-check-in { animation: zg-check-in-fade 200ms ease-out; }
       }
+      @keyframes zg-check-in-fade { from { opacity: 0; } to { opacity: 1; } }
     `}</style>
   );
 }

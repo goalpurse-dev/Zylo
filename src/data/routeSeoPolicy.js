@@ -20,6 +20,7 @@ export const WORKSPACE_ROUTE_SEO_POLICIES = [
   { path: "/workspace/ai-cooking-matic", seoVisibility: "noindex", routeType: "credit-template", title: "Zyvo AI Cooking Matic" },
   { path: "/workspace/footballer-nationality-swap", seoVisibility: "noindex", routeType: "paid-template", title: "Zyvo Footballer Nationality Swap" },
   { path: "/workspace/two-am", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/2am-worlds-ai-generator", title: "Zyvo 2AM Worlds" },
+  { path: "/workspace/thirty-days", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/30-days-video-maker", title: "Zyvo 30 Days Video Maker" },
   { path: "/workspace/cartoon-drive-by", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/cartoon-drive-by-video-maker", title: "Zyvo Cartoon Drive-By" },
   { path: "/workspace/behind-the-scenes", seoVisibility: "noindex", routeType: "paid-template", publicLanding: "/behind-the-scenes-video-maker", title: "Zyvo Behind the Scenes" },
   { path: "/workspace/publishv", seoVisibility: "noindex", routeType: "private-app", publicLanding: "/publish", title: "Zyvo Publish" },

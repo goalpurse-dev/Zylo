@@ -4,7 +4,6 @@ import { getAllowedVideoModels as sharedGetAllowedVideoModels } from "../../../.
 
 /* ── Constants ──────────────────────────────────────────────── */
 export const IMAGE_TOOL_KEY  = "image:fruit-v2";
-export const IMAGE_CREDITS   = 2;   // ~$0.010423 cost — 2 images per scene (problem + fix)
 export const IMAGE_W         = 768;
 export const IMAGE_H         = 1376;
 
@@ -24,7 +23,6 @@ export const VIDEO_MODELS = {
     width: 496,
     height: 864,
     duration: 5,
-    credits: 4,            // measured $0.0607656/5s → blended per-scene margin ~49.0%
     withSound: false,
   },
   "clay-v3": {
@@ -36,7 +34,6 @@ export const VIDEO_MODELS = {
     width: 720,
     height: 1280,
     duration: 5,
-    credits: 16,           // measured $0.17875/5s → blended per-scene margin ~50.1%
     withSound: true,
   },
   "clay-v4": {
@@ -48,11 +45,31 @@ export const VIDEO_MODELS = {
     width: 1080,
     height: 1920,
     duration: 5,
-    credits: 19,           // measured $0.21125/5s → blended per-scene margin ~49.5%
     withSound: true,
   },
 };
 export const DEFAULT_VIDEO_MODEL = "clay-v2";
+
+// Prices come from the server (public.tool_prices) — the exact numbers each
+// job is charged. PRICE_ITEMS mirrors the job shapes this tool creates; pass
+// it to useToolPriceQuotes and hand the resulting prices to calcCredits.
+export const PRICE_ITEMS = [
+  { id: "image", tool_key: IMAGE_TOOL_KEY, input: { width: IMAGE_W, height: IMAGE_H } },
+  ...Object.entries(VIDEO_MODELS).map(([id, m]) => ({
+    id: `video:${id}`,
+    tool_key: m.toolKey,
+    input: { durationSec: m.duration, withSound: m.withSound, width: m.width, height: m.height },
+  })),
+];
+
+/** Total credits for a run (2 images per scene (problem + fix) + 1 clip), or null until prices are quoted. */
+export function calcCredits(sceneCount, videoModelId = DEFAULT_VIDEO_MODEL, prices = {}) {
+  const modelId = VIDEO_MODELS[videoModelId] ? videoModelId : DEFAULT_VIDEO_MODEL;
+  const image = prices.image;
+  const video = prices[`video:${modelId}`];
+  if (image == null || video == null) return null;
+  return sceneCount * (image * 2 + video);
+}
 
 // Plan gating — which video models each plan tier can use.
 export const VIDEO_MODEL_MIN_PLAN = {
@@ -164,10 +181,6 @@ const EXTRA_AI_SCENARIOS = [
 
 // Added to AI_SCENARIOS after the base scenario bank is declared.
 
-export function calcCredits(sceneCount, videoModelId = DEFAULT_VIDEO_MODEL) {
-  const videoCredits = (VIDEO_MODELS[videoModelId] ?? VIDEO_MODELS[DEFAULT_VIDEO_MODEL]).credits;
-  return sceneCount * (IMAGE_CREDITS * 2 + videoCredits);
-}
 
 /* ─────────────────────────────────────────────────────────────
    SOUND DIRECTION  (Seedance 2.0 Fast includes native audio)
@@ -613,7 +626,6 @@ export async function generateProblemImage({ problemImagePrompt }) {
     height: IMAGE_H,
     refImages: [],
     expectedRefSlotCount: 0,
-    chargeCreditsOverride: IMAGE_CREDITS,
     project_id: null,
     providerHint: {
       engine: "runware", mode: "t2i", edgeFn: "/functions/v1/runware-image", airTag: "openai:gpt-image@2",
@@ -632,7 +644,6 @@ export async function generateFixImage({ fixImagePrompt, problemImageUrl }) {
     height: IMAGE_H,
     refImages,
     expectedRefSlotCount: refImages.length,
-    chargeCreditsOverride: IMAGE_CREDITS,
     project_id: null,
     providerHint: {
       engine: "runware", mode: "t2i", edgeFn: "/functions/v1/runware-image", airTag: "openai:gpt-image@2",
@@ -655,7 +666,6 @@ export async function animateSceneClip({ fixImageUrl, problemImageUrl, videoProm
     height:            model.height,
     durationSec:       model.duration,
     initImageUrls,
-    calculatedCredits: model.credits,
     withSound:         model.withSound,
   });
 }

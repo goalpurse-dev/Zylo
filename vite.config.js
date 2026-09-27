@@ -25,6 +25,8 @@ export default defineConfig({
     },
     watch: {
       ignored: [
+        "**/dist/**",
+        "**/dist-ssr/**",
         "**/src/assets/**",
         "**/.tmp.driveupload/**",
         "**/.tmp.drivedownload/**",

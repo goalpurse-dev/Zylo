@@ -1,0 +1,6206 @@
+{
+  "source": "myth-vs-reality.recorded.json",
+  "timingSource": "real",
+  "stats": {
+    "realWpm": 119,
+    "realTotalMs": 523375,
+    "syntheticTotalMs": 471172,
+    "driftMs": {
+      "median": 597,
+      "max": 2870
+    },
+    "boundaries": "real",
+    "realChunks": 152,
+    "realChunksOver6500": [],
+    "realChunkMsMedian": 3367,
+    "splits": 14,
+    "merges": 1,
+    "needsConcept": 14,
+    "beatsAfter": 129,
+    "stillOutOfBounds": []
+  },
+  "outOfBounds": [
+    {
+      "sequence": 10,
+      "startWord": 79,
+      "endWord": 91,
+      "synthMs": 5941,
+      "realMs": 6920,
+      "realStartMs": 38219
+    },
+    {
+      "sequence": 14,
+      "startWord": 118,
+      "endWord": 127,
+      "synthMs": 5217,
+      "realMs": 6583,
+      "realStartMs": 58421
+    },
+    {
+      "sequence": 17,
+      "startWord": 146,
+      "endWord": 157,
+      "synthMs": 5292,
+      "realMs": 8162,
+      "realStartMs": 75035
+    },
+    {
+      "sequence": 32,
+      "startWord": 267,
+      "endWord": 279,
+      "synthMs": 6163,
+      "realMs": 7140,
+      "realStartMs": 131343
+    },
+    {
+      "sequence": 33,
+      "startWord": 280,
+      "endWord": 292,
+      "synthMs": 5960,
+      "realMs": 6700,
+      "realStartMs": 138483
+    },
+    {
+      "sequence": 34,
+      "startWord": 293,
+      "endWord": 305,
+      "synthMs": 6478,
+      "realMs": 8336,
+      "realStartMs": 145183
+    },
+    {
+      "sequence": 36,
+      "startWord": 317,
+      "endWord": 331,
+      "synthMs": 6456,
+      "realMs": 7396,
+      "realStartMs": 159335
+    },
+    {
+      "sequence": 38,
+      "startWord": 344,
+      "endWord": 358,
+      "synthMs": 6337,
+      "realMs": 7929,
+      "realStartMs": 172861
+    },
+    {
+      "sequence": 41,
+      "startWord": 376,
+      "endWord": 389,
+      "synthMs": 6291,
+      "realMs": 7628,
+      "realStartMs": 189927
+    },
+    {
+      "sequence": 63,
+      "startWord": 562,
+      "endWord": 573,
+      "synthMs": 5907,
+      "realMs": 7012,
+      "realStartMs": 292548
+    },
+    {
+      "sequence": 70,
+      "startWord": 623,
+      "endWord": 635,
+      "synthMs": 6030,
+      "realMs": 7128,
+      "realStartMs": 324579
+    },
+    {
+      "sequence": 73,
+      "startWord": 654,
+      "endWord": 665,
+      "synthMs": 5486,
+      "realMs": 6768,
+      "realStartMs": 339579
+    },
+    {
+      "sequence": 77,
+      "startWord": 697,
+      "endWord": 710,
+      "synthMs": 6344,
+      "realMs": 8638,
+      "realStartMs": 360918
+    },
+    {
+      "sequence": 86,
+      "startWord": 770,
+      "endWord": 784,
+      "synthMs": 6422,
+      "realMs": 6850,
+      "realStartMs": 398963
+    }
+  ],
+  "beats": [
+    {
+      "warnings": [],
+      "sequence": 1,
+      "startWord": 0,
+      "endWord": 10,
+      "narrationText": "You're gripping a shield, screaming down a hillside toward a shieldwall,",
+      "startMs": 0,
+      "endMs": 4818,
+      "durationMs": 4818,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "charging, screaming, gripping shield",
+            "castId": "viewer_viking",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          0,
+          0
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "POV",
+          "framing": "wide charging POV"
+        },
+        "userSummary": "Viewer viking charges downhill screaming toward a shieldwall",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Viewer viking charges downhill screaming toward a shieldwall",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 2,
+      "startWord": 11,
+      "endWord": 19,
+      "narrationText": "and two long curved horns jut off your helmet,",
+      "startMs": 4818,
+      "endMs": 8788,
+      "durationMs": 3970,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": "callback",
+          "role": "plant"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [
+          {
+            "action": "charging, horns catching light",
+            "castId": "viewer_viking",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          1,
+          1
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "close on helmet"
+        },
+        "userSummary": "Two long curved horns jut from the helmet,…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Two long curved horns jut from the helmet, framed close",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 3,
+      "startWord": 20,
+      "endWord": 28,
+      "narrationText": "cutting the air on either side of your head.",
+      "startMs": 8788,
+      "endMs": 11876,
+      "durationMs": 3088,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "grips shield tightly, tense",
+            "castId": "viewer_viking",
+            "presence": "hands",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          2,
+          2
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "low angle, hands and shield"
+        },
+        "userSummary": "The horns cut air, viewer's shield-hand braced below",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "The horns cut air, viewer's shield-hand braced below",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 4,
+      "startWord": 29,
+      "endWord": 36,
+      "narrationText": "The horns catch the firelight. They look terrifying.",
+      "startMs": 11876,
+      "endMs": 16927,
+      "durationMs": 5051,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [
+          {
+            "action": "lit by firelight, fierce",
+            "castId": "viewer_viking",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          3,
+          4
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "firelit close-up"
+        },
+        "userSummary": "Firelight glints off the curved horns, terrifying silhouette",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Firelight glints off the curved horns, terrifying silhouette",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 5,
+      "startWord": 37,
+      "endWord": 42,
+      "narrationText": "They look exactly like every painting,",
+      "startMs": 16927,
+      "endMs": 19922,
+      "durationMs": 2995,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "COMPARISON",
+        "chunkRange": [
+          5,
+          5
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "FLAT_GRAPHIC",
+          "framing": "three-panel row"
+        },
+        "userSummary": "Painting, movie poster and Halloween costume all show…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Painting, movie poster and Halloween costume all show same horned figure",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 6,
+      "startWord": 43,
+      "endWord": 54,
+      "narrationText": "every movie poster, every Halloween costume you've ever seen of a Viking.",
+      "startMs": 19922,
+      "endMs": 26157,
+      "durationMs": 6235,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "COMPARISON",
+        "chunkRange": [
+          6,
+          6
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "FLAT_GRAPHIC",
+          "framing": "flat graphic, close on box"
+        },
+        "userSummary": "A Halloween costume box on a shelf, same…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "A Halloween costume box on a shelf, same horned figure printed",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 7,
+      "startWord": 55,
+      "endWord": 62,
+      "narrationText": "This is the image burned into your head.",
+      "startMs": 26157,
+      "endMs": 29918,
+      "durationMs": 3761,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          7,
+          7
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "iconic silhouette"
+        },
+        "userSummary": "The horned silhouette burned large into a stickman…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "The horned silhouette burned large into a stickman head",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 8,
+      "startWord": 63,
+      "endWord": 70,
+      "narrationText": "A single wrong picture like this can quietly",
+      "startMs": 29918,
+      "endMs": 33889,
+      "durationMs": 3971,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          8,
+          8
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "FLAT_GRAPHIC",
+          "framing": "graphic metaphor"
+        },
+        "userSummary": "A single wrong picture rewrites a whole culture's…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "A single wrong picture rewrites a whole culture's history",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 9,
+      "startWord": 71,
+      "endWord": 78,
+      "narrationText": "rewrite an entire culture's history in our heads.",
+      "startMs": 33889,
+      "endMs": 38219,
+      "durationMs": 4330,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          9,
+          9
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "FLAT_GRAPHIC",
+          "framing": "wide symbolic spread"
+        },
+        "userSummary": "The wrong picture spreads outward, replacing real history…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "The wrong picture spreads outward, replacing real history icons",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 10,
+      "startWord": 79,
+      "endWord": 87,
+      "narrationText": "So did any Viking ever actually strap on horns",
+      "startMs": 38219,
+      "endMs": 42213,
+      "durationMs": 3994,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "stopping, uncertain, questioning",
+            "castId": "viewer_viking",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "REACTION",
+        "chunkRange": [
+          10,
+          10
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "Did Vikings really wear horns?"
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "mid-action pause"
+        },
+        "userSummary": "Viewer viking pauses mid-stride, question mark over head",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "small head move",
+          "environment": "none"
+        },
+        "visualConcept": "Viewer viking pauses mid-stride, question mark over head",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 11,
+      "startWord": 88,
+      "endWord": 91,
+      "narrationText": "before walking into battle?",
+      "startMs": 42213,
+      "endMs": 45139,
+      "durationMs": 2926,
+      "contract": {
+        "needsConcept": true,
+        "conceptFrom": "Viewer viking pauses mid-stride, question mark over head",
+        "chunkRange": [
+          11,
+          11
+        ]
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 12,
+      "startWord": 92,
+      "endWord": 100,
+      "narrationText": "Here's the belief almost everyone carries around without question:",
+      "startMs": 45139,
+      "endMs": 50317,
+      "durationMs": 5178,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [
+          {
+            "action": "marching, horned helmets",
+            "castId": "viking_warrior",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "CROWD",
+        "chunkRange": [
+          12,
+          13
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "crowd wide shot"
+        },
+        "userSummary": "Crowd of viking warriors marching, all wearing horned…",
+        "motionIntent": {
+          "camera": "slow pan",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle sway",
+          "environment": "none"
+        },
+        "visualConcept": "Crowd of viking warriors marching, all wearing horned helmets",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 13,
+      "startWord": 101,
+      "endWord": 107,
+      "narrationText": "Viking raiders wore horned helmets into combat,",
+      "startMs": 50317,
+      "endMs": 54589,
+      "durationMs": 4272,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "charges forward, fierce glare",
+            "castId": "viking_warrior",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "CROWD",
+        "chunkRange": [
+          14,
+          14
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "close on lead warrior"
+        },
+        "userSummary": "Front warrior's horned helmet gleams menacingly in the…",
+        "motionIntent": {
+          "camera": "slow pan",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle sway",
+          "environment": "none"
+        },
+        "visualConcept": "Front warrior's horned helmet gleams menacingly in the charge",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 14,
+      "startWord": 108,
+      "endWord": 117,
+      "narrationText": "the horns curving up from the sides like a bull's.",
+      "startMs": 54589,
+      "endMs": 58421,
+      "durationMs": 3832,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          15,
+          15
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "close detail"
+        },
+        "userSummary": "Close on bull-like horns curving up from helmet…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Close on bull-like horns curving up from helmet sides",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 15,
+      "startWord": 118,
+      "endWord": 120,
+      "narrationText": "It feels obvious.",
+      "startMs": 58421,
+      "endMs": 60360,
+      "durationMs": 1939,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "shrugging, unquestioning",
+            "castId": "viewer_viking",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": null,
+        "treatment": "REACTION",
+        "chunkRange": [
+          16,
+          16
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "reaction shot"
+        },
+        "userSummary": "Viewer_modern shrugs, unquestioning, obvious expression",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "small head move",
+          "environment": "none"
+        },
+        "visualConcept": "Viewer_modern shrugs, unquestioning, obvious expression",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 16,
+      "startWord": 121,
+      "endWord": 127,
+      "narrationText": "It's on flags, beer labels, football helmets.",
+      "startMs": 60360,
+      "endMs": 65004,
+      "durationMs": 4644,
+      "contract": {
+        "needsConcept": true,
+        "conceptFrom": "Viewer_modern shrugs, unquestioning, obvious expression",
+        "chunkRange": [
+          17,
+          17
+        ]
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 17,
+      "startWord": 128,
+      "endWord": 136,
+      "narrationText": "But archaeologists digging across Scandinavia for over a century",
+      "startMs": 65004,
+      "endMs": 69985,
+      "durationMs": 4981,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "kneeling, searching, empty-handed",
+            "castId": "archaeologist",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "ESTABLISHING",
+        "chunkRange": [
+          18,
+          19
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "digsite wide"
+        },
+        "userSummary": "Archaeologist kneels at empty digsite, few helmets found",
+        "motionIntent": {
+          "camera": "slow pan",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Archaeologist kneels at empty digsite, few helmets found",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 18,
+      "startWord": 137,
+      "endWord": 145,
+      "narrationText": "have found remarkably few actual Viking-age helmets at all.",
+      "startMs": 69985,
+      "endMs": 75035,
+      "durationMs": 5050,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "stares at sparse tray",
+            "castId": "archaeologist",
+            "presence": "hands",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          20,
+          21
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "OVERHEAD",
+          "framing": "overhead on empty tray"
+        },
+        "userSummary": "Archaeologist's tray holds only a few scattered iron…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Archaeologist's tray holds only a few scattered iron fragments",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 19,
+      "startWord": 146,
+      "endWord": 153,
+      "narrationText": "Total confirmed helmets from the entire Viking Age,",
+      "startMs": 75035,
+      "endMs": 79633,
+      "durationMs": 4598,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "TIMELINE_BAR",
+        "chunkRange": [
+          22,
+          22
+        ],
+        "textIntent": {
+          "mode": "PROGRAMMATIC",
+          "text": "793–1066 CE: few intact helmets"
+        },
+        "composition": {
+          "camera": "FLAT_GRAPHIC",
+          "framing": "timeline graphic"
+        },
+        "userSummary": "Timeline bar spans 793 to 1066, almost no…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "bar fills",
+          "environment": "none"
+        },
+        "visualConcept": "Timeline bar spans 793 to 1066, almost no helmet icons on it",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 20,
+      "startWord": 154,
+      "endWord": 157,
+      "narrationText": "roughly 793 to 1066,",
+      "startMs": 79633,
+      "endMs": 83197,
+      "durationMs": 3564,
+      "contract": {
+        "needsConcept": true,
+        "conceptFrom": "Timeline bar spans 793 to 1066, almost no helmet icons on it",
+        "chunkRange": [
+          23,
+          23
+        ]
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 21,
+      "startWord": 158,
+      "endWord": 167,
+      "narrationText": "that survive with enough of the skull intact to study?",
+      "startMs": 83197,
+      "endMs": 87644,
+      "durationMs": 4447,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "TIMELINE_BAR",
+        "chunkRange": [
+          24,
+          24
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "793–1066"
+        },
+        "composition": {
+          "camera": "FLAT_GRAPHIC",
+          "framing": "flat graphic timeline"
+        },
+        "userSummary": "Timeline bar highlighted end labeled 1066, still nearly…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "bar fills",
+          "environment": "none"
+        },
+        "visualConcept": "Timeline bar highlighted end labeled 1066, still nearly empty",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 22,
+      "startWord": 168,
+      "endWord": 174,
+      "narrationText": "You can count them on one hand.",
+      "startMs": 87644,
+      "endMs": 89699,
+      "durationMs": 2055,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SCALE",
+        "chunkRange": [
+          25,
+          25
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "hand with icons"
+        },
+        "userSummary": "Five helmet fragments fit on one open hand",
+        "motionIntent": {
+          "camera": "slow pull-back",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Five helmet fragments fit on one open hand",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 23,
+      "startWord": 175,
+      "endWord": 181,
+      "narrationText": "The best-preserved one is the Gjermundbu helmet,",
+      "startMs": 89699,
+      "endMs": 92868,
+      "durationMs": 3169,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "gjermundbu_helmet"
+        ],
+        "subjects": [
+          {
+            "action": "lifting, unearthing helmet",
+            "castId": "archaeologist",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          26,
+          26
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "dig reveal"
+        },
+        "userSummary": "Archaeologist lifts Gjermundbu helmet from a 1943 burial…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Archaeologist lifts Gjermundbu helmet from a 1943 burial mound",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 24,
+      "startWord": 182,
+      "endWord": 191,
+      "narrationText": "dug out of a burial mound in Norway in 1943,",
+      "startMs": 92868,
+      "endMs": 96909,
+      "durationMs": 4041,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "brushes soil, careful hands",
+            "castId": "archaeologist",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          27,
+          27
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "medium, kneeling at mound"
+        },
+        "userSummary": "Archaeologist brushes soil off the helmet in the…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Archaeologist brushes soil off the helmet in the mound",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 25,
+      "startWord": 192,
+      "endWord": 197,
+      "narrationText": "dated to around the year 970.",
+      "startMs": 96909,
+      "endMs": 100101,
+      "durationMs": 3192,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "gjermundbu_helmet"
+        ],
+        "subjects": [],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          28,
+          28
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "c. 970 CE"
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "plinth close-up"
+        },
+        "userSummary": "Helmet on plinth labeled with the year 970",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Helmet on plinth labeled with the year 970",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 26,
+      "startWord": 198,
+      "endWord": 203,
+      "narrationText": "It has a rounded iron cap,",
+      "startMs": 100101,
+      "endMs": 102574,
+      "durationMs": 2473,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "gjermundbu_helmet"
+        ],
+        "subjects": [],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          29,
+          29
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "dome close-up"
+        },
+        "userSummary": "Rounded iron cap of the Gjermundbu helmet, clean…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Rounded iron cap of the Gjermundbu helmet, clean dome",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 27,
+      "startWord": 204,
+      "endWord": 210,
+      "narrationText": "a spectacled guard curving over the eyes",
+      "startMs": 102574,
+      "endMs": 105442,
+      "durationMs": 2868,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          30,
+          30
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "EXTREME_CLOSE_UP",
+          "framing": "guard detail"
+        },
+        "userSummary": "Spectacled guard curves over eyes and nose, no…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Spectacled guard curves over eyes and nose, no horn attachments",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 28,
+      "startWord": 211,
+      "endWord": 219,
+      "narrationText": "and nose, and absolutely nothing where horns would attach.",
+      "startMs": 105442,
+      "endMs": 110086,
+      "durationMs": 4644,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "squints, puzzled expression",
+            "castId": "viewer_viking",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "REACTION",
+        "chunkRange": [
+          31,
+          31
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "close on viewer's face"
+        },
+        "userSummary": "Reaction: viewer viking squints, puzzled at bare helmet…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "small head move",
+          "environment": "none"
+        },
+        "visualConcept": "Reaction: viewer viking squints, puzzled at bare helmet surface",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 29,
+      "startWord": 220,
+      "endWord": 228,
+      "narrationText": "No sockets. No rivet holes shaped for anything curved.",
+      "startMs": 110086,
+      "endMs": 114265,
+      "durationMs": 4179,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "gjermundbu_helmet"
+        ],
+        "subjects": [],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          32,
+          33
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "No sockets"
+        },
+        "composition": {
+          "camera": "EXTREME_CLOSE_UP",
+          "framing": "negation close-up"
+        },
+        "userSummary": "Empty smooth patch where sockets should be, crossed…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Empty smooth patch where sockets should be, crossed out",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 30,
+      "startWord": 229,
+      "endWord": 242,
+      "narrationText": "Just a plain iron dome built to deflect a sword, not to look dramatic.",
+      "startMs": 114265,
+      "endMs": 120325,
+      "durationMs": 6060,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "gjermundbu_helmet"
+        ],
+        "subjects": [
+          {
+            "action": "blocking sword strike",
+            "castId": "viking_warrior",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          34,
+          35
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "combat function shot"
+        },
+        "userSummary": "Plain iron dome deflecting a sword strike, sparks…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Plain iron dome deflecting a sword strike, sparks not drama",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 31,
+      "startWord": 243,
+      "endWord": 246,
+      "narrationText": "Why trust one helmet?",
+      "startMs": 120325,
+      "endMs": 122369,
+      "durationMs": 2044,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "gjermundbu_helmet"
+        ],
+        "subjects": [
+          {
+            "action": "raising eyebrow, doubtful",
+            "castId": "archaeologist",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "REACTION",
+        "chunkRange": [
+          36,
+          36
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "skeptical reaction"
+        },
+        "userSummary": "Archaeologist raises skeptical eyebrow beside single helmet",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "small head move",
+          "environment": "none"
+        },
+        "visualConcept": "Archaeologist raises skeptical eyebrow beside single helmet",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 32,
+      "startWord": 247,
+      "endWord": 250,
+      "narrationText": "Because it isn't alone.",
+      "startMs": 122369,
+      "endMs": 124517,
+      "durationMs": 2148,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "plain_iron_helm_fragment"
+        ],
+        "subjects": [],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          37,
+          37
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "tight on plinth label"
+        },
+        "userSummary": "Museum plinth with a single labeled helmet, not…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Museum plinth with a single labeled helmet, not alone",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 33,
+      "startWord": 251,
+      "endWord": 255,
+      "narrationText": "Fragments from Tjele in Denmark",
+      "startMs": 124517,
+      "endMs": 127129,
+      "durationMs": 2612,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "plain_iron_helm_fragment"
+        ],
+        "subjects": [
+          {
+            "action": "gestures across labeled tray",
+            "castId": "archaeologist",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          38,
+          38
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "wide tray of fragments"
+        },
+        "userSummary": "Tray of fragmentary iron helmet pieces from several…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Tray of fragmentary iron helmet pieces from several dig sites",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 34,
+      "startWord": 256,
+      "endWord": 266,
+      "narrationText": "and a handful of other sites all show the same story:",
+      "startMs": 127129,
+      "endMs": 131343,
+      "durationMs": 4214,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "plain_iron_helm_fragment"
+        ],
+        "subjects": [
+          {
+            "action": "points at labeled trays",
+            "castId": "archaeologist",
+            "presence": "hands",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          39,
+          39
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "tight on labels"
+        },
+        "userSummary": "Labeled museum tags line up behind each fragment…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Labeled museum tags line up behind each fragment tray",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 35,
+      "startWord": 267,
+      "endWord": 275,
+      "narrationText": "plain iron, sometimes mail hanging to protect the neck,",
+      "startMs": 131343,
+      "endMs": 135813,
+      "durationMs": 4470,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "plain_iron_helm_fragment"
+        ],
+        "subjects": [],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          40,
+          40
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "EXTREME_CLOSE_UP",
+          "framing": "macro on mail and nose-guard"
+        },
+        "userSummary": "Close fragment shows mail neck-guard and small nose…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Close fragment shows mail neck-guard and small nose strip",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 36,
+      "startWord": 276,
+      "endWord": 279,
+      "narrationText": "occasionally a nose guard.",
+      "startMs": 135813,
+      "endMs": 138483,
+      "durationMs": 2670,
+      "contract": {
+        "needsConcept": true,
+        "conceptFrom": "Close fragment shows mail neck-guard and small nose strip",
+        "chunkRange": [
+          41,
+          41
+        ]
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 37,
+      "startWord": 280,
+      "endWord": 282,
+      "narrationText": "Historian Roberta Frank,",
+      "startMs": 138483,
+      "endMs": 140423,
+      "durationMs": 1940,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "STAT_CARD",
+        "chunkRange": [
+          42,
+          42
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "Roberta Frank"
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "portrait plus name card"
+        },
+        "userSummary": "Portrait card of historian Roberta Frank beside old…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Portrait card of historian Roberta Frank beside old texts",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 38,
+      "startWord": 283,
+      "endWord": 292,
+      "narrationText": "who spent years tracing this myth through Old Norse literature,",
+      "startMs": 140423,
+      "endMs": 145183,
+      "durationMs": 4760,
+      "contract": {
+        "needsConcept": true,
+        "conceptFrom": "Portrait card of historian Roberta Frank beside old texts",
+        "chunkRange": [
+          43,
+          43
+        ]
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 39,
+      "startWord": 293,
+      "endWord": 296,
+      "narrationText": "found zero contemporary written",
+      "startMs": 145183,
+      "endMs": 148050,
+      "durationMs": 2867,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          44,
+          44
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "FLAT_GRAPHIC",
+          "framing": "two crossed-out sources"
+        },
+        "userSummary": "Saga page and stone carving both crossed out,…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Saga page and stone carving both crossed out, no horns found",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 40,
+      "startWord": 297,
+      "endWord": 305,
+      "narrationText": "descriptions of horned battle helmets either. Not one saga.",
+      "startMs": 148050,
+      "endMs": 153519,
+      "durationMs": 5469,
+      "contract": {
+        "needsConcept": true,
+        "conceptFrom": "Saga page and stone carving both crossed out, no horns found",
+        "chunkRange": [
+          45,
+          46
+        ]
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 41,
+      "startWord": 306,
+      "endWord": 316,
+      "narrationText": "Not one carving from the era mentions warriors fighting in horns.",
+      "startMs": 153519,
+      "endMs": 159335,
+      "durationMs": 5816,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          47,
+          47
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "FLAT_GRAPHIC",
+          "framing": "wide stone close"
+        },
+        "userSummary": "A carved rune stone stands blank, no horned…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "A carved rune stone stands blank, no horned warriors etched",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 42,
+      "startWord": 317,
+      "endWord": 326,
+      "narrationText": "So where do actual horned helmets in museums come from,",
+      "startMs": 159335,
+      "endMs": 163561,
+      "durationMs": 4226,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "REACTION",
+        "chunkRange": [
+          48,
+          48
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "plinth plus question mark"
+        },
+        "userSummary": "Museum horned helmet on plinth with a floating…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "small head move",
+          "environment": "none"
+        },
+        "visualConcept": "Museum horned helmet on plinth with a floating question mark",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 43,
+      "startWord": 327,
+      "endWord": 331,
+      "narrationText": "if not the Viking Age?",
+      "startMs": 163561,
+      "endMs": 166731,
+      "durationMs": 3170,
+      "contract": {
+        "needsConcept": true,
+        "conceptFrom": "Museum horned helmet on plinth with a floating question mark",
+        "chunkRange": [
+          49,
+          49
+        ]
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 44,
+      "startWord": 332,
+      "endWord": 343,
+      "narrationText": "Rewind about two thousand years before the first Viking ship ever launched.",
+      "startMs": 166731,
+      "endMs": 172861,
+      "durationMs": 6130,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "TIMELINE_BAR",
+        "chunkRange": [
+          50,
+          51
+        ],
+        "textIntent": {
+          "mode": "PROGRAMMATIC",
+          "text": "rewind ~2000 years"
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "timeline rewinding left"
+        },
+        "userSummary": "Timeline bar rewinding past a tiny Viking ship…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "bar fills",
+          "environment": "none"
+        },
+        "visualConcept": "Timeline bar rewinding past a tiny Viking ship icon",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 45,
+      "startWord": 344,
+      "endWord": 345,
+      "narrationText": "In 1942,",
+      "startMs": 172861,
+      "endMs": 174765,
+      "durationMs": 1904,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "lifts bronze helmet from mud",
+            "castId": "archaeologist",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          52,
+          52
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "1942, Veksø"
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "bog dig wide shot"
+        },
+        "userSummary": "Workers in a bog pulling up two bronze…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Workers in a bog pulling up two bronze helmets, 1942",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 46,
+      "startWord": 346,
+      "endWord": 358,
+      "narrationText": "workers draining a bog near Veksø in Denmark pulled up two bronze helmets,",
+      "startMs": 174765,
+      "endMs": 180790,
+      "durationMs": 6025,
+      "contract": {
+        "needsConcept": true,
+        "conceptFrom": "Workers in a bog pulling up two bronze helmets, 1942",
+        "chunkRange": [
+          53,
+          53
+        ]
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 47,
+      "startWord": 359,
+      "endWord": 370,
+      "narrationText": "each fitted with long, gently curving horns tipped with little round discs.",
+      "startMs": 180790,
+      "endMs": 187269,
+      "durationMs": 6479,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": "callback",
+          "role": "plant"
+        },
+        "propIds": [
+          "vexso_veksø_helmet"
+        ],
+        "subjects": [],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          54,
+          54
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "EXTREME_CLOSE_UP",
+          "framing": "macro on horn tips"
+        },
+        "userSummary": "Extreme close-up of two curving bronze horns with…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Extreme close-up of two curving bronze horns with round tip discs",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 48,
+      "startWord": 371,
+      "endWord": 375,
+      "narrationText": "They're called the Veksø helmets,",
+      "startMs": 187269,
+      "endMs": 189927,
+      "durationMs": 2658,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "vexso_veksø_helmet"
+        ],
+        "subjects": [],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          55,
+          55
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "pair on plinth"
+        },
+        "userSummary": "Both Veksø helmets side by side on museum…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Both Veksø helmets side by side on museum plinth",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 49,
+      "startWord": 376,
+      "endWord": 385,
+      "narrationText": "and they've been dated to roughly 900 to 1100 BCE,",
+      "startMs": 189927,
+      "endMs": 195094,
+      "durationMs": 5167,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "TIMELINE_BAR",
+        "chunkRange": [
+          56,
+          56
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "900–1100 BCE"
+        },
+        "composition": {
+          "camera": "FLAT_GRAPHIC",
+          "framing": "labeled timeline node"
+        },
+        "userSummary": "Timeline bar labeled Nordic Bronze Age 900 to…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "bar fills",
+          "environment": "none"
+        },
+        "visualConcept": "Timeline bar labeled Nordic Bronze Age 900 to 1100 BCE",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 50,
+      "startWord": 386,
+      "endWord": 389,
+      "narrationText": "the Nordic Bronze Age.",
+      "startMs": 195094,
+      "endMs": 197555,
+      "durationMs": 2461,
+      "contract": {
+        "needsConcept": true,
+        "conceptFrom": "Timeline bar labeled Nordic Bronze Age 900 to 1100 BCE",
+        "chunkRange": [
+          57,
+          57
+        ]
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 51,
+      "startWord": 390,
+      "endWord": 399,
+      "narrationText": "These weren't armor. The bronze is thin, decorative, almost delicate.",
+      "startMs": 197555,
+      "endMs": 203824,
+      "durationMs": 6269,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "vexso_veksø_helmet"
+        ],
+        "subjects": [],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          58,
+          60
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "EXTREME_CLOSE_UP",
+          "framing": "macro on thin bronze"
+        },
+        "userSummary": "Thin delicate bronze sheet flexes, clearly not armor",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Thin delicate bronze sheet flexes, clearly not armor",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 52,
+      "startWord": 400,
+      "endWord": 413,
+      "narrationText": "They were likely worn by a priest or a chieftain in a religious ceremony,",
+      "startMs": 203824,
+      "endMs": 209165,
+      "durationMs": 5341,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "vexso_veksø_helmet"
+        ],
+        "subjects": [
+          {
+            "action": "raises arms in ritual",
+            "castId": "bronze_age_priest",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          61,
+          61
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "ceremony wide shot"
+        },
+        "userSummary": "Bronze-age priest wears horned helmet at a ceremony…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Bronze-age priest wears horned helmet at a ceremony altar",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 53,
+      "startWord": 414,
+      "endWord": 417,
+      "narrationText": "maybe alongside sun-worship rituals,",
+      "startMs": 209165,
+      "endMs": 212543,
+      "durationMs": 3378,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "vexso_veksø_helmet"
+        ],
+        "subjects": [
+          {
+            "action": "faces sun symbol",
+            "castId": "bronze_age_priest",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          62,
+          62
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "priest facing sun icon"
+        },
+        "userSummary": "Priest faces a painted sun symbol during ritual",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Priest faces a painted sun symbol during ritual",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 54,
+      "startWord": 418,
+      "endWord": 424,
+      "narrationText": "definitely not swung into a shield wall.",
+      "startMs": 212543,
+      "endMs": 215910,
+      "durationMs": 3367,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "vexso_veksø_helmet"
+        ],
+        "subjects": [],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          63,
+          63
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "crossed-out battle scene"
+        },
+        "userSummary": "Same horned helmet crossed out over a shield…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Same horned helmet crossed out over a shield wall battle",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 55,
+      "startWord": 425,
+      "endWord": 433,
+      "narrationText": "That's over eighteen hundred years separating these horns from",
+      "startMs": 215910,
+      "endMs": 220090,
+      "durationMs": 4180,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "TIMELINE_BAR",
+        "chunkRange": [
+          64,
+          65
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "1800+ years"
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "full span timeline"
+        },
+        "userSummary": "Long timeline bar spans Veksø horns to Lindisfarne…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "bar fills",
+          "environment": "none"
+        },
+        "visualConcept": "Long timeline bar spans Veksø horns to Lindisfarne raid 793",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 56,
+      "startWord": 434,
+      "endWord": 442,
+      "narrationText": "the first recorded Viking raid on Lindisfarne in 793.",
+      "startMs": 220090,
+      "endMs": 225639,
+      "durationMs": 5549,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "TIMELINE_BAR",
+        "chunkRange": [
+          66,
+          66
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "793 CE"
+        },
+        "composition": {
+          "camera": "FLAT_GRAPHIC",
+          "framing": "close on end node"
+        },
+        "userSummary": "Timeline bar stops sharp at a labeled Lindisfarne…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "bar fills",
+          "environment": "none"
+        },
+        "visualConcept": "Timeline bar stops sharp at a labeled Lindisfarne 793 marker",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 57,
+      "startWord": 443,
+      "endWord": 449,
+      "narrationText": "Would you mistake your great-great-great-grandparent's wedding china",
+      "startMs": 225639,
+      "endMs": 230005,
+      "durationMs": 4366,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "holds delicate china nervously",
+            "castId": "viewer_viking",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": null,
+        "treatment": "COMPARISON",
+        "chunkRange": [
+          67,
+          68
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "SPLIT",
+          "framing": "mirrored split panels"
+        },
+        "userSummary": "Split panel: viewer holds wedding china beside a…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Split panel: viewer holds wedding china beside a bar fight",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 58,
+      "startWord": 450,
+      "endWord": 457,
+      "narrationText": "for something you use in a bar fight?",
+      "startMs": 230005,
+      "endMs": 233325,
+      "durationMs": 3320,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "swings china, shocked face",
+            "castId": "viewer_viking",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "COMPARISON",
+        "chunkRange": [
+          69,
+          69
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "bar fight side"
+        },
+        "userSummary": "Viewer swings wedding china wildly mid brawl, stunned",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Viewer swings wedding china wildly mid brawl, stunned",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 59,
+      "startWord": 458,
+      "endWord": 464,
+      "narrationText": "That's roughly the gap we're talking about.",
+      "startMs": 233325,
+      "endMs": 236413,
+      "durationMs": 3088,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "COMPARISON",
+        "chunkRange": [
+          70,
+          70
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "same gap"
+        },
+        "composition": {
+          "camera": "SPLIT",
+          "framing": "mirrored split, labeled"
+        },
+        "userSummary": "Same split panel now labeled with the matching…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Same split panel now labeled with the matching time gap",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 60,
+      "startWord": 465,
+      "endWord": 473,
+      "narrationText": "But 19th-century antiquarians didn't always draw that line carefully.",
+      "startMs": 236413,
+      "endMs": 242253,
+      "durationMs": 5840,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "sketches horns onto drawing",
+            "castId": "19thc_theatre_designer",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          71,
+          72
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "desk with sketch overlay"
+        },
+        "userSummary": "19th-century antiquarian sketches horned helmet onto Viking drawing",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "19th-century antiquarian sketches horned helmet onto Viking drawing",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 61,
+      "startWord": 474,
+      "endWord": 478,
+      "narrationText": "Early collectors and popular illustrators,",
+      "startMs": 242253,
+      "endMs": 245748,
+      "durationMs": 3495,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "squints, sorts artifacts",
+            "castId": "archaeologist",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          73,
+          73
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "waist-up, cluttered table"
+        },
+        "userSummary": "Antiquarian squints at jumbled pile of old artifacts",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Antiquarian squints at jumbled pile of old artifacts",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 62,
+      "startWord": 479,
+      "endWord": 489,
+      "narrationText": "digging through old hoards without modern dating tools, lumped anything old",
+      "startMs": 245748,
+      "endMs": 251959,
+      "durationMs": 6211,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          74,
+          75
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "ANCIENT NORSE WARRIOR"
+        },
+        "composition": {
+          "camera": "OVERHEAD",
+          "framing": "top-down bucket shot"
+        },
+        "userSummary": "Objects of all ages swept into one bucket…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Objects of all ages swept into one bucket labeled ancient Norse warrior",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 63,
+      "startWord": 490,
+      "endWord": 499,
+      "narrationText": "and Nordic into one romantic bucket labeled ancient Norse warrior.",
+      "startMs": 251959,
+      "endMs": 258112,
+      "durationMs": 6153,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          76,
+          76
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "tight on bucket label"
+        },
+        "userSummary": "Bucket label reads ancient Norse warrior over mixed…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Bucket label reads ancient Norse warrior over mixed relics",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 64,
+      "startWord": 500,
+      "endWord": 507,
+      "narrationText": "A ceremonial priest's headdress from the Bronze Age",
+      "startMs": 258112,
+      "endMs": 262001,
+      "durationMs": 3889,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "stands, ceremonial pose",
+            "castId": "bronze_age_priest",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          77,
+          77
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "centered portrait"
+        },
+        "userSummary": "Bronze Age priest in ceremonial horned headdress, still…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Bronze Age priest in ceremonial horned headdress, still and solemn",
+        "settingVariant": "ritual"
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 65,
+      "startWord": 508,
+      "endWord": 514,
+      "narrationText": "and a Viking raider a thousand years",
+      "startMs": 262001,
+      "endMs": 265183,
+      "durationMs": 3182,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "faded into blend",
+            "castId": "bronze_age_priest",
+            "presence": "tiny",
+            "expression": ""
+          },
+          {
+            "action": "faded into blend",
+            "castId": "viking_warrior",
+            "presence": "tiny",
+            "expression": ""
+          }
+        ],
+        "settingId": null,
+        "treatment": "COMPARISON",
+        "chunkRange": [
+          78,
+          78
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "SPLIT",
+          "framing": "two panels colliding"
+        },
+        "userSummary": "Split image: priest and Viking raider merge into…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Split image: priest and Viking raider merge into one blurred silhouette",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 66,
+      "startWord": 515,
+      "endWord": 522,
+      "narrationText": "later got flattened into the same imagined figure.",
+      "startMs": 265183,
+      "endMs": 269815,
+      "durationMs": 4632,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          79,
+          80
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "single blurred figure"
+        },
+        "userSummary": "One flattened silhouette stands alone, priest and raider…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "One flattened silhouette stands alone, priest and raider erased",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 67,
+      "startWord": 523,
+      "endWord": 531,
+      "narrationText": "That mistake didn't stay buried in a museum basement.",
+      "startMs": 269815,
+      "endMs": 273983,
+      "durationMs": 4168,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          81,
+          81
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "low, doorway silhouette"
+        },
+        "userSummary": "Dusty museum basement door swings open in shadow",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Dusty museum basement door swings open in shadow",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 68,
+      "startWord": 532,
+      "endWord": 537,
+      "narrationText": "It walked straight onto a stage.",
+      "startMs": 273983,
+      "endMs": 277350,
+      "durationMs": 3367,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          82,
+          82
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "curtain reveal, backlit"
+        },
+        "userSummary": "Same shadowy figure strides through a stage curtain…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Same shadowy figure strides through a stage curtain onto spotlight",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 69,
+      "startWord": 538,
+      "endWord": 544,
+      "narrationText": "In 1876, composer Richard Wagner's opera cycle",
+      "startMs": 277350,
+      "endMs": 281774,
+      "durationMs": 4424,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "ESTABLISHING",
+        "chunkRange": [
+          83,
+          83
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "Bayreuth, 1876"
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "exterior theatre facade"
+        },
+        "userSummary": "Marquee reads Bayreuth 1876, opera house facade at…",
+        "motionIntent": {
+          "camera": "slow pan",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Marquee reads Bayreuth 1876, opera house facade at night",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 70,
+      "startWord": 545,
+      "endWord": 552,
+      "narrationText": "Der Ring des Nibelungen premiered in Bayreuth, Germany.",
+      "startMs": 281774,
+      "endMs": 287741,
+      "durationMs": 5967,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "ESTABLISHING",
+        "chunkRange": [
+          84,
+          85
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "entrance and poster"
+        },
+        "userSummary": "Opera house doors open, premiere poster names Der…",
+        "motionIntent": {
+          "camera": "slow pan",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Opera house doors open, premiere poster names Der Ring des Nibelungen",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 71,
+      "startWord": 553,
+      "endWord": 561,
+      "narrationText": "Costume designer Carl Emil Doepler dressed the Norse gods",
+      "startMs": 287741,
+      "endMs": 292548,
+      "durationMs": 4807,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "sketches, focused",
+            "castId": "19thc_theatre_designer",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          86,
+          86
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "drafting table close"
+        },
+        "userSummary": "Costume designer sketches horned helmet onto god figure",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Costume designer sketches horned helmet onto god figure",
+        "settingVariant": "backstage costume table"
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 72,
+      "startWord": 562,
+      "endWord": 570,
+      "narrationText": "and warriors in flowing furs, winged helmets, and yes,",
+      "startMs": 292548,
+      "endMs": 297087,
+      "durationMs": 4539,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          87,
+          88
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "costume rack lineup"
+        },
+        "userSummary": "Costume rack displays flowing furs, winged helmet, curved…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Costume rack displays flowing furs, winged helmet, curved horns",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 73,
+      "startWord": 571,
+      "endWord": 573,
+      "narrationText": "dramatic curved horns.",
+      "startMs": 297087,
+      "endMs": 299560,
+      "durationMs": 2473,
+      "contract": {
+        "needsConcept": true,
+        "conceptFrom": "Costume rack displays flowing furs, winged helmet, curved horns",
+        "chunkRange": [
+          89,
+          89
+        ]
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 74,
+      "startWord": 574,
+      "endWord": 582,
+      "narrationText": "Wagner wanted mythic, larger-than-life figures towering over an audience",
+      "startMs": 299560,
+      "endMs": 304819,
+      "durationMs": 5259,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "poses, arms wide",
+            "castId": "viking_warrior",
+            "presence": "tiny",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "SCALE",
+        "chunkRange": [
+          90,
+          91
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "stage vs distant seats"
+        },
+        "userSummary": "Tiny actor onstage looms huge to audience in…",
+        "motionIntent": {
+          "camera": "slow pull-back",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Tiny actor onstage looms huge to audience in back row",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 75,
+      "startWord": 583,
+      "endWord": 589,
+      "narrationText": "from the back row of a theater.",
+      "startMs": 304819,
+      "endMs": 307513,
+      "durationMs": 2694,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "stares awestruck, tiny",
+            "castId": "viewer_viking",
+            "presence": "back",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "SCALE",
+        "chunkRange": [
+          92,
+          92
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "back row silhouettes"
+        },
+        "userSummary": "Audience silhouettes fill a shadowed back row, awestruck",
+        "motionIntent": {
+          "camera": "slow pull-back",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Audience silhouettes fill a shadowed back row, awestruck",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 76,
+      "startWord": 590,
+      "endWord": 596,
+      "narrationText": "Historical accuracy wasn't the assignment. Spectacle was.",
+      "startMs": 307513,
+      "endMs": 312783,
+      "durationMs": 5270,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": true,
+          "reason": "tiny 1.5s beat"
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "shrugs, stamps paper",
+            "castId": "19thc_theatre_designer",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "REACTION",
+        "chunkRange": [
+          93,
+          94
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "Spectacle."
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "hands and stamp"
+        },
+        "userSummary": "Designer shrugs at accuracy checklist, stamps SPECTACLE instead",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "small head move",
+          "environment": "none"
+        },
+        "visualConcept": "Designer shrugs at accuracy checklist, stamps SPECTACLE instead",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 77,
+      "startWord": 597,
+      "endWord": 603,
+      "narrationText": "Why did that image spread so fast?",
+      "startMs": 312783,
+      "endMs": 315674,
+      "durationMs": 2891,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          95,
+          95
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "Why did it spread?"
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "silhouette with graphic mark"
+        },
+        "userSummary": "Question mark hovers over spreading horned silhouette",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Question mark hovers over spreading horned silhouette",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 78,
+      "startWord": 604,
+      "endWord": 610,
+      "narrationText": "Because it landed inside the Romantic movement,",
+      "startMs": 315674,
+      "endMs": 318786,
+      "durationMs": 3112,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "posed on multiple canvases",
+            "castId": "viking_warrior",
+            "presence": "tiny",
+            "expression": ""
+          }
+        ],
+        "settingId": null,
+        "treatment": "CROWD",
+        "chunkRange": [
+          96,
+          96
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "gallery of easels"
+        },
+        "userSummary": "Romantic-era painters across Europe canvas noble untamed Norse…",
+        "motionIntent": {
+          "camera": "slow pan",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle sway",
+          "environment": "none"
+        },
+        "visualConcept": "Romantic-era painters across Europe canvas noble untamed Norse myth scenes",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 79,
+      "startWord": 611,
+      "endWord": 622,
+      "narrationText": "when artists across Europe were painting Norse myth as noble and untamed.",
+      "startMs": 318786,
+      "endMs": 324579,
+      "durationMs": 5793,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          97,
+          97
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "framed canvas on easel"
+        },
+        "userSummary": "Canvas on easel shows noble untamed Norse warrior…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Canvas on easel shows noble untamed Norse warrior scene",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 80,
+      "startWord": 623,
+      "endWord": 626,
+      "narrationText": "Swedish painter Gustav Malmstrom",
+      "startMs": 324579,
+      "endMs": 327168,
+      "durationMs": 2589,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "sketching, era-shifted",
+            "castId": "19thc_theatre_designer",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": null,
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          98,
+          98
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "easel close, sketching hand"
+        },
+        "userSummary": "Painter Malmstrom sketches horned figure decades before Wagner",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Painter Malmstrom sketches horned figure decades before Wagner",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 81,
+      "startWord": 627,
+      "endWord": 635,
+      "narrationText": "and others had already sketched horned figures decades earlier,",
+      "startMs": 327168,
+      "endMs": 331707,
+      "durationMs": 4539,
+      "contract": {
+        "needsConcept": true,
+        "conceptFrom": "Painter Malmstrom sketches horned figure decades before Wagner",
+        "chunkRange": [
+          99,
+          99
+        ]
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 82,
+      "startWord": 636,
+      "endWord": 642,
+      "narrationText": "but Wagner's production put the look in",
+      "startMs": 331707,
+      "endMs": 334087,
+      "durationMs": 2380,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [
+          {
+            "action": "performs onstage",
+            "castId": "viking_warrior",
+            "presence": "tiny",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "CROWD",
+        "chunkRange": [
+          100,
+          100
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "stage from behind full seats"
+        },
+        "userSummary": "Packed theatre audience watches horned costume onstage, night…",
+        "motionIntent": {
+          "camera": "slow pan",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle sway",
+          "environment": "none"
+        },
+        "visualConcept": "Packed theatre audience watches horned costume onstage, night after night",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 83,
+      "startWord": 643,
+      "endWord": 653,
+      "narrationText": "front of thousands of paying theatergoers at once, night after night.",
+      "startMs": 334087,
+      "endMs": 339579,
+      "durationMs": 5492,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "waits in line",
+            "castId": "viking_warrior",
+            "presence": "tiny",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "CROWD",
+        "chunkRange": [
+          101,
+          102
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "queue outside theatre"
+        },
+        "userSummary": "Ticket booth line stretches around the block, night…",
+        "motionIntent": {
+          "camera": "slow pan",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle sway",
+          "environment": "none"
+        },
+        "visualConcept": "Ticket booth line stretches around the block, night marquee lit",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 84,
+      "startWord": 654,
+      "endWord": 660,
+      "narrationText": "A single stage costume became the visual",
+      "startMs": 339579,
+      "endMs": 342783,
+      "durationMs": 3204,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "ICON_ROW",
+        "chunkRange": [
+          103,
+          103
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "FLAT_GRAPHIC",
+          "framing": "repeated small figures"
+        },
+        "userSummary": "Row of illustrators each copying the same stage…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "icons settle",
+          "environment": "none"
+        },
+        "visualConcept": "Row of illustrators each copying the same stage costume template",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 85,
+      "startWord": 661,
+      "endWord": 665,
+      "narrationText": "template every illustrator copied afterward,",
+      "startMs": 342783,
+      "endMs": 346347,
+      "durationMs": 3564,
+      "contract": {
+        "needsConcept": true,
+        "conceptFrom": "Row of illustrators each copying the same stage costume template",
+        "chunkRange": [
+          104,
+          104
+        ]
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 86,
+      "startWord": 666,
+      "endWord": 675,
+      "narrationText": "because it was already proven to work on an audience.",
+      "startMs": 346347,
+      "endMs": 350051,
+      "durationMs": 3704,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          105,
+          105
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "Proven to work"
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "stamp on paper"
+        },
+        "userSummary": "Stamp reads PROVEN TO WORK across the costume…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Stamp reads PROVEN TO WORK across the costume sketch",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 87,
+      "startWord": 676,
+      "endWord": 685,
+      "narrationText": "From there it never stopped moving. By the early 1900s,",
+      "startMs": 350051,
+      "endMs": 355275,
+      "durationMs": 5224,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          106,
+          107
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "rolling motif on line"
+        },
+        "userSummary": "Horned silhouette rolls forward along a timeline like…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Horned silhouette rolls forward along a timeline like a wheel",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 88,
+      "startWord": 686,
+      "endWord": 696,
+      "narrationText": "horned helmets showed up on tourist postcards sold in Norway itself.",
+      "startMs": 355275,
+      "endMs": 360918,
+      "durationMs": 5643,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          108,
+          108
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "tight on postcard rack"
+        },
+        "userSummary": "Postcard rack in Norway spins, horned helmets on…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Postcard rack in Norway spins, horned helmets on every card",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 89,
+      "startWord": 697,
+      "endWord": 705,
+      "narrationText": "In 1939, cartoonist Alex Raymond drew the horned warrior",
+      "startMs": 360918,
+      "endMs": 366699,
+      "durationMs": 5781,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": "callback",
+          "role": "payoff"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "CALLBACK",
+        "chunkRange": [
+          109,
+          110
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "1939"
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "comic-panel framing"
+        },
+        "userSummary": "Comic panel shows Flash Gordon warrior wearing dramatic…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "plant",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Comic panel shows Flash Gordon warrior wearing dramatic curved horns",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 90,
+      "startWord": 706,
+      "endWord": 710,
+      "narrationText": "in his Flash Gordon comics.",
+      "startMs": 366699,
+      "endMs": 369556,
+      "durationMs": 2857,
+      "contract": {
+        "needsConcept": true,
+        "conceptFrom": "Comic panel shows Flash Gordon warrior wearing dramatic curved horns",
+        "chunkRange": [
+          111,
+          111
+        ]
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 91,
+      "startWord": 711,
+      "endWord": 718,
+      "narrationText": "In 1948, the Minnesota Vikings didn't exist yet,",
+      "startMs": 369556,
+      "endMs": 374037,
+      "durationMs": 4481,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "TIMELINE_BAR",
+        "chunkRange": [
+          112,
+          112
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "1948"
+        },
+        "composition": {
+          "camera": "FLAT_GRAPHIC",
+          "framing": "wide graphic"
+        },
+        "userSummary": "1948 calendar page, no Minnesota Vikings team yet",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "bar fills",
+          "environment": "none"
+        },
+        "visualConcept": "1948 calendar page, no Minnesota Vikings team yet",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 92,
+      "startWord": 719,
+      "endWord": 732,
+      "narrationText": "but when the NFL team formed in 1961, they built their whole identity around",
+      "startMs": 374037,
+      "endMs": 380295,
+      "durationMs": 6258,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          113,
+          114
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "1961"
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "tight on jersey"
+        },
+        "userSummary": "1961 NFL team forms, horned logo stamped onto…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "1961 NFL team forms, horned logo stamped onto jersey",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 93,
+      "startWord": 733,
+      "endWord": 736,
+      "narrationText": "that same horned image.",
+      "startMs": 380295,
+      "endMs": 383012,
+      "durationMs": 2717,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          115,
+          115
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "logo close-up"
+        },
+        "userSummary": "Minnesota Vikings helmet with theatrical horns front and…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Minnesota Vikings helmet with theatrical horns front and center",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 94,
+      "startWord": 737,
+      "endWord": 744,
+      "narrationText": "Have you ever questioned why a football team",
+      "startMs": 383012,
+      "endMs": 385450,
+      "durationMs": 2438,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "puzzled, staring, questioning",
+            "castId": "viewer_viking",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "REACTION",
+        "chunkRange": [
+          116,
+          116
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "viewer reacting"
+        },
+        "userSummary": "Viewer stares at TV, question mark over football…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "small head move",
+          "environment": "none"
+        },
+        "visualConcept": "Viewer stares at TV, question mark over football helmet",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 95,
+      "startWord": 745,
+      "endWord": 752,
+      "narrationText": "from Minnesota wears Bronze Age Danish ceremonial gear?",
+      "startMs": 385450,
+      "endMs": 390395,
+      "durationMs": 4945,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "COMPARISON",
+        "chunkRange": [
+          117,
+          117
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "map split"
+        },
+        "userSummary": "Split image: Minnesota map beside Bronze Age Danish…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Split image: Minnesota map beside Bronze Age Danish bog",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 96,
+      "startWord": 753,
+      "endWord": 756,
+      "narrationText": "Most people never do.",
+      "startMs": 390395,
+      "endMs": 392287,
+      "durationMs": 1892,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "CROWD",
+        "chunkRange": [
+          118,
+          118
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "receding crowd"
+        },
+        "userSummary": "Crowd of tiny figures shrugging, none noticing the…",
+        "motionIntent": {
+          "camera": "slow pan",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle sway",
+          "environment": "none"
+        },
+        "visualConcept": "Crowd of tiny figures shrugging, none noticing the gap",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 97,
+      "startWord": 757,
+      "endWord": 765,
+      "narrationText": "But can we really say never, with total certainty?",
+      "startMs": 392287,
+      "endMs": 396571,
+      "durationMs": 4284,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          119,
+          120
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "NEVER?"
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "cracked text graphic"
+        },
+        "userSummary": "Giant question mark hovers over word NEVER, cracked",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Giant question mark hovers over word NEVER, cracked",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 98,
+      "startWord": 766,
+      "endWord": 769,
+      "narrationText": "Here's the honest complication.",
+      "startMs": 396571,
+      "endMs": 398963,
+      "durationMs": 2392,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "leans in, cautions",
+            "castId": "archaeologist",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "REACTION",
+        "chunkRange": [
+          121,
+          121
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "direct address"
+        },
+        "userSummary": "Archaeologist leans in, raising a cautioning hand",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "small head move",
+          "environment": "none"
+        },
+        "visualConcept": "Archaeologist leans in, raising a cautioning hand",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 99,
+      "startWord": 770,
+      "endWord": 777,
+      "narrationText": "Most Viking-age helmets we'd expect to find were",
+      "startMs": 398963,
+      "endMs": 402156,
+      "durationMs": 3193,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "museum_plinth_case"
+        ],
+        "subjects": [],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          122,
+          122
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "empty plinth"
+        },
+        "userSummary": "Empty museum plinth where an iron helmet should…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Empty museum plinth where an iron helmet should sit",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 100,
+      "startWord": 778,
+      "endWord": 784,
+      "narrationText": "probably never made of iron at all.",
+      "startMs": 402156,
+      "endMs": 405813,
+      "durationMs": 3657,
+      "contract": {
+        "needsConcept": true,
+        "conceptFrom": "Empty museum plinth where an iron helmet should sit",
+        "chunkRange": [
+          123,
+          123
+        ]
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 101,
+      "startWord": 785,
+      "endWord": 788,
+      "narrationText": "Leather, boiled and hardened,",
+      "startMs": 405813,
+      "endMs": 408460,
+      "durationMs": 2647,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          124,
+          124
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "possible, no evidence"
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "material sample"
+        },
+        "userSummary": "Sheet of boiled leather laid flat, labeled speculative",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Sheet of boiled leather laid flat, labeled speculative",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 102,
+      "startWord": 789,
+      "endWord": 799,
+      "narrationText": "wood, and antler don't survive well underground for a thousand years,",
+      "startMs": 408460,
+      "endMs": 414160,
+      "durationMs": 5700,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          125,
+          125
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "cross-section soil"
+        },
+        "userSummary": "Wood and antler pieces dissolving into dashed outlines…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Wood and antler pieces dissolving into dashed outlines underground",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 103,
+      "startWord": 800,
+      "endWord": 804,
+      "narrationText": "especially in acidic Scandinavian soil.",
+      "startMs": 414160,
+      "endMs": 417968,
+      "durationMs": 3808,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          126,
+          126
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "OVERHEAD",
+          "framing": "soil cutaway"
+        },
+        "userSummary": "Acidic soil cross-section eating away at buried organic…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Acidic soil cross-section eating away at buried organic shapes",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 104,
+      "startWord": 805,
+      "endWord": 818,
+      "narrationText": "If a helmet had small horns made from antler lashed on with leather cord,",
+      "startMs": 417968,
+      "endMs": 423750,
+      "durationMs": 5782,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "plain_iron_helm_fragment"
+        ],
+        "subjects": [
+          {
+            "action": "sketches, explains gesture",
+            "castId": "archaeologist",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          127,
+          128
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "illustrative sketch"
+        },
+        "userSummary": "Archaeologist sketches small antler horns lashed with leather…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Archaeologist sketches small antler horns lashed with leather cord",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 105,
+      "startWord": 819,
+      "endWord": 830,
+      "narrationText": "that cord and antler could rot into nothing within a few centuries,",
+      "startMs": 423750,
+      "endMs": 428418,
+      "durationMs": 4668,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          129,
+          129
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "fading dashed sketch"
+        },
+        "userSummary": "Dashed antler-horn outline fading to nothing over centuries",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Dashed antler-horn outline fading to nothing over centuries",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 106,
+      "startWord": 831,
+      "endWord": 840,
+      "narrationText": "leaving no rivet holes, no discoloration, no trace at all.",
+      "startMs": 428418,
+      "endMs": 434084,
+      "durationMs": 5666,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "plain_iron_helm_fragment"
+        ],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          130,
+          131
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "no trace"
+        },
+        "composition": {
+          "camera": "EXTREME_CLOSE_UP",
+          "framing": "blank surface"
+        },
+        "userSummary": "Blank helmet fragment, zero rivet holes, zero discoloration…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Blank helmet fragment, zero rivet holes, zero discoloration marked",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 107,
+      "startWord": 841,
+      "endWord": 851,
+      "narrationText": "So when archaeologists say no evidence, they mean no surviving evidence.",
+      "startMs": 434084,
+      "endMs": 440504,
+      "durationMs": 6420,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "holds sign, clarifies",
+            "castId": "archaeologist",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "REACTION",
+        "chunkRange": [
+          132,
+          133
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "no surviving evidence"
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "direct address"
+        },
+        "userSummary": "Archaeologist holds up sign reading NO SURVIVING EVIDENCE",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "small head move",
+          "environment": "none"
+        },
+        "visualConcept": "Archaeologist holds up sign reading NO SURVIVING EVIDENCE",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 108,
+      "startWord": 852,
+      "endWord": 857,
+      "narrationText": "Absence isn't automatically proof of absence.",
+      "startMs": 440504,
+      "endMs": 444695,
+      "durationMs": 4191,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          134,
+          134
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "absence ≠ proof"
+        },
+        "composition": {
+          "camera": "FLAT_GRAPHIC",
+          "framing": "equation graphic"
+        },
+        "userSummary": "Crossed-out equation: absence sign does not equal proof…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Crossed-out equation: absence sign does not equal proof sign",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 109,
+      "startWord": 858,
+      "endWord": 868,
+      "narrationText": "It just means if it happened, it happened in a material",
+      "startMs": 444695,
+      "endMs": 448944,
+      "durationMs": 4249,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          135,
+          136
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "dissolving silhouette"
+        },
+        "userSummary": "Faded silhouette of a horn dissolving into empty…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Faded silhouette of a horn dissolving into empty soil",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 110,
+      "startWord": 869,
+      "endWord": 877,
+      "narrationText": "that time was never going to let us keep.",
+      "startMs": 448944,
+      "endMs": 451940,
+      "durationMs": 2996,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          137,
+          137
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "hourglass graphic"
+        },
+        "userSummary": "Hourglass draining sand over a buried, vanished object",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Hourglass draining sand over a buried, vanished object",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 111,
+      "startWord": 878,
+      "endWord": 886,
+      "narrationText": "So go back to that charge down the hillside,",
+      "startMs": 451940,
+      "endMs": 455550,
+      "durationMs": 3610,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": "callback",
+          "role": "payoff"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "charges, firelit horns",
+            "castId": "viewer_viking",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "CALLBACK",
+        "chunkRange": [
+          138,
+          138
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "hillside charge"
+        },
+        "userSummary": "Viewer charges hillside, helmet with two curved horns…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "plant",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Viewer charges hillside, helmet with two curved horns catching firelight",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 112,
+      "startWord": 887,
+      "endWord": 896,
+      "narrationText": "the helmet with two long curved horns catching the firelight.",
+      "startMs": 455550,
+      "endMs": 460717,
+      "durationMs": 5167,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": "callback",
+          "role": "payoff"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [
+          {
+            "action": "mid-charge, helmet gleaming",
+            "castId": "viewer_viking",
+            "presence": "tiny",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "CALLBACK",
+        "chunkRange": [
+          139,
+          139
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "tight on helmet horns"
+        },
+        "userSummary": "Close-up: firelight glints on two curved bronze horns",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "plant",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Close-up: firelight glints on two curved bronze horns",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 113,
+      "startWord": 897,
+      "endWord": 906,
+      "narrationText": "That image didn't come from a Viking battlefield at all.",
+      "startMs": 460717,
+      "endMs": 464885,
+      "durationMs": 4168,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          140,
+          140
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "crossed-out scene"
+        },
+        "userSummary": "Crossed-out battlefield silhouette, red X over the charge",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Crossed-out battlefield silhouette, red X over the charge",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 114,
+      "startWord": 907,
+      "endWord": 914,
+      "narrationText": "It came from a Bronze Age priest's ritual,",
+      "startMs": 464885,
+      "endMs": 468472,
+      "durationMs": 3587,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "vexso_veksø_helmet"
+        ],
+        "subjects": [
+          {
+            "action": "performs ritual, raises arms",
+            "castId": "bronze_age_priest",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_archaeological_digsite_bog_find",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          141,
+          141
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "ritual scene"
+        },
+        "userSummary": "Bronze Age priest performs ritual wearing Veksø horned…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Bronze Age priest performs ritual wearing Veksø horned helmet",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 115,
+      "startWord": 915,
+      "endWord": 922,
+      "narrationText": "borrowed by a German opera designer in 1876,",
+      "startMs": 468472,
+      "endMs": 473081,
+      "durationMs": 4609,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [
+          {
+            "action": "sketches horned helmet design",
+            "castId": "19thc_theatre_designer",
+            "presence": "back",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          142,
+          142
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "OVER_THE_SHOULDER",
+          "framing": "over shoulder at sketch"
+        },
+        "userSummary": "Designer's sketch of horned helmet pinned above theatre…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Designer's sketch of horned helmet pinned above theatre desk",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 116,
+      "startWord": 923,
+      "endWord": 930,
+      "narrationText": "and sold to the entire world ever since.",
+      "startMs": 473081,
+      "endMs": 477168,
+      "durationMs": 4087,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          143,
+          143
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "globe graphic"
+        },
+        "userSummary": "Globe wrapped in theatrical horned-helmet merchandise, price tags…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Globe wrapped in theatrical horned-helmet merchandise, price tags everywhere",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 117,
+      "startWord": 931,
+      "endWord": 937,
+      "narrationText": "Wagner's costume department gave you a myth",
+      "startMs": 477168,
+      "endMs": 480187,
+      "durationMs": 3019,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "theatre_horned_helmet"
+        ],
+        "subjects": [
+          {
+            "action": "hands over costume",
+            "castId": "19thc_theatre_designer",
+            "presence": "full",
+            "expression": ""
+          },
+          {
+            "action": "receives, curious",
+            "castId": "viewer_viking",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          144,
+          144
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "backstage handoff"
+        },
+        "userSummary": "Costume department rack labeled MYTH, handing helmet to…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Costume department rack labeled MYTH, handing helmet to viewer",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 118,
+      "startWord": 938,
+      "endWord": 942,
+      "narrationText": "so good, so visually perfect,",
+      "startMs": 480187,
+      "endMs": 483438,
+      "durationMs": 3251,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          145,
+          145
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "glowing silhouette"
+        },
+        "userSummary": "Perfect horned silhouette glowing, flawless and irresistible",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Perfect horned silhouette glowing, flawless and irresistible",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 119,
+      "startWord": 943,
+      "endWord": 953,
+      "narrationText": "that even a total absence of battle evidence couldn't kill it.",
+      "startMs": 483438,
+      "endMs": 488407,
+      "durationMs": 4969,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "COMPARISON",
+        "chunkRange": [
+          146,
+          146
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "split comparison"
+        },
+        "userSummary": "Empty battlefield beside triumphant glowing myth silhouette, myth…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Empty battlefield beside triumphant glowing myth silhouette, myth wins",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 120,
+      "startWord": 954,
+      "endWord": 958,
+      "narrationText": "Somewhere in a Norwegian museum,",
+      "startMs": 488407,
+      "endMs": 491111,
+      "durationMs": 2704,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "ESTABLISHING",
+        "chunkRange": [
+          147,
+          147
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "gallery establishing shot"
+        },
+        "userSummary": "Wide museum gallery in Norway, glass case waiting",
+        "motionIntent": {
+          "camera": "slow pan",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Wide museum gallery in Norway, glass case waiting",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 121,
+      "startWord": 959,
+      "endWord": 970,
+      "narrationText": "a plain iron dome with a simple eye guard sits under glass,",
+      "startMs": 491111,
+      "endMs": 496301,
+      "durationMs": 5190,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "gjermundbu_helmet",
+          "museum_plinth_case"
+        ],
+        "subjects": [],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          148,
+          149
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "case close-up"
+        },
+        "userSummary": "Plain iron dome helmet with eye guard under…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Plain iron dome helmet with eye guard under glass",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 122,
+      "startWord": 971,
+      "endWord": 974,
+      "narrationText": "unglamorous, undramatic, and true.",
+      "startMs": 496301,
+      "endMs": 499947,
+      "durationMs": 3646,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "gjermundbu_helmet"
+        ],
+        "subjects": [],
+        "settingId": "setting_museum_display_case_gallery",
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          150,
+          150
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "unglamorous. undramatic. true."
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "tight object shot"
+        },
+        "userSummary": "Same helmet, stark label plaque reading true",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Same helmet, stark label plaque reading true",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 123,
+      "startWord": 975,
+      "endWord": 987,
+      "narrationText": "Nobody buys a postcard of it. Nobody puts it on a football helmet.",
+      "startMs": 499947,
+      "endMs": 504300,
+      "durationMs": 4353,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          151,
+          152
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "two empty props side-side"
+        },
+        "userSummary": "Empty postcard rack and empty football helmet, both…",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Empty postcard rack and empty football helmet, both blank",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 124,
+      "startWord": 988,
+      "endWord": 1001,
+      "narrationText": "Real history is rarely as loud as the myth built on top of it.",
+      "startMs": 504300,
+      "endMs": 509002,
+      "durationMs": 4702,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [
+          "gjermundbu_helmet"
+        ],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "COMPARISON",
+        "chunkRange": [
+          153,
+          153
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "WIDE",
+          "framing": "scale comparison shot"
+        },
+        "userSummary": "Small quiet true helmet dwarfed by towering glowing…",
+        "motionIntent": {
+          "camera": "hold",
+          "source": "default",
+          "weight": "still",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Small quiet true helmet dwarfed by towering glowing myth silhouette",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 125,
+      "startWord": 1002,
+      "endWord": 1007,
+      "narrationText": "Next time you see those curving",
+      "startMs": 509002,
+      "endMs": 510895,
+      "durationMs": 1893,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": "callback",
+          "role": "payoff"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "eyes narrowing, spotting horns",
+            "castId": "viewer_viking",
+            "presence": "tiny",
+            "expression": ""
+          }
+        ],
+        "settingId": null,
+        "treatment": "POV",
+        "chunkRange": [
+          154,
+          154
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "POV",
+          "framing": "viewer pov glimpse"
+        },
+        "userSummary": "Viewer's eye catches curving horns on distant object",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "medium",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Viewer's eye catches curving horns on distant object",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 126,
+      "startWord": 1008,
+      "endWord": 1014,
+      "narrationText": "horns on a lunchbox or a mascot,",
+      "startMs": 510895,
+      "endMs": 513878,
+      "durationMs": 2983,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "OBJECT_DETAIL",
+        "chunkRange": [
+          155,
+          155
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "branded merchandise closeup"
+        },
+        "userSummary": "Lunchbox and mascot costume both stamped with horned…",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Lunchbox and mascot costume both stamped with horned logo",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 127,
+      "startWord": 1015,
+      "endWord": 1020,
+      "narrationText": "you're not looking at Norse memory.",
+      "startMs": 513878,
+      "endMs": 516282,
+      "durationMs": 2404,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [],
+        "settingId": null,
+        "treatment": "SYMBOLIC",
+        "chunkRange": [
+          156,
+          156
+        ],
+        "textIntent": {
+          "mode": "SHORT_TEXT",
+          "text": "NOT Norse memory"
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "negation graphic"
+        },
+        "userSummary": "Norse memory crossed out beneath the horned logo",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "none",
+          "environment": "none"
+        },
+        "visualConcept": "Norse memory crossed out beneath the horned logo",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 128,
+      "startWord": 1021,
+      "endWord": 1030,
+      "narrationText": "You're looking at a nineteenth-century costume designer's best sales pitch,",
+      "startMs": 516282,
+      "endMs": 520879,
+      "durationMs": 4597,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "grinning, holding sales pitch board",
+            "castId": "19thc_theatre_designer",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_19th_century_theatre_stage_and_backstage",
+        "treatment": "STORY_SCENE",
+        "chunkRange": [
+          157,
+          157
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "MEDIUM",
+          "framing": "designer presenting sketch"
+        },
+        "userSummary": "Designer holds up sketch labeled best sales pitch",
+        "motionIntent": {
+          "camera": "slow push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "subtle action",
+          "environment": "ambient drift"
+        },
+        "visualConcept": "Designer holds up sketch labeled best sales pitch",
+        "settingVariant": ""
+      }
+    },
+    {
+      "warnings": [],
+      "sequence": 129,
+      "startWord": 1031,
+      "endWord": 1037,
+      "narrationText": "one that's still working on you today.",
+      "startMs": 520879,
+      "endMs": 523375,
+      "durationMs": 2496,
+      "contract": {
+        "flags": {
+          "hold": false,
+          "punch": false,
+          "reason": null
+        },
+        "motif": {
+          "id": null,
+          "role": "none"
+        },
+        "propIds": [],
+        "subjects": [
+          {
+            "action": "staring, still convinced today",
+            "castId": "viewer_viking",
+            "presence": "full",
+            "expression": ""
+          }
+        ],
+        "settingId": "setting_imagined_viking_battlefield_hillside_cha",
+        "treatment": "REACTION",
+        "chunkRange": [
+          158,
+          158
+        ],
+        "textIntent": {
+          "mode": "NO_TEXT",
+          "text": null
+        },
+        "composition": {
+          "camera": "CLOSE_UP",
+          "framing": "reaction close-up"
+        },
+        "userSummary": "Viewer transfixed by glowing horned image, unaware",
+        "motionIntent": {
+          "camera": "subtle push-in",
+          "source": "default",
+          "weight": "light",
+          "subject": "small head move",
+          "environment": "none"
+        },
+        "visualConcept": "Viewer transfixed by glowing horned image, unaware",
+        "settingVariant": ""
+      }
+    }
+  ]
+}

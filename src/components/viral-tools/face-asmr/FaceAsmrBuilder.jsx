@@ -6,7 +6,8 @@ import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import { emitCreditSpend } from "../../../lib/creditPopEvents";
 import {
   generateFaceAsmrCharacterNames,
-  IMAGE_FALLBACK_CREDITS,
+  PRICE_ITEMS,
+  calcCredits,
   VIDEO_MODELS,
   DEFAULT_VIDEO_MODEL,
   VIDEO_MODEL_MIN_PLAN,
@@ -14,6 +15,8 @@ import {
   getAllowedVideoModels,
 } from "./api/faceAsmrApi";
 import NoCreditsModal from "../shared/NoCreditsModal";
+import useToolPriceQuotes from "../../../hooks/useToolPriceQuotes";
+import QuotedCredits from "../../pricing/QuotedCredits";
 import FaceAsmrUpgradeModal from "./FaceAsmrUpgradeModal";
 
 const LENGTH_OPTIONS = [
@@ -285,8 +288,9 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
   const allFilled     = filledCount === activeScenes.length;
   const partialFilled = filledCount > 0 && !allFilled;
 
-  const totalCost        = (IMAGE_FALLBACK_CREDITS + selectedVideoModel.credits) * sceneCount;
-  const hasEnoughCredits = creditBalance >= totalCost;
+  const quotes           = useToolPriceQuotes(PRICE_ITEMS);
+  const totalCost        = calcCredits(sceneCount, videoModel, quotes.prices);
+  const hasEnoughCredits = totalCost == null || creditBalance >= totalCost;
   const isGenerating     = phase === "images" || phase === "videos";
   const isDone           = phase === "done";
 
@@ -587,8 +591,8 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
-              onClick={() => { if (isGenerating) return; if (!hasEnoughCredits) { setNoCreditsOpen(true); return; } emitCreditSpend(totalCost); onGenerate({ length: selectedLength, scenes: activeScenes, background: selectedBg, backgroundLabel: bgLabel, videoModel }); }}
-              disabled={isGenerating}
+              onClick={() => { if (isGenerating) return; if (!isDone && quotes.status === "error") { quotes.retry(); return; } if (totalCost == null) return; if (!hasEnoughCredits) { setNoCreditsOpen(true); return; } emitCreditSpend(totalCost); onGenerate({ length: selectedLength, scenes: activeScenes, background: selectedBg, backgroundLabel: bgLabel, videoModel }); }}
+              disabled={isGenerating || (!isDone && quotes.status === "loading")}
               className={`flex-1 py-2.5 lg:py-3.5 rounded-xl font-bold text-[15px] transition flex items-center justify-center gap-2.5 ${
                 isDone
                   ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25"
@@ -599,13 +603,13 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
                   : "bg-white/[0.05] text-white/30 cursor-not-allowed"
               }`}
             >
-              {isDone ? "✓  All Done — Generate New" : isGenerating ? "Generating…" : hasEnoughCredits ? "Generate ASMR Video" : "Not enough credits"}
-              {!isDone && (
+              {isDone ? "✓  All Done — Generate New" : isGenerating ? "Generating…" : quotes.status === "error" ? "Couldn't load price — Retry" : quotes.status === "loading" ? "Loading price…" : hasEnoughCredits ? "Generate ASMR Video" : "Not enough credits"}
+              {!isDone && quotes.status !== "error" && (
                 <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[14px] font-bold ${
                   isGenerating ? "bg-white/5 text-white/20" : hasEnoughCredits ? "bg-white/20 text-white" : "bg-white/5 text-white/30"
                 }`}>
                   <img src="/icons/whitecredit.png" alt="" className="w-4 h-4 object-contain" />
-                  {totalCost}
+                  <QuotedCredits status={quotes.status} value={totalCost} onRetry={quotes.retry} />
                 </span>
               )}
             </button>

@@ -1,7 +1,8 @@
 import { Fragment } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { trackSeoEvent } from "../../lib/seoAnalytics.js";
+import { stashPrompt } from "../../lib/promptHandoff.js";
 
 const CTA_PATTERN = /^\[(?:Primary|Secondary|Final) CTA:\s*(.*?)\s*→\s*(\/[^\]]+)\]$/;
 function stripInlineMarkdown(value) {
@@ -44,6 +45,7 @@ function CtaCallout({ label, to, slug, secondary = false }) {
 }
 
 export default function MarkdownArticle({ markdown, slug, ctaHref, promptCards = false, sectionImages = {} }) {
+  const navigate = useNavigate();
   const lines = getBodyLines(markdown);
   const blocks = [];
 
@@ -101,13 +103,17 @@ export default function MarkdownArticle({ markdown, slug, ctaHref, promptCards =
         <blockquote key={`quote-${start}`} className="my-5 rounded-2xl border border-lime-300/15 bg-lime-300/[0.045] p-5 text-[14px] leading-7 text-white/70">
           <p>{renderInline(quote.join(" "))}</p>
           {promptCards && (
-            <Link
-              to={`${ctaHref}?prompt=${encodeURIComponent(prompt)}`}
-              onClick={() => trackSeoEvent("seo_prompt_interaction", { slug: `blog:${slug}`, templateId: "two-am" })}
+            <button
+              type="button"
+              onClick={() => {
+                trackSeoEvent("seo_prompt_interaction", { slug: `blog:${slug}`, templateId: "two-am" });
+                stashPrompt(prompt);
+                navigate(ctaHref);
+              }}
               className="mt-4 inline-flex items-center gap-1 text-[12px] font-bold text-lime-300"
             >
               Try this prompt <ArrowRight className="h-3 w-3" />
-            </Link>
+            </button>
           )}
         </blockquote>,
       );

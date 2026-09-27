@@ -1,0 +1,7 @@
+{
+  "_note": "Phase 3b worn-item annotations for the frozen Myth vs Reality plan, which was directed before the director's wear/hold/pos fields existed. The cold-open 'your helmet' beats (and the hillside callback payoff) show the viewer WEARING the theatrical horned helmet; hands-only beats cannot show a helmet and are left alone. Keyed by the retimed plan's beat sequence.",
+  "1": { "viewer_viking": { "wearing": ["theatre_horned_helmet"] } },
+  "2": { "viewer_viking": { "wearing": ["theatre_horned_helmet"] } },
+  "4": { "viewer_viking": { "wearing": ["theatre_horned_helmet"] } },
+  "111": { "viewer_viking": { "wearing": ["theatre_horned_helmet"] } }
+}

@@ -1,0 +1,21 @@
+{
+  "label": "Josh",
+  "voiceId": "TxGEqnHWrfWFTfGW9XjX",
+  "voiceModel": "eleven_flash_v2_5",
+  "speed": 1,
+  "text": "You're gripping a shield, screaming down a hillside toward a shieldwall, and two long curved horns jut off your helmet, cutting the air on either side of your head. The horns catch the firelight. They look terrifying. They look exactly like every painting, every movie poster, every Halloween costume you've ever seen of a Viking. This is the image burned into your head. A single wrong picture like this can quietly rewrite an entire culture's history in our heads. So did any Viking ever actually strap on horns before walking into battle?",
+  "characters": 541,
+  "wordCount": 92,
+  "wpm": 146.6,
+  "durationSeconds": 37.663,
+  "characterCost": 135,
+  "requestId": "EvJuF8A0zNmc5ZMnzLoE",
+  "voiceSettings": {
+    "stability": 0.48,
+    "similarity_boost": 0.75,
+    "style": 0.12,
+    "use_speaker_boost": true,
+    "speed": 1
+  },
+  "recordedAt": "2026-09-26T22:27:22.793Z"
+}

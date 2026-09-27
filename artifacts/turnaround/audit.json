@@ -1,0 +1,111 @@
+{
+  "masterAssetId": "af9eabbd-ac85-4f64-9f8e-341f55b59db5",
+  "jobId": "af9eabbd-ac85-4f64-9f8e-341f55b59db5",
+  "model": "runware:400@6",
+  "status": "succeeded",
+  "review": "rejected",
+  "providerCostUSD": 0.00247,
+  "providerCalls": 1,
+  "openAICalls": 0,
+  "workerClaimToCompletionMs": 7812,
+  "queueToCompletionMs": 122103,
+  "pureProviderLatency": "not separately persisted",
+  "dimensions": {
+    "width": 1536,
+    "height": 1024
+  },
+  "promotedAssets": [],
+  "originalAssetsUnchanged": 31,
+  "crops": [
+    {
+      "id": "6437d0ea-9de8-4ba8-abd6-2334e1f24631",
+      "role": "three_quarter_neutral",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "cost": 0,
+      "review": "rejected"
+    },
+    {
+      "id": "6b8c9166-3f3a-4a4e-b76e-343b471b9008",
+      "role": "profile",
+      "rect": {
+        "x": 512,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "cost": 0,
+      "review": "rejected"
+    },
+    {
+      "id": "2c6b03a7-cd56-44c5-8896-5fc5d39c8e0a",
+      "role": "back",
+      "rect": {
+        "x": 1024,
+        "y": 0,
+        "width": 512,
+        "height": 512
+      },
+      "cost": 0,
+      "review": "rejected"
+    },
+    {
+      "id": "e155d391-9e30-427e-a43b-929aaff04580",
+      "role": "face_closeup",
+      "rect": {
+        "x": 0,
+        "y": 512,
+        "width": 512,
+        "height": 512
+      },
+      "cost": 0,
+      "review": "rejected"
+    },
+    {
+      "id": "d8f1847d-32db-4be1-90e1-7f6474bf0dcc",
+      "role": "outfit_detail",
+      "rect": {
+        "x": 512,
+        "y": 512,
+        "width": 512,
+        "height": 512
+      },
+      "cost": 0,
+      "review": "rejected"
+    }
+  ],
+  "qa": {
+    "notes": "Three near-identical frontal figures span both rows. Profile and back are frontal. Face cell contains legs. Hair/beard and face differ from original anchor. Blank patches and neutral background pass. No retry authorized.",
+    "method": "manual_visual_review",
+    "backCorrect": false,
+    "faceCorrect": false,
+    "outfitStable": true,
+    "sameIdentity": true,
+    "profileCorrect": false,
+    "noGeneratedText": true,
+    "cellLayoutCorrect": false,
+    "neutralBackground": true,
+    "matchesExistingIdentity": false
+  },
+  "wirePayloadShapeReconstructed": {
+    "taskType": "imageInference",
+    "taskUUID": "af9eabbd-ac85-4f64-9f8e-341f55b59db5",
+    "model": "runware:400@6",
+    "positivePrompt": "CREATE A CLEAN PROFESSIONAL ANIMATION PRODUCTION CHARACTER TURNAROUND REFERENCE SHEET.\nONE image, exactly THREE equal columns by TWO equal rows. Six equal square cells, separated by clean empty gutters. Keep every subject inside its own cell with generous margins. No drawn panel borders or dividing lines.\nShow the EXACT SAME CHARACTER in every occupied cell. Preserve facial structure, hairstyle, hair color, facial hair, skin tone, age, body proportions, outfit colors and construction, footwear, accessories, illustration style, line thickness and shading language.\nCANONICAL APPEARANCE: Adult man around 35–40, lean athletic build, warm light-medium skin, medium brown swept-back hair with slightly longer nape, thick dark eyebrows, brown eyes, straight prominent nose, short brown stubble beard and moustache, angular jaw. Muted olive-grey collared utility jacket with central zipper, two flap chest pockets, dark reinforced seams, matching utility trousers, plain dark practical boots, rectangular dark wrist dosimeter on left wrist. Same plain olive outfit, hair and facial structure in every view. No lanyard; chest patch is a completely blank small pale rectangle without letters or marks. Calm focused neutral expression.\nSupporting costume specification (appearance only; any text, setting or action is overridden by the layout and no-text rules): On‑shift crew member / protagonist: adult 30–45 years, lean‑to‑average athletic build (fits routine maintenance + light EVA tasks), gender and ethnicity unspecified but visually non‑iconic to allow casting diversity. Distinguishing features: short to medium hair kept practical (tied back if long), light stubble optional, small mission‑issue wrist dosimeter worn on the non‑dominant wrist and a laminated name/role patch on chest. Typical attire: institutional technical coverall ensemble — a fitted zippered midweight base layer (matte polyblend) under a soft, low‑bulk insulation vest and a thin, durable outer utility jacket with flat, color‑coded piping to indicate role/shift. Fabric details: matte woven nylon panels at high‑wear points, seam reinforcements with visible, low‑profile hook‑and‑loop patches for tools and patches. Accessories: simple woven lanyard with access badge, fingertip touchscreen glove stubs or wrist‑mounted UI puck for brief interactions. Visual impression: competent, slightly tired but focused; clothing looks maintained and pragmatically patched rather than pristine or cinematic; no bulky parachute or decorative elements.\nSTYLE: Bold 2D illustrated documentary style — thick confident outlines, rounded cartoon forms, and a restrained flat-shaded palette. Not hyper-realistic, not childish preschool cartoon, not generic corporate flat vector art. Linework: Thick, confident black outlines on every silhouette edge, with lighter interior detail lines. No sketchy cross-hatching, no photorealistic edge rendering. Shading: Restrained flat cel-shading, 1-2 tonal steps per surface (base, occasional shadow) — no painterly gradients, no hard outline on the shadow shapes themselves. Palette: Flat, readable hues — avoid neon/oversaturated color. Favor 2-4 dominant hues plus neutrals per scene so the image reads instantly, even at thumbnail size.\nTOP LEFT: true three-quarter neutral full-body character, head to footwear inside this cell.\nTOP CENTER: STRICT 90-DEGREE SIDE PROFILE, body AND head side-on, clear nose and chin silhouette, only one eye visible. NOT frontal, NOT three-quarter. Full body inside cell.\nTOP RIGHT: BACK VIEW facing completely away, face invisible, back of hairstyle and outfit readable. Full body inside cell.\nBOTTOM LEFT: HEAD AND SHOULDERS FACE REFERENCE, large readable face, neutral expression, same facial identity.\nBOTTOM CENTER: OUTFIT / EQUIPMENT REFERENCE, clothing silhouette, same jacket, trousers, footwear and recurring wrist equipment. No invented accessories or lettering.\nBOTTOM RIGHT: leave completely empty neutral background. No sixth pose was requested.\nPlain neutral studio background in every cell. NO ROOM. NO MARS HABITAT. NO ENVIRONMENT. NO FURNITURE. NO CINEMATIC SCENERY. This is a production turnaround, not six cinematic screenshots.\nNO readable OR fake text. NO letters, numbers, names, name tags, readable badges, logos, signage, watermarks, captions, labels, panel names, arrows, UI. Never render the layout instructions. Every patch must be blank or abstract-symbol-only. Text-like scribbles are also forbidden.\nForbidden: exaggerated superhero or cinematic 'space opera' costume elements (capes, ornamental metal armor)\nForbidden: large, heavy‑styled EVA backpack or rocket thruster on person inside habitat",
+    "width": 1536,
+    "height": 1024,
+    "numberResults": 1,
+    "includeCost": true,
+    "deliveryMethod": "async",
+    "outputType": "URL",
+    "outputFormat": "PNG"
+  },
+  "frontendDeployment": "NOT performed",
+  "build": "passed",
+  "tests": "12 passed",
+  "recoveryCron": "NOT deployed — auto-review rejected persistent calls beyond one-test scope"
+}

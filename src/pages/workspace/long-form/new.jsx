@@ -10,6 +10,7 @@ import { createLongFormProject } from "./project";
 import { watchJob } from "../../../lib/jobs";
 import { LongFormActionFooter, LongFormCreationHeader } from "./shared";
 import { LengthDepthControls } from "./LengthDepthControls";
+import { TextDensityControl } from "./TextDensityControl";
 import { DiscoveryLeftPanel, DiscoveryResultsPanel } from "./DiscoveryPanels";
 import LongFormSelect from "./LongFormSelect";
 import GuestGenerateModal from "../../../components/ImageGenerator/GuestGenerateModal";
@@ -208,6 +209,7 @@ export default function LongFormNew() {
       customLengthMinutes: draft.customLengthMinutes,
       depthMode: draft.depthMode,
       customExplanationDepth: draft.customExplanationDepth,
+      onScreenTextDensity: draft.onScreenTextDensity,
     });
 
     if (!project) {
@@ -444,6 +446,10 @@ export default function LongFormNew() {
             <LengthDepthControls draft={draft} onChange={handleSettingsChange} layout="row" />
           </div>
 
+          <div className="max-w-[360px]">
+            <TextDensityControl value={draft.onScreenTextDensity} onChange={(onScreenTextDensity) => handleSettingsChange({ onScreenTextDensity })} />
+          </div>
+
           {(createProjectFailed || sessionError) && (
             <div className="border-t border-white/[0.06] pt-4">
               {createProjectFailed && <p className="text-[12.5px] font-medium text-red-300/80">Couldn't start your project. Try again.</p>}
@@ -580,7 +586,10 @@ export default function LongFormNew() {
           */}
           <aside
             className="min-w-0 lg:sticky lg:overflow-hidden"
-            style={{ top: "var(--lf-header-h, 56px)", height: "calc(100dvh - var(--lf-header-h, 56px) - 24px)" }}
+            style={{
+              top: "var(--lf-header-h, 56px)",
+              height: "calc(100dvh - var(--zyvo-content-top, 0px) - var(--lf-header-h, 56px) - 32px)",
+            }}
           >
             <DiscoveryLeftPanel
               draft={draft}
@@ -599,7 +608,10 @@ export default function LongFormNew() {
             />
           </aside>
 
-          <main className="min-w-0">
+          <main
+            className="min-w-0 lg:overflow-y-auto lg:overscroll-contain lg:pb-4"
+            style={{ maxHeight: "calc(100dvh - var(--zyvo-content-top, 0px) - var(--lf-header-h, 56px) - 32px)" }}
+          >
             <DiscoveryResultsPanel
               ideas={draft.discovery.ideas}
               selectedIdeaId={draft.discovery.selectedIdeaId}

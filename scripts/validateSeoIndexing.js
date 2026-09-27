@@ -19,6 +19,9 @@ const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) =>
 const sitemapPaths = sitemapUrls.map((url) => new URL(url).pathname);
 
 function snapshotFile(pathname) {
+  // "/" IS dist/index.html — generateSeoHtml.js writes the homepage snapshot
+  // directly there (see writeSnapshot in that file), not to a nested ".html".
+  if (pathname === "/") return path.join(root, "dist", "index.html");
   return path.join(root, "dist", `${pathname.replace(/^\//, "")}.html`);
 }
 
@@ -34,6 +37,16 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+// Matches the brief's assertCanonical exactly — structural checks that can
+// never pass regardless of which route/page produced the canonical.
+function assertCanonical(canonical, pathname) {
+  const url = new URL(canonical);
+  assert(url.protocol === "https:", `${pathname}: invalid canonical protocol: ${canonical}`);
+  assert(url.hostname === "www.tryzyvo.com", `${pathname}: invalid canonical hostname: ${canonical}`);
+  assert(!url.search, `${pathname}: canonical contains query params: ${canonical}`);
+  assert(!url.hash, `${pathname}: canonical contains hash: ${canonical}`);
+}
+
 function validateHead(pathname, expectedRobots) {
   const file = snapshotFile(pathname);
   assert(existsSync(file), `missing prerendered direct-route snapshot: ${pathname}`);
@@ -46,6 +59,7 @@ function validateHead(pathname, expectedRobots) {
   assert(hasAttribute(robots[0], "content", expectedRobots), `${pathname} robots mismatch: ${robots[0]}`);
   assert(canonicals.length === 1, `${pathname} has ${canonicals.length} canonicals`);
   assert(hasAttribute(canonicals[0], "href", canonical), `${pathname} canonical mismatch`);
+  assertCanonical(canonical, pathname);
   assert(ogUrls.length === 1, `${pathname} has ${ogUrls.length} og:url tags`);
   assert(hasAttribute(ogUrls[0], "content", canonical), `${pathname} og:url mismatch`);
   return html;
@@ -59,6 +73,12 @@ for (const { source } of redirects) {
 }
 
 if (prerenderSucceeded) {
+  // "/" is a real sitemap entry now (see scripts/generateSitemap.js) and a
+  // real prerendered snapshot (dist/index.html, see writeSnapshot in
+  // scripts/generateSeoHtml.js) — it's validated by the exact same hard-fail
+  // loop as every other public page below, no special-casing needed.
+  assert((readFileSync(snapshotFile("/"), "utf8").match(/application\/ld\+json/gi) || []).length <= 1, "homepage has more than one JSON-LD script");
+
   for (const pathname of sitemapPaths) {
     validateHead(pathname, "index, follow, max-image-preview:large");
   }

@@ -6,6 +6,35 @@ import { SITE_URL } from "./publicSeoMetadata.js";
 // single source of truth for JSON-LD in both places.
 export function structuredDataFor(pathname, metadata, canonical) {
   if (!metadata) return null;
+
+  // Homepage gets exactly one brand-identity graph (Organization + WebSite)
+  // and nothing else — no BreadcrumbList/WebPage duplicate, no second
+  // Organization/WebSite emitted from elsewhere. This is the single JSON-LD
+  // block Google sees for "/", so alternateName carries every branded query
+  // variant (zyvo, zyvo ai, zyvoai, tryzyvo) in one place.
+  if (pathname === "/") {
+    return {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": `${SITE_URL}/#organization`,
+          name: "Zyvo",
+          alternateName: ["TryZyvo", "Zyvo AI", "ZyvoAI"],
+          url: `${SITE_URL}/`,
+        },
+        {
+          "@type": "WebSite",
+          "@id": `${SITE_URL}/#website`,
+          url: `${SITE_URL}/`,
+          name: "Zyvo",
+          alternateName: "TryZyvo",
+          publisher: { "@id": `${SITE_URL}/#organization` },
+        },
+      ],
+    };
+  }
+
   const breadcrumb = {
     "@type": "BreadcrumbList",
     itemListElement: [
@@ -106,6 +135,50 @@ export function structuredDataFor(pathname, metadata, canonical) {
         ["Is this real footage from an actual movie set?", "No. Behind the Scenes generates original, fan-made AI content styled to look like practical-effects filmmaking. It is not real footage, not affiliated with any studio or production, and not a depiction of an actual film shoot."],
         ["How many disaster types can I choose from?", "20 — 8 elemental disasters (wave, eruption, explosion, tornado, flood, meteor, firestorm, blizzard) plus 12 extended modules covering giant creatures, aircraft chases, vehicle chases, structural collapse, and more."],
         ["What do I actually get from one generation?", "A photorealistic movie-set still image, then an 8-second animated video built from it — always with sound: crew chatter, rig and machine noise, and the disaster's impact."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
+  if (pathname === "/30-days-video-maker") {
+    page = {
+      "@type": "SoftwareApplication",
+      name: "Zyvo 30 Days",
+      description: metadata.description,
+      url: canonical,
+      applicationCategory: "MultimediaApplication",
+      operatingSystem: "Web",
+    };
+    graph[0] = page;
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["What is 30 Days?", "30 Days is a video format where you name any fictional universe and a premise for spending 30 days inside it. Zyvo generates a consistent 8-scene story across four milestone days — Day 1, 10, 20, and 30 — with you as the protagonist, narrates it from the actual finished footage, and stitches a final vertical video."],
+        ["Can I use any fictional world, or only the examples shown?", "The examples — LEGO Ninjago, Pokémon, Hogwarts, Naruto, One Piece, Minecraft — are just starting points. You can type in any world you want to visit."],
+        ["How long is the final video?", "Eight scenes at roughly 5 seconds each, stitched with narration into one continuous vertical video — about 40 seconds total."],
+        ["Do the clips come with sound?", "The 8 generated clips are silent. Narration is added afterward: Zyvo writes a script from your actual finished footage, you pick one of 12 voices, and the final export combines the clips with that narration."],
+        ["Which plans include 30 Days?", "30 Days is included on Starter, Pro, and Generative plans, with three image-quality tiers. It isn't available on the free plan."],
+      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+    });
+  }
+
+  if (pathname === "/30-days-series-video-maker") {
+    page = {
+      "@type": "SoftwareApplication",
+      name: "Zyvo 30 Days Series",
+      description: metadata.description,
+      url: canonical,
+      applicationCategory: "MultimediaApplication",
+      operatingSystem: "Web",
+    };
+    graph[0] = page;
+    graph.push({
+      "@type": "FAQPage",
+      mainEntity: [
+        ["How is Series different from a regular 30 Days video?", "A single 30 Days video tells one complete 8-scene story in one sitting. Series mode builds a persistent world once, then lets you generate new 7-scene episodes over time — continuing the same story, cast, and world each time, up to 30 total days."],
+        ["Do I have to generate every episode right away?", "No. Setup — your world bible and 5 reference images — is generated and charged once. After that, you generate and pay for one episode at a time, whenever you're ready for the next one."],
+        ["Does the AI remember what happened in previous episodes?", "Yes. Every episode's summary — relationship changes, new characters, mysteries opened and resolved, and the cliffhanger — feeds into planning the next one, so the story continues without you re-explaining anything."],
+        ["Can I skip ahead to a later day?", "No — episodes generate in order, one at a time, so the continuity stays intact. You can only start the next episode once the current one is complete."],
+        ["Which plans include Series mode?", "Series mode uses the same plan eligibility as standard 30 Days videos — included on Starter, Pro, and Generative plans. It isn't available on the free plan."],
       ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
     });
   }

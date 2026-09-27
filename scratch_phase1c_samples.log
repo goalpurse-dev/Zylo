@@ -1,0 +1,142 @@
+Test user created: ef8218a9-23a8-4524-b60f-baaeee05027a
+
+=== What Did Ancient Humans Do After Dark? (ancient_humans_prehistory, 10 min) ===
+    story plan ready — "What Did Early Humans Do After Dark?" (100.1s)
+    ...research: status=researching stage=planning (0s)
+    ...research: status=researching stage=planning (6s)
+    ...research: status=researching stage=planning (11s)
+    ...research: status=researching stage=planning (16s)
+    ...research: status=researching stage=planning (21s)
+    ...research: status=researching stage=planning (27s)
+    ...research: status=researching stage=planning (32s)
+    ...research: status=researching stage=planning (37s)
+    ...research: status=researching stage=planning (42s)
+    ...research: status=researching stage=planning (47s)
+    ...research: status=researching stage=lite_verify (52s)
+    ...research: status=researching stage=lite_verify (57s)
+    ...research: status=researching stage=lite_verify (63s)
+    ...research: status=researching stage=lite_verify (68s)
+    ...research: status=researching stage=lite_verify (73s)
+    ...research: status=researching stage=lite_verify (78s)
+    ...research: status=researching stage=lite_verify (84s)
+    ...research: status=researching stage=lite_verify (89s)
+    ...research: status=researching stage=lite_verify (94s)
+    ...research: status=researching stage=lite_verify (99s)
+    ...research: status=researching stage=lite_verify (104s)
+    ...research: status=researching stage=lite_verify (110s)
+    ...research: status=researching stage=lite_verify (115s)
+    ...research: status=researching stage=lite_verify (120s)
+    ...research: status=researching stage=lite_verify (125s)
+    ...research: status=researching stage=lite_verify (130s)
+    ...research: status=researching stage=lite_verify (135s)
+    ...research: status=researching stage=lite_verify (140s)
+    ...research: status=researching stage=lite_verify (145s)
+    ...research: status=researching stage=lite_verify (150s)
+    ...research: status=researching stage=lite_verify (156s)
+    ...research: status=researching stage=lite_gap_verify (161s)
+    research: ready (facts=12, cost ~$0.3326, 166.5s, reason=-)
+    saved fixture tests/fixtures/stickman/research/what-did-ancient-humans-do-after-dark.json
+    ...script: status=drafting stage=draft (0s)
+    ...script: status=drafting stage=draft (5s)
+    ...script: status=drafting stage=draft (10s)
+    ...script: status=drafting stage=draft (15s)
+    ...script: status=drafting stage=draft (21s)
+    ...script: status=drafting stage=draft (26s)
+    ...script: status=drafting stage=draft (31s)
+    ...script: status=drafting stage=draft (36s)
+    ...script: status=drafting stage=draft (41s)
+    ...script: status=drafting stage=draft (46s)
+    ...script: status=drafting stage=draft (51s)
+    ...script: status=drafting stage=draft (56s)
+    ...script: status=drafting stage=draft (61s)
+    ...script: status=drafting stage=draft (67s)
+    ...script: status=drafting stage=draft (72s)
+    ...script: status=drafting stage=draft (77s)
+    ...script: status=drafting stage=draft (82s)
+    ...script: status=drafting stage=draft (87s)
+    ...script: status=drafting stage=draft (92s)
+    ...script: status=drafting stage=draft (97s)
+    ...script: status=drafting stage=draft (102s)
+    ...script: status=drafting stage=draft (108s)
+    ...script: status=drafting stage=draft (113s)
+    ...script: status=drafting stage=draft (118s)
+    ...script: status=drafting stage=critic (123s)
+    ...script: status=drafting stage=critic (128s)
+    ...script: status=drafting stage=critic (133s)
+    ...script: status=drafting stage=critic (138s)
+    ...script: status=drafting stage=critic (143s)
+    ...script: status=drafting stage=critic (149s)
+    ...script: status=drafting stage=critic (154s)
+    ...script: status=drafting stage=critic (159s)
+    ...script: status=drafting stage=critic (164s)
+    ...script: status=drafting stage=critic (169s)
+    ...script: status=drafting stage=critic (174s)
+    ...script: status=drafting stage=revision (179s)
+    ...script: status=drafting stage=revision (184s)
+    ...script: status=drafting stage=revision (190s)
+    ...script: status=drafting stage=revision (195s)
+    ...script: status=drafting stage=revision (200s)
+    ...script: status=drafting stage=revision (205s)
+    ...script: status=drafting stage=revision (210s)
+    ...script: status=drafting stage=revision (216s)
+    ...script: status=drafting stage=revision (221s)
+  FAILED: script timed out (last status=drafting, stage=revision, last_error_code=null)
+  running total spend: $0.3476
+
+=== The Psychology of Overthinking (psychology_human_behavior, 8 min) ===
+  FAILED: discovery session insert failed: TypeError: fetch failed
+  running total spend: $0.3476
+
+=== Why Don't We Eat Lions? (why_dont_we_eat_x, 9 min) ===
+  FAILED: discovery session insert failed: TypeError: fetch failed
+  running total spend: $0.3476
+
+=== What If the Moon Disappeared? (what_if_hypotheticals, 12 min) ===
+  FAILED: discovery session insert failed: TypeError: fetch failed
+  running total spend: $0.3476
+
+=== Why Your Phone Is Designed to Be Addictive (technology_attention_economy, 10 min) ===
+  FAILED: discovery session insert failed: TypeError: fetch failed
+  running total spend: $0.3476
+
+
+=== SUMMARY ===
+[
+  {
+    "title": "What Did Ancient Humans Do After Dark?",
+    "slug": "what-did-ancient-humans-do-after-dark",
+    "success": false,
+    "error": "script timed out (last status=drafting, stage=revision, last_error_code=null)",
+    "spentSoFar": 0.3476
+  },
+  {
+    "title": "The Psychology of Overthinking",
+    "slug": "the-psychology-of-overthinking",
+    "success": false,
+    "error": "discovery session insert failed: TypeError: fetch failed",
+    "spentSoFar": 0.3476
+  },
+  {
+    "title": "Why Don't We Eat Lions?",
+    "slug": "why-don-t-we-eat-lions",
+    "success": false,
+    "error": "discovery session insert failed: TypeError: fetch failed",
+    "spentSoFar": 0.3476
+  },
+  {
+    "title": "What If the Moon Disappeared?",
+    "slug": "what-if-the-moon-disappeared",
+    "success": false,
+    "error": "discovery session insert failed: TypeError: fetch failed",
+    "spentSoFar": 0.3476
+  },
+  {
+    "title": "Why Your Phone Is Designed to Be Addictive",
+    "slug": "why-your-phone-is-designed-to-be-addictive",
+    "success": false,
+    "error": "discovery session insert failed: TypeError: fetch failed",
+    "spentSoFar": 0.3476
+  }
+]
+
+Total spend: $0.3476

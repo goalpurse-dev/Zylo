@@ -278,6 +278,8 @@ const KNOWN_VIDEO_PRICES: Array<{
   toolKey: string; width: number; height: number; durationSec: number; withSound: boolean; credits: number;
 }> = [
   { toolKey: "video:seedance15pro",       width: 496,  height: 864,  durationSec: 5, withSound: false, credits: 6 },
+  { toolKey: "video:veo31lite",            width: 720,  height: 1280, durationSec: 6, withSound: false, credits: 18 },
+  { toolKey: "video:cartoondriveseedance720", width: 720, height: 1280, durationSec: 5, withSound: false, credits: 80 },
   { toolKey: "video:microcamminimax720",  width: 768,  height: 1366, durationSec: 6, withSound: false, credits: 18 },
   { toolKey: "video:microcamminimax1080", width: 1080, height: 1920, durationSec: 6, withSound: false, credits: 32 },
 ];
@@ -286,6 +288,9 @@ async function correctKnownVideoPricing(sb: SB, jobId: string) {
   const { data: job } = await sb.from("jobs").select("tool_key,input,charge_credits").eq("id", jobId).maybeSingle();
   if (!job) return;
   const input = (job.input ?? {}) as Record<string, unknown>;
+  if ((input.billing_reservation as Record<string, unknown> | undefined)?.template === "thirty-days") {
+    return;
+  }
   const match = KNOWN_VIDEO_PRICES.find((p) =>
     p.toolKey === job.tool_key &&
     Number(input.width) === p.width &&

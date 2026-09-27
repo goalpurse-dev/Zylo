@@ -10,6 +10,7 @@ export const IDEA_ENGINE_ERROR = {
   RATE_LIMITED: "rate_limited",
   NETWORK: "network",
   SERVER: "server",
+  INSUFFICIENT_CREDITS: "insufficient_credits",
 };
 
 export async function isAuthenticated() {
@@ -24,7 +25,7 @@ function toExistingIdeaRef(idea) {
   return { title: idea.title, topic: idea.topic, angle: idea.angle };
 }
 
-export async function fetchLongFormIdeas({ category, direction, count = 10, existingIdeas = [], discoverySessionId }) {
+export async function fetchLongFormIdeas({ category, direction, count = 10, existingIdeas = [], discoverySessionId, nicheHint, styleId }) {
   if (!(await isAuthenticated())) {
     return { ok: false, errorType: IDEA_ENGINE_ERROR.AUTH_REQUIRED };
   }
@@ -38,6 +39,8 @@ export async function fetchLongFormIdeas({ category, direction, count = 10, exis
         count,
         existingIdeas: existingIdeas.map(toExistingIdeaRef),
         discoverySessionId,
+        nicheHint,
+        styleId,
       },
     });
   } catch {
@@ -58,6 +61,9 @@ export async function fetchLongFormIdeas({ category, direction, count = 10, exis
     if (status === 429 && body?.code === "DISCOVERY_COOLDOWN") {
       return { ok: false, errorType: IDEA_ENGINE_ERROR.COOLDOWN, nextAllowedAt: body.nextAllowedAt, retryAfterSeconds: body.retryAfterSeconds };
     }
+    if (status === 402 && body?.code === "INSUFFICIENT_CREDITS") {
+      return { ok: false, errorType: IDEA_ENGINE_ERROR.INSUFFICIENT_CREDITS };
+    }
     if (status === 429) return { ok: false, errorType: IDEA_ENGINE_ERROR.RATE_LIMITED };
     return { ok: false, errorType: IDEA_ENGINE_ERROR.SERVER };
   }
@@ -66,5 +72,5 @@ export async function fetchLongFormIdeas({ category, direction, count = 10, exis
     return { ok: false, errorType: IDEA_ENGINE_ERROR.SERVER };
   }
 
-  return { ok: true, ideas: data.ideas, discovery: data.discovery ?? null };
+  return { ok: true, ideas: data.ideas, batchId: data.batchId ?? null, charged: data.charged ?? 0, discovery: data.discovery ?? null };
 }

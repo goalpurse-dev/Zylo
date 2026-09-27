@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-21T20:53:16.838Z",
-  "articlesAudited": 226,
+  "generatedAt": "2026-08-26T11:22:51.272Z",
+  "articlesAudited": 246,
   "thinContent": [
     {
       "url": "/blog/product-photos-with-ai-for-shopify",
@@ -51,12 +51,6 @@
       "unigramScore": 0.5331491712707183
     },
     {
-      "a": "/blog/what-is-zyvo",
-      "b": "/blog/which-zyvo-template",
-      "shingleScore": 0.20047169811320756,
-      "unigramScore": 0.5317919075144508
-    },
-    {
       "a": "/blog/2am-in-hogwarts-ai-images",
       "b": "/blog/2am-in-bikini-bottom-ai-images",
       "shingleScore": 0.21091290661070305,
@@ -67,6 +61,12 @@
       "b": "/blog/footballer-nationality-swap-mistakes",
       "shingleScore": 0.11713286713286714,
       "unigramScore": 0.5228070175438596
+    },
+    {
+      "a": "/blog/what-is-zyvo",
+      "b": "/blog/which-zyvo-template",
+      "shingleScore": 0.19540229885057472,
+      "unigramScore": 0.5196629213483146
     },
     {
       "a": "/blog/why-3d-ai-images-perform-better",
@@ -87,16 +87,16 @@
       "unigramScore": 0.500823723228995
     },
     {
+      "a": "/blog/30-days-video-series",
+      "b": "/blog/what-is-30-days-series-mode",
+      "shingleScore": 0.13518886679920478,
+      "unigramScore": 0.49382716049382713
+    },
+    {
       "a": "/blog/2am-wild-west-ai-images",
       "b": "/blog/2am-space-station-ai-images",
       "shingleScore": 0.21984216459977451,
       "unigramScore": 0.4881889763779528
-    },
-    {
-      "a": "/blog/zyvo-template-comparison",
-      "b": "/blog/every-zyvo-video-format-compared",
-      "shingleScore": 0.15875912408759124,
-      "unigramScore": 0.4875
     },
     {
       "a": "/blog/2am-atlantis-ai-images",

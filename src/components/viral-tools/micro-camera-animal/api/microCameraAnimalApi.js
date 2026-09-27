@@ -6,8 +6,6 @@ export { PLAN_LABELS };
 
 /* ── Constants ──────────────────────────────────────────────── */
 export const IMAGE_TOOL_KEY = "image:fruit-v2";
-export const IMAGE_CREDITS  = 2;
-export const REF_CREDITS    = 2;
 export const IMAGE_W        = 768;
 export const IMAGE_H        = 1376;
 
@@ -27,7 +25,6 @@ export const VIDEO_MODELS = {
     width: 496,
     height: 864,
     duration: 5,
-    credits: 6,             // unchanged — measured $0.0607656/5s
     withSound: false,
   },
   "micro-v3": {
@@ -39,7 +36,6 @@ export const VIDEO_MODELS = {
     width: 768,
     height: 1366,
     duration: 6,
-    credits: 18,            // measured $0.19/6s → blended per-scene margin ~49.9%
     withSound: false,
   },
   "micro-v4": {
@@ -51,11 +47,31 @@ export const VIDEO_MODELS = {
     width: 1080,
     height: 1920,
     duration: 6,
-    credits: 32,            // measured $0.33/6s → blended per-scene margin ~49.9%
     withSound: false,
   },
 };
 export const DEFAULT_VIDEO_MODEL = "micro-v2";
+
+// Prices come from the server (public.tool_prices) — the exact numbers each
+// job is charged. PRICE_ITEMS mirrors the job shapes this tool creates; pass
+// it to useToolPriceQuotes and hand the resulting prices to calcCredits.
+export const PRICE_ITEMS = [
+  { id: "image", tool_key: IMAGE_TOOL_KEY, input: { width: IMAGE_W, height: IMAGE_H } },
+  ...Object.entries(VIDEO_MODELS).map(([id, m]) => ({
+    id: `video:${id}`,
+    tool_key: m.toolKey,
+    input: { durationSec: m.duration, withSound: m.withSound, width: m.width, height: m.height },
+  })),
+];
+
+/** Total credits for a run (1 reference image + (1 image + 1 clip) per scene), or null until prices are quoted. */
+export function calcCredits(sceneCount, videoModelId = DEFAULT_VIDEO_MODEL, prices = {}) {
+  const modelId = VIDEO_MODELS[videoModelId] ? videoModelId : DEFAULT_VIDEO_MODEL;
+  const image = prices.image;
+  const video = prices[`video:${modelId}`];
+  if (image == null || video == null) return null;
+  return image + sceneCount * (image + video);
+}
 
 // Plan gating — which video models each plan tier can use.
 export const VIDEO_MODEL_MIN_PLAN = {
@@ -73,10 +89,6 @@ export const LENGTH_OPTIONS = [
   { value: "30s", label: "30 sec", scenes: 6 },
 ];
 
-export function calcCredits(sceneCount, videoModelId = DEFAULT_VIDEO_MODEL) {
-  const videoCredits = (VIDEO_MODELS[videoModelId] ?? VIDEO_MODELS[DEFAULT_VIDEO_MODEL]).credits;
-  return REF_CREDITS + sceneCount * (IMAGE_CREDITS + videoCredits);
-}
 
 // Which prompt indices to use per scene count.
 // 3 scenes: mounting → entering → deep core (skip middle, land on the payoff)
@@ -697,7 +709,6 @@ export async function generateReferenceImage({ prompt }) {
     height: IMAGE_H,
     refImages: [],
     expectedRefSlotCount: 0,
-    chargeCreditsOverride: REF_CREDITS,
     project_id: null,
     providerHint: {
       engine: "runware", mode: "t2i", edgeFn: "/functions/v1/runware-image", airTag: "openai:gpt-image@2",
@@ -717,7 +728,6 @@ export async function generateSceneImage({ prompt, referenceUrl }) {
     height: IMAGE_H,
     refImages,
     expectedRefSlotCount: refImages.length,
-    chargeCreditsOverride: IMAGE_CREDITS,
     project_id: null,
     providerHint: {
       engine: "runware", mode: "t2i", edgeFn: "/functions/v1/runware-image", airTag: "openai:gpt-image@2",
@@ -737,7 +747,6 @@ export async function animateSceneClip({ imageUrl, videoPrompt, videoModel = DEF
     height: model.height,
     durationSec: model.duration,
     initImageUrls: [imageUrl],
-    calculatedCredits: model.credits,
     withSound: model.withSound,
   });
 }

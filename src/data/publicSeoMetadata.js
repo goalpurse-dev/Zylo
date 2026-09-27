@@ -1,11 +1,28 @@
 export const SITE_URL = "https://www.tryzyvo.com";
 
+// The one place a canonical URL is computed from a pathname — used by the
+// build-time SSR generator (scripts/generateSeoHtml.js) and by every
+// client-side metadata path (PublicContentLayout.jsx, SeoLandingPage.jsx) so
+// hydration can never disagree with what the server already rendered. Only
+// ever built from the pathname, never from window.location.search or .hash,
+// so a canonical can structurally never carry a query string, tracking
+// parameter, or fragment.
+export function canonicalFor(pathname) {
+  const clean = pathname === "/" ? "/" : `/${pathname.replace(/^\/+|\/+$/g, "")}`;
+  return `${SITE_URL}${clean}`;
+}
+
 const blog = (title, description) => ({ title: `${title} | Zyvo`, description, type: "article" });
 
 // Explicit metadata for the URLs called out in the August 2026 indexing audit.
 // Keeping this list route-based prevents legacy page effects from carrying
 // metadata across React Router navigations.
 export const PUBLIC_SEO_METADATA = {
+  "/": {
+    title: "TryZyvo (Zyvo) – AI Video & Content Generator",
+    description: "TryZyvo, also known as Zyvo, is an AI content creation platform for generating viral videos, images and social media content.",
+    type: "website",
+  },
   "/image-generator": {
     title: "AI Image Generator – Cinematic, 3D, Anime & Product Images | Zyvo",
     description: "Generate cinematic, 3D, anime, realistic, and product-ready images from a single prompt with Zyvo's AI image generator — free to start.",
@@ -605,6 +622,158 @@ export const PUBLIC_SEO_METADATA = {
     type: "website",
     image: `${SITE_URL}/behind-the-scenes/poster.webp`,
   },
+  "/30-days-video-maker": {
+    title: "30 Days AI Video Maker – Enter Any Fictional World for 30 Days | Zyvo",
+    description: "Name any universe — LEGO Ninjago, Pokémon, Hogwarts, and more — and generate a narrated 8-scene AI video story across 4 milestone days that keeps you as the protagonist.",
+    type: "website",
+    image: `${SITE_URL}/community-posters/lg-2.jpg`,
+  },
+  "/30-days-series-video-maker": {
+    title: "30 Days Series – Build a Persistent AI Story World | Zyvo",
+    description: "Build your world once, then generate the next 7-scene episode whenever you're ready — a persistent, continuing AI video story up to 30 days long.",
+    type: "website",
+    image: `${SITE_URL}/blog-assets/30-days-series-landing-hero.png`,
+  },
+  "/blog/what-is-30-days-ai-trend": {
+    ...blog(
+      "What Is the 30 Days AI Video Trend? Enter Any Fictional World for a Month",
+      "Name a universe, describe a premise, and watch an eight-scene story unfold across four milestone days, with you as the protagonist.",
+    ),
+    image: `${SITE_URL}/community-posters/lg-1.jpg`,
+  },
+  "/blog/30-days-universe-ideas": {
+    ...blog(
+      "50 30 Days Universe Ideas: What World Should You Spend 30 Days In?",
+      "Fifty fictional universes to try, grouped by mood — games, anime, nostalgia, and high-stakes premises.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-universe-ideas-hero.png`,
+  },
+  "/blog/30-days-video-series": {
+    ...blog(
+      "How to Turn One 30 Days Story Into a Series",
+      "A practical, step-by-step walkthrough for starting your first 30 Days Series.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-series-landing-progress.png`,
+  },
+  "/blog/30-days-mistakes": {
+    ...blog(
+      "10 Mistakes Killing Your 30 Days Video Views",
+      "The structural choices that quietly hold results back, with a fix for each one.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-mistakes-hero.png`,
+  },
+  "/blog/30-days-vs-ai-fruit-story": {
+    ...blog(
+      "30 Days vs AI Fruit Story: Which Story Format Should You Try?",
+      "Both tell a real multi-scene story — one puts you inside a world you know, the other builds an original cast.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-vs-fruit-story-hero.png`,
+  },
+  "/blog/30-days-time": {
+    ...blog(
+      "How Long Does a 30 Days Video Take to Make?",
+      "From naming a universe to a finished, narrated video — what actually takes time.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-time-hero.png`,
+  },
+  "/blog/30-days-quality-tiers": {
+    ...blog(
+      "30 Days Quality Tiers Explained: V2 vs V3 vs V4",
+      "Three quality tiers, three animation models, three plan levels — what actually changes.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-quality-tiers-hero.png`,
+  },
+  "/blog/30-days-premise-formula": {
+    ...blog(
+      "How to Write a Viral 30 Days Premise (Formula + Examples)",
+      "A four-part formula for a stronger premise, with weak-vs-strong examples.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-premise-formula-hero.png`,
+  },
+  "/blog/30-days-halloween-special": {
+    ...blog(
+      "30 Days Halloween Special: 10 Spooky Universe Ideas",
+      "Ten Halloween-framed premises for any universe you already have in mind.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-halloween-hero.png`,
+  },
+  "/blog/is-30-days-worth-it": {
+    ...blog(
+      "Is 30 Days Worth It? Credits, Cost, and What You Actually Get",
+      "Exactly where the credits go, and what you get back for them.",
+    ),
+    image: `${SITE_URL}/blog-assets/is-30-days-worth-it-hero.png`,
+  },
+  "/blog/what-is-30-days-series-mode": {
+    ...blog(
+      "What Is 30 Days Series Mode? Continue Your Story Episode by Episode",
+      "Build a persistent world once, then generate the next episode whenever you're ready.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-series-mode-hero.png`,
+  },
+  "/blog/30-days-series-world-bible-explained": {
+    ...blog(
+      "How 30 Days Series Mode Remembers Your Story",
+      "World bible, persistent cast, and spoiler-gated planning explained.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-series-world-bible-hero.png`,
+  },
+  "/blog/30-days-series-days-per-episode": {
+    ...blog(
+      "1, 2, 3, or 5 Days Per Episode? How to Structure Your 30 Days Series",
+      "How your pace choice changes the whole series.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-series-days-per-episode-hero.png`,
+  },
+  "/blog/30-days-series-vs-single-video": {
+    ...blog(
+      "30 Days Series vs Single Video: Which Should You Start With?",
+      "Same universe-building idea, two very different commitments.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-series-vs-single-hero.png`,
+  },
+  "/blog/30-days-series-cliffhangers": {
+    ...blog(
+      "How to Write a Cliffhanger That Makes Your Next 30 Days Episode a Must-Watch",
+      "What actually makes an ending pull viewers into the next episode.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-series-cliffhangers-hero.png`,
+  },
+  "/blog/30-days-camera-mode": {
+    ...blog(
+      "First-Person or Third-Person? How 30 Days Decides Your Story's Camera Angle",
+      "There's no camera toggle — the planner reads your premise and picks the angle, then varies the shots inside it.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-camera-mode-hero.png`,
+  },
+  "/blog/30-days-character-consistency": {
+    ...blog(
+      "How 30 Days Keeps Your Characters Looking the Same in Every Scene",
+      "The persistent reference system explained, and why a recurring character shouldn't randomly change design.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-character-consistency-hero.png`,
+  },
+  "/blog/30-days-scene-continuity": {
+    ...blog(
+      "Why Every 30 Days Series Episode Flows as One Continuous Scene",
+      "The continuity chain that makes each scene pick up exactly where the last one ended.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-scene-continuity-hero.png`,
+  },
+  "/blog/30-days-voiceover-sync": {
+    ...blog(
+      "Getting Perfect Voiceover Sync in 30 Days",
+      "What actually decides how long your narration is, and how to get it right before you spend a generation on it.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-voiceover-sync-hero.png`,
+  },
+  "/blog/30-days-series-dashboard-tour": {
+    ...blog(
+      "A Tour of Your 30 Days Series Dashboard",
+      "What's next, what's already made, and one click into either — what everything on the dashboard means.",
+    ),
+    image: `${SITE_URL}/blog-assets/30-days-series-dashboard-tour-hero.png`,
+  },
   "/blog/behind-the-scenes-trend-explained": {
     ...blog(
       "What Is the \"Behind the Scenes\" AI Video Trend?",
@@ -898,6 +1067,41 @@ export const PUBLIC_SEO_METADATA = {
       "How a fan of one format becomes a viewer of another, without any new content.",
     ),
     image: `${SITE_URL}/blog-assets/cross-promote-formats-hero.png`,
+  },
+  "/blog/skeleton-xray-ai-trend": {
+    ...blog(
+      "The Viral Skeleton X-Ray AI Photo Trend: How to Create Your Own",
+      "A glowing neon skeletal overlay style, for photos of yourself or your dog.",
+    ),
+    image: `${SITE_URL}/blog-assets/skeleton-xray-trend-hero.png`,
+  },
+  "/blog/hidden-ai-image-styles": {
+    ...blog(
+      "10 AI Image Styles You Didn't Know You Could Generate",
+      "Six lesser-known Zyvo image styles most creators never try.",
+    ),
+    image: `${SITE_URL}/blog-assets/hidden-ai-styles-hero.png`,
+  },
+  "/blog/minecraft-style-ai-images": {
+    ...blog(
+      "Minecraft-Style AI Photos: Turn Any Prompt Into Blocky Art",
+      "How the blocky voxel image style works and where it performs best.",
+    ),
+    image: `${SITE_URL}/blog-assets/minecraft-style-ai-hero.png`,
+  },
+  "/blog/noir-vs-cyberpunk-ai-images": {
+    ...blog(
+      "Noir vs Cyberpunk: The Two Moodiest AI Image Styles Compared",
+      "Two named Zyvo styles that go cinematic in opposite directions.",
+    ),
+    image: `${SITE_URL}/blog-assets/noir-vs-cyberpunk-hero.png`,
+  },
+  "/blog/disney-vs-ghibli-ai-images": {
+    ...blog(
+      "Disney vs Ghibli: Which Animated AI Style Should You Use?",
+      "Bold storybook sparkle versus soft watercolor calm, compared.",
+    ),
+    image: `${SITE_URL}/blog-assets/disney-vs-ghibli-hero.png`,
   },
 };
 

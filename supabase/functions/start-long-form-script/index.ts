@@ -69,10 +69,17 @@ Deno.serve(async (req) => {
   if (!project.current_story_plan_version_id) return err(req, "This project needs a Story Plan before Script can begin", 400);
   if (!project.current_research_version_id) return err(req, "This project needs completed Research before Script can begin", 400);
 
-  const { data: researchRow } = await admin.from("long_form_research_versions").select("id, status").eq("id", project.current_research_version_id).maybeSingle();
+  const { data: researchRow } = await admin.from("long_form_research_versions").select("id, status, meta, detail").eq("id", project.current_research_version_id).maybeSingle();
   if (!researchRow || (researchRow.status !== "ready" && researchRow.status !== "needs_attention")) {
     return err(req, "Research for this project isn't finished yet", 400);
   }
+  // Phase 1d — research-lite is a best-effort HELPER for Stickman now, never
+  // a gate: Script writes at full length from its own knowledge and verifies
+  // specific claims itself afterward (see advance-long-form-script's
+  // runStickmanClaimVerify), so a thin or empty research pass is no longer a
+  // reason to refuse Script outright (the old STICKMAN_MIN_FACTS/
+  // "insufficient_facts_below_minimum" block this replaced required Script's
+  // OLD evidence-first draft, which could only write from cited facts).
 
   const storyPlanVersionId = project.current_story_plan_version_id;
   const researchVersionId = project.current_research_version_id;

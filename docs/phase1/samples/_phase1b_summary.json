@@ -1,0 +1,29 @@
+{
+  "results": [
+    {
+      "title": "Why Don't We Eat Lions?",
+      "niche": "why_dont_we_eat_x",
+      "success": true,
+      "slug": "why-don-t-we-eat-lions",
+      "status": "needs_research",
+      "actualWords": 658,
+      "hardCount": 0,
+      "warnCount": 14,
+      "cost": 0.18030000000000002,
+      "wallMs": 491602
+    },
+    {
+      "title": "The Psychology of Overthinking",
+      "niche": "psychology_human_behavior",
+      "success": true,
+      "slug": "the-psychology-of-overthinking",
+      "status": "needs_research",
+      "actualWords": 535,
+      "hardCount": 0,
+      "warnCount": 18,
+      "cost": 0.22849999999999998,
+      "wallMs": 416530
+    }
+  ],
+  "totalSpend": 0.7253000000000001
+}

@@ -260,7 +260,7 @@ export default function LongFormStory() {
     return (
       <div className="mx-auto flex h-full w-full max-w-[760px] flex-col overflow-hidden px-4 lg:px-8">
         <div className="shrink-0">
-          <LongFormCreationHeader current="story" />
+          <LongFormCreationHeader current="story" project={project} />
         </div>
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden">
           <StoryLoadingState failed={phase === "failed"} onRetry={() => { setStoryStartedAt(null); runGeneration(false); }} startedAt={storyStartedAt} />
@@ -274,7 +274,7 @@ export default function LongFormStory() {
 
   return (
     <div className="mx-auto max-w-[760px] px-4 py-8 pb-28 lg:px-8 lg:py-10">
-      <LongFormCreationHeader current="story" />
+      <LongFormCreationHeader current="story" project={project} />
 
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: "easeOut" }} className="mb-7">
         <h1 className="text-[26px] font-bold tracking-[-0.02em] text-white lg:text-[28px]">Your Story Plan</h1>

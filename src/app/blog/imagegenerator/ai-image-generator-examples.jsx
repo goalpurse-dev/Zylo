@@ -16,6 +16,12 @@ const related = [
     slug: "/blog/which-ai-image-style-works-best",
   },
   {
+    title: "10 AI Image Styles You Didn't Know You Could Generate",
+    description: "Six lesser-known Zyvo image styles most creators never try.",
+    date: "23.08.2026",
+    slug: "/blog/hidden-ai-image-styles",
+  },
+  {
     title: "10 AI Image Generator Mistakes to Avoid (And How to Fix Each One)",
     description: "The most common reasons AI-generated images come back looking generic, and the fix for each.",
     date: "19.08.2026",

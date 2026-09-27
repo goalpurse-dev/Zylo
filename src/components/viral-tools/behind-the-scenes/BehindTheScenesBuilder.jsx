@@ -3,6 +3,8 @@ import { ChevronDown, ChevronRight, Clock3, Lock, Shuffle, Sparkles, Volume2, Vo
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import { emitCreditSpend } from "../../../lib/creditPopEvents";
 import NoCreditsModal from "../shared/NoCreditsModal";
+import useToolPriceQuotes from "../../../hooks/useToolPriceQuotes";
+import QuotedCredits from "../../pricing/QuotedCredits";
 import BehindTheScenesUpgradeModal from "./BehindTheScenesUpgradeModal";
 import {
   DEFAULT_QUALITY_TIER,
@@ -13,6 +15,7 @@ import {
   QUALITY_TIER_MIN_PLAN,
   VANTAGES,
   calcCredits,
+  PRICE_ITEMS,
   getAllowedQualityTiers,
   randomEpisodeIdea,
 } from "./api/behindTheScenesApi";
@@ -54,7 +57,8 @@ export default function BehindTheScenesBuilder({
   const creditBalance = useProfileCredits();
   const allowedTiers = getAllowedQualityTiers(planCode);
   const selectedTier = QUALITY_TIERS[qualityId] ?? QUALITY_TIERS[DEFAULT_QUALITY_TIER];
-  const totalCredits = useMemo(() => calcCredits(qualityId), [qualityId]);
+  const quotes = useToolPriceQuotes(PRICE_ITEMS);
+  const totalCredits = useMemo(() => calcCredits(qualityId, quotes.prices), [qualityId, quotes.prices]);
   const isGenerating = phase === "image" || phase === "video";
   const isDone = phase === "done" || phase === "error";
   const visibleDisasters = showMoreDisasters ? DISASTER_LIST : DISASTER_LIST.slice(0, 6);
@@ -101,6 +105,8 @@ export default function BehindTheScenesBuilder({
       else setUpgradeTierId(qualityId);
       return;
     }
+    if (quotes.status === "error") { quotes.retry(); return; }
+    if (totalCredits == null) return;
     if (creditBalance < totalCredits) {
       setNoCreditsOpen(true);
       return;
@@ -316,12 +322,12 @@ export default function BehindTheScenesBuilder({
             <button
               type="button"
               onClick={handleGenerate}
-              disabled={isGenerating}
+              disabled={isGenerating || (!historyMode && !isDone && quotes.status === "loading")}
               className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3.5 text-[14px] font-black transition lg:py-2.5 ${isGenerating ? "cursor-not-allowed bg-lime-300/15 text-lime-300/40" : "bg-lime-300 text-[#11150D] hover:bg-lime-200"}`}
             >
               {isGenerating ? (phase === "image" ? "Building the set..." : "Animating the shot...") : <>
-                Generate Episode
-                <span className="flex items-center gap-1 text-[13px] font-semibold">
+                {quotes.status === "error" ? "Couldn't load price — Retry" : quotes.status === "loading" ? "Loading price…" : "Generate Episode"}
+                {quotes.status !== "error" && <span className="flex items-center gap-1 text-[13px] font-semibold">
                   <span
                     aria-hidden="true"
                     className="h-4 w-4 shrink-0 bg-current"
@@ -336,8 +342,8 @@ export default function BehindTheScenesBuilder({
                       maskSize: "contain",
                     }}
                   />
-                  {totalCredits}
-                </span>
+                  <QuotedCredits status={quotes.status} value={totalCredits} onRetry={quotes.retry} />
+                </span>}
                 <ChevronRight className="h-4 w-4" />
               </>}
             </button>
@@ -345,7 +351,7 @@ export default function BehindTheScenesBuilder({
         )}
       </div>
 
-      <NoCreditsModal open={noCreditsOpen} onClose={() => setNoCreditsOpen(false)} creditsNeeded={totalCredits} creditBalance={creditBalance} />
+      <NoCreditsModal open={noCreditsOpen} onClose={() => setNoCreditsOpen(false)} creditsNeeded={totalCredits ?? 0} creditBalance={creditBalance} />
       <BehindTheScenesUpgradeModal
         open={!!upgradeTierId}
         onClose={() => setUpgradeTierId(null)}

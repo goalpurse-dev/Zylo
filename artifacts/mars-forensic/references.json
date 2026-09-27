@@ -1,0 +1,767 @@
+[
+  {
+    "id": "a7ba6e4e-72e8-49b4-8635-1784cb9561be",
+    "entity_id": "e_ag_spec",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_closeup",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/a7ba6e4e-72e8-49b4-8635-1784cb9561be.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "bc921c86-dfd9-439f-a4ce-fccec5ff7a54",
+    "entity_id": "e_power_officer",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_closeup",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/bc921c86-dfd9-439f-a4ce-fccec5ff7a54.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "16b5f11f-3b4e-4ecc-a4ed-ec29724e3fb0",
+    "entity_id": "o_greenhouse_chamber",
+    "reference_type": "object_reference",
+    "angle_or_view": "three_quarter_hero",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/16b5f11f-3b4e-4ecc-a4ed-ec29724e3fb0.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "a52d6470-f9ae-4476-a83c-d4b57992350e",
+    "entity_id": "l_airlock_lockers",
+    "reference_type": "location_reference",
+    "angle_or_view": "locker_overview",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/a52d6470-f9ae-4476-a83c-d4b57992350e.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "f5dc7903-b918-41bf-ac56-979764b7862e",
+    "entity_id": "e_ag_spec",
+    "reference_type": "character_reference",
+    "angle_or_view": "three_quarter_neutral",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/f5dc7903-b918-41bf-ac56-979764b7862e.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "add88148-c539-4f46-9814-19b830abe1b6",
+    "entity_id": "l_ops_center",
+    "reference_type": "location_reference",
+    "angle_or_view": "ops_console_wide",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/add88148-c539-4f46-9814-19b830abe1b6.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "650e25d2-4091-46a6-9333-ecd5fb2fdf33",
+    "entity_id": "l_habitat_module",
+    "reference_type": "location_reference",
+    "angle_or_view": "candle_cam",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/650e25d2-4091-46a6-9333-ecd5fb2fdf33.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "0647159b-5626-4ba1-9662-55e19fb4a69e",
+    "entity_id": "l_isru_plant",
+    "reference_type": "location_reference",
+    "angle_or_view": "wide_establishing",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/0647159b-5626-4ba1-9662-55e19fb4a69e.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "5ee488d5-3155-4985-8f53-591d19507bdc",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "three_quarter_neutral",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/5ee488d5-3155-4985-8f53-591d19507bdc.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "1dfd8d29-c430-4db7-ad7e-c7d113fb5fbd",
+    "entity_id": "l_habitat_module",
+    "reference_type": "location_reference",
+    "angle_or_view": "common_table_cam",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/1dfd8d29-c430-4db7-ad7e-c7d113fb5fbd.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "e3d9b305-afea-48b2-a5df-eca285dbfb74",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "profile",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/e3d9b305-afea-48b2-a5df-eca285dbfb74.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "e6410330-9e79-49dd-bac6-2699b2d63576",
+    "entity_id": "l_greenhouse",
+    "reference_type": "location_reference",
+    "angle_or_view": "gh_chamber_insert",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/e6410330-9e79-49dd-bac6-2699b2d63576.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "5b25cb86-8534-45a1-a2a0-ae20a617d9e8",
+    "entity_id": "l_habitat_module",
+    "reference_type": "location_reference",
+    "angle_or_view": "hab_window_cam",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/5b25cb86-8534-45a1-a2a0-ae20a617d9e8.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "05abe1eb-d499-46ba-8ac0-d8dd13398de2",
+    "entity_id": "l_habitat_module",
+    "reference_type": "location_reference",
+    "angle_or_view": "hab_tablet_cam",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/05abe1eb-d499-46ba-8ac0-d8dd13398de2.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "70d65698-7240-4448-8f59-e0db6dd7fcd6",
+    "entity_id": "l_greenhouse",
+    "reference_type": "location_reference",
+    "angle_or_view": "gh_rack_overview",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/70d65698-7240-4448-8f59-e0db6dd7fcd6.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "ad177125-dca9-4689-9d2b-46dfebff0631",
+    "entity_id": "l_ops_center",
+    "reference_type": "location_reference",
+    "angle_or_view": "ops_power_gfx_cam",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/ad177125-dca9-4689-9d2b-46dfebff0631.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "4c9b8a1f-22cf-4bb6-8b51-a2607a270ccf",
+    "entity_id": "e_technician",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_closeup",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/4c9b8a1f-22cf-4bb6-8b51-a2607a270ccf.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "73f503e7-4e7c-4f9b-bb2b-aa62f3d32ad2",
+    "entity_id": "l_greenhouse",
+    "reference_type": "location_reference",
+    "angle_or_view": "gh_specialist_cam",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/73f503e7-4e7c-4f9b-bb2b-aa62f3d32ad2.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "e8f4d464-47a4-47d7-b492-7ae382371379",
+    "entity_id": "l_airlock_lockers",
+    "reference_type": "location_reference",
+    "angle_or_view": "suit_panel_cam",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/e8f4d464-47a4-47d7-b492-7ae382371379.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "2e1a5bac-d3ec-4689-8126-9cf90bb8ea8a",
+    "entity_id": "e_power_officer",
+    "reference_type": "character_reference",
+    "angle_or_view": "character_reference_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/2e1a5bac-d3ec-4689-8126-9cf90bb8ea8a.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "2988dc66-1ecb-4c6a-a8dc-44a310dc85b2",
+    "entity_id": "o_isru_unit",
+    "reference_type": "object_reference",
+    "angle_or_view": "three_quarter_hero",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/2988dc66-1ecb-4c6a-a8dc-44a310dc85b2.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "0518dbef-c23b-4ebf-bb20-65bf82ff1a6d",
+    "entity_id": "l_habitat_module",
+    "reference_type": "location_reference",
+    "angle_or_view": "hab_common_cam",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/0518dbef-c23b-4ebf-bb20-65bf82ff1a6d.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "95a0e8f9-08e4-4a92-8e3d-05f953d9f610",
+    "entity_id": "o_tablet",
+    "reference_type": "object_reference",
+    "angle_or_view": "three_quarter_hero",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/95a0e8f9-08e4-4a92-8e3d-05f953d9f610.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "d360fc6e-b4a1-4f5b-9954-6f97b5fc70f1",
+    "entity_id": "o_suit",
+    "reference_type": "object_reference",
+    "angle_or_view": "three_quarter_hero",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/d360fc6e-b4a1-4f5b-9954-6f97b5fc70f1.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "f86ae1d3-0c41-4818-9ce9-f57fa714919c",
+    "entity_id": "o_battery_array",
+    "reference_type": "object_reference",
+    "angle_or_view": "three_quarter_hero",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/f86ae1d3-0c41-4818-9ce9-f57fa714919c.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "a4720539-92a1-4f5d-8e41-d46841034b45",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_closeup",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/a4720539-92a1-4f5d-8e41-d46841034b45.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "38f7ab6b-53c9-4a61-afaa-0b690f985c67",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "profile",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/38f7ab6b-53c9-4a61-afaa-0b690f985c67.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "6a3f1f89-eb88-4313-92fb-c1acfdf717de",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "profile",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/6a3f1f89-eb88-4313-92fb-c1acfdf717de.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "a5fd4c3c-b1d7-4fea-80a6-898132bd54ae",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "three_quarter_neutral",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/a5fd4c3c-b1d7-4fea-80a6-898132bd54ae.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "f1583458-4c6b-4227-b7f6-a6566bb8e876",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "profile",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/f1583458-4c6b-4227-b7f6-a6566bb8e876.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "f0f98f33-ac4a-4311-9a01-da30bc66ffa7",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "identity_outfit_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/f0f98f33-ac4a-4311-9a01-da30bc66ffa7.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "1b7a084e-b0f8-4557-863a-30de11f7830c",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "three_quarter_neutral",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/1b7a084e-b0f8-4557-863a-30de11f7830c.png",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "2a441e85-f8fb-4da5-879c-d9e93af5028f",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "profile_silhouette_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/2a441e85-f8fb-4da5-879c-d9e93af5028f.png",
+    "qa_status": "approved",
+    "stale": true
+  },
+  {
+    "id": "e155d391-9e30-427e-a43b-929aaff04580",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_closeup",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/turnarounds/af9eabbd-ac85-4f64-9f8e-341f55b59db5/face_closeup.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "d8f1847d-32db-4be1-90e1-7f6474bf0dcc",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "outfit_detail",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/turnarounds/af9eabbd-ac85-4f64-9f8e-341f55b59db5/outfit_detail.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "286f7cde-4092-4622-8f0b-e8636d89a1bc",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/286f7cde-4092-4622-8f0b-e8636d89a1bc.png",
+    "qa_status": "rejected",
+    "stale": true
+  },
+  {
+    "id": "dde60d49-01f0-4268-8c45-a7272a583292",
+    "entity_id": "e_ag_spec",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_closeup",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/identity-crops/dde60d49-01f0-4268-8c45-a7272a583292.png",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "835ea4d9-3421-49e0-b65b-431b29b334c4",
+    "entity_id": "e_power_officer",
+    "reference_type": "character_reference",
+    "angle_or_view": "three_quarter_neutral",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/835ea4d9-3421-49e0-b65b-431b29b334c4.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "af9eabbd-ac85-4f64-9f8e-341f55b59db5",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "turnaround_master",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/af9eabbd-ac85-4f64-9f8e-341f55b59db5.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "226c486e-b5b9-4e85-b9af-9f9a237b591b",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "profile",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/226c486e-b5b9-4e85-b9af-9f9a237b591b.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "e7289935-18ec-495f-8f3b-4efadac59038",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "profile",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/e7289935-18ec-495f-8f3b-4efadac59038.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "677ad489-cc72-495f-ad0d-00a908c1834a",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "three_quarter_neutral",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/677ad489-cc72-495f-ad0d-00a908c1834a.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "35d11402-d14a-47f1-8e36-9793d536d668",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_closeup",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/35d11402-d14a-47f1-8e36-9793d536d668.png",
+    "qa_status": null,
+    "stale": false
+  },
+  {
+    "id": "1de0e89a-5dcd-4411-8938-e971434d17f3",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "three_quarter_neutral",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/1de0e89a-5dcd-4411-8938-e971434d17f3.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "99fea9d4-9b36-4584-8b67-c0f3e959116f",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "identity_outfit_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/99fea9d4-9b36-4584-8b67-c0f3e959116f.png",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "6c3c5a8b-4643-4de4-8152-1f311873907d",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "identity_outfit_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/6c3c5a8b-4643-4de4-8152-1f311873907d.png",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "d02666a7-d296-45e0-94c1-2b69f4b49b44",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "profile_silhouette_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/d02666a7-d296-45e0-94c1-2b69f4b49b44.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "c2648891-3b73-49df-be58-f2988ef61ab6",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "identity_outfit_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/c2648891-3b73-49df-be58-f2988ef61ab6.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "bdac332b-9da8-4fce-86db-5ad818ca9848",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "profile_silhouette_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/bdac332b-9da8-4fce-86db-5ad818ca9848.png",
+    "qa_status": "rejected",
+    "stale": true
+  },
+  {
+    "id": "74dece89-1fcd-4860-91aa-802806658bfe",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/74dece89-1fcd-4860-91aa-802806658bfe.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "cdf4021a-82ce-45dd-96fd-658cb5e7db28",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/cdf4021a-82ce-45dd-96fd-658cb5e7db28.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "42eb54e2-cfbb-4b86-9680-c90c50dfe0be",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "identity_outfit_side",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/42eb54e2-cfbb-4b86-9680-c90c50dfe0be.png",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "07915a03-6266-4c7f-ac6f-cd129587be73",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "identity_outfit_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/07915a03-6266-4c7f-ac6f-cd129587be73.png",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "2c6b03a7-cd56-44c5-8896-5fc5d39c8e0a",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "back",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/turnarounds/af9eabbd-ac85-4f64-9f8e-341f55b59db5/back.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "e0813665-6e7f-40bc-b752-c83b201ae920",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/e0813665-6e7f-40bc-b752-c83b201ae920.png",
+    "qa_status": "rejected",
+    "stale": true
+  },
+  {
+    "id": "c13f17dd-e4b5-4e1e-bd05-37c51c61b784",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "identity_outfit_side",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/c13f17dd-e4b5-4e1e-bd05-37c51c61b784.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "9af9532e-ef51-4f60-a6b9-3d38f4e74a1f",
+    "entity_id": "e_technician",
+    "reference_type": "character_reference",
+    "angle_or_view": "character_reference_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/9af9532e-ef51-4f60-a6b9-3d38f4e74a1f.png",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "6614e3a8-9039-4309-afa3-309462754fa0",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/6614e3a8-9039-4309-afa3-309462754fa0.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "47ee79d5-6fdf-48e8-9b10-fac24a4769c1",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "identity_outfit_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/47ee79d5-6fdf-48e8-9b10-fac24a4769c1.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "04cf3c25-a973-4e4e-a40d-7c37d7b0a799",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/04cf3c25-a973-4e4e-a40d-7c37d7b0a799.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "438fcc39-dcbe-464a-be2d-98224e600b29",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/438fcc39-dcbe-464a-be2d-98224e600b29.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "29c9e14e-4a56-4ba3-99a9-9bd640aa8136",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "identity_outfit_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/29c9e14e-4a56-4ba3-99a9-9bd640aa8136.png",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "ed3c403b-8895-40df-900f-c8f5ee792674",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/ed3c403b-8895-40df-900f-c8f5ee792674.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "f386b9ea-5f0f-4a85-b24a-9a6cbf754384",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "identity_outfit_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/f386b9ea-5f0f-4a85-b24a-9a6cbf754384.png",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "fe744bb6-aec0-432f-84d6-7edc74533d5c",
+    "entity_id": "e_technician",
+    "reference_type": "character_reference",
+    "angle_or_view": "three_quarter_neutral",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/fe744bb6-aec0-432f-84d6-7edc74533d5c.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "0729ff4e-4964-4fca-abeb-69d6987e55db",
+    "entity_id": "e_ag_spec",
+    "reference_type": "character_reference",
+    "angle_or_view": "three_quarter_neutral",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/0729ff4e-4964-4fca-abeb-69d6987e55db.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "81dac17e-8d1f-4f4b-83ca-647c18dbc7d7",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "identity_outfit_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/81dac17e-8d1f-4f4b-83ca-647c18dbc7d7.png",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "20dd2e04-c2d3-43f8-90cb-d426946002d6",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/20dd2e04-c2d3-43f8-90cb-d426946002d6.png",
+    "qa_status": "approved",
+    "stale": true
+  },
+  {
+    "id": "7996b629-a90f-477d-885e-7d526d35b213",
+    "entity_id": "e_technician",
+    "reference_type": "character_reference",
+    "angle_or_view": "character_reference_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/7996b629-a90f-477d-885e-7d526d35b213.jpg",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "cb5a59e6-0b40-487a-96a6-4a136340e930",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "identity_outfit_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/cb5a59e6-0b40-487a-96a6-4a136340e930.png",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "b078fae0-bffd-44dc-be84-55b5c19dd413",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "profile_silhouette_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/b078fae0-bffd-44dc-be84-55b5c19dd413.png",
+    "qa_status": "approved",
+    "stale": true
+  },
+  {
+    "id": "323e15d7-44f7-4a92-8997-784782132fa8",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "profile_silhouette_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/323e15d7-44f7-4a92-8997-784782132fa8.png",
+    "qa_status": "approved",
+    "stale": true
+  },
+  {
+    "id": "6b8c9166-3f3a-4a4e-b76e-343b471b9008",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "profile",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/turnarounds/af9eabbd-ac85-4f64-9f8e-341f55b59db5/profile.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "6437d0ea-9de8-4ba8-abd6-2334e1f24631",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "three_quarter_neutral",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/turnarounds/af9eabbd-ac85-4f64-9f8e-341f55b59db5/three_quarter_neutral.png",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "3a297e2c-5cc8-4560-b6f7-5bf4939c6d91",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "character_reference_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/3a297e2c-5cc8-4560-b6f7-5bf4939c6d91.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "ccd70bcf-f720-4785-a6dc-5ba987694697",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/ccd70bcf-f720-4785-a6dc-5ba987694697.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "05245892-c278-42b7-8010-aca703a96106",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "profile_silhouette_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/05245892-c278-42b7-8010-aca703a96106.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "421af16c-de57-4e7b-ba9d-79ac1ba43cff",
+    "entity_id": "e_technician",
+    "reference_type": "character_reference",
+    "angle_or_view": "character_reference_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/421af16c-de57-4e7b-ba9d-79ac1ba43cff.jpg",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "1f2fdccf-8344-41ac-9141-ea0435b38412",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "face_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/1f2fdccf-8344-41ac-9141-ea0435b38412.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "c758b81c-fb99-4058-a971-1372e514ff62",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "character_reference_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/c758b81c-fb99-4058-a971-1372e514ff62.jpg",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "29bff6f3-6dd9-49c0-bd1b-7dbdc1f4f28c",
+    "entity_id": "e_ag_spec",
+    "reference_type": "character_reference",
+    "angle_or_view": "character_reference_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/29bff6f3-6dd9-49c0-bd1b-7dbdc1f4f28c.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "49058048-8235-4aea-bdde-9886071cce46",
+    "entity_id": "e_ag_spec",
+    "reference_type": "character_reference",
+    "angle_or_view": "character_reference_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/49058048-8235-4aea-bdde-9886071cce46.jpg",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "944a13e5-c03a-47b5-9316-a29f3ce66070",
+    "entity_id": "e_protagonist",
+    "reference_type": "character_reference",
+    "angle_or_view": "character_reference_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/944a13e5-c03a-47b5-9316-a29f3ce66070.png",
+    "qa_status": "rejected",
+    "stale": false
+  },
+  {
+    "id": "1f0cf8cd-44aa-403a-a332-7da2626404e9",
+    "entity_id": "e_technician",
+    "reference_type": "character_reference",
+    "angle_or_view": "character_reference_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/1f0cf8cd-44aa-403a-a332-7da2626404e9.jpg",
+    "qa_status": "approved",
+    "stale": false
+  },
+  {
+    "id": "e40ea9c0-0850-40f5-bf77-c151d5af33de",
+    "entity_id": "e_power_officer",
+    "reference_type": "character_reference",
+    "angle_or_view": "character_reference_sheet",
+    "result_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/runware/images/e40ea9c0-0850-40f5-bf77-c151d5af33de.jpg",
+    "qa_status": "approved",
+    "stale": false
+  }
+]

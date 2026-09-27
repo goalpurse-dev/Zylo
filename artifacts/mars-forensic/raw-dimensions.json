@@ -1,0 +1,1706 @@
+[
+  {
+    "shot": 1,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a06dlim3/ws/4/ii/d13f092f-450d-4c96-8166-e1088eaf1246.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "92f3f806b8a26f0602e4611322551716d60ec2ccf14fdc2fc0924a774bf44b2d"
+      }
+    ]
+  },
+  {
+    "shot": 2,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a10dlim3/ws/4/ii/2c583056-275d-498d-86a1-56149c59ec17.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "af77dd378dc6f7c455ea3435aaa21912e3963b21bf3a3da3f22da012ca24a647"
+      }
+    ]
+  },
+  {
+    "shot": 3,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/dd2a3155-fbf8-4acd-9964-117117d6af16.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "836d864acebd75e39d0de87d16c83ab6889692dba860c3672845e1303aad8302"
+      }
+    ]
+  },
+  {
+    "shot": 4,
+    "provider": null,
+    "model": "klingai:kling-image@o3",
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 5,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a10dlim3/ws/4/ii/f5191a64-1fee-4b75-858d-1da57c4d7eac.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "ec53dfd5842786c5bdb8c91d36e03bcb956a10e026fb41733458af1ec9d707e0"
+      }
+    ]
+  },
+  {
+    "shot": 6,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a05d22/ws/3/ii/c4698a80-89f0-4ef8-ae7a-51d29cbd950d.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "0c010d8166585399ca819854155bf1f32ca19ecb5a614f395447aea180f20513"
+      }
+    ]
+  },
+  {
+    "shot": 7,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a04d20/ws/3/ii/8084018b-ea3d-46e6-90a5-1a42eba5a224.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "1f68f278bda8e7dca5e64ac2f5e477afd9db1272da71768c302d3c3336727e9c"
+      }
+    ]
+  },
+  {
+    "shot": 8,
+    "provider": null,
+    "model": "klingai:kling-image@o3",
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 9,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a05d22/ws/4/ii/f59c70a6-f556-4240-a491-b553edbade76.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "06efe15fbda00dcde6af0ccaa04d194f1e613722f8e3388aa45416022a6c9ad4"
+      }
+    ]
+  },
+  {
+    "shot": 10,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/d45ff504-3ee9-4047-8c20-4914a83355c4.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "87ff380fc9558201458282ffe1c78b7123b498cb0eeb300d73a9905a32f9541b"
+      }
+    ]
+  },
+  {
+    "shot": 11,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a04d20/ws/4/ii/cb04eb37-9dbf-46ff-9fae-d2a02fb3af04.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "64542e85ecc3043477009a1f9668242c0a53083c3e00cee95f66f2b62c589204"
+      }
+    ]
+  },
+  {
+    "shot": 12,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 13,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a06dlim3/ws/4/ii/79a7f6d8-9e6e-4c35-bc30-0af9f654e75f.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "b082ed787fe3fa868c52cd5b6113fe1e85bea59480fe601310c8f8725ccf261a"
+      }
+    ]
+  },
+  {
+    "shot": 14,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a10dlim3/ws/4/ii/6521e014-db24-469e-a5f2-7e00d2fb8da4.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "5ac0a1c8092cfef56bd8648a6378b4b83ed439861b7d5176f62534dd0b73de26"
+      }
+    ]
+  },
+  {
+    "shot": 15,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a10dlim3/ws/4/ii/56010129-68b0-4cf7-baec-2ba67cb9e901.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "a3ab90f70791b7ee97ad01918a12b96656efd4159f8092a1aed83c130a8cc257"
+      }
+    ]
+  },
+  {
+    "shot": 16,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a07dlim3/ws/4/ii/51ca19c3-366e-4513-830c-83ff888deb49.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "5acb1d53eca8720bb7319189ea699e27cad684b0f7f74697817bf57bb7c97758"
+      }
+    ]
+  },
+  {
+    "shot": 17,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 18,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a09dlim3/ws/4/ii/654a0c1e-7914-4751-9445-422660b6061d.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "1c6de9ff0b4655c3179b77c49a63e3574b10edb373c59c1058577be4d0ddde75"
+      }
+    ]
+  },
+  {
+    "shot": 19,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 20,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a07dlim3/ws/4/ii/408ed506-8a66-4e27-8ca0-4255dd61c9fb.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "5fe3c587ae0bf5b0649e6b43f603e829b8d46ff063a579a03836fcdc69043921"
+      }
+    ]
+  },
+  {
+    "shot": 21,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a09dlim3/ws/4/ii/ddb84f9d-be11-49c5-a96f-20c345277421.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "dcc941c15d2d41806c9b2bddafd4e5343ada1681f056e52112d56afdbad46f29"
+      }
+    ]
+  },
+  {
+    "shot": 22,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 23,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a09dlim3/ws/4/ii/a5aa1cf4-b6a4-4b12-8af4-00fe5a009e3f.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "af776695866e3e19590318fd00932ffc1c8f5e5ccddf2ef8b70693057b77414e"
+      }
+    ]
+  },
+  {
+    "shot": 24,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a03d21/ws/4/ii/d128ba28-fd62-471c-80c8-f84d46be965e.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "e8517be9a844813b472b9a51284b6c1ff33a8a665c4a7549c8530fbfc4b9258b"
+      }
+    ]
+  },
+  {
+    "shot": 25,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/26fcfe79-f621-4d88-9ba1-e47cd5302d84.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "907a4c870e42e61d5c90c08a0a4497eec2e59e96a82357e5a44fb0ae16ce72eb"
+      }
+    ]
+  },
+  {
+    "shot": 26,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a06dlim3/ws/4/ii/42978dad-ef42-4f09-9cc4-509b16694c1b.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "9f2e11c84013e8750ffc27bbfc70a41b5300a61f18edb105a353b2a949e0d8d3"
+      }
+    ]
+  },
+  {
+    "shot": 27,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a07dlim3/ws/3/ii/738f63cb-062e-4063-b02e-4d57590e4ea6.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "8a8e82b60b62084751a244325748390273bcecd3122d5b040d6adb6f62fe9025"
+      }
+    ]
+  },
+  {
+    "shot": 28,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a01d21/ws/4/ii/ec2fa707-79e9-4e60-ab64-46609f30c0ca.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "a12462eab5725330b4bb226928b2eefcfad216638a0129cce8e45977dbb32efb"
+      }
+    ]
+  },
+  {
+    "shot": 29,
+    "provider": null,
+    "model": "klingai:kling-image@o3",
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 30,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a01d21/ws/3/ii/2c8253ff-12d8-47df-a9c2-29d263692967.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "1bc38f5f2f84bbf4445bf330ba9fe2f480e0d91e49ec85b1e743e4118496afd5"
+      }
+    ]
+  },
+  {
+    "shot": 31,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a02d21/ws/4/ii/cf51ab08-fc18-49af-85ea-3930076c3f63.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "354f8011dacece85692913ba479b7dce04dc21a128d595609577d0ea0bd0eb4a"
+      }
+    ]
+  },
+  {
+    "shot": 32,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a08dlim3/ws/4/ii/4bdd8984-67c0-4f4c-8b43-a81a62bdd9de.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "a45e6dda3d33271fddc45ac3770a5df653b374f8af7bb4be98a17325640a56d3"
+      }
+    ]
+  },
+  {
+    "shot": 33,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a03d21/ws/4/ii/89c64786-daec-4231-8cf7-80872cae9108.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "7e7661fa3e2e2da5872b2aa57e43464f03f1314a5f630620445853af5665dc5f"
+      }
+    ]
+  },
+  {
+    "shot": 34,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a05d22/ws/3/ii/02b25a04-7fd1-4b9c-ac22-87dadc5582f8.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "84de3b82e5297911a2ab39068d0348e2074ea5c59589b584bd7a97195e421e3f"
+      }
+    ]
+  },
+  {
+    "shot": 35,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a05d22/ws/3/ii/5bcbe4cb-b0f3-497f-ae44-f5305af818c0.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "5b8bcb945f00a90c621985672e12f2c8d7a42c7432b6965f4293939f14b73282"
+      }
+    ]
+  },
+  {
+    "shot": 36,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a04d20/ws/3/ii/5b5f218a-b953-4e05-a470-af739c04f88a.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "0d0d9d9c081f4441256cabddc8e791176d88e875b0dbf4a3a311ec5ac3b9a042"
+      }
+    ]
+  },
+  {
+    "shot": 37,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a05d22/ws/4/ii/0f784b53-fa3f-429c-8716-9f524c3cf59c.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "5522c2cd7ac16aabe102298badc9ed4e808e688619e3437b94367e07b11b9658"
+      }
+    ]
+  },
+  {
+    "shot": 38,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a09dlim3/ws/4/ii/16e53503-c1bd-4b0a-908e-da704a1e1314.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "fea85e53594d3e7264599e98c72f0bdbbef8ff1af81616d4eb28ba2ad7a21010"
+      }
+    ]
+  },
+  {
+    "shot": 39,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a10dlim3/ws/4/ii/cde944f8-8cfe-4513-86bd-d6381c6fec98.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "2afab3a0ee3b713c7b0d5fa28a0f7e8149bacccf2b607787a1ccb1734d0f55e0"
+      }
+    ]
+  },
+  {
+    "shot": 40,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a08dlim3/ws/4/ii/5e0a613a-5fe0-4ac8-bb24-fddca4e4a873.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "b26cbdd046522cd50ef6da7179d68699b07b4b26f4d7c1a5e04466302eeee4c1"
+      }
+    ]
+  },
+  {
+    "shot": 41,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 42,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a06dlim3/ws/4/ii/6d7b53a0-84ff-44b7-a0d0-46a8d22b92b8.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "ee36c662555b8a2bd8817b749027f2799475c2480e13da5bae7bdfaf6e1df7f3"
+      }
+    ]
+  },
+  {
+    "shot": 43,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/705c2091-ee64-4113-bd12-4e0258569994.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "50f11dedf111aa901ef22e845e39824567c5b4a7899cbe7a84164ed796e3cc4b"
+      }
+    ]
+  },
+  {
+    "shot": 44,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a06dlim3/ws/4/ii/42b248e2-380f-4bfe-91b0-602b2000572b.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "504e3965e43205a801a6fa0c0d2ecf5224d9904d8ea00862b4fc63558ceb2f9e"
+      }
+    ]
+  },
+  {
+    "shot": 45,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 46,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a02d21/ws/4/ii/f8640fea-203f-47a9-af92-29ec5e1f05dd.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "427fc312cda798d0e9f8eba8a06afca19f33a8eaa50924ed2c9a4fbd3f43d9bc"
+      }
+    ]
+  },
+  {
+    "shot": 47,
+    "provider": null,
+    "model": "klingai:kling-image@o3",
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 48,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a06dlim3/ws/4/ii/0e932fac-5de8-489d-ab35-fc83c897bf61.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "2b9ca8a4d2a8f3fdbe0780d9193594891109e926ff93505e1a9b6764c965e6aa"
+      }
+    ]
+  },
+  {
+    "shot": 49,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a06dlim3/ws/4/ii/336bfb90-4c99-456b-8a6d-be91aabdea8d.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "8d18641dd409773a6e5606524f9be6e22e8de4dd8261b29c7756abfb614eb389"
+      }
+    ]
+  },
+  {
+    "shot": 50,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a04d20/ws/4/ii/04c87512-539f-46b4-835e-dc1d3a590dc7.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "c1083545fb894297f36e629ef8713f1c6302400aeb0b1a441c3ebef2eccfc595"
+      }
+    ]
+  },
+  {
+    "shot": 51,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a07dlim3/ws/4/ii/fd88a084-9ab3-4877-89c1-ba9c121efff6.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "6d611cbbd451d708a1f12f22abfe60a2106538fe97d4390486c1ef77534b819a"
+      }
+    ]
+  },
+  {
+    "shot": 52,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 53,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 54,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 55,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 56,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 57,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 58,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 59,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 60,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 61,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 62,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 63,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 64,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 65,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 66,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 67,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a03d21/ws/4/ii/523df0c9-335a-4f99-b120-9bcc751dcfec.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "ccf695d96431ce048c37ca3a041eb7e7616f3034033eee68fd222f33fc507800"
+      }
+    ]
+  },
+  {
+    "shot": 68,
+    "provider": null,
+    "model": "klingai:kling-image@o3",
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 69,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a07dlim3/ws/4/ii/fb54d705-733b-4ff1-83c7-d64eac6004fa.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "1fc15cb7a6589a5b8dc70f2d593df8b9495bec29f25c5af496db63236066050b"
+      }
+    ]
+  },
+  {
+    "shot": 70,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 71,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 72,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 73,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 74,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a06dlim3/ws/4/ii/0c6795b5-8939-44b9-a13f-d38d7288e7b2.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "2843689a05d54eb40f5ad8a41df906a1bfa4680bb7b6b4929aa7e708930bfdf7"
+      }
+    ]
+  },
+  {
+    "shot": 75,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a09dlim3/ws/4/ii/9e5093ae-7508-4294-98c9-c1aa49403a3e.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "1fbe11e8ea4914cc02f18be6a40270cdc5f0362d811caaf4b86005f9b7000ea3"
+      }
+    ]
+  },
+  {
+    "shot": 76,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a07dlim3/ws/4/ii/b06aee74-640b-47b2-ae4b-bd2927ba7f85.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "1cbbc76b0ba67cb3adb7c313e7609ccaab16ac86d13559538141d8d04f22ebf5"
+      }
+    ]
+  },
+  {
+    "shot": 77,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/f4bd62de-7dae-40de-9f25-9af5c64606cf.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "dad59eb4e7de41d0ee3c2bc2c91b7fa94829303f0d9bc6eb20c30ed946cf0ce1"
+      }
+    ]
+  },
+  {
+    "shot": 78,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a08dlim3/ws/3/ii/18b06577-6680-49df-aaa8-1be77dfbdd5f.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "6d6c704be53c2af45f5d6a3995094441cbb8a261723add1732cfff0fae31f1a7"
+      }
+    ]
+  },
+  {
+    "shot": 79,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a09dlim3/ws/4/ii/62aa80ea-4960-4697-8273-66bea87302bc.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "6cead067acfd4cb3fa26996fb516d2809d39ae526d00debea49221e612a1ead8"
+      }
+    ]
+  },
+  {
+    "shot": 80,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a02d21/ws/3/ii/b32c927e-1a74-4a73-80da-84cd19f390f0.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "37400675bc62d8015235f655653c049cd7750a7aa269305660f3eec5b530be0f"
+      }
+    ]
+  },
+  {
+    "shot": 81,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a04d20/ws/4/ii/c7698709-a1eb-45d5-b955-e881bb727d04.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "3c0dcdca453193891e60a0ca4c5e7cc0d07ded5189b8eef6e7a3cde462218a45"
+      }
+    ]
+  },
+  {
+    "shot": 82,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a08dlim3/ws/4/ii/0f87941f-823c-449e-bbec-fbf7962c5715.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "454c2ecaaa4ab1ea0e516f5d03d7dee30985fe61cc3a7a4b50b41ba7bf68a966"
+      }
+    ]
+  },
+  {
+    "shot": 83,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 84,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a05d22/ws/4/ii/f4678c95-ce3c-4c1d-ace8-5b12a7cfa2e1.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "3f5f562cedae9092470e39d9c55b003c29abc987bf848263dd6d3ab74460645d"
+      }
+    ]
+  },
+  {
+    "shot": 85,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/71002c58-b987-487b-8b76-57f06efbe672.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "897f6a03121776b098d871642dec86a3c731875c1edddf27ea79f4f992034904"
+      }
+    ]
+  },
+  {
+    "shot": 86,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a10dlim3/ws/4/ii/c186eccc-7fbd-4257-b352-734ed7e845cf.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "2f1b0c71e4db542850571d85aa9e49498638155e678077d925740581396e9f07"
+      }
+    ]
+  },
+  {
+    "shot": 87,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a08dlim3/ws/3/ii/3d202aba-48c4-4a0a-afa4-008cf0537ca2.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "fd9f21490eb3c8cdca08b1ce771f55edbc69a72d02c7541e529a5e389b80d9a3"
+      }
+    ]
+  },
+  {
+    "shot": 88,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a10dlim3/ws/4/ii/f326a8fb-b3ab-4c8f-8106-8650c46343da.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "41ea1fa08c6533cb2cf21a26f4f76f9d8bb4e49f7f0a9386c22c2e7ecbd5f94a"
+      }
+    ]
+  },
+  {
+    "shot": 89,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/09a423eb-6448-4ff0-ab08-228b1d6e2b23.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "45d7739248c6a745dbd92e407ad7d3d318cec0f43b3dd119e036505ad8cdc05c"
+      }
+    ]
+  },
+  {
+    "shot": 90,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a03d21/ws/3/ii/9a23d891-779b-42e4-a1fe-46218d6a60ed.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "b0998fed1ad63bfa4e0850c33fe2553ff27716017c77075965d2a8b0ae4342e1"
+      }
+    ]
+  },
+  {
+    "shot": 91,
+    "provider": null,
+    "model": "klingai:kling-image@o3",
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 92,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 93,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 94,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a07dlim3/ws/4/ii/dfa11791-0249-4c25-a855-19761fb50d06.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "4e699531799a4effe41eec4bd2c3954a580dc31128042f3055550597054afe19"
+      }
+    ]
+  },
+  {
+    "shot": 95,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 96,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 97,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 98,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 99,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a09dlim3/ws/4/ii/e1973118-bbfc-40a6-b88c-b884f32175a7.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "f3057d5f59e9ab02055529e7bde64c35e036498bfb0ad54407c9d2d74d21afc7"
+      }
+    ]
+  },
+  {
+    "shot": 100,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a06dlim3/ws/4/ii/a49a9ecf-2a32-40bb-85c8-9804e5e801cd.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "4cafce301611950d7682425075372f3e27096ee6970c51d6810ba8cc682b6f13"
+      }
+    ]
+  },
+  {
+    "shot": 101,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a01d21/ws/3/ii/f839ce21-1137-4e26-86b0-4757560d3696.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "a9bf9d905849d94c2b5464f5c537e717015ec74622f7dc38f8b53e22d4504f50"
+      }
+    ]
+  },
+  {
+    "shot": 102,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a01d21/ws/3/ii/dc7c11ec-dd25-4cb3-a79d-b43efbaeedf1.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "7212014d0cf83f500537d12be163540708224c5444d94598ef5b3d10607d7480"
+      }
+    ]
+  },
+  {
+    "shot": 103,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a04d20/ws/4/ii/68fb018b-d9d2-4d4c-9832-244e6325921c.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "5b3d2a1451f7afb6ac7a191ac36aa129a3b01bb200ff2f51ff89b15fe780954e"
+      }
+    ]
+  },
+  {
+    "shot": 104,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a08dlim3/ws/4/ii/6c06ceaa-41f6-4f4a-8388-0fe0a0453b9d.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "459c79bed8b496a017339d8e299c4f351ffe3e7bceb8c25554dc71daabd4a2f7"
+      }
+    ]
+  },
+  {
+    "shot": 105,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 106,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a05d22/ws/4/ii/aa61a6fa-7b41-4474-9bed-4818716ba298.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "60f62224bed5a5f068b77bba31041efe07304b1f99ea65c9f6fe8a92f7839e16"
+      }
+    ]
+  },
+  {
+    "shot": 107,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a05d22/ws/4/ii/2c70d672-d22e-49c3-8a5f-21fa56e4a7d4.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "660ceb244f7bca04bfb993175ab4fb65d2626e348cc2b6e5e670aff1c3f72351"
+      }
+    ]
+  },
+  {
+    "shot": 108,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a05d22/ws/4/ii/9f08e675-6dd9-4067-90ab-a28c2c0709fb.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "c994fec05482af70c11e99020e9eee1c1fc113f9820d1c12c3ef4fd4fe844bd8"
+      }
+    ]
+  },
+  {
+    "shot": 109,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a07dlim3/ws/4/ii/9436680e-ecba-4372-8aff-b8019a850986.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "40bd90eb3895709d0a95248094cc9c95d1554734d83494e48526a4c77fad99ea"
+      }
+    ]
+  },
+  {
+    "shot": 110,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a08dlim3/ws/4/ii/a7df37d4-8404-4f3c-bdfd-a5bb1248dcef.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "96ebdada1690f0bcb6e52d5b4ea658807cef21b0f560b12e804bddbecd783f7a"
+      }
+    ]
+  },
+  {
+    "shot": 111,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 112,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a04d20/ws/4/ii/505ce5ef-b882-44ee-b7e0-ef5ffd7d0675.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "09d4a1e4bc74a87ab1db2c28bea73a73b58bb056ab1896437883e5b8c2cabe3f"
+      }
+    ]
+  },
+  {
+    "shot": 113,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 114,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a01d21/ws/4/ii/e8ce66c9-6d77-47b8-8640-de52aaa12765.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "2c36fc12d1adc8f3cc724c008a6a86c7afa39202b3503116755b52bfc6e904c3"
+      }
+    ]
+  },
+  {
+    "shot": 115,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a02d21/ws/3/ii/b0489785-1649-4e86-9a19-981f38eb0782.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "64ead85818a6a41ef324001be8ce459fec3efd4461948dd14dc9767bd1c8794c"
+      }
+    ]
+  },
+  {
+    "shot": 116,
+    "provider": null,
+    "model": "klingai:kling-image@o3",
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 117,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/a9d32e0e-6306-4bf6-a16a-5e27558f0715.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "851c9bc4bbfc94e7e0e0fc683eb0f941b27f99e11f0a00326f12df0c1a664e03"
+      }
+    ]
+  },
+  {
+    "shot": 118,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a08dlim3/ws/4/ii/29daf83b-9c2b-423d-9582-9d2418bec5c8.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "2dd93745f17cfa436ab2c7219fd5b7812b9d675b071070d780a059a15c250e37"
+      }
+    ]
+  },
+  {
+    "shot": 119,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/c9df4a11-1354-458a-9a91-07f9a18e095b.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "1c8f8c73f4f9873435ddbd91cdcc8b8d642f62a4cc654ad36b0f3eb5930a3a04"
+      }
+    ]
+  },
+  {
+    "shot": 120,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a08dlim3/ws/4/ii/e102897d-0e1d-4c08-854e-4dccb506f8f7.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "38501333755b40b5f1a99e5fc47985ea31b7282018764692caa12120e63adbb9"
+      }
+    ]
+  },
+  {
+    "shot": 121,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a05d22/ws/3/ii/ba078c32-101a-4cb1-ae85-1d2c35e38faa.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "36e05a183f9d8dd58df44d412c95908a0e510c27c99e6d6be9f6f968876e6e1a"
+      }
+    ]
+  },
+  {
+    "shot": 122,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a05d22/ws/3/ii/074c7833-d8da-49c7-9a55-bb2150cdd8de.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "87b10d77d7a6ac82e1e0e3cfd6d0e251362e8101e691ddc0c99ed885a151534d"
+      }
+    ]
+  },
+  {
+    "shot": 123,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 124,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 125,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 126,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 127,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 128,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a04d20/ws/4/ii/a71207d1-aba8-4047-9d4b-db16b829219c.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "5d4d7b164c08ccaf8aab3c5ada59c995b22cb996b7a1c9baff58a006216e8963"
+      }
+    ]
+  },
+  {
+    "shot": 129,
+    "provider": null,
+    "model": null,
+    "requested_width": null,
+    "requested_height": null,
+    "raw_outputs": []
+  },
+  {
+    "shot": 130,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a04d20/ws/4/ii/d8934cf3-a8e2-4fdd-b7fd-e1380ab49f49.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "4247767b0692abf12e939397a225ffc8fd72b2f601f5740027c63f67cedb7e2e"
+      }
+    ]
+  },
+  {
+    "shot": 131,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a02d21/ws/4/ii/ef6663a2-68ef-47a0-b9d6-ef0699ef3429.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "4ab29083a995d8dc4b76bd7d10c4efbed0159d248fc186a69479593bb49b355e"
+      }
+    ]
+  },
+  {
+    "shot": 132,
+    "provider": "runware",
+    "model": "runware:108@22",
+    "requested_width": 1536,
+    "requested_height": 864,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a01d21/ws/3/ii/67ccef0b-5fc6-4388-9a3c-ba65448fd0ce.png",
+        "width": 1536,
+        "height": 864,
+        "pixel_sha256": "9220507fa79cc2756a62194a68b39cda20863f5d23bea1887cd6b4cc4c0f51cf"
+      }
+    ]
+  },
+  {
+    "shot": 133,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a01d21/ws/4/ii/28df7416-d02c-405c-859e-f12ea128d7c3.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "9fd0544b2ab91e3953bab46d84e597e8e26b348fe709875dbb0078104ef37ba1"
+      }
+    ]
+  },
+  {
+    "shot": 134,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a07dlim3/ws/4/ii/6bd5b8bf-f87e-4496-b051-b20a8784d2e3.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "30b28649db40a2eff1459e6885b40146b331d50c02654a06f287d50658a0cae5"
+      }
+    ]
+  },
+  {
+    "shot": 135,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a02d21/ws/4/ii/1e8d5e30-7320-4fd4-925c-9a07a40f0807.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "7bc351057238b7b281b7c80d91873c0cefada627bef13c8f2e1ceb0aec23aca5"
+      }
+    ]
+  },
+  {
+    "shot": 136,
+    "provider": "runware",
+    "model": "klingai:kling-image@o3",
+    "requested_width": 2720,
+    "requested_height": 1536,
+    "raw_outputs": [
+      {
+        "url": "https://im.runware.ai/image/os/a01d21/ws/4/ii/547b7a80-e658-4106-abfa-26a69b59fc58.jpg",
+        "width": 2720,
+        "height": 1536,
+        "pixel_sha256": "b6c68ad59ec2ca413713e71395724b33e741c0380ad5c460f161e13109aaf498"
+      }
+    ]
+  }
+]

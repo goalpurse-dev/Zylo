@@ -6,6 +6,7 @@ import {
   ProviderReferenceError,
   assertProviderAccessibleImageUrl,
 } from "../_shared/referenceImages.ts";
+import { snapToSupportedDimensions, clampReferenceImageCount } from "../_shared/imageDimensionPolicy.ts";
 
 function logEvent(level: LogLevel, event: string, ctx: Record<string, unknown> = {}) {
   const safeCtx = JSON.parse(JSON.stringify(ctx, (_key, value) =>
@@ -54,22 +55,48 @@ function makeSb() {
   return createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 }
 
+// 2026-09-22 error-taxonomy fix — real incident: a systemic provider-
+// adapter bug (unsupported parameter, broken reference transport) affecting
+// every Kling O3 job in a run was flattened to the SAME generic
+// PROVIDER_GENERATION_FAILED as an ordinary one-off provider hiccup, making
+// it look like 13 independent image failures instead of one root cause. The
+// DB/logs now keep the real, specific code; only the user-facing message
+// stays friendly.
 function stableImageFailure(raw: unknown): { code: string; message: string } {
   const value = String(raw ?? "");
-  if (value === "REFERENCE_IMAGE_NOT_ACCESSIBLE" || value === "REFERENCE_IMAGE_EXPIRED") {
+  if (value === "REFERENCE_IMAGE_NOT_ACCESSIBLE" || value === "REFERENCE_NOT_ACCESSIBLE" || value === "REFERENCE_IMAGE_EXPIRED") {
     return {
-      code: value,
+      code: value === "REFERENCE_IMAGE_NOT_ACCESSIBLE" ? "REFERENCE_NOT_ACCESSIBLE" : value,
       message: value === "REFERENCE_IMAGE_EXPIRED"
         ? "This reference image is no longer available. Please select it again."
         : "This reference image isn't accessible. Please select it again.",
     };
   }
   if (value === "INSUFFICIENT_CREDITS") return { code: value, message: "You don't have enough credits for this generation." };
+  // A required reference could not be prepared for the provider (e.g. its
+  // re-upload/transport step failed) — distinct from the image simply being
+  // inaccessible: the SOURCE url was fine, the TRANSPORT step to get it into
+  // the provider's expected shape failed.
+  if (value === "REFERENCE_TRANSPORT_FAILED" || /imageupload failed|required references? lost/i.test(value)) {
+    return { code: "REFERENCE_TRANSPORT_FAILED", message: "This reference image couldn't be prepared for the provider. Please try again." };
+  }
+  // Runware rejects task CREATION (never reaches inference, never billed) for
+  // a request parameter the selected model doesn't support — a configuration
+  // bug, not a content/creative problem.
+  if (/unsupported use of ['"]?\w+['"]? parameter|not supported for the selected model/i.test(value)) {
+    return { code: "PROVIDER_UNSUPPORTED_PARAMETER", message: "This image couldn't be generated due to a provider configuration issue. Please try again." };
+  }
   if (/safety|moderation|content.?policy|invalidprovidercontent/i.test(value)) {
     return {
       code: "PROVIDER_SAFETY_REJECTION",
       message: "The provider couldn't generate this request because of its safety rules. Try changing the prompt or image.",
     };
+  }
+  // Runware rejected task creation for some OTHER reason (HTTP 400/422, a
+  // malformed request) — still a pre-inference rejection (safe to retry,
+  // never billed), just not one of the specific configuration bugs above.
+  if (/^runware rejected task/i.test(value)) {
+    return { code: "PROVIDER_TASK_REJECTED", message: "The provider rejected this request. Please try again." };
   }
   return { code: "PROVIDER_GENERATION_FAILED", message: "The provider couldn't complete this generation. Please try again." };
 }
@@ -427,88 +454,49 @@ function buildReferenceInputs(
   return valid.length > 0 ? { referenceImages: valid } : undefined;
 }
 
-/**
- * Several Runware/OpenAI models only accept an exact set of width×height
- * pairs and reject anything else with "Unsupported use of width/height
- * parameters" — a hard failure with no generation attempted. Snap whatever
- * the client requested to the closest supported aspect ratio per model so
- * the request is never rejected outright.
- */
-const SUPPORTED_DIMENSIONS: Record<string, [number, number][]> = {
-  // Nano Banana 2 (image:nano.2)
-  "google:4@3": [
-    [1024, 1024], [2048, 2048],
-    [1264, 848], [2528, 1696], [848, 1264], [1696, 2528],
-    [1200, 896], [2400, 1792], [896, 1200], [1792, 2400],
-    [928, 1152], [1856, 2304], [1152, 928], [2304, 1856],
-    [768, 1376], [1536, 2752], [3072, 5504], [1376, 768], [2752, 1536], [5504, 3072],
-    [1584, 672], [3168, 1344],
-  ],
-  // Nano Pro (image:nano-pro)
-  "google:4@2": [
-    [1024, 1024], [2048, 2048], [4096, 4096],
-    [1264, 848], [2528, 1696], [5096, 3392], [5056, 3392],
-    [848, 1264], [1696, 2528], [3392, 5096], [3392, 5056],
-    [1200, 896], [2400, 1792], [4800, 3584],
-    [896, 1200], [1792, 2400], [3584, 4800],
-    [928, 1152], [1856, 2304], [3712, 4608],
-    [1152, 928], [2304, 1856], [4608, 3712],
-    [768, 1376], [1536, 2752], [3072, 5504],
-    [1376, 768], [2752, 1536], [5504, 3072],
-    [1548, 672], [1584, 672], [3168, 1344], [6336, 2688],
-  ],
-  // GPT Image 2 — backs image:fruit-v2
-  "openai:gpt-image@2": [
-    [1024, 1024], [2048, 2048],
-    [1248, 832], [2496, 1664], [832, 1248], [1664, 2496],
-    [1168, 880], [2336, 1760], [880, 1168], [1760, 2336],
-    [768, 1360], [1536, 2720], [1360, 768], [2720, 1536],
-    [1552, 656], [3104, 1312],
-  ],
-  // GPT Image 1.5 (image:openai)
-  "openai:4@1": [
-    [1024, 1024], [1536, 1024], [1024, 1536],
-  ],
+// Dimension snapping and reference-count clamping now live in the shared,
+// cross-function policy module (_shared/imageDimensionPolicy.ts) — see that
+// file's own header comment for why (2026-09-14 Qwen 2720x1536 incident:
+// the old local-only table here never covered Qwen/Kling/Klein9B/Seedream
+// at all, so nothing caught an invalid Long Form dimension before it hit
+// Runware). Byte-identical data/behavior for the four models this file
+// already validated (Nano Banana 2, Nano Pro, GPT Image 2, GPT Image 1.5) —
+// snapToSupportedDimensions/clampReferenceImageCount are imported above.
+
+// Kling IMAGE O3 — backs the V3 canonical character_reference_sheet
+// renderer (2026-09-13, image:kling.o3 in src/lib/providers.ts).
+const KLING_O3_AIR = "klingai:kling-image@o3";
+
+// 2026-09-22 "fix the provider adapter, not the topic" pass — real Atlantis
+// incident, TWO separate confirmed-live bugs from treating every model as if
+// it had the SAME request shape as the models this adapter was originally
+// built for:
+//   1. Every reference image, for every model, was unconditionally routed
+//      through uploadImageToRunware (an `imageUpload` task that re-hosts the
+//      image on Runware's own CDN before use). For Kling O3 this call itself
+//      was rejected by Runware (invalidImage, HTTP 400) — before inference
+//      ever started — even though Kling O3's own inputs.referenceImages
+//      accepts an already-public HTTPS URL directly, no re-upload needed.
+//   2. `negativePrompt` was attached to EVERY task whenever the caller had
+//      one, with no per-model check — Runware rejects task CREATION outright
+//      for Kling O3 with "Unsupported use of 'negativePrompt' parameter."
+// Both are model-CAPABILITY facts, not project/topic-specific — this table
+// is the one place either fact is asserted, and every other model's already-
+// working request shape (upload-then-reference, negativePrompt attached)
+// stays completely untouched via the default below.
+type ImageModelCapabilities = {
+  supportsNegativePrompt: boolean;
+  referenceInputMode: "direct" | "upload";
 };
-
-function snapToSupportedDimensions(
-  width: number,
-  height: number,
-  airTag: string,
-): { width: number; height: number } {
-  const supported = SUPPORTED_DIMENSIONS[airTag];
-  if (!supported?.length) return { width, height };
-
-  // Preserve an exact provider-supported size. Several aspect-ratio families
-  // contain 1K, 2K and 4K variants with identical ratios; ratio-only matching
-  // would otherwise select the first (smallest) variant and silently downsize.
-  const exact = supported.find(([candidateWidth, candidateHeight]) =>
-    candidateWidth === width && candidateHeight === height
-  );
-  if (exact) return { width: exact[0], height: exact[1] };
-
-  const targetRatio = width / height;
-  let best = supported[0];
-  let bestDiff = Infinity;
-
-  for (const pair of supported) {
-    const diff = Math.abs(pair[0] / pair[1] - targetRatio);
-    if (diff < bestDiff) {
-      bestDiff = diff;
-      best = pair;
-    }
-  }
-
-  return { width: best[0], height: best[1] };
-}
-
-const MAX_REFERENCE_IMAGES: Record<string, number> = {
-  "openai:gpt-image@2": 4,
+const DEFAULT_IMAGE_MODEL_CAPABILITIES: ImageModelCapabilities = {
+  supportsNegativePrompt: true,
+  referenceInputMode: "upload",
 };
-
-function clampReferenceImages(refs: string[], airTag: string): string[] {
-  const max = MAX_REFERENCE_IMAGES[airTag];
-  return typeof max === "number" ? refs.slice(0, max) : refs;
+const IMAGE_MODEL_CAPABILITIES: Record<string, ImageModelCapabilities> = {
+  [KLING_O3_AIR]: { supportsNegativePrompt: false, referenceInputMode: "direct" },
+};
+function imageModelCapabilities(airTag: string): ImageModelCapabilities {
+  return IMAGE_MODEL_CAPABILITIES[airTag] ?? DEFAULT_IMAGE_MODEL_CAPABILITIES;
 }
 
 /**
@@ -684,6 +672,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
   );
   const safePrompt = safeImagePositivePrompt(prompt);
   const safeNegative = safeImageNegativePrompt(negative);
+  const capabilities = imageModelCapabilities(airTag);
   const existingProviderId = String(settings?.provider_job_id || "");
 
   if (recoverExistingProvider && existingProviderId) {
@@ -691,17 +680,19 @@ async function processRunwareImageJob(body: any): Promise<void> {
     return;
   }
 
-  /* ── Upload reference images ── */
+  /* ── Reference images: direct (already-accessible URL, no re-upload) vs
+     upload (Runware's imageUpload re-hosting step) per model capability ── */
   console.log("[runware-image] received referenceImages", {
     jobId,
     count:   referenceImages.length,
+    referenceInputMode: capabilities.referenceInputMode,
   });
 
   const runwareRefs: string[] = [];
   try {
     referenceImages.forEach((url: string) => assertProviderAccessibleImageUrl(url));
   } catch (e) {
-    const code = e instanceof ProviderReferenceError ? e.code : "REFERENCE_IMAGE_NOT_ACCESSIBLE";
+    const code = e instanceof ProviderReferenceError ? e.code : "REFERENCE_NOT_ACCESSIBLE";
     logEvent("error", "reference_validation_rejected", { jobId, code });
     await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: code });
     return;
@@ -715,6 +706,15 @@ async function processRunwareImageJob(body: any): Promise<void> {
       logEvent("error", "ref_not_https", { jobId });
       continue;
     }
+    if (capabilities.referenceInputMode === "direct") {
+      // Model's inputs.referenceImages accepts an already-public HTTPS URL
+      // directly — the imageUpload re-hosting step below is not just
+      // unnecessary here, it's the exact call that was failing in
+      // production (Runware's imageUpload endpoint rejected these images
+      // with invalidImage before inference ever started).
+      runwareRefs.push(url);
+      continue;
+    }
     try {
       const rwUrl = await uploadImageToRunware(url);
       runwareRefs.push(rwUrl);
@@ -723,7 +723,7 @@ async function processRunwareImageJob(body: any): Promise<void> {
     }
   }
 
-  console.log("[runware-image] runwareRefs after upload", {
+  console.log("[runware-image] runwareRefs ready", {
     jobId,
     uploaded: runwareRefs.length,
     total:    referenceImages.length,
@@ -737,7 +737,12 @@ async function processRunwareImageJob(body: any): Promise<void> {
     logEvent("error", "required_references_lost", {
       jobId, toolKey: airTag, expected: referenceImages.length, uploaded: runwareRefs.length,
     });
-    await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: "REFERENCE_IMAGE_NOT_ACCESSIBLE" });
+    // The URL itself already passed assertProviderAccessibleImageUrl above —
+    // reaching here means the TRANSPORT step (imageUpload re-hosting, for
+    // models still in "upload" mode) failed, not that the source image is
+    // inaccessible. Distinct stable code so this never looks like a bad
+    // reference when it was actually a provider-transport failure.
+    await safeRpc(sb, "finish_job_failed", { p_id: jobId, p_error: "REFERENCE_TRANSPORT_FAILED" });
     return;
   }
 
@@ -752,12 +757,19 @@ async function processRunwareImageJob(body: any): Promise<void> {
   // take longer than the HTTP timeout in sync mode; retrying that timed-out
   // creation POST can make Runware render the same task more than once.
   const providerTaskId = String(settings?.provider_job_id || jobId);
+  // A model with no negativePrompt parameter must not simply lose those
+  // exclusions (anti-text/style/reference-copying rules matter for scene
+  // quality) — fold them into the positive prompt as an explicit AVOID
+  // clause instead of dropping them.
+  const effectivePositivePrompt = safeNegative && !capabilities.supportsNegativePrompt
+    ? safeImagePositivePrompt(`${safePrompt}\nAVOID: ${safeNegative}`)
+    : safePrompt;
   const task: any = {
     taskType:       "imageInference",
     taskUUID:       providerTaskId,
     model:          airTag,
-    positivePrompt: safePrompt,
-    ...(safeNegative ? { negativePrompt: safeNegative } : {}),
+    positivePrompt: effectivePositivePrompt,
+    ...(safeNegative && capabilities.supportsNegativePrompt ? { negativePrompt: safeNegative } : {}),
     width:          safeWidth,
     height:         safeHeight,
     numberResults:  1,
@@ -769,13 +781,19 @@ async function processRunwareImageJob(body: any): Promise<void> {
           skipResponse: settings?.skipResponse ?? openAiSettings?.skipResponse ?? true,
           outputQuality: settings?.outputQuality ?? openAiSettings?.outputQuality ?? 85,
         }
+      // Kling IMAGE O3 (2026-09-13): the real, Runware-verified working
+      // request for this model used JPG output at quality 95 — kept as its
+      // own branch (not a global default) so every other model's proven PNG
+      // behavior is untouched.
+      : airTag === KLING_O3_AIR
+      ? { outputFormat: "JPG", outputQuality: 95 }
       : { outputFormat: "PNG" }),
   };
 
   // Some models cap how many reference images they'll accept (GPT Image 2
   // allows only 1) — clamp before building the payload so Runware never
   // rejects the whole request over an "Invalid number of elements" error.
-  const cappedRefs = clampReferenceImages(runwareRefs, airTag);
+  const cappedRefs = clampReferenceImageCount(runwareRefs, airTag);
   if (cappedRefs.length < runwareRefs.length) {
     logEvent("warn", "refs_capped", { jobId, toolKey: airTag, max: cappedRefs.length, provided: runwareRefs.length });
   }

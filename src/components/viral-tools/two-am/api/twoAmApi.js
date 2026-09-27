@@ -17,17 +17,17 @@ export const IMAGE_QUALITY_TIERS = {
   "twoam-v2": {
     id: "twoam-v2", label: "V2", tag: "Fastest",
     description: "1K — quick generation",
-    toolKey: "image:twoam1k", width: 384, height: 688, creditsPerImage: 5,
+    toolKey: "image:twoam1k", width: 384, height: 688,
   },
   "twoam-v3": {
     id: "twoam-v3", label: "V3", tag: "Balanced",
     description: "2K — sharper detail",
-    toolKey: "image:twoam2k", width: 768, height: 1376, creditsPerImage: 7,
+    toolKey: "image:twoam2k", width: 768, height: 1376,
   },
   "twoam-v4": {
     id: "twoam-v4", label: "V4", tag: "Max detail",
     description: "4K — maximum detail",
-    toolKey: "image:twoam4k", width: 1536, height: 2752, creditsPerImage: 10,
+    toolKey: "image:twoam4k", width: 1536, height: 2752,
   },
 };
 export const DEFAULT_IMAGE_QUALITY = "twoam-v2";
@@ -47,15 +47,23 @@ export function getAllowedImageQualities(planCode) {
   return sharedGetAllowedQualityTiers(planCode, IMAGE_QUALITY_MIN_PLAN);
 }
 
-export function totalCreditsForQuality(qualityId) {
+// Per-image prices come from the server (public.tool_prices) — the same row
+// begin_two_am_generation charges 6× for a slideshow and the jobs trigger
+// charges for a single-scene regenerate. Keyed by tier id.
+export const PRICE_ITEMS = Object.values(IMAGE_QUALITY_TIERS).map((tier) => ({
+  id: tier.id,
+  tool_key: tier.toolKey,
+  input: { width: tier.width, height: tier.height },
+}));
+
+/** Slideshow total for the tier, from quoted prices; null until loaded. */
+export function totalCreditsForQuality(qualityId, prices = {}) {
   const tier = IMAGE_QUALITY_TIERS[qualityId] ?? IMAGE_QUALITY_TIERS[DEFAULT_IMAGE_QUALITY];
-  return tier.creditsPerImage * TWO_AM_IMAGE_COUNT;
+  const perImage = prices[tier.id];
+  return perImage == null ? null : perImage * TWO_AM_IMAGE_COUNT;
 }
 
-// Legacy fixed constants — kept for any stale imports, now mirroring the
-// default (V2) tier rather than the old hardcoded 2K/42-credit setup.
-export const TWO_AM_CREDITS_PER_IMAGE = IMAGE_QUALITY_TIERS[DEFAULT_IMAGE_QUALITY].creditsPerImage;
-export const TWO_AM_TOTAL_CREDITS = totalCreditsForQuality(DEFAULT_IMAGE_QUALITY);
+// Legacy fixed constants — kept for any stale imports, mirroring the default (V2) tier.
 export const TWO_AM_TOOL_KEY = IMAGE_QUALITY_TIERS[DEFAULT_IMAGE_QUALITY].toolKey;
 export const TWO_AM_IMAGE_WIDTH = IMAGE_QUALITY_TIERS[DEFAULT_IMAGE_QUALITY].width;
 export const TWO_AM_IMAGE_HEIGHT = IMAGE_QUALITY_TIERS[DEFAULT_IMAGE_QUALITY].height;
@@ -157,7 +165,6 @@ export async function regenerateTwoAmScene({ worldBible, scene, randomSeed, sett
     size: `${tier.width}x${tier.height}`,
     width: tier.width,
     height: tier.height,
-    chargeCreditsOverride: tier.creditsPerImage,
   });
 }
 

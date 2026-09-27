@@ -1,0 +1,1351 @@
+{
+  "slug": "ancient-humans-after-dark-NOT-READY-run2",
+  "frozenAt": "2026-09-26T19:29:11.631Z",
+  "source": {
+    "projectId": "b91a9132-f9d2-49cb-b58a-6d67b01dca5b",
+    "scriptVersionId": "ffa6d786-09f9-4329-a729-700d4fe9e012",
+    "storyPlanVersionId": "b430c692-405e-4448-9702-c5ad5b2c62a4",
+    "researchVersionId": "d84afb5f-2e98-410d-a088-77736c5a20bf"
+  },
+  "topic": "What Did Ancient Humans Do After Dark?",
+  "niche": "ancient_humans_prehistory",
+  "visualRecipe": "stickman_doodle_explainer",
+  "title": "What Did Ancient Humans Do After Dark?",
+  "targetWords": 1450,
+  "actualWords": 1311,
+  "lengthRatio": 0.904,
+  "status": "needs_attention",
+  "lastErrorCode": null,
+  "models": {
+    "draft": "claude-sonnet-5",
+    "critic": "claude-sonnet-5",
+    "revision": "claude-sonnet-5"
+  },
+  "criticScore": 6,
+  "criticScores": {
+    "hook": 8,
+    "ending": 5,
+    "rhythm": 6,
+    "bridging": 4,
+    "repetition": 5,
+    "specificity": 5,
+    "angleStrength": 6,
+    "visualConcreteness": 8
+  },
+  "judgedScore": 6.5,
+  "costUsd": 0.4278,
+  "callLedger": [
+    {
+      "model": "claude-sonnet-5",
+      "stage": "draft",
+      "inputTokens": 11717,
+      "outputTokens": 10400,
+      "actualToolCalls": 0,
+      "cacheReadTokens": 12035,
+      "cacheWriteTokens": 0,
+      "estimatedCostUsd": 0.1298
+    },
+    {
+      "model": "gpt-5-mini",
+      "stage": "claim_verify",
+      "inputTokens": 5408,
+      "outputTokens": 909,
+      "actualToolCalls": 2,
+      "cacheReadTokens": 0,
+      "cacheWriteTokens": 0,
+      "estimatedCostUsd": 0.0232
+    },
+    {
+      "model": "gpt-5-mini",
+      "stage": "claim_fix",
+      "inputTokens": 2156,
+      "outputTokens": 1409,
+      "actualToolCalls": 0,
+      "cacheReadTokens": 0,
+      "cacheWriteTokens": 0,
+      "estimatedCostUsd": 0.0034
+    },
+    {
+      "model": "claude-sonnet-5",
+      "stage": "critic",
+      "inputTokens": 20017,
+      "outputTokens": 3562,
+      "actualToolCalls": 0,
+      "cacheReadTokens": 0,
+      "cacheWriteTokens": 4512,
+      "estimatedCostUsd": 0.0869
+    },
+    {
+      "model": "claude-sonnet-5",
+      "stage": "revision_selective_revision",
+      "inputTokens": 18830,
+      "outputTokens": 4059,
+      "actualToolCalls": 0,
+      "cacheReadTokens": 0,
+      "cacheWriteTokens": 2413,
+      "estimatedCostUsd": 0.0843
+    },
+    {
+      "model": "gpt-5-mini",
+      "stage": "claim_verify",
+      "inputTokens": 9791,
+      "outputTokens": 908,
+      "actualToolCalls": 2,
+      "cacheReadTokens": 0,
+      "cacheWriteTokens": 0,
+      "estimatedCostUsd": 0.0243
+    },
+    {
+      "model": "claude-sonnet-5",
+      "stage": "critic",
+      "inputTokens": 20427,
+      "outputTokens": 3418,
+      "actualToolCalls": 0,
+      "cacheReadTokens": 4512,
+      "cacheWriteTokens": 0,
+      "estimatedCostUsd": 0.0759
+    }
+  ],
+  "storyPlan": {
+    "chapters": [
+      {
+        "id": "cold_open_01",
+        "role": "cold_open",
+        "title": "By the embers",
+        "purpose": "Drop viewer into the physical, sensory moment of a prehistoric night to create curiosity and emotional investment.",
+        "summary": "A close, sensory scene: small hearth embers, heat on skin, a child's shadow leaning toward a speaker, crisp cold beyond the light — no explanation, only atmosphere.",
+        "subQuestion": "",
+        "targetWords": 67,
+        "keyQuestions": [
+          "What is happening in this small circle of light?",
+          "Who is awake and why?"
+        ],
+        "estimatedMinutes": 0.5,
+        "picturableMoments": [
+          "A thumb-sized ember pulse on a bed of coals",
+          "A child leaning forward with rapt attention",
+          "Dark tree line or cave mouth beyond the fire's glow"
+        ]
+      },
+      {
+        "id": "stakes_01",
+        "role": "stakes",
+        "title": "Why night matters",
+        "purpose": "One-sentence reason the question matters: nights shaped learning, survival and social life across prehistory.",
+        "summary": "A single-fragment statement that how humans used night affects everything from knowledge transfer to risk and group cohesion.",
+        "subQuestion": "",
+        "targetWords": 15,
+        "keyQuestions": [
+          "Why should we care about prehistoric night behavior?"
+        ],
+        "estimatedMinutes": 0.25,
+        "picturableMoments": [
+          "A string of small camps across a landscape at night",
+          "A stick figure placing a child beside an elder",
+          "A watchman silhouette against the moon"
+        ]
+      },
+      {
+        "id": "core_question_01",
+        "role": "core_question",
+        "title": "The question",
+        "purpose": "State the single question the video will answer.",
+        "summary": "One question sentence: What did ancient humans actually do after dark, and how did light, risk and biology shape those activities?",
+        "subQuestion": "",
+        "targetWords": 24,
+        "keyQuestions": [
+          "What did ancient humans actually do after dark?"
+        ],
+        "estimatedMinutes": 0.25,
+        "picturableMoments": [
+          "A camp circle with multiple small activities visible",
+          "A map icon showing night-time",
+          "A simple clock face with night shaded"
+        ]
+      },
+      {
+        "id": "evidence_fire_social_hub",
+        "role": "evidence",
+        "title": "Hearths and social light",
+        "purpose": "Show the physical evidence for concentrated light sources (hearths, lamp residues) and argue the reasonable inference that they supported prolonged social and teaching activities.",
+        "summary": "Present archaeological indicators of controlled fire and concentrated light (hearth clusters, soot bands, small lamp fragments — research to confirm specific examples). Explain what these materials actually prove (people made and maintained fires; some light sources were portable) and then draw cautious inferences: stable illuminated spots are ideal for storytelling, teaching, and social bonding after dark.",
+        "subQuestion": "Did concentrated fires and early lamps create stable social spaces for storytelling, teaching, and bonding?",
+        "targetWords": 374,
+        "keyQuestions": [
+          "What material traces show people created persistent light?",
+          "How do hearth geometry and residues suggest social use rather than only warmth?"
+        ],
+        "estimatedMinutes": 3,
+        "picturableMoments": [
+          "A clustered ring of stones marking a repeated hearth location",
+          "A narrow soot band high on a cave ceiling (research to verify occurrences)",
+          "A small stone or ceramic lamp fragment on the ground",
+          "A group of people sitting close to a single hearth, faces lit",
+          "Children leaning in to listen to an elder by a low flame"
+        ]
+      },
+      {
+        "id": "evidence_practical_work_at_night",
+        "role": "evidence",
+        "title": "Chores under low light",
+        "purpose": "Argue that many routine maintenance tasks were plausibly scheduled at night using firelight, using indirect archaeological traces and ethnographic analogues.",
+        "summary": "Lay out the kinds of material traces that would support night-time work (microwear and re-sharpening patterns, specialized work surfaces near hearths, concentrations of processed hides or flakes in hearth contexts — research needed to identify specific studies). Then reason why people might shift low-light tasks to night: energy tradeoffs, cooler conditions for hide work, and the presence of children who could be taught in the light.",
+        "subQuestion": "Were tasks like tool sharpening, hide processing, and simple crafts regularly done in the light of fires and lamps?",
+        "targetWords": 327,
+        "keyQuestions": [
+          "Which artifacts or wear patterns indicate tool maintenance near hearths?",
+          "Why would groups choose to do specific tasks after dark?"
+        ],
+        "estimatedMinutes": 2.25,
+        "picturableMoments": [
+          "A hand holding a stone core while another sharpens it near embers",
+          "Strips of hide stretched near a hearth",
+          "A small pile of flakes and half-finished tools beside a fire",
+          "An adult shaping a bone needle by lamplight"
+        ]
+      },
+      {
+        "id": "evidence_night_foraging_hunting",
+        "role": "evidence",
+        "title": "Hunting and gathering at night",
+        "purpose": "Assess the archaeological and ecological evidence for limited nocturnal foraging/hunting and explain which forms of hunting were plausible after dark.",
+        "summary": "Describe the kinds of evidence that would point to night-time hunting or foraging (kill-site seasonality, toolkits suited to trapping, coastal shell middens with dawn/night collection patterns — research required). Explain environmental factors that enable night activity (moon phase, open habitats) and the limits (dense canopy, predator risks) to avoid overclaiming.",
+        "subQuestion": "Did people sometimes hunt, trap or forage at night, using moonlight and torches for advantage?",
+        "targetWords": 315,
+        "keyQuestions": [
+          "Do faunal and tool records indicate nocturnal activity?",
+          "What ecological conditions would make night foraging effective?"
+        ],
+        "estimatedMinutes": 2.25,
+        "picturableMoments": [
+          "A moonlit shoreline with a person collecting shellfish",
+          "A shallow pit trap with cover set at night",
+          "A silhouette carrying a torch toward bushland",
+          "A scatter of animal bones with evidence of nocturnal-activity seasonality (research required)"
+        ]
+      },
+      {
+        "id": "twist_segmented_sleep_watchers",
+        "role": "twist",
+        "title": "The surprising pattern: staggered sleep and watchers",
+        "purpose": "Deliver the 'but here's the thing' complication: evidence and ethnographic analogues suggest sleep wasn't a single long block, and deliberate night-watch roles reduced risk and structured night-time activity.",
+        "summary": "Introduce the idea of segmented or staggered sleep and formal/situational watchers. Explain the kinds of evidence that support this (sleep disturbance markers in bones? ethnographic parallels? camp spatial layouts implying a guarding position) and why this changes how we interpret other night activities — it makes active, organized night life plausible rather than reckless.",
+        "subQuestion": "Was sleep often segmented and backed by deliberate night-watch roles that let others be active?",
+        "targetWords": 158,
+        "keyQuestions": [
+          "What supports the idea of staggered sleep or night watches?",
+          "How would a watch system change risk calculations for night activity?"
+        ],
+        "estimatedMinutes": 1.75,
+        "picturableMoments": [
+          "A small figure standing at the camp edge with a spear",
+          "A crude sleeping area with staggered occupants getting up at different times",
+          "A simple map showing overlapping sleep shifts in a small group"
+        ]
+      },
+      {
+        "id": "callback_payoff_01",
+        "role": "callback_payoff",
+        "title": "The soot smear pays off",
+        "purpose": "Pay off the planted soot/lamp detail and use it to land a deeper conclusion about intimate learning spaces and deliberate night organization.",
+        "summary": "Return to the early soot band/lamp fragment detail planted in the fire/social hub section and show how, if confirmed by specific sites, it supports a tighter conclusion: controlled, portable light created small, repeatable circles for teaching and work, which combined with staggered sleep/watch patterns to make night both productive and safe. This is a new meaning, not a recap of individual evidence points.",
+        "subQuestion": "",
+        "targetWords": 97,
+        "keyQuestions": [
+          "How does a soot band or lamp fragment change our interpretation of night social life?",
+          "What new picture emerges when we combine light-technology with staggered sleep?"
+        ],
+        "estimatedMinutes": 1.75,
+        "picturableMoments": [
+          "The earlier narrow soot band high on a cave ceiling (callback detail)",
+          "A tiny handheld lamp fragment beside a sleeping mat",
+          "A teaching moment by lamplight with a watcher visible outside"
+        ]
+      },
+      {
+        "id": "closer_01",
+        "role": "closer",
+        "title": "One last image",
+        "purpose": "Leave the viewer with a single resonant image that reframes night as structured, social, and purposeful rather than simply dangerous or dormant.",
+        "summary": "Short, punchy closing fragments: small circles of light; staggered sleep and a silent watch; nights as a laboratory for learning and bonding — awe at how groups turned darkness into a resource.",
+        "subQuestion": "",
+        "targetWords": 73,
+        "keyQuestions": [
+          "What final mental image will stick with the viewer?"
+        ],
+        "estimatedMinutes": 0.5,
+        "picturableMoments": [
+          "A small ring of lit faces in the dark",
+          "A lone figure silhouetted against a starry field watching over camp",
+          "A child and elder facing each other by a low flame"
+        ]
+      }
+    ],
+    "hookConcept": "You're crouched beside a small hearth as embers shrink; warm light cuts a small circle, everything beyond is blackness. A child leans forward to hear a voice; someone else sharpens a stone; a figure stands at the camp's edge. The video then asks: what was actually happening in that shadow?",
+    "callbackPlan": {
+      "detail": "a narrow dark soot band high on a cave ceiling (or a small, portable lamp fragment)",
+      "plantSectionId": "evidence_fire_social_hub",
+      "payoffSectionId": "callback_payoff_01"
+    },
+    "viewerPromise": "By the end you'll know the main night activities probably practiced across prehistory, what physical evidence supports each activity, and the biggest uncertainties researchers still argue about.",
+    "narrativeLabel": "reconstruction",
+    "candidateAngles": [
+      {
+        "angle": "The campfire as a social hub — extended wakefulness for story, teaching and bonding around hearths and lamps.",
+        "selected": true,
+        "payoffScore": 8,
+        "surpriseScore": 6,
+        "relatabilityScore": 9,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 9
+      },
+      {
+        "angle": "Segmented sleep and deliberate night-watch systems — people didn't sleep through the night; groups staggered sleep and posted guards.",
+        "selected": true,
+        "payoffScore": 9,
+        "surpriseScore": 8,
+        "relatabilityScore": 6,
+        "isTwistOrPayoffAngle": true,
+        "visualPotentialScore": 8
+      },
+      {
+        "angle": "Practical night work — tasks like tool maintenance, hide processing, and low-light crafts were intentionally done by fire to save daytime energy.",
+        "selected": true,
+        "payoffScore": 7,
+        "surpriseScore": 5,
+        "relatabilityScore": 8,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 8
+      },
+      {
+        "angle": "Opportunistic night foraging and hunting — some prey, trap work, and coastal/river foraging were timed for low-light windows using moonlight or torches.",
+        "selected": true,
+        "payoffScore": 6,
+        "surpriseScore": 6,
+        "relatabilityScore": 7,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 8
+      },
+      {
+        "angle": "Night as ritual and cognitive lab — darkness and fire created settings for ritual, altered states, and memory-intensive storytelling that helped cultural transmission.",
+        "selected": false,
+        "payoffScore": 8,
+        "surpriseScore": 7,
+        "relatabilityScore": 6,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 7
+      }
+    ],
+    "recommendedTitle": "What Did Ancient Humans Do After Dark?",
+    "thumbnailConcept": {
+      "scene": "A stickman circle around a small fire with bright faces and a dark figure standing at the edge holding a spear",
+      "headline": "AFTER DARK?"
+    },
+    "alternativeTitles": [
+      "How Early Humans Used the Night",
+      "Why Nights Mattered to Prehistoric People"
+    ],
+    "researchQuestions": [
+      "Which archaeological sites preserve soot bands, lamp fragments, or repeated hearth placements that indicate concentrated illumination?",
+      "What peer-reviewed studies document microwear or residue patterns consistent with tool maintenance near hearths?",
+      "Are there published faunal/site-seasonality studies that suggest nocturnal or crepuscular hunting at specific locations?",
+      "Which ethnographic records of recent hunter-gatherers describe segmented sleep or formal night-watch systems, and how do researchers cautiously apply these analogues?",
+      "What experimental measurements exist for light falloff and usable work radius from hearths, torches, and simple lamps in realistic settings?",
+      "Are there bioarchaeological or genetic studies that shed light on sleep patterns in preindustrial populations?"
+    ],
+    "researchRiskFlags": [
+      "High risk of overstating behavioural claims from limited or ambiguous material traces",
+      "Dangers of misusing ethnographic analogy to assert universal ancient practices",
+      "Regional and seasonal variability could undermine single-pattern claims",
+      "Possible absence of direct lamp artifacts at many sites — absence of evidence is not evidence of absence"
+    ]
+  },
+  "script_document": {
+    "title": "What Did Ancient Humans Do After Dark?",
+    "claims": [
+      {
+        "id": "c1",
+        "claim": "At Kebara Cave in Israel, Ofer Bar-Yosef's team mapped ash layers from hearths ranging from a few centimeters to over thirty centimeters thick, indicating repeated use of the same hearth spot.",
+        "sentence": "At Kebara Cave in Israel, archaeologist Ofer Bar-Yosef and his team mapped out ash layers left behind by hearths, some just a few centimeters thick, others stacked more than thirty centimeters deep.",
+        "segmentId": "seg_04",
+        "sourceFactId": "f_yd5g812q"
+      },
+      {
+        "id": "c2",
+        "claim": "Dolni Vestonice in the Czech Republic has complex, multi-layered hearths surrounded by dense clusters of tools and debris interpreted as recurrent fireside gathering.",
+        "sentence": "At Dolni Vestonice in the Czech Republic, archaeologists found complex, multi-layered hearths surrounded by dense clusters of tools and debris, the kind of mess that builds up when the same group sits in the same place, night after night, doing things with their hands.",
+        "segmentId": "seg_05",
+        "sourceFactId": "f_iez087k6"
+      },
+      {
+        "id": "c3",
+        "claim": "Charcoal smears in Chauvet Cave, France, radiocarbon dated, show torch use across at least two separate human visitation phases.",
+        "sentence": "And deep inside Chauvet Cave in France, charcoal smears on the walls, dated by radiocarbon, show people carried torches through total blackness in at least two separate visits, thousands of years apart.",
+        "segmentId": "seg_05",
+        "sourceFactId": "f_xdvvcthp"
+      },
+      {
+        "id": "c4",
+        "claim": "A narrow soot band was found high on the ceiling at Chauvet Cave, positioned where smoke from a small steady flame would collect.",
+        "sentence": "High on that cave ceiling at Chauvet, researchers also found something easy to miss: a narrow band of soot, dark and thin, sitting exactly where smoke would collect above a small, steady flame held below it.",
+        "segmentId": "seg_06",
+        "sourceFactId": "f_507b5wrq"
+      },
+      {
+        "id": "c5",
+        "claim": "Deep cave chambers are dark at noon as much as midnight, so torch evidence alone cannot prove nighttime activity specifically.",
+        "sentence": "Now, a caution here, because this matters. Deep cave chambers are pitch dark at noon just as much as at midnight, so a torch mark alone can't prove someone was there specifically at night.",
+        "segmentId": "seg_06",
+        "sourceFactId": "f_788kkge2"
+      },
+      {
+        "id": "c6",
+        "claim": "Polly Wiessner's research on the Ju'hoansi found over 80 percent of nighttime firelight conversation was elaborate storytelling, unlike daytime talk.",
+        "sentence": "But researcher Polly Wiessner's work with the Ju hoansi people of the Kalahari found something suggestive anyway.",
+        "segmentId": "seg_06",
+        "sourceFactId": "f_jkhpz97s"
+      },
+      {
+        "id": "c7",
+        "claim": "Over 80 percent of nighttime conversation among the Ju'hoansi was storytelling.",
+        "sentence": "Around the fire after dark, more than eighty percent of their conversation turned into elaborate storytelling, nothing like the practical daytime talk that came before it.",
+        "segmentId": "seg_06",
+        "sourceFactId": "f_jkhpz97s"
+      },
+      {
+        "id": "c8",
+        "claim": "Archaeologists distinguish hearth fuel types using charcoal structure, phytoliths, and fatty compound residues to tell wood/grass fires apart from those burning animal fat or bone.",
+        "sentence": "Researchers can now read hearth residue almost like a receipt: charcoal structure and tiny plant fragments called phytoliths show whether the fuel was wood or grass, while fatty compounds left behind reveal if animal fat or bone was burned alongside it.",
+        "segmentId": "seg_08",
+        "sourceFactId": "f_887q6sdh"
+      },
+      {
+        "id": "c9",
+        "claim": "An experimental archaeology study found a charred wooden torch burned steadily for 61 minutes before needing replacement.",
+        "sentence": "A charred wooden torch, tested by modern experimental archaeologists, burned steadily for sixty-one minutes before needing to be replaced.",
+        "segmentId": "seg_09",
+        "sourceFactId": "f_dzprncjr"
+      },
+      {
+        "id": "c10",
+        "claim": "Control of fire and cooking extended waking hours and promoted social exchange and learning around fire, per Richard Wrangham's synthesis.",
+        "sentence": "Firelight probably wasn't for starting something new. It was for finishing what daylight didn't get done.",
+        "segmentId": "seg_09",
+        "sourceFactId": "f_d198uh26"
+      },
+      {
+        "id": "c11",
+        "claim": "The same 61-minute torch burn duration constrained how long nighttime shellfish gathering could last.",
+        "sentence": "That same sixty-one-minute torch burn time becomes a real constraint here: gather fast, because the light runs out.",
+        "segmentId": "seg_11",
+        "sourceFactId": "f_dzprncjr"
+      },
+      {
+        "id": "c12",
+        "claim": "There is no dated kill site proving large-game hunting occurred specifically at night.",
+        "sentence": "There's no dated kill site anywhere that proves a group ambushed a large animal at night specifically.",
+        "segmentId": "seg_12",
+        "sourceFactId": null
+      },
+      {
+        "id": "c13",
+        "claim": "Historian Roger Ekirch analyzed more than 500 pre-industrial European diaries, court records, and medical texts and found evidence of segmented sleep, a first and second sleep separated by an hour or more of wakefulness.",
+        "sentence": "Historian Roger Ekirch combed through more than five hundred diaries, court records and medical texts from pre-industrial Europe and found people routinely slept in two blocks, a first sleep and a second, with an hour or more of calm wakefulness in between, spent tending a fire or talking quietly.",
+        "segmentId": "seg_13",
+        "sourceFactId": null
+      },
+      {
+        "id": "rev_1",
+        "claim": "Polly Wiessner's Ju/'hoansi fieldwork found over 80% of nighttime conversation was elaborate storytelling.",
+        "sentence": "But anthropologist Polly Wiessner's fieldwork with the Ju hoansi people of the Kalahari found something suggestive anyway.",
+        "segmentId": "seg_06",
+        "sourceFactId": "f_jkhpz97s"
+      },
+      {
+        "id": "rev_2",
+        "claim": "Over eighty percent of nighttime campfire conversation among the Ju/'hoansi turned to elaborate storytelling.",
+        "sentence": "Around the fire after dark, more than eighty percent of their conversation turned into elaborate storytelling, nothing like the practical daytime talk that came before it.",
+        "segmentId": "seg_06",
+        "sourceFactId": "f_jkhpz97s"
+      },
+      {
+        "id": "rev_3",
+        "claim": "Researchers have found lipid pyromarkers in hearth sediment at Kebara Cave indicating burned animal fat.",
+        "sentence": "At sites like Kebara Cave, researchers have pulled lipid pyromarkers, long-chain fatty compounds, out of hearth sediment, alongside charcoal structure and tiny plant fragments called phytoliths that show whether the fuel was wood or grass.",
+        "segmentId": "seg_08",
+        "sourceFactId": "f_887q6sdh"
+      },
+      {
+        "id": "rev_4",
+        "claim": "A charred wooden torch tested by experimental archaeologists burned for 61 minutes.",
+        "sentence": "A charred wooden torch, tested by modern experimental archaeologists, burned steadily for sixty-one minutes before needing to be replaced.",
+        "segmentId": "seg_09",
+        "sourceFactId": "f_dzprncjr"
+      },
+      {
+        "id": "rev_5",
+        "claim": "Blombos Cave on the South African coast has thick shell middens showing people worked the tideline for tens of thousands of years.",
+        "sentence": "At Blombos Cave on the South African coast, thick shell middens show people were working that tideline for tens of thousands of years, and a tide bound to the moon rather than the sun would have pulled some of that work into the dark.",
+        "segmentId": "seg_11",
+        "sourceFactId": null
+      },
+      {
+        "id": "rev_6",
+        "claim": "The 61-minute torch burn time constrains how long shellfish gathering by torchlight could last.",
+        "sentence": "That same sixty-one-minute torch burn time becomes a real constraint here: gather fast, because the light runs out.",
+        "segmentId": "seg_11",
+        "sourceFactId": "f_dzprncjr"
+      }
+    ],
+    "chapters": [
+      {
+        "role": "cold_open",
+        "title": "By the embers",
+        "chapterId": "cold_open_01",
+        "segmentIds": [
+          "seg_01"
+        ],
+        "actualWords": 60,
+        "subQuestion": "",
+        "estimatedSeconds": 25
+      },
+      {
+        "role": "stakes",
+        "title": "Why night matters",
+        "chapterId": "stakes_01",
+        "segmentIds": [
+          "seg_02"
+        ],
+        "actualWords": 11,
+        "subQuestion": "",
+        "estimatedSeconds": 5
+      },
+      {
+        "role": "core_question",
+        "title": "The question",
+        "chapterId": "core_question_01",
+        "segmentIds": [
+          "seg_03"
+        ],
+        "actualWords": 18,
+        "subQuestion": "",
+        "estimatedSeconds": 7
+      },
+      {
+        "role": "evidence",
+        "title": "Hearths and social light",
+        "chapterId": "evidence_fire_social_hub",
+        "segmentIds": [
+          "seg_04",
+          "seg_05",
+          "seg_06"
+        ],
+        "actualWords": 331,
+        "subQuestion": "Did concentrated fires and early lamps create stable social spaces for storytelling, teaching, and bonding?",
+        "estimatedSeconds": 137
+      },
+      {
+        "role": "evidence",
+        "title": "Chores under low light",
+        "chapterId": "evidence_practical_work_at_night",
+        "segmentIds": [
+          "seg_07",
+          "seg_08",
+          "seg_09"
+        ],
+        "actualWords": 303,
+        "subQuestion": "Were tasks like tool sharpening, hide processing, and simple crafts regularly done in the light of fires and lamps?",
+        "estimatedSeconds": 125
+      },
+      {
+        "role": "evidence",
+        "title": "Hunting and gathering at night",
+        "chapterId": "evidence_night_foraging_hunting",
+        "segmentIds": [
+          "seg_10",
+          "seg_11",
+          "seg_12"
+        ],
+        "actualWords": 260,
+        "subQuestion": "Did people sometimes hunt, trap or forage at night, using moonlight and torches for advantage?",
+        "estimatedSeconds": 108
+      },
+      {
+        "role": "twist",
+        "title": "The surprising pattern: staggered sleep and watchers",
+        "chapterId": "twist_segmented_sleep_watchers",
+        "segmentIds": [
+          "seg_13"
+        ],
+        "actualWords": 147,
+        "subQuestion": "Was sleep often segmented and backed by deliberate night-watch roles that let others be active?",
+        "estimatedSeconds": 61
+      },
+      {
+        "role": "callback_payoff",
+        "title": "The soot smear pays off",
+        "chapterId": "callback_payoff_01",
+        "segmentIds": [
+          "seg_14"
+        ],
+        "actualWords": 99,
+        "subQuestion": "",
+        "estimatedSeconds": 41
+      },
+      {
+        "role": "closer",
+        "title": "One last image",
+        "chapterId": "closer_01",
+        "segmentIds": [
+          "seg_15"
+        ],
+        "actualWords": 82,
+        "subQuestion": "",
+        "estimatedSeconds": 34
+      }
+    ],
+    "openLoops": [
+      {
+        "id": "loop_watcher",
+        "question": "Who is the figure standing apart from the fire, and why are they alone in the dark?",
+        "setupSegmentId": "seg_01",
+        "payoffSegmentId": "seg_13",
+        "expectedPayoffRegion": "twist_segmented_sleep_watchers"
+      },
+      {
+        "id": "loop_stonesound",
+        "question": "Why is someone sharpening stone at night instead of during the day?",
+        "setupSegmentId": "seg_01",
+        "payoffSegmentId": "seg_09",
+        "expectedPayoffRegion": "evidence_practical_work_at_night"
+      },
+      {
+        "id": "loop_soot",
+        "question": "What does the narrow soot band on the cave ceiling actually prove about what happened there?",
+        "setupSegmentId": "seg_06",
+        "payoffSegmentId": "seg_14",
+        "expectedPayoffRegion": "callback_payoff_01"
+      }
+    ],
+    "plantQuote": null,
+    "actualWords": 1311,
+    "callbackKey": "a narrow black smear on the ceiling",
+    "payoffQuote": null,
+    "checkResults": {
+      "hard": [],
+      "warn": [
+        {
+          "code": "repeated_phrase",
+          "message": "The exact phrase \"narrow band of soot dark and\" appears in 2 different segments.",
+          "segmentIds": [
+            "seg_06",
+            "seg_14"
+          ]
+        },
+        {
+          "code": "repeated_phrase",
+          "message": "The exact phrase \"band of soot dark and thin\" appears in 2 different segments.",
+          "segmentIds": [
+            "seg_06",
+            "seg_14"
+          ]
+        },
+        {
+          "code": "repeated_phrase",
+          "message": "The exact phrase \"for tens of thousands of years\" appears in 2 different segments.",
+          "segmentIds": [
+            "seg_06",
+            "seg_11"
+          ]
+        },
+        {
+          "code": "segment_length_off",
+          "message": "Segment seg_02 is 11 words, outside the 40-120 target range.",
+          "segmentIds": [
+            "seg_02"
+          ]
+        },
+        {
+          "code": "segment_length_off",
+          "message": "Segment seg_03 is 18 words, outside the 40-120 target range.",
+          "segmentIds": [
+            "seg_03"
+          ]
+        },
+        {
+          "code": "segment_length_off",
+          "message": "Segment seg_06 is 158 words, outside the 40-120 target range.",
+          "segmentIds": [
+            "seg_06"
+          ]
+        },
+        {
+          "code": "segment_length_off",
+          "message": "Segment seg_08 is 133 words, outside the 40-120 target range.",
+          "segmentIds": [
+            "seg_08"
+          ]
+        },
+        {
+          "code": "segment_length_off",
+          "message": "Segment seg_11 is 123 words, outside the 40-120 target range.",
+          "segmentIds": [
+            "seg_11"
+          ]
+        },
+        {
+          "code": "segment_length_off",
+          "message": "Segment seg_13 is 147 words, outside the 40-120 target range.",
+          "segmentIds": [
+            "seg_13"
+          ]
+        },
+        {
+          "code": "low_question_cadence",
+          "message": "Only 8 rhetorical question(s) across 1311 words — fewer than roughly 1 per 145 words."
+        },
+        {
+          "code": "low_specificity",
+          "message": "Evidence sections use only 6 numeral/number-word(s) across 894 words — fewer than roughly 3 per 100 words."
+        },
+        {
+          "code": "low_bridging",
+          "message": "Only 13 \"you\"/\"your\" reference(s) across 1311 words — fewer than roughly 1 per 100 words."
+        },
+        {
+          "code": "callback_plant_not_found",
+          "message": "The callbackKey \"a narrow black smear on the ceiling\" was not found in the plant segment's text.",
+          "segmentIds": [
+            "seg_04"
+          ]
+        },
+        {
+          "code": "callback_payoff_not_found",
+          "message": "The callbackKey \"a narrow black smear on the ceiling\" was not found in the payoff segment's text.",
+          "segmentIds": [
+            "seg_15"
+          ]
+        },
+        {
+          "code": "weak_evidence_specificity",
+          "message": "Evidence section \"evidence_practical_work_at_night\" has only 0 number(s) and 1 named-source mention(s) — needs at least 2 specific numbers or named sources combined.",
+          "segmentIds": [
+            "seg_07",
+            "seg_08",
+            "seg_09"
+          ]
+        }
+      ]
+    },
+    "qualitySummary": {
+      "criticScores": {
+        "hook": 8,
+        "ending": 5,
+        "rhythm": 6,
+        "bridging": 4,
+        "repetition": 5,
+        "specificity": 5,
+        "angleStrength": 6,
+        "visualConcreteness": 8
+      },
+      "warningCount": 15,
+      "expansionUsed": false,
+      "overallVerdict": "needs_revision",
+      "revisionSkipped": false,
+      "criticOverallScore": 6,
+      "conservativeRewriteApplied": false
+    },
+    "researchWarnings": [
+      "Chapter \"Chores under low light\" could not be fully written from the available evidence.",
+      "Overall research coverage was assessed as \"weak\" — some sections use deliberately cautious language.",
+      "The Viral Editor scored this script 6/10 overall (needs 7+ to ship) — see checkResults/qualitySummary.criticScores for the per-dimension breakdown and the weakest sections it flagged."
+    ],
+    "thumbnailConcept": {
+      "scene": "A stickman circle around a small fire with bright faces and a dark figure standing at the edge holding a spear",
+      "headline": "AFTER DARK?"
+    },
+    "claimVerification": [
+      {
+        "url": null,
+        "claimId": "c1",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "c2",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "c3",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "c4",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "c5",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "c6",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "c7",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "c8",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "c9",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "c10",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "c11",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "c12",
+        "verdict": "unverifiable",
+        "sourceName": null,
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "c13",
+        "verdict": "unverifiable",
+        "sourceName": null,
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "rev_1",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "rev_2",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "rev_3",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "rev_4",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "rev_6",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": "https://in-africa.org/wp-content/uploads/2012/12/Henshilwood-et-al-2001-JAS-Blombos.pdf",
+        "claimId": "rev_5",
+        "verdict": "supported",
+        "sourceName": "Henshilwood et al., \"Blombos Cave, Southern Cape, South Africa: Preliminary Report on the 1992–1999 Excavations of the Middle Stone Age Levels\", Journal of Archaeological Science (2001)",
+        "correctedValue": null
+      }
+    ],
+    "narrationSegments": [
+      {
+        "id": "seg_01",
+        "text": "You're crouched on cold stone, knees pulled to your chest, close enough to the coals to feel their heat on your face. Beyond that ring of orange, nothing. A child leans in toward the voice telling the story. Off to your left, stone scrapes against stone, slow and rhythmic. Past the light, a shape stands alone, still, facing the dark.",
+        "factIds": [],
+        "entities": [
+          "hearth",
+          "child",
+          "watcher figure",
+          "stone tool"
+        ],
+        "mustShow": [
+          "a small fire with a tight ring of light",
+          "a figure standing apart at the edge of the dark",
+          "someone sharpening stone near the fire"
+        ],
+        "chapterId": "cold_open_01",
+        "payoffIds": [],
+        "mustNotShow": [
+          "any modern objects",
+          "a clearly labeled cave painting"
+        ],
+        "openLoopIds": [
+          "loop_watcher",
+          "loop_stonesound"
+        ],
+        "locationHint": "a small prehistoric camp at night, fire-lit clearing or cave mouth",
+        "visualIntent": "Put the viewer physically inside the small circle of firelight with total blackness just past it, and a lone figure visible at the edge.",
+        "sequenceIndex": 1,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": null,
+        "narrativeFunction": "hook",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_02",
+        "text": "Half of every human life happened after the sun went down.",
+        "factIds": [],
+        "entities": [],
+        "mustShow": [
+          "day and night as roughly equal portions of time"
+        ],
+        "chapterId": "stakes_01",
+        "payoffIds": [],
+        "mustNotShow": [],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "A simple sense of scale — night as half of existence, not a footnote to the day.",
+        "sequenceIndex": 2,
+        "estimatedSeconds": 5,
+        "exactTextOverlay": null,
+        "narrativeFunction": "stakes",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "GRAPHIC"
+      },
+      {
+        "id": "seg_03",
+        "text": "So what were people actually doing in those hours, once the light disappeared and the danger came out?",
+        "factIds": [],
+        "entities": [],
+        "mustShow": [
+          "a transition from daylight activity to darkness"
+        ],
+        "chapterId": "core_question_01",
+        "payoffIds": [],
+        "mustNotShow": [
+          "any specific answer yet"
+        ],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "Frame the central mystery of the video — what filled the dark hours.",
+        "sequenceIndex": 3,
+        "estimatedSeconds": 6,
+        "exactTextOverlay": null,
+        "narrativeFunction": "core question",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_04",
+        "text": "Start with the fire itself. At Kebara Cave in Israel, archaeologist Ofer Bar-Yosef and his team mapped out ash layers left behind by hearths, some just a few centimeters thick, others stacked more than thirty centimeters deep. That's not one fire. That's the same spot, burned again and again, for generations. Why come back to the exact same patch of ground every night instead of just lighting a fire wherever you stopped?",
+        "factIds": [
+          "f_yd5g812q"
+        ],
+        "entities": [
+          "Kebara Cave",
+          "Ofer Bar-Yosef",
+          "hearth ash layers"
+        ],
+        "mustShow": [
+          "layered ash deposits at Kebara Cave",
+          "a hearth used repeatedly over time"
+        ],
+        "chapterId": "evidence_fire_social_hub",
+        "payoffIds": [],
+        "mustNotShow": [
+          "modern fireplace imagery"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Kebara Cave, Israel",
+        "visualIntent": "Show a hearth as a repeated, built-up feature rather than a one-off fire, implying a fixed, returned-to gathering spot.",
+        "sequenceIndex": 4,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": null,
+        "narrativeFunction": "evidence - supported fact",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_05",
+        "text": "Because it wasn't just heat. It was a stage. At Dolni Vestonice in the Czech Republic, archaeologists found complex, multi-layered hearths surrounded by dense clusters of tools and debris, the kind of mess that builds up when the same group sits in the same place, night after night, doing things with their hands. And deep inside Chauvet Cave in France, charcoal smears on the walls, dated by radiocarbon, show people carried torches through total blackness in at least two separate visits, thousands of years apart. Someone lit that torch on purpose. Someone walked toward the dark instead of away from it.",
+        "factIds": [
+          "f_iez087k6",
+          "f_xdvvcthp"
+        ],
+        "entities": [
+          "Dolni Vestonice",
+          "Chauvet Cave",
+          "torch"
+        ],
+        "mustShow": [
+          "dense tool clusters around hearths at Dolni Vestonice",
+          "torch smoke smears on Chauvet Cave walls"
+        ],
+        "chapterId": "evidence_fire_social_hub",
+        "payoffIds": [],
+        "mustNotShow": [
+          "explicit cave paintings as final imagery",
+          "claiming the visits prove nighttime specifically"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Dolni Vestonice, Czech Republic and Chauvet Cave, France",
+        "visualIntent": "Show a recurring fireside gathering spot and a torch-lit journey into deep cave darkness across two separate periods of time.",
+        "sequenceIndex": 5,
+        "estimatedSeconds": 30,
+        "exactTextOverlay": null,
+        "narrativeFunction": "evidence - supported fact",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_06",
+        "text": "High on that cave ceiling at Chauvet, researchers also found something easy to miss: a narrow band of soot, dark and thin, sitting exactly where smoke would collect above a small, steady flame held below it. That's the residue of light carried, not light that just happened. A caution here, because it matters: deep cave chambers are pitch dark at noon just as much as at midnight, so a torch mark alone can't prove someone was there specifically at night. But anthropologist Polly Wiessner's fieldwork with the Ju hoansi people of the Kalahari found something suggestive anyway. Around the fire after dark, more than eighty percent of their conversation turned into elaborate storytelling, nothing like the practical daytime talk that came before it. If firelight has done that to human conversation for tens of thousands of years, a lit space deep in a cave was probably where a story got told, not just where a chore got finished.",
+        "factIds": [
+          "f_507b5wrq",
+          "f_788kkge2",
+          "f_jkhpz97s"
+        ],
+        "entities": [
+          "soot band",
+          "Chauvet Cave",
+          "Ju hoansi",
+          "Polly Wiessner"
+        ],
+        "mustShow": [
+          "a narrow dark soot band high on a cave ceiling",
+          "people gathered close in firelight talking"
+        ],
+        "chapterId": "evidence_fire_social_hub",
+        "payoffIds": [],
+        "mustNotShow": [
+          "stating flatly that the soot proves night-time activity"
+        ],
+        "openLoopIds": [
+          "loop_soot"
+        ],
+        "locationHint": "Chauvet Cave, France; Kalahari Desert",
+        "visualIntent": "Reveal the narrow soot band on the ceiling as a plant detail, then connect firelight to storytelling behavior with an honest caveat about what the evidence can and can't prove.",
+        "sequenceIndex": 6,
+        "estimatedSeconds": 38,
+        "exactTextOverlay": null,
+        "narrativeFunction": "evidence - reasonable inference with caveat",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "DETAIL"
+      },
+      {
+        "id": "seg_07",
+        "text": "But firelight wasn't only for talking. It was also for working. Think about your own evenings - how much of your day gets pushed to after dinner, once the chores of daylight are done? Prehistoric nights probably worked the same way, just with sharper stakes, and archaeologists have found a way to check.",
+        "factIds": [],
+        "entities": [],
+        "mustShow": [
+          "a person doing a small task by firelight"
+        ],
+        "chapterId": "evidence_practical_work_at_night",
+        "payoffIds": [],
+        "mustNotShow": [],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "Bridge from social fire use to practical nighttime labor, tying it to the viewer's own evening routine.",
+        "sequenceIndex": 7,
+        "estimatedSeconds": 16,
+        "exactTextOverlay": null,
+        "narrativeFunction": "transition and viewer bridge",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_08",
+        "text": "How do you know a task was really scheduled for night instead of day? You look at what the fire was actually burning. At sites like Kebara Cave, researchers have pulled lipid pyromarkers, long-chain fatty compounds, out of hearth sediment, alongside charcoal structure and tiny plant fragments called phytoliths that show whether the fuel was wood or grass. Together those signatures tell a hearth that just cooked dinner apart from one that stayed stoked for something else, hour after hour. A hearth built up with fat-rich fuel and kept burning long and steady looks less like a quick meal and more like a workstation that needed light for a while, the kind of fire someone kept feeding well past dinner because there was still a hide to finish or a cord to twist.",
+        "factIds": [
+          "f_887q6sdh",
+          "f_yd5g812q"
+        ],
+        "entities": [
+          "hearth residue",
+          "phytoliths",
+          "charcoal"
+        ],
+        "mustShow": [
+          "hearth residue being examined",
+          "a distinction between a short cooking fire and a long sustained fire"
+        ],
+        "chapterId": "evidence_practical_work_at_night",
+        "payoffIds": [],
+        "mustNotShow": [
+          "overly technical lab equipment"
+        ],
+        "openLoopIds": [],
+        "locationHint": "generic prehistoric hearth",
+        "visualIntent": "Explain how scientists chemically tell apart a quick cooking fire from a long, sustained work fire using hearth residue analysis.",
+        "sequenceIndex": 8,
+        "estimatedSeconds": 32,
+        "exactTextOverlay": null,
+        "narrativeFunction": "evidence - mechanism explanation",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_09",
+        "text": "And what would that light actually be good for? Not everything. Fine, precise stone knapping needs sharp daylight, because one wrong angle wastes a good core. But maintenance work is different. Resharpening an edge that's already roughed out, scraping a hide that's already stretched, twisting a cord, shaping a bone needle - these are repetitive, familiar motions your hands can finish almost by feel. A charred wooden torch, tested by modern experimental archaeologists, burned steadily for sixty-one minutes before needing to be replaced. That's a genuine window of usable light, long enough to finish a task, not just glance at one. Firelight probably wasn't for starting something new. It was for finishing what daylight didn't get done.",
+        "factIds": [
+          "f_dzprncjr",
+          "f_d198uh26"
+        ],
+        "entities": [
+          "torch",
+          "stone tool",
+          "hide scraper",
+          "bone needle"
+        ],
+        "mustShow": [
+          "someone finishing a repetitive task like scraping a hide or sharpening a worn edge by firelight",
+          "a burning torch"
+        ],
+        "chapterId": "evidence_practical_work_at_night",
+        "payoffIds": [
+          "loop_stonesound"
+        ],
+        "mustNotShow": [
+          "fine precision stone knapping happening by firelight"
+        ],
+        "openLoopIds": [
+          "loop_stonesound"
+        ],
+        "locationHint": "a prehistoric camp at night",
+        "visualIntent": "Show which specific tasks suit low, flickering torchlight versus which need full daylight, resolving the earlier sharpening sound cue.",
+        "sequenceIndex": 9,
+        "estimatedSeconds": 32,
+        "exactTextOverlay": "61 minutes",
+        "narrativeFunction": "evidence - mechanism and reasonable inference",
+        "continuityEntityIds": [
+          "watcher figure"
+        ],
+        "preferredVisualForm": "DETAIL"
+      },
+      {
+        "id": "seg_10",
+        "text": "Now walk away from the fire completely. Did anyone actually go out into that dark on purpose? Most people today have never had to time an errand around a moonrise, but some animals only become catchable once the sun is gone, and a hungry group couldn't always afford to ignore that.",
+        "factIds": [],
+        "entities": [],
+        "mustShow": [
+          "a figure stepping away from the firelight into darkness"
+        ],
+        "chapterId": "evidence_night_foraging_hunting",
+        "payoffIds": [],
+        "mustNotShow": [],
+        "openLoopIds": [],
+        "locationHint": "edge of a prehistoric camp at night",
+        "visualIntent": "Open the question of deliberate nighttime foraging and hunting beyond the safety of the fire.",
+        "sequenceIndex": 10,
+        "estimatedSeconds": 15,
+        "exactTextOverlay": null,
+        "narrativeFunction": "re-hook question",
+        "continuityEntityIds": [
+          "watcher figure"
+        ],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_11",
+        "text": "Shellfish gathering is the clearest case. Along tidal coastlines, the best low tide of the month doesn't politely wait for daylight, it can fall at two in the morning just as easily as two in the afternoon. At Blombos Cave on the South African coast, thick shell middens show people were working that tideline for tens of thousands of years, and a tide bound to the moon rather than the sun would have pulled some of that work into the dark. Anywhere people relied on shellfish, a portable torch would have been the only thing standing between a bare tide flat and going home empty-handed. That same sixty-one-minute torch burn time becomes a real constraint here: gather fast, because the light runs out.",
+        "factIds": [
+          "f_dzprncjr"
+        ],
+        "entities": [
+          "torch",
+          "tidal shoreline",
+          "shellfish"
+        ],
+        "mustShow": [
+          "a moonlit or torchlit tidal shoreline",
+          "someone collecting shellfish at night"
+        ],
+        "chapterId": "evidence_night_foraging_hunting",
+        "payoffIds": [],
+        "mustNotShow": [
+          "large-scale nighttime big-game hunting shown as certain"
+        ],
+        "openLoopIds": [],
+        "locationHint": "a moonlit tidal coastline",
+        "visualIntent": "Show torchlit shellfish gathering on a tidal flat at night, driven by the tide's schedule rather than the sun's.",
+        "sequenceIndex": 11,
+        "estimatedSeconds": 27,
+        "exactTextOverlay": null,
+        "narrativeFunction": "evidence - reasonable inference",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_12",
+        "text": "What about bigger game? This is where the evidence gets thinner, and it's worth admitting that plainly. Direct archaeological evidence clearly showing groups ambushed large animals at night is scarce. What does exist is ecological logic and simple traps. A pit trap or a snare, set and covered before dusk, keeps working whether the hunter is asleep or awake, catching an animal that only moves after dark without anyone standing there at all. It catches the night shift without anyone having to stay awake for it.",
+        "factIds": [],
+        "entities": [
+          "pit trap",
+          "snare"
+        ],
+        "mustShow": [
+          "a set pit trap or snare left overnight"
+        ],
+        "chapterId": "evidence_night_foraging_hunting",
+        "payoffIds": [],
+        "mustNotShow": [
+          "a dramatic staged night hunt presented as proven fact"
+        ],
+        "openLoopIds": [],
+        "locationHint": "bushland near a prehistoric camp",
+        "visualIntent": "Show a set, covered trap working unattended through the night, contrasted honestly with the lack of proof for active night hunting.",
+        "sequenceIndex": 12,
+        "estimatedSeconds": 25,
+        "exactTextOverlay": null,
+        "narrativeFunction": "evidence - honest limit and inference",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_13",
+        "text": "But here's the part that changes the whole picture. Did anyone even sleep through all of this? Almost certainly not, not all at once. Historian Roger Ekirch, drawing on pre-industrial European records like diaries, court documents and medical texts, describes segmented sleep: a first sleep and a second, separated by an hour or more of calm wakefulness, often spent tending a fire or talking quietly. That's Europe centuries ago, not the Ice Age, so it's a clue, not direct proof. But small hunting and gathering groups today almost never leave a camp fully unwatched at night. Someone stays alert while the rest sleep, then trades off. Put those two patterns together and camp life stops looking like one long blackout. It looks like a rotation. Different people awake at different hours, watching, working, listening. The figure standing apart from the fire wasn't restless. That was the job.",
+        "factIds": [],
+        "entities": [
+          "Roger Ekirch",
+          "watcher figure",
+          "sleeping camp"
+        ],
+        "mustShow": [
+          "a figure standing watch at camp's edge while others sleep",
+          "overlapping staggered sleep among a small group"
+        ],
+        "chapterId": "twist_segmented_sleep_watchers",
+        "payoffIds": [
+          "loop_watcher"
+        ],
+        "mustNotShow": [
+          "stating segmented sleep as proven for Ice Age hunter-gatherers directly"
+        ],
+        "openLoopIds": [
+          "loop_watcher"
+        ],
+        "locationHint": "a small nighttime camp with sleepers and one watcher",
+        "visualIntent": "Reveal that sleep was likely staggered and one person deliberately stood watch while others slept, turning the earlier lone figure into a watcher role.",
+        "sequenceIndex": 13,
+        "estimatedSeconds": 40,
+        "exactTextOverlay": null,
+        "narrativeFunction": "twist - complication and reveal",
+        "continuityEntityIds": [
+          "watcher figure"
+        ],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_14",
+        "text": "Go back to that narrow band of soot, dark and thin, high on the Chauvet ceiling. It isn't just proof that someone carried fire into the dark. That soot sits deep inside the cave, past the point where anyone could stumble in by accident, the kind of spot a group only reaches with someone already posted at the entrance. Line it up with the watch rotation, and the teaching or the story happening under that smear wasn't just intimate. It was protected on purpose, by someone standing exactly where your eye keeps drifting, at the edge of the light.",
+        "factIds": [
+          "f_xdvvcthp"
+        ],
+        "entities": [
+          "soot band",
+          "Chauvet Cave",
+          "watcher figure"
+        ],
+        "mustShow": [
+          "the narrow black smear on the ceiling",
+          "a watcher positioned near a cave entrance while a group gathers deeper inside"
+        ],
+        "chapterId": "callback_payoff_01",
+        "payoffIds": [
+          "loop_soot"
+        ],
+        "mustNotShow": [
+          "a new unrelated fact not tied to the earlier soot detail"
+        ],
+        "openLoopIds": [
+          "loop_soot"
+        ],
+        "locationHint": "Chauvet Cave, France",
+        "visualIntent": "Reconnect the earlier soot band detail to the watch-rotation idea, revealing the lit chamber as a deliberately guarded gathering space.",
+        "sequenceIndex": 14,
+        "estimatedSeconds": 25,
+        "exactTextOverlay": null,
+        "narrativeFunction": "payoff",
+        "continuityEntityIds": [
+          "watcher figure"
+        ],
+        "preferredVisualForm": "DETAIL"
+      },
+      {
+        "id": "seg_15",
+        "text": "So the dark wasn't just something to survive. It was scheduled, guarded, and used. A story told to a leaning child. A hide finished by hand. A trap left to work while everyone slept. A figure at the edge, watching so the rest of the circle didn't have to. Twelve hours of blackness, and every one of them had a job to do. Next time the lights go out around you, that same small circle is still exactly where you'd be sitting.",
+        "factIds": [],
+        "entities": [
+          "hearth",
+          "watcher figure"
+        ],
+        "mustShow": [
+          "a small circle of firelit faces",
+          "a watcher silhouette nearby"
+        ],
+        "chapterId": "closer_01",
+        "payoffIds": [],
+        "mustNotShow": [
+          "a bulleted recap of prior sections"
+        ],
+        "openLoopIds": [],
+        "locationHint": "a small prehistoric camp at night",
+        "visualIntent": "Close on the reframed image of night as organized and purposeful, ending on the small firelit circle and its watcher.",
+        "sequenceIndex": 15,
+        "estimatedSeconds": 25,
+        "exactTextOverlay": null,
+        "narrativeFunction": "closer",
+        "continuityEntityIds": [
+          "watcher figure"
+        ],
+        "preferredVisualForm": "STORY"
+      }
+    ],
+    "plantSegmentIndex": 3,
+    "payoffSegmentIndex": 14,
+    "estimatedDurationSeconds": 542
+  }
+}

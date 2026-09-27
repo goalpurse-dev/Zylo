@@ -1,0 +1,8585 @@
+[
+  {
+    "size": 3,
+    "shots": [
+      1,
+      2,
+      3
+    ],
+    "duration_seconds": 13.44,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      2,
+      3,
+      4
+    ],
+    "duration_seconds": 11.692,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 3,
+        "b": 4,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      3,
+      4,
+      5
+    ],
+    "duration_seconds": 15.496,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 3,
+        "b": 4,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      4,
+      5,
+      6
+    ],
+    "duration_seconds": 17.952,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      5,
+      6,
+      7
+    ],
+    "duration_seconds": 20.194,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        5,
+        6,
+        7
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      6,
+      7,
+      8
+    ],
+    "duration_seconds": 17.28,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        6,
+        7,
+        8
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      7,
+      8,
+      9
+    ],
+    "duration_seconds": 20.274,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      8,
+      9,
+      10
+    ],
+    "duration_seconds": 22.315,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      9,
+      10,
+      11
+    ],
+    "duration_seconds": 24.897,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      10,
+      11,
+      12
+    ],
+    "duration_seconds": 21.588,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      11,
+      12,
+      13
+    ],
+    "duration_seconds": 19.285,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      12,
+      13,
+      14
+    ],
+    "duration_seconds": 16.322,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      13,
+      14,
+      15
+    ],
+    "duration_seconds": 13.8,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      14,
+      15,
+      16
+    ],
+    "duration_seconds": 14.37,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      15,
+      16,
+      17
+    ],
+    "duration_seconds": 15.08,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      16,
+      17,
+      18
+    ],
+    "duration_seconds": 17.212,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      17,
+      18,
+      19
+    ],
+    "duration_seconds": 16.038,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      18,
+      19,
+      20
+    ],
+    "duration_seconds": 17.624,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      19,
+      20,
+      21
+    ],
+    "duration_seconds": 16.307,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      20,
+      21,
+      22
+    ],
+    "duration_seconds": 15.272,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      21,
+      22,
+      23
+    ],
+    "duration_seconds": 14.899,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      22,
+      23,
+      24
+    ],
+    "duration_seconds": 16.768,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      23,
+      24,
+      25
+    ],
+    "duration_seconds": 18.237,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      24,
+      25,
+      26
+    ],
+    "duration_seconds": 21.896,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      25,
+      26,
+      27
+    ],
+    "duration_seconds": 22.659,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      26,
+      27,
+      28
+    ],
+    "duration_seconds": 19.863,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        26,
+        27,
+        28
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      27,
+      28,
+      29
+    ],
+    "duration_seconds": 14.145,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 28,
+        "b": 29,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        27,
+        28,
+        29
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      28,
+      29,
+      30
+    ],
+    "duration_seconds": 10.92,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 28,
+        "b": 29,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        28,
+        29,
+        30
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      29,
+      30,
+      31
+    ],
+    "duration_seconds": 12.6,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      30,
+      31,
+      32
+    ],
+    "duration_seconds": 11.76,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      31,
+      32,
+      33
+    ],
+    "duration_seconds": 14.7,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      32,
+      33,
+      34
+    ],
+    "duration_seconds": 16.875,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      33,
+      34,
+      35
+    ],
+    "duration_seconds": 19.844,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      34,
+      35,
+      36
+    ],
+    "duration_seconds": 17.58,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 35,
+        "b": 36,
+        "dhash_distance": 3,
+        "gray_correlation": 0.8650173578824816,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        34,
+        35,
+        36
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      35,
+      36,
+      37
+    ],
+    "duration_seconds": 17.562,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 35,
+        "b": 36,
+        "dhash_distance": 3,
+        "gray_correlation": 0.8650173578824816,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      36,
+      37,
+      38
+    ],
+    "duration_seconds": 15.751,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      37,
+      38,
+      39
+    ],
+    "duration_seconds": 15.088,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      38,
+      39,
+      40
+    ],
+    "duration_seconds": 12.945,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      39,
+      40,
+      41
+    ],
+    "duration_seconds": 12.024,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      40,
+      41,
+      42
+    ],
+    "duration_seconds": 17.085,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      41,
+      42,
+      43
+    ],
+    "duration_seconds": 20.238,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      42,
+      43,
+      44
+    ],
+    "duration_seconds": 22.274,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      43,
+      44,
+      45
+    ],
+    "duration_seconds": 17.057,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      44,
+      45,
+      46
+    ],
+    "duration_seconds": 16.606,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      45,
+      46,
+      47
+    ],
+    "duration_seconds": 19.053,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 46,
+        "b": 47,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      46,
+      47,
+      48
+    ],
+    "duration_seconds": 21.483,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 46,
+        "b": 47,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      47,
+      48,
+      49
+    ],
+    "duration_seconds": 19.322,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      48,
+      49,
+      50
+    ],
+    "duration_seconds": 14.754,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      49,
+      50,
+      51
+    ],
+    "duration_seconds": 13.957,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      50,
+      51,
+      52
+    ],
+    "duration_seconds": 13.753,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      51,
+      52,
+      53
+    ],
+    "duration_seconds": 14.601,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      52,
+      53,
+      54
+    ],
+    "duration_seconds": 15.924,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      53,
+      54,
+      55
+    ],
+    "duration_seconds": 16.965,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      54,
+      55,
+      56
+    ],
+    "duration_seconds": 16.298,
+    "unavailable_shots": [
+      56
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      55,
+      56,
+      57
+    ],
+    "duration_seconds": 15.406,
+    "unavailable_shots": [
+      56,
+      57
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      56,
+      57,
+      58
+    ],
+    "duration_seconds": 13.414,
+    "unavailable_shots": [
+      56,
+      57,
+      58
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      57,
+      58,
+      59
+    ],
+    "duration_seconds": 19.389,
+    "unavailable_shots": [
+      57,
+      58,
+      59
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      58,
+      59,
+      60
+    ],
+    "duration_seconds": 21.834,
+    "unavailable_shots": [
+      58,
+      59
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      59,
+      60,
+      61
+    ],
+    "duration_seconds": 27.54,
+    "unavailable_shots": [
+      59,
+      61
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      60,
+      61,
+      62
+    ],
+    "duration_seconds": 25.956,
+    "unavailable_shots": [
+      61,
+      62
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      61,
+      62,
+      63
+    ],
+    "duration_seconds": 23.284,
+    "unavailable_shots": [
+      61,
+      62
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      62,
+      63,
+      64
+    ],
+    "duration_seconds": 20.405,
+    "unavailable_shots": [
+      62
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 63,
+        "b": 64,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      63,
+      64,
+      65
+    ],
+    "duration_seconds": 16.218,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 63,
+        "b": 64,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        63,
+        64,
+        65
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      64,
+      65,
+      66
+    ],
+    "duration_seconds": 16.749,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 64,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 65,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        64,
+        65,
+        66
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      65,
+      66,
+      67
+    ],
+    "duration_seconds": 16.395,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 65,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      66,
+      67,
+      68
+    ],
+    "duration_seconds": 20.381,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 67,
+        "b": 68,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      67,
+      68,
+      69
+    ],
+    "duration_seconds": 17.627,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 67,
+        "b": 68,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        67,
+        68,
+        69
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      68,
+      69,
+      70
+    ],
+    "duration_seconds": 19.826,
+    "unavailable_shots": [
+      70
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      69,
+      70,
+      71
+    ],
+    "duration_seconds": 18.73,
+    "unavailable_shots": [
+      70,
+      71
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      70,
+      71,
+      72
+    ],
+    "duration_seconds": 18.205,
+    "unavailable_shots": [
+      70,
+      71
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      71,
+      72,
+      73
+    ],
+    "duration_seconds": 16.174,
+    "unavailable_shots": [
+      71
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 72,
+        "b": 73,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      72,
+      73,
+      74
+    ],
+    "duration_seconds": 16.059,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 72,
+        "b": 73,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      73,
+      74,
+      75
+    ],
+    "duration_seconds": 15.388,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      74,
+      75,
+      76
+    ],
+    "duration_seconds": 15.329,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      75,
+      76,
+      77
+    ],
+    "duration_seconds": 14.804,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      76,
+      77,
+      78
+    ],
+    "duration_seconds": 17.053,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 77,
+        "b": 78,
+        "dhash_distance": 1,
+        "gray_correlation": 0.9247931189829234,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        76,
+        77,
+        78
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      77,
+      78,
+      79
+    ],
+    "duration_seconds": 17.452,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 77,
+        "b": 78,
+        "dhash_distance": 1,
+        "gray_correlation": 0.9247931189829234,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      78,
+      79,
+      80
+    ],
+    "duration_seconds": 16.764,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      79,
+      80,
+      81
+    ],
+    "duration_seconds": 18.525,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      80,
+      81,
+      82
+    ],
+    "duration_seconds": 16.488,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      81,
+      82,
+      83
+    ],
+    "duration_seconds": 14.887,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      82,
+      83,
+      84
+    ],
+    "duration_seconds": 18.001,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      83,
+      84,
+      85
+    ],
+    "duration_seconds": 21.931,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      84,
+      85,
+      86
+    ],
+    "duration_seconds": 22.332,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      85,
+      86,
+      87
+    ],
+    "duration_seconds": 15.711,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      86,
+      87,
+      88
+    ],
+    "duration_seconds": 16.117,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      87,
+      88,
+      89
+    ],
+    "duration_seconds": 19.122,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      88,
+      89,
+      90
+    ],
+    "duration_seconds": 21.8,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      89,
+      90,
+      91
+    ],
+    "duration_seconds": 16.683,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 89,
+        "b": 91,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        89,
+        90,
+        91
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      90,
+      91,
+      92
+    ],
+    "duration_seconds": 14.724,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      91,
+      92,
+      93
+    ],
+    "duration_seconds": 12.463,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      92,
+      93,
+      94
+    ],
+    "duration_seconds": 17.25,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      93,
+      94,
+      95
+    ],
+    "duration_seconds": 18.949,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      94,
+      95,
+      96
+    ],
+    "duration_seconds": 19.962,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      95,
+      96,
+      97
+    ],
+    "duration_seconds": 17.251,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      96,
+      97,
+      98
+    ],
+    "duration_seconds": 13.586,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      97,
+      98,
+      99
+    ],
+    "duration_seconds": 16.789,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      98,
+      99,
+      100
+    ],
+    "duration_seconds": 15.96,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      99,
+      100,
+      101
+    ],
+    "duration_seconds": 17.659,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      100,
+      101,
+      102
+    ],
+    "duration_seconds": 13.851,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        100,
+        101,
+        102
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      101,
+      102,
+      103
+    ],
+    "duration_seconds": 12.417,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      102,
+      103,
+      104
+    ],
+    "duration_seconds": 12.951,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      103,
+      104,
+      105
+    ],
+    "duration_seconds": 13.158,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      104,
+      105,
+      106
+    ],
+    "duration_seconds": 16.448,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      105,
+      106,
+      107
+    ],
+    "duration_seconds": 20.02,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      106,
+      107,
+      108
+    ],
+    "duration_seconds": 25.6,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      107,
+      108,
+      109
+    ],
+    "duration_seconds": 21.953,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      108,
+      109,
+      110
+    ],
+    "duration_seconds": 19.77,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      109,
+      110,
+      111
+    ],
+    "duration_seconds": 15.282,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        109,
+        110,
+        111
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      110,
+      111,
+      112
+    ],
+    "duration_seconds": 19.019,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        110,
+        111,
+        112
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      111,
+      112,
+      113
+    ],
+    "duration_seconds": 17.811,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        111,
+        112,
+        113
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      112,
+      113,
+      114
+    ],
+    "duration_seconds": 20.923,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      113,
+      114,
+      115
+    ],
+    "duration_seconds": 20.502,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      114,
+      115,
+      116
+    ],
+    "duration_seconds": 22.159,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 114,
+        "b": 116,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        114,
+        115,
+        116
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      115,
+      116,
+      117
+    ],
+    "duration_seconds": 18.887,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 115,
+        "b": 117,
+        "dhash_distance": 5,
+        "gray_correlation": 0.8785921039603145,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        115,
+        116,
+        117
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      116,
+      117,
+      118
+    ],
+    "duration_seconds": 19.319,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      117,
+      118,
+      119
+    ],
+    "duration_seconds": 17.67,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      118,
+      119,
+      120
+    ],
+    "duration_seconds": 19.975,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      119,
+      120,
+      121
+    ],
+    "duration_seconds": 21.982,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      120,
+      121,
+      122
+    ],
+    "duration_seconds": 23.56,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        120,
+        121,
+        122
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 3,
+    "shots": [
+      121,
+      122,
+      123
+    ],
+    "duration_seconds": 20.733,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      122,
+      123,
+      124
+    ],
+    "duration_seconds": 19.489,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      123,
+      124,
+      125
+    ],
+    "duration_seconds": 21.039,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      124,
+      125,
+      126
+    ],
+    "duration_seconds": 27.05,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      125,
+      126,
+      127
+    ],
+    "duration_seconds": 22.327,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      126,
+      127,
+      128
+    ],
+    "duration_seconds": 20.444,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      127,
+      128,
+      129
+    ],
+    "duration_seconds": 15.15,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      128,
+      129,
+      130
+    ],
+    "duration_seconds": 14.959,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      129,
+      130,
+      131
+    ],
+    "duration_seconds": 16.314,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      130,
+      131,
+      132
+    ],
+    "duration_seconds": 17.378,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      131,
+      132,
+      133
+    ],
+    "duration_seconds": 20.974,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      132,
+      133,
+      134
+    ],
+    "duration_seconds": 21.602,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      133,
+      134,
+      135
+    ],
+    "duration_seconds": 24.15,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 3,
+    "shots": [
+      134,
+      135,
+      136
+    ],
+    "duration_seconds": 24.15,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "duration_seconds": 24.397,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 3,
+        "b": 4,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "duration_seconds": 26.078,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 3,
+        "b": 4,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "duration_seconds": 28.299,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 3,
+        "b": 4,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        5,
+        6,
+        7
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "duration_seconds": 28.237,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 5,
+        "b": 8,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        5,
+        6,
+        7,
+        8
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "duration_seconds": 34.66,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 5,
+        "b": 8,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        5,
+        6,
+        7,
+        8
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "duration_seconds": 35.118,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        6,
+        7,
+        8
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "duration_seconds": 35.182,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "duration_seconds": 36.054,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      9,
+      10,
+      11,
+      12,
+      13
+    ],
+    "duration_seconds": 37.123,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "duration_seconds": 31.23,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "duration_seconds": 27.539,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "duration_seconds": 26.596,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "duration_seconds": 24.722,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "duration_seconds": 25.466,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "duration_seconds": 26.312,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "duration_seconds": 28.546,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      17,
+      18,
+      19,
+      20,
+      21
+    ],
+    "duration_seconds": 27.403,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      18,
+      19,
+      20,
+      21,
+      22
+    ],
+    "duration_seconds": 26.504,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "duration_seconds": 26.233,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      20,
+      21,
+      22,
+      23,
+      24
+    ],
+    "duration_seconds": 28.133,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      21,
+      22,
+      23,
+      24,
+      25
+    ],
+    "duration_seconds": 27.117,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      22,
+      23,
+      24,
+      25,
+      26
+    ],
+    "duration_seconds": 31.822,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      23,
+      24,
+      25,
+      26,
+      27
+    ],
+    "duration_seconds": 35.52,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      24,
+      25,
+      26,
+      27,
+      28
+    ],
+    "duration_seconds": 32.081,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        26,
+        27,
+        28
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      25,
+      26,
+      27,
+      28,
+      29
+    ],
+    "duration_seconds": 29.199,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 28,
+        "b": 29,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        26,
+        27,
+        28,
+        29
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      26,
+      27,
+      28,
+      29,
+      30
+    ],
+    "duration_seconds": 28.203,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 28,
+        "b": 29,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      27,
+      28,
+      29,
+      30,
+      31
+    ],
+    "duration_seconds": 22.785,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 28,
+        "b": 29,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        27,
+        28,
+        29,
+        30
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      28,
+      29,
+      30,
+      31,
+      32
+    ],
+    "duration_seconds": 18.3,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 28,
+        "b": 29,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        28,
+        29,
+        30
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      29,
+      30,
+      31,
+      32,
+      33
+    ],
+    "duration_seconds": 23.04,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      30,
+      31,
+      32,
+      33,
+      34
+    ],
+    "duration_seconds": 25.515,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      31,
+      32,
+      33,
+      34,
+      35
+    ],
+    "duration_seconds": 27.224,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      32,
+      33,
+      34,
+      35,
+      36
+    ],
+    "duration_seconds": 28.02,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 35,
+        "b": 36,
+        "dhash_distance": 3,
+        "gray_correlation": 0.8650173578824816,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        34,
+        35,
+        36
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      33,
+      34,
+      35,
+      36,
+      37
+    ],
+    "duration_seconds": 31.317,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 35,
+        "b": 36,
+        "dhash_distance": 3,
+        "gray_correlation": 0.8650173578824816,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        34,
+        35,
+        36
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      34,
+      35,
+      36,
+      37,
+      38
+    ],
+    "duration_seconds": 28.275,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 35,
+        "b": 36,
+        "dhash_distance": 3,
+        "gray_correlation": 0.8650173578824816,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        34,
+        35,
+        36
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      35,
+      36,
+      37,
+      38,
+      39
+    ],
+    "duration_seconds": 26.233,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 35,
+        "b": 36,
+        "dhash_distance": 3,
+        "gray_correlation": 0.8650173578824816,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      36,
+      37,
+      38,
+      39,
+      40
+    ],
+    "duration_seconds": 24.418,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      37,
+      38,
+      39,
+      40,
+      41
+    ],
+    "duration_seconds": 22.719,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      38,
+      39,
+      40,
+      41,
+      42
+    ],
+    "duration_seconds": 25.756,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      39,
+      40,
+      41,
+      42,
+      43
+    ],
+    "duration_seconds": 28.905,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      40,
+      41,
+      42,
+      43,
+      44
+    ],
+    "duration_seconds": 29.905,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      41,
+      42,
+      43,
+      44,
+      45
+    ],
+    "duration_seconds": 29.868,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "duration_seconds": 33.487,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      43,
+      44,
+      45,
+      46,
+      47
+    ],
+    "duration_seconds": 31.873,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 46,
+        "b": 47,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      44,
+      45,
+      46,
+      47,
+      48
+    ],
+    "duration_seconds": 31.113,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 46,
+        "b": 47,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      45,
+      46,
+      47,
+      48,
+      49
+    ],
+    "duration_seconds": 30.535,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 46,
+        "b": 47,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      46,
+      47,
+      48,
+      49,
+      50
+    ],
+    "duration_seconds": 29.57,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 46,
+        "b": 47,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      47,
+      48,
+      49,
+      50,
+      51
+    ],
+    "duration_seconds": 28.464,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      48,
+      49,
+      50,
+      51,
+      52
+    ],
+    "duration_seconds": 25.235,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      49,
+      50,
+      51,
+      52,
+      53
+    ],
+    "duration_seconds": 22.688,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      50,
+      51,
+      52,
+      53,
+      54
+    ],
+    "duration_seconds": 25.066,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      51,
+      52,
+      53,
+      54,
+      55
+    ],
+    "duration_seconds": 27.446,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      52,
+      53,
+      54,
+      55,
+      56
+    ],
+    "duration_seconds": 25.029,
+    "unavailable_shots": [
+      56
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      53,
+      54,
+      55,
+      56,
+      57
+    ],
+    "duration_seconds": 26.719,
+    "unavailable_shots": [
+      56,
+      57
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      54,
+      55,
+      56,
+      57,
+      58
+    ],
+    "duration_seconds": 26.259,
+    "unavailable_shots": [
+      56,
+      57,
+      58
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      55,
+      56,
+      57,
+      58,
+      59
+    ],
+    "duration_seconds": 28.494,
+    "unavailable_shots": [
+      56,
+      57,
+      58,
+      59
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      56,
+      57,
+      58,
+      59,
+      60
+    ],
+    "duration_seconds": 31.588,
+    "unavailable_shots": [
+      56,
+      57,
+      58,
+      59
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      57,
+      58,
+      59,
+      60,
+      61
+    ],
+    "duration_seconds": 37.501,
+    "unavailable_shots": [
+      57,
+      58,
+      59,
+      61
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      58,
+      59,
+      60,
+      61,
+      62
+    ],
+    "duration_seconds": 39.044,
+    "unavailable_shots": [
+      58,
+      59,
+      61,
+      62
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      59,
+      60,
+      61,
+      62,
+      63
+    ],
+    "duration_seconds": 41.458,
+    "unavailable_shots": [
+      59,
+      61,
+      62
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      60,
+      61,
+      62,
+      63,
+      64
+    ],
+    "duration_seconds": 38.517,
+    "unavailable_shots": [
+      61,
+      62
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 63,
+        "b": 64,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      61,
+      62,
+      63,
+      64,
+      65
+    ],
+    "duration_seconds": 33.428,
+    "unavailable_shots": [
+      61,
+      62
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 63,
+        "b": 64,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        63,
+        64,
+        65
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      62,
+      63,
+      64,
+      65,
+      66
+    ],
+    "duration_seconds": 30.667,
+    "unavailable_shots": [
+      62
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 63,
+        "b": 64,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 65,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        63,
+        64,
+        65,
+        66
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      63,
+      64,
+      65,
+      66,
+      67
+    ],
+    "duration_seconds": 28.956,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 63,
+        "b": 64,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 65,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        63,
+        64,
+        65,
+        66
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      64,
+      65,
+      66,
+      67,
+      68
+    ],
+    "duration_seconds": 30.525,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 64,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 65,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 67,
+        "b": 68,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        64,
+        65,
+        66
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      65,
+      66,
+      67,
+      68,
+      69
+    ],
+    "duration_seconds": 27.889,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 65,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 67,
+        "b": 68,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        67,
+        68,
+        69
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      66,
+      67,
+      68,
+      69,
+      70
+    ],
+    "duration_seconds": 32.564,
+    "unavailable_shots": [
+      70
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 67,
+        "b": 68,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        67,
+        68,
+        69
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      67,
+      68,
+      69,
+      70,
+      71
+    ],
+    "duration_seconds": 32.506,
+    "unavailable_shots": [
+      70,
+      71
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 67,
+        "b": 68,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        67,
+        68,
+        69
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      68,
+      69,
+      70,
+      71,
+      72
+    ],
+    "duration_seconds": 29.699,
+    "unavailable_shots": [
+      70,
+      71
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      69,
+      70,
+      71,
+      72,
+      73
+    ],
+    "duration_seconds": 28.357,
+    "unavailable_shots": [
+      70,
+      71
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 72,
+        "b": 73,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      70,
+      71,
+      72,
+      73,
+      74
+    ],
+    "duration_seconds": 30.938,
+    "unavailable_shots": [
+      70,
+      71
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 72,
+        "b": 73,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      71,
+      72,
+      73,
+      74,
+      75
+    ],
+    "duration_seconds": 25.261,
+    "unavailable_shots": [
+      71
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 72,
+        "b": 73,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      72,
+      73,
+      74,
+      75,
+      76
+    ],
+    "duration_seconds": 24.956,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 72,
+        "b": 73,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      73,
+      74,
+      75,
+      76,
+      77
+    ],
+    "duration_seconds": 27.537,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      74,
+      75,
+      76,
+      77,
+      78
+    ],
+    "duration_seconds": 26.14,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 77,
+        "b": 78,
+        "dhash_distance": 1,
+        "gray_correlation": 0.9247931189829234,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        76,
+        77,
+        78
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      75,
+      76,
+      77,
+      78,
+      79
+    ],
+    "duration_seconds": 26.349,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 77,
+        "b": 78,
+        "dhash_distance": 1,
+        "gray_correlation": 0.9247931189829234,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        76,
+        77,
+        78
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      76,
+      77,
+      78,
+      79,
+      80
+    ],
+    "duration_seconds": 28.913,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 77,
+        "b": 78,
+        "dhash_distance": 1,
+        "gray_correlation": 0.9247931189829234,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        76,
+        77,
+        78
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      77,
+      78,
+      79,
+      80,
+      81
+    ],
+    "duration_seconds": 29.336,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 77,
+        "b": 78,
+        "dhash_distance": 1,
+        "gray_correlation": 0.9247931189829234,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      78,
+      79,
+      80,
+      81,
+      82
+    ],
+    "duration_seconds": 28.033,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      79,
+      80,
+      81,
+      82,
+      83
+    ],
+    "duration_seconds": 26.747,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      80,
+      81,
+      82,
+      83,
+      84
+    ],
+    "duration_seconds": 29.885,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      81,
+      82,
+      83,
+      84,
+      85
+    ],
+    "duration_seconds": 33.2,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      82,
+      83,
+      84,
+      85,
+      86
+    ],
+    "duration_seconds": 30.554,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      83,
+      84,
+      85,
+      86,
+      87
+    ],
+    "duration_seconds": 29.108,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      84,
+      85,
+      86,
+      87,
+      88
+    ],
+    "duration_seconds": 34.43,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      85,
+      86,
+      87,
+      88,
+      89
+    ],
+    "duration_seconds": 31.675,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      86,
+      87,
+      88,
+      89,
+      90
+    ],
+    "duration_seconds": 28.977,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      87,
+      88,
+      89,
+      90,
+      91
+    ],
+    "duration_seconds": 28.781,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 89,
+        "b": 91,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        89,
+        90,
+        91
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      88,
+      89,
+      90,
+      91,
+      92
+    ],
+    "duration_seconds": 30.688,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 89,
+        "b": 91,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        89,
+        90,
+        91
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      89,
+      90,
+      91,
+      92,
+      93
+    ],
+    "duration_seconds": 25.323,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 89,
+        "b": 91,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        89,
+        90,
+        91
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      90,
+      91,
+      92,
+      93,
+      94
+    ],
+    "duration_seconds": 26.909,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      91,
+      92,
+      93,
+      94,
+      95
+    ],
+    "duration_seconds": 27.837,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      92,
+      93,
+      94,
+      95,
+      96
+    ],
+    "duration_seconds": 28.602,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      93,
+      94,
+      95,
+      96,
+      97
+    ],
+    "duration_seconds": 29.436,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      94,
+      95,
+      96,
+      97,
+      98
+    ],
+    "duration_seconds": 28.96,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      95,
+      96,
+      97,
+      98,
+      99
+    ],
+    "duration_seconds": 28.141,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      96,
+      97,
+      98,
+      99,
+      100
+    ],
+    "duration_seconds": 26.447,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      97,
+      98,
+      99,
+      100,
+      101
+    ],
+    "duration_seconds": 26.657,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      98,
+      99,
+      100,
+      101,
+      102
+    ],
+    "duration_seconds": 24.741,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        100,
+        101,
+        102
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      99,
+      100,
+      101,
+      102,
+      103
+    ],
+    "duration_seconds": 25.278,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        100,
+        101,
+        102
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      100,
+      101,
+      102,
+      103,
+      104
+    ],
+    "duration_seconds": 22.819,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        100,
+        101,
+        102
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      101,
+      102,
+      103,
+      104,
+      105
+    ],
+    "duration_seconds": 21.939,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      102,
+      103,
+      104,
+      105,
+      106
+    ],
+    "duration_seconds": 24.067,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      103,
+      104,
+      105,
+      106,
+      107
+    ],
+    "duration_seconds": 28.988,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      104,
+      105,
+      106,
+      107,
+      108
+    ],
+    "duration_seconds": 35.122,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      105,
+      106,
+      107,
+      108,
+      109
+    ],
+    "duration_seconds": 33.069,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      106,
+      107,
+      108,
+      109,
+      110
+    ],
+    "duration_seconds": 35.6,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      107,
+      108,
+      109,
+      110,
+      111
+    ],
+    "duration_seconds": 33.956,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        109,
+        110,
+        111
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      108,
+      109,
+      110,
+      111,
+      112
+    ],
+    "duration_seconds": 32.068,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        109,
+        110,
+        111,
+        112
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      109,
+      110,
+      111,
+      112,
+      113
+    ],
+    "duration_seconds": 27.811,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        109,
+        110,
+        111,
+        112,
+        113
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      110,
+      111,
+      112,
+      113,
+      114
+    ],
+    "duration_seconds": 32.926,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        110,
+        111,
+        112,
+        113
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      111,
+      112,
+      113,
+      114,
+      115
+    ],
+    "duration_seconds": 32.8,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        111,
+        112,
+        113
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      112,
+      113,
+      114,
+      115,
+      116
+    ],
+    "duration_seconds": 34.688,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 114,
+        "b": 116,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        114,
+        115,
+        116
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      113,
+      114,
+      115,
+      116,
+      117
+    ],
+    "duration_seconds": 32.794,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 114,
+        "b": 116,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      },
+      {
+        "a": 115,
+        "b": 117,
+        "dhash_distance": 5,
+        "gray_correlation": 0.8785921039603145,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        114,
+        115,
+        116,
+        117
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      114,
+      115,
+      116,
+      117,
+      118
+    ],
+    "duration_seconds": 34.308,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 114,
+        "b": 116,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      },
+      {
+        "a": 115,
+        "b": 117,
+        "dhash_distance": 5,
+        "gray_correlation": 0.8785921039603145,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        114,
+        115,
+        116,
+        117
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      115,
+      116,
+      117,
+      118,
+      119
+    ],
+    "duration_seconds": 31.435,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 115,
+        "b": 117,
+        "dhash_distance": 5,
+        "gray_correlation": 0.8785921039603145,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        115,
+        116,
+        117
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      116,
+      117,
+      118,
+      119,
+      120
+    ],
+    "duration_seconds": 32.267,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      117,
+      118,
+      119,
+      120,
+      121
+    ],
+    "duration_seconds": 34.131,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      118,
+      119,
+      120,
+      121,
+      122
+    ],
+    "duration_seconds": 36.108,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        120,
+        121,
+        122
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      119,
+      120,
+      121,
+      122,
+      123
+    ],
+    "duration_seconds": 33.681,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        120,
+        121,
+        122
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      120,
+      121,
+      122,
+      123,
+      124
+    ],
+    "duration_seconds": 35.95,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        120,
+        121,
+        122
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 5,
+    "shots": [
+      121,
+      122,
+      123,
+      124,
+      125
+    ],
+    "duration_seconds": 37.172,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      122,
+      123,
+      124,
+      125,
+      126
+    ],
+    "duration_seconds": 38.749,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      123,
+      124,
+      125,
+      126,
+      127
+    ],
+    "duration_seconds": 34.717,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      124,
+      125,
+      126,
+      127,
+      128
+    ],
+    "duration_seconds": 36.883,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      125,
+      126,
+      127,
+      128,
+      129
+    ],
+    "duration_seconds": 34.41,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      126,
+      127,
+      128,
+      129,
+      130
+    ],
+    "duration_seconds": 28.637,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      127,
+      128,
+      129,
+      130,
+      131
+    ],
+    "duration_seconds": 26.147,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      128,
+      129,
+      130,
+      131,
+      132
+    ],
+    "duration_seconds": 29.461,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      129,
+      130,
+      131,
+      132,
+      133
+    ],
+    "duration_seconds": 29.167,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      130,
+      131,
+      132,
+      133,
+      134
+    ],
+    "duration_seconds": 32.599,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      131,
+      132,
+      133,
+      134,
+      135
+    ],
+    "duration_seconds": 38.652,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 5,
+    "shots": [
+      132,
+      133,
+      134,
+      135,
+      136
+    ],
+    "duration_seconds": 37.003,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "duration_seconds": 41.677,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 3,
+        "b": 4,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      },
+      {
+        "a": 5,
+        "b": 8,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        5,
+        6,
+        7,
+        8
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "duration_seconds": 46.352,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 3,
+        "b": 4,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      },
+      {
+        "a": 5,
+        "b": 8,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        5,
+        6,
+        7,
+        8
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "duration_seconds": 50.614,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 3,
+        "b": 4,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      },
+      {
+        "a": 5,
+        "b": 8,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        5,
+        6,
+        7,
+        8
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "duration_seconds": 53.134,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 5,
+        "b": 8,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        5,
+        6,
+        7,
+        8
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "duration_seconds": 56.248,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 5,
+        "b": 8,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        5,
+        6,
+        7,
+        8
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+    ],
+    "duration_seconds": 54.403,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        6,
+        7,
+        8
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "duration_seconds": 51.504,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "duration_seconds": 49.854,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "duration_seconds": 51.493,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "duration_seconds": 46.31,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "duration_seconds": 44.751,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "duration_seconds": 42.634,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "duration_seconds": 42.346,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21
+    ],
+    "duration_seconds": 41.773,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22
+    ],
+    "duration_seconds": 41.584,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "duration_seconds": 43.445,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24
+    ],
+    "duration_seconds": 44.171,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25
+    ],
+    "duration_seconds": 44.741,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26
+    ],
+    "duration_seconds": 48.129,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27
+    ],
+    "duration_seconds": 50.792,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+    ],
+    "duration_seconds": 46.98,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        26,
+        27,
+        28
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29
+    ],
+    "duration_seconds": 45.967,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 28,
+        "b": 29,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        26,
+        27,
+        28,
+        29
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30
+    ],
+    "duration_seconds": 46.44,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 28,
+        "b": 29,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31
+    ],
+    "duration_seconds": 44.681,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 28,
+        "b": 29,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32
+    ],
+    "duration_seconds": 40.959,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 28,
+        "b": 29,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33
+    ],
+    "duration_seconds": 42.903,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 28,
+        "b": 29,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34
+    ],
+    "duration_seconds": 39.66,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 28,
+        "b": 29,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        27,
+        28,
+        29,
+        30
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+    ],
+    "duration_seconds": 38.144,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 28,
+        "b": 29,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        28,
+        29,
+        30
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36
+    ],
+    "duration_seconds": 40.62,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 35,
+        "b": 36,
+        "dhash_distance": 3,
+        "gray_correlation": 0.8650173578824816,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        34,
+        35,
+        36
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37
+    ],
+    "duration_seconds": 43.077,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 35,
+        "b": 36,
+        "dhash_distance": 3,
+        "gray_correlation": 0.8650173578824816,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        34,
+        35,
+        36
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38
+    ],
+    "duration_seconds": 42.975,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 35,
+        "b": 36,
+        "dhash_distance": 3,
+        "gray_correlation": 0.8650173578824816,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        34,
+        35,
+        36
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39
+    ],
+    "duration_seconds": 43.108,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 35,
+        "b": 36,
+        "dhash_distance": 3,
+        "gray_correlation": 0.8650173578824816,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        34,
+        35,
+        36
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40
+    ],
+    "duration_seconds": 44.262,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 35,
+        "b": 36,
+        "dhash_distance": 3,
+        "gray_correlation": 0.8650173578824816,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        34,
+        35,
+        36
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41
+    ],
+    "duration_seconds": 40.299,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 35,
+        "b": 36,
+        "dhash_distance": 3,
+        "gray_correlation": 0.8650173578824816,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        34,
+        35,
+        36
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42
+    ],
+    "duration_seconds": 43.318,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 35,
+        "b": 36,
+        "dhash_distance": 3,
+        "gray_correlation": 0.8650173578824816,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43
+    ],
+    "duration_seconds": 44.656,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44
+    ],
+    "duration_seconds": 44.993,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
+    ],
+    "duration_seconds": 42.813,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "duration_seconds": 45.511,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47
+    ],
+    "duration_seconds": 48.958,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 46,
+        "b": 47,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48
+    ],
+    "duration_seconds": 51.351,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 46,
+        "b": 47,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49
+    ],
+    "duration_seconds": 52.809,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 46,
+        "b": 47,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50
+    ],
+    "duration_seconds": 46.627,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 46,
+        "b": 47,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51
+    ],
+    "duration_seconds": 45.07,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 46,
+        "b": 47,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52
+    ],
+    "duration_seconds": 44.288,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 46,
+        "b": 47,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53
+    ],
+    "duration_seconds": 44.171,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 46,
+        "b": 47,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54
+    ],
+    "duration_seconds": 44.388,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55
+    ],
+    "duration_seconds": 42.2,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56
+    ],
+    "duration_seconds": 38.986,
+    "unavailable_shots": [
+      56
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57
+    ],
+    "duration_seconds": 40.472,
+    "unavailable_shots": [
+      56,
+      57
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58
+    ],
+    "duration_seconds": 40.86,
+    "unavailable_shots": [
+      56,
+      57,
+      58
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59
+    ],
+    "duration_seconds": 44.418,
+    "unavailable_shots": [
+      56,
+      57,
+      58,
+      59
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60
+    ],
+    "duration_seconds": 48.553,
+    "unavailable_shots": [
+      56,
+      57,
+      58,
+      59
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61
+    ],
+    "duration_seconds": 53.799,
+    "unavailable_shots": [
+      56,
+      57,
+      58,
+      59,
+      61
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62
+    ],
+    "duration_seconds": 54.45,
+    "unavailable_shots": [
+      56,
+      57,
+      58,
+      59,
+      61,
+      62
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63
+    ],
+    "duration_seconds": 54.872,
+    "unavailable_shots": [
+      56,
+      57,
+      58,
+      59,
+      61,
+      62
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64
+    ],
+    "duration_seconds": 57.906,
+    "unavailable_shots": [
+      57,
+      58,
+      59,
+      61,
+      62
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 63,
+        "b": 64,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65
+    ],
+    "duration_seconds": 55.262,
+    "unavailable_shots": [
+      58,
+      59,
+      61,
+      62
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 63,
+        "b": 64,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        63,
+        64,
+        65
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66
+    ],
+    "duration_seconds": 58.207,
+    "unavailable_shots": [
+      59,
+      61,
+      62
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 63,
+        "b": 64,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 65,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        63,
+        64,
+        65,
+        66
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67
+    ],
+    "duration_seconds": 54.912,
+    "unavailable_shots": [
+      61,
+      62
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 63,
+        "b": 64,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 65,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        63,
+        64,
+        65,
+        66
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68
+    ],
+    "duration_seconds": 53.809,
+    "unavailable_shots": [
+      61,
+      62
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 63,
+        "b": 64,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 65,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 67,
+        "b": 68,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        63,
+        64,
+        65,
+        66
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69
+    ],
+    "duration_seconds": 48.294,
+    "unavailable_shots": [
+      62
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 63,
+        "b": 64,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 65,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 67,
+        "b": 68,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        63,
+        64,
+        65,
+        66
+      ],
+      [
+        67,
+        68,
+        69
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70
+    ],
+    "duration_seconds": 48.782,
+    "unavailable_shots": [
+      70
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 63,
+        "b": 64,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 63,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 65,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 67,
+        "b": 68,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        63,
+        64,
+        65,
+        66
+      ],
+      [
+        67,
+        68,
+        69
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71
+    ],
+    "duration_seconds": 49.255,
+    "unavailable_shots": [
+      70,
+      71
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 64,
+        "b": 65,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 64,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 65,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 67,
+        "b": 68,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        64,
+        65,
+        66
+      ],
+      [
+        67,
+        68,
+        69
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72
+    ],
+    "duration_seconds": 46.094,
+    "unavailable_shots": [
+      70,
+      71
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 65,
+        "b": 66,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 65,
+        "b": 72,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 66,
+        "b": 72,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 67,
+        "b": 68,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        67,
+        68,
+        69
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73
+    ],
+    "duration_seconds": 48.738,
+    "unavailable_shots": [
+      70,
+      71
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 66,
+        "b": 72,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 66,
+        "b": 73,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 67,
+        "b": 68,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      },
+      {
+        "a": 72,
+        "b": 73,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        67,
+        68,
+        69
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74
+    ],
+    "duration_seconds": 48.565,
+    "unavailable_shots": [
+      70,
+      71
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 67,
+        "b": 68,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      },
+      {
+        "a": 72,
+        "b": 73,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        67,
+        68,
+        69
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75
+    ],
+    "duration_seconds": 45.087,
+    "unavailable_shots": [
+      70,
+      71
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 72,
+        "b": 73,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76
+    ],
+    "duration_seconds": 43.686,
+    "unavailable_shots": [
+      70,
+      71
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 72,
+        "b": 73,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77
+    ],
+    "duration_seconds": 45.742,
+    "unavailable_shots": [
+      70,
+      71
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 72,
+        "b": 73,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78
+    ],
+    "duration_seconds": 42.314,
+    "unavailable_shots": [
+      71
+    ],
+    "numeric_similar_pairs": [
+      {
+        "a": 72,
+        "b": 73,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 77,
+        "b": 78,
+        "dhash_distance": 1,
+        "gray_correlation": 0.9247931189829234,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        76,
+        77,
+        78
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79
+    ],
+    "duration_seconds": 42.408,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 72,
+        "b": 73,
+        "dhash_distance": 0,
+        "gray_correlation": null,
+        "exact": true
+      },
+      {
+        "a": 77,
+        "b": 78,
+        "dhash_distance": 1,
+        "gray_correlation": 0.9247931189829234,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        76,
+        77,
+        78
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80
+    ],
+    "duration_seconds": 44.301,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 77,
+        "b": 78,
+        "dhash_distance": 1,
+        "gray_correlation": 0.9247931189829234,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        76,
+        77,
+        78
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81
+    ],
+    "duration_seconds": 44.665,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 77,
+        "b": 78,
+        "dhash_distance": 1,
+        "gray_correlation": 0.9247931189829234,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        76,
+        77,
+        78
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82
+    ],
+    "duration_seconds": 42.837,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 77,
+        "b": 78,
+        "dhash_distance": 1,
+        "gray_correlation": 0.9247931189829234,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        76,
+        77,
+        78
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83
+    ],
+    "duration_seconds": 43.8,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 77,
+        "b": 78,
+        "dhash_distance": 1,
+        "gray_correlation": 0.9247931189829234,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        76,
+        77,
+        78
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84
+    ],
+    "duration_seconds": 47.337,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 77,
+        "b": 78,
+        "dhash_distance": 1,
+        "gray_correlation": 0.9247931189829234,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85
+    ],
+    "duration_seconds": 49.964,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86
+    ],
+    "duration_seconds": 49.079,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87
+    ],
+    "duration_seconds": 45.596,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88
+    ],
+    "duration_seconds": 49.317,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89
+    ],
+    "duration_seconds": 49.676,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90
+    ],
+    "duration_seconds": 50.908,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91
+    ],
+    "duration_seconds": 51.113,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 89,
+        "b": 91,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        89,
+        90,
+        91
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92
+    ],
+    "duration_seconds": 46.399,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 89,
+        "b": 91,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        89,
+        90,
+        91
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93
+    ],
+    "duration_seconds": 41.44,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 89,
+        "b": 91,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        89,
+        90,
+        91
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94
+    ],
+    "duration_seconds": 46.031,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 89,
+        "b": 91,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        89,
+        90,
+        91
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95
+    ],
+    "duration_seconds": 49.637,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 89,
+        "b": 91,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        89,
+        90,
+        91
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96
+    ],
+    "duration_seconds": 45.285,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 89,
+        "b": 91,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        89,
+        90,
+        91
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97
+    ],
+    "duration_seconds": 44.16,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98
+    ],
+    "duration_seconds": 41.423,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99
+    ],
+    "duration_seconds": 45.391,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100
+    ],
+    "duration_seconds": 45.396,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101
+    ],
+    "duration_seconds": 46.619,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102
+    ],
+    "duration_seconds": 41.992,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        100,
+        101,
+        102
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103
+    ],
+    "duration_seconds": 38.864,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        100,
+        101,
+        102
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104
+    ],
+    "duration_seconds": 39.608,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        100,
+        101,
+        102
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105
+    ],
+    "duration_seconds": 37.899,
+    "unavailable_shots": [
+      98
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        100,
+        101,
+        102
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106
+    ],
+    "duration_seconds": 41.726,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        100,
+        101,
+        102
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107
+    ],
+    "duration_seconds": 42.839,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        100,
+        101,
+        102
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108
+    ],
+    "duration_seconds": 47.539,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109
+    ],
+    "duration_seconds": 46.02,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110
+    ],
+    "duration_seconds": 48.758,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111
+    ],
+    "duration_seconds": 50.404,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        109,
+        110,
+        111
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112
+    ],
+    "duration_seconds": 52.088,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        109,
+        110,
+        111,
+        112
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113
+    ],
+    "duration_seconds": 53.411,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        109,
+        110,
+        111,
+        112,
+        113
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114
+    ],
+    "duration_seconds": 54.879,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        109,
+        110,
+        111,
+        112,
+        113
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115
+    ],
+    "duration_seconds": 52.57,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        109,
+        110,
+        111,
+        112,
+        113
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116
+    ],
+    "duration_seconds": 49.97,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 114,
+        "b": 116,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        109,
+        110,
+        111,
+        112,
+        113
+      ],
+      [
+        114,
+        115,
+        116
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117
+    ],
+    "duration_seconds": 51.813,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 114,
+        "b": 116,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      },
+      {
+        "a": 115,
+        "b": 117,
+        "dhash_distance": 5,
+        "gray_correlation": 0.8785921039603145,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        110,
+        111,
+        112,
+        113
+      ],
+      [
+        114,
+        115,
+        116,
+        117
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118
+    ],
+    "duration_seconds": 52.119,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 114,
+        "b": 116,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      },
+      {
+        "a": 115,
+        "b": 117,
+        "dhash_distance": 5,
+        "gray_correlation": 0.8785921039603145,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        111,
+        112,
+        113
+      ],
+      [
+        114,
+        115,
+        116,
+        117
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119
+    ],
+    "duration_seconds": 52.358,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 114,
+        "b": 116,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      },
+      {
+        "a": 115,
+        "b": 117,
+        "dhash_distance": 5,
+        "gray_correlation": 0.8785921039603145,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        114,
+        115,
+        116,
+        117
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120
+    ],
+    "duration_seconds": 52.769,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 114,
+        "b": 116,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      },
+      {
+        "a": 115,
+        "b": 117,
+        "dhash_distance": 5,
+        "gray_correlation": 0.8785921039603145,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        114,
+        115,
+        116,
+        117
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121
+    ],
+    "duration_seconds": 56.29,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 114,
+        "b": 116,
+        "dhash_distance": 0,
+        "gray_correlation": 1.0,
+        "exact": true
+      },
+      {
+        "a": 115,
+        "b": 117,
+        "dhash_distance": 5,
+        "gray_correlation": 0.8785921039603145,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        114,
+        115,
+        116,
+        117
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122
+    ],
+    "duration_seconds": 54.995,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [
+      {
+        "a": 115,
+        "b": 117,
+        "dhash_distance": 5,
+        "gray_correlation": 0.8785921039603145,
+        "exact": false
+      }
+    ],
+    "manual_stagnation_overlaps": [
+      [
+        115,
+        116,
+        117
+      ],
+      [
+        120,
+        121,
+        122
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123
+    ],
+    "duration_seconds": 53,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        120,
+        121,
+        122
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124
+    ],
+    "duration_seconds": 53.62,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        120,
+        121,
+        122
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125
+    ],
+    "duration_seconds": 57.147,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        120,
+        121,
+        122
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126
+    ],
+    "duration_seconds": 60.731,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        120,
+        121,
+        122
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127
+    ],
+    "duration_seconds": 58.277,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [
+      [
+        120,
+        121,
+        122
+      ]
+    ],
+    "flagged": true
+  },
+  {
+    "size": 8,
+    "shots": [
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127,
+      128
+    ],
+    "duration_seconds": 57.616,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      122,
+      123,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129
+    ],
+    "duration_seconds": 53.899,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      123,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130
+    ],
+    "duration_seconds": 49.676,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      131
+    ],
+    "duration_seconds": 53.197,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      131,
+      132
+    ],
+    "duration_seconds": 51.788,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      126,
+      127,
+      128,
+      129,
+      130,
+      131,
+      132,
+      133
+    ],
+    "duration_seconds": 49.611,
+    "unavailable_shots": [
+      126
+    ],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      127,
+      128,
+      129,
+      130,
+      131,
+      132,
+      133,
+      134
+    ],
+    "duration_seconds": 47.749,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      128,
+      129,
+      130,
+      131,
+      132,
+      133,
+      134,
+      135
+    ],
+    "duration_seconds": 53.611,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  },
+  {
+    "size": 8,
+    "shots": [
+      129,
+      130,
+      131,
+      132,
+      133,
+      134,
+      135,
+      136
+    ],
+    "duration_seconds": 53.317,
+    "unavailable_shots": [],
+    "numeric_similar_pairs": [],
+    "manual_stagnation_overlaps": [],
+    "flagged": false
+  }
+]

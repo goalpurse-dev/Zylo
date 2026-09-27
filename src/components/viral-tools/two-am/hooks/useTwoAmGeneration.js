@@ -6,7 +6,6 @@ import {
   mapTwoAmGeneration,
   regenerateTwoAmScene,
   settleTwoAmGeneration,
-  TWO_AM_TOTAL_CREDITS,
   updateTwoAmGeneration,
 } from "../api/twoAmApi";
 
@@ -152,7 +151,7 @@ export default function useTwoAmGeneration() {
       generationRef.current = finishedGeneration;
       setGeneration(finishedGeneration);
       setPhase(completed ? "done" : "error");
-      if (!completed) setError(`The image provider could not create this night. Your ${mapped.reservedCredits ?? TWO_AM_TOTAL_CREDITS} credits were refunded.`);
+      if (!completed) setError(`The image provider could not create this night. Your ${mapped.reservedCredits != null ? `${mapped.reservedCredits} ` : ""}credits were refunded.`);
     } catch (caught) {
       clearInterval(stageTimer);
       if (!current()) return;
@@ -276,7 +275,7 @@ export default function useTwoAmGeneration() {
     activeRef.current = false;
     setPhase(mapped.status === "failed" ? "error" : "done");
     if (mapped.status === "failed") {
-      setError(`The image provider could not create this night. Your ${mapped.reservedCredits ?? TWO_AM_TOTAL_CREDITS} credits were refunded.`);
+      setError(`The image provider could not create this night. Your ${mapped.reservedCredits != null ? `${mapped.reservedCredits} ` : ""}credits were refunded.`);
     }
   }, [replaceScenes]);
 

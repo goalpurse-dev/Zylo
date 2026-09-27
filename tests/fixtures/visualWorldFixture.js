@@ -18,7 +18,12 @@ const canonical = {
   longship: "Long narrow shallow-draft clinker-built oak hull with overlapping planks, symmetrical rows of oar ports, one mast with a furled square sail, simple curved undecorated prow, hauled onto a sparse rocky winter shore. Entire hull and mast visible.",
 };
 export const fixtureEntities = planReferenceViews(fixturePlan.entity_registry, fixturePlan.continuity_groups).map((e) => ({ ...e, canonicalSpec: canonical[e.entityId], factualConstraints: e.entityCategory === "CHARACTER" ? ["No horned helmet; practical wool clothing rather than fantasy armor."] : e.entityId === "longhouse" ? ["Central open hearth, not a wall fireplace.", "Light from hearth and roof smoke opening."] : ["Period-appropriate wood, wool, iron and stone; no modern components."], forbiddenElements: ["logos", "weapons", "modern objects"] }));
-export const smokeSlots = ["erik:three_quarter_neutral", "erik:profile", "longhouse:wide_toward_hearth", "longship:three_quarter_hero"];
+// Only identity_outfit_three_quarter is still an independently-generated,
+// text-prompted CHARACTER view in the component-based pack (everything else
+// for erik is now a Qwen geometry edit / deterministic crop / zero-cost
+// adopt, compiled by compileGeometryEdit or not at all — never
+// compileReferencePrompt, which this fixture's own smoke test exercises).
+export const smokeSlots = ["erik:identity_outfit_sheet", "longhouse:wide_toward_hearth", "longship:three_quarter_hero"];
 export const fixtureWorld = {
   id: "fixture-only", status: "ready", renderer_tool_key: "image:flux.base", style_key: "zyvo_illustrated_documentary",
   reference_plan: { visualStyleNotes: "Cold muted blues and greys for a winter survival story", entities: fixtureEntities },

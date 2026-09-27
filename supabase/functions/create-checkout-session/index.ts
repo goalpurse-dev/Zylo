@@ -31,6 +31,27 @@ const TOPUP_PACK_MAP: Record<string, string> = {
   max: "price_1TGKjxHtn4q5rIncQzzCGyrR",
 };
 
+/** Mirrors the plan side of stripe-webhook/index.ts's PRICE_MAP -- keep in
+ *  sync if pricing changes. Used only to label abandoned_checkouts rows for
+ *  recovery emails/analytics; never used for billing/credit decisions. */
+const PLAN_PRICE_MAP: Record<string, { plan: string; interval?: "yearly" }> = {
+  "price_1TmVZZHtn4q5rIncOuf5aKP4": { plan: "starter" },
+  "price_1TmVfXHtn4q5rInc9IaN1l3U": { plan: "pro" },
+  "price_1TmVg2Htn4q5rIncWL0b3HJr": { plan: "generative" },
+  "price_1TmVhxHtn4q5rIncS8sxm6UR": { plan: "starter",    interval: "yearly" },
+  "price_1TmVjnHtn4q5rInccPDBIVaX": { plan: "pro",        interval: "yearly" },
+  "price_1TmVlUHtn4q5rIncbtWbGyof": { plan: "generative", interval: "yearly" },
+  "price_1TGKT6Htn4q5rIncI47V5Ein": { plan: "starter" },
+  "price_1TGKSqHtn4q5rIncIf8RPa6e": { plan: "pro" },
+  "price_1TGKSSHtn4q5rIncSTurqkCN": { plan: "generative" },
+  "price_1T8gM3Htn4q5rInchn8CMEcO": { plan: "starter" },
+  "price_1T8gMVHtn4q5rIncWwcUi9mG": { plan: "pro" },
+  "price_1T8gMsHtn4q5rIncW0vy8d57": { plan: "generative" },
+  "price_1TYWNYHtn4q5rIncWMa3mmvI": { plan: "starter",    interval: "yearly" },
+  "price_1TYWOWHtn4q5rIncTmN3GXdy": { plan: "pro",        interval: "yearly" },
+  "price_1TYWP8Htn4q5rIncbugChVhS": { plan: "generative", interval: "yearly" },
+};
+
 async function stripePost(path: string, body: URLSearchParams) {
   const res = await fetch(`https://api.stripe.com${path}`, {
     method: "POST",
@@ -178,21 +199,124 @@ if (!user?.id) {
       // Optional: pass a known Stripe customer if you store it
       if (stripeCustomerId) body.set("customer", stripeCustomerId);
 
-      const stripeRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${STRIPE_SECRET}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Idempotency-Key": crypto.randomUUID(),
-        },
-        body,
-      });
+      // Lets Stripe generate a post-expiry recovery link (used by the
+      // recovery-email sender's Email 3 CTA once a session has expired).
+      // Not yet verified in Stripe test mode against every mode/config
+      // combination -- see the retry-without-it fallback below, which
+      // guarantees this can never break checkout creation itself.
+      body.set("after_expiration[recovery][enabled]", "true");
 
-      const stripeJson: any = await stripeRes.json();
+      async function postCheckoutSession(b: URLSearchParams) {
+        const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${STRIPE_SECRET}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Idempotency-Key": crypto.randomUUID(),
+          },
+          body: b,
+        });
+        const j: any = await res.json();
+        return { res, j };
+      }
+
+      let { res: stripeRes, j: stripeJson } = await postCheckoutSession(body);
+
+      if (!stripeRes.ok && String(stripeJson?.error?.param || "").startsWith("after_expiration")) {
+        console.error(
+          "[create-checkout-session] after_expiration.recovery rejected by Stripe, retrying without it:",
+          stripeJson?.error?.message,
+        );
+        const retryBody = new URLSearchParams(body);
+        retryBody.delete("after_expiration[recovery][enabled]");
+        ({ res: stripeRes, j: stripeJson } = await postCheckoutSession(retryBody));
+      }
 
       if (!stripeRes.ok) {
         const msg = stripeJson?.error?.message || "Stripe error";
         return json(req, { error: msg, details: stripeJson }, stripeRes.status);
+      }
+
+      // ── Phase 2/3: server-side abandoned-checkout tracking ─────────────────
+      // Source of truth for recovery tracking as of this rebuild. Must NEVER
+      // block or fail the actual checkout -- Stripe already succeeded above,
+      // so the caller gets their URL regardless of what happens in here.
+      try {
+        const planInfo = isSubscription ? PLAN_PRICE_MAP[finalPriceId] : undefined;
+        const nowIso = new Date().toISOString();
+
+        const { data: newRow, error: insertErr } = await sbAdmin
+          .from("abandoned_checkouts")
+          .insert({
+            user_id: userId || null,
+            email,
+            stripe_customer_id: stripeCustomerId || null,
+            stripe_session_id: stripeJson.id,
+            checkout_url: stripeJson.url,
+            purchase_type: isTopup ? "topup" : "subscription",
+            plan_code: planInfo?.plan ?? null,
+            pack: isTopup ? pack : null,
+            billing_interval: planInfo?.interval ?? (isSubscription ? "monthly" : null),
+            price_id: finalPriceId,
+            amount: stripeJson.amount_total ?? null,
+            currency: stripeJson.currency ?? null,
+            expires_at: stripeJson.expires_at
+              ? new Date(stripeJson.expires_at * 1000).toISOString()
+              : null,
+            status: "pending",
+            paid: false,
+            recovered: false,
+            recovery_stage: 0,
+            recovery_system_version: "v2",
+            updated_at: nowIso,
+          })
+          .select("id")
+          .single();
+
+        if (insertErr) {
+          console.error(
+            "[create-checkout-session] abandoned_checkouts insert failed (non-fatal):",
+            insertErr.message,
+          );
+        } else if (newRow?.id) {
+          const { error: eventErr } = await sbAdmin.from("abandoned_checkout_events").insert({
+            checkout_id: newRow.id,
+            event_type: "checkout_started",
+            amount: stripeJson.amount_total ?? null,
+            currency: stripeJson.currency ?? null,
+          });
+          if (eventErr) {
+            console.error(
+              "[create-checkout-session] checkout_started event insert failed (non-fatal):",
+              eventErr.message,
+            );
+          }
+
+          // Phase 3: supersede this user's older unpaid v2 rows -- the
+          // newest session owns the active recovery sequence. Never touches
+          // converted/paid rows, and never touches legacy (v1) rows.
+          if (userId) {
+            const { error: supersedeErr } = await sbAdmin
+              .from("abandoned_checkouts")
+              .update({ status: "superseded", updated_at: nowIso })
+              .eq("user_id", userId)
+              .eq("recovery_system_version", "v2")
+              .neq("id", newRow.id)
+              .eq("paid", false)
+              .in("status", ["pending", "in_sequence", "expired"]);
+            if (supersedeErr) {
+              console.error(
+                "[create-checkout-session] supersede update failed (non-fatal):",
+                supersedeErr.message,
+              );
+            }
+          }
+        }
+      } catch (trackingErr) {
+        console.error(
+          "[create-checkout-session] abandoned-checkout tracking threw (non-fatal):",
+          trackingErr,
+        );
       }
 
       return json(req, { url: stripeJson.url });

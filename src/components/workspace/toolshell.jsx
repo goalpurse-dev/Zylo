@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { createElement, useEffect, useState } from "react";
-import { ChevronRight, Folder, Home, LayoutGrid, Pin, Sparkles } from "lucide-react";
+import { ChevronRight, Clapperboard, DollarSign, Folder, Home, LayoutGrid, Pin, Sparkles } from "lucide-react";
 import Logo from "../../assets/Logo.png";
 import { ALL_PINNABLE_TOOLS, DesktopCreatePanel, DesktopWorkspacePanel } from "./CreateMenu";
 import "../../styles/workspace-shell.css";
@@ -72,6 +72,7 @@ export default function ToolShell({ onClose }) {
   const anyPanelOpen = createOpen || workspaceOpen;
   const createActive = createOpen || (!anyPanelOpen && (
     isActive("/workspace/two-am") ||
+    isActive("/workspace/thirty-days") ||
     isActive("/workspace/cartoon-drive-by") ||
     isActive("/workspace/ai-fruit-story") ||
     isActive("/workspace/face-asmr") ||
@@ -149,12 +150,19 @@ export default function ToolShell({ onClose }) {
 
             <NavItem
               icon={Sparkles}
-              label="Create"
+              label="Short Form"
               active={createActive}
               onClick={() => {
                 setCreateOpen((value) => !value);
                 setWorkspaceOpen(false);
               }}
+            />
+
+            <NavItem
+              icon={Clapperboard}
+              label="Long Form"
+              active={!anyPanelOpen && isActive("/long-form")}
+              onClick={() => go("/long-form")}
             />
 
             <NavItem
@@ -165,6 +173,13 @@ export default function ToolShell({ onClose }) {
                 setWorkspaceOpen((value) => !value);
                 setCreateOpen(false);
               }}
+            />
+
+            <NavItem
+              icon={DollarSign}
+              label="Earn"
+              active={!anyPanelOpen && isActive("/workspace/earn")}
+              onClick={() => go("/workspace/earn")}
             />
 
             <NavItem

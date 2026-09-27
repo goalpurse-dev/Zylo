@@ -1,11 +1,11 @@
 // deno-lint-ignore-file no-explicit-any
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requirePaidFruitUser, consumeFruitRateLimit } from "../_shared/fruitStoryAccess.ts";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_KEY  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const OPENAI_KEY   = Deno.env.get("OPENAI_API_KEY")!;
 const OPENAI_CHAT  = "https://api.openai.com/v1/chat/completions";
+const OPENAI_TIMEOUT_MS = 30_000;
+const RATE_LIMIT_PER_10_MIN = 20;
 
 const CORS = {
   "Access-Control-Allow-Origin":  "*",
@@ -73,11 +73,11 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
   if (req.method !== "POST") return fail("Method not allowed", 405);
 
-  const authorization = req.headers.get("Authorization") ?? "";
-  const token = authorization.replace("Bearer ", "");
-  const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
-  const { data: { user }, error: authError } = await admin.auth.getUser(token);
-  if (authError || !user) return fail("Unauthorized", 401);
+  const access = await requirePaidFruitUser(req, CORS);
+  if (!access.ok) return access.response;
+
+  const limited = await consumeFruitRateLimit(access.admin, access.user.id, "fruit-story-ideas", RATE_LIMIT_PER_10_MIN, CORS);
+  if (limited) return limited;
 
   try {
     const aiRes = await fetch(OPENAI_CHAT, {
@@ -91,6 +91,7 @@ Deno.serve(async (req) => {
         temperature: 1,
         messages: [{ role: "user", content: IDEATION_PROMPT }],
       }),
+      signal: AbortSignal.timeout(OPENAI_TIMEOUT_MS),
     });
 
     if (!aiRes.ok) {
@@ -110,6 +111,10 @@ Deno.serve(async (req) => {
 
     return ok({ ideas });
   } catch (error) {
+    if ((error as any)?.name === "TimeoutError") {
+      console.error("[fruit-story-ideas] OpenAI timed out after", OPENAI_TIMEOUT_MS, "ms");
+      return fail("Idea generation timed out. Try again.", 504);
+    }
     console.error("[fruit-story-ideas] unexpected error:", String(error));
     return fail("Idea generation failed", 500);
   }

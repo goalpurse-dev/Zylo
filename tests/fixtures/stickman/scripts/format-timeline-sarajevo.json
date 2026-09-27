@@ -1,0 +1,1038 @@
+{
+  "slug": "format-timeline-sarajevo",
+  "frozenAt": "2026-09-26T19:29:11.170Z",
+  "source": {
+    "projectId": "ad7552ef-02d1-498b-8bef-909bc5ff140e",
+    "scriptVersionId": "0df5abe1-66e9-4037-ad44-c675548637ea",
+    "storyPlanVersionId": "a71b0cdd-0096-4bfd-8221-525b5f7c5cd8",
+    "researchVersionId": "8510ccf4-f398-4fd6-a74b-9403ce55b9be"
+  },
+  "topic": "How did a single assassination lead to a world war?",
+  "niche": "timeline_history",
+  "visualRecipe": "stickman_doodle_explainer",
+  "title": "How Did One Assassination Spark World War I?",
+  "targetWords": 1450,
+  "actualWords": 1155,
+  "lengthRatio": 0.797,
+  "status": "needs_attention",
+  "lastErrorCode": "DRAFT_ONLY_TEST_MODE",
+  "models": {
+    "draft": "claude-sonnet-5",
+    "critic": null,
+    "revision": null
+  },
+  "criticScore": null,
+  "criticScores": null,
+  "judgedScore": 8.5,
+  "costUsd": 0.1184,
+  "callLedger": [
+    {
+      "model": "claude-sonnet-5",
+      "stage": "draft",
+      "inputTokens": 4756,
+      "outputTokens": 10675,
+      "actualToolCalls": 0,
+      "cacheReadTokens": 10832,
+      "cacheWriteTokens": 0,
+      "estimatedCostUsd": 0.1184
+    }
+  ],
+  "storyPlan": {
+    "chapters": [
+      {
+        "id": "cold_open",
+        "role": "cold_open",
+        "title": "The shot and the stopped watch",
+        "purpose": "Pull the viewer immediately into Sarajevo — the single concrete moment that starts the chain and plants the callback image (time pressure).",
+        "summary": "A rapid, purely cinematic scene at the assassination: the motorcade, a sudden shot, a small pocket watch that stops — no explanations, only sensory detail and the planted image of stopped time.",
+        "subQuestion": "",
+        "targetWords": 67,
+        "keyQuestions": [
+          "What happens in that exact, disorienting moment?",
+          "What small detail here might matter later?"
+        ],
+        "estimatedMinutes": 0.3,
+        "picturableMoments": [
+          "An open-top motorcade turning down a city street",
+          "A sudden shout and a single gunshot",
+          "A small pocket watch with its hands stopped",
+          "A stunned crowd frozen in place"
+        ]
+      },
+      {
+        "id": "stakes",
+        "role": "stakes",
+        "title": "Why this moment matters",
+        "purpose": "Give one short sentence of stakes: a local crime becomes a test of alliances and military machines that could drag an entire continent into war.",
+        "summary": "Explain, in one punchy line, that a seemingly local act could trigger decisions that bind multiple powers — the stakes are whether diplomacy or mechanical timetables win.",
+        "subQuestion": "",
+        "targetWords": 15,
+        "keyQuestions": [
+          "Why should a viewer care about an assassination from a century ago?"
+        ],
+        "estimatedMinutes": 0.2,
+        "picturableMoments": [
+          "A map of Europe with colored blocs",
+          "A line of soldiers boarding a train",
+          "A diplomat sealing an envelope"
+        ]
+      },
+      {
+        "id": "core_question",
+        "role": "core_question",
+        "title": "The single question",
+        "purpose": "Spell out the single question this video will answer in one sentence: how a murder became a general European war.",
+        "summary": "Ask plainly: exactly how did the assassination escalate into a general European war? Then move straight into evidence.",
+        "subQuestion": "",
+        "targetWords": 24,
+        "keyQuestions": [
+          "What chain of events turned this murder into war?"
+        ],
+        "estimatedMinutes": 0.1,
+        "picturableMoments": [
+          "An expanding ripple on a surface of water",
+          "A chessboard with pieces moving outward",
+          "Two hands passing a sealed message"
+        ]
+      },
+      {
+        "id": "e1_domestic",
+        "role": "evidence",
+        "title": "Austria decides on punishment",
+        "purpose": "Show how Austria-Hungary's internal politics and nationalist pressures turned the assassination into a political demand for a forceful response — and how that decision sets the crisis in motion.",
+        "summary": "After the assassination, Austria-Hungary faced intense internal pressure to respond decisively; political leaders viewed a punitive response as necessary to preserve prestige and internal stability. That choice narrows options and hands the next move to diplomacy backed by power — it directly leads to Austria preparing a hardline ultimatum.",
+        "subQuestion": "Why did Austria-Hungary choose a punitive response instead of a restrained diplomatic route?",
+        "targetWords": 343,
+        "keyQuestions": [
+          "What domestic or political pressures pushed Austria toward a military-style response?",
+          "How did choosing punishment rather than quiet diplomacy change the crisis?"
+        ],
+        "estimatedMinutes": 2.2,
+        "picturableMoments": [
+          "A government minister stamping a paper 'For Response'",
+          "Newspaper headlines demanding action",
+          "A map of the empire with restive provinces highlighted",
+          "Soldiers standing ready in a barracks",
+          "A political rally chanting for 'honor' or 'justice'"
+        ]
+      },
+      {
+        "id": "e2_ultimatum",
+        "role": "evidence",
+        "title": "The ultimatum and hardline diplomacy",
+        "purpose": "Explain Austria's harsh ultimatum to Serbia and the crucial diplomatic move that enabled it — Germany's unconditional political backing — showing how diplomacy hardened rather than cooled the crisis.",
+        "summary": "Austria issued a set of demands framed as an ultimatum. The willingness to make those demands was tied to outside diplomatic assurances of support: with strong backing, Austria could risk a confrontation. The shape and tone of the ultimatum intentionally tightened the space for compromise, making a negotiated cooling less likely and setting the clock toward a diplomatic rupture.",
+        "subQuestion": "How did Austria's ultimatum and Germany's backing make diplomatic compromise harder and escalate the crisis?",
+        "targetWords": 317,
+        "keyQuestions": [
+          "What did the ultimatum do to Serbia's room to compromise?",
+          "How did Germany's backing of Austria change the calculation in Vienna?"
+        ],
+        "estimatedMinutes": 2.6,
+        "picturableMoments": [
+          "A folded diplomatic note with a long list of demands",
+          "Two hands clasping across a table in a show of support",
+          "A foreign minister pacing while reading a reply letter",
+          "An aide carrying a sealed diplomatic pouch"
+        ]
+      },
+      {
+        "id": "e3_alliances",
+        "role": "evidence",
+        "title": "Alliances turn a bilateral fight into a continental test",
+        "purpose": "Show how Serbia's appeal to Russia, and the system of alliances generally, transformed what could have stayed a bilateral Austro-Serbian conflict into a crisis that involved multiple great powers.",
+        "summary": "Serbia looked to sympathetic powers for political and moral support. Those responses activated alliance obligations, or at least expectation of backing, which made third parties view the crisis through the lens of bloc credibility. As each capital judged its obligations and prestige, the crisis stepped outward from the Balkans to the great-power level.",
+        "subQuestion": "In what way did alliance commitments and expectations convert a bilateral conflict into a multi-state crisis?",
+        "targetWords": 356,
+        "keyQuestions": [
+          "Why did Russia feel compelled to back Serbia?",
+          "How did alliance ties create expectations that pulled other powers in?"
+        ],
+        "estimatedMinutes": 2.2,
+        "picturableMoments": [
+          "A line of flags representing different allied countries",
+          "A railway timetable with columns labeled for different armies",
+          "A map showing friendly states aligning toward Serbia",
+          "Diplomats at separate tables making mirrored decisions"
+        ]
+      },
+      {
+        "id": "twist_mobilization",
+        "role": "twist",
+        "title": "The machine: mobilization timetables made retreat impossible",
+        "purpose": "Deliver the twist: the crisis turned into general war not only because of bad choices, but because military mobilization timetables and pre-existing war plans literally forced states into irreversible steps — once timetables started, political leaders lost room to negotiate.",
+        "summary": "Military mobilization depended on fixed timetables, railway schedules, and pre-planned troop movements. Once a state started mobilizing, neighboring states interpreted that as an immediate threat and ordered their own mobilizations. These were not easily reversible procedural steps; trains, bridge openings, and railroad timetables turned diplomacy into an emergency race. That mechanical constraint explains why what might have been a stoppable crisis instead ran out of control.",
+        "subQuestion": "",
+        "targetWords": 158,
+        "keyQuestions": [
+          "How did mobilization procedures and war plans limit political options?",
+          "Why couldn't leaders simply pause mobilization and keep negotiating?"
+        ],
+        "estimatedMinutes": 2.4,
+        "picturableMoments": [
+          "A station platform with troop carriages and wagons being loaded",
+          "A military timetable filled with departure times",
+          "A map with arrows showing rail lines and corps movements",
+          "A commander looking at a clock and signing orders",
+          "The stopped pocket watch from the cold open returned"
+        ]
+      },
+      {
+        "id": "callback_payoff",
+        "role": "callback_payoff",
+        "title": "Why the stopped watch mattered",
+        "purpose": "Pay off the planted image (the stopped pocket watch) by tying it to the mobilization timetables: time, not just anger, was the real force that squeezed diplomacy out of the picture.",
+        "summary": "Return to the stopped watch as a symbol and concrete prompt: the crisis was raced forward by schedules and deadlines. The watch becomes the short-hand for why leaders found themselves trapped — not because they wanted global war, but because time and mechanical timetables removed the room to step back. End this section by connecting that mechanical pressure to the alliance-driven chain that followed.",
+        "subQuestion": "",
+        "targetWords": 97,
+        "keyQuestions": [
+          "How does the image of stopped time explain irreversible escalation?",
+          "What does this tell us about responsibility: human choice versus structural constraint?"
+        ],
+        "estimatedMinutes": 1,
+        "picturableMoments": [
+          "The stopped pocket watch lying on a table next to an open ultimatum",
+          "A clock face with several hands pointing at different deadlines",
+          "A railway dispatcher dispatching orders as the watch ticks in the foreground"
+        ]
+      },
+      {
+        "id": "closer",
+        "role": "closer",
+        "title": "The last image",
+        "purpose": "End on one resonant image and a short, reflective line about how structure and choice together produced catastrophe — leave the viewer with a clear, memorable takeaway.",
+        "summary": "A short final fragment emphasizing: a single shot lit the fuse, but it was the collision of political decisions and mechanical timetables that made the explosion continental.",
+        "subQuestion": "",
+        "targetWords": 73,
+        "keyQuestions": [
+          "What's the one takeaway about cause and responsibility?"
+        ],
+        "estimatedMinutes": 0.3,
+        "picturableMoments": [
+          "An exploding match that sparks a line of dominoes",
+          "A continent-sized map with a faint trail from Sarajevo to major capitals",
+          "A hand closing over the stopped watch"
+        ]
+      }
+    ],
+    "hookConcept": "Start inside the motorcade at the assassination: a stopped pocket watch as a tiny planted image that later returns as the literal constraint — time — that trapped the leaders.",
+    "callbackPlan": {
+      "detail": "A stopped pocket watch (planted visually at the assassination moment) used later to symbolize and concretely connect to mobilization timetables and deadlines.",
+      "plantSectionId": "cold_open",
+      "payoffSectionId": "callback_payoff"
+    },
+    "viewerPromise": "A clear, minute-by-minute style chain explaining which decisions pushed Europe from a murder to a general war — and the one mechanical constraint that made retreat almost impossible.",
+    "narrativeLabel": "momentum-driven causal chain",
+    "candidateAngles": [
+      {
+        "angle": "Alliance obligations meant a bilateral Austro-Serbian crisis automatically pulled in larger blocs.",
+        "selected": true,
+        "payoffScore": 7,
+        "surpriseScore": 6,
+        "relatabilityScore": 6,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 8
+      },
+      {
+        "angle": "Domestic politics and nationalist pressures made Austria-Hungary decide on a punitive military response quickly.",
+        "selected": true,
+        "payoffScore": 6,
+        "surpriseScore": 5,
+        "relatabilityScore": 7,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 7
+      },
+      {
+        "angle": "Hardline diplomacy — Austria's ultimatum and Germany's diplomatic backing — escalated the crisis by making compromise politically and practically harder.",
+        "selected": true,
+        "payoffScore": 8,
+        "surpriseScore": 6,
+        "relatabilityScore": 6,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 8
+      },
+      {
+        "angle": "Miscalculation and poor communications between capitals multiplied tensions and turned ambiguous replies into casus belli.",
+        "selected": false,
+        "payoffScore": 5,
+        "surpriseScore": 5,
+        "relatabilityScore": 6,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 6
+      },
+      {
+        "angle": "Mobilization timetables and pre-existing war plans were the mechanical constraint that made escalation irreversible — once trains started and timetables ran, political leaders lost room to negotiate.",
+        "selected": false,
+        "payoffScore": 10,
+        "surpriseScore": 9,
+        "relatabilityScore": 6,
+        "isTwistOrPayoffAngle": true,
+        "visualPotentialScore": 9
+      }
+    ],
+    "recommendedTitle": "How Did One Assassination Spark World War I?",
+    "thumbnailConcept": {
+      "scene": "A stickman pointing a tiny pistol at a small pocket watch that sits between two opposing groups of stick-figure armies.",
+      "headline": "ONE SHOT?"
+    },
+    "alternativeTitles": [
+      "How a Murder Turned Into a Continental War",
+      "From Sarajevo to Europe: What Broke the Peace in 1914"
+    ],
+    "researchQuestions": [
+      "Exact dated timeline of the July crisis (dates and sequence from assassination to declarations and mobilizations).",
+      "Text and key clauses of Austria-Hungary's ultimatum to Serbia and specific elements Serbia accepted or rejected.",
+      "Details and wording of Germany's diplomatic backing to Austria-Hungary (the 'blank cheque') and the dates those communications occurred.",
+      "Which countries issued which mobilization orders and on what dates; how reversibility of mobilization was handled procedurally.",
+      "Specifics of pre-existing war plans (e.g., German Schlieffen-type plans): timetable constraints, railway dependencies, and how they constrained political options.",
+      "Key diplomatic communications and telegraph delays that affected perceptions between capitals.",
+      "Historiographical positions on the relative weight of intentional political design vs. systemic/structural inevitability."
+    ],
+    "researchRiskFlags": [
+      "Avoid asserting precise times or dates before verification; the July crisis timeline is sensitive and contested in detail.",
+      "Avoid definitive language about intentionality (e.g., that leaders 'wanted' a general war) without sourcing — many historians debate motive vs. constraint.",
+      "Be cautious when summarizing the 'blank cheque' — the wording and degree of German commitment are complex and require primary sources.",
+      "Mobilization 'irreversibility' is often overstated; verify procedural details about whether mobilization could have been halted and how quickly.",
+      "Do not invent casualty or troop movement figures; use only confirmed, sourced numbers."
+    ]
+  },
+  "script_document": {
+    "title": "How Did One Assassination Spark World War I?",
+    "claims": [
+      {
+        "id": "c1",
+        "claim": "The assassination of Archduke Franz Ferdinand and Sophie occurred on June 28, 1914 in Sarajevo when their car stalled while reversing.",
+        "sentence": "It stalls right in front of you to reverse out of a wrong turn.",
+        "segmentId": "seg_cold_open",
+        "sourceFactId": null
+      },
+      {
+        "id": "c2",
+        "claim": "Franz Ferdinand and Sophie were shot and killed in the incident.",
+        "sentence": "The man in the plumed hat, Archduke Franz Ferdinand, reaches for her and goes still.",
+        "segmentId": "seg_cold_open",
+        "sourceFactId": null
+      },
+      {
+        "id": "c3",
+        "claim": "Gavrilo Princip was a Bosnian Serb linked to the Black Hand secret society based in Belgrade.",
+        "sentence": "The assassin, Gavrilo Princip, was a Bosnian Serb tied to a secret military society in Belgrade called the Black Hand.",
+        "segmentId": "seg_e1a",
+        "sourceFactId": null
+      },
+      {
+        "id": "c4",
+        "claim": "Conrad von Hotzendorf, Austro-Hungarian Chief of the General Staff, had repeatedly pushed for war with Serbia before the assassination.",
+        "sentence": "Inside Vienna's government, the Chief of the General Staff, Conrad von Hotzendorf, had pushed for war with Serbia more than twenty times in the previous two years alone.",
+        "segmentId": "seg_e1b",
+        "sourceFactId": null
+      },
+      {
+        "id": "c5",
+        "claim": "Hungarian Prime Minister Istvan Tisza initially opposed war but came around by July 14, 1914.",
+        "sentence": "The Hungarian Prime Minister, Istvan Tisza, argued for caution at first, worried about dragging in Russia.",
+        "segmentId": "seg_e1b",
+        "sourceFactId": null
+      },
+      {
+        "id": "c6",
+        "claim": "Austria sent an envoy to Berlin on July 5, 1914 seeking German support.",
+        "sentence": "So on July 5th, an envoy was sent to Berlin with a letter for the Kaiser, asking a single question: if Austria punishes Serbia, will Germany stand behind us no matter what happens next?",
+        "segmentId": "seg_e1c",
+        "sourceFactId": null
+      },
+      {
+        "id": "c7",
+        "claim": "Germany, via Kaiser Wilhelm II and Chancellor Bethmann-Hollweg, gave Austria unconditional support known as the blank cheque.",
+        "sentence": "Kaiser Wilhelm the Second and his chancellor, Theobald von Bethmann-Hollweg, promised Austria full support, whatever it decided to do to Serbia.",
+        "segmentId": "seg_e2a",
+        "sourceFactId": null
+      },
+      {
+        "id": "c8",
+        "claim": "Austria delivered a ten-point ultimatum to Serbia on July 23, 1914 at 6pm with a 48-hour deadline.",
+        "sentence": "On July 23rd, at six in the evening, Austria handed Serbia an ultimatum with ten demands and a forty eight hour deadline.",
+        "segmentId": "seg_e2b",
+        "sourceFactId": null
+      },
+      {
+        "id": "c9",
+        "claim": "One ultimatum demand required Austrian officials to join the investigation on Serbian soil.",
+        "sentence": "Serbia had to shut down anti-Austrian newspapers, dissolve nationalist groups, and, most explosively, let Austrian officials join the investigation into the assassination on Serbian soil.",
+        "segmentId": "seg_e2b",
+        "sourceFactId": null
+      },
+      {
+        "id": "c10",
+        "claim": "Serbian Prime Minister Nikola Pasic's reply accepted or partially accepted nine of the ten ultimatum demands.",
+        "sentence": "Out of ten demands, Serbia agreed fully or partly to nine.",
+        "segmentId": "seg_e2c",
+        "sourceFactId": null
+      },
+      {
+        "id": "c11",
+        "claim": "Austria rejected Serbia's reply as insufficient and broke off diplomatic relations.",
+        "sentence": "Instead, Austria declared it insufficient within hours and broke off relations.",
+        "segmentId": "seg_e2c",
+        "sourceFactId": null
+      },
+      {
+        "id": "c12",
+        "claim": "Tsar Nicholas II ordered general mobilization of the Russian army on July 30, 1914.",
+        "sentence": "On July 30th, under pressure from his generals, the Tsar ordered general mobilization of the Russian army, more than a million men called toward the borders.",
+        "segmentId": "seg_e3a",
+        "sourceFactId": null
+      },
+      {
+        "id": "c13",
+        "claim": "France and Russia signed a mutual defense alliance in 1894.",
+        "sentence": "Germany and Russia weren't allies, but France and Russia had signed a mutual defense pact back in 1894, and Germany had bound itself to Austria-Hungary since 1879.",
+        "segmentId": "seg_e3b",
+        "sourceFactId": null
+      },
+      {
+        "id": "c14",
+        "claim": "Germany declared war on Russia on August 1, 1914 and on France on August 3, 1914.",
+        "sentence": "By August 1st, Germany declared war on Russia. By August 3rd, on France.",
+        "segmentId": "seg_e3c",
+        "sourceFactId": null
+      },
+      {
+        "id": "c15",
+        "claim": "Britain declared war on Germany after German troops invaded Belgium, honoring the 1839 treaty guaranteeing Belgian neutrality.",
+        "sentence": "And when German troops crossed into neutral Belgium the next day to reach Paris quickly, Britain declared war too, honoring an 1839 treaty that guaranteed Belgium's borders.",
+        "segmentId": "seg_e3c",
+        "sourceFactId": null
+      },
+      {
+        "id": "c16",
+        "claim": "Germany's Schlieffen Plan relied on a precise railway mobilization schedule moving over eleven thousand trains.",
+        "sentence": "Germany's plan, built by Alfred von Schlieffen over a decade earlier, ran on a fixed railway timetable moving more than eleven thousand trains in exact sequence to get millions of men to two fronts on schedule.",
+        "segmentId": "seg_twist",
+        "sourceFactId": null
+      },
+      {
+        "id": "c17",
+        "claim": "German railway planners told the Kaiser that halting the mobilization mid-process would leave the army stranded.",
+        "sentence": "German railway planners told the Kaiser directly that stopping the trains halfway would leave the army stranded and undefendable.",
+        "segmentId": "seg_twist",
+        "sourceFactId": null
+      }
+    ],
+    "chapters": [
+      {
+        "role": "cold_open",
+        "title": "The shot and the stopped watch",
+        "chapterId": "cold_open",
+        "segmentIds": [
+          "seg_cold_open"
+        ],
+        "actualWords": 102,
+        "subQuestion": "",
+        "estimatedSeconds": 42
+      },
+      {
+        "role": "stakes",
+        "title": "Why this moment matters",
+        "chapterId": "stakes",
+        "segmentIds": [
+          "seg_stakes"
+        ],
+        "actualWords": 13,
+        "subQuestion": "",
+        "estimatedSeconds": 5
+      },
+      {
+        "role": "core_question",
+        "title": "The single question",
+        "chapterId": "core_question",
+        "segmentIds": [
+          "seg_core_question"
+        ],
+        "actualWords": 20,
+        "subQuestion": "",
+        "estimatedSeconds": 8
+      },
+      {
+        "role": "evidence",
+        "title": "Austria decides on punishment",
+        "chapterId": "e1_domestic",
+        "segmentIds": [
+          "seg_e1a",
+          "seg_e1b",
+          "seg_e1c"
+        ],
+        "actualWords": 215,
+        "subQuestion": "Why did Austria-Hungary choose a punitive response instead of a restrained diplomatic route?",
+        "estimatedSeconds": 89
+      },
+      {
+        "role": "evidence",
+        "title": "The ultimatum and hardline diplomacy",
+        "chapterId": "e2_ultimatum",
+        "segmentIds": [
+          "seg_e2a",
+          "seg_e2b",
+          "seg_e2c"
+        ],
+        "actualWords": 229,
+        "subQuestion": "How did Austria's ultimatum and Germany's backing make diplomatic compromise harder and escalate the crisis?",
+        "estimatedSeconds": 95
+      },
+      {
+        "role": "evidence",
+        "title": "Alliances turn a bilateral fight into a continental test",
+        "chapterId": "e3_alliances",
+        "segmentIds": [
+          "seg_e3a",
+          "seg_e3b",
+          "seg_e3c"
+        ],
+        "actualWords": 253,
+        "subQuestion": "In what way did alliance commitments and expectations convert a bilateral conflict into a multi-state crisis?",
+        "estimatedSeconds": 105
+      },
+      {
+        "role": "twist",
+        "title": "The machine: mobilization timetables made retreat impossible",
+        "chapterId": "twist_mobilization",
+        "segmentIds": [
+          "seg_twist"
+        ],
+        "actualWords": 148,
+        "subQuestion": "",
+        "estimatedSeconds": 61
+      },
+      {
+        "role": "callback_payoff",
+        "title": "Why the stopped watch mattered",
+        "chapterId": "callback_payoff",
+        "segmentIds": [
+          "seg_callback"
+        ],
+        "actualWords": 98,
+        "subQuestion": "",
+        "estimatedSeconds": 41
+      },
+      {
+        "role": "closer",
+        "title": "The last image",
+        "chapterId": "closer",
+        "segmentIds": [
+          "seg_closer"
+        ],
+        "actualWords": 77,
+        "subQuestion": "",
+        "estimatedSeconds": 32
+      }
+    ],
+    "openLoops": [
+      {
+        "id": "loop_austria_choice",
+        "question": "Why would Austria go for a risky military response?",
+        "setupSegmentId": "seg_core_question",
+        "payoffSegmentId": "seg_e1a",
+        "expectedPayoffRegion": "e1_domestic"
+      },
+      {
+        "id": "loop_germany_backing",
+        "question": "Who promised to back Austria, and why did that matter?",
+        "setupSegmentId": "seg_e1c",
+        "payoffSegmentId": "seg_e2a",
+        "expectedPayoffRegion": "e2_ultimatum"
+      },
+      {
+        "id": "loop_diplomacy_stop",
+        "question": "Couldn't diplomacy stop this once words started flying?",
+        "setupSegmentId": "seg_e2b",
+        "payoffSegmentId": "seg_e2c",
+        "expectedPayoffRegion": "e2_ultimatum"
+      },
+      {
+        "id": "loop_mobilization_timetables",
+        "question": "How could mobilization timetables stop leaders from stepping back?",
+        "setupSegmentId": "seg_e3c",
+        "payoffSegmentId": "seg_twist",
+        "expectedPayoffRegion": "twist_mobilization"
+      }
+    ],
+    "actualWords": 1155,
+    "callbackKey": "the stopped pocket watch",
+    "thumbnailConcept": {
+      "scene": "A stickman pointing a tiny pistol at a small pocket watch that sits between two opposing groups of stick-figure armies.",
+      "headline": "ONE SHOT?"
+    },
+    "narrationSegments": [
+      {
+        "id": "seg_cold_open",
+        "text": "You're standing on a Sarajevo curb on June 28th, 1914, and the street smells like hot dust and diesel. An open car rolls past, close enough to touch, carrying a man in a plumed hat and a woman in white. It stalls right in front of you to reverse out of a wrong turn. A young man steps off the curb, raises his arm, and fires twice. The woman slumps first. The man in the plumed hat, Archduke Franz Ferdinand, reaches for her and goes still. In his coat pocket, a small pocket watch stops at the exact minute the shooting ends.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Franz Ferdinand",
+          "Sophie",
+          "Gavrilo Princip",
+          "Sarajevo",
+          "pocket watch"
+        ],
+        "mustShow": [
+          "The open-top car stalling on the street",
+          "Franz Ferdinand and his wife Sophie shot",
+          "A pocket watch stopped at the moment of the shooting"
+        ],
+        "chapterId": "cold_open",
+        "payoffIds": [],
+        "mustNotShow": [
+          "Any later battles or trenches",
+          "Any mobilization or trains"
+        ],
+        "openLoopIds": [],
+        "locationHint": "A city street in Sarajevo, 1914",
+        "visualIntent": "Place the viewer directly on the street at the moment of the assassination, ending on the stopped pocket watch as a planted detail.",
+        "sequenceIndex": 0,
+        "estimatedSeconds": 27,
+        "exactTextOverlay": "June 28, 1914",
+        "narrativeFunction": "hook",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_stakes",
+        "text": "That single gunshot was about to test every alliance and army in Europe.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Europe"
+        ],
+        "mustShow": [],
+        "chapterId": "stakes",
+        "payoffIds": [],
+        "mustNotShow": [
+          "Any specific battle imagery"
+        ],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "Convey the scale of what the single act of violence is about to trigger across the continent.",
+        "sequenceIndex": 1,
+        "estimatedSeconds": 5,
+        "exactTextOverlay": null,
+        "narrativeFunction": "stakes",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "GRAPHIC"
+      },
+      {
+        "id": "seg_core_question",
+        "text": "So how did the murder of one couple in one city turn into a war that swallowed an entire continent?",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [],
+        "mustShow": [],
+        "chapterId": "core_question",
+        "payoffIds": [],
+        "mustNotShow": [
+          "A list of the causal categories to come"
+        ],
+        "openLoopIds": [
+          "loop_austria_choice"
+        ],
+        "locationHint": "",
+        "visualIntent": "Pose the central question the video will answer, visually suggesting expansion outward from one point.",
+        "sequenceIndex": 2,
+        "estimatedSeconds": 6,
+        "exactTextOverlay": null,
+        "narrativeFunction": "core question",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "GRAPHIC"
+      },
+      {
+        "id": "seg_e1a",
+        "text": "Vienna had wanted an excuse like this for years. Austria-Hungary was an empire stitched together from more than a dozen nationalities, and Serbia, small and defiant next door, kept encouraging Slavic populations inside the empire to break away. The assassin, Gavrilo Princip, was a Bosnian Serb tied to a secret military society in Belgrade called the Black Hand. Within days, Austrian investigators believed Serbian officials had at least some knowledge of the plot.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Austria-Hungary",
+          "Serbia",
+          "Gavrilo Princip",
+          "Black Hand",
+          "Vienna",
+          "Belgrade"
+        ],
+        "mustShow": [
+          "Austria-Hungary's multi-ethnic empire",
+          "Serbia's role in Slavic nationalism",
+          "The Black Hand connection to Gavrilo Princip"
+        ],
+        "chapterId": "e1_domestic",
+        "payoffIds": [
+          "loop_austria_choice"
+        ],
+        "mustNotShow": [
+          "German troops",
+          "Mobilization scenes"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Vienna, government offices",
+        "visualIntent": "Show the empire's internal fragility and its grievance against Serbia as the political motive for retaliation.",
+        "sequenceIndex": 3,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": null,
+        "narrativeFunction": "evidence: domestic pressure",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_e1b",
+        "text": "Inside Vienna's government, the Chief of the General Staff, Conrad von Hotzendorf, had pushed for war with Serbia more than twenty times in the previous two years alone. Now he finally had the justification he wanted. The Hungarian Prime Minister, Istvan Tisza, argued for caution at first, worried about dragging in Russia. But by July 14th, even he had come around. Newspapers across Vienna and Budapest demanded action against Serbia within days of the funeral.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Conrad von Hotzendorf",
+          "Istvan Tisza",
+          "Vienna",
+          "Budapest"
+        ],
+        "mustShow": [
+          "Conrad von Hotzendorf's repeated calls for war",
+          "Istvan Tisza's initial caution turning to agreement by July 14"
+        ],
+        "chapterId": "e1_domestic",
+        "payoffIds": [],
+        "mustNotShow": [
+          "The ultimatum text itself"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Vienna government chambers",
+        "visualIntent": "Show the internal debate in Vienna resolving toward war, with hardliners winning out over the one cautious voice.",
+        "sequenceIndex": 4,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": "July 14, 1914",
+        "narrativeFunction": "evidence: political will hardening",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_e1c",
+        "text": "But could Austria-Hungary really fight Serbia alone and not worry about Russia stepping in? That was the one question that decided everything, and Vienna wasn't going to risk finding out the hard way. So on July 5th, an envoy was sent to Berlin with a letter for the Kaiser, asking a single question: if Austria punishes Serbia, will Germany stand behind us no matter what happens next?",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Kaiser Wilhelm II",
+          "Berlin",
+          "Austria-Hungary"
+        ],
+        "mustShow": [
+          "An Austrian envoy carrying a letter to Berlin on July 5"
+        ],
+        "chapterId": "e1_domestic",
+        "payoffIds": [],
+        "mustNotShow": [
+          "Germany's actual reply yet"
+        ],
+        "openLoopIds": [
+          "loop_germany_backing"
+        ],
+        "locationHint": "A train bound for Berlin",
+        "visualIntent": "Bridge directly into the next section by showing Vienna seeking assurance from Berlin before acting.",
+        "sequenceIndex": 5,
+        "estimatedSeconds": 20,
+        "exactTextOverlay": "July 5, 1914",
+        "narrativeFunction": "evidence: transition to Germany",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_e2a",
+        "text": "The answer came back within a day. Kaiser Wilhelm the Second and his chancellor, Theobald von Bethmann-Hollweg, promised Austria full support, whatever it decided to do to Serbia. Historians call this promise the blank cheque, because Germany never asked to see the details before signing on. That single guarantee removed the one thing that might have made Vienna hesitate: the fear of standing against Russia completely alone.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Kaiser Wilhelm II",
+          "Theobald von Bethmann-Hollweg",
+          "Germany",
+          "Austria-Hungary"
+        ],
+        "mustShow": [
+          "Kaiser Wilhelm II and Bethmann-Hollweg promising unconditional support",
+          "The blank cheque concept explained in plain terms"
+        ],
+        "chapterId": "e2_ultimatum",
+        "payoffIds": [
+          "loop_germany_backing"
+        ],
+        "mustNotShow": [
+          "The ultimatum text yet"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Berlin, a government office",
+        "visualIntent": "Show Germany's unconditional promise of support as the enabling act that removed Austria's restraint.",
+        "sequenceIndex": 6,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": null,
+        "narrativeFunction": "evidence: Germany's unconditional backing",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_e2b",
+        "text": "With that promise in hand, Vienna waited nearly three weeks, then struck. On July 23rd, at six in the evening, Austria handed Serbia an ultimatum with ten demands and a forty eight hour deadline. Serbia had to shut down anti-Austrian newspapers, dissolve nationalist groups, and, most explosively, let Austrian officials join the investigation into the assassination on Serbian soil. That last demand was written to be refused. It meant giving up a piece of Serbia's own sovereignty.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Austria-Hungary",
+          "Serbia"
+        ],
+        "mustShow": [
+          "The ultimatum delivered July 23 at 6pm",
+          "The forty-eight hour deadline",
+          "The demand for Austrian officials to join the investigation inside Serbia"
+        ],
+        "chapterId": "e2_ultimatum",
+        "payoffIds": [],
+        "mustNotShow": [
+          "Serbia's actual reply yet"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Belgrade, a government office receiving the ultimatum",
+        "visualIntent": "Show the ultimatum's harsh, deliberately unacceptable terms and its tight deadline.",
+        "sequenceIndex": 7,
+        "estimatedSeconds": 25,
+        "exactTextOverlay": "July 23, 1914",
+        "narrativeFunction": "evidence: the ultimatum's design",
+        "continuityEntityIds": []
+      },
+      {
+        "id": "seg_e2c",
+        "text": "So did Serbia just say no? Not even close. Serbia's Prime Minister, Nikola Pasic, accepted almost every point. Out of ten demands, Serbia agreed fully or partly to nine. It only balked at letting foreign police operate inside its own courts. By any normal diplomatic standard, that reply should have opened the door to negotiation. Instead, Austria declared it insufficient within hours and broke off relations. Diplomacy hadn't failed because talking stopped. It failed because Vienna had already decided no answer would be good enough.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Nikola Pasic",
+          "Serbia",
+          "Austria-Hungary"
+        ],
+        "mustShow": [
+          "Serbia accepting nine of ten demands",
+          "Austria rejecting the reply as insufficient",
+          "Austria breaking diplomatic relations"
+        ],
+        "chapterId": "e2_ultimatum",
+        "payoffIds": [
+          "loop_diplomacy_stop"
+        ],
+        "mustNotShow": [
+          "Russia's mobilization yet"
+        ],
+        "openLoopIds": [
+          "loop_diplomacy_stop"
+        ],
+        "locationHint": "Belgrade, a government chamber",
+        "visualIntent": "Show Serbia's substantial compliance being rejected anyway, proving the crisis was about choice, not necessity.",
+        "sequenceIndex": 8,
+        "estimatedSeconds": 26,
+        "exactTextOverlay": null,
+        "narrativeFunction": "evidence: Serbia's near-acceptance rejected",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_e3a",
+        "text": "Once Austria broke relations, Serbia turned straight to Russia. Russia saw itself as protector of the Slavic peoples of the Balkans, and Tsar Nicholas the Second was not going to watch Serbia get crushed. On July 30th, under pressure from his generals, the Tsar ordered general mobilization of the Russian army, more than a million men called toward the borders. That single order changed the shape of the crisis completely. It was no longer Austria against Serbia. It was Austria's ally against Russia, and everyone else's alliances were about to matter.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Tsar Nicholas II",
+          "Russia",
+          "Serbia"
+        ],
+        "mustShow": [
+          "Tsar Nicholas II ordering general mobilization on July 30",
+          "Russia's role as protector of Slavic peoples"
+        ],
+        "chapterId": "e3_alliances",
+        "payoffIds": [],
+        "mustNotShow": [
+          "German or French mobilization yet"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Saint Petersburg, a palace study",
+        "visualIntent": "Show Russia's mobilization order as the moment the conflict widens beyond Austria and Serbia.",
+        "sequenceIndex": 9,
+        "estimatedSeconds": 27,
+        "exactTextOverlay": "July 30, 1914",
+        "narrativeFunction": "evidence: Russia enters",
+        "continuityEntityIds": []
+      },
+      {
+        "id": "seg_e3b",
+        "text": "Germany and Russia weren't allies, but France and Russia had signed a mutual defense pact back in 1894, and Germany had bound itself to Austria-Hungary since 1879. Nobody had designed these treaties to start a war. They were meant to make attacking anyone too costly to try. But now they worked like a row of dominos standing on end. Russia mobilizing to defend Serbia forced Germany to consider mobilizing to defend Austria. And a German mobilization against Russia meant, under Germany's own war planning, attacking France first.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "France",
+          "Russia",
+          "Germany",
+          "Austria-Hungary"
+        ],
+        "mustShow": [
+          "The Franco-Russian alliance of 1894",
+          "The Austro-German alliance of 1879",
+          "The logical chain from Russia to Germany to France"
+        ],
+        "chapterId": "e3_alliances",
+        "payoffIds": [],
+        "mustNotShow": [
+          "British entry yet"
+        ],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "Explain the mechanism by which alliance treaties pulled additional great powers into the conflict.",
+        "sequenceIndex": 10,
+        "estimatedSeconds": 26,
+        "exactTextOverlay": null,
+        "narrativeFunction": "evidence: alliance chain explained",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_e3c",
+        "text": "By August 1st, Germany declared war on Russia. By August 3rd, on France. And when German troops crossed into neutral Belgium the next day to reach Paris quickly, Britain declared war too, honoring an 1839 treaty that guaranteed Belgium's borders. In one week, a quarrel over a murdered archduke had pulled in five great powers. None of them had wanted a continental war on July 28th. All of them were fighting one by August 4th.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Germany",
+          "Russia",
+          "France",
+          "Britain",
+          "Belgium"
+        ],
+        "mustShow": [
+          "Germany declaring war on Russia August 1",
+          "Germany declaring war on France August 3",
+          "Britain entering after Germany invaded Belgium"
+        ],
+        "chapterId": "e3_alliances",
+        "payoffIds": [],
+        "mustNotShow": [
+          "Trench warfare or later battles"
+        ],
+        "openLoopIds": [],
+        "locationHint": "A European map, capitals lighting up in sequence",
+        "visualIntent": "Show the rapid cascade of war declarations across five powers within one week.",
+        "sequenceIndex": 11,
+        "estimatedSeconds": 24,
+        "exactTextOverlay": "August 4, 1914",
+        "narrativeFunction": "evidence: cascade into general war",
+        "continuityEntityIds": []
+      },
+      {
+        "id": "seg_twist",
+        "text": "So why didn't anyone just stop and talk once the shooting hadn't even started yet? Here's the uncomfortable answer. These armies didn't mobilize like flipping a switch. Germany's plan, built by Alfred von Schlieffen over a decade earlier, ran on a fixed railway timetable moving more than eleven thousand trains in exact sequence to get millions of men to two fronts on schedule. Once that timetable began, reversing it wasn't a political decision anymore. It was a logistical one. German railway planners told the Kaiser directly that stopping the trains halfway would leave the army stranded and undefendable. Russia's mobilization had the same problem. Partial mobilization against only Austria wasn't something the Russian system was built to do. The generals told the Tsar it was all or nothing. Diplomats were still exchanging telegrams on August 1st, hoping to find a way out. But the trains were already moving.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Alfred von Schlieffen",
+          "Germany",
+          "Russia",
+          "Kaiser Wilhelm II",
+          "Tsar Nicholas II"
+        ],
+        "mustShow": [
+          "Alfred von Schlieffen's railway-based mobilization plan",
+          "Over eleven thousand trains moving on a fixed schedule",
+          "Generals telling leaders partial mobilization was impossible"
+        ],
+        "chapterId": "twist_mobilization",
+        "payoffIds": [
+          "loop_mobilization_timetables"
+        ],
+        "mustNotShow": [
+          "Actual battle scenes"
+        ],
+        "openLoopIds": [
+          "loop_mobilization_timetables"
+        ],
+        "locationHint": "A railway station with troop trains loading",
+        "visualIntent": "Show that mobilization plans were rigid railway timetables that made stopping physically impractical, not just politically hard.",
+        "sequenceIndex": 12,
+        "estimatedSeconds": 40,
+        "exactTextOverlay": "11,000 trains",
+        "narrativeFunction": "twist: mechanical irreversibility",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_callback",
+        "text": "That stopped pocket watch from the street in Sarajevo captured more than a single death. It captured what time itself was about to do to Europe. Once a mobilization order was signed, the schedule couldn't wait for diplomats, couldn't wait for a telegram, couldn't wait for anyone to reconsider. A general could delay a train by an hour and lose an entire army's position days later. The watch had stopped at the assassination. The clocks running the mobilization timetables never did. They were the real machine no ultimatum, no treaty, and no cheque, blank or otherwise, could pause.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "pocket watch"
+        ],
+        "mustShow": [
+          "The stopped pocket watch reappearing",
+          "The idea that mobilization timetables could not be paused once started"
+        ],
+        "chapterId": "callback_payoff",
+        "payoffIds": [],
+        "mustNotShow": [
+          "New unrelated facts not yet mentioned"
+        ],
+        "openLoopIds": [],
+        "locationHint": "A table holding the stopped watch beside an open ultimatum",
+        "visualIntent": "Connect the stopped watch image to the unstoppable mobilization timetables as the real mechanism of the war's inevitability.",
+        "sequenceIndex": 13,
+        "estimatedSeconds": 26,
+        "exactTextOverlay": null,
+        "narrativeFunction": "payoff: callback resolved",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "DETAIL"
+      },
+      {
+        "id": "seg_closer",
+        "text": "One bullet started it. But it took a chain of willing hands to carry that spark all the way to a continental fire: an empire looking for an excuse, an ally writing a blank cheque, a neighbor who complied and still wasn't enough, and generals who had already handed the decision to a train schedule. Structure and choice, working together. The watch in the Archduke's pocket still reads four minutes past eleven. Everyone else's clock kept running.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "pocket watch",
+          "Franz Ferdinand"
+        ],
+        "mustShow": [
+          "The stopped watch reading a fixed time",
+          "A sense of the chain of choices leading to catastrophe"
+        ],
+        "chapterId": "closer",
+        "payoffIds": [],
+        "mustNotShow": [
+          "Any new factual claims"
+        ],
+        "openLoopIds": [],
+        "locationHint": "A quiet table, the watch resting alone",
+        "visualIntent": "End on the image of the stopped watch against the continuing clocks of history as the final reflective note.",
+        "sequenceIndex": 14,
+        "estimatedSeconds": 26,
+        "exactTextOverlay": null,
+        "narrativeFunction": "closer",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "DETAIL"
+      }
+    ],
+    "plantSegmentIndex": 0,
+    "payoffSegmentIndex": 13,
+    "estimatedDurationSeconds": 478
+  }
+}

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CheckCircle2, ChevronDown, ExternalLink, RefreshCw, RotateCw, TriangleAlert } from "lucide-react";
 import { fetchLongFormProjectSafe, fetchCurrentStoryPlan } from "./project";
-import { fetchLatestResearchForStoryPlanVersionSafe, fetchResearchSources, fetchLastCompletedResearch, startResearch } from "./research";
+import { fetchLatestResearchForStoryPlanVersionSafe, fetchResearchSources, fetchLastCompletedResearch, fetchResearchVersionById, startResearch, startResearchRepair } from "./research";
 import { LongFormActionFooter, LongFormCreationHeader } from "./shared";
 import GenerationExperience from "./GenerationExperience";
 import { nextBackoffMs, useConnectionStatus } from "./connectionState";
@@ -71,7 +71,7 @@ function hostnameOf(url) {
 // stages the DB has actually persisted as complete (stage is strictly
 // ahead of that step). See GenerationExperience for the shared visual
 // system every Long Form generation screen now uses.
-function ResearchLoadingState({ stage, failed, onRetry, startedAt, connectionStatus }) {
+function ResearchLoadingState({ stage, failed, onRetry, startedAt, stageStartedAt, workerLockUntil, connectionStatus, isComplete }) {
   const steps = visibleStages(stage ?? "planning");
   return (
     <GenerationExperience
@@ -82,12 +82,15 @@ function ResearchLoadingState({ stage, failed, onRetry, startedAt, connectionSta
       stageLabels={STAGE_LABELS}
       currentStageKey={stage ?? "planning"}
       startedAt={startedAt}
+      stageStartedAt={stageStartedAt}
+      workerLockUntil={workerLockUntil}
       failed={failed}
       failedHeading="We couldn't complete the research right now."
       failedSubcopy="Please try again shortly."
       onRetry={onRetry}
       reassuranceNote="You can leave this page. Zyvo will keep working in the background and pick up right where it left off."
       connectionStatus={connectionStatus}
+      isComplete={isComplete}
     />
   );
 }
@@ -234,8 +237,33 @@ export default function LongFormResearch() {
   const [researchRow, setResearchRow] = useState(null); // the live in-flight row, kept for startedAt/meta while generating
   // loading | generating | ready | stale | viewing-stale | failed | notfound | needs-story-plan
   const [phase, setPhase] = useState("loading");
+  // Brief true-only window between the backend actually reporting done and
+  // this page switching to the ready reveal — lets the progress rail play
+  // its 97->100 payoff (see GenerationProgressRail) instead of jump-cutting
+  // straight to the result screen. Purely cosmetic; never gates a real
+  // status decision — settleFromVersionRow still does that once this timer
+  // elapses.
+  const [completing, setCompleting] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [updating, setUpdating] = useState(false);
+  // 2026-09-20 "clarify the completed research screen" fix — true only
+  // while the real targeted-repair action (startResearchRepair) is
+  // in flight. Separate from `regenerating` (the full-restart path,
+  // kept only as an explicit secondary action) so the UI can never
+  // conflate the two.
+  const [repairError, setRepairError] = useState(null);
+  const [repairing, setRepairing] = useState(false);
+  // Set only when the LATEST version for the current Story Plan is a
+  // targeted-repair attempt (parent_research_version_id set) that ended in
+  // status "failed" — e.g. the worker holding its lease disappeared
+  // mid-extraction and never came back. Real incident this fixes: without
+  // this, settleFromVersionRow took that row's bare "failed" status at face
+  // value and showed the full-screen generic failure UI, completely hiding
+  // the parent's real, already-completed research (30 sources, 18 facts) as
+  // if none of it had ever happened. `research` here always holds that
+  // still-valid PARENT row; this field only carries the failed repair row
+  // itself, purely to drive the banner + retry action below.
+  const [repairFailure, setRepairFailure] = useState(null);
   // True only while a POLL has recorded a transient fetch error (network,
   // auth-refresh-while-offline, timeout) — never set from a real persisted
   // "failed" status. Cleared the instant a poll succeeds again. This (not a
@@ -249,7 +277,20 @@ export default function LongFormResearch() {
   const [justReconnected, setJustReconnected] = useState(false);
   const startInFlightRef = useRef(false);
   const pollTimerRef = useRef(null);
-  const cancelledRef = useRef(false);
+  // Bumped on every real mount, including React StrictMode's dev-only
+  // deliberate double-invoke. Every async chain below (bootstrap,
+  // pollForCompletion, startAndWatch, settleFromVersionRow) captures the
+  // token that was current when IT started and re-checks it after each
+  // await, bailing out the instant it no longer matches. This replaces a
+  // previous plain `cancelledRef` boolean that was flipped true by the
+  // FIRST (pre-remount) mount's cleanup and never reset — since StrictMode's
+  // remount reuses the same ref, that made the SECOND bootstrap call (and
+  // the tail of the first one, once its pending await resolved) bail out
+  // immediately after their very first await, forever. `phase` never left
+  // its initial "loading" value, which rendered blank — the exact cause of
+  // the Research route going dark, reproducible on both a brand-new project
+  // (no Research row was ever created) and an existing "ready" one.
+  const mountTokenRef = useRef(0);
   const consecutiveFailuresRef = useRef(0);
   const activePollKeyRef = useRef(null); // the storyPlanVersionId currently being watched, so the "online" handler can trigger an immediate resync without a stale closure
   const { reconnectedAt } = useConnectionStatus();
@@ -257,7 +298,6 @@ export default function LongFormResearch() {
   useEffect(() => {
     document.title = "Research | Zyvo";
     return () => {
-      cancelledRef.current = true;
       if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
     };
   }, []);
@@ -271,16 +311,34 @@ export default function LongFormResearch() {
     if (!reconnectedAt || !activePollKeyRef.current) return;
     if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
     setJustReconnected(true);
-    pollForCompletion(activePollKeyRef.current);
+    pollForCompletion(activePollKeyRef.current, mountTokenRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reconnectedAt]);
 
-  const settleFromVersionRow = async (row) => {
+  const settleFromVersionRow = async (row, token) => {
     if (row.status === "ready" || row.status === "needs_attention") {
       const sources = await fetchResearchSources(row.id);
+      if (mountTokenRef.current !== token) return;
       setResearch({ ...row, sources });
+      setRepairFailure(null);
       setPhase("ready");
       return;
+    }
+    if (row.status === "failed" && row.parent_research_version_id) {
+      // A targeted repair died (see repairFailure's own comment) — recover
+      // and show the PARENT's real completed research instead of a blank
+      // failure. Only takes this path if the parent itself is genuinely
+      // usable; otherwise falls through to the honest full failure screen.
+      const parent = await fetchResearchVersionById(row.parent_research_version_id);
+      if (mountTokenRef.current !== token) return;
+      if (parent && (parent.status === "ready" || parent.status === "needs_attention")) {
+        const sources = await fetchResearchSources(parent.id);
+        if (mountTokenRef.current !== token) return;
+        setResearch({ ...parent, sources });
+        setRepairFailure(row);
+        setPhase("ready");
+        return;
+      }
     }
     setPhase("failed");
   };
@@ -289,11 +347,11 @@ export default function LongFormResearch() {
   // never a trigger. Refresh, browser close/reopen, or "Back to Story then
   // Research again" all land back here and just resume watching whatever
   // the backend has already gotten to; nothing here ever re-starts a run.
-  const pollForCompletion = async (storyPlanVersionId) => {
-    if (cancelledRef.current) return;
+  const pollForCompletion = async (storyPlanVersionId, token) => {
+    if (mountTokenRef.current !== token) return;
     activePollKeyRef.current = storyPlanVersionId;
     const { ok, data: row } = await fetchLatestResearchForStoryPlanVersionSafe(projectId, storyPlanVersionId);
-    if (cancelledRef.current) return;
+    if (mountTokenRef.current !== token) return;
 
     if (!ok) {
       // A transient fetch error (offline, auth refresh failing while
@@ -303,7 +361,7 @@ export default function LongFormResearch() {
       const failureCount = consecutiveFailuresRef.current + 1;
       consecutiveFailuresRef.current = failureCount;
       setConnectionIssue(true);
-      pollTimerRef.current = setTimeout(() => pollForCompletion(storyPlanVersionId), nextBackoffMs(failureCount));
+      pollTimerRef.current = setTimeout(() => pollForCompletion(storyPlanVersionId, token), nextBackoffMs(failureCount));
       return;
     }
     consecutiveFailuresRef.current = 0;
@@ -314,13 +372,26 @@ export default function LongFormResearch() {
       setStage(row.stage ?? "planning");
       setResearchRow(row);
       setPhase("generating");
-      pollTimerRef.current = setTimeout(() => pollForCompletion(storyPlanVersionId), POLL_INTERVAL_MS);
+      pollTimerRef.current = setTimeout(() => pollForCompletion(storyPlanVersionId, token), POLL_INTERVAL_MS);
       return;
     }
     if (row) {
       const { ok: projectOk, data: freshProject } = await fetchLongFormProjectSafe(projectId);
+      if (mountTokenRef.current !== token) return;
       if (projectOk && freshProject) setProject(freshProject);
-      settleFromVersionRow(row);
+      if (row.status === "ready" || row.status === "needs_attention") {
+        // Real completion — hold on the generating screen just long enough
+        // for the rail's 97->100 payoff (see rule 17/18) before switching to
+        // the ready reveal. Only reachable from an active "generating"
+        // render, never from a cold bootstrap landing directly on "ready".
+        setCompleting(true);
+        pollTimerRef.current = setTimeout(() => {
+          if (mountTokenRef.current !== token) return;
+          settleFromVersionRow(row, token);
+        }, 550);
+        return;
+      }
+      settleFromVersionRow(row, token);
     } else {
       // A genuinely successful query that found NO row at all — this only
       // happens if the research row was somehow deleted server-side (never
@@ -333,8 +404,12 @@ export default function LongFormResearch() {
   // Starts (or resumes watching) research for the CURRENT Story Plan
   // version. start-long-form-research returns almost immediately — it does
   // not wait for the pipeline, so this always transitions into polling
-  // rather than assuming the result it gets back is final.
-  const startAndWatch = async (regenerate = false) => {
+  // rather than assuming the result it gets back is final. `token` defaults
+  // to the CURRENT mount token so user-triggered call sites (Try Again,
+  // Regenerate, Update Research) don't need to thread one through manually;
+  // bootstrap() passes its own captured token explicitly since it may still
+  // be resolving from a now-stale mount by the time this runs.
+  const startAndWatch = async (regenerate = false, token = mountTokenRef.current) => {
     if (startInFlightRef.current) return;
     startInFlightRef.current = true;
     setPhase("generating");
@@ -348,6 +423,8 @@ export default function LongFormResearch() {
     startInFlightRef.current = false;
     setRegenerating(false);
     setUpdating(false);
+
+    if (mountTokenRef.current !== token) return;
 
     if (!result.ok) {
       setPhase("failed");
@@ -366,7 +443,7 @@ export default function LongFormResearch() {
     // with a stale or missing start time for one render. `stage` and
     // `researchRow` must only ever change TOGETHER, from the same full row
     // — pollForCompletion's very next fetch does exactly that.
-    pollForCompletion(result.project.current_story_plan_version_id);
+    pollForCompletion(result.project.current_story_plan_version_id, token);
   };
 
   // Every branch below that could otherwise land on a WRONG conclusion
@@ -375,15 +452,15 @@ export default function LongFormResearch() {
   // itself after a short delay instead of ever falling through to
   // "genuinely nothing exists" or triggering startAndWatch() on a project
   // that may already have real work in progress server-side.
-  const bootstrap = async () => {
-    if (cancelledRef.current) return;
+  const bootstrap = async (token) => {
+    if (mountTokenRef.current !== token) return;
     const { ok: projectOk, data: row } = await fetchLongFormProjectSafe(projectId);
-    if (cancelledRef.current) return;
+    if (mountTokenRef.current !== token) return;
     if (!projectOk) {
       const failureCount = consecutiveFailuresRef.current + 1;
       consecutiveFailuresRef.current = failureCount;
       setConnectionIssue(true);
-      pollTimerRef.current = setTimeout(bootstrap, nextBackoffMs(failureCount));
+      pollTimerRef.current = setTimeout(() => bootstrap(token), nextBackoffMs(failureCount));
       return;
     }
     consecutiveFailuresRef.current = 0;
@@ -400,6 +477,7 @@ export default function LongFormResearch() {
     setProject(row);
 
     const plan = await fetchCurrentStoryPlan(row);
+    if (mountTokenRef.current !== token) return;
     if (plan) setStoryPlan(plan.story_plan);
 
     // Is there research (any status) already tied to the CURRENT Story Plan
@@ -408,11 +486,12 @@ export default function LongFormResearch() {
     // — it can't by itself tell "nothing started yet" apart from "an update
     // is already running."
     const { ok: researchOk, data: currentVersionRow } = await fetchLatestResearchForStoryPlanVersionSafe(projectId, row.current_story_plan_version_id);
+    if (mountTokenRef.current !== token) return;
     if (!researchOk) {
       const failureCount = consecutiveFailuresRef.current + 1;
       consecutiveFailuresRef.current = failureCount;
       setConnectionIssue(true);
-      pollTimerRef.current = setTimeout(bootstrap, nextBackoffMs(failureCount));
+      pollTimerRef.current = setTimeout(() => bootstrap(token), nextBackoffMs(failureCount));
       return;
     }
     consecutiveFailuresRef.current = 0;
@@ -423,10 +502,10 @@ export default function LongFormResearch() {
         setStage(currentVersionRow.stage ?? "planning");
         setResearchRow(currentVersionRow);
         setPhase("generating");
-        pollForCompletion(row.current_story_plan_version_id);
+        pollForCompletion(row.current_story_plan_version_id, token);
         return;
       }
-      await settleFromVersionRow(currentVersionRow);
+      await settleFromVersionRow(currentVersionRow, token);
       return;
     }
 
@@ -434,8 +513,10 @@ export default function LongFormResearch() {
     // left over from an earlier plan? Show it as stale; never auto-promote
     // or auto-regenerate it.
     const lastCompleted = await fetchLastCompletedResearch(row);
+    if (mountTokenRef.current !== token) return;
     if (lastCompleted && lastCompleted.story_plan_version_id !== row.current_story_plan_version_id && (lastCompleted.status === "ready" || lastCompleted.status === "needs_attention")) {
       const sources = await fetchResearchSources(lastCompleted.id);
+      if (mountTokenRef.current !== token) return;
       setStaleResearch({ ...lastCompleted, sources });
       setPhase("stale");
       return;
@@ -444,12 +525,12 @@ export default function LongFormResearch() {
     // Genuinely nothing yet for this project at all — both fetches above
     // confirmed `ok`, so this is a real, verified conclusion, not a guess
     // made after a failed request.
-    startAndWatch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    startAndWatch(false, token);
   };
 
   useEffect(() => {
-    bootstrap();
+    const token = ++mountTokenRef.current;
+    bootstrap(token);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
@@ -457,6 +538,34 @@ export default function LongFormResearch() {
     if (regenerating) return;
     setRegenerating(true);
     startAndWatch(true);
+  };
+
+  // 2026-09-20 "clarify the completed research screen" fix — the REAL
+  // targeted repair action: narrows to exactly the chapters the current
+  // research's own coverage flagged, preserves every existing source/fact
+  // (see start-long-form-research-repair's own comment), and never touches
+  // current_research_version_id until the repair genuinely finishes. Same
+  // shape as startAndWatch/handleRegenerate: fire the request, then switch
+  // into the same real polling loop everything else already uses — nothing
+  // here assumes success ahead of the backend.
+  const handleRepair = async () => {
+    if (repairing) return;
+    setRepairing(true);
+    setRepairError(null);
+    const token = mountTokenRef.current;
+    const result = await startResearchRepair(projectId);
+    if (mountTokenRef.current !== token) return;
+    if (!result.ok) {
+      setRepairing(false);
+      setRepairError(result.message);
+      return;
+    }
+    setProject(result.project);
+    setPhase("generating");
+    setStage("repair_planning");
+    setResearchRow(null);
+    setRepairing(false);
+    pollForCompletion(result.project.current_story_plan_version_id, token);
   };
 
   // Never "regenerate" in the backend sense — the new Story Plan version has
@@ -490,9 +599,7 @@ export default function LongFormResearch() {
     );
   }
 
-  if (phase === "loading") return null;
-
-  if (phase === "generating" || phase === "failed") {
+  if (phase === "loading" || phase === "generating" || phase === "failed") {
     // Viewport-locked: #workspace-scroll (the actual scroll container, see
     // pages/workspace/layout.jsx) already computes its own height correctly
     // via native flexbox (100dvh minus the notice banner, TopRow, and mobile
@@ -504,7 +611,7 @@ export default function LongFormResearch() {
     return (
       <div className="mx-auto flex h-full w-full max-w-[760px] flex-col overflow-hidden px-4 lg:px-8">
         <div className="shrink-0">
-          <LongFormCreationHeader current="story" />
+          <LongFormCreationHeader current="story" project={project} />
         </div>
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden">
           <ResearchLoadingState
@@ -512,7 +619,10 @@ export default function LongFormResearch() {
             failed={phase === "failed"}
             onRetry={() => startAndWatch(false)}
             startedAt={researchRow?.research_started_at}
+            stageStartedAt={researchRow?.stage_started_at}
+            workerLockUntil={researchRow?.worker_lock_until}
             connectionStatus={phase === "failed" ? null : connectionStatus}
+            isComplete={completing}
           />
         </div>
       </div>
@@ -522,7 +632,7 @@ export default function LongFormResearch() {
   if (phase === "stale") {
     return (
       <div className="mx-auto max-w-[760px] px-4 py-8 pb-28 lg:px-8 lg:py-10">
-        <LongFormCreationHeader current="story" />
+        <LongFormCreationHeader current="story" project={project} />
         <StaleResearchState onViewPrevious={() => setPhase("viewing-stale")} />
         <LongFormActionFooter
           secondaryLabel="Back to Story Plan"
@@ -539,7 +649,7 @@ export default function LongFormResearch() {
   if (phase === "viewing-stale") {
     return (
       <div className="mx-auto max-w-[760px] px-4 py-8 pb-28 lg:px-8 lg:py-10">
-        <LongFormCreationHeader current="story" />
+        <LongFormCreationHeader current="story" project={project} />
 
         <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] px-4 py-3">
           <p className="text-[12.5px] font-medium text-amber-200">This research belongs to an earlier Story Plan.</p>
@@ -572,6 +682,29 @@ export default function LongFormResearch() {
     );
   }
 
+  // Last-resort safety net — every real state above has its own explicit
+  // branch, so reaching here with no research loaded means `phase` somehow
+  // landed on "ready" (or an unrecognized value) without the data it needs.
+  // Never let that fall through into `research.status` and throw on render
+  // (a null-property read there is exactly what a truly blank/black content
+  // area looks like) — log it for diagnostics and offer a real way out.
+  if (phase !== "ready" || !research) {
+    console.error("[LongFormResearch] unexpected render state", { projectId, phase, researchVersionId: research?.id ?? researchRow?.id ?? null, status: research?.status ?? researchRow?.status ?? null, stage });
+    return (
+      <div className="mx-auto max-w-[560px] px-4 py-20 text-center">
+        <p className="text-[15px] font-semibold text-white">We couldn't load this research state.</p>
+        <div className="mt-4 flex items-center justify-center gap-4">
+          <button type="button" onClick={() => window.location.reload()} className="text-[13px] font-semibold text-lime-300">
+            Retry Loading
+          </button>
+          <button type="button" onClick={() => navigate(`/long-form/project/${projectId}/story`)} className="text-[13px] font-semibold text-white/50 hover:text-white">
+            Back to Story Plan
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const needsAttention = research.status === "needs_attention";
   // A budget-limited finish is not the same story as "evidence was
   // genuinely thin" — Research stopped gap-filling because another call
@@ -581,27 +714,83 @@ export default function LongFormResearch() {
   // ceiling itself to the user — this is calmer, honest, non-alarming copy
   // for exactly that case.
   const budgetLimited = research.meta?.completionReason === "budget_ceiling_reached";
+  // 2026-09-20 "clarify the completed research screen" fix — real report:
+  // a "moderate coverage, 3/7 chapters need more research" run showed an
+  // alarming "Try Again" (which fully restarted research) directly next to
+  // an unconditionally-enabled "Write Script", a contradictory pairing. The
+  // real distinction the backend already computes is coverage.overallCoverage
+  // (strong/moderate/weak) plus the per-chapter breakdown — "weak" overall
+  // means the Coverage Critic itself judged the evidence base too thin
+  // across the topic to write from confidently (blocking); "moderate" with
+  // some individual weak chapters is real, honest uncertainty the narration
+  // can still responsibly write around (nonblocking) — matching this exact
+  // reported scenario (moderate overall, a minority of chapters weak).
+  const chapterCoverage = research.coverage?.chapterCoverage ?? [];
+  const weakChapters = chapterCoverage.filter((c) => c.status !== "strong");
+  const isBlocking = needsAttention && research.coverage?.overallCoverage === "weak";
+  const isNonblocking = needsAttention && !isBlocking;
+  const affectedChapterTitles = weakChapters.map((c) => storyPlan?.chapters?.find((ch) => ch.id === c.chapterId)?.title ?? c.chapterId);
 
   return (
-    <div className="mx-auto max-w-[760px] px-4 py-8 pb-28 lg:px-8 lg:py-10">
-      <LongFormCreationHeader current="story" />
+    <div className="mx-auto max-w-[760px] px-4 py-8 pb-[calc(112px+env(safe-area-inset-bottom))] lg:px-8 lg:py-10 lg:pb-24">
+      <LongFormCreationHeader current="story" project={project} />
 
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: "easeOut" }} className="mb-7">
-        <h1 className="text-[26px] font-bold tracking-[-0.02em] text-white lg:text-[28px]">Research Ready</h1>
-        <p className="mt-1.5 text-[14px] text-white/45">Zyvo found and organized the evidence needed to write your video.</p>
+        <h1 className="text-[26px] font-bold tracking-[-0.02em] text-white lg:text-[28px]">
+          {isBlocking ? "More evidence needed" : isNonblocking ? "Research complete — some uncertainty" : "Research Ready"}
+        </h1>
+        <p className="mt-1.5 text-[14px] text-white/45">
+          {isBlocking
+            ? "Zyvo couldn't verify enough reliable information for part of this topic — these sections need real evidence before the script can write them honestly."
+            : isNonblocking
+            ? "Zyvo found and organized solid evidence for most of your video. A few sections have lighter evidence — the script will handle them carefully rather than overstating what's known."
+            : "Zyvo found and organized the evidence needed to write your video."}
+        </p>
       </motion.div>
 
-      {needsAttention && (
+      {repairFailure && (
+        // Highest priority, and the ONLY banner shown when present — this
+        // research is exactly as it was before the repair attempt, so
+        // showing the blocking/nonblocking banner underneath it too would
+        // just be a second, confusing CTA competing with the retry action
+        // (see script.jsx's own "duplicate Improve Research" fix for why
+        // that's worth being deliberate about).
         <div className="mb-5 rounded-2xl border border-amber-300/25 bg-amber-300/[0.06] p-4">
           <p className="flex items-start gap-2 text-[13px] font-medium text-amber-200">
             <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+            An evidence repair attempt was interrupted before it finished. Nothing was lost — this is your research exactly as it was before that attempt.
+          </p>
+          <button type="button" onClick={() => startAndWatch(false)} disabled={regenerating} className="mt-2.5 text-[12.5px] font-semibold text-amber-200 underline underline-offset-2 disabled:opacity-50">
+            {regenerating ? "Retrying…" : "Retry evidence repair"}
+          </button>
+        </div>
+      )}
+
+      {!repairFailure && isBlocking && (
+        <div className="mb-5 rounded-2xl border border-amber-300/25 bg-amber-300/[0.06] p-4">
+          <p className="flex items-start gap-2 text-[13px] font-medium text-amber-200">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+            Affected chapters: {affectedChapterTitles.join(", ")}
+          </p>
+          <button type="button" onClick={handleRepair} disabled={repairing} className="mt-2.5 text-[12.5px] font-semibold text-amber-200 underline underline-offset-2 disabled:opacity-50">
+            {repairing ? "Researching missing sections…" : "Research missing sections"}
+          </button>
+          {repairError && <p className="mt-2 text-[12px] text-red-300">{repairError}</p>}
+        </div>
+      )}
+
+      {!repairFailure && isNonblocking && (
+        <div className="mb-5 rounded-2xl border border-white/[0.09] bg-white/[0.02] p-4">
+          <p className="flex items-start gap-2 text-[13px] font-medium text-white/70">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-300/70" />
             {budgetLimited
               ? "Zyvo found strong evidence for most of your story. A few sections have less evidence, so the narration will handle those carefully."
-              : "Zyvo couldn't verify enough reliable information for part of this topic."}
+              : `${weakChapters.length} of ${storyPlan?.chapters?.length ?? weakChapters.length} chapters have lighter evidence: ${affectedChapterTitles.join(", ")}.`}
           </p>
-          <button type="button" onClick={handleRegenerate} disabled={regenerating} className="mt-2.5 text-[12.5px] font-semibold text-amber-200 underline underline-offset-2 disabled:opacity-50">
-            {regenerating ? "Retrying…" : budgetLimited ? "Improve Research" : "Try Again"}
+          <button type="button" onClick={handleRepair} disabled={repairing} className="mt-2.5 text-[12.5px] font-semibold text-white/50 underline underline-offset-2 hover:text-white/80 disabled:opacity-50">
+            {repairing ? "Researching missing sections…" : "Research missing sections anyway"}
           </button>
+          {repairError && <p className="mt-2 text-[12px] text-red-300">{repairError}</p>}
         </div>
       )}
 
@@ -615,16 +804,40 @@ export default function LongFormResearch() {
           className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-white/45 hover:text-white disabled:opacity-40"
         >
           <RotateCw className={`h-3.5 w-3.5 ${regenerating ? "animate-spin" : ""}`} />
-          {regenerating ? "Regenerating…" : "Regenerate Research"}
+          {regenerating ? "Regenerating…" : "Start over with full research"}
         </button>
       </div>
 
-      <LongFormActionFooter
-        secondaryLabel="Back to Story Plan"
-        onSecondary={() => navigate(`/long-form/project/${projectId}/story`)}
-        primaryLabel="Write Script"
-        onPrimary={() => navigate(`/long-form/project/${projectId}/script`)}
-      />
+      {repairFailure ? (
+        <LongFormActionFooter
+          secondaryLabel="Back to Story Plan"
+          onSecondary={() => navigate(`/long-form/project/${projectId}/story`)}
+          tertiaryLabel="Write Script anyway"
+          onTertiary={() => navigate(`/long-form/project/${projectId}/script`)}
+          primaryLabel="Retry evidence repair"
+          onPrimary={() => startAndWatch(false)}
+          primaryLoading={regenerating}
+          primaryLoadingLabel="Retrying…"
+        />
+      ) : isBlocking ? (
+        <LongFormActionFooter
+          secondaryLabel="Back to Story Plan"
+          onSecondary={() => navigate(`/long-form/project/${projectId}/story`)}
+          tertiaryLabel="Write Script anyway"
+          onTertiary={() => navigate(`/long-form/project/${projectId}/script`)}
+          primaryLabel="Research missing sections"
+          onPrimary={handleRepair}
+          primaryLoading={repairing}
+          primaryLoadingLabel="Researching…"
+        />
+      ) : (
+        <LongFormActionFooter
+          secondaryLabel="Back to Story Plan"
+          onSecondary={() => navigate(`/long-form/project/${projectId}/story`)}
+          primaryLabel="Write Script"
+          onPrimary={() => navigate(`/long-form/project/${projectId}/script`)}
+        />
+      )}
     </div>
   );
 }

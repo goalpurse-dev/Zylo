@@ -21,7 +21,7 @@ export default function Toast({
     success:
       "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
     info:
-      "bg-purple-500/10 border-purple-500/30 text-purple-400",
+      "bg-lime-500/10 border-lime-500/30 text-lime-400",
   };
 
   return (

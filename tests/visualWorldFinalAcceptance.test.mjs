@@ -1,0 +1,34 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import { createStyleBible, compileReferencePrompt, deriveReferenceQAExpectations, validateCompiledReferencePrompt, ZYVO_STYLE_SPEC } from "../supabase/functions/_shared/visualWorldStyle.ts";
+import { recomputeCharacterSheetApproval } from "../supabase/functions/_shared/referenceQA.ts";
+import { analyzeReferenceHierarchy } from "../supabase/functions/_shared/referenceHierarchy.ts";
+
+const root = new URL("..", import.meta.url);
+const read = (path) => fs.readFileSync(new URL(path, root), "utf8");
+const budget = { characterSheets: 7, locationSheets: 4, objectSheets: 3, styleAnchors: 0, diagramStyleSheets: 1, maxAssets: 16 };
+const entity = (id, name, category, importance = "RECURRING") => ({ id, name, category, importance, referenceNeeded: true, referencePriority: importance === "HERO" ? "high" : "medium" });
+const baseSheet = { panelCountCorrect: false, sameIdentityAcrossPanels: true, frontPresent: true, sidePresent: true, backPresent: true, facePresent: true, outfitDetailPresent: false, actionPosePresent: false, expressionPanelPresent: true, expressionCount: 4, outfitConsistent: true, fullBodyNotCropped: true, environmentContamination: false, textArtifactSeverity: "none", styleMismatchSeverity: "none", corruptionArtifacts: false, reasons: [] };
+
+test("1 character sheet accepts multiple useful views without rigid outfit box", () => assert.equal(recomputeCharacterSheetApproval("HERO", baseSheet), true));
+test("2 colorful character guidance is preserved", () => assert.match(compileReferencePrompt({ styleSpec: ZYVO_STYLE_SPEC, entityName: "Viking", canonicalSpec: "brown leather, green cloak, blue tunic", view: { referenceType: "character_reference", angle: "character_reference_sheet", purpose: "sheet", importance: "HERO" } }), /brown leather, green cloak, blue tunic/));
+test("3 style selection explicitly rejects forced grayscale", () => assert.match(createStyleBible(ZYVO_STYLE_SPEC).colorPolicy, /never force grayscale/i));
+test("4 location board QA allows coordinated multiple views", () => { const q = deriveReferenceQAExpectations({ referenceType: "location_reference", angle: "location_reference_board", purpose: "world" }); assert.equal(q.coherentLocationBoardAllowed, true); assert.equal(q.expectedViewCount, 3); });
+test("4b location board prompt passes its own dispatch contract", () => { const view = { referenceType: "location_reference", angle: "location_reference_board", purpose: "world" }; const prompt = compileReferencePrompt({ styleSpec: ZYVO_STYLE_SPEC, entityName: "Lost City of Atlantis", canonicalSpec: "coherent submerged city location", view }); assert.doesNotThrow(() => validateCompiledReferencePrompt(view, prompt)); });
+test("5 minor location remains one simple reference", () => { const r = analyzeReferenceHierarchy({ topic: "The history of Rome", entities: [entity("rome", "Rome", "LOCATION", "HERO"), entity("port", "Comparison port", "LOCATION", "INCIDENTAL")], visualBeats: [], budget }); const port = [...r.selectedReferences, ...r.excludedReferences].find(x => x.subjectId === "port"); assert.equal(port.referenceFormat, "single_reference"); });
+test("6 visual core receives richer format than side entity", () => { const r = analyzeReferenceHierarchy({ topic: "Inside Atlantis", entities: [entity("atlantis", "Atlantis", "LOCATION", "HERO"), entity("sonar", "Sonar", "IMPORTANT_OBJECT", "INCIDENTAL")], visualBeats: [], budget }); assert.equal(r.heroSubjects[0].referenceFormat, "location_board"); });
+test("7 optional references are excluded from required generation", () => { const r = analyzeReferenceHierarchy({ topic: "Inside Atlantis", entities: [entity("atlantis", "Atlantis", "LOCATION", "HERO"), entity("meter", "Small meter tool", "IMPORTANT_OBJECT", "INCIDENTAL")], visualBeats: [], budget }); assert.ok(r.excludedReferences.some(x => x.subjectId === "meter")); });
+test("8 historical version has atomic promotion RPC", () => assert.match(read("supabase/migrations/20261001150000_reference_history_promotion.sql"), /promote_long_form_reference_asset_version/));
+test("9 history promotion creates no provider job", () => { const s = read("supabase/migrations/20261001150000_reference_history_promotion.sql"); assert.doesNotMatch(s, /insert into public\.jobs|api\.runware|functions\/v1/); });
+test("10 full rebuild records adopted world as reuse source", () => assert.match(read("supabase/functions/start-long-form-visual-world/index.ts"), /reuseSourceVisualWorldVersionId: project\.current_visual_world_version_id/));
+test("11 rebuild only leaves unmatched views pending", () => { const s = read("supabase/functions/advance-long-form-visual-world/index.ts"); assert.match(s, /const match = rawMatch/); assert.match(s, /copiedAssetRows\.push/); assert.match(s, /pendingAssetRows\.push/); });
+test("12 page polling cannot submit regeneration", () => { const s = read("src/pages/workspace/long-form/visualWorld.jsx"); const effect = s.slice(s.indexOf("useEffect(() =>"), s.indexOf("async function perform")); assert.doesNotMatch(effect, /regenerateReferenceAsset|startVisualWorld\(/); });
+test("13 QA rejection does not auto-regenerate sheets", () => assert.match(read("supabase/functions/advance-long-form-visual-world/index.ts"), /NO_AUTO_FALLBACK_SHEET_ROLES/));
+test("14 manual approval stays a durable approved state", () => assert.match(read("supabase/migrations/20260914020000_manual_reference_approval.sql"), /qa_status = 'approved', manual_approval = true/));
+test("15 reference format determines QA rules", () => assert.notDeepEqual(deriveReferenceQAExpectations({ referenceType: "location_reference", angle: "location_reference_board", purpose: "world" }), deriveReferenceQAExpectations({ referenceType: "object_reference", angle: "three_quarter_hero", purpose: "object" })));
+test("16 board ordering follows persisted UI priority", () => assert.match(read("src/pages/workspace/long-form/VisualWorldWorkspace.jsx"), /Number\(b\.uiPriority/));
+test("17 core subject can be a hypothetical reconstruction", () => { const r = analyzeReferenceHierarchy({ topic: "Could Atlantis have existed?", entities: [entity("plato", "Plato", "CHARACTER")], visualBeats: [], budget }); assert.equal(r.heroSubjects[0].isHypotheticalReconstruction, true); });
+test("18 normal reference prompts ban readable text", () => assert.match(compileReferencePrompt({ styleSpec: ZYVO_STYLE_SPEC, entityName: "Sonar", canonicalSpec: "sensor", view: { referenceType: "object_reference", angle: "three_quarter_hero", purpose: "object" } }), /NO readable text/));
+test("19 Style Bible uses content-dependent color", () => assert.equal(createStyleBible(ZYVO_STYLE_SPEC).paletteMode, "content_dependent"));
+test("20 promotion reconciles the completion contract", () => assert.match(read("supabase/migrations/20261001150000_reference_history_promotion.sql"), /reconcile_visual_world_completion_status/));

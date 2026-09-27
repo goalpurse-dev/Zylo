@@ -1,12 +1,13 @@
 import { createElement, useEffect, useRef, useState } from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Folder, Home, LayoutGrid, Sparkles } from "lucide-react";
+import { ChevronDown, Clapperboard, Folder, Home, LayoutGrid, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CREATE_TOOLS, WORKSPACE_TOOLS } from "./CreateMenu";
 
 const groups = [
   { name: "Home", icon: Home, path: "/workspace/home" },
-  { name: "Create", icon: Sparkles, items: CREATE_TOOLS },
+  { name: "Short Form", icon: Sparkles, items: CREATE_TOOLS },
+  { name: "Long Form", icon: Clapperboard, path: "/long-form" },
   { name: "Workspace", icon: LayoutGrid, items: WORKSPACE_TOOLS },
   { name: "Creations", icon: Folder, path: "/workspace/creations" },
 ];
@@ -113,7 +114,7 @@ export default function ToolSelector() {
         })}
       </div>
 
-      <div className="hidden grid-cols-4 gap-0 rounded-full border border-white/[0.09] bg-[#100c14]/68 p-1 shadow-[0_18px_60px_rgba(0,0,0,.34),inset_0_1px_0_rgba(255,255,255,.035)] backdrop-blur-2xl sm:grid">
+      <div className="hidden grid-cols-5 gap-0 rounded-full border border-white/[0.09] bg-[#100c14]/68 p-1 shadow-[0_18px_60px_rgba(0,0,0,.34),inset_0_1px_0_rgba(255,255,255,.035)] backdrop-blur-2xl sm:grid">
         {groups.map((group) => {
           const isOpen = openGroup === group.name;
           return (

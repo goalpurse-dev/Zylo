@@ -18,6 +18,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { requireUser } from "../shared/auth.ts";
 import { logEvent } from "../_shared/systemLog.ts";
+import { FIRST_IDEA_BATCH_IS_FREE, REGENERATE_IDEAS_COST } from "../../../src/lib/longFormIdeaThumbnails.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -111,6 +112,18 @@ interface DiscoveryContext {
   // Accepted and threaded through today; not yet backed by any real Series.
   // Series will eventually supply a style/identity summary here.
   seriesContext: { summary?: string } | null;
+  // 2026-10-02 "Production Setup redesign" pass, Section 5 — the new
+  // Production Setup page's niche picker (niches.js) is a SEPARATE, broader
+  // taxonomy from categoryValue's fixed CATEGORY_VALUES enum above (and
+  // deliberately not validated against any enum here — a free-text bias
+  // hint, never a schema field on the returned ideas). Optional; every
+  // existing caller that never sends it behaves byte-identical to before.
+  nicheHint?: string;
+  // Final-polish round 4, Section 4 — the visual style id the caller has
+  // selected, purely to be RECORDED on the session (last_idea_batch_style_id)
+  // for the "style changed since these ideas were generated, refresh
+  // thumbnails" notice. Never used to alter idea generation itself.
+  styleId?: string;
   // FUTURE CONTEXT (not implemented): previousPublishedTopics,
   // rejectedIdeaHistory, channelTopicEmbeddings. Add as new optional
   // DiscoveryContext fields + a corresponding paragraph in
@@ -141,7 +154,13 @@ function buildDiscoveryContext(body: any): DiscoveryContext {
       ? { summary: typeof body.seriesContext.summary === "string" ? body.seriesContext.summary.slice(0, 500) : undefined }
       : null;
 
-  return { categoryValue, directionValue, requestedCount, existingIdeas, seriesContext };
+  const rawNicheHint = typeof body?.nicheHint === "string" ? body.nicheHint.trim().slice(0, 120) : "";
+  const nicheHint = rawNicheHint.length > 0 ? rawNicheHint : undefined;
+
+  const rawStyleId = typeof body?.styleId === "string" ? body.styleId.trim().slice(0, 80) : "";
+  const styleId = rawStyleId.length > 0 ? rawStyleId : undefined;
+
+  return { categoryValue, directionValue, requestedCount, existingIdeas, seriesContext, nicheHint, styleId };
 }
 
 /* ============================= Prompt building ============================= */
@@ -161,6 +180,10 @@ function buildContextBlock(context: DiscoveryContext): string {
   );
 
   parts.push(`DIRECTION: ${context.directionValue} — ${DIRECTION_GUIDE[context.directionValue]}`);
+
+  if (context.nicheHint) {
+    parts.push(`NICHE FOCUS: "${context.nicheHint}" — every idea in this batch should genuinely belong to this niche, still respecting the CATEGORY/DIRECTION guidance above.`);
+  }
 
   if (context.existingIdeas.length) {
     parts.push(
@@ -204,18 +227,29 @@ Each idea needs enough conceptual depth for a future research -> story -> script
 
 Strong ideas usually have several (not necessarily all) of: a clear central question, a strong mechanism, a hidden system, human consequence, tension, transformation, a surprising fact, contrast, a chronological arc, cause/effect, a misconception being corrected, an extreme constraint, a useful explanation, scale, mystery, or a strong visual world.
 
-AVOID generic AI-sounding titles: "The Fascinating World of X", "Exploring the Secrets of X", "The Incredible History of X", "Everything You Need to Know About X", "The Ultimate Guide to X". Prefer specific curiosity instead — e.g. not "The Fascinating World of Submarines" but "How Nuclear Submarines Make Oxygen for Months Underwater"; not "The History of Refrigeration" but "How People Kept Food Cold Before Refrigerators Existed".
+AVOID generic AI-sounding titles: "The Fascinating World of X", "Exploring the Secrets of X", "The Incredible History of X", "Everything You Need to Know About X", "The Ultimate Guide to X", "The Mystery of X". Prefer specific curiosity instead — e.g. not "The Fascinating World of Submarines" but "How Nuclear Submarines Make Oxygen for Months Underwater"; not "The History of Refrigeration" but "How People Kept Food Cold Before Refrigerators Existed".
+
+TITLE FORMAT RULES (every title must follow one of these proven shapes, or a close variant of one):
+- "What Did [Group] Do [X]?" (e.g. "What Did Vikings Do In Winter?")
+- "How Did [Group] Survive [X]?" (e.g. "How Did Sailors Survive Scurvy?")
+- "Why Don't We [X]?" (e.g. "Why Don't We Build Wooden Skyscrapers?")
+- "What If [X]?" (e.g. "What If The Moon Disappeared?")
+- A direct second-person hook (e.g. "You'd Die In 3 Minutes Without This", "Could You Survive Medieval London?")
+Every title must: be a genuine question or direct second-person address (not a flat statement/label), be 60 characters or fewer, contain NO colon, and never give away the answer/payoff in the title itself — the title creates the curiosity gap, it never resolves it.
 
 Across these ${POOL_SIZE} ideas, also vary: entities, question forms, mechanisms, time periods, narrative structures, locations, scales, and subject types.
 
 For each idea, write:
-- title: a specific, clickable YouTube-style working title (not a generic label).
+- title: a specific, clickable YouTube-style working title, following the TITLE FORMAT RULES above exactly.
 - topic: one precise sentence stating the canonical concept for a downstream research engine — more formal/complete than the title.
 - angle: 1-2 sentences explaining why THIS version of the topic is interesting — the viewer promise.
 - category: the single best-fit category from this exact list: ${CATEGORY_VALUES.join(", ")}.
 - direction: the single best-fit direction from this exact list: ${DIRECTION_VALUES.join(", ")}.
 - narrativeArchetype: the single best-fit archetype from this exact list: ${ARCHETYPE_VALUES.join(", ")}. Internal only — never shown to the viewer, but it will help a future step pick the right narrative structure.
 - visualDirection: a concrete description of ONE compelling scene for a 16:9 illustrated image — describe WHAT should be shown (subject, setting, composition, a sense of scale or contrast if relevant), never the rendering/art style, and never any text, letters, words, captions, titles, logos, watermarks, UI, numbers, or labels appearing in the image.
+- thumbnailConcept: the raw material for a separate YouTube-thumbnail image (assembled with a fixed art-style header elsewhere — you never write style/rendering instructions here, only the concept):
+  - headline: 1-3 words, ALL CAPS, ending in "?" where that reads naturally (e.g. "NO FIRE?", "30 DAYS?", "ADDICTED?") — the single most shocking/curious word or two from the idea, not a restatement of the title.
+  - scene: one or two sentences describing EXACTLY what the thumbnail should show — the character(s), an exaggerated reaction or a stark before/after or size/scale comparison, and the background. Must be vivid and extreme enough to read instantly at a tiny size; never mention text, letters, or rendering style.
 
 Return JSON only.`;
 }
@@ -260,10 +294,20 @@ Return JSON only, one evaluation for every candidate, in the same order.`;
 
 /* ============================= JSON schemas ============================= */
 
+const THUMBNAIL_CONCEPT_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["headline", "scene"],
+  properties: {
+    headline: { type: "string" },
+    scene: { type: "string" },
+  },
+};
+
 const IDEA_ITEM_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["title", "topic", "angle", "category", "direction", "narrativeArchetype", "visualDirection"],
+  required: ["title", "topic", "angle", "category", "direction", "narrativeArchetype", "visualDirection", "thumbnailConcept"],
   properties: {
     title: { type: "string" },
     topic: { type: "string" },
@@ -272,6 +316,7 @@ const IDEA_ITEM_SCHEMA = {
     direction: { type: "string", enum: DIRECTION_VALUES },
     narrativeArchetype: { type: "string", enum: ARCHETYPE_VALUES },
     visualDirection: { type: "string" },
+    thumbnailConcept: THUMBNAIL_CONCEPT_SCHEMA,
   },
 };
 
@@ -375,38 +420,44 @@ function isValidIdeaShape(idea: any): boolean {
   if (!CATEGORY_VALUES.includes(idea.category)) return false;
   if (!DIRECTION_VALUES.includes(idea.direction)) return false;
   if (!ARCHETYPE_VALUES.includes(idea.narrativeArchetype)) return false;
+  const concept = idea.thumbnailConcept;
+  if (!concept || typeof concept !== "object") return false;
+  if (typeof concept.headline !== "string" || concept.headline.trim().length < 1 || concept.headline.length > 40) return false;
+  if (typeof concept.scene !== "string" || concept.scene.trim().length < 4 || concept.scene.length > 500) return false;
   return true;
 }
 
 /* ============================= Discovery session gate ============================= */
 
-// Per-creation safeguard (product decision, not a generic rate limiter):
-// batch 1 free, batch 2 free (starts a 3h cooldown), then one batch allowed
-// per 3h after that, each renewing the cooldown. This IS the authoritative
-// gate — the frontend may show a countdown, but refreshing, editing
-// sessionStorage, or calling this endpoint directly cannot bypass it, since
-// the counters live in long_form_discovery_sessions, not in anything the
-// client sends.
+// Final-polish round 4, Section 4 — REPLACED the old time-based cooldown gate
+// (batch 1 free, batch 2 free + starts a 3h cooldown, then one per 3h) with a
+// per-draft model: the first ideas+thumbnails generation for a session is
+// free; every one after that costs REGENERATE_IDEAS_COST credits, charged
+// here via the same deduct_credits RPC every other credit-charging path in
+// this codebase uses (see createProductPhotoJob in src/lib/jobs.ts) —
+// SECURITY DEFINER, keyed off the caller's OWN verified user id (never a
+// client-supplied uid), so this cannot be spoofed by sending a flag. A real
+// credit charge is a strictly stronger abuse control than a time cooldown,
+// and matches the product's explicit pricing spec. idea_batches_generated/
+// next_generation_allowed_at are still written below for telemetry/legacy
+// (the old /long-form/new page still reads them) but no longer BLOCK a
+// request — free_idea_batch_used is the sole gate now.
 interface DiscoverySession {
   id: string;
   user_id: string;
   idea_batches_generated: number;
   next_generation_allowed_at: string | null;
+  free_idea_batch_used: boolean;
 }
 
 async function loadOwnedSession(admin: ReturnType<typeof createClient>, sessionId: string, userId: string): Promise<DiscoverySession | null> {
   const { data } = await admin
     .from("long_form_discovery_sessions")
-    .select("id, user_id, idea_batches_generated, next_generation_allowed_at")
+    .select("id, user_id, idea_batches_generated, next_generation_allowed_at, free_idea_batch_used")
     .eq("id", sessionId)
     .maybeSingle();
   if (!data || data.user_id !== userId) return null;
   return data as DiscoverySession;
-}
-
-function cooldownResponse(req: Request, nextAllowedAt: string) {
-  const retryAfterSeconds = Math.max(0, Math.ceil((new Date(nextAllowedAt).getTime() - Date.now()) / 1000));
-  return err(req, "More ideas available soon.", 429, { code: "DISCOVERY_COOLDOWN", nextAllowedAt, retryAfterSeconds });
 }
 
 /* ============================= Handler ============================= */
@@ -427,9 +478,23 @@ Deno.serve(async (req) => {
   const session = await loadOwnedSession(admin, discoverySessionId, user.id);
   if (!session) return err(req, "Discovery session not found", 404);
 
-  if (session.idea_batches_generated >= 2) {
-    const stillCoolingDown = !session.next_generation_allowed_at || Date.now() < new Date(session.next_generation_allowed_at).getTime();
-    if (stillCoolingDown) return cooldownResponse(req, session.next_generation_allowed_at ?? new Date().toISOString());
+  // FIRST_IDEA_BATCH_IS_FREE gate — a real credit charge (not a client flag)
+  // for every batch after the session's first. Charged BEFORE the expensive
+  // OpenAI calls so an insufficient-balance user gets an instant 402; refunded
+  // below if generation ends up failing after all.
+  const isChargeableBatch = !(FIRST_IDEA_BATCH_IS_FREE && !session.free_idea_batch_used);
+  if (isChargeableBatch) {
+    const { error: chargeError } = await admin.rpc("deduct_credits", { uid: user.id, amount: REGENERATE_IDEAS_COST });
+    if (chargeError) {
+      return err(req, "Not enough credits to regenerate ideas.", 402, { code: "INSUFFICIENT_CREDITS" });
+    }
+  }
+  async function refundIfCharged(reason: string) {
+    if (!isChargeableBatch) return;
+    const { error: refundError } = await admin.rpc("deduct_credits", { uid: user.id, amount: -REGENERATE_IDEAS_COST });
+    if (refundError) {
+      await logEvent(SOURCE, "error", "refund_failed", { userId: user.id, discoverySessionId, reason, message: refundError.message });
+    }
   }
 
   const context = buildDiscoveryContext(body);
@@ -462,6 +527,7 @@ Deno.serve(async (req) => {
     }
     if (pool.length < Math.max(3, Math.ceil(context.requestedCount / 2))) {
       await logEvent(SOURCE, "error", "candidate_generation_failed", { userId: user.id, poolSize: pool.length });
+      await refundIfCharged("candidate_generation_failed");
       return err(req, "Idea generation returned too few usable candidates", 502);
     }
 
@@ -530,24 +596,35 @@ Deno.serve(async (req) => {
       // rather than re-deriving it from title/angle text later.
       narrativeArchetype: idea.narrativeArchetype,
       visualDirection: idea.visualDirection.trim(),
+      thumbnailConcept: {
+        headline: idea.thumbnailConcept.headline.trim(),
+        scene: idea.thumbnailConcept.scene.trim(),
+      },
     }));
 
     if (ideas.length === 0) {
       await logEvent(SOURCE, "error", "no_ideas_survived_selection", { userId: user.id, poolSize: pool.length });
+      await refundIfCharged("no_ideas_survived_selection");
       return err(req, "No ideas passed validation", 502);
     }
 
     // Advance the session's free-batch counter and (from batch 2 onward) set
-    // the next 3h cooldown — done here, after a genuinely successful batch,
-    // so a failed generation never consumes part of the free allowance.
+    // the next 3h cooldown — kept for telemetry/the legacy /long-form/new
+    // page, but no longer enforced as a blocking gate (see above).
     const nextBatchCount = session.idea_batches_generated + 1;
     const nowIso = new Date().toISOString();
     const nextAllowedAt = nextBatchCount >= 2 ? new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString() : null;
+    const batchId = crypto.randomUUID();
     // Only the fields THIS function unambiguously knows. The full merged
     // (and capped) `ideas` array is persisted by the frontend right after
     // this call, via update-long-form-discovery-session — this function
     // only ever sees the new batch's ideas, not the client's running
     // append/cap state, so it can't safely write the merged list itself.
+    // last_idea_batch_id/style_id/thumbnails_claimed are billing state for
+    // generate-long-form-idea-thumbnails (see its own comments) — set here,
+    // AFTER a genuinely successful + already-charged-or-free batch, never
+    // client-writable (not in update-long-form-discovery-session's
+    // ALLOWED_FIELDS).
     await admin
       .from("long_form_discovery_sessions")
       .update({
@@ -556,14 +633,24 @@ Deno.serve(async (req) => {
         next_generation_allowed_at: nextAllowedAt,
         idea_category: context.categoryValue,
         idea_direction: context.directionValue,
+        free_idea_batch_used: true,
+        last_idea_batch_id: batchId,
+        last_idea_batch_style_id: context.styleId ?? null,
+        last_idea_batch_thumbnails_claimed: false,
         updated_at: nowIso,
       })
       .eq("id", discoverySessionId);
 
-    await logEvent(SOURCE, "info", "ideas_returned", { userId: user.id, returned: ideas.length, requested: context.requestedCount });
-    return ok(req, { ideas, discovery: { ideaBatchesGenerated: nextBatchCount, nextGenerationAllowedAt: nextAllowedAt } });
+    await logEvent(SOURCE, "info", "ideas_returned", { userId: user.id, returned: ideas.length, requested: context.requestedCount, charged: isChargeableBatch });
+    return ok(req, {
+      ideas,
+      batchId,
+      charged: isChargeableBatch ? REGENERATE_IDEAS_COST : 0,
+      discovery: { ideaBatchesGenerated: nextBatchCount, nextGenerationAllowedAt: nextAllowedAt },
+    });
   } catch (error) {
     await logEvent(SOURCE, "error", "unexpected_error", { userId: user.id, message: String((error as Error)?.message ?? error) });
+    await refundIfCharged("unexpected_error");
     return err(req, "Idea generation failed", 500);
   }
 });

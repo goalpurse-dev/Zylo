@@ -4,7 +4,8 @@ import { Download, MoonStar, RefreshCw, X } from "lucide-react";
 import TwoAmSceneCard from "./TwoAmSceneCard";
 import TwoAmDemoCarousel from "./TwoAmDemoCarousel";
 import TwoAmLoadingCard from "./TwoAmLoadingCard";
-import { IMAGE_QUALITY_TIERS, TWO_AM_IMAGE_COUNT, TWO_AM_TOTAL_CREDITS } from "./api/twoAmApi";
+import { DEFAULT_IMAGE_QUALITY, IMAGE_QUALITY_TIERS, PRICE_ITEMS } from "./api/twoAmApi";
+import useToolPriceQuotes from "../../../hooks/useToolPriceQuotes";
 import { downloadFile, downloadImagesAsZip } from "./utils/twoAmHelpers";
 
 export default function TwoAmResults({ phase, plannerStage, scenes, generation, error, recentGenerations, onOpenRecent, onRegenerate, onAnotherNight, recentOnly = false }) {
@@ -13,9 +14,11 @@ export default function TwoAmResults({ phase, plannerStage, scenes, generation, 
   const active = phase === "planning" || phase === "generating";
   const hasResults = scenes.some((scene) => scene.imageUrl);
   const lockDesktopPreview = phase === "idle" && !hasResults;
-  const totalCredits = generation?.reservedCredits ?? TWO_AM_TOTAL_CREDITS;
-  const perImageCredits = IMAGE_QUALITY_TIERS[generation?.settings?.quality]?.creditsPerImage
-    ?? Math.round(totalCredits / TWO_AM_IMAGE_COUNT);
+  // What this night was charged (server-recorded), and the server's quote for
+  // regenerating one scene at the tier it was created at.
+  const quotes = useToolPriceQuotes(PRICE_ITEMS);
+  const totalCredits = generation?.reservedCredits ?? null;
+  const perImageCredits = quotes.price(IMAGE_QUALITY_TIERS[generation?.settings?.quality] ? generation.settings.quality : DEFAULT_IMAGE_QUALITY);
 
   const downloadOne = async (scene, index) => {
     try { await downloadFile(scene.imageUrl, `2am-${String(index + 1).padStart(2, "0")}.jpg`); } catch (caught) { console.error(caught); }
@@ -110,7 +113,7 @@ export default function TwoAmResults({ phase, plannerStage, scenes, generation, 
         )}
 
         {phase === "error" && error && (
-          <div className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/[0.08] px-4 py-3 text-center text-[11px] font-semibold text-red-300">{error === "INSUFFICIENT_CREDITS" ? `You need ${totalCredits} credits to create this slideshow.` : error}</div>
+          <div className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/[0.08] px-4 py-3 text-center text-[11px] font-semibold text-red-300">{error === "INSUFFICIENT_CREDITS" ? (totalCredits != null ? `You need ${totalCredits} credits to create this slideshow.` : "You don't have enough credits to create this slideshow.") : error}</div>
         )}
       </div>
 

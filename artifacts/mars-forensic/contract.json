@@ -1,0 +1,4914 @@
+{
+  "id": "9a3826cd-9a2d-4b48-8275-0b5a8489950e",
+  "claims": [
+    {
+      "claimId": "s1__c1",
+      "emphasis": "MEDIUM",
+      "claimType": "FACT",
+      "confidence": 0.88,
+      "stateAfter": "bunk illuminated and crew awakened",
+      "stateBefore": "crew asleep/dim lighting",
+      "planningMode": "STORY",
+      "narrationText": "A soft chime wakes the bunk and a band of blue‑white light rises along the wall.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "the bunk is woken by a soft chime and a rising blue‑white light"
+      ],
+      "primarySubject": "bunk",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "wake cue",
+        "lighting"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "bunk",
+        "blue‑white light",
+        "chime"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [],
+      "entityRequirements": [
+        {
+          "entity": "bunk/crew sleeping area",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "soft chime (sound cue)",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "blue‑white light band on wall",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s1"
+      ],
+      "requiredVisualFacts": [
+        "a band of blue‑white light is visibly rising along the wall",
+        "a distinct soft chime (or visual cue for an alarm) indicates wake"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_REACTION",
+        "ENVIRONMENT_ESTABLISHING"
+      ],
+      "textOverlayCandidate": {
+        "importance": "LOW",
+        "recommended": false,
+        "semanticText": ""
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that an automated soft chime plus a rising blue‑white light visibly and audibly wake the bunk."
+    },
+    {
+      "claimId": "s1__c2",
+      "emphasis": "HIGH",
+      "claimType": "FACT",
+      "confidence": 0.9,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "STORY",
+      "narrationText": "Through the porthole the horizon is the same thin red, but the tablet on the wall is decisive: three status icons—oxygen, water, power—line the top and read green, amber, green.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "the tablet clearly displays oxygen, water, power icons reading green, amber, green"
+      ],
+      "primarySubject": "tablet",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "external environment",
+        "status display"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "porthole",
+        "horizon",
+        "tablet",
+        "oxygen",
+        "water",
+        "power"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "LABEL",
+        "CHECK"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "porthole showing Mars horizon",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "tablet on the wall",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "status icons (oxygen, water, power)",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s1"
+      ],
+      "requiredVisualFacts": [
+        "through the porthole a thin red Martian horizon is visible",
+        "the tablet shows three status icons labeled oxygen, water, power",
+        "the icons read green, amber, green respectively"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "ENVIRONMENT_ESTABLISHING",
+        "OBJECT_HERO",
+        "OBJECT_DETAIL"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "O W P: G A G"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Convey that outside is the familiar Mars red horizon while the interior tablet decisively shows system statuses (O, W, P = green/amber/green)."
+    },
+    {
+      "claimId": "s1__c5",
+      "emphasis": "HIGH",
+      "claimType": "QUANTITY",
+      "confidence": 0.94,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "EXPLAINER",
+      "narrationText": "A sol is almost an Earth day but runs about forty minutes longer.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "a sol runs about forty minutes longer than an Earth day"
+      ],
+      "primarySubject": "sol",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "sol length",
+        "time comparison"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "sol",
+        "Earth day"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "NUMBER",
+        "COMPARE_PANEL",
+        "TIMELINE_BAR"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "sol (Martian day) as time concept",
+          "criticality": "NONE"
+        }
+      ],
+      "quantitativeClaims": [
+        "about 40 minutes longer"
+      ],
+      "narrationSegmentIds": [
+        "s2"
+      ],
+      "requiredVisualFacts": [
+        "the sol is presented as approximately an Earth day plus about 40 minutes"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "NUMBER_EMPHASIS",
+        "COMPARISON"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "+40 min"
+      },
+      "continuityRequirement": "NONE",
+      "visualCommunicationGoal": "Convey the concrete time difference: a sol lasts roughly 24 hours plus ~40 minutes."
+    },
+    {
+      "claimId": "s1__c6",
+      "emphasis": "MEDIUM",
+      "claimType": "COMPARISON",
+      "confidence": 0.86,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "EXPLAINER",
+      "narrationText": "Operations handle that drift in two ways: during intense, short campaigns crews may 'live on Mars time'—shifting sleep and duty cycles gradually—otherwise planners lock activities to the sol and schedule around the daily slip so sleep and tasks stay reliable.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "operations either shift crew schedules to Mars time during intense campaigns or lock activities to the sol and schedule around the slip"
+      ],
+      "primarySubject": "operations",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "operational strategies",
+        "time management"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [
+        "live on Mars time (crew shifts sleep/duty cycles) vs lock activities to the sol (planners schedule around daily slip)"
+      ],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "crews",
+        "planners",
+        "sleep and duty cycles"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "COMPARE_PANEL",
+        "TIMELINE_BAR",
+        "ARROW"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "operation planners/crew",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "sleep/duty cycle schedules",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s2"
+      ],
+      "requiredVisualFacts": [
+        "two distinct operational strategies are presented: (1) crews living on Mars time by shifting sleep/duty cycles; (2) planners locking activities to the sol and scheduling around the slip"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "COMPARISON",
+        "TIMELINE"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "Mars time vs Sol lock"
+      },
+      "continuityRequirement": "NONE",
+      "visualCommunicationGoal": "Distinguish the two operational responses to the sol's ~40 minute drift: progressively shifting crew schedules versus fixing activities to the sol and adjusting schedules."
+    },
+    {
+      "claimId": "s1__c7",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.9,
+      "stateAfter": "lighting follows sol cycle and helps circadian entrainment",
+      "stateBefore": "lighting/color not aligned to sol",
+      "planningMode": "HYBRID",
+      "narrationText": "On Base Alpha the lighting and the daily routines follow the sol: lights come up bright and blue at the start of the crew day and then slowly shift to warmer tones before sleep, which helps the body stay entrained to a 24.6597‑hour rhythm rather than slowly drifting out of phase.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "Base Alpha lighting follows the sol and the blue→warm shift helps entrain crew circadian rhythms to a 24.6597‑hour day"
+      ],
+      "primarySubject": "Base Alpha lighting",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "lighting schedule",
+        "circadian entrainment"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "lights come up bright blue then warm before sleep -> this helps the body stay entrained to a 24.6597‑hour rhythm"
+      ],
+      "entitiesMentioned": [
+        "Base Alpha",
+        "lighting",
+        "crew",
+        "24.6597‑hour rhythm"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "TIMELINE_BAR",
+        "CALLOUT",
+        "NUMBER"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "Base Alpha interior lighting system",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "lighting color shift (bright blue to warm)",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "crew's circadian rhythm/body",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [
+        "24.6597 hours (sol rhythm)"
+      ],
+      "narrationSegmentIds": [
+        "s2"
+      ],
+      "requiredVisualFacts": [
+        "lighting is bright blue at the start of the crew day and gradually shifts to warmer tones toward sleep",
+        "this lighting schedule is presented as following the sol and helping entrain the body to a 24.6597‑hour rhythm"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "ENVIRONMENT_ESTABLISHING",
+        "PROCESS",
+        "CAUSE_EFFECT"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "24.6597 h"
+      },
+      "continuityRequirement": "NONE",
+      "visualCommunicationGoal": "Show that Base Alpha's lighting follows the sol with a blue→warm day cycle, and that this pattern serves to entrain crew circadian rhythms to the sol length."
+    },
+    {
+      "claimId": "s1__c8",
+      "emphasis": "HIGH",
+      "claimType": "HYPOTHETICAL",
+      "confidence": 0.85,
+      "stateAfter": "crew has verified and possibly escalated an issue to local intervention",
+      "stateBefore": "icons are auto‑updated by sensors/monitors",
+      "planningMode": "HYBRID",
+      "narrationText": "That tablet checklist is where automation and human judgment meet. Sensors and monitors continuously update the green/amber/red icons, but the crew still verifies them—reading the brief exception note, opening a recent sensor trace if something looks off, and deciding whether a local intervention is warranted.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "sensors/monitors update icons automatically, but humans verify and may open sensor traces and decide on interventions"
+      ],
+      "primarySubject": "tablet checklist",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "automation + human oversight",
+        "verification workflow"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "tablet checklist",
+        "sensors",
+        "monitors",
+        "crew",
+        "exception note",
+        "sensor trace"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "ANNOTATED_IMAGE",
+        "CALLOUT",
+        "ARROW"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "tablet checklist UI",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "sensors",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "monitors",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "green/amber/red icons",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "exception note / sensor trace",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "crew",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s3"
+      ],
+      "requiredVisualFacts": [
+        "icons update continuously (visually implying automation)",
+        "crew members actively verify icons and read a brief exception note",
+        "the crew opens a recent sensor trace when something looks off",
+        "the crew appears to decide about local interventions"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_INTERACTION",
+        "ANNOTATED_DIAGRAM",
+        "PROCESS"
+      ],
+      "textOverlayCandidate": {
+        "importance": "LOW",
+        "recommended": false,
+        "semanticText": ""
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Communicate that automation (sensors/monitors) and human judgment collaborate via the tablet: automatic icon updates prompt human verification and possible intervention."
+    },
+    {
+      "claimId": "s1__c9",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.9,
+      "stateAfter": "forecasts are used to gate or defer activities",
+      "stateBefore": "forecasts not considered",
+      "planningMode": "HYBRID",
+      "narrationText": "Dust and radiation forecasts appear next to the icons because those predictions gate what the crew can do: an amber dust forecast may defer an EVA or reschedule greenhouse lighting.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "forecasts (dust/radiation) appear beside icons and they gate activities such as EVAs and greenhouse lighting"
+      ],
+      "primarySubject": "forecasts (dust and radiation)",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "forecast gating",
+        "operational constraints"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "an amber dust forecast -> may defer an EVA or reschedule greenhouse lighting"
+      ],
+      "entitiesMentioned": [
+        "dust forecast",
+        "radiation forecast",
+        "icons",
+        "EVA",
+        "greenhouse"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "ARROW",
+        "CALLOUT",
+        "LABEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "dust forecast",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "radiation forecast",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "icons/forecast UI next to icons",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "EVA (extravehicular activity)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "greenhouse lighting schedule",
+          "criticality": "LOW"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s3"
+      ],
+      "requiredVisualFacts": [
+        "dust and radiation forecasts are visibly placed next to system icons on the tablet",
+        "an amber dust forecast is shown as a condition that could defer an EVA or prompt rescheduling of greenhouse lighting"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CAUSE_EFFECT",
+        "ANNOTATED_DIAGRAM",
+        "CHARACTER_ACTION"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "Forecasts gate actions"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Make explicit that dust/radiation forecasts shown beside the icons directly influence operational decisions, e.g., deferring EVAs or altering greenhouse lighting."
+    },
+    {
+      "claimId": "s1__c10",
+      "emphasis": "HIGH",
+      "claimType": "SEQUENCE",
+      "confidence": 0.88,
+      "stateAfter": "tasks for the sol are determined or deferred",
+      "stateBefore": "",
+      "planningMode": "EXPLAINER",
+      "narrationText": "In short: wake, check, decide—those three actions determine what gets done this sol and what must wait.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "the sequence wake, check, decide determines what is done this sol and what is postponed"
+      ],
+      "primarySubject": "morning workflow",
+      "temporalClaims": [
+        "wake → check → decide (ordered sequence for setting priorities)"
+      ],
+      "primaryConcepts": [
+        "workflow summary",
+        "prioritization sequence"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "wake",
+        "check",
+        "decide",
+        "sol"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "FLOW",
+        "ARROW",
+        "BEFORE_AFTER_PANEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "wake/check/decide sequence (process)",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "sol tasks (implied)",
+          "criticality": "LOW"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s3"
+      ],
+      "requiredVisualFacts": [
+        "a clear three‑step sequence is presented: wake → check → decide",
+        "that sequence visibly leads to some tasks being scheduled for the sol and others deferred"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "PROCESS",
+        "BEFORE_AFTER",
+        "NUMBER_EMPHASIS"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "Wake → Check → Decide"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Visually summarize the morning routine as a three‑step sequence whose outcome sets the sol's priorities."
+    },
+    {
+      "claimId": "s4__c1",
+      "emphasis": "MEDIUM",
+      "claimType": "FACT",
+      "confidence": 0.94,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "STORY",
+      "narrationText": "A sol’s life‑support work reads like a choreography of small mechanical cues: a valve clicks, a blower ramps, a scrubber cycles through sorbent beds.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "life‑support operations are signaled by discrete mechanical cues (valve clicks, blower ramps, scrubber cycles)"
+      ],
+      "primarySubject": "life-support system",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "life-support operations",
+        "mechanical cues"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "valve",
+        "blower",
+        "scrubber",
+        "sorbent beds"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "CALLOUT",
+        "ANNOTATED_IMAGE"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "valve",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "blower",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "scrubber",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "sorbent bed / cartridge",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s4"
+      ],
+      "requiredVisualFacts": [
+        "small mechanical events occur (e.g., valve movement, blower speed change, scrubber cycling)"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "ENVIRONMENT_DETAIL",
+        "OBJECT_HERO",
+        "CUTAWAY"
+      ],
+      "textOverlayCandidate": {
+        "importance": "LOW",
+        "recommended": true,
+        "semanticText": "Mechanical cues"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Convey that daily life‑support maintenance is driven by small, observable mechanical events (valve clicks, blower ramps, scrubber cycles)."
+    },
+    {
+      "claimId": "s4__c2",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.9,
+      "stateAfter": "control loops rerouted to compensate for drift",
+      "stateBefore": "control loops in their nominal configuration",
+      "planningMode": "EXPLAINER",
+      "narrationText": "Automated diagnostics run continuous health checks and reroute control loops to compensate for drift,",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "automated diagnostics continuously run and reroute control loops to compensate for drift"
+      ],
+      "primarySubject": "automated diagnostics",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "automated diagnostics",
+        "control loop reroute",
+        "compensate for drift"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "continuous diagnostics -> reroute control loops to compensate for drift"
+      ],
+      "entitiesMentioned": [
+        "diagnostics",
+        "control loops",
+        "drift"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "FLOW",
+        "ARROW",
+        "ANNOTATED_IMAGE"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "automated diagnostics / control system",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "control loop (valves/actuators)",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s4"
+      ],
+      "requiredVisualFacts": [
+        "automation actively running diagnostics and showing control-loop reroute (e.g., indicator or schematic showing a reroute)"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "DIAGRAM",
+        "ANNOTATED_DIAGRAM",
+        "CAUSE_EFFECT"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "Auto diagnostics"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that the automation continually monitors system health and actively adjusts control routing to counteract performance drift."
+    },
+    {
+      "claimId": "s4__c3",
+      "emphasis": "HIGH",
+      "claimType": "SEQUENCE",
+      "confidence": 0.95,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "STORY",
+      "narrationText": "but each morning a crew member walks the modules and performs hands‑on checks—reading filter pressure trends, feeling ducts for unexpected heat or vibration, and spot‑checking humidity at reference points.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "crew members perform morning hands‑on inspections including reading pressures, feeling ducts, and spot‑checking humidity"
+      ],
+      "primarySubject": "crew member",
+      "temporalClaims": [
+        "these hands‑on checks occur each morning"
+      ],
+      "primaryConcepts": [
+        "morning inspection",
+        "hands-on checks",
+        "filter pressure",
+        "duct heat/vibration",
+        "humidity spot-check"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "crew member",
+        "modules",
+        "filter pressure",
+        "ducts",
+        "humidity"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "CALLOUT",
+        "LABEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "crew member (technician)",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "module interior",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "filter housings / pressure gauges",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "ducts",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "humidity reference points / hygrometer",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s4"
+      ],
+      "requiredVisualFacts": [
+        "a crew member physically inspecting modules and performing tactile checks (touching ducts), reading filter pressure trends, and spot‑checking humidity"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "ENVIRONMENT_DETAIL",
+        "OBJECT_DETAIL"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "Morning check"
+      },
+      "continuityRequirement": "HIGH",
+      "visualCommunicationGoal": "Communicate that despite automation, a human morning walk-through physically verifies system health by reading gauges and feeling for abnormal heat/vibration."
+    },
+    {
+      "claimId": "s4__c4",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.92,
+      "stateAfter": "maintenance is advanced, swap scheduled, spare‑part request submitted, timeline adjusted",
+      "stateBefore": "systems operating under planned schedule",
+      "planningMode": "HYBRID",
+      "narrationText": "If an abnormal pressure rise appears they isolate the affected element, prepare the cartridge for replacement, and schedule a swap—one finding can cascade, pushing that maintenance ahead of planned EVAs or lab work and generating a spare‑part request before the sol’s timeline is finalized.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "an abnormal pressure rise triggers isolation, cartridge prep, scheduling a swap, and can cascade into rescheduling EVAs or generating spare‑part requests before the sol timeline is final"
+      ],
+      "primarySubject": "maintenance process",
+      "temporalClaims": [
+        "spare‑part request may be generated before the sol’s timeline is finalized"
+      ],
+      "primaryConcepts": [
+        "abnormal pressure",
+        "isolate element",
+        "cartridge replacement",
+        "maintenance cascade",
+        "schedule impact",
+        "spare-part request"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "abnormal pressure rise -> isolate element and prepare cartridge -> schedule swap",
+        "one finding -> cascade that can push maintenance ahead of planned EVAs/lab work and generate spare‑part request"
+      ],
+      "entitiesMentioned": [
+        "cartridge",
+        "EVA",
+        "lab work",
+        "spare‑part request",
+        "sol’s timeline"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "FLOW",
+        "ARROW",
+        "TIMELINE_BAR",
+        "NUMBER"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "affected element / filter cartridge",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "crew/planner scheduling",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "EVA schedule / lab work",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "spare-parts inventory / request",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s4"
+      ],
+      "requiredVisualFacts": [
+        "an affected element being isolated and a cartridge prepared for replacement; evidence that the finding leads to rescheduling or a spare‑part request"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CAUSE_EFFECT",
+        "BEFORE_AFTER",
+        "PROCESS"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "Cascading maintenance"
+      },
+      "continuityRequirement": "MEDIUM",
+      "visualCommunicationGoal": "Make clear that a single abnormal reading leads to an operational cascade: isolation, part prep, schedule changes, and procurement actions."
+    },
+    {
+      "claimId": "s4__c5",
+      "emphasis": "HIGH",
+      "claimType": "CONTRAST",
+      "confidence": 0.92,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "HYBRID",
+      "narrationText": "Automation catches many routine deviations, but crews still run scheduled diagnostics and deal with surprises.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "automation handles many routine deviations, but crews still perform scheduled diagnostics and respond to surprises"
+      ],
+      "primarySubject": "automation vs crew",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "automation",
+        "human crew diagnostics",
+        "surprises"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [
+        "automation handles many routine deviations vs crews running scheduled diagnostics and dealing with surprises"
+      ],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "automation",
+        "crews",
+        "scheduled diagnostics"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "COMPARE_PANEL",
+        "CHECK",
+        "X_MARK"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "automation",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "crew",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s5"
+      ],
+      "requiredVisualFacts": [
+        "automation indicators resolving routine deviations while crew members are shown still performing scheduled diagnostics or interrupt-driven tasks"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "COMPARISON",
+        "CHARACTER_ACTION",
+        "DIAGRAM"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "Automation vs Crew"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Highlight that automation reduces routine workload but humans remain essential for scheduled checks and unexpected events."
+    },
+    {
+      "claimId": "s4__c6",
+      "emphasis": "HIGH",
+      "claimType": "SEQUENCE",
+      "confidence": 0.95,
+      "stateAfter": "technician has diagnostic data and inventory status",
+      "stateBefore": "exception posted to log",
+      "planningMode": "STORY",
+      "narrationText": "A typical workflow looks like this: the automated log posts an exception; a technician pulls the relevant sensor trace, runs a handheld analyzer, then cross‑checks the onboard spare‑parts inventory.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "the technician follows a sequence: log exception -> pull sensor trace -> run handheld analyzer -> check spare inventory"
+      ],
+      "primarySubject": "technician workflow",
+      "temporalClaims": [
+        "these steps occur in sequence as the typical workflow"
+      ],
+      "primaryConcepts": [
+        "exception log",
+        "technician workflow",
+        "sensor trace",
+        "handheld analyzer",
+        "spare‑parts inventory"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "automated log",
+        "technician",
+        "sensor trace",
+        "handheld analyzer",
+        "spare‑parts inventory"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "FLOW",
+        "ARROW",
+        "ANNOTATED_IMAGE"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "automated log / console",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "technician",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "sensor trace / display",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "handheld analyzer",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "onboard spare‑parts inventory (computer/tablet)",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s5"
+      ],
+      "requiredVisualFacts": [
+        "the exception posted in an automated log, a technician retrieving a sensor trace, using a handheld analyzer, and checking spare‑parts inventory"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "PROCESS",
+        "CHARACTER_ACTION",
+        "CUTAWAY"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "Typical workflow"
+      },
+      "continuityRequirement": "MEDIUM",
+      "visualCommunicationGoal": "Depict the standard diagnostic workflow a technician follows after an automated exception is posted."
+    },
+    {
+      "claimId": "s4__c7",
+      "emphasis": "MEDIUM",
+      "claimType": "SEQUENCE",
+      "confidence": 0.93,
+      "stateAfter": "job assigned with priority and target window recorded",
+      "stateBefore": "part identified as needed",
+      "planningMode": "STORY",
+      "narrationText": "If a part is needed they assign the job to the maintenance officer, who records a priority and a target window for repair.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "when a part is needed the job is assigned to the maintenance officer who records a priority and target repair window"
+      ],
+      "primarySubject": "work assignment",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "part needed",
+        "assign job",
+        "maintenance officer",
+        "priority and target window"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "maintenance officer",
+        "priority",
+        "target window"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "LABEL",
+        "NUMBER"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "maintenance officer",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "work order / assignment record",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "priority marker / schedule window",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s5"
+      ],
+      "requiredVisualFacts": [
+        "a part need triggers assignment to maintenance officer and a recorded priority and repair target window"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_INTERACTION",
+        "PROCESS",
+        "OBJECT_DETAIL"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "Priority set"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show the administrative step: parts needs become assigned maintenance work with explicit priority and timing."
+    },
+    {
+      "claimId": "s4__c8",
+      "emphasis": "HIGH",
+      "claimType": "FACT",
+      "confidence": 0.94,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "HYBRID",
+      "narrationText": "On Base Alpha the morning inspection therefore typically includes a quick hands‑on glance at accessible scrubbers and filter housings—visual confirmation complements the automated green/amber markers—and any unresolved anomaly is handed off in the shift log so it won’t be forgotten overnight.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "morning inspection on Base Alpha includes quick hands‑on confirmation of scrubbers and filters, complements green/amber automation markers, and hands off unresolved anomalies in the shift log"
+      ],
+      "primarySubject": "morning inspection on Base Alpha",
+      "temporalClaims": [
+        "the handoff to the shift log happens so anomalies won't be forgotten overnight"
+      ],
+      "primaryConcepts": [
+        "Base Alpha morning inspection",
+        "hands-on glance",
+        "visual confirmation vs automated markers",
+        "shift log handoff"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "Base Alpha",
+        "scrubbers",
+        "filter housings",
+        "green/amber markers",
+        "shift log"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "CHECK",
+        "CALLOUT",
+        "LABEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "Base Alpha (module/location)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "technician/inspector",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "accessible scrubbers and filter housings",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "automation status markers (green/amber)",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "shift log (digital/physical)",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s5"
+      ],
+      "requiredVisualFacts": [
+        "hands‑on glance at scrubbers and filter housings; presence of automated green/amber status markers; unresolved anomaly recorded in a shift log"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "ENVIRONMENT_DETAIL",
+        "PROCESS"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "Shift handoff"
+      },
+      "continuityRequirement": "HIGH",
+      "visualCommunicationGoal": "Convey that on Base Alpha the morning routine pairs quick tactile/visual checks with automated status lights and a formal log handoff for unresolved issues."
+    },
+    {
+      "claimId": "s6__c1",
+      "emphasis": "MEDIUM",
+      "claimType": "FACT",
+      "confidence": 0.95,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "STORY",
+      "narrationText": "In the greenhouse a faint hiss marks air movement through a growth rack and young lettuce unfurls beneath LEDs.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "air is moving through the growth rack (faint hiss)",
+        "lettuce is growing/unfurling beneath LEDs"
+      ],
+      "primarySubject": "greenhouse",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "greenhouse environment",
+        "air movement",
+        "growth rack",
+        "young lettuce",
+        "LED lighting"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "greenhouse",
+        "growth rack",
+        "lettuce",
+        "LEDs"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [],
+      "entityRequirements": [
+        {
+          "entity": "greenhouse interior",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "growth rack",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "young lettuce",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "LED lights",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s6"
+      ],
+      "requiredVisualFacts": [
+        "visible airflow (e.g., slight movement, vent or fan indication)",
+        "growth rack present",
+        "young lettuce leaves under LED lighting"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "ENVIRONMENT_ESTABLISHING",
+        "ENVIRONMENT_DETAIL",
+        "CHARACTER_ACTION"
+      ],
+      "textOverlayCandidate": {
+        "importance": "LOW",
+        "recommended": false,
+        "semanticText": ""
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that the greenhouse contains active growth racks with ventilation and young lettuce illuminated by LEDs."
+    },
+    {
+      "claimId": "s6__c2",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.9,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "EXPLAINER",
+      "narrationText": "Sensors track CO2, humidity, nutrient conductivity/pH and light intensity; control software nudges ventilation or nutrient dosing for small deviations,",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "sensors track CO2, humidity, nutrient conductivity/pH and light intensity",
+        "control software nudges ventilation or nutrient dosing for small deviations"
+      ],
+      "primarySubject": "sensors and control software",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "sensors",
+        "environmental variables",
+        "control software",
+        "automated adjustments"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "sensors detect small deviations -> control software nudges ventilation or nutrient dosing"
+      ],
+      "entitiesMentioned": [
+        "Sensors",
+        "control software",
+        "ventilation",
+        "nutrient dosing"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "ARROW",
+        "CALLOUT",
+        "LABEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "environmental sensors (CO2, humidity, EC/pH, light)",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "control software/interface",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "ventilation or dosing hardware (fans, nutrient lines)",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s6"
+      ],
+      "requiredVisualFacts": [
+        "sensors visibly labeled or indicated measuring CO2, humidity, nutrient conductivity/pH and light",
+        "some automatic control action being initiated (e.g., vent adjusting or nutrient dosing indicated)"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "PROCESS",
+        "ANNOTATED_DIAGRAM",
+        "CUTAWAY"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "AUTO CORRECTIONS"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Convey that sensors monitor environmental variables and the control software automatically makes small corrective actions."
+    },
+    {
+      "claimId": "s6__c3",
+      "emphasis": "HIGH",
+      "claimType": "FACT",
+      "confidence": 0.95,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "STORY",
+      "narrationText": "but people still perform the hands‑on tasks—seeding trays, pruning crowded plants, harvesting leaves and visually scanning for mold.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "people still perform hands-on tasks such as seeding, pruning, harvesting and visual mold scanning"
+      ],
+      "primarySubject": "crew/human workers",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "human labor",
+        "hands-on tasks",
+        "plant maintenance"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "people",
+        "seeding trays",
+        "crowded plants",
+        "harvesting leaves",
+        "mold"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [],
+      "entityRequirements": [
+        {
+          "entity": "crew member(s) performing hands-on tasks",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "seeding trays",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "crowded plants (needing pruning)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "harvested leaves",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "mold visually scanned for",
+          "criticality": "LOW"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s6"
+      ],
+      "requiredVisualFacts": [
+        "people actively seeding trays, pruning plants, harvesting leaves, or visually inspecting plants for mold"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "CHARACTER_INTERACTION",
+        "ENVIRONMENT_DETAIL"
+      ],
+      "textOverlayCandidate": {
+        "importance": "LOW",
+        "recommended": false,
+        "semanticText": ""
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that despite automation, humans are required for routine hands-on plant care tasks."
+    },
+    {
+      "claimId": "s6__c4",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.92,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "HYBRID",
+      "narrationText": "When the morning checklist flags a greenhouse exception, it routes that alert to the agricultural specialist—because fresh greens are both morale and physiology, those human inspections and manual fixes keep the plant system functioning as part lab, part kitchen and part life‑support buffer.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "morning checklist flags greenhouse exceptions and routes alerts to the agricultural specialist",
+        "human inspections and manual fixes keep the plant system functioning"
+      ],
+      "primarySubject": "alert routing and human inspections",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "alerts routing",
+        "agricultural specialist",
+        "importance of fresh greens",
+        "human inspections maintaining system function"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "morning checklist flags exception -> alert routed to agricultural specialist",
+        "human inspections and manual fixes -> plant system remains functioning as part lab/kitchen/life-support buffer"
+      ],
+      "entitiesMentioned": [
+        "morning checklist",
+        "agricultural specialist",
+        "fresh greens",
+        "plant system"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "CALLOUT",
+        "LABEL",
+        "ICON"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "morning checklist/alert (UI or paper)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "agricultural specialist",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "human worker performing manual fixes",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "greenhouse plant system (lab/kitchen/life-support metaphorically)",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s6"
+      ],
+      "requiredVisualFacts": [
+        "an alert originating from the greenhouse checklist being routed or shown addressed to an agricultural specialist",
+        "a specialist or crew member performing an inspection or manual fix"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "CUTAWAY",
+        "SYMBOLIC_POSITIVE"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "GREENHOUSE ALERT"
+      },
+      "continuityRequirement": "MEDIUM",
+      "visualCommunicationGoal": "Communicate that checklist alerts go to a specialist and that human inspections/manual fixes are essential to keeping greenhouse-grown fresh greens available and the system functioning."
+    },
+    {
+      "claimId": "s6__c5",
+      "emphasis": "MEDIUM",
+      "claimType": "COMPARISON",
+      "confidence": 0.96,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "EXPLAINER",
+      "narrationText": "Not all plant hardware is equal.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "plant hardware differs in capability, cost-profile and operational needs"
+      ],
+      "primarySubject": "plant hardware",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "difference between plant hardware classes"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [
+        "small, low-power racks vs large, multi-layer CEA modules"
+      ],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "plant hardware"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "COMPARE_PANEL",
+        "LABEL",
+        "ICON"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "plant hardware",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s7"
+      ],
+      "requiredVisualFacts": [
+        "a clear juxtaposition of at least two types of plant hardware to show they differ"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "COMPARISON",
+        "BEFORE_AFTER",
+        "SYMBOLIC_POSITIVE"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "HARDWARE TRADEOFFS"
+      },
+      "continuityRequirement": "NONE",
+      "visualCommunicationGoal": "Convey that there are distinct classes of plant hardware with different tradeoffs."
+    },
+    {
+      "claimId": "s6__c8",
+      "emphasis": "HIGH",
+      "claimType": "SEQUENCE",
+      "confidence": 0.93,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "EXPLAINER",
+      "narrationText": "On Base Alpha the schedule balances both: the little racks usually operate continuously to supply part of the daily fresh food, while the power‑hungry vertical systems are brought online only when power forecasts and ISRU margins allow.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "little racks operate continuously to supply part of daily fresh food",
+        "vertical systems are brought online only when power forecasts and ISRU margins allow"
+      ],
+      "primarySubject": "Base Alpha schedule",
+      "temporalClaims": [
+        "small racks operate continuously; vertical systems are conditional"
+      ],
+      "primaryConcepts": [
+        "scheduling",
+        "Base Alpha operations",
+        "continuous small racks",
+        "conditional vertical systems"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "sufficient power forecasts/ISRU margins -> vertical systems brought online"
+      ],
+      "entitiesMentioned": [
+        "Base Alpha",
+        "little racks",
+        "vertical systems",
+        "power forecasts",
+        "ISRU margins"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "TIMELINE_BAR",
+        "MAP_MARKER",
+        "LABEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "Base Alpha (facility)",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "small racks (operating continuously)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "vertical systems (power-hungry)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "power forecasts / ISRU margins",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s7"
+      ],
+      "requiredVisualFacts": [
+        "visual distinction between small racks running continuously and vertical systems shown offline or inactive unless conditions are met",
+        "some representation of power forecasts/ISRU margins gating the vertical systems"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "TIMELINE",
+        "MAP",
+        "CAUSE_EFFECT"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "POWER-GATED"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Explain that Base Alpha runs small racks continuously while powering larger vertical systems only when energy conditions permit."
+    },
+    {
+      "claimId": "s6__c9",
+      "emphasis": "HIGH",
+      "claimType": "COMPARISON",
+      "confidence": 0.96,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "EXPLAINER",
+      "narrationText": "That tradeoff shapes crew time: small racks cost more hands‑on labor per gram; large racks cost more energy but less per‑unit labor.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "small racks require more hands-on labor per gram produced",
+        "large racks consume more energy but require less labor per unit"
+      ],
+      "primarySubject": "tradeoff between rack types",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "tradeoff",
+        "labor per gram",
+        "energy cost",
+        "per-unit labor"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [
+        "small racks: higher labor-per-gram vs large racks: higher energy but lower labor-per-unit"
+      ],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "crew time",
+        "small racks",
+        "large racks"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "COMPARE_PANEL",
+        "SIMPLE_CHART",
+        "NUMBER"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "small racks",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "large racks/vertical systems",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "crew time",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s7"
+      ],
+      "requiredVisualFacts": [
+        "visual comparison showing small racks with higher hands-on labor per gram and large racks with higher energy cost but lower labor per unit"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "COMPARISON",
+        "CHART",
+        "NUMBER_EMPHASIS"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "LABOR vs ENERGY"
+      },
+      "continuityRequirement": "NONE",
+      "visualCommunicationGoal": "Make the audience understand the operational tradeoff: small racks increase labor intensity per mass, large racks increase energy intensity but reduce per-unit labor."
+    },
+    {
+      "claimId": "s8__c1",
+      "emphasis": "HIGH",
+      "claimType": "SEQUENCE",
+      "confidence": 0.9,
+      "stateAfter": "an allowed dose and corresponding maximum allowed EVA time exist",
+      "stateBefore": "no allowed-time computed for this EVA",
+      "planningMode": "HYBRID",
+      "narrationText": "Before any EVA the operations officer calculates an allowed dose for the suit based on the current environment and the mission's exposure policy, then converts that into a maximum allowed time for the planned walk.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "the operations officer computes an allowed dose then converts it to a maximum allowed EVA time"
+      ],
+      "primarySubject": "operations officer",
+      "temporalClaims": [
+        "calculation happens before an EVA; conversion to allowed-time follows"
+      ],
+      "primaryConcepts": [
+        "EVA planning",
+        "allowed dose",
+        "allowed time"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "operations officer",
+        "suit",
+        "environment",
+        "mission's exposure policy"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "ARROW",
+        "CALLOUT",
+        "LABEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "operations officer",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "suit",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "current environment (radiation)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "mission exposure policy (document/policy)",
+          "criticality": "LOW"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s8"
+      ],
+      "requiredVisualFacts": [
+        "a calculation or conversion from dose to time is being made or represented"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "PROCESS",
+        "ANNOTATED_DIAGRAM"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "Dose -> Time"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that before any EVA an officer computes a radiation-based allowed dose and converts it into a maximum allowed walk time."
+    },
+    {
+      "claimId": "s8__c2",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.92,
+      "stateAfter": "tasks batched into fewer longer EVAs to save time and radiation budget",
+      "stateBefore": "tasks could be scheduled as many short trips",
+      "planningMode": "STORY",
+      "narrationText": "Planners batch surface tasks to make the most of each outing—one long paired EVA is often better than several short trips—because every airlock cycle costs time and every minute outside consumes radiation budget.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "batching tasks into fewer longer EVAs reduces total airlock cycles and conserves radiation budget"
+      ],
+      "primarySubject": "planners",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "task batching",
+        "airlock cycle cost",
+        "radiation budget consumption"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [
+        "one long paired EVA versus several short trips"
+      ],
+      "causeEffectClaims": [
+        "more airlock cycles cause higher time cost and more outside minutes cause greater radiation consumption"
+      ],
+      "entitiesMentioned": [
+        "planners",
+        "paired EVA",
+        "short trips",
+        "airlock cycle"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "COMPARE_PANEL",
+        "ARROW",
+        "LABEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "planners",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "paired EVA",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "airlock",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "radiation budget",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s8"
+      ],
+      "requiredVisualFacts": [
+        "airlock cycles consume mission time",
+        "time spent outside consumes radiation allowance"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "COMPARISON",
+        "CHARACTER_INTERACTION",
+        "BEFORE_AFTER"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "Batch Tasks"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Communicate that planners group surface tasks so fewer EVAs reduce airlock time and radiation use, making longer paired EVAs preferable."
+    },
+    {
+      "claimId": "s8__c4",
+      "emphasis": "HIGH",
+      "claimType": "QUANTITY",
+      "confidence": 0.9,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "EXPLAINER",
+      "narrationText": "Dose rates on Mars vary with solar conditions and location; a reasonable open‑surface baseline is roughly a few hundred microsieverts per sol, with hourly rates on the order of a few hundredths of a millisievert.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "a reasonable open-surface baseline is a few hundred microsieverts per sol; hourly rates are a few hundredths of a millisievert"
+      ],
+      "primarySubject": "dose rates on Mars",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "dose rates",
+        "baseline values",
+        "spatial and solar variability"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "Mars",
+        "dose rates",
+        "solar conditions",
+        "location"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "NUMBER",
+        "SIMPLE_CHART",
+        "LABEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "Mars surface dose rates",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "solar conditions",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "location/site",
+          "criticality": "LOW"
+        }
+      ],
+      "quantitativeClaims": [
+        "a few hundred microsieverts per sol",
+        "hourly rates on the order of a few hundredths of a millisievert"
+      ],
+      "narrationSegmentIds": [
+        "s9"
+      ],
+      "requiredVisualFacts": [
+        "numeric baseline: a few hundred microsieverts per sol and hourly ~ few hundredths of a millisievert"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "NUMBER_EMPHASIS",
+        "SYMBOLIC_POSITIVE",
+        "CHART"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "≈100s μSv/sol"
+      },
+      "continuityRequirement": "NONE",
+      "visualCommunicationGoal": "Present representative numeric baseline radiation rates on Mars and note they depend on location and solar conditions."
+    },
+    {
+      "claimId": "s8__c5",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.92,
+      "stateAfter": "potentially much higher radiation during SEP spikes",
+      "stateBefore": "baseline representative radiation levels",
+      "planningMode": "EXPLAINER",
+      "narrationText": "These are representative figures—the actual values depend on site and solar cycle—and solar particle events can spike exposures dramatically.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "actual dose values depend on site and solar cycle; SEPs can dramatically increase exposure"
+      ],
+      "primarySubject": "dose variability",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "variability",
+        "solar particle events (SEP) spikes"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "solar particle events cause dramatic spikes in exposures"
+      ],
+      "entitiesMentioned": [
+        "solar particle events",
+        "site",
+        "solar cycle"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "TIMELINE_BAR",
+        "SIMPLE_CHART",
+        "ARROW"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "site",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "solar cycle",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "solar particle events (SEP)",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s9"
+      ],
+      "requiredVisualFacts": [
+        "SEPs can cause dramatic spikes in radiation exposure"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CAUSE_EFFECT",
+        "CHART",
+        "SYMBOLIC_POSITIVE"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "SEP Spike"
+      },
+      "continuityRequirement": "NONE",
+      "visualCommunicationGoal": "Make clear that while baseline figures exist, SEP events can sharply raise radiation exposure depending on site and cycle."
+    },
+    {
+      "claimId": "s8__c6",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.93,
+      "stateAfter": "EVA planning that always includes SEP forecasts and mandatory shelter/storm procedures",
+      "stateBefore": "EVA planning without SEP or shelter considerations",
+      "planningMode": "STORY",
+      "narrationText": "That variability is why EVA planning always folds in SEP forecasts and why shelters and storm procedures are a hard requirement for surface operations.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "EVA planning incorporates SEP forecasts and requires shelters and storm procedures"
+      ],
+      "primarySubject": "EVA planning",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "SEP forecasts",
+        "shelters and storm procedures",
+        "EVA planning requirement"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "radiation variability causes EVA planning to include SEP forecasts and mandate shelters/storm procedures"
+      ],
+      "entitiesMentioned": [
+        "SEP forecasts",
+        "shelters",
+        "storm procedures",
+        "surface operations"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "MAP_MARKER",
+        "ARROW",
+        "LABEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "EVA planning process",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "SEP forecasts",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "shelters",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "storm procedures",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s9"
+      ],
+      "requiredVisualFacts": [
+        "EVA plans incorporate SEP forecasts and include shelters/storm procedures as mandatory precautions"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "PROCESS",
+        "DIAGRAM"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "Shelter Required"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that because radiation varies, EVA plans must use SEP forecasts and mandate shelters and storm procedures for surface safety."
+    },
+    {
+      "claimId": "s10__c1",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.9,
+      "stateAfter": "reduced solar insolation across the next few sols (forecasted)",
+      "stateBefore": "normal or expected solar insolation",
+      "planningMode": "EXPLAINER",
+      "narrationText": "Mid‑morning the uplink brings an updated dust forecast: regional dust mobilization could cut solar insolation over the next few sols.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "The uplink reports dust mobilization that could reduce solar insolation over the next few sols."
+      ],
+      "primarySubject": "dust forecast",
+      "temporalClaims": [
+        "this reduction in insolation is expected to occur \"over the next few sols\""
+      ],
+      "primaryConcepts": [
+        "dust forecast",
+        "solar insolation",
+        "time (sols)"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "regional dust mobilization -> cut solar insolation over the next few sols"
+      ],
+      "entitiesMentioned": [
+        "uplink",
+        "regional dust",
+        "solar insolation",
+        "sols"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "BIG_TEXT",
+        "TIMELINE_BAR",
+        "MAP_MARKER",
+        "CALLOUT"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "uplink/data uplink",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "regional dust",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "solar insolation / sunlight on arrays",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s10"
+      ],
+      "requiredVisualFacts": [
+        "an updated dust forecast or alert is being received",
+        "reduced incoming sunlight is plausible/indicated over multiple sols"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "ANNOTATED_DIAGRAM",
+        "TIMELINE",
+        "ENVIRONMENT_ESTABLISHING"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "DUST FORECAST"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that an uplinked dust forecast predicts reduced sunlight (solar insolation) for multiple upcoming sols."
+    },
+    {
+      "claimId": "s10__c5",
+      "emphasis": "HIGH",
+      "claimType": "FACT",
+      "confidence": 0.95,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "EXPLAINER",
+      "narrationText": "Priorities on Base Alpha are explicit: human life and habitat systems come first, followed by communications and essential science, then greenhouse support and ISRU, and last the discretionary work.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "Base Alpha's priorities are: life and habitat systems first; communications & essential science next; greenhouse support and ISRU after that; discretionary work last."
+      ],
+      "primarySubject": "priorities on Base Alpha",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "priority hierarchy",
+        "Base Alpha"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "Base Alpha",
+        "human life",
+        "habitat systems",
+        "communications",
+        "essential science",
+        "greenhouse support"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "BIG_TEXT",
+        "NUMBER",
+        "COMPARE_PANEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "Base Alpha (the colony)",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "human life and habitat systems",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "communications systems",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "essential science",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "greenhouse support",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "ISRU",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s11"
+      ],
+      "requiredVisualFacts": [
+        "a clear, ordered priority list is shown or communicated indicating: 1) human life & habitat, 2) communications & essential science, 3) greenhouse support & ISRU, 4) discretionary work"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "ANNOTATED_DIAGRAM",
+        "NUMBER_EMPHASIS",
+        "TEXT_EMPHASIS"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "PRIORITY HIERARCHY"
+      },
+      "continuityRequirement": "NONE",
+      "visualCommunicationGoal": "Visually communicate the explicit priority hierarchy used on Base Alpha, from life‑critical systems down to discretionary tasks."
+    },
+    {
+      "claimId": "s10__c6",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.94,
+      "stateAfter": "paused construction/cleaning, dimmed greenhouse lighting, ISRU shifted to safer modes to protect batteries",
+      "stateBefore": "full schedule with construction, cleaning, full greenhouse lighting, full ISRU production",
+      "planningMode": "STORY",
+      "narrationText": "When a dust forecast lowers expected solar the team trims from the bottom up—construction and elective cleaning pause, greenhouse supplemental lighting is dimmed, and ISRU is shifted from full production toward options that won’t risk depleting batteries.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "Lower‑priority activities are paused, greenhouse lighting is dimmed, and ISRU is reduced or shifted to modes that avoid depleting batteries when solar is expected to be lower."
+      ],
+      "primarySubject": "team operational response",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "operational trimming",
+        "construction pause",
+        "greenhouse dimming",
+        "ISRU production reduction",
+        "battery protection"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "lower expected solar -> trimming operations from lowest priority upward (pause construction/cleaning, dim greenhouse lighting, shift ISRU from full production)"
+      ],
+      "entitiesMentioned": [
+        "construction",
+        "elective cleaning",
+        "greenhouse supplemental lighting",
+        "ISRU",
+        "batteries"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "BEFORE_AFTER_PANEL",
+        "ARROW",
+        "X_MARK",
+        "LABEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "team/colony operations (generic)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "construction activities",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "elective cleaning",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "greenhouse supplemental lighting",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "ISRU (production mode)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "batteries",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s11"
+      ],
+      "requiredVisualFacts": [
+        "lower‑priority activities (construction, elective cleaning) are shown paused or tagged as paused",
+        "greenhouse supplemental lighting is reduced/dimmed",
+        "ISRU is shown operating at reduced output or moved to safer modes to avoid battery depletion"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "BEFORE_AFTER",
+        "CAUSE_EFFECT",
+        "CHARACTER_ACTION"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "TRIM FROM BOTTOM"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show the concrete, ordered operational reductions the colony applies when solar is forecast to drop: pause lowest priorities, dim greenhouse lighting, and reduce ISRU to protect batteries."
+    },
+    {
+      "claimId": "s12__c1",
+      "emphasis": "HIGH",
+      "claimType": "FACT",
+      "confidence": 0.95,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "STORY",
+      "narrationText": "A chamber alarm flags rising CO2.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "a chamber alarm is actively flagging rising CO2"
+      ],
+      "primarySubject": "chamber alarm",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "alarm",
+        "CO2",
+        "chamber"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "chamber alarm",
+        "CO2"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "BIG_TEXT",
+        "NUMBER"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "chamber alarm (indicator)",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "chamber (interior or exterior)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "CO2 level indicator/graph",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s12"
+      ],
+      "requiredVisualFacts": [
+        "an alarm visibly indicating rising CO2 (light or audible symbol) or a CO2 readout trending upward"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "ENVIRONMENT_ESTABLISHING",
+        "OBJECT_DETAIL",
+        "CHARACTER_REACTION"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "RISING CO2"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that the chamber's monitoring system has detected and flagged an increase in CO2."
+    },
+    {
+      "claimId": "s12__c2",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.9,
+      "stateAfter": "ventilation increased, scrubbers pulsing, UI shows corrective action",
+      "stateBefore": "CO2 rising flagged by alarm; control loops idle or at previous setpoint",
+      "planningMode": "HYBRID",
+      "narrationText": "First, automated control loops reply—ventilation increases, scrubbers pulse, and the UI posts the corrective action taken.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "automated control loops initiate corrective actions: ventilation increases, scrubbers pulse, and the UI posts the corrective action"
+      ],
+      "primarySubject": "automated control loops",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "automated control loops",
+        "ventilation",
+        "scrubbers",
+        "UI corrective action"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "alarm/CO2 rise -> automated control loops increase ventilation",
+        "alarm/CO2 rise -> automated control loops pulse scrubbers",
+        "automated response -> UI posts corrective action taken"
+      ],
+      "entitiesMentioned": [
+        "automated control loops",
+        "ventilation",
+        "scrubbers",
+        "UI"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "CALLOUT",
+        "LABEL",
+        "ARROW",
+        "ANNOTATED_IMAGE"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "automated control loop/interface",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "ventilation system (visible fan/duct movement)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "CO2 scrubbers",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "UI/dashboard showing corrective action",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s12"
+      ],
+      "requiredVisualFacts": [
+        "ventilation visibly increasing (airflow or fan speed indicator)",
+        "scrubbers visibly pulsing or operating",
+        "UI/dashboard posts a corrective action message or status update"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "ENVIRONMENT_DETAIL",
+        "OBJECT_HERO"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "AUTOMATIC CORRECTION"
+      },
+      "continuityRequirement": "MEDIUM",
+      "visualCommunicationGoal": "Convey that the system automatically responds to rising CO2 by increasing ventilation and activating scrubbers while informing operators via the UI."
+    },
+    {
+      "claimId": "s12__c3",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.9,
+      "stateAfter": "specialist suited up and ready for targeted inspection",
+      "stateBefore": "automated corrective actions have been attempted",
+      "planningMode": "STORY",
+      "narrationText": "If those automatic steps can’t restore the setpoint, the agricultural specialist suits up for a targeted inspection:",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "when automatic steps cannot restore setpoint, the agricultural specialist suits up to inspect"
+      ],
+      "primarySubject": "agricultural specialist",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "automatic steps fail",
+        "agricultural specialist",
+        "suit up",
+        "targeted inspection"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "automatic correction failure -> specialist suits up and prepares for inspection"
+      ],
+      "entitiesMentioned": [
+        "automatic steps",
+        "setpoint",
+        "agricultural specialist"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "LABEL",
+        "BIG_TEXT"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "agricultural specialist",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "protective suit/PPE",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "chamber being inspected",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s12"
+      ],
+      "requiredVisualFacts": [
+        "a specialist putting on or already wearing a protective suit (suiting up) preparing to enter/inspect",
+        "implied context that automated steps failed (e.g., UI still indicating unresolved CO2 setpoint)"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "CHARACTER_REACTION",
+        "ENVIRONMENT_ESTABLISHING"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "SPECIALIST SUIT-UP"
+      },
+      "continuityRequirement": "MEDIUM",
+      "visualCommunicationGoal": "Show that human intervention follows when automation fails: a suited agricultural specialist prepares to inspect the chamber."
+    },
+    {
+      "claimId": "s12__c4",
+      "emphasis": "MEDIUM",
+      "claimType": "SEQUENCE",
+      "confidence": 0.9,
+      "stateAfter": "inspections and samples taken; potential evidence of respiration surge evaluated",
+      "stateBefore": "specialist suited up and entering inspection",
+      "planningMode": "STORY",
+      "narrationText": "they check nutrient reservoirs and pumps, verify seals on air plenums, swab samples for contamination, and look for an unexpected respiration surge from a dense crop block.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "the specialist inspects nutrient reservoirs and pumps, verifies air plenum seals, swabs for contamination, and checks for unexpected respiration surges"
+      ],
+      "primarySubject": "targeted inspection actions",
+      "temporalClaims": [
+        "these inspection actions occur as a targeted inspection following failed automated correction"
+      ],
+      "primaryConcepts": [
+        "inspection checklist",
+        "nutrient reservoirs",
+        "pumps",
+        "air plenum seals",
+        "swab samples",
+        "respiration surge from crop block"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "nutrient reservoirs",
+        "pumps",
+        "air plenums",
+        "swab samples",
+        "dense crop block"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "CALLOUT",
+        "LABEL",
+        "ANNOTATED_IMAGE"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "nutrient reservoirs",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "pumps",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "air plenums/seals",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "swab/sampling equipment",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "dense crop block",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "respiration surge (evidence: condensation, localized CO2 sensor spike, visible plant respiration)",
+          "criticality": "LOW"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s12"
+      ],
+      "requiredVisualFacts": [
+        "specialist actively checking reservoirs and pumps",
+        "specialist inspecting/verifying seals on air plenums",
+        "specialist taking swab samples",
+        "specialist looking at a dense crop block for signs of elevated respiration"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "PROCESS",
+        "CUTAWAY"
+      ],
+      "textOverlayCandidate": {
+        "importance": "LOW",
+        "recommended": false,
+        "semanticText": ""
+      },
+      "continuityRequirement": "HIGH",
+      "visualCommunicationGoal": "Communicate the checklist of manual diagnostic actions the specialist performs to find the cause of elevated CO2."
+    },
+    {
+      "claimId": "s12__c5",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.92,
+      "stateAfter": "chamber isolated, samples bagged, trays moved to quarantine, remediation underway",
+      "stateBefore": "contamination suspected during inspection",
+      "planningMode": "HYBRID",
+      "narrationText": "If contamination is suspected the protocol is immediate: isolate the chamber, bag samples for analysis, and transition trays to quarantine while the control loop and human inspection guide remediation.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "on suspected contamination the protocol is to isolate the chamber, bag samples, and move trays to quarantine while control loop and inspection guide remediation"
+      ],
+      "primarySubject": "contamination protocol",
+      "temporalClaims": [
+        "these steps are immediate when contamination is suspected"
+      ],
+      "primaryConcepts": [
+        "contamination suspected",
+        "isolate chamber",
+        "bag samples",
+        "transition trays to quarantine",
+        "control loop and human inspection guide remediation"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "suspected contamination -> immediate isolation, bagging of samples, and quarantining trays; remediation guided by control loop and human inspection"
+      ],
+      "entitiesMentioned": [
+        "contamination",
+        "chamber",
+        "samples",
+        "trays",
+        "control loop",
+        "human inspection"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "X_MARK",
+        "CHECK",
+        "ARROW",
+        "LABEL",
+        "BEFORE_AFTER_PANEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "chamber to be isolated",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "bagged sample containers",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "trays with plants",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "quarantine area",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "control loop/UI",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "inspection team/human inspector",
+          "criticality": "LOW"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s12"
+      ],
+      "requiredVisualFacts": [
+        "chamber being isolated or sealed off",
+        "samples placed in sealed bags labeled for analysis",
+        "trays being moved or tagged for quarantine",
+        "simultaneous evidence of automated control and human inspection coordinating remediation (e.g., UI instruction + inspector action)"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "BEFORE_AFTER",
+        "CAUSE_EFFECT"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "QUARANTINE"
+      },
+      "continuityRequirement": "HIGH",
+      "visualCommunicationGoal": "Make clear the immediate containment protocol for suspected contamination: isolate, bag samples, and quarantine trays while automation and humans coordinate remediation."
+    },
+    {
+      "claimId": "s13__c1",
+      "emphasis": "MEDIUM",
+      "claimType": "FACT",
+      "confidence": 0.95,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "STORY",
+      "narrationText": "Meanwhile the EVA team is prepping a rover‑mounted drill sortie to collect outcrops for a geology campaign.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "the EVA team is actively preparing a rover‑mounted drill sortie to collect outcrops for a geology campaign"
+      ],
+      "primarySubject": "EVA team",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "EVA preparation",
+        "rover‑mounted drill sortie",
+        "geology campaign",
+        "outcrop collection"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "EVA team",
+        "rover‑mounted drill",
+        "outcrops",
+        "geology campaign"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [],
+      "entityRequirements": [
+        {
+          "entity": "EVA team",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "rover‑mounted drill",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "outcrops",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "geology campaign",
+          "criticality": "NONE"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s13"
+      ],
+      "requiredVisualFacts": [
+        "personnel preparing or inspecting a rover‑mounted drill for a sortie",
+        "equipment staged for collecting rock outcrops"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "ENVIRONMENT_ESTABLISHING",
+        "OBJECT_HERO"
+      ],
+      "textOverlayCandidate": {
+        "importance": "LOW",
+        "recommended": false,
+        "semanticText": ""
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that the EVA team is actively preparing a rover‑mounted drill sortie aimed at collecting outcrops for a geology campaign."
+    },
+    {
+      "claimId": "s13__c2",
+      "emphasis": "HIGH",
+      "claimType": "FACT",
+      "confidence": 0.95,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "STORY",
+      "narrationText": "One suit in the locker shows a fault code during pre‑flight diagnostics: a pressure‑regulation valve is reporting marginal response.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "a suit in the locker displays a fault code during pre‑flight diagnostics indicating a pressure‑regulation valve with marginal response"
+      ],
+      "primarySubject": "suit",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "suit fault code",
+        "pre‑flight diagnostics",
+        "pressure‑regulation valve",
+        "marginal response"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "suit",
+        "locker",
+        "pre‑flight diagnostics",
+        "pressure‑regulation valve"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "BIG_TEXT",
+        "LABEL",
+        "X_MARK"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "suit in the locker",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "pre‑flight diagnostics screen or readout",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "pressure‑regulation valve (component)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "locker",
+          "criticality": "LOW"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s13"
+      ],
+      "requiredVisualFacts": [
+        "a suit's diagnostic display showing a fault code",
+        "indication that the pressure‑regulation valve is reporting marginal response"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "OBJECT_DETAIL",
+        "CHARACTER_ACTION",
+        "CUTAWAY"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "FAULT CODE"
+      },
+      "continuityRequirement": "MEDIUM",
+      "visualCommunicationGoal": "Make visible that a specific suit in the locker has reported a fault code during pre‑flight diagnostics: the pressure‑regulation valve is behaving marginally."
+    },
+    {
+      "claimId": "s13__c3",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.9,
+      "stateAfter": "EVA is pushed down the schedule pending technician test/repair",
+      "stateBefore": "EVA was scheduled as planned",
+      "planningMode": "EXPLAINER",
+      "narrationText": "The morning checklist's routing logic flags that suit and moves the planned EVA down the list until a technician can test and, if necessary, swap components.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "the routing logic flags the faulty suit and moves the planned EVA down the list until a technician can test and (if necessary) swap components"
+      ],
+      "primarySubject": "morning checklist's routing logic",
+      "temporalClaims": [
+        "the EVA is moved down the list pending technician action"
+      ],
+      "primaryConcepts": [
+        "morning checklist routing",
+        "flagging suit",
+        "rescheduling EVA",
+        "technician intervention",
+        "component swap"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "morning checklist routing flags the suit -> the planned EVA is moved down the list until a technician can test and swap components"
+      ],
+      "entitiesMentioned": [
+        "morning checklist",
+        "routing logic",
+        "suit",
+        "planned EVA",
+        "technician"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "ARROW",
+        "CALLOUT",
+        "LABEL",
+        "FLOW"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "morning checklist / routing logic",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "flagged suit",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "planned EVA slot/list",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "technician",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s13"
+      ],
+      "requiredVisualFacts": [
+        "the checklist or scheduling system visibly flagging the suit and shifting the EVA down the schedule",
+        "a technician being assigned or scheduled to test/repair the suit"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "DIAGRAM",
+        "PROCESS",
+        "ANNOTATED_DIAGRAM"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "ROUTED TO TECH"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that the morning checklist's routing logic flags the faulty suit and postpones the EVA until a technician can intervene."
+    },
+    {
+      "claimId": "s13__c5",
+      "emphasis": "HIGH",
+      "claimType": "SEQUENCE",
+      "confidence": 0.93,
+      "stateAfter": "diagnostic steps completed (bench test, optional filter swap, pressure hold)",
+      "stateBefore": "suit fault flagged and awaiting technician action",
+      "planningMode": "STORY",
+      "narrationText": "A quick diagnostic means technicians run a bench test, swap a filter if needed and perform a pressure hold.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "technicians run a bench test, swap a filter if needed, and perform a pressure hold as the quick diagnostic"
+      ],
+      "primarySubject": "technicians",
+      "temporalClaims": [
+        "bench test -> (if needed) filter swap -> pressure hold"
+      ],
+      "primaryConcepts": [
+        "quick diagnostic",
+        "bench test",
+        "filter swap",
+        "pressure hold"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "technicians",
+        "bench test",
+        "filter",
+        "pressure hold"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "ARROW",
+        "LABEL",
+        "CALLOUT"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "technicians",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "bench test equipment",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "filter (suit component)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "pressure hold test",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s14"
+      ],
+      "requiredVisualFacts": [
+        "technicians performing a bench test",
+        "technician swapping a filter if necessary",
+        "a pressure‑hold test being performed on the suit or component"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "PROCESS",
+        "CHARACTER_ACTION",
+        "CUTAWAY"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "DIAGNOSTIC STEPS"
+      },
+      "continuityRequirement": "MEDIUM",
+      "visualCommunicationGoal": "Show the quick diagnostic sequence technicians perform: bench test, optional filter swap, and pressure‑hold verification."
+    },
+    {
+      "claimId": "s13__c6",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.9,
+      "stateAfter": "suit returned to service and EVA team reassigned to a shortened sortie later that day",
+      "stateBefore": "suit flagged and EVA delayed",
+      "planningMode": "EXPLAINER",
+      "narrationText": "Because the operations chain integrated the morning check with technician schedules, the suit is returned to service within that sol's schedule and the mission can safely reassign the EVA team to a shortened field sortie later in the day.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "integration of morning checks with technician schedules enabled the suit to be returned to service within the same sol and allowed the mission to reassign the EVA team to a shortened field sortie"
+      ],
+      "primarySubject": "operations chain",
+      "temporalClaims": [
+        "the suit is returned to service within that sol's schedule",
+        "the EVA team is reassigned later the same day"
+      ],
+      "primaryConcepts": [
+        "operations chain integration",
+        "morning check",
+        "technician schedules",
+        "returned to service",
+        "reassigned EVA",
+        "shortened field sortie"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "operations chain integrated checks with technician schedules -> suit returned to service within that sol's schedule",
+        "suit returned to service -> mission can safely reassign EVA team to a shortened field sortie later that day"
+      ],
+      "entitiesMentioned": [
+        "operations chain",
+        "morning check",
+        "technician schedules",
+        "suit",
+        "sol",
+        "mission"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "TIMELINE_BAR",
+        "ARROW",
+        "LABEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "operations chain / scheduling system",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "morning check",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "technician schedules",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "suit returned to service",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "EVA team being reassigned to a shortened field sortie",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s14"
+      ],
+      "requiredVisualFacts": [
+        "evidence that the suit was returned to operational status within the same sol's schedule",
+        "the mission reassigning the EVA team to a shortened field sortie later that day"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "TIMELINE",
+        "PROCESS",
+        "BEFORE_AFTER"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "RETURNED TO SERVICE"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Communicate that integrating morning checks with technician scheduling allows rapid turnaround: the suit returns to service within the same sol and the EVA proceeds later as a shortened sortie."
+    },
+    {
+      "claimId": "s15__c1",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.92,
+      "stateAfter": "solar output reduced; battery state‑of‑charge moving to a lower margin",
+      "stateBefore": "solar output normal; battery at higher margin",
+      "planningMode": "EXPLAINER",
+      "narrationText": "By mid‑afternoon the forecast proves prescient: dust thickens and solar output drops, so the battery state‑of‑charge starts toward a lower margin.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "dust thickens and solar output drops",
+        "battery state‑of‑charge moves toward a lower margin"
+      ],
+      "primarySubject": "battery state‑of‑charge",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "dust",
+        "solar output",
+        "battery state‑of‑charge"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "thickening dust causes solar output to drop -> battery state‑of‑charge moves toward a lower margin"
+      ],
+      "entitiesMentioned": [
+        "dust",
+        "solar output",
+        "battery"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "ARROW",
+        "CALLOUT",
+        "LABEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "the habitat exterior / dust in atmosphere",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "solar panels / solar array",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "battery / energy storage",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s15"
+      ],
+      "requiredVisualFacts": [
+        "visible increase in dust/thick atmosphere",
+        "observable reduction in solar output (e.g., panels receiving less light) or indicators showing lower power input",
+        "battery state‑of‑charge trending downward"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "ENVIRONMENT_DETAIL",
+        "OBJECT_HERO",
+        "CAUSE_EFFECT"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "DUST REDUCES SOLAR"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that rising dust reduces solar generation and as a result battery charge begins to fall."
+    },
+    {
+      "claimId": "s15__c2",
+      "emphasis": "HIGH",
+      "claimType": "FACT",
+      "confidence": 0.9,
+      "stateAfter": "contingency enacted: critical loads maintained, non‑critical loads reduced or deferred, ISRU moved to standby",
+      "stateBefore": "",
+      "planningMode": "STORY",
+      "narrationText": "The power officer flips the dust contingency: keep life‑support and medical loads powered, reduce greenhouse supplemental lighting and defer some growth cycles, and place the ISRU plant into a verified low‑power standby rather than an active production mode.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "the power officer activates the dust contingency",
+        "life‑support and medical loads are kept powered",
+        "greenhouse supplemental lighting is reduced",
+        "some growth cycles are deferred"
+      ],
+      "primarySubject": "power officer",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "power officer",
+        "contingency actions",
+        "prioritization of loads"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "power officer",
+        "life‑support",
+        "medical loads",
+        "greenhouse supplemental lighting",
+        "growth cycles",
+        "ISRU plant"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "LABEL",
+        "CALLOUT",
+        "CHECK"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "power officer (role/person)",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "life‑support system",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "medical systems/loads",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "greenhouse (supplemental lighting)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "ISRU plant",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s15"
+      ],
+      "requiredVisualFacts": [
+        "power officer initiating or commanding contingency",
+        "life‑support and medical systems shown or labeled as maintained/powered",
+        "greenhouse supplemental lighting shown reduced or labeled as reduced",
+        "ISRU plant indicated as placed into low‑power standby (see separate NEGATION claim for not active)"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "CHARACTER_INTERACTION",
+        "OBJECT_DETAIL"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "LIFE‑SUPPORT FIRST"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Convey that the power officer implements a contingency that prioritizes life‑sustaining systems while reducing or deferring lower‑priority loads."
+    },
+    {
+      "claimId": "s15__c3",
+      "emphasis": "HIGH",
+      "claimType": "NEGATION",
+      "confidence": 0.95,
+      "stateAfter": "ISRU confirmed in a verified low‑power standby state",
+      "stateBefore": "ISRU potentially operating or available for active production",
+      "planningMode": "STORY",
+      "narrationText": "place the ISRU plant into a verified low‑power standby rather than an active production mode.",
+      "negativeClaims": [
+        "ISRU is NOT operating in active production mode"
+      ],
+      "positiveClaims": [
+        "ISRU is placed into a verified low‑power standby"
+      ],
+      "primarySubject": "ISRU plant",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "ISRU plant",
+        "power mode (active vs low‑power standby)"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "ISRU plant"
+      ],
+      "forbiddenEntities": [
+        "ISRU plant in active production mode"
+      ],
+      "graphicPrimitives": [
+        "X_MARK",
+        "LABEL",
+        "CALLOUT"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "ISRU plant",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s15"
+      ],
+      "requiredVisualFacts": [
+        "ISRU plant visibly in a low‑power/standby state (indicators, lights dimmed, machinery idle)",
+        "no signs of active production (no processing equipment running, no output streams)"
+      ],
+      "forbiddenVisualFacts": [
+        "ISRU plant shown actively producing/resource processing",
+        "ISRU displays or animations indicating normal/active production"
+      ],
+      "preferredVisualForms": [
+        "OBJECT_HERO",
+        "SYMBOLIC_NEGATION",
+        "ANNOTATED_DIAGRAM"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "ISRU STANDBY"
+      },
+      "continuityRequirement": "HIGH",
+      "visualCommunicationGoal": "Make clear the ISRU plant has been explicitly put into low‑power standby and is not actively producing."
+    },
+    {
+      "claimId": "s15__c4",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.9,
+      "stateAfter": "ISRU tasks staggered, batteries used as reserves, growth slowed, science deferred, life‑support maintained",
+      "stateBefore": "full activity across ISRU, normal growth and science schedules, batteries at a higher margin",
+      "planningMode": "HYBRID",
+      "narrationText": "To bridge the gap the team staggers ISRU tasks and leans on battery reserves; the consequence is straightforward—short‑term food growth slows and some science runs are deferred, but crew safety and breathable air remain protected.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "the team staggers ISRU tasks and uses battery reserves to bridge the gap",
+        "short‑term food growth slows and some science runs are deferred",
+        "crew safety and breathable air remain protected"
+      ],
+      "primarySubject": "team operations",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "task staggering",
+        "battery reserves",
+        "reduced growth",
+        "deferred science",
+        "crew safety",
+        "breathable air"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "staggering ISRU tasks and leaning on battery reserves -> short‑term food growth slows and some science runs are deferred",
+        "staggering ISRU tasks and leaning on battery reserves -> crew safety and breathable air remain protected"
+      ],
+      "entitiesMentioned": [
+        "team",
+        "ISRU",
+        "battery reserves",
+        "food growth",
+        "science runs",
+        "crew safety"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "FLOW",
+        "TIMELINE_BAR",
+        "BEFORE_AFTER_PANEL",
+        "LABEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "team/crew",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "ISRU tasks / operations",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "battery reserves",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "greenhouse/food growth",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "science experiments/runs",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "life‑support / breathable air",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s15"
+      ],
+      "requiredVisualFacts": [
+        "team coordinating/staggering ISRU tasks or shown scheduling adjustments",
+        "battery reserves being drawn down or a gauge showing reserve use",
+        "greenhouse growth activity shown slowed or labeled as deferred",
+        "science equipment or experiments indicated as deferred/postponed",
+        "life‑support systems continuing to operate, and breathable air indicated as maintained"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "PROCESS",
+        "CHARACTER_INTERACTION",
+        "BEFORE_AFTER"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "GROWTH SLOWED"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that operational tradeoffs (staggering tasks and using batteries) cause slowed food growth and deferred science while preserving crew safety and breathable air."
+    },
+    {
+      "claimId": "s16__c1",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.86,
+      "stateAfter": "automation prevented CO2 from rising despite tighter power budget in most chambers",
+      "stateBefore": "dust event had not yet tightened the power budget (implicit baseline)",
+      "planningMode": "HYBRID",
+      "narrationText": "When the dust event tightened the power budget earlier, automated ventilation and scrubbers prevented CO2 from rising in most chambers.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "automated ventilation and scrubbers prevented CO2 from rising in most chambers"
+      ],
+      "primarySubject": "most chambers",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "dust event",
+        "power budget",
+        "automated ventilation",
+        "scrubbers",
+        "CO2 levels",
+        "most chambers"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "dust event tightened the power budget -> automation (ventilation and scrubbers) prevented CO2 from rising in most chambers"
+      ],
+      "entitiesMentioned": [
+        "dust event",
+        "power budget",
+        "automated ventilation",
+        "scrubbers",
+        "most chambers"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "ANNOTATED_IMAGE",
+        "ARROW"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "dust event",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "power budget",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "automated ventilation",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "scrubbers",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "chambers (general)",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s16"
+      ],
+      "requiredVisualFacts": [
+        "automated ventilation and scrubbers operating successfully in multiple chambers"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "ENVIRONMENT_ESTABLISHING",
+        "OBJECT_HERO",
+        "PROCESS"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "AUTOMATION CONTROLLED CO2"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that despite a dust-related power constraint, automated systems kept CO2 under control in most chambers."
+    },
+    {
+      "claimId": "s16__c3",
+      "emphasis": "MEDIUM",
+      "claimType": "TIMELINE",
+      "confidence": 0.92,
+      "stateAfter": "CO2 returned to nominal after several hours",
+      "stateBefore": "CO2 was elevated/triggered an alarm",
+      "planningMode": "HYBRID",
+      "narrationText": "The chamber’s CO2 returned to nominal over the following hours;",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "the chamber’s CO2 returned to nominal over the following hours"
+      ],
+      "primarySubject": "the chamber’s CO2",
+      "temporalClaims": [
+        "CO2 returned to nominal over the following hours"
+      ],
+      "primaryConcepts": [
+        "chamber CO2",
+        "returned to nominal",
+        "following hours"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "the chamber’s CO2",
+        "following hours"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "TIMELINE_BAR",
+        "NUMBER"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "the flagged chamber",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "CO2 level indicator",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s16"
+      ],
+      "requiredVisualFacts": [
+        "CO2 level in the flagged chamber visibly decreasing and reaching nominal over a multi‑hour period (or a clear indication that levels are nominal after hours)"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "BEFORE_AFTER",
+        "TIMELINE",
+        "ANNOTATED_DIAGRAM"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "HOURS LATER"
+      },
+      "continuityRequirement": "HIGH",
+      "visualCommunicationGoal": "Show that CO2 levels in the alarmed chamber trended back to nominal within hours after the manual intervention."
+    },
+    {
+      "claimId": "s17__c1",
+      "emphasis": "HIGH",
+      "claimType": "FACT",
+      "confidence": 0.9,
+      "stateAfter": "",
+      "stateBefore": "",
+      "planningMode": "STORY",
+      "narrationText": "The shortened EVA goes ahead during a lower‑dose window and the team keeps strict watch on individual dosimetry.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "a shortened EVA proceeds during a lower-dose window",
+        "the team monitors individual dosimetry closely"
+      ],
+      "primarySubject": "shortened EVA / team",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "shortened EVA",
+        "lower-dose window",
+        "individual dosimetry",
+        "team monitoring"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "EVA",
+        "lower‑dose window",
+        "team",
+        "individual dosimetry"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [],
+      "entityRequirements": [
+        {
+          "entity": "EVA (extravehicular activity)",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "the team (astronauts/crew)",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "individual dosimeters / personal dosimetry readouts",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "lower-dose window (environmental condition)",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s17"
+      ],
+      "requiredVisualFacts": [
+        "the EVA is shorter than normal",
+        "crew are visibly monitoring dosimeters/readouts"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "CHARACTER_INTERACTION",
+        "ENVIRONMENT_ESTABLISHING"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "LOW‑DOSE WINDOW"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that a deliberately shortened EVA is executed during a lower-radiation window while crew actively monitor individual dosimeters."
+    },
+    {
+      "claimId": "s17__c2",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.88,
+      "stateAfter": "EVAs are shorter, tasks batched, crew stay close to rover, lowering cumulative exposure",
+      "stateBefore": "EVAs might have been longer or tasks spread out",
+      "planningMode": "STORY",
+      "narrationText": "They batch sampling tasks, stay close to the rover, and accept a shorter outing to keep cumulative mission exposure within the allocated budget.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "batching tasks and staying near the rover are deliberate choices",
+        "the team accepts a shorter outing to limit cumulative exposure"
+      ],
+      "primarySubject": "team/EVAs",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "batching tasks",
+        "staying close to rover",
+        "shorter outing",
+        "cumulative exposure",
+        "allocated budget"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "batching tasks + staying close to rover + shorter outing -> reduces cumulative mission radiation exposure within allocated budget"
+      ],
+      "entitiesMentioned": [
+        "they",
+        "sampling tasks",
+        "the rover",
+        "cumulative mission exposure",
+        "allocated budget"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "ARROW"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "the team (astronauts/crew)",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "samples / sampling tasks",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "the rover",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "mission cumulative exposure budget",
+          "criticality": "LOW"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s17"
+      ],
+      "requiredVisualFacts": [
+        "crew are grouped/batching sampling actions rather than scattered tasks",
+        "crew remain physically close to the rover during the outing",
+        "the outing is visibly shorter (e.g., fewer actions/time or turning back earlier)"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "CHARACTER_INTERACTION",
+        "BEFORE_AFTER"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "LIMIT EXPOSURE"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Convey that operational choices (batching tasks, staying near the rover, shortening the outing) are taken specifically to keep cumulative radiation exposure within the mission's allocated budget."
+    },
+    {
+      "claimId": "s17__c3",
+      "emphasis": "MEDIUM",
+      "claimType": "FACT",
+      "confidence": 0.9,
+      "stateAfter": "dose accounting updated to include today's exposures",
+      "stateBefore": "previous dose accounting totals before today's EVA",
+      "planningMode": "EXPLAINER",
+      "narrationText": "The day’s dose accounting is updated",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "the day's dose accounting is updated to reflect today's EVA(s)"
+      ],
+      "primarySubject": "dose accounting",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "day's dose accounting",
+        "updated records"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "day’s dose accounting"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "LABEL",
+        "CALLOUT",
+        "BIG_TEXT"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "dose accounting / mission dose ledger",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "operations/ground team systems",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s17"
+      ],
+      "requiredVisualFacts": [
+        "there is an evident update to the day's dose accounting (e.g., visible ledger/display updating to reflect new cumulative doses)"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "ANNOTATED_DIAGRAM",
+        "OBJECT_DETAIL"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "DOSE LOG UPDATED"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Make clear that mission dose records are being actively updated to include the day's exposures."
+    },
+    {
+      "claimId": "s17__c4",
+      "emphasis": "MEDIUM",
+      "claimType": "SEQUENCE",
+      "confidence": 0.88,
+      "stateAfter": "some lower-priority outdoor tasks are rescheduled to later sols contingent on forecasts",
+      "stateBefore": "outdoor tasks were scheduled for nearer-term sols",
+      "planningMode": "HYBRID",
+      "narrationText": "and the mission planners reassign lower‑priority outdoor tasks to later sols when radiation forecasts are more favorable.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "mission planners reassign lower-priority outdoor tasks to later sols when forecasts improve"
+      ],
+      "primarySubject": "mission planners",
+      "temporalClaims": [
+        "reassignment happens to 'later sols' (future mission days)"
+      ],
+      "primaryConcepts": [
+        "mission planners",
+        "reassign lower-priority outdoor tasks",
+        "later sols",
+        "radiation forecasts"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "more favorable radiation forecasts -> lower-priority outdoor tasks get reassigned to later sols"
+      ],
+      "entitiesMentioned": [
+        "mission planners",
+        "lower‑priority outdoor tasks",
+        "later sols",
+        "radiation forecasts"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "TIMELINE_BAR",
+        "CALLOUT",
+        "MAP_MARKER"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "mission planners / operations team",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "lower-priority outdoor tasks",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "future sols (later days)",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "radiation forecasts",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s17"
+      ],
+      "requiredVisualFacts": [
+        "mission planners are shown reassigning outdoor tasks to future sols",
+        "a scheduling interface or calendar visibly shows tasks moved to later sols contingent on better radiation forecasts"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "PROCESS",
+        "SYMBOLIC_POSITIVE",
+        "MAP"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "TASKS MOVED"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Communicate that planners actively reschedule lower-priority outdoor tasks to future sols when radiation forecasts indicate safer times."
+    },
+    {
+      "claimId": "s18__c2",
+      "emphasis": "HIGH",
+      "claimType": "FACT",
+      "confidence": 0.92,
+      "stateAfter": "crew performing countermeasure exercises",
+      "stateBefore": "",
+      "planningMode": "STORY",
+      "narrationText": "Each crew member follows a scheduled mix of resistance exercises—elastic bands, a harnessed weight rig that loads legs in low gravity—and aerobic work on a treadmill or cycle to blunt muscle and bone loss.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "Crew follow a scheduled mix of resistance and aerobic exercises to blunt muscle and bone loss"
+      ],
+      "primarySubject": "exercise regimen",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "resistance exercise",
+        "aerobic exercise",
+        "countermeasure to muscle and bone loss"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "resistance and aerobic exercise -> reduces/blunts muscle and bone loss"
+      ],
+      "entitiesMentioned": [
+        "elastic bands",
+        "harnessed weight rig",
+        "treadmill",
+        "cycle"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [],
+      "entityRequirements": [
+        {
+          "entity": "crew member",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "elastic bands",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "harnessed weight rig",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "treadmill",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "cycle (exercise bike)",
+          "criticality": "LOW"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s18"
+      ],
+      "requiredVisualFacts": [
+        "elastic bands or harnessed rig being used for resistance exercise",
+        "a treadmill or cycle shown as the aerobic option"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "OBJECT_HERO",
+        "ENVIRONMENT_DETAIL"
+      ],
+      "textOverlayCandidate": {
+        "importance": "LOW",
+        "recommended": true,
+        "semanticText": "Resistance + Aerobic"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Convey the specific exercise types (bands, harnessed rig, treadmill/cycle) used as scheduled daily countermeasures to preserve muscle and bone."
+    },
+    {
+      "claimId": "s18__c3",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.9,
+      "stateAfter": "lighting cycles that emphasize active periods and warm down to evening",
+      "stateBefore": "lighting not specifically tuned to activity",
+      "planningMode": "HYBRID",
+      "narrationText": "These sessions are slotted into the timetable like any other task because the habitat lighting system is tuned to reinforce them: bright, blue‑enriched spectra for active periods and gradual warming toward evening.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "Lighting is tuned to reinforce active periods (bright, blue‑enriched) and warm toward evening"
+      ],
+      "primarySubject": "habitat lighting system",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "timetable scheduling",
+        "lighting tuned to reinforce activity"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "habitual scheduling + tuned lighting -> reinforces exercise adherence"
+      ],
+      "entitiesMentioned": [
+        "habitat lighting system",
+        "timetable"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "BIG_TEXT",
+        "CALLOUT",
+        "ARROW"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "habitat lighting system",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "schedule/timetable display",
+          "criticality": "LOW"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s18"
+      ],
+      "requiredVisualFacts": [
+        "lighting that looks bright and blue‑enriched during active periods and warmer toward evening",
+        "exercise sessions shown in a visible timetable or being treated like scheduled tasks"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "ENVIRONMENT_DETAIL",
+        "DIAGRAM",
+        "TEXT_EMPHASIS"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "Blue = Active"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that the habitat's lighting schedule is intentionally tuned (blue‑rich for active times, warmer later) and that exercise sessions are treated as scheduled tasks."
+    },
+    {
+      "claimId": "s18__c5",
+      "emphasis": "HIGH",
+      "claimType": "NEGATION",
+      "confidence": 0.95,
+      "stateAfter": "routine acts locally without instant Earth input",
+      "stateBefore": "alarm sounds with expectation of remote support",
+      "planningMode": "HYBRID",
+      "narrationText": "When an alarm sounds the crew cannot expect an instant answer from Earth, so the routine is built to act locally.",
+      "negativeClaims": [
+        "The crew cannot expect an instant answer from Earth"
+      ],
+      "positiveClaims": [
+        "Routines are built to act locally because instant answers from Earth are not available"
+      ],
+      "primarySubject": "communication with Earth",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "no instant answer from Earth",
+        "local autonomy"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "lack of instant Earth response -> routines designed for local action"
+      ],
+      "entitiesMentioned": [
+        "Earth",
+        "crew"
+      ],
+      "forbiddenEntities": [
+        "instant live response from Earth (e.g., mission control responding in real time)"
+      ],
+      "graphicPrimitives": [
+        "X_MARK",
+        "BIG_TEXT",
+        "CALLOUT"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "crew",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "Earth / mission control",
+          "criticality": "LOW"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s19"
+      ],
+      "requiredVisualFacts": [
+        "an alarm sounding in the habitat while no immediate Earth/Mission Control response is shown (no live audio/video connection responding instantly)"
+      ],
+      "forbiddenVisualFacts": [
+        "a depiction of Earth/mission control instantly answering or solving the alarm in real time"
+      ],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "SYMBOLIC_NEGATION",
+        "DIAGRAM"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "No instant reply"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Communicate that alarms must be handled locally because immediate assistance from Earth is not available."
+    },
+    {
+      "claimId": "s18__c6",
+      "emphasis": "HIGH",
+      "claimType": "SEQUENCE",
+      "confidence": 0.95,
+      "stateAfter": "diagnostics run and local specialist intervenes or repair enacted",
+      "stateBefore": "instrument alarm not yet responded to",
+      "planningMode": "STORY",
+      "narrationText": "An instrument alarm first triggers onboard diagnostics and automated mitigation; if the problem persists a locally qualified specialist—often the person on the morning checklist—takes immediate steps: isolate the circuit, run handheld tests, and, if safe, enact a short repair.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "Alarm triggers onboard diagnostics and automated mitigation",
+        "A locally qualified specialist takes immediate steps (isolate circuit, run handheld tests, enact short repair if safe)"
+      ],
+      "primarySubject": "alarm response",
+      "temporalClaims": [
+        "diagnostics/mitigation happen first; specialist actions follow if the problem persists"
+      ],
+      "primaryConcepts": [
+        "alarm response sequence",
+        "onboard diagnostics",
+        "local specialist actions"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "alarm -> onboard diagnostics/automated mitigation; if persists -> specialist isolates circuit, runs handheld tests, and may perform a short repair"
+      ],
+      "entitiesMentioned": [
+        "instrument alarm",
+        "onboard diagnostics",
+        "automated mitigation",
+        "handheld tests",
+        "person on the morning checklist"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "ARROW",
+        "FLOW",
+        "ANNOTATED_IMAGE"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "instrument alarm",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "onboard diagnostics/automated mitigation system",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "locally qualified specialist (crew member)",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "handheld test equipment",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "circuit or equipment being isolated",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s19"
+      ],
+      "requiredVisualFacts": [
+        "an instrument alarm triggering automated diagnostics/mitigation",
+        "a crew member (locally qualified specialist) isolating a circuit, using handheld test equipment, and performing or preparing a short repair if safe"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "PROCESS",
+        "CHARACTER_ACTION",
+        "CUTAWAY"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "Diagnose → Isolate → Test → Repair"
+      },
+      "continuityRequirement": "HIGH",
+      "visualCommunicationGoal": "Depict the stepwise local response to an instrument alarm: automated diagnostics first, then a qualified crew member isolating circuits, running handheld tests, and making short repairs when safe."
+    },
+    {
+      "claimId": "s18__c7",
+      "emphasis": "MEDIUM",
+      "claimType": "FACT",
+      "confidence": 0.93,
+      "stateAfter": "message drafted and queued/sent asynchronously to Earth",
+      "stateBefore": "",
+      "planningMode": "HYBRID",
+      "narrationText": "Only for problems that need expert analysis or policy changes is a message drafted to Earth and sent asynchronously.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "Messages to Earth are drafted and sent asynchronously only when expert analysis or policy changes are required"
+      ],
+      "primarySubject": "communication protocol",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "asynchronous uplink",
+        "criteria for Earth contact"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "problem requiring expert analysis/policy change -> draft and send asynchronous message to Earth"
+      ],
+      "entitiesMentioned": [
+        "Earth",
+        "message"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "BIG_TEXT",
+        "CALLOUT"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "crew member drafting a message",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "asynchronous message to Earth",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "expert on Earth/mission control",
+          "criticality": "LOW"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s19"
+      ],
+      "requiredVisualFacts": [
+        "a crew member composing a message to send to Earth with some indication it will be sent asynchronously (not immediate two‑way conversation)"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "DIAGRAM",
+        "TEXT_EMPHASIS"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "Send asynchronously"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Make clear that only issues needing external expertise or policy changes are packaged and sent to Earth asynchronously rather than handled immediately."
+    },
+    {
+      "claimId": "s20__c1",
+      "emphasis": "HIGH",
+      "claimType": "FACT",
+      "confidence": 0.92,
+      "stateAfter": "crew engaged in formal end-of-sol procedures",
+      "stateBefore": "",
+      "planningMode": "STORY",
+      "narrationText": "As the sun sets across the basin the crew runs a formal end‑of‑sol routine.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "The crew runs a formal end-of-sol routine at sunset"
+      ],
+      "primarySubject": "the crew",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "end-of-sol routine",
+        "crew",
+        "sunset"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "crew",
+        "basin"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [],
+      "entityRequirements": [
+        {
+          "entity": "crew",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "basin / exterior sunset",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s20"
+      ],
+      "requiredVisualFacts": [
+        "time-of-day indicated as sunset",
+        "multiple crew members performing routine activity"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "ENVIRONMENT_ESTABLISHING"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "END OF SOL"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that at sunset the crew executes an established, formal end‑of‑sol routine."
+    },
+    {
+      "claimId": "s20__c2",
+      "emphasis": "HIGH",
+      "claimType": "FACT",
+      "confidence": 0.9,
+      "stateAfter": "logs archived, alarms tagged, orders queued",
+      "stateBefore": "logs/alarm/order state unarchived/unresolved",
+      "planningMode": "HYBRID",
+      "narrationText": "They export and archive life‑support logs, tag any alarms as cleared or deferred, and queue spare‑part orders for the next sol.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "Life‑support logs are exported and archived",
+        "Alarms are tagged as cleared or deferred",
+        "Spare‑part orders are queued for the next sol"
+      ],
+      "primarySubject": "end-of-sol data and orders",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "export logs",
+        "archive",
+        "alarms tagged",
+        "spare-part orders queued"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "life‑support logs",
+        "alarms",
+        "spare‑part orders",
+        "next sol"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "CALLOUT",
+        "LABEL",
+        "BIG_TEXT",
+        "ARROW"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "life‑support logs",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "alarms (tags shown as cleared or deferred)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "spare‑part orders",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "operator(s) performing export/archive",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s20"
+      ],
+      "requiredVisualFacts": [
+        "a log export/archive action (files being transferred to archive)",
+        "alarms explicitly shown as 'cleared' or 'deferred'",
+        "a queued spare-part order entry for the next sol"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "ANNOTATED_DIAGRAM",
+        "TEXT_EMPHASIS"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "LOGS ARCHIVED"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Convey that critical operational records and follow‑on orders are formally recorded and queued at closeout."
+    },
+    {
+      "claimId": "s20__c3",
+      "emphasis": "MEDIUM",
+      "claimType": "SEQUENCE",
+      "confidence": 0.9,
+      "stateAfter": "tasks moved to next plan with annotations",
+      "stateBefore": "non‑critical tasks listed in current plan",
+      "planningMode": "HYBRID",
+      "narrationText": "Non‑critical tasks—construction checks, elective maintenance—are slipped into the next plan and annotated with expected power and crew needs.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "Non‑critical tasks are deferred to the next plan",
+        "Those deferred tasks are annotated with expected power and crew needs"
+      ],
+      "primarySubject": "non‑critical tasks",
+      "temporalClaims": [
+        "these tasks are scheduled for the subsequent plan (next sol)"
+      ],
+      "primaryConcepts": [
+        "deferral of non-critical tasks",
+        "annotation with power and crew needs"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "construction checks",
+        "elective maintenance",
+        "next plan"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "TIMELINE_BAR",
+        "LABEL",
+        "ARROW"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "construction checks",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "elective maintenance",
+          "criticality": "LOW"
+        },
+        {
+          "entity": "next plan / schedule",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "annotations indicating expected power and crew needs",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s20"
+      ],
+      "requiredVisualFacts": [
+        "non‑critical tasks shown moved into a future plan entry",
+        "annotations visible specifying expected power and crew needs"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "PROCESS",
+        "ANNOTATED_DIAGRAM",
+        "TIMELINE"
+      ],
+      "textOverlayCandidate": {
+        "importance": "LOW",
+        "recommended": false,
+        "semanticText": ""
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Show that less urgent work is intentionally deferred into the next schedule with explicit resource annotations."
+    },
+    {
+      "claimId": "s20__c4",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.9,
+      "stateAfter": "ISRU scheduled for shutdown/standby and action queued for tomorrow",
+      "stateBefore": "ISRU potentially running and drawing variable loads",
+      "planningMode": "HYBRID",
+      "narrationText": "If an ISRU plant was running during the day, operators either schedule a controlled shutdown or set it to a low‑power standby so it won’t draw unpredictable loads overnight; that queued action appears in tomorrow’s timeline.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "ISRU plants are either scheduled for controlled shutdown or put to low‑power standby at closeout",
+        "The chosen action is queued into the next sol's timeline"
+      ],
+      "primarySubject": "ISRU plant operations",
+      "temporalClaims": [
+        "the queued action appears in tomorrow’s timeline"
+      ],
+      "primaryConcepts": [
+        "ISRU plant daytime running",
+        "controlled shutdown or low-power standby",
+        "prevent unpredictable overnight loads",
+        "action queued in tomorrow's timeline"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "If ISRU runs during the day -> operators schedule shutdown or low‑power standby to avoid unpredictable overnight loads"
+      ],
+      "entitiesMentioned": [
+        "ISRU plant",
+        "operators",
+        "tomorrow’s timeline"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "ARROW",
+        "LABEL",
+        "TIMELINE_BAR"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "ISRU plant / ISRU array",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "operators scheduling shutdown/standby",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "tomorrow's timeline / schedule",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s20"
+      ],
+      "requiredVisualFacts": [
+        "operators setting ISRU to controlled shutdown or low‑power standby",
+        "a queued action visible in the schedule for the next sol referencing the ISRU"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "PROCESS",
+        "TIMELINE"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "ISRU: STANDBY"
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Make clear that ISRU operations are actively managed at closeout to prevent unpredictable overnight power draws and that the action is recorded for tomorrow."
+    },
+    {
+      "claimId": "s20__c5",
+      "emphasis": "HIGH",
+      "claimType": "CAUSE_EFFECT",
+      "confidence": 0.88,
+      "stateAfter": "exceptions caught and recorded; crew able to rest",
+      "stateBefore": "exceptions potentially unrecorded and able to vanish between shifts",
+      "planningMode": "EXPLAINER",
+      "narrationText": "The point is practical: catching and recording exceptions at closeout prevents small faults from vanishing between shifts and lets people sleep without an unresolved technical mystery nagging them.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "Recording exceptions prevents small faults from disappearing between shifts",
+        "This practice allows people to sleep without an unresolved technical mystery"
+      ],
+      "primarySubject": "the closeout procedure",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "catching/recording exceptions",
+        "prevents faults vanishing between shifts",
+        "allows people to sleep without unresolved technical mysteries"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [
+        "Catching and recording exceptions at closeout -> prevents small faults from vanishing between shifts and -> lets people sleep without unresolved technical questions"
+      ],
+      "entitiesMentioned": [
+        "exceptions",
+        "people"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "FLOW",
+        "ANNOTATED_IMAGE",
+        "LABEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "exceptions / recorded faults",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "crew / people",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s20"
+      ],
+      "requiredVisualFacts": [
+        "exceptions being recorded at closeout",
+        "impression of shifted responsibility (e.g., logged items visible for next shift)",
+        "people shown relaxed or at rest after handoff"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CAUSE_EFFECT",
+        "DIAGRAM",
+        "CHARACTER_REACTION"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "NO UNRESOLVED ISSUES"
+      },
+      "continuityRequirement": "NONE",
+      "visualCommunicationGoal": "Communicate that disciplined recording at closeout preserves issues across shifts and reduces overnight worry for crew."
+    },
+    {
+      "claimId": "s20__c6",
+      "emphasis": "HIGH",
+      "claimType": "FACT",
+      "confidence": 0.9,
+      "stateAfter": "formal verification ritual completed",
+      "stateBefore": "",
+      "planningMode": "STORY",
+      "narrationText": "The day closes with a human verification ritual.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "The day closes with a human verification ritual"
+      ],
+      "primarySubject": "verification ritual",
+      "temporalClaims": [
+        "this happens at the close of the day"
+      ],
+      "primaryConcepts": [
+        "human verification ritual",
+        "day closes"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "human verification ritual"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [],
+      "entityRequirements": [
+        {
+          "entity": "crew",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "verification ritual (group activity)",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s21"
+      ],
+      "requiredVisualFacts": [
+        "a group or lead performing a ritualized verification at closeout"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_INTERACTION",
+        "CHARACTER_REACTION"
+      ],
+      "textOverlayCandidate": {
+        "importance": "LOW",
+        "recommended": false,
+        "semanticText": ""
+      },
+      "continuityRequirement": "LOW",
+      "visualCommunicationGoal": "Indicate that the technical closeout culminates in a deliberate human-led verification ritual."
+    },
+    {
+      "claimId": "s20__c7",
+      "emphasis": "HIGH",
+      "claimType": "SEQUENCE",
+      "confidence": 0.92,
+      "stateAfter": "checklist read aloud and confirmations logged",
+      "stateBefore": "status not yet verbally confirmed",
+      "planningMode": "STORY",
+      "narrationText": "First the engineering lead reads aloud the status checklist—air scrubbers nominal, humidity within band, batteries holding a conservative reserve—and the maintenance officer confirms the suit repair log entry and the spare‑part ticket status.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "Engineering lead reads the status checklist and reports systems nominal",
+        "Maintenance officer confirms suit repair log and spare‑part ticket status"
+      ],
+      "primarySubject": "verification checklist reading and confirmation",
+      "temporalClaims": [
+        "the reading happens before the maintenance confirmation in the ritual"
+      ],
+      "primaryConcepts": [
+        "engineering lead reads checklist",
+        "specific checklist items (air scrubbers, humidity, batteries)",
+        "maintenance officer confirms suit repair log and spare-part ticket"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "engineering lead",
+        "maintenance officer",
+        "air scrubbers",
+        "humidity",
+        "batteries",
+        "suit repair log entry"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "LABEL",
+        "CALLOUT",
+        "BIG_TEXT"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "engineering lead",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "maintenance officer",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "status checklist (air scrubbers, humidity, batteries)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "suit repair log entry",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "spare‑part ticket",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s21"
+      ],
+      "requiredVisualFacts": [
+        "engineering lead visibly reading checklist aloud",
+        "checklist items visible or called out: air scrubbers nominal, humidity within band, batteries holding conservative reserve",
+        "maintenance officer acknowledging/confirming a suit repair log entry and spare‑part ticket status"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_ACTION",
+        "CHARACTER_INTERACTION",
+        "TEXT_EMPHASIS"
+      ],
+      "textOverlayCandidate": {
+        "importance": "HIGH",
+        "recommended": true,
+        "semanticText": "CHECKLIST OK"
+      },
+      "continuityRequirement": "HIGH",
+      "visualCommunicationGoal": "Show the formal verbal checklist and the maintenance confirmation that together validate systems before closing the day."
+    },
+    {
+      "claimId": "s20__c8",
+      "emphasis": "HIGH",
+      "claimType": "FACT",
+      "confidence": 0.9,
+      "stateAfter": "ISRU in low‑power standby recorded; greenhouse setpoints restored",
+      "stateBefore": "ISRU/greenhouse possibly altered during day",
+      "planningMode": "HYBRID",
+      "narrationText": "The ISRU array is left in a documented low‑power standby and greenhouse controllers show setpoints restored.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "ISRU array is left in a documented low‑power standby",
+        "Greenhouse controllers show setpoints restored"
+      ],
+      "primarySubject": "ISRU array and greenhouse controllers",
+      "temporalClaims": [],
+      "primaryConcepts": [
+        "ISRU left in low-power standby",
+        "documentation",
+        "greenhouse controllers restored setpoints"
+      ],
+      "allowedAmbiguity": "LOW",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "ISRU array",
+        "greenhouse controllers"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "LABEL",
+        "ANNOTATED_IMAGE"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "ISRU array",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "documentation (showing standby state)",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "greenhouse controllers and setpoints",
+          "criticality": "MEDIUM"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s21"
+      ],
+      "requiredVisualFacts": [
+        "ISRU shown in low‑power standby with a documented entry recording that state",
+        "greenhouse controller displays showing setpoints restored"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "ANNOTATED_DIAGRAM",
+        "CHARACTER_ACTION",
+        "OBJECT_DETAIL"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "GREENHOUSE SETPOINTS"
+      },
+      "continuityRequirement": "MEDIUM",
+      "visualCommunicationGoal": "Make explicit that key automated systems are placed into and recorded as being in safe states at closeout."
+    },
+    {
+      "claimId": "s20__c9",
+      "emphasis": "HIGH",
+      "claimType": "SEQUENCE",
+      "confidence": 0.92,
+      "stateAfter": "crew assembled, communal meal underway",
+      "stateBefore": "technical sign‑offs incomplete",
+      "planningMode": "STORY",
+      "narrationText": "Only then does the crew assemble in the common module: they light safe, synthetic candles and share a bowl of lettuce from that morning’s harvest.",
+      "negativeClaims": [],
+      "positiveClaims": [
+        "The crew assembles in the common module only after sign‑offs",
+        "They light safe synthetic candles and share lettuce from that morning’s harvest"
+      ],
+      "primarySubject": "the crew assembling in the common module",
+      "temporalClaims": [
+        "assembly and meal occur after the technical sign‑offs"
+      ],
+      "primaryConcepts": [
+        "assembly in common module after sign‑offs",
+        "lighting safe synthetic candles",
+        "sharing a bowl of lettuce from that morning’s harvest"
+      ],
+      "allowedAmbiguity": "MEDIUM",
+      "comparisonClaims": [],
+      "causeEffectClaims": [],
+      "entitiesMentioned": [
+        "crew",
+        "common module",
+        "synthetic candles",
+        "bowl of lettuce",
+        "morning’s harvest"
+      ],
+      "forbiddenEntities": [],
+      "graphicPrimitives": [
+        "BEFORE_AFTER_PANEL"
+      ],
+      "entityRequirements": [
+        {
+          "entity": "crew",
+          "criticality": "HIGH"
+        },
+        {
+          "entity": "common module",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "safe synthetic candles",
+          "criticality": "MEDIUM"
+        },
+        {
+          "entity": "bowl of lettuce from that morning’s harvest",
+          "criticality": "HIGH"
+        }
+      ],
+      "quantitativeClaims": [],
+      "narrationSegmentIds": [
+        "s21"
+      ],
+      "requiredVisualFacts": [
+        "crew gathered in a common module after technical sign‑offs",
+        "safe synthetic candles being lit",
+        "a bowl of fresh lettuce clearly labeled or suggested as 'this morning's harvest' being shared"
+      ],
+      "forbiddenVisualFacts": [],
+      "preferredVisualForms": [
+        "CHARACTER_INTERACTION",
+        "CHARACTER_REACTION",
+        "OBJECT_HERO"
+      ],
+      "textOverlayCandidate": {
+        "importance": "MEDIUM",
+        "recommended": true,
+        "semanticText": "COMMUNAL CLOSEOUT"
+      },
+      "continuityRequirement": "HIGH",
+      "visualCommunicationGoal": "Show the ritual transition: technical closeout completed, then communal gathering with symbolic gestures (candles, shared harvest)."
+    }
+  ]
+}

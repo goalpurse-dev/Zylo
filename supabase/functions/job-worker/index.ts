@@ -63,7 +63,9 @@ const PLAN_TIER_ORDER = ["free", "starter", "pro", "generative"];
 const PLAN_GATED_TOOLS: Record<string, string> = {
   "video:viduq3turbo720":            "pro",         // Clay Rescue V3, AI Fruit Story V3, Face ASMR V3
   "video:viduq3turbo1080":           "generative",  // Clay Rescue V4, Face ASMR V4
-  "video:fruitveo31lite":            "generative",  // AI Fruit Story V4
+  "video:fruitveo31lite":            "generative",  // AI Fruit Story V4 (legacy key, old bundles)
+  "video:fruit-v3":                  "pro",         // AI Fruit Story V3
+  "video:fruit-v4":                  "generative",  // AI Fruit Story V4
   "video:microcamminimax720":        "pro",         // Micro Camera Animal V3
   "video:microcamminimax1080":       "generative",  // Micro Camera Animal V4
   // Footballer V3/V4 were swapped (720p Seedance turned out pricier than
@@ -96,7 +98,19 @@ async function isToolAllowedForUser(
   userId: string,
   toolKey: string,
 ): Promise<{ allowed: boolean; userPlan: string; requiredPlan?: string }> {
-  const requiredPlan = PLAN_GATED_TOOLS[toolKey];
+  let requiredPlan: string | undefined = PLAN_GATED_TOOLS[toolKey];
+  if (!requiredPlan) {
+    // tool_prices.min_plan is the table-driven gate for server-priced tools
+    // (the Fruit rebuild changes tiers there, not here). A missing table or
+    // row simply means "no extra gate".
+    const { data: priceRow } = await sbAdmin
+      .from("tool_prices")
+      .select("min_plan")
+      .eq("tool_key", toolKey)
+      .eq("active", true)
+      .maybeSingle();
+    requiredPlan = (priceRow as any)?.min_plan ?? undefined;
+  }
   if (!requiredPlan) return { allowed: true, userPlan: "" };
 
   const { data: profile } = await sbAdmin
@@ -386,6 +400,41 @@ Deno.serve(async (req) => {
       await failAndRefundJob(sbAdmin, jobId, "PLAN_UPGRADE_REQUIRED",
         `PLAN_UPGRADE_REQUIRED: ${job.tool_key} requires the ${planCheck.requiredPlan} plan`);
       return fail(req, `This model requires the ${planCheck.requiredPlan} plan`, 403);
+    }
+
+    // Server price — browser-created jobs are priced from public.tool_prices by
+    // the jobs_enforce_tool_pricing trigger, which stamps
+    // settings.price_source = 'tool_prices'. This re-checks that price right
+    // before any charge. Jobs created by trusted server code (Long Form, 2AM
+    // planner, ...) and 30 Days reservation jobs carry their own billing and
+    // are deliberately NOT re-priced here.
+    const isReservationJob = (job.input as any)?.billing_reservation?.template === "thirty-days";
+    const isServerPricedJob =
+      !isReservationJob &&
+      ((job.settings as any)?.price_source === "tool_prices" || String(job.tool_key).startsWith("video:fruit"));
+    const { data: serverPrice, error: priceError } = isServerPricedJob
+      ? await sbAdmin.rpc("compute_tool_price", { p_tool_key: String(job.tool_key), p_input: job.input ?? {} })
+      : { data: null, error: null };
+    if (priceError) {
+      const message = String(priceError.message ?? priceError);
+      // Only Fruit keys depend on this check; other tools keep dispatching
+      // even if the price function is unavailable.
+      if (message.includes("INVALID_JOB_SIGNATURE") || String(job.tool_key).startsWith("video:fruit")) {
+        logEvent("warn", "server_price_rejected", { jobId, toolKey: job.tool_key, userId: job.user_id, message });
+        await failAndRefundJob(sbAdmin, jobId, "INVALID_JOB_SIGNATURE", message.slice(0, 300));
+        return fail(req, message.slice(0, 300), 400);
+      }
+      logEvent("warn", "server_price_check_unavailable", { jobId, toolKey: job.tool_key, message });
+    } else if (typeof serverPrice === "number" && Number(job.charge_credits) !== serverPrice) {
+      logEvent("warn", "server_price_corrected", {
+        jobId, toolKey: job.tool_key, userId: job.user_id, was: job.charge_credits, correctedTo: serverPrice,
+      });
+      const { error: correctError } = await sbAdmin.from("jobs").update({ charge_credits: serverPrice }).eq("id", jobId);
+      if (correctError) {
+        await failAndRefundJob(sbAdmin, jobId, "PRICE_CORRECTION_FAILED", "Could not apply the server price");
+        return fail(req, "Could not apply the server price", 500);
+      }
+      job.charge_credits = serverPrice;
     }
 
     // 30 Days reserves the full visual cost before child jobs are created.

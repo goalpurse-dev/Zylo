@@ -29,10 +29,10 @@ export default function LimitReachedToast({ resetAt, onClose }) {
         className="fixed bottom-6 right-4 md:right-6 z-[9999] w-[340px] max-w-[calc(100vw-2rem)]"
         style={{ animation: "slideNotifUp 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards" }}
       >
-        <div className="relative rounded-2xl border border-[#7A3BFF]/35 bg-[#0B0E1A] backdrop-blur-xl shadow-[0_8px_60px_rgba(122,59,255,0.45),0_2px_20px_rgba(0,0,0,0.8)]">
+        <div className="relative rounded-2xl border border-[#BEF264]/35 bg-[#0B0E1A] backdrop-blur-xl shadow-[0_8px_60px_rgba(190,242,100,0.45),0_2px_20px_rgba(0,0,0,0.8)]">
 
           {/* Top accent line */}
-          <div className="absolute top-0 inset-x-6 h-px bg-gradient-to-r from-transparent via-[#7A3BFF]/50 to-transparent" />
+          <div className="absolute top-0 inset-x-6 h-px bg-gradient-to-r from-transparent via-[#BEF264]/50 to-transparent" />
 
           <div className="px-5 py-5">
 
@@ -42,13 +42,13 @@ export default function LimitReachedToast({ resetAt, onClose }) {
                 <img
                   src="/assets/ai/robot.webp"
                   alt="Zyvo AI"
-                  className="w-11 h-11 rounded-full border border-[#7A3BFF]/30 shadow-[0_0_18px_rgba(122,59,255,0.5)]"
+                  className="w-11 h-11 rounded-full border border-[#BEF264]/30 shadow-[0_0_18px_rgba(190,242,100,0.5)]"
                 />
-                <div className="absolute inset-0 rounded-full bg-[#7A3BFF]/20 blur-md animate-pulse pointer-events-none" />
+                <div className="absolute inset-0 rounded-full bg-[#BEF264]/20 blur-md animate-pulse pointer-events-none" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-white text-sm font-semibold leading-tight">Zyvo AI</div>
-                <div className="text-[#9D6BFF] text-xs font-medium mt-0.5">Monthly limit reached</div>
+                <div className="text-[#A3E635] text-xs font-medium mt-0.5">Monthly limit reached</div>
               </div>
               <button
                 onClick={onClose}
@@ -66,8 +66,8 @@ export default function LimitReachedToast({ resetAt, onClose }) {
               </div>
               <div className="h-1.5 w-full bg-white/[0.07] rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-[#7A3BFF] to-[#C084FC]"
-                  style={{ width: "100%", boxShadow: "0 0 8px rgba(122,59,255,0.7)" }}
+                  className="h-full rounded-full bg-gradient-to-r from-[#BEF264] to-[#D9F99D]"
+                  style={{ width: "100%", boxShadow: "0 0 8px rgba(190,242,100,0.7)" }}
                 />
               </div>
             </div>
@@ -87,8 +87,8 @@ export default function LimitReachedToast({ resetAt, onClose }) {
                 "Product photos & brand kits",
               ].map((perk) => (
                 <div key={perk} className="flex items-center gap-2.5">
-                  <div className="w-4 h-4 rounded-full bg-[#7A3BFF]/15 border border-[#7A3BFF]/35 flex items-center justify-center shrink-0">
-                    <span className="text-[#9D6BFF] text-[9px] font-bold leading-none">✓</span>
+                  <div className="w-4 h-4 rounded-full bg-[#BEF264]/15 border border-[#BEF264]/35 flex items-center justify-center shrink-0">
+                    <span className="text-[#A3E635] text-[9px] font-bold leading-none">✓</span>
                   </div>
                   <span className="text-sm text-white/75">{perk}</span>
                 </div>
@@ -101,7 +101,7 @@ export default function LimitReachedToast({ resetAt, onClose }) {
                 {["🧑‍💻", "👩‍🎨", "🧑‍🚀", "👩‍💼"].map((emoji, i) => (
                   <div
                     key={i}
-                    className="w-6 h-6 rounded-full bg-[#1C1F2E] border border-[#7A3BFF]/20 flex items-center justify-center text-[11px] leading-none"
+                    className="w-6 h-6 rounded-full bg-[#141C0D] border border-[#BEF264]/20 flex items-center justify-center text-[11px] leading-none"
                   >
                     {emoji}
                   </div>
@@ -113,10 +113,10 @@ export default function LimitReachedToast({ resetAt, onClose }) {
             {/* CTA */}
             <button
               onClick={handleUpgrade}
-              className="w-full rounded-full py-2.5 font-semibold text-white text-sm transition active:scale-[0.98]"
+              className="w-full rounded-full py-2.5 font-semibold text-[#11150D] text-sm transition active:scale-[0.98]"
               style={{
-                background: "linear-gradient(135deg, #7A3BFF, #9D6BFF)",
-                boxShadow: "0 4px 20px rgba(122,59,255,0.55)",
+                background: "linear-gradient(135deg, #BEF264, #A3E635)",
+                boxShadow: "0 4px 20px rgba(190,242,100,0.55)",
               }}
               onMouseEnter={(e) => (e.currentTarget.style.filter = "brightness(1.1)")}
               onMouseLeave={(e) => (e.currentTarget.style.filter = "brightness(1)")}

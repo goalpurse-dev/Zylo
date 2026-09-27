@@ -70,10 +70,45 @@ export async function fetchRepairResearchVersion(parentResearchVersionId) {
   return data;
 }
 
+// A specific research version row by id, regardless of status — used to
+// recover the last real completed research (the PARENT) when the LATEST
+// version for a story plan is a failed targeted-repair attempt, so a dead
+// repair round never hides real, valid, previously-completed research
+// behind a blank failure screen (see research.jsx's settleFromVersionRow).
+export async function fetchResearchVersionById(researchVersionId) {
+  if (!researchVersionId) return null;
+  const { data, error } = await supabase.from("long_form_research_versions").select("*").eq("id", researchVersionId).maybeSingle();
+  if (error || !data) return null;
+  return data;
+}
+
+// Maps a source object from a research version's own intermediate.*SourcesFull
+// (camelCase, exactly what the compiler works with in-memory) into the same
+// snake_case shape long_form_research_sources rows already have, so callers
+// never have to know which of the two this came from.
+function intermediateSourceToRowShape(s) {
+  return { id: s.id, url: s.url, title: s.title, publisher: null, source_type: s.sourceType, quality_tier: s.qualityTier, relevance: s.relevance, credibility_notes: s.credibilityNotes, chapters_supported: s.chaptersSupported ?? [] };
+}
+
+// 2026-09-20 real-incident fix: a completed research version (real facts,
+// research_completed_at set) can still have ZERO rows in
+// long_form_research_sources if that version's own persistence upsert failed
+// silently (see advance-long-form-research's stageFinalizing — it only
+// console.errors on failure, never throws or retries) — confirmed live on a
+// real repair version (b8049220-..., 29 merged facts, 57 real sources sitting
+// in intermediate.repairSourcesFull, 0 rows in the sources table). Without
+// this, the UI showed "0 sources" for research that had genuinely found and
+// kept real evidence — provenance was never actually lost, just unreadable
+// from the one place the UI looked. Never fabricates anything: only reads
+// back the exact source objects the compiler itself already extracted and
+// persisted onto the version row.
 export async function fetchResearchSources(researchVersionId) {
   if (!researchVersionId) return [];
   const { data } = await supabase.from("long_form_research_sources").select("*").eq("research_version_id", researchVersionId);
-  return data ?? [];
+  if (data?.length) return data;
+  const { data: versionRow } = await supabase.from("long_form_research_versions").select("intermediate").eq("id", researchVersionId).maybeSingle();
+  const fallback = versionRow?.intermediate?.finalSourcesFull ?? versionRow?.intermediate?.repairSourcesFull ?? versionRow?.intermediate?.v1SourcesFull ?? [];
+  return fallback.map(intermediateSourceToRowShape);
 }
 
 // The most recently COMPLETED research for this project, whatever Story
@@ -113,6 +148,30 @@ export async function startResearch(projectId, { regenerate = false } = {}) {
       payload = null;
     }
     return { ok: false, status: context?.status ?? 500, code: payload?.code ?? null, message: payload?.error ?? "We couldn't complete the research right now." };
+  }
+  return { ok: true, project: data.project, research: data.research };
+}
+
+// 2026-09-20 "clarify the completed research screen" fix — the REAL
+// targeted repair pipeline (advance-long-form-research's repair_planning ->
+// repair_search -> repair_extraction -> repair_coverage, which explicitly
+// merges with the parent version's own existing sources/facts rather than
+// discarding them), exposed as a direct user action for the first time —
+// previously only ever triggered server-side by the Script Engine's Critic.
+// Never a full restart: this only ever narrows to the specific chapters the
+// current research's own coverage.chapterCoverage already flagged as not
+// "strong".
+export async function startResearchRepair(projectId) {
+  const { data, error } = await supabase.functions.invoke("start-long-form-research-repair", { body: { projectId } });
+  if (error) {
+    const context = error.context;
+    let payload = null;
+    try {
+      payload = context && typeof context.json === "function" ? await context.json() : null;
+    } catch {
+      payload = null;
+    }
+    return { ok: false, status: context?.status ?? 500, message: payload?.error ?? "We couldn't start the targeted repair right now." };
   }
   return { ok: true, project: data.project, research: data.research };
 }

@@ -17,7 +17,10 @@ export type ToolKey =
   | "image:Wan2.6-image"
   | "image:nano-pro"
   | "image:seedream4.0"
+  | "image:seedream5lite"
+  | "image:seedream5pro"
   | "image:nano.2"
+  | "image:kling.o3"
   | "image:fruit-v2"
   | "image:twoam1k"
   | "image:twoam2k"
@@ -46,6 +49,9 @@ export type ToolKey =
   | "video:viduq3turbo720"
   | "video:viduq3turbo1080"
   | "video:fruitveo31lite"
+  | "video:fruit-v2"
+  | "video:fruit-v3"
+  | "video:fruit-v4"
   | "video:microcamminimax720"
   | "video:microcamminimax1080"
   | "video:footballerseedance720"
@@ -155,6 +161,84 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     "1k": { credits: 5, price: 0.10 },
     "2k": { credits: 7, price: 0.14 },
     "4k": { credits: 10, price: 0.20 },
+  },
+},
+
+// Verified directly against real Runware Kling IMAGE O3 test requests
+// (2026-09-13): 1360x768 = $0.028, 2720x1536 = $0.028 (same billing tier —
+// 1K and 2K are currently priced identically), 5440x3072 = $0.056. costUSD/
+// retailUSD/credits below reflect that real measured cost.
+// UPDATE (2026-09-14, Long Form Generate workspace): this is now ALSO the
+// primary GENERATE renderer for Long Form's V3 ("High Quality") paid scene-
+// generation tier — see estimate_long_form_episode_credits (SQL) and
+// resolveLongFormSceneRenderer (_shared/sceneRendererTiers.ts), which price
+// V3 at 3 credits/generation using this same measured $0.028/$0.06 figure.
+// That specific customer-facing price has NOT had a separate explicit
+// business sign-off beyond reusing this already-measured number — flag
+// before wide release if a different retail price is wanted.
+"image:kling.o3": {
+  provider: "runware",
+  generator: "Kling IMAGE O3",
+  airTag: "klingai:kling-image@o3",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-image",
+
+  costUSD: 0.028,
+  retailUSD: 0.06,
+  credits: 3,
+  margin: m(0.028, 0.06),
+
+  resolutionPricing: {
+    "1k": { credits: 3, price: 0.028 },
+    "2k": { credits: 3, price: 0.028 },
+    "4k": { credits: 6, price: 0.056 },
+  },
+},
+
+// Seedream 5.0 LITE (2026-09-14 correction) — the prior pass registered
+// this tier as "Seedream 5.0 Pro" with a guessed, never-verified price. The
+// model actually manually tested against Runware is Seedream 5.0 LITE
+// (bytedance:seedream@5.0-lite) — Pro is a separate, not-yet-added model;
+// do not conflate them. Real observed costs: $0.035 at BOTH verified
+// resolutions (2848x1600 and 4096x2304, identical billing) — do not assume
+// this means Seedream is flat-rate regardless of size in general, only that
+// these two specific verified points happened to match. retailUSD/credits
+// apply the same ~2.2x margin this codebase's other Long Form entries use
+// (Kling ~2.14x, Qwen ~2.41x) — this specific customer-facing price has NOT
+// had explicit business sign-off, same disclosed caveat as image:kling.o3's
+// own comment above. Approved dimensions live in supabase/functions/_shared
+// /imageDimensionPolicy.ts's MODEL_DIMENSION_POLICY, not here — providers.ts
+// has no width/height enforcement mechanism of its own.
+"image:seedream5lite": {
+  provider: "runware",
+  generator: "Seedream 5.0 Lite",
+  airTag: "bytedance:seedream@5.0-lite",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-image",
+
+  costUSD: 0.035,
+  retailUSD: 0.08,
+  credits: 4,
+  margin: m(0.035, 0.08),
+},
+
+// Verified against Runware's official Seedream 5.0 Pro model page. Canonical
+// Visual World references use its documented 1.5K 1536x1024 tier. Internal
+// Long Form jobs remain zero-credit; these values keep the shared registry
+// complete for dispatch and any future customer-facing use.
+"image:seedream5pro": {
+  provider: "runware",
+  generator: "Seedream 5.0 Pro",
+  airTag: "bytedance:seedream@5.0-pro",
+  secret: "RUNWARE_API_KEY",
+  edgeFn: "/functions/v1/runware-image",
+  costUSD: 0.0481,
+  retailUSD: 0.10,
+  credits: 5,
+  margin: m(0.0481, 0.10),
+  resolutionPricing: {
+    "1.5k": { credits: 5, price: 0.10 },
+    "2k": { credits: 10, price: 0.20 },
   },
 },
 
@@ -389,10 +473,19 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
   // estimate.
   // Compute-time estimate, not a fixed price. Internal references override credits to zero.
   // Verified: runware.ai/docs/models/alibaba-qwen-image-edit-plus (2026-09-10).
+  // UPDATED 2026-09-14 (Long Form scene-operation pricing audit): the ONLY
+  // real completed Qwen Image Edit Plus job in production so far (a Long
+  // Form scene edit, 1536x1024) actually cost $0.009 — cheaper than this
+  // doc-derived estimate. Using the real measured number per the explicit
+  // "retail = 2x actual internal provider cost" rule: retailUSD = 0.018,
+  // credits = roundCredits(0.018 / CREDIT_RETAIL_USD) = 1 (src/lib/pricing.ts
+  // is the authoritative roundCredits/CREDIT_RETAIL_USD source — this value
+  // is pre-computed here, not re-derived at runtime, matching every other
+  // entry in this table).
   "image:qwen.image-edit-plus": {
     provider: "runware", generator: "Qwen Image Edit Plus", airTag: "runware:108@22",
     secret: "RUNWARE_API_KEY", edgeFn: "/functions/v1/runware-image",
-    costUSD: 0.0166, retailUSD: 0.04, credits: 2, margin: m(0.0166, 0.04),
+    costUSD: 0.009, retailUSD: 0.018, credits: 1, margin: m(0.009, 0.018),
   },
   "image:flux2.klein9bkv": {
     provider: "runware",
@@ -739,6 +832,35 @@ export const KEY_LINKS: Record<ToolKey, ProviderLink> = {
     retailMultiplier:      2,
     soundCreditsPerSecond: 5,
     baseCreditsPerSecond:  3,
+  },
+
+  /**
+   * AI Fruit Story tier keys. Fruit-only, so the server can price them from
+   * public.tool_prices (see migration 20261007120000) without touching the
+   * shared keys other tools use. To move a tier to a new model, change only
+   * the airTag here and the matching tool_prices row — the key stays.
+   * Credits are NOT read from here; the database price is authoritative.
+   */
+  "video:fruit-v2": {           // currently Seedance 1.5 Pro, 480p + audio
+    provider:   "runware",
+    generator:  "Seedance 1.5 Pro",
+    airTag:     "bytedance:seedance@1.5-pro",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
+  },
+  "video:fruit-v3": {           // currently Vidu Q3 Turbo, 720p + audio
+    provider:   "runware",
+    generator:  "Vidu Q3 Turbo",
+    airTag:     "vidu:4@2",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
+  },
+  "video:fruit-v4": {           // currently Veo 3.1 Lite + audio
+    provider:   "runware",
+    generator:  "Veo 3.1 Lite",
+    airTag:     "google:veo@3.1-lite",
+    secret:     "RUNWARE_API_KEY",
+    edgeFn:     "/functions/v1/runware-video",
   },
 
   /**

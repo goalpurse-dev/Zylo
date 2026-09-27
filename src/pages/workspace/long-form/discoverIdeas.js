@@ -69,13 +69,23 @@ export const GENERATE_STATUS = {
  *     imageUrl: string | null,
  *     jobId: string | null,   // real `jobs` table id once submitted — hydration resumes this id, never resubmits
  *   },
+ *   thumbnailConcept: { headline: string, scene: string } | undefined, // final-polish round 4 — LLM-written raw material for `thumbnail` below
+ *   thumbnail: {                       // final-polish round 4, Section 4 — the ProductionSetup.jsx idea-card image
+ *     status: PREVIEW_STATUS,
+ *     imageUrl: string | null,
+ *     jobId: string | null,
+ *   },
  * }
  *
- * Deliberately NOT called "thumbnail" — this is a cheap concept preview to
- * help a creator imagine the video, not the final YouTube thumbnail (that's
- * a separate, later Thumbnail Generator tool).
+ * `conceptPreview` (deliberately NOT called "thumbnail" when it was added) is
+ * a cheap concept preview from the OLD /long-form/new page's flow — kept
+ * as-is, unused by ProductionSetup.jsx. `thumbnail` is the new, actual
+ * YouTube-thumbnail-style image ProductionSetup.jsx's idea cards show,
+ * generated deterministically from thumbnailConcept + the selected visual
+ * style's own header (see src/lib/longFormIdeaThumbnails.ts) — never the
+ * final video thumbnail, but closer to it than conceptPreview ever was.
  */
-export function createIdea({ id, title, topic, angle, visualDirection, category, direction, narrativeArchetype }) {
+export function createIdea({ id, title, topic, angle, visualDirection, category, direction, narrativeArchetype, thumbnailConcept }) {
   return {
     id,
     title,
@@ -85,7 +95,9 @@ export function createIdea({ id, title, topic, angle, visualDirection, category,
     category,
     narrativeArchetype,
     direction,
+    thumbnailConcept: thumbnailConcept ?? undefined,
     conceptPreview: { status: PREVIEW_STATUS.PENDING, imageUrl: null, jobId: null },
+    thumbnail: { status: PREVIEW_STATUS.PENDING, imageUrl: null, jobId: null },
   };
 }
 

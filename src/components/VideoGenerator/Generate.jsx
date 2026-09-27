@@ -2,7 +2,7 @@ import {
   BoxSelect,
   ChevronRight,
   Folder,
-  Image,
+  Image as ImageIcon,
   ImagePlus,
   VideoIcon,
   Wand2,
@@ -21,7 +21,9 @@ import { supabase } from "../../lib/supabaseClient";
 import {watchJob } from "../../lib/jobs";
 import { KEY_LINKS } from "../../lib/providers";
 import { generateVideoFromUI } from "../../lib/video-generator/generator";
-import { calculateVideoCredits, calculateVideoCreditsRaw } from "../../lib/video-generator/videoPricing";
+import { videoPriceGrid, videoPriceItem } from "../../lib/video-generator/pricing";
+import useToolPriceQuotes from "../../hooks/useToolPriceQuotes";
+import QuotedCredits from "../../components/pricing/QuotedCredits";
 import VideoTemplate from "../../components/video-templates/VideoTemplate";
 import { createPortal } from "react-dom";
 import { useMemo } from "react";
@@ -37,7 +39,7 @@ const SAMPLE_REFERENCE_IMAGES = [
   "/assets/showcase/image5.webp",
 ];
 
-export default function Generate({  }) {
+export default function Generate({ onGenerated }) {
 
 
   const [toast, setToast] = useState(null);
@@ -103,12 +105,21 @@ const selectedModel = MODELS[selectedModelKey] ?? MODELS[V3_KEY];
     if (selectedModelKey === V3_KEY) setSelectedDuration("6s");
   }, [selectedModelKey]);
 
-const totalCredits = useMemo(() => {
-  if (usesDurationSlider) {
-    return Math.ceil(calculateVideoCreditsRaw(selectedModelKey, sliderDuration, modelHasSound ? withSound : false));
-  }
-  return calculateVideoCredits(selectedModelKey, selectedDuration, selectedResolution, modelHasSound ? withSound : false);
-}, [selectedModelKey, selectedDuration, sliderDuration, selectedResolution, withSound, modelHasSound, usesDurationSlider]);
+// Server price quote for exactly the job this selection creates; both active
+// models' option grids are quoted up front so changing options is instant.
+const priceItems = useMemo(() => [
+  ...videoPriceGrid([V2_KEY, V3_KEY]),
+  videoPriceItem({
+    modelKey:   selectedModelKey,
+    size:       selectedSize,
+    duration:   usesDurationSlider ? String(sliderDuration) : selectedDuration,
+    resolution: selectedResolution,
+    withSound:  modelHasSound ? withSound : false,
+  }, "current"),
+], [selectedModelKey, selectedSize, selectedDuration, sliderDuration, selectedResolution, withSound, modelHasSound, usesDurationSlider]);
+const priceQuotes = useToolPriceQuotes(priceItems);
+const totalCredits = priceQuotes.price("current");
+const priceStatus = priceQuotes.errors.current ? "error" : totalCredits != null ? "ready" : "loading";
 
 const maxRefImages = selectedModel.maxReferenceImages;
 const canAddImages = maxRefImages > 0;
@@ -285,7 +296,12 @@ useEffect(() => {
       return;
     }
 
-    // 🔥 CREDIT CHECK
+    // 🔥 CREDIT CHECK (against the server quote for this exact job)
+    if (totalCredits == null) {
+      if (priceStatus === "error") priceQuotes.retry();
+      setIsGenerating(false);
+      return;
+    }
     if (balance < totalCredits) {
       setToast({
         message: `You need ${totalCredits} credits to generate this video`,
@@ -307,6 +323,7 @@ useEffect(() => {
     });
 
     watchJob(job.id, () => {});
+    onGenerated?.(job);
 
     // unlock after short delay (long enough to prevent rapid double-submit)
     setTimeout(() => {
@@ -327,7 +344,7 @@ useEffect(() => {
 }
 
   return (
-    <div className="w-full flex-1 flex flex-col gap-2.5 relative bg-[#0b0c0e] border border-white/[0.06] shadow-[0_10px_40px_rgba(0,0,0,0.4)] rounded-2xl p-4 md:p-5">
+    <div className="w-full flex-1 flex flex-col gap-2.5 relative bg-[#0b0c0e] border border-white/[0.06] shadow-[0_10px_40px_rgba(0,0,0,0.4)] rounded-2xl px-4 pt-4 pb-[168px] md:px-5 md:pt-5 lg:pb-5">
 
       {/* BLUR OVERLAY */}
 {isAnyModalOpen &&
@@ -347,8 +364,8 @@ useEffect(() => {
 <div className="w-full">
   <div
     className="
-      relative flex w-full p-1
-      rounded-xl
+      relative flex w-full p-0.5 lg:p-1
+      rounded-lg lg:rounded-xl
       bg-[#151719]
       border border-white/[0.08]
       overflow-hidden
@@ -356,59 +373,45 @@ useEffect(() => {
   >
     <div
       className={`
-        absolute top-1 bottom-1 w-1/2 rounded-lg
+        absolute top-0.5 bottom-0.5 lg:top-1 lg:bottom-1 w-1/2 rounded-md lg:rounded-lg
         transition-all duration-300
         ${
           location.pathname === "/workspace/video-generator"
-            ? "left-[calc(50%-2px)]"
-            : "left-1"
+            ? "left-[calc(50%-1px)] lg:left-[calc(50%-2px)]"
+            : "left-0.5 lg:left-1"
         }
-        bg-[#2D1B50]
-        border border-[#9B6DFF]/55
+        bg-[#16210A]
+        border border-[#A3E635]/55
         overflow-hidden
       `}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.45),transparent_72%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(132,204,22,0.45),transparent_72%)]" />
     </div>
 
     {[
       {
         label: "Viral Image",
         path: "/workspace/image-generator",
-        icon: "/icons/image.png",
+        Icon: ImageIcon,
       },
       {
         label: "Viral Video",
         path: "/workspace/video-generator",
-        icon: "/icons/video.png",
+        Icon: VideoIcon,
       },
     ].map((item) => {
-      const isActive = location.pathname === item.path;
-
       return (
         <button
           key={item.label}
           onClick={() => navigate(item.path)}
-          className="relative flex-1 py-1 flex flex-col items-center justify-center gap-[1px] mb-1 z-10"
+          className="relative flex-1 py-1.5 lg:py-1 flex flex-row lg:flex-col items-center justify-center gap-1.5 lg:gap-[1px] mb-0 lg:mb-1 z-10"
         >
-          <img
-            src={item.icon}
-            alt={item.label}
-            className={`
-              object-contain transition-all duration-200
-              ${
-                isActive
-                  ? "w-8 h-8 opacity-100 scale-110 drop-shadow-[0_0_14px_rgba(168,85,247,0.9)]"
-                  : "w-7 h-7 opacity-50 hover:opacity-80 hover:scale-105"
-              }
-            `}
+          <item.Icon
+            aria-hidden="true"
+            className="w-3 h-3 lg:w-[18px] lg:h-[18px] text-white transition-transform duration-200"
           />
 
-          <span
-            className={`text-xs font-medium transition-all duration-200 ${
-              isActive ? "text-white" : "text-white/60"
-            }`}
-          >
+          <span className="text-[11px] lg:text-xs font-medium text-white">
             {item.label}
           </span>
         </button>
@@ -429,12 +432,12 @@ useEffect(() => {
         key={key}
         onClick={() => setSelectedModelKey(key)}
         className={`relative flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 transition-all ${
-          active ? "bg-[#7A3BFF] text-white shadow-lg shadow-[#7A3BFF]/20" : "text-white/40 hover:text-white/70"
+          active ? "bg-[#BEF264] text-[#11150D] shadow-lg shadow-[#BEF264]/20" : "text-white/40 hover:text-white/70"
         }`}
       >
-        <span className={`text-[12px] font-bold tracking-wide ${active ? "text-white" : ""}`}>{label}</span>
+        <span className={`text-[12px] font-bold tracking-wide ${active ? "text-[#11150D]" : ""}`}>{label}</span>
         <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-          active ? "bg-white/20 text-white" : "bg-white/[0.05] text-white/30"
+          active ? "bg-black/15 text-[#11150D]" : "bg-white/[0.05] text-white/30"
         }`}>{badge}</span>
       </button>
     );
@@ -444,7 +447,7 @@ useEffect(() => {
       {/* PROMPT */}
 <div
   data-ftg="prompt"
-  className="rounded-xl border border-white/[0.08] bg-[#0e1012] px-4 py-3 focus-within:border-[#7A3BFF]/40 transition"
+  className="rounded-xl border border-white/[0.08] bg-[#0e1012] px-4 py-3 focus-within:border-[#BEF264]/40 transition"
 >
   <p className="text-[10px] font-semibold uppercase tracking-wider text-white/25 mb-2">Prompt</p>
   <textarea
@@ -508,8 +511,8 @@ useEffect(() => {
     py-3
     text-sm font-medium text-white
     transition-all duration-300
-    hover:border-[#7A3BFF]/50
-    hover:shadow-[0_0_20px_rgba(122,59,255,0.2)]
+    hover:border-[#BEF264]/50
+    hover:shadow-[0_0_20px_rgba(190,242,100,0.2)]
   "
 >
   Browse Templates
@@ -536,7 +539,7 @@ useEffect(() => {
           bg-[#141722]/95
           border border-[#2A2F45]
           rounded-3xl
-          shadow-[0_0_60px_rgba(122,59,255,0.25)]
+          shadow-[0_0_60px_rgba(190,242,100,0.25)]
           p-8
           overflow-y-auto
         "
@@ -581,11 +584,11 @@ className={`
   px-4 py-3.5
   text-left
   transition-all duration-200
-  hover:border-[#7A3BFF]/40
-  hover:shadow-[0_6px_20px_rgba(122,59,255,0.15)]
+  hover:border-[#BEF264]/40
+  hover:shadow-[0_6px_20px_rgba(190,242,100,0.15)]
   active:scale-[0.98]
 
-  ${openModel ? "border-[#7A3BFF] shadow-[0_0_0_1px_rgba(122,59,255,0.4)] alive-active" : ""}
+  ${openModel ? "border-[#BEF264] shadow-[0_0_0_1px_rgba(190,242,100,0.4)] alive-active" : ""}
 `}
 >
 
@@ -612,7 +615,7 @@ className={`
   <ChevronRight
     className={`w-4 h-4 text-white/40 transition-all duration-200 ${
       openModel
-        ? "rotate-90 text-purple-400"
+        ? "rotate-90 text-lime-400"
         : "group-hover:translate-x-1"
     }`}
   />
@@ -637,7 +640,7 @@ className={`
     setOpenDuration(false);
   }}
   className={`group flex items-center justify-between rounded-xl border bg-[#0e1012] px-3.5 py-2.5 text-left transition-all
-    ${openSize ? "border-[#7A3BFF]/60" : "border-white/[0.07] hover:border-white/15"}
+    ${openSize ? "border-[#BEF264]/60" : "border-white/[0.07] hover:border-white/15"}
     ${disableSizeSelector ? "opacity-40 cursor-not-allowed" : ""}`}
 >
   <div>
@@ -646,7 +649,7 @@ className={`
   </div>
   <div className="flex items-center gap-2">
     <AspectPreview ratio={selectedSize} />
-    <ChevronRight className={`w-3.5 h-3.5 text-white/30 transition-all ${openSize ? "rotate-90 text-[#7A3BFF]" : "group-hover:translate-x-0.5"}`} />
+    <ChevronRight className={`w-3.5 h-3.5 text-white/30 transition-all ${openSize ? "rotate-90 text-[#BEF264]" : "group-hover:translate-x-0.5"}`} />
   </div>
 </button>
 
@@ -670,7 +673,7 @@ className={`
       value={sliderDuration}
       onChange={(e) => setSliderDuration(Number(e.target.value))}
       className="w-full h-1 rounded-full appearance-none cursor-pointer"
-      style={{ accentColor: "#7A3BFF" }}
+      style={{ accentColor: "#BEF264" }}
     />
     <div className="flex justify-between mt-1.5">
       <span className="text-[10px] text-white/25">{selectedModel.minDuration ?? 4}s</span>
@@ -681,12 +684,12 @@ className={`
   <button
     onClick={() => { setOpenDuration(!openDuration); setOpenModel(false); setOpenSize(false); }}
     className={`w-full group flex items-center justify-between rounded-xl border bg-[#0e1012] px-3.5 py-2.5 text-left transition-all
-      ${openDuration ? "border-[#7A3BFF]/60" : "border-white/[0.07] hover:border-white/15"}`}
+      ${openDuration ? "border-[#BEF264]/60" : "border-white/[0.07] hover:border-white/15"}`}
   >
     <p className="text-[10px] font-semibold uppercase tracking-wider text-white/25">Duration</p>
     <div className="flex items-center gap-2">
       <p className="text-[13px] font-semibold text-white">{selectedDuration}</p>
-      <ChevronRight className={`w-3.5 h-3.5 text-white/30 transition-all ${openDuration ? "rotate-90 text-[#7A3BFF]" : "group-hover:translate-x-0.5"}`} />
+      <ChevronRight className={`w-3.5 h-3.5 text-white/30 transition-all ${openDuration ? "rotate-90 text-[#BEF264]" : "group-hover:translate-x-0.5"}`} />
     </div>
   </button>
 )}
@@ -835,7 +838,7 @@ className={`
     </div>
     <div
       className="relative shrink-0 rounded-full"
-      style={{ width: 34, height: 18, background: withSound ? "#7A3BFF" : "rgba(255,255,255,0.10)", transition: "background 120ms" }}
+      style={{ width: 34, height: 18, background: withSound ? "#BEF264" : "rgba(255,255,255,0.10)", transition: "background 120ms" }}
     >
       <div
         className="absolute top-[3px] w-3 h-3 rounded-full bg-white shadow"
@@ -846,16 +849,18 @@ className={`
 )}
 
 {/* GENERATE + RESET
-     mt-auto pushes this to the bottom of the flex-col container when content
-     is short; sticky keeps it pinned to the bottom of the scroll viewport
-     (mobile and desktop both scroll this panel) once content overflows.
-     bottom offset on mobile clears the fixed MobileBottomNav (78px + safe
-     area) that would otherwise sit on top of the button; desktop has no
-     such nav so it sticks flush to the column's own bottom edge.
-     z-[60] — must beat the Size/Duration settings wrapper below (z-50),
-     otherwise that box stacks above this sticky footer and visually
-     covers it whenever their boxes overlap while scrolling. */}
-<div className="sticky bottom-[calc(78px_+_env(safe-area-inset-bottom))] lg:bottom-0 z-[60] mt-auto flex items-center gap-3 border-t border-white/[0.08] bg-[#0b0c0e]/95 py-3 backdrop-blur-xl">
+     Mobile: truly `fixed` to the viewport bottom (clearing the fixed
+     MobileBottomNav) — `position: sticky` was tried here first, but a
+     sticky-bottom element renders "stuck" the moment its panel overflows
+     the viewport, even unscrolled, so it visually overlapped the prompt
+     textarea instead of sitting below it. `fixed` reads as an intentional
+     floating action bar instead, matching ImageGenerator/Generate.jsx and
+     CartoonDriveByBuilder's own bottom bar.
+     Desktop: sticky within its own dedicated scroll column, where there's
+     no shared/overflowing-content ambiguity — mt-auto keeps it pinned to
+     the bottom when content is short. z-[60] beats the Size/Duration
+     settings wrapper's z-50 so it isn't visually covered when they overlap. */}
+<div className="fixed inset-x-0 bottom-[calc(78px_+_env(safe-area-inset-bottom))] z-[90] flex items-center gap-3 border-t border-white/[0.08] bg-[#0b0c0e]/95 px-4 py-3 backdrop-blur-xl lg:sticky lg:inset-x-auto lg:bottom-0 lg:z-[60] lg:mt-auto lg:px-0 lg:backdrop-blur-none">
   {/* Reset — bare text */}
   <button
     onClick={() => {
@@ -878,6 +883,8 @@ className={`
       disabled={!prompt.trim() || isGenerating || missingRequiredImage}
       isGenerating={isGenerating}
       estimatedCredits={totalCredits}
+      priceStatus={priceStatus}
+      onRetryPrice={priceQuotes.retry}
     />
   </div>
 </div>
@@ -896,15 +903,15 @@ className={`
       ? "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
       : `
       generate-btn generate-btn-ready
-      bg-gradient-to-r from-purple-500 to-fuchsia-500/40
+      bg-gradient-to-r from-lime-500 to-lime-500/40
       backdrop-blur-md
-      border border-purple-400/30
-      hover:from-purple-500/60
-      hover:to-fuchsia-500/50
-      hover:border-purple-400/50
+      border border-lime-400/30
+      hover:from-lime-500/60
+      hover:to-lime-500/50
+      hover:border-lime-400/50
       hover:scale-[1.03]
-      shadow-[0_0_20px_rgba(168,85,247,0.35)]
-      hover:shadow-[0_0_30px_rgba(168,85,247,0.55)] 
+      shadow-[0_0_20px_rgba(132,204,22,0.35)]
+      hover:shadow-[0_0_30px_rgba(132,204,22,0.55)] 
       `
   }`}
 >
@@ -929,7 +936,7 @@ className={`
       transition-all duration-300    "
   >
     <span className="text-base cursor-default">◆</span>
-    <span className="cursor-default">Estimated cost: {totalCredits} credits</span>
+    <span className="cursor-default">Estimated cost: <QuotedCredits status={priceStatus} value={totalCredits} onRetry={priceQuotes.retry} /> credits</span>
   </div>
 </div>
 </>
@@ -1025,15 +1032,15 @@ function VideoModelCard({
         bg-[#0B0E1A]/70 border
         ${
           active
-            ? "border-[#7A3BFF] bg-[#7A3BFF]/10 shadow-[0_0_20px_rgba(122,59,255,0.35)]"
-            : "border-white/10 hover:bg-white/5 hover:border-[#7A3BFF]/40"
+            ? "border-[#BEF264] bg-[#BEF264]/10 shadow-[0_0_20px_rgba(190,242,100,0.35)]"
+            : "border-white/10 hover:bg-white/5 hover:border-[#BEF264]/40"
         }
         p-4
       `}
     >
       {/* ACTIVE CHECK */}
       {active && (
-        <span className="absolute top-3 right-3 text-[#7A3BFF] font-bold">
+        <span className="absolute top-3 right-3 text-[#BEF264] font-bold">
           ✓
         </span>
       )}
@@ -1084,7 +1091,7 @@ function SelectOption({ children, active, onClick }) {
         transition-all duration-200
         ${
           active
-            ? "bg-[#7A3BFF]/20 border border-[#7A3BFF]"
+            ? "bg-[#BEF264]/20 border border-[#BEF264]"
             : "hover:bg-white/5"
         }
       `}

@@ -1,0 +1,44 @@
+import fs from "node:fs";
+import assert from "node:assert/strict";
+import { PGlite } from "../artifacts/mars-forensic/sql-check/node_modules/@electric-sql/pglite/dist/index.js";
+// Ephemeral local Postgres only. Never connects to the project database.
+const db = new PGlite();
+await db.exec(`
+create role anon; create role authenticated; create role service_role;
+create table public.long_form_projects(id uuid primary key,user_id uuid,current_visual_plan_version_id uuid,current_visual_world_version_id uuid,current_script_version_id uuid,scene_generation_tier text,current_scene_generation_status text,active_generation_charge_id uuid,updated_at timestamptz);
+create table public.long_form_visual_world_versions(id uuid primary key,status text);
+create table public.long_form_visual_plan_versions(id uuid primary key,status text,visual_plan jsonb);
+create table public.long_form_narration_contract_versions(id uuid primary key,project_id uuid,script_version_id uuid,status text,claims jsonb);
+create table public.profiles(id uuid primary key,credit_balance int,credits_spent_today int);
+create table public.long_form_episode_generation_charges(id uuid primary key default gen_random_uuid(),project_id uuid,visual_world_version_id uuid,visual_plan_version_id uuid,user_id uuid,tier text,credits_charged int,cost_breakdown jsonb,idempotency_key text unique,rebuild_of_charge_id uuid,status text default 'charged',superseded_at timestamptz,superseded_by_charge_id uuid);
+create function public.estimate_long_form_episode_credits(uuid,text) returns jsonb language sql as $$ select '{"totalCredits":1,"breakdown":{}}'::jsonb $$;
+`);
+const migration = fs.readFileSync("supabase/migrations/20260930390000_long_form_generate_preflight.sql", "utf8");
+await db.exec(migration);
+await db.exec(migration); // reapplicable: no duplicate object error
+const id = n => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
+const plan = { narrationContractVersionId: id(5), visualBeats: [{ id: "b1", renderMethod: "GENERATE", narrationClaimId: "c1" }] };
+await db.query("insert into long_form_projects(id,user_id,current_visual_plan_version_id,current_visual_world_version_id,current_script_version_id) values($1,$2,$3,$4,$5)", [id(1),id(2),id(3),id(4),id(6)]);
+await db.query("insert into long_form_visual_plan_versions values($1,'ready',$2)", [id(3), JSON.stringify(plan)]);
+await db.query("insert into long_form_visual_world_versions values($1,'ready')", [id(4)]);
+await db.query("insert into long_form_narration_contract_versions values($1,$2,$3,'ready',$4)", [id(5),id(1),id(6),'[{"claimId":"c1"}]']);
+await db.query("insert into profiles values($1,10,0)", [id(2)]);
+const call = receipt => db.query("select charge_long_form_episode_generation($1,$2,'v3',$3::jsonb) as result", [id(1), id(2), JSON.stringify(receipt)]);
+const balance = async () => (await db.query("select credit_balance from profiles")).rows[0].credit_balance;
+await assert.rejects(db.query("select charge_long_form_episode_generation($1,$2,'v3')", [id(1),id(2)]), /SERVER_UPGRADE_REQUIRED/);
+await assert.rejects(call({}), /PREFLIGHT_FAILED/);
+assert.equal(await balance(), 10);
+const receipt = { planId:id(3),worldId:id(4),contractId:id(5),plan,beatIds:["b1"] };
+await assert.rejects(call({ ...receipt, plan: { ...plan, unexpectedChange: true } }), /PREFLIGHT_FAILED/);
+await assert.rejects(call({ ...receipt, beatIds: [] }), /PREFLIGHT_FAILED/);
+assert.equal(await balance(), 10);
+const charged = await call(receipt);
+assert.equal(charged.rows[0].result.creditsCharged, 1);
+assert.equal(await balance(), 9);
+const replayed = await call(receipt);
+assert.equal(replayed.rows[0].result.alreadyCharged, true);
+assert.equal(await balance(), 9);
+const acl = await db.query("select has_function_privilege('authenticated','public.charge_long_form_episode_generation(uuid,uuid,text,jsonb)','execute') as allowed");
+assert.equal(acl.rows[0].allowed, false);
+console.log("PASS: migration runs twice; missing/stale/incomplete preflight cannot debit; valid local fixture charges once; replay is idempotent; customer role cannot bypass Edge preflight.");
+await db.close();

@@ -23,7 +23,7 @@ import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { getPublicSeoMetadata, SITE_URL } from "../src/data/publicSeoMetadata.js";
+import { getPublicSeoMetadata, canonicalFor, SITE_URL } from "../src/data/publicSeoMetadata.js";
 import { structuredDataFor } from "../src/data/structuredData.js";
 import { getNoindexWorkspaceRoutes, getWorkspaceRouteSeoPolicy } from "../src/data/routeSeoPolicy.js";
 
@@ -38,8 +38,7 @@ const DEFAULT_DESCRIPTION = "Create AI images, videos, and social content with Z
 function sitemapPaths() {
   const xml = readFileSync(sitemapPath, "utf8");
   return [...xml.matchAll(/<loc>https:\/\/www\.tryzyvo\.com([^<]*)<\/loc>/g)]
-    .map((m) => m[1] || "/")
-    .filter((p) => p !== "/");
+    .map((m) => m[1] || "/");
 }
 
 // Decodes entities React's server renderer produces for text nodes (it
@@ -98,7 +97,7 @@ function removeTag(html, tagName, matchAttr, matchValue) {
 function buildHead({ pathname, seoVisibility, innerHtml }) {
   const metadata = getPublicSeoMetadata(pathname);
   const workspacePolicy = getWorkspaceRouteSeoPolicy(pathname);
-  const canonical = `${SITE_URL}${pathname}`;
+  const canonical = canonicalFor(pathname);
   const robots = seoVisibility === "noindex" ? "noindex, follow" : "index, follow, max-image-preview:large";
 
   const derived = (!metadata?.title || !metadata?.description) ? deriveLegacyTitleDescription(innerHtml) : null;
@@ -152,7 +151,10 @@ function validate({ pathname, seoVisibility, head, innerHtml, finalHtml }) {
   if (seoVisibility === "public" && h1Count !== 1) errors.push(`expected 1 H1, found ${h1Count}`);
   if (!head.title || head.title === "Zyvo – Go Viral With AI Content Creation") errors.push(`generic or missing title: ${head.title}`);
   if (!head.description) errors.push("missing description");
-  if (head.canonical !== `${SITE_URL}${pathname}`) errors.push(`canonical mismatch: ${head.canonical}`);
+  if (head.canonical !== canonicalFor(pathname)) errors.push(`canonical mismatch: ${head.canonical}`);
+  if (new URL(head.canonical).search || new URL(head.canonical).hash) errors.push(`canonical contains query/hash: ${head.canonical}`);
+  if (new URL(head.canonical).hostname !== "www.tryzyvo.com") errors.push(`canonical has wrong host: ${head.canonical}`);
+  if ((finalHtml.match(/application\/ld\+json/gi) || []).length > 1 && pathname === "/") errors.push("homepage has more than one JSON-LD block");
   const expectedRobots = seoVisibility === "noindex" ? "noindex, follow" : "index, follow";
   if (!head.robots.toLowerCase().includes(expectedRobots)) errors.push(`robots mismatch: ${head.robots}`);
   if ((finalHtml.match(/<title>/gi) || []).length !== 1) errors.push("title tag count != 1 in final HTML");
@@ -161,6 +163,14 @@ function validate({ pathname, seoVisibility, head, innerHtml, finalHtml }) {
 }
 
 async function writeSnapshot(pathname, html) {
+  if (pathname === "/") {
+    // The homepage IS dist/index.html — there's no separate ".html" sibling
+    // to also write, and no nested index.html folder to create. `template`
+    // was already read into memory before this loop started, so overwriting
+    // the file here is safe and doesn't affect any other route's rendering.
+    await writeFile(indexTemplatePath, html);
+    return;
+  }
   const relative = pathname.replace(/^\/+/, "");
   const htmlFile = path.join(distDir, `${relative}.html`);
   const indexFile = path.join(distDir, relative, "index.html");

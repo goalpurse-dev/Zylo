@@ -3,6 +3,7 @@ import { IDEA_CATEGORY_OPTIONS, IDEA_DIRECTION_OPTIONS } from "./discoverIdeas";
 import { IdeaCard } from "./shared";
 import LongFormSelect from "./LongFormSelect";
 import { LengthDepthControls } from "./LengthDepthControls";
+import { TextDensityControl } from "./TextDensityControl";
 
 function formatCountdown(ms) {
   const totalMinutes = Math.max(0, Math.ceil(ms / 60000));
@@ -87,6 +88,7 @@ export function DiscoveryLeftPanel({
                 <p className="mt-1 text-[12.5px] leading-relaxed text-white/45">{selectedIdea.angle}</p>
               </div>
               <LengthDepthControls draft={draft} onChange={onSettingsChange} />
+              <TextDensityControl value={draft.onScreenTextDensity} onChange={(onScreenTextDensity) => onSettingsChange({ onScreenTextDensity })} />
             </div>
           ) : (
             <p className="mt-3 text-[12.5px] text-white/40">Choose an idea from the results to continue.</p>

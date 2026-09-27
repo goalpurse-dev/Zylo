@@ -13,8 +13,8 @@ export default function ProgressToast({ remaining, onClose, duration = 5000 }) {
     return () => clearTimeout(t);
   }, [duration, onClose, remaining]);
 
-  let accentColor = "#7A3BFF";
-  let glowColor   = "rgba(122,59,255,0.25)";
+  let accentColor = "#BEF264";
+  let glowColor   = "rgba(190,242,100,0.25)";
   let badge       = null;
   let message     = "";
   let showUpgrade = false;
@@ -22,20 +22,20 @@ export default function ProgressToast({ remaining, onClose, duration = 5000 }) {
   if (remaining >= 3) {
     message = `${remaining} free images left this month.`;
   } else if (remaining === 2) {
-    accentColor = "#9B6DFF";
-    glowColor   = "rgba(155,109,255,0.3)";
+    accentColor = "#A3E635";
+    glowColor   = "rgba(163,230,53,0.3)";
     badge       = "Almost out";
     message     = `2 free images left — make them count!`;
     showUpgrade = true;
   } else if (remaining === 1) {
-    accentColor = "#B69CFF";
-    glowColor   = "rgba(182,156,255,0.3)";
+    accentColor = "#D9F99D";
+    glowColor   = "rgba(217,249,157,0.3)";
     badge       = "Last one!";
     message     = `1 free image left this month.`;
     showUpgrade = true;
   } else {
-    accentColor = "#B69CFF";
-    glowColor   = "rgba(182,156,255,0.3)";
+    accentColor = "#D9F99D";
+    glowColor   = "rgba(217,249,157,0.3)";
     badge       = "All used";
     message     = "You've used all your free images this month.";
     showUpgrade = true;

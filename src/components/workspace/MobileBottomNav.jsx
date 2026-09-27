@@ -1,6 +1,6 @@
 import { useEffect, useState, isValidElement } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Folder, LayoutGrid, Sparkles, X } from "lucide-react";
+import { Clapperboard, Home, Folder, LayoutGrid, Sparkles, X } from "lucide-react";
 import { createPortal } from "react-dom";
 import MobileCreateMenu, { WORKSPACE_TOOLS } from "./CreateMenu";
 
@@ -163,6 +163,7 @@ export default function MobileBottomNav({ hidden }) {
   const NAV_HEIGHT = 78;
   const createActive =
     location.pathname.startsWith("/workspace/two-am") ||
+    location.pathname.startsWith("/workspace/thirty-days") ||
     location.pathname.startsWith("/workspace/cartoon-drive-by") ||
     location.pathname.startsWith("/workspace/ai-fruit-story") ||
     location.pathname.startsWith("/workspace/face-asmr") ||
@@ -226,13 +227,21 @@ export default function MobileBottomNav({ hidden }) {
             onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/workspace/home"); }}
           />
 
-          {/* Create — same orb everywhere, raised only on Home */}
+          {/* Short Form — same orb everywhere, raised only on Home */}
           <NavItem
-            name="Create"
+            name="Short Form"
             icon={Sparkles}
             active={createOpen || (!anyMenuOpen && createActive)}
             expanded={createOpen}
             onClick={() => { setWorkspaceOpen(false); setCreateOpen((value) => !value); }}
+          />
+
+          {/* Long Form */}
+          <NavItem
+            name="Long Form"
+            icon={Clapperboard}
+            active={!anyMenuOpen && location.pathname.startsWith("/long-form")}
+            onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/long-form"); }}
           />
 
           {/* Tools */}

@@ -71,6 +71,7 @@ const [userPlan, setUserPlan] = useState("free");
 
   const [activeJobId, setActiveJobId] = useState(null);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1280);
+  const [mobilePanel, setMobilePanel] = useState("generate");
 
   useEffect(() => {
     const onResize = () => setIsDesktop(window.innerWidth >= 1280);
@@ -184,10 +185,13 @@ useEffect(() => {
   /* ===============================
      OPTIMISTIC INSERT + WATCH
   =============================== */
-  const addOptimisticJob = (job) => {
+  const addOptimisticJob = (job, opts = {}) => {
     if (!job?.id) return;
-    
 
+    // Batch mode fires this once per queued prompt — don't yank the user
+    // over to Results after the first one finishes, they're still working
+    // through the queue. Normal single-shot generation still auto-switches.
+    if (!opts.batch) setMobilePanel("result");
     upsertJob({ ...job, progress: 0 });
 
     watchersRef.current[job.id] = watchJob(job.id, (updated) => {
@@ -307,6 +311,7 @@ useEffect(() => {
   =============================== */
   const sendPromptToGenerator = (p) => {
     setPrompt(p);
+    setMobilePanel("generate");
     inspirationRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "center",
@@ -338,12 +343,12 @@ useEffect(() => {
   );
 
   return (
-    <div className={`w-full bg-[#090A0A] ${isDesktop ? "h-full overflow-hidden" : ""}`}>
+    <div className="w-full h-full overflow-hidden bg-[#090A0A]">
 
       {isDesktop ? (
         /* 🖥️ DESKTOP — side by side */
         <div className="flex h-full gap-2 bg-[#090A0A]">
-          <div className="basis-[40%] 2xl:basis-[25%] shrink-0 h-full bg-[#090A0A]">
+          <div className="basis-[44%] 2xl:basis-[32%] min-w-0 shrink-0 h-full bg-[#090A0A]">
             <div className="h-full overflow-y-auto">
               {generatePanel}
             </div>
@@ -353,11 +358,28 @@ useEffect(() => {
           </div>
         </div>
       ) : (
-        /* 📱 MOBILE — stacked, let workspace-scroll handle scrolling */
-        <div className="flex flex-col px-3 pt-3 pb-[220px] space-y-3">
-          {generatePanel}
-          <div className="md:pt-24 xl:pt-0">
-            {resultPanel}
+        /*
+         * 📱 MOBILE / TABLET — tab-switched, one panel visible at a time,
+         * same "Generate / Result" strip pattern used across every other
+         * viral tool page (see BehindTheScenes.jsx etc).
+         */
+        <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-[#090A0A]">
+          <div className="sticky top-0 z-20 border-b border-white/10 bg-[#090A0A] px-3 py-3">
+            <div className="grid grid-cols-2 rounded-full border border-white/10 bg-white/[0.04] p-1">
+              {[["generate", "Generate"], ["result", "Result"]].map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setMobilePanel(id)}
+                  className={`rounded-full px-3 py-2 text-[13px] font-semibold transition ${mobilePanel === id ? "bg-[#BEF264] text-[#11150D]" : "text-white/60"}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-[110px] pt-3">
+            {mobilePanel === "generate" ? generatePanel : resultPanel}
           </div>
         </div>
       )}

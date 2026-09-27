@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useAuth } from "../../context/AuthContext.jsx";
 import {
   ArrowRight,
   BarChart3,
@@ -26,6 +27,13 @@ const fadeUp = {
 };
 
 export default function Hero() {
+  // SSR (and the moment before hydration resolves) always has no session, so
+  // this must default to the logged-out CTA — never gate rendering on
+  // `loading`. It only upgrades to "Go to Workspace" client-side, after a
+  // real session is confirmed; that upgrade is a text/href swap, never a
+  // reason to redirect or hide the page itself.
+  const { user, loading } = useAuth();
+  const signedIn = !loading && Boolean(user);
   return (
     <section className="relative isolate min-h-[720px] overflow-hidden bg-[#090610] px-4 pb-16 pt-28 text-white sm:px-6 md:min-h-[760px] md:pb-20 md:pt-36">
       {/* Replace these files with the final 16:9 exports. Video is intentionally
@@ -85,10 +93,10 @@ export default function Hero() {
           className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row"
         >
           <Link
-            to="/signup"
+            to={signedIn ? "/workspace/home" : "/signup"}
             className="group flex w-full items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-bold text-[#160c24] shadow-[0_12px_38px_rgba(255,255,255,.16)] transition hover:-translate-y-0.5 hover:bg-[#f3edff] sm:w-auto"
           >
-            Start creating free
+            {signedIn ? "Go to Workspace" : "Start creating free"}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
           <Link

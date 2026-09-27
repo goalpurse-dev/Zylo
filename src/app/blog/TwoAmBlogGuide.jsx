@@ -1,11 +1,12 @@
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Calendar } from "lucide-react";
 import Footer from "../../components/workspace/footer.jsx";
 import { SITE_URL } from "../../data/seoLandingPages.js";
 import { getSeoBlogPost } from "../../data/seoBlogPosts.js";
 import { trackSeoEvent } from "../../lib/seoAnalytics.js";
 import { useSEO } from "../../hooks/useSEO.js";
+import { stashPrompt } from "../../lib/promptHandoff.js";
 import MarkdownArticle from "./MarkdownArticle.jsx";
 import { extractFaqs, extractRelatedLinks } from "./markdownBlogUtils.js";
 import aiWorldGeneratorGuide from "./content/ai-world-generator-guide.md?raw";
@@ -725,6 +726,7 @@ const GUIDES = {
 };
 
 export default function TwoAmBlogGuide({ slug }) {
+  const navigate = useNavigate();
   const guide = GUIDES[slug];
   const published = getSeoBlogPost(slug)?.published !== false;
   const faqs = useMemo(() => guide?.markdown ? extractFaqs(guide.markdown) : (guide?.faqs || []), [guide]);
@@ -854,15 +856,19 @@ export default function TwoAmBlogGuide({ slug }) {
             <h2 className="text-[22px] font-black tracking-[-0.02em] text-white">{group.title}</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {group.prompts.map((text) => (
-                <Link
+                <button
                   key={text}
-                  to={`${guide.ctaHref}?prompt=${encodeURIComponent(text)}`}
-                  onClick={() => trackSeoEvent("seo_prompt_interaction", { slug: `blog:${slug}`, templateId: "two-am" })}
+                  type="button"
+                  onClick={() => {
+                    trackSeoEvent("seo_prompt_interaction", { slug: `blog:${slug}`, templateId: "two-am" });
+                    stashPrompt(text);
+                    navigate(guide.ctaHref);
+                  }}
                   className="group inline-flex items-center gap-1.5 rounded-full border border-lime-300/[0.16] bg-lime-300/[0.05] px-4 py-2 text-[13px] font-semibold text-lime-100 transition hover:border-lime-300/40 hover:bg-lime-300/[0.09]"
                 >
                   {text}
                   <span className="text-[11px] text-lime-300/70 opacity-0 transition group-hover:opacity-100">Try this prompt →</span>
-                </Link>
+                </button>
               ))}
             </div>
           </section>

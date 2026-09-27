@@ -1,8 +1,10 @@
 // src/pages/home/home.jsx
 
 import React from "react";
-import { useEffect } from "react";
 
+import { useSEO } from "../../hooks/useSEO.js";
+import { getPublicSeoMetadata, canonicalFor } from "../../data/publicSeoMetadata.js";
+import { structuredDataFor } from "../../data/structuredData.js";
 import Navbar from "../../components/Figma/navbar/navbar.jsx";
 import Hero from "../../components/Figma/hero.jsx";
 import Proof from "../../components/Figma/proof.jsx"
@@ -25,9 +27,15 @@ import AIFruitPromo from "../../components/workspace/AIFruitPromo.jsx"
 
 
 export default function Home() {
-  useEffect(() => {
-  document.title = "Create product visuals that sell";
-}, []);
+  const metadata = getPublicSeoMetadata("/");
+  const canonical = canonicalFor("/");
+  useSEO({
+    title: metadata?.title,
+    description: metadata?.description,
+    canonical,
+    robots: "index, follow, max-image-preview:large",
+    structuredData: structuredDataFor("/", metadata, canonical),
+  });
   return (
 
      

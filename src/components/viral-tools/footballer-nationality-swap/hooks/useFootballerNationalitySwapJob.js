@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { watchJob, cancelJob } from "../../../../lib/jobs";
+import { getCachedQuote } from "../../../../lib/pricing/toolPriceQuotes";
 import {
   buildImagePrompt,
   buildFriendlyImagePrompt,
@@ -196,7 +197,10 @@ async function generateVideoWithFallback({ imageUrl, spokenLine, expression, vid
       break;
     }
 
-    const refundedCredits = VIDEO_MODELS[failedModel]?.credits ?? 0;
+    const failed = VIDEO_MODELS[failedModel];
+    const refundedCredits = failed
+      ? getCachedQuote(failed.toolKey, { durationSec: failed.duration, withSound: failed.withSound, width: failed.width, height: failed.height }) ?? 0
+      : 0;
     console.warn(`[Footballer] ${failedModel} failed both prompt stages — falling back to ${nextModel}`);
     onDowngrade?.({ fromModel: failedModel, toModel: nextModel, refundedCredits });
     currentModel = nextModel;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { DownloadIcon, VideoIcon, Maximize2 } from "lucide-react";
+import { DownloadIcon, VideoIcon, Maximize2, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CREATION_TYPES } from "../../lib/creations";
 import { useAuth } from "../../context/AuthContext";
@@ -109,13 +109,179 @@ function scrollToElementWithinContainer(el, container, topOffset = 80) {
 
 
 
+/* =============================== VIEWER MODAL =============================== */
+
+function ImagePeekThumb({ item }) {
+  const src = getDisplayImageSrc(item.result_url);
+  const isDone = item.status === "succeeded" && !!src;
+  return (
+    <div
+      className="relative w-[120px] rounded-xl overflow-hidden border border-white/10 bg-black"
+      style={getAspectStyle(item)}
+    >
+      {isDone ? (
+        <img src={src} className="w-full h-full object-contain" alt="" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-[#060912]">
+          <span className="text-white/30 text-[10px]">Generating…</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Viewer({ image, onClose, prevImage, nextImage, onPrev, onNext }) {
+  const navigate = useNavigate();
+  const fullImageSrc = getDisplayImageSrc(image.result_url, "?width=1200");
+  const rawImageSrc = isLoadableImageSrc(image.result_url) ? image.result_url.trim() : null;
+
+  // Close on Escape, step through results with arrow keys
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft" && prevImage) onPrev?.();
+      if (e.key === "ArrowRight" && nextImage) onNext?.();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose, prevImage, nextImage, onPrev, onNext]);
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex flex-col"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      {/* TOP BAR */}
+      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
+        <p className="text-white/40 text-xs truncate max-w-[75%]">
+          {image.input?.subject ?? image.prompt}
+        </p>
+        <button
+          onClick={onClose}
+          className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* IMAGE + CAROUSEL NAV */}
+      <div className="relative flex-1 flex items-center justify-center px-4 min-h-0">
+        <div className="flex items-center justify-center gap-5 min-h-0">
+          {/* Left peek — faded neighbor, click to jump */}
+          {prevImage && (
+            <div
+              className="hidden lg:block shrink-0 w-[120px] opacity-50 transition hover:opacity-80 cursor-pointer"
+              onClick={onPrev}
+            >
+              <ImagePeekThumb item={prevImage} />
+            </div>
+          )}
+
+          <img
+            key={image.id}
+            src={fullImageSrc}
+            className="max-w-full max-h-full rounded-2xl object-contain"
+            style={{ maxHeight: "calc(100dvh - 160px)" }}
+          />
+
+          {/* Right peek — faded neighbor, click to jump */}
+          {nextImage && (
+            <div
+              className="hidden lg:block shrink-0 w-[120px] opacity-50 transition hover:opacity-80 cursor-pointer"
+              onClick={onNext}
+            >
+              <ImagePeekThumb item={nextImage} />
+            </div>
+          )}
+        </div>
+
+        {/* Arrows — always available, step to the previous/next result */}
+        <button
+          type="button"
+          onClick={onPrev}
+          disabled={!prevImage}
+          className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-20 rounded-full border border-white/10 bg-black/55 p-2.5 sm:p-3 backdrop-blur-md transition hover:bg-black/80 disabled:cursor-not-allowed disabled:opacity-20 disabled:hover:bg-black/55"
+        >
+          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        </button>
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={!nextImage}
+          className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 rounded-full border border-white/10 bg-black/55 p-2.5 sm:p-3 backdrop-blur-md transition hover:bg-black/80 disabled:cursor-not-allowed disabled:opacity-20 disabled:hover:bg-black/55"
+        >
+          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        </button>
+      </div>
+
+      {/* ACTIONS */}
+      <div className="flex-shrink-0 px-4 py-4 flex items-center justify-center flex-wrap gap-3">
+
+        {/* DOWNLOAD */}
+        <button
+          onClick={async () => {
+            try {
+              await saveMediaToDevice({
+                url: fullImageSrc || rawImageSrc,
+                filename: "zyvo-image.webp",
+                title: "My Zyvo image",
+              });
+            } catch { window.open(rawImageSrc, "_blank"); }
+          }}
+          className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#BEF264] hover:bg-[#D9F99D] text-[#11150D] font-semibold text-sm transition active:scale-95 shadow-[0_0_20px_rgba(190,242,100,0.4)]"
+        >
+          <DownloadIcon className="w-4 h-4" />
+          Save Image
+        </button>
+
+        {/* MAKE VIDEO */}
+        <button
+          onClick={() => {
+            onClose();
+            navigate("/workspace/video-generator", {
+              state: { refImage: { id: image.id, url: rawImageSrc } },
+            });
+          }}
+          className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition active:scale-95"
+        >
+          <VideoIcon className="w-4 h-4" />
+          Make Video
+        </button>
+
+        {/* COPY PROMPT */}
+        <button
+          onClick={() => navigator.clipboard.writeText(image.input?.subject ?? image.prompt)}
+          className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition active:scale-95"
+        >
+          Copy Prompt
+        </button>
+
+        {/* SHARE */}
+        {"share" in navigator && (
+          <button
+            onClick={() => shareMediaFile({
+              url: fullImageSrc || rawImageSrc,
+              filename: "zyvo-image.webp",
+              title: "My Zyvo image",
+            }).catch(() => {})}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition active:scale-95"
+          >
+            Share
+          </button>
+        )}
+
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 /* =============================== CARD =============================== */
 
 function ResultCard({ item, onOpen }) {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(true);
 const [isImageLoaded, setIsImageLoaded] = useState(false);
-const [viewerOpen, setViewerOpen] = useState(false);
 const [displayProgress, setDisplayProgress] = useState(0);
 const dpRef = useRef(0);
 const rafRef = useRef(null);
@@ -199,7 +365,7 @@ const isFailed =
   overflow-hidden
   bg-[#0B0F1A]
   border border-white/5
-  hover:border-[#7A3BFF]/40
+  hover:border-[#BEF264]/40
   transition-all duration-300
 ">
      <div className="relative w-full bg-black overflow-hidden rounded-xl">
@@ -240,7 +406,7 @@ const isFailed =
 />
 {/* EXPAND ICON — always visible top-right */}
 <button
-  onClick={(e) => { e.stopPropagation(); setViewerOpen(true); }}
+  onClick={(e) => { e.stopPropagation(); onOpen?.(); }}
   className="absolute top-2 right-2 z-20 w-7 h-7 flex items-center justify-center rounded-lg bg-black/50 hover:bg-black/80 backdrop-blur-sm text-white/80 hover:text-white transition active:scale-95"
   title="Open fullscreen"
 >
@@ -274,7 +440,7 @@ const isFailed =
       className="absolute rounded-full pointer-events-none"
       style={{
         width: "65%", paddingBottom: "65%", top: "5%", left: "18%",
-        background: "radial-gradient(circle, rgba(122,59,255,0.18), transparent)",
+        background: "radial-gradient(circle, rgba(190,242,100,0.18), transparent)",
         filter: "blur(32px)",
         animation: "pulse 2.8s ease-in-out infinite",
       }}
@@ -307,8 +473,8 @@ const isFailed =
         >
           <defs>
             <linearGradient id={`imgRing_${item.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#7A3BFF" />
-              <stop offset="100%" stopColor="#C077FF" />
+              <stop offset="0%" stopColor="#BEF264" />
+              <stop offset="100%" stopColor="#D9F99D" />
             </linearGradient>
           </defs>
           <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" />
@@ -336,7 +502,7 @@ const isFailed =
           className="absolute rounded-full pointer-events-none"
           style={{
             inset: "-8px",
-            background: "radial-gradient(circle, rgba(122,59,255,0.22), transparent 70%)",
+            background: "radial-gradient(circle, rgba(190,242,100,0.22), transparent 70%)",
             filter: "blur(10px)",
             animation: "pulse 2s ease-in-out infinite",
           }}
@@ -371,7 +537,7 @@ const isFailed =
                   ? "bg-amber-400/55"
                   : item.status === "queued"
                   ? "bg-white/20"
-                  : "bg-[#7A3BFF]/55"
+                  : "bg-[#BEF264]/55"
               }`}
               style={{ animationDelay: `${i * 150}ms`, animationDuration: "1.1s" }}
             />
@@ -387,9 +553,9 @@ const isFailed =
           className="h-full rounded-r-full"
           style={{
             width: `${Math.max(2, displayProgress)}%`,
-            background: "linear-gradient(90deg, #7A3BFF, #C077FF)",
+            background: "linear-gradient(90deg, #BEF264, #D9F99D)",
             transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)",
-            boxShadow: "0 0 8px rgba(122,59,255,0.65)",
+            boxShadow: "0 0 8px rgba(190,242,100,0.65)",
           }}
         />
       </div>
@@ -449,95 +615,6 @@ const isFailed =
       )}
 
     </div>
-
-    {/* ===== FULLSCREEN VIEWER PORTAL ===== */}
-    {viewerOpen && isDone && createPortal(
-      <div
-        className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex flex-col"
-        onClick={(e) => { if (e.target === e.currentTarget) setViewerOpen(false); }}
-      >
-        {/* TOP BAR */}
-        <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
-          <p className="text-white/40 text-xs truncate max-w-[75%]">
-            {item.input?.subject ?? item.prompt}
-          </p>
-          <button
-            onClick={() => setViewerOpen(false)}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* IMAGE */}
-        <div className="flex-1 flex items-center justify-center px-4 min-h-0">
-          <img
-            src={fullImageSrc}
-            className="max-w-full max-h-full rounded-2xl object-contain"
-            style={{ maxHeight: "calc(100dvh - 160px)" }}
-          />
-        </div>
-
-        {/* ACTIONS */}
-        <div className="flex-shrink-0 px-4 py-4 flex items-center justify-center flex-wrap gap-3">
-
-          {/* DOWNLOAD */}
-          <button
-            onClick={async () => {
-              try {
-                await saveMediaToDevice({
-                  url: fullImageSrc || rawImageSrc,
-                  filename: "zyvo-image.webp",
-                  title: "My Zyvo image",
-                });
-              } catch { window.open(rawImageSrc, "_blank"); }
-            }}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#7A3BFF] hover:bg-[#6A32E0] text-white font-semibold text-sm transition active:scale-95 shadow-[0_0_20px_rgba(122,59,255,0.4)]"
-          >
-            <DownloadIcon className="w-4 h-4" />
-            Save Image
-          </button>
-
-          {/* MAKE VIDEO */}
-          <button
-            onClick={() => {
-              setViewerOpen(false);
-              navigate("/workspace/video-generator", {
-                state: { refImage: { id: item.id, url: rawImageSrc } },
-              });
-            }}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition active:scale-95"
-          >
-            <VideoIcon className="w-4 h-4" />
-            Make Video
-          </button>
-
-          {/* COPY PROMPT */}
-          <button
-            onClick={() => navigator.clipboard.writeText(item.input?.subject ?? item.prompt)}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition active:scale-95"
-          >
-            Copy Prompt
-          </button>
-
-          {/* SHARE */}
-          {"share" in navigator && (
-            <button
-              onClick={() => shareMediaFile({
-                url: fullImageSrc || rawImageSrc,
-                filename: "zyvo-image.webp",
-                title: "My Zyvo image",
-              }).catch(() => {})}
-              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition active:scale-95"
-            >
-              Share
-            </button>
-          )}
-
-        </div>
-      </div>,
-      document.body
-    )}
     </>
   );
 }
@@ -579,7 +656,7 @@ function ImageGenHero() {
         style={{
           top: "-80px", left: "50%", transform: "translateX(-50%)",
           width: "420px", height: "420px",
-          background: "radial-gradient(circle, rgba(122,59,255,0.13), transparent 70%)",
+          background: "radial-gradient(circle, rgba(190,242,100,0.13), transparent 70%)",
           filter: "blur(60px)",
         }}
       />
@@ -589,13 +666,13 @@ function ImageGenHero() {
 
         {/* Text block */}
         <div className="flex flex-col gap-3.5">
-          <span className="text-[#A87AFF] text-[11px] font-bold tracking-widest uppercase">
+          <span className="text-[#A3E635] text-[11px] font-bold tracking-widest uppercase">
             ✦ AI Image Generator
           </span>
           <div>
             <h2 className="text-white font-black text-[24px] lg:text-[28px] leading-tight tracking-tight">
               Turn words into<br />
-              <span className="bg-gradient-to-r from-white via-purple-100 to-[#C084FC] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-white via-lime-100 to-[#D9F99D] bg-clip-text text-transparent">
                 stunning visuals
               </span>
             </h2>
@@ -607,7 +684,7 @@ function ImageGenHero() {
             {IMG_HERO_PILLS.map((label) => (
               <span
                 key={label}
-                className="inline-flex h-6 items-center rounded-full border border-[rgba(168,122,255,0.25)] bg-[rgba(168,122,255,0.08)] px-2.5 text-[#c4a8ff] text-[11px] font-medium"
+                className="inline-flex h-6 items-center rounded-full border border-[rgba(163,230,53,0.25)] bg-[rgba(163,230,53,0.08)] px-2.5 text-[#d9f99d] text-[11px] font-medium"
               >
                 {label}
               </span>
@@ -637,7 +714,7 @@ function ImageGenHero() {
                     borderRadius: "14px",
                     background:
                       "linear-gradient(#0E1012, #0E1012) padding-box, " +
-                      "linear-gradient(135deg, rgba(168,122,255,0.65) 0%, rgba(255,255,255,0.22) 50%, rgba(122,59,255,0.55) 100%) border-box",
+                      "linear-gradient(135deg, rgba(163,230,53,0.65) 0%, rgba(255,255,255,0.22) 50%, rgba(190,242,100,0.55) 100%) border-box",
                     border: "1.5px solid transparent",
                     boxShadow: "0 10px 32px rgba(0,0,0,0.6)",
                     animation: `${cfg.anim} ${cfg.dur}s ease-in-out ${cfg.delay}s infinite alternate`,
@@ -670,10 +747,10 @@ function ImageGenHero() {
           {!user ? (
             <button
               onClick={() => navigate("/signup")}
-              className="w-full py-3.5 rounded-xl font-black text-white text-[15px] tracking-tight hover:opacity-90 active:scale-[0.98] transition-all select-none"
+              className="w-full py-3.5 rounded-xl font-black text-[#11150D] text-[15px] tracking-tight hover:opacity-90 active:scale-[0.98] transition-all select-none"
               style={{
-                background: "linear-gradient(135deg, #7A3BFF 0%, #9F5CFF 50%, #C084FC 100%)",
-                boxShadow: "0 0 28px rgba(122,59,255,0.38)",
+                background: "linear-gradient(135deg, #BEF264 0%, #A3E635 50%, #D9F99D 100%)",
+                boxShadow: "0 0 28px rgba(190,242,100,0.38)",
               }}
             >
               ✦ &nbsp; Start generating for free
@@ -724,7 +801,7 @@ function ThinkingBanner({ progress }) {
         <div
           className="absolute inset-0 rounded-full"
           style={{
-            background: "radial-gradient(circle, rgba(122,59,255,0.35), transparent 70%)",
+            background: "radial-gradient(circle, rgba(190,242,100,0.35), transparent 70%)",
             filter: "blur(16px)",
             animation: "pulse 2s ease-in-out infinite",
           }}
@@ -741,8 +818,8 @@ function ThinkingBanner({ progress }) {
           />
           <defs>
             <linearGradient id="thinkGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#7A3BFF" />
-              <stop offset="100%" stopColor="#C077FF" />
+              <stop offset="0%" stopColor="#BEF264" />
+              <stop offset="100%" stopColor="#D9F99D" />
             </linearGradient>
           </defs>
         </svg>
@@ -762,7 +839,7 @@ function ThinkingBanner({ progress }) {
         </p>
         <div className="flex justify-center gap-1 mt-3">
           {[0,1,2].map((i) => (
-            <span key={i} className="w-1 h-1 rounded-full bg-[#7A3BFF]/50 animate-bounce"
+            <span key={i} className="w-1 h-1 rounded-full bg-[#BEF264]/50 animate-bounce"
               style={{ animationDelay: `${i * 160}ms`, animationDuration: "1.1s" }} />
           ))}
         </div>
@@ -782,6 +859,8 @@ export default function Result({ results, activeJobId, userPlan }) {
   const latestRef = useRef(null);
   const { user } = useAuth();
 const [isMobile, setIsMobile] = useState(false);
+const [activeImageId, setActiveImageId] = useState(null);
+const [viewerOpen, setViewerOpen] = useState(false);
 
 useEffect(() => {
   setIsMobile(window.innerWidth < 768);
@@ -818,6 +897,19 @@ const photoResults = useMemo(
       : [],
   [results]
 );
+
+/* derive activeImage live so progress/result_url stay fresh */
+const activeImage = useMemo(
+  () => photoResults.find((v) => v.id === activeImageId) ?? null,
+  [photoResults, activeImageId]
+);
+
+/* neighboring results — power the fullscreen carousel arrows/peeks */
+const activeImageIndex = photoResults.findIndex((v) => v.id === activeImageId);
+const prevImage = activeImageIndex > 0 ? photoResults[activeImageIndex - 1] : null;
+const nextImage = activeImageIndex >= 0 && activeImageIndex < photoResults.length - 1 ? photoResults[activeImageIndex + 1] : null;
+const goPrev = () => { if (prevImage) setActiveImageId(prevImage.id); };
+const goNext = () => { if (nextImage) setActiveImageId(nextImage.id); };
 
 const cardRefs = useRef({});
 
@@ -911,13 +1003,28 @@ useEffect(() => {
           if (el) cardRefs.current[item.id] = el;
         }}
       >
-        <ResultCard item={item} />
+        <ResultCard
+          item={item}
+          onOpen={() => { setActiveImageId(item.id); setViewerOpen(true); }}
+        />
       </div>
     ))}
   </div>
 
 )}
-      
+
+{/* ================= VIEWER MODAL (carousel) ================= */}
+{viewerOpen && activeImage && (
+  <Viewer
+    image={activeImage}
+    onClose={() => setViewerOpen(false)}
+    prevImage={prevImage}
+    nextImage={nextImage}
+    onPrev={goPrev}
+    onNext={goNext}
+  />
+)}
+
 {/* REAL BOTTOM SPACER (NO LAG) */}
 <div
   style={{
@@ -925,7 +1032,7 @@ useEffect(() => {
   }}
 />
     </div>
-    
+
   );
 }
 

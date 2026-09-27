@@ -164,6 +164,11 @@ const AIFruitStoryExamples = lazy(() => import("./app/blog/imagegenerator/ai-fru
 const AIFruitStoryPricing = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-pricing.jsx"));
 const AIImageGeneratorPromptFormula = lazy(() => import("./app/blog/imagegenerator/ai-image-generator-prompt-formula.jsx"));
 const AIImageGeneratorExamples = lazy(() => import("./app/blog/imagegenerator/ai-image-generator-examples.jsx"));
+const SkeletonXrayAiTrend = lazy(() => import("./app/blog/imagegenerator/skeleton-xray-ai-trend.jsx"));
+const HiddenAiImageStyles = lazy(() => import("./app/blog/imagegenerator/hidden-ai-image-styles.jsx"));
+const MinecraftStyleAiImages = lazy(() => import("./app/blog/imagegenerator/minecraft-style-ai-images.jsx"));
+const NoirVsCyberpunkAiImages = lazy(() => import("./app/blog/imagegenerator/noir-vs-cyberpunk-ai-images.jsx"));
+const DisneyVsGhibliAiImages = lazy(() => import("./app/blog/imagegenerator/disney-vs-ghibli-ai-images.jsx"));
 const AIFruitStoryTime = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-time.jsx"));
 const AIFruitStoryCliffhangers = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-cliffhangers.jsx"));
 const AIFruitStoryHalloween = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-halloween.jsx"));
@@ -216,12 +221,35 @@ import { supabase } from "./lib/supabaseClient";
 import NotFoundRedirect from "./components/NotFoundRedirect";
 import PublicContentLayout from "./components/seo/PublicContentLayout.jsx";
 import WorkspaceRouteSeo from "./components/seo/WorkspaceRouteSeo.jsx";
+import { clearRouteReloadAttempt, lazyRoute } from "./lib/lazyRouteRecovery.js";
 import PublicGallery from "./components/public-gallery/gallery";
 const AIFruitStoryLanding = lazy(() => import("./pages/landing/AIFruitStoryLanding.jsx"));
 const ImageGeneratorLanding = lazy(() => import("./pages/landing/ImageGeneratorLanding.jsx"));
 const CartoonDriveByLanding = lazy(() => import("./pages/landing/CartoonDriveByLanding.jsx"));
 const FootballerNationalitySwapLanding = lazy(() => import("./pages/landing/FootballerNationalitySwapLanding.jsx"));
 const BehindTheScenesLanding = lazy(() => import("./pages/landing/BehindTheScenesLanding.jsx"));
+const ThirtyDaysLanding = lazy(() => import("./pages/landing/ThirtyDaysLanding.jsx"));
+const ThirtyDaysSeriesLanding = lazy(() => import("./pages/landing/ThirtyDaysSeriesLanding.jsx"));
+const WhatIs30DaysAiTrend = lazy(() => import("./app/blog/imagegenerator/what-is-30-days-ai-trend.jsx"));
+const ThirtyDaysUniverseIdeas = lazy(() => import("./app/blog/imagegenerator/30-days-universe-ideas.jsx"));
+const ThirtyDaysVideoSeries = lazy(() => import("./app/blog/imagegenerator/30-days-video-series.jsx"));
+const ThirtyDaysMistakes = lazy(() => import("./app/blog/imagegenerator/30-days-mistakes.jsx"));
+const ThirtyDaysVsAiFruitStory = lazy(() => import("./app/blog/imagegenerator/30-days-vs-ai-fruit-story.jsx"));
+const ThirtyDaysTime = lazy(() => import("./app/blog/imagegenerator/30-days-time.jsx"));
+const ThirtyDaysQualityTiers = lazy(() => import("./app/blog/imagegenerator/30-days-quality-tiers.jsx"));
+const ThirtyDaysPremiseFormula = lazy(() => import("./app/blog/imagegenerator/30-days-premise-formula.jsx"));
+const ThirtyDaysHalloweenSpecial = lazy(() => import("./app/blog/imagegenerator/30-days-halloween-special.jsx"));
+const Is30DaysWorthIt = lazy(() => import("./app/blog/imagegenerator/is-30-days-worth-it.jsx"));
+const WhatIs30DaysSeriesMode = lazy(() => import("./app/blog/imagegenerator/what-is-30-days-series-mode.jsx"));
+const ThirtyDaysSeriesWorldBibleExplained = lazy(() => import("./app/blog/imagegenerator/30-days-series-world-bible-explained.jsx"));
+const ThirtyDaysSeriesDaysPerEpisode = lazy(() => import("./app/blog/imagegenerator/30-days-series-days-per-episode.jsx"));
+const ThirtyDaysSeriesVsSingleVideo = lazy(() => import("./app/blog/imagegenerator/30-days-series-vs-single-video.jsx"));
+const ThirtyDaysSeriesCliffhangers = lazy(() => import("./app/blog/imagegenerator/30-days-series-cliffhangers.jsx"));
+const ThirtyDaysCameraMode = lazy(() => import("./app/blog/imagegenerator/30-days-camera-mode.jsx"));
+const ThirtyDaysCharacterConsistency = lazy(() => import("./app/blog/imagegenerator/30-days-character-consistency.jsx"));
+const ThirtyDaysSceneContinuity = lazy(() => import("./app/blog/imagegenerator/30-days-scene-continuity.jsx"));
+const ThirtyDaysVoiceoverSync = lazy(() => import("./app/blog/imagegenerator/30-days-voiceover-sync.jsx"));
+const ThirtyDaysSeriesDashboardTour = lazy(() => import("./app/blog/imagegenerator/30-days-series-dashboard-tour.jsx"));
 const BehindTheScenesTrendExplained = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-trend-explained.jsx"));
 const BehindTheScenesHowItsMade = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-how-its-made.jsx"));
 const BehindTheScenesVideoIdeas = lazy(() => import("./app/blog/imagegenerator/behind-the-scenes-video-ideas.jsx"));
@@ -305,11 +333,24 @@ const ClayRescuePage         = lazy(() => import("./pages/workspace/ClayRescue.j
 const AICookingMaticPage     = lazy(() => import("./pages/workspace/AICookingMatic.jsx"));
 const FootballerNationalitySwapPage = lazy(() => import("./pages/workspace/FootballerNationalitySwap.jsx"));
 const TwoAmPage               = lazy(() => import("./pages/workspace/TwoAm.jsx"));
+const ThirtyDaysPage          = lazy(() => import("./pages/workspace/ThirtyDays.jsx"));
 const CartoonDriveByPage       = lazy(() => import("./pages/workspace/CartoonDriveBy.jsx"));
 const BehindTheScenesPage      = lazy(() => import("./pages/workspace/BehindTheScenes.jsx"));
 const PublishPage            = lazy(() => import("./pages/workspace/publish.jsx"));
 const StatsPage              = lazy(() => import("./pages/workspace/stats.jsx"));
 const ConnectionsPage        = lazy(() => import("./pages/workspace/connections.jsx"));
+const EarnPage                = lazy(() => import("./pages/workspace/earn/index.jsx"));
+const LongFormPage            = lazy(() => import("./pages/workspace/long-form/index.jsx"));
+const LongFormNewPage         = lazy(() => import("./pages/workspace/long-form/new.jsx"));
+const LongFormStoryPage       = lazy(() => import("./pages/workspace/long-form/story.jsx"));
+const LongFormResearchPage    = lazy(() => import("./pages/workspace/long-form/research.jsx"));
+const LongFormScriptPage      = lazy(() => import("./pages/workspace/long-form/script.jsx"));
+const LongFormLookPage        = lazy(() => import("./pages/workspace/long-form/look.jsx"));
+const LongFormVisualWorldPage = lazy(() => import("./pages/workspace/long-form/visualWorld.jsx"));
+const LongFormNarrationPage   = lazy(() => import("./pages/workspace/long-form/narration.jsx"));
+const LongFormVisualsPage     = lazy(() => import("./pages/workspace/long-form/visuals.jsx"));
+const LongFormProductionSetupPage = lazy(() => import("./pages/workspace/long-form/ProductionSetup.jsx"));
+const LongFormGeneratePage    = lazyRoute(() => import("./pages/workspace/long-form/generate.jsx"), "long-form-generate");
 
 import "./styles/sand.css";
 
@@ -330,6 +371,44 @@ function GuestOnly({ children }) {
   }
 
   return children;
+}
+
+class LongFormGenerateRouteBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error) { return { error }; }
+
+  componentDidCatch(error) {
+    console.error("[long-form-generate] route failed to load", error);
+  }
+
+  render() {
+    if (!this.state.error) return this.props.children;
+    const retry = () => {
+      clearRouteReloadAttempt("long-form-generate");
+      window.location.reload();
+    };
+    const back = () => {
+      window.history.pushState({}, "", "/long-form");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    };
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center bg-[#080b09] px-5 text-white">
+        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0d120f] p-7 text-center shadow-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-lime-300">Scenes</p>
+          <h1 className="mt-3 text-2xl font-semibold">We couldn't open this page</h1>
+          <p className="mt-3 text-sm leading-6 text-white/60">The page module could not be loaded. Your project and generation state are still saved.</p>
+          <div className="mt-6 flex justify-center gap-3">
+            <button type="button" onClick={retry} className="rounded-xl bg-lime-300 px-5 py-2.5 text-sm font-semibold text-black">Try Again</button>
+            <button type="button" onClick={back} className="rounded-xl border border-white/15 px-5 py-2.5 text-sm font-semibold text-white">Back to Long Form</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 }
 
 export default function App({ ssrPath } = {}) {
@@ -412,7 +491,8 @@ React.useEffect(() => {
     "/video-library",
     "/pricing",
     "/text-to-voice",
-    "/workspace"
+    "/workspace",
+    "/long-form"
   ];
 
   const computeHide = React.useCallback(
@@ -462,8 +542,11 @@ return (
   </div>
 }>
         <Routes>
-          {/* Public home */}
-          <Route path="/" element={<Navigate to="/workspace/home" replace />} />
+          {/* Public marketing home — real content, server-rendered, indexable.
+              Logged-in vs logged-out only changes CTA text/target inside Hero,
+              resolved client-side after hydration; it must never gate/redirect
+              the route itself (that's what made "/" un-indexable before). */}
+          <Route path="/" element={<NewHome />} />
 
         
 
@@ -592,6 +675,11 @@ return (
         <Route path="/blog/ai-fruit-story-pricing" element={<AIFruitStoryPricing/>} />
         <Route path="/blog/ai-image-generator-prompt-formula" element={<AIImageGeneratorPromptFormula/>} />
         <Route path="/blog/ai-image-generator-examples" element={<AIImageGeneratorExamples/>} />
+        <Route path="/blog/skeleton-xray-ai-trend" element={<SkeletonXrayAiTrend/>} />
+        <Route path="/blog/hidden-ai-image-styles" element={<HiddenAiImageStyles/>} />
+        <Route path="/blog/minecraft-style-ai-images" element={<MinecraftStyleAiImages/>} />
+        <Route path="/blog/noir-vs-cyberpunk-ai-images" element={<NoirVsCyberpunkAiImages/>} />
+        <Route path="/blog/disney-vs-ghibli-ai-images" element={<DisneyVsGhibliAiImages/>} />
         <Route path="/blog/ai-fruit-story-time" element={<AIFruitStoryTime/>} />
         <Route path="/blog/ai-fruit-story-cliffhangers" element={<AIFruitStoryCliffhangers/>} />
         <Route path="/blog/ai-fruit-story-halloween" element={<AIFruitStoryHalloween/>} />
@@ -645,6 +733,28 @@ return (
          <Route path="/cartoon-drive-by-video-maker" element={<CartoonDriveByLanding />} />
          <Route path="/footballer-nationality-swap-ai" element={<FootballerNationalitySwapLanding />} />
          <Route path="/behind-the-scenes-video-maker" element={<BehindTheScenesLanding />} />
+         <Route path="/30-days-video-maker" element={<ThirtyDaysLanding />} />
+         <Route path="/30-days-series-video-maker" element={<ThirtyDaysSeriesLanding />} />
+         <Route path="/blog/what-is-30-days-ai-trend" element={<WhatIs30DaysAiTrend />} />
+         <Route path="/blog/30-days-universe-ideas" element={<ThirtyDaysUniverseIdeas />} />
+         <Route path="/blog/30-days-video-series" element={<ThirtyDaysVideoSeries />} />
+         <Route path="/blog/30-days-mistakes" element={<ThirtyDaysMistakes />} />
+         <Route path="/blog/30-days-vs-ai-fruit-story" element={<ThirtyDaysVsAiFruitStory />} />
+         <Route path="/blog/30-days-time" element={<ThirtyDaysTime />} />
+         <Route path="/blog/30-days-quality-tiers" element={<ThirtyDaysQualityTiers />} />
+         <Route path="/blog/30-days-premise-formula" element={<ThirtyDaysPremiseFormula />} />
+         <Route path="/blog/30-days-halloween-special" element={<ThirtyDaysHalloweenSpecial />} />
+         <Route path="/blog/is-30-days-worth-it" element={<Is30DaysWorthIt />} />
+         <Route path="/blog/what-is-30-days-series-mode" element={<WhatIs30DaysSeriesMode />} />
+         <Route path="/blog/30-days-series-world-bible-explained" element={<ThirtyDaysSeriesWorldBibleExplained />} />
+         <Route path="/blog/30-days-series-days-per-episode" element={<ThirtyDaysSeriesDaysPerEpisode />} />
+         <Route path="/blog/30-days-series-vs-single-video" element={<ThirtyDaysSeriesVsSingleVideo />} />
+         <Route path="/blog/30-days-series-cliffhangers" element={<ThirtyDaysSeriesCliffhangers />} />
+         <Route path="/blog/30-days-camera-mode" element={<ThirtyDaysCameraMode />} />
+         <Route path="/blog/30-days-character-consistency" element={<ThirtyDaysCharacterConsistency />} />
+         <Route path="/blog/30-days-scene-continuity" element={<ThirtyDaysSceneContinuity />} />
+         <Route path="/blog/30-days-voiceover-sync" element={<ThirtyDaysVoiceoverSync />} />
+         <Route path="/blog/30-days-series-dashboard-tour" element={<ThirtyDaysSeriesDashboardTour />} />
         <Route path="/blog/behind-the-scenes-trend-explained" element={<BehindTheScenesTrendExplained/>} />
         <Route path="/blog/behind-the-scenes-how-its-made" element={<BehindTheScenesHowItsMade/>} />
         <Route path="/blog/behind-the-scenes-video-ideas" element={<BehindTheScenesVideoIdeas/>} />
@@ -768,12 +878,30 @@ return (
   <Route path="/workspace/ai-cooking-matic" element={<AICookingMaticPage />} />
   <Route path="/workspace/footballer-nationality-swap" element={<FootballerNationalitySwapPage />} />
   <Route path="/workspace/two-am" element={<TwoAmPage />} />
+  <Route path="/workspace/thirty-days" element={<ThirtyDaysPage />} />
   <Route path="/workspace/cartoon-drive-by" element={<CartoonDriveByPage />} />
   <Route path="/workspace/behind-the-scenes" element={<BehindTheScenesPage />} />
   <Route path="/workspace/publish"          element={<Navigate to="/workspace/home" replace />} />
   <Route path="/workspace/publishv"         element={<PublishPage />} />
   <Route path="/workspace/stats"            element={<StatsPage />} />
   <Route path="/workspace/connections"      element={<ConnectionsPage />} />
+  <Route path="/workspace/earn"             element={<EarnPage />} />
+  <Route path="/workspace/earn/submissions" element={<EarnPage />} />
+  <Route path="/workspace/earn/referrals"   element={<EarnPage />} />
+  <Route path="/workspace/earn/payouts"     element={<EarnPage />} />
+  <Route path="/workspace/earn/leaderboard" element={<EarnPage />} />
+  <Route path="/workspace/earn/rules"       element={<EarnPage />} />
+  <Route path="/long-form"                       element={<LongFormPage />} />
+  <Route path="/long-form/new"                   element={<LongFormNewPage />} />
+  <Route path="/long-form/create"                element={<LongFormProductionSetupPage />} />
+  <Route path="/long-form/project/:id/story"     element={<LongFormStoryPage />} />
+  <Route path="/long-form/project/:id/research"  element={<LongFormResearchPage />} />
+  <Route path="/long-form/project/:id/script"    element={<LongFormScriptPage />} />
+  <Route path="/long-form/project/:id/look"      element={<LongFormLookPage />} />
+  <Route path="/long-form/project/:id/visual-world" element={<LongFormVisualWorldPage />} />
+  <Route path="/long-form/project/:id/generate"     element={<LongFormGenerateRouteBoundary><LongFormGeneratePage /></LongFormGenerateRouteBoundary>} />
+  <Route path="/long-form/project/:id/narration"    element={<LongFormNarrationPage />} />
+  <Route path="/long-form/project/:id/visuals"      element={<LongFormVisualsPage />} />
 
 
 </Route>

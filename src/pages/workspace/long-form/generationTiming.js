@@ -93,7 +93,13 @@ export function formatEtaRange({ low, high }) {
 
 export function formatElapsed(seconds) {
   const s = Math.max(0, Math.floor(seconds));
-  const m = Math.floor(s / 60);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
   const rem = s % 60;
+  // A normal generation run never crosses the 60-minute mark, so the plain
+  // mm:ss form covers every real case — but a genuinely stuck worker (see
+  // GenerationExperience's `recovering` state) can leave this counting for
+  // hours, and "749:48" reads as a nonsense number rather than "12+ hours".
+  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(rem).padStart(2, "0")}`;
   return `${String(m).padStart(2, "0")}:${String(rem).padStart(2, "0")}`;
 }

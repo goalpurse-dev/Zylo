@@ -1,0 +1,994 @@
+{
+  "slug": "why-don-t-we-eat-lions",
+  "savedAt": "2026-09-26T11:37:07.431Z",
+  "project": {
+    "topic": "Why Don't We Eat Lions?",
+    "resolved_length_minutes": 9,
+    "resolved_explanation_depth": "balanced",
+    "target_words": 1305,
+    "topic_model": {
+      "topicTypes": [
+        "misconception",
+        "cause_effect",
+        "investigation",
+        "comparison"
+      ],
+      "coreEntities": [
+        "Panthera leo (African/Asiatic lions)",
+        "bushmeat trade",
+        "captive-bred lion farms",
+        "trophy hunting industry",
+        "CITES / national wildlife laws",
+        "conservation organizations (IUCN, local NGOs)",
+        "zoonotic pathogens / parasites",
+        "local cultural beliefs and taboos",
+        "meat market economics (supply, price, demand)"
+      ],
+      "knowledgeGap": "Viewers need the causal chain connecting ecological scarcity and conservation policy to economics and social taboos, plus the biological/food-safety reasons (if any) and documented exceptions — information that most people don't already have or conflate.",
+      "primaryDomain": "cultural ecology / food anthropology",
+      "researchNeeds": [
+        "Documented instances (historical or contemporary) of people eating lion meat and primary sources or ethnographies describing taste/prep",
+        "Nutritional composition and lab analyses (if any) of lion meat compared to common livestock",
+        "Published evidence on foodborne pathogens/parasites found in lions (e.g., any zoonoses, prevalence rates) and documented health incidents from eating lion meat",
+        "Legal status of lions under CITES and national laws for major range states (which populations are protected and how trade is regulated)",
+        "Data on lion population trends and supply constraints (IUCN assessments or national wildlife surveys)",
+        "Evidence on economic incentives: value of live lion tourism vs. meat value; role and scale of lion farms and bone trade",
+        "Anthropological sources describing cultural taboos, symbolism, or rituals involving lions across different societies",
+        "Examples where carnivore meat (other big cats) is or was consumed, for comparison and context"
+      ],
+      "temporalScope": "ongoing (historical precedent to present-day practices; exceptions may be recent)",
+      "canonicalTopic": "Why don't humans eat lions? — a multi-factor explanation (biology, culture, law, economics, and logistics).",
+      "coreMechanisms": [
+        "ecological scarcity and population decline reduce supply",
+        "legal protection and international trade restrictions limit legal harvest and sale",
+        "cultural symbolism and taboos reduce demand",
+        "economic incentives prefer live animals for tourism or high-margin trophy markets over meat",
+        "food-safety and biological issues (pathogen/parasite risk, taste/texture differences) reduce desirability",
+        "logistical difficulties in hunting, butchering and distributing large carnivore meat compared with livestock"
+      ],
+      "factualityRisk": "medium",
+      "centralQuestion": "What combination of biological, cultural, legal, economic and logistical reasons explains why lion meat is not a common human food?",
+      "geographicScope": "global framing with emphasis on Africa (range states), historical Asia references, and captive/canned-hunting contexts worldwide",
+      "visualPotential": "high",
+      "secondaryDomains": [
+        "conservation biology",
+        "food safety / nutrition",
+        "economics",
+        "legal/regulatory"
+      ],
+      "likelyMisconceptions": [
+        "That lions are never eaten anywhere in the world (there are probably rare or historical exceptions)",
+        "That lions are avoided only because they're dangerous to hunt",
+        "That trophy hunting and eating are the same market or that trophy animals are typically consumed",
+        "That lion meat is inherently poisonous or universally inedible without evidence",
+        "That legal protection automatically means zero trade or zero use"
+      ],
+      "viewerExpectedAnswer": "By the end the viewer should understand that there is no single reason; lion meat is rare because of a mix of factors — low availability, legal protection and international trade rules, cultural taboos and symbolism, real food-safety and taste issues, high economic value through non-food uses (tourism/trophy hunting), and practical/logistical barriers — plus important exceptions and regional variation.",
+      "viewerPriorKnowledge": "Viewers know humans eat many wild and domesticated animals, that some cultures eat exotic 'bushmeat', and that lions are large, charismatic carnivores often protected by conservation laws.",
+      "recommendedLengthMinutes": 10,
+      "recommendedNarrativeModes": [
+        "investigation",
+        "cause_effect",
+        "comparison",
+        "misconception"
+      ],
+      "recommendedExplanationDepth": "balanced"
+    },
+    "narrative_strategy": {
+      "endingPayoff": "Close by returning to the 'menu moment' and summarizing the checklist so viewers can quickly answer 'why not' with five short reasons and one caveat.",
+      "centralThesis": "There isn't a single reason — lions are rarely eaten because low supply, legal protection, cultural meaning, higher non-food value, and real food-safety and logistical barriers all push meat consumption away from lions.",
+      "viewerPromise": "A clear, memorable checklist showing the mix of ecology, law, culture, economics, and food-safety reasons that together explain why people rarely eat lions — plus the notable exceptions.",
+      "plannedPayoffs": [
+        "Show how low supply and legal rules close off usual meat routes",
+        "Bust the 'poisonous lion' myth while explaining realistic food-safety concerns",
+        "Explain the tradeoff: a live lion can earn more through tourism/trophies than meat",
+        "Name the real exceptions (captivity, historical cases) while keeping them rare"
+      ],
+      "viewerQuestion": "Why is lion meat basically absent from human diets despite humans eating many wild animals?",
+      "openingStrategy": "Drop the viewer into an impossible menu moment (you spot 'lion steak' for sale) and immediately plant a visual that hints at the real winner in most places: live lions turning tourism into money.",
+      "plannedOpenLoops": [
+        "That surprising menu item in the opener — does it actually exist?",
+        "Are lions dangerous to eat biologically, or is that a myth?",
+        "Why would people keep lions alive instead of butchering them?",
+        "What about lion farms or rare historical examples?"
+      ],
+      "primaryNarrativeMode": "investigation",
+      "informationRevealOrder": [
+        "hook",
+        "why_it_matters",
+        "promise_question",
+        "availability_supply",
+        "legal_protection",
+        "culture_taboos",
+        "economics_tourism_vs_meat",
+        "food_safety_and_logistics",
+        "callback_payoff",
+        "closer"
+      ],
+      "supportingNarrativeModes": [
+        "cause_effect",
+        "comparison",
+        "misconception"
+      ]
+    },
+    "selected_idea_title": null,
+    "selected_idea_angle": null
+  },
+  "storyPlan": {
+    "recommendedTitle": "Why Don't People Eat Lions?",
+    "alternativeTitles": [
+      "Why Lion Meat Is Almost Never Served",
+      "Why Lions Aren't Food"
+    ],
+    "viewerPromise": "You'll be able to list the main reasons lion meat is rare — ecological scarcity, laws, culture, economics, and food-safety/logistics — and spot the exceptions.",
+    "hookConcept": "A street vendor's chalkboard reads 'Lion Steak?' while a separate pop-up shows a tourist selfie with a live lion and a dollar-sign sticker — planting the visual idea that live lions often make more money than meat.",
+    "narrativeLabel": "investigative myth-bust",
+    "chapters": [
+      {
+        "id": "s1",
+        "title": "impossible_menu",
+        "role": "cold_open",
+        "estimatedMinutes": 0.5,
+        "purpose": "Grab attention with a funny/improbable image and plant the main callback visual.",
+        "summary": "Open on a stickman spotting a market stall advertising 'lion steak?' — immediate curiosity. Cut to a second shot: tourists taking selfies with a live lion and a floating dollar-sign sticker to hint at an economic angle. No claims about frequency — just the strange juxtaposition.",
+        "keyQuestions": [
+          "Would you eat lion if you saw it for sale?",
+          "Why would 'live lion = tourist dollars' matter for a question about food?"
+        ],
+        "subQuestion": ""
+      },
+      {
+        "id": "s2",
+        "title": "fast_stakes",
+        "role": "stakes",
+        "estimatedMinutes": 0.5,
+        "purpose": "Explain why this question is interesting: it exposes trade-offs between food, culture, law and conservation and clears up common misconceptions.",
+        "summary": "Quickly state what viewers probably assume (people eat many wild animals) and why lions are a useful case to learn about how multiple systems shape what we eat. Promise a short, usable checklist rather than a lecture.",
+        "keyQuestions": [
+          "Why does it matter whether a big animal is eaten or not?",
+          "What common myths will we clear up?"
+        ],
+        "subQuestion": ""
+      },
+      {
+        "id": "s3",
+        "title": "central_question",
+        "role": "core_question",
+        "estimatedMinutes": 0.5,
+        "purpose": "State the single question the video will answer and set expectation for a multi-factor answer.",
+        "summary": "Pose the core question: what combination of biology, culture, law, economics and logistics explains why lion meat is not a normal food? Promise 5 short reasons and a note on exceptions.",
+        "keyQuestions": [
+          "What exactly will we explain?",
+          "How will the answer be structured?"
+        ],
+        "subQuestion": ""
+      },
+      {
+        "id": "s4",
+        "title": "ecology_and_supply",
+        "role": "evidence",
+        "estimatedMinutes": 1.1,
+        "purpose": "Show how ecology and population realities limit supply and make ordinary meat markets unlikely.",
+        "summary": "Explain that lion populations are relatively small and patchy compared with livestock; low natural abundance and conservation concerns mean there simply isn't a steady, cheap supply the way there is for cows or goats. Emphasize that this is about supply dynamics, not moral value judgments.",
+        "keyQuestions": [
+          "Are there enough lions to supply a meat market?",
+          "How does wild abundance compare to livestock?",
+          "Does scarcity by itself stop consumption or just make it rare/expensive?"
+        ],
+        "subQuestion": "How does lions' ecological scarcity and population distribution affect their availability as a meat source?"
+      },
+      {
+        "id": "s5",
+        "title": "laws_and_trade",
+        "role": "evidence",
+        "estimatedMinutes": 1.1,
+        "purpose": "Explain legal and international trade constraints that block normal meat commerce.",
+        "summary": "Lay out how protected status and trade rules make hunting, selling, or exporting lion parts legally risky or tightly regulated in many places — meaning legal supply chains for food are generally closed. Avoid listing specific laws or dates; instead explain the mechanism: legal restrictions raise the cost and risk of meat trade.",
+        "keyQuestions": [
+          "Do laws stop people from eating lions, or just stop commercial trade?",
+          "How do legal restrictions change what markets look like?"
+        ],
+        "subQuestion": "How do legal protections and trade regulations limit the legal harvest and sale of lion meat?"
+      },
+      {
+        "id": "s6",
+        "title": "culture_and_taboo",
+        "role": "evidence",
+        "estimatedMinutes": 1.1,
+        "purpose": "Show how symbolism and cultural taboos reduce demand even when meat might be available.",
+        "summary": "Cover how lions are powerful cultural symbols in many societies (status, ancestor spirits, national emblems) and how those meanings can create taboos or strong ambivalence about eating them. Stress variation: some groups may have eaten lions historically, but cultural meanings usually cut demand.",
+        "keyQuestions": [
+          "Are lions taboo in some cultures?",
+          "How does symbolism translate into eating behavior?"
+        ],
+        "subQuestion": "In what ways do cultural beliefs and symbolism lower the demand for lion meat?"
+      },
+      {
+        "id": "s7",
+        "title": "economics_tourism_vs_meat",
+        "role": "evidence",
+        "estimatedMinutes": 1.1,
+        "purpose": "Explain the economic tradeoffs that make keeping lions alive often more profitable than turning them into meat.",
+        "summary": "Compare the likely economic returns from keeping a live lion (tourism, photo-op revenue, and in some contexts high-value parts markets) with the one-time, low-margin value of meat. Explain how this opportunity cost shapes decisions in communities and private enterprise. Note that captive-breeding and bone markets complicate things — research will confirm scale.",
+        "keyQuestions": [
+          "Would meat or live tourism/trophy value be more lucrative?",
+          "How do financial incentives change how people use lions?"
+        ],
+        "subQuestion": "Why would economic incentives favor keeping lions alive for tourism or other uses rather than butchering them for meat?"
+      },
+      {
+        "id": "s8",
+        "title": "food_safety_and_logistics",
+        "role": "evidence",
+        "estimatedMinutes": 1.1,
+        "purpose": "Address biological, taste, and practical barriers to making lion meat a normal food item.",
+        "summary": "Talk about practical issues: big carnivores present butchery and distribution challenges compared with livestock; there are plausible food-safety concerns (parasites, pathogens, or taste/texture differences) that reduce desirability. Avoid asserting unproven claims — flag that specific pathogen prevalence and taste reports need source checks.",
+        "keyQuestions": [
+          "Is lion meat dangerous or just unpleasant?",
+          "Are there special butchery and distribution problems with big carnivores?"
+        ],
+        "subQuestion": "How do food-safety risks, taste/texture, and logistical difficulties make lion meat less desirable or harder to sell?"
+      },
+      {
+        "id": "s9",
+        "title": "payoff_live_vs_meat",
+        "role": "callback_payoff",
+        "estimatedMinutes": 1,
+        "purpose": "Pay off the visual callback planted in the cold open and tie together economic, legal and cultural threads.",
+        "summary": "Return to the tourist-selfie-with-dollar-sign image from the opener and explain concretely how that visual symbolizes the main force keeping lions off plates: in many contexts a live lion converts to repeatable income and status, while meat is a one-off with legal and demand barriers. Reiterate the checklist of five reasons and point to the main exceptions.",
+        "keyQuestions": [
+          "How does the 'tourist dollars' visual explain the overall answer?",
+          "Which of the five reasons is usually the strongest driver?"
+        ],
+        "subQuestion": ""
+      },
+      {
+        "id": "s10",
+        "title": "final_takeaway",
+        "role": "closer",
+        "estimatedMinutes": 1,
+        "purpose": "Leave the viewer with a quick mnemonic checklist and a curiosity-sparking caveat to explore further.",
+        "summary": "Deliver a tidy five-word or five-item mnemonic (Supply, Law, Culture, Economics, Safety/Logistics) and note the main exception categories (captivity, historical cases) with an invitation to look up region-specific stories. Close with a playful reframe of the opening menu moment.",
+        "keyQuestions": [
+          "How can I remember the main reasons?",
+          "Where could I learn about exceptions?"
+        ],
+        "subQuestion": ""
+      }
+    ],
+    "callbackPlan": {
+      "detail": "Image: tourists taking a selfie with a live lion and a floating dollar-sign sticker (symbolizing tourism revenue)",
+      "plantSectionId": "s1",
+      "payoffSectionId": "s9"
+    },
+    "thumbnailConcept": {
+      "headline": "LION MEAT?",
+      "scene": "A stickman chef holds a huge raw slab with a lion silhouette; another stickman points from a tourist selfie with a dollar-sign sticker"
+    },
+    "researchQuestions": [
+      "Documented instances (historical or contemporary) of people eating lion meat and primary ethnographic sources describing taste and preparation.",
+      "Any published nutritional analyses or lab data comparing lion meat to common livestock.",
+      "Evidence about pathogens/parasites found in lions and documented health incidents from consuming lion meat.",
+      "Exact legal status of lions under CITES and representative national wildlife laws in major range states (to avoid overgeneralization).",
+      "Data on lion population trends and distribution to support ecological scarcity claims.",
+      "Economic data comparing returns from tourism/trophy markets versus meat value, and the scale/role of captive-breeding/lion farms.",
+      "Anthropological sources on cultural taboos and symbolic roles of lions across different societies.",
+      "Examples of other big-carnivore meat consumption (for comparison) with primary references."
+    ],
+    "researchRiskFlags": [
+      "Do not state that lions are 'never' eaten — there are documented exceptions; confirm and cite examples.",
+      "Avoid asserting specific pathogen risks without sources; pathogen prevalence varies and needs verification.",
+      "Legal regimes differ by country — avoid blanket statements that could be false; verify representative laws.",
+      "Economic claims about tourism versus meat value require region-specific data; flag captive-breeding market scale as uncertain."
+    ]
+  },
+  "research": {
+    "status": "needs_attention",
+    "research_plan": {
+      "researchQuestions": [
+        {
+          "id": "q1",
+          "priority": "critical",
+          "question": "According to the IUCN Red List (Panthera leo account), what is the current estimated global wild lion population (numeric estimate and trend: increasing/stable/declining)?",
+          "sectionId": "s4"
+        },
+        {
+          "id": "q2",
+          "priority": "critical",
+          "question": "According to the Food and Agriculture Organization (FAO) statistics, how many head of cattle (or total livestock biomass) exist globally (or in Africa) today—so we can compare livestock supply to lion numbers?",
+          "sectionId": "s4"
+        },
+        {
+          "id": "q3",
+          "priority": "important",
+          "question": "According to the IUCN Cat Specialist Group or Panthera, how fragmented are lion populations (e.g., number of subpopulations or range fragments and how many range countries still have viable populations)?",
+          "sectionId": "s4"
+        },
+        {
+          "id": "q4",
+          "priority": "important",
+          "question": "According to Brashares et al. (Science 2004) or other bushmeat-economics studies, how does declining wild mammal abundance affect bushmeat market prices and consumption (i.e., does scarcity typically reduce consumption or raise prices and drive substitution)?",
+          "sectionId": "s4"
+        },
+        {
+          "id": "q5",
+          "priority": "critical",
+          "question": "According to the Convention on International Trade in Endangered Species (CITES) database and listings, what CITES Appendix(s) cover Panthera leo and what international trade controls apply to lion specimens?",
+          "sectionId": "s5"
+        },
+        {
+          "id": "q6",
+          "priority": "important",
+          "question": "According to TRAFFIC or UNODC reports on wildlife crime/trade, do wildlife protection laws typically prohibit only commercial export/sale of protected species or also local sale/consumption—specifically how do these frameworks affect commercial trade in lion parts/meat?",
+          "sectionId": "s5"
+        },
+        {
+          "id": "q7",
+          "priority": "important",
+          "question": "Using national wildlife authority sources (e.g., South African Department of Environment, Kenya Wildlife Service), what is the legal status of hunting or selling lion meat in at least two contrasting range countries (one where captive breeding is allowed and one where hunting/consumption is banned)?",
+          "sectionId": "s5"
+        },
+        {
+          "id": "q8",
+          "priority": "critical",
+          "question": "According to anthropological/ethnographic sources (for example Mary Douglas 'Purity and Danger' and specific ethnographies like studies of the Maasai), what social mechanisms typically create food taboos around large predators such as lions (i.e., documented links between symbolism/status and prohibition of eating)?",
+          "sectionId": "s6"
+        },
+        {
+          "id": "q9",
+          "priority": "important",
+          "question": "According to published ethnographies or historical sources (e.g., accounts of Maasai culture, colonial-era naturalists, or regional histories), are there documented cultures or historical periods where lions were routinely eaten, and what contexts (ceremony, famine, subsistence) are reported?",
+          "sectionId": "s6"
+        },
+        {
+          "id": "q10",
+          "priority": "critical",
+          "question": "According to studies on wildlife economics (for example Lindsey et al., publications by Panthera, or World Bank/UNWTO tourism analyses), what is the estimated annual or per-animal revenue generated by live lions through tourism (photo-tours, park fees) versus one-time revenue from meat/trophy sale—any specific numbers or case studies?",
+          "sectionId": "s7"
+        },
+        {
+          "id": "q11",
+          "priority": "important",
+          "question": "According to TRAFFIC, South African government reports, or peer-reviewed analyses, what are recent documented volumes (numbers per year) of captive-bred lion skeletons/parts exported from South Africa for bone trade to Asia (to quantify the scale of a non-meat commercial use)?",
+          "sectionId": "s7"
+        },
+        {
+          "id": "q12",
+          "priority": "critical",
+          "question": "According to FAO guidance or peer-reviewed literature on bushmeat commerce (e.g., FAO technical reports), what practical butchery, refrigeration, and distribution challenges are highlighted for processing large wild carnivores compared with domesticated herbivores?",
+          "sectionId": "s8"
+        },
+        {
+          "id": "q13",
+          "priority": "important",
+          "question": "According to WHO/CDC or veterinary parasitology studies (for example Cleaveland et al. or journal articles on zoonoses), what specific zoonotic pathogens or parasites have been documented in big felids (lions) that pose food-safety risks to humans if meat is consumed?",
+          "sectionId": "s8"
+        },
+        {
+          "id": "q14",
+          "priority": "nice_to_have",
+          "question": "Are there any peer‑reviewed nutritional analyses or veterinary lab reports that give the chemical/nutritional composition (protein, fat, key micronutrients) of lion meat—if so, where (which study/institution) and what do they report about palatability or unusual taste/texture?",
+          "sectionId": "s8"
+        },
+        {
+          "id": "q15",
+          "priority": "important",
+          "question": "According to Panthera, IUCN, or leading lion-conservation experts (e.g., Craig Packer or other named researchers), which single factor do they most often cite as the dominant reason lions are generally not part of normal diets (conservation/scarcity, legal risk, cultural taboo, economic opportunity from tourism, or food-safety/logistics)?",
+          "sectionId": "s9"
+        },
+        {
+          "id": "q16",
+          "priority": "nice_to_have",
+          "question": "For the cold-open visual idea (live lion = tourist dollars), are there quantifiable examples published by national parks or tourism authorities (e.g., Serengeti/National Park reports, South African tourism boards) that show per-visitor or per-animal revenue figures that could illustrate how a live lion generates repeat income?",
+          "sectionId": "s1"
+        },
+        {
+          "id": "q17",
+          "priority": "important",
+          "question": "According to FAO, World Bank, or conservation reviews, why does it matter whether large wild animals are eaten or kept alive—what are the documented ecological and socio-economic stakes (e.g., effects on ecosystem services, livelihoods, or extinction risk)?",
+          "sectionId": "s2"
+        },
+        {
+          "id": "q18",
+          "priority": "nice_to_have",
+          "question": "According to classic work on food taboos and disgust (e.g., Mary Douglas, and Paul Rozin's research), what are the typical categories of explanation for why some animals become taboo (ecological scarcity, symbolic status, disease risk, or social signaling) and how consistent is that framework in the literature?",
+          "sectionId": "s2"
+        },
+        {
+          "id": "q19",
+          "priority": "nice_to_have",
+          "question": "To support the 'exceptions' claim in the closer, which authoritative sources (Panthera case studies, IUCN Species Accounts, national news stories, or peer-reviewed regional studies) document specific exceptions where lions have been eaten (e.g., captive animals used for meat, historical famine cases, or isolated local practices)?",
+          "sectionId": "s10"
+        },
+        {
+          "id": "q20",
+          "priority": "nice_to_have",
+          "question": "Which authoritative public databases and NGOs (specifically IUCN Red List, CITES trade database, TRAFFIC reports, and Panthera) are the best single-entry points for viewers to look up region-specific stories or data on lion use and trade?",
+          "sectionId": "s10"
+        }
+      ]
+    },
+    "fact_graph": {
+      "facts": [
+        {
+          "id": "f_fa96qk15",
+          "claim": "The IUCN Red List Panthera leo account does not provide a single current global wild‑lion population number (insufficient confidence); it lists the species as Vulnerable and indicates a suspected population reduction (overall declining trend).",
+          "disputed": false,
+          "sourceIds": [
+            "src_eluk1wg1"
+          ],
+          "chapterIds": [
+            "s4"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "Due to insufficient confidence in earlier or recent species population estimates, they cannot be employed to estimate overall, real-time trends.",
+          "researchQuestionIds": [
+            "q1"
+          ]
+        },
+        {
+          "id": "f_0kcx42rw",
+          "claim": "FAOSTAT-based counts show about 31.1 billion heads of the five major farmed species (cattle, sheep, goats, pigs, chickens) worldwide in 2022. (31100000000 heads (animals))",
+          "disputed": false,
+          "sourceIds": [
+            "src_oejdbbh3"
+          ],
+          "chapterIds": [
+            "s4"
+          ],
+          "confidence": "medium",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "Of 31.1 billion cattle, sheep, goats, pigs and chickens in 2022:",
+          "researchQuestionIds": [
+            "q2"
+          ]
+        },
+        {
+          "id": "f_rzg3naef",
+          "claim": "Lions are extant in 18 African range states and possibly extant in four. (18 countries)",
+          "disputed": false,
+          "sourceIds": [
+            "src_x0q1n5vt"
+          ],
+          "chapterIds": [
+            "s4"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "\"Lions are extant in 18 African Range States and possibly extant in four.\"",
+          "researchQuestionIds": [
+            "q3"
+          ]
+        },
+        {
+          "id": "f_iatxkaly",
+          "claim": "Studies (including market analyses and Brashares et al. 2004) find that declining wild mammal abundance typically raises bushmeat prices, reducing consumption of depleted species and prompting substitution to alternative proteins when available.",
+          "disputed": false,
+          "sourceIds": [
+            "src_vwtp155o"
+          ],
+          "chapterIds": [
+            "s4"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "\"consumption levels are driven not by consumer choice but by shortfalls in supply and consequent price responses.\"",
+          "researchQuestionIds": [
+            "q4"
+          ]
+        },
+        {
+          "id": "f_r8gxr4o2",
+          "claim": "CITES lists Panthera leo with the Indian population (P. l. persica) on Appendix I and all other populations on Appendix II; CITES annotation establishes a zero annual export quota for bones, bone pieces, bone products, claws, skeletons, skulls and teeth removed from the wild (commercial trade); annual export quotas for certain captive-bred specimens (e.g., from South Africa) are set and communicated annually. (0 annual export quota)",
+          "disputed": false,
+          "sourceIds": [
+            "src_mgk93jm0"
+          ],
+          "chapterIds": [
+            "s5"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "a zero annual export quota is established for specimens of bones, bone pieces, bone products, claws, skeletons, skulls and teeth removed from the wild.",
+          "researchQuestionIds": [
+            "q5"
+          ]
+        },
+        {
+          "id": "f_o7pym8th",
+          "claim": "TRAFFIC reports that international instruments (e.g., CITES) govern cross‑border trade, while domestic sale/consumption is regulated by national laws that vary; TRAFFIC documents domestic commercial markets for lion parts (including in South Africa).",
+          "disputed": false,
+          "sourceIds": [
+            "src_kbhst2gl"
+          ],
+          "chapterIds": [
+            "s5"
+          ],
+          "confidence": "medium",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "\"a market also exists for non‑essential ‘luxury’ products such as Tiger meat, skins and ornaments.\"",
+          "researchQuestionIds": [
+            "q6"
+          ]
+        },
+        {
+          "id": "f_8d5ycrtd",
+          "claim": "Anthropological theory (Mary Douglas) argues that food taboos—including prohibitions around dangerous or symbolically charged animals like large predators—arise from symbolic classification/purity: animals that ‘blur’ categories or are seen as ‘matter out of place’ (dangerous, anomalous, or status-laden) become prohibited as part of social/ritual ordering.",
+          "disputed": false,
+          "sourceIds": [
+            "src_8tkazt41"
+          ],
+          "chapterIds": [
+            "s6"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "She showed how the subjects of taboos are often “matter out of place” (Douglas 1966, 44).",
+          "researchQuestionIds": [
+            "q8"
+          ]
+        },
+        {
+          "id": "f_rwaaux5b",
+          "claim": "Ethnographic and historical sources report that lion meat was generally not eaten; instead lions’ parts were used ritually or medicinally and consumption occurred only rarely or in exceptional contexts.",
+          "disputed": false,
+          "sourceIds": [
+            "src_ojj2ewqz"
+          ],
+          "chapterIds": [
+            "s6"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "Lion meat was usually not eaten.",
+          "researchQuestionIds": [
+            "q9"
+          ]
+        },
+        {
+          "id": "f_gidb39zc",
+          "claim": "Trophy-hunting revenue (per trophy) for African lions in Tanzania is cited at approximately $13,500–$49,000.",
+          "disputed": false,
+          "sourceIds": [
+            "src_ug2iozz9"
+          ],
+          "chapterIds": [
+            "s7"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "African lion  | Panthera leo  | ...  | ∼$13,500–$49,000 (11)  | Tanzania.",
+          "researchQuestionIds": [
+            "q10"
+          ]
+        },
+        {
+          "id": "f_rzq4vznn",
+          "claim": "Annual legal exports of lion skeletons from South Africa peaked at 1,771 skeletons in 2016. (1771 skeletons per year)",
+          "disputed": false,
+          "sourceIds": [
+            "src_wljfnk6l"
+          ],
+          "chapterIds": [
+            "s7"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "Numbers of legally exported skeletons originating from South Africa rose from approximately 50 individuals in 2008 to a maximum of 1,771 skeletons in 2016.",
+          "researchQuestionIds": [
+            "q11"
+          ]
+        },
+        {
+          "id": "f_0cufg0xr",
+          "claim": "FAO guidance highlights that absence of refrigeration and dedicated meat‑processing facilities (chilling/freezing, separate offal rooms) greatly shortens meat shelf‑life and complicates safe processing and distribution — a practical challenge for bushmeat (including large wild carnivores) compared with industrially processed domesticated livestock.",
+          "disputed": false,
+          "sourceIds": [
+            "src_m6etlxff"
+          ],
+          "chapterIds": [
+            "s8"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "Where refrigeration is unavailable either owing to financial or technical reasons ... the shelf-life of meat is reduced to days or hours, not weeks.",
+          "researchQuestionIds": [
+            "q12"
+          ]
+        }
+      ]
+    },
+    "coverage": {
+      "conflicts": [],
+      "gapQueries": [],
+      "chapterCoverage": [
+        {
+          "note": "0/1 claim(s) verified with a sourced fact.",
+          "status": "weak",
+          "chapterId": "s1"
+        },
+        {
+          "note": "0/2 claim(s) verified with a sourced fact.",
+          "status": "weak",
+          "chapterId": "s2"
+        },
+        {
+          "note": "No specific claims required for this section.",
+          "status": "strong",
+          "chapterId": "s3"
+        },
+        {
+          "note": "4/4 claim(s) verified with a sourced fact.",
+          "status": "strong",
+          "chapterId": "s4"
+        },
+        {
+          "note": "2/3 claim(s) verified with a sourced fact.",
+          "status": "moderate",
+          "chapterId": "s5"
+        },
+        {
+          "note": "2/2 claim(s) verified with a sourced fact.",
+          "status": "strong",
+          "chapterId": "s6"
+        },
+        {
+          "note": "2/2 claim(s) verified with a sourced fact.",
+          "status": "strong",
+          "chapterId": "s7"
+        },
+        {
+          "note": "1/3 claim(s) verified with a sourced fact.",
+          "status": "weak",
+          "chapterId": "s8"
+        },
+        {
+          "note": "0/1 claim(s) verified with a sourced fact.",
+          "status": "weak",
+          "chapterId": "s9"
+        },
+        {
+          "note": "0/2 claim(s) verified with a sourced fact.",
+          "status": "weak",
+          "chapterId": "s10"
+        }
+      ],
+      "overallCoverage": "weak",
+      "unansweredQuestionIds": [
+        "q7",
+        "q13",
+        "q14",
+        "q15",
+        "q16",
+        "q17",
+        "q18",
+        "q19",
+        "q20"
+      ],
+      "weaklySupportedClaims": [],
+      "staleOrIrrelevantNotes": []
+    },
+    "meta": {
+      "model": "gpt-5-mini",
+      "timings": {
+        "totalMs": 137085,
+        "claimPlanMs": 28583,
+        "liteVerifyMs": 102853
+      },
+      "callLedger": [
+        {
+          "stage": "lite_claim_plan",
+          "inputTokens": 1990,
+          "requestType": "plan",
+          "outputTokens": 4230,
+          "actualToolCalls": 0,
+          "estimatedCostUsd": 0.009
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q0_0",
+          "inputTokens": 9562,
+          "requestType": "web_search",
+          "outputTokens": 2591,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0276
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q1_1",
+          "inputTokens": 9525,
+          "requestType": "web_search",
+          "outputTokens": 3042,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0285
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q2_2",
+          "inputTokens": 10086,
+          "requestType": "web_search",
+          "outputTokens": 954,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0244
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q3_3",
+          "inputTokens": 9458,
+          "requestType": "web_search",
+          "outputTokens": 1947,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0263
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q4_4",
+          "inputTokens": 10111,
+          "requestType": "web_search",
+          "outputTokens": 1256,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.025
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q5_5",
+          "inputTokens": 9661,
+          "requestType": "web_search",
+          "outputTokens": 3105,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0286
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q6_6",
+          "inputTokens": 10008,
+          "requestType": "web_search",
+          "outputTokens": 1618,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0257
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q7_7",
+          "inputTokens": 9504,
+          "requestType": "web_search",
+          "outputTokens": 1951,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0263
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q8_8",
+          "inputTokens": 9795,
+          "requestType": "web_search",
+          "outputTokens": 1875,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0262
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q9_9",
+          "inputTokens": 9560,
+          "requestType": "web_search",
+          "outputTokens": 2414,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0272
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q10_10",
+          "inputTokens": 9816,
+          "requestType": "web_search",
+          "outputTokens": 1480,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0254
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q11_11",
+          "inputTokens": 9658,
+          "requestType": "web_search",
+          "outputTokens": 2535,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0275
+        }
+      ],
+      "modelCalls": 13,
+      "totalFacts": 11,
+      "inputTokens": 118734,
+      "outputTokens": 28998,
+      "totalSources": 11,
+      "liteFactCount": 11,
+      "liteVerifyCalls": 20,
+      "reasoningTokens": 26511,
+      "webSearchRequests": 12,
+      "stickmanVerifyDiag": [
+        {
+          "id": "lite_q0_0",
+          "urls": [
+            {
+              "url": "https://doi.org/10.2305/IUCN.UK.2024-2.RLTS.T15951A266696959.en",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q1_1",
+          "urls": [
+            {
+              "url": "https://github.com/tirios/faostat-livestock-flags",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q2_2",
+          "urls": [
+            {
+              "url": "https://www.africanliondatabase.org/distribution/",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q3_3",
+          "urls": [
+            {
+              "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5024990/",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q4_4",
+          "urls": [
+            {
+              "url": "https://www.cites.org/sites/default/files/eng/app/2021/E-Appendices-2021-06-22.pdf",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q5_5",
+          "urls": [
+            {
+              "url": "https://www.traffic.org/site/assets/files/2474/bones_of_contention_report.pdf",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q6_6",
+          "urls": [
+            {
+              "url": "https://www.dffe.gov.za/sites/default/files/parliamentary-questions/pq1601of2021_lionbonesexportquota.pdf",
+              "live": false
+            }
+          ],
+          "liveVerified": 0,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q7_7",
+          "urls": [
+            {
+              "url": "https://openstax.org/books/introduction-anthropology/pages/3-5-modes-of-cultural-analysis",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q8_8",
+          "urls": [
+            {
+              "url": "https://rai.onlinelibrary.wiley.com/doi/10.1111/1467-9655.14008",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q9_9",
+          "urls": [
+            {
+              "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7522670/",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q10_10",
+          "urls": [
+            {
+              "url": "https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0249306",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q11_11",
+          "urls": [
+            {
+              "url": "https://www.fao.org/4/T0279E/T0279E04.htm",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        }
+      ],
+      "liteUnansweredRatio": 0.45,
+      "liteGapSkippedReason": "BUDGET_EXHAUSTED",
+      "estimatedModelCostUsd": 0.0877,
+      "estimatedTotalCostUsd": 0.3277,
+      "searchBudgetExhausted": true,
+      "estimatedSearchCostUsd": 0.24,
+      "actualWebSearchToolCalls": 24
+    },
+    "detail": null
+  }
+}

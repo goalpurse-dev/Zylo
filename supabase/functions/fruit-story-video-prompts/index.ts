@@ -1,8 +1,26 @@
 // deno-lint-ignore-file no-explicit-any
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { requirePaidFruitUser, consumeFruitRateLimit } from "../_shared/fruitStoryAccess.ts";
 
 const OPENAI_KEY  = Deno.env.get("OPENAI_API_KEY")!;
 const OPENAI_CHAT = "https://api.openai.com/v1/chat/completions";
+const OPENAI_TIMEOUT_MS     = 30_000;
+const RATE_LIMIT_PER_10_MIN = 40;   // one call per scene; a 60s story is 10 scenes
+const STORAGE_HOST = new URL(Deno.env.get("SUPABASE_URL")!).host;
+
+// Scene images are always our own Storage copy (generated/…) or, when that
+// copy failed, the Runware CDN URL. Anything else is refused so this
+// endpoint can't be used to make OpenAI fetch arbitrary URLs.
+function isAllowedSceneImageUrl(value: unknown): boolean {
+  try {
+    const url = new URL(String(value ?? ""));
+    if (url.protocol !== "https:") return false;
+    if (url.host === STORAGE_HOST && url.pathname.startsWith("/storage/v1/object/")) return true;
+    return url.hostname === "im.runware.ai";
+  } catch {
+    return false;
+  }
+}
 
 const CORS = {
   "Access-Control-Allow-Origin":  "*",
@@ -50,11 +68,19 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return fail("Method not allowed", 405);
   if (!OPENAI_KEY) return fail("OpenAI key not configured", 500);
 
+  const access = await requirePaidFruitUser(req, CORS);
+  if (!access.ok) return access.response;
+
   let body: any;
   try { body = await req.json(); } catch { return fail("Invalid JSON"); }
 
   const { scenes, form } = body as { scenes: SceneInput[]; form: any };
   if (!Array.isArray(scenes) || scenes.length === 0) return fail("scenes array required");
+  if (scenes.length > 1) return fail("Only one scene per request");
+  if (!isAllowedSceneImageUrl(scenes[0]?.imageUrl)) return fail("imageUrl must be a generated scene image");
+
+  const limited = await consumeFruitRateLimit(access.admin, access.user.id, "fruit-story-video-prompts", RATE_LIMIT_PER_10_MIN, CORS);
+  if (limited) return limited;
 
   const castBible: CastEntry[] = Array.isArray(form?.castBible) ? form.castBible : [];
   const storyPreset: string = form?.storyPreset ?? "";
@@ -148,6 +174,7 @@ Return JSON:
         temperature: 0.8,
         response_format: { type: "json_object" },
       }),
+      signal: AbortSignal.timeout(OPENAI_TIMEOUT_MS),
     });
 
     if (!response.ok) {

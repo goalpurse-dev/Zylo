@@ -1,0 +1,58 @@
+[
+  {
+    "bundle": {
+      "id": "a9c245e9-b8a0-4432-9378-fa31d141dcd5",
+      "created_at": "2026-09-15T21:27:43.166837+00:00",
+      "bundle_hash": "350065944b9d757ece099fa39596f1cf45b28d1d560d05ec59bdd4a370670db9",
+      "storage_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/reference-bundles/350065944b9d757ece099fa39596f1cf45b28d1d560d05ec59bdd4a370670db9.png",
+      "layout_version": "reference-bundle-v1",
+      "visual_world_version_id": "973ec40c-82d2-42d8-9090-c6cf469dd3f4",
+      "source_reference_asset_ids": [
+        "c758b81c-fb99-4058-a971-1372e514ff62",
+        "0518dbef-c23b-4ebf-bb20-65bf82ff1a6d"
+      ]
+    }
+  },
+  {
+    "bundle": {
+      "id": "36a568c5-7d16-403d-9e94-fd2ea8b41428",
+      "created_at": "2026-09-15T21:27:44.943538+00:00",
+      "bundle_hash": "e55f85fc7ce84b3c3c1c275ce77a077fc02ba34515bf17c8d97dbade4f2dce3a",
+      "storage_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/reference-bundles/e55f85fc7ce84b3c3c1c275ce77a077fc02ba34515bf17c8d97dbade4f2dce3a.png",
+      "layout_version": "reference-bundle-v1",
+      "visual_world_version_id": "973ec40c-82d2-42d8-9090-c6cf469dd3f4",
+      "source_reference_asset_ids": [
+        "c758b81c-fb99-4058-a971-1372e514ff62",
+        "05abe1eb-d499-46ba-8ac0-d8dd13398de2"
+      ]
+    }
+  },
+  {
+    "bundle": {
+      "id": "7995ea09-4204-4446-b47b-0592ed1478bb",
+      "created_at": "2026-09-15T22:06:12.469002+00:00",
+      "bundle_hash": "03451ec22dc297509f9a4ff72aa33a9e99fc407062635429af9c105c1d71700b",
+      "storage_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/reference-bundles/03451ec22dc297509f9a4ff72aa33a9e99fc407062635429af9c105c1d71700b.png",
+      "layout_version": "reference-bundle-v1",
+      "visual_world_version_id": "973ec40c-82d2-42d8-9090-c6cf469dd3f4",
+      "source_reference_asset_ids": [
+        "c758b81c-fb99-4058-a971-1372e514ff62",
+        "650e25d2-4091-46a6-9333-ecd5fb2fdf33"
+      ]
+    }
+  },
+  {
+    "bundle": {
+      "id": "5bcfad7b-ec84-47e5-88de-580726f5b8b9",
+      "created_at": "2026-09-15T22:15:26.19761+00:00",
+      "bundle_hash": "1e513c778be33198f4774092c81378f95a462383ea1a2de43c099f9dfe19c1f2",
+      "storage_url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/reference-bundles/1e513c778be33198f4774092c81378f95a462383ea1a2de43c099f9dfe19c1f2.png",
+      "layout_version": "reference-bundle-v1",
+      "visual_world_version_id": "973ec40c-82d2-42d8-9090-c6cf469dd3f4",
+      "source_reference_asset_ids": [
+        "c758b81c-fb99-4058-a971-1372e514ff62",
+        "1dfd8d29-c430-4db7-ad7e-c7d113fb5fbd"
+      ]
+    }
+  }
+]

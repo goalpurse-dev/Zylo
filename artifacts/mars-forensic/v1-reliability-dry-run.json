@@ -1,0 +1,914 @@
+{
+  "sourcePlanId": "56a0e0b5-3f91-4efc-af2f-c86f2a9238df",
+  "sourcePlanVersion": 5,
+  "contractReused": true,
+  "contractCompiledDuringRun": false,
+  "contractVersionId": "94f119e7-9b4f-433d-8d28-529c57666365",
+  "storedClaims": 61,
+  "totalBeats": 128,
+  "boundBeats": 95,
+  "missingClaimShots": [
+    1,
+    40,
+    57,
+    58,
+    59,
+    60,
+    61,
+    66,
+    67,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    92,
+    93,
+    94,
+    96,
+    97,
+    101,
+    106,
+    107,
+    113,
+    114,
+    116,
+    118,
+    119,
+    120,
+    121,
+    122,
+    127,
+    128
+  ],
+  "strategies": {
+    "GENERATE": 97,
+    "REUSE": 7,
+    "EDIT": 7,
+    "PROGRAMMATIC_GRAPHIC": 17
+  },
+  "longestEditChain": 2,
+  "longestCompositionChain": 2,
+  "longestGraphicChain": 1,
+  "graphicShots": [
+    7,
+    17,
+    23,
+    27,
+    34,
+    39,
+    44,
+    48,
+    54,
+    62,
+    77,
+    81,
+    85,
+    89,
+    95,
+    112,
+    116
+  ],
+  "cast": {
+    "e_protagonist": {
+      "shots": [
+        13,
+        14,
+        15,
+        16,
+        21,
+        22,
+        25,
+        26,
+        27,
+        28,
+        29,
+        36,
+        45,
+        46,
+        55,
+        69,
+        72,
+        73,
+        79,
+        98,
+        99,
+        102,
+        103,
+        104,
+        105,
+        108,
+        115
+      ],
+      "chapters": [
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c6",
+        "c7"
+      ]
+    },
+    "e_operations_officer": {
+      "shots": [
+        47
+      ],
+      "chapters": [
+        "c4"
+      ]
+    },
+    "e_power_officer": {
+      "shots": [
+        43,
+        44,
+        64,
+        65,
+        88,
+        117,
+        123,
+        124
+      ],
+      "chapters": [
+        "c3",
+        "c5",
+        "c7"
+      ]
+    },
+    "e_agri_specialist": {
+      "shots": [
+        17,
+        33,
+        37,
+        38,
+        70,
+        71,
+        89,
+        90,
+        126
+      ],
+      "chapters": [
+        "c1",
+        "c3",
+        "c5",
+        "c7"
+      ]
+    },
+    "e_technician": {
+      "shots": [
+        4,
+        5,
+        6,
+        19,
+        30,
+        31,
+        32,
+        75,
+        76,
+        77,
+        109,
+        110,
+        111
+      ],
+      "chapters": [
+        "c1",
+        "c2",
+        "c4",
+        "c6"
+      ]
+    },
+    "e_eva_team": {
+      "shots": [
+        74,
+        80,
+        81
+      ],
+      "chapters": [
+        "c4"
+      ]
+    }
+  },
+  "aliases": {
+    "farmer greenhouse": [
+      "e_agri_specialist"
+    ],
+    "battery solar power": [
+      "e_power_officer"
+    ],
+    "suit mechanical repairs": [
+      "e_technician"
+    ]
+  },
+  "exactTextShots": [
+    {
+      "shot": 7,
+      "text": "+40 minutes",
+      "reserved": true
+    },
+    {
+      "shot": 10,
+      "text": "24.6597 h",
+      "reserved": true
+    },
+    {
+      "shot": 11,
+      "text": "24.6597 h",
+      "reserved": true
+    },
+    {
+      "shot": 12,
+      "text": "24.6597 h",
+      "reserved": true
+    },
+    {
+      "shot": 17,
+      "text": "Amber = Delay EVA",
+      "reserved": true
+    },
+    {
+      "shot": 18,
+      "text": "Wake → Check → Decide",
+      "reserved": true
+    },
+    {
+      "shot": 20,
+      "text": "continuous health checks",
+      "reserved": true
+    },
+    {
+      "shot": 21,
+      "text": "hands‑on checks",
+      "reserved": true
+    },
+    {
+      "shot": 22,
+      "text": "hands‑on checks",
+      "reserved": true
+    },
+    {
+      "shot": 23,
+      "text": "isolated → replace → schedule",
+      "reserved": true
+    },
+    {
+      "shot": 24,
+      "text": "isolated → replace → schedule",
+      "reserved": true
+    },
+    {
+      "shot": 27,
+      "text": "exception → trace → analyze → inventory",
+      "reserved": true
+    },
+    {
+      "shot": 28,
+      "text": "exception → trace → analyze → inventory",
+      "reserved": true
+    },
+    {
+      "shot": 29,
+      "text": "exception → trace → analyze → inventory",
+      "reserved": true
+    },
+    {
+      "shot": 43,
+      "text": "Labor vs Energy",
+      "reserved": true
+    },
+    {
+      "shot": 44,
+      "text": "Labor vs Energy",
+      "reserved": true
+    },
+    {
+      "shot": 50,
+      "text": "Conservative + Individualized",
+      "reserved": true
+    },
+    {
+      "shot": 51,
+      "text": "Conservative + Individualized",
+      "reserved": true
+    },
+    {
+      "shot": 52,
+      "text": "~hundreds μSv/sol",
+      "reserved": true
+    },
+    {
+      "shot": 53,
+      "text": "~hundreds μSv/sol",
+      "reserved": true
+    },
+    {
+      "shot": 55,
+      "text": "Shelters required",
+      "reserved": true
+    },
+    {
+      "shot": 62,
+      "text": "PRIORITIES",
+      "reserved": true
+    },
+    {
+      "shot": 63,
+      "text": "PRIORITIES",
+      "reserved": true
+    },
+    {
+      "shot": 64,
+      "text": "TRIM BOTTOM-UP",
+      "reserved": true
+    },
+    {
+      "shot": 65,
+      "text": "TRIM BOTTOM-UP",
+      "reserved": true
+    },
+    {
+      "shot": 68,
+      "text": "CO2 ALARM",
+      "reserved": true
+    },
+    {
+      "shot": 72,
+      "text": "QUARANTINE",
+      "reserved": true
+    },
+    {
+      "shot": 73,
+      "text": "QUARANTINE",
+      "reserved": true
+    },
+    {
+      "shot": 75,
+      "text": "VALVE: MARGINAL",
+      "reserved": true
+    },
+    {
+      "shot": 76,
+      "text": "VALVE: MARGINAL",
+      "reserved": true
+    },
+    {
+      "shot": 78,
+      "text": "SAFETY IMPACT",
+      "reserved": true
+    },
+    {
+      "shot": 80,
+      "text": "RETURNED SAME SOL",
+      "reserved": true
+    },
+    {
+      "shot": 81,
+      "text": "RETURNED SAME SOL",
+      "reserved": true
+    },
+    {
+      "shot": 89,
+      "text": "SAFETY FIRST",
+      "reserved": true
+    },
+    {
+      "shot": 90,
+      "text": "SAFETY FIRST",
+      "reserved": true
+    },
+    {
+      "shot": 108,
+      "text": "NO INSTANT HELP",
+      "reserved": true
+    },
+    {
+      "shot": 123,
+      "text": "SYSTEMS NOMINAL",
+      "reserved": true
+    },
+    {
+      "shot": 124,
+      "text": "SYSTEMS NOMINAL",
+      "reserved": true
+    }
+  ],
+  "compiledBeats": 34,
+  "preflightPassed": false,
+  "compiledGenerateStyleCoverage": true,
+  "errors": [
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b1_wake_open_shot_1"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b3_greenhouse_intro_shot_8"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b5_dust_forecast_and_power_shot_2"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b5_dust_forecast_and_power_shot_3"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b5_dust_forecast_and_power_shot_4"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b5_dust_forecast_and_power_shot_5"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b5_dust_forecast_and_power_shot_6"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b5_dust_forecast_and_power_shot_11"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b5_dust_forecast_and_power_shot_12"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b8_suit_repair_payoff_shot_4"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b8_suit_repair_payoff_shot_5"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b9_dust_contingency_switch_shot_1"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b9_dust_contingency_switch_shot_2"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b9_dust_contingency_switch_shot_3"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b9_dust_contingency_switch_shot_4"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b10_greenhouse_fix_payoff_shot_2"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b10_greenhouse_fix_payoff_shot_3"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b10_greenhouse_fix_payoff_shot_4"
+    },
+    {
+      "beatId": null,
+      "reason": "GRAPHIC_INVALID:sequence_b10_greenhouse_fix_payoff_shot_5:No template could safely represent claim s16__c3 without inventing content — narration was too long/unstructured for any of the 11 known templates."
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b10_greenhouse_fix_payoff_shot_6"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b10_greenhouse_fix_payoff_shot_7"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b12_exercise_and_social_routine_shot_1"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b12_exercise_and_social_routine_shot_6"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b12_exercise_and_social_routine_shot_7"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b12_exercise_and_social_routine_shot_13"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b12_exercise_and_social_routine_shot_14"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b13_end_of_sol_checks_shot_2"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b13_end_of_sol_checks_shot_4"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b13_end_of_sol_checks_shot_5"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b13_end_of_sol_checks_shot_6"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b13_end_of_sol_checks_shot_7"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b14_evening_ritual_and_payoff_shot_1"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b14_evening_ritual_and_payoff_shot_6"
+    },
+    {
+      "beatId": null,
+      "reason": "CLAIM_MISSING:sequence_b14_evening_ritual_and_payoff_shot_7"
+    },
+    {
+      "beatId": "sequence_b1_wake_open_shot_1",
+      "reason": "CLAIM_MISSING:sequence_b1_wake_open_shot_1"
+    },
+    {
+      "beatId": "sequence_b1_wake_open_shot_4",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_technician/three_quarter"
+    },
+    {
+      "beatId": "sequence_b1_wake_open_shot_5",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_technician/three_quarter"
+    },
+    {
+      "beatId": "sequence_b1_wake_open_shot_6",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_technician/three_quarter"
+    },
+    {
+      "beatId": "sequence_b1_wake_open_shot_10",
+      "reason": "SCENE_PROMPT_REPLAN_REQUIRED: essential content exceeds renderer prompt budget"
+    },
+    {
+      "beatId": "sequence_b1_wake_open_shot_11",
+      "reason": "SCENE_PROMPT_REPLAN_REQUIRED: essential content exceeds renderer prompt budget"
+    },
+    {
+      "beatId": "sequence_b1_wake_open_shot_12",
+      "reason": "SCENE_PROMPT_REPLAN_REQUIRED: essential content exceeds renderer prompt budget"
+    },
+    {
+      "beatId": "sequence_b1_wake_open_shot_13",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b1_wake_open_shot_15",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b1_wake_open_shot_16",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b1_wake_open_shot_18",
+      "reason": "SCENE_PROMPT_REPLAN_REQUIRED: essential content exceeds renderer prompt budget"
+    },
+    {
+      "beatId": "sequence_b2_life_support_walk_shot_1",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_technician/three_quarter"
+    },
+    {
+      "beatId": "sequence_b2_life_support_walk_shot_3",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b2_life_support_walk_shot_4",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b2_life_support_walk_shot_6",
+      "reason": "SCENE_PROMPT_REPLAN_REQUIRED: essential content exceeds renderer prompt budget"
+    },
+    {
+      "beatId": "sequence_b2_life_support_walk_shot_7",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/face_close_up"
+    },
+    {
+      "beatId": "sequence_b2_life_support_walk_shot_8",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/side_profile"
+    },
+    {
+      "beatId": "sequence_b2_life_support_walk_shot_10",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/face_close_up"
+    },
+    {
+      "beatId": "sequence_b2_life_support_walk_shot_11",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/side_profile"
+    },
+    {
+      "beatId": "sequence_b2_life_support_walk_shot_12",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_technician/three_quarter"
+    },
+    {
+      "beatId": "sequence_b2_life_support_walk_shot_13",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_technician/three_quarter"
+    },
+    {
+      "beatId": "sequence_b2_life_support_walk_shot_14",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_technician/face_close_up"
+    },
+    {
+      "beatId": "sequence_b3_greenhouse_intro_shot_1",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_agri_specialist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b3_greenhouse_intro_shot_4",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b3_greenhouse_intro_shot_5",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_agri_specialist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b3_greenhouse_intro_shot_6",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_agri_specialist/face_close_up"
+    },
+    {
+      "beatId": "sequence_b3_greenhouse_intro_shot_8",
+      "reason": "CLAIM_MISSING:sequence_b3_greenhouse_intro_shot_8"
+    },
+    {
+      "beatId": "sequence_b3_greenhouse_intro_shot_11",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_power_officer/face_close_up"
+    },
+    {
+      "beatId": "sequence_b4_eva_planning_and_risk_shot_1",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b4_eva_planning_and_risk_shot_2",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b4_eva_planning_and_risk_shot_3",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_operations_officer/three_quarter"
+    },
+    {
+      "beatId": "sequence_b4_eva_planning_and_risk_shot_11",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b5_dust_forecast_and_power_shot_2",
+      "reason": "CLAIM_MISSING:sequence_b5_dust_forecast_and_power_shot_2"
+    },
+    {
+      "beatId": "sequence_b5_dust_forecast_and_power_shot_3",
+      "reason": "CLAIM_MISSING:sequence_b5_dust_forecast_and_power_shot_3"
+    },
+    {
+      "beatId": "sequence_b5_dust_forecast_and_power_shot_4",
+      "reason": "CLAIM_MISSING:sequence_b5_dust_forecast_and_power_shot_4"
+    },
+    {
+      "beatId": "sequence_b5_dust_forecast_and_power_shot_5",
+      "reason": "CLAIM_MISSING:sequence_b5_dust_forecast_and_power_shot_5"
+    },
+    {
+      "beatId": "sequence_b5_dust_forecast_and_power_shot_6",
+      "reason": "CLAIM_MISSING:sequence_b5_dust_forecast_and_power_shot_6"
+    },
+    {
+      "beatId": "sequence_b5_dust_forecast_and_power_shot_9",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_power_officer/three_quarter"
+    },
+    {
+      "beatId": "sequence_b5_dust_forecast_and_power_shot_10",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_power_officer/three_quarter"
+    },
+    {
+      "beatId": "sequence_b5_dust_forecast_and_power_shot_11",
+      "reason": "CLAIM_MISSING:sequence_b5_dust_forecast_and_power_shot_11"
+    },
+    {
+      "beatId": "sequence_b5_dust_forecast_and_power_shot_12",
+      "reason": "CLAIM_MISSING:sequence_b5_dust_forecast_and_power_shot_12"
+    },
+    {
+      "beatId": "sequence_b6_greenhouse_alarm_handling_shot_2",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b6_greenhouse_alarm_handling_shot_3",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_agri_specialist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b6_greenhouse_alarm_handling_shot_4",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_agri_specialist/face_close_up"
+    },
+    {
+      "beatId": "sequence_b6_greenhouse_alarm_handling_shot_5",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b6_greenhouse_alarm_handling_shot_6",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b7_suit_fault_discovery_shot_1",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_eva_team/three_quarter"
+    },
+    {
+      "beatId": "sequence_b7_suit_fault_discovery_shot_2",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_technician/three_quarter"
+    },
+    {
+      "beatId": "sequence_b7_suit_fault_discovery_shot_3",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_technician/three_quarter"
+    },
+    {
+      "beatId": "sequence_b7_suit_fault_discovery_shot_5",
+      "reason": "SCENE_PROMPT_REPLAN_REQUIRED: essential content exceeds renderer prompt budget"
+    },
+    {
+      "beatId": "sequence_b8_suit_repair_payoff_shot_1",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b8_suit_repair_payoff_shot_2",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_eva_team/side_profile"
+    },
+    {
+      "beatId": "sequence_b8_suit_repair_payoff_shot_4",
+      "reason": "CLAIM_MISSING:sequence_b8_suit_repair_payoff_shot_4"
+    },
+    {
+      "beatId": "sequence_b8_suit_repair_payoff_shot_5",
+      "reason": "CLAIM_MISSING:sequence_b8_suit_repair_payoff_shot_5"
+    },
+    {
+      "beatId": "sequence_b9_dust_contingency_switch_shot_1",
+      "reason": "CLAIM_MISSING:sequence_b9_dust_contingency_switch_shot_1"
+    },
+    {
+      "beatId": "sequence_b9_dust_contingency_switch_shot_2",
+      "reason": "CLAIM_MISSING:sequence_b9_dust_contingency_switch_shot_2"
+    },
+    {
+      "beatId": "sequence_b9_dust_contingency_switch_shot_3",
+      "reason": "CLAIM_MISSING:sequence_b9_dust_contingency_switch_shot_3"
+    },
+    {
+      "beatId": "sequence_b9_dust_contingency_switch_shot_4",
+      "reason": "CLAIM_MISSING:sequence_b9_dust_contingency_switch_shot_4"
+    },
+    {
+      "beatId": "sequence_b9_dust_contingency_switch_shot_5",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_power_officer/three_quarter"
+    },
+    {
+      "beatId": "sequence_b9_dust_contingency_switch_shot_7",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_agri_specialist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b10_greenhouse_fix_payoff_shot_2",
+      "reason": "CLAIM_MISSING:sequence_b10_greenhouse_fix_payoff_shot_2"
+    },
+    {
+      "beatId": "sequence_b10_greenhouse_fix_payoff_shot_3",
+      "reason": "CLAIM_MISSING:sequence_b10_greenhouse_fix_payoff_shot_3"
+    },
+    {
+      "beatId": "sequence_b10_greenhouse_fix_payoff_shot_4",
+      "reason": "CLAIM_MISSING:sequence_b10_greenhouse_fix_payoff_shot_4"
+    },
+    {
+      "beatId": "sequence_b10_greenhouse_fix_payoff_shot_5",
+      "reason": "GRAPHIC_REPLAN_REQUIRED:No template could safely represent claim s16__c3 without inventing content — narration was too long/unstructured for any of the 11 known templates."
+    },
+    {
+      "beatId": "sequence_b10_greenhouse_fix_payoff_shot_6",
+      "reason": "CLAIM_MISSING:sequence_b10_greenhouse_fix_payoff_shot_6"
+    },
+    {
+      "beatId": "sequence_b10_greenhouse_fix_payoff_shot_7",
+      "reason": "CLAIM_MISSING:sequence_b10_greenhouse_fix_payoff_shot_7"
+    },
+    {
+      "beatId": "sequence_b11_shortened_eva_execution_shot_1",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b11_shortened_eva_execution_shot_2",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b12_exercise_and_social_routine_shot_1",
+      "reason": "CLAIM_MISSING:sequence_b12_exercise_and_social_routine_shot_1"
+    },
+    {
+      "beatId": "sequence_b12_exercise_and_social_routine_shot_2",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b12_exercise_and_social_routine_shot_3",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b12_exercise_and_social_routine_shot_4",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b12_exercise_and_social_routine_shot_5",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b12_exercise_and_social_routine_shot_6",
+      "reason": "CLAIM_MISSING:sequence_b12_exercise_and_social_routine_shot_6"
+    },
+    {
+      "beatId": "sequence_b12_exercise_and_social_routine_shot_7",
+      "reason": "CLAIM_MISSING:sequence_b12_exercise_and_social_routine_shot_7"
+    },
+    {
+      "beatId": "sequence_b12_exercise_and_social_routine_shot_8",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b12_exercise_and_social_routine_shot_9",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_technician/three_quarter"
+    },
+    {
+      "beatId": "sequence_b12_exercise_and_social_routine_shot_10",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_technician/three_quarter"
+    },
+    {
+      "beatId": "sequence_b12_exercise_and_social_routine_shot_11",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_technician/three_quarter"
+    },
+    {
+      "beatId": "sequence_b12_exercise_and_social_routine_shot_13",
+      "reason": "CLAIM_MISSING:sequence_b12_exercise_and_social_routine_shot_13"
+    },
+    {
+      "beatId": "sequence_b12_exercise_and_social_routine_shot_14",
+      "reason": "CLAIM_MISSING:sequence_b12_exercise_and_social_routine_shot_14"
+    },
+    {
+      "beatId": "sequence_b13_end_of_sol_checks_shot_1",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_protagonist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b13_end_of_sol_checks_shot_2",
+      "reason": "CLAIM_MISSING:sequence_b13_end_of_sol_checks_shot_2"
+    },
+    {
+      "beatId": "sequence_b13_end_of_sol_checks_shot_3",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_power_officer/three_quarter"
+    },
+    {
+      "beatId": "sequence_b13_end_of_sol_checks_shot_4",
+      "reason": "CLAIM_MISSING:sequence_b13_end_of_sol_checks_shot_4"
+    },
+    {
+      "beatId": "sequence_b13_end_of_sol_checks_shot_5",
+      "reason": "CLAIM_MISSING:sequence_b13_end_of_sol_checks_shot_5"
+    },
+    {
+      "beatId": "sequence_b13_end_of_sol_checks_shot_6",
+      "reason": "CLAIM_MISSING:sequence_b13_end_of_sol_checks_shot_6"
+    },
+    {
+      "beatId": "sequence_b13_end_of_sol_checks_shot_7",
+      "reason": "CLAIM_MISSING:sequence_b13_end_of_sol_checks_shot_7"
+    },
+    {
+      "beatId": "sequence_b14_evening_ritual_and_payoff_shot_1",
+      "reason": "CLAIM_MISSING:sequence_b14_evening_ritual_and_payoff_shot_1"
+    },
+    {
+      "beatId": "sequence_b14_evening_ritual_and_payoff_shot_2",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_power_officer/three_quarter"
+    },
+    {
+      "beatId": "sequence_b14_evening_ritual_and_payoff_shot_3",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_power_officer/three_quarter"
+    },
+    {
+      "beatId": "sequence_b14_evening_ritual_and_payoff_shot_5",
+      "reason": "ISOLATED_CHARACTER_REFERENCE_REQUIRED:e_agri_specialist/three_quarter"
+    },
+    {
+      "beatId": "sequence_b14_evening_ritual_and_payoff_shot_6",
+      "reason": "CLAIM_MISSING:sequence_b14_evening_ritual_and_payoff_shot_6"
+    },
+    {
+      "beatId": "sequence_b14_evening_ritual_and_payoff_shot_7",
+      "reason": "CLAIM_MISSING:sequence_b14_evening_ritual_and_payoff_shot_7"
+    }
+  ],
+  "providerCalls": 0,
+  "creditsCharged": 0,
+  "pointersChanged": false
+}

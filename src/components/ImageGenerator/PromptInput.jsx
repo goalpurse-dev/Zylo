@@ -61,7 +61,7 @@ const PromptInput = React.memo(({ prompt, setPrompt }) => {
             border border-white/[0.08]
             px-4 py-3
             transition
-            focus-within:border-[#7A3BFF]/50
+            focus-within:border-[#BEF264]/50
             focus-within:bg-[#111317]
           "
         >

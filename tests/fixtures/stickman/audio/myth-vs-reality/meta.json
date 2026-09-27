@@ -1,0 +1,114 @@
+{
+  "narrationAudioVersionId": "2f87db61-d5db-40ab-b14e-3b7acd1a0f04",
+  "projectId": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae",
+  "scriptVersionId": "b3669868-54a6-4814-bd61-323efed108b0",
+  "createdAt": "2026-09-26T22:15:40.585242+00:00",
+  "readyAt": "2026-09-26T22:15:53.659+00:00",
+  "voiceProvider": "elevenlabs",
+  "voiceId": "TxGEqnHWrfWFTfGW9XjX",
+  "voiceModel": "eleven_flash_v2_5",
+  "voiceSettings": {},
+  "requestHash": "8e9150e517bc6b68438dcdc2a092e426c4fe7c5f28ec995bda61dd7a961f7ce2",
+  "scriptInputHash": "7633025f8504f57753be5128f11d77cc439cd263caca32f5097d3b73aa76c1a6",
+  "audioUrl": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/narration/2f87db61-d5db-40ab-b14e-3b7acd1a0f04.mp3",
+  "audioBytes": 8375110,
+  "audioDurationSeconds": 523.375,
+  "charactersSent": 6310,
+  "wordCount": 1038,
+  "segments": 15,
+  "providerMetadata": {
+    "model": "eleven_flash_v2_5",
+    "costBasis": "estimated_per_character; providerCharacterCost is ElevenLabs' own character-cost header",
+    "characterCount": 6310,
+    "providerRequestId": "MsnkR4FxT5HY1FDgL4yp",
+    "providerCharacterCost": 1577
+  },
+  "internalCostUsdEstimate": 1.893,
+  "quotaBefore": {
+    "ok": false,
+    "keyConfigured": true,
+    "keyValid": "restricted",
+    "subscriptionStatus": 401,
+    "detail": "missing_permissions",
+    "probes": {
+      "user": 401,
+      "models": 200,
+      "voice": 200
+    }
+  },
+  "quotaAfter": {
+    "ok": false,
+    "keyConfigured": true,
+    "keyValid": "restricted",
+    "subscriptionStatus": 401,
+    "detail": "missing_permissions",
+    "probes": {
+      "user": 401,
+      "models": 200,
+      "voice": 200
+    }
+  },
+  "quotaDeltaCharacters": null,
+  "segmentTexts": [
+    {
+      "id": "seg1",
+      "text": "You're gripping a shield, screaming down a hillside toward a shieldwall, and two long curved horns jut off your helmet, cutting the air on either side of your head. The horns catch the firelight. They look terrifying. They look exactly like every painting, every movie poster, every Halloween costume you've ever seen of a Viking. This is the image burned into your head."
+    },
+    {
+      "id": "seg2",
+      "text": "A single wrong picture like this can quietly rewrite an entire culture's history in our heads."
+    },
+    {
+      "id": "seg3",
+      "text": "So did any Viking ever actually strap on horns before walking into battle?"
+    },
+    {
+      "id": "seg4",
+      "text": "Here's the belief almost everyone carries around without question: Viking raiders wore horned helmets into combat, the horns curving up from the sides like a bull's. It feels obvious. It's on flags, beer labels, football helmets. But archaeologists digging across Scandinavia for over a century have found remarkably few actual Viking-age helmets at all. Total confirmed helmets from the entire Viking Age, roughly 793 to 1066, that survive with enough of the skull intact to study? You can count them on one hand."
+    },
+    {
+      "id": "seg5",
+      "text": "The best-preserved one is the Gjermundbu helmet, dug out of a burial mound in Norway in 1943, dated to around the year 970. It has a rounded iron cap, a spectacled guard curving over the eyes and nose, and absolutely nothing where horns would attach. No sockets. No rivet holes shaped for anything curved. Just a plain iron dome built to deflect a sword, not to look dramatic."
+    },
+    {
+      "id": "seg6",
+      "text": "Why trust one helmet? Because it isn't alone. Fragments from Tjele in Denmark and a handful of other sites all show the same story: plain iron, sometimes mail hanging to protect the neck, occasionally a nose guard. Historian Roberta Frank, who spent years tracing this myth through Old Norse literature, found zero contemporary written descriptions of horned battle helmets either. Not one saga. Not one carving from the era mentions warriors fighting in horns."
+    },
+    {
+      "id": "seg7",
+      "text": "So where do actual horned helmets in museums come from, if not the Viking Age? Rewind about two thousand years before the first Viking ship ever launched. In 1942, workers draining a bog near Veksø in Denmark pulled up two bronze helmets, each fitted with long, gently curving horns tipped with little round discs. They're called the Veksø helmets, and they've been dated to roughly 900 to 1100 BCE, the Nordic Bronze Age."
+    },
+    {
+      "id": "seg8",
+      "text": "These weren't armor. The bronze is thin, decorative, almost delicate. They were likely worn by a priest or a chieftain in a religious ceremony, maybe alongside sun-worship rituals, definitely not swung into a shield wall. That's over eighteen hundred years separating these horns from the first recorded Viking raid on Lindisfarne in 793. Would you mistake your great-great-great-grandparent's wedding china for something you use in a bar fight? That's roughly the gap we're talking about."
+    },
+    {
+      "id": "seg9",
+      "text": "But 19th-century antiquarians didn't always draw that line carefully. Early collectors and popular illustrators, digging through old hoards without modern dating tools, lumped anything old and Nordic into one romantic bucket labeled ancient Norse warrior. A ceremonial priest's headdress from the Bronze Age and a Viking raider a thousand years later got flattened into the same imagined figure. That mistake didn't stay buried in a museum basement. It walked straight onto a stage."
+    },
+    {
+      "id": "seg10",
+      "text": "In 1876, composer Richard Wagner's opera cycle Der Ring des Nibelungen premiered in Bayreuth, Germany. Costume designer Carl Emil Doepler dressed the Norse gods and warriors in flowing furs, winged helmets, and yes, dramatic curved horns. Wagner wanted mythic, larger-than-life figures towering over an audience from the back row of a theater. Historical accuracy wasn't the assignment. Spectacle was."
+    },
+    {
+      "id": "seg11",
+      "text": "Why did that image spread so fast? Because it landed inside the Romantic movement, when artists across Europe were painting Norse myth as noble and untamed. Swedish painter Gustav Malmstrom and others had already sketched horned figures decades earlier, but Wagner's production put the look in front of thousands of paying theatergoers at once, night after night. A single stage costume became the visual template every illustrator copied afterward, because it was already proven to work on an audience."
+    },
+    {
+      "id": "seg12",
+      "text": "From there it never stopped moving. By the early 1900s, horned helmets showed up on tourist postcards sold in Norway itself. In 1939, cartoonist Alex Raymond drew the horned warrior in his Flash Gordon comics. In 1948, the Minnesota Vikings didn't exist yet, but when the NFL team formed in 1961, they built their whole identity around that same horned image. Have you ever questioned why a football team from Minnesota wears Bronze Age Danish ceremonial gear? Most people never do."
+    },
+    {
+      "id": "seg13",
+      "text": "But can we really say never, with total certainty? Here's the honest complication. Most Viking-age helmets we'd expect to find were probably never made of iron at all. Leather, boiled and hardened, wood, and antler don't survive well underground for a thousand years, especially in acidic Scandinavian soil. If a helmet had small horns made from antler lashed on with leather cord, that cord and antler could rot into nothing within a few centuries, leaving no rivet holes, no discoloration, no trace at all. So when archaeologists say no evidence, they mean no surviving evidence. Absence isn't automatically proof of absence. It just means if it happened, it happened in a material that time was never going to let us keep."
+    },
+    {
+      "id": "seg14",
+      "text": "So go back to that charge down the hillside, the helmet with two long curved horns catching the firelight. That image didn't come from a Viking battlefield at all. It came from a Bronze Age priest's ritual, borrowed by a German opera designer in 1876, and sold to the entire world ever since. Wagner's costume department gave you a myth so good, so visually perfect, that even a total absence of battle evidence couldn't kill it."
+    },
+    {
+      "id": "seg15",
+      "text": "Somewhere in a Norwegian museum, a plain iron dome with a simple eye guard sits under glass, unglamorous, undramatic, and true. Nobody buys a postcard of it. Nobody puts it on a football helmet. Real history is rarely as loud as the myth built on top of it. Next time you see those curving horns on a lunchbox or a mascot, you're not looking at Norse memory. You're looking at a nineteenth-century costume designer's best sales pitch, one that's still working on you today."
+    }
+  ]
+}

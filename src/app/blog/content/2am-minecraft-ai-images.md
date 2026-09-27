@@ -66,5 +66,6 @@ Yes — describing your own base, biome, or in-progress project (in general term
 - How to Create Cinematic Worlds With an AI World Generator → /blog/ai-world-generator-guide
 - What Is the 2AM Worlds AI Trend? → /blog/what-is-the-2am-worlds-ai-trend
 - How to Go Viral on TikTok With AI World Slideshows → /blog/how-to-go-viral-tiktok-ai-worlds
+- Minecraft-Style AI Photos: Turn Any Prompt Into Blocky Art → /blog/minecraft-style-ai-images
 
 ---

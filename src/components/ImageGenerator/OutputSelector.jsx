@@ -61,7 +61,7 @@ if (rect) {
             bg-[#151719]
             px-4 py-3 text-left
             transition-colors duration-200
-            hover:border-[#7A3BFF]/70 hover:bg-[#181B1E]
+            hover:border-[#BEF264]/70 hover:bg-[#181B1E]
           "
         >
           <div className="flex justify-between items-center">
@@ -82,7 +82,7 @@ if (rect) {
             <ChevronRight
               className={`
                 w-4 h-4 transition
-                ${open ? "rotate-90 text-[#B69CFF]" : "text-white/50"}
+                ${open ? "rotate-90 text-[#D9F99D]" : "text-white/50"}
               `}
             />
           </div>

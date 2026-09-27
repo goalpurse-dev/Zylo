@@ -1,0 +1,32 @@
+✔ orphan first reuse becomes a setup without changing narration or grounding (4.442ms)
+✔ created is distinct from started, with real timestamp authoritative (0.9253ms)
+✔ chapter groups preserve every narration-linked beat in order (0.2755ms)
+✔ friendly labels and continuity hide raw keys (0.239ms)
+✔ counts derive from registry and actual beats (0.2556ms)
+✔ edit request contains only permitted visual fields, no narration or grounding override (0.1924ms)
+✔ unsupported cameras and empty descriptions rejected (0.2481ms)
+✔ hard restriction matches warn and factual grounding remains visible (0.223ms)
+✔ coarse 14-item plan fails density; semantic shot layer passes without quota (0.9916ms)
+✔ macro sequence purposes, narration and factual reasoning are retained (1.0653ms)
+✔ every shot has exact original text ranges, original grounding, and contiguous estimated timing (1.6922ms)
+✔ semantic boundaries react to location, object and explanation changes (0.4159ms)
+✔ render reuse is distinct from shot count, with an established base before dependent shots (0.2799ms)
+✔ stable setup sketches retain environment across camera crops (0.2053ms)
+✔ expansion is deterministic and idempotent (9.4661ms)
+✔ all original narration characters are covered by some shot range, excluding whitespace only (2.487ms)
+✔ density distinguishes static hold from progressive diagram and rejects timing gaps (0.3253ms)
+✔ fixture exercises every category and storyboard camera anchors (1.4778ms)
+✔ only usable successes count as ready; replacements do not double-count (0.2225ms)
+✔ four deterministic prompts: identity, full body/profile, reusable set, no labels (5.6024ms)
+✔ reference job stays free, uses FLUX Base, and keeps stable durable identity (2.2121ms)
+✔ uncertain enqueue response retries same asset/job through one atomic RPC (0.6529ms)
+✔ reconciliation observes terminal jobs without creating or claiming paid work (0.2356ms)
+✔ saved smoke audit is exactly four successful zero-credit results, no claimed asset-link proof (1.949ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 197.3616

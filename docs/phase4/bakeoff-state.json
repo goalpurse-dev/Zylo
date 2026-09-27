@@ -1,0 +1,3029 @@
+{
+ "renders": {
+  "A:flux2-klein-9b-kv:12": {
+   "round": "A",
+   "model": "flux2-klein-9b-kv",
+   "seq": 12,
+   "imageURL": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/a1fa945e-c102-43ab-a801-2887ee996cf1.jpg",
+   "file": "docs/phase4/images/A-flux2-klein-9b-kv-12.jpg",
+   "cost": 0.00169,
+   "costReported": true,
+   "latencyMs": 2139
+  },
+  "A:flux2-klein-9b-kv:18": {
+   "round": "A",
+   "model": "flux2-klein-9b-kv",
+   "seq": 18,
+   "imageURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/61fc2c57-6464-4229-b40e-9c402c0b0f53.jpg",
+   "file": "docs/phase4/images/A-flux2-klein-9b-kv-18.jpg",
+   "cost": 0.00169,
+   "costReported": true,
+   "latencyMs": 2803
+  },
+  "A:flux2-klein-9b-kv:117": {
+   "round": "A",
+   "model": "flux2-klein-9b-kv",
+   "seq": 117,
+   "imageURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/b3f170fd-6fa0-43b9-a25b-99d8e0557d95.jpg",
+   "file": "docs/phase4/images/A-flux2-klein-9b-kv-117.jpg",
+   "cost": 0.00169,
+   "costReported": true,
+   "latencyMs": 2325
+  },
+  "A:flux2-klein-9b-kv:7": {
+   "round": "A",
+   "model": "flux2-klein-9b-kv",
+   "seq": 7,
+   "imageURL": "https://im.runware.ai/image/os/a02d21/ws/3/ii/c0a296ec-be4c-4320-b196-198ece30c91a.jpg",
+   "file": "docs/phase4/images/A-flux2-klein-9b-kv-7.jpg",
+   "cost": 0.00169,
+   "costReported": true,
+   "latencyMs": 2860
+  },
+  "A:flux2-klein-9b-kv:69": {
+   "round": "A",
+   "model": "flux2-klein-9b-kv",
+   "seq": 69,
+   "imageURL": "https://im.runware.ai/image/os/a02d21/ws/3/ii/7978fc8b-fc03-4ee0-b2b8-2616927cdd04.jpg",
+   "file": "docs/phase4/images/A-flux2-klein-9b-kv-69.jpg",
+   "cost": 0.00169,
+   "costReported": true,
+   "latencyMs": 5171
+  },
+  "A:flux2-klein-9b-kv:111": {
+   "round": "A",
+   "model": "flux2-klein-9b-kv",
+   "seq": 111,
+   "imageURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/c7422849-d638-462a-9761-608e7f21c044.jpg",
+   "file": "docs/phase4/images/A-flux2-klein-9b-kv-111.jpg",
+   "cost": 0.00169,
+   "costReported": true,
+   "latencyMs": 2876
+  },
+  "A:flux2-klein-9b-kv:125": {
+   "round": "A",
+   "model": "flux2-klein-9b-kv",
+   "seq": 125,
+   "imageURL": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/f3fdc408-5136-415f-955a-16bc2e8495c0.jpg",
+   "file": "docs/phase4/images/A-flux2-klein-9b-kv-125.jpg",
+   "cost": 0.00169,
+   "costReported": true,
+   "latencyMs": 3036
+  },
+  "A:qwen-image-2512:117": {
+   "round": "A",
+   "model": "qwen-image-2512",
+   "seq": 117,
+   "imageURL": "https://im.runware.ai/image/os/a05d22/ws/3/ii/ac6c87a9-2196-4803-a81c-dae6bf2cb889.jpg",
+   "file": "docs/phase4/images/A-qwen-image-2512-117.jpg",
+   "cost": 0.0032,
+   "costReported": true,
+   "latencyMs": 7741
+  },
+  "A:flux2-klein-9b-kv:57": {
+   "round": "A",
+   "model": "flux2-klein-9b-kv",
+   "seq": 57,
+   "imageURL": "https://im.runware.ai/image/os/a02d21/ws/3/ii/665dedbf-5764-45c5-ad6e-01382394211f.jpg",
+   "file": "docs/phase4/images/A-flux2-klein-9b-kv-57.jpg",
+   "cost": 0.00169,
+   "costReported": true,
+   "latencyMs": 17574
+  },
+  "A:flux2-klein-9b-kv:10": {
+   "round": "A",
+   "model": "flux2-klein-9b-kv",
+   "seq": 10,
+   "imageURL": "https://im.runware.ai/image/os/a06dlim3/ws/3/ii/61033285-a297-42fc-a063-67c92bda5ca5.jpg",
+   "file": "docs/phase4/images/A-flux2-klein-9b-kv-10.jpg",
+   "cost": 0.00169,
+   "costReported": true,
+   "latencyMs": 17717
+  },
+  "A:qwen-image-2512:7": {
+   "round": "A",
+   "model": "qwen-image-2512",
+   "seq": 7,
+   "imageURL": "https://im.runware.ai/image/os/a05d22/ws/3/ii/74482598-9e87-451b-aa5a-babdc5bcf66c.jpg",
+   "file": "docs/phase4/images/A-qwen-image-2512-7.jpg",
+   "cost": 0.0032,
+   "costReported": true,
+   "latencyMs": 5799
+  },
+  "A:qwen-image-2512:69": {
+   "round": "A",
+   "model": "qwen-image-2512",
+   "seq": 69,
+   "imageURL": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/d3f73f13-9ae1-4cf0-94ec-14f094391068.jpg",
+   "file": "docs/phase4/images/A-qwen-image-2512-69.jpg",
+   "cost": 0.0045,
+   "costReported": true,
+   "latencyMs": 17970
+  },
+  "A:qwen-image-2512:18": {
+   "round": "A",
+   "model": "qwen-image-2512",
+   "seq": 18,
+   "imageURL": "https://im.runware.ai/image/os/a07dlim3/ws/3/ii/abf23fae-bbf3-4744-b7e2-df9d7e4e8621.jpg",
+   "file": "docs/phase4/images/A-qwen-image-2512-18.jpg",
+   "cost": 0.0045,
+   "costReported": true,
+   "latencyMs": 11879
+  },
+  "A:qwen-image-2512:21": {
+   "round": "A",
+   "model": "qwen-image-2512",
+   "seq": 21,
+   "imageURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/e3ab446a-188c-4e7c-b18d-57acf37c79d7.jpg",
+   "file": "docs/phase4/images/A-qwen-image-2512-21.jpg",
+   "cost": 0.0045,
+   "costReported": true,
+   "latencyMs": 11155
+  },
+  "A:qwen-image-2512:12": {
+   "round": "A",
+   "model": "qwen-image-2512",
+   "seq": 12,
+   "imageURL": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/3cb813ce-68f9-4aa8-95d4-e51a34e16e16.jpg",
+   "file": "docs/phase4/images/A-qwen-image-2512-12.jpg",
+   "cost": 0.0045,
+   "costReported": true,
+   "latencyMs": 11595
+  },
+  "A:qwen-image-2512:57": {
+   "round": "A",
+   "model": "qwen-image-2512",
+   "seq": 57,
+   "imageURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/c8ee41dc-d17b-44f9-a29f-9f911f5fd65e.jpg",
+   "file": "docs/phase4/images/A-qwen-image-2512-57.jpg",
+   "cost": 0.0032,
+   "costReported": true,
+   "latencyMs": 5567
+  },
+  "A:flux2-klein-9b-kv:21": {
+   "round": "A",
+   "model": "flux2-klein-9b-kv",
+   "seq": 21,
+   "imageURL": "https://im.runware.ai/image/os/a02d21/ws/3/ii/2a58b78c-c7a8-4004-aa56-5571954af357.jpg",
+   "file": "docs/phase4/images/A-flux2-klein-9b-kv-21.jpg",
+   "cost": 0.00169,
+   "costReported": true,
+   "latencyMs": 37314
+  },
+  "A:nano-banana-2-lite:117": {
+   "round": "A",
+   "model": "nano-banana-2-lite",
+   "seq": 117,
+   "imageURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/cb09ddb3-20d6-45fa-9eee-eaa17c252418.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-lite-117.jpg",
+   "cost": 0.0337725,
+   "costReported": true,
+   "latencyMs": 3233
+  },
+  "A:qwen-image-2512:125": {
+   "round": "A",
+   "model": "qwen-image-2512",
+   "seq": 125,
+   "imageURL": "https://im.runware.ai/image/os/a05d22/ws/3/ii/8397acce-52e0-48df-872e-2ea5a6a702a3.jpg",
+   "file": "docs/phase4/images/A-qwen-image-2512-125.jpg",
+   "cost": 0.0032,
+   "costReported": true,
+   "latencyMs": 4824
+  },
+  "A:qwen-image-2512:111": {
+   "round": "A",
+   "model": "qwen-image-2512",
+   "seq": 111,
+   "imageURL": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/622f1811-1406-4beb-afaa-50d191160d1c.jpg",
+   "file": "docs/phase4/images/A-qwen-image-2512-111.jpg",
+   "cost": 0.0032,
+   "costReported": true,
+   "latencyMs": 5218
+  },
+  "A:qwen-image-2512:10": {
+   "round": "A",
+   "model": "qwen-image-2512",
+   "seq": 10,
+   "imageURL": "https://im.runware.ai/image/os/a07dlim3/ws/3/ii/d9ae66aa-efa9-4e1b-89ef-7c362aeffdc8.jpg",
+   "file": "docs/phase4/images/A-qwen-image-2512-10.jpg",
+   "cost": 0.0032,
+   "costReported": true,
+   "latencyMs": 5463
+  },
+  "A:nano-banana-2-lite:7": {
+   "round": "A",
+   "model": "nano-banana-2-lite",
+   "seq": 7,
+   "imageURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/3e89a65c-013d-4740-9cfb-8bbfc2a0440f.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-lite-7.jpg",
+   "cost": 0.0336888,
+   "costReported": true,
+   "latencyMs": 3065
+  },
+  "A:nano-banana-2-lite:69": {
+   "round": "A",
+   "model": "nano-banana-2-lite",
+   "seq": 69,
+   "imageURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/fdf4c813-93fa-4d55-a7f4-a332522113b0.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-lite-69.jpg",
+   "cost": 0.0337089,
+   "costReported": true,
+   "latencyMs": 3246
+  },
+  "A:nano-banana-2-lite:18": {
+   "round": "A",
+   "model": "nano-banana-2-lite",
+   "seq": 18,
+   "imageURL": "https://im.runware.ai/image/os/a08dlim3/ws/3/ii/7340161d-cf5e-4978-a196-35c8cc1bf14d.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-lite-18.jpg",
+   "cost": 0.0337128,
+   "costReported": true,
+   "latencyMs": 3518
+  },
+  "A:nano-banana-2-lite:12": {
+   "round": "A",
+   "model": "nano-banana-2-lite",
+   "seq": 12,
+   "imageURL": "https://im.runware.ai/image/os/a05d22/ws/3/ii/5032520e-8023-4e3d-9e9c-ea47bc8ccefb.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-lite-12.jpg",
+   "cost": 0.033735,
+   "costReported": true,
+   "latencyMs": 3778
+  },
+  "A:nano-banana-2-lite:21": {
+   "round": "A",
+   "model": "nano-banana-2-lite",
+   "seq": 21,
+   "imageURL": "https://im.runware.ai/image/os/a05d22/ws/3/ii/b56faa3d-63e2-4fba-9091-ce5da8b2e71a.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-lite-21.jpg",
+   "cost": 0.0336861,
+   "costReported": true,
+   "latencyMs": 3179
+  },
+  "A:nano-banana-2-lite:57": {
+   "round": "A",
+   "model": "nano-banana-2-lite",
+   "seq": 57,
+   "imageURL": "https://im.runware.ai/image/os/a08dlim3/ws/3/ii/c31921aa-7675-416e-a58b-17119e4ac342.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-lite-57.jpg",
+   "cost": 0.0337113,
+   "costReported": true,
+   "latencyMs": 3276
+  },
+  "A:nano-banana-2-lite:10": {
+   "round": "A",
+   "model": "nano-banana-2-lite",
+   "seq": 10,
+   "imageURL": "https://im.runware.ai/image/os/a08dlim3/ws/3/ii/1daa30b2-a5c4-4e19-bf09-92a808d3885e.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-lite-10.jpg",
+   "cost": 0.0337386,
+   "costReported": true,
+   "latencyMs": 3895
+  },
+  "A:nano-banana-2-lite:111": {
+   "round": "A",
+   "model": "nano-banana-2-lite",
+   "seq": 111,
+   "imageURL": "https://im.runware.ai/image/os/a02d21/ws/3/ii/046314b8-0026-4f12-824a-9e3b7069bca7.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-lite-111.jpg",
+   "cost": 0.0337422,
+   "costReported": true,
+   "latencyMs": 3751
+  },
+  "A:nano-banana-2-lite:125": {
+   "round": "A",
+   "model": "nano-banana-2-lite",
+   "seq": 125,
+   "imageURL": "https://im.runware.ai/image/os/a02d21/ws/3/ii/c228ba1e-e9c7-4013-873c-36dc66e6f536.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-lite-125.jpg",
+   "cost": 0.0336996,
+   "costReported": true,
+   "latencyMs": 4324
+  },
+  "A:nano-banana-2:69": {
+   "round": "A",
+   "model": "nano-banana-2",
+   "seq": 69,
+   "imageURL": "https://im.runware.ai/image/os/a02d21/ws/3/ii/8bc15fb4-b1ae-4b5e-aa36-9bd683d5ced6.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-69.jpg",
+   "cost": 0.06895,
+   "costReported": true,
+   "latencyMs": 8949
+  },
+  "A:nano-banana-2:18": {
+   "round": "A",
+   "model": "nano-banana-2",
+   "seq": 18,
+   "imageURL": "https://im.runware.ai/image/os/a02d21/ws/3/ii/d69be0ae-3b84-41a8-be37-14dc0bd6051c.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-18.jpg",
+   "cost": 0.06895,
+   "costReported": true,
+   "latencyMs": 8484
+  },
+  "A:nano-banana-2:117": {
+   "round": "A",
+   "model": "nano-banana-2",
+   "seq": 117,
+   "imageURL": "https://im.runware.ai/image/os/a02d21/ws/3/ii/457b22bb-ec9e-47df-9330-d21f27e708ca.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-117.jpg",
+   "cost": 0.06895,
+   "costReported": true,
+   "latencyMs": 11559
+  },
+  "A:nano-banana-2:7": {
+   "round": "A",
+   "model": "nano-banana-2",
+   "seq": 7,
+   "imageURL": "https://im.runware.ai/image/os/a04d20/ws/3/ii/d0ae0fbe-e1d3-41e4-ab30-850752f58e55.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-7.jpg",
+   "cost": 0.06895,
+   "costReported": true,
+   "latencyMs": 9088
+  },
+  "A:nano-banana-2:12": {
+   "round": "A",
+   "model": "nano-banana-2",
+   "seq": 12,
+   "imageURL": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/844b7e04-b5d7-4f49-afde-369ec9188d46.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-12.jpg",
+   "cost": 0.06895,
+   "costReported": true,
+   "latencyMs": 11990
+  },
+  "A:nano-banana-2:21": {
+   "round": "A",
+   "model": "nano-banana-2",
+   "seq": 21,
+   "imageURL": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/e8beba7d-d2c2-4348-b545-33413b43498a.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-21.jpg",
+   "cost": 0.06895,
+   "costReported": true,
+   "latencyMs": 8385
+  },
+  "A:nano-banana-2:10": {
+   "round": "A",
+   "model": "nano-banana-2",
+   "seq": 10,
+   "imageURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/b6a5e47b-2ff3-4916-ab75-35e30698cc16.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-10.jpg",
+   "cost": 0.06895,
+   "costReported": true,
+   "latencyMs": 7790
+  },
+  "A:nano-banana-2:111": {
+   "round": "A",
+   "model": "nano-banana-2",
+   "seq": 111,
+   "imageURL": "https://im.runware.ai/image/os/a08dlim3/ws/3/ii/1ccd2900-5c68-42e6-a532-345cbca93f22.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-111.jpg",
+   "cost": 0.06895,
+   "costReported": true,
+   "latencyMs": 11747
+  },
+  "A:nano-banana-2:125": {
+   "round": "A",
+   "model": "nano-banana-2",
+   "seq": 125,
+   "imageURL": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/b2c0183a-f1b2-456b-906c-8d17bafd4229.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-125.jpg",
+   "cost": 0.06895,
+   "costReported": true,
+   "latencyMs": 7749
+  },
+  "A:nano-banana-2:57": {
+   "round": "A",
+   "model": "nano-banana-2",
+   "seq": 57,
+   "imageURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/474d9a6c-9e9d-4444-8f83-695e4ec53a1c.jpg",
+   "file": "docs/phase4/images/A-nano-banana-2-57.jpg",
+   "cost": 0.06895,
+   "costReported": true,
+   "latencyMs": 12683
+  },
+  "A:recraft-v4:69": {
+   "round": "A",
+   "model": "recraft-v4",
+   "seq": 69,
+   "imageURL": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/dbe61189-ea47-4726-aea7-5d59745b01e8.jpg",
+   "file": "docs/phase4/images/A-recraft-v4-69.jpg",
+   "cost": 0.04,
+   "costReported": true,
+   "latencyMs": 12792
+  },
+  "A:recraft-v4:7": {
+   "round": "A",
+   "model": "recraft-v4",
+   "seq": 7,
+   "imageURL": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/64b9d612-4c97-4e60-a339-c9eb6bbb4da5.jpg",
+   "file": "docs/phase4/images/A-recraft-v4-7.jpg",
+   "cost": 0.04,
+   "costReported": true,
+   "latencyMs": 9301
+  },
+  "A:recraft-v4:117": {
+   "round": "A",
+   "model": "recraft-v4",
+   "seq": 117,
+   "imageURL": "https://im.runware.ai/image/os/a02d21/ws/3/ii/27113b8e-d57f-4785-8178-13c450d5a402.jpg",
+   "file": "docs/phase4/images/A-recraft-v4-117.jpg",
+   "cost": 0.04,
+   "costReported": true,
+   "latencyMs": 15672
+  },
+  "A:recraft-v4:18": {
+   "round": "A",
+   "model": "recraft-v4",
+   "seq": 18,
+   "imageURL": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/63ea2911-9e78-4ba4-8fda-d2fa0ee01bf3.jpg",
+   "file": "docs/phase4/images/A-recraft-v4-18.jpg",
+   "cost": 0.04,
+   "costReported": true,
+   "latencyMs": 12138
+  },
+  "A:recraft-v4:12": {
+   "round": "A",
+   "model": "recraft-v4",
+   "seq": 12,
+   "imageURL": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/c97f4557-15d8-47e5-94c9-2f26f526f5d2.jpg",
+   "file": "docs/phase4/images/A-recraft-v4-12.jpg",
+   "cost": 0.04,
+   "costReported": true,
+   "latencyMs": 12003
+  },
+  "A:recraft-v4:57": {
+   "round": "A",
+   "model": "recraft-v4",
+   "seq": 57,
+   "imageURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/be7bbece-d6d9-4fef-b8fe-3fb8a8c282d8.jpg",
+   "file": "docs/phase4/images/A-recraft-v4-57.jpg",
+   "cost": 0.04,
+   "costReported": true,
+   "latencyMs": 11843
+  },
+  "A:recraft-v4:21": {
+   "round": "A",
+   "model": "recraft-v4",
+   "seq": 21,
+   "imageURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/7d4b4576-e00a-4604-9f28-913b6a422ebe.jpg",
+   "file": "docs/phase4/images/A-recraft-v4-21.jpg",
+   "cost": 0.04,
+   "costReported": true,
+   "latencyMs": 12847
+  },
+  "A:recraft-v4:111": {
+   "round": "A",
+   "model": "recraft-v4",
+   "seq": 111,
+   "imageURL": "https://im.runware.ai/image/os/a04d20/ws/3/ii/eb07489d-010f-4f5d-8450-8ef76f68ab6a.jpg",
+   "file": "docs/phase4/images/A-recraft-v4-111.jpg",
+   "cost": 0.04,
+   "costReported": true,
+   "latencyMs": 11414
+  },
+  "A:recraft-v4:125": {
+   "round": "A",
+   "model": "recraft-v4",
+   "seq": 125,
+   "imageURL": "https://im.runware.ai/image/os/a08dlim3/ws/3/ii/6168438b-5191-4cae-ac3a-fee1be386a2a.jpg",
+   "file": "docs/phase4/images/A-recraft-v4-125.jpg",
+   "cost": 0.04,
+   "costReported": true,
+   "latencyMs": 11346
+  },
+  "A:recraft-v4:10": {
+   "round": "A",
+   "model": "recraft-v4",
+   "seq": 10,
+   "imageURL": "https://im.runware.ai/image/os/a04d20/ws/3/ii/6a13d236-3ec7-4f73-b3d5-abf4f7edd4a7.jpg",
+   "file": "docs/phase4/images/A-recraft-v4-10.jpg",
+   "cost": 0.04,
+   "costReported": true,
+   "latencyMs": 15718
+  },
+  "B:nano-banana-2-lite:57": {
+   "round": "B",
+   "model": "nano-banana-2-lite",
+   "seq": 57,
+   "imageURL": "https://im.runware.ai/image/os/a06dlim3/ws/3/ii/18ab0180-109f-4ffb-87fb-f549b245ba36.jpg",
+   "file": "docs/phase4/images/B-nano-banana-2-lite-57.jpg",
+   "cost": 0.0340473,
+   "costReported": true,
+   "latencyMs": 4651
+  },
+  "B:nano-banana-2-lite:10": {
+   "round": "B",
+   "model": "nano-banana-2-lite",
+   "seq": 10,
+   "imageURL": "https://im.runware.ai/image/os/a06dlim3/ws/3/ii/8039c88c-7332-4a3d-83f3-a3ec8d47238d.jpg",
+   "file": "docs/phase4/images/B-nano-banana-2-lite-10.jpg",
+   "cost": 0.0340746,
+   "costReported": true,
+   "latencyMs": 5217
+  },
+  "B:nano-banana-2-lite:117": {
+   "round": "B",
+   "model": "nano-banana-2-lite",
+   "seq": 117,
+   "imageURL": "https://im.runware.ai/image/os/a06dlim3/ws/3/ii/c26b1cb5-fd2c-44ac-9b78-96e8658a02c3.jpg",
+   "file": "docs/phase4/images/B-nano-banana-2-lite-117.jpg",
+   "cost": 0.0341085,
+   "costReported": true,
+   "latencyMs": 6118
+  },
+  "B:nano-banana-2-lite:111": {
+   "round": "B",
+   "model": "nano-banana-2-lite",
+   "seq": 111,
+   "imageURL": "https://im.runware.ai/image/os/a05d22/ws/3/ii/2f6ea063-75e8-45fd-80e8-ad499fc42383.jpg",
+   "file": "docs/phase4/images/B-nano-banana-2-lite-111.jpg",
+   "cost": 0.0340782,
+   "costReported": true,
+   "latencyMs": 6402
+  }
+ },
+ "upscales": {
+  "A:flux2-klein-9b-kv:18": {
+   "upscaledURL": "https://im.runware.ai/image/os/a05d22/ws/3/ii/b67a8136-774a-42e8-8512-ab5628059d49.jpg",
+   "file": "docs/phase4/images/final-A-flux2-klein-9b-kv-18.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3316,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:flux2-klein-9b-kv:7": {
+   "upscaledURL": "https://im.runware.ai/image/os/a02d21/ws/3/ii/5ae3fed9-e4fa-4a0f-8c41-84139199f31c.jpg",
+   "file": "docs/phase4/images/final-A-flux2-klein-9b-kv-7.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3814,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:flux2-klein-9b-kv:117": {
+   "upscaledURL": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/10619839-d34b-4418-a2ae-21ac25203b77.jpg",
+   "file": "docs/phase4/images/final-A-flux2-klein-9b-kv-117.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 4325,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:flux2-klein-9b-kv:69": {
+   "upscaledURL": "https://im.runware.ai/image/os/a02d21/ws/4/ii/13f1aa1f-2915-41a2-a014-2304dc572d09.jpg",
+   "file": "docs/phase4/images/final-A-flux2-klein-9b-kv-69.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 4122,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:flux2-klein-9b-kv:12": {
+   "upscaledURL": "https://im.runware.ai/image/os/a08dlim3/ws/4/ii/907cd183-959a-4f37-94d9-b74a83c8281a.jpg",
+   "file": "docs/phase4/images/final-A-flux2-klein-9b-kv-12.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 4649,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:flux2-klein-9b-kv:111": {
+   "upscaledURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/d41d9834-5fda-48f6-b6cd-9437b76a2adc.jpg",
+   "file": "docs/phase4/images/final-A-flux2-klein-9b-kv-111.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3633,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:flux2-klein-9b-kv:57": {
+   "upscaledURL": "https://im.runware.ai/image/os/a07dlim3/ws/3/ii/6a1e6937-4fd5-4ec8-b0ad-bbb15b6efafb.jpg",
+   "file": "docs/phase4/images/final-A-flux2-klein-9b-kv-57.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3140,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:flux2-klein-9b-kv:125": {
+   "upscaledURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/56ea65c8-df71-4529-9c11-8ab8e190695d.jpg",
+   "file": "docs/phase4/images/final-A-flux2-klein-9b-kv-125.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3893,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:flux2-klein-9b-kv:10": {
+   "upscaledURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/2fe0d078-9992-4c85-b405-499a4f3d67bd.jpg",
+   "file": "docs/phase4/images/final-A-flux2-klein-9b-kv-10.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3489,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:qwen-image-2512:117": {
+   "upscaledURL": "https://im.runware.ai/image/os/a04d20/ws/4/ii/0a61336d-eabc-480e-afe3-946bded76d82.jpg",
+   "file": "docs/phase4/images/final-A-qwen-image-2512-117.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 4609,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:qwen-image-2512:7": {
+   "upscaledURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/fc3918e4-d796-4194-98ae-7be7af492716.jpg",
+   "file": "docs/phase4/images/final-A-qwen-image-2512-7.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3128,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:qwen-image-2512:21": {
+   "upscaledURL": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/25d65c0b-dddb-44cb-8b49-c8a3ba52223f.jpg",
+   "file": "docs/phase4/images/final-A-qwen-image-2512-21.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3264,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:qwen-image-2512:18": {
+   "upscaledURL": "https://im.runware.ai/image/os/a04d20/ws/3/ii/b68e7a12-8f13-4d8f-b116-3da40dfa0b6e.jpg",
+   "file": "docs/phase4/images/final-A-qwen-image-2512-18.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3500,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:qwen-image-2512:69": {
+   "upscaledURL": "https://im.runware.ai/image/os/a10dlim3/ws/4/ii/20bdde17-be2d-4a63-8c5f-d72ad8208580.jpg",
+   "file": "docs/phase4/images/final-A-qwen-image-2512-69.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3808,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:qwen-image-2512:57": {
+   "upscaledURL": "https://im.runware.ai/image/os/a04d20/ws/3/ii/cbd6475d-e798-418f-af83-4a0f3b786928.jpg",
+   "file": "docs/phase4/images/final-A-qwen-image-2512-57.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3239,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:qwen-image-2512:12": {
+   "upscaledURL": "https://im.runware.ai/image/os/a03d21/ws/4/ii/0ad56305-8b76-480c-a869-fb36009e8176.jpg",
+   "file": "docs/phase4/images/final-A-qwen-image-2512-12.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3750,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:flux2-klein-9b-kv:21": {
+   "upscaledURL": "https://im.runware.ai/image/os/a04d20/ws/3/ii/a564f111-f021-43c7-81fe-16205b1da7ad.jpg",
+   "file": "docs/phase4/images/final-A-flux2-klein-9b-kv-21.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 4022,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2-lite:117": {
+   "upscaledURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/44a8731e-e630-4295-9df8-f61691c4d53b.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-lite-117.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3886,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:qwen-image-2512:111": {
+   "upscaledURL": "https://im.runware.ai/image/os/a07dlim3/ws/3/ii/16424694-8ae0-4641-85bc-166cd8b6d1dc.jpg",
+   "file": "docs/phase4/images/final-A-qwen-image-2512-111.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3405,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:qwen-image-2512:125": {
+   "upscaledURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/baaa6eb8-d794-4ceb-9e98-9f74ca661702.jpg",
+   "file": "docs/phase4/images/final-A-qwen-image-2512-125.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3402,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:qwen-image-2512:10": {
+   "upscaledURL": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/004a646e-1835-48d1-a392-331515681e88.jpg",
+   "file": "docs/phase4/images/final-A-qwen-image-2512-10.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 4656,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2-lite:7": {
+   "upscaledURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/3547fa5a-6728-468f-9c72-d29b06c2c10e.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-lite-7.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3108,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2-lite:69": {
+   "upscaledURL": "https://im.runware.ai/image/os/a08dlim3/ws/3/ii/8b3bbd26-2469-4192-8214-306133cc0437.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-lite-69.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3334,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2-lite:18": {
+   "upscaledURL": "https://im.runware.ai/image/os/a05d22/ws/3/ii/c2ce388b-70bb-47ee-a925-9b6eca610440.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-lite-18.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3384,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2-lite:12": {
+   "upscaledURL": "https://im.runware.ai/image/os/a07dlim3/ws/3/ii/c1e24758-ddc8-4bc5-8ff1-c19390aa2111.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-lite-12.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 4025,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2-lite:21": {
+   "upscaledURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/c8783861-0d30-4bf6-ac5d-8fb8450d5033.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-lite-21.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 4023,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2-lite:57": {
+   "upscaledURL": "https://im.runware.ai/image/os/a02d21/ws/3/ii/e68f1299-a42e-4083-8ec3-f065db953cd3.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-lite-57.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3953,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2-lite:10": {
+   "upscaledURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/ceda560b-4671-4050-a60b-8301559d9a89.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-lite-10.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3592,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2-lite:125": {
+   "upscaledURL": "https://im.runware.ai/image/os/a04d20/ws/3/ii/67bcb655-78ea-4bf3-b9c7-4d8190a143e4.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-lite-125.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 2874,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2-lite:111": {
+   "upscaledURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/dfbca4a9-ce4b-496d-93b2-ce3cdf23c7a4.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-lite-111.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3630,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2:69": {
+   "upscaledURL": "https://im.runware.ai/image/os/a05d22/ws/4/ii/dcf00b6d-9231-4def-82f6-d05d57214844.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-69.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 4383,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2:18": {
+   "upscaledURL": "https://im.runware.ai/image/os/a08dlim3/ws/3/ii/5d243fba-f558-436b-b23d-62ec89847abe.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-18.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3170,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2:117": {
+   "upscaledURL": "https://im.runware.ai/image/os/a08dlim3/ws/3/ii/68ffbf9a-86ae-4cd5-8f01-1e32fdc3f9a4.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-117.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 4350,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2:7": {
+   "upscaledURL": "https://im.runware.ai/image/os/a04d20/ws/3/ii/59eb2cd2-a315-4c03-952c-7f7fc4c2474b.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-7.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3219,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2:12": {
+   "upscaledURL": "https://im.runware.ai/image/os/a09dlim3/ws/4/ii/768b8866-645f-4d75-ac44-d2f14ac5de72.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-12.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3355,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2:21": {
+   "upscaledURL": "https://im.runware.ai/image/os/a07dlim3/ws/3/ii/bb17c508-1e0f-4b1e-9338-e60ad84091ad.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-21.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3164,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2:10": {
+   "upscaledURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/bb939de0-5b36-4d0d-8633-bdd447ed97ec.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-10.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3478,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2:125": {
+   "upscaledURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/7239129c-683f-4f2e-9a60-7e2ed808c512.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-125.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3774,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2:111": {
+   "upscaledURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/5765a993-0fbc-499b-8b36-49cd5ca15494.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-111.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 4602,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:nano-banana-2:57": {
+   "upscaledURL": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/e2f9e9ac-d024-4b7e-a9d6-0a2481139995.jpg",
+   "file": "docs/phase4/images/final-A-nano-banana-2-57.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 4292,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:recraft-v4:7": {
+   "upscaledURL": "https://im.runware.ai/image/os/a02d21/ws/3/ii/93a521f9-e036-4bca-8fe2-d5c25a77f6e7.jpg",
+   "file": "docs/phase4/images/final-A-recraft-v4-7.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3125,
+   "fit": {
+    "scale": 0.7142857142857143,
+    "resizeW": 1920,
+    "resizeH": 1097,
+    "cropX": 0,
+    "cropY": 8,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:recraft-v4:69": {
+   "upscaledURL": "https://im.runware.ai/image/os/a08dlim3/ws/4/ii/51d88a54-322f-4450-a90f-473243015254.jpg",
+   "file": "docs/phase4/images/final-A-recraft-v4-69.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 4221,
+   "fit": {
+    "scale": 0.7142857142857143,
+    "resizeW": 1920,
+    "resizeH": 1097,
+    "cropX": 0,
+    "cropY": 8,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:recraft-v4:117": {
+   "upscaledURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/d165d6e7-2161-4ef4-9c33-f7ca391735c6.jpg",
+   "file": "docs/phase4/images/final-A-recraft-v4-117.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3830,
+   "fit": {
+    "scale": 0.7142857142857143,
+    "resizeW": 1920,
+    "resizeH": 1097,
+    "cropX": 0,
+    "cropY": 8,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:recraft-v4:18": {
+   "upscaledURL": "https://im.runware.ai/image/os/a05d22/ws/3/ii/6eb7cdf1-da4b-4a58-8f20-b329731eac40.jpg",
+   "file": "docs/phase4/images/final-A-recraft-v4-18.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3427,
+   "fit": {
+    "scale": 0.7142857142857143,
+    "resizeW": 1920,
+    "resizeH": 1097,
+    "cropX": 0,
+    "cropY": 8,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:recraft-v4:12": {
+   "upscaledURL": "https://im.runware.ai/image/os/a08dlim3/ws/3/ii/aa7e0fa8-fe31-46ac-94d6-f888a17f0837.jpg",
+   "file": "docs/phase4/images/final-A-recraft-v4-12.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3322,
+   "fit": {
+    "scale": 0.7142857142857143,
+    "resizeW": 1920,
+    "resizeH": 1097,
+    "cropX": 0,
+    "cropY": 8,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:recraft-v4:21": {
+   "upscaledURL": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/c4f739e6-04ea-4951-8bcd-c2b9a37ad104.jpg",
+   "file": "docs/phase4/images/final-A-recraft-v4-21.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3261,
+   "fit": {
+    "scale": 0.7142857142857143,
+    "resizeW": 1920,
+    "resizeH": 1097,
+    "cropX": 0,
+    "cropY": 8,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:recraft-v4:57": {
+   "upscaledURL": "https://im.runware.ai/image/os/a10dlim3/ws/3/ii/4ab47f2a-32dd-4f4d-a862-6c5931eff8a0.jpg",
+   "file": "docs/phase4/images/final-A-recraft-v4-57.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 4158,
+   "fit": {
+    "scale": 0.7142857142857143,
+    "resizeW": 1920,
+    "resizeH": 1097,
+    "cropX": 0,
+    "cropY": 8,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:recraft-v4:111": {
+   "upscaledURL": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/1b1d3aac-a05f-4fd6-9148-5dc33d6c7bf1.jpg",
+   "file": "docs/phase4/images/final-A-recraft-v4-111.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3262,
+   "fit": {
+    "scale": 0.7142857142857143,
+    "resizeW": 1920,
+    "resizeH": 1097,
+    "cropX": 0,
+    "cropY": 8,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:recraft-v4:125": {
+   "upscaledURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/b21da5a5-958b-4504-8e6e-621e906ba1ea.jpg",
+   "file": "docs/phase4/images/final-A-recraft-v4-125.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3027,
+   "fit": {
+    "scale": 0.7142857142857143,
+    "resizeW": 1920,
+    "resizeH": 1097,
+    "cropX": 0,
+    "cropY": 8,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "A:recraft-v4:10": {
+   "upscaledURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/267f2e5f-5d74-4865-a2f6-c70fc6134d85.jpg",
+   "file": "docs/phase4/images/final-A-recraft-v4-10.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3265,
+   "fit": {
+    "scale": 0.7142857142857143,
+    "resizeW": 1920,
+    "resizeH": 1097,
+    "cropX": 0,
+    "cropY": 8,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "B:nano-banana-2-lite:57": {
+   "upscaledURL": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/cebfb1d8-4c51-4c21-a235-54439c4ebf41.jpg",
+   "file": "docs/phase4/images/final-B-nano-banana-2-lite-57.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 2996,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "B:nano-banana-2-lite:10": {
+   "upscaledURL": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/976af771-18b3-4749-afb6-266eaf503d5f.jpg",
+   "file": "docs/phase4/images/final-B-nano-banana-2-lite-10.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3008,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "B:nano-banana-2-lite:117": {
+   "upscaledURL": "https://im.runware.ai/image/os/a04d20/ws/3/ii/b9019711-eabe-43a1-8741-b14bed5ccf91.jpg",
+   "file": "docs/phase4/images/final-B-nano-banana-2-lite-117.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3282,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  },
+  "B:nano-banana-2-lite:111": {
+   "upscaledURL": "https://im.runware.ai/image/os/a04d20/ws/3/ii/6436cdb6-568a-4a74-b5b1-c795cb22ddc4.jpg",
+   "file": "docs/phase4/images/final-B-nano-banana-2-lite-111.jpg",
+   "cost": 0.0006,
+   "costReported": true,
+   "latencyMs": 3344,
+   "fit": {
+    "scale": 0.703125,
+    "resizeW": 1935,
+    "resizeH": 1080,
+    "cropX": 7,
+    "cropY": 0,
+    "dstW": 1920,
+    "dstH": 1080
+   }
+  }
+ },
+ "qa": {
+  "A:flux2-klein-9b-kv:12": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image has shading and realistic features, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The required Viking warrior is present among the crowd."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows a crowd of Viking warriors marching as intended."
+   },
+   "readableText": "",
+   "cost": 0.0005726999999999999
+  },
+  "A:flux2-klein-9b-kv:7": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The illustration has shading and a 3D appearance."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The character does not match the requirement of a stickman; it has detailed features."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "There is visible text in the form of facial features."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not represent a symbolic illustration as intended."
+   },
+   "readableText": "",
+   "cost": 0.0005646000000000001
+  },
+  "A:flux2-klein-9b-kv:111": {
+   "flatStyle": {
+    "pass": true,
+    "note": "The style is flat-color 2D doodle with circle heads and stick limbs."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The viewer is present as a stickman with the required features."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer has short dark-brown hair with a fringe, a forest-green tunic, and a round wooden shield."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not resemble a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows the intended picture of a Viking raider."
+   },
+   "readableText": "",
+   "cost": 0.0005875499999999999
+  },
+  "A:flux2-klein-9b-kv:117": {
+   "flatStyle": {
+    "pass": true,
+    "note": "The style is flat-color 2D doodle with circle heads and stick limbs."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "Both the costume designer and the viewer as a Viking raider are present and look as described."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer is depicted as a stickman with short dark-brown hair, a forest-green tunic, and a round wooden shield."
+   },
+   "textRule": {
+    "pass": false,
+    "note": "There is more than one piece of text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not resemble a collage or character sheet."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows the intended picture of a backstage handoff."
+   },
+   "readableText": "MYTH",
+   "cost": 0.0005998499999999999
+  },
+  "A:flux2-klein-9b-kv:69": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image features shading and a realistic face, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The image includes a character, which is not required."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": true,
+    "note": "The text 'Bayreuth, 1876' is present and spelled correctly."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not show the intended wide establishing view of an exterior theatre facade."
+   },
+   "readableText": "Bayreuth, 1876",
+   "cost": 0.0005803499999999999
+  },
+  "A:flux2-klein-9b-kv:18": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image has shading and realistic elements, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The archaeologist's hands are present, but the character lacks the specified features (short tidy dark brown hair, khaki shirt, olive-drab trousers, small trowel)."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": true,
+    "note": "No readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not accurately depict the intended picture of an archaeologist's tray with iron fragments."
+   },
+   "readableText": "",
+   "cost": 0.00059145
+  },
+  "A:flux2-klein-9b-kv:125": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image has shading and 3D elements, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The viewer as a Viking raider is not present; the character does not match the specified features."
+   },
+   "viewerIdentity": {
+    "pass": false,
+    "note": "The viewer is not depicted as a stickman with the required features."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not show the intended picture of a first-person POV shot."
+   },
+   "readableText": "",
+   "cost": 0.0005943
+  },
+  "A:qwen-image-2512:117": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and detailed features, not flat-color 2D doodle."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The 19th-century costume designer is present, but the viewer is not a stickman."
+   },
+   "viewerIdentity": {
+    "pass": false,
+    "note": "The viewer does not match the stickman description."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "The text 'MYTH' is present and spelled correctly."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not show the intended picture as described."
+   },
+   "readableText": "MYTH",
+   "cost": 0.0005896499999999999
+  },
+  "A:qwen-image-2512:69": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and a realistic face, which does not meet the flat-color 2D doodle requirement."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The image includes a character, but no specific people were required."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "The text includes a comma, which is not specified in the requirement."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not show the intended wide establishing view of the theatre facade."
+   },
+   "readableText": "Bayreuth, 1876",
+   "cost": 0.0005785499999999999
+  },
+  "A:flux2-klein-9b-kv:57": {
+   "flatStyle": {
+    "pass": true,
+    "note": "The style is flat-color 2D doodle with circle heads and stick limbs."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The viewer does not have the required features: no dark brown hair with a fringe, and the shield is not round."
+   },
+   "viewerIdentity": {
+    "pass": false,
+    "note": "The viewer does not match the specified identity of a Viking raider."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not effectively show the intended comparison of wedding china beside a bar fight."
+   },
+   "readableText": "",
+   "cost": 0.0005929500000000001
+  },
+  "A:qwen-image-2512:7": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image features shading and a 3D appearance, which does not comply with the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The stickman character is present, fitting the requirement."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "The image contains a readable text element (the smiley face), which violates the text rule."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not depict a horned silhouette burned into a stickman head as intended."
+   },
+   "readableText": "",
+   "cost": 0.0005807999999999999
+  },
+  "A:flux2-klein-9b-kv:10": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and a more detailed character design, which does not match the flat-color 2D doodle/stickman style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The viewer as a Viking raider is present with the specified features."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer has short dark-brown hair with a fringe, a forest-green tunic, and a round wooden shield."
+   },
+   "textRule": {
+    "pass": false,
+    "note": "The text includes an additional question mark, which is not allowed."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows the intended reaction shot of the viewer Viking pausing mid-stride."
+   },
+   "readableText": "Did Vikings really wear horns?",
+   "cost": 0.0006057
+  },
+  "A:qwen-image-2512:18": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image has shading and realistic features, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The archaeologist is not depicted as specified; the character does not have the required features."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "There is readable text in the image."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not show the intended overhead view of the tray with iron fragments."
+   },
+   "readableText": "",
+   "cost": 0.00057825
+  },
+  "A:qwen-image-2512:21": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and realistic features, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "There are three characters present, which is acceptable."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "There is additional text beyond the required '793–1066'."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The timeline bar is not highlighted as intended and does not appear nearly empty."
+   },
+   "readableText": "793–1066",
+   "cost": 0.0005742
+  },
+  "A:flux2-klein-9b-kv:21": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and realistic features, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "Two stick figures are present, fulfilling the requirement."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "There is additional text and the text is not formatted as specified."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The timeline bar is not highlighted as intended and does not appear nearly empty."
+   },
+   "readableText": "793-1066",
+   "cost": 0.0005754
+  },
+  "A:qwen-image-2512:12": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image has shading and realistic features, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The Viking warrior is present with the specified attributes."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "There is readable text in the form of a character's expression."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows a crowd of Viking warriors marching as intended."
+   },
+   "readableText": "",
+   "cost": 0.0005763
+  },
+  "A:qwen-image-2512:57": {
+   "flatStyle": {
+    "pass": true,
+    "note": "The style is flat-color 2D doodle with circle heads and stick limbs."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The viewer is present with the required features: short dark-brown hair, forest-green tunic, and round wooden shield."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer matches the description with the specified features."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image is a split panel as intended, not a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not depict a bar fight; it shows the viewer holding china instead."
+   },
+   "readableText": "",
+   "cost": 0.00059115
+  },
+  "A:nano-banana-2-lite:117": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and realistic features, which do not match the flat-color 2D doodle/stickman style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "Both the 19th-century costume designer and the viewer as a Viking raider are present."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer is depicted as a stickman with short dark-brown hair, a forest-green tunic, and a round wooden shield."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "The text 'MYTH' is present and spelled correctly."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows the intended picture of a backstage handoff."
+   },
+   "readableText": "MYTH",
+   "cost": 0.0006070499999999999
+  },
+  "A:qwen-image-2512:125": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and realistic features."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The viewer as a Viking raider is not present; the character has horns instead."
+   },
+   "viewerIdentity": {
+    "pass": false,
+    "note": "The viewer's features do not match the specified description."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "No readable text is present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not show the intended point-of-view shot."
+   },
+   "readableText": "",
+   "cost": 0.0005763
+  },
+  "A:qwen-image-2512:111": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style is not flat-color 2D doodle; it has shading and details."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The viewer is not a stickman; the character has a detailed face and features."
+   },
+   "viewerIdentity": {
+    "pass": false,
+    "note": "The viewer does not match the specified stickman features."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "No readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not show the intended close-up scene of the helmet."
+   },
+   "readableText": "",
+   "cost": 0.00058215
+  },
+  "A:nano-banana-2-lite:69": {
+   "flatStyle": {
+    "pass": false,
+    "note": "Shading and 3D elements are present."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "Multiple characters are present, but not required."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": true,
+    "note": "Text reads 'Bayreuth, 1876' correctly."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "Does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "Does not show a wide establishing view of the theatre facade."
+   },
+   "readableText": "BAYREUTH 1876",
+   "cost": 0.00056475
+  },
+  "A:qwen-image-2512:10": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style is not flat-color 2D doodle; it has shading and realistic features."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The viewer is not a stickman; the character has visible fingers and a detailed face."
+   },
+   "viewerIdentity": {
+    "pass": false,
+    "note": "The viewer does not match the specified features of a stickman Viking."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "The text is correct and follows the rule."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not show the intended picture as described."
+   },
+   "readableText": "Did Vikings really wear horns?",
+   "cost": 0.0005889
+  },
+  "A:nano-banana-2-lite:18": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image has shading and realistic elements, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The archaeologist's hands are present, but the character does not match the specified description (e.g., hair color, clothing)."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows an archaeologist's tray with iron fragments as intended."
+   },
+   "readableText": "",
+   "cost": 0.00058305
+  },
+  "A:nano-banana-2-lite:7": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The illustration includes shading and realistic features, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The stickman character is present, but the design does not match the intended symbolic illustration."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "There is a visible face and features that do not comply with the text rule."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not effectively show the intended symbolic illustration of a horned silhouette."
+   },
+   "readableText": "",
+   "cost": 0.0005802
+  },
+  "A:nano-banana-2-lite:12": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image has shading and realistic features, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The required Viking warrior is present with the specified features."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows a crowd of Viking warriors marching as intended."
+   },
+   "readableText": "",
+   "cost": 0.0005733
+  },
+  "A:nano-banana-2-lite:21": {
+   "flatStyle": {
+    "pass": false,
+    "note": "Shading and 3D elements are present."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "One character is present."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": true,
+    "note": "Text '793–1066' is present and spelled correctly."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not resemble a collage."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows a horizontal timeline bar as intended."
+   },
+   "readableText": "793–1066",
+   "cost": 0.0005585999999999999
+  },
+  "A:nano-banana-2-lite:57": {
+   "flatStyle": {
+    "pass": true,
+    "note": "The style is flat-color 2D doodle with circle heads and stick limbs."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The viewer is present as a Viking raider with the specified features."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer has short dark-brown hair, a forest-green tunic, and a round wooden shield."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image is a split panel and does not resemble a collage."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image effectively shows the intended side-by-side comparison."
+   },
+   "readableText": "",
+   "cost": 0.0005875499999999999
+  },
+  "A:nano-banana-2-lite:111": {
+   "flatStyle": {
+    "pass": true,
+    "note": "The style is flat-color 2D doodle with circle heads and stick limbs."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The viewer is present as a stickman with the required features."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer has short dark-brown hair with a fringe, a forest-green tunic, and a round wooden shield."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not resemble a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows the intended picture of a Viking raider."
+   },
+   "readableText": "",
+   "cost": 0.0005875499999999999
+  },
+  "A:nano-banana-2-lite:10": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and a more detailed character design, which does not match the flat-color 2D doodle/stickman style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The viewer as a Viking raider is present with the specified features."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer has short dark-brown hair with a fringe, a forest-green tunic, and a round wooden shield."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is exactly one piece of text reading 'Did Vikings really wear horns?' spelled correctly."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not depict a mid-action pause as intended; the character is in a walking pose."
+   },
+   "readableText": "DID VIKINGS REALLY WEAR HORNS?",
+   "cost": 0.0006135
+  },
+  "A:nano-banana-2-lite:125": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and 3D elements."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The viewer as a Viking raider is not depicted correctly; the character is not in the specified attire."
+   },
+   "viewerIdentity": {
+    "pass": false,
+    "note": "The viewer does not match the specified features."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "No readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not show the intended first-person POV concept."
+   },
+   "readableText": "",
+   "cost": 0.0005780999999999999
+  },
+  "A:nano-banana-2:69": {
+   "flatStyle": {
+    "pass": false,
+    "note": "Shading and 3D elements are present."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "Multiple characters are present, which is not required."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "Text includes 'BAYREUTH' twice, which is not allowed."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "No collage elements are present."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "Does not show a wide establishing view of the theatre facade."
+   },
+   "readableText": "BAYREUTH, 1876",
+   "cost": 0.00056595
+  },
+  "A:nano-banana-2:18": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image has shading and realistic features, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The archaeologist's hands are present, but the character's appearance does not fully match the description."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "There is readable text in the form of a label on the tray."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows an archaeologist's tray with iron fragments as intended."
+   },
+   "readableText": "",
+   "cost": 0.00058365
+  },
+  "A:nano-banana-2:7": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image has shading and a 3D appearance."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The character is present as a stickman."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "There is readable text in the form of a character's expression."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not depict a horned silhouette burned into a stickman head."
+   },
+   "readableText": "",
+   "cost": 0.000564
+  },
+  "A:nano-banana-2:117": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and realistic features, which do not match the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The 19th-century costume designer is present, but the viewer is not a stickman as required."
+   },
+   "viewerIdentity": {
+    "pass": false,
+    "note": "The viewer does not match the specified stickman features."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "The text 'MYTH' is present and spelled correctly."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not show the intended picture as described."
+   },
+   "readableText": "MYTH",
+   "cost": 0.00059445
+  },
+  "A:nano-banana-2:12": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image has shading and realistic features, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The required Viking warrior is present with the specified attributes."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "There is readable text in the form of symbols on the shields."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows a crowd of Viking warriors marching as intended."
+   },
+   "readableText": "",
+   "cost": 0.0005769
+  },
+  "A:nano-banana-2:21": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image contains shading and realistic features, which do not align with the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "Multiple characters are present, but the requirement is for a single frozen moment."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "The text '793–1066' is present, but there is additional text '1066' that violates the rule."
+   },
+   "noCollage": {
+    "pass": false,
+    "note": "The layout resembles a character sheet with multiple characters, failing the no collage rule."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not show the intended single frozen moment on the timeline."
+   },
+   "readableText": "793–1066",
+   "cost": 0.0005868
+  },
+  "A:nano-banana-2:10": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style is not flat-color 2D doodle; it has shading and a more detailed appearance."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The viewer as a Viking raider is present with the specified features."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer has short dark-brown hair with a fringe, a forest-green tunic, and a round wooden shield."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is exactly one piece of text reading 'Did Vikings really wear horns?' spelled correctly."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows the intended reaction shot of the viewer Viking pausing mid-stride."
+   },
+   "readableText": "Did Vikings really wear horns?",
+   "cost": 0.0006045
+  },
+  "A:nano-banana-2:111": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image has shading and a more detailed style, not flat-color 2D doodle."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The viewer is not depicted as a stickman; the character has a detailed face and features."
+   },
+   "viewerIdentity": {
+    "pass": false,
+    "note": "The viewer does not match the specified stickman features."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "No readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not show the intended close-up scene with the helmet."
+   },
+   "readableText": "",
+   "cost": 0.00058395
+  },
+  "A:nano-banana-2:125": {
+   "flatStyle": {
+    "pass": true,
+    "note": "The style is flat-color 2D doodle with circle heads and stick limbs."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The viewer is not depicted as a Viking raider; the character lacks the required features."
+   },
+   "viewerIdentity": {
+    "pass": false,
+    "note": "The viewer does not have short dark-brown hair, a forest-green tunic, or a round wooden shield."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not effectively show the intended concept of a first-person POV with curving horns."
+   },
+   "readableText": "",
+   "cost": 0.0005960999999999999
+  },
+  "A:nano-banana-2:57": {
+   "flatStyle": {
+    "pass": true,
+    "note": "The style is flat-color 2D doodle with circle heads and stick limbs."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The viewer is present as a stickman with the required features."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer has short dark-brown hair, a forest-green tunic, and a round wooden shield."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text, only a drawn ? symbol."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image is a split panel and does not resemble a collage."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image effectively shows the intended side-by-side comparison."
+   },
+   "readableText": "",
+   "cost": 0.00058995
+  },
+  "A:recraft-v4:7": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The illustration includes shading and a realistic face, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The stickman character is present, but the design does not match the intended symbolic illustration."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "There is a visible face with features, which counts as readable text."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The design does not represent a symbolic illustration of a horned silhouette burned into a stickman head."
+   },
+   "readableText": "",
+   "cost": 0.000582
+  },
+  "A:recraft-v4:69": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and realistic features, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "There are multiple stick figures present, but they are not required for the establishing shot."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": true,
+    "note": "The text 'Bayreuth, 1876' is present and spelled correctly."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not depict a wide establishing view of an exterior theatre facade."
+   },
+   "readableText": "Bayreuth, 1876",
+   "cost": 0.00058455
+  },
+  "A:recraft-v4:117": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and realistic features, which do not match the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The 19th-century costume designer is present, but the viewer as a Viking raider is not depicted as a stickman."
+   },
+   "viewerIdentity": {
+    "pass": false,
+    "note": "The viewer does not appear as a stickman with the specified features."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "The text 'MYTH' is present and spelled correctly."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not show the intended picture of a backstage handoff."
+   },
+   "readableText": "MYTH",
+   "cost": 0.0006028499999999999
+  },
+  "A:recraft-v4:18": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image has shading and realistic features, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The archaeologist's hands are present, but the character's appearance does not match the specified description."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "There is visible text in the form of symbols, which is not allowed."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not accurately depict the intended picture of a close object detail on an empty tray."
+   },
+   "readableText": "",
+   "cost": 0.00058725
+  },
+  "A:recraft-v4:12": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The image has shading and 3D elements, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The required Viking warrior is present with the specified attributes."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "There is readable text in the form of a character's expression, which violates the text rule."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or character sheet."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows a crowd of Viking warriors as intended."
+   },
+   "readableText": "",
+   "cost": 0.0005810999999999999
+  },
+  "A:recraft-v4:21": {
+   "flatStyle": {
+    "pass": false,
+    "note": "Contains shading and 3D elements."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "Multiple characters present instead of a single frozen moment."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "n/a"
+   },
+   "textRule": {
+    "pass": false,
+    "note": "Text '793–1066' is present but not the only text."
+   },
+   "noCollage": {
+    "pass": false,
+    "note": "Looks like a character sheet with multiple characters."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "Does not show the intended single frozen moment."
+   },
+   "readableText": "793–1066",
+   "cost": 0.0005615999999999999
+  },
+  "A:recraft-v4:57": {
+   "flatStyle": {
+    "pass": true,
+    "note": "The style is flat-color 2D doodle with circle heads and stick limbs."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The viewer as a Viking raider is present with the correct features."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer has short dark-brown hair with a fringe, a forest-green tunic, and a round wooden shield."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not resemble a collage; it is a split panel."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image effectively shows the intended side-by-side comparison."
+   },
+   "readableText": "",
+   "cost": 0.00058995
+  },
+  "A:recraft-v4:111": {
+   "flatStyle": {
+    "pass": true,
+    "note": "The style is flat-color 2D doodle with circle heads and stick limbs."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The viewer is not a stickman; the character has a different hairstyle and helmet."
+   },
+   "viewerIdentity": {
+    "pass": false,
+    "note": "The viewer does not match the specified features (hair, tunic, shield)."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "No readable text is present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not show the intended picture as described."
+   },
+   "readableText": "",
+   "cost": 0.00058575
+  },
+  "A:recraft-v4:125": {
+   "flatStyle": {
+    "pass": true,
+    "note": "The style is flat-color 2D doodle with circle heads and stick limbs."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The viewer is not depicted as a Viking raider; the character has a round head and lacks the specified hair and shield."
+   },
+   "viewerIdentity": {
+    "pass": false,
+    "note": "The viewer does not match the description of a Viking raider with the specified features."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": false,
+    "note": "The image does not effectively show the intended concept of a viewer's POV with curving horns."
+   },
+   "readableText": "",
+   "cost": 0.0005966999999999999
+  },
+  "A:recraft-v4:10": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and a more detailed face, which does not match the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The viewer is present as a Viking raider with the specified features."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer has short dark-brown hair with a fringe, a forest-green tunic, and a round wooden shield."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is exactly one piece of text reading 'Did Vikings really wear horns?' spelled correctly."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows the intended reaction shot of the viewer Viking pausing mid-stride."
+   },
+   "readableText": "Did Vikings really wear horns?",
+   "cost": 0.0006062999999999999
+  },
+  "B:nano-banana-2-lite:57": {
+   "flatStyle": {
+    "pass": true,
+    "note": "The style is flat-color 2D doodle with circle heads and stick limbs."
+   },
+   "castPresent": {
+    "pass": false,
+    "note": "The viewer does not have the required Viking raider features."
+   },
+   "viewerIdentity": {
+    "pass": false,
+    "note": "The viewer does not match the specified Viking raider description."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image is a split panel as intended."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows a side-by-side comparison of the intended concept."
+   },
+   "readableText": "",
+   "cost": 0.00057975
+  },
+  "B:nano-banana-2-lite:117": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and realistic faces."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "Both the costume designer and the viewer as a Viking raider are present."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer has short dark-brown hair with a fringe, a forest-green tunic, and a round wooden shield."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "The text 'MYTH' is present and spelled correctly."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows the intended picture of a backstage handoff."
+   },
+   "readableText": "MYTH",
+   "cost": 0.0005908499999999999
+  },
+  "B:nano-banana-2-lite:111": {
+   "flatStyle": {
+    "pass": true,
+    "note": "The style is flat-color 2D doodle with circle heads and stick limbs."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The viewer is present as a stickman with the required features."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer has short dark-brown hair with a fringe, a forest-green tunic, and a round wooden shield."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is no readable text present."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows the intended picture of a Viking raider."
+   },
+   "readableText": "",
+   "cost": 0.00058875
+  },
+  "B:nano-banana-2-lite:10": {
+   "flatStyle": {
+    "pass": false,
+    "note": "The style includes shading and realistic features, which do not conform to the flat-color 2D doodle style."
+   },
+   "castPresent": {
+    "pass": true,
+    "note": "The viewer as a Viking raider is present with the specified features."
+   },
+   "viewerIdentity": {
+    "pass": true,
+    "note": "The viewer has short dark-brown hair with a fringe, a forest-green tunic, and a round wooden shield."
+   },
+   "textRule": {
+    "pass": true,
+    "note": "There is exactly one piece of text reading 'Did Vikings really wear horns?' spelled correctly."
+   },
+   "noCollage": {
+    "pass": true,
+    "note": "The image does not appear to be a collage or multiple panels."
+   },
+   "showsConcept": {
+    "pass": true,
+    "note": "The image shows the intended reaction shot of the viewer Viking pausing mid-stride."
+   },
+   "readableText": "DID VIKINGS REALLY WEAR HORNS?",
+   "cost": 0.0006087
+  }
+ },
+ "extra": {
+  "reference": {
+   "from": "A:nano-banana-2-lite:57",
+   "box": {
+    "x": 0.35,
+    "y": 0.25,
+    "w": 0.15,
+    "h": 0.5
+   },
+   "crop": {
+    "x": 399,
+    "y": 145,
+    "w": 372,
+    "h": 477
+   },
+   "cost": 0.00045584999999999994,
+   "dataUri": "data:image/jpeg;base64,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"
+  },
+  "cmp:7": {
+   "verdict": "slightly worse",
+   "note": "Image 1 has a clearer silhouette effect but lacks the dynamic expression seen in Image 2, making it slightly less impactful.",
+   "cost": 0.0008946000000000001
+  },
+  "cmp:12": {
+   "verdict": "slightly worse",
+   "note": "Image 1 lacks the focus on a central character, making it feel less dynamic compared to Image 2.",
+   "cost": 0.0008930999999999999
+  },
+  "cmp:117": {
+   "verdict": "as good",
+   "note": "Both images effectively convey the intended scene with clarity and style, maintaining a consistent visual theme.",
+   "cost": 0.0008894999999999999
+  },
+  "cmp:69": {
+   "verdict": "slightly worse",
+   "note": "Image 1 has a clear depiction of the marquee and figures, but lacks the depth and atmosphere of the benchmark image.",
+   "cost": 0.0008949
+  },
+  "cmp:18": {
+   "verdict": "slightly worse",
+   "note": "Image 1 has a less detailed representation of the fragments and lacks the framing of the tray, making it slightly less effective in conveying the intended focus.",
+   "cost": 0.00089805
+  },
+  "cmp:125": {
+   "verdict": "as good",
+   "note": "Both images effectively convey a first-person perspective, but image 1 provides a clearer view of the viewer's interaction with the distant object.",
+   "cost": 0.0008961
+  },
+  "cmp:111": {
+   "verdict": "clearly worse",
+   "note": "Image 1 lacks the dynamic action and clarity of Image 2, making it less effective as a storytelling frame.",
+   "cost": 0.00089355
+  },
+  "cmp:21": {
+   "verdict": "slightly worse",
+   "note": "Image 1 is simpler and less visually engaging than Image 2, which offers more detail and context, but it still conveys the timeline concept effectively.",
+   "cost": 0.0008982
+  },
+  "cmp:10": {
+   "verdict": "slightly worse",
+   "note": "Image 1 has a less dynamic pose and lacks the depth of the benchmark, making it feel less engaging.",
+   "cost": 0.0008930999999999999
+  },
+  "cmp:57": {
+   "verdict": "slightly worse",
+   "note": "Image 1 has a clearer depiction of the wedding china, but the bar fight lacks some detail and action compared to Image 2.",
+   "cost": 0.0008962499999999999
+  },
+  "consistency:A:flux2-klein-9b-kv": {
+   "score": 5,
+   "note": "The stickman character is consistently depicted across all images with the same features: short dark-brown hair with a fringe, forest-green tunic, and round wooden shield. There is no significant leakage in terms of pose or background, although the character's expressions and contexts vary. The character remains identifiable as the same individual throughout.",
+   "images": 4,
+   "cost": 0.00176025
+  },
+  "consistency:A:qwen-image-2512": {
+   "score": 5,
+   "note": "The stickman character is consistently depicted across all images with the same features: short dark-brown hair with a fringe, forest-green tunic, and round wooden shield. There is no leakage in terms of pose or background, although the last image introduces a horned helmet, which is a variation but does not detract from the character's identity.",
+   "images": 4,
+   "cost": 0.00176325
+  },
+  "consistency:A:nano-banana-2-lite": {
+   "score": 5,
+   "note": "The stickman character is consistently depicted across all images with the same features: short dark-brown hair with a fringe, a forest-green tunic, and a round wooden shield. There is no significant leakage in terms of pose or background, although the last image introduces a horned helmet, which is a variation but does not detract from the character's identity.",
+   "images": 4,
+   "cost": 0.00176505
+  },
+  "consistency:A:nano-banana-2": {
+   "score": 5,
+   "note": "The stickman character is consistently depicted across all images with the same features: short dark-brown hair with a fringe, forest-green tunic, and round wooden shield. There is no significant leakage in terms of pose or background, although the last image introduces a horned helmet, which is a variation of the character's usual appearance.",
+   "images": 4,
+   "cost": 0.0017614500000000001
+  },
+  "consistency:A:recraft-v4": {
+   "score": 4,
+   "note": "The stickman character is mostly consistent across the images, featuring the same short dark-brown hair, forest-green tunic, and round wooden shield. However, there are slight variations in facial expressions and poses. The last image introduces a different horned helmet, which deviates from the original character design. There is some leakage in terms of background and thematic elements, particularly in the last two images, which share a similar setting.",
+   "images": 4,
+   "cost": 0.00177285
+  },
+  "consistency:B:nano-banana-2-lite+ref": {
+   "score": 5,
+   "note": "The stickman character is consistently depicted across all images with the same features: short dark-brown hair with a fringe, forest-green tunic, and round wooden shield. There is no significant leakage in terms of pose or background, although the last image introduces a horned helmet, which is a variation of the character's appearance.",
+   "images": 4,
+   "cost": 0.0017608500000000002
+  }
+ }
+}

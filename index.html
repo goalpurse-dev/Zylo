@@ -26,38 +26,20 @@
 
 
 
-    <!-- SEO -->
-    <title>Zyvo – Go Viral With AI Content Creation</title>
-    <meta
-      name="description"
-      content="Go viral with AI. Create scroll-stopping images, product photos, backgrounds, and social media content instantly with Zyvo AI."
-    />
+    <!-- SEO: this is only the bare pre-render template default. Every real
+         route's title/description/canonical/robots/og:*/JSON-LD is injected
+         by scripts/generateSeoHtml.js at build time (see buildHead/injectHead
+         there) — that script's output is the single source of truth for
+         crawlable metadata. Do not add title/meta/og/JSON-LD tags here: they
+         would ship unchanged on any route the generator doesn't reprocess,
+         and previously did exactly that (a stray WebSite JSON-LD block and
+         a generic title/description leaked onto every prerendered page). -->
+    <title>Zyvo</title>
 
     <!-- Brand identity -->
     <meta name="application-name" content="Zyvo" />
     <meta name="apple-mobile-web-app-title" content="Zyvo" />
-
-    <!-- Open Graph -->
     <meta property="og:site_name" content="Zyvo" />
-    <meta property="og:title" content="Zyvo – Go Viral With AI Content Creation" />
-    <meta
-      property="og:description"
-      content="Create viral AI images, product photos, and social media content in seconds. Zyvo helps creators and brands grow faster."
-    />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.tryzyvo.com/" />
-    <meta property="og:image" content="https://www.tryzyvo.com/og-image.png" />
-
-    <!-- Structured Data for Google Site Name -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Zyvo",
-      "alternateName": "ZyvoAI",
-      "url": "https://www.tryzyvo.com/"
-    }
-    </script>
 
     <!-- Fonts -->
     <link

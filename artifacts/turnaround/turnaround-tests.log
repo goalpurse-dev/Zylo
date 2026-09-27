@@ -1,0 +1,16 @@
+(node:31520) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/browserAssets.loader.mjs", pathToFileURL("./")); register("./tests/browserAssets.loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ hero rollout requires explicit approval; recurring and incidental remain inexpensive (2.0816ms)
+✔ five default cells and optional sixth pose use exact non-overlapping 512 squares (2.4344ms)
+✔ crop copies pixels exactly and rejects wrong dimensions or bounds (1.2978ms)
+✔ dedicated master prompt contains different views and strict no-text/no-environment contract (0.4285ms)
+✔ unreviewed/rejected crops and master cannot replace current role assets (0.3435ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 271.7423

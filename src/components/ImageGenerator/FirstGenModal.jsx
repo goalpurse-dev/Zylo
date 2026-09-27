@@ -46,13 +46,13 @@ export default function FirstGenModal({ imageUrl, onClose }) {
                 alt="Your generated image"
                 className="w-full h-full object-cover object-top"
               />
-              <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-[#0D0F1C] to-transparent" />
+              <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-[#0C130A] to-transparent" />
             </div>
           )}
 
           {/* Card body */}
           <div
-            className="bg-[#0D0F1C] px-5 pt-4 pb-6"
+            className="bg-[#0C130A] px-5 pt-4 pb-6"
             style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}
           >
             <h2 className="text-white text-[20px] font-bold leading-tight mb-2">
@@ -68,7 +68,7 @@ export default function FirstGenModal({ imageUrl, onClose }) {
                 <span
                   key={f}
                   className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
-                  style={{ background: "rgba(122,59,255,0.15)", color: "#C084FC", border: "1px solid rgba(122,59,255,0.25)" }}
+                  style={{ background: "rgba(190,242,100,0.15)", color: "#D9F99D", border: "1px solid rgba(190,242,100,0.25)" }}
                 >
                   {f}
                 </span>
@@ -78,10 +78,10 @@ export default function FirstGenModal({ imageUrl, onClose }) {
             {/* CTA */}
             <button
               onClick={handlePlans}
-              className="w-full py-3.5 rounded-2xl font-bold text-white text-[15px] mb-2.5 transition active:scale-[0.98] hover:brightness-110"
+              className="w-full py-3.5 rounded-2xl font-bold text-[#11150D] text-[15px] mb-2.5 transition active:scale-[0.98] hover:brightness-110"
               style={{
-                background: "linear-gradient(135deg, #7A3BFF, #A855F7)",
-                boxShadow: "0 8px 32px rgba(122,59,255,0.5)",
+                background: "linear-gradient(135deg, #BEF264, #84CC16)",
+                boxShadow: "0 8px 32px rgba(190,242,100,0.5)",
               }}
             >
               See Plans →

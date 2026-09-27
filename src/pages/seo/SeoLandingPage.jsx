@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getSeoLandingPage, resolveRelatedLandingPages, SITE_URL } from "../../data/seoLandingPages.js";
 import { getSeoBlogPost } from "../../data/seoBlogPosts.js";
+import { canonicalFor } from "../../data/publicSeoMetadata.js";
 import { useSEO } from "../../hooks/useSEO.js";
 import { trackSeoEvent } from "../../lib/seoAnalytics.js";
 import { captureFirstTouch } from "../../lib/firstTouch.js";
+import { takeStashedPrompt } from "../../lib/promptHandoff.js";
 import SeoBreadcrumbs from "../../components/seo/SeoBreadcrumbs.jsx";
 import SeoGeneratorHero from "../../components/seo/SeoGeneratorHero.jsx";
 import SeoIntro from "../../components/seo/SeoIntro.jsx";
@@ -74,12 +76,25 @@ function buildStructuredData(config, canonical) {
 export default function SeoLandingPage({ slug }) {
   const config = getSeoLandingPage(slug);
   const [searchParams] = useSearchParams();
-  // Deep-link support (e.g. from a blog post's "Try this prompt" link):
-  // the canonical URL stays clean/query-free, only the initial input value
-  // is seeded from ?prompt=, per the brief's "query state, clean canonical" rule.
-  const [prompt, setPrompt] = useState(() => searchParams.get("prompt") || "");
+  // Deep-link support (e.g. from a blog post's "Try this prompt" button):
+  // the prompt travels via sessionStorage (stashPrompt/takeStashedPrompt), so
+  // the URL the user lands on is always the clean, query-free generator URL —
+  // no ?prompt=... URL is ever created. ?prompt= on the incoming URL is only
+  // read here as a compatibility fallback for any older/external/shared link
+  // that still has it; the canonical tag has always been the clean URL
+  // regardless, and the query string is stripped from the visible address
+  // bar below so a legacy link can't keep propagating itself.
+  const [prompt, setPrompt] = useState(() => takeStashedPrompt() || searchParams.get("prompt") || "");
 
-  const canonical = config ? `${SITE_URL}/${config.slug}` : SITE_URL;
+  useEffect(() => {
+    if (searchParams.get("prompt") && typeof window !== "undefined") {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+    // Only ever needs to run once, on mount, for whatever query the page was opened with.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const canonical = config ? canonicalFor(`/${config.slug}`) : SITE_URL;
 
   useSEO({
     title: config?.seo.title,

@@ -118,14 +118,23 @@ useEffect(() => {
     "/workspace/clay-rescue":        "Clay Rescue",
     "/workspace/ai-cooking-matic":   "AI Cooking Matic",
     "/workspace/two-am":             "2AM In...",
+    "/workspace/thirty-days":        "30 Days",
     "/workspace/cartoon-drive-by":   "Cartoon Drive By",
     "/workspace/behind-the-scenes":  "Behind the Scenes",
     "/workspace/publishv":           "Publish",
     "/workspace/stats":              "Stats",
     "/workspace/connections":        "Connections",
+    "/workspace/earn":               "Earn",
+    "/workspace/earn/submissions":   "Earn",
+    "/workspace/earn/referrals":     "Earn",
+    "/workspace/earn/payouts":       "Earn",
+    "/workspace/earn/leaderboard":   "Earn",
+    "/workspace/earn/rules":         "Earn",
+    "/long-form":                    "Long Form",
+    "/long-form/new":                "Long Form",
   };
 
-  const title = titleMap[location.pathname] || "Workspace";
+  const title = titleMap[location.pathname] || (location.pathname.startsWith("/long-form/") ? "Long Form" : "Workspace");
 
   useEffect(() => {
     const notice = noticeRef.current;
@@ -141,6 +150,40 @@ useEffect(() => {
     return () => {
       observer.disconnect();
       document.documentElement.style.removeProperty("--zyvo-notice-height");
+    };
+  }, []);
+
+  // How much of the real viewport is consumed above #workspace-scroll (promo
+  // banner + top row) — pages nested inside that scroll container need this
+  // to size anything against 100dvh (e.g. a sticky sidebar's own height), since
+  // 100dvh is the whole browser viewport, not this scroll container's box.
+  // Resizes with #workspace-scroll itself, which already shrinks/grows in sync
+  // with the notice banner above it (same flex column), so one observer covers both.
+  useEffect(() => {
+    const scrollEl = document.getElementById("workspace-scroll");
+    if (!scrollEl) return;
+
+    const syncContentTop = () => {
+      document.documentElement.style.setProperty("--zyvo-content-top", `${scrollEl.getBoundingClientRect().top}px`);
+    };
+
+    syncContentTop();
+    // On some Windows setups (taskbar auto-hide, per-monitor DPI, external
+    // displays) the very first layout pass reports a viewport height that
+    // still includes space the taskbar visually covers — it only corrects
+    // once a real resize event fires. Re-check a couple of times right after
+    // mount so pages don't need the user to resize the window to fix it.
+    const settleTimers = [50, 300, 1000].map((ms) => setTimeout(syncContentTop, ms));
+    window.addEventListener("resize", syncContentTop);
+    window.visualViewport?.addEventListener("resize", syncContentTop);
+    const observer = new ResizeObserver(syncContentTop);
+    observer.observe(scrollEl);
+    return () => {
+      settleTimers.forEach(clearTimeout);
+      window.removeEventListener("resize", syncContentTop);
+      window.visualViewport?.removeEventListener("resize", syncContentTop);
+      observer.disconnect();
+      document.documentElement.style.removeProperty("--zyvo-content-top");
     };
   }, []);
 

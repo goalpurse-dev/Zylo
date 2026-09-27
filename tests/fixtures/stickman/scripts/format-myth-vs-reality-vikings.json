@@ -1,0 +1,956 @@
+{
+  "slug": "format-myth-vs-reality-vikings",
+  "frozenAt": "2026-09-26T19:29:10.738Z",
+  "source": {
+    "projectId": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae",
+    "scriptVersionId": "b3669868-54a6-4814-bd61-323efed108b0",
+    "storyPlanVersionId": "0ec948eb-f96d-4fc1-a77b-37f1fe00541e",
+    "researchVersionId": "cca1aca5-5c46-4a5d-988d-e1ba96bcd0e1"
+  },
+  "topic": "Did Vikings really wear horned helmets?",
+  "niche": "myth_vs_reality",
+  "visualRecipe": "stickman_doodle_explainer",
+  "title": "Did Vikings Wear Horned Helmets?",
+  "targetWords": 1450,
+  "actualWords": 1038,
+  "lengthRatio": 0.716,
+  "status": "needs_attention",
+  "lastErrorCode": "DRAFT_ONLY_TEST_MODE",
+  "models": {
+    "draft": "claude-sonnet-5",
+    "critic": null,
+    "revision": null
+  },
+  "criticScore": null,
+  "criticScores": null,
+  "judgedScore": 8,
+  "costUsd": 0.237,
+  "callLedger": [
+    {
+      "model": "claude-sonnet-5",
+      "stage": "draft",
+      "inputTokens": 9398,
+      "outputTokens": 18898,
+      "actualToolCalls": 0,
+      "cacheReadTokens": 10840,
+      "cacheWriteTokens": 10840,
+      "estimatedCostUsd": 0.237
+    }
+  ],
+  "storyPlan": {
+    "chapters": [
+      {
+        "id": "s1_cold_open",
+        "role": "cold_open",
+        "title": "Charge with horns",
+        "purpose": "Immerse the viewer in the familiar, false image that the video will investigate; plant the callback visual detail.",
+        "summary": "A short scene: a stickman Viking in full battle run, helmet topped by two long curved horns, roaring and raising an axe — the instantly recognizable, heroic stereotype that most viewers know from media and costumes. This image is the planted detail we'll return to.",
+        "subQuestion": "",
+        "targetWords": 67,
+        "keyQuestions": [
+          "What does the classic 'horned Viking' look like?",
+          "Why does that visual feel so convincing?"
+        ],
+        "estimatedMinutes": 0.5,
+        "picturableMoments": [
+          "A stickman charging with a helmet that has two long curved horns",
+          "A parade of Halloween costumes with plastic horns",
+          "A sports mascot wearing a horned helmet"
+        ]
+      },
+      {
+        "id": "s2_stakes",
+        "role": "stakes",
+        "title": "Why this matters",
+        "purpose": "Explain quickly why the viewer should care: visual myths shape our idea of the past and can mislead museums and education.",
+        "summary": "One-sentence stakes: the horned-Viking image changes how people imagine history and how museums and media teach the past, so separating myth from evidence matters for how we understand real Viking life.",
+        "subQuestion": "",
+        "targetWords": 15,
+        "keyQuestions": [
+          "How does a false image change public understanding of history?"
+        ],
+        "estimatedMinutes": 0.3,
+        "picturableMoments": [
+          "A museum visitor pointing at a display",
+          "A schoolchild dressed as a Viking in class",
+          "A popular movie poster showing horned Vikings"
+        ]
+      },
+      {
+        "id": "s3_core_question",
+        "role": "core_question",
+        "title": "The single question",
+        "purpose": "State the single question the video will answer.",
+        "summary": "Ask plainly: 'Is there solid archaeological evidence that Vikings wore horned helmets — and if not, where did that image come from?'. Then move straight into the first piece of evidence.",
+        "subQuestion": "",
+        "targetWords": 24,
+        "keyQuestions": [
+          "Is the horned-helmet image archaeologically supported?",
+          "If not, what created it?"
+        ],
+        "estimatedMinutes": 0.3,
+        "picturableMoments": [
+          "An illustrated question mark over a helmet",
+          "A split-screen: battlefield versus theatre stage",
+          "A magnifying glass over a museum label"
+        ]
+      },
+      {
+        "id": "s4_evidence_arch_record",
+        "role": "evidence",
+        "title": "What the archaeology actually says",
+        "purpose": "Examine the material record: what types of helmets and helmet fragments are securely dated to the Viking Age, and whether any show horn attachments — also note what kinds of evidence researchers rely on.",
+        "summary": "This section lays out the archaeological picture without invented specifics: it will survey the types of surviving helmets and fragments attributed to the Viking Age, explain how archaeologists date and classify these finds, and point out that securely-dated Viking-age finds lack the dramatic curved horns of popular imagination. Specific site names, artifact IDs, and dates are listed as research items to verify before scripting.",
+        "subQuestion": "Are there any reliably-dated Viking-age helmets with horns or fittings for horns?",
+        "targetWords": 322,
+        "keyQuestions": [
+          "Which helmet types and fragments are reliably dated to the Viking Age?",
+          "Do any of those show horn attachments or metal fittings for horns?",
+          "How do archaeologists interpret fragmentary helmets?"
+        ],
+        "estimatedMinutes": 3.4,
+        "picturableMoments": [
+          "A repaired iron helmet fragment on a table",
+          "A conservator using brushes on a small helmet piece",
+          "A timeline strip showing 'Viking Age' and artifact icons",
+          "A museum label noting 'helmet fragment — context to be verified'"
+        ]
+      },
+      {
+        "id": "s5_evidence_bronze",
+        "role": "evidence",
+        "title": "Where the horns really show up — earlier ritual objects",
+        "purpose": "Show that horned helmets exist in the archaeological record, but mainly in earlier Bronze Age ceremonial contexts — explain how later viewers conflated these objects with Vikings.",
+        "summary": "This section traces horned helmets or horn-like objects in much earlier contexts (ceremonial/ritual Bronze Age pieces) and explains how antiquarians and illustrators later misattributed or reused those striking images when imagining the Norse past. Exact hoards, objects, and dates will be specified during research.",
+        "subQuestion": "Do horned head-objects in archaeological collections come from earlier (pre-Viking) ritual contexts rather than Viking battle gear?",
+        "targetWords": 334,
+        "keyQuestions": [
+          "Where and when do horned helmet-like artifacts appear in the archaeological record?",
+          "Why would people later see those and think 'Vikings'?"
+        ],
+        "estimatedMinutes": 2,
+        "picturableMoments": [
+          "A Bronze Age ritual figure wearing a horned headdress",
+          "An antiquarian-era drawing of a hoard with polished horns",
+          "A museum glass case labelled 'ceremonial object — Bronze Age'"
+        ]
+      },
+      {
+        "id": "s6_evidence_opera_media",
+        "role": "evidence",
+        "title": "Theatre, Romanticism, and modern amplification",
+        "purpose": "Explain the cultural and visual mechanism by which 19th-century Romantic art and stage designers, then later media, turned a theatrical shorthand into an everyday stereotype.",
+        "summary": "This section follows the visual trail: Romantic-era art and stage productions used dramatic horns as a quick symbol for 'Norse' or 'barbarian'; opera and theatre costume designers popularized the look onstage; 20th-century cartoons, logos, and merchandising reapplied it to Vikings. Specific designers, productions, and first documented uses are added to research tasks.",
+        "subQuestion": "Did 19th-century theatre and later media create and spread the horned-Viking image more than archaeology did?",
+        "targetWords": 360,
+        "keyQuestions": [
+          "When did stage/theatrical costume first show horned 'Vikings'?",
+          "How did visual shorthand from theatre move into cartoons, logos, and toys?"
+        ],
+        "estimatedMinutes": 2,
+        "picturableMoments": [
+          "A theatre poster showing a horned-costumed performer",
+          "A comic strip panel with a horned Viking gag",
+          "A sports team logo borrowing horned imagery"
+        ]
+      },
+      {
+        "id": "s7_twist_preservation",
+        "role": "twist",
+        "title": "But here's the complicating caveat",
+        "purpose": "Introduce the preservation-bias complication: organic horn attachments (leather, wood, antler) decay and might not survive in graves — this prevents a simple 'no horns ever' proclamation and asks for a nuanced conclusion.",
+        "summary": "Present the honest complication: some decorative or perishable helmet add-ons would not archaeologically preserve, which means absence of horns in the metal record doesn't automatically prove they never existed. This is a research-sensitive claim; the script must verify which materials do and don't survive and how archaeologists test for vanished fittings.",
+        "subQuestion": "",
+        "targetWords": 158,
+        "keyQuestions": [
+          "What materials could attach horns and how well do they survive in burial conditions?",
+          "How do archaeologists detect lost fittings or ephemeral decorations?"
+        ],
+        "estimatedMinutes": 0.7,
+        "picturableMoments": [
+          "A dug grave section showing soil layers",
+          "A diagram of leather or wood fibers decaying over time",
+          "A conservator pointing to microscopic residues on a metal rim"
+        ]
+      },
+      {
+        "id": "s8_callback_payoff",
+        "role": "callback_payoff",
+        "title": "So who put those horns onstage?",
+        "purpose": "Pay off the horned-helmet image planted in the cold open by connecting it to theatrical and artistic invention, and fold in the preservation caveat to reach the final verdict.",
+        "summary": "Return to the planted image of the long-curved horns from the cold open and reveal that those exact horns match theatrical stage design and Romantic imagery more closely than archaeological finds; conclude with the balanced verdict that archaeologists find no clear Viking-age horned battle helmets while acknowledging the preservation caveat.",
+        "subQuestion": "",
+        "targetWords": 97,
+        "keyQuestions": [
+          "Does the theatre horn match any archaeological find?",
+          "What's the final, balanced verdict given the preservation issue?"
+        ],
+        "estimatedMinutes": 0.6,
+        "picturableMoments": [
+          "The same horned helmet from the cold open, now labeled 'stage costume'",
+          "A museum placard stating a realistic verdict",
+          "A stickman shrugging with a small text: 'Mostly myth, with a nuance'"
+        ]
+      },
+      {
+        "id": "s9_closer",
+        "role": "closer",
+        "title": "Final image",
+        "purpose": "End with one memorable, resonant image and a short call to curiosity — not a list of points.",
+        "summary": "Close on a simple visual: the dramatic horn is a great costume, not a reliable piece of Viking kit — leave viewers with a single resonant line about how images shape what we 'know' of the past and an invitation to look closely next time.",
+        "subQuestion": "",
+        "targetWords": 73,
+        "keyQuestions": [
+          "What should viewers remember the next time they see a horned Viking?"
+        ],
+        "estimatedMinutes": 0.6,
+        "picturableMoments": [
+          "A stickman swapping a horned helmet for a plain iron one",
+          "A child looking surprised at a museum label",
+          "A final single horn on a pedestal with a question mark"
+        ]
+      }
+    ],
+    "hookConcept": "Start inside the false belief: you are a horned-helmet Viking mid-charge — then pull back to ask 'wait, is this real?' and begin the investigation.",
+    "callbackPlan": {
+      "detail": "A helmet with two long curved horns attached (exact shape and length visible)",
+      "plantSectionId": "s1_cold_open",
+      "payoffSectionId": "s8_callback_payoff"
+    },
+    "viewerPromise": "By the end you'll know whether archaeological evidence supports horned Viking helmets, which objects and ideas actually created the image, and the single preservation caveat that complicates a total denial.",
+    "narrativeLabel": "Mythbust + origin story",
+    "candidateAngles": [
+      {
+        "angle": "The Viking-age archaeological record shows no clear examples of horned helmets used in battle — surviving Viking helmets are simpler and functional.",
+        "selected": true,
+        "payoffScore": 8,
+        "surpriseScore": 5,
+        "relatabilityScore": 8,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 6
+      },
+      {
+        "angle": "The visual idea actually migrated from much earlier Bronze Age ceremonial 'horned' items; later viewers misapplied those ritual objects to Viking warriors.",
+        "selected": true,
+        "payoffScore": 7,
+        "surpriseScore": 7,
+        "relatabilityScore": 6,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 8
+      },
+      {
+        "angle": "19th-century Romanticism and stagecraft — notably opera and theatrical costume designers — popularized horned helmets as a dramatic shorthand for 'Norse' and that theatrical image was amplified by modern media and merchandising.",
+        "selected": true,
+        "payoffScore": 8,
+        "surpriseScore": 7,
+        "relatabilityScore": 6,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 9
+      },
+      {
+        "angle": "Twentieth-century media (cartoons, sports logos, films, Halloween) took the theatre image and turned it into a global stereotype through repetition and commerce.",
+        "selected": false,
+        "payoffScore": 6,
+        "surpriseScore": 4,
+        "relatabilityScore": 9,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 8
+      },
+      {
+        "angle": "Preservation bias: horns or organic attachments (leather, wood, antler) decay and rarely survive in graves, so archaeological absence is complicated — it's possible small or perishable decorations existed and simply left no trace.",
+        "selected": true,
+        "payoffScore": 9,
+        "surpriseScore": 8,
+        "relatabilityScore": 5,
+        "isTwistOrPayoffAngle": true,
+        "visualPotentialScore": 4
+      }
+    ],
+    "recommendedTitle": "Did Vikings Wear Horned Helmets?",
+    "thumbnailConcept": {
+      "scene": "A stickman Viking head-on with oversized curved horns and a big question mark beside him",
+      "headline": "HORNS?"
+    },
+    "alternativeTitles": [
+      "Who Put Horns on Vikings?",
+      "Where the Viking Horn-Helmet Myth Came From"
+    ],
+    "researchQuestions": [
+      "Authoritative summary of Viking-age helmet finds: a list of securely dated Viking-age helmets/fragments and their museum citations.",
+      "Verification of any archaeological objects sometimes cited as 'horned' — are they Bronze Age, Viking Age, or later reproductions? (site names, contexts, dates required).",
+      "Detailed, citable information on the best-known Viking-age helmet finds (commonly referenced examples) and expert interpretations.",
+      "Documented cases of Bronze Age horned/antler headdresses or ceremonial objects, including provenance and publication references.",
+      "Primary-source documentation or scholarship on the first use of horned Viking costumes in 19th-century opera/theatre — who designed them and when.",
+      "Evidence for how and when 20th-century media (cartoons, logos, films) adopted and spread the horned-Viking image (first recorded uses).",
+      "Archaeological taphonomy sources on preservation of organic attachments (leather, wood, antler) in Northern European burial environments — what can disappear and what leaves traces?",
+      "Scholarly commentary from archaeologists or historians summarizing the consensus on Viking helmets and the horn myth."
+    ],
+    "researchRiskFlags": [
+      "Avoid asserting specifics about particular finds (names/dates) until primary sources confirm them.",
+      "Be careful not to equate any single horned object with Viking combat use without contextual evidence.",
+      "Preservation-bias claims require taphonomy sources — avoid speculative language about 'could have' without citations.",
+      "Claims about Wagner or specific costume designers require primary theatre history sources to avoid repeating apocrypha."
+    ]
+  },
+  "script_document": {
+    "title": "Did Vikings Wear Horned Helmets?",
+    "claims": [
+      {
+        "id": "c1",
+        "claim": "The Viking Age spans roughly 793 to 1066 CE.",
+        "sentence": "Total confirmed helmets from the entire Viking Age, roughly 793 to 1066, that survive with enough of the skull intact to study?",
+        "segmentId": "seg4",
+        "sourceFactId": null
+      },
+      {
+        "id": "c2",
+        "claim": "The Gjermundbu helmet was found in a Norwegian burial mound in 1943 and dates to around 970 CE.",
+        "sentence": "The best-preserved one is the Gjermundbu helmet, dug out of a burial mound in Norway in 1943, dated to around the year 970.",
+        "segmentId": "seg5",
+        "sourceFactId": null
+      },
+      {
+        "id": "c3",
+        "claim": "The Gjermundbu helmet has a spectacled eye guard and no horn attachment points.",
+        "sentence": "It has a rounded iron cap, a spectacled guard curving over the eyes and nose, and absolutely nothing where horns would attach.",
+        "segmentId": "seg5",
+        "sourceFactId": null
+      },
+      {
+        "id": "c4",
+        "claim": "A helmet fragment was found at Tjele, Denmark, showing plain iron construction consistent with other Viking-age finds.",
+        "sentence": "Fragments from Tjele in Denmark and a handful of other sites all show the same story: plain iron, sometimes mail hanging to protect the neck, occasionally a nose guard.",
+        "segmentId": "seg6",
+        "sourceFactId": null
+      },
+      {
+        "id": "c5",
+        "claim": "Historian Roberta Frank found no contemporary Old Norse written or carved descriptions of horned battle helmets.",
+        "sentence": "Historian Roberta Frank, who spent years tracing this myth through Old Norse literature, found zero contemporary written descriptions of horned battle helmets either.",
+        "segmentId": "seg6",
+        "sourceFactId": null
+      },
+      {
+        "id": "c6",
+        "claim": "The Veksø helmets were found in a bog near Veksø, Denmark in 1942.",
+        "sentence": "In 1942, workers draining a bog near Veksø in Denmark pulled up two bronze helmets, each fitted with long, gently curving horns tipped with little round discs.",
+        "segmentId": "seg7",
+        "sourceFactId": null
+      },
+      {
+        "id": "c7",
+        "claim": "The Veksø helmets date to roughly 900-1100 BCE, the Nordic Bronze Age.",
+        "sentence": "They're called the Veksø helmets, and they've been dated to roughly 900 to 1100 BCE, the Nordic Bronze Age.",
+        "segmentId": "seg7",
+        "sourceFactId": null
+      },
+      {
+        "id": "c8",
+        "claim": "The first recorded Viking raid on Lindisfarne occurred in 793 CE.",
+        "sentence": "That's over eighteen hundred years separating these horns from the first recorded Viking raid on Lindisfarne in 793.",
+        "segmentId": "seg8",
+        "sourceFactId": null
+      },
+      {
+        "id": "c9",
+        "claim": "Wagner's opera cycle Der Ring des Nibelungen premiered in Bayreuth in 1876 with horned costumes designed by Carl Emil Doepler.",
+        "sentence": "In 1876, composer Richard Wagner's opera cycle Der Ring des Nibelungen premiered in Bayreuth, Germany.",
+        "segmentId": "seg10",
+        "sourceFactId": null
+      },
+      {
+        "id": "c10",
+        "claim": "Costume designer Carl Emil Doepler dressed Norse figures with furs, winged helmets, and curved horns.",
+        "sentence": "Costume designer Carl Emil Doepler dressed the Norse gods and warriors in flowing furs, winged helmets, and yes, dramatic curved horns.",
+        "segmentId": "seg10",
+        "sourceFactId": null
+      },
+      {
+        "id": "c11",
+        "claim": "Cartoonist Alex Raymond drew a horned warrior in Flash Gordon comics in 1939.",
+        "sentence": "In 1939, cartoonist Alex Raymond drew the horned warrior in his Flash Gordon comics.",
+        "segmentId": "seg12",
+        "sourceFactId": null
+      },
+      {
+        "id": "c12",
+        "claim": "The Minnesota Vikings NFL team formed in 1961 and adopted horned Viking imagery as its identity.",
+        "sentence": "In 1948, the Minnesota Vikings didn't exist yet, but when the NFL team formed in 1961, they built their whole identity around that same horned image.",
+        "segmentId": "seg12",
+        "sourceFactId": null
+      }
+    ],
+    "chapters": [
+      {
+        "role": "cold_open",
+        "title": "Charge with horns",
+        "chapterId": "s1_cold_open",
+        "segmentIds": [
+          "seg1"
+        ],
+        "actualWords": 63,
+        "subQuestion": "",
+        "estimatedSeconds": 26
+      },
+      {
+        "role": "stakes",
+        "title": "Why this matters",
+        "chapterId": "s2_stakes",
+        "segmentIds": [
+          "seg2"
+        ],
+        "actualWords": 16,
+        "subQuestion": "",
+        "estimatedSeconds": 7
+      },
+      {
+        "role": "core_question",
+        "title": "The single question",
+        "chapterId": "s3_core_question",
+        "segmentIds": [
+          "seg3"
+        ],
+        "actualWords": 13,
+        "subQuestion": "",
+        "estimatedSeconds": 5
+      },
+      {
+        "role": "evidence",
+        "title": "What the archaeology actually says",
+        "chapterId": "s4_evidence_arch_record",
+        "segmentIds": [
+          "seg4",
+          "seg5",
+          "seg6"
+        ],
+        "actualWords": 225,
+        "subQuestion": "Are there any reliably-dated Viking-age helmets with horns or fittings for horns?",
+        "estimatedSeconds": 93
+      },
+      {
+        "role": "evidence",
+        "title": "Where the horns really show up",
+        "chapterId": "s5_evidence_bronze",
+        "segmentIds": [
+          "seg7",
+          "seg8",
+          "seg9"
+        ],
+        "actualWords": 221,
+        "subQuestion": "Do horned head-objects in archaeological collections come from earlier (pre-Viking) ritual contexts rather than Viking battle gear?",
+        "estimatedSeconds": 91
+      },
+      {
+        "role": "evidence",
+        "title": "Theatre, Romanticism, and modern amplification",
+        "chapterId": "s6_evidence_opera_media",
+        "segmentIds": [
+          "seg10",
+          "seg11",
+          "seg12"
+        ],
+        "actualWords": 219,
+        "subQuestion": "Did 19th-century theatre and later media create and spread the horned-Viking image more than archaeology did?",
+        "estimatedSeconds": 91
+      },
+      {
+        "role": "twist",
+        "title": "But here's the complicating caveat",
+        "chapterId": "s7_twist_preservation",
+        "segmentIds": [
+          "seg13"
+        ],
+        "actualWords": 121,
+        "subQuestion": "",
+        "estimatedSeconds": 50
+      },
+      {
+        "role": "callback_payoff",
+        "title": "So who put those horns onstage?",
+        "chapterId": "s8_callback_payoff",
+        "segmentIds": [
+          "seg14"
+        ],
+        "actualWords": 76,
+        "subQuestion": "",
+        "estimatedSeconds": 31
+      },
+      {
+        "role": "closer",
+        "title": "Final image",
+        "chapterId": "s9_closer",
+        "segmentIds": [
+          "seg15"
+        ],
+        "actualWords": 84,
+        "subQuestion": "",
+        "estimatedSeconds": 35
+      }
+    ],
+    "openLoops": [
+      {
+        "id": "loop_horns_origin",
+        "question": "Who first put horns on Vikings onstage and in art?",
+        "setupSegmentId": "seg1",
+        "payoffSegmentId": "seg10",
+        "expectedPayoffRegion": "s6_evidence_opera_media / s8_callback_payoff"
+      },
+      {
+        "id": "loop_museum_horned_helmets",
+        "question": "Are there any authenticated Viking-age horned helmets in museums?",
+        "setupSegmentId": "seg5",
+        "payoffSegmentId": "seg5",
+        "expectedPayoffRegion": "s4_evidence_arch_record"
+      },
+      {
+        "id": "loop_preservation",
+        "question": "Could horns simply have rotted away and therefore left no trace?",
+        "setupSegmentId": "seg13",
+        "payoffSegmentId": "seg13",
+        "expectedPayoffRegion": "s7_twist_preservation"
+      }
+    ],
+    "actualWords": 1038,
+    "callbackKey": "two long curved horns",
+    "thumbnailConcept": {
+      "scene": "A stickman Viking head-on with oversized curved horns and a big question mark beside him",
+      "headline": "HORNS?"
+    },
+    "narrationSegments": [
+      {
+        "id": "seg1",
+        "text": "You're gripping a shield, screaming down a hillside toward a shieldwall, and two long curved horns jut off your helmet, cutting the air on either side of your head. The horns catch the firelight. They look terrifying. They look exactly like every painting, every movie poster, every Halloween costume you've ever seen of a Viking. This is the image burned into your head.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Viking warrior",
+          "horned helmet",
+          "shieldwall"
+        ],
+        "mustShow": [
+          "A helmet with two long curved horns attached, clearly visible"
+        ],
+        "chapterId": "s1_cold_open",
+        "payoffIds": [],
+        "mustNotShow": [
+          "Any label or text suggesting this is fake or theatrical yet"
+        ],
+        "openLoopIds": [
+          "loop_horns_origin"
+        ],
+        "locationHint": "A hillside battlefield charge at dusk",
+        "visualIntent": "Immerse the viewer as a charging warrior wearing an oversized curved-horn helmet, matching the familiar cultural image exactly.",
+        "sequenceIndex": 1,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": null,
+        "narrativeFunction": "hook",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg2",
+        "text": "A single wrong picture like this can quietly rewrite an entire culture's history in our heads.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "museum visitor"
+        ],
+        "mustShow": [],
+        "chapterId": "s2_stakes",
+        "payoffIds": [],
+        "mustNotShow": [],
+        "openLoopIds": [],
+        "locationHint": "A museum hall",
+        "visualIntent": "Show a museum visitor confidently pointing at a horned helmet display, unaware it's inaccurate.",
+        "sequenceIndex": 2,
+        "estimatedSeconds": 5,
+        "exactTextOverlay": null,
+        "narrativeFunction": "stakes",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg3",
+        "text": "So did any Viking ever actually strap on horns before walking into battle?",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "helmet"
+        ],
+        "mustShow": [],
+        "chapterId": "s3_core_question",
+        "payoffIds": [],
+        "mustNotShow": [],
+        "openLoopIds": [],
+        "locationHint": "Neutral space, helmet on a pedestal",
+        "visualIntent": "A question mark hovering over an illustrated helmet, framing the central mystery.",
+        "sequenceIndex": 3,
+        "estimatedSeconds": 5,
+        "exactTextOverlay": null,
+        "narrativeFunction": "core question",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "GRAPHIC"
+      },
+      {
+        "id": "seg4",
+        "text": "Here's the belief almost everyone carries around without question: Viking raiders wore horned helmets into combat, the horns curving up from the sides like a bull's. It feels obvious. It's on flags, beer labels, football helmets. But archaeologists digging across Scandinavia for over a century have found remarkably few actual Viking-age helmets at all. Total confirmed helmets from the entire Viking Age, roughly 793 to 1066, that survive with enough of the skull intact to study? You can count them on one hand.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "archaeologists",
+          "helmet fragments"
+        ],
+        "mustShow": [
+          "Only a handful of confirmed Viking-age helmets exist",
+          "Viking Age dates roughly 793 to 1066"
+        ],
+        "chapterId": "s4_evidence_arch_record",
+        "payoffIds": [],
+        "mustNotShow": [
+          "Rows of complete helmets"
+        ],
+        "openLoopIds": [],
+        "locationHint": "An excavation site in Scandinavia",
+        "visualIntent": "Show the scarcity of surviving helmets by depicting a nearly empty display case with one small fragment.",
+        "sequenceIndex": 4,
+        "estimatedSeconds": 30,
+        "exactTextOverlay": "793-1066",
+        "narrativeFunction": "steelman the myth then begin evidence",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg5",
+        "text": "The best-preserved one is the Gjermundbu helmet, dug out of a burial mound in Norway in 1943, dated to around the year 970. It has a rounded iron cap, a spectacled guard curving over the eyes and nose, and absolutely nothing where horns would attach. No sockets. No rivet holes shaped for anything curved. Just a plain iron dome built to deflect a sword, not to look dramatic.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Gjermundbu helmet"
+        ],
+        "mustShow": [
+          "The Gjermundbu helmet found in Norway in 1943",
+          "dated around 970",
+          "spectacled eye guard",
+          "no horn sockets or attachment points"
+        ],
+        "chapterId": "s4_evidence_arch_record",
+        "payoffIds": [
+          "loop_museum_horned_helmets"
+        ],
+        "mustNotShow": [
+          "Any horns on this helmet"
+        ],
+        "openLoopIds": [],
+        "locationHint": "A burial mound excavation in Norway",
+        "visualIntent": "Show the Gjermundbu helmet's real design: a rounded cap with a spectacled eye guard and smooth surface with no horn attachments.",
+        "sequenceIndex": 5,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": "970 AD",
+        "narrativeFunction": "core physical evidence",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "DETAIL"
+      },
+      {
+        "id": "seg6",
+        "text": "Why trust one helmet? Because it isn't alone. Fragments from Tjele in Denmark and a handful of other sites all show the same story: plain iron, sometimes mail hanging to protect the neck, occasionally a nose guard. Historian Roberta Frank, who spent years tracing this myth through Old Norse literature, found zero contemporary written descriptions of horned battle helmets either. Not one saga. Not one carving from the era mentions warriors fighting in horns.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Roberta Frank",
+          "Tjele fragment",
+          "Old Norse sagas"
+        ],
+        "mustShow": [
+          "Tjele helmet fragment from Denmark",
+          "Roberta Frank's research finding no horned helmets in Old Norse sagas or carvings"
+        ],
+        "chapterId": "s4_evidence_arch_record",
+        "payoffIds": [],
+        "mustNotShow": [
+          "Any saga illustration depicting horned warriors as if accurate"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Denmark excavation site, then a library of old manuscripts",
+        "visualIntent": "Show additional plain iron helmet fragments from Denmark alongside a scroll representing sagas with no mention of horns.",
+        "sequenceIndex": 6,
+        "estimatedSeconds": 25,
+        "exactTextOverlay": null,
+        "narrativeFunction": "corroborating evidence",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg7",
+        "text": "So where do actual horned helmets in museums come from, if not the Viking Age? Rewind about two thousand years before the first Viking ship ever launched. In 1942, workers draining a bog near Veksø in Denmark pulled up two bronze helmets, each fitted with long, gently curving horns tipped with little round discs. They're called the Veksø helmets, and they've been dated to roughly 900 to 1100 BCE, the Nordic Bronze Age.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Veksø helmets"
+        ],
+        "mustShow": [
+          "Veksø helmets found in a Danish bog in 1942",
+          "dated roughly 900 to 1100 BCE",
+          "curved bronze horns with round discs on tips"
+        ],
+        "chapterId": "s5_evidence_bronze",
+        "payoffIds": [],
+        "mustNotShow": [
+          "Any Viking warrior wearing these"
+        ],
+        "openLoopIds": [],
+        "locationHint": "A drained bog near Veksø, Denmark",
+        "visualIntent": "Show the real bronze horned helmets pulled from a Danish bog in 1942, dated over a thousand years before the Viking Age.",
+        "sequenceIndex": 7,
+        "estimatedSeconds": 25,
+        "exactTextOverlay": "900-1100 BCE",
+        "narrativeFunction": "reveal the true source object",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "DETAIL"
+      },
+      {
+        "id": "seg8",
+        "text": "These weren't armor. The bronze is thin, decorative, almost delicate. They were likely worn by a priest or a chieftain in a religious ceremony, maybe alongside sun-worship rituals, definitely not swung into a shield wall. That's over eighteen hundred years separating these horns from the first recorded Viking raid on Lindisfarne in 793. Would you mistake your great-great-great-grandparent's wedding china for something you use in a bar fight? That's roughly the gap we're talking about.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Bronze Age priest",
+          "Lindisfarne raid"
+        ],
+        "mustShow": [
+          "Thin decorative bronze construction unsuited for combat",
+          "roughly 1800 year gap to the 793 Lindisfarne raid"
+        ],
+        "chapterId": "s5_evidence_bronze",
+        "payoffIds": [],
+        "mustNotShow": [],
+        "openLoopIds": [],
+        "locationHint": "A ceremonial ritual scene, then a timeline",
+        "visualIntent": "Contrast the thin ceremonial bronze horns with actual battle gear, and place a timeline gap between Bronze Age ritual and the 793 Viking raid.",
+        "sequenceIndex": 8,
+        "estimatedSeconds": 28,
+        "exactTextOverlay": "793 AD",
+        "narrativeFunction": "explain the mismatch and conflation",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg9",
+        "text": "But 19th-century antiquarians didn't always draw that line carefully. Early collectors and popular illustrators, digging through old hoards without modern dating tools, lumped anything old and Nordic into one romantic bucket labeled ancient Norse warrior. A ceremonial priest's headdress from the Bronze Age and a Viking raider a thousand years later got flattened into the same imagined figure. That mistake didn't stay buried in a museum basement. It walked straight onto a stage.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "19th-century antiquarians"
+        ],
+        "mustShow": [
+          "19th-century antiquarians conflating Bronze Age ritual objects with Viking imagery"
+        ],
+        "chapterId": "s5_evidence_bronze",
+        "payoffIds": [],
+        "mustNotShow": [],
+        "openLoopIds": [],
+        "locationHint": "A cluttered 19th-century study filled with sketches and artifacts",
+        "visualIntent": "Show an antiquarian illustrator sketching Bronze Age and Viking artifacts as if from the same era, blending the two.",
+        "sequenceIndex": 9,
+        "estimatedSeconds": 25,
+        "exactTextOverlay": null,
+        "narrativeFunction": "bridge into media section",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg10",
+        "text": "In 1876, composer Richard Wagner's opera cycle Der Ring des Nibelungen premiered in Bayreuth, Germany. Costume designer Carl Emil Doepler dressed the Norse gods and warriors in flowing furs, winged helmets, and yes, dramatic curved horns. Wagner wanted mythic, larger-than-life figures towering over an audience from the back row of a theater. Historical accuracy wasn't the assignment. Spectacle was.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Richard Wagner",
+          "Carl Emil Doepler",
+          "Der Ring des Nibelungen"
+        ],
+        "mustShow": [
+          "Richard Wagner's Der Ring des Nibelungen premiering in 1876 in Bayreuth",
+          "costume designer Carl Emil Doepler adding horns for dramatic effect"
+        ],
+        "chapterId": "s6_evidence_opera_media",
+        "payoffIds": [
+          "loop_horns_origin"
+        ],
+        "mustNotShow": [
+          "Any claim this was historically accurate"
+        ],
+        "openLoopIds": [
+          "loop_horns_origin"
+        ],
+        "locationHint": "An opera stage in Bayreuth, Germany",
+        "visualIntent": "Show the 1876 Bayreuth opera stage with Carl Emil Doepler's costumed performers wearing dramatic horned and winged helmets.",
+        "sequenceIndex": 10,
+        "estimatedSeconds": 22,
+        "exactTextOverlay": "1876",
+        "narrativeFunction": "identify the specific origin moment",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg11",
+        "text": "Why did that image spread so fast? Because it landed inside the Romantic movement, when artists across Europe were painting Norse myth as noble and untamed. Swedish painter Gustav Malmstrom and others had already sketched horned figures decades earlier, but Wagner's production put the look in front of thousands of paying theatergoers at once, night after night. A single stage costume became the visual template every illustrator copied afterward, because it was already proven to work on an audience.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Romantic painters",
+          "theatergoers"
+        ],
+        "mustShow": [
+          "Romantic movement painters depicting horned Norse figures before wide adoption",
+          "opera image being copied by later illustrators"
+        ],
+        "chapterId": "s6_evidence_opera_media",
+        "payoffIds": [],
+        "mustNotShow": [],
+        "openLoopIds": [],
+        "locationHint": "A gallery of Romantic-era Norse paintings",
+        "visualIntent": "Show Romantic-era paintings of horned Norse figures circulating and being copied by illustrators after the opera's success.",
+        "sequenceIndex": 11,
+        "estimatedSeconds": 28,
+        "exactTextOverlay": null,
+        "narrativeFunction": "mechanism explanation of cultural spread",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg12",
+        "text": "From there it never stopped moving. By the early 1900s, horned helmets showed up on tourist postcards sold in Norway itself. In 1939, cartoonist Alex Raymond drew the horned warrior in his Flash Gordon comics. In 1948, the Minnesota Vikings didn't exist yet, but when the NFL team formed in 1961, they built their whole identity around that same horned image. Have you ever questioned why a football team from Minnesota wears Bronze Age Danish ceremonial gear? Most people never do.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "Alex Raymond",
+          "Minnesota Vikings",
+          "Flash Gordon"
+        ],
+        "mustShow": [
+          "Norwegian tourist postcards with horned Vikings",
+          "Alex Raymond's 1939 Flash Gordon comic",
+          "Minnesota Vikings NFL team formed in 1961 adopting horned imagery"
+        ],
+        "chapterId": "s6_evidence_opera_media",
+        "payoffIds": [],
+        "mustNotShow": [],
+        "openLoopIds": [],
+        "locationHint": "A postcard stand, then a comic panel, then a football stadium",
+        "visualIntent": "Show the horned image spreading across postcards, comics, and eventually a football team logo, tracing decades of amplification.",
+        "sequenceIndex": 12,
+        "estimatedSeconds": 28,
+        "exactTextOverlay": "1961",
+        "narrativeFunction": "trace amplification through modern media",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "GRAPHIC"
+      },
+      {
+        "id": "seg13",
+        "text": "But can we really say never, with total certainty? Here's the honest complication. Most Viking-age helmets we'd expect to find were probably never made of iron at all. Leather, boiled and hardened, wood, and antler don't survive well underground for a thousand years, especially in acidic Scandinavian soil. If a helmet had small horns made from antler lashed on with leather cord, that cord and antler could rot into nothing within a few centuries, leaving no rivet holes, no discoloration, no trace at all. So when archaeologists say no evidence, they mean no surviving evidence. Absence isn't automatically proof of absence. It just means if it happened, it happened in a material that time was never going to let us keep.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "organic materials",
+          "acidic soil"
+        ],
+        "mustShow": [
+          "Leather, wood, and antler decay rapidly in acidic soil",
+          "iron survives while organic attachments do not",
+          "absence of evidence is not proof of absence"
+        ],
+        "chapterId": "s7_twist_preservation",
+        "payoffIds": [
+          "loop_preservation"
+        ],
+        "mustNotShow": [
+          "A definitive claim that horns definitely existed"
+        ],
+        "openLoopIds": [
+          "loop_preservation"
+        ],
+        "locationHint": "A cross-section of a burial site showing decayed organic matter beside preserved iron",
+        "visualIntent": "Show organic materials like leather and antler decaying to nothing in soil over centuries, leaving iron artifacts intact nearby.",
+        "sequenceIndex": 13,
+        "estimatedSeconds": 40,
+        "exactTextOverlay": null,
+        "narrativeFunction": "twist complication",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg14",
+        "text": "So go back to that charge down the hillside, the helmet with two long curved horns catching the firelight. That image didn't come from a Viking battlefield at all. It came from a Bronze Age priest's ritual, borrowed by a German opera designer in 1876, and sold to the entire world ever since. Wagner's costume department gave you a myth so good, so visually perfect, that even a total absence of battle evidence couldn't kill it.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "horned helmet",
+          "Wagner opera costume"
+        ],
+        "mustShow": [
+          "The helmet with two long curved horns attached from the cold open, now traced to opera costume origin"
+        ],
+        "chapterId": "s8_callback_payoff",
+        "payoffIds": [
+          "loop_horns_origin"
+        ],
+        "mustNotShow": [
+          "Any suggestion Vikings actually wore this in battle"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Split between the original battlefield charge and the opera stage",
+        "visualIntent": "Reveal the cold-open helmet with two long curved horns now explicitly labeled as originating from opera costuming, not the battlefield.",
+        "sequenceIndex": 14,
+        "estimatedSeconds": 26,
+        "exactTextOverlay": null,
+        "narrativeFunction": "callback payoff",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg15",
+        "text": "Somewhere in a Norwegian museum, a plain iron dome with a simple eye guard sits under glass, unglamorous, undramatic, and true. Nobody buys a postcard of it. Nobody puts it on a football helmet. Real history is rarely as loud as the myth built on top of it. Next time you see those curving horns on a lunchbox or a mascot, you're not looking at Norse memory. You're looking at a nineteenth-century costume designer's best sales pitch, one that's still working on you today.",
+        "factIds": [
+          "__none__"
+        ],
+        "entities": [
+          "museum display",
+          "iron helmet"
+        ],
+        "mustShow": [
+          "The real plain iron helmet with eye guard under museum glass"
+        ],
+        "chapterId": "s9_closer",
+        "payoffIds": [],
+        "mustNotShow": [
+          "A definitive win/lose framing beyond quiet contrast"
+        ],
+        "openLoopIds": [],
+        "locationHint": "A quiet museum case",
+        "visualIntent": "End on the quiet, real iron helmet in a museum case, contrasted with the loud horned image still sold on merchandise.",
+        "sequenceIndex": 15,
+        "estimatedSeconds": 28,
+        "exactTextOverlay": null,
+        "narrativeFunction": "closer",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "DETAIL"
+      }
+    ],
+    "plantSegmentIndex": 0,
+    "payoffSegmentIndex": 13,
+    "estimatedDurationSeconds": 430
+  }
+}

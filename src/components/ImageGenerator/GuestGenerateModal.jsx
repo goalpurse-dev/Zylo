@@ -16,13 +16,13 @@ export default function GuestGenerateModal({ open, onClose, onSignup }) {
       <div className="fixed z-[9999] left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[92%] max-w-[420px]">
         <div
           className="relative rounded-3xl overflow-hidden shadow-2xl"
-          style={{ background: "linear-gradient(160deg, #0D0620, #1A0533, #0B0E1A)" }}
+          style={{ background: "linear-gradient(160deg, #0A1206, #142008, #0B0E1A)" }}
         >
           {/* Top glow line */}
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#7A3BFF] to-transparent" />
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#BEF264] to-transparent" />
 
           {/* Purple ambient */}
-          <div className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-72 h-72 bg-[#7A3BFF]/20 rounded-full blur-[80px]" />
+          <div className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-72 h-72 bg-[#BEF264]/20 rounded-full blur-[80px]" />
 
           <div className="relative px-7 py-8">
             {/* Close */}
@@ -35,10 +35,10 @@ export default function GuestGenerateModal({ open, onClose, onSignup }) {
 
             {/* Icon */}
             <div className="relative inline-flex mb-5">
-              <div className="w-14 h-14 rounded-2xl bg-[#7A3BFF]/20 border border-[#7A3BFF]/30 flex items-center justify-center">
-                <ImageIcon className="w-7 h-7 text-[#C084FC]" />
+              <div className="w-14 h-14 rounded-2xl bg-[#BEF264]/20 border border-[#BEF264]/30 flex items-center justify-center">
+                <ImageIcon className="w-7 h-7 text-[#D9F99D]" />
               </div>
-              <div className="absolute -inset-1 bg-[#7A3BFF]/20 rounded-2xl blur-lg -z-10" />
+              <div className="absolute -inset-1 bg-[#BEF264]/20 rounded-2xl blur-lg -z-10" />
             </div>
 
             {/* Headline */}
@@ -50,8 +50,8 @@ export default function GuestGenerateModal({ open, onClose, onSignup }) {
             </p>
 
             {/* Free badge */}
-            <div className="flex items-center gap-3 bg-[#7A3BFF]/15 border border-[#7A3BFF]/30 rounded-2xl px-4 py-3 mb-6">
-              <Zap className="w-5 h-5 text-[#C084FC] shrink-0" />
+            <div className="flex items-center gap-3 bg-[#BEF264]/15 border border-[#BEF264]/30 rounded-2xl px-4 py-3 mb-6">
+              <Zap className="w-5 h-5 text-[#D9F99D] shrink-0" />
               <div>
                 <div className="text-white font-bold text-base leading-tight">10 Free Generations</div>
                 <div className="text-white/40 text-xs">resets monthly · no credit card</div>
@@ -75,7 +75,7 @@ export default function GuestGenerateModal({ open, onClose, onSignup }) {
                 { icon: ImageIcon, label: "HD quality" },
               ].map(({ icon: Icon, label }) => (
                 <div key={label} className="flex items-center gap-1.5">
-                  <Icon className="w-3.5 h-3.5 text-[#C084FC]" />
+                  <Icon className="w-3.5 h-3.5 text-[#D9F99D]" />
                   <span>{label}</span>
                 </div>
               ))}
@@ -84,10 +84,10 @@ export default function GuestGenerateModal({ open, onClose, onSignup }) {
             {/* CTA */}
             <button
               onClick={onSignup}
-              className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all hover:opacity-90 active:scale-[0.98]"
+              className="w-full py-4 rounded-2xl text-[#11150D] font-bold text-base transition-all hover:opacity-90 active:scale-[0.98]"
               style={{
-                background: "linear-gradient(135deg, #7A3BFF, #9D6BFF)",
-                boxShadow: "0 8px 32px rgba(122,59,255,0.45)",
+                background: "linear-gradient(135deg, #BEF264, #A3E635)",
+                boxShadow: "0 8px 32px rgba(190,242,100,0.45)",
               }}
             >
               Create Free Account →
@@ -99,7 +99,7 @@ export default function GuestGenerateModal({ open, onClose, onSignup }) {
           </div>
 
           {/* Bottom glow line */}
-          <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#7A3BFF]/40 to-transparent" />
+          <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#BEF264]/40 to-transparent" />
         </div>
       </div>
     </>,

@@ -1,0 +1,969 @@
+{
+  "slug": "the-psychology-of-overthinking",
+  "savedAt": "2026-09-26T13:42:10.002Z",
+  "project": {
+    "topic": "The Psychology of Overthinking",
+    "resolved_length_minutes": 8,
+    "resolved_explanation_depth": "balanced",
+    "target_words": 1160,
+    "topic_model": {
+      "topicTypes": [
+        "mechanism",
+        "scientific_explanation",
+        "lived_experience",
+        "cause_effect"
+      ],
+      "coreEntities": [
+        "rumination",
+        "worry",
+        "default mode network (DMN)",
+        "prefrontal cortex / executive control",
+        "amygdala / threat circuits",
+        "working memory",
+        "intolerance of uncertainty",
+        "negative reinforcement / avoidance",
+        "cognitive distortions (catastrophizing, all-or-nothing thinking)",
+        "metacognitive beliefs (\"I must resolve this now\")"
+      ],
+      "knowledgeGap": "Most viewers lack a clear model connecting subjective experience to underlying mechanisms (brain networks, attention/executive control failures, reinforcement loops) and therefore don't know which targeted strategies address specific causes rather than offering vague advice.",
+      "primaryDomain": "psychology",
+      "researchNeeds": [
+        "Definitions and authoritative distinctions between rumination and worry (sources)",
+        "Key neuroimaging studies linking DMN activity and rumination (authors, years, journals)",
+        "Evidence on executive control deficits in perseverative thinking (meta-analyses or reviews)",
+        "Effect sizes and comparisons for evidence-based interventions (CBT, metacognitive therapy, mindfulness, behavioral activation)",
+        "Empirical support for intolerance of uncertainty as a causal mechanism (validated scales, studies)",
+        "Data on prevalence/severity (clinical vs subclinical) if citing statistics",
+        "Physiological studies linking stress hormones (cortisol) and perseverative cognition",
+        "Research on thought suppression/backfire effect and habit formation in cognition"
+      ],
+      "temporalScope": "Ongoing patterns: covers momentary episodes (minutes/hours) up to chronic habits developed over months or years",
+      "canonicalTopic": "The psychology and mechanics of overthinking: what it is, why it persists, and how to break the cycle",
+      "coreMechanisms": [
+        "DMN-driven self-referential thought loops that bias attention inward",
+        "reduced top-down executive control (prefrontal) making it hard to shift attention away",
+        "attentional bias toward negative information and memory retrieval",
+        "intolerance of uncertainty triggering repetitive analysis intended to reduce uncertainty but increasing it (a paradox)",
+        "negative reinforcement: avoidance behaviors temporarily reduce distress, reinforcing rumination/avoidance cycle",
+        "thought suppression/backfire effects that increase frequency of unwanted thoughts",
+        "habit formation: repeated rumination forms automatic cognitive routines",
+        "physiological stress responses (cortisol/sympathetic arousal) that amplify negative affect and cognitive narrowing"
+      ],
+      "factualityRisk": "medium",
+      "centralQuestion": "What exactly happens in the mind and brain when someone 'overthinks', why does the pattern persist, and which evidence-based strategies actually interrupt it?",
+      "geographicScope": "Universal / psychological (not location-specific)",
+      "visualPotential": "high",
+      "secondaryDomains": [
+        "neuroscience",
+        "self-help",
+        "behavioral science"
+      ],
+      "likelyMisconceptions": [
+        "Overthinking is just 'thinking a lot' — it's quality (unproductive loops), not quantity, that matters",
+        "It's purely a moral or personality failing (laziness or weakness)",
+        "You can simply stop by \"trying harder\" or forcing yourself not to think",
+        "Overthinking is always bad or is the same as deep/creative thinking",
+        "One-size-fits-all tips (e.g., \"just meditate 5 minutes\") will solve chronic overthinking"
+      ],
+      "viewerExpectedAnswer": "By the end the viewer should understand the cognitive and neural processes that create and sustain overthinking (rumination/worry), common triggers and perpetuating loops, why mere willpower often fails, and several practical, evidence-grounded ways to reduce it.",
+      "viewerPriorKnowledge": "Viewers typically know 'overthinking' as rumination or worry that feels unproductive, often linked to anxiety, indecision, or stress. They may have heard generic tips like 'don't think about it' or 'distract yourself.'",
+      "recommendedLengthMinutes": 10,
+      "recommendedNarrativeModes": [
+        "mechanism",
+        "scientific_explanation",
+        "lived_experience",
+        "cause_effect"
+      ],
+      "recommendedExplanationDepth": "balanced"
+    },
+    "narrative_strategy": {
+      "endingPayoff": "You leave with a simple rule: identify which mechanism is running your loop, then use the matching technique — not vague self-blame — and one quick practice you can do now to test it.",
+      "centralThesis": "Overthinking is not just 'too much thought' but a predictable interaction of self-referential brain networks, weakened top-down control, attentional biases, and short-term reinforcement; targeting those mechanisms (not just \"stop trying harder\") is what reliably interrupts the cycle.",
+      "viewerPromise": "A clear, usable model that links the subjective feeling of 'overthinking' to specific brain/cognitive mechanisms and three to five concrete, evidence-based strategies you can try — each matched to the problem it fixes.",
+      "plannedPayoffs": [
+        "Explain why willpower backfires and what to do instead",
+        "Show the sticky-note detail being removed after a mapped technique",
+        "End with one short, concrete practice viewers can use immediately"
+      ],
+      "viewerQuestion": "What exactly is happening in my mind when I get stuck in unproductive loops, and which fixes actually break them?",
+      "openingStrategy": "Drop the viewer into a tiny, painfully familiar scene (a text unsent, a replayed awkward moment) with a memorable visual hook that represents the mental 'stickiness', then zoom out and promise to explain the machinery behind it and concrete fixes.",
+      "plannedOpenLoops": [
+        "Why 'trying harder' usually doesn't work",
+        "One visual detail (a sticky note) planted now will be resolved later",
+        "Which exact strategy you should try first"
+      ],
+      "primaryNarrativeMode": "mechanism",
+      "informationRevealOrder": [
+        "hook",
+        "why_it_matters",
+        "core_question",
+        "phenomenology_vs_productive_thinking",
+        "brain_networks",
+        "why_willpower_fails",
+        "reinforcement_triggers",
+        "targeted_strategies",
+        "twist_when_thinking_is_useful",
+        "callback_payoff"
+      ],
+      "supportingNarrativeModes": [
+        "scientific_explanation",
+        "lived_experience",
+        "cause_effect"
+      ]
+    },
+    "selected_idea_title": null,
+    "selected_idea_angle": null
+  },
+  "storyPlan": {
+    "recommendedTitle": "Why Can't I Stop Overthinking?",
+    "alternativeTitles": [
+      "Why Do I Overthink Everything?",
+      "How Overthinking Hijacks Your Mind"
+    ],
+    "viewerPromise": "Understand the cognitive and brain processes that make thoughts sticky, why willpower often fails, and three evidence-grounded techniques you can use right away to break the loop.",
+    "hookConcept": "A stickman stares at a tiny text bubble, re-reads it 10 times; a bright yellow sticky note labeled 'MUST FIX' is plastered to his forehead — the narrator asks: why won't that thought go away?",
+    "narrativeLabel": "mechanism",
+    "chapters": [
+      {
+        "id": "s1",
+        "title": "cold_open_sticky_note",
+        "role": "cold_open",
+        "estimatedMinutes": 0.5,
+        "purpose": "Grab attention with a hyper-relatable moment and plant the visual callback.",
+        "summary": "Show a stickman stuck replaying a tiny everyday moment (unsent text, replayed remark). Emphasize the subjective feeling: thoughts that loop and refuse to let go. Plant a concrete visual: a yellow sticky note on the forehead that reads 'MUST FIX.'",
+        "keyQuestions": [
+          "What does it feel like when a thought refuses to stop?",
+          "What little detail can we use later to signal 'this is the loop'?"
+        ],
+        "subQuestion": ""
+      },
+      {
+        "id": "s2",
+        "title": "fast_stakes",
+        "role": "stakes",
+        "estimatedMinutes": 0.5,
+        "purpose": "Rapidly explain why viewers should care — cost to mood, decisions, sleep, and relationships — but keep it non-alarmist.",
+        "summary": "One-sentence consequences: stuck thinking wastes time, raises stress, and can turn into a habitual pattern that affects choices. Frame it as a common, fixable problem rather than a character flaw.",
+        "keyQuestions": [
+          "Why does breaking this matter for daily life?",
+          "Why is a targeted approach better than vague advice?"
+        ],
+        "subQuestion": ""
+      },
+      {
+        "id": "s3",
+        "title": "core_question",
+        "role": "core_question",
+        "estimatedMinutes": 0.5,
+        "purpose": "State the single question the video will answer and promise practical takeaways.",
+        "summary": "Ask: what happens in the mind/brain when we overthink, why does it persist, and which specific strategies actually interrupt it? Promise a short model and handful of usable techniques.",
+        "keyQuestions": [
+          "What will I actually learn by the end?",
+          "Which kinds of solutions will be shown?"
+        ],
+        "subQuestion": ""
+      },
+      {
+        "id": "s4",
+        "title": "evidence_1_what_is_it",
+        "role": "evidence",
+        "estimatedMinutes": 1,
+        "purpose": "Define the phenomenon in usable terms and distinguish it from normal productive thinking.",
+        "summary": "Explain that overthinking is characterized by repetitive, self-focused, often negative loops (rumination/worry) that feel unproductive and reduce problem-solving ability — unlike focused analysis, which is goal-directed and time-limited.",
+        "keyQuestions": [
+          "How is rumination/worry different from useful problem-solving?",
+          "What subjective cues tell you 'this is a loop'?"
+        ],
+        "subQuestion": "How do rumination and worry differ from productive problem-solving?"
+      },
+      {
+        "id": "s5",
+        "title": "evidence_2_brain_networks",
+        "role": "evidence",
+        "estimatedMinutes": 1,
+        "purpose": "Introduce the basic neural/cognitive components that create sticky thoughts—keeps it conceptual, not technical.",
+        "summary": "Sketch a simple model: a self-referential 'default-mode' tendency that pulls attention inward, plus executive control systems that normally shift focus; when control weakens and self-focus dominates, loops form. Note that neuroimaging links self-referential networks to perseverative thought (research to cite separately).",
+        "keyQuestions": [
+          "Which brain systems bias attention inward?",
+          "What happens when top-down control is reduced?"
+        ],
+        "subQuestion": "What brain networks and cognitive processes create repetitive, self-focused thought loops?"
+      },
+      {
+        "id": "s6",
+        "title": "evidence_3_willpower_backfire",
+        "role": "evidence",
+        "estimatedMinutes": 1,
+        "purpose": "Explain why common advice to 'just stop' or 'try harder' usually fails.",
+        "summary": "Describe mechanisms behind backfire: thought suppression increases the salience of unwanted thoughts; stress reduces control capacity; habitual loops become automatic — so effort alone often makes loops more frequent or exhausting.",
+        "keyQuestions": [
+          "Why does trying harder make thoughts louder?",
+          "How do stress and limited control capacity affect thinking?"
+        ],
+        "subQuestion": "Why does trying to suppress or force thoughts away often make them come back stronger?"
+      },
+      {
+        "id": "s7",
+        "title": "evidence_4_reinforcement_triggers",
+        "role": "evidence",
+        "estimatedMinutes": 1,
+        "purpose": "Show the cause-effect loops that maintain overthinking over time.",
+        "summary": "Cover short-term reinforcement (e.g., avoidance reduces anxiety temporarily), intolerance of uncertainty that drives more checking/analysis, and attentional biases toward negative information — together they make the pattern self-sustaining.",
+        "keyQuestions": [
+          "What short-term rewards keep the loop running?",
+          "How do triggers like uncertainty or avoidance feed rumination?"
+        ],
+        "subQuestion": "How do avoidance, short-term relief, and intolerance of uncertainty reinforce perseverative thinking?"
+      },
+      {
+        "id": "s8",
+        "title": "evidence_5_targeted_strategies",
+        "role": "evidence",
+        "estimatedMinutes": 1,
+        "purpose": "Map concrete interventions to the mechanisms they address so viewers can pick the right tool.",
+        "summary": "Offer specific, evidence-aligned options (brief labels only): cognitive restructuring / CBT techniques for cognitive distortions; metacognitive strategies for beliefs about thinking; attention-training/mindfulness for shifting focus; scheduled worry or 'worry time' to contain loops; behavioral activation to break avoidance. Note that effect sizes and best-fit cases require research citations (listed below).",
+        "keyQuestions": [
+          "Which technique targets which mechanism?",
+          "How should I try one in a short, testable way?"
+        ],
+        "subQuestion": "Which concrete interventions target the mechanisms behind overthinking, and how do they differ?"
+      },
+      {
+        "id": "s9",
+        "title": "twist_when_helpful",
+        "role": "twist",
+        "estimatedMinutes": 0.5,
+        "purpose": "Introduce a necessary complication: some repetitive thought can be adaptive, so blanket suppression isn't the answer.",
+        "summary": "Admit that repetitive thinking sometimes signals a real unsolved problem or preparation; the useful insight is to discriminate 'productive rehearsal' from 'sticky rumination' and respond differently to each.",
+        "keyQuestions": [
+          "When is repetition actually useful?",
+          "How do you tell productive thinking from maladaptive looping?"
+        ],
+        "subQuestion": ""
+      },
+      {
+        "id": "s10",
+        "title": "callback_payoff_peel_note",
+        "role": "callback_payoff",
+        "estimatedMinutes": 0.7,
+        "purpose": "Pay off the sticky-note visual by demonstrating a short technique that visibly 'peels' the note off and creates immediate relief.",
+        "summary": "Return to the stickman with the 'MUST FIX' note. Show a short practice (for example: label the thought, set a 10-minute 'worry slot', then do a one-minute attention-shift exercise) and animate the note peeling away as the loop loosens. Emphasize this is a testable first step, not a cure-all.",
+        "keyQuestions": [
+          "What next step can I try right now?",
+          "What does success look like in a single minute?"
+        ],
+        "subQuestion": ""
+      }
+    ],
+    "callbackPlan": {
+      "detail": "Yellow sticky note on the stickman's forehead labeled 'MUST FIX' that visibly peels off after a short technique.",
+      "plantSectionId": "s1",
+      "payoffSectionId": "s10"
+    },
+    "thumbnailConcept": {
+      "headline": "STOP OVERTHINKING?",
+      "scene": "Stickman surrounded by spiraling thought-bubbles, one hand holding tiny scissors poised near a bright yellow sticky note on his forehead."
+    },
+    "researchQuestions": [
+      "Authoritative definitions and distinctions between rumination and worry (sources to cite).",
+      "Key neuroimaging studies linking default-mode/self-referential networks to rumination (authors/journals to cite).",
+      "Meta-analyses on executive-control deficits and perseverative thinking (to quantify effect sizes).",
+      "Comparative evidence and effect sizes for CBT, metacognitive therapy, mindfulness-based attention training, behavioral activation, and 'worry time' interventions.",
+      "Empirical studies testing intolerance of uncertainty as a causal mechanism (validated scales and longitudinal designs).",
+      "Research on thought-suppression/backfire effects and habit-formation in cognition.",
+      "Physiological research linking stress responses (e.g., cortisol/arousal) to perseverative cognition."
+    ],
+    "researchRiskFlags": [
+      "Do not claim specific neuroimaging 'proof' without citing studies — current literature is nuanced.",
+      "Avoid precise effect-size statements for interventions until meta-analyses are referenced.",
+      "Be cautious about implying a single mechanism causes overthinking for all people — it's multi-factorial.",
+      "Do not present 'one simple trick' as a universal cure; indicate variability and need for professional help in severe cases."
+    ]
+  },
+  "research": {
+    "status": "ready",
+    "research_plan": {
+      "researchQuestions": [
+        {
+          "id": "q1",
+          "priority": "nice_to_have",
+          "question": "According to the Ruminative Responses Scale (Nolen‑Hoeksema et al.), what specific first‑person phrases or item examples best capture the subjective feeling of a thought that 'refuses to stop' (to inform the cold‑open visual cue)?",
+          "sectionId": "s1"
+        },
+        {
+          "id": "q2",
+          "priority": "nice_to_have",
+          "question": "According to qualitative clinical descriptions or summary texts (for example, Nolen‑Hoeksema's reviews), what short, concrete cues (single words or brief phrases) reliably signal 'this is the loop' vs normal reflection (to use later as the sticky‑note text)?",
+          "sectionId": "s1"
+        },
+        {
+          "id": "q3",
+          "priority": "important",
+          "question": "According to the World Health Organization (WHO) or WHO's 'Mental health in the workplace' reports, what is a concise statistic linking common mental‑health problems (like depression/anxiety) to lost productivity or economic cost that supports the 'breaking this matters' line?",
+          "sectionId": "s2"
+        },
+        {
+          "id": "q4",
+          "priority": "critical",
+          "question": "According to longitudinal research summarized by Susan Nolen‑Hoeksema (e.g., her rumination reviews), how does rumination affect the duration or relapse risk of depressive episodes (e.g., percent increase in duration or relapse rates if available)?",
+          "sectionId": "s2"
+        },
+        {
+          "id": "q5",
+          "priority": "important",
+          "question": "According to NICE (UK National Institute for Health and Care Excellence) clinical guidelines for anxiety and depression, which categories of interventions (for example: CBT, mindfulness/MBCT, metacognitive therapy, behavioral activation) are recommended for perseverative negative thinking, and in what short label form should we promise 'what you'll learn' in the core question?",
+          "sectionId": "s3"
+        },
+        {
+          "id": "q6",
+          "priority": "important",
+          "question": "According to a clear review source (for example, Watkins 2008 'Constructive and unconstructive repetitive thought'), what specific list of outcomes or skills should the video promise viewers they will learn (i.e., a short model + handful of usable techniques) so the core question is credible?",
+          "sectionId": "s3"
+        },
+        {
+          "id": "q7",
+          "priority": "critical",
+          "question": "According to Nolen‑Hoeksema's work and the Ruminative Responses Scale, versus Meyer et al.'s Penn State Worry Questionnaire (PSWQ), what are the diagnostic/operational differences between rumination and worry (core features that distinguish them from goal‑directed problem‑solving)?",
+          "sectionId": "s4"
+        },
+        {
+          "id": "q8",
+          "priority": "critical",
+          "question": "According to clinical‑psychology sources (for example, D'Zurilla & Nezu on problem‑solving therapy), which observable cues differentiate productive, time‑limited analytical problem‑solving from repetitive, unproductive rumination/worry?",
+          "sectionId": "s4"
+        },
+        {
+          "id": "q9",
+          "priority": "important",
+          "question": "According to Watkins (2008) or other reviews on repetitive thought, what simple subjective cues (e.g., focus on causes vs solutions, emotional tone, time spent) reliably tell someone 'this is a loop' rather than useful rehearsal?",
+          "sectionId": "s4"
+        },
+        {
+          "id": "q10",
+          "priority": "critical",
+          "question": "According to Raichle et al. (2001) / Buckner et al. (2008) reviews of the Default Mode Network (DMN), which brain regions / networks are implicated in self‑referential, inward‑focused thought that can sustain rumination?",
+          "sectionId": "s5"
+        },
+        {
+          "id": "q11",
+          "priority": "critical",
+          "question": "According to neuroimaging studies linking rumination to network function (for example, Hamilton et al., 2011), what empirical evidence ties increased DMN activity or DMN‑connectivity to perseverative negative thinking (specific findings or effect descriptions)?",
+          "sectionId": "s5"
+        },
+        {
+          "id": "q12",
+          "priority": "critical",
+          "question": "According to Arnsten's work on stress and prefrontal cortex (for example, Arnsten 2009), what precise changes occur in top‑down control systems under stress that make it harder to shift attention away from self‑focused loops?",
+          "sectionId": "s5"
+        },
+        {
+          "id": "q13",
+          "priority": "critical",
+          "question": "According to Daniel Wegner's 'ironic processes' research (e.g., Wegner 1987), what mechanism explains why actively trying to suppress a thought makes it come back more strongly (concise description suitable for a short animation)?",
+          "sectionId": "s6"
+        },
+        {
+          "id": "q14",
+          "priority": "critical",
+          "question": "According to executive‑function research reviews (for example, Diamond 2013 or Arnsten 2009), how do limited control capacity and acute stress quantitatively or mechanistically reduce the ability to 'will' a thought away?",
+          "sectionId": "s6"
+        },
+        {
+          "id": "q15",
+          "priority": "critical",
+          "question": "According to the intolerance of uncertainty model (Buhr & Dugas, 2006) and Borkovec's avoidance model of worry, what short‑term reinforcements (e.g., temporary anxiety reduction) keep worry/rumination self‑sustaining?",
+          "sectionId": "s7"
+        },
+        {
+          "id": "q16",
+          "priority": "important",
+          "question": "According to attentional‑bias meta‑analyses (for example, Bar‑Haim et al., 2007), how strong is the bias toward negative/threat information that feeds perseverative thinking (a one‑sentence, evidence‑based description)?",
+          "sectionId": "s7"
+        },
+        {
+          "id": "q17",
+          "priority": "critical",
+          "question": "According to major meta‑analyses and reviews (for example, Hofmann et al., 2012 for CBT; Normann et al., 2014 for metacognitive therapy; Kuyken et al., 2016 for MBCT), what are the approximate effect sizes or relative strengths of CBT, metacognitive therapy (MCT), and mindfulness/MBCT at reducing rumination or repetitive negative thinking?",
+          "sectionId": "s8"
+        },
+        {
+          "id": "q18",
+          "priority": "critical",
+          "question": "According to Adrian Wells' metacognitive therapy and associated trials (for example Wells 2009 and Normann meta‑analysis), which specific mechanisms (e.g., beliefs about thinking) does MCT target that differ from classic CBT, summarized in one line per technique?",
+          "sectionId": "s8"
+        },
+        {
+          "id": "q19",
+          "priority": "important",
+          "question": "According to randomized trials or protocol descriptions (for example, Borkovec's worry‑postponement techniques and standard CBT homework in 'Mind Over Mood' / Beck & Greenberger), how should someone set up a short, testable version of 'worry time' or a one‑minute attention‑shift so viewers can try it immediately (concrete steps and timing)?",
+          "sectionId": "s8"
+        },
+        {
+          "id": "q20",
+          "priority": "important",
+          "question": "According to Watkins (2008) 'constructive vs unconstructive repetitive thought' or similar reviews, when is repetition actually useful (e.g., rehearsal for performance or planning) and what quick cues reliably distinguish productive rehearsal from maladaptive rumination?",
+          "sectionId": "s9"
+        },
+        {
+          "id": "q21",
+          "priority": "important",
+          "question": "According to brief‑intervention studies on short mindfulness/attention exercises (for example, Zeidan et al., 2010; Creswell 2014), what measurable benefits (if any) can be expected from a single very short practice (under 10 minutes) for reducing state rumination or improving attention—suitable to claim 'what success looks like in a single minute/ten minutes'?",
+          "sectionId": "s10"
+        }
+      ]
+    },
+    "fact_graph": {
+      "facts": [
+        {
+          "id": "f_wbyvijgw",
+          "claim": "Meta-analysis reports that a single-session brief mindfulness exercise (pre-recorded focused attention/open monitoring) can produce measurable effects on executive attention and recognition memory and has been studied for outcomes including rumination (effects vary across studies).",
+          "disputed": false,
+          "sourceIds": [
+            "src_fbs7r45s"
+          ],
+          "chapterIds": [
+            "s10"
+          ],
+          "confidence": "medium",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "A single session of pre‐recorded mindfulness (focused attention and open monitoring)... The effects of a brief mindfulness exercise on executive attention and recognition memory.",
+          "researchQuestionIds": [
+            "q21"
+          ]
+        },
+        {
+          "id": "f_fkm6jtqz",
+          "claim": "Short cues that reliably signal rumination ('the loop') vs normal reflection include: rumination = \"repetitive\", \"negative\", \"abstract/analytical\", \"passive\", \"brooding\"; reflection = \"concrete/experiential\", \"problem-solving\", \"active\", \"reflective\".",
+          "disputed": false,
+          "sourceIds": [
+            "src_vum1bhyu"
+          ],
+          "chapterIds": [
+            "s1"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "\"the maladaptive component of rumination may be its abstract analytical aspects, whereas a more experiential form of self-reflection is not maladaptive.\"",
+          "researchQuestionIds": [
+            "q2"
+          ]
+        },
+        {
+          "id": "f_xv5mhzhi",
+          "claim": "Depression and anxiety cost the global economy US$ 1 trillion each year, predominantly due to reduced productivity. (1 US$ trillion per year)",
+          "disputed": false,
+          "sourceIds": [
+            "src_i7eefe32"
+          ],
+          "chapterIds": [
+            "s2"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "Depression and anxiety cost the global economy US$ 1 trillion each year predominantly from reduced productivity.",
+          "researchQuestionIds": [
+            "q3"
+          ]
+        },
+        {
+          "id": "f_df2anl37",
+          "claim": "Nolen‑Hoeksema (and colleagues) summarize longitudinal research showing rumination more reliably predicts the onset/relapse risk of depression than it predicts episode duration; evidence for longer episodes is mixed and appears to depend on interactions (e.g., with negative cognitive styles).",
+          "disputed": false,
+          "sourceIds": [
+            "src_2sso0hnj"
+          ],
+          "chapterIds": [
+            "s2"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "rumination appears to more consistently predict the onset of depression rather than the duration.",
+          "researchQuestionIds": [
+            "q4"
+          ]
+        },
+        {
+          "id": "f_nkibqwwo",
+          "claim": "Promise viewers a short model distinguishing constructive vs. unconstructive repetitive thought (key principles: valence of content; intrapersonal/situational context; level of construal — abstract vs. concrete) plus a handful of usable techniques they will learn: adopt concrete (vs. abstract) processing, use adaptive problem-solving/anticipatory planning, and apply strategies to support recovery and health-promoting behaviors.",
+          "disputed": false,
+          "sourceIds": [
+            "src_p5wvebfd"
+          ],
+          "chapterIds": [
+            "s3"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "\"The main constructive consequences of RT are (a) recovery from upsetting and traumatic events, (b) adaptive preparation and anticipatory planning, (c) recovery from depression, and (d) uptake of health-promoting behaviors.\"",
+          "researchQuestionIds": [
+            "q6"
+          ]
+        },
+        {
+          "id": "f_09voghi2",
+          "claim": "Clinical literature distinguishes productive analytical problem‑solving from rumination/worry by observable cues: productive problem‑solving is concrete, time‑limited, solution‑focused and leads to plan generation/action; rumination/worry is repetitive, prolonged, uncontrollable, abstract/self‑focused and impairs problem solving.",
+          "disputed": false,
+          "sourceIds": [
+            "src_p5wvebfd"
+          ],
+          "chapterIds": [
+            "s4"
+          ],
+          "confidence": "medium",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "constructive RT is concrete and problem‑focused; unconstructive RT is abstract, evaluative, and repetitive.",
+          "researchQuestionIds": [
+            "q8"
+          ]
+        },
+        {
+          "id": "f_35h97onn",
+          "claim": "Watkins (2008) identifies three simple subjective cues that distinguish an unconstructive 'loop' from useful rehearsal: (1) negative valence of content, (2) the intrapersonal/situational context, and (3) level of construal — abstract (ruminative, non-solution-focused) vs. concrete (problem‑solving) processing.",
+          "disputed": false,
+          "sourceIds": [
+            "src_p5wvebfd"
+          ],
+          "chapterIds": [
+            "s4"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "the valence of thought content, the intrapersonal and situational context, and the level of construal (abstract vs. concrete processing)",
+          "researchQuestionIds": [
+            "q9"
+          ]
+        },
+        {
+          "id": "f_yebqmwur",
+          "claim": "Raichle et al. (2001) and Buckner et al. (2008) identify core Default Mode Network regions—medial prefrontal cortex (mPFC), posterior cingulate/precuneus (PCC), lateral parietal cortex/angular gyrus, and medial temporal lobe (hippocampus)—as supporting self‑referential, inward‑focused thought that can sustain rumination.",
+          "disputed": false,
+          "sourceIds": [
+            "src_bi283mow"
+          ],
+          "chapterIds": [
+            "s5"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "The medial prefrontal subsystem facilitates ... the construction of self-relevant mental simulations. These two subsystems converge on ... the posterior cingulate cortex.",
+          "researchQuestionIds": [
+            "q10"
+          ]
+        },
+        {
+          "id": "f_l1pajfuu",
+          "claim": "Hamilton et al. (2011) state that levels of default-mode network (DMN) activity relative to the task-positive network may represent neural substrates of maladaptive rumination in major depressive disorder (MDD).",
+          "disputed": false,
+          "sourceIds": [
+            "src_jvv98iax"
+          ],
+          "chapterIds": [
+            "s5"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "may represent important neural substrates of maladaptive and adaptive rumination in MDD.",
+          "researchQuestionIds": [
+            "q11"
+          ]
+        },
+        {
+          "id": "f_mvmhw8fg",
+          "claim": "Under stress, high levels of catecholamines and glucocorticoids activate intracellular cAMP–HCN and phosphatidylinositol–PKC signalling that open ion channels and suppress prefrontal cortical neuronal firing and network connectivity, weakening top‑down PFC control (shifting control to the amygdala) and thereby impairing the ability to shift attention away from self‑focused loops.",
+          "disputed": false,
+          "sourceIds": [
+            "src_tmk5z9ak"
+          ],
+          "chapterIds": [
+            "s5"
+          ],
+          "confidence": "high",
+          "scriptUsable": true,
+          "temporalScope": null,
+          "classification": "SUPPORTED_FACT",
+          "disputeSummary": null,
+          "geographicScope": null,
+          "uncertaintyNotes": "high levels of cyclic AMP–HCN channel signalling weaken prefrontal network connectivity, and high levels of phosphatidylinositol–protein kinase C signalling suppress prefrontal firing.",
+          "researchQuestionIds": [
+            "q12"
+          ]
+        }
+      ]
+    },
+    "coverage": {
+      "conflicts": [],
+      "gapQueries": [],
+      "chapterCoverage": [
+        {
+          "note": "1/2 claim(s) verified with a sourced fact.",
+          "status": "moderate",
+          "chapterId": "s1"
+        },
+        {
+          "note": "2/2 claim(s) verified with a sourced fact.",
+          "status": "strong",
+          "chapterId": "s2"
+        },
+        {
+          "note": "1/2 claim(s) verified with a sourced fact.",
+          "status": "moderate",
+          "chapterId": "s3"
+        },
+        {
+          "note": "2/3 claim(s) verified with a sourced fact.",
+          "status": "moderate",
+          "chapterId": "s4"
+        },
+        {
+          "note": "3/3 claim(s) verified with a sourced fact.",
+          "status": "strong",
+          "chapterId": "s5"
+        },
+        {
+          "note": "0/2 claim(s) verified with a sourced fact.",
+          "status": "weak",
+          "chapterId": "s6"
+        },
+        {
+          "note": "0/2 claim(s) verified with a sourced fact.",
+          "status": "weak",
+          "chapterId": "s7"
+        },
+        {
+          "note": "0/3 claim(s) verified with a sourced fact.",
+          "status": "weak",
+          "chapterId": "s8"
+        },
+        {
+          "note": "0/1 claim(s) verified with a sourced fact.",
+          "status": "weak",
+          "chapterId": "s9"
+        },
+        {
+          "note": "1/1 claim(s) verified with a sourced fact.",
+          "status": "strong",
+          "chapterId": "s10"
+        }
+      ],
+      "overallCoverage": "weak",
+      "unansweredQuestionIds": [
+        "q1",
+        "q5",
+        "q7",
+        "q13",
+        "q14",
+        "q15",
+        "q16",
+        "q17",
+        "q18",
+        "q19",
+        "q20"
+      ],
+      "weaklySupportedClaims": [],
+      "staleOrIrrelevantNotes": []
+    },
+    "meta": {
+      "model": "gpt-5-mini",
+      "timings": {
+        "totalMs": 185415,
+        "claimPlanMs": 52064,
+        "liteVerifyMs": 127403
+      },
+      "callLedger": [
+        {
+          "stage": "lite_claim_plan",
+          "inputTokens": 1906,
+          "requestType": "plan",
+          "outputTokens": 5379,
+          "actualToolCalls": 0,
+          "estimatedCostUsd": 0.0112
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q0_0",
+          "inputTokens": 9539,
+          "requestType": "web_search",
+          "outputTokens": 2000,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0264
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q1_1",
+          "inputTokens": 10061,
+          "requestType": "web_search",
+          "outputTokens": 1872,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0263
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q2_2",
+          "inputTokens": 9255,
+          "requestType": "web_search",
+          "outputTokens": 1371,
+          "actualToolCalls": 1,
+          "estimatedCostUsd": 0.0151
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q3_3",
+          "inputTokens": 9481,
+          "requestType": "web_search",
+          "outputTokens": 1933,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0262
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q4_4",
+          "inputTokens": 9462,
+          "requestType": "web_search",
+          "outputTokens": 671,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0237
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q5_5",
+          "inputTokens": 9435,
+          "requestType": "web_search",
+          "outputTokens": 1910,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0262
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q6_6",
+          "inputTokens": 5972,
+          "requestType": "web_search",
+          "outputTokens": 1134,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0238
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q7_7",
+          "inputTokens": 9805,
+          "requestType": "web_search",
+          "outputTokens": 3815,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0301
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q8_8",
+          "inputTokens": 9555,
+          "requestType": "web_search",
+          "outputTokens": 1783,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.026
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q9_9",
+          "inputTokens": 9950,
+          "requestType": "web_search",
+          "outputTokens": 2754,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.028
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q10_10",
+          "inputTokens": 9434,
+          "requestType": "web_search",
+          "outputTokens": 1848,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0261
+        },
+        {
+          "stage": "lite_verify",
+          "queryId": "lite_q11_11",
+          "inputTokens": 9824,
+          "requestType": "web_search",
+          "outputTokens": 1581,
+          "actualToolCalls": 2,
+          "estimatedCostUsd": 0.0256
+        }
+      ],
+      "modelCalls": 13,
+      "totalFacts": 10,
+      "inputTokens": 113679,
+      "outputTokens": 28051,
+      "totalSources": 8,
+      "liteFactCount": 10,
+      "liteVerifyCalls": 20,
+      "reasoningTokens": 25085,
+      "webSearchRequests": 12,
+      "stickmanVerifyDiag": [
+        {
+          "id": "lite_q0_0",
+          "urls": [
+            {
+              "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9543193/",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q1_1",
+          "urls": [
+            {
+              "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2672052/",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q2_2",
+          "urls": [
+            {
+              "url": "https://www.who.int//news-room/fact-sheets/detail/mental-health-at-work/?trk=article-ssr-frontend-pulse_little-text-block",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q3_3",
+          "urls": [
+            {
+              "url": "https://pubmed.ncbi.nlm.nih.gov/26158958/",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q4_4",
+          "urls": [],
+          "liveVerified": 0,
+          "modelCandidates": 0
+        },
+        {
+          "id": "lite_q5_5",
+          "urls": [
+            {
+              "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2672052/",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q6_6",
+          "urls": [],
+          "liveVerified": 0,
+          "modelCandidates": 0
+        },
+        {
+          "id": "lite_q7_7",
+          "urls": [
+            {
+              "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2672052/",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q8_8",
+          "urls": [
+            {
+              "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2672052/",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q9_9",
+          "urls": [
+            {
+              "url": "https://sites.harvard.edu/schacter-memory/files/2022/09/i_The-Brain_s-Default-Network__i_.pdf",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q10_10",
+          "urls": [
+            {
+              "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3144981/",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        },
+        {
+          "id": "lite_q11_11",
+          "urls": [
+            {
+              "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2907136/?trk=article-ssr-frontend-pulse_little-text-block",
+              "live": true
+            }
+          ],
+          "liveVerified": 1,
+          "modelCandidates": 1
+        }
+      ],
+      "liteUnansweredRatio": 0.524,
+      "liteGapSkippedReason": "BUDGET_EXHAUSTED",
+      "estimatedModelCostUsd": 0.0845,
+      "estimatedTotalCostUsd": 0.3145,
+      "searchBudgetExhausted": true,
+      "estimatedSearchCostUsd": 0.23,
+      "actualWebSearchToolCalls": 23
+    },
+    "detail": null
+  }
+}

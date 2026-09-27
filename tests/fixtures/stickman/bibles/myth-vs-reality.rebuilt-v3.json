@@ -1,0 +1,382 @@
+{
+  "rebuiltAt": "2026-09-26T22:51:56.642Z",
+  "productionBibleId": "48365d66-2764-470b-8ed0-6f15ca26e2b4",
+  "stats": {
+    "llmCalls": 2,
+    "repairCalls": 1,
+    "inputTokens": 12339,
+    "outputTokens": 10282,
+    "estimatedModelCostUsd": 0.0236,
+    "latencyMs": 72896
+  },
+  "warnings": [
+    "PROMPT_BLOCK_NOT_STANDALONE:viewer_viking",
+    "PROMPT_BLOCK_NOT_STANDALONE:viewer_modern",
+    "PROMPT_BLOCK_NOT_STANDALONE:battlefield_hillside",
+    "PROMPT_BLOCK_NOT_STANDALONE:museum_gallery"
+  ],
+  "bible": {
+    "productionBibleVersion": 1,
+    "recipeId": "stickman_doodle_explainer",
+    "recipeVersion": "STICKMAN_DOODLE_EXPLAINER_V1",
+    "visualPremise": "A flat 2D stickman‑doodle explainer that alternates between an imagined Viking charge, close archaeological evidence, and historical staging/illustration moments — all rendered as simple outlined figures and objects set in clear, single‑layer scenes.",
+    "visualTone": "matter-of-fact with punctuated theatrical flourishes: grounded, slightly wry, and occasionally dramatic when recreating the popular myth image.",
+    "styleContract": {
+      "medium": "Flat-color 2D doodle/stickman illustration",
+      "illustrationStyle": "Simplified stickman/doodle explainer construction — circle heads, dot eyes, stick limbs, mitten hands — never a detailed or semi-realistic character",
+      "lineLanguage": "Uniform thin, clean black outlines of identical weight everywhere; no sketchiness, no variable line weight, no cross-hatching",
+      "shapeLanguage": "Simple geometric primitives — circles, rounded rectangles, straight or gently curved lines — never intricate or organic detail",
+      "detailLevel": "Minimal — enough to read instantly at a glance, never busy or cluttered",
+      "shadingPolicy": "None — flat solid fills only, no gradients, no soft shadow rendering, no highlights",
+      "texturePolicy": "None — flat, texture-free surfaces throughout",
+      "dimensionality": "2D flat, no 3D rendering, no depth shading, no perspective distortion beyond simple flat-layer staging",
+      "realismLevel": "Non-realistic, iconographic — identity is carried by a handful of discrete flat features, never facial realism",
+      "backgroundStrategy": "2-3 flat color layers (background/midground/foreground), never a fully rendered or photographic environment",
+      "forbiddenStyleTraits": [
+        "photorealistic or photographic rendering",
+        "3D render or CGI look",
+        "painterly or watercolor texture",
+        "anime or manga stylization",
+        "pencil-sketch or hand-drawn sketchiness",
+        "cel-shading with rendered shadows",
+        "gradient mesh or airbrushed shading",
+        "drop shadows or glow/bloom effects",
+        "realistic anatomy, fingers, or necks on stickman characters"
+      ],
+      "colorStrategy": "Use muted, desaturated earth tones to signal historical/archaeological reality; reserve saturated stage colors (maroon, gold, fire orange) solely for theatrical/mythic recreations so viewers immediately read those as dramatized rather than factual.",
+      "lightingStrategy": "Flat, single‑plane lighting throughout. Use neutral soft lighting for museum and archaeological shots; cool daylight for outdoor scenes; a single warm gold spotlight plane for theater/mythic recreations. No gradients or shading beyond the single flat color planes."
+    },
+    "palette": {
+      "primaryColors": [
+        "muted ochre",
+        "slate grey",
+        "mud brown",
+        "desaturated green"
+      ],
+      "supportingColors": [
+        "steel grey",
+        "bronze",
+        "off‑white",
+        "deep maroon",
+        "stage gold",
+        "fire orange"
+      ],
+      "environmentPaletteRules": "Outdoor historic scenes: muted ochre, slate grey, desaturated green and mud brown. Museum/gallery: off‑white, neutral light grey with bronze accent for objects. Theater: deep maroon and stage gold accent. Objects: use steel grey for iron, bronze for Bronze Age, and bone/beige for horn suggestions when illustrating hypothetical organic components.",
+      "contrastRules": "Objects must contrast with their pedestal/background by at least one supporting color (e.g., bronze object on off‑white pedestal). Mythic horned helmet shots may use fire orange or deep maroon backgrounds for theatrical contrast.",
+      "colorApproach": "FULL_COLOR",
+      "monochromeJustification": ""
+    },
+    "continuityMode": "NONE",
+    "hero": {
+      "exists": false,
+      "subjectType": "none",
+      "semanticIdentity": "",
+      "canonicalAppearance": "",
+      "headFaceConstruction": "",
+      "bodyConstruction": "",
+      "skinTone": "",
+      "hair": "",
+      "outfit": "",
+      "accessories": [],
+      "persistentIdentifyingFeatures": [],
+      "bodyProportions": "",
+      "emotionalExpressionLanguage": "",
+      "forbiddenMutations": [],
+      "reasoning": "The episode does not follow a single human protagonist through a throughline. Instead it repeatedly stages a handful of distinct contexts (an imagined Viking combat moment, archaeological evidence, Bronze Age ritual objects, and 19th‑century theater/art.) The narration places the viewer into multiple eras, so continuity is carried by consistent role archetypes (viewer avatars and a few recurring archetypal figures) rather than a single hero."
+    },
+    "recurringCharacters": [],
+    "roleArchetypes": [
+      {
+        "identity": {
+          "displayName": "viewer_viking",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "short-cropped dark brown hair",
+          "outfit": "a plain muted ochre wool tunic, slate-grey trousers, a dark brown leather belt, and a round wooden shield strapped to the left arm",
+          "outfitShort": "muted ochre tunic and shield",
+          "sleeves": "long muted ochre wool sleeves",
+          "build": "average adult stickman proportions",
+          "signature": "a round wooden shield with a single dark brown boss"
+        },
+        "outfitVariants": [],
+        "id": "viewer_viking",
+        "role": "the viewer placed in an imagined Viking battle",
+        "canonicalAppearance": "A second‑person avatar for Viking‑era imaginings: a stickman with a light warm beige circular head, short‑cropped dark brown hair, wearing a plain muted ochre wool tunic, slate‑grey trousers, a dark brown leather belt, long muted ochre wool sleeves, and carrying a round wooden shield with a dark brown boss strapped to the left arm. No facial hair or glasses.",
+        "usedFor": "Every scene that places 'you' into the Viking Age (the opening charge, any imagined battlefield shots)."
+      },
+      {
+        "identity": {
+          "displayName": "viewer_modern",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "short-cropped dark brown hair",
+          "outfit": "a plain slate-blue T-shirt and dark jeans, no jacket, hands empty or holding a modern lunchbox or postcard in relevant shots",
+          "outfitShort": "slate-blue T-shirt",
+          "sleeves": "short slate-blue sleeves",
+          "build": "average adult stickman proportions",
+          "signature": "a modern lunchbox or a postcard in hand when the narration references consumer objects"
+        },
+        "outfitVariants": [],
+        "id": "viewer_modern",
+        "role": "the present‑day viewer used for museum, postcard, and mascot/consumer references",
+        "canonicalAppearance": "A second‑person avatar for present day: a stickman with a light warm beige circular head, short‑cropped dark brown hair, wearing a plain slate-blue T-shirt and dark jeans, short slate-blue sleeves, average stickman proportions. When relevant the figure may hold a modern lunchbox or a postcard. No facial hair or glasses.",
+        "usedFor": "Every present‑day 'you' line (museum visitor, seeing a postcard, seeing a mascot or lunchbox)."
+      },
+      {
+        "identity": {
+          "displayName": "viking_warrior_myth",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "long straight dark brown hair",
+          "outfit": "a fur‑trimmed dark brown cloak over a muted ochre tunic, slate‑grey trousers, leather boots",
+          "outfitShort": "fur cloak and tunic",
+          "sleeves": "long muted ochre wool sleeves",
+          "build": "muscular adult stickman proportions",
+          "signature": "a steel grey rounded helmet with two large stylized curved horns (one on each side) sweeping upward"
+        },
+        "outfitVariants": [],
+        "id": "viking_warrior_myth",
+        "role": "the iconic, theatrical 'horned Viking' image that the episode shows as the myth to be debunked",
+        "canonicalAppearance": "A stickman representing the popular myth of a Viking: light warm beige head, long straight dark brown hair, fur‑trimmed dark brown cloak over a muted ochre tunic and slate‑grey trousers, leather boots, and a steel grey rounded helmet fitted with two large stylized curved horns rising outward and upward from the sides. This is a theatrical, incorrect visual used only when the narration describes or shows the myth image.",
+        "usedFor": "All scenes that explicitly recreate or show the incorrect myth image (movie poster, Halloween costume, mascot references)."
+      },
+      {
+        "identity": {
+          "displayName": "bronze_age_priest",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "shoulder‑length light brown hair",
+          "outfit": "a decorative thin white tunic with simple bronze armbands and a cloth sash",
+          "outfitShort": "white tunic with bronze armbands",
+          "sleeves": "short white tunic sleeves",
+          "build": "slender adult stickman proportions",
+          "signature": "a thin decorative bronze helmet fitted with long gently curving horn attachments (delicate, decorative, not reinforced)"
+        },
+        "outfitVariants": [],
+        "id": "bronze_age_priest",
+        "role": "a reconstructed figure used when explaining the Veksø / Nordic Bronze Age ceremonial helmets",
+        "canonicalAppearance": "A stickman representing a Bronze Age ritual wearer: light warm beige head, shoulder‑length light brown hair, a decorative thin white tunic with bronze armbands and a cloth sash, short white sleeves, slender proportions, and wearing a thin decorative bronze helmet with long, gently curving horn attachments and small round disc tips. The helmet looks delicate and ceremonial, not combat‑grade.",
+        "usedFor": "Scenes that show the Bronze Age Veksø helmets in their likely ritual context."
+      },
+      {
+        "identity": {
+          "displayName": "19th_century_costume_designer",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "short neat dark brown hair",
+          "outfit": "a dark charcoal waistcoat over a white shirt and a narrow black cravat",
+          "outfitShort": "charcoal waistcoat and cravat",
+          "sleeves": "white shirt sleeves rolled to the forearm",
+          "build": "average adult stickman proportions",
+          "signature": "holding a rolled costume sketch or a dramatic horned stage helm prop"
+        },
+        "outfitVariants": [],
+        "id": "19th_century_costume_designer",
+        "role": "the theatrical source figure when the script explains Wagnerian stage costume and 19th‑century Romantic staging",
+        "canonicalAppearance": "A stickman wearing a dark charcoal waistcoat over a white shirt and narrow black cravat, short neat dark brown hair, average proportions, often shown holding a rolled costume sketch or a dramatic horned stage helm prop. No facial hair or glasses.",
+        "usedFor": "Scenes describing Wagner/19th‑century theater and costume history."
+      }
+    ],
+    "world": {
+      "settingFamilies": [
+        "battlefield_hillside",
+        "museum_gallery",
+        "theater_stage",
+        "bronze_age_bog",
+        "archaeological_site"
+      ],
+      "architecture": "Minimal, functional: one flat background plane per setting with a single midground element and a small foreground prop. No detailed period architecture beyond obvious, simple cues (timber longship silhouette for Viking scenes, museum pedestals and glass case for gallery).",
+      "geography": "Northern European temperate landscapes for outdoor scenes; neutral indoor galleries and proscenium theater interiors for indoor scenes.",
+      "era": "Mostly Viking Age (circa 8th–11th centuries) in imagined scenes, Nordic Bronze Age for ritual object context, 19th century for theater/illustration context, and contemporary present day for museum/consumer references.",
+      "recurringEnvironmentConstruction": "2‑3 flat layers: single‑color sky (top), a midground band that defines terrain or room (middle), and a small foreground strip with a signature prop or figure (bottom). Scenes with objects place them on a neutral pedestal foreground.",
+      "environmentalColorRules": "Outdoor historic scenes use muted earth tones and cool desaturated greens; museum/gallery scenes use neutral light greys and off‑white; theater stage scenes use theatrical deep red and gold accent colors; close object shots use contrasting neutral background to make the object silhouette clear.",
+      "weatherTimeConventions": "Default daylight for outdoor scenes; warm focused stage lighting (deep warm spotlight) for theater; soft neutral gallery lighting for museum shots.",
+      "historicalScientificConstraints": [
+        "Viking‑age battlefield scenes may include a round wooden shield, iron helmets (plain dome), mail fragments — do not show horned battle helmets as archaeological fact.",
+        "Bronze Age ceremonial helmets are thin bronze and decorative; they should look fragile, not combat‑grade."
+      ],
+      "settingBlocks": [
+        {
+          "family": "battlefield_hillside",
+          "name": "a windswept hillside shieldwall",
+          "variants": [
+            {
+              "name": "default",
+              "background": "a pale cool sky with a low, desaturated green midground ridge",
+              "midground": "a band of muted green grass with a few low rocks and a silhouette of multiple shields leaned at an angle",
+              "foreground": "the viewer_viking avatar charging, foreground dirt strip and a single dark brown round wooden shield edge",
+              "palette": "desaturated green, muted ochre, slate grey",
+              "signatureObjects": "round wooden shields with dark brown bosses, simple iron helmet silhouettes",
+              "lighting": "flat cool daylight"
+            },
+            {
+              "name": "dramatic_mythic",
+              "background": "a smoky orange sky gradient (single flat orange plane) to suggest firelight",
+              "midground": "silhouetted shieldwall and low flames indicated by orange flat shapes",
+              "foreground": "the viking_warrior_myth helmet and horns in the foreground catching the orange plane",
+              "palette": "fire orange, deep red, steel grey",
+              "signatureObjects": "large stylized horned helmet, shields",
+              "lighting": "flat theatrical warm highlight (single flat color)"
+            }
+          ]
+        },
+        {
+          "family": "museum_gallery",
+          "name": "a museum gallery with display cases",
+          "variants": [
+            {
+              "name": "default",
+              "background": "a warm off‑white wall with a simple placard strip",
+              "midground": "a glass display case on a neutral light grey pedestal",
+              "foreground": "viewer_modern looking at the object with a small label under the pedestal",
+              "palette": "off‑white, neutral light grey, muted ochre accent",
+              "signatureObjects": "pedestal, placard, small transparent glass case",
+              "lighting": "soft neutral gallery lighting (single flat light grey)"
+            }
+          ]
+        },
+        {
+          "family": "theater_stage",
+          "name": "a 19th‑century proscenium stage",
+          "variants": [
+            {
+              "name": "default",
+              "background": "deep maroon curtain plane",
+              "midground": "a flat stage floor in dark brown with a single spotlight circle in gold",
+              "foreground": "the 19th_century_costume_designer figure gesturing to a dramatic horned stage helm prop on a stand",
+              "palette": "deep maroon, stage gold, dark brown",
+              "signatureObjects": "curtain, spotlight circle, exaggerated stage helm prop",
+              "lighting": "flat theatrical spotlight (single flat gold patch)"
+            }
+          ]
+        },
+        {
+          "family": "bronze_age_bog",
+          "name": "a shallow bog and excavation find",
+          "variants": [
+            {
+              "name": "default",
+              "background": "pale muted sky and low reeds",
+              "midground": "a muddy bog surface with a shallow pool and reed silhouettes",
+              "foreground": "a small exposed bronze helmet on a raised neutral stone slab for clarity",
+              "palette": "mud brown, reed green, bronze highlight",
+              "signatureObjects": "thin bronze helmet with curving horns, reed plants",
+              "lighting": "flat cool overcast daylight"
+            }
+          ]
+        },
+        {
+          "family": "archaeological_site",
+          "name": "an open archaeological trench",
+          "variants": [
+            {
+              "name": "default",
+              "background": "pale sky with a simple horizon and a few excavation tent silhouettes",
+              "midground": "a rectangular dug trench with labelled small finds trays",
+              "foreground": "a plain iron helmet fragment on a measuring tag in the foreground",
+              "palette": "earth brown, slate grey, off‑white tags",
+              "signatureObjects": "measuring tag, small finds tray, iron helmet fragment",
+              "lighting": "flat daylight"
+            }
+          ]
+        }
+      ]
+    },
+    "objectLanguage": [
+      {
+        "id": "gjermundbu_helmet",
+        "canonicalDescription": "The Gjermundbu helmet: a late 10th‑century Viking‑age iron helmet with a rounded iron cap and a spectacle‑shaped guard across the eyes and nose; functional, robust, and showing no attachments or rivet patterns for decorative horns.",
+        "promptBlock": "The Gjermundbu helmet: a rounded iron helmet with a spectacled eye/nose guard, plain dome, and no horn attachments.",
+        "whyRecurring": "Used as the primary archaeological counterexample to the horned‑helmet myth; referenced whenever the script explains actual Viking‑age helmet evidence."
+      },
+      {
+        "id": "vekso_helmets",
+        "canonicalDescription": "The Veksø helmets: a pair of thin decorative bronze helmets from the Nordic Bronze Age fitted with long, gently curving bronze horn attachments tipped with small disc terminals; clearly ceremonial and not structurally reinforced for combat.",
+        "promptBlock": "The Veksø helmets: thin decorative bronze helmets each fitted with long gently curving bronze horns tipped with small round discs, appearing delicate and ceremonial.",
+        "whyRecurring": "These Bronze Age ceremonial horned pieces are the real archaeological objects that later got conflated with Viking imagery; they are central to explaining the myth's origin."
+      },
+      {
+        "id": "horned_stage_helm_prop",
+        "canonicalDescription": "A theatrical horned stage helmet: an oversized, stylized helm prop with exaggerated curved horns, made for visibility on a 19th‑century stage and not functional as armor.",
+        "promptBlock": "A theatrical horned stage helmet prop: oversized steel grey helm with exaggerated curved horns designed for stage spectacle rather than combat.",
+        "whyRecurring": "Represents Wagnerian and 19th‑century theatrical sources that propagated the horned image; used in theater/stage scenes and myth illustrations."
+      },
+      {
+        "id": "plain_iron_helmet_fragment",
+        "canonicalDescription": "A generic Viking‑age iron helmet fragment: a dark iron curved plate showing rivet edges and an intact nasal or eye guard fragment, plain and utilitarian in construction.",
+        "promptBlock": "A plain iron helmet fragment: curved dark iron plate with rivet edges and a simple nose/eye guard fragment, utilitarian and unornamented.",
+        "whyRecurring": "Used in archaeological trench and museum closeups to show the actual material evidence available from the Viking Age."
+      }
+    ],
+    "graphicLanguage": {
+      "backgroundBehavior": "Clean, uncluttered flat backgrounds (often light/white or the episode's own environment palette) — never assumed to be white-only; the Production Bible's graphic language decides per episode",
+      "lineStyle": "The exact same line weight and fill language as narrative scenes — a graphic must never look like a different visual universe from the story frames around it",
+      "arrowsConnectors": "Simple flat-filled arrow shapes and thin connector lines, same line language as everything else",
+      "characterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+      "whitespaceBehavior": "Generous but not empty — whitespace isolates the one idea a graphic communicates, it is never filler",
+      "colorUse": "Uses this episode's own palette (muted ochre, slate grey, mud brown, desaturated green) as flat fills, consistent with narrative scenes — never a separate infographic color scheme.",
+      "diagramConventions": "Timelines and comparisons use flat horizontal bars with three labeled nodes: 'Nordic Bronze Age (~1000 BCE)', 'Viking Age (~800–1066 CE)', '19th Century Romanticism (1800s)'. Bars are colored muted ochre, slate grey, and deep maroon respectively.",
+      "comparisonLayouts": "Side‑by‑side object comparisons use identical scale silhouettes on neutral pedestals: left = Veksø bronze helm silhouette labeled 'ceremonial', right = Gjermundbu iron helm silhouette labeled 'combat'.",
+      "timelineConventions": "Simple single‑row timeline with labeled ticks and short captions; avoid decorative icons except small silhouette helmet glyphs.",
+      "mapConventions": "When showing find locations, use a simple outline of Scandinavia in desaturated green with a single flat dot and label; no topographic detail.",
+      "symbolicMetaphorLanguage": "Use the theatrical horn image as a visual 'patch' that is shown being pasted onto a plain iron helmet in a short animated metaphor to demonstrate cultural grafting.",
+      "overlayTextBehavior": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+    },
+    "cameraLanguage": {
+      "allowedShotFamilies": [
+        "WIDE",
+        "MEDIUM",
+        "CLOSE_UP",
+        "OVERHEAD",
+        "POV",
+        "SPLIT_SCREEN",
+        "CUTAWAY",
+        "DIAGRAM_LAYOUT"
+      ],
+      "simplicityReadabilityRules": "Every frame must read clearly at thumbnail size — avoid busy multi-subject compositions unless the beat's own visual concept specifically requires comparing multiple subjects at once",
+      "framingConventions": "Establishing shots use medium wide framing showing context; mythic recreations use tight foreground helmet closeups; evidence shots use simple centered closeups of objects on pedestals; diagrams use flat orthographic framing.",
+      "visualHierarchyRules": "When myth vs. evidence are compared, place the myth image on the left with saturated theatrical colors and the archaeological evidence on the right with muted, neutral colors and a label; object scale should be identical for direct comparison.",
+      "whenEstablishingVsCloseupVsDiagram": "Start with an establishing imagined Viking charge (wide) then cut to a myth helmet closeup (tight) before switching to an archaeological object closeup (tight) and finally to a timeline diagram (flat orthographic)."
+    },
+    "textPolicy": {
+      "providerGeneratedTextDefault": "OFF",
+      "exactTextHandledDownstream": true,
+      "exceptionsPolicy": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+    },
+    "continuityRules": {
+      "neverDrift": [
+        "the recipe's own universal style (flat 2D, uniform outline, flat fills, no shading/gradients/texture)",
+        "Never depict a Viking‑age archaeological iron helmet with attached horns as factual evidence.",
+        "Never show organic horn/antler attachments surviving intact on Viking‑age helmets — if organic attachments are mentioned, depict them as hypothetical dashed/ghost shapes or labeled as 'hypothetical (would not survive)'.",
+        "Viewer avatars must match their canonical appearance exactly when used (viewer_viking vs viewer_modern)."
+      ],
+      "allowedToVary": [
+        "Mythic/rendered viking_warrior_myth may be stylized (larger horns, more fur) for theatrical effect, but must remain visually distinct from archaeological depictions.",
+        "Museum display variants may include or omit glass case depending on shot size but must retain neutral pedestal and placard."
+      ],
+      "episodeWideConsistencyRules": [
+        "Use the Gjermundbu helmet canonical promptBlock whenever referring to real Viking‑age helmet evidence.",
+        "Use the Veksø helmets canonical promptBlock for Bronze Age horned examples.",
+        "Use the theatrical horned stage helmet canonical promptBlock for 19th‑century theatrical references."
+      ]
+    },
+    "factualVisualConstraints": [
+      "No confirmed Viking‑age helmets show horn attachments; any combat helmet shown as archaeological evidence must be plain iron dome with spectacle or nasal guard (use Gjermundbu promptBlock or plain_iron_helmet_fragment).",
+      "Veksø helmets date to the Nordic Bronze Age and must be depicted as thin bronze ceremonial objects, never armored for battle."
+    ],
+    "negativeRules": [
+      "accidental 3D render or CGI look",
+      "photorealistic drift away from flat 2D",
+      "painterly, sketchy, or textured drift away from flat solid fills",
+      "random or unrequested generated typography",
+      "stickman construction mutating into a more detailed/realistic character mid-episode",
+      "shading, gradients, or texture appearing despite the flat-fill policy",
+      "Do not depict Vikings in authentic archaeological scenes wearing the mythic horned helmets.",
+      "Do not present the theatrical horned helmet as archaeological evidence in museum/archaeological shots.",
+      "Do not mix era signifiers on a single figure (e.g., no Viking with a 19th‑century cravat)."
+    ],
+    "projectId": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae",
+    "generationProfileId": "9c0f897e-a6e6-40ca-8766-300abeec366b",
+    "scriptVersionId": "b3669868-54a6-4814-bd61-323efed108b0"
+  }
+}

@@ -32,24 +32,17 @@ export const FRUIT_IMAGE_MODEL_TO_TOOLKEY = {
 };
 
 // Three video tiers, gated by plan — same pattern as Clay Rescue. All three
-// now include audio. Video credits below are tuned so the BLENDED per-scene
-// margin (1 image @ 2cr/$0.010423 + 1 video clip) lands at ~50%, not just the
-// video's own margin — the image's higher margin (~74%) pulls the combined
-// number up, so video-only credits sit a bit below a flat 2x cost markup.
+// include audio. Prices are NOT defined here: the server prices every job
+// from public.tool_prices, and the UI quotes that same price through
+// useToolPriceQuotes (see buildFruitPriceItems below).
 export const FRUIT_VIDEO_MODELS = {
   "fruit-v2": {
     id: "fruit-v2",
     label: "V2",
     tag: "Cheapest",
     description: "480p — includes audio",
-    toolKey: "video:seedance15pro",
+    toolKey: "video:fruit-v2",   // Fruit-only key → Seedance 1.5 Pro; priced server-side (tool_prices)
     duration: 5,
-    // ⚠️ Cost is an ESTIMATE, not measured — no-sound 480p was $0.0607656/5s
-    // (measured). Scaled by this same model's 720p sound/no-sound ratio
-    // (5.25/2.5 ≈ 2.1x) to ~$0.1276/5s. 12cr → blended per-scene margin ~50.7%.
-    // Please run one real 480p+audio Seedance 1.5 Pro test and report the
-    // invoice cost so this can be corrected like the others were.
-    credits: 12,
     withSound: true,
     dims: {
       "9:16": { width: 496, height: 864 },
@@ -62,9 +55,8 @@ export const FRUIT_VIDEO_MODELS = {
     label: "V3",
     tag: "Premium",
     description: "720p — includes audio",
-    toolKey: "video:viduq3turbo720",
+    toolKey: "video:fruit-v3",   // Fruit-only key → Vidu Q3 Turbo 720p; priced server-side (tool_prices)
     duration: 5,
-    credits: 17,            // measured $0.17875/5s → blended per-scene margin ~50.2%
     withSound: true,
     dims: {
       "9:16": { width: 720, height: 1280 },
@@ -77,9 +69,8 @@ export const FRUIT_VIDEO_MODELS = {
     label: "V4",
     tag: "Professional",
     description: "Full resolution — includes audio",
-    toolKey: "video:fruitveo31lite",
+    toolKey: "video:fruit-v4",   // Fruit-only key → Veo 3.1 Lite; priced server-side (tool_prices)
     duration: 6,
-    credits: 29,            // $0.30/6s clip cost → blended per-scene margin ~49.9%
     withSound: true,
     dims: {
       "9:16": { width: 1080, height: 1920 },
@@ -146,13 +137,44 @@ const FRUIT_MODEL_DIMS = {
   },
 };
 
-export function getFruitV2CreditsPerImage(selectedCharacters) {
-  const count = Array.isArray(selectedCharacters) ? selectedCharacters.length : 0;
-  return count >= 3 ? 3 : 2;
+/**
+ * Price quote items for useToolPriceQuotes: one scene/portrait image plus one
+ * clip per video tier, at the chosen aspect ratio. Built from the exact job
+ * shapes generateSceneImage / generateCharacterPortrait / animateClip create,
+ * so the quoted price is the price the server charges.
+ *   ids: "image", "clip:fruit-v2", "clip:fruit-v3", "clip:fruit-v4"
+ */
+export function buildFruitPriceItems(sceneAspect = "9:16", imageModelId = "zyvo-v2") {
+  const imageDims = (FRUIT_MODEL_DIMS[imageModelId] ?? FRUIT_MODEL_DIMS["zyvo-v2"])[sceneAspect]
+    ?? FRUIT_MODEL_DIMS["zyvo-v2"]["9:16"];
+  return [
+    {
+      id: "image",
+      tool_key: FRUIT_IMAGE_MODEL_TO_TOOLKEY[imageModelId] ?? "image:fruit-v2",
+      input: { width: imageDims.width, height: imageDims.height },
+    },
+    ...Object.values(FRUIT_VIDEO_MODELS).map((model) => {
+      const dims = model.dims[sceneAspect] ?? model.dims["9:16"];
+      return {
+        id: `clip:${model.id}`,
+        tool_key: model.toolKey,
+        input: { durationSec: model.duration, withSound: model.withSound, width: dims.width, height: dims.height },
+      };
+    }),
+  ];
 }
 
-export function getFruitImageCreditsPerImage(modelId, selectedCharacters) {
-  return getFruitV2CreditsPerImage(selectedCharacters);
+// Each cast member gets one solo reference portrait (an image job) before
+// scenes start. Cast size is only known after planning, so prices budget the
+// worst case: 3 characters (cheating stories add a 3rd).
+export const FRUIT_PORTRAIT_BUDGET = 3;
+
+/** Full story (scenes × (image + clip) + portrait budget) from buildFruitPriceItems quotes; null until loaded. */
+export function calcFruitStoryCredits(sceneCount, videoModelId = DEFAULT_FRUIT_VIDEO_MODEL, prices = {}) {
+  const image = prices.image;
+  const clip = prices[`clip:${videoModelId}`];
+  if (image == null || clip == null) return null;
+  return sceneCount * (image + clip) + FRUIT_PORTRAIT_BUDGET * image;
 }
 
 const STORY_LENGTH_DURATION_SEC = {
@@ -1844,7 +1866,6 @@ export async function generateCharacterPortrait({ member, form }) {
   const aspect  = form.sceneAspect ?? "9:16";
   const dimMap  = FRUIT_MODEL_DIMS[imageToolKey] ?? FRUIT_MODEL_DIMS["zyvo-v2"];
   const dims    = dimMap[aspect] ?? dimMap["9:16"];
-  const creditsPerImage = getFruitImageCreditsPerImage(imageToolKey, []);
   const isFruitImageModel = toolKey === "image:fruit-v2";
 
   const job = await createImageJobSimple({
@@ -1856,7 +1877,6 @@ export async function generateCharacterPortrait({ member, form }) {
     project_id:   form.project_id ?? null,
     refImages:    [],
     expectedRefSlotCount: 0,
-    chargeCreditsOverride: creditsPerImage,
     providerHint: {
       engine:   "runware",
       mode:     "t2i",
@@ -1885,7 +1905,6 @@ export async function generateSceneImage({
   const aspect   = form.sceneAspect ?? "9:16";
   const dimMap   = FRUIT_MODEL_DIMS[imageToolKey] ?? FRUIT_MODEL_DIMS["zyvo-v2"];
   const dims     = dimMap[aspect] ?? dimMap["9:16"];
-  const creditsPerImage = getFruitImageCreditsPerImage(imageToolKey, form.selectedCharacters);
   const quality = "low";
 
   const { refSlots, referenceImages } = buildSceneRefSlots({
@@ -1988,7 +2007,6 @@ export async function generateSceneImage({
     sceneNumber:          scene.sceneNumber,
     characterIdsInScene:  scene.characterIdsInScene,
     model:                imageToolKey,
-    creditsPerImage,
     refCount:             referenceImages.length,
     refUrls:              referenceImages.map((u) => u.slice(0, 80)),
   });
@@ -1998,7 +2016,6 @@ export async function generateSceneImage({
     sceneNumber: scene.sceneNumber,
     title: scene.title,
     model: imageToolKey,
-    creditsPerImage,
     refCount: referenceImages.length,
   });
 
@@ -2014,7 +2031,6 @@ export async function generateSceneImage({
     project_id:   form.project_id ?? null,
     refImages:    referenceImages,
     expectedRefSlotCount: refSlots.length,
-    chargeCreditsOverride: creditsPerImage,
     providerHint: {
       engine:   "runware",
       mode:     "t2i",
@@ -2145,7 +2161,7 @@ export async function animateClip({ clip, startScene, endScene, form, videoModel
 
   const model       = FRUIT_VIDEO_MODELS[videoModel] ?? FRUIT_VIDEO_MODELS[DEFAULT_FRUIT_VIDEO_MODEL];
   const toolKey     = model.toolKey;
-  const isVeo       = toolKey === "video:fruitveo31lite";
+  const isVeo       = model.id === "fruit-v4";
   const withSound   = model.withSound;
   const aspect      = form.sceneAspect ?? "9:16";
   const dims        = model.dims[aspect] ?? model.dims["9:16"];
@@ -2170,7 +2186,6 @@ export async function animateClip({ clip, startScene, endScene, form, videoModel
     height:            dims.height,
     durationSec,
     initImageUrls,
-    calculatedCredits: model.credits,
     project_id:        form.project_id ?? null,
     withSound,
   });

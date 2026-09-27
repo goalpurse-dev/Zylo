@@ -1,0 +1,167 @@
+{
+  "total": 136,
+  "available": 126,
+  "verdicts": {
+    "BAD": 89,
+    "GOOD": 37,
+    "NO_OUTPUT": 10
+  },
+  "valid_ratio": 123,
+  "strict_exact_16_9": 22,
+  "issues": {
+    "SEMANTIC_MISMATCH": 40,
+    "WRONG_ACTION": 9,
+    "EXACT_DUPLICATE_NEIGHBOR": 8,
+    "EXCESSIVE_SAME_SETUP_RUN": 50,
+    "LONG_DUPLICATE_RUN": 40,
+    "TEXT_GIBBERISH_MAJOR": 18,
+    "CAMERA_STAGNATION": 34,
+    "NEAR_DUPLICATE_NEIGHBOR": 22,
+    "POSE_STAGNATION": 34,
+    "FAILED_VISUAL_DELTA": 14,
+    "BAD_CROP": 9,
+    "TEXT_GIBBERISH_MINOR": 10,
+    "CHARACTER_DUPLICATION": 14,
+    "EXTRA_CHARACTER": 6,
+    "MULTI_SCENE_COMPOSITION_LEAK": 6,
+    "REFERENCE_SHEET_VISIBLE": 2,
+    "ASPECT_RATIO_INVALID": 3,
+    "PORTRAIT_OUTPUT": 2,
+    "SUBJECT_CROPPED_OUT": 4,
+    "TEXT_CLIPPING": 12,
+    "IDENTITY_DRIFT": 28,
+    "WRONG_LOCATION": 3,
+    "WRONG_STYLE": 2,
+    "LIGHTING_ONLY_EDIT": 2,
+    "MISSING_REQUIRED_OBJECT": 12,
+    "BAD_GRAPHIC": 28,
+    "GRAPHIC_SEMANTIC_MISMATCH": 28,
+    "GRAPHIC_TOO_TEXT_HEAVY": 2,
+    "CORRUPTED_IMAGE": 10,
+    "TEXT_OVERFLOW": 10,
+    "BLANK_GRAPHIC": 6,
+    "COMPOSITION_AWKWARD": 3,
+    "MISSING_REQUIRED_TEXT": 6,
+    "WRONG_OBJECT": 3,
+    "BLURRY_OUTPUT": 1,
+    "MISSING_CHARACTER": 10,
+    "REFERENCE_BOARD_VISIBLE": 1,
+    "PHOTOREALISM_DRIFT": 1
+  },
+  "confusion": {
+    "Review / BAD": 59,
+    "Review / GOOD": 33,
+    "Ready / GOOD": 4,
+    "Ready / BAD": 30,
+    "Failed / NO_OUTPUT": 10
+  },
+  "composition": {
+    "SINGLE_COHERENT_SCENE": 102,
+    "UNINTENTIONAL_MULTI_PANEL": 6,
+    "SINGLE_FRAME_GRAPHIC": 12,
+    "NO_OUTPUT": 10,
+    "BLANK_NO_SCENE": 6
+  },
+  "exact_groups": [
+    [
+      3,
+      4
+    ],
+    [
+      5,
+      8
+    ],
+    [
+      28,
+      29
+    ],
+    [
+      46,
+      47
+    ],
+    [
+      63,
+      64,
+      65,
+      66,
+      72,
+      73
+    ],
+    [
+      67,
+      68
+    ],
+    [
+      89,
+      91
+    ],
+    [
+      114,
+      116
+    ]
+  ],
+  "edits": {
+    "total": 22,
+    "meaningful": 8,
+    "failed_delta": 14,
+    "predominantly_lighting": 2,
+    "strict_lighting_only": 0
+  },
+  "duration_seconds": 811.2,
+  "good_duration": 206.725,
+  "graphic_shots": [
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    70,
+    71,
+    72,
+    73,
+    92,
+    93,
+    96,
+    97,
+    98,
+    123,
+    124,
+    125,
+    126,
+    127
+  ],
+  "graphic_duration": 170.035,
+  "stagnant_run_count": 16,
+  "stagnant_shots": 50,
+  "window_counts": {
+    "3": {
+      "total": 134,
+      "flagged": 29
+    },
+    "5": {
+      "total": 132,
+      "flagged": 53
+    },
+    "8": {
+      "total": 129,
+      "flagged": 78
+    }
+  },
+  "transition_strength": {
+    "MAJOR": 61,
+    "NONE": 8,
+    "MEANINGFUL": 10,
+    "MINOR": 39,
+    "COSMETIC_ONLY": 2,
+    "UNAVAILABLE_BOUNDARY": 15
+  }
+}

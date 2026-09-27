@@ -1,91 +1,82 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile, writeFile } from "node:fs/promises";
-import { compileReferencePrompt, deriveRequiredViews, ZYVO_STYLE_SPEC } from "../supabase/functions/_shared/visualWorldStyle.ts";
-import { ensureReferenceJob, referenceJobPayload, referenceJobResult } from "../supabase/functions/_shared/visualWorldJobs.ts";
-import { currentReferenceAssets, referenceEntities, referenceProgress } from "../src/pages/workspace/long-form/visualWorldPlanning.js";
-import { fixtureEntities, fixturePlan, fixtureWorld, smokeSlots } from "./fixtures/visualWorldFixture.js";
+import { applyReferencePlanningBudget, compileReferencePrompt, deriveReferenceQAExpectations, deriveRequiredViews, validateCompiledReferencePrompt, validateRequiredViews, ZYVO_STYLE_SPEC } from "../supabase/functions/_shared/visualWorldStyle.ts";
 
-test("fixture exercises every category and storyboard camera anchors", () => {
-  assert.equal(fixtureEntities.length, 4);
-  assert.equal(fixtureEntities.flatMap((e) => e.requiredViews).length, 7);
-  for (const entity of fixturePlan.entity_registry) {
-    assert.deepEqual(deriveRequiredViews(entity, fixturePlan.continuity_groups), fixtureEntities.find((e) => e.entityId === entity.id).requiredViews);
+const views = (name, category = "IMPORTANT_OBJECT") => deriveRequiredViews({ id: name.toLowerCase().replace(/\W/g, "_"), name, category, importance: "RECURRING", referenceNeeded: true }, []);
+const promptFor = (name, view) => compileReferencePrompt({ styleSpec: ZYVO_STYLE_SPEC, entityName: name, canonicalSpec: `${name}, clean reusable canonical appearance`, view, factualConstraints: ["Display the label POWER", "show a process sequence"] });
+
+test("Sun and Moon stay single-subject; Earth is capped at three distinct images", () => {
+  assert.equal(views("Sun", "DIAGRAM_SUBJECT").length, 1);
+  assert.equal(views("Moon", "DIAGRAM_SUBJECT").length, 1);
+  const earth = views("Earth", "DIAGRAM_SUBJECT");
+  assert.deepEqual(earth.map((v) => v.angle), ["earth_full_disk", "earth_atmosphere_limb", "earth_surface_texture"]);
+  validateRequiredViews({ id: "earth", name: "Earth", category: "DIAGRAM_SUBJECT", importance: "RECURRING" }, earth);
+  const sunPrompt = promptFor("Sun", views("Sun", "DIAGRAM_SUBJECT")[0]);
+  assert.match(sunPrompt, /the Sun only/);
+  assert.match(sunPrompt, /NO people, spacecraft, vehicles, unrelated planets/);
+});
+
+test("PV panel and sky references stay isolated and reject presentation clutter", () => {
+  for (const name of ["Photovoltaic panel", "Daytime sky"]) {
+    const view = views(name)[0];
+    const prompt = promptFor(name, view);
+    validateCompiledReferencePrompt(view, prompt);
+    assert.match(prompt, /NO infographic layout/);
+    assert.match(prompt, /NO collage/);
+    assert.match(prompt, /NO readable text/);
+    assert.doesNotMatch(prompt, /Display the label POWER|show a process sequence/);
   }
-  const selected = referenceEntities(fixturePlan, fixtureWorld);
-  assert.equal(selected.flatMap((e) => e.requiredViews).length, 4);
-  assert.deepEqual(selected.find((e) => e.entityId === "longhouse").requiredViews.map((v) => v.angle), ["wide_toward_hearth"]);
 });
 
-test("only usable successes count as ready; replacements do not double-count", () => {
-  const assets = [{ id: "old", status: "succeeded", result_url: "old.png" }, { id: "new", replaces_asset_id: "old", status: "pending" }, { id: "failed", status: "failed" }, { id: "ready", status: "succeeded", result_url: "ready.png" }, { id: "missing", status: "succeeded", result_url: null }];
-  assert.equal(currentReferenceAssets(assets).length, 4);
-  assert.deepEqual(referenceProgress(assets), { total: 4, ready: 1, failed: 1, active: 1 });
+test("combined plants split into crop, forest and phytoplankton assets and never characters", () => {
+  const plantViews = views("plants crops forests phytoplankton", "CHARACTER");
+  assert.deepEqual(plantViews.map((v) => v.angle), ["crop_specimen", "forest_vegetation", "phytoplankton_specimen"]);
+  assert.ok(plantViews.every((v) => v.referenceType === "environment_reference"));
 });
 
-test("four deterministic prompts: identity, full body/profile, reusable set, no labels", async () => {
-  const prompts = smokeSlots.map((key) => {
-    const [entityId, angle] = key.split(":");
-    const entity = fixtureEntities.find((e) => e.entityId === entityId);
-    const args = { styleSpec: ZYVO_STYLE_SPEC, visualStyleNotes: fixtureWorld.reference_plan.visualStyleNotes, ...entity, view: entity.requiredViews.find((v) => v.angle === angle) };
-    const prompt = compileReferencePrompt(args);
-    assert.equal(prompt, compileReferencePrompt(args));
-    assert.ok(prompt.includes(entity.canonicalSpec));
-    assert.match(prompt, /labels/);
-    assert.match(prompt, /logos/);
-    return { slot: key, prompt };
-  });
-  assert.match(prompts[0].prompt, /Full body head to toe/);
-  assert.match(prompts[1].prompt, /Strict side profile/);
-  assert.match(prompts[2].prompt, /reusable empty animation set/);
-  assert.doesNotMatch(prompts[2].prompt, /Plain warm off-white background/);
-  await writeFile(new URL("../artifacts/visual-world/compiled-prompts.json", import.meta.url), JSON.stringify(prompts, null, 2));
+test("machine references remain individual object images", () => {
+  const machineViews = views("Oxygen scrubber machine", "VEHICLE_MACHINE");
+  assert.equal(machineViews.length, 1);
+  assert.equal(machineViews[0].referenceType, "object_reference");
+  const prompt = promptFor("Oxygen scrubber machine", machineViews[0]);
+  assert.match(prompt, /one coherent equipment system/i);
+  assert.match(prompt, /sensor plus console/i);
+  assert.equal(deriveReferenceQAExpectations(machineViews[0]).coherentSystemAllowed, true);
 });
 
-test("reference job stays free, uses FLUX Base, and keeps stable durable identity", () => {
-  const job = referenceJobPayload({ id: "asset" }, fixtureWorld, { user_id: "owner" }, "prompt", "free");
-  assert.equal(job.id, "asset");
-  assert.equal(job.charge_credits, 0);
-  assert.equal(job.settings.credits, 0);
-  assert.equal(job.settings.long_form_reference_asset_id, "asset");
-  assert.equal(job.settings.long_form_internal, true);
-  assert.equal(job.tool_key, "image:flux.base");
-  assert.equal(job.max_attempts, 3);
-  assert.throws(() => referenceJobPayload({ id: "asset" }, { renderer_tool_key: "premium" }, {}, "prompt", "free"));
+test("reference planning budget keeps reusable high-value entities and one diagram style sheet", () => {
+  const entities = [
+    ...Array.from({ length: 9 }, (_, i) => ({ id: `c${i}`, name: `Character ${i}`, category: "CHARACTER", importance: i === 0 ? "HERO" : "RECURRING", referenceNeeded: true, referencePriority: i < 3 ? "high" : "medium" })),
+    ...Array.from({ length: 6 }, (_, i) => ({ id: `l${i}`, name: `Location ${i}`, category: "LOCATION", importance: "RECURRING", referenceNeeded: true, referencePriority: "medium" })),
+    ...Array.from({ length: 5 }, (_, i) => ({ id: `o${i}`, name: `Object ${i}`, category: "IMPORTANT_OBJECT", importance: "RECURRING", referenceNeeded: true, referencePriority: "medium" })),
+    { id: "diagram", name: "Timeline", category: "DIAGRAM_SUBJECT", importance: "RECURRING", referenceNeeded: true, referencePriority: "high" },
+  ];
+  const budgeted = applyReferencePlanningBudget(entities);
+  assert.equal(budgeted.selected.filter((e) => e.category === "CHARACTER").length, 7);
+  assert.equal(budgeted.selected.filter((e) => e.category === "LOCATION").length, 4);
+  assert.equal(budgeted.selected.filter((e) => e.category === "IMPORTANT_OBJECT").length, 3);
+  assert.equal(budgeted.diagramStyleNeeded, true);
+  assert.ok(budgeted.selected.length + 1 <= 16);
 });
 
-test("uncertain enqueue response retries same asset/job through one atomic RPC", async () => {
-  const jobs = new Map();
-  const links = new Map();
-  let calls = 0;
-  const admin = { rpc: async (name, args) => {
-    assert.equal(name, "enqueue_long_form_reference_job");
-    const id = args.p_asset_id;
-    if (!links.has(id)) { jobs.set(id, args.p_job); links.set(id, id); }
-    calls++;
-    return calls === 1 ? { error: new Error("response lost after commit") } : { data: links.get(id) };
-  } };
-  const run = () => ensureReferenceJob(admin, { id: "a", claim_attempts: 1 }, fixtureWorld, { user_id: "u" }, "prompt", "free");
-  await assert.rejects(run, /response lost/);
-  assert.equal(await run(), "a");
-  assert.equal(jobs.size, 1);
-  assert.equal(links.size, 1);
+test("recurring locations compile to one reusable anchor", () => {
+  const location = { id: "lab", name: "Field lab", category: "LOCATION", importance: "RECURRING", referenceNeeded: true };
+  const result = deriveRequiredViews(location, [{ locationId: "lab", cameraAnchors: ["wide_establishing", "reverse_wide", "detail_insert"] }]);
+  assert.equal(result.length, 1);
+  assert.equal(result[0].referenceType, "location_reference");
 });
 
-test("reconciliation observes terminal jobs without creating or claiming paid work", () => {
-  assert.equal(referenceJobResult({ status: "processing" }), null);
-  assert.equal(referenceJobResult({ status: "canceled" }).status, "failed");
-  assert.equal(referenceJobResult({ status: "succeeded" }).status, "failed");
-  const result = referenceJobResult({ status: "succeeded", result_url: "a.png", output: { data: [{ cost: 0.0006 }] }, created_at: "2026-09-08T12:00:00Z", updated_at: "2026-09-08T12:00:06Z" });
-  assert.equal(result.cost_usd, 0.0006);
-  assert.equal(result.generation_latency_ms, 6000);
-  assert.equal(referenceJobResult({ status: "failed" }).cost_usd, null);
+test("diagram style prompt is simple, text-free, and topic-neutral", () => {
+  const prompt = compileReferencePrompt({ styleSpec: ZYVO_STYLE_SPEC, entityName: "Diagram visual language", canonicalSpec: "minimal", view: { referenceType: "diagram_style_reference", angle: "canonical_diagram_style", purpose: "style" } });
+  assert.match(prompt, /extremely simple visual-language sample/i);
+  assert.match(prompt, /NO readable text/);
+  assert.match(prompt, /not an information graphic/i);
+  validateCompiledReferencePrompt({ referenceType: "diagram_style_reference", angle: "canonical_diagram_style", purpose: "style" }, prompt);
 });
 
-test("saved smoke audit is exactly four successful zero-credit results, no claimed asset-link proof", async () => {
-  const jobs = JSON.parse(await readFile(new URL("../artifacts/visual-world/smoke-results.json", import.meta.url)));
-  assert.equal(jobs.length, 4);
-  assert.equal(new Set(jobs.map((job) => job.id)).size, 4);
-  assert.ok(jobs.every((job) => job.charge_credits === 0 && job.result_url && job.linked_assets === 0));
-  assert.equal(jobs.reduce((sum, job) => sum + job.output.data[0].cost, 0), 0.0024);
+test("canonical character sheet carries the universal dispatch contract", () => {
+  const view = { referenceType: "character_reference", angle: "character_reference_sheet", purpose: "sheet", importance: "HERO" };
+  const prompt = compileReferencePrompt({ styleSpec: ZYVO_STYLE_SPEC, entityName: "Plato", canonicalSpec: "older bearded philosopher in a simple robe", view });
+  validateCompiledReferencePrompt(view, prompt);
+  assert.match(prompt, /\[CANONICAL REFERENCE NEGATIVE CONTRACT\]/);
 });

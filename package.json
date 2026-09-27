@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test": "node --test tests/*.test.mjs",
+    "test": "node --import ./tests/setup.mjs --test tests/*.test.mjs",
     "prebuild": "node scripts/generateSitemap.js",
     "build": "vite build && vite build --ssr src/entry-server.jsx --outDir dist-ssr",
     "postbuild": "node scripts/generateSeoHtml.js && node scripts/validateSeoIndexing.js",
@@ -16,9 +16,11 @@
     "seo:audit": "node scripts/auditSeoUrls.js",
     "seo:audit:live": "node scripts/auditSeoUrls.js --live",
     "seo:watchlist": "node scripts/auditSeoUrls.js --watchlist",
-    "seo:similarity": "node scripts/auditContentSimilarity.js"
+    "seo:similarity": "node scripts/auditContentSimilarity.js",
+    "test:replay": "npx -y deno@2.9.6 test -A --no-check tests/replay/"
   },
   "dependencies": {
+    "@elevenlabs/elevenlabs-js": "^2.69.0",
     "@fal-ai/client": "^1.10.0",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
@@ -28,11 +30,12 @@
     "@supabase/supabase-js": "^2.99.1",
     "@vercel/analytics": "^1.6.1",
     "animate.css": "^4.1.1",
-    "dotenv": "^17.3.1",
+    "dotenv": "^17.4.2",
     "framer-motion": "^12.38.0",
     "konva": "^9.3.22",
     "lucide-react": "^0.537.0",
     "node-fetch": "^3.3.2",
+    "qrcode": "^1.5.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.62.0",

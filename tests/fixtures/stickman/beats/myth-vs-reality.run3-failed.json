@@ -1,0 +1,3003 @@
+{
+  "recordedAt": "2026-09-26T20:29:39.290Z",
+  "beatPlanVersionId": "92a4b8b5-407b-41f7-8d54-bea076938127",
+  "segments": [
+    {
+      "id": "seg1",
+      "text": "You're gripping a shield, screaming down a hillside toward a shieldwall, and two long curved horns jut off your helmet, cutting the air on either side of your head. The horns catch the firelight. They look terrifying. They look exactly like every painting, every movie poster, every Halloween costume you've ever seen of a Viking. This is the image burned into your head."
+    },
+    {
+      "id": "seg2",
+      "text": "A single wrong picture like this can quietly rewrite an entire culture's history in our heads."
+    },
+    {
+      "id": "seg3",
+      "text": "So did any Viking ever actually strap on horns before walking into battle?"
+    },
+    {
+      "id": "seg4",
+      "text": "Here's the belief almost everyone carries around without question: Viking raiders wore horned helmets into combat, the horns curving up from the sides like a bull's. It feels obvious. It's on flags, beer labels, football helmets. But archaeologists digging across Scandinavia for over a century have found remarkably few actual Viking-age helmets at all. Total confirmed helmets from the entire Viking Age, roughly 793 to 1066, that survive with enough of the skull intact to study? You can count them on one hand."
+    },
+    {
+      "id": "seg5",
+      "text": "The best-preserved one is the Gjermundbu helmet, dug out of a burial mound in Norway in 1943, dated to around the year 970. It has a rounded iron cap, a spectacled guard curving over the eyes and nose, and absolutely nothing where horns would attach. No sockets. No rivet holes shaped for anything curved. Just a plain iron dome built to deflect a sword, not to look dramatic."
+    },
+    {
+      "id": "seg6",
+      "text": "Why trust one helmet? Because it isn't alone. Fragments from Tjele in Denmark and a handful of other sites all show the same story: plain iron, sometimes mail hanging to protect the neck, occasionally a nose guard. Historian Roberta Frank, who spent years tracing this myth through Old Norse literature, found zero contemporary written descriptions of horned battle helmets either. Not one saga. Not one carving from the era mentions warriors fighting in horns."
+    },
+    {
+      "id": "seg7",
+      "text": "So where do actual horned helmets in museums come from, if not the Viking Age? Rewind about two thousand years before the first Viking ship ever launched. In 1942, workers draining a bog near Veksø in Denmark pulled up two bronze helmets, each fitted with long, gently curving horns tipped with little round discs. They're called the Veksø helmets, and they've been dated to roughly 900 to 1100 BCE, the Nordic Bronze Age."
+    },
+    {
+      "id": "seg8",
+      "text": "These weren't armor. The bronze is thin, decorative, almost delicate. They were likely worn by a priest or a chieftain in a religious ceremony, maybe alongside sun-worship rituals, definitely not swung into a shield wall. That's over eighteen hundred years separating these horns from the first recorded Viking raid on Lindisfarne in 793. Would you mistake your great-great-great-grandparent's wedding china for something you use in a bar fight? That's roughly the gap we're talking about."
+    },
+    {
+      "id": "seg9",
+      "text": "But 19th-century antiquarians didn't always draw that line carefully. Early collectors and popular illustrators, digging through old hoards without modern dating tools, lumped anything old and Nordic into one romantic bucket labeled ancient Norse warrior. A ceremonial priest's headdress from the Bronze Age and a Viking raider a thousand years later got flattened into the same imagined figure. That mistake didn't stay buried in a museum basement. It walked straight onto a stage."
+    },
+    {
+      "id": "seg10",
+      "text": "In 1876, composer Richard Wagner's opera cycle Der Ring des Nibelungen premiered in Bayreuth, Germany. Costume designer Carl Emil Doepler dressed the Norse gods and warriors in flowing furs, winged helmets, and yes, dramatic curved horns. Wagner wanted mythic, larger-than-life figures towering over an audience from the back row of a theater. Historical accuracy wasn't the assignment. Spectacle was."
+    },
+    {
+      "id": "seg11",
+      "text": "Why did that image spread so fast? Because it landed inside the Romantic movement, when artists across Europe were painting Norse myth as noble and untamed. Swedish painter Gustav Malmstrom and others had already sketched horned figures decades earlier, but Wagner's production put the look in front of thousands of paying theatergoers at once, night after night. A single stage costume became the visual template every illustrator copied afterward, because it was already proven to work on an audience."
+    },
+    {
+      "id": "seg12",
+      "text": "From there it never stopped moving. By the early 1900s, horned helmets showed up on tourist postcards sold in Norway itself. In 1939, cartoonist Alex Raymond drew the horned warrior in his Flash Gordon comics. In 1948, the Minnesota Vikings didn't exist yet, but when the NFL team formed in 1961, they built their whole identity around that same horned image. Have you ever questioned why a football team from Minnesota wears Bronze Age Danish ceremonial gear? Most people never do."
+    },
+    {
+      "id": "seg13",
+      "text": "But can we really say never, with total certainty? Here's the honest complication. Most Viking-age helmets we'd expect to find were probably never made of iron at all. Leather, boiled and hardened, wood, and antler don't survive well underground for a thousand years, especially in acidic Scandinavian soil. If a helmet had small horns made from antler lashed on with leather cord, that cord and antler could rot into nothing within a few centuries, leaving no rivet holes, no discoloration, no trace at all. So when archaeologists say no evidence, they mean no surviving evidence. Absence isn't automatically proof of absence. It just means if it happened, it happened in a material that time was never going to let us keep."
+    },
+    {
+      "id": "seg14",
+      "text": "So go back to that charge down the hillside, the helmet with two long curved horns catching the firelight. That image didn't come from a Viking battlefield at all. It came from a Bronze Age priest's ritual, borrowed by a German opera designer in 1876, and sold to the entire world ever since. Wagner's costume department gave you a myth so good, so visually perfect, that even a total absence of battle evidence couldn't kill it."
+    },
+    {
+      "id": "seg15",
+      "text": "Somewhere in a Norwegian museum, a plain iron dome with a simple eye guard sits under glass, unglamorous, undramatic, and true. Nobody buys a postcard of it. Nobody puts it on a football helmet. Real history is rarely as loud as the myth built on top of it. Next time you see those curving horns on a lunchbox or a mascot, you're not looking at Norse memory. You're looking at a nineteenth-century costume designer's best sales pitch, one that's still working on you today."
+    }
+  ],
+  "bible": {
+    "hero": {
+      "hair": "short triangular beard only (no hair on head visible under helmet).",
+      "exists": true,
+      "outfit": "plain tunic suggested by a single curved line across torso; no detailed armor visible in the horned icon — the helmet and horns are the defining elements.",
+      "skinTone": "neutral pale peach (used when skin is visible); keep consistent across all appearances.",
+      "reasoning": "The episode follows one non-human throughline: the cultural image/idea of the 'horned Viking' itself — how that image originated, migrated, and persisted. The narrative does not follow a single human protagonist from scene to scene; instead it follows this recurring visual motif as it appears in different historical moments and settings.",
+      "accessories": [
+        "curved horns attached to helmet (iconic element)"
+      ],
+      "subjectType": "object_character",
+      "bodyProportions": "head roughly 1.0 units, torso 1.2 units, legs combined 1.8 units (slightly squat to emphasize helmet/horns), helmet about 0.6 head-height tall excluding horns.",
+      "bodyConstruction": "Simple vertical stick torso, two slightly angled stick arms raised, two straight stick legs in a running stance; proportions slightly squat so helmet and horns dominate the silhouette.",
+      "semanticIdentity": "the horned-Viking icon — the single wrong picture that circulates across time",
+      "forbiddenMutations": [
+        "never change horn curvature into straight spikes; horns must always curve outward/upward",
+        "never add elaborate facial detail (no moustaches, no shading, no realistic eyes)",
+        "helmet color must never switch to bright metallic gold",
+        "do not convert horns to wings or other ornamentation"
+      ],
+      "canonicalAppearance": "A single, repeatable flat 2D stickman icon representing the 'horned Viking' image: compact human stickman silhouette (simple round head, thin neck line), wearing a round domed helmet with two long symmetrical curved horns rising from the sides and curving outward/upward about 1.2 head-heights; short triangular beard suggestion under the head; arms slightly raised as if charging. Helmet and horns are outlined in uniform thin black ink; helmet fill color dull iron gray; horns fill color off-white/ivory. Eyes are two small black dots; mouth is a short straight line. No shading or texture.",
+      "headFaceConstruction": "Round head (circle), two dot eyes horizontally centered, short straight line mouth, tiny triangular beard below the chin.",
+      "emotionalExpressionLanguage": "neutral-to-aggressive silhouette: dot eyes and straight mouth; posture provides the 'terrifying' read when needed (leaning forward, arms raised).",
+      "persistentIdentifyingFeatures": [
+        "rounded domed helmet with two long symmetrical curved horns",
+        "horns length ≈ 1.2 head-heights and curve outward/upward",
+        "short triangular beard under chin",
+        "charging/running stickman stance with arms slightly raised",
+        "helmet fill color dull iron gray, horns off-white/ivory"
+      ]
+    },
+    "world": {
+      "era": "visually separated by a small set of cues: Bronze Age uses warm copper accents and thin fragile bronze props; Viking Age archaeology uses dull iron gray and simple wood props; 19th-century uses sepia/muted brown clothing and theatrical rigs; modern museum/excavation scenes use neutral modern clothing and labeled placards.",
+      "geography": "temperate Northern European motifs: low rolling hills, scattered pine/leaf trees as simple conical/oval shapes, coastal reference lines only when needed.",
+      "architecture": "simple, iconic location blocks only: low stylized hill silhouette for battlefield, minimal wooden stage proscenium for theater, rectangular trench and scaffolding lines for dig, glass rectangle and pedestal for museum. No detailed buildings beyond these archetypes.",
+      "settingFamilies": [
+        "imagined battlefield hillside (dramatic, stylized)",
+        "Bronze Age ritual/ bog find location (open field with peat bog marker)",
+        "archaeological excavation trench (grid, labeled finds, trowel and brush)",
+        "19th-century theater stage/atelier (stage backdrop, costume racks)",
+        "museum display case (pedestal, label plaque, glass casing)"
+      ],
+      "weatherTimeConventions": "Battle/hill scenes use dusk lighting (cool blue sky with warmer horizon band) to heighten drama; other scenes default to neutral daylight. No storms or dramatic weather unless explicitly required by a script beat.",
+      "environmentalColorRules": "Use the episode palette consistently for each setting family: battlefield (cool dusk sky, muted greens/browns), Bronze Age (warm copper accents), excavation (neutral tans and muted earth browns), theater (muted sepia and deep burgundy curtain), museum (cool neutrals with a single spot color for exhibit labels).",
+      "historicalScientificConstraints": [
+        "Do not depict Viking-age helmets with horns or decorative attachments unless explicitly showing them as later theatrical or Bronze Age ceremonial objects.",
+        "Bronze Age ceremonial helmets must look delicate and decorative, not battle-ready."
+      ],
+      "recurringEnvironmentConstruction": "2–3 flat layers per scene: background sky strip, middle ground simple silhouette shapes (hills/trees/stage curtains), foreground action and props. Keep depth minimal and consistent across all scenes."
+    },
+    "palette": {
+      "colorApproach": "FULL_COLOR",
+      "contrastRules": "Icons and hero subject (horned image) use iron-gray outlines with helmet/horn fills kept distinct (helmet gray, horns off-white/ivory). Museum labels and explanatory text blocks use cool blue or muted burgundy as single-spot accents to draw the eye.",
+      "primaryColors": [
+        "dull iron gray (#6C6F72)",
+        "warm copper (#B76E3B)",
+        "muted forest green (#6B8A58)",
+        "off-white/ivory (#F2EDE6)",
+        "neutral pale peach (skin) (#F1D0BD)"
+      ],
+      "supportingColors": [
+        "muted burgundy (#7B3F46)",
+        "muted wood brown (#8B6B4B)",
+        "cool dusk blue (#6EA0C8)",
+        "sepia brown (#A57A56)"
+      ],
+      "environmentPaletteRules": "Each setting uses one dominant supporting color plus primary neutrals: Bronze Age = warm copper dominant; theater = sepia/burgundy dominant; museum/excavation = cool blue + neutral grays; battlefield = muted forest green + dusk blue.",
+      "monochromeJustification": ""
+    },
+    "recipeId": "stickman_doodle_explainer",
+    "projectId": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae",
+    "textPolicy": {
+      "exceptionsPolicy": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image.",
+      "exactTextHandledDownstream": true,
+      "providerGeneratedTextDefault": "OFF"
+    },
+    "visualTone": "informative with wry distance: clear and slightly ironic (we're debunking a dramatic image), balancing visceral spectacle (the imagined horned charge) with quiet, evidence-first museum and archaeology scenes.",
+    "negativeRules": [
+      "accidental 3D render or CGI look",
+      "photorealistic drift away from flat 2D",
+      "painterly, sketchy, or textured drift away from flat solid fills",
+      "random or unrequested generated typography",
+      "stickman construction mutating into a more detailed/realistic character mid-episode",
+      "shading, gradients, or texture appearing despite the flat-fill policy",
+      "Never present the horned helmet icon as archaeological fact for the Viking Age.",
+      "Never show organic horn attachments surviving intact on Viking-age artifacts.",
+      "Never use bright, shiny gold tones for helmets in archaeological contexts (use dull iron gray only)."
+    ],
+    "recipeVersion": "STICKMAN_DOODLE_EXPLAINER_V1",
+    "styleContract": {
+      "medium": "Flat-color 2D doodle/stickman illustration",
+      "detailLevel": "Minimal — enough to read instantly at a glance, never busy or cluttered",
+      "lineLanguage": "Uniform thin, clean black outlines of identical weight everywhere; no sketchiness, no variable line weight, no cross-hatching",
+      "realismLevel": "Non-realistic, iconographic — identity is carried by a handful of discrete flat features, never facial realism",
+      "colorStrategy": "Deploy full color but keep saturation muted so the horned icon remains readable against backgrounds; use warm copper only for Bronze Age props and sepia only for romantic/theatrical beats to signal historical layering. Reserve one spot accent (burgundy or cool blue) per frame to guide attention.",
+      "shadingPolicy": "None — flat solid fills only, no gradients, no soft shadow rendering, no highlights",
+      "shapeLanguage": "Simple geometric primitives — circles, rounded rectangles, straight or gently curved lines — never intricate or organic detail",
+      "texturePolicy": "None — flat, texture-free surfaces throughout",
+      "dimensionality": "2D flat, no 3D rendering, no depth shading, no perspective distortion beyond simple flat-layer staging",
+      "lightingStrategy": "Flat 2D lighting (no shading) but different time/feel implied by palette: dramatic dusk colors for the charge; warm copper highlights for Bronze Age scenes; neutral even daylight for excavation and museum; theatrical scenes may include a darker curtain silhouette with a focused warm spot accent color on the prop.",
+      "illustrationStyle": "Simplified stickman/doodle explainer construction — circle heads, dot eyes, stick limbs, mitten hands — never a detailed or semi-realistic character",
+      "backgroundStrategy": "2-3 flat color layers (background/midground/foreground), never a fully rendered or photographic environment",
+      "forbiddenStyleTraits": [
+        "photorealistic or photographic rendering",
+        "3D render or CGI look",
+        "painterly or watercolor texture",
+        "anime or manga stylization",
+        "pencil-sketch or hand-drawn sketchiness",
+        "cel-shading with rendered shadows",
+        "gradient mesh or airbrushed shading",
+        "drop shadows or glow/bloom effects",
+        "realistic anatomy, fingers, or necks on stickman characters"
+      ]
+    },
+    "visualPremise": "A flat 2D stickman-doodle explainer that tracks one visual subject — the cultural image of the 'horned Viking' — across a few distinct, repeatable locations (battle hillside, Bronze Age ritual site, excavation trench, 19th‑century theater, museum display).",
+    "cameraLanguage": {
+      "framingConventions": "Establishing wide shot for scene type (hill, theater, dig, museum), medium shots for role archetypes speaking or pointing, close-ups for helmet details and label plaques. Maintain generous negative space around the horned icon so its silhouette reads clearly.",
+      "allowedShotFamilies": [
+        "WIDE",
+        "MEDIUM",
+        "CLOSE_UP",
+        "OVERHEAD",
+        "POV",
+        "SPLIT_SCREEN",
+        "CUTAWAY",
+        "DIAGRAM_LAYOUT"
+      ],
+      "visualHierarchyRules": "Primary visual focus is always the horned icon or the archaeological object under discussion; secondary elements (people, tools, labels) should be smaller and lower contrast.",
+      "simplicityReadabilityRules": "Every frame must read clearly at thumbnail size — avoid busy multi-subject compositions unless the beat's own visual concept specifically requires comparing multiple subjects at once",
+      "whenEstablishingVsCloseupVsDiagram": "Use establishing shots to orient the setting, closeups for evidence (helmet details, rivet holes), and diagrams for side-by-side historical comparison/timeline nodes."
+    },
+    "continuityMode": "SUBJECT",
+    "objectLanguage": [
+      {
+        "id": "gjermundbu_helmet",
+        "whyRecurring": "Serves as the canonical archaeological counterexample to the horned image; used repeatedly when explaining the actual Viking-age evidence.",
+        "canonicalDescription": "The Gjermundbu-style helmet: a simple rounded iron dome with an integrated 'spectacle' guard curving over the eye region and a short nose guard; no horn attachments, no rivet patterns for horns. Dull iron-gray fill, thin black outline. Display on a small museum pedestal with a label reading 'Gjermundbu helmet, c. 970'."
+      },
+      {
+        "id": "veksø_bronze_helm",
+        "whyRecurring": "Used to illustrate the real Bronze Age origin of horned headgear that later got misapplied to Vikings.",
+        "canonicalDescription": "Veksø-type bronze ceremonial helmet: thin decorative bronze cap with long gently curved horns ending in small round discs; horns are narrower and shorter than the icon horns and look fragile. Warm copper fill, horns off-white tips. Often shown with a watery/bog or ritual context."
+      },
+      {
+        "id": "theater_prop_helmet",
+        "whyRecurring": "Represents the 19th-century theatrical source (Wagner/Doeppler) that popularized the horned image.",
+        "canonicalDescription": "Theatrical horned helmet prop: bold, exaggerated horns (same silhouette as the horned-Viking icon) but visually heavier and stylized for stage: thicker horn cross-section and larger scale. Colored with slightly brighter pigments to read at a distance (burgundy accent available)."
+      },
+      {
+        "id": "museum_label",
+        "whyRecurring": "A quick visual shorthand to signal 'this is evidence/archaeology' in museum and explanatory shots.",
+        "canonicalDescription": "Small rectangular placard: pale gray rectangle with two lines of text (title line bold, secondary line small). Use once next to actual archaeological pieces (e.g., 'Gjermundbu helmet, c. 970') to visually cue 'authentic museum object'."
+      }
+    ],
+    "roleArchetypes": [
+      {
+        "id": "viewer",
+        "role": "the viewer's second-person avatar used in the opening charge scene",
+        "usedFor": "opening charged hillside sequence where the viewer is 'gripping a shield' and imagined as the horned-charging figure.",
+        "canonicalAppearance": "A generic stickman in first-person-referenced posture: round head with two dot eyes and a short straight mouth, short dark-brown triangular haircut line visible when helmet is off, simple tunic line, holding a round shield (circle with a single short handle line behind) in the left hand and a short spear in the right. Proportions match the episode's stickman rules; skin fill neutral pale peach. Use only when narration places 'you' in the scene."
+      },
+      {
+        "id": "archaeologist",
+        "role": "a generic archaeologist who inspects finds and points out absence/presence of evidence",
+        "usedFor": "dig site scenes, close-ups of the Gjermundbu helmet and museum narration beats, and when discussing preservation caveats.",
+        "canonicalAppearance": "Stickman with short tidy dark-brown hair (solid triangular block), thin rectangular spectacles (two tiny squares connected by a thin line), wearing a short-sleeve field vest suggested by two vertical lines and a small tool pocket square; holding a trowel (small triangular shape on a short line) in one hand and a clipboard (thin rectangle) in the other. Neutral pale peach skin tone. Used for excavation, museum, and explanation shots."
+      },
+      {
+        "id": "19th_century_costume_designer",
+        "role": "the Romantic/operatic costume designer figure who first popularizes the horned look onstage",
+        "usedFor": "Wagner/opera and 19th-century Romantic art scenes where costume design and spectacle are being shown.",
+        "canonicalAppearance": "Stickman with neat side-parted hair (thin curved line) and a small pencil-mustache line; wearing a theatrical frock coat (a longer coat silhouette drawn as a single outer line with two inner lapel lines) and holding a simple horned helmet prop (small rounded cap with exaggerated thin horns) in one hand like a sketch. Use sepia-tinted costume accent (muted brown fill) for visual distinction in theater scenes."
+      },
+      {
+        "id": "bronze_age_priest",
+        "role": "the wearer of ritual/ceremonial horned headgear from the Nordic Bronze Age context",
+        "usedFor": "Veksø/bronze-age bog discovery reenactments and explanations distinguishing ceremonial vs. combat gear.",
+        "canonicalAppearance": "Stickman with simple long robe suggested by a single curved line down the torso, hands open and down; headwear is a fragile-looking thin-bronze helmet with delicate long curved horns ending in small round discs (horns narrower than the icon horns, length ≈ 0.8 head-heights). Bronze fill color warm muted copper. Posture calm and ritualistic (arms lowered)."
+      },
+      {
+        "id": "plain_viking_warrior",
+        "role": "the evidence-grounded Viking-age warrior as reconstructed from archaeology (no horns)",
+        "usedFor": "museum/Gjermundbu references, contrasts with the horned icon, and to show what real Viking helmets look like.",
+        "canonicalAppearance": "Stickman wearing a rounded iron helmet without horns (domed cap with a simple horizontal 'spectacle' eye-nose guard when needed), short triangular beard, a rectangular kite shield held in front (flat rectangle with central boss circle), and a short sword at the hip (small straight line). Helmet fill dull iron gray, shield fill muted wood-brown. Posture neutral/ready, not theatrical."
+      }
+    ],
+    "continuityRules": {
+      "neverDrift": [
+        "the recipe's own universal style (flat 2D, uniform outline, flat fills, no shading/gradients/texture)",
+        "never depict a Viking-age archaeological helmet with horns as authentic combat gear",
+        "never alter the horned icon's horn curvature or length; keep the 1.2 head-height curvature",
+        "never change primary helmet fill colors (helmet = dull iron gray, horns = off-white/ivory) in archaeological contexts"
+      ],
+      "allowedToVary": [
+        "the horned icon may be shown in different contexts (postcard, stage prop, mascot) but its silhouette must remain identical",
+        "role archetypes' clothing colors can shift slightly to match scene pallet accents (sepia for theater, neutral for museum)"
+      ],
+      "episodeWideConsistencyRules": [
+        "whenever the script says 'no rivet holes or horn sockets', show the Gjermundbu helmet close-up with a clear blank dome and labeled callout pointing out 'no horn sockets'",
+        "when illustrating the preservation caveat, use the archaeologist archetype pointing to simple dashed outlines representing organic attachments (antler) to imply 'no surviving trace'"
+      ]
+    },
+    "graphicLanguage": {
+      "colorUse": "Uses this episode's own palette (dull iron gray (#6C6F72), warm copper (#B76E3B), muted forest green (#6B8A58), off-white/ivory (#F2EDE6), neutral pale peach (skin) (#F1D0BD)) as flat fills, consistent with narrative scenes — never a separate infographic color scheme.",
+      "lineStyle": "The exact same line weight and fill language as narrative scenes — a graphic must never look like a different visual universe from the story frames around it",
+      "mapConventions": "Simplified northern-Europe outline with 2–3 dots (Denmark for Veksø, Norway for Gjermundbu, Germany for Bayreuth); dots use primary colors (copper, iron-gray, sepia) and short labels.",
+      "arrowsConnectors": "Simple flat-filled arrow shapes and thin connector lines, same line language as everything else",
+      "comparisonLayouts": "Side-by-side comparisons always align helmets at the same baseline for easy silhouette reading. Use captions in cool blue for archaeological items and sepia for theatrical/cultural items.",
+      "backgroundBehavior": "Clean, uncluttered flat backgrounds (often light/white or the episode's own environment palette) — never assumed to be white-only; the Production Bible's graphic language decides per episode",
+      "diagramConventions": "When comparing objects (e.g., Gjermundbu helmet vs Veksø helm vs theatrical prop), use a three-column flat layout with each object centered, simple one-sentence label below, and a thin separator line. Use consistent scale where possible; if scale differs, include a tiny scale bar icon.",
+      "whitespaceBehavior": "Generous but not empty — whitespace isolates the one idea a graphic communicates, it is never filler",
+      "overlayTextBehavior": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image.",
+      "timelineConventions": "Horizontal timeline bar with three labeled nodes: 'Bronze Age (c. 900–1100 BCE)' — copper node; 'Viking Age (c. 793–1066 CE)' — iron-gray node; '19th century Romantic/theatre' — sepia node. Connect the horned icon with arrows showing cultural borrowing.",
+      "symbolicMetaphorLanguage": "Use the horned-Viking icon as a recurring metaphor: when the narration says 'this image stuck', show the icon stamped repeatedly like a simple rubber-stamp motif fading into postcards, theater posters, and a modern football helmet.",
+      "characterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template"
+    },
+    "scriptVersionId": "b3669868-54a6-4814-bd61-323efed108b0",
+    "generationProfileId": "9c0f897e-a6e6-40ca-8766-300abeec366b",
+    "recurringCharacters": [],
+    "productionBibleVersion": 1,
+    "factualVisualConstraints": [
+      "Do not invent physical horn attachment marks on genuine Viking-age helmet reconstructions (e.g., Gjermundbu).",
+      "Veksø bronze helmets must be clearly labeled Bronze Age and look decorative, not battle-ready.",
+      "Theatrical horned helmets must be shown as 19th-century costume props, visually distinct from Bronze Age originals."
+    ]
+  },
+  "callback": {
+    "key": "two long curved horns",
+    "plantSegmentId": "seg1",
+    "payoffSegmentId": "seg14"
+  },
+  "cassette": {
+    "entries": [
+      {
+        "kind": "anthropic",
+        "key": "direct_beats",
+        "request": {
+          "model": "claude-sonnet-5",
+          "max_tokens": 12000,
+          "system": [
+            {
+              "type": "text",
+              "text": "You are Zyvo's Beat Director for 2D stickman-doodle explainer videos. You receive the finished narration already split by code into CLAUSE CHUNKS (C-numbers, each with its duration), the video's Production Bible (the only cast, settings and props that exist, with ids), the callback plan, and a short summary of the beats already directed. You group the chunks of one window into BEATS: small scenes of about 3-4 seconds, each one visual idea.\n\nYou never write or change narration. A beat is a range of consecutive chunks: startChunk..endChunk (inclusive), 1-3 chunks. Cover the window exactly: the first beat starts at the window's first chunk, each next beat starts at the previous endChunk + 1, the last beat ends at the window's last chunk.\n\nSIZE — most beats are 1-2 chunks; merge only when splitting would break a single visual idea. Reference: a good video of this kind averages ~9 words and ~3.7 s per beat, never more than ~15 words; sentences are routinely split across beats at clauses. A beat must stay at or under 6.5 s (sum of its chunk durations); HOLD (flags.hold with a reason) may run to 9 s, about once a minute at most. Anything longer is split by code at chunk boundaries — so don't rely on it. In the first 30 seconds keep beats at about 2.5-3.5 s.\n\nWHERE TO CUT — cut on MEANING: a new claim, a change of action, a question, a reveal, a statistic, a comparison, a callback, a jump in time or place.\n\nWHAT THE VIEWER SEES — visualConcept is what makes THIS exact line land, drawable in simple stickman doodle style. Use visual rhetoric when it fits:\n- threat: POV of the danger approaching the subject;\n- negation or myth: the thing crossed out;\n- safety vs danger: a small safe zone against a looming threat;\n- a tiny share of something huge: a long bar with a tiny highlighted sliver;\n- huge numbers: a crowd receding to the horizon;\n- then vs now: a mirrored SPLIT;\n- callbacks: re-use the EXACT composition, camera and subjects of the planted beat (treatment CALLBACK).\n\nPick one treatment per beat: STORY_SCENE, REACTION, POV, ESTABLISHING, OBJECT_DETAIL, SYMBOLIC, COMPARISON, SPLIT, MAP, TIMELINE_BAR, SCALE, STAT_CARD, ICON_ROW, CROWD, CALLBACK. Adjacent beats must differ in treatment, camera, subjects or setting (unless HOLD or CALLBACK).\n\nCAST — use ONLY the castIds listed (never a placeholder). \"you\" lines use the viewer avatar (castId \"viewer\") when the bible has one; generic people (a warrior, an archaeologist) use their archetype ids. Omit subjects for beats with nobody on screen. Omit settingId for abstract graphics.\n\nTEXT — omit textIntent for most beats (NO_TEXT). SHORT_TEXT is exact on-screen text of at most 5 words (a year, a number, a key term), at most about 4 per minute. PROGRAMMATIC is for charts, bars and stat cards the editor renders. Never ask the image to render sentences.\n\nMOTION — motionIntent: a simple camera move (hold, slow push-in, pan, tilt), what the subject does, what the environment does, a weight. Only what a drawn frame can show — never lens, focal length or depth of field.\n\nMOTIF — the callback's planted detail gets motif {role:\"plant\", id:\"callback\"}; its payoff {role:\"payoff\", id:\"callback\"} and treatment CALLBACK. Omit motif otherwise.\n\nBE TERSE — one concrete sentence per visualConcept, a short userSummary, a few words per framing and motion field. Omit optional fields you don't need. Return \"beats\" as a JSON array (never a string).\n\nPRODUCTION BIBLE INDEX (the only ids that exist):\n{\"visualPremise\":\"A flat 2D stickman-doodle explainer that tracks one visual subject — the cultural image of the 'horned Viking' — across a few distinct, repeatable locations (battle hillside, Bronze Age ritual site, excavation trench, 19th‑century theater, museum display).\",\"visualTone\":\"informative with wry distance: clear and slightly ironic (we're debunking a dramatic image), balancing visceral spectacle (the imagined horned charge) with quiet, evidence-first museum and archaeology scenes.\",\"cast\":[{\"id\":\"hero\",\"role\":\"the horned-Viking icon — the single wrong picture that circulates across time\"},{\"id\":\"viewer\",\"role\":\"the viewer's second-person avatar used in the opening charge scene\"},{\"id\":\"archaeologist\",\"role\":\"a generic archaeologist who inspects finds and points out absence/presence of evidence\"},{\"id\":\"19th_century_costume_designer\",\"role\":\"the Romantic/operatic costume designer figure who first popularizes the horned look onstage\"},{\"id\":\"bronze_age_priest\",\"role\":\"the wearer of ritual/ceremonial horned headgear from the Nordic Bronze Age context\"},{\"id\":\"plain_viking_warrior\",\"role\":\"the evidence-grounded Viking-age warrior as reconstructed from archaeology (no horns)\"}],\"settings\":[{\"id\":\"setting_imagined_battlefield_hillside_dramatic_s\",\"label\":\"imagined battlefield hillside (dramatic, stylized)\"},{\"id\":\"setting_bronze_age_ritual_bog_find_location_open\",\"label\":\"Bronze Age ritual/ bog find location (open field with peat bog marker)\"},{\"id\":\"setting_archaeological_excavation_trench_grid_la\",\"label\":\"archaeological excavation trench (grid, labeled finds, trowel and brush)\"},{\"id\":\"setting_19th_century_theater_stage_atelier_stage\",\"label\":\"19th-century theater stage/atelier (stage backdrop, costume racks)\"},{\"id\":\"setting_museum_display_case_pedestal_label_plaqu\",\"label\":\"museum display case (pedestal, label plaque, glass casing)\"}],\"props\":[{\"id\":\"gjermundbu_helmet\",\"label\":\"The Gjermundbu-style helmet: a simple rounded iron dome with an integrated 'spectacle' guard curving over the eye region and a short nose guard; no horn attachments, no rivet patterns for horns. Dull iron-gray fill, thin black outline. Display on a small museum pedestal with a label reading 'Gjermundbu helmet, c. 970'.\"},{\"id\":\"veksø_bronze_helm\",\"label\":\"Veksø-type bronze ceremonial helmet: thin decorative bronze cap with long gently curved horns ending in small round discs; horns are narrower and shorter than the icon horns and look fragile. Warm copper fill, horns off-white tips. Often shown with a watery/bog or ritual context.\"},{\"id\":\"theater_prop_helmet\",\"label\":\"Theatrical horned helmet prop: bold, exaggerated horns (same silhouette as the horned-Viking icon) but visually heavier and stylized for stage: thicker horn cross-section and larger scale. Colored with slightly brighter pigments to read at a distance (burgundy accent available).\"},{\"id\":\"museum_label\",\"label\":\"Small rectangular placard: pale gray rectangle with two lines of text (title line bold, secondary line small). Use once next to actual archaeological pieces (e.g., 'Gjermundbu helmet, c. 970') to visually cue 'authentic museum object'.\"}],\"graphicLanguage\":{\"comparisonLayouts\":\"Side-by-side comparisons always align helmets at the same baseline for easy silhouette reading. Use captions in cool blue for archaeological items and sepia for theatrical/cultural items.\",\"timelineConventions\":\"Horizontal timeline bar with three labeled nodes: 'Bronze Age (c. 900–1100 BCE)' — copper node; 'Viking Age (c. 793–1066 CE)' — iron-gray node; '19th century Romantic/theatre' — sepia node. Connect the horned icon with arrows showing cultural borrowing.\",\"symbolicMetaphorLanguage\":\"Use the horned-Viking icon as a recurring metaphor: when the narration says 'this image stuck', show the icon stamped repeatedly like a simple rubber-stamp motif fading into postcards, theater posters, and a modern football helmet.\"},\"factualVisualConstraints\":[\"Do not invent physical horn attachment marks on genuine Viking-age helmet reconstructions (e.g., Gjermundbu).\",\"Veksø bronze helmets must be clearly labeled Bronze Age and look decorative, not battle-ready.\",\"Theatrical horned helmets must be shown as 19th-century costume props, visually distinct from Bronze Age originals.\"]}\n\nCALLBACK PLAN: planted detail \"two long curved horns\" — plant in segment seg1, payoff in segment seg14.",
+              "cache_control": {
+                "type": "ephemeral"
+              }
+            }
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "content": "WINDOW 1: chunks C0..C33 (0.0s-112.1s of the video). Cover EXACTLY these chunks. Times are from the window start.\n\nPREVIOUS BEATS: none — this is the opening (the hook).\n\nCHUNKS:\n(segment seg1)\nC0 [0.0s, 1.8s long, 4w] You're gripping a shield,\nC1 [1.8s, 3.2s long, 7w] screaming down a hillside toward a shieldwall,\nC2 [5.0s, 3.7s long, 9w] and two long curved horns jut off your helmet,\nC3 [8.7s, 3.9s long, 9w] cutting the air on either side of your head.\nC4 [12.6s, 2.5s long, 5w] The horns catch the firelight.\nC5 [15.0s, 1.7s long, 3w] They look terrifying.\nC6 [16.7s, 2.7s long, 6w] They look exactly like every painting,\nC7 [19.5s, 5.5s long, 12w] every movie poster, every Halloween costume you've ever seen of a Viking.\nC8 [25.0s, 3.8s long, 8w] This is the image burned into your head.\n(segment seg2)\nC9 [28.7s, 3.3s long, 8w] A single wrong picture like this can quietly\nC10 [32.0s, 4.0s long, 8w] rewrite an entire culture's history in our heads.\n(segment seg3)\nC11 [35.9s, 3.6s long, 9w] So did any Viking ever actually strap on horns\nC12 [39.5s, 2.4s long, 4w] before walking into battle?\n(segment seg4)\nC13 [41.9s, 4.2s long, 9w] Here's the belief almost everyone carries around without question:\nC14 [46.1s, 3.2s long, 7w] Viking raiders wore horned helmets into combat,\nC15 [49.3s, 4.3s long, 10w] the horns curving up from the sides like a bull's.\nC16 [53.5s, 1.6s long, 3w] It feels obvious.\nC17 [55.1s, 3.6s long, 7w] It's on flags, beer labels, football helmets.\nC18 [58.7s, 4.0s long, 9w] But archaeologists digging across Scandinavia for over a century\nC19 [62.8s, 4.2s long, 9w] have found remarkably few actual Viking-age helmets at all.\nC20 [67.0s, 5.3s long, 12w] Total confirmed helmets from the entire Viking Age, roughly 793 to 1066,\nC21 [72.3s, 4.4s long, 10w] that survive with enough of the skull intact to study?\nC22 [76.7s, 3.3s long, 7w] You can count them on one hand.\n(segment seg5)\nC23 [80.0s, 3.2s long, 7w] The best-preserved one is the Gjermundbu helmet,\nC24 [83.2s, 3.9s long, 10w] dug out of a burial mound in Norway in 1943,\nC25 [87.1s, 2.7s long, 6w] dated to around the year 970.\nC26 [89.8s, 2.4s long, 6w] It has a rounded iron cap,\nC27 [92.2s, 2.9s long, 7w] a spectacled guard curving over the eyes\nC28 [95.1s, 4.4s long, 9w] and nose, and absolutely nothing where horns would attach.\nC29 [99.4s, 1.2s long, 2w] No sockets.\nC30 [100.6s, 3.3s long, 7w] No rivet holes shaped for anything curved.\nC31 [103.9s, 4.0s long, 10w] Just a plain iron dome built to deflect a sword,\nC32 [107.9s, 2.2s long, 4w] not to look dramatic.\n(segment seg6)\nC33 [110.1s, 2.0s long, 4w] Why trust one helmet?"
+            }
+          ],
+          "tools": [
+            {
+              "name": "direct_beats",
+              "description": "Returns the beats.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "beats"
+                ],
+                "properties": {
+                  "beats": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "startChunk",
+                        "endChunk",
+                        "visualConcept",
+                        "userSummary",
+                        "treatment",
+                        "composition",
+                        "motionIntent"
+                      ],
+                      "properties": {
+                        "startChunk": {
+                          "type": "integer",
+                          "description": "First chunk index (C-number) of this beat."
+                        },
+                        "endChunk": {
+                          "type": "integer",
+                          "description": "Last chunk index of this beat (inclusive). A beat is 1-3 consecutive chunks."
+                        },
+                        "visualConcept": {
+                          "type": "string",
+                          "description": "What the viewer SEES that makes this exact line land — one concrete sentence (max ~20 words)."
+                        },
+                        "userSummary": {
+                          "type": "string",
+                          "description": "One short plain sentence for the UI (max ~10 words)."
+                        },
+                        "treatment": {
+                          "type": "string",
+                          "enum": [
+                            "STORY_SCENE",
+                            "REACTION",
+                            "POV",
+                            "ESTABLISHING",
+                            "OBJECT_DETAIL",
+                            "SYMBOLIC",
+                            "COMPARISON",
+                            "SPLIT",
+                            "MAP",
+                            "TIMELINE_BAR",
+                            "SCALE",
+                            "STAT_CARD",
+                            "ICON_ROW",
+                            "CROWD",
+                            "CALLBACK"
+                          ]
+                        },
+                        "subjects": {
+                          "type": "array",
+                          "description": "Cast on screen (omit if none).",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "castId",
+                              "presence",
+                              "action",
+                              "expression"
+                            ],
+                            "properties": {
+                              "castId": {
+                                "type": "string",
+                                "enum": [
+                                  "hero",
+                                  "viewer",
+                                  "archaeologist",
+                                  "19th_century_costume_designer",
+                                  "bronze_age_priest",
+                                  "plain_viking_warrior"
+                                ]
+                              },
+                              "presence": {
+                                "type": "string",
+                                "enum": [
+                                  "full",
+                                  "hands",
+                                  "back",
+                                  "tiny"
+                                ]
+                              },
+                              "action": {
+                                "type": "string"
+                              },
+                              "expression": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "settingId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "enum": [
+                            "setting_imagined_battlefield_hillside_dramatic_s",
+                            "setting_bronze_age_ritual_bog_find_location_open",
+                            "setting_archaeological_excavation_trench_grid_la",
+                            "setting_19th_century_theater_stage_atelier_stage",
+                            "setting_museum_display_case_pedestal_label_plaqu",
+                            null
+                          ],
+                          "description": "Omit or null for abstract graphic beats."
+                        },
+                        "settingVariant": {
+                          "type": "string",
+                          "description": "Optional short variant (time of day, angle)."
+                        },
+                        "propIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "gjermundbu_helmet",
+                              "veksø_bronze_helm",
+                              "theater_prop_helmet",
+                              "museum_label"
+                            ]
+                          },
+                          "description": "Omit if none."
+                        },
+                        "composition": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "camera",
+                            "framing"
+                          ],
+                          "properties": {
+                            "camera": {
+                              "type": "string",
+                              "enum": [
+                                "EXTREME_WIDE",
+                                "WIDE",
+                                "MEDIUM",
+                                "CLOSE_UP",
+                                "EXTREME_CLOSE_UP",
+                                "OVERHEAD",
+                                "POV",
+                                "OVER_THE_SHOULDER",
+                                "LOW_ANGLE",
+                                "FLAT_GRAPHIC"
+                              ]
+                            },
+                            "framing": {
+                              "type": "string",
+                              "description": "A few words."
+                            }
+                          }
+                        },
+                        "textIntent": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "mode",
+                            "text"
+                          ],
+                          "description": "Omit for NO_TEXT.",
+                          "properties": {
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "NO_TEXT",
+                                "SHORT_TEXT",
+                                "PROGRAMMATIC"
+                              ]
+                            },
+                            "text": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "description": "Exact on-screen text (<= 5 words) for SHORT_TEXT; what to render for PROGRAMMATIC."
+                            }
+                          }
+                        },
+                        "motif": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "role",
+                            "id"
+                          ],
+                          "description": "Only for the callback plant/payoff; omit otherwise.",
+                          "properties": {
+                            "role": {
+                              "type": "string",
+                              "enum": [
+                                "none",
+                                "plant",
+                                "payoff"
+                              ]
+                            },
+                            "id": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        },
+                        "motionIntent": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "camera",
+                            "subject",
+                            "environment",
+                            "weight"
+                          ],
+                          "properties": {
+                            "camera": {
+                              "type": "string"
+                            },
+                            "subject": {
+                              "type": "string"
+                            },
+                            "environment": {
+                              "type": "string"
+                            },
+                            "weight": {
+                              "type": "string",
+                              "enum": [
+                                "still",
+                                "light",
+                                "medium",
+                                "strong"
+                              ]
+                            }
+                          }
+                        },
+                        "flags": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "punch",
+                            "hold",
+                            "reason"
+                          ],
+                          "description": "Omit unless PUNCH or HOLD.",
+                          "properties": {
+                            "punch": {
+                              "type": "boolean"
+                            },
+                            "hold": {
+                              "type": "boolean"
+                            },
+                            "reason": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "tool_choice": {
+            "type": "tool",
+            "name": "direct_beats"
+          }
+        },
+        "status": 200,
+        "response": {
+          "model": "claude-sonnet-5",
+          "id": "msg_011CfSgTt4JHAJDNKFvb5TE2",
+          "type": "message",
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "toolu_01VLzgTvicuZAY9vHQgoEHuS",
+              "name": "direct_beats",
+              "input": {
+                "beats": [
+                  {
+                    "startChunk": 0,
+                    "endChunk": 1,
+                    "visualConcept": "Viewer avatar charges downhill gripping a shield, screaming toward a distant shieldwall.",
+                    "userSummary": "You charge into battle, shield raised.",
+                    "treatment": "POV",
+                    "composition": {
+                      "camera": "POV",
+                      "framing": "low angle, hillside rushing past"
+                    },
+                    "motionIntent": {
+                      "camera": "fast push forward",
+                      "subject": "viewer sprints downhill",
+                      "environment": "hillside blurs past",
+                      "weight": "strong"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "viewer",
+                        "presence": "full",
+                        "action": "gripping shield, screaming down hillside",
+                        "expression": "fierce, terrified"
+                      }
+                    ],
+                    "settingId": "setting_imagined_battlefield_hillside_dramatic_s"
+                  },
+                  {
+                    "startChunk": 2,
+                    "endChunk": 3,
+                    "visualConcept": "Two long curved horns jut off the viewer's helmet, slicing the air on each side.",
+                    "userSummary": "Curved horns cut the air off your helmet.",
+                    "treatment": "POV",
+                    "composition": {
+                      "camera": "CLOSE_UP",
+                      "framing": "helmet horns in profile"
+                    },
+                    "motionIntent": {
+                      "camera": "slight push-in",
+                      "subject": "horns cut air as head turns",
+                      "environment": "wind lines",
+                      "weight": "medium"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "viewer",
+                        "presence": "full",
+                        "action": "running, horns visible on helmet",
+                        "expression": "intense"
+                      }
+                    ],
+                    "settingId": "setting_imagined_battlefield_hillside_dramatic_s",
+                    "motif": {
+                      "role": "plant",
+                      "id": "callback"
+                    }
+                  },
+                  {
+                    "startChunk": 4,
+                    "endChunk": 5,
+                    "visualConcept": "Firelight glints off the curved horns, making them look menacing.",
+                    "userSummary": "Firelight makes the horns look terrifying.",
+                    "treatment": "OBJECT_DETAIL",
+                    "composition": {
+                      "camera": "EXTREME_CLOSE_UP",
+                      "framing": "horn tip catching flame light"
+                    },
+                    "motionIntent": {
+                      "camera": "hold",
+                      "subject": "horn glints",
+                      "environment": "firelight flicker",
+                      "weight": "light"
+                    },
+                    "settingId": "setting_imagined_battlefield_hillside_dramatic_s"
+                  },
+                  {
+                    "startChunk": 6,
+                    "endChunk": 7,
+                    "visualConcept": "The horned silhouette morphs across a painting, movie poster, and Halloween costume.",
+                    "userSummary": "Same horned image in paintings, posters, costumes.",
+                    "treatment": "SYMBOLIC",
+                    "composition": {
+                      "camera": "FLAT_GRAPHIC",
+                      "framing": "three stamped icons in a row"
+                    },
+                    "motionIntent": {
+                      "camera": "pan across row",
+                      "subject": "icon repeats and fades between forms",
+                      "environment": "static backdrop",
+                      "weight": "light"
+                    },
+                    "textIntent": {
+                      "mode": "SHORT_TEXT",
+                      "text": "Painting. Poster. Costume."
+                    }
+                  },
+                  {
+                    "startChunk": 8,
+                    "endChunk": 8,
+                    "visualConcept": "The horned icon stamps itself directly onto a stylized human head like a brand.",
+                    "userSummary": "This image is burned into your head.",
+                    "treatment": "SYMBOLIC",
+                    "composition": {
+                      "camera": "CLOSE_UP",
+                      "framing": "stamp mark on head silhouette"
+                    },
+                    "motionIntent": {
+                      "camera": "hold",
+                      "subject": "stamp presses down",
+                      "environment": "none",
+                      "weight": "medium"
+                    }
+                  },
+                  {
+                    "startChunk": 9,
+                    "endChunk": 10,
+                    "visualConcept": "A single wrong stamped icon quietly overwrites an entire timeline of history.",
+                    "userSummary": "One wrong picture rewrites history.",
+                    "treatment": "SYMBOLIC",
+                    "composition": {
+                      "camera": "WIDE",
+                      "framing": "icon stamping over faded timeline"
+                    },
+                    "motionIntent": {
+                      "camera": "slow pan",
+                      "subject": "stamp spreads across timeline",
+                      "environment": "timeline fades under stamp",
+                      "weight": "medium"
+                    }
+                  },
+                  {
+                    "startChunk": 11,
+                    "endChunk": 12,
+                    "visualConcept": "A plain Viking warrior pauses mid-step, question mark over the helmet before battle.",
+                    "userSummary": "Did Vikings really wear horns into battle?",
+                    "treatment": "REACTION",
+                    "composition": {
+                      "camera": "MEDIUM",
+                      "framing": "warrior mid-stride, helmet visible"
+                    },
+                    "motionIntent": {
+                      "camera": "hold",
+                      "subject": "warrior pauses, tilts head",
+                      "environment": "battlefield mist",
+                      "weight": "light"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "plain_viking_warrior",
+                        "presence": "full",
+                        "action": "pausing before battle, uncertain",
+                        "expression": "questioning"
+                      }
+                    ],
+                    "settingId": "setting_imagined_battlefield_hillside_dramatic_s",
+                    "textIntent": {
+                      "mode": "SHORT_TEXT",
+                      "text": "Horns? Really?"
+                    }
+                  },
+                  {
+                    "startChunk": 13,
+                    "endChunk": 15,
+                    "visualConcept": "A crowd nods along as the horned-helmet belief is stated plainly overhead.",
+                    "userSummary": "Almost everyone believes Vikings wore horns.",
+                    "treatment": "CROWD",
+                    "composition": {
+                      "camera": "WIDE",
+                      "framing": "crowd of tiny figures nodding"
+                    },
+                    "motionIntent": {
+                      "camera": "slow pull back",
+                      "subject": "crowd nods in unison",
+                      "environment": "static",
+                      "weight": "light"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "plain_viking_warrior",
+                        "presence": "tiny",
+                        "action": "standing among crowd nodding",
+                        "expression": "convinced"
+                      }
+                    ]
+                  },
+                  {
+                    "startChunk": 16,
+                    "endChunk": 17,
+                    "visualConcept": "The horned icon appears stamped on a flag, a beer label, and a football helmet.",
+                    "userSummary": "It's on flags, beer, football helmets.",
+                    "treatment": "ICON_ROW",
+                    "composition": {
+                      "camera": "FLAT_GRAPHIC",
+                      "framing": "three icons in a row"
+                    },
+                    "motionIntent": {
+                      "camera": "pan across icons",
+                      "subject": "icons appear in sequence",
+                      "environment": "static",
+                      "weight": "light"
+                    },
+                    "textIntent": {
+                      "mode": "SHORT_TEXT",
+                      "text": "Flags. Beer. Football."
+                    }
+                  },
+                  {
+                    "startChunk": 18,
+                    "endChunk": 19,
+                    "visualConcept": "An archaeologist kneels in a trench surrounded by empty labeled grid squares.",
+                    "userSummary": "Archaeologists find almost no Viking helmets at all.",
+                    "treatment": "STORY_SCENE",
+                    "composition": {
+                      "camera": "WIDE",
+                      "framing": "trench grid, mostly empty labels"
+                    },
+                    "motionIntent": {
+                      "camera": "slow push-in",
+                      "subject": "archaeologist brushes empty dirt",
+                      "environment": "dust settles",
+                      "weight": "light"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "archaeologist",
+                        "presence": "full",
+                        "action": "brushing dirt in empty trench square",
+                        "expression": "focused"
+                      }
+                    ],
+                    "settingId": "setting_archaeological_excavation_trench_grid_la"
+                  },
+                  {
+                    "startChunk": 20,
+                    "endChunk": 21,
+                    "visualConcept": "A horizontal timeline bar spans 793 to 1066 CE, almost entirely empty of markers.",
+                    "userSummary": "Almost no intact helmets survive from centuries.",
+                    "treatment": "TIMELINE_BAR",
+                    "composition": {
+                      "camera": "FLAT_GRAPHIC",
+                      "framing": "long bar, sparse markers"
+                    },
+                    "motionIntent": {
+                      "camera": "pan along bar",
+                      "subject": "few markers appear",
+                      "environment": "static",
+                      "weight": "light"
+                    },
+                    "textIntent": {
+                      "mode": "PROGRAMMATIC",
+                      "text": "793–1066 CE timeline, sparse helmet markers"
+                    }
+                  },
+                  {
+                    "startChunk": 22,
+                    "endChunk": 22,
+                    "visualConcept": "A single hand holds up fingers counting the world's surviving Viking helmets.",
+                    "userSummary": "You can count them on one hand.",
+                    "treatment": "STAT_CARD",
+                    "composition": {
+                      "camera": "CLOSE_UP",
+                      "framing": "hand with raised fingers"
+                    },
+                    "motionIntent": {
+                      "camera": "hold",
+                      "subject": "fingers count up",
+                      "environment": "none",
+                      "weight": "light"
+                    }
+                  },
+                  {
+                    "startChunk": 23,
+                    "endChunk": 24,
+                    "visualConcept": "An archaeologist uncovers the Gjermundbu helmet in a Norwegian burial mound, 1943.",
+                    "userSummary": "Best-preserved helmet found in Norway, 1943.",
+                    "treatment": "STORY_SCENE",
+                    "composition": {
+                      "camera": "OVERHEAD",
+                      "framing": "burial mound reveal"
+                    },
+                    "motionIntent": {
+                      "camera": "slow push-in",
+                      "subject": "archaeologist lifts helmet from soil",
+                      "environment": "soil crumbles away",
+                      "weight": "medium"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "archaeologist",
+                        "presence": "full",
+                        "action": "unearthing helmet from mound",
+                        "expression": "amazed"
+                      }
+                    ],
+                    "settingId": "setting_archaeological_excavation_trench_grid_la",
+                    "propIds": [
+                      "gjermundbu_helmet"
+                    ],
+                    "textIntent": {
+                      "mode": "SHORT_TEXT",
+                      "text": "Norway, 1943"
+                    }
+                  },
+                  {
+                    "startChunk": 25,
+                    "endChunk": 25,
+                    "visualConcept": "The Gjermundbu helmet sits on a museum pedestal with its date label.",
+                    "userSummary": "Dated to around the year 970.",
+                    "treatment": "OBJECT_DETAIL",
+                    "composition": {
+                      "camera": "MEDIUM",
+                      "framing": "helmet on pedestal, label visible"
+                    },
+                    "motionIntent": {
+                      "camera": "slow push-in",
+                      "subject": "helmet static on pedestal",
+                      "environment": "none",
+                      "weight": "still"
+                    },
+                    "settingId": "setting_museum_display_case_pedestal_label_plaqu",
+                    "propIds": [
+                      "gjermundbu_helmet",
+                      "museum_label"
+                    ],
+                    "textIntent": {
+                      "mode": "SHORT_TEXT",
+                      "text": "c. 970"
+                    }
+                  },
+                  {
+                    "startChunk": 26,
+                    "endChunk": 28,
+                    "visualConcept": "Close-up rotates the Gjermundbu helmet showing rounded cap, spectacled eye-guard, nose guard, no horns.",
+                    "userSummary": "Rounded cap, eye guard, nose guard, no horns.",
+                    "treatment": "OBJECT_DETAIL",
+                    "composition": {
+                      "camera": "CLOSE_UP",
+                      "framing": "helmet rotating in view"
+                    },
+                    "motionIntent": {
+                      "camera": "slow rotate around object",
+                      "subject": "helmet turns to reveal features",
+                      "environment": "none",
+                      "weight": "light"
+                    },
+                    "settingId": "setting_museum_display_case_pedestal_label_plaqu",
+                    "propIds": [
+                      "gjermundbu_helmet"
+                    ]
+                  },
+                  {
+                    "startChunk": 29,
+                    "endChunk": 30,
+                    "visualConcept": "Extreme close-up of the smooth helmet surface, showing no sockets and no rivet holes.",
+                    "userSummary": "No sockets, no rivet holes for horns.",
+                    "treatment": "OBJECT_DETAIL",
+                    "composition": {
+                      "camera": "EXTREME_CLOSE_UP",
+                      "framing": "smooth iron surface"
+                    },
+                    "motionIntent": {
+                      "camera": "hold",
+                      "subject": "surface scanned",
+                      "environment": "none",
+                      "weight": "still"
+                    },
+                    "settingId": "setting_museum_display_case_pedestal_label_plaqu",
+                    "propIds": [
+                      "gjermundbu_helmet"
+                    ],
+                    "textIntent": {
+                      "mode": "SHORT_TEXT",
+                      "text": "No sockets. No rivets."
+                    }
+                  },
+                  {
+                    "startChunk": 31,
+                    "endChunk": 32,
+                    "visualConcept": "A sword strikes the plain iron dome and deflects off, showing pure function over drama.",
+                    "userSummary": "Built to deflect a sword, not to impress.",
+                    "treatment": "STORY_SCENE",
+                    "composition": {
+                      "camera": "MEDIUM",
+                      "framing": "sword glancing off helmet"
+                    },
+                    "motionIntent": {
+                      "camera": "quick push-in",
+                      "subject": "sword deflects off dome",
+                      "environment": "spark flash",
+                      "weight": "strong"
+                    },
+                    "propIds": [
+                      "gjermundbu_helmet"
+                    ],
+                    "settingId": "setting_imagined_battlefield_hillside_dramatic_s"
+                  },
+                  {
+                    "startChunk": 33,
+                    "endChunk": 33,
+                    "visualConcept": "The lone Gjermundbu helmet sits alone under a spotlight, a skeptical question mark above it.",
+                    "userSummary": "Why trust just one helmet?",
+                    "treatment": "REACTION",
+                    "composition": {
+                      "camera": "MEDIUM",
+                      "framing": "single helmet, spotlight"
+                    },
+                    "motionIntent": {
+                      "camera": "hold",
+                      "subject": "helmet static",
+                      "environment": "spotlight flicker",
+                      "weight": "still"
+                    },
+                    "settingId": "setting_museum_display_case_pedestal_label_plaqu",
+                    "propIds": [
+                      "gjermundbu_helmet"
+                    ],
+                    "textIntent": {
+                      "mode": "SHORT_TEXT",
+                      "text": "Why trust one helmet?"
+                    }
+                  }
+                ]
+              },
+              "caller": {
+                "type": "direct"
+              }
+            }
+          ],
+          "container": null,
+          "stop_reason": "tool_use",
+          "stop_sequence": null,
+          "stop_details": null,
+          "usage": {
+            "input_tokens": 1527,
+            "cache_creation_input_tokens": 5025,
+            "cache_read_input_tokens": 0,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 5025,
+              "ephemeral_1h_input_tokens": 0
+            },
+            "output_tokens": 4398,
+            "output_tokens_details": {
+              "thinking_tokens": 0
+            },
+            "service_tier": "standard",
+            "inference_geo": "global"
+          },
+          "diagnostics": null
+        },
+        "seq": 0,
+        "stage": "beat_director"
+      },
+      {
+        "kind": "anthropic",
+        "key": "direct_beats",
+        "request": {
+          "model": "claude-sonnet-5",
+          "max_tokens": 12000,
+          "system": [
+            {
+              "type": "text",
+              "text": "You are Zyvo's Beat Director for 2D stickman-doodle explainer videos. You receive the finished narration already split by code into CLAUSE CHUNKS (C-numbers, each with its duration), the video's Production Bible (the only cast, settings and props that exist, with ids), the callback plan, and a short summary of the beats already directed. You group the chunks of one window into BEATS: small scenes of about 3-4 seconds, each one visual idea.\n\nYou never write or change narration. A beat is a range of consecutive chunks: startChunk..endChunk (inclusive), 1-3 chunks. Cover the window exactly: the first beat starts at the window's first chunk, each next beat starts at the previous endChunk + 1, the last beat ends at the window's last chunk.\n\nSIZE — most beats are 1-2 chunks; merge only when splitting would break a single visual idea. Reference: a good video of this kind averages ~9 words and ~3.7 s per beat, never more than ~15 words; sentences are routinely split across beats at clauses. A beat must stay at or under 6.5 s (sum of its chunk durations); HOLD (flags.hold with a reason) may run to 9 s, about once a minute at most. Anything longer is split by code at chunk boundaries — so don't rely on it. In the first 30 seconds keep beats at about 2.5-3.5 s.\n\nWHERE TO CUT — cut on MEANING: a new claim, a change of action, a question, a reveal, a statistic, a comparison, a callback, a jump in time or place.\n\nWHAT THE VIEWER SEES — visualConcept is what makes THIS exact line land, drawable in simple stickman doodle style. Use visual rhetoric when it fits:\n- threat: POV of the danger approaching the subject;\n- negation or myth: the thing crossed out;\n- safety vs danger: a small safe zone against a looming threat;\n- a tiny share of something huge: a long bar with a tiny highlighted sliver;\n- huge numbers: a crowd receding to the horizon;\n- then vs now: a mirrored SPLIT;\n- callbacks: re-use the EXACT composition, camera and subjects of the planted beat (treatment CALLBACK).\n\nPick one treatment per beat: STORY_SCENE, REACTION, POV, ESTABLISHING, OBJECT_DETAIL, SYMBOLIC, COMPARISON, SPLIT, MAP, TIMELINE_BAR, SCALE, STAT_CARD, ICON_ROW, CROWD, CALLBACK. Adjacent beats must differ in treatment, camera, subjects or setting (unless HOLD or CALLBACK).\n\nCAST — use ONLY the castIds listed (never a placeholder). \"you\" lines use the viewer avatar (castId \"viewer\") when the bible has one; generic people (a warrior, an archaeologist) use their archetype ids. Omit subjects for beats with nobody on screen. Omit settingId for abstract graphics.\n\nTEXT — omit textIntent for most beats (NO_TEXT). SHORT_TEXT is exact on-screen text of at most 5 words (a year, a number, a key term), at most about 4 per minute. PROGRAMMATIC is for charts, bars and stat cards the editor renders. Never ask the image to render sentences.\n\nMOTION — motionIntent: a simple camera move (hold, slow push-in, pan, tilt), what the subject does, what the environment does, a weight. Only what a drawn frame can show — never lens, focal length or depth of field.\n\nMOTIF — the callback's planted detail gets motif {role:\"plant\", id:\"callback\"}; its payoff {role:\"payoff\", id:\"callback\"} and treatment CALLBACK. Omit motif otherwise.\n\nBE TERSE — one concrete sentence per visualConcept, a short userSummary, a few words per framing and motion field. Omit optional fields you don't need. Return \"beats\" as a JSON array (never a string).\n\nPRODUCTION BIBLE INDEX (the only ids that exist):\n{\"visualPremise\":\"A flat 2D stickman-doodle explainer that tracks one visual subject — the cultural image of the 'horned Viking' — across a few distinct, repeatable locations (battle hillside, Bronze Age ritual site, excavation trench, 19th‑century theater, museum display).\",\"visualTone\":\"informative with wry distance: clear and slightly ironic (we're debunking a dramatic image), balancing visceral spectacle (the imagined horned charge) with quiet, evidence-first museum and archaeology scenes.\",\"cast\":[{\"id\":\"hero\",\"role\":\"the horned-Viking icon — the single wrong picture that circulates across time\"},{\"id\":\"viewer\",\"role\":\"the viewer's second-person avatar used in the opening charge scene\"},{\"id\":\"archaeologist\",\"role\":\"a generic archaeologist who inspects finds and points out absence/presence of evidence\"},{\"id\":\"19th_century_costume_designer\",\"role\":\"the Romantic/operatic costume designer figure who first popularizes the horned look onstage\"},{\"id\":\"bronze_age_priest\",\"role\":\"the wearer of ritual/ceremonial horned headgear from the Nordic Bronze Age context\"},{\"id\":\"plain_viking_warrior\",\"role\":\"the evidence-grounded Viking-age warrior as reconstructed from archaeology (no horns)\"}],\"settings\":[{\"id\":\"setting_imagined_battlefield_hillside_dramatic_s\",\"label\":\"imagined battlefield hillside (dramatic, stylized)\"},{\"id\":\"setting_bronze_age_ritual_bog_find_location_open\",\"label\":\"Bronze Age ritual/ bog find location (open field with peat bog marker)\"},{\"id\":\"setting_archaeological_excavation_trench_grid_la\",\"label\":\"archaeological excavation trench (grid, labeled finds, trowel and brush)\"},{\"id\":\"setting_19th_century_theater_stage_atelier_stage\",\"label\":\"19th-century theater stage/atelier (stage backdrop, costume racks)\"},{\"id\":\"setting_museum_display_case_pedestal_label_plaqu\",\"label\":\"museum display case (pedestal, label plaque, glass casing)\"}],\"props\":[{\"id\":\"gjermundbu_helmet\",\"label\":\"The Gjermundbu-style helmet: a simple rounded iron dome with an integrated 'spectacle' guard curving over the eye region and a short nose guard; no horn attachments, no rivet patterns for horns. Dull iron-gray fill, thin black outline. Display on a small museum pedestal with a label reading 'Gjermundbu helmet, c. 970'.\"},{\"id\":\"veksø_bronze_helm\",\"label\":\"Veksø-type bronze ceremonial helmet: thin decorative bronze cap with long gently curved horns ending in small round discs; horns are narrower and shorter than the icon horns and look fragile. Warm copper fill, horns off-white tips. Often shown with a watery/bog or ritual context.\"},{\"id\":\"theater_prop_helmet\",\"label\":\"Theatrical horned helmet prop: bold, exaggerated horns (same silhouette as the horned-Viking icon) but visually heavier and stylized for stage: thicker horn cross-section and larger scale. Colored with slightly brighter pigments to read at a distance (burgundy accent available).\"},{\"id\":\"museum_label\",\"label\":\"Small rectangular placard: pale gray rectangle with two lines of text (title line bold, secondary line small). Use once next to actual archaeological pieces (e.g., 'Gjermundbu helmet, c. 970') to visually cue 'authentic museum object'.\"}],\"graphicLanguage\":{\"comparisonLayouts\":\"Side-by-side comparisons always align helmets at the same baseline for easy silhouette reading. Use captions in cool blue for archaeological items and sepia for theatrical/cultural items.\",\"timelineConventions\":\"Horizontal timeline bar with three labeled nodes: 'Bronze Age (c. 900–1100 BCE)' — copper node; 'Viking Age (c. 793–1066 CE)' — iron-gray node; '19th century Romantic/theatre' — sepia node. Connect the horned icon with arrows showing cultural borrowing.\",\"symbolicMetaphorLanguage\":\"Use the horned-Viking icon as a recurring metaphor: when the narration says 'this image stuck', show the icon stamped repeatedly like a simple rubber-stamp motif fading into postcards, theater posters, and a modern football helmet.\"},\"factualVisualConstraints\":[\"Do not invent physical horn attachment marks on genuine Viking-age helmet reconstructions (e.g., Gjermundbu).\",\"Veksø bronze helmets must be clearly labeled Bronze Age and look decorative, not battle-ready.\",\"Theatrical horned helmets must be shown as 19th-century costume props, visually distinct from Bronze Age originals.\"]}\n\nCALLBACK PLAN: planted detail \"two long curved horns\" — plant in segment seg1, payoff in segment seg14.",
+              "cache_control": {
+                "type": "ephemeral"
+              }
+            }
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "content": "WINDOW 1: code split beats that ran too long. Write a fresh visual contract for EACH beat marked NEEDS CONTRACT, using exactly its chunk range. Give each a different composition, framing or moment from its neighbours — never duplicate the original beat's image idea; show the next beat of the action instead.\n\ncontext C2..C2 \"and two long curved horns jut off your helmet,\" — POV/CLOSE_UP: Two long curved horns jut off the viewer's helmet, slicing the air on each side.\nNEEDS CONTRACT C3..C3 \"cutting the air on either side of your head.\" (split from a longer beat whose idea was: Two long curved horns jut off the viewer's helmet, slicing the air on each side.)\ncontext C4..C5 \"The horns catch the firelight. They look terrifying.\" — OBJECT_DETAIL/EXTREME_CLOSE_UP: Firelight glints off the curved horns, making them look menacing.\ncontext C6..C6 \"They look exactly like every painting,\" — SYMBOLIC/FLAT_GRAPHIC: The horned silhouette morphs across a painting, movie poster, and Halloween costume.\nNEEDS CONTRACT C7..C7 \"every movie poster, every Halloween costume you've ever seen of a Viking.\" (split from a longer beat whose idea was: The horned silhouette morphs across a painting, movie poster, and Halloween costume.)\ncontext C8..C8 \"This is the image burned into your head.\" — SYMBOLIC/CLOSE_UP: The horned icon stamps itself directly onto a stylized human head like a brand.\ncontext C9..C9 \"A single wrong picture like this can quietly\" — SYMBOLIC/WIDE: A single wrong stamped icon quietly overwrites an entire timeline of history.\nNEEDS CONTRACT C10..C10 \"rewrite an entire culture's history in our heads.\" (split from a longer beat whose idea was: A single wrong stamped icon quietly overwrites an entire timeline of history.)\ncontext C11..C12 \"So did any Viking ever actually strap on horns before walking into battle?\" — REACTION/MEDIUM: A plain Viking warrior pauses mid-step, question mark over the helmet before battle.\ncontext C13..C13 \"Here's the belief almost everyone carries around without question:\" — CROWD/WIDE: A crowd nods along as the horned-helmet belief is stated plainly overhead.\nNEEDS CONTRACT C14..C14 \"Viking raiders wore horned helmets into combat,\" (split from a longer beat whose idea was: A crowd nods along as the horned-helmet belief is stated plainly overhead.)\nNEEDS CONTRACT C15..C15 \"the horns curving up from the sides like a bull's.\" (split from a longer beat whose idea was: A crowd nods along as the horned-helmet belief is stated plainly overhead.)\ncontext C16..C17 \"It feels obvious. It's on flags, beer labels, football helmets.\" — ICON_ROW/FLAT_GRAPHIC: The horned icon appears stamped on a flag, a beer label, and a football helmet.\ncontext C18..C18 \"But archaeologists digging across Scandinavia for over a century\" — STORY_SCENE/WIDE: An archaeologist kneels in a trench surrounded by empty labeled grid squares.\nNEEDS CONTRACT C19..C19 \"have found remarkably few actual Viking-age helmets at all.\" (split from a longer beat whose idea was: An archaeologist kneels in a trench surrounded by empty labeled grid squares.)\ncontext C20..C20 \"Total confirmed helmets from the entire Viking Age, roughly 793 to 1066,\" — TIMELINE_BAR/FLAT_GRAPHIC: A horizontal timeline bar spans 793 to 1066 CE, almost entirely empty of markers.\nNEEDS CONTRACT C21..C21 \"that survive with enough of the skull intact to study?\" (split from a longer beat whose idea was: A horizontal timeline bar spans 793 to 1066 CE, almost entirely empty of markers.)\ncontext C22..C22 \"You can count them on one hand.\" — STAT_CARD/CLOSE_UP: A single hand holds up fingers counting the world's surviving Viking helmets.\ncontext C23..C23 \"The best-preserved one is the Gjermundbu helmet,\" — STORY_SCENE/OVERHEAD: An archaeologist uncovers the Gjermundbu helmet in a Norwegian burial mound, 1943.\nNEEDS CONTRACT C24..C24 \"dug out of a burial mound in Norway in 1943,\" (split from a longer beat whose idea was: An archaeologist uncovers the Gjermundbu helmet in a Norwegian burial mound, 1943.)\ncontext C25..C25 \"dated to around the year 970.\" — OBJECT_DETAIL/MEDIUM: The Gjermundbu helmet sits on a museum pedestal with its date label.\ncontext C26..C27 \"It has a rounded iron cap, a spectacled guard curving over the eyes\" — OBJECT_DETAIL/CLOSE_UP: Close-up rotates the Gjermundbu helmet showing rounded cap, spectacled eye-guard, nose guard, no horns.\nNEEDS CONTRACT C28..C28 \"and nose, and absolutely nothing where horns would attach.\" (split from a longer beat whose idea was: Close-up rotates the Gjermundbu helmet showing rounded cap, spectacled eye-guard, nose guard, no horns.)\ncontext C29..C30 \"No sockets. No rivet holes shaped for anything curved.\" — OBJECT_DETAIL/EXTREME_CLOSE_UP: Extreme close-up of the smooth helmet surface, showing no sockets and no rivet holes.\n\nReturn \"beats\" containing ONLY the 9 NEEDS CONTRACT beat(s), in order."
+            }
+          ],
+          "tools": [
+            {
+              "name": "direct_beats",
+              "description": "Returns the beats.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "beats"
+                ],
+                "properties": {
+                  "beats": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "startChunk",
+                        "endChunk",
+                        "visualConcept",
+                        "userSummary",
+                        "treatment",
+                        "composition",
+                        "motionIntent"
+                      ],
+                      "properties": {
+                        "startChunk": {
+                          "type": "integer",
+                          "description": "First chunk index (C-number) of this beat."
+                        },
+                        "endChunk": {
+                          "type": "integer",
+                          "description": "Last chunk index of this beat (inclusive). A beat is 1-3 consecutive chunks."
+                        },
+                        "visualConcept": {
+                          "type": "string",
+                          "description": "What the viewer SEES that makes this exact line land — one concrete sentence (max ~20 words)."
+                        },
+                        "userSummary": {
+                          "type": "string",
+                          "description": "One short plain sentence for the UI (max ~10 words)."
+                        },
+                        "treatment": {
+                          "type": "string",
+                          "enum": [
+                            "STORY_SCENE",
+                            "REACTION",
+                            "POV",
+                            "ESTABLISHING",
+                            "OBJECT_DETAIL",
+                            "SYMBOLIC",
+                            "COMPARISON",
+                            "SPLIT",
+                            "MAP",
+                            "TIMELINE_BAR",
+                            "SCALE",
+                            "STAT_CARD",
+                            "ICON_ROW",
+                            "CROWD",
+                            "CALLBACK"
+                          ]
+                        },
+                        "subjects": {
+                          "type": "array",
+                          "description": "Cast on screen (omit if none).",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "castId",
+                              "presence",
+                              "action",
+                              "expression"
+                            ],
+                            "properties": {
+                              "castId": {
+                                "type": "string",
+                                "enum": [
+                                  "hero",
+                                  "viewer",
+                                  "archaeologist",
+                                  "19th_century_costume_designer",
+                                  "bronze_age_priest",
+                                  "plain_viking_warrior"
+                                ]
+                              },
+                              "presence": {
+                                "type": "string",
+                                "enum": [
+                                  "full",
+                                  "hands",
+                                  "back",
+                                  "tiny"
+                                ]
+                              },
+                              "action": {
+                                "type": "string"
+                              },
+                              "expression": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "settingId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "enum": [
+                            "setting_imagined_battlefield_hillside_dramatic_s",
+                            "setting_bronze_age_ritual_bog_find_location_open",
+                            "setting_archaeological_excavation_trench_grid_la",
+                            "setting_19th_century_theater_stage_atelier_stage",
+                            "setting_museum_display_case_pedestal_label_plaqu",
+                            null
+                          ],
+                          "description": "Omit or null for abstract graphic beats."
+                        },
+                        "settingVariant": {
+                          "type": "string",
+                          "description": "Optional short variant (time of day, angle)."
+                        },
+                        "propIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "gjermundbu_helmet",
+                              "veksø_bronze_helm",
+                              "theater_prop_helmet",
+                              "museum_label"
+                            ]
+                          },
+                          "description": "Omit if none."
+                        },
+                        "composition": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "camera",
+                            "framing"
+                          ],
+                          "properties": {
+                            "camera": {
+                              "type": "string",
+                              "enum": [
+                                "EXTREME_WIDE",
+                                "WIDE",
+                                "MEDIUM",
+                                "CLOSE_UP",
+                                "EXTREME_CLOSE_UP",
+                                "OVERHEAD",
+                                "POV",
+                                "OVER_THE_SHOULDER",
+                                "LOW_ANGLE",
+                                "FLAT_GRAPHIC"
+                              ]
+                            },
+                            "framing": {
+                              "type": "string",
+                              "description": "A few words."
+                            }
+                          }
+                        },
+                        "textIntent": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "mode",
+                            "text"
+                          ],
+                          "description": "Omit for NO_TEXT.",
+                          "properties": {
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "NO_TEXT",
+                                "SHORT_TEXT",
+                                "PROGRAMMATIC"
+                              ]
+                            },
+                            "text": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "description": "Exact on-screen text (<= 5 words) for SHORT_TEXT; what to render for PROGRAMMATIC."
+                            }
+                          }
+                        },
+                        "motif": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "role",
+                            "id"
+                          ],
+                          "description": "Only for the callback plant/payoff; omit otherwise.",
+                          "properties": {
+                            "role": {
+                              "type": "string",
+                              "enum": [
+                                "none",
+                                "plant",
+                                "payoff"
+                              ]
+                            },
+                            "id": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        },
+                        "motionIntent": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "camera",
+                            "subject",
+                            "environment",
+                            "weight"
+                          ],
+                          "properties": {
+                            "camera": {
+                              "type": "string"
+                            },
+                            "subject": {
+                              "type": "string"
+                            },
+                            "environment": {
+                              "type": "string"
+                            },
+                            "weight": {
+                              "type": "string",
+                              "enum": [
+                                "still",
+                                "light",
+                                "medium",
+                                "strong"
+                              ]
+                            }
+                          }
+                        },
+                        "flags": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "punch",
+                            "hold",
+                            "reason"
+                          ],
+                          "description": "Omit unless PUNCH or HOLD.",
+                          "properties": {
+                            "punch": {
+                              "type": "boolean"
+                            },
+                            "hold": {
+                              "type": "boolean"
+                            },
+                            "reason": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "tool_choice": {
+            "type": "tool",
+            "name": "direct_beats"
+          }
+        },
+        "status": 200,
+        "response": {
+          "model": "claude-sonnet-5",
+          "id": "msg_011CfSgWTPa2XfcfezZJPfEm",
+          "type": "message",
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "toolu_01VPE5pwWg1WcREfvh2fasqF",
+              "name": "direct_beats",
+              "input": {
+                "beats": [
+                  {
+                    "startChunk": 3,
+                    "endChunk": 3,
+                    "visualConcept": "Camera pulls back to profile view: the two horns slice past the viewer's temples as wind streaks past.",
+                    "userSummary": "Horns cut the air beside your head.",
+                    "treatment": "POV",
+                    "composition": {
+                      "camera": "CLOSE_UP",
+                      "framing": "profile, wind streaks"
+                    },
+                    "motionIntent": {
+                      "camera": "slow pull back",
+                      "subject": "horns cutting air",
+                      "environment": "wind streak lines",
+                      "weight": "medium"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "viewer",
+                        "presence": "full",
+                        "action": "charging forward, horns slicing air",
+                        "expression": "determined"
+                      }
+                    ],
+                    "settingId": "setting_imagined_battlefield_hillside_dramatic_s",
+                    "motif": {
+                      "role": "plant",
+                      "id": "callback"
+                    }
+                  },
+                  {
+                    "startChunk": 7,
+                    "endChunk": 7,
+                    "visualConcept": "The morphing silhouette lands on a Halloween costume rack with a plastic horned mask.",
+                    "userSummary": "Same horned image, now a costume.",
+                    "treatment": "SYMBOLIC",
+                    "composition": {
+                      "camera": "FLAT_GRAPHIC",
+                      "framing": "costume rack close view"
+                    },
+                    "motionIntent": {
+                      "camera": "static",
+                      "subject": "silhouette settling into costume mask",
+                      "environment": "none",
+                      "weight": "light"
+                    },
+                    "settingId": null
+                  },
+                  {
+                    "startChunk": 10,
+                    "endChunk": 10,
+                    "visualConcept": "The stamped icon spreads ink across a whole timeline of history, blotting out other images beneath it.",
+                    "userSummary": "One wrong image overwrites real history.",
+                    "treatment": "SYMBOLIC",
+                    "composition": {
+                      "camera": "WIDE",
+                      "framing": "timeline with spreading ink stamp"
+                    },
+                    "motionIntent": {
+                      "camera": "slow push-in",
+                      "subject": "ink stamp spreading",
+                      "environment": "timeline fading beneath",
+                      "weight": "medium"
+                    },
+                    "settingId": null
+                  },
+                  {
+                    "startChunk": 14,
+                    "endChunk": 14,
+                    "visualConcept": "A plain Viking warrior stands mid-battle-charge while the crowd's belief bubble floats above unquestioned.",
+                    "userSummary": "The belief: horned helmets in combat.",
+                    "treatment": "CROWD",
+                    "composition": {
+                      "camera": "WIDE",
+                      "framing": "warrior charging under belief bubble"
+                    },
+                    "motionIntent": {
+                      "camera": "hold",
+                      "subject": "warrior charging",
+                      "environment": "crowd murmuring behind",
+                      "weight": "medium"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "plain_viking_warrior",
+                        "presence": "full",
+                        "action": "charging into battle",
+                        "expression": "fierce"
+                      }
+                    ],
+                    "settingId": "setting_imagined_battlefield_hillside_dramatic_s",
+                    "textIntent": {
+                      "mode": "SHORT_TEXT",
+                      "text": "Horned helmets in combat"
+                    }
+                  },
+                  {
+                    "startChunk": 15,
+                    "endChunk": 15,
+                    "visualConcept": "Close-up on the warrior's helmet as chalky bull-like horns are drawn curving upward from the sides.",
+                    "userSummary": "Horns curve up like a bull's.",
+                    "treatment": "REACTION",
+                    "composition": {
+                      "camera": "CLOSE_UP",
+                      "framing": "helmet detail, horns curving"
+                    },
+                    "motionIntent": {
+                      "camera": "slow push-in",
+                      "subject": "horns being drawn on",
+                      "environment": "none",
+                      "weight": "light"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "plain_viking_warrior",
+                        "presence": "full",
+                        "action": "standing still, horns appearing",
+                        "expression": "neutral"
+                      }
+                    ],
+                    "settingId": "setting_imagined_battlefield_hillside_dramatic_s"
+                  },
+                  {
+                    "startChunk": 19,
+                    "endChunk": 19,
+                    "visualConcept": "The archaeologist looks up from the mostly empty trench, shrugging at the near-total absence of finds.",
+                    "userSummary": "Almost no real helmets have been found.",
+                    "treatment": "REACTION",
+                    "composition": {
+                      "camera": "MEDIUM",
+                      "framing": "archaeologist in empty trench"
+                    },
+                    "motionIntent": {
+                      "camera": "hold",
+                      "subject": "archaeologist shrugging",
+                      "environment": "empty grid squares",
+                      "weight": "still"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "archaeologist",
+                        "presence": "full",
+                        "action": "shrugging at empty trench",
+                        "expression": "resigned"
+                      }
+                    ],
+                    "settingId": "setting_archaeological_excavation_trench_grid_la"
+                  },
+                  {
+                    "startChunk": 21,
+                    "endChunk": 21,
+                    "visualConcept": "Zoom into the near-empty timeline bar revealing only a handful of tiny helmet icons scattered across it.",
+                    "userSummary": "Only a few helmets survive intact.",
+                    "treatment": "TIMELINE_BAR",
+                    "composition": {
+                      "camera": "FLAT_GRAPHIC",
+                      "framing": "zoomed timeline, sparse icons"
+                    },
+                    "motionIntent": {
+                      "camera": "slow push-in",
+                      "subject": "tiny helmet icons",
+                      "environment": "empty bar",
+                      "weight": "light"
+                    },
+                    "settingId": null
+                  },
+                  {
+                    "startChunk": 24,
+                    "endChunk": 24,
+                    "visualConcept": "The archaeologist brushes dirt off the helmet in the mound, a small '1943' flag marking the dig date.",
+                    "userSummary": "Found in Norway, 1943.",
+                    "treatment": "STORY_SCENE",
+                    "composition": {
+                      "camera": "OVERHEAD",
+                      "framing": "burial mound, dirt brushing"
+                    },
+                    "motionIntent": {
+                      "camera": "hold",
+                      "subject": "archaeologist brushing dirt",
+                      "environment": "mound soil",
+                      "weight": "medium"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "archaeologist",
+                        "presence": "hands",
+                        "action": "brushing dirt off helmet",
+                        "expression": "focused"
+                      }
+                    ],
+                    "settingId": "setting_bronze_age_ritual_bog_find_location_open",
+                    "propIds": [
+                      "gjermundbu_helmet"
+                    ],
+                    "textIntent": {
+                      "mode": "SHORT_TEXT",
+                      "text": "Norway, 1943"
+                    }
+                  },
+                  {
+                    "startChunk": 28,
+                    "endChunk": 28,
+                    "visualConcept": "Close-up pans down the nose guard to the smooth iron surface where horns would attach, finding nothing.",
+                    "userSummary": "No horn attachments anywhere.",
+                    "treatment": "OBJECT_DETAIL",
+                    "composition": {
+                      "camera": "EXTREME_CLOSE_UP",
+                      "framing": "smooth iron surface, nose guard"
+                    },
+                    "motionIntent": {
+                      "camera": "slow pan down",
+                      "subject": "none",
+                      "environment": "none",
+                      "weight": "still"
+                    },
+                    "propIds": [
+                      "gjermundbu_helmet"
+                    ],
+                    "settingId": "setting_museum_display_case_pedestal_label_plaqu"
+                  }
+                ]
+              },
+              "caller": {
+                "type": "direct"
+              }
+            }
+          ],
+          "container": null,
+          "stop_reason": "tool_use",
+          "stop_sequence": null,
+          "stop_details": null,
+          "usage": {
+            "input_tokens": 2211,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 5025,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 0
+            },
+            "output_tokens": 2358,
+            "output_tokens_details": {
+              "thinking_tokens": 0
+            },
+            "service_tier": "standard",
+            "inference_geo": "global"
+          },
+          "diagnostics": null
+        },
+        "seq": 1,
+        "stage": "beat_director"
+      },
+      {
+        "kind": "anthropic",
+        "key": "direct_beats",
+        "request": {
+          "model": "claude-sonnet-5",
+          "max_tokens": 12000,
+          "system": [
+            {
+              "type": "text",
+              "text": "You are Zyvo's Beat Director for 2D stickman-doodle explainer videos. You receive the finished narration already split by code into CLAUSE CHUNKS (C-numbers, each with its duration), the video's Production Bible (the only cast, settings and props that exist, with ids), the callback plan, and a short summary of the beats already directed. You group the chunks of one window into BEATS: small scenes of about 3-4 seconds, each one visual idea.\n\nYou never write or change narration. A beat is a range of consecutive chunks: startChunk..endChunk (inclusive), 1-3 chunks. Cover the window exactly: the first beat starts at the window's first chunk, each next beat starts at the previous endChunk + 1, the last beat ends at the window's last chunk.\n\nSIZE — most beats are 1-2 chunks; merge only when splitting would break a single visual idea. Reference: a good video of this kind averages ~9 words and ~3.7 s per beat, never more than ~15 words; sentences are routinely split across beats at clauses. A beat must stay at or under 6.5 s (sum of its chunk durations); HOLD (flags.hold with a reason) may run to 9 s, about once a minute at most. Anything longer is split by code at chunk boundaries — so don't rely on it. In the first 30 seconds keep beats at about 2.5-3.5 s.\n\nWHERE TO CUT — cut on MEANING: a new claim, a change of action, a question, a reveal, a statistic, a comparison, a callback, a jump in time or place.\n\nWHAT THE VIEWER SEES — visualConcept is what makes THIS exact line land, drawable in simple stickman doodle style. Use visual rhetoric when it fits:\n- threat: POV of the danger approaching the subject;\n- negation or myth: the thing crossed out;\n- safety vs danger: a small safe zone against a looming threat;\n- a tiny share of something huge: a long bar with a tiny highlighted sliver;\n- huge numbers: a crowd receding to the horizon;\n- then vs now: a mirrored SPLIT;\n- callbacks: re-use the EXACT composition, camera and subjects of the planted beat (treatment CALLBACK).\n\nPick one treatment per beat: STORY_SCENE, REACTION, POV, ESTABLISHING, OBJECT_DETAIL, SYMBOLIC, COMPARISON, SPLIT, MAP, TIMELINE_BAR, SCALE, STAT_CARD, ICON_ROW, CROWD, CALLBACK. Adjacent beats must differ in treatment, camera, subjects or setting (unless HOLD or CALLBACK).\n\nCAST — use ONLY the castIds listed (never a placeholder). \"you\" lines use the viewer avatar (castId \"viewer\") when the bible has one; generic people (a warrior, an archaeologist) use their archetype ids. Omit subjects for beats with nobody on screen. Omit settingId for abstract graphics.\n\nTEXT — omit textIntent for most beats (NO_TEXT). SHORT_TEXT is exact on-screen text of at most 5 words (a year, a number, a key term), at most about 4 per minute. PROGRAMMATIC is for charts, bars and stat cards the editor renders. Never ask the image to render sentences.\n\nMOTION — motionIntent: a simple camera move (hold, slow push-in, pan, tilt), what the subject does, what the environment does, a weight. Only what a drawn frame can show — never lens, focal length or depth of field.\n\nMOTIF — the callback's planted detail gets motif {role:\"plant\", id:\"callback\"}; its payoff {role:\"payoff\", id:\"callback\"} and treatment CALLBACK. Omit motif otherwise.\n\nBE TERSE — one concrete sentence per visualConcept, a short userSummary, a few words per framing and motion field. Omit optional fields you don't need. Return \"beats\" as a JSON array (never a string).\n\nPRODUCTION BIBLE INDEX (the only ids that exist):\n{\"visualPremise\":\"A flat 2D stickman-doodle explainer that tracks one visual subject — the cultural image of the 'horned Viking' — across a few distinct, repeatable locations (battle hillside, Bronze Age ritual site, excavation trench, 19th‑century theater, museum display).\",\"visualTone\":\"informative with wry distance: clear and slightly ironic (we're debunking a dramatic image), balancing visceral spectacle (the imagined horned charge) with quiet, evidence-first museum and archaeology scenes.\",\"cast\":[{\"id\":\"hero\",\"role\":\"the horned-Viking icon — the single wrong picture that circulates across time\"},{\"id\":\"viewer\",\"role\":\"the viewer's second-person avatar used in the opening charge scene\"},{\"id\":\"archaeologist\",\"role\":\"a generic archaeologist who inspects finds and points out absence/presence of evidence\"},{\"id\":\"19th_century_costume_designer\",\"role\":\"the Romantic/operatic costume designer figure who first popularizes the horned look onstage\"},{\"id\":\"bronze_age_priest\",\"role\":\"the wearer of ritual/ceremonial horned headgear from the Nordic Bronze Age context\"},{\"id\":\"plain_viking_warrior\",\"role\":\"the evidence-grounded Viking-age warrior as reconstructed from archaeology (no horns)\"}],\"settings\":[{\"id\":\"setting_imagined_battlefield_hillside_dramatic_s\",\"label\":\"imagined battlefield hillside (dramatic, stylized)\"},{\"id\":\"setting_bronze_age_ritual_bog_find_location_open\",\"label\":\"Bronze Age ritual/ bog find location (open field with peat bog marker)\"},{\"id\":\"setting_archaeological_excavation_trench_grid_la\",\"label\":\"archaeological excavation trench (grid, labeled finds, trowel and brush)\"},{\"id\":\"setting_19th_century_theater_stage_atelier_stage\",\"label\":\"19th-century theater stage/atelier (stage backdrop, costume racks)\"},{\"id\":\"setting_museum_display_case_pedestal_label_plaqu\",\"label\":\"museum display case (pedestal, label plaque, glass casing)\"}],\"props\":[{\"id\":\"gjermundbu_helmet\",\"label\":\"The Gjermundbu-style helmet: a simple rounded iron dome with an integrated 'spectacle' guard curving over the eye region and a short nose guard; no horn attachments, no rivet patterns for horns. Dull iron-gray fill, thin black outline. Display on a small museum pedestal with a label reading 'Gjermundbu helmet, c. 970'.\"},{\"id\":\"veksø_bronze_helm\",\"label\":\"Veksø-type bronze ceremonial helmet: thin decorative bronze cap with long gently curved horns ending in small round discs; horns are narrower and shorter than the icon horns and look fragile. Warm copper fill, horns off-white tips. Often shown with a watery/bog or ritual context.\"},{\"id\":\"theater_prop_helmet\",\"label\":\"Theatrical horned helmet prop: bold, exaggerated horns (same silhouette as the horned-Viking icon) but visually heavier and stylized for stage: thicker horn cross-section and larger scale. Colored with slightly brighter pigments to read at a distance (burgundy accent available).\"},{\"id\":\"museum_label\",\"label\":\"Small rectangular placard: pale gray rectangle with two lines of text (title line bold, secondary line small). Use once next to actual archaeological pieces (e.g., 'Gjermundbu helmet, c. 970') to visually cue 'authentic museum object'.\"}],\"graphicLanguage\":{\"comparisonLayouts\":\"Side-by-side comparisons always align helmets at the same baseline for easy silhouette reading. Use captions in cool blue for archaeological items and sepia for theatrical/cultural items.\",\"timelineConventions\":\"Horizontal timeline bar with three labeled nodes: 'Bronze Age (c. 900–1100 BCE)' — copper node; 'Viking Age (c. 793–1066 CE)' — iron-gray node; '19th century Romantic/theatre' — sepia node. Connect the horned icon with arrows showing cultural borrowing.\",\"symbolicMetaphorLanguage\":\"Use the horned-Viking icon as a recurring metaphor: when the narration says 'this image stuck', show the icon stamped repeatedly like a simple rubber-stamp motif fading into postcards, theater posters, and a modern football helmet.\"},\"factualVisualConstraints\":[\"Do not invent physical horn attachment marks on genuine Viking-age helmet reconstructions (e.g., Gjermundbu).\",\"Veksø bronze helmets must be clearly labeled Bronze Age and look decorative, not battle-ready.\",\"Theatrical horned helmets must be shown as 19th-century costume props, visually distinct from Bronze Age originals.\"]}\n\nCALLBACK PLAN: planted detail \"two long curved horns\" — plant in segment seg1, payoff in segment seg14.",
+              "cache_control": {
+                "type": "ephemeral"
+              }
+            }
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "content": "WINDOW 1: chunks C0..C33 (0.0s-112.1s of the video). Cover EXACTLY these chunks. Times are from the window start.\n\nPREVIOUS BEATS: none — this is the opening (the hook).\n\nCHUNKS:\n(segment seg1)\nC0 [0.0s, 1.8s long, 4w] You're gripping a shield,\nC1 [1.8s, 3.2s long, 7w] screaming down a hillside toward a shieldwall,\nC2 [5.0s, 3.7s long, 9w] and two long curved horns jut off your helmet,\nC3 [8.7s, 3.9s long, 9w] cutting the air on either side of your head.\nC4 [12.6s, 2.5s long, 5w] The horns catch the firelight.\nC5 [15.0s, 1.7s long, 3w] They look terrifying.\nC6 [16.7s, 2.7s long, 6w] They look exactly like every painting,\nC7 [19.5s, 5.5s long, 12w] every movie poster, every Halloween costume you've ever seen of a Viking.\nC8 [25.0s, 3.8s long, 8w] This is the image burned into your head.\n(segment seg2)\nC9 [28.7s, 3.3s long, 8w] A single wrong picture like this can quietly\nC10 [32.0s, 4.0s long, 8w] rewrite an entire culture's history in our heads.\n(segment seg3)\nC11 [35.9s, 3.6s long, 9w] So did any Viking ever actually strap on horns\nC12 [39.5s, 2.4s long, 4w] before walking into battle?\n(segment seg4)\nC13 [41.9s, 4.2s long, 9w] Here's the belief almost everyone carries around without question:\nC14 [46.1s, 3.2s long, 7w] Viking raiders wore horned helmets into combat,\nC15 [49.3s, 4.3s long, 10w] the horns curving up from the sides like a bull's.\nC16 [53.5s, 1.6s long, 3w] It feels obvious.\nC17 [55.1s, 3.6s long, 7w] It's on flags, beer labels, football helmets.\nC18 [58.7s, 4.0s long, 9w] But archaeologists digging across Scandinavia for over a century\nC19 [62.8s, 4.2s long, 9w] have found remarkably few actual Viking-age helmets at all.\nC20 [67.0s, 5.3s long, 12w] Total confirmed helmets from the entire Viking Age, roughly 793 to 1066,\nC21 [72.3s, 4.4s long, 10w] that survive with enough of the skull intact to study?\nC22 [76.7s, 3.3s long, 7w] You can count them on one hand.\n(segment seg5)\nC23 [80.0s, 3.2s long, 7w] The best-preserved one is the Gjermundbu helmet,\nC24 [83.2s, 3.9s long, 10w] dug out of a burial mound in Norway in 1943,\nC25 [87.1s, 2.7s long, 6w] dated to around the year 970.\nC26 [89.8s, 2.4s long, 6w] It has a rounded iron cap,\nC27 [92.2s, 2.9s long, 7w] a spectacled guard curving over the eyes\nC28 [95.1s, 4.4s long, 9w] and nose, and absolutely nothing where horns would attach.\nC29 [99.4s, 1.2s long, 2w] No sockets.\nC30 [100.6s, 3.3s long, 7w] No rivet holes shaped for anything curved.\nC31 [103.9s, 4.0s long, 10w] Just a plain iron dome built to deflect a sword,\nC32 [107.9s, 2.2s long, 4w] not to look dramatic.\n(segment seg6)\nC33 [110.1s, 2.0s long, 4w] Why trust one helmet?\n\nYOUR PREVIOUS ATTEMPT FOR THIS WINDOW FAILED VALIDATION — FIX EXACTLY THESE:\n- Beat 3 repeats the previous beat's treatment, camera, subjects and setting — change at least one (or flag HOLD).\n- Beat 6 repeats the previous beat's treatment, camera, subjects and setting — change at least one (or flag HOLD).\n- Beat 9 repeats the previous beat's treatment, camera, subjects and setting — change at least one (or flag HOLD).\n- Beat 18 repeats the previous beat's treatment, camera, subjects and setting — change at least one (or flag HOLD).\n- Beat 25 repeats the previous beat's treatment, camera, subjects and setting — change at least one (or flag HOLD).\n- 9 SHORT_TEXT beats in this window; at most 7 (~4/minute). Change the rest to NO_TEXT or PROGRAMMATIC."
+            }
+          ],
+          "tools": [
+            {
+              "name": "direct_beats",
+              "description": "Returns the beats.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "beats"
+                ],
+                "properties": {
+                  "beats": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "startChunk",
+                        "endChunk",
+                        "visualConcept",
+                        "userSummary",
+                        "treatment",
+                        "composition",
+                        "motionIntent"
+                      ],
+                      "properties": {
+                        "startChunk": {
+                          "type": "integer",
+                          "description": "First chunk index (C-number) of this beat."
+                        },
+                        "endChunk": {
+                          "type": "integer",
+                          "description": "Last chunk index of this beat (inclusive). A beat is 1-3 consecutive chunks."
+                        },
+                        "visualConcept": {
+                          "type": "string",
+                          "description": "What the viewer SEES that makes this exact line land — one concrete sentence (max ~20 words)."
+                        },
+                        "userSummary": {
+                          "type": "string",
+                          "description": "One short plain sentence for the UI (max ~10 words)."
+                        },
+                        "treatment": {
+                          "type": "string",
+                          "enum": [
+                            "STORY_SCENE",
+                            "REACTION",
+                            "POV",
+                            "ESTABLISHING",
+                            "OBJECT_DETAIL",
+                            "SYMBOLIC",
+                            "COMPARISON",
+                            "SPLIT",
+                            "MAP",
+                            "TIMELINE_BAR",
+                            "SCALE",
+                            "STAT_CARD",
+                            "ICON_ROW",
+                            "CROWD",
+                            "CALLBACK"
+                          ]
+                        },
+                        "subjects": {
+                          "type": "array",
+                          "description": "Cast on screen (omit if none).",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "castId",
+                              "presence",
+                              "action",
+                              "expression"
+                            ],
+                            "properties": {
+                              "castId": {
+                                "type": "string",
+                                "enum": [
+                                  "hero",
+                                  "viewer",
+                                  "archaeologist",
+                                  "19th_century_costume_designer",
+                                  "bronze_age_priest",
+                                  "plain_viking_warrior"
+                                ]
+                              },
+                              "presence": {
+                                "type": "string",
+                                "enum": [
+                                  "full",
+                                  "hands",
+                                  "back",
+                                  "tiny"
+                                ]
+                              },
+                              "action": {
+                                "type": "string"
+                              },
+                              "expression": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "settingId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "enum": [
+                            "setting_imagined_battlefield_hillside_dramatic_s",
+                            "setting_bronze_age_ritual_bog_find_location_open",
+                            "setting_archaeological_excavation_trench_grid_la",
+                            "setting_19th_century_theater_stage_atelier_stage",
+                            "setting_museum_display_case_pedestal_label_plaqu",
+                            null
+                          ],
+                          "description": "Omit or null for abstract graphic beats."
+                        },
+                        "settingVariant": {
+                          "type": "string",
+                          "description": "Optional short variant (time of day, angle)."
+                        },
+                        "propIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "gjermundbu_helmet",
+                              "veksø_bronze_helm",
+                              "theater_prop_helmet",
+                              "museum_label"
+                            ]
+                          },
+                          "description": "Omit if none."
+                        },
+                        "composition": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "camera",
+                            "framing"
+                          ],
+                          "properties": {
+                            "camera": {
+                              "type": "string",
+                              "enum": [
+                                "EXTREME_WIDE",
+                                "WIDE",
+                                "MEDIUM",
+                                "CLOSE_UP",
+                                "EXTREME_CLOSE_UP",
+                                "OVERHEAD",
+                                "POV",
+                                "OVER_THE_SHOULDER",
+                                "LOW_ANGLE",
+                                "FLAT_GRAPHIC"
+                              ]
+                            },
+                            "framing": {
+                              "type": "string",
+                              "description": "A few words."
+                            }
+                          }
+                        },
+                        "textIntent": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "mode",
+                            "text"
+                          ],
+                          "description": "Omit for NO_TEXT.",
+                          "properties": {
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "NO_TEXT",
+                                "SHORT_TEXT",
+                                "PROGRAMMATIC"
+                              ]
+                            },
+                            "text": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "description": "Exact on-screen text (<= 5 words) for SHORT_TEXT; what to render for PROGRAMMATIC."
+                            }
+                          }
+                        },
+                        "motif": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "role",
+                            "id"
+                          ],
+                          "description": "Only for the callback plant/payoff; omit otherwise.",
+                          "properties": {
+                            "role": {
+                              "type": "string",
+                              "enum": [
+                                "none",
+                                "plant",
+                                "payoff"
+                              ]
+                            },
+                            "id": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        },
+                        "motionIntent": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "camera",
+                            "subject",
+                            "environment",
+                            "weight"
+                          ],
+                          "properties": {
+                            "camera": {
+                              "type": "string"
+                            },
+                            "subject": {
+                              "type": "string"
+                            },
+                            "environment": {
+                              "type": "string"
+                            },
+                            "weight": {
+                              "type": "string",
+                              "enum": [
+                                "still",
+                                "light",
+                                "medium",
+                                "strong"
+                              ]
+                            }
+                          }
+                        },
+                        "flags": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "punch",
+                            "hold",
+                            "reason"
+                          ],
+                          "description": "Omit unless PUNCH or HOLD.",
+                          "properties": {
+                            "punch": {
+                              "type": "boolean"
+                            },
+                            "hold": {
+                              "type": "boolean"
+                            },
+                            "reason": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "tool_choice": {
+            "type": "tool",
+            "name": "direct_beats"
+          }
+        },
+        "status": 200,
+        "response": {
+          "model": "claude-sonnet-5",
+          "id": "msg_011CfSgXwKs7pUqXP4PikDNW",
+          "type": "message",
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "toolu_01DGinh2CuuHH5QnpS74GoDq",
+              "name": "direct_beats",
+              "input": {
+                "beats": [
+                  {
+                    "startChunk": 0,
+                    "endChunk": 1,
+                    "visualConcept": "Viewer's own hands grip a shield, charging POV down a hillside at a shieldwall.",
+                    "userSummary": "You charge into battle, shield in hand.",
+                    "treatment": "POV",
+                    "composition": {
+                      "camera": "POV",
+                      "framing": "hands and shield, hillside ahead"
+                    },
+                    "motionIntent": {
+                      "camera": "handheld push forward",
+                      "subject": "viewer sprinting downhill",
+                      "environment": "enemy shieldwall looms closer",
+                      "weight": "strong"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "viewer",
+                        "presence": "hands",
+                        "action": "grips shield, runs downhill",
+                        "expression": "fierce"
+                      }
+                    ],
+                    "settingId": "setting_imagined_battlefield_hillside_dramatic_s"
+                  },
+                  {
+                    "startChunk": 2,
+                    "endChunk": 3,
+                    "visualConcept": "Two long curved horns jut from the viewer's helmet, slicing the air as they run.",
+                    "userSummary": "Horns jut from your helmet as you run.",
+                    "treatment": "POV",
+                    "composition": {
+                      "camera": "POV",
+                      "framing": "helmet horns cutting frame edges"
+                    },
+                    "motionIntent": {
+                      "camera": "slight whip pan with motion",
+                      "subject": "horns swing side to side",
+                      "environment": "wind streaks past",
+                      "weight": "strong"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "viewer",
+                        "presence": "tiny",
+                        "action": "runs with horned helmet",
+                        "expression": "intense"
+                      }
+                    ],
+                    "settingId": "setting_imagined_battlefield_hillside_dramatic_s",
+                    "propIds": [
+                      "theater_prop_helmet"
+                    ],
+                    "motif": {
+                      "role": "plant",
+                      "id": "callback"
+                    }
+                  },
+                  {
+                    "startChunk": 4,
+                    "endChunk": 5,
+                    "visualConcept": "Firelight glints off the curved horns in close-up, looking fearsome.",
+                    "userSummary": "The horns catch firelight, looking terrifying.",
+                    "treatment": "OBJECT_DETAIL",
+                    "composition": {
+                      "camera": "CLOSE_UP",
+                      "framing": "horn tip catching flame glow"
+                    },
+                    "motionIntent": {
+                      "camera": "slow push-in",
+                      "subject": "horn glints",
+                      "environment": "firelight flicker",
+                      "weight": "medium"
+                    },
+                    "propIds": [
+                      "theater_prop_helmet"
+                    ],
+                    "settingId": "setting_imagined_battlefield_hillside_dramatic_s"
+                  },
+                  {
+                    "startChunk": 6,
+                    "endChunk": 7,
+                    "visualConcept": "The horned silhouette morphs across a painting, a movie poster, and a Halloween costume.",
+                    "userSummary": "The same horned image everywhere: art, film, costumes.",
+                    "treatment": "ICON_ROW",
+                    "composition": {
+                      "camera": "FLAT_GRAPHIC",
+                      "framing": "three icons in a row"
+                    },
+                    "motionIntent": {
+                      "camera": "static",
+                      "subject": "icons appear in sequence",
+                      "environment": "none",
+                      "weight": "light"
+                    },
+                    "propIds": [
+                      "theater_prop_helmet"
+                    ]
+                  },
+                  {
+                    "startChunk": 8,
+                    "endChunk": 8,
+                    "visualConcept": "The horned icon stamps itself onto a simple head silhouette like a brand.",
+                    "userSummary": "This image is burned into your head.",
+                    "treatment": "SYMBOLIC",
+                    "composition": {
+                      "camera": "CLOSE_UP",
+                      "framing": "stamp hitting head silhouette"
+                    },
+                    "motionIntent": {
+                      "camera": "static",
+                      "subject": "stamp slams down",
+                      "environment": "none",
+                      "weight": "strong"
+                    },
+                    "propIds": [
+                      "theater_prop_helmet"
+                    ]
+                  },
+                  {
+                    "startChunk": 9,
+                    "endChunk": 10,
+                    "visualConcept": "A single wrong picture icon quietly rewrites a swirling timeline of history behind it.",
+                    "userSummary": "One wrong image can rewrite history.",
+                    "treatment": "SYMBOLIC",
+                    "composition": {
+                      "camera": "WIDE",
+                      "framing": "icon overlaying warped timeline"
+                    },
+                    "motionIntent": {
+                      "camera": "slow pan",
+                      "subject": "icon pulses",
+                      "environment": "timeline warps",
+                      "weight": "medium"
+                    }
+                  },
+                  {
+                    "startChunk": 11,
+                    "endChunk": 12,
+                    "visualConcept": "A plain Viking warrior pauses mid-step, question mark hovering, before the shieldwall.",
+                    "userSummary": "Did Vikings really wear horns into battle?",
+                    "treatment": "REACTION",
+                    "composition": {
+                      "camera": "MEDIUM",
+                      "framing": "warrior mid-stride, questioning"
+                    },
+                    "motionIntent": {
+                      "camera": "hold",
+                      "subject": "warrior pauses",
+                      "environment": "battlefield dust settles",
+                      "weight": "medium"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "plain_viking_warrior",
+                        "presence": "full",
+                        "action": "pauses before battle",
+                        "expression": "uncertain"
+                      }
+                    ],
+                    "settingId": "setting_imagined_battlefield_hillside_dramatic_s"
+                  },
+                  {
+                    "startChunk": 13,
+                    "endChunk": 13,
+                    "visualConcept": "A thought bubble shows the horned belief floating above a crowd of nodding heads.",
+                    "userSummary": "Almost everyone believes this without question.",
+                    "treatment": "CROWD",
+                    "composition": {
+                      "camera": "WIDE",
+                      "framing": "crowd with shared thought bubble"
+                    },
+                    "motionIntent": {
+                      "camera": "static",
+                      "subject": "heads nod",
+                      "environment": "none",
+                      "weight": "light"
+                    }
+                  },
+                  {
+                    "startChunk": 14,
+                    "endChunk": 15,
+                    "visualConcept": "A plain Viking warrior stands beside a drawn horned helmet with horns curving up like a bull's.",
+                    "userSummary": "Horns curving up like a bull's, so the story goes.",
+                    "treatment": "STORY_SCENE",
+                    "composition": {
+                      "camera": "MEDIUM",
+                      "framing": "warrior beside diagram"
+                    },
+                    "motionIntent": {
+                      "camera": "hold",
+                      "subject": "warrior gestures at helmet",
+                      "environment": "none",
+                      "weight": "light"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "plain_viking_warrior",
+                        "presence": "full",
+                        "action": "stands beside horned helmet diagram",
+                        "expression": "neutral"
+                      }
+                    ],
+                    "propIds": [
+                      "theater_prop_helmet"
+                    ]
+                  },
+                  {
+                    "startChunk": 16,
+                    "endChunk": 16,
+                    "visualConcept": "A nodding head shrugs, the horned icon glowing overhead as if self-evident.",
+                    "userSummary": "It feels obvious.",
+                    "treatment": "REACTION",
+                    "composition": {
+                      "camera": "CLOSE_UP",
+                      "framing": "nodding face, icon glow above"
+                    },
+                    "motionIntent": {
+                      "camera": "static",
+                      "subject": "head nods",
+                      "environment": "none",
+                      "weight": "light"
+                    }
+                  },
+                  {
+                    "startChunk": 17,
+                    "endChunk": 17,
+                    "visualConcept": "The horned icon stamped on a flag, a beer label, and a football helmet in a row.",
+                    "userSummary": "It's on flags, beer labels, football helmets.",
+                    "treatment": "ICON_ROW",
+                    "composition": {
+                      "camera": "FLAT_GRAPHIC",
+                      "framing": "three stamped objects in a row"
+                    },
+                    "motionIntent": {
+                      "camera": "static",
+                      "subject": "icons appear",
+                      "environment": "none",
+                      "weight": "light"
+                    },
+                    "propIds": [
+                      "theater_prop_helmet"
+                    ]
+                  },
+                  {
+                    "startChunk": 18,
+                    "endChunk": 19,
+                    "visualConcept": "An archaeologist kneels in a trench grid, brushing dirt, finds sparse and few.",
+                    "userSummary": "Archaeologists have found very few Viking helmets.",
+                    "treatment": "STORY_SCENE",
+                    "composition": {
+                      "camera": "WIDE",
+                      "framing": "trench grid, archaeologist kneeling"
+                    },
+                    "motionIntent": {
+                      "camera": "slow pan",
+                      "subject": "archaeologist brushes dirt",
+                      "environment": "empty grid squares",
+                      "weight": "medium"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "archaeologist",
+                        "presence": "full",
+                        "action": "brushes dirt in trench",
+                        "expression": "focused"
+                      }
+                    ],
+                    "settingId": "setting_archaeological_excavation_trench_grid_la"
+                  },
+                  {
+                    "startChunk": 20,
+                    "endChunk": 21,
+                    "visualConcept": "A horizontal timeline bar spans 793-1066 with almost no helmet icons marked on it.",
+                    "userSummary": "Almost no helmets survive from the whole Viking Age.",
+                    "treatment": "TIMELINE_BAR",
+                    "composition": {
+                      "camera": "FLAT_GRAPHIC",
+                      "framing": "timeline bar with sparse markers"
+                    },
+                    "motionIntent": {
+                      "camera": "static",
+                      "subject": "bar draws left to right",
+                      "environment": "none",
+                      "weight": "light"
+                    },
+                    "textIntent": {
+                      "mode": "SHORT_TEXT",
+                      "text": "793–1066 CE"
+                    }
+                  },
+                  {
+                    "startChunk": 22,
+                    "endChunk": 22,
+                    "visualConcept": "A single hand counts a few helmet icons on its fingers.",
+                    "userSummary": "You can count them on one hand.",
+                    "treatment": "STAT_CARD",
+                    "composition": {
+                      "camera": "CLOSE_UP",
+                      "framing": "hand with icons on fingertips"
+                    },
+                    "motionIntent": {
+                      "camera": "static",
+                      "subject": "fingers curl up counting",
+                      "environment": "none",
+                      "weight": "light"
+                    }
+                  },
+                  {
+                    "startChunk": 23,
+                    "endChunk": 24,
+                    "visualConcept": "The Gjermundbu helmet rests on a museum pedestal, label noting 1943 Norway discovery.",
+                    "userSummary": "The Gjermundbu helmet, dug up in Norway in 1943.",
+                    "treatment": "OBJECT_DETAIL",
+                    "composition": {
+                      "camera": "MEDIUM",
+                      "framing": "helmet on pedestal with label"
+                    },
+                    "motionIntent": {
+                      "camera": "slow push-in",
+                      "subject": "helmet static",
+                      "environment": "none",
+                      "weight": "still"
+                    },
+                    "propIds": [
+                      "gjermundbu_helmet",
+                      "museum_label"
+                    ],
+                    "settingId": "setting_museum_display_case_pedestal_label_plaqu",
+                    "textIntent": {
+                      "mode": "SHORT_TEXT",
+                      "text": "Norway, 1943"
+                    }
+                  },
+                  {
+                    "startChunk": 25,
+                    "endChunk": 25,
+                    "visualConcept": "A date stamp settles beside the helmet: around 970.",
+                    "userSummary": "Dated to around the year 970.",
+                    "treatment": "STAT_CARD",
+                    "composition": {
+                      "camera": "CLOSE_UP",
+                      "framing": "helmet with date overlay"
+                    },
+                    "motionIntent": {
+                      "camera": "hold",
+                      "subject": "date fades in",
+                      "environment": "none",
+                      "weight": "still"
+                    },
+                    "propIds": [
+                      "gjermundbu_helmet"
+                    ],
+                    "settingId": "setting_museum_display_case_pedestal_label_plaqu",
+                    "textIntent": {
+                      "mode": "SHORT_TEXT",
+                      "text": "c. 970 CE"
+                    },
+                    "flags": {
+                      "punch": false,
+                      "hold": true,
+                      "reason": "key dated artifact establishing shot"
+                    }
+                  },
+                  {
+                    "startChunk": 26,
+                    "endChunk": 26,
+                    "visualConcept": "Close-up on the rounded iron cap of the Gjermundbu helmet.",
+                    "userSummary": "It has a rounded iron cap.",
+                    "treatment": "OBJECT_DETAIL",
+                    "composition": {
+                      "camera": "EXTREME_CLOSE_UP",
+                      "framing": "iron dome surface"
+                    },
+                    "motionIntent": {
+                      "camera": "pan across dome",
+                      "subject": "none",
+                      "environment": "none",
+                      "weight": "still"
+                    },
+                    "propIds": [
+                      "gjermundbu_helmet"
+                    ],
+                    "settingId": "setting_museum_display_case_pedestal_label_plaqu"
+                  },
+                  {
+                    "startChunk": 27,
+                    "endChunk": 28,
+                    "visualConcept": "Close-up traces the spectacled eye guard and nose guard, then pans to bare spots with nothing where horns would be.",
+                    "userSummary": "Eye and nose guards, no horn attachments at all.",
+                    "treatment": "OBJECT_DETAIL",
+                    "composition": {
+                      "camera": "EXTREME_CLOSE_UP",
+                      "framing": "eye guard then bare helmet sides"
+                    },
+                    "motionIntent": {
+                      "camera": "pan side to side",
+                      "subject": "none",
+                      "environment": "none",
+                      "weight": "still"
+                    },
+                    "propIds": [
+                      "gjermundbu_helmet"
+                    ],
+                    "settingId": "setting_museum_display_case_pedestal_label_plaqu"
+                  },
+                  {
+                    "startChunk": 29,
+                    "endChunk": 29,
+                    "visualConcept": "A circled X marks empty spots where horn sockets should be.",
+                    "userSummary": "No sockets for horns.",
+                    "treatment": "SYMBOLIC",
+                    "composition": {
+                      "camera": "EXTREME_CLOSE_UP",
+                      "framing": "empty socket area with X"
+                    },
+                    "motionIntent": {
+                      "camera": "static",
+                      "subject": "X stamps on",
+                      "environment": "none",
+                      "weight": "light"
+                    },
+                    "propIds": [
+                      "gjermundbu_helmet"
+                    ]
+                  },
+                  {
+                    "startChunk": 30,
+                    "endChunk": 30,
+                    "visualConcept": "Close-up on smooth iron surface, no rivet holes shaped for anything curved.",
+                    "userSummary": "No rivet holes shaped for horns either.",
+                    "treatment": "OBJECT_DETAIL",
+                    "composition": {
+                      "camera": "EXTREME_CLOSE_UP",
+                      "framing": "smooth metal surface"
+                    },
+                    "motionIntent": {
+                      "camera": "slow pan",
+                      "subject": "none",
+                      "environment": "none",
+                      "weight": "still"
+                    },
+                    "propIds": [
+                      "gjermundbu_helmet"
+                    ]
+                  },
+                  {
+                    "startChunk": 31,
+                    "endChunk": 32,
+                    "visualConcept": "A sword strikes the plain iron dome and deflects off, no drama, just function.",
+                    "userSummary": "Just a plain dome built to deflect a sword.",
+                    "treatment": "STORY_SCENE",
+                    "composition": {
+                      "camera": "MEDIUM",
+                      "framing": "sword glancing off helmet"
+                    },
+                    "motionIntent": {
+                      "camera": "quick push",
+                      "subject": "sword deflects",
+                      "environment": "spark flash",
+                      "weight": "medium"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "plain_viking_warrior",
+                        "presence": "full",
+                        "action": "helmet deflects blow",
+                        "expression": "stoic"
+                      }
+                    ],
+                    "propIds": [
+                      "gjermundbu_helmet"
+                    ],
+                    "settingId": "setting_imagined_battlefield_hillside_dramatic_s"
+                  },
+                  {
+                    "startChunk": 33,
+                    "endChunk": 33,
+                    "visualConcept": "The single Gjermundbu helmet sits alone, viewer's silhouette leaning in skeptically to question it.",
+                    "userSummary": "Why trust just one helmet?",
+                    "treatment": "REACTION",
+                    "composition": {
+                      "camera": "MEDIUM",
+                      "framing": "viewer silhouette beside lone helmet"
+                    },
+                    "motionIntent": {
+                      "camera": "slow push-in",
+                      "subject": "viewer leans, questioning",
+                      "environment": "none",
+                      "weight": "light"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "viewer",
+                        "presence": "back",
+                        "action": "leans in skeptically",
+                        "expression": "curious"
+                      }
+                    ],
+                    "settingId": "setting_museum_display_case_pedestal_label_plaqu"
+                  }
+                ]
+              },
+              "caller": {
+                "type": "direct"
+              }
+            }
+          ],
+          "container": null,
+          "stop_reason": "tool_use",
+          "stop_sequence": null,
+          "stop_details": null,
+          "usage": {
+            "input_tokens": 1858,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 5025,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 0
+            },
+            "output_tokens": 5014,
+            "output_tokens_details": {
+              "thinking_tokens": 0
+            },
+            "service_tier": "standard",
+            "inference_geo": "global"
+          },
+          "diagnostics": null
+        },
+        "seq": 2,
+        "stage": "beat_director"
+      },
+      {
+        "kind": "anthropic",
+        "key": "direct_beats",
+        "request": {
+          "model": "claude-sonnet-5",
+          "max_tokens": 12000,
+          "system": [
+            {
+              "type": "text",
+              "text": "You are Zyvo's Beat Director for 2D stickman-doodle explainer videos. You receive the finished narration already split by code into CLAUSE CHUNKS (C-numbers, each with its duration), the video's Production Bible (the only cast, settings and props that exist, with ids), the callback plan, and a short summary of the beats already directed. You group the chunks of one window into BEATS: small scenes of about 3-4 seconds, each one visual idea.\n\nYou never write or change narration. A beat is a range of consecutive chunks: startChunk..endChunk (inclusive), 1-3 chunks. Cover the window exactly: the first beat starts at the window's first chunk, each next beat starts at the previous endChunk + 1, the last beat ends at the window's last chunk.\n\nSIZE — most beats are 1-2 chunks; merge only when splitting would break a single visual idea. Reference: a good video of this kind averages ~9 words and ~3.7 s per beat, never more than ~15 words; sentences are routinely split across beats at clauses. A beat must stay at or under 6.5 s (sum of its chunk durations); HOLD (flags.hold with a reason) may run to 9 s, about once a minute at most. Anything longer is split by code at chunk boundaries — so don't rely on it. In the first 30 seconds keep beats at about 2.5-3.5 s.\n\nWHERE TO CUT — cut on MEANING: a new claim, a change of action, a question, a reveal, a statistic, a comparison, a callback, a jump in time or place.\n\nWHAT THE VIEWER SEES — visualConcept is what makes THIS exact line land, drawable in simple stickman doodle style. Use visual rhetoric when it fits:\n- threat: POV of the danger approaching the subject;\n- negation or myth: the thing crossed out;\n- safety vs danger: a small safe zone against a looming threat;\n- a tiny share of something huge: a long bar with a tiny highlighted sliver;\n- huge numbers: a crowd receding to the horizon;\n- then vs now: a mirrored SPLIT;\n- callbacks: re-use the EXACT composition, camera and subjects of the planted beat (treatment CALLBACK).\n\nPick one treatment per beat: STORY_SCENE, REACTION, POV, ESTABLISHING, OBJECT_DETAIL, SYMBOLIC, COMPARISON, SPLIT, MAP, TIMELINE_BAR, SCALE, STAT_CARD, ICON_ROW, CROWD, CALLBACK. Adjacent beats must differ in treatment, camera, subjects or setting (unless HOLD or CALLBACK).\n\nCAST — use ONLY the castIds listed (never a placeholder). \"you\" lines use the viewer avatar (castId \"viewer\") when the bible has one; generic people (a warrior, an archaeologist) use their archetype ids. Omit subjects for beats with nobody on screen. Omit settingId for abstract graphics.\n\nTEXT — omit textIntent for most beats (NO_TEXT). SHORT_TEXT is exact on-screen text of at most 5 words (a year, a number, a key term), at most about 4 per minute. PROGRAMMATIC is for charts, bars and stat cards the editor renders. Never ask the image to render sentences.\n\nMOTION — motionIntent: a simple camera move (hold, slow push-in, pan, tilt), what the subject does, what the environment does, a weight. Only what a drawn frame can show — never lens, focal length or depth of field.\n\nMOTIF — the callback's planted detail gets motif {role:\"plant\", id:\"callback\"}; its payoff {role:\"payoff\", id:\"callback\"} and treatment CALLBACK. Omit motif otherwise.\n\nBE TERSE — one concrete sentence per visualConcept, a short userSummary, a few words per framing and motion field. Omit optional fields you don't need. Return \"beats\" as a JSON array (never a string).\n\nPRODUCTION BIBLE INDEX (the only ids that exist):\n{\"visualPremise\":\"A flat 2D stickman-doodle explainer that tracks one visual subject — the cultural image of the 'horned Viking' — across a few distinct, repeatable locations (battle hillside, Bronze Age ritual site, excavation trench, 19th‑century theater, museum display).\",\"visualTone\":\"informative with wry distance: clear and slightly ironic (we're debunking a dramatic image), balancing visceral spectacle (the imagined horned charge) with quiet, evidence-first museum and archaeology scenes.\",\"cast\":[{\"id\":\"hero\",\"role\":\"the horned-Viking icon — the single wrong picture that circulates across time\"},{\"id\":\"viewer\",\"role\":\"the viewer's second-person avatar used in the opening charge scene\"},{\"id\":\"archaeologist\",\"role\":\"a generic archaeologist who inspects finds and points out absence/presence of evidence\"},{\"id\":\"19th_century_costume_designer\",\"role\":\"the Romantic/operatic costume designer figure who first popularizes the horned look onstage\"},{\"id\":\"bronze_age_priest\",\"role\":\"the wearer of ritual/ceremonial horned headgear from the Nordic Bronze Age context\"},{\"id\":\"plain_viking_warrior\",\"role\":\"the evidence-grounded Viking-age warrior as reconstructed from archaeology (no horns)\"}],\"settings\":[{\"id\":\"setting_imagined_battlefield_hillside_dramatic_s\",\"label\":\"imagined battlefield hillside (dramatic, stylized)\"},{\"id\":\"setting_bronze_age_ritual_bog_find_location_open\",\"label\":\"Bronze Age ritual/ bog find location (open field with peat bog marker)\"},{\"id\":\"setting_archaeological_excavation_trench_grid_la\",\"label\":\"archaeological excavation trench (grid, labeled finds, trowel and brush)\"},{\"id\":\"setting_19th_century_theater_stage_atelier_stage\",\"label\":\"19th-century theater stage/atelier (stage backdrop, costume racks)\"},{\"id\":\"setting_museum_display_case_pedestal_label_plaqu\",\"label\":\"museum display case (pedestal, label plaque, glass casing)\"}],\"props\":[{\"id\":\"gjermundbu_helmet\",\"label\":\"The Gjermundbu-style helmet: a simple rounded iron dome with an integrated 'spectacle' guard curving over the eye region and a short nose guard; no horn attachments, no rivet patterns for horns. Dull iron-gray fill, thin black outline. Display on a small museum pedestal with a label reading 'Gjermundbu helmet, c. 970'.\"},{\"id\":\"veksø_bronze_helm\",\"label\":\"Veksø-type bronze ceremonial helmet: thin decorative bronze cap with long gently curved horns ending in small round discs; horns are narrower and shorter than the icon horns and look fragile. Warm copper fill, horns off-white tips. Often shown with a watery/bog or ritual context.\"},{\"id\":\"theater_prop_helmet\",\"label\":\"Theatrical horned helmet prop: bold, exaggerated horns (same silhouette as the horned-Viking icon) but visually heavier and stylized for stage: thicker horn cross-section and larger scale. Colored with slightly brighter pigments to read at a distance (burgundy accent available).\"},{\"id\":\"museum_label\",\"label\":\"Small rectangular placard: pale gray rectangle with two lines of text (title line bold, secondary line small). Use once next to actual archaeological pieces (e.g., 'Gjermundbu helmet, c. 970') to visually cue 'authentic museum object'.\"}],\"graphicLanguage\":{\"comparisonLayouts\":\"Side-by-side comparisons always align helmets at the same baseline for easy silhouette reading. Use captions in cool blue for archaeological items and sepia for theatrical/cultural items.\",\"timelineConventions\":\"Horizontal timeline bar with three labeled nodes: 'Bronze Age (c. 900–1100 BCE)' — copper node; 'Viking Age (c. 793–1066 CE)' — iron-gray node; '19th century Romantic/theatre' — sepia node. Connect the horned icon with arrows showing cultural borrowing.\",\"symbolicMetaphorLanguage\":\"Use the horned-Viking icon as a recurring metaphor: when the narration says 'this image stuck', show the icon stamped repeatedly like a simple rubber-stamp motif fading into postcards, theater posters, and a modern football helmet.\"},\"factualVisualConstraints\":[\"Do not invent physical horn attachment marks on genuine Viking-age helmet reconstructions (e.g., Gjermundbu).\",\"Veksø bronze helmets must be clearly labeled Bronze Age and look decorative, not battle-ready.\",\"Theatrical horned helmets must be shown as 19th-century costume props, visually distinct from Bronze Age originals.\"]}\n\nCALLBACK PLAN: planted detail \"two long curved horns\" — plant in segment seg1, payoff in segment seg14.",
+              "cache_control": {
+                "type": "ephemeral"
+              }
+            }
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "content": "WINDOW 1: code split beats that ran too long. Write a fresh visual contract for EACH beat marked NEEDS CONTRACT, using exactly its chunk range. Give each a different composition, framing or moment from its neighbours — never duplicate the original beat's image idea; show the next beat of the action instead.\n\ncontext C2..C2 \"and two long curved horns jut off your helmet,\" — POV/POV: Two long curved horns jut from the viewer's helmet, slicing the air as they run.\nNEEDS CONTRACT C3..C3 \"cutting the air on either side of your head.\" (split from a longer beat whose idea was: Two long curved horns jut from the viewer's helmet, slicing the air as they run.)\ncontext C4..C5 \"The horns catch the firelight. They look terrifying.\" — OBJECT_DETAIL/CLOSE_UP: Firelight glints off the curved horns in close-up, looking fearsome.\ncontext C6..C6 \"They look exactly like every painting,\" — ICON_ROW/FLAT_GRAPHIC: The horned silhouette morphs across a painting, a movie poster, and a Halloween costume.\nNEEDS CONTRACT C7..C7 \"every movie poster, every Halloween costume you've ever seen of a Viking.\" (split from a longer beat whose idea was: The horned silhouette morphs across a painting, a movie poster, and a Halloween costume.)\ncontext C8..C8 \"This is the image burned into your head.\" — SYMBOLIC/CLOSE_UP: The horned icon stamps itself onto a simple head silhouette like a brand.\ncontext C9..C9 \"A single wrong picture like this can quietly\" — SYMBOLIC/WIDE: A single wrong picture icon quietly rewrites a swirling timeline of history behind it.\nNEEDS CONTRACT C10..C10 \"rewrite an entire culture's history in our heads.\" (split from a longer beat whose idea was: A single wrong picture icon quietly rewrites a swirling timeline of history behind it.)\ncontext C11..C12 \"So did any Viking ever actually strap on horns before walking into battle?\" — REACTION/MEDIUM: A plain Viking warrior pauses mid-step, question mark hovering, before the shieldwall.\ncontext C14..C14 \"Viking raiders wore horned helmets into combat,\" — STORY_SCENE/MEDIUM: A plain Viking warrior stands beside a drawn horned helmet with horns curving up like a bull's.\nNEEDS CONTRACT C15..C15 \"the horns curving up from the sides like a bull's.\" (split from a longer beat whose idea was: A plain Viking warrior stands beside a drawn horned helmet with horns curving up like a bull's.)\ncontext C16..C17 \"It feels obvious. It's on flags, beer labels, football helmets.\" — REACTION/CLOSE_UP: A nodding head shrugs, the horned icon glowing overhead as if self-evident.\ncontext C18..C18 \"But archaeologists digging across Scandinavia for over a century\" — STORY_SCENE/WIDE: An archaeologist kneels in a trench grid, brushing dirt, finds sparse and few.\nNEEDS CONTRACT C19..C19 \"have found remarkably few actual Viking-age helmets at all.\" (split from a longer beat whose idea was: An archaeologist kneels in a trench grid, brushing dirt, finds sparse and few.)\ncontext C20..C20 \"Total confirmed helmets from the entire Viking Age, roughly 793 to 1066,\" — TIMELINE_BAR/FLAT_GRAPHIC: A horizontal timeline bar spans 793-1066 with almost no helmet icons marked on it.\nNEEDS CONTRACT C21..C21 \"that survive with enough of the skull intact to study?\" (split from a longer beat whose idea was: A horizontal timeline bar spans 793-1066 with almost no helmet icons marked on it.)\ncontext C22..C22 \"You can count them on one hand.\" — STAT_CARD/CLOSE_UP: A single hand counts a few helmet icons on its fingers.\ncontext C23..C23 \"The best-preserved one is the Gjermundbu helmet,\" — OBJECT_DETAIL/MEDIUM: The Gjermundbu helmet rests on a museum pedestal, label noting 1943 Norway discovery.\nNEEDS CONTRACT C24..C24 \"dug out of a burial mound in Norway in 1943,\" (split from a longer beat whose idea was: The Gjermundbu helmet rests on a museum pedestal, label noting 1943 Norway discovery.)\ncontext C25..C25 \"dated to around the year 970.\" — STAT_CARD/CLOSE_UP: A date stamp settles beside the helmet: around 970.\ncontext C27..C27 \"a spectacled guard curving over the eyes\" — OBJECT_DETAIL/EXTREME_CLOSE_UP: Close-up traces the spectacled eye guard and nose guard, then pans to bare spots with nothing where horns would be.\nNEEDS CONTRACT C28..C28 \"and nose, and absolutely nothing where horns would attach.\" (split from a longer beat whose idea was: Close-up traces the spectacled eye guard and nose guard, then pans to bare spots with nothing where horns would be.)\ncontext C29..C30 \"No sockets. No rivet holes shaped for anything curved.\" — SYMBOLIC/EXTREME_CLOSE_UP: A circled X marks empty spots where horn sockets should be.\n\nReturn \"beats\" containing ONLY the 8 NEEDS CONTRACT beat(s), in order."
+            }
+          ],
+          "tools": [
+            {
+              "name": "direct_beats",
+              "description": "Returns the beats.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "beats"
+                ],
+                "properties": {
+                  "beats": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "startChunk",
+                        "endChunk",
+                        "visualConcept",
+                        "userSummary",
+                        "treatment",
+                        "composition",
+                        "motionIntent"
+                      ],
+                      "properties": {
+                        "startChunk": {
+                          "type": "integer",
+                          "description": "First chunk index (C-number) of this beat."
+                        },
+                        "endChunk": {
+                          "type": "integer",
+                          "description": "Last chunk index of this beat (inclusive). A beat is 1-3 consecutive chunks."
+                        },
+                        "visualConcept": {
+                          "type": "string",
+                          "description": "What the viewer SEES that makes this exact line land — one concrete sentence (max ~20 words)."
+                        },
+                        "userSummary": {
+                          "type": "string",
+                          "description": "One short plain sentence for the UI (max ~10 words)."
+                        },
+                        "treatment": {
+                          "type": "string",
+                          "enum": [
+                            "STORY_SCENE",
+                            "REACTION",
+                            "POV",
+                            "ESTABLISHING",
+                            "OBJECT_DETAIL",
+                            "SYMBOLIC",
+                            "COMPARISON",
+                            "SPLIT",
+                            "MAP",
+                            "TIMELINE_BAR",
+                            "SCALE",
+                            "STAT_CARD",
+                            "ICON_ROW",
+                            "CROWD",
+                            "CALLBACK"
+                          ]
+                        },
+                        "subjects": {
+                          "type": "array",
+                          "description": "Cast on screen (omit if none).",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "castId",
+                              "presence",
+                              "action",
+                              "expression"
+                            ],
+                            "properties": {
+                              "castId": {
+                                "type": "string",
+                                "enum": [
+                                  "hero",
+                                  "viewer",
+                                  "archaeologist",
+                                  "19th_century_costume_designer",
+                                  "bronze_age_priest",
+                                  "plain_viking_warrior"
+                                ]
+                              },
+                              "presence": {
+                                "type": "string",
+                                "enum": [
+                                  "full",
+                                  "hands",
+                                  "back",
+                                  "tiny"
+                                ]
+                              },
+                              "action": {
+                                "type": "string"
+                              },
+                              "expression": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "settingId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "enum": [
+                            "setting_imagined_battlefield_hillside_dramatic_s",
+                            "setting_bronze_age_ritual_bog_find_location_open",
+                            "setting_archaeological_excavation_trench_grid_la",
+                            "setting_19th_century_theater_stage_atelier_stage",
+                            "setting_museum_display_case_pedestal_label_plaqu",
+                            null
+                          ],
+                          "description": "Omit or null for abstract graphic beats."
+                        },
+                        "settingVariant": {
+                          "type": "string",
+                          "description": "Optional short variant (time of day, angle)."
+                        },
+                        "propIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "gjermundbu_helmet",
+                              "veksø_bronze_helm",
+                              "theater_prop_helmet",
+                              "museum_label"
+                            ]
+                          },
+                          "description": "Omit if none."
+                        },
+                        "composition": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "camera",
+                            "framing"
+                          ],
+                          "properties": {
+                            "camera": {
+                              "type": "string",
+                              "enum": [
+                                "EXTREME_WIDE",
+                                "WIDE",
+                                "MEDIUM",
+                                "CLOSE_UP",
+                                "EXTREME_CLOSE_UP",
+                                "OVERHEAD",
+                                "POV",
+                                "OVER_THE_SHOULDER",
+                                "LOW_ANGLE",
+                                "FLAT_GRAPHIC"
+                              ]
+                            },
+                            "framing": {
+                              "type": "string",
+                              "description": "A few words."
+                            }
+                          }
+                        },
+                        "textIntent": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "mode",
+                            "text"
+                          ],
+                          "description": "Omit for NO_TEXT.",
+                          "properties": {
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "NO_TEXT",
+                                "SHORT_TEXT",
+                                "PROGRAMMATIC"
+                              ]
+                            },
+                            "text": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "description": "Exact on-screen text (<= 5 words) for SHORT_TEXT; what to render for PROGRAMMATIC."
+                            }
+                          }
+                        },
+                        "motif": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "role",
+                            "id"
+                          ],
+                          "description": "Only for the callback plant/payoff; omit otherwise.",
+                          "properties": {
+                            "role": {
+                              "type": "string",
+                              "enum": [
+                                "none",
+                                "plant",
+                                "payoff"
+                              ]
+                            },
+                            "id": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        },
+                        "motionIntent": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "camera",
+                            "subject",
+                            "environment",
+                            "weight"
+                          ],
+                          "properties": {
+                            "camera": {
+                              "type": "string"
+                            },
+                            "subject": {
+                              "type": "string"
+                            },
+                            "environment": {
+                              "type": "string"
+                            },
+                            "weight": {
+                              "type": "string",
+                              "enum": [
+                                "still",
+                                "light",
+                                "medium",
+                                "strong"
+                              ]
+                            }
+                          }
+                        },
+                        "flags": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "punch",
+                            "hold",
+                            "reason"
+                          ],
+                          "description": "Omit unless PUNCH or HOLD.",
+                          "properties": {
+                            "punch": {
+                              "type": "boolean"
+                            },
+                            "hold": {
+                              "type": "boolean"
+                            },
+                            "reason": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "tool_choice": {
+            "type": "tool",
+            "name": "direct_beats"
+          }
+        },
+        "status": 200,
+        "response": {
+          "model": "claude-sonnet-5",
+          "id": "msg_011CfSgau23Aun7mZufWve25",
+          "type": "message",
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "toolu_016e2tHByasctmrVzWMWJJna",
+              "name": "direct_beats",
+              "input": {
+                "beats": [
+                  {
+                    "startChunk": 3,
+                    "endChunk": 3,
+                    "visualConcept": "Wide shot shows the horns whistling past the viewer's ears as wind lines streak backward.",
+                    "userSummary": "Horns slice the air beside your head.",
+                    "treatment": "POV",
+                    "composition": {
+                      "camera": "WIDE",
+                      "framing": "over-head angle, wind streaks"
+                    },
+                    "motionIntent": {
+                      "camera": "slight pull-back",
+                      "subject": "horns whip past temples",
+                      "environment": "wind lines streaking",
+                      "weight": "medium"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "viewer",
+                        "presence": "back",
+                        "action": "running with horned helmet",
+                        "expression": "strained focus"
+                      }
+                    ]
+                  },
+                  {
+                    "startChunk": 7,
+                    "endChunk": 7,
+                    "visualConcept": "The same silhouette now stamped onto a movie poster and a Halloween costume box side by side.",
+                    "userSummary": "Same horns on posters and costumes.",
+                    "treatment": "ICON_ROW",
+                    "composition": {
+                      "camera": "FLAT_GRAPHIC",
+                      "framing": "two icons side by side"
+                    },
+                    "motionIntent": {
+                      "camera": "static",
+                      "subject": "icons sit still",
+                      "environment": "flat background",
+                      "weight": "still"
+                    }
+                  },
+                  {
+                    "startChunk": 10,
+                    "endChunk": 10,
+                    "visualConcept": "The wrong-picture icon overwrites a scroll of history text, the words dissolving into the icon's shape.",
+                    "userSummary": "The wrong image rewrites history's text.",
+                    "treatment": "SYMBOLIC",
+                    "composition": {
+                      "camera": "CLOSE_UP",
+                      "framing": "icon over dissolving scroll"
+                    },
+                    "motionIntent": {
+                      "camera": "slow push-in",
+                      "subject": "icon overwrites text",
+                      "environment": "scroll dissolves",
+                      "weight": "medium"
+                    }
+                  },
+                  {
+                    "startChunk": 15,
+                    "endChunk": 15,
+                    "visualConcept": "Close-up traces the drawn helmet's horns curling upward like a bull's, chalk-sketch style.",
+                    "userSummary": "Close-up on the bull-like curving horns.",
+                    "treatment": "OBJECT_DETAIL",
+                    "composition": {
+                      "camera": "CLOSE_UP",
+                      "framing": "helmet horns only"
+                    },
+                    "motionIntent": {
+                      "camera": "slow pan up horn curve",
+                      "subject": "horns static",
+                      "environment": "chalk outline shimmer",
+                      "weight": "light"
+                    }
+                  },
+                  {
+                    "startChunk": 19,
+                    "endChunk": 19,
+                    "visualConcept": "The archaeologist holds up an empty tray, only a couple of helmet fragments visible among empty slots.",
+                    "userSummary": "Almost empty tray of helmet finds.",
+                    "treatment": "STORY_SCENE",
+                    "composition": {
+                      "camera": "MEDIUM",
+                      "framing": "archaeologist with sparse tray"
+                    },
+                    "motionIntent": {
+                      "camera": "hold",
+                      "subject": "archaeologist lifts tray",
+                      "environment": "dust settles",
+                      "weight": "light"
+                    },
+                    "subjects": [
+                      {
+                        "castId": "archaeologist",
+                        "presence": "full",
+                        "action": "holding near-empty finds tray",
+                        "expression": "resigned"
+                      }
+                    ]
+                  },
+                  {
+                    "startChunk": 21,
+                    "endChunk": 21,
+                    "visualConcept": "Camera tightens on the timeline bar, magnifying to show only a couple faint skull-intact icons.",
+                    "userSummary": "Only a few skulls survive intact.",
+                    "treatment": "TIMELINE_BAR",
+                    "composition": {
+                      "camera": "CLOSE_UP",
+                      "framing": "zoomed timeline segment"
+                    },
+                    "motionIntent": {
+                      "camera": "push-in on bar",
+                      "subject": "faint icons highlighted",
+                      "environment": "rest of bar fades",
+                      "weight": "light"
+                    }
+                  },
+                  {
+                    "startChunk": 24,
+                    "endChunk": 24,
+                    "visualConcept": "A small inset shows a shovel unearthing the helmet from a burial mound in Norway, 1943 stamped below.",
+                    "userSummary": "Helmet dug from a Norway burial mound.",
+                    "treatment": "STORY_SCENE",
+                    "composition": {
+                      "camera": "MEDIUM",
+                      "framing": "burial mound dig inset"
+                    },
+                    "motionIntent": {
+                      "camera": "hold",
+                      "subject": "shovel lifts dirt revealing helmet",
+                      "environment": "mound soil crumbles",
+                      "weight": "medium"
+                    }
+                  },
+                  {
+                    "startChunk": 28,
+                    "endChunk": 28,
+                    "visualConcept": "Camera pans from the nose guard to bare iron where horns would attach, nothing but smooth metal.",
+                    "userSummary": "Bare smooth spot where horns would go.",
+                    "treatment": "OBJECT_DETAIL",
+                    "composition": {
+                      "camera": "EXTREME_CLOSE_UP",
+                      "framing": "bare helmet side"
+                    },
+                    "motionIntent": {
+                      "camera": "pan across dome",
+                      "subject": "helmet static",
+                      "environment": "none",
+                      "weight": "still"
+                    }
+                  }
+                ]
+              },
+              "caller": {
+                "type": "direct"
+              }
+            }
+          ],
+          "container": null,
+          "stop_reason": "tool_use",
+          "stop_sequence": null,
+          "stop_details": null,
+          "usage": {
+            "input_tokens": 2103,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 5025,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 0
+            },
+            "output_tokens": 1695,
+            "output_tokens_details": {
+              "thinking_tokens": 0
+            },
+            "service_tier": "standard",
+            "inference_geo": "global"
+          },
+          "diagnostics": null
+        },
+        "seq": 3,
+        "stage": "beat_director"
+      }
+    ]
+  },
+  "result": {
+    "ok": false,
+    "beatCount": 0,
+    "ranges": []
+  },
+  "stats": {
+    "usage": {
+      "calls": 4,
+      "inputTokens": 7699,
+      "outputTokens": 13465,
+      "cacheReadTokens": 15075,
+      "cacheWriteTokens": 5025
+    },
+    "repairs": 1,
+    "windows": 5,
+    "latencyMs": 112119
+  },
+  "validation": {},
+  "costUsd": 0.1656,
+  "beats": []
+}

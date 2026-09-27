@@ -4,21 +4,15 @@ import { uploadForExternalFetch } from "../../../../lib/storage";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 export const IMAGE_TOOL_KEY  = "image:fruit-v2";
-export const IMAGE_CREDITS   = 2;
 export const SCENE_COUNT     = 10;
 export const IMAGE_W         = 720;
 export const IMAGE_H         = 1280;
 
-// Video phase — Seedance 1.5 Pro, no sound, 6s clips.
-// Retuned to ~50% blended margin (was 15cr, ~55% margin): no-sound cost is
-// ~$0.15/clip (estimated — scaled from the measured 720p+sound rate,
-// $0.052529/s, by the sound/no-sound credit ratio 2.5/5.25; still unverified
-// by a real no-sound invoice). Each clip = 2 images (4cr) + 1 video, so this
-// uses the same 2-images/output formula as Clay Rescue:
-// videoCredits = round(100 * videoCostUSD - 1.9154) = round(100*0.15 - 1.9154) = 13.
+// Video phase — Seedance 1.5 Pro, no sound, 6s clips, 720x1280.
 export const VIDEO_TOOL_KEY         = "video:seedance15pro";
 export const VIDEO_DURATION         = 6;
-export const VIDEO_CREDITS_PER_CLIP = 13;   // ~2.17 cr/s × 6s
+export const VIDEO_W                = 720;
+export const VIDEO_H                = 1280;
 export const VIDEO_CLIP_COUNT       = 5;
 
 // Which image pair [A, B] feeds each clip
@@ -30,20 +24,23 @@ export const CLIP_PAIRS = [
   [8, 9],   // Chef Presents     → Matching Close-Up
 ];
 
-export const VISUAL_CREDITS =
-  SCENE_COUNT * IMAGE_CREDITS +          // 20 — images
-  VIDEO_CLIP_COUNT * VIDEO_CREDITS_PER_CLIP; // 65 — videos
+// Prices come from the server (public.tool_prices) — see useToolPriceQuotes.
+export const PRICE_ITEMS = [
+  { id: "image", tool_key: IMAGE_TOOL_KEY, input: { width: IMAGE_W, height: IMAGE_H } },
+  { id: "clip", tool_key: VIDEO_TOOL_KEY, input: { durationSec: VIDEO_DURATION, withSound: false, width: VIDEO_W, height: VIDEO_H } },
+];
+
+/** Images + clips for one generation, from quoted prices; null until loaded. */
+export function calcVisualCredits(prices = {}) {
+  if (prices.image == null || prices.clip == null) return null;
+  return SCENE_COUNT * prices.image + VIDEO_CLIP_COUNT * prices.clip;
+}
 
 // ── Vibes ─────────────────────────────────────────────────────────────────────
-export const VOICE_CREDITS_PER_TAKE = 3;
-// Base service credits — covers the OpenAI GPT-4o(-mini) vision call in
-// cooking-script-captions (generates the clip-aligned voiceover script AND
-// its on-screen caption timing from the actual rendered frames) plus
-// per-request overhead. Bumped 10 -> 12 since that OpenAI/caption cost
-// wasn't previously priced in on top of the visual (image+video) credits.
-// The ElevenLabs voice *audio* itself is billed separately per take via
-// VOICE_CREDITS_PER_TAKE below.
-export const COOKING_SERVICE_BASE_CREDITS = 12;
+// The service fee (script/caption tools + generated voice takes) is set and
+// charged by begin_cooking_matic_generation; quoteCookingMaticService returns
+// the same number for the caller's plan. Voice limits here are display-only
+// fallbacks and mirror cooking_matic_service_terms.
 export const COOKING_VOICE_LIMITS = {
   starter: 2,
   affiliate: 2,
@@ -55,15 +52,22 @@ export function getCookingVoiceLimit(planCode) {
   return COOKING_VOICE_LIMITS[String(planCode || "starter").toLowerCase()] ?? 2;
 }
 
-export function getCookingServiceCredits(planCode) {
-  return COOKING_SERVICE_BASE_CREDITS + getCookingVoiceLimit(planCode) * VOICE_CREDITS_PER_TAKE;
+/** Server quote of the service fee for the signed-in user's plan. */
+export async function quoteCookingMaticService() {
+  const { data, error } = await supabase.rpc("quote_cooking_matic_service");
+  if (error) throw new Error(error.message || "PRICE_QUOTE_FAILED");
+  if (!data || !Number.isFinite(data.service_credits)) throw new Error("NO_SERVER_PRICE");
+  return { serviceCredits: data.service_credits, voiceLimit: data.voice_limit, plan: data.plan, allowed: Boolean(data.allowed) };
 }
 
-export function getCookingTotalCredits(planCode) {
-  return VISUAL_CREDITS + getCookingServiceCredits(planCode);
+/** Service fee for a given plan (public, for the pricing page) — same helper the charge uses. */
+export async function quoteCookingMaticServiceForPlan(planCode) {
+  const { data, error } = await supabase.rpc("cooking_matic_service_terms", { p_plan: planCode });
+  const row = Array.isArray(data) ? data[0] : data;
+  if (error) throw new Error(error.message || "PRICE_QUOTE_FAILED");
+  if (!row || !Number.isFinite(row.service_credits)) throw new Error("NO_SERVER_PRICE");
+  return row.service_credits;
 }
-
-export const TOTAL_CREDITS = getCookingTotalCredits("starter");
 
 export const VIBES = [
   {
@@ -427,11 +431,9 @@ export async function generateCookingScene({ prompt, referenceUrl = null, refere
     size: `${IMAGE_W}x${IMAGE_H}`,
     refImages,
     expectedRefSlotCount: refImages.length,
-    chargeCreditsOverride: IMAGE_CREDITS,
   });
 }
 
-// Nano Banana 2 fallback — no reference images, same credit cost
 // ── Viral clip video prompts ──────────────────────────────────────────────────
 // 5 clips × 6s. Camera stays overhead or tight on hands during cooking —
 // only the FINAL clip reveals the full chef for the payoff moment.
@@ -479,11 +481,10 @@ export async function animateCookingClip({ firstImageUrl, secondImageUrl, prompt
   return createVideoJobSimple({
     subject:           prompt,
     toolKey:           VIDEO_TOOL_KEY,
-    width:             720,     // 720x1280 = 9:16 HD — confirmed allowed by Runware
-    height:            1280,
+    width:             VIDEO_W,     // 720x1280 = 9:16 HD — confirmed allowed by Runware
+    height:            VIDEO_H,
     durationSec:       VIDEO_DURATION,
     initImageUrls:     refs,
-    calculatedCredits: VIDEO_CREDITS_PER_CLIP,
     withSound:         false,
   });
 }

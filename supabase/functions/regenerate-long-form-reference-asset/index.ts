@@ -1,13 +1,19 @@
 // deno-lint-ignore-file no-explicit-any
 // regenerate-long-form-reference-asset/index.ts
 //
-// Regenerates ONE reference asset — never the whole Visual World (Part 15
-// item 19 / the UI's per-image "Regenerate" action). Creates one replacement
-// row, preserving the prior job/result/cost, and reopens the parent version's
-// "generating" stage so the existing durable claim/lease machinery
+// Regenerates/retries ONE reference asset — never the whole Visual World
+// (Part 15 item 19 / the UI's per-image "Regenerate"/"Try Again" action).
+// Real incident (2026-09-13): this used to always call
+// replace_long_form_reference_asset, which unconditionally creates a new
+// history row — correct for a genuine post-dispatch failure or QA
+// rejection, but wrong for a PRE-DISPATCH failure (job_id was never set, no
+// provider request was ever made): that case has nothing to supersede, so
+// it should resume the SAME row instead of manufacturing a duplicate
+// history entry. retry_long_form_reference_asset branches on exactly that
+// (job_id is null) and reopens the parent version's "generating" stage
+// either way so the existing durable claim/lease machinery
 // (advance-long-form-visual-world) picks it up on its own — no separate,
-// parallel regeneration path. Bounded the same way as any other asset: 3
-// claim attempts max, same crash-safety contract.
+// parallel regeneration path.
 //
 // POST { assetId }
 // Returns { ok: true }
@@ -35,11 +41,11 @@ Deno.serve(async (req) => {
 
   const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
-  const { data: assetIdCreated, error } = await admin.rpc("replace_long_form_reference_asset", { p_asset_id: assetId, p_user_id: user.id });
+  const { data: assetIdCreated, error } = await admin.rpc("retry_long_form_reference_asset", { p_asset_id: assetId, p_user_id: user.id });
   if (error) {
     const message = error.message ?? "";
     const status = message.includes("FORBIDDEN") ? 403 : message.includes("NOT_FOUND") ? 404 : message.includes("BUSY") || message.includes("IN_PROGRESS") ? 409 : 500;
-    return err(req, status === 409 ? "References are updating. Please try again shortly." : "Could not replace this reference", status);
+    return err(req, status === 409 ? "References are updating. Please try again shortly." : "Could not retry this reference", status);
   }
   const { data: replacement } = await admin.from("long_form_reference_assets").select("visual_world_version_id").eq("id", assetIdCreated).single();
   if (replacement) {

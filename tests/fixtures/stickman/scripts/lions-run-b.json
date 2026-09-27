@@ -1,0 +1,1438 @@
+{
+  "slug": "lions-run-b",
+  "frozenAt": "2026-09-26T19:29:21.481Z",
+  "source": {
+    "projectId": "c73d6c6f-7172-4060-943d-8dcb16621284",
+    "scriptVersionId": "2db62347-9cbe-4190-ace4-e6c1c46546d2",
+    "storyPlanVersionId": "3d5c7c74-c5c2-48d3-9ff0-36a0274eb138",
+    "researchVersionId": "ff4aa189-72ce-4b02-ae19-8e57aeae1ee5"
+  },
+  "topic": "Why Don't We Eat Lions?",
+  "niche": "why_dont_we_eat_x",
+  "visualRecipe": "stickman_doodle_explainer",
+  "title": "Why Don't We Eat Lions?",
+  "targetWords": 1305,
+  "actualWords": 1348,
+  "lengthRatio": 1.033,
+  "status": "needs_attention",
+  "lastErrorCode": null,
+  "models": {
+    "draft": "gpt-5.6-sol",
+    "critic": "gpt-5.6-sol",
+    "revision": null
+  },
+  "criticScore": 5.5,
+  "criticScores": {
+    "hook": 8,
+    "ending": 5,
+    "rhythm": 7,
+    "bridging": 8,
+    "repetition": 6,
+    "specificity": 7,
+    "angleStrength": 6,
+    "visualConcreteness": 8
+  },
+  "judgedScore": 7.5,
+  "costUsd": 0.6081,
+  "callLedger": [
+    {
+      "model": "gpt-5.6-sol",
+      "stage": "draft",
+      "inputTokens": 13653,
+      "outputTokens": 9222,
+      "actualToolCalls": 0,
+      "estimatedCostUsd": 0.3449
+    },
+    {
+      "model": "gpt-5-mini",
+      "stage": "claim_verify",
+      "inputTokens": 9638,
+      "outputTokens": 3594,
+      "actualToolCalls": 2,
+      "estimatedCostUsd": 0.0296
+    },
+    {
+      "model": "gpt-5-mini",
+      "stage": "claim_verify",
+      "inputTokens": 9690,
+      "outputTokens": 1171,
+      "actualToolCalls": 2,
+      "estimatedCostUsd": 0.0248
+    },
+    {
+      "model": "gpt-5-mini",
+      "stage": "claim_fix",
+      "inputTokens": 3272,
+      "outputTokens": 2772,
+      "actualToolCalls": 0,
+      "estimatedCostUsd": 0.0064
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "stage": "critic",
+      "inputTokens": 15802,
+      "outputTokens": 3983,
+      "actualToolCalls": 0,
+      "estimatedCostUsd": 0.1985
+    },
+    {
+      "model": "gpt-5-mini",
+      "stage": "conservative_rewrite",
+      "inputTokens": 3160,
+      "outputTokens": 1559,
+      "actualToolCalls": 0,
+      "estimatedCostUsd": 0.0039
+    }
+  ],
+  "storyPlan": {
+    "chapters": [
+      {
+        "id": "cold_open",
+        "role": "cold_open",
+        "title": "The Uncooked Carcass",
+        "purpose": "Hook the viewer by dropping them into an awkward, concrete moment that raises immediate questions.",
+        "summary": "A small group stands silently around a freshly dead lion on the outskirts of a village; a cooking pot sits nearby but untouched — tension and hesitation replace the expected bustle of butchery.",
+        "subQuestion": "",
+        "targetWords": 60,
+        "keyQuestions": [
+          "Why would a cooking pot sit unused beside a big carcass?",
+          "Is this a meal, a trophy, or something else?"
+        ],
+        "estimatedMinutes": 0.5,
+        "picturableMoments": [
+          "A dead lion tied to the back of a pickup truck at dawn",
+          "A metal cooking pot boiling over an empty fire with no meat added",
+          "A group of villagers watching the carcass in silence"
+        ]
+      },
+      {
+        "id": "stakes",
+        "role": "stakes",
+        "title": "Why This Matters",
+        "purpose": "Signal why the question is worth answering in one short fragment.",
+        "summary": "Whether lions are food touches conservation, public health, cultural identity and who gets to eat what.",
+        "subQuestion": "",
+        "targetWords": 13,
+        "keyQuestions": [
+          "Why does it matter if lions are eaten or not?"
+        ],
+        "estimatedMinutes": 0.2,
+        "picturableMoments": [
+          "A balance scale with a lion on one side and a loaf of bread on the other",
+          "A courtroom gavel beside a refrigerator",
+          "A family dinner table with an empty chair"
+        ]
+      },
+      {
+        "id": "core_question",
+        "role": "core_question",
+        "title": "The Question",
+        "purpose": "State the single question the video will answer in one sentence.",
+        "summary": "What combination of biological, cultural, legal and practical factors explains why lions are not eaten as ordinary food?",
+        "subQuestion": "",
+        "targetWords": 22,
+        "keyQuestions": [
+          "What's the full explanation — not just one reason?"
+        ],
+        "estimatedMinutes": 0.2,
+        "picturableMoments": [
+          "A question mark hovering above a savanna scene",
+          "Icons for biology, law, culture and economics clustered together",
+          "A person pointing at a list labeled 'Why?'"
+        ]
+      },
+      {
+        "id": "evidence_scarcity",
+        "role": "evidence",
+        "title": "Not Enough Animals to Feed a Diet",
+        "purpose": "Explain ecological scarcity: how low density, large territories and territorial behavior limit lion availability compared with common food animals.",
+        "summary": "Lions occupy wide ranges and exist at much lower densities than livestock or typical game; that scarcity means lion carcasses are rare and cannot form a predictable food source for communities or markets.",
+        "subQuestion": "How does lions' ecology and population density limit their availability as a food source?",
+        "targetWords": 224,
+        "keyQuestions": [
+          "How common are lions compared with food animals and game?",
+          "Does lion behavior or territory size make them rare as meat?"
+        ],
+        "estimatedMinutes": 2.5,
+        "picturableMoments": [
+          "A wide savanna with a single lion far from any village",
+          "A hunting party returning with several small antelopes but no lions",
+          "An illustrated map showing large, empty territories labeled 'lion range' (no numbers)",
+          "A butchered goat on a market stall and an empty space where lion meat would be"
+        ]
+      },
+      {
+        "id": "evidence_risk_economics",
+        "role": "evidence",
+        "title": "Danger vs. Dinner",
+        "purpose": "Show the cost-benefit logic: hunting predators is more dangerous and costly per calorie or kilogram of usable meat than hunting herbivores or raising livestock.",
+        "summary": "Killing or capturing a large predator requires greater risk, tools, time and often legal risk; when a species is hard to catch and yields less reliable meat, communities rationally favor safer, more productive animals.",
+        "subQuestion": "Why do the risks and costs of hunting lions make them a poor choice compared with other food animals?",
+        "targetWords": 259,
+        "keyQuestions": [
+          "Why is hunting a lion a worse investment than hunting herbivores or raising livestock?",
+          "How do danger and effort change the economics of meat?"
+        ],
+        "estimatedMinutes": 2.2,
+        "picturableMoments": [
+          "A hunter wounded or retreating from a lion and another butcher carrying a goat easily",
+          "An old, heavy rifle and a simple trap side-by-side to show different effort levels",
+          "A market price tag showing common meat versus an imaginary 'lion' slot left blank",
+          "A timeline showing days spent tracking a big cat versus a quick hunt for small game"
+        ]
+      },
+      {
+        "id": "evidence_culture",
+        "role": "evidence",
+        "title": "Sacred Cat, Not a Stew",
+        "purpose": "Describe how symbolism, prestige and taboos make lions socially off-limits as ordinary food in many communities.",
+        "summary": "Across lion range, lions often appear in ritual, leadership symbolism and folklore; treating a lion as food can be taboo or lower its social value compared with keeping it as a symbol, trophy or sacred animal.",
+        "subQuestion": "How do cultural attitudes and taboos reduce the likelihood of lions being eaten as ordinary food?",
+        "targetWords": 241,
+        "keyQuestions": [
+          "How do cultural meanings change whether an animal is eaten?",
+          "Are lions treated as special or sacred in ways that discourage eating them?"
+        ],
+        "estimatedMinutes": 1.8,
+        "picturableMoments": [
+          "A tribal mask or carved lion figure displayed in a central hut",
+          "A ceremonial headdress made from a lion mane",
+          "A village leader blessing a lion trophy instead of a cooking pot",
+          "Children being told lion stories around a fire"
+        ]
+      },
+      {
+        "id": "evidence_law_conservation",
+        "role": "evidence",
+        "title": "Protected by Law (and Money)",
+        "purpose": "Outline how legal protections, international rules and conservation economics reduce legal supply and raise penalties and costs for obtaining lion meat.",
+        "summary": "National regulations and international listings create legal barriers and fines; enforcement, permits and the growth of wildlife economies (tourism, trophy programs) make killing or selling lions economically unattractive or risky for most people.",
+        "subQuestion": "How do legal protections and conservation economics make lion meat less available and less attractive as a food source?",
+        "targetWords": 189,
+        "keyQuestions": [
+          "Do laws and conservation measures actually block lion meat from markets?",
+          "How do tourism and conservation change incentives compared with making meat?"
+        ],
+        "estimatedMinutes": 1.8,
+        "picturableMoments": [
+          "A park ranger in uniform beside a 'Protected Species' sign",
+          "A tourist photographing lions from a safari vehicle",
+          "A closed market stall with a 'no wildlife trade' notice",
+          "A stack of documents labeled 'permit' and 'fine'"
+        ]
+      },
+      {
+        "id": "twist_health_risks",
+        "role": "twist",
+        "title": "The Hidden Biological Strike",
+        "purpose": "Deliver the surprising biological/health complication that reinforces all earlier reasons: predators can carry distinct pathogen and contaminant risks that make their meat less appealing or safe.",
+        "summary": "Beyond being dangerous to hunt, lions as apex predators can concentrate contaminants and host pathogens or parasites differently than herbivores; this hidden health angle helps explain why even places without strong laws or taboos often avoid eating big cats.",
+        "subQuestion": "",
+        "targetWords": 143,
+        "keyQuestions": [
+          "Are there specific health risks tied to eating large predators like lions?",
+          "Could contaminants concentrated through the food chain make lion meat risky even if cooked?"
+        ],
+        "estimatedMinutes": 1,
+        "picturableMoments": [
+          "A stylized food chain arrow from antelope to lion with an icon for 'contaminant concentration' near the top",
+          "A veterinarian examining tissue samples from a big cat",
+          "A caution symbol next to a steak labeled 'predator meat' (for the twist effect)"
+        ]
+      },
+      {
+        "id": "callback_payoff",
+        "role": "callback_payoff",
+        "title": "Why the Pan Stayed Empty",
+        "purpose": "Pay off the visual callback (the untouched cooking pot) by connecting it to the stack of reasons and the twist, giving a new meaning to the opening image.",
+        "summary": "The empty pot now makes sense: low supply, risk and social rules discourage butchery, and the biological health risk makes even willing cooks think twice — the pot remains empty because the costs outweigh the benefits.",
+        "subQuestion": "",
+        "targetWords": 88,
+        "keyQuestions": [
+          "How do all the factors combine to produce hesitation in that opening scene?",
+          "Does the health twist change how we read the untouched pot?"
+        ],
+        "estimatedMinutes": 0.7,
+        "picturableMoments": [
+          "The original cooking pot still on the fire but cold, now with a small warning tag",
+          "A villager turning away from the lion carcass and closing a chest containing a ceremonial object",
+          "A split image: a safari tourist camera on one side, an empty dinner plate on the other"
+        ]
+      },
+      {
+        "id": "closer",
+        "role": "closer",
+        "title": "A Simple Final Image",
+        "purpose": "Leave the viewer with one clear, memorable image: the stack of reasons that keep lions off the plate.",
+        "summary": "Short fragments that tie scarcity, danger, law, culture and health into a single resonant image: lions belong to the wild, to culture and to complexity — not to everyday cooking pots.",
+        "subQuestion": "",
+        "targetWords": 66,
+        "keyQuestions": [
+          "What single image will stay with the viewer?"
+        ],
+        "estimatedMinutes": 0.3,
+        "picturableMoments": [
+          "A lion walking away across the savanna at sunset",
+          "The untouched cooking pot closed and hanging on a wall",
+          "A small plaque that reads 'Not for eating' (symbolic)"
+        ]
+      }
+    ],
+    "hookConcept": "A village cook standing before a dead lion and an untouched cooking pot, the whole group hesitating.",
+    "callbackPlan": {
+      "detail": "An untouched cooking pot sitting beside the lion carcass (cold, no meat added).",
+      "plantSectionId": "cold_open",
+      "payoffSectionId": "callback_payoff"
+    },
+    "viewerPromise": "By the end you'll understand the layered reasons — ecology, economics, culture, law and a surprising health problem — that make lion meat uncommon, and when exceptions might occur.",
+    "narrativeLabel": "cause_effect / investigation",
+    "candidateAngles": [
+      {
+        "angle": "Ecological scarcity: lions have low densities and large territories, so there simply aren't many carcasses available compared with livestock and common game.",
+        "selected": true,
+        "payoffScore": 7,
+        "surpriseScore": 5,
+        "relatabilityScore": 6,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 8
+      },
+      {
+        "angle": "Risk/reward economics: hunting or killing a large predator is dangerous, time-consuming and yields less usable meat per unit effort than domestic animals or common herbivore game.",
+        "selected": true,
+        "payoffScore": 8,
+        "surpriseScore": 5,
+        "relatabilityScore": 8,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 9
+      },
+      {
+        "angle": "Cultural symbolism and taboo: in many lion-range societies lions carry prestige, ritual roles or taboos that discourage eating them, so social value protects them from becoming routine food.",
+        "selected": true,
+        "payoffScore": 7,
+        "surpriseScore": 6,
+        "relatabilityScore": 7,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 8
+      },
+      {
+        "angle": "Conservation and legal deterrents: national laws and international protections raise the cost and risk of legally obtaining lion meat, cutting legal supply and creating penalties.",
+        "selected": true,
+        "payoffScore": 6,
+        "surpriseScore": 4,
+        "relatabilityScore": 6,
+        "isTwistOrPayoffAngle": false,
+        "visualPotentialScore": 6
+      },
+      {
+        "angle": "Health and biology: beyond obvious disease risks, apex predators can concentrate pathogens or contaminants (trophic magnification), making their meat riskier than herbivores — an underappreciated reason many communities avoid eating lions.",
+        "selected": false,
+        "payoffScore": 9,
+        "surpriseScore": 9,
+        "relatabilityScore": 5,
+        "isTwistOrPayoffAngle": true,
+        "visualPotentialScore": 7
+      }
+    ],
+    "recommendedTitle": "Why Don't We Eat Lions?",
+    "thumbnailConcept": {
+      "scene": "A stickman chef holding a huge raw lion steak with a confused expression; a small law gavel and a tribal mask float beside the steak",
+      "headline": "EAT LIONS?"
+    },
+    "alternativeTitles": [
+      "Why People Almost Never Eat Lions",
+      "Why Lions Aren't Food"
+    ],
+    "researchQuestions": [
+      "Documented historical or ethnographic cases of lion meat consumption (when and where) and reliable citations.",
+      "Summaries of legal status and major protections for lions in key range countries and relevant international agreements (CITES listing details to be verified).",
+      "Peer-reviewed sources on pathogens and parasite prevalence in large felids and any documented zoonoses linked to consuming big-cat meat.",
+      "Studies or authoritative sources on contaminant bioaccumulation in apex predators relevant to lion meat safety.",
+      "Comparative accounts of culinary taste/texture and preparation for big-cat meats (bear, crocodile) to support taste/texture comparisons.",
+      "Economic studies or credible hunting reports quantifying effort/yield for hunting large predators versus typical game or livestock.",
+      "Anthropological sources on lion symbolism, taboos, and ritual roles across different lion-range cultures.",
+      "Data on bushmeat market composition and whether lion parts or meat appear in markets, including seizure records or market surveys."
+    ],
+    "researchRiskFlags": [
+      "Avoid asserting any specific pathogen names, infection rates, contaminant concentrations, or legal statutes without sourcing.",
+      "Do not claim general inedibility or 'poisonous' status for lions; frame health concerns as potential risks requiring citation.",
+      "Be cautious about implying widespread consumption in any culture without direct ethnographic evidence.",
+      "Any numerical claims about lion population sizes, territory areas, or densities must be verified with current sources."
+    ]
+  },
+  "script_document": {
+    "title": "Why Don't We Eat Lions?",
+    "claims": [
+      {
+        "id": "claim_01",
+        "claim": "The IUCN classifies lions as Vulnerable, reports a declining trend and does not provide one confident current global wild population total.",
+        "sentence": "The IUCN classifies lions as Vulnerable, says their population trend is declining, and cannot give one confident current total for all wild lions.",
+        "segmentId": "seg_04",
+        "sourceFactId": "f_fa96qk15"
+      },
+      {
+        "id": "claim_02",
+        "claim": "Lions have a confirmed range in 18 African countries.",
+        "sentence": "Their confirmed range now covers only 18 African countries.",
+        "segmentId": "seg_04",
+        "sourceFactId": "f_rzg3naef"
+      },
+      {
+        "id": "claim_03",
+        "claim": "FAOSTAT-based counts put five major farmed species at about 31.1 billion animals worldwide in 2022.",
+        "sentence": "FAOSTAT-based counts put cattle, sheep, goats, pigs and chickens at roughly 31.1 billion animals worldwide in 2022.",
+        "segmentId": "seg_04",
+        "sourceFactId": "f_0kcx42rw"
+      },
+      {
+        "id": "claim_04",
+        "claim": "Market research associated with Justin Brashares and colleagues found that declining wild mammal abundance raises bushmeat prices and encourages substitution.",
+        "sentence": "Market studies, including work linked to Justin Brashares and colleagues in 2004, show the predictable result: as wild mammals become scarce, bushmeat prices rise and buyers switch to other proteins.",
+        "segmentId": "seg_05",
+        "sourceFactId": "f_iatxkaly"
+      },
+      {
+        "id": "claim_05",
+        "claim": "FAO guidance emphasizes rapid chilling, clean processing areas and separate offal facilities for safe meat handling.",
+        "sentence": "FAO meat-handling guidance stresses rapid chilling, clean processing areas and separate spaces for offal.",
+        "segmentId": "seg_07",
+        "sourceFactId": "f_0cufg0xr"
+      },
+      {
+        "id": "claim_06",
+        "claim": "Cited trophy fees for one African lion in Tanzania range from about 13,500 dollars to 49,000 dollars.",
+        "sentence": "In Tanzania, cited trophy fees for one African lion have ranged from about 13,500 dollars to 49,000 dollars.",
+        "segmentId": "seg_08",
+        "sourceFactId": "f_gidb39zc"
+      },
+      {
+        "id": "claim_07",
+        "claim": "South Africa's legal lion skeleton exports peaked at 1,771 skeletons in 2016.",
+        "sentence": "In 2016, legal exports from South Africa peaked at 1,771 lion skeletons, sent to markets seeking bones rather than steaks.",
+        "segmentId": "seg_08",
+        "sourceFactId": "f_rzq4vznn"
+      },
+      {
+        "id": "claim_08",
+        "claim": "Mary Douglas discussed symbolic classification and food prohibitions in her 1966 book Purity and Danger.",
+        "sentence": "Anthropologist Mary Douglas explained this in her 1966 book, Purity and Danger: societies build food rules around categories, and animals seen as dangerous, anomalous or symbolically powerful can become improper to eat.",
+        "segmentId": "seg_09",
+        "sourceFactId": "f_8d5ycrtd"
+      },
+      {
+        "id": "claim_09",
+        "claim": "Lion hunting historically carried warrior prestige among Maasai communities without making lion meat an ordinary food.",
+        "sentence": "Among Maasai communities, lion hunting historically carried warrior prestige, yet prestige did not turn lion flesh into weekday food.",
+        "segmentId": "seg_10",
+        "sourceFactId": null
+      },
+      {
+        "id": "claim_10",
+        "claim": "Ethnographic and historical accounts generally describe lion meat as avoided while some lion parts had ritual or medicinal uses.",
+        "sentence": "Ethnographic and historical accounts describe lion meat as generally avoided, while claws, teeth, fat or other parts could receive ritual or medicinal uses.",
+        "segmentId": "seg_10",
+        "sourceFactId": "f_rwaaux5b"
+      },
+      {
+        "id": "claim_11",
+        "claim": "Lion Guardians began in the Amboseli region in 2007 and recruited local pastoralists, including traditional warriors, for lion monitoring and conflict reduction.",
+        "sentence": "Lion Guardians began in the Amboseli region in 2007, recruiting local pastoralists, including traditional warriors, to monitor lions and reduce killings.",
+        "segmentId": "seg_11",
+        "sourceFactId": null
+      },
+      {
+        "id": "claim_12",
+        "claim": "CITES places India's lion population on Appendix One and other lion populations on Appendix Two.",
+        "sentence": "Under CITES, India's lion population is on Appendix One, the strictest international trade category, while other lion populations are on Appendix Two.",
+        "segmentId": "seg_12",
+        "sourceFactId": "f_r8gxr4o2"
+      },
+      {
+        "id": "claim_13",
+        "claim": "Commercial exports of specified parts taken from wild lions have an annual quota of zero.",
+        "sentence": "Commercial exports of bones, skulls, teeth, claws and skeletons taken from wild lions face an annual quota of zero.",
+        "segmentId": "seg_12",
+        "sourceFactId": "f_r8gxr4o2"
+      },
+      {
+        "id": "claim_14",
+        "claim": "CITES regulates international trade rather than all domestic consumption.",
+        "sentence": "But CITES controls international trade, not whatever someone cooks inside every country.",
+        "segmentId": "seg_12",
+        "sourceFactId": "f_o7pym8th"
+      },
+      {
+        "id": "claim_15",
+        "claim": "TRAFFIC has documented domestic markets for lion parts in South Africa despite international trade controls.",
+        "sentence": "TRAFFIC has documented domestic markets for lion parts, including in South Africa, even while international movement is tightly controlled.",
+        "segmentId": "seg_13",
+        "sourceFactId": "f_o7pym8th"
+      },
+      {
+        "id": "claim_16",
+        "claim": "Trichinella larvae can lodge in muscle.",
+        "sentence": "That places them inside the life cycles of parasites such as Trichinella, whose larvae can lodge in muscle, and Toxoplasma gondii, which reproduces in members of the cat family.",
+        "segmentId": "seg_14",
+        "sourceFactId": null
+      },
+      {
+        "id": "claim_17",
+        "claim": "Toxoplasma gondii reproduces in members of the cat family.",
+        "sentence": "That places them inside the life cycles of parasites such as Trichinella, whose larvae can lodge in muscle, and Toxoplasma gondii, which reproduces in members of the cat family.",
+        "segmentId": "seg_14",
+        "sourceFactId": null
+      },
+      {
+        "id": "claim_18",
+        "claim": "Persistent contaminants can become more concentrated in predators through biomagnification.",
+        "sentence": "Predators can also accumulate persistent contaminants by eating contaminated prey again and again, a process called biomagnification.",
+        "segmentId": "seg_15",
+        "sourceFactId": null
+      },
+      {
+        "id": "claim_19",
+        "claim": "Freezing does not reliably neutralize every Trichinella species found in wild game.",
+        "sentence": "Freezing is not a dependable answer for all Trichinella species found in wild game.",
+        "segmentId": "seg_15",
+        "sourceFactId": null
+      },
+      {
+        "id": "claim_20",
+        "claim": "Public-health guidance for Trichinella risk in wild game recommends an internal temperature of at least 71 degrees Celsius.",
+        "sentence": "For Trichinella risk in wild game, public-health guidance recommends reaching at least 71 degrees Celsius throughout the meat.",
+        "segmentId": "seg_16",
+        "sourceFactId": null
+      }
+    ],
+    "chapters": [
+      {
+        "role": "cold_open",
+        "title": "The Uncooked Carcass",
+        "chapterId": "cold_open",
+        "segmentIds": [
+          "seg_01"
+        ],
+        "actualWords": 47,
+        "subQuestion": "",
+        "estimatedSeconds": 19
+      },
+      {
+        "role": "stakes",
+        "title": "Why This Matters",
+        "chapterId": "stakes",
+        "segmentIds": [
+          "seg_02"
+        ],
+        "actualWords": 13,
+        "subQuestion": "",
+        "estimatedSeconds": 5
+      },
+      {
+        "role": "core_question",
+        "title": "The Question",
+        "chapterId": "core_question",
+        "segmentIds": [
+          "seg_03"
+        ],
+        "actualWords": 15,
+        "subQuestion": "",
+        "estimatedSeconds": 6
+      },
+      {
+        "role": "evidence",
+        "title": "Not Enough Animals to Feed a Diet",
+        "chapterId": "evidence_scarcity",
+        "segmentIds": [
+          "seg_04",
+          "seg_05"
+        ],
+        "actualWords": 184,
+        "subQuestion": "How does lions' ecology and population density limit their availability as a food source?",
+        "estimatedSeconds": 76
+      },
+      {
+        "role": "evidence",
+        "title": "Danger Versus Dinner",
+        "chapterId": "evidence_risk_economics",
+        "segmentIds": [
+          "seg_06",
+          "seg_07",
+          "seg_08"
+        ],
+        "actualWords": 290,
+        "subQuestion": "Why do the risks and costs of hunting lions make them a poor choice compared with other food animals?",
+        "estimatedSeconds": 120
+      },
+      {
+        "role": "evidence",
+        "title": "Sacred Cat, Not a Stew",
+        "chapterId": "evidence_culture",
+        "segmentIds": [
+          "seg_09",
+          "seg_10",
+          "seg_11"
+        ],
+        "actualWords": 282,
+        "subQuestion": "How do cultural attitudes and taboos reduce the likelihood of lions being eaten as ordinary food?",
+        "estimatedSeconds": 117
+      },
+      {
+        "role": "evidence",
+        "title": "Protected by Law and Money",
+        "chapterId": "evidence_law_conservation",
+        "segmentIds": [
+          "seg_12",
+          "seg_13"
+        ],
+        "actualWords": 185,
+        "subQuestion": "How do legal protections and conservation economics make lion meat less available and less attractive as a food source?",
+        "estimatedSeconds": 77
+      },
+      {
+        "role": "twist",
+        "title": "The Hidden Biological Strike",
+        "chapterId": "twist_health_risks",
+        "segmentIds": [
+          "seg_14",
+          "seg_15"
+        ],
+        "actualWords": 192,
+        "subQuestion": "",
+        "estimatedSeconds": 79
+      },
+      {
+        "role": "callback_payoff",
+        "title": "Why the Pot Stayed Empty",
+        "chapterId": "callback_payoff",
+        "segmentIds": [
+          "seg_16"
+        ],
+        "actualWords": 70,
+        "subQuestion": "",
+        "estimatedSeconds": 29
+      },
+      {
+        "role": "closer",
+        "title": "Technically Meat, Socially Something Else",
+        "chapterId": "closer",
+        "segmentIds": [
+          "seg_17"
+        ],
+        "actualWords": 70,
+        "subQuestion": "",
+        "estimatedSeconds": 29
+      }
+    ],
+    "openLoops": [
+      {
+        "id": "loop_meat",
+        "question": "If the dead lion contains edible flesh, why does nobody put it in the pot?",
+        "setupSegmentId": "seg_01",
+        "payoffSegmentId": "seg_16",
+        "expectedPayoffRegion": "callback_payoff"
+      },
+      {
+        "id": "loop_health",
+        "question": "Could something hidden inside the meat explain the hesitation?",
+        "setupSegmentId": "seg_01",
+        "payoffSegmentId": "seg_14",
+        "expectedPayoffRegion": "twist_health_risks"
+      },
+      {
+        "id": "loop_law",
+        "question": "Is lion meat rare simply because eating it is illegal?",
+        "setupSegmentId": "seg_03",
+        "payoffSegmentId": "seg_12",
+        "expectedPayoffRegion": "evidence_law_conservation"
+      },
+      {
+        "id": "loop_rarity",
+        "question": "Are lions too rare to support an ordinary food supply?",
+        "setupSegmentId": "seg_03",
+        "payoffSegmentId": "seg_04",
+        "expectedPayoffRegion": "evidence_scarcity"
+      }
+    ],
+    "plantQuote": "Behind you, water trembles inside an untouched cooking pot, but nobody reaches for a knife.",
+    "actualWords": 1348,
+    "callbackKey": "untouched cooking pot",
+    "payoffQuote": "Now return to the untouched cooking pot.",
+    "checkResults": {
+      "hard": [],
+      "warn": [
+        {
+          "code": "segment_length_off",
+          "message": "Segment seg_02 is 13 words, outside the 40-120 target range.",
+          "segmentIds": [
+            "seg_02"
+          ]
+        },
+        {
+          "code": "segment_length_off",
+          "message": "Segment seg_03 is 15 words, outside the 40-120 target range.",
+          "segmentIds": [
+            "seg_03"
+          ]
+        },
+        {
+          "code": "low_specificity",
+          "message": "Evidence sections use only 15 numeral/number-word(s) across 941 words — fewer than roughly 3 per 100 words."
+        },
+        {
+          "code": "jargon_unexplained",
+          "message": "Segment seg_12 uses the bureaucratic term \"quota\" without explaining it in plain words in the same sentence.",
+          "segmentIds": [
+            "seg_12"
+          ]
+        },
+        {
+          "code": "jargon_unexplained",
+          "message": "Segment seg_13 uses the bureaucratic term \"domestic markets\" without explaining it in plain words in the same sentence.",
+          "segmentIds": [
+            "seg_13"
+          ]
+        }
+      ]
+    },
+    "qualitySummary": {
+      "criticScores": {
+        "hook": 8,
+        "ending": 5,
+        "rhythm": 7,
+        "bridging": 8,
+        "repetition": 6,
+        "specificity": 7,
+        "angleStrength": 6,
+        "visualConcreteness": 8
+      },
+      "warningCount": 5,
+      "expansionUsed": false,
+      "overallVerdict": "needs_research",
+      "revisionSkipped": true,
+      "criticOverallScore": 5.5,
+      "conservativeRewriteApplied": true
+    },
+    "researchWarnings": [
+      "Chapter \"The Hidden Biological Strike\" had some exact details reframed as reconstruction — the evidence supports the concept, not the precise figures.",
+      "Chapter \"Why the Pan Stayed Empty\" had some exact details reframed as reconstruction — the evidence supports the concept, not the precise figures.",
+      "Overall research coverage was assessed as \"weak\" — some sections use deliberately cautious language.",
+      "The Viral Editor scored this script 5.5/10 overall (needs 7+ to ship) — see checkResults/qualitySummary.criticScores for the per-dimension breakdown and the weakest sections it flagged."
+    ],
+    "thumbnailConcept": {
+      "scene": "A stickman chef holding a huge raw lion steak with a confused expression; a small law gavel and a tribal mask float beside the steak",
+      "headline": "EAT LIONS?"
+    },
+    "claimVerification": [
+      {
+        "url": null,
+        "claimId": "claim_01",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "claim_02",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "claim_03",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "claim_04",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "claim_05",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "claim_06",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "claim_07",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "claim_08",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "claim_10",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "claim_12",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "claim_13",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "claim_14",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "claim_15",
+        "verdict": "supported",
+        "sourceName": "preferred source (research-lite)",
+        "correctedValue": null
+      },
+      {
+        "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0170796",
+        "claimId": "claim_09",
+        "verdict": "supported",
+        "sourceName": "PLOS ONE (From Attitudes to Actions: Predictors of Lion Killing by Maasai Warriors)",
+        "correctedValue": null
+      },
+      {
+        "url": "https://www.nationalgeographic.com/animals/article/140428-serengeti-ngorongoro-conservation-area-tanzania-lions-maasai-craig-packer-lion-guardians-world",
+        "claimId": "claim_11",
+        "verdict": "unverifiable",
+        "sourceName": "National Geographic (article on Maasai and lion conservation — most relevant result found)",
+        "correctedValue": null
+      },
+      {
+        "url": "https://www.cdc.gov/parasites/trichinellosis/biology.html",
+        "claimId": "claim_16",
+        "verdict": "unverifiable",
+        "sourceName": "U.S. Centers for Disease Control and Prevention — Trichinellosis (biology/clinical)",
+        "correctedValue": null
+      },
+      {
+        "url": "https://www.cdc.gov/parasites/toxoplasmosis/biology.html",
+        "claimId": "claim_17",
+        "verdict": "unverifiable",
+        "sourceName": "U.S. Centers for Disease Control and Prevention — Toxoplasmosis (biology/hosts)",
+        "correctedValue": null
+      },
+      {
+        "url": "https://www.epa.gov/sites/default/files/documents/bioaccumulationbiomagnificationeffects.pdf",
+        "claimId": "claim_18",
+        "verdict": "supported",
+        "sourceName": "U.S. Environmental Protection Agency (EPA)",
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "claim_19",
+        "verdict": "unverifiable",
+        "sourceName": null,
+        "correctedValue": null
+      },
+      {
+        "url": null,
+        "claimId": "claim_20",
+        "verdict": "unverifiable",
+        "sourceName": null,
+        "correctedValue": null
+      }
+    ],
+    "narrationSegments": [
+      {
+        "id": "seg_01",
+        "text": "You stand beside a pickup truck at dawn, staring at a dead lion tied across the back. Flies gather around its mane. Behind you, water trembles inside an untouched cooking pot, but nobody reaches for a knife. Nobody adds meat. The entire village kitchen has gone quiet.",
+        "factIds": [],
+        "entities": [
+          "viewer",
+          "dead lion",
+          "pickup truck",
+          "villagers",
+          "cooking pot"
+        ],
+        "mustShow": [
+          "dead lion tied across a pickup truck",
+          "untouched cooking pot containing only water",
+          "silent group hesitating at dawn"
+        ],
+        "chapterId": "cold_open",
+        "payoffIds": [],
+        "mustNotShow": [
+          "lion meat cooking",
+          "any explanation for the hesitation",
+          "health warning symbol"
+        ],
+        "openLoopIds": [
+          "loop_meat",
+          "loop_health"
+        ],
+        "locationHint": "Village kitchen beside a pickup truck at dawn",
+        "visualIntent": "Immerse the viewer in the uncomfortable gap between an available carcass and a meal nobody will prepare.",
+        "sequenceIndex": 0,
+        "estimatedSeconds": 20,
+        "exactTextOverlay": null,
+        "narrativeFunction": "sensory hook and callback plant",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_02",
+        "text": "Because being edible has never guaranteed an animal a place on your plate.",
+        "factIds": [],
+        "entities": [
+          "lion",
+          "dinner plate"
+        ],
+        "mustShow": [
+          "lion separated from an ordinary dinner plate"
+        ],
+        "chapterId": "stakes",
+        "payoffIds": [],
+        "mustNotShow": [
+          "list of upcoming reasons"
+        ],
+        "openLoopIds": [],
+        "locationHint": "",
+        "visualIntent": "Establish the gap between biological edibility and ordinary food.",
+        "sequenceIndex": 1,
+        "estimatedSeconds": 5,
+        "exactTextOverlay": null,
+        "narrativeFunction": "stakes",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "GRAPHIC"
+      },
+      {
+        "id": "seg_03",
+        "text": "If a lion is made of meat, why do humans almost everywhere leave it uneaten?",
+        "factIds": [],
+        "entities": [
+          "lion",
+          "humans"
+        ],
+        "mustShow": [
+          "lion beside an empty plate",
+          "single question mark"
+        ],
+        "chapterId": "core_question",
+        "payoffIds": [],
+        "mustNotShow": [
+          "answer categories",
+          "numbered list"
+        ],
+        "openLoopIds": [
+          "loop_law",
+          "loop_rarity"
+        ],
+        "locationHint": "",
+        "visualIntent": "Focus attention on the apparent contradiction between lion flesh and human food choices.",
+        "sequenceIndex": 2,
+        "estimatedSeconds": 5,
+        "exactTextOverlay": null,
+        "narrativeFunction": "central question",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "GRAPHIC"
+      },
+      {
+        "id": "seg_04",
+        "text": "Start with the supermarket problem: there are barely any lions to stock. The IUCN classifies lions as Vulnerable, says their population trend is declining, and cannot give one confident current total for all wild lions. Their confirmed range now covers only 18 African countries. Compare that with your normal food supply. FAOSTAT-based counts put cattle, sheep, goats, pigs and chickens at roughly 31.1 billion animals worldwide in 2022. One side is counted by the billion. The other is too uncertain to count confidently at all.",
+        "factIds": [
+          "f_fa96qk15",
+          "f_rzg3naef",
+          "f_0kcx42rw"
+        ],
+        "entities": [
+          "IUCN",
+          "wild lions",
+          "cattle",
+          "sheep",
+          "goats",
+          "pigs",
+          "chickens"
+        ],
+        "mustShow": [
+          "single wild lion in a large range",
+          "18 highlighted African range countries",
+          "31.1 billion farm animals represented as an overwhelming supply"
+        ],
+        "chapterId": "evidence_scarcity",
+        "payoffIds": [
+          "loop_rarity"
+        ],
+        "mustNotShow": [
+          "invented global lion population number",
+          "dense herds of wild lions"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Savanna contrasted with global livestock production",
+        "visualIntent": "Contrast a sparse and declining wild predator population with the enormous global supply of livestock.",
+        "sequenceIndex": 3,
+        "estimatedSeconds": 34,
+        "exactTextOverlay": "31.1 billion",
+        "narrativeFunction": "establish ecological scarcity through scale contrast",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_05",
+        "text": "Why does that gap matter at dinner? Lions are territorial predators spread across large landscapes, not herds you can harvest repeatedly from one pasture. Remove breeding adults and the supply does not refill like a chicken house. It collapses locally. Market studies, including work linked to Justin Brashares and colleagues in 2004, show the predictable result: as wild mammals become scarce, bushmeat prices rise and buyers switch to other proteins. A goat can produce offspring, milk and meat beside your home. A lion must first be found across miles of bush. Scarcity has already made the choice for you.",
+        "factIds": [
+          "f_iatxkaly"
+        ],
+        "entities": [
+          "lions",
+          "Justin Brashares",
+          "wild mammals",
+          "goat"
+        ],
+        "mustShow": [
+          "widely separated lion territories",
+          "goat reproducing near a household",
+          "bushmeat price rising as wildlife availability falls"
+        ],
+        "chapterId": "evidence_scarcity",
+        "payoffIds": [],
+        "mustNotShow": [
+          "lion farm presented as the normal source of meat",
+          "precise territory size not stated in narration"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Savanna territory and household livestock enclosure",
+        "visualIntent": "Show why widely dispersed territorial predators cannot support a repeatable food supply like domestic livestock.",
+        "sequenceIndex": 4,
+        "estimatedSeconds": 38,
+        "exactTextOverlay": "2004",
+        "narrativeFunction": "explain how predator ecology becomes food scarcity",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_06",
+        "text": "Suppose you find one anyway. Now your dinner can fight back. A lion is an ambush hunter armed to drag down animals heavier than a person, and a wounded lion is still dangerous at touching distance. What do you gain for accepting that risk? Mostly muscle from one carcass. A herd animal offers meat without requiring trackers, a powerful rifle, transport and people willing to approach a big cat. Humans usually hunt downward through the food chain because herbivores are more numerous and convert plants directly into flesh. Hunting the hunter means paying for every meal it ate before you arrived.",
+        "factIds": [],
+        "entities": [
+          "lion",
+          "hunter",
+          "trackers",
+          "herd animal"
+        ],
+        "mustShow": [
+          "wounded lion remaining dangerous",
+          "trackers and heavy equipment",
+          "accessible herd animal"
+        ],
+        "chapterId": "evidence_risk_economics",
+        "payoffIds": [],
+        "mustNotShow": [
+          "effortless lion hunt",
+          "lion surrendering like livestock"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Open bush during a hunt",
+        "visualIntent": "Contrast the danger and equipment needed to kill a lion with the relative ease of obtaining herbivore meat.",
+        "sequenceIndex": 5,
+        "estimatedSeconds": 37,
+        "exactTextOverlay": null,
+        "narrativeFunction": "turn physical danger into poor food economics",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_07",
+        "text": "Then the carcass starts losing value. FAO meat-handling guidance stresses rapid chilling, clean processing areas and separate spaces for offal. Without those, wild meat spoils faster and contamination becomes harder to control. Where is your refrigerated truck in the middle of the savanna? Where is the inspected cutting room? A domestic animal reaches a slaughterhouse through an established chain. A dead lion may be hours from electricity, clean water or a buyer. Even if the meat is usable, carrying hundreds of kilograms through heat is a logistics problem your neighborhood butcher never faces.",
+        "factIds": [
+          "f_0cufg0xr"
+        ],
+        "entities": [
+          "FAO",
+          "lion carcass",
+          "refrigerated truck",
+          "butcher"
+        ],
+        "mustShow": [
+          "lion carcass far from electricity",
+          "refrigerated transport absent",
+          "clean slaughterhouse contrasted with bush processing"
+        ],
+        "chapterId": "evidence_risk_economics",
+        "payoffIds": [],
+        "mustNotShow": [
+          "guaranteed exact spoilage time",
+          "modern cold chain already available beside the lion"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Remote savanna contrasted with a regulated slaughterhouse",
+        "visualIntent": "Show how distance from refrigeration and clean processing destroys the practical value of a large wild carcass.",
+        "sequenceIndex": 6,
+        "estimatedSeconds": 34,
+        "exactTextOverlay": null,
+        "narrativeFunction": "add processing and distribution costs",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_08",
+        "text": "And the strangest part is that meat may be the least valuable thing attached to the animal. In Tanzania, cited trophy fees for one African lion have ranged from about 13,500 dollars to 49,000 dollars. That price buys the hunt and its prestige, not sandwiches. In 2016, legal exports from South Africa peaked at 1,771 lion skeletons, sent to markets seeking bones rather than steaks. So even when lions enter commerce, demand often pulls them toward trophies, skins or body parts. Why turn a rare, expensive animal into stew when buyers value almost everything else more?",
+        "factIds": [
+          "f_gidb39zc",
+          "f_rzq4vznn"
+        ],
+        "entities": [
+          "African lion",
+          "Tanzania",
+          "South Africa",
+          "trophy hunter",
+          "lion skeletons"
+        ],
+        "mustShow": [
+          "trophy fee reaching 49,000 dollars",
+          "crates representing 1,771 exported skeletons",
+          "steak losing a price comparison"
+        ],
+        "chapterId": "evidence_risk_economics",
+        "payoffIds": [],
+        "mustNotShow": [
+          "skeleton exports described as meat exports",
+          "all lion commerce presented as legal"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Commercial transaction and export depot",
+        "visualIntent": "Demonstrate that trophy and body-part markets can assign far more value to a lion than its meat could command.",
+        "sequenceIndex": 7,
+        "estimatedSeconds": 36,
+        "exactTextOverlay": "$49,000",
+        "narrativeFunction": "show competing uses that outbid meat",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "GRAPHIC"
+      },
+      {
+        "id": "seg_09",
+        "text": "But food is never just chemistry. Put a lion steak beside potatoes and many people feel the same mental brake they feel around a pet, a sacred animal or a national symbol. Anthropologist Mary Douglas explained this in her 1966 book, Purity and Danger: societies build food rules around categories, and animals seen as dangerous, anomalous or symbolically powerful can become improper to eat. The reaction arrives before nutrition does. Your own kitchen works that way. A horse, dog or insect may be ordinary food somewhere else and emotionally impossible inside your home.",
+        "factIds": [
+          "f_8d5ycrtd"
+        ],
+        "entities": [
+          "lion",
+          "Mary Douglas",
+          "horse",
+          "dog",
+          "insect"
+        ],
+        "mustShow": [
+          "lion steak rejected before tasting",
+          "Mary Douglas and Purity and Danger",
+          "different animals crossing or failing a food boundary"
+        ],
+        "chapterId": "evidence_culture",
+        "payoffIds": [],
+        "mustNotShow": [
+          "one universal taboo shared by every culture",
+          "culture portrayed as irrational ignorance"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Household dining table shifting into an anthropological comparison",
+        "visualIntent": "Connect lion symbolism to the viewer's immediate emotional boundaries around what counts as food.",
+        "sequenceIndex": 8,
+        "estimatedSeconds": 34,
+        "exactTextOverlay": "1966",
+        "narrativeFunction": "explain how symbolic classification becomes taboo",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_10",
+        "text": "For communities living beside lions, the animal can represent danger, courage, ancestry or authority all at once. Among Maasai communities, lion hunting historically carried warrior prestige, yet prestige did not turn lion flesh into weekday food. The achievement was confronting the predator. Ethnographic and historical accounts describe lion meat as generally avoided, while claws, teeth, fat or other parts could receive ritual or medicinal uses. That distinction matters. Killing an animal does not automatically mean eating it. Your grandfather may hang antlers on a wall without wanting venison every night. The lion's social meaning can be worth more than its calories.",
+        "factIds": [
+          "f_rwaaux5b"
+        ],
+        "entities": [
+          "Maasai communities",
+          "lion",
+          "warrior",
+          "grandfather"
+        ],
+        "mustShow": [
+          "Maasai warrior prestige linked to confronting a lion",
+          "claws and teeth treated as symbolic objects",
+          "ordinary cooking pot remaining separate"
+        ],
+        "chapterId": "evidence_culture",
+        "payoffIds": [],
+        "mustNotShow": [
+          "all Maasai people portrayed as lion hunters",
+          "lion meat shown as a routine Maasai food"
+        ],
+        "openLoopIds": [],
+        "locationHint": "East African community and family home",
+        "visualIntent": "Show that ritual prestige and symbolic body parts can matter without converting the lion into an everyday meal.",
+        "sequenceIndex": 9,
+        "estimatedSeconds": 36,
+        "exactTextOverlay": null,
+        "narrativeFunction": "separate ceremonial killing and symbolic use from routine eating",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_11",
+        "text": "Culture can change, too. Lion Guardians have worked near Amboseli with local pastoralists, including traditional warriors, to monitor lions and reduce killings. The same knowledge once used to track a lion can help keep it alive. That is a deeper shift than swapping one recipe for another: the predator becomes a neighbor whose survival carries status. Are there exceptions? Of course. Lion meat has been consumed in unusual circumstances and sold in a few novelty markets. But novelty proves the boundary. Nobody advertises chicken as a once-in-a-lifetime dare.",
+        "factIds": [],
+        "entities": [
+          "Lion Guardians",
+          "Amboseli",
+          "pastoralists",
+          "traditional warriors",
+          "lion",
+          "chicken"
+        ],
+        "mustShow": [
+          "local tracker monitoring a living lion",
+          "Lion Guardians connected to Amboseli",
+          "novelty lion meal contrasted with ordinary chicken"
+        ],
+        "chapterId": "evidence_culture",
+        "payoffIds": [],
+        "mustNotShow": [
+          "claim that lion meat is never eaten",
+          "traditional communities frozen in the past"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Amboseli landscape and a novelty restaurant comparison",
+        "visualIntent": "Show traditional tracking knowledge being redirected from lion killing toward conservation.",
+        "sequenceIndex": 10,
+        "estimatedSeconds": 32,
+        "exactTextOverlay": "2007",
+        "narrativeFunction": "show cultural values changing toward protection while acknowledging exceptions",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_12",
+        "text": "So is the answer simply that eating lions is illegal? No. The law is more specific and more complicated. Under CITES, India's lion population is on Appendix One, the strictest international trade category, while other lion populations are on Appendix Two. Commercial exports of bones, skulls, teeth, claws and skeletons taken from wild lions face an annual quota of zero. Cross a border with those wild parts for sale and the legal door slams shut. But CITES controls international trade, not whatever someone cooks inside every country.",
+        "factIds": [
+          "f_r8gxr4o2"
+        ],
+        "entities": [
+          "CITES",
+          "India",
+          "wild lions",
+          "border officers"
+        ],
+        "mustShow": [
+          "India's lions under Appendix One",
+          "other populations under Appendix Two",
+          "zero commercial export quota for listed wild lion parts",
+          "border barrier"
+        ],
+        "chapterId": "evidence_law_conservation",
+        "payoffIds": [
+          "loop_law"
+        ],
+        "mustNotShow": [
+          "claim that CITES universally bans eating lion meat",
+          "all domestic possession shown as legal"
+        ],
+        "openLoopIds": [],
+        "locationHint": "International border checkpoint",
+        "visualIntent": "Clarify the difference between strict cross-border controls and domestic food law.",
+        "sequenceIndex": 11,
+        "estimatedSeconds": 32,
+        "exactTextOverlay": "Zero",
+        "narrativeFunction": "correct the blanket illegality misconception",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_13",
+        "text": "Inside national borders, rules differ. TRAFFIC has documented domestic markets for lion parts, including in South Africa, even while international movement is tightly controlled. Legal does not mean easy, cheap or common. Permits, protected areas and hunting restrictions keep wild supply narrow, and a living lion can keep producing value through tourism. A steak is sold once. A lion seen from a safari vehicle can be photographed by new visitors for years. Would you empty the attraction to fill one refrigerator? Conservation law reinforces an economic fact already pushing in the same direction: living lions can remain valuable.",
+        "factIds": [
+          "f_o7pym8th"
+        ],
+        "entities": [
+          "TRAFFIC",
+          "South Africa",
+          "lion",
+          "safari tourists"
+        ],
+        "mustShow": [
+          "TRAFFIC documentation represented accurately",
+          "domestic South African market",
+          "safari visitors repeatedly photographing a living lion",
+          "permit barriers"
+        ],
+        "chapterId": "evidence_law_conservation",
+        "payoffIds": [],
+        "mustNotShow": [
+          "domestic laws portrayed as identical everywhere",
+          "tourism claimed to benefit every individual community automatically"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Domestic market contrasted with a protected safari area",
+        "visualIntent": "Contrast a one-time meat sale with repeated tourism value generated by a living lion.",
+        "sequenceIndex": 12,
+        "estimatedSeconds": 34,
+        "exactTextOverlay": null,
+        "narrativeFunction": "connect domestic legal variation with conservation economics",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_14",
+        "text": "But strip away the law and taboo, and the meat carries one more problem. Predators eat raw prey - sometimes sick or parasite-bearing animals - and that can leave microscopic hazards tucked into muscle tissue. A steak can look perfectly normal while invisible risks remain inside it. Is every lion infected? No. Is lion meat uniquely poisonous? Also no. The core issue is uncertainty: a wild carnivore arrives without the controlled feed, veterinary history or routine inspection that supermarket livestock routinely carry.",
+        "factIds": [],
+        "entities": [
+          "lion",
+          "Trichinella",
+          "Toxoplasma gondii",
+          "livestock veterinarian"
+        ],
+        "mustShow": [
+          "lion eating raw prey",
+          "Trichinella larvae in muscle",
+          "Toxoplasma tissue cysts",
+          "absence of livestock inspection records"
+        ],
+        "chapterId": "twist_health_risks",
+        "payoffIds": [
+          "loop_health"
+        ],
+        "mustNotShow": [
+          "every lion shown as infected",
+          "lion meat labeled inherently poisonous",
+          "parasites visible to the naked eye"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Food chain and veterinary examination",
+        "visualIntent": "Reveal invisible parasite exposure inside apparently normal predator muscle while preserving scientific nuance.",
+        "sequenceIndex": 13,
+        "estimatedSeconds": 35,
+        "exactTextOverlay": null,
+        "narrativeFunction": "deliver the hidden biological complication without exaggeration",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "DETAIL"
+      },
+      {
+        "id": "seg_15",
+        "text": "Predators can also pick up persistent contaminants over time by eating many prey animals. How much accumulates depends on the chemical and the local environment, so this is not a universal verdict on every carcass. Still, uncertainty alone damages demand. You know the animal was wild. You do not know every carcass it consumed, every microscopic exposure it encountered or every pollutant that may have moved through its food chain. Simple safeguards and checks people rely on with sold meat - traceability, testing and controlled storage - are hardest to guarantee beside a remote kill. Proper testing and thorough cooking matter, yet both are difficult to secure in that setting.",
+        "factIds": [],
+        "entities": [
+          "predators",
+          "prey",
+          "Trichinella",
+          "wild game"
+        ],
+        "mustShow": [
+          "contaminant moving from multiple prey animals into one predator",
+          "freezing failing as a universal parasite safeguard",
+          "remote carcass lacking testing"
+        ],
+        "chapterId": "twist_health_risks",
+        "payoffIds": [],
+        "mustNotShow": [
+          "all contaminants increasing in every food chain",
+          "freezing shown as always useless",
+          "specific contamination level not stated"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Food chain leading back to the remote carcass",
+        "visualIntent": "Show contaminants and parasite risk accumulating through repeated predation, then connect that uncertainty to remote food handling.",
+        "sequenceIndex": 14,
+        "estimatedSeconds": 34,
+        "exactTextOverlay": "Biomagnification",
+        "narrativeFunction": "explain contaminant concentration and why uncertainty suppresses demand",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "EXPLAINER"
+      },
+      {
+        "id": "seg_16",
+        "text": "Now return to the untouched cooking pot. It wasn't empty because lion flesh couldn't be cooked. It was empty because cooking only happens after someone accepts the carcass - the danger, the cost and the invisible uncertainties tucked inside its tissue. Flesh becomes food when people trust the path from carcass to mouth; here that path is broken before cooking even begins. The lion is dead. The doubt is not.",
+        "factIds": [],
+        "entities": [
+          "cooking pot",
+          "lion carcass",
+          "Trichinella",
+          "food thermometer"
+        ],
+        "mustShow": [
+          "same untouched cooking pot from the opening",
+          "food thermometer reaching 71 degrees Celsius",
+          "parasite risk remaining invisible"
+        ],
+        "chapterId": "callback_payoff",
+        "payoffIds": [
+          "loop_meat"
+        ],
+        "mustNotShow": [
+          "meat entering the pot",
+          "temperature presented as a guarantee against every hazard"
+        ],
+        "openLoopIds": [],
+        "locationHint": "The original village kitchen",
+        "visualIntent": "Reframe the opening pot as a rational response to invisible preparation requirements rather than simple squeamishness.",
+        "sequenceIndex": 15,
+        "estimatedSeconds": 30,
+        "exactTextOverlay": "71 degrees Celsius",
+        "narrativeFunction": "callback payoff with a new food‑safety meaning",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      },
+      {
+        "id": "seg_17",
+        "text": "That is why exceptions never become the ordinary dinner. An adventurous restaurant can find one carcass. A desperate hunter can eat one. A custom can loosen. But a food tradition needs dependable supply, safe handling and people who want the next serving. Week after week. Generation after generation. Lions fail that test before the plate reaches the table. They are technically meat. Human life has given them a different job.",
+        "factIds": [],
+        "entities": [
+          "lion",
+          "restaurant",
+          "hunter",
+          "family table"
+        ],
+        "mustShow": [
+          "single lion walking away from a dining table",
+          "closed empty pot",
+          "ordinary meals continuing without lion meat"
+        ],
+        "chapterId": "closer",
+        "payoffIds": [],
+        "mustNotShow": [
+          "numbered recap",
+          "absolute claim that no human ever eats lion"
+        ],
+        "openLoopIds": [],
+        "locationHint": "Savanna at sunset beyond a household table",
+        "visualIntent": "Leave the viewer with the distinction between a rare edible exception and a dependable food tradition.",
+        "sequenceIndex": 16,
+        "estimatedSeconds": 24,
+        "exactTextOverlay": null,
+        "narrativeFunction": "reflective closer",
+        "continuityEntityIds": [],
+        "preferredVisualForm": "STORY"
+      }
+    ],
+    "plantSegmentIndex": 0,
+    "payoffSegmentIndex": 15,
+    "estimatedDurationSeconds": 558
+  }
+}

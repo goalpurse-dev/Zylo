@@ -5,6 +5,7 @@ import { emitCreditSpend } from "../../../lib/creditPopEvents";
 import {
   LENGTH_OPTIONS,
   calcCredits,
+  PRICE_ITEMS,
   detectAnimal,
   VIDEO_MODELS,
   DEFAULT_VIDEO_MODEL,
@@ -13,6 +14,8 @@ import {
   getAllowedVideoModels,
 } from "./api/microCameraAnimalApi";
 import NoCreditsModal from "../shared/NoCreditsModal";
+import useToolPriceQuotes from "../../../hooks/useToolPriceQuotes";
+import QuotedCredits from "../../pricing/QuotedCredits";
 import MicroCameraUpgradeModal from "./MicroCameraUpgradeModal";
 
 const EXAMPLES = ["ant", "worm", "beetle", "termite", "spider", "mole", "cricket"];
@@ -71,8 +74,9 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase, p
   const allowedModels = getAllowedVideoModels(planCode);
 
   const sceneCount       = LENGTH_OPTIONS.find((l) => l.value === selectedLength)?.scenes ?? 3;
-  const totalCredits     = calcCredits(sceneCount, videoModel);
-  const hasEnoughCredits = creditBalance >= totalCredits;
+  const quotes = useToolPriceQuotes(PRICE_ITEMS);
+  const totalCredits     = calcCredits(sceneCount, videoModel, quotes.prices);
+  const hasEnoughCredits = totalCredits == null || creditBalance >= totalCredits;
   const isGenerating     = phase === "images" || phase === "videos";
   const isDone           = phase === "done";
 
@@ -88,6 +92,8 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase, p
   };
 
   const handleGenerate = () => {
+    if (quotes.status === "error") { quotes.retry(); return; }
+    if (totalCredits == null) return;
     if (!hasEnoughCredits) { setNoCreditsOpen(true); return; }
     const trimmed = animalInput.trim();
     if (!trimmed) { setValidationError("Please type an animal first."); return; }
@@ -303,7 +309,7 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase, p
 
         <button
           onClick={isDone ? onReset : handleGenerate}
-          disabled={isGenerating}
+          disabled={isGenerating || (!isDone && quotes.status === "loading")}
           className={`w-full py-2.5 lg:py-3.5 rounded-xl font-bold text-[15px] flex items-center justify-center gap-2.5 transition-all duration-300 ${
             isDone
               ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25"
@@ -317,18 +323,22 @@ export default function MicroCameraAnimalBuilder({ onGenerate, onReset, phase, p
               <span className="w-4 h-4 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />
               Generating…
             </>
+          ) : quotes.status === "error" ? (
+            "Couldn't load price — Retry"
+          ) : quotes.status === "loading" ? (
+            "Loading price…"
           ) : isDone ? (
             "✓  All Done — Generate New"
           ) : (
             <>Generate Bodycam Video <ChevronRight className="w-4 h-4" /></>
           )}
 
-          {!isDone && (
+          {!isDone && quotes.status !== "error" && (
             <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[14px] font-bold ${
               isGenerating ? "bg-white/5 text-white/20" : hasEnoughCredits ? "bg-white/20 text-white" : "bg-white/5 text-white/30"
             }`}>
               <img src="/icons/whitecredit.png" alt="" className="w-4 h-4 object-contain" />
-              {totalCredits}
+              <QuotedCredits status={quotes.status} value={totalCredits} onRetry={quotes.retry} />
             </span>
           )}
         </button>

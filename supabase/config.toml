@@ -61,5 +61,98 @@ verify_jwt = false
 [functions.two-am-planner]
 verify_jwt = true
 
+[functions.thirty-days-idea]
+verify_jwt = true
+
+[functions.generate-long-form-ideas]
+verify_jwt = true
+
+[functions.generate-long-form-preview]
+verify_jwt = true
+
+[functions.create-long-form-discovery-session]
+verify_jwt = true
+
+[functions.update-long-form-discovery-session]
+verify_jwt = true
+
+[functions.create-long-form-project]
+verify_jwt = true
+
+[functions.generate-long-form-story-plan]
+verify_jwt = true
+
+[functions.update-long-form-project]
+verify_jwt = true
+
+[functions.start-long-form-research]
+verify_jwt = true
+
+[functions.advance-long-form-research]
+verify_jwt = false
+
+[functions.start-long-form-script]
+verify_jwt = true
+
+[functions.advance-long-form-script]
+verify_jwt = false
+
+[functions.start-long-form-visual-plan]
+verify_jwt = true
+
+[functions.advance-long-form-visual-plan]
+verify_jwt = false
+
+# Real incident fixed 2026-09-15: this worker's own recovery cron
+# (private.trigger_long_form_scene_generation_recovery, every minute) calls
+# it with ONLY a custom x-recovery-secret header, no Authorization bearer
+# token — matching every OTHER advance-long-form-* worker's cron-calling
+# convention above. Without this entry the function defaulted to
+# verify_jwt=true, so Supabase's own JWT gateway rejected the cron's request
+# with a 401 BEFORE the function's own (already strong) x-cron-secret/
+# x-recovery-secret check ever ran — the recovery cron silently failed
+# every single invocation. This is the same already-established, already-
+# audited pattern the three siblings above use: verify_jwt=false here is
+# safe ONLY because the function's own custom secret check (unchanged) is
+# the real authentication gate.
+[functions.start-long-form-scene-generation]
+verify_jwt = true
+
+[functions.advance-long-form-scene-generation]
+verify_jwt = false
+
+[functions.thirty-days-planner]
+verify_jwt = true
+
+[functions.thirty-days-series-planner]
+verify_jwt = true
+
+[functions.thirty-days-series-episode-planner]
+verify_jwt = true
+
+[functions.thirty-days-series-episode-commit]
+verify_jwt = true
+
+[functions.thirty-days-scene-qa]
+verify_jwt = true
+
+[functions.thirty-days-generation-advance]
+verify_jwt = false
+
+[functions.thirty-days-script]
+verify_jwt = true
+
+[functions.thirty-days-voice-generate]
+verify_jwt = true
+
+[functions.thirty-days-voice-preview]
+verify_jwt = true
+
 [functions.cleanup-generation-references]
+verify_jwt = false
+
+[functions.abandoned-checkout-processor]
+verify_jwt = false
+
+[functions.resend-webhook]
 verify_jwt = false

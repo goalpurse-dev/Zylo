@@ -62,5 +62,6 @@ Yes — Halloween details layer naturally onto most of the existing 2AM Worlds, 
 - Liminal Space AI Generator: Create Eerie 2AM Liminal Worlds → /blog/liminal-space-ai-generator
 - 50 2AM World AI Prompt Ideas → /blog/best-2am-world-ai-prompts
 - What Is the 2AM Worlds AI Trend? → /blog/what-is-the-2am-worlds-ai-trend
+- 30 Days Halloween Special: 10 Spooky Universe Ideas → /blog/30-days-halloween-special
 
 ---

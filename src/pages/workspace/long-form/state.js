@@ -20,6 +20,10 @@ export const DEFAULT_IDEA_DRAFT = {
   customLengthMinutes: DEFAULT_CUSTOM_LENGTH_MINUTES,
   depthMode: "auto", // "auto" | "custom"
   customExplanationDepth: DEFAULT_CUSTOM_DEPTH, // "simple" | "balanced" | "deep"
+  // Part 2/3 (2026-09-15 content-grounding pass) — On-Screen Text /
+  // Explainer Density. Chosen here because this is the only point in the
+  // flow genuinely BEFORE the storyboard compiles; see TextDensityControl.jsx.
+  onScreenTextDensity: "balanced", // "minimal" | "balanced" | "frequent"
   source: "custom", // "custom" | "discovery"
   ideaCategory: "all",
   ideaDirection: "high_curiosity",
@@ -142,5 +146,21 @@ export const LONG_FORM_STAGES = [
   { key: "story", label: "Story" },
   { key: "look", label: "Look" },
   { key: "generate", label: "Generate" },
+  { key: "edit", label: "Edit" },
+];
+
+// 2026-10-02 "make the new flow real in the product" pass — the new
+// narration-first Stickman flow replaces Look/Generate (Visual World +
+// per-scene render dispatch) with Narration (the real audio master
+// timeline) and Visuals (Beat Director + scene compiler, not yet built).
+// ONLY shown when the project's active generation_profile.visual_recipe is
+// 'stickman_doodle_explainer' (see productionProfile.js) — every other
+// project, Atlantis included, keeps LONG_FORM_STAGES above unchanged. Never
+// exported as the default; callers must explicitly opt in via that check.
+export const LONG_FORM_STICKMAN_STAGES = [
+  { key: "idea", label: "Idea" },
+  { key: "story", label: "Story" },
+  { key: "narration", label: "Narration" },
+  { key: "visuals", label: "Visuals" },
   { key: "edit", label: "Edit" },
 ];

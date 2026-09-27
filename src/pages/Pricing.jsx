@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { startCheckout, openBillingPortal } from "../lib/payments";
 import { supabase } from "../lib/supabaseClient";
@@ -8,12 +8,37 @@ import {
   PLAN_ORDER,
   V2_OUTPUT_COSTS,
   TOOL_ORDER,
-  calculateCompleteOutputs,
   outputsForPlan,
+  creditsForPlan,
   headlineOutputsForPlan,
   HEADLINE_TOOL_KEY,
+  HEADLINE_OPTION_INDEX,
   HEADLINE_OPTION_LABEL,
 } from "../lib/pricingOutputs";
+import usePricingOutputCosts from "../hooks/usePricingOutputCosts";
+import QuotedCredits, { PriceRetry } from "../components/pricing/QuotedCredits";
+
+/* ─── Output estimates — computed from server price quotes ───────────────── */
+const OutputCostsContext = createContext({ status: "loading", costs: null, retry: () => {} });
+
+/** A complete-output count (or credit cost) for one plan: skeleton while quotes load, "—" if they failed. */
+function OutputCount({ planId, tool, idx = 0, credits = false }) {
+  const { status, costs } = useContext(OutputCostsContext);
+  if (status === "error") return <span>—</span>;
+  const value = credits ? creditsForPlan(costs, planId, tool, idx) : outputsForPlan(costs, planId, tool, idx);
+  return <QuotedCredits status={status} value={value}>{(v) => v.toLocaleString()}</QuotedCredits>;
+}
+
+/** One option's credit cost; shows a range when it differs by plan (Cooking Matic's service fee). */
+function OptionCredits({ tool, idx }) {
+  const { status, costs } = useContext(OutputCostsContext);
+  if (status === "error") return <span>—</span>;
+  const values = PLAN_ORDER.map((id) => creditsForPlan(costs, id, tool, idx));
+  const ready = values.every((v) => v != null);
+  const lo = ready ? Math.min(...values) : null;
+  const hi = ready ? Math.max(...values) : null;
+  return <QuotedCredits status={status} value={lo}>{() => (lo === hi ? lo : `${lo}–${hi}`)}</QuotedCredits>;
+}
 
 /* ─── Stripe IDs ─────────────────────────────────────────────────────────── */
 const PRICE_IDS = {
@@ -182,11 +207,11 @@ const PARTICLE_CONFIG = [
 const COMPARISON_DATA = [
   { section: "Credits & Usage" },
   { label: "Credits / month", values: ["750", "1,600", "3,200"], highlight: true },
-  { label: "AI Fruit Story V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => outputsForPlan(id, "fruitStory", 1).toLocaleString()) },
-  { label: "Clay Rescue V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => outputsForPlan(id, "clayRescue", 0).toLocaleString()) },
-  { label: "Face ASMR V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => outputsForPlan(id, "faceAsmr", 1).toLocaleString()) },
-  { label: "Micro Camera Animal V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => outputsForPlan(id, "microCamera", 1).toLocaleString()) },
-  { label: "Zyvo V2 images / mo", values: PLAN_ORDER.map((id) => outputsForPlan(id, "imageGenerator", 0).toLocaleString()) },
+  { label: "AI Fruit Story V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="fruitStory" idx={1} />) },
+  { label: "Clay Rescue V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="clayRescue" idx={0} />) },
+  { label: "Face ASMR V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="faceAsmr" idx={1} />) },
+  { label: "Micro Camera Animal V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="microCamera" idx={1} />) },
+  { label: "Zyvo V2 images / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="imageGenerator" idx={0} />) },
   { section: "Video/Image Model Access" },
   { label: "V2 — standard quality", values: [true, true, true] },
   { label: "V3 — sharper, higher resolution", values: [false, true, true] },
@@ -325,15 +350,17 @@ function BillingToggle({ billing, setBilling }) {
 
 /* ─── Headline claim — exact AI Fruit Story V2 30s count, per plan ────────── */
 function HeadlineClaim({ planId, accent }) {
-  const count = headlineOutputsForPlan(planId);
+  const { status, costs, retry } = useContext(OutputCostsContext);
+  const count = headlineOutputsForPlan(costs, planId);
   return (
     <div className="mb-4 rounded-xl px-3.5 py-3" style={{ background: `${accent}12`, border: `1px solid ${accent}30` }}>
       <p className="text-[13px] font-bold leading-snug text-white">
-        Up to <span style={{ color: accent }}>{count}</span> complete {HEADLINE_OPTION_LABEL} AI Fruit Story videos / month
+        Up to <span style={{ color: accent }}>{status === "error" ? "—" : <QuotedCredits status={status} value={count} />}</span> complete {HEADLINE_OPTION_LABEL} AI Fruit Story videos / month
       </p>
       <p className="mt-1 text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.32)" }}>
-        Based on AI Fruit Story V2 at {V2_OUTPUT_COSTS[HEADLINE_TOOL_KEY].options.find(o => o.label === HEADLINE_OPTION_LABEL).credits} credits per 30-second video. Other tools and lengths use different amounts of credits.
+        Based on AI Fruit Story V2 at <OutputCount planId={planId} tool={HEADLINE_TOOL_KEY} idx={HEADLINE_OPTION_INDEX} credits /> credits per 30-second video. Other tools and lengths use different amounts of credits.
       </p>
+      {status === "error" && <PriceRetry onRetry={retry} className="mt-1 text-[11px]" />}
     </div>
   );
 }
@@ -357,7 +384,7 @@ function ExampleOutputs({ planId, accent }) {
           <li key={row.key} className="flex items-center gap-2 text-[13px]">
             <Check className="w-3.5 h-3.5 shrink-0" style={{ color: `${accent}90` }} />
             <span style={{ color: "rgba(255,255,255,0.55)" }}>
-              {outputsForPlan(planId, row.key, row.idx).toLocaleString()} {row.label}
+              <OutputCount planId={planId} tool={row.key} idx={row.idx} /> {row.label}
             </span>
           </li>
         ))}
@@ -393,10 +420,8 @@ function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade, animClas
     if (!priceId) return;
     if (hasSub) return openBillingPortal({ flow: "change_plan", returnPath: "/pricing" });
     if (thisRank < curRank) return onAskDowngrade(tier);
-    await supabase.from("abandoned_checkouts").upsert(
-      { email: user.email, status: "pending", recovery_stage: 0, recovered: false, paid: false, updated_at: new Date().toISOString() },
-      { onConflict: "email" }
-    );
+    // Abandoned-checkout tracking now happens server-side in
+    // create-checkout-session, keyed off the real Stripe Checkout Session.
     await startCheckout({ type: "subscription", priceId, userId: user.id, email: user.email,
       metadata: { email: user.email, plan: tier.id } });
   }
@@ -509,10 +534,8 @@ function MobilePlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade }) 
     if (!priceId) return;
     if (hasSub) return openBillingPortal({ flow: "change_plan", returnPath: "/pricing" });
     if (thisRank < curRank) return onAskDowngrade(tier);
-    await supabase.from("abandoned_checkouts").upsert(
-      { email: user.email, status: "pending", recovery_stage: 0, recovered: false, paid: false, updated_at: new Date().toISOString() },
-      { onConflict: "email" }
-    );
+    // Abandoned-checkout tracking now happens server-side in
+    // create-checkout-session, keyed off the real Stripe Checkout Session.
     await startCheckout({ type: "subscription", priceId, userId: user.id, email: user.email,
       metadata: { email: user.email, plan: tier.id } });
   }
@@ -755,6 +778,7 @@ function ComparisonTable() {
 function WhatCanYouCreateSection() {
   const [activeTool, setActiveTool] = useState(TOOL_ORDER[0]);
   const tool = V2_OUTPUT_COSTS[activeTool];
+  const { status: costsStatus, retry: retryCosts } = useContext(OutputCostsContext);
 
   return (
     <div id="output-estimates" className="mb-14 scroll-mt-24">
@@ -762,6 +786,11 @@ function WhatCanYouCreateSection() {
       <p className="text-center text-sm mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
         Exact estimates based on Zyvo V2. Counts are rounded down to complete generations.
       </p>
+      {costsStatus === "error" && (
+        <p className="text-center text-sm -mt-4 mb-6" style={{ color: "rgba(255,255,255,0.55)" }}>
+          <PriceRetry onRetry={retryCosts} />
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
         {TOOL_ORDER.map((key) => (
@@ -815,12 +844,12 @@ function WhatCanYouCreateSection() {
               <tr key={opt.label} style={{ borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.04)" }}>
                 <td className="px-4 py-3">
                   <span className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{opt.label}</span>
-                  <span className="ml-2 text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>({opt.credits} cr)</span>
+                  <span className="ml-2 text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>(<OptionCredits tool={activeTool} idx={i} /> cr)</span>
                 </td>
                 {PLAN_ORDER.map((id) => (
                   <td key={id} className="px-2 py-3 text-center">
                     <span className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.8)" }}>
-                      {calculateCompleteOutputs(PRICING_PLANS[id].credits, opt.credits).toLocaleString()}
+                      <OutputCount planId={id} tool={activeTool} idx={i} />
                     </span>
                   </td>
                 ))}
@@ -839,6 +868,7 @@ export default function Pricing() {
   const [askTier, setAskTier] = useState(null);
   const { plan, hasSub, isPaid, loading: planLoading } = useCurrentPlan();
   const liveCount = useLiveCounter(2000847);
+  const outputCosts = usePricingOutputCosts();
 
   useEffect(() => { document.title = "Pricing — Zyvo AI"; }, []);
 
@@ -848,6 +878,7 @@ export default function Pricing() {
   }, [plan]);
 
   return (
+    <OutputCostsContext.Provider value={outputCosts}>
     <section className="relative min-h-screen text-white" style={{ background: "#07080F" }}>
 
       <Particles />
@@ -1098,5 +1129,6 @@ export default function Pricing() {
         onConfirm={() => { setAskTier(null); openBillingPortal({ flow: "change_plan", returnPath: "/pricing" }); }}
       />
     </section>
+    </OutputCostsContext.Provider>
   );
 }

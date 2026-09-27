@@ -9,6 +9,7 @@ import {
   getAllowedFruitVideoModels,
 } from "../api/fruitStoryApi";
 import FruitStoryUpgradeModal from "../FruitStoryUpgradeModal";
+import QuotedCredits from "../../../pricing/QuotedCredits";
 
 const STORY_LENGTHS = [
   { id: "15s", label: "15s", scenes: getFruitSceneCountForLength("15s") },
@@ -48,9 +49,10 @@ export default function FruitStepScenes({
   isGenerating = false,
   isContinuationMode = false,
   planCode,
-  imageCredits = 0,
-  videoCredits = 0,
-  totalCredits = 0,
+  imageCredits = null,
+  videoCredits = null,
+  totalCredits = null,
+  quotes = { status: "loading", retry: () => {} },
 }) {
   const [upgradeModelId, setUpgradeModelId] = useState(null);
 
@@ -352,10 +354,11 @@ export default function FruitStepScenes({
           Full story cost
         </div>
         <p className="mt-1 text-xs text-white/40">
-          {selectedLength.scenes} images ({imageCredits}cr) + {clipCount} clips ({videoCredits}cr) • {selectedAspect} • {selectedVideoModel.label}
+          {selectedLength.scenes} images (<QuotedCredits status={quotes.status} value={imageCredits} onRetry={quotes.retry} />cr) + {clipCount} clips (<QuotedCredits status={quotes.status} value={videoCredits} onRetry={quotes.retry} />cr) + up to 3 character portraits • {selectedAspect} • {selectedVideoModel.label}
         </p>
         <div className="mt-2 text-2xl font-black text-white">
-          {totalCredits} <span className="text-sm font-semibold text-white/40">credits</span>
+          <QuotedCredits status={quotes.status} value={totalCredits} onRetry={quotes.retry} />{" "}
+          <span className="text-sm font-semibold text-white/40">credits</span>
         </div>
       </div>
 

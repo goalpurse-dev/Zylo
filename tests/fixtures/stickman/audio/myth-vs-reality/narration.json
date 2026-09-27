@@ -1,0 +1,5342 @@
+[
+ {
+  "words": [
+   {
+    "end": 0.232,
+    "word": "You're",
+    "start": 0
+   },
+   {
+    "end": 0.615,
+    "word": "gripping",
+    "start": 0.255
+   },
+   {
+    "end": 0.697,
+    "word": "a",
+    "start": 0.673
+   },
+   {
+    "end": 1.474,
+    "word": "shield,",
+    "start": 0.801
+   },
+   {
+    "end": 2.287,
+    "word": "screaming",
+    "start": 1.706
+   },
+   {
+    "end": 2.554,
+    "word": "down",
+    "start": 2.345
+   },
+   {
+    "end": 2.623,
+    "word": "a",
+    "start": 2.6
+   },
+   {
+    "end": 3.366,
+    "word": "hillside",
+    "start": 2.705
+   },
+   {
+    "end": 3.668,
+    "word": "toward",
+    "start": 3.401
+   },
+   {
+    "end": 3.738,
+    "word": "a",
+    "start": 3.715
+   },
+   {
+    "end": 4.69,
+    "word": "shieldwall,",
+    "start": 3.819
+   },
+   {
+    "end": 5.003,
+    "word": "and",
+    "start": 4.818
+   },
+   {
+    "end": 5.445,
+    "word": "two",
+    "start": 5.108
+   },
+   {
+    "end": 6.06,
+    "word": "long",
+    "start": 5.63
+   },
+   {
+    "end": 6.64,
+    "word": "curved",
+    "start": 6.188
+   },
+   {
+    "end": 7.232,
+    "word": "horns",
+    "start": 6.699
+   },
+   {
+    "end": 7.627,
+    "word": "jut",
+    "start": 7.36
+   },
+   {
+    "end": 7.824,
+    "word": "off",
+    "start": 7.685
+   },
+   {
+    "end": 8.01,
+    "word": "your",
+    "start": 7.882
+   },
+   {
+    "end": 8.602,
+    "word": "helmet,",
+    "start": 8.091
+   },
+   {
+    "end": 9.16,
+    "word": "cutting",
+    "start": 8.788
+   },
+   {
+    "end": 9.299,
+    "word": "the",
+    "start": 9.206
+   },
+   {
+    "end": 9.624,
+    "word": "air",
+    "start": 9.392
+   },
+   {
+    "end": 9.81,
+    "word": "on",
+    "start": 9.705
+   },
+   {
+    "end": 10.274,
+    "word": "either",
+    "start": 9.937
+   },
+   {
+    "end": 10.68,
+    "word": "side",
+    "start": 10.367
+   },
+   {
+    "end": 10.762,
+    "word": "of",
+    "start": 10.704
+   },
+   {
+    "end": 10.936,
+    "word": "your",
+    "start": 10.808
+   },
+   {
+    "end": 11.528,
+    "word": "head.",
+    "start": 11.017
+   },
+   {
+    "end": 12.039,
+    "word": "The",
+    "start": 11.876
+   },
+   {
+    "end": 12.759,
+    "word": "horns",
+    "start": 12.167
+   },
+   {
+    "end": 13.269,
+    "word": "catch",
+    "start": 12.863
+   },
+   {
+    "end": 13.432,
+    "word": "the",
+    "start": 13.351
+   },
+   {
+    "end": 14.581,
+    "word": "firelight.",
+    "start": 13.56
+   },
+   {
+    "end": 14.999,
+    "word": "They",
+    "start": 14.814
+   },
+   {
+    "end": 15.29,
+    "word": "look",
+    "start": 15.081
+   },
+   {
+    "end": 16.694,
+    "word": "terrifying.",
+    "start": 15.417
+   },
+   {
+    "end": 17.112,
+    "word": "They",
+    "start": 16.927
+   },
+   {
+    "end": 17.356,
+    "word": "look",
+    "start": 17.17
+   },
+   {
+    "end": 18.18,
+    "word": "exactly",
+    "start": 17.437
+   },
+   {
+    "end": 18.459,
+    "word": "like",
+    "start": 18.262
+   },
+   {
+    "end": 18.935,
+    "word": "every",
+    "start": 18.54
+   },
+   {
+    "end": 19.736,
+    "word": "painting,",
+    "start": 19.016
+   },
+   {
+    "end": 20.328,
+    "word": "every",
+    "start": 19.922
+   },
+   {
+    "end": 20.816,
+    "word": "movie",
+    "start": 20.41
+   },
+   {
+    "end": 21.524,
+    "word": "poster,",
+    "start": 20.862
+   },
+   {
+    "end": 22.07,
+    "word": "every",
+    "start": 21.687
+   },
+   {
+    "end": 22.824,
+    "word": "Halloween",
+    "start": 22.174
+   },
+   {
+    "end": 23.533,
+    "word": "costume",
+    "start": 22.917
+   },
+   {
+    "end": 23.753,
+    "word": "you've",
+    "start": 23.567
+   },
+   {
+    "end": 23.985,
+    "word": "ever",
+    "start": 23.788
+   },
+   {
+    "end": 24.554,
+    "word": "seen",
+    "start": 24.113
+   },
+   {
+    "end": 24.705,
+    "word": "of",
+    "start": 24.636
+   },
+   {
+    "end": 24.821,
+    "word": "a",
+    "start": 24.787
+   },
+   {
+    "end": 25.739,
+    "word": "Viking.",
+    "start": 24.903
+   },
+   {
+    "end": 26.621,
+    "word": "This",
+    "start": 26.157
+   },
+   {
+    "end": 26.969,
+    "word": "is",
+    "start": 26.749
+   },
+   {
+    "end": 27.143,
+    "word": "the",
+    "start": 27.027
+   },
+   {
+    "end": 27.747,
+    "word": "image",
+    "start": 27.271
+   },
+   {
+    "end": 28.455,
+    "word": "burned",
+    "start": 27.852
+   },
+   {
+    "end": 28.688,
+    "word": "into",
+    "start": 28.513
+   },
+   {
+    "end": 28.931,
+    "word": "your",
+    "start": 28.769
+   },
+   {
+    "end": 29.616,
+    "word": "head.",
+    "start": 29.059
+   }
+  ],
+  "segmentId": "seg1",
+  "wordCount": 63,
+  "endSeconds": 29.616,
+  "startSeconds": 0,
+  "wordEndIndex": 63,
+  "wordStartIndex": 0
+ },
+ {
+  "words": [
+   {
+    "end": 30.046,
+    "word": "A",
+    "start": 29.918
+   },
+   {
+    "end": 30.801,
+    "word": "single",
+    "start": 30.232
+   },
+   {
+    "end": 31.242,
+    "word": "wrong",
+    "start": 30.847
+   },
+   {
+    "end": 31.857,
+    "word": "picture",
+    "start": 31.369
+   },
+   {
+    "end": 32.113,
+    "word": "like",
+    "start": 31.904
+   },
+   {
+    "end": 32.53,
+    "word": "this",
+    "start": 32.159
+   },
+   {
+    "end": 32.937,
+    "word": "can",
+    "start": 32.716
+   },
+   {
+    "end": 33.761,
+    "word": "quietly",
+    "start": 33.065
+   },
+   {
+    "end": 34.539,
+    "word": "rewrite",
+    "start": 33.889
+   },
+   {
+    "end": 34.643,
+    "word": "an",
+    "start": 34.574
+   },
+   {
+    "end": 35.421,
+    "word": "entire",
+    "start": 34.702
+   },
+   {
+    "end": 36.095,
+    "word": "culture's",
+    "start": 35.503
+   },
+   {
+    "end": 36.757,
+    "word": "history",
+    "start": 36.176
+   },
+   {
+    "end": 36.873,
+    "word": "in",
+    "start": 36.815
+   },
+   {
+    "end": 37.082,
+    "word": "our",
+    "start": 36.954
+   },
+   {
+    "end": 37.801,
+    "word": "heads.",
+    "start": 37.163
+   }
+  ],
+  "segmentId": "seg2",
+  "wordCount": 16,
+  "endSeconds": 37.801,
+  "startSeconds": 29.918,
+  "wordEndIndex": 79,
+  "wordStartIndex": 63
+ },
+ {
+  "words": [
+   {
+    "end": 38.452,
+    "word": "So",
+    "start": 38.219
+   },
+   {
+    "end": 38.672,
+    "word": "did",
+    "start": 38.51
+   },
+   {
+    "end": 38.939,
+    "word": "any",
+    "start": 38.73
+   },
+   {
+    "end": 39.613,
+    "word": "Viking",
+    "start": 39.067
+   },
+   {
+    "end": 39.938,
+    "word": "ever",
+    "start": 39.705
+   },
+   {
+    "end": 40.553,
+    "word": "actually",
+    "start": 40.042
+   },
+   {
+    "end": 41.238,
+    "word": "strap",
+    "start": 40.681
+   },
+   {
+    "end": 41.517,
+    "word": "on",
+    "start": 41.342
+   },
+   {
+    "end": 42.132,
+    "word": "horns",
+    "start": 41.609
+   },
+   {
+    "end": 42.596,
+    "word": "before",
+    "start": 42.213
+   },
+   {
+    "end": 43.107,
+    "word": "walking",
+    "start": 42.654
+   },
+   {
+    "end": 43.305,
+    "word": "into",
+    "start": 43.154
+   },
+   {
+    "end": 44.106,
+    "word": "battle?",
+    "start": 43.386
+   }
+  ],
+  "segmentId": "seg3",
+  "wordCount": 13,
+  "endSeconds": 44.106,
+  "startSeconds": 38.219,
+  "wordEndIndex": 92,
+  "wordStartIndex": 79
+ },
+ {
+  "words": [
+   {
+    "end": 45.557,
+    "word": "Here's",
+    "start": 45.139
+   },
+   {
+    "end": 45.673,
+    "word": "the",
+    "start": 45.603
+   },
+   {
+    "end": 46.195,
+    "word": "belief",
+    "start": 45.731
+   },
+   {
+    "end": 46.718,
+    "word": "almost",
+    "start": 46.277
+   },
+   {
+    "end": 47.565,
+    "word": "everyone",
+    "start": 46.88
+   },
+   {
+    "end": 48.053,
+    "word": "carries",
+    "start": 47.623
+   },
+   {
+    "end": 48.541,
+    "word": "around",
+    "start": 48.111
+   },
+   {
+    "end": 48.935,
+    "word": "without",
+    "start": 48.587
+   },
+   {
+    "end": 49.841,
+    "word": "question:",
+    "start": 48.993
+   },
+   {
+    "end": 50.897,
+    "word": "Viking",
+    "start": 50.317
+   },
+   {
+    "end": 51.548,
+    "word": "raiders",
+    "start": 50.99
+   },
+   {
+    "end": 52,
+    "word": "wore",
+    "start": 51.64
+   },
+   {
+    "end": 52.558,
+    "word": "horned",
+    "start": 52.082
+   },
+   {
+    "end": 53.208,
+    "word": "helmets",
+    "start": 52.651
+   },
+   {
+    "end": 53.452,
+    "word": "into",
+    "start": 53.266
+   },
+   {
+    "end": 54.427,
+    "word": "combat,",
+    "start": 53.545
+   },
+   {
+    "end": 54.706,
+    "word": "the",
+    "start": 54.589
+   },
+   {
+    "end": 55.332,
+    "word": "horns",
+    "start": 54.798
+   },
+   {
+    "end": 55.971,
+    "word": "curving",
+    "start": 55.46
+   },
+   {
+    "end": 56.18,
+    "word": "up",
+    "start": 56.064
+   },
+   {
+    "end": 56.389,
+    "word": "from",
+    "start": 56.238
+   },
+   {
+    "end": 56.505,
+    "word": "the",
+    "start": 56.435
+   },
+   {
+    "end": 57.144,
+    "word": "sides",
+    "start": 56.61
+   },
+   {
+    "end": 57.365,
+    "word": "like",
+    "start": 57.202
+   },
+   {
+    "end": 57.434,
+    "word": "a",
+    "start": 57.399
+   },
+   {
+    "end": 58.293,
+    "word": "bull's.",
+    "start": 57.527
+   },
+   {
+    "end": 58.607,
+    "word": "It",
+    "start": 58.421
+   },
+   {
+    "end": 59.211,
+    "word": "feels",
+    "start": 58.711
+   },
+   {
+    "end": 60.197,
+    "word": "obvious.",
+    "start": 59.338
+   },
+   {
+    "end": 60.581,
+    "word": "It's",
+    "start": 60.36
+   },
+   {
+    "end": 60.813,
+    "word": "on",
+    "start": 60.662
+   },
+   {
+    "end": 61.811,
+    "word": "flags,",
+    "start": 60.952
+   },
+   {
+    "end": 62.38,
+    "word": "beer",
+    "start": 61.997
+   },
+   {
+    "end": 63.112,
+    "word": "labels,",
+    "start": 62.485
+   },
+   {
+    "end": 64.029,
+    "word": "football",
+    "start": 63.413
+   },
+   {
+    "end": 64.876,
+    "word": "helmets.",
+    "start": 64.122
+   },
+   {
+    "end": 65.236,
+    "word": "But",
+    "start": 65.004
+   },
+   {
+    "end": 66.397,
+    "word": "archaeologists",
+    "start": 65.294
+   },
+   {
+    "end": 66.931,
+    "word": "digging",
+    "start": 66.536
+   },
+   {
+    "end": 67.407,
+    "word": "across",
+    "start": 67.012
+   },
+   {
+    "end": 68.406,
+    "word": "Scandinavia",
+    "start": 67.454
+   },
+   {
+    "end": 68.626,
+    "word": "for",
+    "start": 68.487
+   },
+   {
+    "end": 68.94,
+    "word": "over",
+    "start": 68.708
+   },
+   {
+    "end": 69.056,
+    "word": "a",
+    "start": 69.021
+   },
+   {
+    "end": 69.903,
+    "word": "century",
+    "start": 69.184
+   },
+   {
+    "end": 70.136,
+    "word": "have",
+    "start": 69.985
+   },
+   {
+    "end": 70.53,
+    "word": "found",
+    "start": 70.182
+   },
+   {
+    "end": 71.506,
+    "word": "remarkably",
+    "start": 70.658
+   },
+   {
+    "end": 71.982,
+    "word": "few",
+    "start": 71.633
+   },
+   {
+    "end": 72.713,
+    "word": "actual",
+    "start": 72.109
+   },
+   {
+    "end": 73.677,
+    "word": "Viking-age",
+    "start": 72.841
+   },
+   {
+    "end": 74.187,
+    "word": "helmets",
+    "start": 73.723
+   },
+   {
+    "end": 74.315,
+    "word": "at",
+    "start": 74.234
+   },
+   {
+    "end": 74.907,
+    "word": "all.",
+    "start": 74.373
+   },
+   {
+    "end": 75.546,
+    "word": "Total",
+    "start": 75.035
+   },
+   {
+    "end": 76.498,
+    "word": "confirmed",
+    "start": 75.674
+   },
+   {
+    "end": 77.043,
+    "word": "helmets",
+    "start": 76.579
+   },
+   {
+    "end": 77.229,
+    "word": "from",
+    "start": 77.078
+   },
+   {
+    "end": 77.369,
+    "word": "the",
+    "start": 77.287
+   },
+   {
+    "end": 78.135,
+    "word": "entire",
+    "start": 77.45
+   },
+   {
+    "end": 78.797,
+    "word": "Viking",
+    "start": 78.228
+   },
+   {
+    "end": 79.505,
+    "word": "Age,",
+    "start": 78.925
+   },
+   {
+    "end": 80.086,
+    "word": "roughly",
+    "start": 79.633
+   },
+   {
+    "end": 81.479,
+    "word": "793",
+    "start": 80.271
+   },
+   {
+    "end": 81.595,
+    "word": "to",
+    "start": 81.537
+   },
+   {
+    "end": 83.011,
+    "word": "1066,",
+    "start": 81.688
+   },
+   {
+    "end": 83.395,
+    "word": "that",
+    "start": 83.197
+   },
+   {
+    "end": 84.056,
+    "word": "survive",
+    "start": 83.476
+   },
+   {
+    "end": 84.23,
+    "word": "with",
+    "start": 84.091
+   },
+   {
+    "end": 84.59,
+    "word": "enough",
+    "start": 84.277
+   },
+   {
+    "end": 84.695,
+    "word": "of",
+    "start": 84.637
+   },
+   {
+    "end": 84.823,
+    "word": "the",
+    "start": 84.753
+   },
+   {
+    "end": 85.333,
+    "word": "skull",
+    "start": 84.915
+   },
+   {
+    "end": 86.018,
+    "word": "intact",
+    "start": 85.415
+   },
+   {
+    "end": 86.123,
+    "word": "to",
+    "start": 86.042
+   },
+   {
+    "end": 87.087,
+    "word": "study?",
+    "start": 86.251
+   },
+   {
+    "end": 87.76,
+    "word": "You",
+    "start": 87.644
+   },
+   {
+    "end": 87.922,
+    "word": "can",
+    "start": 87.806
+   },
+   {
+    "end": 88.189,
+    "word": "count",
+    "start": 87.981
+   },
+   {
+    "end": 88.352,
+    "word": "them",
+    "start": 88.236
+   },
+   {
+    "end": 88.48,
+    "word": "on",
+    "start": 88.398
+   },
+   {
+    "end": 88.724,
+    "word": "one",
+    "start": 88.561
+   },
+   {
+    "end": 89.35,
+    "word": "hand.",
+    "start": 88.77
+   }
+  ],
+  "segmentId": "seg4",
+  "wordCount": 83,
+  "endSeconds": 89.35,
+  "startSeconds": 45.139,
+  "wordEndIndex": 175,
+  "wordStartIndex": 92
+ },
+ {
+  "words": [
+   {
+    "end": 89.827,
+    "word": "The",
+    "start": 89.699
+   },
+   {
+    "end": 90.686,
+    "word": "best-preserved",
+    "start": 89.908
+   },
+   {
+    "end": 90.976,
+    "word": "one",
+    "start": 90.744
+   },
+   {
+    "end": 91.104,
+    "word": "is",
+    "start": 91.011
+   },
+   {
+    "end": 91.231,
+    "word": "the",
+    "start": 91.15
+   },
+   {
+    "end": 92.032,
+    "word": "Gjermundbu",
+    "start": 91.324
+   },
+   {
+    "end": 92.706,
+    "word": "helmet,",
+    "start": 92.125
+   },
+   {
+    "end": 93.135,
+    "word": "dug",
+    "start": 92.868
+   },
+   {
+    "end": 93.356,
+    "word": "out",
+    "start": 93.217
+   },
+   {
+    "end": 93.46,
+    "word": "of",
+    "start": 93.402
+   },
+   {
+    "end": 93.542,
+    "word": "a",
+    "start": 93.518
+   },
+   {
+    "end": 94.076,
+    "word": "burial",
+    "start": 93.635
+   },
+   {
+    "end": 94.505,
+    "word": "mound",
+    "start": 94.157
+   },
+   {
+    "end": 94.633,
+    "word": "in",
+    "start": 94.563
+   },
+   {
+    "end": 95.225,
+    "word": "Norway",
+    "start": 94.726
+   },
+   {
+    "end": 95.341,
+    "word": "in",
+    "start": 95.283
+   },
+   {
+    "end": 96.723,
+    "word": "1943,",
+    "start": 95.399
+   },
+   {
+    "end": 97.303,
+    "word": "dated",
+    "start": 96.909
+   },
+   {
+    "end": 97.443,
+    "word": "to",
+    "start": 97.361
+   },
+   {
+    "end": 97.965,
+    "word": "around",
+    "start": 97.57
+   },
+   {
+    "end": 98.081,
+    "word": "the",
+    "start": 98.012
+   },
+   {
+    "end": 98.371,
+    "word": "year",
+    "start": 98.162
+   },
+   {
+    "end": 99.625,
+    "word": "970.",
+    "start": 98.476
+   },
+   {
+    "end": 100.24,
+    "word": "It",
+    "start": 100.101
+   },
+   {
+    "end": 100.438,
+    "word": "has",
+    "start": 100.287
+   },
+   {
+    "end": 100.531,
+    "word": "a",
+    "start": 100.496
+   },
+   {
+    "end": 101.192,
+    "word": "rounded",
+    "start": 100.658
+   },
+   {
+    "end": 101.738,
+    "word": "iron",
+    "start": 101.32
+   },
+   {
+    "end": 102.446,
+    "word": "cap,",
+    "start": 101.842
+   },
+   {
+    "end": 102.655,
+    "word": "a",
+    "start": 102.574
+   },
+   {
+    "end": 103.572,
+    "word": "spectacled",
+    "start": 102.783
+   },
+   {
+    "end": 104.06,
+    "word": "guard",
+    "start": 103.654
+   },
+   {
+    "end": 104.582,
+    "word": "curving",
+    "start": 104.153
+   },
+   {
+    "end": 104.815,
+    "word": "over",
+    "start": 104.664
+   },
+   {
+    "end": 104.954,
+    "word": "the",
+    "start": 104.873
+   },
+   {
+    "end": 105.395,
+    "word": "eyes",
+    "start": 105.047
+   },
+   {
+    "end": 105.534,
+    "word": "and",
+    "start": 105.442
+   },
+   {
+    "end": 106.266,
+    "word": "nose,",
+    "start": 105.639
+   },
+   {
+    "end": 106.579,
+    "word": "and",
+    "start": 106.394
+   },
+   {
+    "end": 107.52,
+    "word": "absolutely",
+    "start": 106.742
+   },
+   {
+    "end": 108.147,
+    "word": "nothing",
+    "start": 107.705
+   },
+   {
+    "end": 108.379,
+    "word": "where",
+    "start": 108.205
+   },
+   {
+    "end": 108.785,
+    "word": "horns",
+    "start": 108.437
+   },
+   {
+    "end": 108.971,
+    "word": "would",
+    "start": 108.82
+   },
+   {
+    "end": 109.737,
+    "word": "attach.",
+    "start": 109.006
+   },
+   {
+    "end": 110.283,
+    "word": "No",
+    "start": 110.086
+   },
+   {
+    "end": 111.154,
+    "word": "sockets.",
+    "start": 110.376
+   },
+   {
+    "end": 111.548,
+    "word": "No",
+    "start": 111.339
+   },
+   {
+    "end": 112.001,
+    "word": "rivet",
+    "start": 111.688
+   },
+   {
+    "end": 112.349,
+    "word": "holes",
+    "start": 112.036
+   },
+   {
+    "end": 112.791,
+    "word": "shaped",
+    "start": 112.408
+   },
+   {
+    "end": 112.965,
+    "word": "for",
+    "start": 112.837
+   },
+   {
+    "end": 113.36,
+    "word": "anything",
+    "start": 113.023
+   },
+   {
+    "end": 114.103,
+    "word": "curved.",
+    "start": 113.441
+   },
+   {
+    "end": 114.497,
+    "word": "Just",
+    "start": 114.265
+   },
+   {
+    "end": 114.579,
+    "word": "a",
+    "start": 114.544
+   },
+   {
+    "end": 115.229,
+    "word": "plain",
+    "start": 114.706
+   },
+   {
+    "end": 115.809,
+    "word": "iron",
+    "start": 115.391
+   },
+   {
+    "end": 116.274,
+    "word": "dome",
+    "start": 115.914
+   },
+   {
+    "end": 116.634,
+    "word": "built",
+    "start": 116.332
+   },
+   {
+    "end": 116.773,
+    "word": "to",
+    "start": 116.692
+   },
+   {
+    "end": 117.388,
+    "word": "deflect",
+    "start": 116.854
+   },
+   {
+    "end": 117.469,
+    "word": "a",
+    "start": 117.446
+   },
+   {
+    "end": 118.236,
+    "word": "sword,",
+    "start": 117.574
+   },
+   {
+    "end": 118.665,
+    "word": "not",
+    "start": 118.421
+   },
+   {
+    "end": 118.758,
+    "word": "to",
+    "start": 118.7
+   },
+   {
+    "end": 119.013,
+    "word": "look",
+    "start": 118.839
+   },
+   {
+    "end": 119.907,
+    "word": "dramatic.",
+    "start": 119.06
+   }
+  ],
+  "segmentId": "seg5",
+  "wordCount": 68,
+  "endSeconds": 119.907,
+  "startSeconds": 89.699,
+  "wordEndIndex": 243,
+  "wordStartIndex": 175
+ },
+ {
+  "words": [
+   {
+    "end": 120.604,
+    "word": "Why",
+    "start": 120.325
+   },
+   {
+    "end": 121.045,
+    "word": "trust",
+    "start": 120.662
+   },
+   {
+    "end": 121.359,
+    "word": "one",
+    "start": 121.138
+   },
+   {
+    "end": 122.102,
+    "word": "helmet?",
+    "start": 121.417
+   },
+   {
+    "end": 122.763,
+    "word": "Because",
+    "start": 122.369
+   },
+   {
+    "end": 122.88,
+    "word": "it",
+    "start": 122.81
+   },
+   {
+    "end": 123.239,
+    "word": "isn't",
+    "start": 122.938
+   },
+   {
+    "end": 124.041,
+    "word": "alone.",
+    "start": 123.298
+   },
+   {
+    "end": 125.167,
+    "word": "Fragments",
+    "start": 124.517
+   },
+   {
+    "end": 125.411,
+    "word": "from",
+    "start": 125.213
+   },
+   {
+    "end": 126.119,
+    "word": "Tjele",
+    "start": 125.503
+   },
+   {
+    "end": 126.305,
+    "word": "in",
+    "start": 126.2
+   },
+   {
+    "end": 127.048,
+    "word": "Denmark",
+    "start": 126.409
+   },
+   {
+    "end": 127.257,
+    "word": "and",
+    "start": 127.129
+   },
+   {
+    "end": 127.338,
+    "word": "a",
+    "start": 127.315
+   },
+   {
+    "end": 127.86,
+    "word": "handful",
+    "start": 127.431
+   },
+   {
+    "end": 127.976,
+    "word": "of",
+    "start": 127.918
+   },
+   {
+    "end": 128.232,
+    "word": "other",
+    "start": 128.034
+   },
+   {
+    "end": 128.661,
+    "word": "sites",
+    "start": 128.29
+   },
+   {
+    "end": 129.033,
+    "word": "all",
+    "start": 128.754
+   },
+   {
+    "end": 129.393,
+    "word": "show",
+    "start": 129.126
+   },
+   {
+    "end": 129.579,
+    "word": "the",
+    "start": 129.486
+   },
+   {
+    "end": 130.078,
+    "word": "same",
+    "start": 129.671
+   },
+   {
+    "end": 130.995,
+    "word": "story:",
+    "start": 130.136
+   },
+   {
+    "end": 131.75,
+    "word": "plain",
+    "start": 131.343
+   },
+   {
+    "end": 132.458,
+    "word": "iron,",
+    "start": 131.842
+   },
+   {
+    "end": 133.27,
+    "word": "sometimes",
+    "start": 132.585
+   },
+   {
+    "end": 133.758,
+    "word": "mail",
+    "start": 133.363
+   },
+   {
+    "end": 134.246,
+    "word": "hanging",
+    "start": 133.863
+   },
+   {
+    "end": 134.397,
+    "word": "to",
+    "start": 134.327
+   },
+   {
+    "end": 134.907,
+    "word": "protect",
+    "start": 134.478
+   },
+   {
+    "end": 135.035,
+    "word": "the",
+    "start": 134.954
+   },
+   {
+    "end": 135.627,
+    "word": "neck,",
+    "start": 135.128
+   },
+   {
+    "end": 136.591,
+    "word": "occasionally",
+    "start": 135.813
+   },
+   {
+    "end": 136.684,
+    "word": "a",
+    "start": 136.649
+   },
+   {
+    "end": 137.229,
+    "word": "nose",
+    "start": 136.812
+   },
+   {
+    "end": 137.926,
+    "word": "guard.",
+    "start": 137.288
+   },
+   {
+    "end": 139.226,
+    "word": "Historian",
+    "start": 138.483
+   },
+   {
+    "end": 139.784,
+    "word": "Roberta",
+    "start": 139.308
+   },
+   {
+    "end": 140.399,
+    "word": "Frank,",
+    "start": 139.888
+   },
+   {
+    "end": 140.597,
+    "word": "who",
+    "start": 140.423
+   },
+   {
+    "end": 140.991,
+    "word": "spent",
+    "start": 140.678
+   },
+   {
+    "end": 141.456,
+    "word": "years",
+    "start": 141.084
+   },
+   {
+    "end": 142.141,
+    "word": "tracing",
+    "start": 141.537
+   },
+   {
+    "end": 142.361,
+    "word": "this",
+    "start": 142.199
+   },
+   {
+    "end": 142.779,
+    "word": "myth",
+    "start": 142.489
+   },
+   {
+    "end": 143.093,
+    "word": "through",
+    "start": 142.814
+   },
+   {
+    "end": 143.511,
+    "word": "Old",
+    "start": 143.186
+   },
+   {
+    "end": 144.033,
+    "word": "Norse",
+    "start": 143.615
+   },
+   {
+    "end": 144.95,
+    "word": "literature,",
+    "start": 144.091
+   },
+   {
+    "end": 145.601,
+    "word": "found",
+    "start": 145.183
+   },
+   {
+    "end": 146.39,
+    "word": "zero",
+    "start": 145.728
+   },
+   {
+    "end": 147.586,
+    "word": "contemporary",
+    "start": 146.518
+   },
+   {
+    "end": 147.992,
+    "word": "written",
+    "start": 147.679
+   },
+   {
+    "end": 148.863,
+    "word": "descriptions",
+    "start": 148.05
+   },
+   {
+    "end": 149.014,
+    "word": "of",
+    "start": 148.921
+   },
+   {
+    "end": 149.618,
+    "word": "horned",
+    "start": 149.142
+   },
+   {
+    "end": 150.152,
+    "word": "battle",
+    "start": 149.722
+   },
+   {
+    "end": 150.616,
+    "word": "helmets",
+    "start": 150.21
+   },
+   {
+    "end": 151.313,
+    "word": "either.",
+    "start": 150.709
+   },
+   {
+    "end": 152.044,
+    "word": "Not",
+    "start": 151.731
+   },
+   {
+    "end": 152.485,
+    "word": "one",
+    "start": 152.137
+   },
+   {
+    "end": 153.333,
+    "word": "saga.",
+    "start": 152.567
+   },
+   {
+    "end": 153.809,
+    "word": "Not",
+    "start": 153.519
+   },
+   {
+    "end": 154.157,
+    "word": "one",
+    "start": 153.89
+   },
+   {
+    "end": 154.784,
+    "word": "carving",
+    "start": 154.238
+   },
+   {
+    "end": 154.993,
+    "word": "from",
+    "start": 154.842
+   },
+   {
+    "end": 155.132,
+    "word": "the",
+    "start": 155.051
+   },
+   {
+    "end": 155.574,
+    "word": "era",
+    "start": 155.225
+   },
+   {
+    "end": 156.317,
+    "word": "mentions",
+    "start": 155.701
+   },
+   {
+    "end": 157.327,
+    "word": "warriors",
+    "start": 156.584
+   },
+   {
+    "end": 157.896,
+    "word": "fighting",
+    "start": 157.42
+   },
+   {
+    "end": 158.012,
+    "word": "in",
+    "start": 157.942
+   },
+   {
+    "end": 158.987,
+    "word": "horns.",
+    "start": 158.116
+   }
+  ],
+  "segmentId": "seg6",
+  "wordCount": 74,
+  "endSeconds": 158.987,
+  "startSeconds": 120.325,
+  "wordEndIndex": 317,
+  "wordStartIndex": 243
+ },
+ {
+  "words": [
+   {
+    "end": 159.579,
+    "word": "So",
+    "start": 159.335
+   },
+   {
+    "end": 159.951,
+    "word": "where",
+    "start": 159.66
+   },
+   {
+    "end": 160.101,
+    "word": "do",
+    "start": 159.997
+   },
+   {
+    "end": 160.682,
+    "word": "actual",
+    "start": 160.206
+   },
+   {
+    "end": 161.146,
+    "word": "horned",
+    "start": 160.775
+   },
+   {
+    "end": 161.622,
+    "word": "helmets",
+    "start": 161.204
+   },
+   {
+    "end": 161.727,
+    "word": "in",
+    "start": 161.657
+   },
+   {
+    "end": 162.47,
+    "word": "museums",
+    "start": 161.785
+   },
+   {
+    "end": 162.865,
+    "word": "come",
+    "start": 162.563
+   },
+   {
+    "end": 163.399,
+    "word": "from,",
+    "start": 162.911
+   },
+   {
+    "end": 163.77,
+    "word": "if",
+    "start": 163.561
+   },
+   {
+    "end": 164.188,
+    "word": "not",
+    "start": 163.898
+   },
+   {
+    "end": 164.339,
+    "word": "the",
+    "start": 164.246
+   },
+   {
+    "end": 164.943,
+    "word": "Viking",
+    "start": 164.432
+   },
+   {
+    "end": 165.848,
+    "word": "Age?",
+    "start": 165.071
+   },
+   {
+    "end": 167.358,
+    "word": "Rewind",
+    "start": 166.731
+   },
+   {
+    "end": 167.694,
+    "word": "about",
+    "start": 167.416
+   },
+   {
+    "end": 168.02,
+    "word": "two",
+    "start": 167.752
+   },
+   {
+    "end": 168.635,
+    "word": "thousand",
+    "start": 168.124
+   },
+   {
+    "end": 169.122,
+    "word": "years",
+    "start": 168.728
+   },
+   {
+    "end": 169.54,
+    "word": "before",
+    "start": 169.204
+   },
+   {
+    "end": 169.657,
+    "word": "the",
+    "start": 169.575
+   },
+   {
+    "end": 170.167,
+    "word": "first",
+    "start": 169.784
+   },
+   {
+    "end": 170.771,
+    "word": "Viking",
+    "start": 170.272
+   },
+   {
+    "end": 171.154,
+    "word": "ship",
+    "start": 170.852
+   },
+   {
+    "end": 171.561,
+    "word": "ever",
+    "start": 171.247
+   },
+   {
+    "end": 172.385,
+    "word": "launched.",
+    "start": 171.665
+   },
+   {
+    "end": 173.047,
+    "word": "In",
+    "start": 172.861
+   },
+   {
+    "end": 174.602,
+    "word": "1942,",
+    "start": 173.128
+   },
+   {
+    "end": 175.322,
+    "word": "workers",
+    "start": 174.765
+   },
+   {
+    "end": 175.787,
+    "word": "draining",
+    "start": 175.38
+   },
+   {
+    "end": 175.879,
+    "word": "a",
+    "start": 175.845
+   },
+   {
+    "end": 176.414,
+    "word": "bog",
+    "start": 175.961
+   },
+   {
+    "end": 176.681,
+    "word": "near",
+    "start": 176.495
+   },
+   {
+    "end": 177.331,
+    "word": "Veksø",
+    "start": 176.762
+   },
+   {
+    "end": 177.528,
+    "word": "in",
+    "start": 177.435
+   },
+   {
+    "end": 178.178,
+    "word": "Denmark",
+    "start": 177.633
+   },
+   {
+    "end": 178.538,
+    "word": "pulled",
+    "start": 178.26
+   },
+   {
+    "end": 178.712,
+    "word": "up",
+    "start": 178.585
+   },
+   {
+    "end": 179.13,
+    "word": "two",
+    "start": 178.805
+   },
+   {
+    "end": 179.78,
+    "word": "bronze",
+    "start": 179.258
+   },
+   {
+    "end": 180.489,
+    "word": "helmets,",
+    "start": 179.815
+   },
+   {
+    "end": 181.081,
+    "word": "each",
+    "start": 180.79
+   },
+   {
+    "end": 181.603,
+    "word": "fitted",
+    "start": 181.208
+   },
+   {
+    "end": 181.824,
+    "word": "with",
+    "start": 181.661
+   },
+   {
+    "end": 182.485,
+    "word": "long,",
+    "start": 181.928
+   },
+   {
+    "end": 183.112,
+    "word": "gently",
+    "start": 182.532
+   },
+   {
+    "end": 183.739,
+    "word": "curving",
+    "start": 183.217
+   },
+   {
+    "end": 184.354,
+    "word": "horns",
+    "start": 183.832
+   },
+   {
+    "end": 184.9,
+    "word": "tipped",
+    "start": 184.459
+   },
+   {
+    "end": 185.109,
+    "word": "with",
+    "start": 184.947
+   },
+   {
+    "end": 185.504,
+    "word": "little",
+    "start": 185.214
+   },
+   {
+    "end": 185.922,
+    "word": "round",
+    "start": 185.562
+   },
+   {
+    "end": 186.92,
+    "word": "discs.",
+    "start": 186.015
+   },
+   {
+    "end": 187.524,
+    "word": "They're",
+    "start": 187.269
+   },
+   {
+    "end": 187.919,
+    "word": "called",
+    "start": 187.559
+   },
+   {
+    "end": 188.046,
+    "word": "the",
+    "start": 187.965
+   },
+   {
+    "end": 188.848,
+    "word": "Veksø",
+    "start": 188.174
+   },
+   {
+    "end": 189.8,
+    "word": "helmets,",
+    "start": 188.952
+   },
+   {
+    "end": 190.113,
+    "word": "and",
+    "start": 189.927
+   },
+   {
+    "end": 190.403,
+    "word": "they've",
+    "start": 190.159
+   },
+   {
+    "end": 190.589,
+    "word": "been",
+    "start": 190.426
+   },
+   {
+    "end": 191.019,
+    "word": "dated",
+    "start": 190.647
+   },
+   {
+    "end": 191.146,
+    "word": "to",
+    "start": 191.065
+   },
+   {
+    "end": 191.669,
+    "word": "roughly",
+    "start": 191.239
+   },
+   {
+    "end": 192.609,
+    "word": "900",
+    "start": 191.796
+   },
+   {
+    "end": 192.783,
+    "word": "to",
+    "start": 192.667
+   },
+   {
+    "end": 193.84,
+    "word": "1100",
+    "start": 192.911
+   },
+   {
+    "end": 194.966,
+    "word": "BCE,",
+    "start": 193.898
+   },
+   {
+    "end": 195.221,
+    "word": "the",
+    "start": 195.094
+   },
+   {
+    "end": 195.767,
+    "word": "Nordic",
+    "start": 195.326
+   },
+   {
+    "end": 196.359,
+    "word": "Bronze",
+    "start": 195.848
+   },
+   {
+    "end": 197.079,
+    "word": "Age.",
+    "start": 196.417
+   }
+  ],
+  "segmentId": "seg7",
+  "wordCount": 73,
+  "endSeconds": 197.079,
+  "startSeconds": 159.335,
+  "wordEndIndex": 390,
+  "wordStartIndex": 317
+ },
+ {
+  "words": [
+   {
+    "end": 197.857,
+    "word": "These",
+    "start": 197.555
+   },
+   {
+    "end": 198.182,
+    "word": "weren't",
+    "start": 197.903
+   },
+   {
+    "end": 198.925,
+    "word": "armor.",
+    "start": 198.217
+   },
+   {
+    "end": 199.32,
+    "word": "The",
+    "start": 199.192
+   },
+   {
+    "end": 199.923,
+    "word": "bronze",
+    "start": 199.401
+   },
+   {
+    "end": 200.051,
+    "word": "is",
+    "start": 199.958
+   },
+   {
+    "end": 200.829,
+    "word": "thin,",
+    "start": 200.179
+   },
+   {
+    "end": 201.839,
+    "word": "decorative,",
+    "start": 201.015
+   },
+   {
+    "end": 202.512,
+    "word": "almost",
+    "start": 202.025
+   },
+   {
+    "end": 203.557,
+    "word": "delicate.",
+    "start": 202.605
+   },
+   {
+    "end": 203.999,
+    "word": "They",
+    "start": 203.824
+   },
+   {
+    "end": 204.184,
+    "word": "were",
+    "start": 204.045
+   },
+   {
+    "end": 204.66,
+    "word": "likely",
+    "start": 204.242
+   },
+   {
+    "end": 205.136,
+    "word": "worn",
+    "start": 204.741
+   },
+   {
+    "end": 205.426,
+    "word": "by",
+    "start": 205.229
+   },
+   {
+    "end": 205.542,
+    "word": "a",
+    "start": 205.508
+   },
+   {
+    "end": 206.169,
+    "word": "priest",
+    "start": 205.635
+   },
+   {
+    "end": 206.39,
+    "word": "or",
+    "start": 206.251
+   },
+   {
+    "end": 206.518,
+    "word": "a",
+    "start": 206.494
+   },
+   {
+    "end": 207.214,
+    "word": "chieftain",
+    "start": 206.622
+   },
+   {
+    "end": 207.33,
+    "word": "in",
+    "start": 207.272
+   },
+   {
+    "end": 207.412,
+    "word": "a",
+    "start": 207.388
+   },
+   {
+    "end": 208.027,
+    "word": "religious",
+    "start": 207.493
+   },
+   {
+    "end": 208.979,
+    "word": "ceremony,",
+    "start": 208.085
+   },
+   {
+    "end": 209.501,
+    "word": "maybe",
+    "start": 209.165
+   },
+   {
+    "end": 210.36,
+    "word": "alongside",
+    "start": 209.548
+   },
+   {
+    "end": 211.417,
+    "word": "sun-worship",
+    "start": 210.453
+   },
+   {
+    "end": 212.381,
+    "word": "rituals,",
+    "start": 211.498
+   },
+   {
+    "end": 213.205,
+    "word": "definitely",
+    "start": 212.543
+   },
+   {
+    "end": 213.53,
+    "word": "not",
+    "start": 213.286
+   },
+   {
+    "end": 214.064,
+    "word": "swung",
+    "start": 213.623
+   },
+   {
+    "end": 214.378,
+    "word": "into",
+    "start": 214.157
+   },
+   {
+    "end": 214.54,
+    "word": "a",
+    "start": 214.505
+   },
+   {
+    "end": 215.051,
+    "word": "shield",
+    "start": 214.633
+   },
+   {
+    "end": 215.782,
+    "word": "wall.",
+    "start": 215.132
+   },
+   {
+    "end": 216.235,
+    "word": "That's",
+    "start": 215.91
+   },
+   {
+    "end": 216.583,
+    "word": "over",
+    "start": 216.316
+   },
+   {
+    "end": 217.35,
+    "word": "eighteen",
+    "start": 216.723
+   },
+   {
+    "end": 217.826,
+    "word": "hundred",
+    "start": 217.443
+   },
+   {
+    "end": 218.255,
+    "word": "years",
+    "start": 217.884
+   },
+   {
+    "end": 219.022,
+    "word": "separating",
+    "start": 218.313
+   },
+   {
+    "end": 219.323,
+    "word": "these",
+    "start": 219.08
+   },
+   {
+    "end": 219.823,
+    "word": "horns",
+    "start": 219.381
+   },
+   {
+    "end": 220.032,
+    "word": "from",
+    "start": 219.869
+   },
+   {
+    "end": 220.171,
+    "word": "the",
+    "start": 220.09
+   },
+   {
+    "end": 220.647,
+    "word": "first",
+    "start": 220.275
+   },
+   {
+    "end": 221.355,
+    "word": "recorded",
+    "start": 220.74
+   },
+   {
+    "end": 221.936,
+    "word": "Viking",
+    "start": 221.436
+   },
+   {
+    "end": 222.354,
+    "word": "raid",
+    "start": 222.029
+   },
+   {
+    "end": 222.505,
+    "word": "on",
+    "start": 222.412
+   },
+   {
+    "end": 223.48,
+    "word": "Lindisfarne",
+    "start": 222.597
+   },
+   {
+    "end": 223.573,
+    "word": "in",
+    "start": 223.503
+   },
+   {
+    "end": 225.163,
+    "word": "793.",
+    "start": 223.701
+   },
+   {
+    "end": 225.872,
+    "word": "Would",
+    "start": 225.639
+   },
+   {
+    "end": 226.034,
+    "word": "you",
+    "start": 225.93
+   },
+   {
+    "end": 226.649,
+    "word": "mistake",
+    "start": 226.127
+   },
+   {
+    "end": 226.858,
+    "word": "your",
+    "start": 226.696
+   },
+   {
+    "end": 228.948,
+    "word": "great-great-great-grandparent's",
+    "start": 226.951
+   },
+   {
+    "end": 229.378,
+    "word": "wedding",
+    "start": 229.03
+   },
+   {
+    "end": 229.923,
+    "word": "china",
+    "start": 229.436
+   },
+   {
+    "end": 230.156,
+    "word": "for",
+    "start": 230.005
+   },
+   {
+    "end": 230.667,
+    "word": "something",
+    "start": 230.237
+   },
+   {
+    "end": 231.166,
+    "word": "you",
+    "start": 231.015
+   },
+   {
+    "end": 231.665,
+    "word": "use",
+    "start": 231.328
+   },
+   {
+    "end": 231.769,
+    "word": "in",
+    "start": 231.7
+   },
+   {
+    "end": 231.851,
+    "word": "a",
+    "start": 231.816
+   },
+   {
+    "end": 232.211,
+    "word": "bar",
+    "start": 231.932
+   },
+   {
+    "end": 232.907,
+    "word": "fight?",
+    "start": 232.304
+   },
+   {
+    "end": 233.627,
+    "word": "That's",
+    "start": 233.325
+   },
+   {
+    "end": 234.15,
+    "word": "roughly",
+    "start": 233.72
+   },
+   {
+    "end": 234.289,
+    "word": "the",
+    "start": 234.208
+   },
+   {
+    "end": 234.695,
+    "word": "gap",
+    "start": 234.37
+   },
+   {
+    "end": 234.916,
+    "word": "we're",
+    "start": 234.753
+   },
+   {
+    "end": 235.38,
+    "word": "talking",
+    "start": 234.951
+   },
+   {
+    "end": 236.065,
+    "word": "about.",
+    "start": 235.438
+   }
+  ],
+  "segmentId": "seg8",
+  "wordCount": 75,
+  "endSeconds": 236.065,
+  "startSeconds": 197.555,
+  "wordEndIndex": 465,
+  "wordStartIndex": 390
+ },
+ {
+  "words": [
+   {
+    "end": 236.646,
+    "word": "But",
+    "start": 236.413
+   },
+   {
+    "end": 237.818,
+    "word": "19th-century",
+    "start": 236.739
+   },
+   {
+    "end": 238.933,
+    "word": "antiquarians",
+    "start": 237.9
+   },
+   {
+    "end": 239.316,
+    "word": "didn't",
+    "start": 239.026
+   },
+   {
+    "end": 239.734,
+    "word": "always",
+    "start": 239.374
+   },
+   {
+    "end": 240.082,
+    "word": "draw",
+    "start": 239.792
+   },
+   {
+    "end": 240.303,
+    "word": "that",
+    "start": 240.14
+   },
+   {
+    "end": 240.79,
+    "word": "line",
+    "start": 240.361
+   },
+   {
+    "end": 241.835,
+    "word": "carefully.",
+    "start": 240.837
+   },
+   {
+    "end": 242.66,
+    "word": "Early",
+    "start": 242.253
+   },
+   {
+    "end": 243.554,
+    "word": "collectors",
+    "start": 242.741
+   },
+   {
+    "end": 243.774,
+    "word": "and",
+    "start": 243.635
+   },
+   {
+    "end": 244.528,
+    "word": "popular",
+    "start": 243.902
+   },
+   {
+    "end": 245.643,
+    "word": "illustrators,",
+    "start": 244.621
+   },
+   {
+    "end": 246.131,
+    "word": "digging",
+    "start": 245.748
+   },
+   {
+    "end": 246.433,
+    "word": "through",
+    "start": 246.189
+   },
+   {
+    "end": 246.885,
+    "word": "old",
+    "start": 246.514
+   },
+   {
+    "end": 247.594,
+    "word": "hoards",
+    "start": 246.967
+   },
+   {
+    "end": 248.081,
+    "word": "without",
+    "start": 247.652
+   },
+   {
+    "end": 248.592,
+    "word": "modern",
+    "start": 248.186
+   },
+   {
+    "end": 249.068,
+    "word": "dating",
+    "start": 248.673
+   },
+   {
+    "end": 249.904,
+    "word": "tools,",
+    "start": 249.126
+   },
+   {
+    "end": 250.415,
+    "word": "lumped",
+    "start": 250.032
+   },
+   {
+    "end": 251.216,
+    "word": "anything",
+    "start": 250.542
+   },
+   {
+    "end": 251.866,
+    "word": "old",
+    "start": 251.344
+   },
+   {
+    "end": 252.075,
+    "word": "and",
+    "start": 251.959
+   },
+   {
+    "end": 252.714,
+    "word": "Nordic",
+    "start": 252.203
+   },
+   {
+    "end": 253.05,
+    "word": "into",
+    "start": 252.806
+   },
+   {
+    "end": 253.538,
+    "word": "one",
+    "start": 253.19
+   },
+   {
+    "end": 254.327,
+    "word": "romantic",
+    "start": 253.596
+   },
+   {
+    "end": 254.873,
+    "word": "bucket",
+    "start": 254.409
+   },
+   {
+    "end": 255.488,
+    "word": "labeled",
+    "start": 254.966
+   },
+   {
+    "end": 256.452,
+    "word": "ancient",
+    "start": 255.837
+   },
+   {
+    "end": 257.021,
+    "word": "Norse",
+    "start": 256.58
+   },
+   {
+    "end": 257.984,
+    "word": "warrior.",
+    "start": 257.102
+   },
+   {
+    "end": 258.24,
+    "word": "A",
+    "start": 258.112
+   },
+   {
+    "end": 259.18,
+    "word": "ceremonial",
+    "start": 258.368
+   },
+   {
+    "end": 259.761,
+    "word": "priest's",
+    "start": 259.273
+   },
+   {
+    "end": 260.434,
+    "word": "headdress",
+    "start": 259.854
+   },
+   {
+    "end": 260.666,
+    "word": "from",
+    "start": 260.481
+   },
+   {
+    "end": 260.794,
+    "word": "the",
+    "start": 260.724
+   },
+   {
+    "end": 261.398,
+    "word": "Bronze",
+    "start": 260.875
+   },
+   {
+    "end": 261.92,
+    "word": "Age",
+    "start": 261.456
+   },
+   {
+    "end": 262.199,
+    "word": "and",
+    "start": 262.001
+   },
+   {
+    "end": 262.327,
+    "word": "a",
+    "start": 262.292
+   },
+   {
+    "end": 263.104,
+    "word": "Viking",
+    "start": 262.489
+   },
+   {
+    "end": 263.708,
+    "word": "raider",
+    "start": 263.209
+   },
+   {
+    "end": 263.975,
+    "word": "a",
+    "start": 263.847
+   },
+   {
+    "end": 264.742,
+    "word": "thousand",
+    "start": 264.138
+   },
+   {
+    "end": 265.09,
+    "word": "years",
+    "start": 264.823
+   },
+   {
+    "end": 265.636,
+    "word": "later",
+    "start": 265.183
+   },
+   {
+    "end": 266.065,
+    "word": "got",
+    "start": 265.798
+   },
+   {
+    "end": 266.832,
+    "word": "flattened",
+    "start": 266.158
+   },
+   {
+    "end": 267.052,
+    "word": "into",
+    "start": 266.89
+   },
+   {
+    "end": 267.226,
+    "word": "the",
+    "start": 267.133
+   },
+   {
+    "end": 267.842,
+    "word": "same",
+    "start": 267.331
+   },
+   {
+    "end": 268.608,
+    "word": "imagined",
+    "start": 267.888
+   },
+   {
+    "end": 269.397,
+    "word": "figure.",
+    "start": 268.701
+   },
+   {
+    "end": 270.094,
+    "word": "That",
+    "start": 269.815
+   },
+   {
+    "end": 270.744,
+    "word": "mistake",
+    "start": 270.175
+   },
+   {
+    "end": 271.069,
+    "word": "didn't",
+    "start": 270.791
+   },
+   {
+    "end": 271.464,
+    "word": "stay",
+    "start": 271.127
+   },
+   {
+    "end": 272.091,
+    "word": "buried",
+    "start": 271.592
+   },
+   {
+    "end": 272.195,
+    "word": "in",
+    "start": 272.137
+   },
+   {
+    "end": 272.265,
+    "word": "a",
+    "start": 272.242
+   },
+   {
+    "end": 272.973,
+    "word": "museum",
+    "start": 272.346
+   },
+   {
+    "end": 273.798,
+    "word": "basement.",
+    "start": 273.055
+   },
+   {
+    "end": 274.169,
+    "word": "It",
+    "start": 273.983
+   },
+   {
+    "end": 274.634,
+    "word": "walked",
+    "start": 274.227
+   },
+   {
+    "end": 275.272,
+    "word": "straight",
+    "start": 274.738
+   },
+   {
+    "end": 275.586,
+    "word": "onto",
+    "start": 275.33
+   },
+   {
+    "end": 275.725,
+    "word": "a",
+    "start": 275.69
+   },
+   {
+    "end": 276.688,
+    "word": "stage.",
+    "start": 275.818
+   }
+  ],
+  "segmentId": "seg9",
+  "wordCount": 73,
+  "endSeconds": 276.688,
+  "startSeconds": 236.413,
+  "wordEndIndex": 538,
+  "wordStartIndex": 465
+ },
+ {
+  "words": [
+   {
+    "end": 277.501,
+    "word": "In",
+    "start": 277.35
+   },
+   {
+    "end": 278.894,
+    "word": "1876,",
+    "start": 277.559
+   },
+   {
+    "end": 279.51,
+    "word": "composer",
+    "start": 278.918
+   },
+   {
+    "end": 279.986,
+    "word": "Richard",
+    "start": 279.614
+   },
+   {
+    "end": 280.636,
+    "word": "Wagner's",
+    "start": 280.044
+   },
+   {
+    "end": 281.147,
+    "word": "opera",
+    "start": 280.717
+   },
+   {
+    "end": 281.716,
+    "word": "cycle",
+    "start": 281.205
+   },
+   {
+    "end": 282.017,
+    "word": "Der",
+    "start": 281.774
+   },
+   {
+    "end": 282.517,
+    "word": "Ring",
+    "start": 282.145
+   },
+   {
+    "end": 283.237,
+    "word": "des",
+    "start": 282.935
+   },
+   {
+    "end": 284.339,
+    "word": "Nibelungen",
+    "start": 283.364
+   },
+   {
+    "end": 285.408,
+    "word": "premiered",
+    "start": 284.641
+   },
+   {
+    "end": 285.559,
+    "word": "in",
+    "start": 285.466
+   },
+   {
+    "end": 286.36,
+    "word": "Bayreuth,",
+    "start": 285.663
+   },
+   {
+    "end": 287.265,
+    "word": "Germany.",
+    "start": 286.418
+   },
+   {
+    "end": 288.368,
+    "word": "Costume",
+    "start": 287.741
+   },
+   {
+    "end": 288.902,
+    "word": "designer",
+    "start": 288.415
+   },
+   {
+    "end": 289.425,
+    "word": "Carl",
+    "start": 288.995
+   },
+   {
+    "end": 290.04,
+    "word": "Emil",
+    "start": 289.552
+   },
+   {
+    "end": 290.679,
+    "word": "Doepler",
+    "start": 290.144
+   },
+   {
+    "end": 291.271,
+    "word": "dressed",
+    "start": 290.806
+   },
+   {
+    "end": 291.398,
+    "word": "the",
+    "start": 291.317
+   },
+   {
+    "end": 291.956,
+    "word": "Norse",
+    "start": 291.526
+   },
+   {
+    "end": 292.513,
+    "word": "gods",
+    "start": 292.014
+   },
+   {
+    "end": 292.652,
+    "word": "and",
+    "start": 292.548
+   },
+   {
+    "end": 293.314,
+    "word": "warriors",
+    "start": 292.745
+   },
+   {
+    "end": 293.442,
+    "word": "in",
+    "start": 293.36
+   },
+   {
+    "end": 294.127,
+    "word": "flowing",
+    "start": 293.569
+   },
+   {
+    "end": 294.986,
+    "word": "furs,",
+    "start": 294.254
+   },
+   {
+    "end": 295.648,
+    "word": "winged",
+    "start": 295.218
+   },
+   {
+    "end": 296.216,
+    "word": "helmets,",
+    "start": 295.729
+   },
+   {
+    "end": 296.344,
+    "word": "and",
+    "start": 296.24
+   },
+   {
+    "end": 296.925,
+    "word": "yes,",
+    "start": 296.425
+   },
+   {
+    "end": 297.761,
+    "word": "dramatic",
+    "start": 297.087
+   },
+   {
+    "end": 298.295,
+    "word": "curved",
+    "start": 297.865
+   },
+   {
+    "end": 299.084,
+    "word": "horns.",
+    "start": 298.353
+   },
+   {
+    "end": 300.059,
+    "word": "Wagner",
+    "start": 299.56
+   },
+   {
+    "end": 300.466,
+    "word": "wanted",
+    "start": 300.141
+   },
+   {
+    "end": 301.128,
+    "word": "mythic,",
+    "start": 300.57
+   },
+   {
+    "end": 302.335,
+    "word": "larger-than-life",
+    "start": 301.36
+   },
+   {
+    "end": 302.881,
+    "word": "figures",
+    "start": 302.381
+   },
+   {
+    "end": 303.612,
+    "word": "towering",
+    "start": 302.962
+   },
+   {
+    "end": 303.96,
+    "word": "over",
+    "start": 303.693
+   },
+   {
+    "end": 304.111,
+    "word": "an",
+    "start": 304.042
+   },
+   {
+    "end": 304.796,
+    "word": "audience",
+    "start": 304.239
+   },
+   {
+    "end": 304.97,
+    "word": "from",
+    "start": 304.819
+   },
+   {
+    "end": 305.087,
+    "word": "the",
+    "start": 305.017
+   },
+   {
+    "end": 305.516,
+    "word": "back",
+    "start": 305.191
+   },
+   {
+    "end": 305.992,
+    "word": "row",
+    "start": 305.644
+   },
+   {
+    "end": 306.143,
+    "word": "of",
+    "start": 306.073
+   },
+   {
+    "end": 306.248,
+    "word": "a",
+    "start": 306.224
+   },
+   {
+    "end": 307.037,
+    "word": "theater.",
+    "start": 306.352
+   },
+   {
+    "end": 308.279,
+    "word": "Historical",
+    "start": 307.513
+   },
+   {
+    "end": 309.103,
+    "word": "accuracy",
+    "start": 308.372
+   },
+   {
+    "end": 309.579,
+    "word": "wasn't",
+    "start": 309.184
+   },
+   {
+    "end": 309.695,
+    "word": "the",
+    "start": 309.614
+   },
+   {
+    "end": 310.682,
+    "word": "assignment.",
+    "start": 309.776
+   },
+   {
+    "end": 311.773,
+    "word": "Spectacle",
+    "start": 311.03
+   },
+   {
+    "end": 312.435,
+    "word": "was.",
+    "start": 311.82
+   }
+  ],
+  "segmentId": "seg10",
+  "wordCount": 59,
+  "endSeconds": 312.435,
+  "startSeconds": 277.35,
+  "wordEndIndex": 597,
+  "wordStartIndex": 538
+ },
+ {
+  "words": [
+   {
+    "end": 313.004,
+    "word": "Why",
+    "start": 312.783
+   },
+   {
+    "end": 313.178,
+    "word": "did",
+    "start": 313.062
+   },
+   {
+    "end": 313.352,
+    "word": "that",
+    "start": 313.213
+   },
+   {
+    "end": 313.712,
+    "word": "image",
+    "start": 313.41
+   },
+   {
+    "end": 314.177,
+    "word": "spread",
+    "start": 313.759
+   },
+   {
+    "end": 314.455,
+    "word": "so",
+    "start": 314.258
+   },
+   {
+    "end": 315.373,
+    "word": "fast?",
+    "start": 314.583
+   },
+   {
+    "end": 316.011,
+    "word": "Because",
+    "start": 315.674
+   },
+   {
+    "end": 316.116,
+    "word": "it",
+    "start": 316.046
+   },
+   {
+    "end": 316.603,
+    "word": "landed",
+    "start": 316.197
+   },
+   {
+    "end": 317.044,
+    "word": "inside",
+    "start": 316.65
+   },
+   {
+    "end": 317.149,
+    "word": "the",
+    "start": 317.079
+   },
+   {
+    "end": 317.903,
+    "word": "Romantic",
+    "start": 317.23
+   },
+   {
+    "end": 318.6,
+    "word": "movement,",
+    "start": 317.985
+   },
+   {
+    "end": 318.995,
+    "word": "when",
+    "start": 318.786
+   },
+   {
+    "end": 319.633,
+    "word": "artists",
+    "start": 319.088
+   },
+   {
+    "end": 320.144,
+    "word": "across",
+    "start": 319.68
+   },
+   {
+    "end": 320.585,
+    "word": "Europe",
+    "start": 320.225
+   },
+   {
+    "end": 320.771,
+    "word": "were",
+    "start": 320.62
+   },
+   {
+    "end": 321.282,
+    "word": "painting",
+    "start": 320.818
+   },
+   {
+    "end": 321.816,
+    "word": "Norse",
+    "start": 321.41
+   },
+   {
+    "end": 322.234,
+    "word": "myth",
+    "start": 321.897
+   },
+   {
+    "end": 322.455,
+    "word": "as",
+    "start": 322.315
+   },
+   {
+    "end": 323.116,
+    "word": "noble",
+    "start": 322.582
+   },
+   {
+    "end": 323.279,
+    "word": "and",
+    "start": 323.163
+   },
+   {
+    "end": 324.277,
+    "word": "untamed.",
+    "start": 323.383
+   },
+   {
+    "end": 325.171,
+    "word": "Swedish",
+    "start": 324.579
+   },
+   {
+    "end": 325.694,
+    "word": "painter",
+    "start": 325.253
+   },
+   {
+    "end": 326.356,
+    "word": "Gustav",
+    "start": 325.798
+   },
+   {
+    "end": 327.11,
+    "word": "Malmstrom",
+    "start": 326.46
+   },
+   {
+    "end": 327.261,
+    "word": "and",
+    "start": 327.168
+   },
+   {
+    "end": 327.76,
+    "word": "others",
+    "start": 327.365
+   },
+   {
+    "end": 327.911,
+    "word": "had",
+    "start": 327.806
+   },
+   {
+    "end": 328.375,
+    "word": "already",
+    "start": 327.969
+   },
+   {
+    "end": 328.944,
+    "word": "sketched",
+    "start": 328.468
+   },
+   {
+    "end": 329.362,
+    "word": "horned",
+    "start": 328.991
+   },
+   {
+    "end": 329.931,
+    "word": "figures",
+    "start": 329.443
+   },
+   {
+    "end": 330.639,
+    "word": "decades",
+    "start": 330.059
+   },
+   {
+    "end": 331.44,
+    "word": "earlier,",
+    "start": 330.721
+   },
+   {
+    "end": 331.893,
+    "word": "but",
+    "start": 331.707
+   },
+   {
+    "end": 332.578,
+    "word": "Wagner's",
+    "start": 331.974
+   },
+   {
+    "end": 333.193,
+    "word": "production",
+    "start": 332.625
+   },
+   {
+    "end": 333.507,
+    "word": "put",
+    "start": 333.298
+   },
+   {
+    "end": 333.635,
+    "word": "the",
+    "start": 333.553
+   },
+   {
+    "end": 333.89,
+    "word": "look",
+    "start": 333.693
+   },
+   {
+    "end": 334.006,
+    "word": "in",
+    "start": 333.936
+   },
+   {
+    "end": 334.262,
+    "word": "front",
+    "start": 334.087
+   },
+   {
+    "end": 334.354,
+    "word": "of",
+    "start": 334.296
+   },
+   {
+    "end": 335.051,
+    "word": "thousands",
+    "start": 334.447
+   },
+   {
+    "end": 335.156,
+    "word": "of",
+    "start": 335.086
+   },
+   {
+    "end": 335.608,
+    "word": "paying",
+    "start": 335.237
+   },
+   {
+    "end": 336.421,
+    "word": "theatergoers",
+    "start": 335.69
+   },
+   {
+    "end": 336.537,
+    "word": "at",
+    "start": 336.456
+   },
+   {
+    "end": 337.152,
+    "word": "once,",
+    "start": 336.63
+   },
+   {
+    "end": 337.872,
+    "word": "night",
+    "start": 337.454
+   },
+   {
+    "end": 338.453,
+    "word": "after",
+    "start": 338.058
+   },
+   {
+    "end": 339.103,
+    "word": "night.",
+    "start": 338.546
+   },
+   {
+    "end": 339.672,
+    "word": "A",
+    "start": 339.579
+   },
+   {
+    "end": 340.31,
+    "word": "single",
+    "start": 339.811
+   },
+   {
+    "end": 340.844,
+    "word": "stage",
+    "start": 340.368
+   },
+   {
+    "end": 341.483,
+    "word": "costume",
+    "start": 340.891
+   },
+   {
+    "end": 341.971,
+    "word": "became",
+    "start": 341.518
+   },
+   {
+    "end": 342.087,
+    "word": "the",
+    "start": 342.017
+   },
+   {
+    "end": 342.69,
+    "word": "visual",
+    "start": 342.191
+   },
+   {
+    "end": 343.387,
+    "word": "template",
+    "start": 342.783
+   },
+   {
+    "end": 343.933,
+    "word": "every",
+    "start": 343.468
+   },
+   {
+    "end": 344.711,
+    "word": "illustrator",
+    "start": 344.026
+   },
+   {
+    "end": 345.302,
+    "word": "copied",
+    "start": 344.792
+   },
+   {
+    "end": 346.161,
+    "word": "afterward,",
+    "start": 345.36
+   },
+   {
+    "end": 346.661,
+    "word": "because",
+    "start": 346.347
+   },
+   {
+    "end": 346.753,
+    "word": "it",
+    "start": 346.695
+   },
+   {
+    "end": 346.904,
+    "word": "was",
+    "start": 346.788
+   },
+   {
+    "end": 347.392,
+    "word": "already",
+    "start": 346.986
+   },
+   {
+    "end": 347.973,
+    "word": "proven",
+    "start": 347.485
+   },
+   {
+    "end": 348.135,
+    "word": "to",
+    "start": 348.054
+   },
+   {
+    "end": 348.53,
+    "word": "work",
+    "start": 348.263
+   },
+   {
+    "end": 348.692,
+    "word": "on",
+    "start": 348.611
+   },
+   {
+    "end": 348.808,
+    "word": "an",
+    "start": 348.739
+   },
+   {
+    "end": 349.633,
+    "word": "audience.",
+    "start": 348.913
+   }
+  ],
+  "segmentId": "seg11",
+  "wordCount": 79,
+  "endSeconds": 349.633,
+  "startSeconds": 312.783,
+  "wordEndIndex": 676,
+  "wordStartIndex": 597
+ },
+ {
+  "words": [
+   {
+    "end": 350.295,
+    "word": "From",
+    "start": 350.051
+   },
+   {
+    "end": 350.921,
+    "word": "there",
+    "start": 350.399
+   },
+   {
+    "end": 351.27,
+    "word": "it",
+    "start": 351.084
+   },
+   {
+    "end": 351.757,
+    "word": "never",
+    "start": 351.397
+   },
+   {
+    "end": 352.338,
+    "word": "stopped",
+    "start": 351.862
+   },
+   {
+    "end": 353.058,
+    "word": "moving.",
+    "start": 352.419
+   },
+   {
+    "end": 353.545,
+    "word": "By",
+    "start": 353.36
+   },
+   {
+    "end": 353.685,
+    "word": "the",
+    "start": 353.603
+   },
+   {
+    "end": 354.01,
+    "word": "early",
+    "start": 353.743
+   },
+   {
+    "end": 355.147,
+    "word": "1900s,",
+    "start": 354.068
+   },
+   {
+    "end": 355.74,
+    "word": "horned",
+    "start": 355.275
+   },
+   {
+    "end": 356.285,
+    "word": "helmets",
+    "start": 355.821
+   },
+   {
+    "end": 356.692,
+    "word": "showed",
+    "start": 356.343
+   },
+   {
+    "end": 356.843,
+    "word": "up",
+    "start": 356.738
+   },
+   {
+    "end": 357.052,
+    "word": "on",
+    "start": 356.935
+   },
+   {
+    "end": 357.655,
+    "word": "tourist",
+    "start": 357.144
+   },
+   {
+    "end": 358.433,
+    "word": "postcards",
+    "start": 357.713
+   },
+   {
+    "end": 358.874,
+    "word": "sold",
+    "start": 358.48
+   },
+   {
+    "end": 359.002,
+    "word": "in",
+    "start": 358.932
+   },
+   {
+    "end": 359.652,
+    "word": "Norway",
+    "start": 359.13
+   },
+   {
+    "end": 360.5,
+    "word": "itself.",
+    "start": 359.71
+   },
+   {
+    "end": 361.103,
+    "word": "In",
+    "start": 360.918
+   },
+   {
+    "end": 362.636,
+    "word": "1939,",
+    "start": 361.196
+   },
+   {
+    "end": 363.588,
+    "word": "cartoonist",
+    "start": 362.822
+   },
+   {
+    "end": 364.168,
+    "word": "Alex",
+    "start": 363.716
+   },
+   {
+    "end": 364.819,
+    "word": "Raymond",
+    "start": 364.296
+   },
+   {
+    "end": 365.411,
+    "word": "drew",
+    "start": 364.923
+   },
+   {
+    "end": 365.573,
+    "word": "the",
+    "start": 365.492
+   },
+   {
+    "end": 366.049,
+    "word": "horned",
+    "start": 365.678
+   },
+   {
+    "end": 366.595,
+    "word": "warrior",
+    "start": 366.107
+   },
+   {
+    "end": 366.792,
+    "word": "in",
+    "start": 366.699
+   },
+   {
+    "end": 367.013,
+    "word": "his",
+    "start": 366.874
+   },
+   {
+    "end": 367.628,
+    "word": "Flash",
+    "start": 367.141
+   },
+   {
+    "end": 368.081,
+    "word": "Gordon",
+    "start": 367.721
+   },
+   {
+    "end": 369.08,
+    "word": "comics.",
+    "start": 368.174
+   },
+   {
+    "end": 369.73,
+    "word": "In",
+    "start": 369.556
+   },
+   {
+    "end": 371.03,
+    "word": "1948,",
+    "start": 369.811
+   },
+   {
+    "end": 371.262,
+    "word": "the",
+    "start": 371.158
+   },
+   {
+    "end": 371.843,
+    "word": "Minnesota",
+    "start": 371.32
+   },
+   {
+    "end": 372.423,
+    "word": "Vikings",
+    "start": 371.936
+   },
+   {
+    "end": 372.806,
+    "word": "didn't",
+    "start": 372.504
+   },
+   {
+    "end": 373.352,
+    "word": "exist",
+    "start": 372.853
+   },
+   {
+    "end": 373.874,
+    "word": "yet,",
+    "start": 373.433
+   },
+   {
+    "end": 374.188,
+    "word": "but",
+    "start": 374.037
+   },
+   {
+    "end": 374.35,
+    "word": "when",
+    "start": 374.223
+   },
+   {
+    "end": 374.478,
+    "word": "the",
+    "start": 374.397
+   },
+   {
+    "end": 375.14,
+    "word": "NFL",
+    "start": 374.583
+   },
+   {
+    "end": 375.488,
+    "word": "team",
+    "start": 375.233
+   },
+   {
+    "end": 376.011,
+    "word": "formed",
+    "start": 375.616
+   },
+   {
+    "end": 376.127,
+    "word": "in",
+    "start": 376.057
+   },
+   {
+    "end": 377.683,
+    "word": "1961,",
+    "start": 376.22
+   },
+   {
+    "end": 378.042,
+    "word": "they",
+    "start": 377.868
+   },
+   {
+    "end": 378.391,
+    "word": "built",
+    "start": 378.147
+   },
+   {
+    "end": 378.611,
+    "word": "their",
+    "start": 378.437
+   },
+   {
+    "end": 379.006,
+    "word": "whole",
+    "start": 378.669
+   },
+   {
+    "end": 379.772,
+    "word": "identity",
+    "start": 379.053
+   },
+   {
+    "end": 380.248,
+    "word": "around",
+    "start": 379.865
+   },
+   {
+    "end": 380.457,
+    "word": "that",
+    "start": 380.295
+   },
+   {
+    "end": 381.038,
+    "word": "same",
+    "start": 380.585
+   },
+   {
+    "end": 381.502,
+    "word": "horned",
+    "start": 381.096
+   },
+   {
+    "end": 382.35,
+    "word": "image.",
+    "start": 381.595
+   },
+   {
+    "end": 383.174,
+    "word": "Have",
+    "start": 383.012
+   },
+   {
+    "end": 383.29,
+    "word": "you",
+    "start": 383.209
+   },
+   {
+    "end": 383.511,
+    "word": "ever",
+    "start": 383.348
+   },
+   {
+    "end": 384.149,
+    "word": "questioned",
+    "start": 383.604
+   },
+   {
+    "end": 384.381,
+    "word": "why",
+    "start": 384.196
+   },
+   {
+    "end": 384.474,
+    "word": "a",
+    "start": 384.44
+   },
+   {
+    "end": 385.032,
+    "word": "football",
+    "start": 384.556
+   },
+   {
+    "end": 385.368,
+    "word": "team",
+    "start": 385.113
+   },
+   {
+    "end": 385.601,
+    "word": "from",
+    "start": 385.45
+   },
+   {
+    "end": 386.344,
+    "word": "Minnesota",
+    "start": 385.659
+   },
+   {
+    "end": 386.703,
+    "word": "wears",
+    "start": 386.425
+   },
+   {
+    "end": 387.353,
+    "word": "Bronze",
+    "start": 386.796
+   },
+   {
+    "end": 387.794,
+    "word": "Age",
+    "start": 387.411
+   },
+   {
+    "end": 388.352,
+    "word": "Danish",
+    "start": 387.887
+   },
+   {
+    "end": 389.292,
+    "word": "ceremonial",
+    "start": 388.41
+   },
+   {
+    "end": 389.977,
+    "word": "gear?",
+    "start": 389.385
+   },
+   {
+    "end": 390.72,
+    "word": "Most",
+    "start": 390.395
+   },
+   {
+    "end": 391.126,
+    "word": "people",
+    "start": 390.778
+   },
+   {
+    "end": 391.451,
+    "word": "never",
+    "start": 391.184
+   },
+   {
+    "end": 392.055,
+    "word": "do.",
+    "start": 391.533
+   }
+  ],
+  "segmentId": "seg12",
+  "wordCount": 81,
+  "endSeconds": 392.055,
+  "startSeconds": 350.051,
+  "wordEndIndex": 757,
+  "wordStartIndex": 676
+ },
+ {
+  "words": [
+   {
+    "end": 392.485,
+    "word": "But",
+    "start": 392.287
+   },
+   {
+    "end": 392.717,
+    "word": "can",
+    "start": 392.531
+   },
+   {
+    "end": 392.938,
+    "word": "we",
+    "start": 392.798
+   },
+   {
+    "end": 393.367,
+    "word": "really",
+    "start": 393.042
+   },
+   {
+    "end": 393.739,
+    "word": "say",
+    "start": 393.46
+   },
+   {
+    "end": 394.54,
+    "word": "never,",
+    "start": 393.924
+   },
+   {
+    "end": 394.842,
+    "word": "with",
+    "start": 394.621
+   },
+   {
+    "end": 395.318,
+    "word": "total",
+    "start": 394.934
+   },
+   {
+    "end": 396.223,
+    "word": "certainty?",
+    "start": 395.41
+   },
+   {
+    "end": 396.908,
+    "word": "Here's",
+    "start": 396.571
+   },
+   {
+    "end": 397.047,
+    "word": "the",
+    "start": 396.955
+   },
+   {
+    "end": 397.5,
+    "word": "honest",
+    "start": 397.14
+   },
+   {
+    "end": 398.545,
+    "word": "complication.",
+    "start": 397.558
+   },
+   {
+    "end": 399.323,
+    "word": "Most",
+    "start": 398.963
+   },
+   {
+    "end": 400.159,
+    "word": "Viking-age",
+    "start": 399.416
+   },
+   {
+    "end": 400.612,
+    "word": "helmets",
+    "start": 400.205
+   },
+   {
+    "end": 400.821,
+    "word": "we'd",
+    "start": 400.647
+   },
+   {
+    "end": 401.332,
+    "word": "expect",
+    "start": 400.867
+   },
+   {
+    "end": 401.424,
+    "word": "to",
+    "start": 401.366
+   },
+   {
+    "end": 401.889,
+    "word": "find",
+    "start": 401.506
+   },
+   {
+    "end": 402.109,
+    "word": "were",
+    "start": 401.947
+   },
+   {
+    "end": 402.702,
+    "word": "probably",
+    "start": 402.156
+   },
+   {
+    "end": 403.189,
+    "word": "never",
+    "start": 402.829
+   },
+   {
+    "end": 403.514,
+    "word": "made",
+    "start": 403.282
+   },
+   {
+    "end": 403.596,
+    "word": "of",
+    "start": 403.537
+   },
+   {
+    "end": 404.176,
+    "word": "iron",
+    "start": 403.723
+   },
+   {
+    "end": 404.478,
+    "word": "at",
+    "start": 404.269
+   },
+   {
+    "end": 405.256,
+    "word": "all.",
+    "start": 404.559
+   },
+   {
+    "end": 406.51,
+    "word": "Leather,",
+    "start": 405.813
+   },
+   {
+    "end": 407.311,
+    "word": "boiled",
+    "start": 406.672
+   },
+   {
+    "end": 407.45,
+    "word": "and",
+    "start": 407.357
+   },
+   {
+    "end": 408.274,
+    "word": "hardened,",
+    "start": 407.554
+   },
+   {
+    "end": 409.087,
+    "word": "wood,",
+    "start": 408.46
+   },
+   {
+    "end": 409.365,
+    "word": "and",
+    "start": 409.191
+   },
+   {
+    "end": 410.027,
+    "word": "antler",
+    "start": 409.493
+   },
+   {
+    "end": 410.364,
+    "word": "don't",
+    "start": 410.132
+   },
+   {
+    "end": 411.072,
+    "word": "survive",
+    "start": 410.422
+   },
+   {
+    "end": 411.409,
+    "word": "well",
+    "start": 411.13
+   },
+   {
+    "end": 412.187,
+    "word": "underground",
+    "start": 411.467
+   },
+   {
+    "end": 412.384,
+    "word": "for",
+    "start": 412.245
+   },
+   {
+    "end": 412.465,
+    "word": "a",
+    "start": 412.442
+   },
+   {
+    "end": 413.243,
+    "word": "thousand",
+    "start": 412.593
+   },
+   {
+    "end": 414.033,
+    "word": "years,",
+    "start": 413.336
+   },
+   {
+    "end": 415.054,
+    "word": "especially",
+    "start": 414.16
+   },
+   {
+    "end": 415.17,
+    "word": "in",
+    "start": 415.112
+   },
+   {
+    "end": 415.728,
+    "word": "acidic",
+    "start": 415.229
+   },
+   {
+    "end": 416.749,
+    "word": "Scandinavian",
+    "start": 415.809
+   },
+   {
+    "end": 417.492,
+    "word": "soil.",
+    "start": 416.842
+   },
+   {
+    "end": 418.177,
+    "word": "If",
+    "start": 417.968
+   },
+   {
+    "end": 418.294,
+    "word": "a",
+    "start": 418.259
+   },
+   {
+    "end": 418.874,
+    "word": "helmet",
+    "start": 418.421
+   },
+   {
+    "end": 419.095,
+    "word": "had",
+    "start": 418.932
+   },
+   {
+    "end": 419.756,
+    "word": "small",
+    "start": 419.188
+   },
+   {
+    "end": 420.441,
+    "word": "horns",
+    "start": 419.849
+   },
+   {
+    "end": 420.743,
+    "word": "made",
+    "start": 420.523
+   },
+   {
+    "end": 420.929,
+    "word": "from",
+    "start": 420.766
+   },
+   {
+    "end": 421.579,
+    "word": "antler",
+    "start": 421.057
+   },
+   {
+    "end": 422.09,
+    "word": "lashed",
+    "start": 421.684
+   },
+   {
+    "end": 422.334,
+    "word": "on",
+    "start": 422.171
+   },
+   {
+    "end": 422.52,
+    "word": "with",
+    "start": 422.38
+   },
+   {
+    "end": 422.903,
+    "word": "leather",
+    "start": 422.612
+   },
+   {
+    "end": 423.564,
+    "word": "cord,",
+    "start": 422.984
+   },
+   {
+    "end": 424.017,
+    "word": "that",
+    "start": 423.75
+   },
+   {
+    "end": 424.528,
+    "word": "cord",
+    "start": 424.11
+   },
+   {
+    "end": 424.656,
+    "word": "and",
+    "start": 424.575
+   },
+   {
+    "end": 425.213,
+    "word": "antler",
+    "start": 424.76
+   },
+   {
+    "end": 425.445,
+    "word": "could",
+    "start": 425.271
+   },
+   {
+    "end": 425.91,
+    "word": "rot",
+    "start": 425.538
+   },
+   {
+    "end": 426.212,
+    "word": "into",
+    "start": 425.991
+   },
+   {
+    "end": 426.757,
+    "word": "nothing",
+    "start": 426.339
+   },
+   {
+    "end": 427.059,
+    "word": "within",
+    "start": 426.815
+   },
+   {
+    "end": 427.129,
+    "word": "a",
+    "start": 427.106
+   },
+   {
+    "end": 427.419,
+    "word": "few",
+    "start": 427.21
+   },
+   {
+    "end": 428.29,
+    "word": "centuries,",
+    "start": 427.501
+   },
+   {
+    "end": 428.801,
+    "word": "leaving",
+    "start": 428.418
+   },
+   {
+    "end": 429.184,
+    "word": "no",
+    "start": 428.929
+   },
+   {
+    "end": 429.66,
+    "word": "rivet",
+    "start": 429.312
+   },
+   {
+    "end": 430.264,
+    "word": "holes,",
+    "start": 429.707
+   },
+   {
+    "end": 430.647,
+    "word": "no",
+    "start": 430.426
+   },
+   {
+    "end": 431.971,
+    "word": "discoloration,",
+    "start": 430.74
+   },
+   {
+    "end": 432.365,
+    "word": "no",
+    "start": 432.156
+   },
+   {
+    "end": 432.853,
+    "word": "trace",
+    "start": 432.447
+   },
+   {
+    "end": 432.957,
+    "word": "at",
+    "start": 432.888
+   },
+   {
+    "end": 433.666,
+    "word": "all.",
+    "start": 433.015
+   },
+   {
+    "end": 434.269,
+    "word": "So",
+    "start": 434.084
+   },
+   {
+    "end": 434.467,
+    "word": "when",
+    "start": 434.327
+   },
+   {
+    "end": 435.639,
+    "word": "archaeologists",
+    "start": 434.548
+   },
+   {
+    "end": 435.976,
+    "word": "say",
+    "start": 435.697
+   },
+   {
+    "end": 436.278,
+    "word": "no",
+    "start": 436.069
+   },
+   {
+    "end": 437.009,
+    "word": "evidence,",
+    "start": 436.382
+   },
+   {
+    "end": 437.334,
+    "word": "they",
+    "start": 437.137
+   },
+   {
+    "end": 437.683,
+    "word": "mean",
+    "start": 437.427
+   },
+   {
+    "end": 438.089,
+    "word": "no",
+    "start": 437.81
+   },
+   {
+    "end": 439.018,
+    "word": "surviving",
+    "start": 438.217
+   },
+   {
+    "end": 439.947,
+    "word": "evidence.",
+    "start": 439.146
+   },
+   {
+    "end": 441.142,
+    "word": "Absence",
+    "start": 440.504
+   },
+   {
+    "end": 441.665,
+    "word": "isn't",
+    "start": 441.201
+   },
+   {
+    "end": 442.64,
+    "word": "automatically",
+    "start": 441.746
+   },
+   {
+    "end": 443.174,
+    "word": "proof",
+    "start": 442.745
+   },
+   {
+    "end": 443.476,
+    "word": "of",
+    "start": 443.314
+   },
+   {
+    "end": 444.347,
+    "word": "absence.",
+    "start": 443.604
+   },
+   {
+    "end": 444.881,
+    "word": "It",
+    "start": 444.695
+   },
+   {
+    "end": 445.322,
+    "word": "just",
+    "start": 444.974
+   },
+   {
+    "end": 445.74,
+    "word": "means",
+    "start": 445.415
+   },
+   {
+    "end": 445.868,
+    "word": "if",
+    "start": 445.786
+   },
+   {
+    "end": 446.019,
+    "word": "it",
+    "start": 445.926
+   },
+   {
+    "end": 446.866,
+    "word": "happened,",
+    "start": 446.112
+   },
+   {
+    "end": 447.261,
+    "word": "it",
+    "start": 447.052
+   },
+   {
+    "end": 447.899,
+    "word": "happened",
+    "start": 447.354
+   },
+   {
+    "end": 448.027,
+    "word": "in",
+    "start": 447.958
+   },
+   {
+    "end": 448.108,
+    "word": "a",
+    "start": 448.074
+   },
+   {
+    "end": 448.863,
+    "word": "material",
+    "start": 448.166
+   },
+   {
+    "end": 449.118,
+    "word": "that",
+    "start": 448.944
+   },
+   {
+    "end": 449.641,
+    "word": "time",
+    "start": 449.2
+   },
+   {
+    "end": 449.827,
+    "word": "was",
+    "start": 449.687
+   },
+   {
+    "end": 450.175,
+    "word": "never",
+    "start": 449.92
+   },
+   {
+    "end": 450.477,
+    "word": "going",
+    "start": 450.233
+   },
+   {
+    "end": 450.581,
+    "word": "to",
+    "start": 450.523
+   },
+   {
+    "end": 450.825,
+    "word": "let",
+    "start": 450.663
+   },
+   {
+    "end": 450.964,
+    "word": "us",
+    "start": 450.872
+   },
+   {
+    "end": 451.591,
+    "word": "keep.",
+    "start": 451.057
+   }
+  ],
+  "segmentId": "seg13",
+  "wordCount": 121,
+  "endSeconds": 451.591,
+  "startSeconds": 392.287,
+  "wordEndIndex": 878,
+  "wordStartIndex": 757
+ },
+ {
+  "words": [
+   {
+    "end": 452.172,
+    "word": "So",
+    "start": 451.94
+   },
+   {
+    "end": 452.462,
+    "word": "go",
+    "start": 452.265
+   },
+   {
+    "end": 452.857,
+    "word": "back",
+    "start": 452.59
+   },
+   {
+    "end": 452.985,
+    "word": "to",
+    "start": 452.915
+   },
+   {
+    "end": 453.228,
+    "word": "that",
+    "start": 453.066
+   },
+   {
+    "end": 453.809,
+    "word": "charge",
+    "start": 453.31
+   },
+   {
+    "end": 454.111,
+    "word": "down",
+    "start": 453.855
+   },
+   {
+    "end": 454.215,
+    "word": "the",
+    "start": 454.146
+   },
+   {
+    "end": 455.202,
+    "word": "hillside,",
+    "start": 454.297
+   },
+   {
+    "end": 455.678,
+    "word": "the",
+    "start": 455.55
+   },
+   {
+    "end": 456.177,
+    "word": "helmet",
+    "start": 455.783
+   },
+   {
+    "end": 456.375,
+    "word": "with",
+    "start": 456.224
+   },
+   {
+    "end": 456.746,
+    "word": "two",
+    "start": 456.433
+   },
+   {
+    "end": 457.35,
+    "word": "long",
+    "start": 456.932
+   },
+   {
+    "end": 457.907,
+    "word": "curved",
+    "start": 457.478
+   },
+   {
+    "end": 458.523,
+    "word": "horns",
+    "start": 457.965
+   },
+   {
+    "end": 459.022,
+    "word": "catching",
+    "start": 458.615
+   },
+   {
+    "end": 459.138,
+    "word": "the",
+    "start": 459.068
+   },
+   {
+    "end": 460.16,
+    "word": "firelight.",
+    "start": 459.196
+   },
+   {
+    "end": 461.03,
+    "word": "That",
+    "start": 460.717
+   },
+   {
+    "end": 461.46,
+    "word": "image",
+    "start": 461.088
+   },
+   {
+    "end": 461.773,
+    "word": "didn't",
+    "start": 461.506
+   },
+   {
+    "end": 462.098,
+    "word": "come",
+    "start": 461.831
+   },
+   {
+    "end": 462.307,
+    "word": "from",
+    "start": 462.156
+   },
+   {
+    "end": 462.4,
+    "word": "a",
+    "start": 462.365
+   },
+   {
+    "end": 462.981,
+    "word": "Viking",
+    "start": 462.493
+   },
+   {
+    "end": 463.77,
+    "word": "battlefield",
+    "start": 463.074
+   },
+   {
+    "end": 463.898,
+    "word": "at",
+    "start": 463.817
+   },
+   {
+    "end": 464.537,
+    "word": "all.",
+    "start": 463.956
+   },
+   {
+    "end": 465.036,
+    "word": "It",
+    "start": 464.885
+   },
+   {
+    "end": 465.407,
+    "word": "came",
+    "start": 465.094
+   },
+   {
+    "end": 465.628,
+    "word": "from",
+    "start": 465.465
+   },
+   {
+    "end": 465.721,
+    "word": "a",
+    "start": 465.686
+   },
+   {
+    "end": 466.441,
+    "word": "Bronze",
+    "start": 465.825
+   },
+   {
+    "end": 466.766,
+    "word": "Age",
+    "start": 466.487
+   },
+   {
+    "end": 467.358,
+    "word": "priest's",
+    "start": 466.824
+   },
+   {
+    "end": 468.31,
+    "word": "ritual,",
+    "start": 467.462
+   },
+   {
+    "end": 469.064,
+    "word": "borrowed",
+    "start": 468.472
+   },
+   {
+    "end": 469.273,
+    "word": "by",
+    "start": 469.111
+   },
+   {
+    "end": 469.366,
+    "word": "a",
+    "start": 469.331
+   },
+   {
+    "end": 469.924,
+    "word": "German",
+    "start": 469.459
+   },
+   {
+    "end": 470.469,
+    "word": "opera",
+    "start": 470.051
+   },
+   {
+    "end": 471.061,
+    "word": "designer",
+    "start": 470.527
+   },
+   {
+    "end": 471.224,
+    "word": "in",
+    "start": 471.154
+   },
+   {
+    "end": 472.896,
+    "word": "1876,",
+    "start": 471.305
+   },
+   {
+    "end": 473.279,
+    "word": "and",
+    "start": 473.081
+   },
+   {
+    "end": 473.917,
+    "word": "sold",
+    "start": 473.407
+   },
+   {
+    "end": 474.033,
+    "word": "to",
+    "start": 473.964
+   },
+   {
+    "end": 474.196,
+    "word": "the",
+    "start": 474.115
+   },
+   {
+    "end": 474.939,
+    "word": "entire",
+    "start": 474.277
+   },
+   {
+    "end": 475.427,
+    "word": "world",
+    "start": 474.997
+   },
+   {
+    "end": 475.67,
+    "word": "ever",
+    "start": 475.485
+   },
+   {
+    "end": 476.414,
+    "word": "since.",
+    "start": 475.763
+   },
+   {
+    "end": 477.795,
+    "word": "Wagner's",
+    "start": 477.168
+   },
+   {
+    "end": 478.434,
+    "word": "costume",
+    "start": 477.853
+   },
+   {
+    "end": 479.014,
+    "word": "department",
+    "start": 478.468
+   },
+   {
+    "end": 479.339,
+    "word": "gave",
+    "start": 479.072
+   },
+   {
+    "end": 479.479,
+    "word": "you",
+    "start": 479.386
+   },
+   {
+    "end": 479.606,
+    "word": "a",
+    "start": 479.571
+   },
+   {
+    "end": 480.059,
+    "word": "myth",
+    "start": 479.711
+   },
+   {
+    "end": 480.523,
+    "word": "so",
+    "start": 480.187
+   },
+   {
+    "end": 481.185,
+    "word": "good,",
+    "start": 480.651
+   },
+   {
+    "end": 481.673,
+    "word": "so",
+    "start": 481.417
+   },
+   {
+    "end": 482.439,
+    "word": "visually",
+    "start": 481.801
+   },
+   {
+    "end": 483.252,
+    "word": "perfect,",
+    "start": 482.532
+   },
+   {
+    "end": 483.612,
+    "word": "that",
+    "start": 483.438
+   },
+   {
+    "end": 483.914,
+    "word": "even",
+    "start": 483.67
+   },
+   {
+    "end": 483.995,
+    "word": "a",
+    "start": 483.96
+   },
+   {
+    "end": 484.668,
+    "word": "total",
+    "start": 484.134
+   },
+   {
+    "end": 485.388,
+    "word": "absence",
+    "start": 484.796
+   },
+   {
+    "end": 485.493,
+    "word": "of",
+    "start": 485.423
+   },
+   {
+    "end": 486.003,
+    "word": "battle",
+    "start": 485.597
+   },
+   {
+    "end": 486.503,
+    "word": "evidence",
+    "start": 486.05
+   },
+   {
+    "end": 486.828,
+    "word": "couldn't",
+    "start": 486.537
+   },
+   {
+    "end": 487.164,
+    "word": "kill",
+    "start": 486.886
+   },
+   {
+    "end": 487.652,
+    "word": "it.",
+    "start": 487.257
+   }
+  ],
+  "segmentId": "seg14",
+  "wordCount": 76,
+  "endSeconds": 487.652,
+  "startSeconds": 451.94,
+  "wordEndIndex": 954,
+  "wordStartIndex": 878
+ },
+ {
+  "words": [
+   {
+    "end": 489.068,
+    "word": "Somewhere",
+    "start": 488.407
+   },
+   {
+    "end": 489.184,
+    "word": "in",
+    "start": 489.115
+   },
+   {
+    "end": 489.266,
+    "word": "a",
+    "start": 489.243
+   },
+   {
+    "end": 489.997,
+    "word": "Norwegian",
+    "start": 489.347
+   },
+   {
+    "end": 490.949,
+    "word": "museum,",
+    "start": 490.055
+   },
+   {
+    "end": 491.204,
+    "word": "a",
+    "start": 491.111
+   },
+   {
+    "end": 491.843,
+    "word": "plain",
+    "start": 491.332
+   },
+   {
+    "end": 492.458,
+    "word": "iron",
+    "start": 491.971
+   },
+   {
+    "end": 493.004,
+    "word": "dome",
+    "start": 492.551
+   },
+   {
+    "end": 493.178,
+    "word": "with",
+    "start": 493.039
+   },
+   {
+    "end": 493.259,
+    "word": "a",
+    "start": 493.236
+   },
+   {
+    "end": 493.898,
+    "word": "simple",
+    "start": 493.387
+   },
+   {
+    "end": 494.258,
+    "word": "eye",
+    "start": 493.979
+   },
+   {
+    "end": 494.641,
+    "word": "guard",
+    "start": 494.304
+   },
+   {
+    "end": 495.047,
+    "word": "sits",
+    "start": 494.722
+   },
+   {
+    "end": 495.349,
+    "word": "under",
+    "start": 495.128
+   },
+   {
+    "end": 496.173,
+    "word": "glass,",
+    "start": 495.43
+   },
+   {
+    "end": 497.543,
+    "word": "unglamorous,",
+    "start": 496.301
+   },
+   {
+    "end": 498.774,
+    "word": "undramatic,",
+    "start": 497.671
+   },
+   {
+    "end": 499.041,
+    "word": "and",
+    "start": 498.82
+   },
+   {
+    "end": 499.761,
+    "word": "true.",
+    "start": 499.122
+   },
+   {
+    "end": 500.33,
+    "word": "Nobody",
+    "start": 499.947
+   },
+   {
+    "end": 500.655,
+    "word": "buys",
+    "start": 500.388
+   },
+   {
+    "end": 500.736,
+    "word": "a",
+    "start": 500.701
+   },
+   {
+    "end": 501.421,
+    "word": "postcard",
+    "start": 500.817
+   },
+   {
+    "end": 501.549,
+    "word": "of",
+    "start": 501.467
+   },
+   {
+    "end": 501.781,
+    "word": "it.",
+    "start": 501.607
+   },
+   {
+    "end": 502.315,
+    "word": "Nobody",
+    "start": 501.943
+   },
+   {
+    "end": 502.675,
+    "word": "puts",
+    "start": 502.396
+   },
+   {
+    "end": 502.791,
+    "word": "it",
+    "start": 502.721
+   },
+   {
+    "end": 502.93,
+    "word": "on",
+    "start": 502.837
+   },
+   {
+    "end": 503,
+    "word": "a",
+    "start": 502.977
+   },
+   {
+    "end": 503.592,
+    "word": "football",
+    "start": 503.081
+   },
+   {
+    "end": 504.173,
+    "word": "helmet.",
+    "start": 503.673
+   },
+   {
+    "end": 504.614,
+    "word": "Real",
+    "start": 504.3
+   },
+   {
+    "end": 505.171,
+    "word": "history",
+    "start": 504.707
+   },
+   {
+    "end": 505.322,
+    "word": "is",
+    "start": 505.229
+   },
+   {
+    "end": 505.949,
+    "word": "rarely",
+    "start": 505.45
+   },
+   {
+    "end": 506.1,
+    "word": "as",
+    "start": 506.007
+   },
+   {
+    "end": 506.657,
+    "word": "loud",
+    "start": 506.228
+   },
+   {
+    "end": 506.796,
+    "word": "as",
+    "start": 506.715
+   },
+   {
+    "end": 506.947,
+    "word": "the",
+    "start": 506.878
+   },
+   {
+    "end": 507.389,
+    "word": "myth",
+    "start": 507.052
+   },
+   {
+    "end": 507.772,
+    "word": "built",
+    "start": 507.47
+   },
+   {
+    "end": 507.957,
+    "word": "on",
+    "start": 507.853
+   },
+   {
+    "end": 508.364,
+    "word": "top",
+    "start": 508.039
+   },
+   {
+    "end": 508.515,
+    "word": "of",
+    "start": 508.445
+   },
+   {
+    "end": 508.817,
+    "word": "it.",
+    "start": 508.596
+   },
+   {
+    "end": 509.293,
+    "word": "Next",
+    "start": 509.002
+   },
+   {
+    "end": 509.594,
+    "word": "time",
+    "start": 509.339
+   },
+   {
+    "end": 509.722,
+    "word": "you",
+    "start": 509.641
+   },
+   {
+    "end": 510.024,
+    "word": "see",
+    "start": 509.815
+   },
+   {
+    "end": 510.291,
+    "word": "those",
+    "start": 510.07
+   },
+   {
+    "end": 510.79,
+    "word": "curving",
+    "start": 510.349
+   },
+   {
+    "end": 511.394,
+    "word": "horns",
+    "start": 510.895
+   },
+   {
+    "end": 511.533,
+    "word": "on",
+    "start": 511.452
+   },
+   {
+    "end": 511.614,
+    "word": "a",
+    "start": 511.591
+   },
+   {
+    "end": 512.45,
+    "word": "lunchbox",
+    "start": 511.707
+   },
+   {
+    "end": 512.624,
+    "word": "or",
+    "start": 512.532
+   },
+   {
+    "end": 512.706,
+    "word": "a",
+    "start": 512.683
+   },
+   {
+    "end": 513.611,
+    "word": "mascot,",
+    "start": 512.799
+   },
+   {
+    "end": 514.076,
+    "word": "you're",
+    "start": 513.878
+   },
+   {
+    "end": 514.25,
+    "word": "not",
+    "start": 514.111
+   },
+   {
+    "end": 514.61,
+    "word": "looking",
+    "start": 514.308
+   },
+   {
+    "end": 514.738,
+    "word": "at",
+    "start": 514.668
+   },
+   {
+    "end": 515.132,
+    "word": "Norse",
+    "start": 514.819
+   },
+   {
+    "end": 515.864,
+    "word": "memory.",
+    "start": 515.214
+   },
+   {
+    "end": 516.479,
+    "word": "You're",
+    "start": 516.282
+   },
+   {
+    "end": 516.746,
+    "word": "looking",
+    "start": 516.502
+   },
+   {
+    "end": 516.862,
+    "word": "at",
+    "start": 516.792
+   },
+   {
+    "end": 516.932,
+    "word": "a",
+    "start": 516.897
+   },
+   {
+    "end": 517.988,
+    "word": "nineteenth-century",
+    "start": 517.025
+   },
+   {
+    "end": 518.615,
+    "word": "costume",
+    "start": 518.081
+   },
+   {
+    "end": 519.161,
+    "word": "designer's",
+    "start": 518.65
+   },
+   {
+    "end": 519.614,
+    "word": "best",
+    "start": 519.242
+   },
+   {
+    "end": 520.148,
+    "word": "sales",
+    "start": 519.718
+   },
+   {
+    "end": 520.751,
+    "word": "pitch,",
+    "start": 520.229
+   },
+   {
+    "end": 521.1,
+    "word": "one",
+    "start": 520.879
+   },
+   {
+    "end": 521.32,
+    "word": "that's",
+    "start": 521.123
+   },
+   {
+    "end": 521.75,
+    "word": "still",
+    "start": 521.378
+   },
+   {
+    "end": 522.214,
+    "word": "working",
+    "start": 521.854
+   },
+   {
+    "end": 522.377,
+    "word": "on",
+    "start": 522.296
+   },
+   {
+    "end": 522.505,
+    "word": "you",
+    "start": 522.423
+   },
+   {
+    "end": 523.375,
+    "word": "today.",
+    "start": 522.563
+   }
+  ],
+  "segmentId": "seg15",
+  "wordCount": 84,
+  "endSeconds": 523.375,
+  "startSeconds": 488.407,
+  "wordEndIndex": 1038,
+  "wordStartIndex": 954
+ }
+]

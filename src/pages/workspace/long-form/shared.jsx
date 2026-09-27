@@ -1,9 +1,11 @@
-import { useEffect, useRef } from "react";
-import { ArrowLeft, ArrowRight, Check, Clapperboard, ImageOff, RotateCw, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { ArrowLeft, ArrowRight, Check, Clapperboard, ImageOff, MoreVertical, Pencil, RotateCw, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { IDEA_CATEGORY_OPTIONS, PREVIEW_STATUS } from "./discoverIdeas";
-import { LONG_FORM_STAGES } from "./state";
-import { deriveProjectStageInfo, formatElapsedMinutes, formatProjectDuration } from "./projectStage";
+import { LONG_FORM_STAGES, LONG_FORM_STICKMAN_STAGES } from "./state";
+import { deriveProjectStageInfo, formatElapsedMinutes, formatProjectDuration, humanizeProjectStatus, resolveStoryStepRoute, resolveLookStepRoute } from "./projectStage";
+import { deleteLongFormProject, selectStoryTitle } from "./project";
 
 // Top row for /long-form/new and every future Long Form creation-step page:
 // an explicit route back to the lobby (never navigate(-1) — these steps may
@@ -18,7 +20,7 @@ import { deriveProjectStageInfo, formatElapsedMinutes, formatProjectDuration } f
 // container padding (sticky only pins vertically), so this works unchanged
 // across the centered and split-view layouts without duplicating that
 // padding here.
-export function LongFormCreationHeader({ current }) {
+export function LongFormCreationHeader({ current, project, stickman = false }) {
   const navigate = useNavigate();
   const headerRef = useRef(null);
 
@@ -52,31 +54,89 @@ export function LongFormCreationHeader({ current }) {
           <span className="hidden sm:inline">Back to Long Form</span>
           <span className="sm:hidden">Long Form</span>
         </button>
-        <LongFormProgress current={current} />
+        <LongFormProgress current={current} project={project} stickman={stickman} />
       </div>
     </div>
   );
 }
 
-export function LongFormProgress({ current = "idea" }) {
-  const currentIndex = LONG_FORM_STAGES.findIndex((stage) => stage.key === current);
+// `project` is optional (some pages — Idea's own /long-form/new, or a page
+// that hasn't loaded its project yet — render this before a project row
+// exists at all): every completed step just renders as a plain label in
+// that case, identical to the previous non-interactive behavior.
+//
+// `stickman` is an explicit boolean the CALLER decides (from the project's
+// own active generation_profile.visual_recipe, or — on /long-form/new,
+// before any project/profile exists yet — the locally-selected recipe draft
+// value) rather than something derived here. This component has no way to
+// safely fetch a profile itself (see productionProfile.js's own comment on
+// why long_form_generation_profiles has no direct table grant), and
+// guessing from `project` alone would misclassify a Stickman project before
+// its profile row loads. Defaults to false — the legacy 5-stage flow is the
+// only stage list rendered unless a caller explicitly opts in.
+export function LongFormProgress({ current = "idea", project = null, stickman = false }) {
+  const navigate = useNavigate();
+  const stages = stickman ? LONG_FORM_STICKMAN_STAGES : LONG_FORM_STAGES;
+  const currentIndex = stages.findIndex((stage) => stage.key === current);
+  const storyRoute = project ? resolveStoryStepRoute(project) : null;
+  const lookRoute = project ? resolveLookStepRoute(project) : null;
+  const currentStage = stages[currentIndex] ?? stages[0];
 
   return (
-    <div className="flex min-w-0 items-center gap-2 overflow-x-auto">
-      {LONG_FORM_STAGES.map((stage, i) => {
+    <>
+      {/* Final-polish round 2, Section 4 — below 768px the full stepper's
+          labels get visually cut off right next to the back link (there
+          just isn't room for both), so it's swapped for one compact line
+          instead of trying to force the full row to somehow still fit. */}
+      <p className="truncate text-[12px] font-semibold text-white/50 md:hidden">
+        Step {currentIndex + 1} of {stages.length} · {currentStage.label}
+      </p>
+      <div className="hidden min-w-0 items-center gap-2 overflow-x-auto md:flex">
+        {stages.map((stage, i) => {
         const active = i === currentIndex;
         const done = i < currentIndex;
+        // "story" and "look" have a real, safe destination once completed —
+        // the furthest completed Story-family artifact (Story Plan /
+        // Research / Narration; see resolveStoryStepRoute) and the
+        // completed VisualPlan (resolveLookStepRoute) respectively. Both are
+        // plain view/edit navigations, never a rebuild trigger. "idea" is
+        // deliberately left non-clickable: reopening it for an already-
+        // committed project isn't safely reconstructable with the current
+        // /long-form/new architecture (that route is keyed to a disposable
+        // discovery-session draft, not an existing project id) — faking a
+        // "back to idea" navigation risks confusing draft state, so it stays
+        // a plain completed-step label rather than a navigation this
+        // codebase doesn't actually support yet. "generate"/"edit" are never
+        // clickable from the stepper itself (they're not yet reached, or
+        // they're the current step already).
+        const route = stage.key === "story" ? storyRoute : stage.key === "look" ? lookRoute : null;
+        const clickable = done && Boolean(route);
+        const label = (
+          <>
+            <span className={`h-1.5 w-1.5 rounded-full ${active ? "bg-lime-300" : done ? "bg-lime-300/50" : "bg-white/15"}`} />
+            <span className={`text-[11.5px] font-semibold ${active ? "text-white" : done ? "text-white/55" : "text-white/30"}`}>{stage.label}</span>
+          </>
+        );
         return (
           <div key={stage.key} className="flex shrink-0 items-center gap-2">
-            <div className="flex items-center gap-1.5">
-              <span className={`h-1.5 w-1.5 rounded-full ${active ? "bg-lime-300" : done ? "bg-lime-300/50" : "bg-white/15"}`} />
-              <span className={`text-[11.5px] font-semibold ${active ? "text-white" : "text-white/30"}`}>{stage.label}</span>
-            </div>
-            {i < LONG_FORM_STAGES.length - 1 && <span className="h-px w-5 bg-white/10" />}
+            {clickable ? (
+              <button
+                type="button"
+                onClick={() => navigate(`/long-form/project/${project.id}/${route}`)}
+                className="flex items-center gap-1.5 rounded px-0.5 py-0.5 transition hover:opacity-75 focus:outline-none focus-visible:ring-1 focus-visible:ring-lime-300"
+                aria-label={`Back to ${stage.label}`}
+              >
+                {label}
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5">{label}</div>
+            )}
+            {i < stages.length - 1 && <span className="h-px w-5 bg-white/10" />}
           </div>
         );
       })}
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -221,28 +281,47 @@ function formatProjectDate(dateStr) {
 // whatever stage deriveProjectStageInfo (projectStage.js) determines it
 // actually reached — including genuinely active work (researching/
 // drafting/planning), not just the last completed pointer.
-export function ProjectCard({ project }) {
+// 2026-10-03 "fixes round 3" pass, Section 3 — the card's status badge now
+// shows exactly one of humanizeProjectStatus's 7 human buckets (never the
+// raw topLevel/statusLabel pair, e.g. never "Story · Script Ready" or
+// "Scenes · 111 need review" again), with the real "Xm ago"/live-elapsed
+// treatment kept only for genuinely active work.
+export function ProjectCard({ project, onChanged }) {
   const navigate = useNavigate();
   const stage = deriveProjectStageInfo(project);
+  const humanStatus = humanizeProjectStatus(stage);
   const duration = formatProjectDuration(project);
   const elapsed = stage.active ? formatElapsedMinutes(stage.startedAt) : null;
   const title = project.selected_title || project.selected_idea_title || project.topic;
   const tint = tintForIdea(project.id);
+  const createdLabel = formatProjectDate(project.created_at);
+  const metaLine = [duration, createdLabel].filter(Boolean).join(" · ");
+  const [busy, setBusy] = useState(false);
+
+  const open = () => navigate(`/long-form/project/${project.id}/${stage.route}`);
+
+  const handleRename = async () => {
+    const next = window.prompt("Rename this video", title);
+    if (!next || !next.trim() || next.trim() === title) return;
+    setBusy(true);
+    const ok = await selectStoryTitle(project.id, next.trim());
+    setBusy(false);
+    if (ok) onChanged?.();
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm(`Delete "${title}"? This can't be undone from here.`)) return;
+    setBusy(true);
+    const ok = await deleteLongFormProject(project.id);
+    setBusy(false);
+    if (ok) onChanged?.();
+  };
 
   return (
-    <button
-      type="button"
-      onClick={() => navigate(`/long-form/project/${project.id}/${stage.route}`)}
-      className="group flex flex-col overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.03] text-left transition hover:border-white/[0.16]"
-    >
-      <div className="relative aspect-video w-full overflow-hidden">
-        {project._conceptPreviewUrl ? (
-          // Cover priority (final thumbnail / representative scene / Visual
-          // World board / storyboard preview) doesn't exist yet at this
-          // stage of the product — this is the cheapest real cover above
-          // that: the concept preview the user already saw and picked in
-          // Discover Ideas, never a newly-generated image.
-          <img src={project._conceptPreviewUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+    <div className="group relative flex h-full flex-col overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.03] text-left transition hover:border-white/[0.16]">
+      <div className="relative aspect-video w-full shrink-0 overflow-hidden">
+        {project._thumbnailUrl ? (
+          <img src={project._thumbnailUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
         ) : (
           <>
             <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${tint}33, ${tint}0d)` }} />
@@ -253,7 +332,7 @@ export function ProjectCard({ project }) {
         )}
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="line-clamp-2 text-[14px] font-bold leading-snug text-white">{title}</h3>
+        <h3 className="line-clamp-2 min-h-[2.6em] text-[14px] font-bold leading-snug text-white">{title}</h3>
         <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
           <span
             className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10.5px] font-semibold ${
@@ -261,14 +340,48 @@ export function ProjectCard({ project }) {
             }`}
           >
             {stage.active && <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-lime-300" />}
-            {stage.active ? stage.statusLabel : `${stage.topLevel} · ${stage.statusLabel}`}
+            {humanStatus}
             {stage.active && "…"}
           </span>
-          {elapsed ? <span className="text-[11px] font-medium text-white/35">{elapsed}</span> : duration && <span className="text-[11px] font-medium text-white/35">{duration}</span>}
+          {elapsed && <span className="text-[11px] font-medium text-white/35">{elapsed}</span>}
         </div>
-        {project.created_at && <p className="text-[10.5px] text-white/25">Created {formatProjectDate(project.created_at)}</p>}
+        {metaLine && <p className="text-[10.5px] text-white/25">{metaLine}</p>}
       </div>
-    </button>
+
+      {/* Full-card click target — positioned so the "⋯" menu (z-10, its own
+          absolute corner box) always wins the topmost hit-test over this. */}
+      <button type="button" onClick={open} aria-label={`Open ${title}`} disabled={busy} className="absolute inset-0 z-0" />
+
+      <div className="absolute right-2 top-2 z-10">
+        <Menu>
+          <MenuButton
+            onClick={(e) => e.stopPropagation()}
+            disabled={busy}
+            aria-label="Video options"
+            className="grid h-7 w-7 place-items-center rounded-full bg-black/50 text-white/70 opacity-0 backdrop-blur-sm transition hover:bg-black/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-lime-300 group-hover:opacity-100 data-[open]:opacity-100"
+          >
+            <MoreVertical className="h-4 w-4" />
+          </MenuButton>
+          <MenuItems anchor="bottom end" className="z-20 mt-1 w-40 rounded-xl border border-white/10 bg-[#181b1d] p-1 shadow-xl focus:outline-none">
+            <MenuItem>
+              <button type="button" onClick={open} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12.5px] font-medium text-white/80 data-[focus]:bg-white/10">
+                <ArrowRight className="h-3.5 w-3.5" /> Open
+              </button>
+            </MenuItem>
+            <MenuItem>
+              <button type="button" onClick={handleRename} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12.5px] font-medium text-white/80 data-[focus]:bg-white/10">
+                <Pencil className="h-3.5 w-3.5" /> Rename
+              </button>
+            </MenuItem>
+            <MenuItem>
+              <button type="button" onClick={handleDelete} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12.5px] font-medium text-red-300/90 data-[focus]:bg-red-400/10">
+                <Trash2 className="h-3.5 w-3.5" /> Delete
+              </button>
+            </MenuItem>
+          </MenuItems>
+        </Menu>
+      </div>
+    </div>
   );
 }
 
@@ -292,9 +405,24 @@ export function ProjectCard({ project }) {
 // takes the full row); primaryLabel/onPrimary/primaryDisabled/primaryLoading
 // drive the right-hand CTA. Generic on purpose — every current Idea/Story/
 // Research usage is just different label/handler values, nothing more.
+//
+// tertiaryLabel/onTertiary/tertiaryLoading is an OPTIONAL middle action (an
+// outlined secondary button, between the quiet back-link and the primary
+// CTA) — added for Script's "Regenerate Script", which previously lived
+// inline in the page body and got silently hidden behind this same fixed
+// footer once the narration was long enough (see the real reported bug:
+// visible "Show Less," a sticky footer starting right below it, and
+// "Regenerate Script" rendered underneath that footer, unreachable).
+// Omitted entirely by every other caller, which keeps their exact original
+// two-button layout byte-identical — only stacks into 3 full-width rows on
+// mobile when a tertiary action is actually present.
 export function LongFormActionFooter({
   secondaryLabel,
   onSecondary,
+  tertiaryLabel,
+  onTertiary,
+  tertiaryLoading = false,
+  tertiaryLoadingLabel,
   primaryLabel,
   onPrimary,
   primaryDisabled = false,
@@ -302,6 +430,58 @@ export function LongFormActionFooter({
   primaryLoadingLabel,
   maxWidthClassName = "max-w-[760px]",
 }) {
+  if (tertiaryLabel) {
+    return (
+      <div className="fixed inset-x-0 z-40 border-t border-white/[0.08] bg-[#101213]/97 px-4 py-3 backdrop-blur-xl bottom-[calc(78px+env(safe-area-inset-bottom))] lg:bottom-0">
+        <div className={`mx-auto flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 lg:px-4 ${maxWidthClassName}`}>
+          {secondaryLabel && (
+            <button
+              type="button"
+              onClick={onSecondary}
+              className="inline-flex shrink-0 items-center gap-1.5 self-start text-[12.5px] font-semibold text-white/45 transition hover:text-white sm:self-auto"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              {secondaryLabel}
+            </button>
+          )}
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3">
+            <button
+              type="button"
+              onClick={onTertiary}
+              disabled={tertiaryLoading}
+              className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-3 text-[13.5px] font-semibold text-white/75 transition hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+            >
+              {tertiaryLoading && <RotateCw className="h-3.5 w-3.5 animate-spin" />}
+              {tertiaryLoading ? tertiaryLoadingLabel || tertiaryLabel : tertiaryLabel}
+            </button>
+            <button
+              type="button"
+              onClick={onPrimary}
+              disabled={primaryDisabled || primaryLoading}
+              className={`inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-[14.5px] font-semibold transition sm:w-auto ${
+                primaryDisabled || primaryLoading
+                  ? "cursor-not-allowed border border-white/[0.08] bg-[#202224] text-white/35"
+                  : "bg-lime-300 text-[#11150D] hover:bg-lime-200 active:scale-[0.99]"
+              }`}
+            >
+              {primaryLoading ? (
+                <>
+                  <RotateCw className="h-4 w-4 animate-spin" />
+                  {primaryLoadingLabel || primaryLabel}
+                </>
+              ) : (
+                <>
+                  {primaryLabel}
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-x-0 z-40 border-t border-white/[0.08] bg-[#101213]/97 px-4 py-3 backdrop-blur-xl bottom-[calc(78px+env(safe-area-inset-bottom))] lg:bottom-0">
       <div className={`mx-auto flex items-center gap-3 lg:px-4 ${maxWidthClassName} ${secondaryLabel ? "justify-between" : "justify-end"}`}>

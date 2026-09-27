@@ -21,9 +21,9 @@ const ModelSelector = React.memo(
 
           transition-all duration-200
 
-          hover:border-[#7A3BFF]/40
+          hover:border-[#BEF264]/40
           hover:bg-[#181B1E]
-          hover:shadow-[0_10px_35px_rgba(122,59,255,0.15)]
+          hover:shadow-[0_10px_35px_rgba(190,242,100,0.15)]
         "
       >
         {/* LEFT SIDE */}
@@ -72,7 +72,7 @@ const ModelSelector = React.memo(
             w-5 h-5 transition-all duration-200
             ${
               openModel
-                ? "rotate-90 text-[#B69CFF]"
+                ? "rotate-90 text-[#D9F99D]"
                 : "text-white/40"
             }
           `}

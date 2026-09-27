@@ -143,10 +143,10 @@ function Viewer({ video, onClose, prevVideo, nextVideo, onPrev, onNext }) {
           disabled={downloading}
           className="
             flex items-center gap-2 px-5 py-3 rounded-2xl
-            bg-[#7A3BFF] hover:bg-[#6a30e0]
-            text-white font-semibold text-sm
+            bg-[#BEF264] hover:bg-[#D9F99D]
+            text-[#11150D] font-semibold text-sm
             transition active:scale-95 disabled:opacity-60
-            shadow-[0_0_20px_rgba(122,59,255,0.4)]
+            shadow-[0_0_20px_rgba(190,242,100,0.4)]
           "
         >
           {downloading ? (
@@ -227,7 +227,7 @@ function VideoThumb({ item, isActive, onClick, sizeClass = "w-[100px] sm:w-[120p
             ? "border-amber-500/70 shadow-[0_0_18px_rgba(245,158,11,0.35)]"
             : "border-amber-500/30 hover:border-amber-500/50"
           : isActive
-          ? "border-[#7A3BFF] shadow-[0_0_18px_rgba(122,59,255,0.4)]"
+          ? "border-[#BEF264] shadow-[0_0_18px_rgba(190,242,100,0.4)]"
           : "border-white/10 hover:border-white/30"
         }
       `}
@@ -265,7 +265,7 @@ function VideoThumb({ item, isActive, onClick, sizeClass = "w-[100px] sm:w-[120p
             className="absolute rounded-full pointer-events-none"
             style={{
               width: "90%", paddingBottom: "90%", top: "5%", left: "5%",
-              background: "radial-gradient(circle, rgba(122,59,255,0.16), transparent)",
+              background: "radial-gradient(circle, rgba(190,242,100,0.16), transparent)",
               filter: "blur(14px)",
               animation: "pulse 2.5s ease-in-out infinite",
             }}
@@ -275,8 +275,8 @@ function VideoThumb({ item, isActive, onClick, sizeClass = "w-[100px] sm:w-[120p
             <svg className="w-full h-full" style={{ transform: "rotate(-90deg)" }} viewBox="0 0 100 100">
               <defs>
                 <linearGradient id={`thumbRing_${item.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor={item.status === "queued" && Number(item.attempts ?? 0) > 0 ? "#f59e0b" : "#7A3BFF"} />
-                  <stop offset="100%" stopColor={item.status === "queued" && Number(item.attempts ?? 0) > 0 ? "#fbbf24" : "#C077FF"} />
+                  <stop offset="0%" stopColor={item.status === "queued" && Number(item.attempts ?? 0) > 0 ? "#f59e0b" : "#BEF264"} />
+                  <stop offset="100%" stopColor={item.status === "queued" && Number(item.attempts ?? 0) > 0 ? "#fbbf24" : "#D9F99D"} />
                 </linearGradient>
               </defs>
               <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="9" />
@@ -313,9 +313,9 @@ function VideoThumb({ item, isActive, onClick, sizeClass = "w-[100px] sm:w-[120p
                 className="h-full"
                 style={{
                   width: `${Math.max(2, thumbProgress)}%`,
-                  background: "linear-gradient(90deg, #7A3BFF, #C077FF)",
+                  background: "linear-gradient(90deg, #BEF264, #D9F99D)",
                   transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)",
-                  boxShadow: "0 0 6px rgba(122,59,255,0.5)",
+                  boxShadow: "0 0 6px rgba(190,242,100,0.5)",
                 }}
               />
             </div>
@@ -359,7 +359,7 @@ function PreviewPane({ video, previewProgress, onFullscreen, onDownload, variant
               </button>
               <button
                 onClick={() => onDownload(video.result_url)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#7A3BFF] hover:bg-[#6a30e0] text-white text-xs font-medium transition active:scale-95"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#BEF264] hover:bg-[#D9F99D] text-[#11150D] text-xs font-medium transition active:scale-95"
               >
                 <Download className="w-3.5 h-3.5" />
                 Download
@@ -404,7 +404,7 @@ function PreviewPane({ video, previewProgress, onFullscreen, onDownload, variant
             className="absolute rounded-full pointer-events-none"
             style={{
               width: "55%", paddingBottom: "55%", top: "-10%", left: "22%",
-              background: "radial-gradient(circle, rgba(122,59,255,0.17), transparent)",
+              background: "radial-gradient(circle, rgba(190,242,100,0.17), transparent)",
               filter: "blur(40px)",
               animation: "pulse 2.8s ease-in-out infinite",
             }}
@@ -418,7 +418,7 @@ function PreviewPane({ video, previewProgress, onFullscreen, onDownload, variant
                 className="w-[3px] rounded-full"
                 style={{
                   height: `${h * 100}%`,
-                  background: "linear-gradient(to top, #7A3BFF, #C077FF)",
+                  background: "linear-gradient(to top, #BEF264, #D9F99D)",
                   opacity: 0.7,
                   animation: `waveBar 1.1s ease-in-out ${i * 0.1}s infinite alternate`,
                   transformOrigin: "bottom",
@@ -432,8 +432,8 @@ function PreviewPane({ video, previewProgress, onFullscreen, onDownload, variant
             <svg className="w-full h-full" style={{ transform: "rotate(-90deg)" }} viewBox="0 0 100 100">
               <defs>
                 <linearGradient id={ringId} x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#7A3BFF" />
-                  <stop offset="100%" stopColor="#C077FF" />
+                  <stop offset="0%" stopColor="#BEF264" />
+                  <stop offset="100%" stopColor="#D9F99D" />
                 </linearGradient>
               </defs>
               <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
@@ -455,7 +455,7 @@ function PreviewPane({ video, previewProgress, onFullscreen, onDownload, variant
               className="absolute rounded-full pointer-events-none"
               style={{
                 inset: "-6px",
-                background: "radial-gradient(circle, rgba(122,59,255,0.2), transparent 70%)",
+                background: "radial-gradient(circle, rgba(190,242,100,0.2), transparent 70%)",
                 filter: "blur(6px)",
                 animation: "pulse 2s ease-in-out infinite",
               }}
@@ -479,7 +479,7 @@ function PreviewPane({ video, previewProgress, onFullscreen, onDownload, variant
               {[0, 1, 2].map((i) => (
                 <span
                   key={i}
-                  className="block w-[4px] h-[4px] rounded-full bg-[#7A3BFF]/55 animate-bounce"
+                  className="block w-[4px] h-[4px] rounded-full bg-[#BEF264]/55 animate-bounce"
                   style={{ animationDelay: `${i * 150}ms`, animationDuration: "1.1s" }}
                 />
               ))}
@@ -492,9 +492,9 @@ function PreviewPane({ video, previewProgress, onFullscreen, onDownload, variant
               className="h-full rounded-full"
               style={{
                 width: `${Math.max(2, previewProgress)}%`,
-                background: "linear-gradient(90deg, #7A3BFF, #C077FF)",
+                background: "linear-gradient(90deg, #BEF264, #D9F99D)",
                 transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)",
-                boxShadow: "0 0 8px rgba(122,59,255,0.6)",
+                boxShadow: "0 0 8px rgba(190,242,100,0.6)",
               }}
             />
           </div>
@@ -544,7 +544,7 @@ function VideoGenHero() {
         style={{
           top: "-60px", left: "50%", transform: "translateX(-50%)",
           width: "400px", height: "400px",
-          background: "radial-gradient(circle, rgba(122,59,255,0.14), transparent 70%)",
+          background: "radial-gradient(circle, rgba(190,242,100,0.14), transparent 70%)",
           filter: "blur(60px)",
         }}
       />
@@ -552,7 +552,7 @@ function VideoGenHero() {
       <div className="relative z-10 flex flex-col gap-4 p-6 h-full flex-1">
         {/* Badge */}
         <div>
-          <span className="text-[#A87AFF] text-[11px] font-bold tracking-widest uppercase">
+          <span className="text-[#A3E635] text-[11px] font-bold tracking-widest uppercase">
             ✦ AI Video Generator
           </span>
         </div>
@@ -561,7 +561,7 @@ function VideoGenHero() {
         <div>
           <h2 className="text-white font-black text-[24px] lg:text-[28px] leading-tight tracking-tight">
             Create videos that<br />
-            <span className="bg-gradient-to-r from-white via-purple-100 to-[#C084FC] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-white via-lime-100 to-[#D9F99D] bg-clip-text text-transparent">
               go viral instantly
             </span>
           </h2>
@@ -575,7 +575,7 @@ function VideoGenHero() {
           {VID_HERO_PILLS.map((label) => (
             <span
               key={label}
-              className="inline-flex h-6 items-center rounded-full border border-[rgba(168,122,255,0.25)] bg-[rgba(168,122,255,0.08)] px-2.5 text-[#c4a8ff] text-[11px] font-medium"
+              className="inline-flex h-6 items-center rounded-full border border-[rgba(163,230,53,0.25)] bg-[rgba(163,230,53,0.08)] px-2.5 text-[#d9f99d] text-[11px] font-medium"
             >
               {label}
             </span>
@@ -609,8 +609,8 @@ function VideoGenHero() {
 
           {/* Prompt card */}
           <div className="hidden lg:flex flex-1 flex-col justify-center gap-3 pl-1">
-            <div className="rounded-2xl border border-[rgba(168,122,255,0.2)] bg-[rgba(168,122,255,0.06)] p-4">
-              <p className="text-[10px] font-semibold tracking-widest uppercase text-[#A87AFF] mb-2">Example prompt</p>
+            <div className="rounded-2xl border border-[rgba(163,230,53,0.2)] bg-[rgba(163,230,53,0.06)] p-4">
+              <p className="text-[10px] font-semibold tracking-widest uppercase text-[#A3E635] mb-2">Example prompt</p>
               <p className="text-white/75 text-[13px] leading-snug font-medium italic">
                 "{VID_PROMPTS[promptIdx]}"
               </p>
@@ -618,8 +618,8 @@ function VideoGenHero() {
             <div className="space-y-2">
               {["Cinematic & atmospheric", "Portrait 9:16 for TikTok", "Download in 1 click"].map((feat) => (
                 <div key={feat} className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-[#7A3BFF]/20 border border-[#7A3BFF]/40 flex items-center justify-center shrink-0">
-                    <svg className="w-2.5 h-2.5 text-[#C084FC]" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth="2.5">
+                  <div className="w-4 h-4 rounded-full bg-[#BEF264]/20 border border-[#BEF264]/40 flex items-center justify-center shrink-0">
+                    <svg className="w-2.5 h-2.5 text-[#D9F99D]" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth="2.5">
                       <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
@@ -634,10 +634,10 @@ function VideoGenHero() {
         {!user ? (
           <button
             onClick={() => navigate("/signup")}
-            className="w-full py-3.5 rounded-xl font-black text-white text-[15px] tracking-tight hover:opacity-90 active:scale-[0.98] transition-all select-none"
+            className="w-full py-3.5 rounded-xl font-black text-[#11150D] text-[15px] tracking-tight hover:opacity-90 active:scale-[0.98] transition-all select-none"
             style={{
-              background: "linear-gradient(135deg, #7A3BFF 0%, #9F5CFF 50%, #C084FC 100%)",
-              boxShadow: "0 0 28px rgba(122,59,255,0.38)",
+              background: "linear-gradient(135deg, #BEF264 0%, #A3E635 50%, #D9F99D 100%)",
+              boxShadow: "0 0 28px rgba(190,242,100,0.38)",
             }}
           >
             ✦ &nbsp; Start generating for free

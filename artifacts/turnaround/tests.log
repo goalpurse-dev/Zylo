@@ -1,0 +1,26 @@
+(node:31804) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/browserAssets.loader.mjs", pathToFileURL("./")); register("./tests/browserAssets.loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ hero rollout requires explicit approval; recurring and incidental remain inexpensive (0.9576ms)
+✔ five default cells and optional sixth pose use exact non-overlapping 512 squares (0.7855ms)
+✔ crop copies pixels exactly and rejects wrong dimensions or bounds (1.3675ms)
+✔ dedicated master prompt contains different views and strict no-text/no-environment contract (0.4225ms)
+✔ unreviewed/rejected crops and master cannot replace current role assets (0.3119ms)
+(node:31268) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:
+--import 'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("./tests/browserAssets.loader.mjs", pathToFileURL("./")); register("./tests/browserAssets.loader.mjs", pathToFileURL("./"));'
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ fixture exercises every category and storyboard camera anchors (2.1091ms)
+✔ only usable successes count as ready; replacements do not double-count (0.2807ms)
+✔ four deterministic prompts: identity, full body/profile, reusable set, no labels (6.3488ms)
+✔ reference job stays free, uses FLUX Base, and keeps stable durable identity (1.7968ms)
+✔ uncertain enqueue response retries same asset/job through one atomic RPC (0.6719ms)
+✔ reconciliation observes terminal jobs without creating or claiming paid work (0.2423ms)
+✔ saved smoke audit is exactly four successful zero-credit results, no claimed asset-link proof (2.5293ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 231.825

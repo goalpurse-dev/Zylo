@@ -20,6 +20,8 @@ import ErrorToast from "../../components/ImageGenerator/ErrorToast";
 import { watchJob } from "../../lib/jobs";
 import { NANO_RESOLUTIONS } from "../../lib/image-generator/nanoResolutions";
 import PromptInput from "./PromptInput";
+import useToolPriceQuotes from "../../hooks/useToolPriceQuotes";
+import { IMAGE_PRICE_GRID, imagePriceItem } from "../../lib/image-generator/pricing";
 import GenerateButton from "./GenerateButton";
 import ModelSelector from "./ModelSelector";
 import StyleSelector from "./StyleSelector";
@@ -27,10 +29,10 @@ import SizeSelector from "./SizeSelector";
 import OutputSelector from "./OutputSelector";
 
 
-import { ArrowBigDown, ArrowBigLeft, BoxSelect, Image, ImagePlusIcon, Settings, Wand, Wand2, X } from "lucide-react";
+import { ArrowBigDown, ArrowBigLeft, BoxSelect, Image as ImageIcon, ImagePlusIcon, Layers, Minus, Plus, Settings, Wand, Wand2, X } from "lucide-react";
 import Bg from "../../assets/ImageGenerator/bg.png"
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
-Image
+ImageIcon
 ImagePlusIcon
 X
 Settings
@@ -56,7 +58,7 @@ const MenuItem = ({ label, value, onClick }) => (
 );
 
 const Option = ({ label }) => (
-  <button className="px-4 py-2 text-sm text-white/90 hover:bg-purple-500/20">
+  <button className="px-4 py-2 text-sm text-white/90 hover:bg-lime-500/20">
     {label}
   </button>
 );
@@ -118,8 +120,8 @@ const StyleCard = ({ img, label, active, onClick }) => (
 
       ${
         active
-          ? "scale-[1.05] border-2 border-[#7A3BFF] "
-          : "md:hover:scale-[1.03] md:hover:shadow-[0_0_25px_rgba(122,59,255,0.25)]"
+          ? "scale-[1.05] border-2 border-[#BEF264] "
+          : "md:hover:scale-[1.03] md:hover:shadow-[0_0_25px_rgba(190,242,100,0.25)]"
       }
     `}
   >
@@ -131,8 +133,8 @@ const StyleCard = ({ img, label, active, onClick }) => (
         absolute inset-0 rounded-2xl p-[1px]
         ${
           active
-            ? " scale-[1.04] shadow-lg bg-gradient-to-r from-[#7A3BFF] via-[#9D4EDD] to-[#C77DFF]"
-            : "bg-white/10 md:group-hover:bg-gradient-to-r md:group-hover:from-[#7A3BFF]/40 md:group-hover:to-[#9D4EDD]/40"
+            ? " scale-[1.04] shadow-lg bg-gradient-to-r from-[#BEF264] via-[#A3E635] to-[#D9F99D]"
+            : "bg-white/10 md:group-hover:bg-gradient-to-r md:group-hover:from-[#BEF264]/40 md:group-hover:to-[#A3E635]/40"
         }
       `}
     >
@@ -164,8 +166,8 @@ absolute top-2 right-2
 px-2 py-1 
 text-[10px] 
 rounded-md 
-bg-gradient-to-r from-[#7A3BFF] to-[#9D4EDD]
-text-white 
+bg-gradient-to-r from-[#BEF264] to-[#A3E635]
+text-[#11150D] font-semibold
 
 ">
   Selected
@@ -332,15 +334,15 @@ const ModelCard = ({
       bg-[#0B0E1A]/70 border
       ${
         active
-          ? "border-[#7A3BFF] bg-[#7A3BFF]/10 "
-          : "border-white/10 hover:bg-white/5 hover:border-[#7A3BFF]/40"
+          ? "border-[#BEF264] bg-[#BEF264]/10 "
+          : "border-white/10 hover:bg-white/5 hover:border-[#BEF264]/40"
       }
       ${compact ? "p-3" : "p-4"}
     `}
   >
     {/* ACTIVE CHECK */}
     {active && (
-      <span className="absolute top-3 right-3 text-[#7A3BFF] font-bold">
+      <span className="absolute top-3 right-3 text-[#BEF264] font-bold">
         ✓
       </span>
     )}
@@ -433,10 +435,41 @@ const isSelectorOpen = openModel || openStyle || openSize;
 
 
 const selectedModel = MODELS[selectedModelKey];
-const estimatedCredits = selectedModel?.supportsResolutions
-  ? selectedModel.resolutions.find(r => r.key === selectedResolution)?.credits ?? selectedModel.credits
-  : selectedModel?.credits ?? 0;
+// Server price quote for exactly the job this selection creates; the whole
+// option grid is quoted up front so switching model/size/resolution is instant.
+const priceItems = useMemo(
+  () => [...IMAGE_PRICE_GRID, imagePriceItem(selectedModelKey, selectedSize, selectedResolution, "current")],
+  [selectedModelKey, selectedSize, selectedResolution],
+);
+const priceQuotes = useToolPriceQuotes(priceItems);
+const estimatedCredits = priceQuotes.price("current");
+const priceStatus = priceQuotes.errors.current ? "error" : estimatedCredits != null ? "ready" : "loading";
   const textareaRef = useRef(null);
+
+// 🔥 MULTIPLE IMAGE GENERATIONS — same prompt, 1-3 variations per generate
+const [variationCount, setVariationCount] = useState(1);
+const MAX_VARIATIONS = 3;
+
+// 🔥 GENERATE MULTIPLE — stack different prompts, generate them all at once
+const [batchMode, setBatchMode] = useState(false);
+const [queuedPrompts, setQueuedPrompts] = useState([]);
+const MAX_QUEUED_PROMPTS = 15;
+
+const readyQueuedPrompt = () => {
+  const clean = prompt.trim();
+  if (!clean || queuedPrompts.length >= MAX_QUEUED_PROMPTS) return;
+  setQueuedPrompts((prev) => [...prev, clean]);
+  setPrompt("");
+};
+
+const removeQueuedPrompt = (index) => {
+  setQueuedPrompts((prev) => prev.filter((_, i) => i !== index));
+};
+
+// batch: queued prompts + whatever's currently typed but not yet "readied"
+const batchPromptCount = batchMode ? Math.max(1, queuedPrompts.length + (prompt.trim() ? 1 : 0)) : 1;
+const totalGenerationCount = variationCount * batchPromptCount;
+const totalEstimatedCredits = estimatedCredits != null ? estimatedCredits * totalGenerationCount : null;
 
 const isDesktop = window.innerWidth >= 768;
 
@@ -479,6 +512,8 @@ useEffect(() => {
 }, [])
 
 const [selectedStyle, setSelectedStyle] = useState(STYLE_KEYS[0]);
+// off = no style hint/reference applied to generation at all
+const [styleEnabled, setStyleEnabled] = useState(false);
 
 const {
   images,
@@ -535,167 +570,191 @@ const handleUpload = async (e) => {
 };
 
 const handleGenerate = async () => {
-  if (!prompt.trim()) return;
+  // 🔥 Build the full list of prompts to run:
+  //    - normal mode: just whatever's typed
+  //    - batch mode: every "readied" prompt + whatever's still typed (auto-readied)
+  const cleanPrompt = prompt.trim();
+  const allPrompts = batchMode
+    ? [...queuedPrompts, ...(cleanPrompt ? [cleanPrompt] : [])]
+    : (cleanPrompt ? [cleanPrompt] : []);
 
-  // 🔥 FREE LIMIT GUARD
-// 🔥 FREE LIMIT GUARD (only for free plan)
-if (planCode === "free" && freeRemaining === 0) {
-  setLimitToastOpen(true);
-  return;
-}
+  if (allPrompts.length === 0) return;
+  if (priceStatus !== "ready") { if (priceStatus === "error") priceQuotes.retry(); return; }
+
+  const totalItems = allPrompts.length * variationCount;
+
+  // 🔥 FREE LIMIT GUARD (only for free plan) — must cover the whole batch
+  if (planCode === "free" && (freeRemaining === 0 || (freeRemaining !== null && freeRemaining < totalItems))) {
+    setLimitToastOpen(true);
+    return;
+  }
 
   // 🔥 CHECK AUTH FIRST
   const { data: authData } = await supabase.auth.getSession();
   const user = authData?.session?.user;
 
-if (!user) {
-  setGuestModalOpen(true);
-  return;
-}
-
-
- // 🔥 CHECK CREDITS (use credit_balance)
-const { data: profile, error: profErr } = await supabase
-  .from("profiles")
-  .select("credit_balance")
-  .eq("id", user.id)
-  .single();
-
-if (profErr) {
-  console.error("Failed to fetch profile credits:", profErr);
-  setToast({ message: "Could not check credits. Try again.", type: "error" });
-  return;
-}
-
-const requiredCredits = Number(selectedModel?.credits ?? 0);
-const balance = Number(profile?.credit_balance ?? 0);
-
-// 🔥 Skip credit check for free plan
-if (planCode !== "free") {
-  if (balance < requiredCredits) {
-    setToast({
-      message: `You need ${requiredCredits} credits to generate.`,
-      type: "error",
-    });
+  if (!user) {
+    setGuestModalOpen(true);
     return;
   }
-}
 
+  // 🔥 CHECK CREDITS (use credit_balance) — scaled to the whole batch
+  const { data: profile, error: profErr } = await supabase
+    .from("profiles")
+    .select("credit_balance")
+    .eq("id", user.id)
+    .single();
+
+  if (profErr) {
+    console.error("Failed to fetch profile credits:", profErr);
+    setToast({ message: "Could not check credits. Try again.", type: "error" });
+    return;
+  }
+
+  const requiredCredits = estimatedCredits * totalItems;
+  const balance = Number(profile?.credit_balance ?? 0);
+
+  // 🔥 Skip credit check for free plan
+  if (planCode !== "free") {
+    if (balance < requiredCredits) {
+      setToast({
+        message: `You need ${requiredCredits} credits to generate ${totalItems} image${totalItems > 1 ? "s" : ""}.`,
+        type: "error",
+      });
+      return;
+    }
+  }
 
   try {
     setIsGenerating(true);
 
-const style = IMAGE_STYLES[selectedStyle];
+    const style = styleEnabled ? IMAGE_STYLES[selectedStyle] : null;
 
-// user uploaded references
-let refImagesFinal = selected.map((x) => x.url);
+    // user uploaded references
+    const baseRefImages = selected.map((x) => x.url);
+    // 🔥 auto attach hidden style reference — skipped entirely when style is off
+    if (style?.defaultReference) baseRefImages.unshift(style.defaultReference);
+    // Style hint is applied by buildFinalImagePrompt in generator.ts via the `style` param.
+    // Do NOT add it here — it would be appended twice.
 
-// 🔥 auto attach hidden style reference
-if (style?.defaultReference) {
-  refImagesFinal.unshift(style.defaultReference);
-}
-// Style hint is applied by buildFinalImagePrompt in generator.ts via the `style` param.
-// Do NOT add it here — it would be appended twice.
-const finalPrompt = prompt.trim();
+    let overrideWidth = null;
+    let overrideHeight = null;
 
-let overrideWidth = null;
-let overrideHeight = null;
+    // 🔥 ONLY for Nano Banana 2
+    if (selectedModel?.supportsResolutions) {
+      const res = NANO_RESOLUTIONS[selectedSize]?.[selectedResolution];
+      if (res) {
+        overrideWidth = res.width;
+        overrideHeight = res.height;
+      }
+    }
 
-// 🔥 ONLY for Nano Banana 2
-if (selectedModel?.supportsResolutions) {
-  const res =
-    NANO_RESOLUTIONS[selectedSize]?.[selectedResolution];
+    let remainingLocal = freeRemaining;
+    let lastJob = null;
+    let succeededCount = 0;
+    let rejectedCount = 0;
+    let firstRejectionMsg = null;
 
-  if (res) {
-    overrideWidth = res.width;
-    overrideHeight = res.height;
-  }
-}
+    for (const promptText of allPrompts) {
+      for (let v = 0; v < variationCount; v++) {
+        let job;
+        try {
+          job = await generateImageFromUI({
+            modelKey: selectedModelKey,
+            prompt: promptText,
+            style: styleEnabled ? selectedStyle : undefined,
+            size: selectedSize,
+            refImages: baseRefImages,
+            width: overrideWidth,
+            height: overrideHeight,
+            resolution: selectedResolution,
+          });
+        } catch (err) {
+          rejectedCount++;
+          firstRejectionMsg ??= String(err?.message || err);
+          continue;
+        }
 
-const job = await generateImageFromUI({
-  modelKey: selectedModelKey,
-  prompt: finalPrompt,
-  style: selectedStyle,
-  size: selectedSize,
-  refImages: refImagesFinal,
+        if (!job || job.ok === false || job.errors?.length) {
+          rejectedCount++;
+          firstRejectionMsg ??= job?.errors?.[0]?.message || job?.error || "This prompt was rejected by the image provider.";
+          continue;
+        }
 
-  // ✅ YOU ADD THESE HERE
-  width: overrideWidth,
-  height: overrideHeight,
-  resolution: selectedResolution, // 🔥 THIS LINE
-});
+        succeededCount++;
+        lastJob = job;
+        setActiveJobId?.(job.id);
+        onJobCreated?.(job, { batch: batchMode });
 
-if (!job || job.ok === false || job.errors?.length) {
-  const errMsg =
-    job?.errors?.[0]?.message ||
-    job?.error ||
-    "This prompt was rejected by the image provider.";
+        watchJob(job.id, (updatedJob) => {
+          if (updatedJob.status === "failed") {
+            setErrorToast(
+              updatedJob.error ||
+              updatedJob.errors?.[0]?.message ||
+              "The AI provider rejected this prompt."
+            );
+          }
+          // Show first-gen upsell modal — only for the job flagged as user's first generation
+          if (
+            updatedJob.status === "succeeded" &&
+            updatedJob.result_url &&
+            firstGenJobRef.current === updatedJob.id
+          ) {
+            firstGenJobRef.current = null; // clear so it only fires once
+            setTimeout(() => setFirstGenModal(updatedJob.result_url), 800);
+          }
+        });
 
-  setErrorToast(errMsg);
+        // 🔥 decrement UI counter (free plan only)
+        if (remainingLocal !== null && remainingLocal > 0) {
+          if (remainingLocal === 5 && planCode === "free") {
+            firstGenJobRef.current = job.id;
+          }
+          remainingLocal -= 1;
+          setFreeRemaining(remainingLocal);
+          if (remainingLocal >= 0) setProgressToast(remainingLocal);
+        }
+      }
+    }
 
-  setIsGenerating(false);
-  return;
-}
-    
-    
-  
-    setActiveJobId?.(job.id);
-    onJobCreated?.(job);
-watchJob(job.id, (updatedJob) => {
-  if (updatedJob.status === "failed") {
-    setErrorToast(
-      updatedJob.error ||
-      updatedJob.errors?.[0]?.message ||
-      "The AI provider rejected this prompt."
-    );
-  }
-  // Show first-gen upsell modal — only for the job flagged as user's first generation
-  if (
-    updatedJob.status === "succeeded" &&
-    updatedJob.result_url &&
-    firstGenJobRef.current === updatedJob.id
-  ) {
-    firstGenJobRef.current = null; // clear so it only fires once
-    setTimeout(() => setFirstGenModal(updatedJob.result_url), 800);
-  }
-});
-      // 🔥 decrement UI counter
- if (freeRemaining !== null && freeRemaining > 0) {
-  const newRemaining = freeRemaining - 1;
+    if (succeededCount === 0 && lastJob === null) {
+      setErrorToast(firstRejectionMsg || "This prompt was rejected by the image provider.");
+    } else if (rejectedCount > 0) {
+      setToast({
+        message: `${succeededCount} of ${totalItems} generated — ${rejectedCount} rejected by the provider.`,
+        type: "error",
+      });
+    }
 
-  // If this is their very first generation (was at 5), flag the job for the upsell modal
-  if (freeRemaining === 5 && planCode === "free") {
-    firstGenJobRef.current = job.id;
-  }
+    // Batch mode clears the queue (and whatever was still typed) once the
+    // run is done — non-batch generation keeps the prompt as-is, matching
+    // the existing single-shot behavior so it can be tweaked and re-run.
+    if (batchMode) {
+      setPrompt("");
+      setQueuedPrompts([]);
+    }
 
-  setFreeRemaining(newRemaining);
-  if (newRemaining >= 0) {
-    setProgressToast(newRemaining);
-  }
-}
-
-  
   } catch (err) {
-  console.error("Generate failed:", err);
+    console.error("Generate failed:", err);
 
-  const msg = String(err?.message || err);
+    const msg = String(err?.message || err);
 
-  // Provider moderation / provider failure
- if (
-  msg.toLowerCase().includes("invalid content") ||
-  msg.toLowerCase().includes("moderation") ||
-  msg.toLowerCase().includes("provider")
-) {
-    setErrorToast(
-      "This prompt was rejected by the image provider's safety filters. Try rewording your prompt or switching models."
-    );
-  } else {
-    setToast({
-      message: "Generation failed. Please try again.",
-      type: "error",
-    });
-  }
-} finally {
+    // Provider moderation / provider failure
+    if (
+      msg.toLowerCase().includes("invalid content") ||
+      msg.toLowerCase().includes("moderation") ||
+      msg.toLowerCase().includes("provider")
+    ) {
+      setErrorToast(
+        "This prompt was rejected by the image provider's safety filters. Try rewording your prompt or switching models."
+      );
+    } else {
+      setToast({
+        message: "Generation failed. Please try again.",
+        type: "error",
+      });
+    }
+  } finally {
     setIsGenerating(false);
   }
 };
@@ -786,8 +845,13 @@ useEffect(() => {
   };
 }, [settingsOpen]);
 
+ // h-full (not h-[100dvh]) on the root section below — it sits inside an
+ // already-sized scroll column (mobile tab panel or desktop side-by-side
+ // column), not at the raw viewport root. Forcing 100dvh made it taller
+ // than that column's actual visible height, which was throwing off where
+ // the fixed/sticky Generate bar ended up landing.
  return (
-<section className="w-full md:h-[100dvh] h-auto flex flex-col bg-[#090A0A]">
+<section className="w-full h-full flex flex-col bg-[#090A0A]">
 
 <div
   onClick={(e) => {
@@ -835,7 +899,7 @@ useEffect(() => {
     <div
   className="
 w-full h-full flex flex-col
- pb-[110px] md:pb-6
+ pb-[180px] lg:pb-[100px] xl:pb-6
   rounded-[22px]
  bg-[#111314]
 border border-white/[0.08]
@@ -853,8 +917,8 @@ shadow-[0_10px_40px_rgba(0,0,0,0.32)]
 <div className="w-full">
   <div
     className="
-      relative flex w-full p-1
-      rounded-xl
+      relative flex w-full p-0.5 lg:p-1
+      rounded-lg lg:rounded-xl
       bg-[#151719]
       border border-white/[0.08]
       overflow-hidden
@@ -863,72 +927,51 @@ shadow-[0_10px_40px_rgba(0,0,0,0.32)]
     {/* 🔥 SLIDING ACTIVE BACKGROUND */}
     <div
       className={`
-        absolute top-1 bottom-1 w-1/2 rounded-lg
+        absolute top-0.5 bottom-0.5 lg:top-1 lg:bottom-1 w-1/2 rounded-md lg:rounded-lg
         transition-all duration-300
         ${
           location.pathname === "/workspace/image-generator"
-            ? "left-1"
-            : "left-[calc(50%-2px)]"
+            ? "left-0.5 lg:left-1"
+            : "left-[calc(50%-1px)] lg:left-[calc(50%-2px)]"
         }
-        bg-[#2D1B50]
-        border border-[#9B6DFF]/55
+        bg-[#16210A]
+        border border-[#A3E635]/55
         overflow-hidden
       `}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.45),transparent_72%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(132,204,22,0.45),transparent_72%)]" />
     </div>
 
     {[
       {
         label: "Viral Image",
         path: "/workspace/image-generator",
-        icon: "/icons/image.png",
+        Icon: ImageIcon,
       },
       {
         label: "Viral Video",
         path: "/workspace/video-generator",
-        icon: "/icons/video.png",
+        Icon: VideoIcon,
       },
     ].map((item) => {
-      const isActive = location.pathname === item.path;
-
       return (
         <button
           key={item.label}
           onClick={() => navigate(item.path)}
         className="
-  relative flex-1 py-1
-  flex flex-col items-center justify-center gap-[1px] mb-1
+  relative flex-1 py-1.5 lg:py-1
+  flex flex-row lg:flex-col items-center justify-center gap-1.5 lg:gap-[1px] mb-0 lg:mb-1
   z-10
 "
         >
-          {/* ✅ IMAGE ICON (FIXED) */}
-          <img
-            src={item.icon}
-            alt={item.label}
-className={`
-  object-contain transition-all duration-200
-
-  ${
-    isActive
-      ? "w-8 h-8 opacity-100 scale-110 drop-shadow-[0_0_14px_rgba(168,85,247,0.9)]"
-      : "w-7 h-7 opacity-50 hover:opacity-80 hover:scale-105"
-  }
-`}
+          {/* ICON — same size active or not, straight white */}
+          <item.Icon
+            aria-hidden="true"
+            className="w-3 h-3 lg:w-[18px] lg:h-[18px] text-white transition-transform duration-200"
           />
 
-          {/* TEXT */}
-          <span
-            className={`
-              text-xs font-medium
-              transition-all duration-200
-              ${
-                isActive
-                  ? "text-white"
-                  : "text-white/50"
-              }
-            `}
-          >
+          {/* TEXT — straight white regardless of active state */}
+          <span className="text-[11px] lg:text-xs font-medium text-white">
             {item.label}
           </span>
         </button>
@@ -946,12 +989,12 @@ className={`
 <div className="mt-3 flex items-center justify-center gap-3 text-sm font-medium">
 
 {freeRemaining > 0 ? (
-  <span className={freeRemaining <= 1 ? "text-[#B69CFF]" : freeRemaining <= 3 ? "text-[#9B6DFF]" : "text-white/40"}>
+  <span className={freeRemaining <= 1 ? "text-[#D9F99D]" : freeRemaining <= 3 ? "text-[#A3E635]" : "text-white/40"}>
     {freeRemaining} / 5 free this month
   </span>
 ) : (
   <>
-    <span className="text-[#B69CFF]">
+    <span className="text-[#D9F99D]">
       Monthly limit reached
     </span>
 
@@ -962,11 +1005,11 @@ className={`
       rounded-md
       text-xs
       font-semibold
-      text-purple-200
-      bg-purple-500/10
-      border border-purple-400/20
-      hover:bg-purple-500/15
-      hover:border-purple-400/30
+      text-lime-200
+      bg-lime-500/10
+      border border-lime-400/20
+      hover:bg-lime-500/15
+      hover:border-lime-400/30
       transition-all duration-200
       "
     >
@@ -991,6 +1034,63 @@ className={`
   />
 </div>
 
+{/* 🔥 GENERATE MULTIPLE — queue different prompts, fire them all at once.
+     Collapsed state is a thin one-line row; the queue only appears once
+     the user actually turns it on. */}
+<div className="w-full rounded-lg border border-white/[0.07] bg-[#0e1012] overflow-hidden">
+  <button
+    type="button"
+    onClick={() => setBatchMode((v) => !v)}
+    className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left"
+  >
+    <div className="flex items-center gap-2">
+      <Layers className={`h-3.5 w-3.5 shrink-0 ${batchMode ? "text-[#A3E635]" : "text-white/40"}`} />
+      <span className="text-[12px] font-medium text-white/70">Generate multiple</span>
+    </div>
+    <div
+      className="relative shrink-0 rounded-full"
+      style={{ width: 30, height: 16, background: batchMode ? "#A3E635" : "rgba(255,255,255,0.10)", transition: "background 120ms" }}
+    >
+      <div
+        className="absolute top-[2.5px] h-[11px] w-[11px] rounded-full bg-white shadow"
+        style={{ left: batchMode ? 15.5 : 2.5, transition: "left 120ms" }}
+      />
+    </div>
+  </button>
+
+  {batchMode && (
+    <div className="border-t border-white/[0.06] p-3 space-y-2.5">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Prompt queue</span>
+        <span className="text-[11px] font-bold text-[#A3E635]">{queuedPrompts.length}/{MAX_QUEUED_PROMPTS} ready</span>
+      </div>
+
+      {queuedPrompts.length > 0 && (
+        <div className="flex min-w-0 max-h-[180px] flex-col gap-1.5 overflow-y-auto pr-0.5">
+          {queuedPrompts.map((p, i) => (
+            <div key={i} className="flex min-w-0 items-center gap-2 rounded-lg bg-white/[0.04] px-3 py-2">
+              <span className="shrink-0 text-[10px] font-bold text-white/30">{i + 1}</span>
+              <span className="min-w-0 flex-1 truncate text-[12px] text-white/70">{p}</span>
+              <button onClick={() => removeQueuedPrompt(i)} className="shrink-0 text-white/30 hover:text-white/70">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={readyQueuedPrompt}
+        disabled={!prompt.trim() || queuedPrompts.length >= MAX_QUEUED_PROMPTS}
+        className="w-full rounded-lg border border-[#A3E635]/30 bg-[#A3E635]/10 py-2.5 text-[13px] font-semibold text-[#A3E635] transition disabled:cursor-not-allowed disabled:opacity-30"
+      >
+        {queuedPrompts.length >= MAX_QUEUED_PROMPTS ? "Queue full" : "+ Ready — add this prompt, start the next"}
+      </button>
+    </div>
+  )}
+</div>
+
           {/* PROMPT */}
 <PromptInput prompt={prompt} setPrompt={setPrompt} />
 
@@ -1011,7 +1111,7 @@ className={`
 
     ${
       canAddImages
-        ? "border-[#9B6DFF]/55 bg-[#2A1845] hover:border-[#C4A0FF]/80 hover:bg-[#341F55]"
+        ? "border-[#A3E635]/55 bg-[#16210A] hover:border-[#D9F99D]/80 hover:bg-[#1C2B0D]"
         : "opacity-40 cursor-not-allowed"
     }
   `}
@@ -1044,7 +1144,7 @@ className={`
     </p>
   </div>
 
-  <span className="shrink-0 rounded-lg border border-[#C4A0FF]/45 bg-[#7A3BFF]/35 px-3 py-1.5 text-[11px] font-bold text-[#EAE0FF] transition-colors group-hover:bg-[#7A3BFF]/50">
+  <span className="shrink-0 rounded-lg border border-[#D9F99D]/45 bg-[#BEF264]/35 px-3 py-1.5 text-[11px] font-bold text-[#ECFCCB] transition-colors group-hover:bg-[#BEF264]/50">
     {selected.length > 0 ? "Edit" : "Add"}
   </span>
 
@@ -1082,20 +1182,6 @@ md:group-hover:brightness-110
   </div>
 )}
 
-
-<div className="w-full">
-  <StyleSelector
-    selectedStyle={selectedStyle}
-    styles={IMAGE_STYLES}
-    openStyle={openStyle}
-    setOpenStyle={() => {
-      setOpenStyle(prev => !prev)
-      setOpenModel(false)
-      setOpenSize(false)
-    }}
-  />
-</div>
-
             {/* SETTINGS ROW */}
                 <div
        ref={controlsRef}
@@ -1127,6 +1213,19 @@ md:group-hover:brightness-110
 />
 </OutputSelector>
 
+  {/* STYLE — now second, with the on/off toggle */}
+  <StyleSelector
+    selectedStyle={selectedStyle}
+    styles={IMAGE_STYLES}
+    openStyle={openStyle}
+    setOpenStyle={() => {
+      setOpenStyle(prev => !prev)
+      setOpenModel(false)
+      setOpenSize(false)
+    }}
+    enabled={styleEnabled}
+    onToggleEnabled={() => setStyleEnabled((v) => !v)}
+  />
 
               {/* EXISTING DROPDOWNS BELOW (unchanged logic) */}
 
@@ -1278,7 +1377,7 @@ md:group-hover:brightness-110
 
                   ${
                     isActive
-                      ? "bg-white/10 border border-[#7A3BFF]"
+                      ? "bg-white/10 border border-[#BEF264]"
                       : isLocked
                         ? "bg-white/[0.02] border border-white/[0.05]"
                         : "hover:bg-white/[0.04] border border-transparent"
@@ -1292,8 +1391,8 @@ md:group-hover:brightness-110
                     <div className="
                       px-4 py-1.5 rounded-md
                       text-[11px] font-semibold
-                      bg-gradient-to-r from-[#7A3BFF] to-[#9D4EDD]
-                      text-white
+                      bg-gradient-to-r from-[#BEF264] to-[#A3E635]
+                      text-[#11150D]
                       md:shadow-lg
                       hover:brightness-110
                       hover:scale-[1.05]
@@ -1323,7 +1422,7 @@ md:group-hover:brightness-110
                         </span>
 
                         {key === "image:nano.2" && (
-                          <span className="text-[10px] px-2 py-[2px] rounded-md bg-purple-500/20 text-purple-300">
+                          <span className="text-[10px] px-2 py-[2px] rounded-md bg-lime-500/20 text-lime-300">
                             Best
                           </span>
                         )}
@@ -1403,22 +1502,54 @@ md:group-hover:brightness-110
 
 
 
-{/* GENERATE SECTION (FIXED ABOVE NAV) */}
+{/* GENERATE SECTION — fixed above the mobile nav below lg (matching where
+     MobileBottomNav itself hides); still fixed but flush to the screen edge
+     from lg to xl (nav is gone but the page is still in its tab-switched
+     mobile layout there, per Image.jsx's own 1280px isDesktop check); sticky
+     within the Generate column from xl up, so it's always visible with no
+     scrolling needed on any size. */}
 <div
-  className="fixed left-0 right-0 z-[90] md:static pointer-events-none"
-  style={{
-    bottom: "calc(70px + env(safe-area-inset-bottom))"
-  }}
+  className="fixed inset-x-0 bottom-[calc(70px_+_env(safe-area-inset-bottom))] z-[90] pointer-events-none lg:bottom-[env(safe-area-inset-bottom)] xl:sticky xl:inset-x-auto xl:bottom-0"
 >
   <div className="pointer-events-auto">
-    <div className="w-full bg-[#101213]/95 border-t border-white/[0.08] md:px-0 px-4 pt-3 pb-3 backdrop-blur-xl">
-     <div className="w-full md:max-w-none md:mx-0 max-w-[900px] mx-auto">
-        <GenerateButton
-          onClick={handleGenerate}
-          disabled={!prompt.trim()}
-          isGenerating={isGenerating}
-          estimatedCredits={estimatedCredits}
-        />
+    <div className="w-full bg-[#101213]/95 border-t border-white/[0.08] xl:px-0 px-4 pt-3 pb-3 backdrop-blur-xl">
+     <div className="w-full md:max-w-none md:mx-0 max-w-[900px] mx-auto flex items-stretch gap-2">
+        <div className="flex-1 min-w-0">
+          <GenerateButton
+            onClick={handleGenerate}
+            disabled={!prompt.trim() && !(batchMode && queuedPrompts.length > 0)}
+            isGenerating={isGenerating}
+            estimatedCredits={totalEstimatedCredits}
+            priceStatus={priceStatus}
+            onRetryPrice={priceQuotes.retry}
+          />
+        </div>
+
+        {/* 🔥 VARIATIONS — 1 to 3 copies of each prompt, minus / count / plus in a row */}
+        <div className="flex shrink-0 items-center gap-0.5 rounded-full border border-white/[0.08] bg-[#0e1012] p-1">
+          <button
+            type="button"
+            onClick={() => setVariationCount((c) => Math.max(1, c - 1))}
+            disabled={variationCount <= 1}
+            aria-label="Decrease image count"
+            className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-[#A3E635] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+          >
+            <Minus className="h-3.5 w-3.5" />
+          </button>
+          <div className="flex items-baseline gap-[2px] whitespace-nowrap px-1 text-[14px]">
+            <span className="font-bold text-white">{variationCount}</span>
+            <span className="font-normal text-white/35">/ {MAX_VARIATIONS}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setVariationCount((c) => Math.min(MAX_VARIATIONS, c + 1))}
+            disabled={variationCount >= MAX_VARIATIONS}
+            aria-label="Increase image count"
+            className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-[#A3E635] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1532,8 +1663,8 @@ function ImageToPromptButton({ onPrompt }) {
         className="p-[1.5px] rounded-2xl img2prompt-border-anim"
         style={{
           background: loading
-            ? "linear-gradient(135deg,#7A3BFF,#C084FC)"
-            : "linear-gradient(135deg,#7A3BFF 0%,#9B6DFF 48%,#B69CFF 72%,#7A3BFF 100%)",
+            ? "linear-gradient(135deg,#BEF264,#D9F99D)"
+            : "linear-gradient(135deg,#BEF264 0%,#A3E635 48%,#D9F99D 72%,#BEF264 100%)",
         }}
       >
         <button
@@ -1544,10 +1675,10 @@ function ImageToPromptButton({ onPrompt }) {
         >
           <div className="flex items-center gap-3 px-4 py-3.5">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${!loading ? "img2prompt-icon" : ""}`}
-              style={{ background: "rgba(122,59,255,0.2)", border: "1px solid rgba(122,59,255,0.3)", boxShadow: "0 0 14px rgba(122,59,255,0.18)" }}>
+              style={{ background: "rgba(190,242,100,0.2)", border: "1px solid rgba(190,242,100,0.3)", boxShadow: "0 0 14px rgba(190,242,100,0.18)" }}>
               {loading
-                ? <div className="w-4 h-4 rounded-full border-2 border-[#7A3BFF]/30 border-t-[#C084FC] animate-spin" />
-                : <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="13" height="10" rx="2" stroke="#C084FC" strokeWidth="1.5"/><path d="M16 10.5l4-2.5v8l-4-2.5" stroke="#C084FC" strokeWidth="1.5" strokeLinejoin="round"/><path d="M20 4l1.5 1.5M22.5 2l-1.5 1.5" stroke="#B69CFF" strokeWidth="1.2" strokeLinecap="round" opacity="0.8"/></svg>
+                ? <div className="w-4 h-4 rounded-full border-2 border-[#BEF264]/30 border-t-[#D9F99D] animate-spin" />
+                : <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="13" height="10" rx="2" stroke="#D9F99D" strokeWidth="1.5"/><path d="M16 10.5l4-2.5v8l-4-2.5" stroke="#D9F99D" strokeWidth="1.5" strokeLinejoin="round"/><path d="M20 4l1.5 1.5M22.5 2l-1.5 1.5" stroke="#D9F99D" strokeWidth="1.2" strokeLinecap="round" opacity="0.8"/></svg>
               }
             </div>
             <div className="flex-1 min-w-0">
@@ -1556,8 +1687,8 @@ function ImageToPromptButton({ onPrompt }) {
             </div>
             {!loading && (
               <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"
-                style={{ background: "linear-gradient(135deg,#7A3BFF,#C084FC)", boxShadow: "0 0 10px rgba(122,59,255,0.45)" }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                style={{ background: "linear-gradient(135deg,#BEF264,#D9F99D)", boxShadow: "0 0 10px rgba(190,242,100,0.45)" }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#11150D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </div>
             )}
           </div>

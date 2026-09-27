@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Clapperboard } from "lucide-react";
-import { resetIdeaDraft } from "./state";
 import { fetchUserLongFormProjects } from "./project";
 import { ProjectCard } from "./shared";
 import { useAuth } from "../../../context/AuthContext";
@@ -11,18 +10,29 @@ export default function LongForm() {
   const { user } = useAuth();
   const [projects, setProjects] = useState(null); // null = loading, [] = loaded-empty
 
+  // 2026-10-02 "Production Setup redesign" pass, Section 16 — CREATE NEW
+  // VIDEO now opens the new single-column Production Setup experience
+  // (ProductionSetup.jsx), never the old Idea/"Create Story Plan" page.
+  // resetIdeaDraft() is no longer called here: that clears the OLD page's
+  // sessionStorage draft, which ProductionSetup.jsx doesn't use at all — the
+  // old page (still reachable directly at /long-form/new for whatever else
+  // may link to it) manages its own draft lifecycle independently.
   const startNewVideo = () => {
-    resetIdeaDraft();
-    navigate("/long-form/new");
+    navigate("/long-form/create");
   };
 
   useEffect(() => {
     document.title = "Long Form | Zyvo";
   }, []);
 
-  useEffect(() => {
+  const reloadProjects = () => {
     if (!user?.id) return;
     fetchUserLongFormProjects(user.id).then(setProjects);
+  };
+
+  useEffect(() => {
+    reloadProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   return (
@@ -43,7 +53,7 @@ export default function LongForm() {
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0 flex-1">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-lime-300/25 bg-lime-300/[0.08] px-3 py-1 text-[11px] font-semibold text-lime-300">
-              2D Explainer
+              AI Long Form
             </span>
 
             <h2 className="mt-4 max-w-[520px] text-[20px] font-bold leading-snug text-white lg:text-[22px]">
@@ -51,7 +61,7 @@ export default function LongForm() {
             </h2>
 
             <p className="mt-2 max-w-[560px] text-[13.5px] leading-relaxed text-white/45">
-              Zyvo will help turn a topic into a structured story, narration, visuals, and a finished long-form video.
+              Pick a niche, add an idea, and get a finished long-form video with script, narration and visuals.
             </p>
 
             <button
@@ -83,7 +93,7 @@ export default function LongForm() {
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+              <ProjectCard key={project.id} project={project} onChanged={reloadProjects} />
             ))}
           </div>
         )}
