@@ -85,6 +85,10 @@ export default function AIFruitStoryBuilder({
   // to the top of step 2 — reset it explicitly whenever the step changes.
   useEffect(() => {
     bodyScrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    // Below lg the body is not its own scroller — the page (#workspace-scroll) is.
+    if (!window.matchMedia("(min-width: 1024px)").matches) {
+      document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
+    }
   }, [stepIndex]);
 
   const currentStep  = STEPS[stepIndex] || STEPS[0];
@@ -274,13 +278,15 @@ export default function AIFruitStoryBuilder({
         </div>
       </div>
 
-      {/* ── Body — the ONLY part of this panel that scrolls ──
-          overscroll-contain stops wheel/touch scroll from "chaining" into
-          the outer #workspace-scroll page container once this hits its own
-          top/bottom edge — that chaining was the cause of the double-scroll
-          glitch (scroll down, stop, scroll again and it creeps a bit further,
-          then scrolling up needs an extra nudge to actually move). ── */}
-      <div ref={bodyScrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5">
+      {/* ── Body ──
+          Desktop (lg+): the ONLY part of this panel that scrolls, and
+          overscroll-contain stops wheel scroll from "chaining" into
+          #workspace-scroll at its edges (the old double-scroll glitch).
+          Mobile: plain page content — #workspace-scroll is the only scroller.
+          A scroll container with overscroll-contain here swallowed every
+          touch swipe on mobile, so the page could not scroll at all.
+          pb-[150px] keeps the last card clear of the fixed footer + nav. ── */}
+      <div ref={bodyScrollRef} className="px-4 pb-[150px] pt-4 sm:px-5 sm:pt-5 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pb-5">
         <div className="mb-5">
           <h2 className="text-lg font-black text-white">{stepTitle}</h2>
           <p className="mt-1 text-sm text-white/45">{stepDescription}</p>

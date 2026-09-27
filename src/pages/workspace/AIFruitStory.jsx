@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { Suspense, lazy, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import ToolGenerationLayout from "../viral/shared/ToolGenerationLayout";
 import AIFruitStoryBuilder from "../../components/viral-tools/ai-fruit-story/AIFruitStoryBuilder";
 import AIFruitStoryResults from "../../components/viral-tools/ai-fruit-story/AIFruitStoryResults";
@@ -8,6 +8,11 @@ import useFruitStoryJob from "../../components/viral-tools/ai-fruit-story/hooks/
 import { sceneCountToLength, DEFAULT_FRUIT_VIDEO_MODEL } from "../../components/viral-tools/ai-fruit-story/api/fruitStoryApi";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
+import { useFeatureFlag } from "../../lib/featureFlags";
+
+// AI Fruit Story v2 is loaded only for users who get it, so everyone else
+// never downloads its code.
+const FruitStoryV2Page = lazy(() => import("../../components/viral-tools/ai-fruit-story-v2/FruitStoryV2Page"));
 
 const FRUIT_PLAN_CACHE_KEY = "zyvo_fruit_plan";
 function getCachedPlan(userId) {
@@ -17,7 +22,45 @@ function setCachedPlan(userId, code) {
   try { localStorage.setItem(FRUIT_PLAN_CACHE_KEY, JSON.stringify({ id: userId, code })); } catch {}
 }
 
+/**
+ * /workspace/ai-fruit-story — shows v2 when VITE_FRUIT_V2=true and the
+ * signed-in user's server-side fruit_v2 flag is on (src/lib/featureFlags.js);
+ * everyone else gets the current tool (AIFruitStoryV1 below).
+ *
+ * Dev builds only: ?fruitV2Preview=1[&plan=pro][&credits=40][&fail=scene3]
+ * opens v2 with mock data and no sign-in, for screenshots and QA.
+ */
 export default function AIFruitStory() {
+  const { user, loading: authLoading } = useAuth();
+  const { search } = useLocation();
+  const flag = useFeatureFlag("fruit_v2", user?.id);
+  const preview = import.meta.env.DEV ? readDevPreview(search) : null;
+
+  if (preview || flag.enabled) {
+    return (
+      <Suspense fallback={<div className="min-h-full w-full bg-[#0B0D0F]" />}>
+        <FruitStoryV2Page preview={preview} />
+      </Suspense>
+    );
+  }
+  // Global switch on and the user's flag still loading: hold a blank page
+  // instead of starting v1 (its paywall and effects) and then swapping.
+  if (authLoading || flag.loading) return <div className="min-h-full w-full bg-[#0B0D0F]" />;
+  return <AIFruitStoryV1 />;
+}
+
+function readDevPreview(search) {
+  const params = new URLSearchParams(search);
+  if (!params.has("fruitV2Preview")) return null;
+  const credits = Number(params.get("credits"));
+  return {
+    plan: params.get("plan") || "starter",
+    credits: Number.isFinite(credits) && params.get("credits") !== null ? credits : 750,
+    fail: params.get("fail") || "",
+  };
+}
+
+function AIFruitStoryV1() {
   const navigate = useNavigate();
   const [stepIndex,       setStepIndex]       = useState(0);
   const [mobilePanel,     setMobilePanel]     = useState("builder");

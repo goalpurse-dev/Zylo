@@ -280,7 +280,7 @@ export default function FaceAsmr() {
 
   return (
     <>
-      <div className="flex w-full h-full overflow-hidden p-3 gap-3 bg-[#0B0D0F]">
+      <div className="flex w-full min-h-full p-3 gap-3 bg-[#0B0D0F] lg:h-full lg:min-h-0 lg:overflow-hidden">
 
         {/* ── LEFT: builder (desktop) ── */}
         <div className="hidden lg:flex flex-col w-[460px] xl:w-[500px] shrink-0 h-full">
@@ -292,31 +292,26 @@ export default function FaceAsmr() {
           {resultsPanel}
         </div>
 
-        {/* ── MOBILE ── */}
-        <div
-          className="flex lg:hidden flex-col w-full"
-          style={{ height: "calc(100% - 84px - env(safe-area-inset-bottom, 0px))" }}
-        >
-          <div className="shrink-0 mb-3 border-b border-white/10 bg-[#0B0D0F] pb-3">
+        {/* ── MOBILE ── #workspace-scroll is the only scroller; the tab bar sticks to its top. */}
+        <div className="flex lg:hidden flex-col w-full">
+          <div className="sticky top-0 z-30 -mx-3 -mt-3 mb-3 shrink-0 border-b border-white/10 bg-[#0B0D0F]/95 px-3 py-3 backdrop-blur-xl">
             <div className="grid grid-cols-2 rounded-full border border-white/10 bg-white/[0.04] p-1">
               <button
-                onClick={() => setMobilePanel("builder")}
+                onClick={() => { setMobilePanel("builder"); document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" }); }}
                 className={`rounded-full px-3 py-2 text-[13px] font-semibold transition ${mobilePanel === "builder" ? "bg-white text-black" : "text-white/60"}`}
               >
                 Setup
               </button>
               <button
-                onClick={() => setMobilePanel("results")}
+                onClick={() => { setMobilePanel("results"); document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" }); }}
                 className={`rounded-full px-3 py-2 text-[13px] font-semibold transition ${mobilePanel === "results" ? "bg-white text-black" : "text-white/60"}`}
               >
                 Results
               </button>
             </div>
           </div>
-          <div className="flex-1 min-h-0">
-            {mobilePanel === "builder" ? builderPanel : (
-              <div className="h-full overflow-y-auto">{resultsPanel}</div>
-            )}
+          <div>
+            {mobilePanel === "builder" ? builderPanel : resultsPanel}
           </div>
         </div>
       </div>
