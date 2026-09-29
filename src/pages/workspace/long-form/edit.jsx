@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Check, Loader2, Pause, Play, Redo2, Scissors, Undo2 } from "lucide-react";
-import { LongFormActionFooter, LongFormCreationHeader } from "./shared";
+import { CreditsError, LongFormActionFooter, LongFormCreationHeader } from "./shared";
 import { cachedStickmanProject } from "./StickmanRouteGuard";
 import { fetchLongFormProject } from "./project";
 import { useOverlayFont } from "./sceneVisuals";
@@ -298,7 +298,7 @@ export default function LongFormEdit() {
 
   const media = (
     <>
-      {notice && <div className="fixed left-1/2 z-[90] max-w-[92vw] -translate-x-1/2 rounded-full bg-black/85 px-4 py-2 text-center text-[12.5px] text-white shadow-lg" style={{ bottom: mobile ? "calc(160px + env(safe-area-inset-bottom))" : "6rem" }} data-testid="edit-notice">{notice}</div>}
+      {notice && <div className="fixed left-1/2 z-[90] max-w-[92vw] -translate-x-1/2 rounded-full bg-black/85 px-4 py-2 text-center text-[12.5px] text-white shadow-lg" style={{ bottom: mobile ? "calc(160px + env(safe-area-inset-bottom))" : "6rem" }} data-testid="edit-notice">{/^Not enough credits/i.test(notice) ? <CreditsError message={notice} className="text-white" /> : notice}</div>}
       <audio ref={audioRef} src={doc.audio.url} preload="auto" className="hidden" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} onTimeUpdate={(e) => { if (!playing) setT(e.currentTarget.currentTime); }} />
       {doc.music?.url && <audio ref={musicRef} src={doc.music.url} preload="auto" loop className="hidden" />}
     </>

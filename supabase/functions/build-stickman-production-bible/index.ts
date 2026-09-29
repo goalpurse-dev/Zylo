@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
     compileResult = await compileBible();
   } catch (e: any) {
     console.error("[build-stickman-production-bible] draft call failed:", projectId, e?.message);
-    if (e?.outputTokens) await recordCost(admin, { projectId, stage: "bible", provider: "openai", model: "gpt-5-mini", units: { calls: 1, inputTokens: e.inputTokens ?? 0, outputTokens: e.outputTokens }, usd: ((e.inputTokens ?? 0) * 0.25 + e.outputTokens * 2) / 1_000_000, sourceTable: "long_form_production_bibles" });
+    if (e?.outputTokens) await recordCost(admin, { projectId, stage: "bible", provider: "openai", model: "gpt-5-mini", units: { calls: 1, inputTokens: e.inputTokens ?? 0, outputTokens: e.outputTokens }, usd: ((e.inputTokens ?? 0) * 0.25 + e.outputTokens * 2) / 1_000_000, estimated: false, sourceTable: "long_form_production_bibles" });
     const code = String(e?.message ?? "").split(":")[0] || "PRODUCTION_BIBLE_CALL_FAILED";
     await logEvent("build-stickman-production-bible", "warn", "bible_build_failed", { ...buildCtx, reason: code });
     return err(req, "The Production Bible could not be generated right now — please try again.", 502, { code, detail: String(e?.message ?? e).slice(0, 300) });
@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
   }); }
 
   // Cost ledger: the calls were paid whether or not the bible validated.
-  await recordCost(admin, { projectId, stage: "bible", provider: "openai", model: "gpt-5-mini", units: { calls: compileResult.stats.llmCalls, inputTokens: compileResult.stats.inputTokens, outputTokens: compileResult.stats.outputTokens }, usd: compileResult.stats.estimatedModelCostUsd, sourceTable: "long_form_production_bibles" });
+  await recordCost(admin, { projectId, stage: "bible", provider: "openai", model: "gpt-5-mini", units: { calls: compileResult.stats.llmCalls, inputTokens: compileResult.stats.inputTokens, outputTokens: compileResult.stats.outputTokens }, usd: compileResult.stats.estimatedModelCostUsd, estimated: false, sourceTable: "long_form_production_bibles" });
 
   if (!compileResult.ok) {
     await logEvent("build-stickman-production-bible", "warn", "bible_build_failed", { ...buildCtx, reason: "validation" });

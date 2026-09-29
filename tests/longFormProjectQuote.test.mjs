@@ -23,24 +23,18 @@ test("applies the bounded retry uplift only to fresh renders, never to reused/pr
   assert.equal(quote.totalRenderCount, quote.estimatedFreshRenders + quote.estimatedRetryRenders);
 });
 
-test("prices visuals using the REAL confirmed per-tier credit costs (v2=2, v3=3, v4=4)", () => {
-  const shared = { targetDurationMinutes: 10, beatsPerMinute: 15 };
-  const v2 = estimateLongFormProjectQuote({ ...shared, renderTier: "v2" });
-  const v3 = estimateLongFormProjectQuote({ ...shared, renderTier: "v3" });
-  const v4 = estimateLongFormProjectQuote({ ...shared, renderTier: "v4" });
-  assert.equal(v2.totalCredits, v2.totalRenderCount * 2);
-  assert.equal(v3.totalCredits, v3.totalRenderCount * 3);
-  assert.equal(v4.totalCredits, v4.totalRenderCount * 4);
-  assert.ok(v4.totalCredits > v3.totalCredits && v3.totalCredits > v2.totalCredits, "a higher tier must always quote a higher total for the same duration");
+test("Phase 7: the video is a FIXED price per minute (V2 25, V3 75, V4 90 credits/min)", () => {
+  const q = (renderTier, targetDurationMinutes) => estimateLongFormProjectQuote({ renderTier, targetDurationMinutes, beatsPerMinute: 15 }).totalCredits;
+  assert.deepEqual([q("v2", 10), q("v3", 10), q("v4", 10)], [250, 750, 900]);
+  assert.deepEqual([q("v3", 8), q("v3", 12), q("v3", 15)], [600, 900, 1125]);
+  assert.equal(q("v2", 8.5), 213, "a partial minute rounds up, never down");
+  assert.ok(q("v4", 10) > q("v3", 10) && q("v3", 10) > q("v2", 10), "a higher tier must always quote a higher total for the same duration");
 });
 
-test("the breakdown explicitly itemizes every stage, even ones currently absorbed at 0 credits — never a silently omitted stage", () => {
+test("the breakdown says everything the fixed price includes, and the total is its sum", () => {
   const quote = estimateLongFormProjectQuote({ targetDurationMinutes: 10, renderTier: "v3", beatsPerMinute: 15 });
-  const labels = quote.breakdown.map((l) => l.label);
-  assert.ok(labels.some((l) => l.includes("Research")));
-  assert.ok(labels.some((l) => l.includes("Narration")));
-  assert.ok(labels.some((l) => l.includes("visuals")));
-  assert.ok(labels.some((l) => l.includes("QA")));
+  const note = quote.breakdown.map((l) => `${l.label} ${l.note}`).join(" ");
+  for (const part of ["research", "script", "scenes", "QA", "voiceover", "1080p render", "thumbnails", "YouTube text"]) assert.ok(note.includes(part), part);
   assert.equal(quote.totalCredits, quote.breakdown.reduce((s, l) => s + l.credits, 0), "totalCredits must always equal the sum of its own itemized breakdown");
 });
 
@@ -54,4 +48,13 @@ test("longer target duration always quotes a higher total, all else equal", () =
 test("rejects an invalid target duration or pacing density rather than silently producing a zero/negative quote", () => {
   assert.throws(() => estimateLongFormProjectQuote({ targetDurationMinutes: 0, renderTier: "v3", beatsPerMinute: 15 }), /INVALID_TARGET_DURATION/);
   assert.throws(() => estimateLongFormProjectQuote({ targetDurationMinutes: 10, renderTier: "v3", beatsPerMinute: 0 }), /INVALID_PACING_DENSITY/);
+});
+
+test("the tier cards show the same per-minute price the server charges", async () => {
+  const { readFileSync } = await import("node:fs");
+  const page = readFileSync(new URL("../src/pages/workspace/long-form/ProductionSetup.jsx", import.meta.url), "utf8");
+  for (const [tier, perMin] of [["v2", 25], ["v3", 75], ["v4", 90]]) {
+    assert.match(page, new RegExp(`value: "${tier}".*perMin: ${perMin}[ ,]`));
+    assert.equal(estimateLongFormProjectQuote({ renderTier: tier, targetDurationMinutes: 1, beatsPerMinute: 15 }).totalCredits, perMin);
+  }
 });

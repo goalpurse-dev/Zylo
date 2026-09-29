@@ -22,8 +22,9 @@ import { codeCheckImage, imageDHash } from "../_shared/stickman/imageChecks.ts";
 import { overlayText, scaleLayer, type OverlayLayer } from "../_shared/stickman/textOverlay.ts";
 import { placeTextLayer } from "../_shared/stickman/textPlacement.ts";
 import { DEFAULT_POSTPROCESS } from "../_shared/stickman/sceneImagePost.ts";
-import { SCENE_LEASE_S, sceneCredits } from "../_shared/stickman/scenes.ts";
-import { commitReservationSpend } from "../_shared/longFormReservations.ts";
+import { SCENE_LEASE_S } from "../_shared/stickman/scenes.ts";
+import { refundAddon } from "../_shared/stickman/addons.ts";
+import { logEvent } from "../_shared/systemLog.ts";
 import { recordCost } from "../_shared/costLedger.ts";
 import { nudgeAutopilot } from "../_shared/stickman/autopilotNudge.ts";
 
@@ -81,6 +82,16 @@ async function qaCopyUrl(bytes: Uint8Array, name: string): Promise<string | null
   return url;
 }
 
+// A paid redraw (add-on) that fails is refunded exactly once.
+async function refundSceneAddon(scene: any) {
+  const credits = Number(scene.addon_credits ?? 0);
+  if (!credits) return;
+  const { data: p } = await admin.from("long_form_projects").select("user_id").eq("id", scene.project_id).maybeSingle();
+  if (!p) return;
+  await admin.from("long_form_scene_images").update({ addon_credits: 0 }).eq("id", scene.id);
+  await refundAddon(admin, p.user_id, credits, "scene_failed", logEvent, { projectId: scene.project_id, sceneId: scene.id });
+}
+
 async function drawScene(scene: any) {
   const projectId = scene.project_id;
   const tier = scene.tier as "V2" | "V3" | "V4";
@@ -102,7 +113,8 @@ async function drawScene(scene: any) {
   let masterUrl: string | null = null;
   let layer: OverlayLayer | null = null;
   let textBlocked = false;
-  const costs: { stage: string; model: string; usd: number }[] = [];
+  // real: the provider returned the price (Runware `cost`) or the real token usage (OpenAI) — not an estimate.
+  const costs: { stage: string; model: string; usd: number; real: boolean }[] = [];
   let qaCalls = 0;
   const t0 = Date.now();
   const timings: Record<string, number> = {};
@@ -110,7 +122,7 @@ async function drawScene(scene: any) {
 
   const r = await renderBeat(tier, { startMs: beat.startMs, contract: beat.contract }, {
     compile: (c) => { const p = compileBeatPrompt({ ...beat, contract: c }, set, { plantFrame, ...compileOptionsFor(tier, c) }); if (p.lintErrors.length) throw new Error(`prompt check: ${p.lintErrors.join("; ")}`); return p; },
-    render: async (task) => { const res = await timed("renderMs", () => runware(task)); costs.push({ stage: "images", model: task.model, usd: Number(res.result.cost ?? 0) }); return { imageURL: res.result.imageURL, cost: Number(res.result.cost ?? 0) }; },
+    render: async (task) => { const res = await timed("renderMs", () => runware(task)); costs.push({ stage: "images", model: task.model, usd: Number(res.result.cost ?? 0), real: res.result.cost != null }); return { imageURL: res.result.imageURL, cost: Number(res.result.cost ?? 0) }; },
     codeCheck: async (url) => {
       const bytes = await timed("fetchOriginalMs", () => fetchBytes(url));
       original = { url, bytes };
@@ -125,13 +137,13 @@ async function drawScene(scene: any) {
       const small = await timed("qaCopyMs", () => qaCopyUrl(bytes, `${scene.id}-${++qaCalls}`));
       // Fall back to the original render URL if the small copy can't be read.
       const q = small ? await aiQa(small, contract, castNames).catch(() => aiQa(url, contract, castNames)) : await aiQa(url, contract, castNames);
-      costs.push({ stage: "qa", model: STICKMAN_QA.model, usd: q.cost });
+      costs.push({ stage: "qa", model: STICKMAN_QA.model, usd: q.cost, real: true });
       return q;
     },
     postProcess: async (url) => {
       const up = DEFAULT_POSTPROCESS.upscale[tier];
-      const res = await timed("upscaleMs", () => runware({ taskType: "upscale", model: up.model, upscaleFactor: up.factor, inputs: { image: url }, outputType: "URL", outputFormat: "JPG", outputQuality: 95 }));
-      costs.push({ stage: "image_upscale", model: up.model, usd: Number(res.result.cost ?? 0) });
+      const res = await timed("upscaleMs", () => runware({ taskType: "upscale", model: up.model, upscaleFactor: up.factor, inputs: { image: url }, outputType: "URL", outputFormat: "JPG", outputQuality: 95, includeCost: true }));
+      costs.push({ stage: "image_upscale", model: up.model, usd: Number(res.result.cost ?? 0), real: res.result.cost != null });
       masterUrl = res.result.imageURL;
       return { bytes: await timed("fetchMasterMs", () => fetchBytes(res.result.imageURL)), cost: Number(res.result.cost ?? 0) };
     },
@@ -142,17 +154,18 @@ async function drawScene(scene: any) {
       fontBytes ??= await fetchBytes(FONT_URL);
       const src = original?.bytes?.length ? original.bytes : await fetchBytes(original!.url);
       const p = await timed("overlayMs", () => placeTextLayer({ bytes: src, imageUrl: original!.url, text, intent: beat.contract.textIntent, font: fontBytes!, openaiKey: OPENAI_KEY }));
-      if (p.costUsd) costs.push({ stage: "qa", model: STICKMAN_QA.model, usd: p.costUsd });
+      if (p.costUsd) costs.push({ stage: "qa", model: STICKMAN_QA.model, usd: p.costUsd, real: true });
       layer = p.layer;
       textBlocked = p.blocked;
       return bytes;
     },
   });
 
-  for (const c of costs) await recordCost(admin, { projectId, stage: c.stage, provider: c.stage === "qa" ? "openai" : "runware", model: c.model, units: { calls: 1, images: c.stage === "qa" ? 0 : 1, beat: beat.sequence }, usd: c.usd, sourceTable: "long_form_scene_images", sourceId: scene.id });
+  for (const c of costs) await recordCost(admin, { projectId, stage: c.stage, provider: c.stage === "qa" ? "openai" : "runware", model: c.model, units: { calls: 1, images: c.stage === "qa" ? 0 : 1, beat: beat.sequence }, usd: c.usd, estimated: !c.real, sourceTable: "long_form_scene_images", sourceId: scene.id });
   const costUsd = Number(r.cost.toFixed(5));
   if (r.failed) {
     await admin.from("long_form_scene_images").update({ status: "failed", error: "image_failed", cost_usd: costUsd, qa: { steps: r.log.map((l) => l.step), wallMs: Date.now() - t0 }, lease_until: null }).eq("id", scene.id);
+    await refundSceneAddon(scene);
     return { failed: true };
   }
   const path = `long-form/scenes/${projectId}/${String(beat.sequence).padStart(3, "0")}-v${scene.version}.jpg`;
@@ -176,12 +189,13 @@ async function drawScene(scene: any) {
     layer = scaleLayer((await overlayText(src, scene.overlay_text, { font: fontBytes })).layer, 1920 / cfg.width);
     finalText = scene.overlay_text;
   }
-  // Credits from the reservation, per finished scene.
-  const credits = sceneCredits(tier);
-  const billed = await commitReservationSpend(admin, projectId, credits).catch((e) => (/CEILING/i.test(String(e?.message ?? e)) ? "CEILING_EXCEEDED" : "BILLING_ERROR"));
+  // Phase 7 fixed quote: the first pass is included in the video's quote (settled in full at
+  // render completion); a regenerate/split was paid at click time (addon_credits). The scene
+  // worker never touches the reservation.
+  const billed = Number(scene.addon_credits ?? 0) > 0 ? "ADDON_PREPAID" : "INCLUDED";
   await admin.from("long_form_scene_images").update({
     status: "ready", image_url: imageUrl, master_url: masterUrl, original_url: r.imageURL, overlay: layer, overlay_text: finalText,
-    warnings: [...(soft ? ["image_check_soft"] : []), ...(textMismatch ? ["text_mismatch"] : [])], cost_usd: costUsd, credits_charged: billed === "COMMITTED" ? credits : 0,
+    warnings: [...(soft ? ["image_check_soft"] : []), ...(textMismatch ? ["text_mismatch"] : [])], cost_usd: costUsd, credits_charged: Number(scene.addon_credits ?? 0),
     qa: { steps: r.log.map((l) => l.step), retries: r.retries, wallMs: Date.now() - t0, timings, billed, dhash }, ready_at: new Date().toISOString(), lease_until: null, error: null,
   }).eq("id", scene.id);
   return { failed: false, billed };
@@ -200,8 +214,10 @@ Deno.serve(async (req) => {
   const work = drawScene(scene)
     .catch(async (e) => {
       console.error("[render-long-form-scene]", scene.id, String(e));
-      // Not charged. The watchdog does not retry an explicit failure; the review page offers Regenerate.
+      // A first-pass scene is never charged (the fixed quote); a paid redraw is refunded. The watchdog
+      // does not retry an explicit failure; the review page offers a free Regenerate for failed scenes.
       await admin.from("long_form_scene_images").update({ status: "failed", error: "image_failed", qa: { error: String(e).slice(0, 300) }, lease_until: null }).eq("id", scene.id);
+      await refundSceneAddon(scene);
     })
     .finally(() => nudgeAutopilot(projectId));
   const rt = (globalThis as any).EdgeRuntime;

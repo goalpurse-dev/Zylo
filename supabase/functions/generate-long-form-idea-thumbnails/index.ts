@@ -34,6 +34,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { requireUser } from "../shared/auth.ts";
 import { logEvent } from "../_shared/systemLog.ts";
+import { recordCost } from "../_shared/costLedger.ts";
 import { getPlanPriority } from "../../../src/lib/queuePriority.ts";
 import {
   buildThumbnailPrompt,
@@ -175,6 +176,10 @@ Deno.serve(async (req) => {
     await refundIfCharged("job_insert_failed");
     return err(req, "Could not create thumbnail jobs", 500);
   }
+
+  // Account-level ledger row (no project yet): the jobs pipeline does not
+  // return a Runware cost, so this is the list price per image (estimated).
+  await recordCost(admin, { userId: user.id, stage: "other", provider: "runware", model: THUMBNAIL_IMAGE_TOOL_KEY, units: { calls: jobs.length, images: jobs.length, purpose: "idea_thumbnails" } as any, usd: jobs.length * 0.00169, sourceTable: "long_form_discovery_sessions", sourceId: discoverySessionId || null });
 
   // Fire-and-forget per job, same pattern as generate-long-form-preview —
   // the caller tracks completion via each jobs row itself (Realtime + poll).

@@ -21,6 +21,7 @@ import { ok, err, cors } from "../shared/cors.ts";
 import { requireUser } from "../shared/auth.ts";
 import { buildInitialEdit, flattenWords, retimeToWords, validateEdit, EDIT_VERSION } from "../../../src/lib/stickmanEdit.js";
 import { sceneCredits, tierOf, segmentForWord } from "../_shared/stickman/scenes.ts";
+import { chargeAddon, refundAddon } from "../_shared/stickman/addons.ts";
 import { IP_MARKS, IP_LOOKALIKE } from "../_shared/stickman/beatDirector.ts";
 import { logEvent } from "../_shared/systemLog.ts";
 import { fillCenterFlatness } from "../_shared/stickman/flatness.ts";
@@ -244,11 +245,14 @@ Deno.serve(async (req) => {
     const tier = tierOf(profile?.render_tier);
     const credits = sceneCredits(tier);
     if (body?.dryRun === true) return ok(req, { ok: true, dryRun: true, credits });
+    // Phase 7: a split's new picture is a paid add-on, charged now from the balance (never the reservation).
+    const charge = await chargeAddon(admin, user.id, credits, "scene_split", logEvent, { projectId, beatSequence });
+    if (!charge.ok) return err(req, charge.message, charge.status, { credits });
     const { data: last } = await admin.from("long_form_scene_images").select("version").eq("project_id", projectId).eq("beat_plan_version_id", planId).eq("beat_sequence", beatSequence).order("version", { ascending: false }).limit(1).maybeSingle();
     const description = `A different moment of the same scene, showing: ${narration}`.slice(0, 400);
-    const { data: row, error } = await admin.from("long_form_scene_images").insert({ project_id: projectId, beat_plan_version_id: planId, beat_sequence: beatSequence, version: (last?.version ?? 0) + 1, tier, status: "queued", source: "split", description_override: description, is_current: false }).select("id").single();
-    if (error) return err(req, "Couldn't start the new picture.", 500);
-    // Drawn now by the scene worker (credits per finished scene, from the reservation).
+    const { data: row, error } = await admin.from("long_form_scene_images").insert({ project_id: projectId, beat_plan_version_id: planId, beat_sequence: beatSequence, version: (last?.version ?? 0) + 1, tier, status: "queued", addon_credits: credits, source: "split", description_override: description, is_current: false }).select("id").single();
+    if (error) { await refundAddon(admin, user.id, credits, "scene_split_insert_failed", logEvent, { projectId }); return err(req, "Couldn't start the new picture.", 500); }
+    // Drawn now by the scene worker (already paid; refunded there if the picture fails).
     fetch(`${SUPABASE_URL}/functions/v1/render-long-form-scene`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}`, "x-autopilot-secret": SECRET }, body: JSON.stringify({ projectId, userId: user.id, sceneId: row.id }) }).then((r) => r.body?.cancel()).catch(() => {});
     await logEvent("long-form-edit", "info", "edit_split_generate", { projectId, beatSequence, credits });
     return ok(req, { ok: true, sceneId: row.id, credits });

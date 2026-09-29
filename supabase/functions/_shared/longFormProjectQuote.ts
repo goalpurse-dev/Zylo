@@ -16,7 +16,10 @@
 
 export type RenderTier = "v2" | "v3" | "v4";
 
-const CREDITS_PER_GENERATE: Record<RenderTier, number> = { v2: 2, v3: 3, v4: 4 };
+const CREDITS_PER_GENERATE: Record<RenderTier, number> = { v2: 1, v3: 4, v4: 5 };
+// Phase 7: the video is a FIXED price per minute (~2x our real cost incl. overhead,
+// at the cheapest $/credit we sell) — see docs/phase7/pricing-proposal.md.
+export const CREDITS_PER_MINUTE: Record<RenderTier, number> = { v2: 25, v3: 75, v4: 90 };
 
 export type ProjectQuoteInput = {
   targetDurationMinutes: number;
@@ -67,14 +70,11 @@ export function estimateLongFormProjectQuote(input: ProjectQuoteInput): ProjectQ
   const estimatedRetryRenders = Math.round(estimatedFreshRenders * retryUpliftShare);
   const totalRenderCount = estimatedFreshRenders + estimatedRetryRenders;
 
-  const creditsPerRender = CREDITS_PER_GENERATE[renderTier];
-  const visualsCredits = totalRenderCount * creditsPerRender;
+  void CREDITS_PER_GENERATE; // per-scene prices now apply to scene REGENERATE only (stickman/scenes.ts)
+  const videoCredits = Math.ceil(CREDITS_PER_MINUTE[renderTier] * targetDurationMinutes);
 
   const breakdown: ProjectQuoteBreakdownLine[] = [
-    { label: "Research + Story", credits: 0, note: "Included — no additional charge." },
-    { label: "Narration (voiceover + timing)", credits: 0, note: "Included — no additional charge." },
-    { label: `~${estimatedBeatCount} visuals (${renderTier.toUpperCase()})`, credits: visualsCredits, note: `${estimatedFreshRenders} fresh renders + ${estimatedRetryRenders} bounded retry allowance; ${estimatedReusedOrProgrammatic} reused/programmatic at 0 credits.` },
-    { label: "QA + bounded retries", credits: 0, note: "Retry allowance already folded into the visuals line above; the QA judging pass itself is included." },
+    { label: `${targetDurationMinutes}-min video (${renderTier.toUpperCase()})`, credits: videoCredits, note: `${CREDITS_PER_MINUTE[renderTier]} credits per minute — a fixed price: research, script, ~${estimatedBeatCount} scenes with QA and retries, voiceover, 1080p render, 3 thumbnails and the YouTube text are all included.` },
   ];
 
   const totalCredits = breakdown.reduce((sum, line) => sum + line.credits, 0);

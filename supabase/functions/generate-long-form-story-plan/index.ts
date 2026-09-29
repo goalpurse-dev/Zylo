@@ -859,7 +859,7 @@ Deno.serve(async (req) => {
     console.error("generate-long-form-story-plan failed", error);
     return err(req, "We couldn't create the Story Plan.", 500);
   } finally {
-    if (usage.calls) await recordCost(admin, { projectId, stage: "story_plan", provider: "openai", model: OPENAI_MODEL, units: { ...usage }, usd: storyPlanUsd(usage), sourceTable: "long_form_projects", sourceId: projectId });
+    if (usage.calls) await recordCost(admin, { projectId, stage: "story_plan", provider: "openai", model: OPENAI_MODEL, units: { ...usage }, usd: storyPlanUsd(usage), estimated: false, sourceTable: "long_form_projects", sourceId: projectId });
   }
   });
 });

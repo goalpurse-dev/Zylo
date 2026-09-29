@@ -36,11 +36,13 @@ import { cleanText } from "./textClean";
 // which still increases with tier the same way. No per-tier generation-time
 // estimate exists anywhere in this codebase, so — per explicit instruction
 // not to invent numbers — the Cost dots stay dots rather than becoming a
-// fabricated "~N min" estimate.
+// fabricated "~N min" estimate. Phase 7: `perMin` is the fixed price per
+// minute (mirrors CREDITS_PER_MINUTE in _shared/longFormProjectQuote.ts; a
+// test keeps them equal). The summary quote is still the charged number.
 const RENDER_TIER_OPTIONS = [
-  { value: "v2", label: "V2 Fast", description: "Quickest and cheapest. Good for drafts.", quality: 1, cost: 1 },
-  { value: "v3", label: "V3 High Quality", description: "Best balance of detail and cost.", quality: 2, cost: 2, recommended: true },
-  { value: "v4", label: "V4 Ultra", description: "Maximum detail. Slowest.", quality: 3, cost: 3 },
+  { value: "v2", label: "V2 Fast", description: "Quickest and cheapest. Good for drafts.", quality: 1, cost: 1, perMin: 25 },
+  { value: "v3", label: "V3 High Quality", description: "Best balance of detail and cost.", quality: 2, cost: 2, perMin: 75, recommended: true },
+  { value: "v4", label: "V4 Ultra", description: "Maximum detail. Slowest.", quality: 3, cost: 3, perMin: 90 },
 ];
 const EXPLANATION_DEPTH_OPTIONS = [
   { value: "simple", label: "Brief" },
@@ -1546,7 +1548,7 @@ export default function ProductionSetup() {
           // a second, competing price display.
           <>
             <p className="text-[13px] text-white/70">~<AnimatedNumber value={quote.estimatedBeatCount} reducedMotion={reducedMotion} /> visuals</p>
-            <p className="mt-1 text-[11px] text-white/35">Maximum charge — unused credits are released.</p>
+            <p className="mt-1 text-[11px] text-white/35">Fixed price — everything included. Fully refunded if the video can't be made.</p>
             {projectedBalance != null && (
               <p className="mt-2 text-[12px] text-white/50">
                 Balance {credits.toLocaleString()} → {projectedBalance.toLocaleString()}
@@ -1891,6 +1893,7 @@ export default function ProductionSetup() {
                     )}
                     <span className="text-[14px] font-bold text-white">{opt.label}</span>
                     <span className="text-[12px] leading-snug text-white/45">{opt.description}</span>
+                    <span data-testid={`tier-price-${opt.value}`} className="text-[12px] font-semibold text-white/75">{opt.perMin} credits / min</span>
                     <span className="mt-1 flex items-center gap-3 text-[10.5px] text-white/30">
                       <span className="flex items-center gap-1">Quality {[1, 2, 3].map((i) => <span key={i} className={`h-1.5 w-1.5 rounded-full ${i <= opt.quality ? "bg-lime-300/70" : "bg-white/10"}`} />)}</span>
                       <span className="flex items-center gap-1">Cost {[1, 2, 3].map((i) => <span key={i} className={`h-1.5 w-1.5 rounded-full ${i <= opt.cost ? "bg-amber-300/70" : "bg-white/10"}`} />)}</span>
@@ -2018,7 +2021,7 @@ export default function ProductionSetup() {
                 <div className="space-y-1.5">
                   <p className="text-[14px] text-white/80">~<AnimatedNumber value={quote.estimatedBeatCount} reducedMotion={reducedMotion} /> visuals</p>
                   <p className="text-[14px] text-white/80">{RENDER_TIER_OPTIONS.find((o) => o.value === renderTier)?.label}</p>
-                  <p className="mt-2 text-[15px] font-bold text-white">Maximum charge: <AnimatedNumber value={quote.totalCredits} reducedMotion={reducedMotion} /> credits</p>
+                  <p className="mt-2 text-[15px] font-bold text-white">Price: <AnimatedNumber value={quote.totalCredits} reducedMotion={reducedMotion} /> credits <span className="text-[12px] font-normal text-white/45">(fixed, everything included)</span></p>
                 </div>
               )}
             </div>

@@ -568,3 +568,14 @@ export function ChipRow({ label, options, value, onChange }) {
     </div>
   );
 }
+
+// Phase 7: an error line; "Not enough credits — Add credits" gets a real Add credits link.
+export function CreditsError({ message, className = "text-[12px] text-red-200" }) {
+  if (!message) return null;
+  const short = /^Not enough credits/i.test(message);
+  return (
+    <p className={className} data-testid={short ? "not-enough-credits" : undefined}>
+      {short ? <>Not enough credits — <a href="/workspace/pricing" className="font-semibold text-lime-200 underline underline-offset-2">Add credits</a></> : message}
+    </p>
+  );
+}

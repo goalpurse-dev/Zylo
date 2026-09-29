@@ -63,7 +63,7 @@ Deno.test("ETA range from measured timings; credits per scene by tier", () => {
   // V2: 9.7-12.1 s per scene at 6 at a time (136 scenes measured in 229 s).
   const [lo, hi] = drawingEta(136, "V2");
   assert(lo >= 200 && lo <= 240 && hi > lo, `${lo}-${hi}`);
-  assertEquals([sceneCredits("V2"), sceneCredits("V3"), sceneCredits("V4")], [2, 3, 4]);
+  assertEquals([sceneCredits("V2"), sceneCredits("V3"), sceneCredits("V4")], [1, 4, 5]); // Phase 7: scene REGENERATE add-on prices
 });
 
 Deno.test("plain words only: warning codes, summaries and sections read like a person wrote them", () => {
@@ -82,7 +82,8 @@ Deno.test("server-side + display-only wiring", () => {
   assertMatch(adv, /if \(ap\.phase === "scenes"\) return await advanceScenes/);
   assertMatch(adv, /render-long-form-scene/);
   const worker = read("supabase/functions/render-long-form-scene/index.ts");
-  assertMatch(worker, /commitReservationSpend\(admin, projectId, credits\)/); // credits from the reservation per scene
+  assert(!/commitReservationSpend/.test(worker)); // Phase 7 fixed quote: the scene worker never touches the reservation
+  assertMatch(worker, /refundSceneAddon/); // a paid redraw that fails is refunded
   assertMatch(worker, /claim_long_form_scene_image/);
   assert(!/toTarget\(|\.encodeJPEG\(/.test(worker), "no full-size re-encode at the edge");
   const upd = read("supabase/functions/update-long-form-scene/index.ts");

@@ -18,6 +18,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { requireUser } from "../shared/auth.ts";
 import { logEvent } from "../_shared/systemLog.ts";
+import { recordCost } from "../_shared/costLedger.ts";
 import { FIRST_IDEA_BATCH_IS_FREE, REGENERATE_IDEAS_COST } from "../../../src/lib/longFormIdeaThumbnails.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -383,7 +384,8 @@ function buildRankingSchema(count: number) {
 
 /* ============================= OpenAI call ============================= */
 
-async function callJson(messages: any[], schema: any, maxTokens: number, temperature: number, timeoutMs = 30_000) {
+// acc: the request's usage total (real token counts, for the cost ledger).
+async function callJson(messages: any[], schema: any, maxTokens: number, temperature: number, timeoutMs = 30_000, acc?: { calls: number; inputTokens: number; outputTokens: number }) {
   const response = await fetch(OPENAI_CHAT, {
     method: "POST",
     headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
@@ -398,6 +400,7 @@ async function callJson(messages: any[], schema: any, maxTokens: number, tempera
   });
   if (!response.ok) throw new Error(`OpenAI ${response.status}: ${(await response.text()).slice(0, 300)}`);
   const payload = await response.json();
+  if (acc) { acc.calls++; acc.inputTokens += payload?.usage?.prompt_tokens ?? 0; acc.outputTokens += payload?.usage?.completion_tokens ?? 0; }
   return JSON.parse(String(payload?.choices?.[0]?.message?.content ?? "{}"));
 }
 
@@ -538,9 +541,10 @@ Deno.serve(async (req) => {
     const SHARDS = 12;
     const perShard = Math.ceil(POOL_SIZE / SHARDS);
     const tA = Date.now();
+    const ideaUsage = { calls: 0, inputTokens: 0, outputTokens: 0 };
     const runShard = async (shard: number, maxTokens: number) => {
       try {
-        const generated = await callJson([{ role: "user", content: buildCandidatePrompt(context, perShard, HINTS[shard % HINTS.length]) }], candidateSchema(perShard), maxTokens, 1.0, 25_000);
+        const generated = await callJson([{ role: "user", content: buildCandidatePrompt(context, perShard, HINTS[shard % HINTS.length]) }], candidateSchema(perShard), maxTokens, 1.0, 25_000, ideaUsage);
         return (Array.isArray(generated?.candidates) ? generated.candidates : []).filter(isValidIdeaShape);
       } catch (e) {
         await logEvent(SOURCE, "warn", "candidate_shard_failed", { userId: user.id, shard, message: String(e).slice(0, 160) });
@@ -559,6 +563,8 @@ Deno.serve(async (req) => {
     let pool: any[] = [];
     for (let i = 0; i < perShard; i++) for (const sh of shards) if (sh[i]) pool.push(sh[i]);
     await logEvent(SOURCE, "info", "candidate_pool_ready", { userId: user.id, poolSize: pool.length, ms: Date.now() - tA, shardsOk: shards.filter((x) => x.length).length });
+    // Account-level cost row (no project yet): the real token usage of this generation.
+    if (ideaUsage.calls) await recordCost(admin, { userId: user.id, stage: "other", provider: "openai", model: MODEL, units: { ...ideaUsage, purpose: "ideas" } as any, usd: (ideaUsage.inputTokens * 0.15 + ideaUsage.outputTokens * 0.6) / 1e6, estimated: false, sourceTable: "long_form_discovery_sessions", sourceId: null });
     if (pool.length < Math.max(3, Math.ceil(context.requestedCount / 2))) {
       await logEvent(SOURCE, "error", "candidate_generation_failed", { userId: user.id, poolSize: pool.length });
       await refundIfCharged("candidate_generation_failed");

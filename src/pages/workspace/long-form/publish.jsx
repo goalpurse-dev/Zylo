@@ -7,7 +7,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { AlertTriangle, ArrowLeft, Check, Copy, Download, Film, Image as ImageIcon, Loader2, RefreshCw, RotateCcw, Sparkles, Type, X } from "lucide-react";
 import { fetchLongFormProject } from "./project";
-import { LongFormActionFooter, LongFormCreationHeader } from "./shared";
+import { CreditsError, LongFormActionFooter, LongFormCreationHeader } from "./shared";
 import { cachedStickmanProject } from "./StickmanRouteGuard";
 import { useOverlayFont } from "./sceneVisuals";
 import { fileSlug, limitTags, TITLE_MAX, TAGS_MAX_CHARS } from "../../../lib/publishText";
@@ -123,7 +123,7 @@ function RenderCard({ projectId, autopilot }) {
           </div>
         ) : (
           <button type="button" data-testid="make-1440p" disabled={busy || live} onClick={() => start("1440p")} className={GHOST_BTN}>
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Make 1440p version <span className="text-[11.5px] font-normal text-white/45">sharper on YouTube · free</span>
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Make 1440p version <span data-testid="price-1440" className="text-[11.5px] font-normal text-white/45">sharper on YouTube · {state?.price1440 === 0 ? "free on V4" : state?.price1440 ? `${state.price1440} credits` : "…"}</span>
           </button>
         ))}
         {!current && status !== "rendering" && (
@@ -134,7 +134,7 @@ function RenderCard({ projectId, autopilot }) {
         )}
         {previous && <button type="button" data-testid="download-previous" onClick={() => download(previous)} className="inline-flex items-center gap-1.5 justify-self-start text-[12.5px] font-semibold text-white/55 underline decoration-white/20 underline-offset-4 hover:text-white"><Download className="h-3.5 w-3.5" /> Download previous version ({previous.resolution})</button>}
       </div>
-      {msg && <p className="mt-2 text-[12px] text-red-200">{msg}</p>}
+      <CreditsError message={msg} className="mt-2 text-[12px] text-red-200" />
     </Card>
   );
 }
@@ -214,7 +214,7 @@ function ThumbnailsCard({ projectId, slug }) {
         {selected?.pngUrl && <button type="button" data-testid="thumb-download" onClick={() => downloadFile(selected.pngUrl, `${slug}-thumbnail.png`)} className={GHOST_BTN}><Download className="h-4 w-4" /> Download thumbnail</button>}
         <span className="text-[11.5px] text-white/40">{empty ? "Drawing 3 thumbnails from your video (included)…" : busy ? "Drawing…" : selected ? "1280×720 PNG, under 2 MB." : "Tap one to preview, edit its headline and pick it."}</span>
       </div>
-      {msg && <p className="mt-2 text-[12px] text-red-200">{msg}</p>}
+      <CreditsError message={msg} className="mt-2 text-[12px] text-red-200" />
       {open && <ThumbModal t={open} slug={slug} projectId={projectId} onClose={() => setOpen(null)} onChanged={load} />}
     </Card>
   );
@@ -294,7 +294,7 @@ function TextCard({ projectId, onTitle }) {
           </div>
         </div>
       )}
-      {msg && <p className="mt-2 text-[12px] text-red-200">{msg}</p>}
+      <CreditsError message={msg} className="mt-2 text-[12px] text-red-200" />
     </Card>
   );
 }

@@ -6,7 +6,7 @@ import { fetchLongFormProject } from "./project";
 import { supabase } from "../../../lib/supabaseClient";
 import { fetchActiveGenerationProfile, isStickmanRecipeProfile } from "./productionProfile";
 import { fetchLatestNarrationAudio, fetchNarrationStatus, generateNarrationAudio, reconcileNarrationAlignment, changeNarrationVoice, fetchBeatDirectorReadiness } from "./narration";
-import { LongFormActionFooter, LongFormCreationHeader } from "./shared";
+import { CreditsError, LongFormActionFooter, LongFormCreationHeader } from "./shared";
 import VoiceLibraryDialog from "./VoiceLibraryDialog";
 import { findVoice } from "../../../lib/voiceCatalog";
 import { findNiche } from "./niches";
@@ -219,7 +219,20 @@ function ProjectNarration({ projectId }) {
     if (!changed.ok) { setBusyAction(null); setActionError("Couldn't update the voice."); return; }
     const result = await generateNarrationAudio(projectId, { manual: true });
     setBusyAction(null);
+    // Phase 7: after the included re-record, another one is a paid add-on — offer it with its price.
+    if (!result.ok && result.payload?.requiresExtraCredits && result.payload?.credits) { setPaidRerecord({ credits: result.payload.credits }); return; }
     if (!result.ok) { setActionError(result.message); return; }
+    reconcileAttemptedRef.current = false;
+    refresh(mountTokenRef.current);
+  };
+  const [paidRerecord, setPaidRerecord] = useState(null);
+  const handlePaidRerecord = async () => {
+    setBusyAction("changeVoice");
+    setActionError(null);
+    const result = await generateNarrationAudio(projectId, { manual: true, paid: true });
+    setBusyAction(null);
+    if (!result.ok) { setActionError(result.message); return; }
+    setPaidRerecord(null);
     reconcileAttemptedRef.current = false;
     refresh(mountTokenRef.current);
   };
@@ -281,7 +294,8 @@ function ProjectNarration({ projectId }) {
           </div>
           <h1 className="text-[19px] font-bold text-white">Couldn't generate narration</h1>
           <p className="mt-2 text-[13.5px] leading-relaxed text-white/45">{narration?.last_error_code ? "The voice provider returned an error." : "Something went wrong."} Your Production Bible was unaffected.</p>
-          {actionError && <p className="mt-3 text-[12.5px] text-red-300/80">{actionError}</p>}
+          {actionError && <CreditsError message={actionError} className="mt-3 text-[12.5px] text-red-300/80" />}
+          {paidRerecord && <div data-testid="paid-rerecord" className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-[12.5px] text-white/75"><span>You've used the free re-record. Another one costs {paidRerecord.credits} credits.</span><button type="button" disabled={!!busyAction} onClick={handlePaidRerecord} className="rounded-lg bg-lime-300 px-3 py-1.5 text-[12px] font-bold text-[#11150D] disabled:opacity-50">Re-record · {paidRerecord.credits} credits</button></div>}
         </div>
         <LongFormActionFooter primaryLabel="Retry (free)" primaryLoadingLabel="Retrying…" onPrimary={handleRetryFailed} primaryLoading={busyAction === "retry"} />
       </div>
@@ -360,7 +374,8 @@ function ProjectNarration({ projectId }) {
           <p className="mt-2 text-center text-[11.5px] text-white/35">
             {allowanceRemaining > 0 ? "1 free re-record included (0 credits)." : "Included re-record used."}
           </p>
-          {actionError && <p className="mt-3 text-[12px] text-red-300/80">{actionError}</p>}
+          {actionError && <CreditsError message={actionError} className="mt-3 text-[12px] text-red-300/80" />}
+          {paidRerecord && <div data-testid="paid-rerecord" className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-[12.5px] text-white/75"><span>You've used the free re-record. Another one costs {paidRerecord.credits} credits.</span><button type="button" disabled={!!busyAction} onClick={handlePaidRerecord} className="rounded-lg bg-lime-300 px-3 py-1.5 text-[12px] font-bold text-[#11150D] disabled:opacity-50">Re-record · {paidRerecord.credits} credits</button></div>}
         </div>
 
         <div className="space-y-1 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-3">

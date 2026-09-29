@@ -9,7 +9,8 @@
 
 export type CostStage = "story_plan" | "research" | "script" | "bible" | "beats" | "narration" | "images" | "qa" | "render" | "other";
 export type CostUnits = { calls?: number; seconds?: number; inputTokens?: number; outputTokens?: number; cacheReadTokens?: number; cacheWriteTokens?: number; characters?: number; providerCredits?: number | null; images?: number };
-export type CostEntry = { projectId: string; stage: CostStage; provider: string; model?: string | null; units: CostUnits; usd: number; estimated?: boolean; sourceTable?: string; sourceId?: string | null };
+// projectId, or userId for account-level rows (idea generation runs before a project exists).
+export type CostEntry = { projectId?: string | null; userId?: string | null; stage: CostStage; provider: string; model?: string | null; units: CostUnits; usd: number; estimated?: boolean; sourceTable?: string; sourceId?: string | null };
 
 // Phase 6d-1 (config): ElevenLabs is priced from ITS OWN character-cost header
 // (the credits it actually charged) at our plan's $/credit — not the old
@@ -24,7 +25,7 @@ export function narrationCost(characters: number, providerCredits: number | null
 
 export function ledgerRow(e: CostEntry) {
   return {
-    project_id: e.projectId, stage: e.stage, provider: e.provider, model: e.model ?? null,
+    project_id: e.projectId ?? null, user_id: e.userId ?? null, stage: e.stage, provider: e.provider, model: e.model ?? null,
     units: Object.fromEntries(Object.entries(e.units).filter(([, v]) => v != null)),
     usd: Number((Number(e.usd) || 0).toFixed(6)), estimated: e.estimated ?? true,
     source_table: e.sourceTable ?? null, source_id: e.sourceId ?? null,

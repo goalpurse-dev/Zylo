@@ -16,6 +16,7 @@ import { ok, err, cors } from "../shared/cors.ts";
 import { logEvent } from "../_shared/systemLog.ts";
 import { recordCost } from "../_shared/costLedger.ts";
 import { applyRenderBilling } from "../_shared/longFormReservations.ts";
+import { refundAddon } from "../_shared/stickman/addons.ts";
 
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, SERVICE_KEY, { auth: { persistSession: false } });
@@ -73,6 +74,12 @@ Deno.serve(async (req) => {
   const back = editRender ? { status: proj?.final_video_path ? "complete" : "images_ready" } : { status: "failed" };
   await admin.from("long_form_projects").update({ ...back, status_reason: userReason, current_render_job_id: job.id }).eq("id", job.project_id);
   const billing = await applyRenderBilling(admin, job.project_id, "failed", terminal, logEvent);
+  // Phase 7: a paid add-on render (1440p) that fails for good is refunded exactly once.
+  if (terminal && Number(job.addon_credits ?? 0) > 0) {
+    const { data: owner } = await admin.from("long_form_projects").select("user_id").eq("id", job.project_id).maybeSingle();
+    const { data: claimed } = await admin.from("long_form_render_jobs").update({ addon_credits: 0 }).eq("id", job.id).gt("addon_credits", 0).select("id");
+    if (owner && claimed?.length) await refundAddon(admin, owner.user_id, Number(job.addon_credits), "render_1440p_failed", logEvent, { projectId: job.project_id, jobId: job.id });
+  }
   await logEvent("finish-long-form-render", "error", "render_failed", { jobId: job.id, projectId: job.project_id, errorCode: b.errorCode, terminal, billing: billing.decision });
   return ok(req, { ok: true, billing: billing.decision });
 });

@@ -38,8 +38,8 @@ export async function fetchNarrationStatus(projectId) {
   return data;
 }
 
-export async function generateNarrationAudio(projectId, { manual = false } = {}) {
-  const { data, error } = await supabase.functions.invoke("generate-long-form-narration-audio", { body: { projectId, manual } });
+export async function generateNarrationAudio(projectId, { manual = false, paid = false } = {}) {
+  const { data, error } = await supabase.functions.invoke("generate-long-form-narration-audio", { body: { projectId, manual, ...(paid ? { paid: true } : {}) } });
   if (error) {
     const payload = await parseInvokeError(error);
     return { ok: false, status: error.context?.status ?? 500, message: payload?.error ?? "Couldn't generate narration.", payload };

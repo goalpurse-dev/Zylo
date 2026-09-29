@@ -35,6 +35,7 @@ import { computeScriptInputHash, computeRequestHash, synthesizeNarrationAudio, m
 import { logEvent } from "../_shared/systemLog.ts";
 import { recordCost, narrationCost } from "../_shared/costLedger.ts";
 import { releaseReservationIfActive, settleReservationIfActive } from "../_shared/longFormReservations.ts";
+import { chargeAddon, voiceRerecordCredits } from "../_shared/stickman/addons.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -194,11 +195,22 @@ Deno.serve(async (req) => {
   // synthesis attempt (not a poll of an in-progress/ready/alignment_failed
   // row, all handled above) ever consumes it, and only when explicitly
   // manual. The automatic first generation Lock Story triggers is never manual.
+  let paidCredits = 0;
   if (manual) {
     if (project.manual_tts_regenerations_used >= project.included_manual_tts_regenerations) {
-      return err(req, "You've used your included voice regeneration for this project. Regenerating again will cost additional credits.", 402, {
-        includedRegenerationsUsed: project.manual_tts_regenerations_used, includedRegenerationsTotal: project.included_manual_tts_regenerations, requiresExtraCredits: true,
-      });
+      // Phase 7: after the included one, a re-record is a paid add-on (4 credits per started
+      // minute), charged at click time. Without `paid: true` the price is returned for the button.
+      const { data: lastReady } = await admin.from("long_form_narration_audio_versions").select("audio_duration_seconds").eq("project_id", projectId).eq("status", "ready").order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const durationMs = lastReady?.audio_duration_seconds ? Number(lastReady.audio_duration_seconds) * 1000 : (ttsInputText.length / 867) * 60000;
+      const price = voiceRerecordCredits(durationMs);
+      if (body?.paid !== true) {
+        return err(req, `Re-recording the voice again costs ${price} credits.`, 402, {
+          includedRegenerationsUsed: project.manual_tts_regenerations_used, includedRegenerationsTotal: project.included_manual_tts_regenerations, requiresExtraCredits: true, credits: price,
+        });
+      }
+      const charge = await chargeAddon(admin, user.id, price, "voice_rerecord", logEvent, { projectId });
+      if (!charge.ok) return err(req, charge.message, charge.status, { credits: price, requiresExtraCredits: true });
+      paidCredits = price;
     }
     await admin.from("long_form_projects").update({ manual_tts_regenerations_used: project.manual_tts_regenerations_used + 1 }).eq("id", projectId);
   }
@@ -215,7 +227,7 @@ Deno.serve(async (req) => {
       project_id: projectId, generation_profile_id: profile.id, script_version_id: scriptVersion.id, version: (count ?? 0) + 1,
       status: "generating", voice_provider: voiceSpec.provider, voice_id: voiceSpec.voiceId, voice_model: voiceSpec.voiceModel,
       voice_settings: voiceSpec.voiceSettings, language: voiceSpec.language,
-      script_input_hash: scriptInputHash, request_hash: requestHash, lease_until: new Date(Date.now() + leaseMs).toISOString(), provider_metadata: { attempts: 1, phase: "tts", characterCount: ttsInputText.length },
+      script_input_hash: scriptInputHash, request_hash: requestHash, lease_until: new Date(Date.now() + leaseMs).toISOString(), provider_metadata: { attempts: 1, phase: "tts", characterCount: ttsInputText.length, addonCredits: paidCredits },
     }).select("id").single();
     if (insertError) return err(req, "Could not start narration generation.", 500, { reason: insertError.message });
     rowId = inserted.id;

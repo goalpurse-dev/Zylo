@@ -15,7 +15,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Check, Coins, Maximize2, PenLine, RotateCw, Sparkles, TriangleAlert, Type, Undo2 } from "lucide-react";
 import { fetchLongFormProject } from "./project";
-import { LongFormActionFooter, LongFormCreationHeader } from "./shared";
+import { CreditsError, LongFormActionFooter, LongFormCreationHeader } from "./shared";
 import { formatClock, formatEta, watchProject, unwatchProject } from "./autopilot";
 import { fetchScenes, startScenes, updateScene, formatSceneTime, SCENES_POLL_MS } from "./scenes";
 import { SceneThumb, SCENES_CSS, useOverlayFont } from "./sceneVisuals";
@@ -115,6 +115,8 @@ function SceneCard({ scene, credits, active, pending, undoable, busy, drawing, o
 const GRID = "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 min-[1800px]:grid-cols-4";
 
 function Notice({ notice }) {
+  // Phase 7: a paid redraw refused for credits shows the Add credits link.
+  if (notice.tone === "error" && /^Not enough credits/i.test(notice.text)) return <CreditsError message={notice.text} className="mb-4 rounded-lg bg-red-400/10 px-3 py-2 text-[12.5px] text-red-200" />;
   return <p className={`mb-4 rounded-lg px-3 py-2 text-[12.5px] ${notice.tone === "error" ? "bg-red-400/10 text-red-200" : notice.tone === "ok" ? "bg-lime-300/10 text-lime-200" : "bg-white/[0.05] text-white/70"}`}>{notice.text}</p>;
 }
 

@@ -24,6 +24,8 @@ import { logEvent } from "../_shared/systemLog.ts";
 import { chunkPieces } from "../_shared/stickman/renderChunks.ts";
 import { fillCenterFlatness } from "../_shared/stickman/flatness.ts";
 import { fileSlug } from "../../../src/lib/publishText.js";
+import { chargeAddon, refundAddon, render1440Credits } from "../_shared/stickman/addons.ts";
+import { tierOf } from "../_shared/stickman/scenes.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -41,6 +43,11 @@ const PARALLEL_MIN_FRAMES = 30 * 180; // under 3 minutes: one machine is fine
 
 
 export const RESOLUTIONS: Record<string, { width: number; height: number }> = { "1080p": { width: 1920, height: 1080 }, "1440p": { width: 2560, height: 1440 } };
+// The project's render tier (V2/V3/V4), for add-on prices.
+async function projectTier(projectId: string) {
+  const { data } = await admin.from("long_form_generation_profiles").select("render_tier").eq("project_id", projectId).eq("status", "active").maybeSingle();
+  return tierOf(data?.render_tier);
+}
 
 // fly.toml's [env] only applies to `fly deploy` machines, not Machines API ones: the same values here.
 const FLY_WORKER_ENV = { WORK_DIR: "/tmp/render", RENDER_HOST: "fly", RENDER_MACHINE: "performance-8x", CONCURRENCY: "7", CRF: "23", MACHINE_USD_PER_SECOND: "0.0000957" };
@@ -156,6 +163,16 @@ Deno.serve(async (req) => {
           await admin.from("long_form_render_jobs").update(fail).eq("parent_job_id", j.parent_job_id).eq("status", "queued");
         }
         await logEvent("long-form-render", "error", "render_boot_failed", { jobId: j.id, parentJobId: j.parent_job_id ?? null, machineId: j.machine_id });
+        // Phase 7: a paid add-on render (1440p) that never started is refunded exactly once.
+        const paidId = j.parent_job_id ?? j.id;
+        const { data: pj } = await admin.from("long_form_render_jobs").select("project_id, addon_credits").eq("id", paidId).maybeSingle();
+        const credits = Number(pj?.addon_credits ?? 0);
+        // Claim the refund (only one caller wins), then pay it back.
+        const { data: claimed } = credits > 0 ? await admin.from("long_form_render_jobs").update({ addon_credits: 0 }).eq("id", paidId).eq("addon_credits", credits).select("id") : { data: [] };
+        if (claimed?.length) {
+          const { data: owner } = await admin.from("long_form_projects").select("user_id").eq("id", pj!.project_id).maybeSingle();
+          if (owner) await refundAddon(admin, owner.user_id, credits, "render_1440p_boot_failed", logEvent, { projectId: pj!.project_id, jobId: paidId });
+        }
         continue;
       }
       const needs = queuedLate || (j.status === "rendering" && (!j.heartbeat_at || now - Date.parse(j.heartbeat_at) > STALE_S * 1000) && j.attempt < j.max_attempts);
@@ -206,7 +223,10 @@ Deno.serve(async (req) => {
       const { data: dones } = await admin.from("long_form_render_jobs").select("*").eq("project_id", projectId).is("parent_job_id", null).eq("status", "done").eq("edit_version", latestEdit.version).order("created_at", { ascending: false });
       for (const d of dones ?? []) if (!doneByRes[d.resolution]) doneByRes[d.resolution] = await jobView(d, projectId);
     }
-    return ok(req, { ok: true, job: job ? await jobView(job, projectId) : null, lastDone: lastDone ? await jobView(lastDone, projectId) : null, doneByRes });
+    // The "Make 1440p version" price (free on V4), from the finished video's length.
+    const lengthMs = doneByRes["1080p"]?.durationMs ?? job?.edl?.audio?.durationMs ?? 0;
+    const price1440 = render1440Credits(await projectTier(projectId), lengthMs);
+    return ok(req, { ok: true, job: job ? await jobView(job, projectId) : null, lastDone: lastDone ? await jobView(lastDone, projectId) : null, doneByRes, price1440 });
   }
 
   if (action === "download") {
@@ -254,8 +274,14 @@ Deno.serve(async (req) => {
   const sha = encodeHex(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(edlJson))));
   const ranges = edl.totalFrames >= PARALLEL_MIN_FRAMES && RENDER_PARALLEL > 1 ? chunkPieces(edl.pieces, RENDER_PARALLEL) : [];
   const parallel = ranges.length > 1;
-  const { data: row, error } = await admin.from("long_form_render_jobs").insert({ project_id: projectId, status: parallel ? "waiting" : "queued", edl, edl_sha256: sha, inputs_prefix: `${projectId}/edit-v${edit.version}`, edit_version: edit.version, resolution, stage: "queued", chunk_count: parallel ? ranges.length : 0 }).select("*").single();
+  // Phase 7: the 1440p version is a paid add-on (V2/V3: 2 credits/min, min 10; free on V4),
+  // charged now from the balance, refunded if the job can't start or the render fails.
+  const addonCredits = resolution === "1440p" ? render1440Credits(await projectTier(projectId), doc.audio?.durationMs ?? 0) : 0;
+  const charge = await chargeAddon(admin, user.id, addonCredits, "render_1440p", logEvent, { projectId });
+  if (!charge.ok) return err(req, charge.message, charge.status, { credits: addonCredits });
+  const { data: row, error } = await admin.from("long_form_render_jobs").insert({ project_id: projectId, status: parallel ? "waiting" : "queued", edl, edl_sha256: sha, inputs_prefix: `${projectId}/edit-v${edit.version}`, edit_version: edit.version, resolution, stage: "queued", chunk_count: parallel ? ranges.length : 0, addon_credits: addonCredits }).select("*").single();
   if (error) {
+    await refundAddon(admin, user.id, addonCredits, "render_1440p_not_started", logEvent, { projectId });
     if (/duplicate|one_live/.test(error.message)) { const { data: live } = await admin.from("long_form_render_jobs").select("*").eq("project_id", projectId).in("status", ["queued", "rendering"]).maybeSingle(); return ok(req, { ok: true, alreadyRunning: true, job: live ? await jobView(live, projectId) : null }); }
     return err(req, "Couldn't start the render.", 500);
   }

@@ -63,7 +63,7 @@ async function buildInBackground(admin: any, planId: string, projectId: string, 
       return;
     }
     // Cost ledger: one row per finished plan (usage is cumulative across yields).
-    const ledger = () => recordCost(admin, { projectId, stage: "beats", provider: "anthropic", model: BEAT_DIRECTOR_MODEL, units: { calls: result.usage.calls, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens, cacheReadTokens: result.usage.cacheReadTokens, cacheWriteTokens: result.usage.cacheWriteTokens }, usd: cost, sourceTable: "long_form_beat_plan_versions", sourceId: planId });
+    const ledger = () => recordCost(admin, { projectId, stage: "beats", provider: "anthropic", model: BEAT_DIRECTOR_MODEL, units: { calls: result.usage.calls, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens, cacheReadTokens: result.usage.cacheReadTokens, cacheWriteTokens: result.usage.cacheWriteTokens }, usd: cost, estimated: false, sourceTable: "long_form_beat_plan_versions", sourceId: planId });
     await ledger();
     if (!result.ok) {
       await admin.from("long_form_beat_plan_versions").update({
@@ -85,7 +85,7 @@ async function buildInBackground(admin: any, planId: string, projectId: string, 
       const acc = acceptHeadlines(result.beats, picked.picks, density);
       result.beats = applyTextPass(result.beats, acc.accepted);
       textPass = { density, target: acc.target, total: acc.total, added: acc.accepted.length, rejected: acc.rejected.length, costUsd: picked.costUsd };
-      if (picked.costUsd) await recordCost(admin, { projectId, stage: "beats_text", provider: "openai", model: HEADLINE_MODEL, units: { ...picked.usage }, usd: picked.costUsd, sourceTable: "long_form_beat_plan_versions", sourceId: planId });
+      if (picked.costUsd) await recordCost(admin, { projectId, stage: "beats", provider: "openai", model: HEADLINE_MODEL, units: { ...picked.usage, purpose: "on_screen_text" } as any, usd: picked.costUsd, estimated: false, sourceTable: "long_form_beat_plan_versions", sourceId: planId });
     } catch (e) {
       console.error("[build-stickman-beat-plan] text pass skipped:", String(e).slice(0, 200));
       result.beats = applyTextPass(result.beats, []);

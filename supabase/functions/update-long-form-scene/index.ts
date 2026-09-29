@@ -3,8 +3,8 @@
 // review page's per-scene actions:
 //   text        — edit the on-screen words: FREE, edits the text layer only
 //                 (re-placed on the image), never re-renders.
-//   regenerate  — draw the scene again on the project's tier (credits from
-//                 the reservation, shown in the button).
+//   regenerate  — draw the scene again on the project's tier: a paid add-on charged at
+//                 click time from the balance (price on the button; a failed scene redraws free).
 //   describe    — the user's own description becomes the picture, through the
 //                 same compiler (style, cast, IP guard), then regenerate.
 //   regenerate_flagged — every scene with a warning (total cost shown first).
@@ -21,6 +21,7 @@ import { compileBeatPrompt, canonicalSetFromBible, plantFrameFor } from "../_sha
 import { compileOptionsFor } from "../_shared/stickman/renderTiers.ts";
 import { IP_MARKS, IP_LOOKALIKE } from "../_shared/stickman/beatDirector.ts";
 import { plainWarnings, sceneCredits, tierOf } from "../_shared/stickman/scenes.ts";
+import { chargeAddon } from "../_shared/stickman/addons.ts";
 import { duplicateScenes } from "../_shared/stickman/imageChecks.ts";
 import { nudgeAutopilot } from "../_shared/stickman/autopilotNudge.ts";
 import { logEvent } from "../_shared/systemLog.ts";
@@ -126,18 +127,25 @@ Deno.serve(async (req) => {
     const p = compileBeatPrompt({ ...beat, contract: { ...beat.contract, visualConcept: description, userSummary: description } }, set, { plantFrame: plantFrameFor(all, set), ...compileOptionsFor(tier) });
     if (p.lintErrors.length) return err(req, "That description asks for written words or labels in the picture — use the on-screen text for words instead.", 422);
   }
-  const total = numbers.length * credits;
-  if (dryRun) return ok(req, { ok: true, dryRun: true, action, scenes: numbers.length, sceneNumbers: numbers.slice(0, 200), creditsPerScene: credits, credits: total });
+  // Phase 7: a redraw is a paid add-on charged NOW from the balance (never the video's
+  // reservation); a scene that failed to draw is retried free.
+  const olds = new Map<number, any>();
+  for (const n of numbers) olds.set(n, await current(n));
+  const toDraw = numbers.filter((n) => { const o = olds.get(n); return !(o && (o.status === "queued" || o.status === "rendering")); });
+  const priceOf = (n: number) => (olds.get(n)?.status === "failed" ? 0 : credits);
+  const total = toDraw.reduce((s, n) => s + priceOf(n), 0);
+  if (dryRun) return ok(req, { ok: true, dryRun: true, action, scenes: toDraw.length, sceneNumbers: toDraw.slice(0, 200), creditsPerScene: credits, credits: total });
+  const charge = await chargeAddon(admin, user.id, total, `scene_${action}`, logEvent, { projectId, scenes: toDraw.length });
+  if (!charge.ok) return err(req, charge.message, charge.status, { credits: total });
 
   // Real: a new version per scene (the old one stays in history), drawn by the scene loop.
-  for (const n of numbers) {
-    const old = await current(n);
-    if (old && (old.status === "queued" || old.status === "rendering")) continue;
+  for (const n of toDraw) {
+    const old = olds.get(n);
     if (old) await admin.from("long_form_scene_images").update({ is_current: false }).eq("id", old.id);
     await admin.from("long_form_scene_images").insert({
       project_id: projectId, beat_plan_version_id: planId, beat_sequence: n, version: (old?.version ?? 0) + 1, tier, status: "queued",
       source: description ? "edit_description" : "regenerate", description_override: description ?? (old?.description_override ?? null),
-      overlay_text: old?.overlay_text ?? null,
+      overlay_text: old?.overlay_text ?? null, addon_credits: priceOf(n),
     });
   }
   const sc = ap.phase === "scenes" && ap.scenes ? ap.scenes : { startedAt: new Date().toISOString(), resumes: 0, dispatched: {} };

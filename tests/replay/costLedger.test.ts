@@ -4,7 +4,12 @@ import { ledgerRow, recordCost, summarizeStageRows } from "../../supabase/functi
 
 Deno.test("ledger row: provider, model, stage, units (nulls dropped) and USD rounded to 6 dp", () => {
   const row = ledgerRow({ projectId: "p1", stage: "narration", provider: "elevenlabs", model: "eleven_flash_v2_5", units: { calls: 1, characters: 6310, providerCredits: 1577, images: undefined }, usd: 1.8930000004, sourceTable: "long_form_narration_audio_versions", sourceId: "r1" });
-  assertEquals(row, { project_id: "p1", stage: "narration", provider: "elevenlabs", model: "eleven_flash_v2_5", units: { calls: 1, characters: 6310, providerCredits: 1577 }, usd: 1.893, estimated: true, source_table: "long_form_narration_audio_versions", source_id: "r1" });
+  assertEquals(row, { project_id: "p1", user_id: null, stage: "narration", provider: "elevenlabs", model: "eleven_flash_v2_5", units: { calls: 1, characters: 6310, providerCredits: 1577 }, usd: 1.893, estimated: true, source_table: "long_form_narration_audio_versions", source_id: "r1" });
+});
+
+Deno.test("Phase 7: account-level rows (no project) and real costs flagged estimated: false", () => {
+  const row = ledgerRow({ userId: "u1", stage: "other", provider: "openai", model: "gpt-4o-mini", units: { calls: 3, purpose: "ideas" } as any, usd: 0.0021, estimated: false });
+  assertEquals([row.project_id, row.user_id, row.estimated], [null, "u1", false]);
 });
 
 Deno.test("recordCost never fails the stage that paid for the call", async () => {

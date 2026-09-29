@@ -8,9 +8,32 @@ Where costs are recorded: `long_form_cost_ledger` (one row per paid call or stag
 research engines' own `meta.callLedger`. `long_form_project_cost_by_stage(project_id)` and
 `costByStage()` (`supabase/functions/_shared/costLedger.ts`) return the total per stage per project.
 
+## Prices (Phase 7, live)
+
+The video is a **fixed price per minute**: V2 **25** · V3 **75** · V4 **90** credits/min (rounded up). Reserved at
+Generate; charged in full only when the render finishes; fully released if the project fails, is cancelled or
+deleted first. That price includes research, script, scenes + QA, voiceover, the 1080p render, 3 thumbnails and
+the YouTube text. The balance can never go below 0 (`credit_balance_nonnegative`).
+
+Paid extras are charged at click time from the balance (never from the reservation):
+
+| Extra | Credits |
+|---|---|
+| Scene regenerate / split | V2 1 · V3 4 · V4 5 per scene |
+| Thumbnail regenerate | 6 per image |
+| 1440p render | 2/min, min 10; **free on V4**; refunded if the render fails |
+| Voice re-record (after the free one) | 4/min |
+| Idea regenerate | 2 |
+| YouTube text rewrite | free |
+
+Ledger: rows carry `estimated` (false = the provider reported the cost or token usage). Idea generation and
+idea thumbnails are account-level rows (`user_id`, no project).
+
+## Measured costs
+
 | Stage | Provider / model | Measured | Notes |
 |---|---|---|---|
-| Story plan | OpenAI | **not tracked yet** | Gap: `generate-long-form-story-plan` records no usage; needs a ledger write. |
+| Story plan | OpenAI | tracked (stage `story_plan`) | Recorded since Phase 7 from real token usage. |
 | Research | OpenAI (+ web search) | not measured on this project | The Myth vs Reality script was imported; research keeps its per-call ledger in `meta.callLedger`. |
 | Script | Claude Sonnet 5 | **$0.237** | Stickman script run, from `meta.callLedger` (estimated). |
 | Production Bible | gpt-5-mini | **$0.011–0.024** per build | Five builds: $0.0109, $0.0191, $0.0113, $0.0181 (rejected), $0.0236 (new schema, one repair). A repair roughly doubles it. |

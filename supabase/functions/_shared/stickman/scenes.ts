@@ -35,7 +35,8 @@ export const WATCHDOG_GRACE_S = 90;
 export const SCENES_MAX_RESUMES = 2;
 
 // Credits per image by tier (the same prices as the project quote: GENERATE v2=2 / v3=3 / v4=4).
-export const SCENE_CREDITS: Record<string, number> = { V2: 2, V3: 3, V4: 4 };
+// Phase 7: scene REGENERATE add-on prices (~2x real cost at the cheapest $/credit).
+export const SCENE_CREDITS: Record<string, number> = { V2: 1, V3: 4, V4: 5 };
 export const sceneCredits = (tier: string) => SCENE_CREDITS[String(tier).toUpperCase()] ?? 2;
 export const tierOf = (renderTier: string | null | undefined) => (String(renderTier ?? "v2").toUpperCase() as "V2" | "V3" | "V4");
 

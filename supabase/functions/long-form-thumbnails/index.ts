@@ -23,6 +23,7 @@ import { drawLayer } from "../_shared/stickman/textOverlay.ts";
 import { canonicalSetFromBible, castBlock } from "../_shared/stickman/promptCompiler.ts";
 import { tierOf } from "../_shared/stickman/scenes.ts";
 import { IP_MARKS } from "../_shared/stickman/beatDirector.ts";
+import { NOT_ENOUGH_CREDITS } from "../_shared/stickman/addons.ts";
 import { ARCHETYPES, ARCHETYPE_DEFINITIONS, BACKGROUND_STYLE, clearTopThird, packFewShot, THUMB_MODEL, THUMB_GEN, THUMB_OUT, THUMB_MAX_BYTES, checkThumb, headlineLayerV2, normalizeConcepts, thumbnailPromptV2, titleWords, type ThumbConcept, type ThumbLook } from "../_shared/stickman/thumbnailV2.ts";
 import { recordCost } from "../_shared/costLedger.ts";
 import { logEvent } from "../_shared/systemLog.ts";
@@ -34,7 +35,8 @@ const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
 const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 const FONT_URL = `${SUPABASE_URL}/storage/v1/object/public/generated/assets/fonts/LilitaOne-Regular.ttf`;
 // 3 credits per regenerated image on every tier (one model for all: Nano Banana 2 Lite).
-export const THUMB_CREDITS: Record<string, number> = { V2: 3, V3: 3, V4: 3 };
+// Phase 7: ~$0.064 real cost per regenerated image -> 6 credits (~50% margin at the cheapest $/credit).
+export const THUMB_CREDITS: Record<string, number> = { V2: 6, V3: 6, V4: 6 };
 // The concept call: Sonnet 5 (gpt-5-mini concepts were generic). $2 / $10 per 1M tokens.
 const CONCEPT_MODEL = "claude-sonnet-5";
 const SONNET_IN_PER_M = 2.0, SONNET_OUT_PER_M = 10.0;
@@ -239,7 +241,7 @@ Deno.serve(async (req) => {
   if (!project || (!internal && project.user_id !== user.id)) return err(req, "Project not found", 404);
   const { data: profile } = await admin.from("long_form_generation_profiles").select("render_tier").eq("project_id", projectId).eq("status", "active").maybeSingle();
   const tier = tierOf(profile?.render_tier);
-  const perImage = THUMB_CREDITS[tier] ?? 3;
+  const perImage = THUMB_CREDITS[tier] ?? 6;
   const { data: rows } = await admin.from("long_form_thumbnails").select("*").eq("project_id", projectId).order("batch", { ascending: false }).order("slot");
   const lastBatch = rows?.[0]?.batch ?? 0;
   const latest = (rows ?? []).filter((r: any) => r.batch === lastBatch);
@@ -256,7 +258,7 @@ Deno.serve(async (req) => {
     const charge = regenerate ? perImage : 0;
     if (charge) {
       const { error: chargeError } = await admin.rpc("deduct_credits", { uid: user.id, amount: charge * 3 });
-      if (chargeError) return err(req, "You don't have enough credits for 3 new thumbnails.", 402);
+      if (chargeError) return err(req, /INSUFFICIENT/i.test(chargeError.message) ? NOT_ENOUGH_CREDITS : "Couldn't charge the credits. Try again.", /INSUFFICIENT/i.test(chargeError.message) ? 402 : 500);
     }
     const batch = lastBatch + 1;
     // The 3 rows first (queued, no prompt yet): a second start at the same time

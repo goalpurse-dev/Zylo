@@ -76,11 +76,14 @@ export async function settleReservationIfActive(
   admin: SupabaseClient,
   projectId: string,
   reason: string,
-  logEvent?: (source: string, level: string, event: string, data: Record<string, unknown>) => Promise<void>
+  logEvent?: (source: string, level: string, event: string, data: Record<string, unknown>) => Promise<void>,
+  // Phase 7 fixed quote: `full` commits the WHOLE reservation (render completion);
+  // otherwise only what was committed is kept and the rest refunded (idle settle).
+  opts: { full?: boolean } = {}
 ): Promise<ReservationOutcome> {
   const active = await findActiveReservation(admin, projectId);
   if (!active) return { found: false };
-  const { data, error } = await admin.rpc("settle_long_form_reservation", {
+  const { data, error } = await admin.rpc(opts.full ? "settle_long_form_reservation_full" : "settle_long_form_reservation", {
     p_reservation_id: active.id,
     p_user_id: active.user_id,
   });
@@ -88,7 +91,7 @@ export async function settleReservationIfActive(
     await logEvent?.("longFormReservations", "error", "settle_failed", { projectId, reservationId: active.id, reason, message: error.message });
     return { found: true, ok: false, error: error.message };
   }
-  await logEvent?.("longFormReservations", "info", "reservation_settled", { projectId, reservationId: active.id, reason, refunded: active.reserved_credits - active.committed_credits });
+  await logEvent?.("longFormReservations", "info", "reservation_settled", { projectId, reservationId: active.id, reason, full: !!opts.full, charged: opts.full ? active.reserved_credits : active.committed_credits, refunded: opts.full ? 0 : active.reserved_credits - active.committed_credits });
   return { found: true, ok: true, reservation: data };
 }
 
@@ -148,16 +151,16 @@ export async function commitReservationSpend(admin: SupabaseClient, projectId: s
 // (finish-long-form-render). Grep this symbol to find the one settle site.
 export const RENDER_IS_THE_LAST_REAL_STAGE = true;
 
-// What a render outcome does to the project's reservation (pure, tested):
-//   done                                  -> settle (keep what was spent, refund the rest)
-//   failed, terminal, nothing committed   -> release (a terminal failure before any spend)
-//   failed otherwise                      -> keep (work was paid for and is preserved;
-//                                            the render is resumable, a later success settles)
+// What a render outcome does to the project's reservation (pure, tested).
+// Phase 7 FIXED QUOTE: nothing is committed before completion, so:
+//   done   -> settle the FULL quote (exactly what the user was shown, never more or less)
+//   failed -> keep (the render is retried free; the edit and scenes are intact —
+//             a project abandoned after that is released by the 7-day idle settle,
+//             a deleted one by delete-long-form-project)
 export type RenderBilling = "settle" | "release" | "keep";
-export function renderBillingDecision(outcome: "done" | "failed", terminal: boolean, reservation: { committed_credits: number } | null): RenderBilling {
+export function renderBillingDecision(outcome: "done" | "failed", _terminal: boolean, reservation: { committed_credits: number } | null): RenderBilling {
   if (!reservation) return "keep";
-  if (outcome === "done") return "settle";
-  return terminal && Number(reservation.committed_credits) === 0 ? "release" : "keep";
+  return outcome === "done" ? "settle" : "keep";
 }
 
 export async function applyRenderBilling(
@@ -168,7 +171,7 @@ export async function applyRenderBilling(
   logEvent?: (source: string, level: string, event: string, data: Record<string, unknown>) => Promise<void>
 ): Promise<{ decision: RenderBilling; result?: ReservationOutcome }> {
   const decision = renderBillingDecision(outcome, terminal, await findActiveReservation(admin, projectId));
-  if (decision === "settle") return { decision, result: await settleReservationIfActive(admin, projectId, "render_complete", logEvent) };
+  if (decision === "settle") return { decision, result: await settleReservationIfActive(admin, projectId, "render_complete", logEvent, { full: true }) };
   if (decision === "release") return { decision, result: await releaseReservationIfActive(admin, projectId, "render_failed_before_spend", logEvent) };
   return { decision };
 }
