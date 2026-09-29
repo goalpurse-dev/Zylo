@@ -18,7 +18,7 @@ import { requireUser } from "../shared/auth.ts";
 import { segmentForWord } from "../_shared/stickman/scenes.ts";
 import { recordCost } from "../_shared/costLedger.ts";
 import { claimSourceList, sourceTier } from "../_shared/stickman/claimSources.ts";
-import { buildChapters, cleanTitle, limitTags, realSources, composeDescription, chapterHook, cleanHashtags, disclaimerFor, LECTURE_TITLE, LAME_HOOK } from "../../../src/lib/publishText.js";
+import { buildChapters, cleanTitle, limitTags, realSources, composeDescription, chapterHook, cleanHashtags, disclaimerFor, stripInstructionEchoes, tagsInVideo, titleCase, LECTURE_TITLE, LAME_HOOK } from "../../../src/lib/publishText.js";
 
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
@@ -30,11 +30,29 @@ const SECRET = Deno.env.get("LONG_FORM_AUTOPILOT_SECRET") ?? "";
 
 // Saved sources pass the quality filter on every read too (texts written before it existed): weak hosts out, strong first.
 const goodSources = (list: any[]) => (list ?? []).map((s, i) => ({ s, i, t: sourceTier(String(s?.url ?? "")) })).filter((x) => x.t > 0).sort((a, b) => b.t - a.t || a.i - b.i).map((x) => x.s);
-const view = (m: any) => {
+// The description is ONE field: built from its parts (with the Chapters / Sources / Zyvo line
+// toggles), or the user's own edited text (kept until "Reset to generated").
+// `corpus` (the narration + verified facts) keeps tags to what the video actually says.
+const view = (m: any, corpus = "") => {
   const sources = goodSources(m.sources);
-  const meta = { hook: m.hook, chapters: m.chapters ?? [], sources, includeCredit: m.include_credit, disclaimer: m.disclaimer, hashtags: m.hashtags ?? [] };
-  return { title: m.title, alternatives: m.title_alternatives ?? [], hook: m.hook, chapters: m.chapters ?? [], sources: realSources(sources), includeCredit: m.include_credit, disclaimer: m.disclaimer ?? "", hashtags: cleanHashtags(m.hashtags ?? []), tags: m.tags ?? [], editVersion: m.edit_version, description: composeDescription(meta), updatedAt: m.updated_at };
+  const chapters = (m.chapters ?? []).map((c: any) => ({ ...c, title: titleCase(c.title) }));
+  const hashtags = corpus ? cleanHashtags(tagsInVideo(m.hashtags ?? [], corpus)) : cleanHashtags(m.hashtags ?? []);
+  const meta = { hook: m.hook, chapters, sources, includeCredit: m.include_credit, includeChapters: m.include_chapters !== false, includeSources: m.include_sources !== false, disclaimer: m.disclaimer, hashtags };
+  const generated = composeDescription(meta);
+  return {
+    title: m.title, alternatives: m.title_alternatives ?? [], hook: m.hook, chapters, sources: realSources(sources), includeCredit: m.include_credit !== false, includeChapters: m.include_chapters !== false, includeSources: m.include_sources !== false,
+    disclaimer: m.disclaimer ?? "", hashtags, tags: corpus ? tagsInVideo(m.tags ?? [], corpus) : m.tags ?? [], editVersion: m.edit_version,
+    generatedDescription: generated, description: m.description_override ?? generated, edited: m.description_override != null, updatedAt: m.updated_at,
+  };
 };
+// What the video actually says: the narration + the fact-checked (supported) claims.
+async function videoCorpus(project: any) {
+  const { data: script } = await admin.from("long_form_script_versions").select("script_document").eq("id", project.current_script_version_id).maybeSingle();
+  const sd = script?.script_document ?? {};
+  const verdictOf = new Map((sd.claimVerification ?? []).map((v: any) => [v.claimId, v]));
+  const facts = (sd.claims ?? []).filter((c: any) => (verdictOf.get(c.id) as any)?.verdict === "supported").map((c: any) => String(c.claim ?? c.sentence ?? ""));
+  return `${(sd.narrationSegments ?? []).map((s: any) => s.text).join(" ")} ${facts.join(" ")} ${project.selected_title ?? ""} ${project.topic ?? ""}`;
+}
 
 // Numbers in the intro that appear nowhere in the facts or the script: logged (never silently published as fact).
 const numbersIn = (s: string) => [...String(s).matchAll(/\b\d[\d,.]*\b/g)].map((m) => m[0].replace(/[,.]$/, "").replace(/,/g, ""));
@@ -56,11 +74,17 @@ Deno.serve(async (req) => {
   // A row without a title is a placeholder: a generate is running (the Publish
   // autopilot's, server-side). Younger than 2 min = still going, older = it failed.
   const generating = !!saved && !saved.title && Date.now() - Date.parse(saved.updated_at) < GENERATING_MS;
-  if (action === "get") return ok(req, { ok: true, text: saved?.title ? view(saved) : null, generating });
+  const corpus = saved?.title ? await videoCorpus(project) : "";
+  if (action === "get") return ok(req, { ok: true, text: saved?.title ? view(saved, corpus) : null, generating });
 
   if (action === "save") {
     if (!saved?.title) return err(req, "Generate the text first.", 409);
     const patch: any = { updated_at: new Date().toISOString() };
+    if (typeof body.includeChapters === "boolean") patch.include_chapters = body.includeChapters;
+    if (typeof body.includeSources === "boolean") patch.include_sources = body.includeSources;
+    // The whole description as the user edited it (null = back to the generated one).
+    if (typeof body.description === "string") patch.description_override = String(body.description).slice(0, 5000);
+    if (body.description === null) patch.description_override = null;
     if (typeof body.title === "string") patch.title = cleanTitle(body.title);
     if (typeof body.hook === "string") patch.hook = String(body.hook).slice(0, 3000);
     if (typeof body.disclaimer === "string") patch.disclaimer = String(body.disclaimer).slice(0, 500);
@@ -69,13 +93,13 @@ Deno.serve(async (req) => {
     if (typeof body.includeCredit === "boolean") patch.include_credit = body.includeCredit;
     if (Array.isArray(body.chapters)) patch.chapters = body.chapters.map((c: any) => ({ ms: Number(c.ms) || 0, title: String(c.title ?? "").slice(0, 80) }));
     const { data: next } = await admin.from("long_form_publish_meta").update(patch).eq("project_id", projectId).select("*").single();
-    return ok(req, { ok: true, text: view(next) });
+    return ok(req, { ok: true, text: view(next, corpus) });
   }
 
   // ---------------- generate ----------------
   // The autopilot (and a page opened mid-way) never writes it twice.
   if (generating) return ok(req, { ok: true, text: null, generating: true });
-  if (body?.ifMissing === true && saved?.title) return ok(req, { ok: true, text: view(saved), exists: true });
+  if (body?.ifMissing === true && saved?.title) return ok(req, { ok: true, text: view(saved, corpus), exists: true });
   if (!saved) await admin.from("long_form_publish_meta").upsert({ project_id: projectId, title: null, updated_at: new Date().toISOString() });
   else if (!saved.title) await admin.from("long_form_publish_meta").update({ updated_at: new Date().toISOString() }).eq("project_id", projectId);
   const { data: script } = await admin.from("long_form_script_versions").select("script_document, research_version_id").eq("id", project.current_script_version_id).maybeSingle();
@@ -141,19 +165,20 @@ Deno.serve(async (req) => {
   const finalChapters = chapters.map((c: any, i: number) => ({ ms: c.ms, title: chapterHook(String(chapterTitles[i] ?? "").slice(0, 40), c.title) }));
   // Code holds the model to the rules: no lame opener, lecture-style alternatives dropped.
   const hookP = String(out.hookParagraph ?? "").trim().replace(/^(in this video,?\s*)/i, "");
-  const intro = [LAME_HOOK.test(hookP) ? "" : hookP, String(out.evidenceParagraph ?? "").trim(), String(out.thesis ?? "").trim()].filter(Boolean).join("\n\n");
+  const intro = stripInstructionEchoes([LAME_HOOK.test(hookP) ? "" : hookP, String(out.evidenceParagraph ?? "").trim(), String(out.thesis ?? "").trim()].filter(Boolean).join("\n\n"));
+  const genCorpus = await videoCorpus(project);
   const known = new Set(numbersIn(`${facts.join(" ")} ${scriptText}`));
   const unverified = numbersIn(intro).filter((n) => !known.has(n));
   if (unverified.length) console.warn(`youtube text ${projectId}: numbers not in the facts: ${unverified.join(", ")}`);
-  const hashtags = cleanHashtags(out.hashtags ?? []);
+  const hashtags = cleanHashtags(tagsInVideo(out.hashtags ?? [], genCorpus));
   const row = {
     project_id: projectId, title: cleanTitle(out.title || titleBase), title_alternatives: (out.alternatives ?? []).map(cleanTitle).filter((t: string) => t && !LECTURE_TITLE.test(t)).slice(0, 4), hook: intro,
     chapters: finalChapters, sources, include_credit: saved?.include_credit ?? true,
     disclaimer: String(out.disclaimer ?? "").trim() || disclaimerFor(nicheText),
     hashtags,
-    tags: limitTags([...(out.tags ?? []), ...hashtags.map((h) => h.slice(1))]), edit_version: edit.version, cost_usd: usd, updated_at: new Date().toISOString(),
+    tags: limitTags(tagsInVideo([...(out.tags ?? []), ...hashtags.map((h) => h.slice(1))], genCorpus)), description_override: null, edit_version: edit.version, cost_usd: usd, updated_at: new Date().toISOString(),
   };
   const { data: next, error } = await admin.from("long_form_publish_meta").upsert(row).select("*").single();
   if (error) return err(req, "Couldn't save the YouTube text.", 500);
-  return ok(req, { ok: true, text: view(next), costUsd: Number(usd.toFixed(5)), unverifiedNumbers: unverified });
+  return ok(req, { ok: true, text: view(next, genCorpus), costUsd: Number(usd.toFixed(5)), unverifiedNumbers: unverified });
 });

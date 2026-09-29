@@ -100,9 +100,20 @@ export async function makeConcepts(project: any, projectId: string) {
   await recordCost(admin, { projectId, stage: "other", provider: "anthropic", model: CONCEPT_MODEL, units: { calls: 1, inputTokens: j.usage?.input_tokens ?? 0, outputTokens: j.usage?.output_tokens ?? 0, purpose: "thumbnail concepts" } as any, usd, estimated: false, sourceTable: "long_form_thumbnails", sourceId: null });
   const out = (j.content ?? []).find((c: any) => c.type === "tool_use")?.input ?? {};
   const hookObject = String(out.hookObject ?? "").trim();
-  // Sonnet sometimes returns a nested array as a JSON string (f90160bc, 2026-09-29): parse it.
-  const asArray = (v: any) => { if (typeof v === "string") { try { v = JSON.parse(v); } catch { return []; } } return Array.isArray(v) ? v : []; };
-  const raw = asArray(out.concepts);
+  // Sonnet sometimes returns the nested array as a JSON STRING (f90160bc, twice), or wrapped / with a
+  // trailing comma: every form becomes the array; a reply that still yields < 3 concepts is logged as it came.
+  const asArray = (v: any): any[] => {
+    if (Array.isArray(v)) return v;
+    if (v && typeof v === "object") return Array.isArray(v.concepts) ? v.concepts : Object.values(v).every((x) => x && typeof x === "object") ? Object.values(v) : [];
+    if (typeof v !== "string") return [];
+    const s = v.trim();
+    for (const cand of [s, s.slice(s.indexOf("["), s.lastIndexOf("]") + 1), s.replace(/,\s*([\]}])/g, "$1")]) {
+      try { const p = JSON.parse(cand); if (Array.isArray(p)) return p; if (Array.isArray(p?.concepts)) return p.concepts; } catch { /* next form */ }
+    }
+    return [];
+  };
+  const raw = asArray(out.concepts ?? out);
+  if (raw.length < 3) await logEvent("long-form-thumbnails", "warn", "thumbnail_concepts_shape", { projectId, message: `${raw.length} concepts parsed`, type: typeof out.concepts, sample: JSON.stringify(out).slice(0, 1500) });
   const castNames = castIds.map((id) => set.cast[id].displayName);
   const { concepts, problems } = normalizeConcepts(raw, title, castIds, hookObject, castNames);
   // Each concept's own cast blocks from the Bible (verbatim, never re-authored).
@@ -188,6 +199,8 @@ async function draw(row: any) {
   await admin.from("long_form_thumbnails").update({ status: "ready", ...saved, checks: { ...best.checks, tries: tries.length, all: tries }, flagged: !best.checks.pass, cost_usd: cost, ready_at: new Date().toISOString(), error: null }).eq("id", row.id);
 }
 
+// Fire-and-forget: one image draw (its own invocation, so each gets the full function time).
+const dispatchDraw = (id: string) => { fetch(`${SUPABASE_URL}/functions/v1/long-form-thumbnails`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}`, "x-autopilot-secret": SECRET }, body: JSON.stringify({ action: "draw", id }) }).then((x) => x.body?.cancel()).catch(() => {}); };
 const view = (r: any) => ({ id: r.id, batch: r.batch, slot: r.slot, status: r.status, headline: r.headline, imageUrl: r.image_url, pngUrl: r.png_url, fullUrl: r.full_url, selected: r.selected, creditsCharged: r.credits_charged, archetype: r.concept?.archetype ?? null, flagged: r.flagged });
 
 Deno.serve(async (req) => {
@@ -201,6 +214,13 @@ Deno.serve(async (req) => {
     if (!row || row.status === "ready") return ok(req, { ok: true, skipped: true });
     try { await draw(row); return ok(req, { ok: true }); }
     catch (e) {
+      // One automatic free retry before a failure is ever shown.
+      if ((row.attempts ?? 0) < 1) {
+        await admin.from("long_form_thumbnails").update({ status: "queued", attempts: (row.attempts ?? 0) + 1, error: `retrying: ${String((e as any)?.message ?? e).slice(0, 160)}` }).eq("id", row.id);
+        await logEvent("long-form-thumbnails", "warn", "thumbnail_auto_retry", { projectId: row.project_id, id: row.id, message: String((e as any)?.message ?? e).slice(0, 200) });
+        dispatchDraw(row.id);
+        return ok(req, { ok: false, retrying: true });
+      }
       await admin.from("long_form_thumbnails").update({ status: "failed", error: String((e as any)?.message ?? e).slice(0, 200) }).eq("id", row.id);
       // A paid image that failed is refunded.
       if (row.credits_charged > 0) { const { data: p } = await admin.from("long_form_projects").select("user_id").eq("id", row.project_id).single(); await admin.rpc("deduct_credits", { uid: p.user_id, amount: -row.credits_charged }); await admin.from("long_form_thumbnails").update({ credits_charged: 0 }).eq("id", row.id); }
@@ -209,12 +229,14 @@ Deno.serve(async (req) => {
     }
   }
 
-  const { user, authError } = await requireUser(req);
-  if (!user) return err(req, authError || "Unauthorized", 401);
+  // Internal (the autopilot secret): the FREE retry for a project, as its owner — never a user login, never a charge.
+  const internal = !!SECRET && req.headers.get("x-autopilot-secret") === SECRET && action === "retry";
+  const { user, authError } = internal ? { user: null as any, authError: null } : await requireUser(req);
+  if (!internal && !user) return err(req, authError || "Unauthorized", 401);
   const projectId = String(body?.projectId ?? "").trim();
-  if (!projectId || !["list", "start", "headline", "select"].includes(action)) return err(req, "Bad request", 400);
+  if (!projectId || !["list", "start", "headline", "select", "retry"].includes(action)) return err(req, "Bad request", 400);
   const { data: project } = await admin.from("long_form_projects").select("id, user_id, topic, selected_title, current_script_version_id, current_story_plan_version_id").eq("id", projectId).maybeSingle();
-  if (!project || project.user_id !== user.id) return err(req, "Project not found", 404);
+  if (!project || (!internal && project.user_id !== user.id)) return err(req, "Project not found", 404);
   const { data: profile } = await admin.from("long_form_generation_profiles").select("render_tier").eq("project_id", projectId).eq("status", "active").maybeSingle();
   const tier = tierOf(profile?.render_tier);
   const perImage = THUMB_CREDITS[tier] ?? 3;
@@ -247,7 +269,8 @@ Deno.serve(async (req) => {
     }
     let made: any[] = [];
     try {
-      const c = await makeConcepts(project, projectId);
+      // One automatic retry of the concept step (Sonnet hiccups) before the batch fails.
+      const c = await makeConcepts(project, projectId).catch(async (e1) => { await logEvent("long-form-thumbnails", "warn", "thumbnail_concepts_retry", { projectId, message: String(e1?.message ?? e1).slice(0, 200) }); return makeConcepts(project, projectId); });
       for (const [slot, it] of c.items.entries()) {
         const row = slots.find((s: any) => s.slot === slot);
         const { data } = await admin.from("long_form_thumbnails").update({ prompt: it.prompt, headline: headlineOf(it.concept.headline), concept: { ...it.concept, problems: c.problems } }).eq("id", row.id).select("*").single();
@@ -260,9 +283,36 @@ Deno.serve(async (req) => {
       await logEvent("long-form-thumbnails", "error", "thumbnail_concepts_failed", { projectId, message: String((e as any)?.message ?? e).slice(0, 200) });
       if (!made.length) return err(req, "Couldn't start the thumbnails.", 500);
     }
-    for (const r of made) fetch(`${SUPABASE_URL}/functions/v1/long-form-thumbnails`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}`, "x-autopilot-secret": SECRET }, body: JSON.stringify({ action: "draw", id: r.id }) }).then((x) => x.body?.cancel()).catch(() => {});
+    for (const r of made) dispatchDraw(r.id);
     await logEvent("long-form-thumbnails", "info", regenerate ? "thumbnails_regenerate" : "thumbnails_first_batch", { projectId, batch, credits: charge * 3, tier, archetypes: made.map((r: any) => r.concept?.archetype) });
     return ok(req, { ok: true, credits: charge * 3, thumbnails: made.map(view) });
+  }
+
+  // retry (free): one failed thumbnail (id) or every failed one in the newest batch.
+  // Rows that never got a concept (the concept step failed) get new concepts first.
+  if (action === "retry") {
+    const failed = latest.filter((r: any) => r.status === "failed" && (!body?.id || r.id === String(body.id)));
+    if (!failed.length) return ok(req, { ok: true, thumbnails: latest.map(view) });
+    const needConcepts = failed.filter((r: any) => !r.prompt);
+    if (needConcepts.length) {
+      try {
+        const c = await makeConcepts(project, projectId).catch(() => makeConcepts(project, projectId));
+        for (const [i, r] of needConcepts.entries()) {
+          const it: any = c.items[r.slot] ?? c.items[i];
+          if (it) await admin.from("long_form_thumbnails").update({ prompt: it.prompt, headline: headlineOf(it.concept.headline), concept: { ...it.concept, problems: c.problems }, version: 2 }).eq("id", r.id);
+        }
+      } catch (e) {
+        await logEvent("long-form-thumbnails", "error", "thumbnail_retry_concepts_failed", { projectId, message: String((e as any)?.message ?? e).slice(0, 200) });
+        return err(req, "Couldn't start the thumbnails. Try again in a moment.", 502);
+      }
+    }
+    const ids = failed.map((r: any) => r.id);
+    await admin.from("long_form_thumbnails").update({ status: "queued", attempts: 0, error: null }).in("id", ids).not("prompt", "is", null);
+    const { data: again } = await admin.from("long_form_thumbnails").select("*").in("id", ids);
+    for (const r of again ?? []) if (r.status === "queued") dispatchDraw(r.id);
+    await logEvent("long-form-thumbnails", "info", "thumbnails_retry", { projectId, count: (again ?? []).filter((r: any) => r.status === "queued").length });
+    const { data: now } = await admin.from("long_form_thumbnails").select("*").eq("project_id", projectId).eq("batch", lastBatch).order("slot");
+    return ok(req, { ok: true, thumbnails: (now ?? []).map(view) });
   }
 
   const row = (rows ?? []).find((r: any) => r.id === String(body?.id ?? ""));

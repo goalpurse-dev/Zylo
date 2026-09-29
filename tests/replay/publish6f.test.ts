@@ -58,7 +58,7 @@ Deno.test("YouTube text: one title <= 60 (no | joins), no lecture titles, 2-5 wo
   assertEquals(cleanTitle("Did Vikings Wear Horned Helmets? | Who Put Horns on Vikings?"), "Did Vikings Wear Horned Helmets?");
   assert(cleanTitle("A very long title that keeps going and going well beyond the sixty char limit").length <= 60);
   assert(LECTURE_TITLE.test("Viking Helmets Explained: Myth, Evidence, Caveat") && !LECTURE_TITLE.test("Who Put Horns on Vikings?"));
-  assertEquals(chapterHook("Final image", "The ending"), "The ending");
+  assertEquals(chapterHook("Final image", "The ending"), "The Ending");
   assertEquals(chapterHook("Who Added the Horns?", "x"), "Who Added the Horns?");
   assertEquals(chapterHook("A", "Cold open"), "What It Means");
   assert(LAME_HOOK.test("Find out whether real Vikings wore horns") && !LAME_HOOK.test("No Viking grave ever held a horned helmet."));
@@ -68,4 +68,18 @@ Deno.test("sources: claim -> fact -> research sources, verdict URLs first, uniqu
   const research: any = { fact_graph: { facts: [{ id: "f1", sourceIds: ["src_a", "src_b"] }, { id: "f2", sourceIds: ["src_a"] }] }, intermediate: { v1SourcesFull: [{ id: "src_a", url: "https://a.org/x", title: "A" }, { id: "src_b", url: "https://b.org/y", title: "B" }, { id: "src_c", url: "not a url" }] } };
   const doc = { claims: [{ id: "c1", sourceFactId: "f1" }, { id: "c2", sourceFactId: "f2" }, { id: "c3", sourceFactId: null }], claimVerification: [{ claimId: "c3", url: "https://c.org/z", sourceName: "C", sources: [{ url: "https://c.org/z", title: "C" }] }, { claimId: "c1", url: null, sourceName: "preferred source (research-lite)" }] };
   assertEquals(claimSourceList(doc, research).map((s) => s.url), ["https://a.org/x", "https://b.org/y", "https://c.org/z"]);
+});
+
+import { titleCase, stripInstructionEchoes, tagsInVideo } from "../../src/lib/publishText.js";
+Deno.test("publish UX: Title Case chapters, no instruction echoes, tags only from the video, description toggles", () => {
+  assertEquals(titleCase("Night By the Fire"), "Night by the Fire");
+  assertEquals(titleCase("what the spear really says"), "What the Spear Really Says");
+  assertEquals(titleCase("the 300,000-year-old DNA test"), "The 300,000-year-old DNA Test");
+  assertEquals(stripInstructionEchoes('First para.\n\nEnd with "🎬 Made with tryzyvo.com — turn any idea"\n\nThird.'), "First para.\n\nThird.");
+  const corpus = "Archaeologists at Schöningen found spears. Archaeologist Ian Hodder put it plainly. Early hunters ran prey down.";
+  assertEquals(tagsInVideo(["Schöningen spears", "Ian Hodder archaeology", "Louis Binford", "archaeology", "#Archaeology", "#HumanEvolution", "persistence hunting"], corpus), ["Schöningen spears", "Ian Hodder archaeology", "archaeology", "#Archaeology"]);
+  const meta = { hook: "Intro.", chapters: [{ ms: 0, title: "A B" }, { ms: 30000, title: "C D" }, { ms: 60000, title: "E F" }], sources: [{ url: "https://nature.com/x" }], includeCredit: true, disclaimer: "D.", hashtags: ["#One", "#Two", "#Three"] };
+  const on = composeDescription(meta), off = composeDescription({ ...meta, includeChapters: false, includeSources: false, includeCredit: false });
+  assert(on.includes("0:30 C D") && on.includes("Sources:") && on.includes(CREDIT_LINE) && on.trim().endsWith("#One #Two #Three"));
+  assert(!off.includes("0:30") && !off.includes("Sources:") && !off.includes("tryzyvo") && off.includes("D.") && off.includes("#One"));
 });

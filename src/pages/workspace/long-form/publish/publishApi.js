@@ -21,3 +21,4 @@ export const generateYoutubeText = (projectId) => invoke("long-form-youtube-text
 export const saveYoutubeText = (projectId, patch) => invoke("long-form-youtube-text", { projectId, action: "save", ...patch });
 // Publish autopilot: the render (if this edit version has none), the YouTube text and the 3 thumbnails, server-side.
 export const startPublish = (projectId) => invoke("long-form-publish-start", { projectId });
+export const retryThumbnails = (projectId, id) => invoke("long-form-thumbnails", { projectId, action: "retry", ...(id ? { id } : {}) });

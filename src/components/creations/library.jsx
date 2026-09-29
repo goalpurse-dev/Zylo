@@ -158,6 +158,7 @@ export default function Library() {
   const viralOnly = location.pathname.endsWith("/viral-videos");
 
   const [videos, setVideos] = useState([]);
+  const [longForm, setLongForm] = useState([]);
   const [viralVideos, setViralVideos] = useState([]);
   const [images, setImages] = useState([]);
   const [activeItem, setActiveItem] = useState(null);
@@ -203,6 +204,10 @@ export default function Library() {
           .limit(20)
 
       ]);
+
+      // Finished long-form videos (private bucket: signed links, 1 h) — the newest per project and resolution.
+      const lf = await supabase.functions.invoke("long-form-render", { body: { action: "list_done" } }).catch(() => null);
+      setLongForm((lf?.data?.videos ?? []).map((v) => ({ id: v.id, type: "video", result_url: v.videoUrl, preview_url: v.previewUrl ?? v.videoUrl, prompt: `${v.title} · ${v.resolution}`, created_at: v.finishedAt })));
 
       const videoData = videoRes.data || [];
       const viralVideoData = viralVideoRes.data || [];
@@ -264,6 +269,15 @@ export default function Library() {
         />
       ) : (
         <>
+          {longForm.length > 0 && (
+            <HorizontalRow
+              title="Long-form videos"
+              items={longForm}
+              getImageUrl={(i) => i.preview_url}
+              onItemClick={setActiveItem}
+              isVideo
+            />
+          )}
           {viralVideos.length > 0 && (
             <HorizontalRow
               title="Viral Videos"

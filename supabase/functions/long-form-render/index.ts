@@ -89,6 +89,8 @@ async function jobView(job: any, projectId: string) {
   const { data: latest } = await admin.from("long_form_edits").select("version").eq("project_id", projectId).order("version", { ascending: false }).limit(1).maybeSingle();
   const now = Date.now();
   const proxy = job.status === "done" && job.proxy_path ? await admin.storage.from(BUCKET).createSignedUrl(job.proxy_path, 3600) : null;
+  // The in-page player plays the FULL render (faststart MP4, starts at once); the 360p proxy is only its fallback.
+  const full = job.status === "done" && job.output_path ? await admin.storage.from(BUCKET).createSignedUrl(job.output_path, 3600) : null;
   const stale = job.status === "rendering" && job.heartbeat_at && now - Date.parse(job.heartbeat_at) > STALE_S * 1000;
   return {
     id: job.id, status: job.status, stage: job.stage, resolution: job.resolution, editVersion: job.edit_version, latestEditVersion: latest?.version ?? null,
@@ -96,7 +98,7 @@ async function jobView(job: any, projectId: string) {
     progress: progressOf(job), etaSeconds: etaOf(job, job.edl?.audio?.durationMs ?? 0, now),
     elapsedSeconds: job.started_at ? Math.round(((job.finished_at ? Date.parse(job.finished_at) : now) - Date.parse(job.started_at)) / 1000) : 0,
     queuedSeconds: Math.round((now - Date.parse(job.created_at)) / 1000), stale,
-    previewUrl: proxy?.data?.signedUrl ?? null, durationMs: job.duration_ms, sizeBytes: job.size_bytes,
+    previewUrl: proxy?.data?.signedUrl ?? null, videoUrl: full?.data?.signedUrl ?? null, durationMs: job.duration_ms, sizeBytes: job.size_bytes,
     reason: job.status === "failed" ? job.user_reason ?? "The video couldn't be rendered." : null, createdAt: job.created_at, finishedAt: job.finished_at,
   };
 }
@@ -167,6 +169,26 @@ Deno.serve(async (req) => {
 
   const { user, authError } = await requireUser(req);
   if (!user) return err(req, authError || "Unauthorized", 401);
+
+  // ---------------- list_done (Creations): the user's finished long-form videos ----------------
+  if (action === "list_done") {
+    const { data: projects } = await admin.from("long_form_projects").select("id, selected_title, topic").eq("user_id", user.id);
+    const ids = (projects ?? []).map((p: any) => p.id);
+    if (!ids.length) return ok(req, { ok: true, videos: [] });
+    const { data: jobs } = await admin.from("long_form_render_jobs").select("id, project_id, output_path, proxy_path, resolution, duration_ms, finished_at, edit_version").in("project_id", ids).is("parent_job_id", null).eq("status", "done").order("finished_at", { ascending: false }).limit(30);
+    const seen = new Set<string>();
+    const videos = [];
+    for (const j of jobs ?? []) {
+      const key = `${j.project_id}|${j.resolution}`; // the newest per project and resolution
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const p: any = (projects ?? []).find((x: any) => x.id === j.project_id);
+      const [full, proxy] = await Promise.all([admin.storage.from(BUCKET).createSignedUrl(j.output_path, 3600), j.proxy_path ? admin.storage.from(BUCKET).createSignedUrl(j.proxy_path, 3600) : Promise.resolve({ data: null })]);
+      videos.push({ id: j.id, projectId: j.project_id, title: p?.selected_title ?? p?.topic ?? "Long-form video", resolution: j.resolution, durationMs: j.duration_ms, finishedAt: j.finished_at, videoUrl: full.data?.signedUrl ?? null, previewUrl: (proxy as any).data?.signedUrl ?? null });
+    }
+    return ok(req, { ok: true, videos });
+  }
+
   const projectId = String(body?.projectId ?? "").trim();
   if (!projectId || !["start", "status", "download"].includes(action)) return err(req, "Bad request", 400);
   const { data: project } = await admin.from("long_form_projects").select("id, user_id, selected_title").eq("id", projectId).maybeSingle();
@@ -176,7 +198,14 @@ Deno.serve(async (req) => {
   if (action === "status") {
     // The last successful render stays watchable while a re-render runs.
     const { data: lastDone } = job && job.status !== "done" ? await admin.from("long_form_render_jobs").select("*").eq("project_id", projectId).is("parent_job_id", null).eq("status", "done").order("created_at", { ascending: false }).limit(1).maybeSingle() : { data: null };
-    return ok(req, { ok: true, job: job ? await jobView(job, projectId) : null, lastDone: lastDone ? await jobView(lastDone, projectId) : null });
+    // The newest finished render per resolution for the CURRENT edit version (1080p + 1440p side by side).
+    const { data: latestEdit } = await admin.from("long_form_edits").select("version").eq("project_id", projectId).order("version", { ascending: false }).limit(1).maybeSingle();
+    const doneByRes: Record<string, any> = {};
+    if (latestEdit?.version != null) {
+      const { data: dones } = await admin.from("long_form_render_jobs").select("*").eq("project_id", projectId).is("parent_job_id", null).eq("status", "done").eq("edit_version", latestEdit.version).order("created_at", { ascending: false });
+      for (const d of dones ?? []) if (!doneByRes[d.resolution]) doneByRes[d.resolution] = await jobView(d, projectId);
+    }
+    return ok(req, { ok: true, job: job ? await jobView(job, projectId) : null, lastDone: lastDone ? await jobView(lastDone, projectId) : null, doneByRes });
   }
 
   if (action === "download") {

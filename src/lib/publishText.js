@@ -59,9 +59,9 @@ export const BORING_CHAPTER = /^(final image|intro(duction)?|outro|conclusion|co
 export function chapterHook(title, fallback) {
   const t = String(title ?? "").replace(/[.]+$/, "").replace(/\s+/g, " ").trim();
   const n = t.split(" ").filter(Boolean).length;
-  if (t && n >= 2 && n <= 5 && !BORING_CHAPTER.test(t)) return t;
+  if (t && n >= 2 && n <= 5 && !BORING_CHAPTER.test(t)) return titleCase(t);
   const f = String(fallback ?? "").replace(/\s+/g, " ").trim().split(" ").slice(0, 5).join(" ");
-  return BORING_CHAPTER.test(f) || f.split(" ").length < 2 ? "What It Means" : f;
+  return BORING_CHAPTER.test(f) || f.split(" ").length < 2 ? "What It Means" : titleCase(f);
 }
 // A hook starts with the story, not "Find out whether…".
 export const LAME_HOOK = /^(find out|learn|discover|in this video|this video|today we|we explore|let's)\b/i;
@@ -77,6 +77,40 @@ export function limitTags(tags) {
   }
   return out;
 }
+// Title Case for chapter names: small words stay lower case unless first/last ("Night by the Fire").
+const SMALL_WORDS = new Set("a an and as at but by for from in into nor of off on onto or out over per the to up via vs with".split(" "));
+export function titleCase(s) {
+  const ws = String(s ?? "").replace(/\s+/g, " ").trim().split(" ");
+  return ws.map((w, i) => {
+    const bare = w.toLowerCase().replace(/[^a-z']/g, "");
+    if (i > 0 && i < ws.length - 1 && SMALL_WORDS.has(bare)) return w.toLowerCase();
+    if (/[A-Z].*[A-Z]/.test(w.slice(1)) || /\d/.test(w)) return w; // acronyms, "DNA", "300,000"
+    return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+  }).join(" ");
+}
+// The Zyvo line and instructions are added by CODE: any echo of them in the model's text is removed.
+export const stripInstructionEchoes = (text) => String(text ?? "").split(/\n/).filter((l) => !/^\s*(end with|made with tryzyvo|🎬|🎨|disclaimer:|hashtags?:|return:|note:)/i.test(l) && !/tryzyvo\.com/i.test(l)).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+// Tags only for names/terms the video actually has: every significant word must appear in the narration or the verified facts.
+const TAG_STOP = new Set("a an and are as at be by for from in into is it its of on or the to with how why what who when where did does do was were history facts science documentary explained".split(" "));
+const tagStem = (w) => w.toLowerCase().replace(/[^a-z0-9]/g, "").replace(/(ies)$/, "y").replace(/(es|s|ed|ing)$/, "");
+// Names (capitalised words in a tag, e.g. "Ian Hodder") must appear as such; ordinary
+// terms may be another form of a word the video uses ("archaeology" ~ "archaeologists",
+// a shared 6-letter start).
+export function tagsInVideo(tags, corpus) {
+  const words = String(corpus ?? "").split(/[^A-Za-z0-9À-ÿ]+/).filter(Boolean);
+  const have = new Set(words.map(tagStem));
+  const prefixes = new Set(words.filter((w) => w.length >= 6).map((w) => w.slice(0, 6).toLowerCase()));
+  return (tags ?? []).filter((t) => {
+    const raw = String(t ?? "");
+    const hashtag = raw.startsWith("#");
+    const ws = raw.replace(/^#/, "").replace(/([a-z])([A-Z])/g, "$1 $2").split(/[\s\-_/]+/).filter((w) => w.length >= 3 && !TAG_STOP.has(w.toLowerCase()));
+    return ws.length > 0 && ws.every((w) => {
+      if (have.has(tagStem(w))) return true;
+      const isName = !hashtag && /^[A-ZÀ-Ý]/.test(w);
+      return !isName && w.length >= 6 && prefixes.has(w.slice(0, 6).toLowerCase());
+    });
+  });
+}
 export const realSources = (sources) => {
   const seen = new Set();
   return (sources ?? []).filter((s) => /^https?:\/\/[^\s]+\.[^\s]+/.test(String(s?.url ?? "")) && !seen.has(s.url) && seen.add(s.url)).slice(0, SOURCES_MAX);
@@ -86,9 +120,9 @@ export const realSources = (sources) => {
 // paragraph, thesis line — stored together as `hook`), chapters, sources (omitted
 // when none), the disclaimer, the Zyvo line (toggle), 3-5 hashtags at the very end.
 export function composeDescription(meta) {
-  const parts = [String(meta.hook ?? "").trim()];
-  if (meta.chapters?.length) parts.push(meta.chapters.map((c) => `${fmtChapter(c.ms)} ${c.title}`).join("\n"));
-  const src = realSources(meta.sources);
+  const parts = [stripInstructionEchoes(meta.hook)];
+  if (meta.includeChapters !== false && meta.chapters?.length) parts.push(meta.chapters.map((c) => `${fmtChapter(c.ms)} ${c.title}`).join("\n"));
+  const src = meta.includeSources === false ? [] : realSources(meta.sources);
   if (src.length) parts.push(["Sources:", ...src.map((s) => `• ${s.title ? `${s.title} — ` : ""}${s.url}`)].join("\n"));
   if (meta.disclaimer) parts.push(String(meta.disclaimer).trim());
   if (meta.includeCredit !== false) parts.push(CREDIT_LINE);
