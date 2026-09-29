@@ -2,6 +2,7 @@ import Glow from "../../components/workspace/Glow.jsx";
 import Features from "../../components/workspace/features.jsx";
 import ZyvoSuiteCarousel from "../../components/workspace/ZyvoSuiteCarousel.jsx";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { LongFormLaunchBanner, ShowcaseRow } from "../../components/launch/LaunchUI.jsx";
 
 const ViralShowcase = lazy(() => import("../../components/workspace/ViralShowcase.jsx"));
 const LatestTrends = lazy(() => import("../../components/workspace/LatestTrends.jsx"));
@@ -116,6 +117,12 @@ export default function WorkspaceHome() {
 
       {/* 2 — CATEGORY TABS */}
         <Features />
+      </div>
+
+      {/* 2b — LONG FORM LAUNCH: banner + videos made with Zyvo (row hidden when empty) */}
+      <div className="mx-auto mt-6 flex w-full max-w-7xl flex-col gap-8 px-4 md:px-[50px]">
+        <LongFormLaunchBanner />
+        <ShowcaseRow id="made-with-zyvo" placement="home" title="2D cartoon videos made with Zyvo" subtitle="Real Long Form videos, straight from one idea." />
       </div>
 
       {/* 3 — ZYVO SUITE */}

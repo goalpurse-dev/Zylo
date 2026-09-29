@@ -4,6 +4,8 @@ import { ChevronRight, Clapperboard, DollarSign, Folder, Home, LayoutGrid, Pin, 
 import Logo from "../../assets/Logo.png";
 import { ALL_PINNABLE_TOOLS, DesktopCreatePanel, DesktopWorkspacePanel } from "./CreateMenu";
 import "../../styles/workspace-shell.css";
+import { NewBadge } from "../launch/LaunchUI.jsx";
+import { isLongFormNew, trackLaunch } from "../launch/launch";
 
 const NAV_IDLE = "text-white/[0.88] hover:text-white hover:bg-white/[0.045] border border-transparent";
 const PINNED_TOOLS_KEY = "zyvo:pinned-tools:v1";
@@ -24,7 +26,7 @@ function getInitialPinnedTools() {
   }
 }
 
-function NavItem({ icon, iconSrc, label, active, onClick }) {
+function NavItem({ icon, iconSrc, label, active, onClick, badge }) {
   return (
     <button
       onClick={onClick}
@@ -36,6 +38,7 @@ function NavItem({ icon, iconSrc, label, active, onClick }) {
           : createElement(icon, { className: "h-[16px] w-[16px]", strokeWidth: 2 })}
       </span>
       <span className="text-[13.5px] font-semibold">{label}</span>
+      {badge && <NewBadge className="ml-auto" />}
     </button>
   );
 }
@@ -162,7 +165,8 @@ export default function ToolShell({ onClose }) {
               icon={Clapperboard}
               label="Long Form"
               active={!anyPanelOpen && isActive("/long-form")}
-              onClick={() => go("/long-form")}
+              badge={isLongFormNew()}
+              onClick={() => { if (!isActive("/long-form")) trackLaunch("nav_long_form", { placement: "sidebar" }); go("/long-form"); }}
             />
 
             <NavItem

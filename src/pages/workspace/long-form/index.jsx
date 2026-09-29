@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowRight, Clapperboard } from "lucide-react";
 import { fetchUserLongFormProjects } from "./project";
 import { ProjectCard } from "./shared";
 import { useAuth } from "../../../context/AuthContext";
+import { ShowcaseRow, TutorialCard } from "../../../components/launch/LaunchUI.jsx";
+import { trackLaunch } from "../../../components/launch/launch";
 
 export default function LongForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [projects, setProjects] = useState(null); // null = loading, [] = loaded-empty
 
@@ -18,12 +21,21 @@ export default function LongForm() {
   // old page (still reachable directly at /long-form/new for whatever else
   // may link to it) manages its own draft lifecycle independently.
   const startNewVideo = () => {
+    trackLaunch("create_new_video", { placement: "long_form_lobby" });
     navigate("/long-form/create");
   };
 
   useEffect(() => {
     document.title = "Long Form | Zyvo";
   }, []);
+
+  // "See examples" (What's new popup) lands here: scroll to the showcase once it renders.
+  useEffect(() => {
+    if (location.hash !== "#made-with-zyvo") return undefined;
+    let tries = 0;
+    const t = setInterval(() => { const el = document.getElementById("made-with-zyvo"); if (el || ++tries > 20) { clearInterval(t); el?.scrollIntoView({ block: "start" }); } }, 150);
+    return () => clearInterval(t);
+  }, [location.hash]);
 
   const reloadProjects = () => {
     if (!user?.id) return;
@@ -78,6 +90,10 @@ export default function LongForm() {
           </div>
         </div>
       </div>
+
+      {/* Made with Zyvo + the tutorial (each hidden until it has an active row) */}
+      <TutorialCard className="mt-6" />
+      <ShowcaseRow id="made-with-zyvo" placement="long_form" title="Made with Zyvo" subtitle="Long Form videos on YouTube — each one started from a single idea." className="mt-8" />
 
       {/* Your Long Form Videos — backed by long_form_projects, present from
           the moment "Create Story Plan" is clicked, regardless of how far

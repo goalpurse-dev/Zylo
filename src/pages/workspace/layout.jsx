@@ -8,6 +8,8 @@ import MobileBottomNav from "../../components/workspace/MobileBottomNav";
 import WelcomeScreen from "../../components/WelcomeScreen";
 import CreatorRewardsModal from "../../components/CreatorRewardsModal";
 import WorkspaceRouteSeo from "../../components/seo/WorkspaceRouteSeo.jsx";
+import { WhatsNewModal } from "../../components/launch/LaunchUI.jsx";
+import { LONG_FORM_ANNOUNCEMENT, trackLaunch } from "../../components/launch/launch";
 
 // ── Promo banner ──────────────────────────────────────────────
 export default function WorkspaceLayout() {
@@ -22,6 +24,8 @@ export default function WorkspaceLayout() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showRewards, setShowRewards] = useState(false);
   const [rewardsUserId, setRewardsUserId] = useState(null);
+  const [showWhatsNew, setShowWhatsNew] = useState(false);
+  const whatsNewChecked = useRef(false); // StrictMode runs the effect twice in dev
 
   // Clean up trailing # left by Supabase OAuth token exchange
   useEffect(() => {
@@ -47,7 +51,7 @@ export default function WorkspaceLayout() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("plan_code")
+        .select("plan_code, seen_announcements")
         .eq("id", user.id)
         .single();
 
@@ -63,6 +67,13 @@ export default function WorkspaceLayout() {
         setShowWelcome(true);
       } else if (!hasSeenRewards) {
         setShowRewards(true);
+      } else if (profile && !whatsNewChecked.current && !(profile.seen_announcements ?? []).includes(LONG_FORM_ANNOUNCEMENT)) {
+        whatsNewChecked.current = true;
+        // Long Form launch: once per user (stored on the profile, so once across
+        // devices), and never on top of the signup Welcome / Rewards popups.
+        setShowWhatsNew(true);
+        trackLaunch("whats_new_shown", { placement: "whats_new" });
+        supabase.rpc("mark_announcement_seen", { p_key: LONG_FORM_ANNOUNCEMENT }).then(() => {}, () => {});
       }
     };
 
@@ -260,6 +271,8 @@ useEffect(() => {
             setShowRewards(false);
           }} />
         )}
+
+        <WhatsNewModal open={showWhatsNew} onClose={() => setShowWhatsNew(false)} />
 
         {/* MOBILE NAV */}
         <MobileBottomNav hidden={isSelectorOpen} />

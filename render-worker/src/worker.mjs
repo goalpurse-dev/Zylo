@@ -42,7 +42,7 @@ const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: 
 // EDL carries full-res sources, else 1080p (CRF 23); both preset slow, tuned for flat animation.
 const x264For = (profile) => [...profile.x264.map((a, i, arr) => (arr[i - 1] === "-crf" && profile.name === "base" ? env("CRF", a) : a)), "-threads", String(X264_THREADS)];
 
-class TerminalError extends Error { constructor(code, userReason, detail) { super(detail ?? code); this.code = code; this.userReason = userReason; } }
+class TerminalError extends Error { constructor(code, userReason, detail, checks) { super(detail ?? code); this.code = code; this.userReason = userReason; this.checks = checks ?? null; } }
 
 function run(cmd, args) {
   return new Promise((resolve) => {
@@ -129,6 +129,13 @@ function bestLagMs(a, b, maxLag = 400) {
   }
   return (best / 8000) * 1000;
 }
+// The video is as long as its FRAMES say: Debian ffmpeg 5.1 pads the joined
+// chunks' container by 35-52 ms (more than one frame at 30 fps), so a check on
+// the container duration failed good renders (f6ee3eb2, 2026-09-29 16:31).
+export function durationCheck({ videoFrames, edlFrames, fps, audioMs, containerMs }) {
+  const frameMs = 1000 / fps, videoMs = videoFrames * frameMs;
+  return { videoFrames, edlFrames, videoMs: Math.round(videoMs), containerMs: Math.round(containerMs), audioMs, diffFrames: Number(((videoMs - audioMs) / frameMs).toFixed(2)), pass: videoFrames === edlFrames && Math.abs(videoMs - audioMs) <= frameMs };
+}
 export async function runChecks({ edl, finalPath, proxyPath, audioPath, segFrames }) {
   const fps = edl.fps, frameMs = 1000 / fps;
   const vFrames = await frameCount(finalPath);
@@ -155,7 +162,7 @@ export async function runChecks({ edl, finalPath, proxyPath, audioPath, segFrame
     // The video's length is its frame count: the container's stream duration can
     // carry a few ms of padding (Debian's ffmpeg 5.1 wrote +43 ms on the joined
     // chunks of a frame-exact 15701-frame video) — kept as containerMs, for info.
-    duration: { videoFrames: vFrames, edlFrames: edl.totalFrames, videoMs: Math.round(vFrames * frameMs), containerMs: Math.round(vDur), audioMs, diffFrames: Number(((vFrames * frameMs - audioMs) / frameMs).toFixed(2)), pass: vFrames === edl.totalFrames && Math.abs(vFrames * frameMs - audioMs) <= frameMs },
+    duration: durationCheck({ videoFrames: vFrames, edlFrames: edl.totalFrames, fps, audioMs, containerMs: vDur }),
     cuts: { maxErrFrames: Math.max(...cutErr), visible: `${visible}/${cutMs.length}`, pass: Math.max(...cutErr) <= 1 },
     blank: { blackRuns: blackAt.map((s) => ({ atS: s, beat: clipAt(s) })), whiteRuns: whiteAt.map((s) => ({ atS: s, beat: clipAt(s) })), pass: blackAt.length === 0 && whiteAt.length === 0 },
     sync: { spots, pass: spots.every((s) => Math.abs(s.audioLagMs) < frameMs) },
@@ -311,7 +318,7 @@ async function processJob(job) {
     const tEncode = Date.now() - t0;
 
     const checks = await runChecks({ edl: units === edl.clips ? edl : { ...edl, clips: units }, finalPath, proxyPath, audioPath, segFrames });
-    if (!checks.duration.pass || !checks.cuts.pass || !checks.sync.pass) throw new TerminalError("RENDER_CHECKS_FAILED", "The rendered video failed its timing checks. Please try rendering again.", JSON.stringify(checks).slice(0, 400));
+    if (!checks.duration.pass || !checks.cuts.pass || !checks.sync.pass) throw new TerminalError("RENDER_CHECKS_FAILED", "The rendered video failed its timing checks. Please try rendering again.", JSON.stringify(checks).slice(0, 400), checks);
 
     // Upload (TUS resumable) — output, proxy, thumbnail (the first beat's image).
     await setStage("uploading");
@@ -341,10 +348,10 @@ async function processJob(job) {
     if (terminal && job.parent_job_id) {
       await admin.from("long_form_render_jobs").update({ status: "failed", error_code: String(e.code ?? "RENDER_ERROR").slice(0, 120), finished_at: new Date().toISOString(), compute_seconds: computeSeconds }).eq("id", job.id);
       const total = await chunksCompute(job.parent_job_id);
-      await finish({ jobId: job.parent_job_id, outcome: "failed", terminal: true, errorCode: e.code ?? "CHUNK_FAILED", userReason: e.userReason, computeSeconds: total, computeUsd: Number((total * USD_PER_SECOND).toFixed(4)), host: HOST, machine: MACHINE });
+      await finish({ jobId: job.parent_job_id, outcome: "failed", terminal: true, errorCode: e.code ?? "CHUNK_FAILED", userReason: e.userReason, checks: e.checks ?? null, computeSeconds: total, computeUsd: Number((total * USD_PER_SECOND).toFixed(4)), host: HOST, machine: MACHINE });
     } else if (terminal) {
       const total = computeSeconds + (Number(job.chunk_count ?? 0) > 0 ? await chunksCompute(job.id) : 0);
-      await finish({ jobId: job.id, outcome: "failed", terminal: true, errorCode: e.code ?? "RENDER_ERROR", userReason: e.userReason, computeSeconds: total, computeUsd: Number((total * USD_PER_SECOND).toFixed(4)), host: HOST, machine: MACHINE });
+      await finish({ jobId: job.id, outcome: "failed", terminal: true, errorCode: e.code ?? "RENDER_ERROR", userReason: e.userReason, checks: e.checks ?? null, computeSeconds: total, computeUsd: Number((total * USD_PER_SECOND).toFixed(4)), host: HOST, machine: MACHINE });
     } else {
       // Transient: back to the queue; the next claim resumes from the finished segments.
       // Transient: back to the queue (the next claim resumes from the finished
