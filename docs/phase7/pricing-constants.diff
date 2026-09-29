@@ -1,0 +1,75 @@
+diff --git a/supabase/functions/_shared/longFormProjectQuote.ts b/supabase/functions/_shared/longFormProjectQuote.ts
+index 344c46e..522bf22 100644
+--- a/supabase/functions/_shared/longFormProjectQuote.ts
++++ b/supabase/functions/_shared/longFormProjectQuote.ts
+@@ -16,7 +16,10 @@
+ 
+ export type RenderTier = "v2" | "v3" | "v4";
+ 
+-const CREDITS_PER_GENERATE: Record<RenderTier, number> = { v2: 2, v3: 3, v4: 4 };
++const CREDITS_PER_GENERATE: Record<RenderTier, number> = { v2: 1, v3: 4, v4: 5 };
++// Phase 7: the video is a FIXED price per minute (~2x our real cost incl. overhead,
++// at the cheapest $/credit we sell) — see docs/phase7/pricing-proposal.md.
++export const CREDITS_PER_MINUTE: Record<RenderTier, number> = { v2: 25, v3: 75, v4: 90 };
+ 
+ export type ProjectQuoteInput = {
+   targetDurationMinutes: number;
+@@ -67,14 +70,11 @@ export function estimateLongFormProjectQuote(input: ProjectQuoteInput): ProjectQ
+   const estimatedRetryRenders = Math.round(estimatedFreshRenders * retryUpliftShare);
+   const totalRenderCount = estimatedFreshRenders + estimatedRetryRenders;
+ 
+-  const creditsPerRender = CREDITS_PER_GENERATE[renderTier];
+-  const visualsCredits = totalRenderCount * creditsPerRender;
++  void CREDITS_PER_GENERATE; // per-scene prices now apply to scene REGENERATE only (stickman/scenes.ts)
++  const videoCredits = Math.ceil(CREDITS_PER_MINUTE[renderTier] * targetDurationMinutes);
+ 
+   const breakdown: ProjectQuoteBreakdownLine[] = [
+-    { label: "Research + Story", credits: 0, note: "Included — no additional charge." },
+-    { label: "Narration (voiceover + timing)", credits: 0, note: "Included — no additional charge." },
+-    { label: `~${estimatedBeatCount} visuals (${renderTier.toUpperCase()})`, credits: visualsCredits, note: `${estimatedFreshRenders} fresh renders + ${estimatedRetryRenders} bounded retry allowance; ${estimatedReusedOrProgrammatic} reused/programmatic at 0 credits.` },
+-    { label: "QA + bounded retries", credits: 0, note: "Retry allowance already folded into the visuals line above; the QA judging pass itself is included." },
++    { label: `${targetDurationMinutes}-min video (${renderTier.toUpperCase()})`, credits: videoCredits, note: `${CREDITS_PER_MINUTE[renderTier]} credits per minute — a fixed price: research, script, ~${estimatedBeatCount} scenes with QA and retries, voiceover, 1080p render, 3 thumbnails and the YouTube text are all included.` },
+   ];
+ 
+   const totalCredits = breakdown.reduce((sum, line) => sum + line.credits, 0);
+diff --git a/supabase/functions/_shared/stickman/scenes.ts b/supabase/functions/_shared/stickman/scenes.ts
+index 4a62805..b729789 100644
+--- a/supabase/functions/_shared/stickman/scenes.ts
++++ b/supabase/functions/_shared/stickman/scenes.ts
+@@ -35,7 +35,8 @@ export const WATCHDOG_GRACE_S = 90;
+ export const SCENES_MAX_RESUMES = 2;
+ 
+ // Credits per image by tier (the same prices as the project quote: GENERATE v2=2 / v3=3 / v4=4).
+-export const SCENE_CREDITS: Record<string, number> = { V2: 2, V3: 3, V4: 4 };
++// Phase 7: scene REGENERATE add-on prices (~2x real cost at the cheapest $/credit).
++export const SCENE_CREDITS: Record<string, number> = { V2: 1, V3: 4, V4: 5 };
+ export const sceneCredits = (tier: string) => SCENE_CREDITS[String(tier).toUpperCase()] ?? 2;
+ export const tierOf = (renderTier: string | null | undefined) => (String(renderTier ?? "v2").toUpperCase() as "V2" | "V3" | "V4");
+ 
+diff --git a/supabase/functions/long-form-render/index.ts b/supabase/functions/long-form-render/index.ts
+index 7d771d3..93621fc 100644
+--- a/supabase/functions/long-form-render/index.ts
++++ b/supabase/functions/long-form-render/index.ts
+@@ -38,6 +38,8 @@ const STALE_S = 300, QUEUED_NO_MACHINE_S = 150;
+ // Parallel render: up to N machines each render a chunk of the timeline (same total CPU).
+ const RENDER_PARALLEL = Math.max(1, Math.min(4, Number(Deno.env.get("RENDER_PARALLEL") ?? "4")));
+ const PARALLEL_MIN_FRAMES = 30 * 180; // under 3 minutes: one machine is fine
++// Phase 7: the 1440p version is a paid add-on (est. real cost 1.7x the measured 1080p: ~$0.018/min).
++export const RENDER_1440P_CREDITS_PER_MIN = 2, RENDER_1440P_MIN_CREDITS = 10;
+ 
+ 
+ export const RESOLUTIONS: Record<string, { width: number; height: number }> = { "1080p": { width: 1920, height: 1080 }, "1440p": { width: 2560, height: 1440 } };
+diff --git a/supabase/functions/long-form-thumbnails/index.ts b/supabase/functions/long-form-thumbnails/index.ts
+index 1d01b3d..c30ed60 100644
+--- a/supabase/functions/long-form-thumbnails/index.ts
++++ b/supabase/functions/long-form-thumbnails/index.ts
+@@ -34,7 +34,8 @@ const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
+ const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+ const FONT_URL = `${SUPABASE_URL}/storage/v1/object/public/generated/assets/fonts/LilitaOne-Regular.ttf`;
+ // 3 credits per regenerated image on every tier (one model for all: Nano Banana 2 Lite).
+-export const THUMB_CREDITS: Record<string, number> = { V2: 3, V3: 3, V4: 3 };
++// Phase 7: ~$0.064 real cost per regenerated image -> 6 credits (~50% margin at the cheapest $/credit).
++export const THUMB_CREDITS: Record<string, number> = { V2: 6, V3: 6, V4: 6 };
+ // The concept call: Sonnet 5 (gpt-5-mini concepts were generic). $2 / $10 per 1M tokens.
+ const CONCEPT_MODEL = "claude-sonnet-5";
+ const SONNET_IN_PER_M = 2.0, SONNET_OUT_PER_M = 10.0;
