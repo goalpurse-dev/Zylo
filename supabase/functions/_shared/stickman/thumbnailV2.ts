@@ -294,6 +294,63 @@ export function clearTopThird(img: Image, layout = readLayout(img)): { img: Imag
   return { img: out, shiftPx: shift, scale: Number(scale.toFixed(3)) };
 }
 
+// Thumbnail faces (the pack's exaggerated style): big round WHITE eyes with a
+// dark pupil inside a black outline. The video's finder (faceFinder.ts) wants
+// small dot eyes on even skin, so it under-read these (pack #1, #13: 0.8% and
+// 1.4% for faces clearly bigger). Here: round near-white regions holding a
+// dark pupil, paired side by side at a similar size; the face is a circle
+// about twice the eye span.
+export function findThumbFaces(src: Image): { x: number; y: number; width: number; height: number }[] {
+  const WW = 688, k = src.width / WW;
+  const img = src.clone().resize(WW, Math.round(src.height / k));
+  const W = img.width, H = img.height;
+  const luma = new Float32Array(W * H), white = new Uint8Array(W * H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const [r, g, b] = Image.colorToRGBA(img.getPixelAt(x + 1, y + 1));
+    const i = y * W + x;
+    luma[i] = 0.299 * r + 0.587 * g + 0.114 * b;
+    white[i] = luma[i] > 205 && Math.max(r, g, b) - Math.min(r, g, b) < 45 ? 1 : 0;
+  }
+  const seen = new Uint8Array(W * H), stack: number[] = [];
+  const eyes: { cx: number; cy: number; size: number }[] = [];
+  for (let s = 0; s < W * H; s++) {
+    if (seen[s] || !white[s]) continue;
+    let x0 = W, y0 = H, x1 = 0, y1 = 0, area = 0;
+    stack.push(s); seen[s] = 1;
+    while (stack.length) {
+      const i = stack.pop()!, x = i % W, y = (i / W) | 0;
+      area++;
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      for (const j of [i - 1, i + 1, i - W, i + W]) {
+        if (j < 0 || j >= W * H || seen[j] || !white[j]) continue;
+        if ((j === i - 1 && x === 0) || (j === i + 1 && x === W - 1)) continue;
+        seen[j] = 1; stack.push(j);
+      }
+    }
+    const w = x1 - x0 + 1, h = y1 - y0 + 1;
+    if (w < 6 || h < 6 || w > W * 0.15 || h > H * 0.25 || h / w < 0.6 || h / w > 1.7) continue;
+    // A pupil: dark pixels inside the box (the white region wraps around it).
+    let dark = 0;
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (luma[y * W + x] < 70) dark++;
+    const box = w * h, fill = (area + dark) / box;
+    if (dark < box * 0.03 || dark > box * 0.5 || fill < 0.55) continue;
+    eyes.push({ cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, size: (w + h) / 2 });
+  }
+  const faces: { x: number; y: number; width: number; height: number }[] = [];
+  const used = new Set<number>();
+  for (let i = 0; i < eyes.length; i++) for (let j = i + 1; j < eyes.length; j++) {
+    if (used.has(i) || used.has(j)) continue;
+    const a = eyes[i], b = eyes[j], size = (a.size + b.size) / 2;
+    const dx = Math.abs(a.cx - b.cx), dy = Math.abs(a.cy - b.cy);
+    if (Math.max(a.size, b.size) / Math.min(a.size, b.size) > 1.8 || dy > size * 0.6 || dx < size * 0.9 || dx > size * 4) continue;
+    used.add(i); used.add(j);
+    const d = (dx + size) * 2; // face diameter ≈ twice the eye span
+    const cx = (a.cx + b.cx) / 2, cy = (a.cy + b.cy) / 2 + size * 0.3;
+    faces.push({ x: Math.round((cx - d / 2) * k), y: Math.round((cy - d / 2) * k), width: Math.round(d * k), height: Math.round(d * k) });
+  }
+  return faces;
+}
+
 // The vision look (one cheap call): stray words, who is in the picture, the hook object.
 export type ThumbLook = { text: string; people: number; blankHeads: number; hookVisible: boolean; hookAttached?: boolean };
 export type ThumbChecks = {
@@ -307,7 +364,7 @@ export function checkThumb(img: Image, look: Partial<ThumbLook> = {}, castCount 
   const W = img.width, H = img.height;
   const layout = readLayout(img);
   const topEdge = edgeDensity(img, 0, 0, W, Math.round(H / 3));
-  const faces = findFaces(img);
+  const faces = [...findFaces(img), ...findThumbFaces(img)]; // dot-eye faces + the big white thumbnail eyes
   const faceShare = Number((faces.reduce((m, f) => Math.max(m, f.width * f.height), 0) / (W * H)).toFixed(3));
   const contrast = contrastScore(img, layout);
   const grey = greyShare(img);

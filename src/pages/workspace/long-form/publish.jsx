@@ -114,7 +114,7 @@ function ThumbnailsCard({ projectId }) {
   const [msg, setMsg] = useState(null);
   const started = useRef(false);
   const load = useCallback(async () => { const r = await listThumbnails(projectId); if (r.ok) setS(r); return r; }, [projectId]);
-  useEffect(() => { load().then((r) => { if (r.ok && !r.thumbnails.length && !started.current) { started.current = true; startThumbnails(projectId).then(load); } }); }, [load, projectId]);
+  useEffect(() => { load().then((r) => { if (r.ok && (!r.thumbnails.length || r.thumbnails.every((t) => t.status === "failed")) && !started.current) { started.current = true; startThumbnails(projectId).then(load); } }); }, [load, projectId]);
   const busy = s?.thumbnails?.some((t) => t.status === "queued" || t.status === "rendering");
   // Also poll while empty: the autopilot's batch appears a moment after the page opens.
   const empty = !!s && !s.thumbnails?.length;

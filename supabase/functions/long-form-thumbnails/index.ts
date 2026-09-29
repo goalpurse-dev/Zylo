@@ -100,7 +100,9 @@ export async function makeConcepts(project: any, projectId: string) {
   await recordCost(admin, { projectId, stage: "other", provider: "anthropic", model: CONCEPT_MODEL, units: { calls: 1, inputTokens: j.usage?.input_tokens ?? 0, outputTokens: j.usage?.output_tokens ?? 0, purpose: "thumbnail concepts" } as any, usd, estimated: false, sourceTable: "long_form_thumbnails", sourceId: null });
   const out = (j.content ?? []).find((c: any) => c.type === "tool_use")?.input ?? {};
   const hookObject = String(out.hookObject ?? "").trim();
-  const raw = out.concepts ?? [];
+  // Sonnet sometimes returns a nested array as a JSON string (f90160bc, 2026-09-29): parse it.
+  const asArray = (v: any) => { if (typeof v === "string") { try { v = JSON.parse(v); } catch { return []; } } return Array.isArray(v) ? v : []; };
+  const raw = asArray(out.concepts);
   const castNames = castIds.map((id) => set.cast[id].displayName);
   const { concepts, problems } = normalizeConcepts(raw, title, castIds, hookObject, castNames);
   // Each concept's own cast blocks from the Bible (verbatim, never re-authored).
@@ -225,7 +227,9 @@ Deno.serve(async (req) => {
 
   if (action === "start") {
     const regenerate = body?.regenerate === true;
-    if (!regenerate && lastBatch > 0) return ok(req, { ok: true, thumbnails: latest.map(view) }); // the included batch exists
+    // The included batch exists (a batch whose every image failed doesn't count: it's re-made free).
+    const allFailed = latest.length > 0 && latest.every((r: any) => r.status === "failed");
+    if (!regenerate && lastBatch > 0 && !allFailed) return ok(req, { ok: true, thumbnails: latest.map(view) });
     if (latest.some((r: any) => r.status === "queued" || r.status === "rendering")) return ok(req, { ok: true, busy: true, thumbnails: latest.map(view) });
     const charge = regenerate ? perImage : 0;
     if (charge) {

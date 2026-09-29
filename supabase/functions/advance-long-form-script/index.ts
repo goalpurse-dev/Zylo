@@ -46,7 +46,7 @@ import { nudgeAutopilot } from "../_shared/stickman/autopilotNudge.ts";
 import { urlIsLive } from "../_shared/stickman/urlVerify.ts";
 import { nicheGuidanceFor } from "../_shared/stickman/nicheGuidance.ts";
 import { installCassetteRecorder } from "../_shared/stickman/cassette.ts";
-import { sourceIndex, factSources, isLiveUrl } from "../_shared/stickman/claimSources.ts";
+import { sourceIndex, factSources, isLiveUrl, isWeakSource } from "../_shared/stickman/claimSources.ts";
 import {
   findBannedLecturePhrases,
   findNumberedListEnumerations,
@@ -1836,7 +1836,8 @@ async function stageClaimVerify(admin: any, row: ScriptRow) {
   const srcIndex = sourceIndex(researchRow);
   const checked = await Promise.all(toCheck.map(async (c) => {
     const v = verdictByClaimId.get(c.id) ?? { claimId: c.id, verdict: "unverifiable", correctedValue: null, sourceName: null, url: null };
-    const live = v.url ? await isLiveUrl(v.url) : false;
+    // A weak host (a document mirror, Q&A, content farm) is dropped like a dead link — the claim stays.
+    const live = v.url && !isWeakSource(v.url) ? await isLiveUrl(v.url) : false;
     return { ...v, url: live ? v.url : null, sources: live ? [{ url: v.url, title: v.sourceName ?? null }] : [], ...(v.url && !live ? { droppedUrl: v.url } : {}) };
   }));
   const newVerdicts = [

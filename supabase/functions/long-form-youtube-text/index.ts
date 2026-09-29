@@ -17,7 +17,7 @@ import { ok, err, cors } from "../shared/cors.ts";
 import { requireUser } from "../shared/auth.ts";
 import { segmentForWord } from "../_shared/stickman/scenes.ts";
 import { recordCost } from "../_shared/costLedger.ts";
-import { claimSourceList } from "../_shared/stickman/claimSources.ts";
+import { claimSourceList, sourceTier } from "../_shared/stickman/claimSources.ts";
 import { buildChapters, cleanTitle, limitTags, realSources, composeDescription, chapterHook, cleanHashtags, disclaimerFor, LECTURE_TITLE, LAME_HOOK } from "../../../src/lib/publishText.js";
 
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -28,9 +28,12 @@ const IN_PER_M = 2.0, OUT_PER_M = 10.0;
 const GENERATING_MS = 120_000;
 const SECRET = Deno.env.get("LONG_FORM_AUTOPILOT_SECRET") ?? "";
 
+// Saved sources pass the quality filter on every read too (texts written before it existed): weak hosts out, strong first.
+const goodSources = (list: any[]) => (list ?? []).map((s, i) => ({ s, i, t: sourceTier(String(s?.url ?? "")) })).filter((x) => x.t > 0).sort((a, b) => b.t - a.t || a.i - b.i).map((x) => x.s);
 const view = (m: any) => {
-  const meta = { hook: m.hook, chapters: m.chapters ?? [], sources: m.sources ?? [], includeCredit: m.include_credit, disclaimer: m.disclaimer, hashtags: m.hashtags ?? [] };
-  return { title: m.title, alternatives: m.title_alternatives ?? [], hook: m.hook, chapters: m.chapters ?? [], sources: realSources(m.sources ?? []), includeCredit: m.include_credit, disclaimer: m.disclaimer ?? "", hashtags: cleanHashtags(m.hashtags ?? []), tags: m.tags ?? [], editVersion: m.edit_version, description: composeDescription(meta), updatedAt: m.updated_at };
+  const sources = goodSources(m.sources);
+  const meta = { hook: m.hook, chapters: m.chapters ?? [], sources, includeCredit: m.include_credit, disclaimer: m.disclaimer, hashtags: m.hashtags ?? [] };
+  return { title: m.title, alternatives: m.title_alternatives ?? [], hook: m.hook, chapters: m.chapters ?? [], sources: realSources(sources), includeCredit: m.include_credit, disclaimer: m.disclaimer ?? "", hashtags: cleanHashtags(m.hashtags ?? []), tags: m.tags ?? [], editVersion: m.edit_version, description: composeDescription(meta), updatedAt: m.updated_at };
 };
 
 // Numbers in the intro that appear nowhere in the facts or the script: logged (never silently published as fact).
@@ -131,6 +134,8 @@ Deno.serve(async (req) => {
   const usd = (usage.inputTokens * IN_PER_M + usage.outputTokens * OUT_PER_M) / 1_000_000;
   await recordCost(admin, { projectId, stage: "other", provider: "anthropic", model: MODEL, units: { ...usage, purpose: "youtube text" } as any, usd, estimated: false, sourceTable: "long_form_publish_meta", sourceId: null });
   const out: any = (j.content ?? []).find((c: any) => c.type === "tool_use")?.input;
+  // Sonnet sometimes returns a nested array as a JSON string: parse those.
+  for (const k of ["alternatives", "chapterTitles", "hashtags", "tags"]) if (out && typeof out[k] === "string") { try { out[k] = JSON.parse(out[k]); } catch { out[k] = []; } }
   if (!out) return err(req, "Couldn't write the YouTube text right now. Try again.", 502);
   const chapterTitles: string[] = out.chapterTitles ?? [];
   const finalChapters = chapters.map((c: any, i: number) => ({ ms: c.ms, title: chapterHook(String(chapterTitles[i] ?? "").slice(0, 40), c.title) }));
