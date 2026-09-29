@@ -67,7 +67,11 @@ Deno.serve(async (req) => {
   // Phase 6f: a failed render of an EDIT (EDL v2) never marks the project failed —
   // the edit and every earlier render are intact; the Publish page offers a free Retry.
   const editRender = job.edl?.version === "STICKMAN_EDL_V2";
-  await admin.from("long_form_projects").update({ ...(editRender ? {} : { status: "failed" }), status_reason: userReason, current_render_job_id: job.id }).eq("id", job.project_id);
+  // The claim set the project to 'rendering'; it goes back to what it was: 'complete' when an
+  // earlier video exists, else 'images_ready' (never stuck showing "Rendering").
+  const { data: proj } = editRender ? await admin.from("long_form_projects").select("final_video_path").eq("id", job.project_id).maybeSingle() : { data: null };
+  const back = editRender ? { status: proj?.final_video_path ? "complete" : "images_ready" } : { status: "failed" };
+  await admin.from("long_form_projects").update({ ...back, status_reason: userReason, current_render_job_id: job.id }).eq("id", job.project_id);
   const billing = await applyRenderBilling(admin, job.project_id, "failed", terminal, logEvent);
   await logEvent("finish-long-form-render", "error", "render_failed", { jobId: job.id, projectId: job.project_id, errorCode: b.errorCode, terminal, billing: billing.decision });
   return ok(req, { ok: true, billing: billing.decision });

@@ -17,7 +17,7 @@ test("stickman stepper: every project state maps to exactly one Stickman step (n
   assert.equal(deriveStickmanStep({ autopilot: { status: "failed" } }).route, "generating");
   assert.equal(deriveStickmanStep({ autopilot: { status: "done" }, _script: { locked_at: "x" } }).stage, "voice");
   assert.equal(deriveStickmanStep({ status: "images_ready" }).route, "scenes");
-  assert.equal(deriveStickmanStep({ status: "rendering" }).key, "edit");
+  assert.equal(deriveStickmanStep({ status: "rendering" }).key, "publish"); // rendered projects land on Publish
   assert.equal(deriveStickmanStep({ status: "complete", final_video_path: "p" }).statusLabel, "Done");
   // The lobby card for a Stickman project speaks the Stickman steps; a legacy project keeps its own.
   const info = deriveProjectStageInfo({ _stickman: true, autopilot: { status: "running" }, current_visual_plan_version_id: null });

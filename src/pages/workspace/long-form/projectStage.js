@@ -84,7 +84,8 @@ function stageInfoFromVideoStatus(project) {
 export function deriveStickmanStep(project) {
   const ap = project?.autopilot ?? null;
   if (["rendering", "complete"].includes(project?.status) || project?.final_video_path) {
-    return { key: "edit", route: "edit", statusLabel: project?.status === "rendering" ? "Rendering" : "Done", active: project?.status === "rendering" };
+    // Rendered (or rendering from Publish): the furthest step is Publish — opening the project lands there.
+    return { key: "publish", route: "publish", statusLabel: project?.status === "rendering" ? "Rendering" : "Done", active: project?.status === "rendering" };
   }
   if (ap?.phase === "scenes") {
     const sc = ap.scenes ?? {};

@@ -5,3 +5,6 @@ dist-ssr
 .env.local
 .env.production
 .vercel
+
+# Generated render / proof videos (hundreds of MB; GitHub rejects files > 100 MB)
+*.mp4

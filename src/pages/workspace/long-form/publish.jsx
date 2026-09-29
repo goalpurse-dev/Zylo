@@ -10,7 +10,7 @@ import { fetchLongFormProject } from "./project";
 import { LongFormActionFooter, LongFormCreationHeader } from "./shared";
 import { cachedStickmanProject } from "./StickmanRouteGuard";
 import { useOverlayFont } from "./sceneVisuals";
-import { limitTags, TITLE_MAX, TAGS_MAX_CHARS } from "../../../lib/publishText";
+import { fileSlug, limitTags, TITLE_MAX, TAGS_MAX_CHARS } from "../../../lib/publishText";
 import { renderStatus, startRender, downloadRender, listThumbnails, startThumbnails, retryThumbnails, setThumbnailHeadline, selectThumbnail, getYoutubeText, generateYoutubeText, saveYoutubeText } from "./publish/publishApi";
 
 const STAGE = { queued: "Waiting for a render machine…", drawing: "Drawing the text and captions…", rendering: "Rendering the scenes…", finishing: "Joining the scenes and the voice…", uploading: "Uploading your video…" };
@@ -18,6 +18,18 @@ const mins = (s) => (s < 90 ? `${Math.max(1, Math.round(s / 10) * 10)} s` : `${M
 const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 const LIME_BTN = "inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-lime-300 px-4 text-[15px] font-bold text-[#11150D] shadow-[0_0_40px_rgba(190,242,100,0.18)] hover:bg-lime-200 disabled:opacity-60";
 const GHOST_BTN = "inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.05] px-4 text-[14px] font-semibold text-white hover:bg-white/[0.09] disabled:opacity-60";
+// Save a file at once (no new tab): fetch -> blob -> a[download]. Storage is another
+// origin, where the download attribute alone is ignored; if the fetch fails, open it.
+async function downloadFile(url, name) {
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(String(r.status));
+    const href = URL.createObjectURL(await r.blob());
+    const a = Object.assign(document.createElement("a"), { href, download: name });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(href), 10_000);
+  } catch { window.open(url, "_blank", "noopener"); }
+}
 const SMALL_BTN = "inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 text-[11.5px] font-semibold text-white/75 hover:bg-white/[0.08] disabled:opacity-40";
 
 function Card({ title, icon: Icon, children, right, testid }) {
@@ -129,7 +141,7 @@ function RenderCard({ projectId, autopilot }) {
 
 // ======================================================= thumbnails
 
-function ThumbModal({ t, projectId, onClose, onChanged }) {
+function ThumbModal({ t, projectId, onClose, onChanged, slug }) {
   const [headline, setHeadline] = useState(t.headline ?? "");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -147,8 +159,8 @@ function ThumbModal({ t, projectId, onClose, onChanged }) {
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={pick} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-lime-300 px-4 text-[13.5px] font-bold text-[#11150D] hover:bg-lime-200"><Check className="h-4 w-4" /> Use this thumbnail</button>
-          <a href={t.pngUrl} download="thumbnail-1280x720.png" className={GHOST_BTN}><Download className="h-4 w-4" /> 1280×720</a>
-          {t.fullUrl && <a href={t.fullUrl} download="thumbnail-1920x1080.jpg" className={GHOST_BTN}><Download className="h-4 w-4" /> 1920×1080</a>}
+          <button type="button" data-testid="modal-download-720" onClick={() => downloadFile(t.pngUrl, `${slug}-thumbnail.png`)} className={GHOST_BTN}><Download className="h-4 w-4" /> 1280×720</button>
+          {t.fullUrl && <button type="button" onClick={() => downloadFile(t.fullUrl, `${slug}-thumbnail-1920x1080.jpg`)} className={GHOST_BTN}><Download className="h-4 w-4" /> 1920×1080</button>}
         </div>
         <p className="text-[11.5px] text-white/40">Edit the headline for free (1–3 words, 4 for a question). The 1280×720 file is under YouTube's 2 MB limit.</p>
         {msg && <p className="text-[12px] text-red-200">{msg}</p>}
@@ -157,7 +169,7 @@ function ThumbModal({ t, projectId, onClose, onChanged }) {
   );
 }
 
-function ThumbnailsCard({ projectId }) {
+function ThumbnailsCard({ projectId, slug }) {
   const [s, setS] = useState(null);
   const [msg, setMsg] = useState(null);
   const [open, setOpen] = useState(null);
@@ -189,7 +201,7 @@ function ThumbnailsCard({ projectId }) {
           <button type="button" data-testid="thumb-retry" disabled={acting} onClick={() => retry(t.id)} className="inline-flex min-h-[32px] items-center gap-1 rounded-lg bg-white/10 px-2.5 text-[11px] font-semibold text-white hover:bg-white/15 disabled:opacity-50"><RotateCcw className="h-3 w-3" /> Try again · free</button>
         </div>
       ) : <div className="zyvo-shimmer grid aspect-video w-full place-items-center bg-white/[0.04]"><Loader2 className="h-4 w-4 animate-spin text-white/50" /></div>}
-      {t.selected && <span className="pointer-events-none absolute right-1 top-1 rounded-full bg-lime-300 px-1.5 py-0.5 text-[9.5px] font-bold text-[#11150D]">Picked</span>}
+      {t.selected && <span className="pointer-events-none absolute bottom-1 left-1 rounded-full bg-lime-300 px-1.5 py-0.5 text-[9.5px] font-bold text-[#11150D]">Picked</span>}
     </div>
   );
   return (
@@ -199,11 +211,11 @@ function ThumbnailsCard({ projectId }) {
         {thumbs.length ? thumbs.map(tile) : [0, 1, 2].map((i) => <div key={i} data-testid="thumb-skeleton" className="zyvo-shimmer aspect-video min-w-0 rounded-lg bg-white/[0.04] max-md:w-[72%] max-md:shrink-0" />)}
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        {selected?.pngUrl && <a data-testid="thumb-download" href={selected.pngUrl} download="thumbnail.png" className={GHOST_BTN}><Download className="h-4 w-4" /> Download thumbnail</a>}
+        {selected?.pngUrl && <button type="button" data-testid="thumb-download" onClick={() => downloadFile(selected.pngUrl, `${slug}-thumbnail.png`)} className={GHOST_BTN}><Download className="h-4 w-4" /> Download thumbnail</button>}
         <span className="text-[11.5px] text-white/40">{empty ? "Drawing 3 thumbnails from your video (included)…" : busy ? "Drawing…" : selected ? "1280×720 PNG, under 2 MB." : "Tap one to preview, edit its headline and pick it."}</span>
       </div>
       {msg && <p className="mt-2 text-[12px] text-red-200">{msg}</p>}
-      {open && <ThumbModal t={open} projectId={projectId} onClose={() => setOpen(null)} onChanged={load} />}
+      {open && <ThumbModal t={open} slug={slug} projectId={projectId} onClose={() => setOpen(null)} onChanged={load} />}
     </Card>
   );
 }
@@ -221,7 +233,7 @@ function Toggle({ label, on, onChange, testid }) {
   );
 }
 
-function TextCard({ projectId }) {
+function TextCard({ projectId, onTitle }) {
   const [t, setT] = useState(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -230,7 +242,7 @@ function TextCard({ projectId }) {
   const descRef = useRef(null);
   useAutoHeight(descRef, desc);
   const asked = useRef(false);
-  const apply = (x) => { setT(x); setTagsText((x?.tags ?? []).join(", ")); setDesc(x?.description ?? ""); };
+  const apply = (x) => { setT(x); setTagsText((x?.tags ?? []).join(", ")); setDesc(x?.description ?? ""); if (x?.title) onTitle?.(x.title); };
   // Written server-side by the Publish autopilot: while it's being written, poll; a page opened without any text writes it once.
   const [waiting, setWaiting] = useState(false);
   useEffect(() => { getYoutubeText(projectId).then((r) => { if (r.ok && r.text) apply(r.text); else if (r.ok && r.generating) setWaiting(true); else if (r.ok && !asked.current) { asked.current = true; setBusy(true); generateYoutubeText(projectId).then((g) => { setBusy(false); if (g.ok && g.text) apply(g.text); else if (g.ok && g.generating) setWaiting(true); else setMsg(g.message); }); } }); }, [projectId]);
@@ -296,13 +308,14 @@ export default function LongFormPublish() {
   const autopilot = useLocation().state?.autopilot === true;
   useOverlayFont();
   const [project, setProject] = useState(cachedStickmanProject(projectId)?.project ?? null);
+  const [ytTitle, setYtTitle] = useState(null);
   const [mobile, setMobile] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches);
   useEffect(() => { const mq = window.matchMedia("(max-width: 767px)"); const on = () => setMobile(mq.matches); mq.addEventListener("change", on); return () => mq.removeEventListener("change", on); }, []);
   useEffect(() => { document.title = "Publish | Zyvo"; fetchLongFormProject(projectId).then((p) => p && setProject((o) => ({ ...(o ?? {}), ...p }))); }, [projectId]);
   const cards = (
     <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start" data-testid="publish-page">
       <div className="grid min-w-0 gap-4 lg:sticky lg:top-3"><RenderCard projectId={projectId} autopilot={autopilot} /></div>
-      <div className="grid min-w-0 gap-4"><ThumbnailsCard projectId={projectId} /><TextCard projectId={projectId} /></div>
+      <div className="grid min-w-0 gap-4"><ThumbnailsCard projectId={projectId} slug={fileSlug(ytTitle ?? project?.selected_title ?? "zyvo-video")} /><TextCard projectId={projectId} onTitle={setYtTitle} /></div>
     </div>
   );
   if (mobile) return (

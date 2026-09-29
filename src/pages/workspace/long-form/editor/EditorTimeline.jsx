@@ -22,23 +22,37 @@ const ROWS = [
 ];
 const fmt = (ms) => { const s = Math.max(0, ms / 1000); return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`; };
 
-function Waveform({ peaks, widthPx, height }) {
+// The voiceover waveform in tiles of <= 4000 px (one canvas up to 32,000 px wide
+// rendered blank on some GPUs when zoomed in), only the tiles near the view.
+const WAVE_TILE = 4000;
+function WaveTile({ peaks, left, width, total, height }) {
   const ref = useRef(null);
   useEffect(() => {
     const c = ref.current;
-    if (!c || !peaks?.length) return;
-    const w = Math.min(32000, Math.max(1, Math.round(widthPx)));
-    c.width = w; c.height = height;
+    if (!c) return;
+    c.width = width; c.height = height;
     const g = c.getContext("2d");
-    g.clearRect(0, 0, w, height);
+    g.clearRect(0, 0, width, height);
     g.fillStyle = "rgba(190,242,100,0.55)";
-    for (let x = 0; x < w; x++) {
-      const p = peaks[Math.floor((x / w) * peaks.length)] ?? 0;
+    for (let x = 0; x < width; x++) {
+      const p = peaks[Math.floor(((left + x) / total) * peaks.length)] ?? 0;
       const h = Math.max(1, p * (height - 4));
       g.fillRect(x, (height - h) / 2, 1, h);
     }
-  }, [peaks, widthPx, height]);
-  return <canvas ref={ref} className="absolute left-0 top-0" style={{ width: widthPx, height }} />;
+  }, [peaks, left, width, total, height]);
+  return <canvas ref={ref} data-testid="wave-tile" className="absolute top-0" style={{ left, width, height }} />;
+}
+function Waveform({ peaks, widthPx, height, scrollX = 0, viewW = 1200 }) {
+  if (peaks === "failed") return <div className="absolute inset-0 flex items-center px-2 text-[10.5px] text-white/40">Couldn't draw the waveform (the voiceover still plays).</div>;
+  if (!Array.isArray(peaks) || !peaks.length) return <div className="zyvo-shimmer absolute inset-y-2 left-0 rounded bg-white/[0.04]" style={{ width: Math.min(widthPx, viewW) }} />;
+  const total = Math.max(1, Math.round(widthPx));
+  const tiles = [];
+  for (let left = 0; left < total; left += WAVE_TILE) {
+    const width = Math.min(WAVE_TILE, total - left);
+    if (left + width < scrollX - WAVE_TILE || left > scrollX + viewW + WAVE_TILE) continue; // far off screen
+    tiles.push(<WaveTile key={left} peaks={peaks} left={left} width={width} total={total} height={height} />);
+  }
+  return <>{tiles}</>;
 }
 
 export default function EditorTimeline({ doc, clips, words, phrases, peaks, t, onSeek, zoom, setZoom, selection, onSelect, onMoveCut, onUpdateText, musicName, playing = false }) {
@@ -184,7 +198,7 @@ export default function EditorTimeline({ doc, clips, words, phrases, peaks, t, o
                   );
                 })}
                 {row.key === "captions" && doc.captions?.enabled && phrases.map((p, k) => (visible(p.startMs, p.endMs) ? <div key={k} className="absolute top-1 bottom-1 rounded bg-sky-300/20" style={{ left: x(p.startMs), width: Math.max(2, x(p.endMs) - x(p.startMs) - 1) }} onPointerDown={(ev) => { ev.stopPropagation(); onSelect({ kind: "captions" }); onSeek(msAt(ev.clientX)); }} /> : null))}
-                {row.key === "voice" && <Waveform peaks={peaks} widthPx={widthPx} height={row.h} />}
+                {row.key === "voice" && <Waveform peaks={peaks} widthPx={widthPx} height={row.h} scrollX={scrollX} viewW={viewW} />}
                 {row.key === "music" && doc.music?.url && <div className="absolute top-1 bottom-1 flex items-center rounded bg-fuchsia-300/15 px-2 text-[10.5px] text-fuchsia-100" style={{ left: 0, width: widthPx }} onPointerDown={(ev) => { ev.stopPropagation(); onSelect({ kind: "music" }); }}>{musicName ?? "Music"}{doc.music.duck !== false ? " · auto-duck" : ""}</div>}
               </div>
             </div>

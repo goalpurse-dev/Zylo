@@ -32,7 +32,7 @@ test("the Stickman stepper is Idea · Scenes · Edit · Publish", () => {
 });
 
 test("every legacy page (and the old writing page) redirects to the real state's page", () => {
-  const home = { writing: "generating", scriptFailed: "generating", narrating: "generating", voiceFailed: "generating", drawing: "generating", scenesFailed: "generating", f90160bc: "scenes", regenerating: "scenes", stoppedAtVoice: "generating", complete: "edit" };
+  const home = { writing: "generating", scriptFailed: "generating", narrating: "generating", voiceFailed: "generating", drawing: "generating", scenesFailed: "generating", f90160bc: "scenes", regenerating: "scenes", stoppedAtVoice: "generating", complete: "publish" };
   for (const [name, project] of Object.entries(STATES)) for (const page of LEGACY_STICKMAN_PAGES) assert.equal(resolveStickmanPage(page, project), home[name], `${name} /${page}`);
   assert.equal(deriveStickmanStep(STATES.writing).stage, "script");
   assert.equal(deriveStickmanStep(STATES.narrating).stage, "voice");

@@ -23,6 +23,7 @@ import { flattenWords, validateEdit } from "../../../src/lib/stickmanEdit.js";
 import { logEvent } from "../_shared/systemLog.ts";
 import { chunkPieces } from "../_shared/stickman/renderChunks.ts";
 import { fillCenterFlatness } from "../_shared/stickman/flatness.ts";
+import { fileSlug } from "../../../src/lib/publishText.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -212,7 +213,9 @@ Deno.serve(async (req) => {
     const id = String(body?.jobId ?? job?.id ?? "");
     const { data: j } = await admin.from("long_form_render_jobs").select("id, project_id, status, output_path, resolution").eq("id", id).maybeSingle();
     if (!j || j.project_id !== projectId || j.status !== "done" || !j.output_path) return err(req, "This video isn't ready yet.", 409);
-    const name = `${String(project.selected_title ?? "zyvo-video").replace(/[^\w\- ]+/g, "").trim().slice(0, 60) || "zyvo-video"} (${j.resolution}).mp4`;
+    // A short slug from the YouTube title (else the project title): "how-did-ancient-humans-actually-hunt-1080p.mp4".
+    const { data: meta } = await admin.from("long_form_publish_meta").select("title").eq("project_id", projectId).maybeSingle();
+    const name = `${fileSlug(meta?.title ?? project.selected_title ?? "zyvo-video")}-${j.resolution}.mp4`;
     const signed = await admin.storage.from(BUCKET).createSignedUrl(j.output_path, 600, { download: name });
     if (signed.error) return err(req, "Couldn't prepare the download.", 500);
     return ok(req, { ok: true, url: signed.data.signedUrl, fileName: name });

@@ -89,7 +89,7 @@ function MobileTimeline({ doc, clips, phrases, peaks, t, onSeek, selection, onSe
   // Waveform: only the visible seconds are drawn.
   useEffect(() => {
     const c = canvasRef.current;
-    if (!c || !peaks?.length) return;
+    if (!c || !Array.isArray(peaks) || !peaks.length) return; // "failed" or still loading
     c.width = Math.round(W); c.height = 34;
     const g = c.getContext("2d");
     g.clearRect(0, 0, c.width, 34);

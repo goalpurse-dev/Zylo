@@ -36,7 +36,8 @@ const goodSources = (list: any[]) => (list ?? []).map((s, i) => ({ s, i, t: sour
 const view = (m: any, corpus = "") => {
   const sources = goodSources(m.sources);
   const chapters = (m.chapters ?? []).map((c: any) => ({ ...c, title: titleCase(c.title) }));
-  const hashtags = corpus ? cleanHashtags(tagsInVideo(m.hashtags ?? [], corpus)) : cleanHashtags(m.hashtags ?? []);
+  // Hashtags: topic ones (#EarlyHumans) are fine; names were checked against the video when written.
+  const hashtags = cleanHashtags(m.hashtags ?? []);
   const meta = { hook: m.hook, chapters, sources, includeCredit: m.include_credit, includeChapters: m.include_chapters !== false, includeSources: m.include_sources !== false, disclaimer: m.disclaimer, hashtags };
   const generated = composeDescription(meta);
   return {
@@ -145,11 +146,11 @@ Deno.serve(async (req) => {
     `"thesis": 1-2 sentences, the line that lands the idea.`,
     `"chapterTitles": one 2-5 word hook per section, same order (style from other topics: "The Missing Clue", "Why It Backfired"); never Intro, Conclusion, Final image: ${chapters.length || (sd.chapters ?? []).length} of them.`,
     `"disclaimer": 1-2 sentences fitting the niche — history/science: it summarizes published research for general educational purposes, some details rely on inference and remain debated; health: not medical advice; money: not financial advice.`,
-    `"hashtags": 3-5 hashtags, most specific first (#CamelCase, no spaces). "tags": 12-20 search tags, most specific first, no '#'.`,
+    `"hashtags": 3-5 hashtags, most specific first (#CamelCase, no spaces), each marked isName (a person, site, find, study or work) or not (a topic like #EarlyHumans). "tags": 12-20 search tags, most specific first, no '#'.`,
   ].join("\n");
   const schema = { type: "object", additionalProperties: false, required: ["title", "alternatives", "hookParagraph", "evidenceParagraph", "thesis", "chapterTitles", "disclaimer", "hashtags", "tags"], properties: {
     title: { type: "string" }, alternatives: { type: "array", items: { type: "string" } }, hookParagraph: { type: "string" }, evidenceParagraph: { type: "string" }, thesis: { type: "string" },
-    chapterTitles: { type: "array", items: { type: "string" } }, disclaimer: { type: "string" }, hashtags: { type: "array", items: { type: "string" } }, tags: { type: "array", items: { type: "string" } } } };
+    chapterTitles: { type: "array", items: { type: "string" } }, disclaimer: { type: "string" }, hashtags: { type: "array", items: { type: "object", additionalProperties: false, required: ["tag", "isName"], properties: { tag: { type: "string" }, isName: { type: "boolean" } } } }, tags: { type: "array", items: { type: "string" } } } };
   const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
     body: JSON.stringify({ model: MODEL, max_tokens: 2500, tools: [{ name: "youtube_text", description: "The YouTube title, description parts and tags.", input_schema: schema }], tool_choice: { type: "tool", name: "youtube_text" }, messages: [{ role: "user", content: prompt }] }) });
   const j: any = await r.json().catch(() => null);
@@ -170,7 +171,8 @@ Deno.serve(async (req) => {
   const known = new Set(numbersIn(`${facts.join(" ")} ${scriptText}`));
   const unverified = numbersIn(intro).filter((n) => !known.has(n));
   if (unverified.length) console.warn(`youtube text ${projectId}: numbers not in the facts: ${unverified.join(", ")}`);
-  const hashtags = cleanHashtags(tagsInVideo(out.hashtags ?? [], genCorpus));
+  // Names (people, sites, studies) must be in the video; topic hashtags are fine as they are.
+  const hashtags = cleanHashtags((Array.isArray(out.hashtags) ? out.hashtags : []).map((h: any) => (typeof h === "string" ? { tag: h, isName: false } : h)).filter((h: any) => !h.isName || tagsInVideo([String(h.tag)], genCorpus).length).map((h: any) => String(h.tag)));
   const row = {
     project_id: projectId, title: cleanTitle(out.title || titleBase), title_alternatives: (out.alternatives ?? []).map(cleanTitle).filter((t: string) => t && !LECTURE_TITLE.test(t)).slice(0, 4), hook: intro,
     chapters: finalChapters, sources, include_credit: saved?.include_credit ?? true,

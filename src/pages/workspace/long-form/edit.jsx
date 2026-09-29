@@ -20,18 +20,29 @@ import { withEnds, clipMotion, moveCut, splitAt, setClip, newTextItem, updateTex
 
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
-// Peaks for the voiceover waveform (decoded once in the browser).
+// Peaks for the voiceover waveform. Decoded at 8 kHz in an OfflineAudioContext
+// (a 10-minute narration at full rate is ~220 MB of floats — enough to fail in
+// a busy tab, silently, leaving the track empty), cached per file, and retried
+// once at an even lower rate before giving up.
+const PEAKS_CACHE = "zyvo_peaks_v1:";
+async function decodeAt(buf, rate) {
+  const Offline = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  const ctx = new Offline(1, 1, rate);
+  return await new Promise((ok, bad) => { const p = ctx.decodeAudioData(buf, ok, bad); p?.then?.(ok, bad); });
+}
 async function waveformPeaks(url, buckets = 6000) {
-  const buf = await (await fetch(url)).arrayBuffer();
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const audio = await ctx.decodeAudioData(buf);
+  try { const hit = localStorage.getItem(PEAKS_CACHE + url); if (hit) return JSON.parse(hit); } catch { /* no cache */ }
+  const bytes = await (await fetch(url)).arrayBuffer();
+  let audio;
+  try { audio = await decodeAt(bytes.slice(0), 8000); } catch { audio = await decodeAt(bytes.slice(0), 3000); }
   const ch = audio.getChannelData(0);
   const step = Math.max(1, Math.floor(ch.length / buckets));
-  const out = new Float32Array(buckets);
+  const out = new Array(buckets).fill(0);
   let max = 0;
-  for (let b = 0; b < buckets; b++) { let m = 0; for (let i = b * step; i < Math.min(ch.length, (b + 1) * step); i += 4) { const v = Math.abs(ch[i]); if (v > m) m = v; } out[b] = m; if (m > max) max = m; }
-  ctx.close?.();
-  return Array.from(out, (v) => (max ? v / max : 0));
+  for (let b = 0; b < buckets; b++) { let m = 0; for (let i = b * step; i < Math.min(ch.length, (b + 1) * step); i++) { const v = Math.abs(ch[i]); if (v > m) m = v; } out[b] = m; if (m > max) max = m; }
+  const peaks = out.map((v) => (max ? Math.round((v / max) * 1000) / 1000 : 0));
+  try { localStorage.setItem(PEAKS_CACHE + url, JSON.stringify(peaks)); } catch { /* full: fine */ }
+  return peaks;
 }
 
 export default function LongFormEdit() {
@@ -78,7 +89,7 @@ export default function LongFormEdit() {
       if (r.retimed) setNotice("Your new voiceover is in: the cuts follow its timing and your pictures stay.");
       else if (r.resynced) setNotice(`${r.resynced} scene${r.resynced === 1 ? "" : "s"} now show their newest picture.`);
       if (r.version === 0) saveNow(r.doc); // the first edit is saved at once (a re-timed / re-synced one is saved by the server)
-      waveformPeaks(r.doc.audio.url).then((p) => alive && setPeaks(p)).catch(() => {});
+      waveformPeaks(r.doc.audio.url).then((p) => alive && setPeaks(p)).catch((e) => { console.warn("waveform:", e); alive && setPeaks("failed"); });
     });
     return () => { alive = false; };
   }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps

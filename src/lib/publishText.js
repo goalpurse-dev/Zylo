@@ -130,3 +130,11 @@ export function composeDescription(meta) {
   if (tags.length) parts.push(tags.join(" "));
   return parts.filter(Boolean).join("\n\n");
 }
+// Download file names: a short slug from the title (<= 40 chars, cut at a word),
+// e.g. "how-did-ancient-humans-actually-hunt-1080p.mp4", "...-thumbnail.png".
+export function fileSlug(title, max = 40) {
+  const s = String(title ?? "").normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  if (s.length <= max) return s || "zyvo-video";
+  const cut = s.slice(0, max + 1);
+  return (cut.lastIndexOf("-") > 10 ? cut.slice(0, cut.lastIndexOf("-")) : s.slice(0, max)).replace(/-+$/, "") || "zyvo-video";
+}
