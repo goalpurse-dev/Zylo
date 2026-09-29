@@ -1,11 +1,13 @@
-// Home v2 (hidden local route /home-v2): the Long Form launch layout, built
-// from today's Home pieces (gradient headline, zyvo suite coverflow).
+// Home (/workspace/home): the Long Form launch layout, built from the previous
+// Home's pieces (gradient headline, zyvo suite coverflow). The previous Home is
+// home.jsx, behind USE_LEGACY_HOME (src/data/homeContent.js) for one release.
 import { useEffect, useState } from "react";
 import Glow from "../../components/workspace/Glow.jsx";
 import ZyvoSuiteCarousel from "../../components/workspace/ZyvoSuiteCarousel.jsx";
 import PublicGallery from "../../components/public-gallery/gallery.jsx";
 import { JumpBackInV2, LongFormSection, PathCards, SectionHeader, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
 import { fetchShowcase } from "../../components/launch/launch";
+import { HIDDEN_COMMUNITY_CATEGORIES } from "../../data/homeContent";
 
 export default function HomeV2() {
   const [longFormCreations, setLongFormCreations] = useState([]);
@@ -41,7 +43,7 @@ export default function HomeV2() {
         <div className="px-4 md:px-[50px]">
           <SectionHeader title="Community creations" subtitle="Watch how people use Zyvo to make content that performs." />
         </div>
-        <PublicGallery hideHeader dense longFormItems={longFormCreations} excludeCategories={["Face ASMR", "Lego", "Cartoon"]} />
+        <PublicGallery hideHeader dense longFormItems={longFormCreations} excludeCategories={HIDDEN_COMMUNITY_CATEGORIES} />
       </div>
     </div>
   );

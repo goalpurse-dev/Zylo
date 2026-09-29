@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import ToolShell from "../../components/workspace/toolshell.jsx";
 import TopRow from "../../components/workspace/toprow.jsx";
-import TopPromoBanner from "../../components/workspace/TopPromoBanner";
 import MobileBottomNav from "../../components/workspace/MobileBottomNav";
 import WelcomeScreen from "../../components/WelcomeScreen";
 import CreatorRewardsModal from "../../components/CreatorRewardsModal";
@@ -23,7 +22,6 @@ export default function WorkspaceLayout() {
   useEffect(() => { const mq = window.matchMedia("(max-width: 767px)"); const on = () => setNarrow(mq.matches); mq.addEventListener("change", on); return () => mq.removeEventListener("change", on); }, []);
   const hidePromo = narrow && /\/long-form\/project\/[^/]+\/(edit|publish)\/?$/.test(location.pathname);
   const [showWelcome, setShowWelcome] = useState(false);
-  const isHomeV2 = location.pathname === "/home-v2";
   const [showRewards, setShowRewards] = useState(false);
   const [rewardsUserId, setRewardsUserId] = useState(null);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
@@ -82,11 +80,6 @@ export default function WorkspaceLayout() {
     run();
   }, []);
 
-  // Home v2 review: /home-v2?whatsnew=1 opens the popup (nothing is marked seen).
-  useEffect(() => {
-    if (isHomeV2 && new URLSearchParams(location.search).get("whatsnew") === "1") setShowWhatsNew(true);
-  }, [isHomeV2, location.search]);
-
   /* ================= RESET HEADER ================= */
   useEffect(() => {
     setShowTopRow(true);
@@ -128,7 +121,6 @@ useEffect(() => {
   const titleMap = {
     "/workspace": "Home",
     "/workspace/home": "Home",
-    "/home-v2": "Home",
     "/workspace/creations": "Creations",
     "/workspace/creations/viral-videos": "Viral Videos",
     "/workspace/pricing": "Pricing",
@@ -215,7 +207,7 @@ useEffect(() => {
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#090A0A]">
       <WorkspaceRouteSeo />
       <div ref={noticeRef} className="relative z-[70] w-full shrink-0">
-        {!hidePromo && (isHomeV2 ? <AnnouncementBar /> : <TopPromoBanner />)}
+        {!hidePromo && <AnnouncementBar />}
       </div>
 
       <div className="flex min-h-0 flex-1 overflow-hidden">

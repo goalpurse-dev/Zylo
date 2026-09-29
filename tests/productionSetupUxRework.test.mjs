@@ -460,9 +460,10 @@ test("delete-long-form-project is a soft delete (sets deleted_at) with an owners
 });
 
 test("the hero banner subtitle no longer duplicates the heading's 'Turn any topic into...' opening", async () => {
+  // Lobby redesign: the compact create card's supporting line sits next to the button.
   const text = await source("src/pages/workspace/long-form/index.jsx");
-  assert.match(text, /Pick a niche, add an idea, and get a finished long-form video with script, narration and visuals\./);
-  const subtitleLine = text.split("\n").find((l) => l.includes("Pick a niche"));
+  assert.match(text, /8–15 min · script, voice, scenes and thumbnails/);
+  const subtitleLine = text.split("\n").find((l) => l.includes("8–15 min · script"));
   assert.ok(!subtitleLine.includes("Turn any topic into"));
 });
 

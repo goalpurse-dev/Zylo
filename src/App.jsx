@@ -1,3 +1,4 @@
+import { USE_LEGACY_HOME } from "./data/homeContent";
 import React, { Suspense, lazy } from "react";
 import {
   BrowserRouter,
@@ -53,7 +54,8 @@ const TextToVoice = lazy(() => import("./pages/tools/TextToVoice"));
 
 // already lazy
 const Workspace = lazy(() => import("./pages/workspace/home.jsx"));
-const HomeV2 = lazy(() => import("./pages/workspace/HomeV2.jsx")); // hidden review route
+const HomeV2 = lazy(() => import("./pages/workspace/HomeV2.jsx"));
+// Previous Home, kept for one release behind src/data/homeContent.js.
 
 // 🔥 ALSO lazy these workspace pages (important for performance)
 const WorkspaceLayout = lazy(() => import("./pages/workspace/layout.jsx"));
@@ -870,13 +872,12 @@ return (
     index
     element={
    
-        <Workspace />
+        USE_LEGACY_HOME ? <Workspace /> : <HomeV2 />
    
     }
   />
 
   {/* PUBLIC ROUTES */}
-  <Route path="/home-v2" element={<HomeV2 />} />
   <Route path="/workspace/library" element={<Navigate to="/workspace/creations" replace />} />
   <Route path="/workspace/creations" element={<Creations />} />
   <Route path="/workspace/creations/viral-videos" element={<Creations />} />

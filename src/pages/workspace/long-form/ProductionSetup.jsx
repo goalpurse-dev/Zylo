@@ -438,7 +438,7 @@ function LockedSection({ locked, children }) {
 // system-sans digits have at line-height:1.
 function SectionLabel({ n, children }) {
   return (
-    <p className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/35">
+    <p id={`setup-step-${n}`} className="mb-3 flex scroll-mt-6 items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/35">
       <span
         className="inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-white/10 p-0 text-[10px] font-bold leading-none text-white/60"
         style={{ fontVariantNumeric: "tabular-nums" }}
@@ -944,6 +944,13 @@ function loadPersistedDraft() {
     return null;
   }
 }
+// ?niche=<id> from Home's "Pick a niche" row; null when missing or unknown.
+function nicheFromLink() {
+  if (typeof window === "undefined") return null;
+  const id = new URLSearchParams(window.location.search).get("niche");
+  return id && findNiche(id) ? id : null;
+}
+
 function savePersistedDraft(patch) {
   try {
     const current = loadPersistedDraft() ?? {};
@@ -1159,12 +1166,16 @@ export default function ProductionSetup() {
   const bootstrapSession = async () => {
     setSessionError(null);
     const saved = loadPersistedDraft();
+    // Home's "Pick a niche" links here with ?niche=<id>: a valid one wins over
+    // the saved draft's niche (and drops an idea picked for another niche).
+    const linkedNiche = nicheFromLink();
+    const nicheChangedByLink = !!linkedNiche && linkedNiche !== saved?.nicheId;
     if (saved?.discoverySessionId) {
       const existing = await fetchDiscoverySession(saved.discoverySessionId);
       if (existing) {
         setDiscoverySessionId(existing.id);
         if (saved.topic) setTopic(saved.topic);
-        if (saved.nicheId) setNicheId(saved.nicheId);
+        if (linkedNiche || saved.nicheId) setNicheId(linkedNiche ?? saved.nicheId);
         if (saved.visualStyleId) setVisualStyleId(saved.visualStyleId);
         if (saved.lengthMinutes) setLengthMinutes(saved.lengthMinutes);
         if (saved.renderTier) setRenderTier(saved.renderTier);
@@ -1181,8 +1192,8 @@ export default function ProductionSetup() {
         const hydratedIdeas = Array.isArray(existing.ideas) ? existing.ideas : [];
         if (hydratedIdeas.length > 0) {
           setIdeas(hydratedIdeas);
-          setTopicMode((prevMode) => (existing.selected_idea_id ? "write" : prevMode));
-          if (existing.selected_idea_id) {
+          setTopicMode((prevMode) => (existing.selected_idea_id && !nicheChangedByLink ? "write" : prevMode));
+          if (existing.selected_idea_id && !nicheChangedByLink) {
             setSelectedIdeaId(existing.selected_idea_id);
             const selected = hydratedIdeas.find((idea) => idea.id === existing.selected_idea_id);
             if (selected?.thumbnail?.status === PREVIEW_STATUS.READY) setSelectedIdeaThumbnailUrl(selected.thumbnail.imageUrl);
@@ -1202,6 +1213,7 @@ export default function ProductionSetup() {
     if (!result.ok) { setSessionError(result.code); return; }
     setDiscoverySessionId(result.id);
     savePersistedDraft({ discoverySessionId: result.id });
+    if (linkedNiche) setNicheId(linkedNiche);
     setBootstrapped(true);
   };
 
@@ -1278,15 +1290,14 @@ export default function ProductionSetup() {
     setSelectedIdeaId(null);
   };
 
-  // Home "Pick a niche" links here as /long-form/create?niche=<id>: preselect
-  // it once the saved draft has been restored (so the link wins over it).
-  const nicheParamApplied = useRef(false);
+  // A ?niche= link (applied in bootstrapSession) lands on the next step to
+  // fill: Topic (Visual Style has a recommended default). An unknown id is
+  // ignored, so the page opens as usual with no niche from the link.
+  const nicheLinkScrolled = useRef(false);
   useEffect(() => {
-    if (!bootstrapped || nicheParamApplied.current) return;
-    nicheParamApplied.current = true;
-    const id = new URLSearchParams(window.location.search).get("niche");
-    if (id && findNiche(id) && id !== nicheId) handleSelectNiche(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!bootstrapped || nicheLinkScrolled.current || !nicheFromLink()) return;
+    nicheLinkScrolled.current = true;
+    setTimeout(() => document.getElementById("setup-step-3")?.scrollIntoView({ block: "start", behavior: "smooth" }), 350);
   }, [bootstrapped]);
 
   // Final-polish round 4, Section 4 — this is BOTH the free first-batch

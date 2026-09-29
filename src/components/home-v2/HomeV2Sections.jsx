@@ -9,6 +9,8 @@ import { NICHE_GROUPS } from "../../pages/workspace/long-form/niches";
 import CreatorRewardsModal from "../CreatorRewardsModal.jsx";
 import { ShowcaseRow, TutorialCard } from "../launch/LaunchUI.jsx";
 import { fetchUserLongFormProjects } from "../../pages/workspace/long-form/project";
+import { fetchProjectCovers } from "../../pages/workspace/long-form/projectCovers";
+import { HIDDEN_TEMPLATES } from "../../data/homeContent";
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 import shipClip from "../../assets/home/latest/video9.16-fast.mp4";
 
@@ -247,14 +249,12 @@ export function JumpBackInV2() {
     if (!user?.id) { setItems([]); return undefined; }
     let live = true;
     (async () => {
-      // Cover: the picked YouTube thumbnail (covers RPC, own projects only),
-      // else the same cover the Long Form lobby shows.
-      const [projects, { data: covers }, { data: jobs }] = await Promise.all([
+      // Cover: chosen thumbnail -> first finished scene -> niche art.
+      const [projects, coverOf, { data: jobs }] = await Promise.all([
         fetchUserLongFormProjects(user.id),
-        supabase.rpc("long_form_project_covers"),
+        fetchProjectCovers(),
         supabase.from("jobs").select("id, result_url, prompt, created_at, tool_key").eq("user_id", user.id).not("result_url", "is", null).order("created_at", { ascending: false }).limit(8),
       ]);
-      const coverOf = new Map((covers ?? []).map((c) => [c.project_id, c.url]));
       const long = (projects ?? []).slice(0, 8).map((p) => ({ key: `lf-${p.id}`, kind: "long", at: p.updated_at, title: sentence(p.topic), meta: LF_STATUS[p.status] ?? sentence(String(p.status).replace(/_/g, " ")), image: coverOf.get(p.id) ?? p._thumbnailUrl ?? null, go: `/long-form/project/${p.id}` }));
       const short = (jobs ?? []).map((j) => ({ key: `job-${j.id}`, kind: "short", at: j.created_at, title: sentence(String(j.prompt ?? "").slice(0, 60)), meta: "Short Form", image: j.result_url, go: "/workspace/creations" }));
       if (live) setItems([...long, ...short].sort((a, b) => Date.parse(b.at) - Date.parse(a.at)).slice(0, 8));
@@ -295,13 +295,9 @@ const STEPS = [
 ];
 const ALL_NICHES = NICHE_GROUPS.flatMap((g) => g.niches);
 
-export function LongFormSection() {
-  const navigate = useNavigate();
+export function HowItWorks({ className = "" }) {
   return (
-    <section className={`mt-12 w-full ${SECTION_X}`} data-testid="long-form-section">
-      <SectionHeader title="Make a YouTube video with Long Form" subtitle="8–15 minute explainers. You pick the idea, Zyvo does the rest." badge={isLongFormNew() ? <NewPill /> : null}
-        action="Start a video" onAction={() => { trackLaunch("try_long_form", { placement: "home_how_it_works" }); navigate("/long-form"); }} />
-      <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
+      <div className={`-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden ${className}`} data-testid="how-it-works">
         {STEPS.map((s, i) => (
           <div key={s.title} className="w-[86%] shrink-0 snap-start rounded-[22px] border border-white/10 bg-white/[0.03] p-4 md:w-auto md:p-5">
             <div className="flex items-start gap-3">
@@ -317,6 +313,16 @@ export function LongFormSection() {
           </div>
         ))}
       </div>
+  );
+}
+
+export function LongFormSection() {
+  const navigate = useNavigate();
+  return (
+    <section className={`mt-12 w-full ${SECTION_X}`} data-testid="long-form-section">
+      <SectionHeader title="Make a YouTube video with Long Form" subtitle="8–15 minute explainers. You pick the idea, Zyvo does the rest." badge={isLongFormNew() ? <NewPill /> : null}
+        action="Start a video" onAction={() => { trackLaunch("try_long_form", { placement: "home_how_it_works" }); navigate("/long-form"); }} />
+      <HowItWorks />
 
       <div className="mb-3 mt-9 flex items-end justify-between gap-4">
         <div>
@@ -337,16 +343,15 @@ export function LongFormSection() {
       </div>
 
       <TutorialCard className="mt-8" />
-      <ShowcaseRow id="made-with-zyvo" placement="home" title="Made with Zyvo" subtitle="Long Form videos on YouTube, each one started from a single idea." className="mt-9" />
+      <ShowcaseRow id="made-with-zyvo" placement="home" title="Made with Zyvo" subtitle="Long Form videos on YouTube, each one started from a single idea." className="mt-9 md:hidden" />
     </section>
   );
 }
 
 /* ─── 6. Short Form templates for the zyvo suite coverflow ─────── */
-// Merged "zyvo suite" + "Most Viral Templates", one entry each. Templates whose
-// current art shows a real person, character or brand are left out until they
-// have new art (2AM Worlds, 30 Days, Face ASMR, Nationality Swap). "NEW" comes
-// only from `addedAt` (the last 30 days), never set by hand.
+// Merged "zyvo suite" + "Most Viral Templates", one entry each. Names listed in
+// HIDDEN_TEMPLATES (src/data/homeContent.js) stay hidden until their art is
+// replaced. "NEW" comes only from `addedAt` (the last 30 days), never by hand.
 const TEMPLATES = [
   { name: "Behind the Scenes", desc: "Miniature cities destroyed by real practical FX", image: "/behind-the-scenes/poster.webp", path: "/workspace/behind-the-scenes", addedAt: "2026-08-13" },
   { name: "Cartoon Drive By", desc: "Drive past cartoon worlds in real life", image: cartoonDrivePreview, path: "/workspace/cartoon-drive-by", addedAt: "2026-08-05" },
@@ -355,7 +360,11 @@ const TEMPLATES = [
   { name: "Video Generator", desc: "Create cinematic videos in seconds", image: "/home/videogen.png", path: "/workspace/video-generator", addedAt: null },
   { name: "Clay Rescue", desc: "Giant hands save tiny clay worlds", image: "/clayrescue/smallpreview.webp", path: "/workspace/clay-rescue", addedAt: "2026-06-01" },
   { name: "AI Cooking Matic", desc: "Viral cooking videos on autopilot", image: "/templates/AICOOKING/thumbnail.png", path: "/workspace/ai-cooking-matic", addedAt: "2026-06-17" },
+  { name: "30 Days", desc: "Thirty days inside any world", image: "/template/2am-world/preview.png", path: "/workspace/thirty-days", addedAt: "2026-09-27" },
+  { name: "2AM Worlds", desc: "TikTok slideshows of worlds at 2AM", image: "/template/2am-world/preview.png", path: "/workspace/two-am", addedAt: "2026-07-26" },
+  { name: "Face ASMR", desc: "Viral face reveal ASMR videos", image: "/face/neypreview.png", path: "/workspace/face-asmr", addedAt: "2026-05-24" },
+  { name: "Nationality Swap", desc: "Reimagine football stars around the world", image: "/template/nationality-swap/preview.png", path: "/workspace/footballer-nationality-swap", addedAt: "2026-07-12" },
 ];
 export function suiteTemplates(now = Date.now()) {
-  return TEMPLATES.map((t) => ({ ...t, badge: t.addedAt && now - Date.parse(t.addedAt) < 30 * 86_400_000 ? "NEW" : null }));
+  return TEMPLATES.filter((t) => !HIDDEN_TEMPLATES.includes(t.name)).map((t) => ({ ...t, badge: t.addedAt && now - Date.parse(t.addedAt) < 30 * 86_400_000 ? "NEW" : null }));
 }
