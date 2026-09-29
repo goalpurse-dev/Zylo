@@ -1,21 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useReducedMotion } from "framer-motion";
-import { ArrowRight, ChevronRight, Clapperboard, Play, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronRight, Clapperboard, Sparkles } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { useAuth } from "../../context/AuthContext";
 import { fetchShowcase, isLongFormNew, showcaseThumb, trackLaunch } from "../launch/launch";
 import { NICHE_GROUPS } from "../../pages/workspace/long-form/niches";
-import { FeatureCard, SHOWCASE_ITEMS } from "../workspace/ViralShowcase.jsx";
-import { TRENDING_MODELS } from "../workspace/LatestModels.jsx";
 import CreatorRewardsModal from "../CreatorRewardsModal.jsx";
+import { ShowcaseRow, TutorialCard } from "../launch/LaunchUI.jsx";
 import { fetchUserLongFormProjects } from "../../pages/workspace/long-form/project";
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 import shipClip from "../../assets/home/latest/video9.16-fast.mp4";
 
 const STORAGE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/showcase`;
 export const HUNT_THUMBS = [`${STORAGE}/launch/spear-or-patience.jpg`, `${STORAGE}/launch/how-did-this-kill.jpg`, `${STORAGE}/launch/what-does-it-prove.jpg`];
-const HUNT_CLIP = { src: `${STORAGE}/preview/hunt-lab-960.mp4`, poster: `${STORAGE}/preview/hunt-lab-poster.jpg` };
+// Real f90160bc clips, no burned-in captions: the boar hunt (path card) and
+// the hunters around the fire (Made with Zyvo).
+export const HUNT_CLIP = { src: `${STORAGE}/preview/hunt-boar-v2.mp4`, poster: `${STORAGE}/preview/hunt-boar-v2.jpg` };
+export const FIRE_CLIP = { src: `${STORAGE}/preview/hunt-fire-960.mp4`, poster: `${STORAGE}/preview/hunt-fire-poster.jpg` };
 const SECTION_X = "px-4 md:px-[50px]";
 
 // Today's Home section header, one component: title + one-line subtitle + "See all →".
@@ -60,7 +62,7 @@ export function LazyLoopVideo({ src, poster, className = "" }) {
     if (inView) v.play().catch(() => {}); else v.pause();
   }, [inView]);
   return (
-    <div ref={ref} className={`relative overflow-hidden ${className}`}>
+    <div ref={ref} className={`overflow-hidden ${className.split(" ").includes("absolute") ? "" : "relative"} ${className}`}>
       <img src={poster} alt="" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
       {!reduced && (inView || ready) && (
         <video src={src} poster={poster} muted loop playsInline autoPlay preload="none" onCanPlay={() => setReady(true)}
@@ -140,14 +142,34 @@ function FanArt() {
   );
 }
 
+// Illustrated credits: lime coin stacks, one coin in the air, sparkles.
+const COIN_STACKS = [{ x: 150, n: 4 }, { x: 206, n: 7 }, { x: 262, n: 5 }];
+function Coin({ cx, cy, rx = 24, ry = 9, h = 7 }) {
+  return (
+    <g>
+      <path d={`M${cx - rx} ${cy} v${h} a${rx} ${ry} 0 0 0 ${rx * 2} 0 v-${h} z`} fill="#4D7C0F" />
+      <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="url(#coinTop)" stroke="#65A30D" strokeWidth="1" />
+      <ellipse cx={cx} cy={cy} rx={rx * 0.62} ry={ry * 0.58} fill="none" stroke="#3F6212" strokeOpacity=".45" strokeWidth="1.5" />
+    </g>
+  );
+}
 function CreditsArt() {
   return (
-    <div className="absolute inset-0 bg-[#0C0D10]">
+    <div className="absolute inset-0 overflow-hidden bg-[#0C0D10]">
       <div className="absolute -right-10 -top-16 h-56 w-56 rounded-full bg-[#7A3BFF]/30 blur-3xl" />
-      <div className="absolute right-6 top-[22%] flex items-center gap-2 text-lime-300">
-        <span aria-hidden="true" className="block h-10 w-10 bg-current" style={{ WebkitMaskImage: "url('/icons/credits.png')", maskImage: "url('/icons/credits.png')", WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center" }} />
-        <span className="text-[44px] font-black tracking-tight drop-shadow-[0_0_24px_rgba(190,242,100,.35)]">+1,500</span>
-      </div>
+      <div className="absolute right-10 top-8 h-32 w-48 rounded-full bg-lime-300/15 blur-3xl" />
+      <svg viewBox="0 0 320 170" className="absolute -right-2 top-0 h-[88%] w-auto" aria-hidden="true">
+        <defs>
+          <linearGradient id="coinTop" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ECFCCB" /><stop offset=".45" stopColor="#BEF264" /><stop offset="1" stopColor="#84CC16" /></linearGradient>
+        </defs>
+        <ellipse cx="206" cy="150" rx="110" ry="10" fill="#000" opacity=".45" />
+        {COIN_STACKS.map(({ x, n }) => Array.from({ length: n }, (_, i) => <Coin key={`${x}-${i}`} cx={x} cy={140 - i * 9} />))}
+        <g transform="rotate(-24 104 58)"><Coin cx={104} cy={58} rx={22} ry={12} h={6} /></g>
+        {[[64, 30, 7], [288, 34, 6], [240, 16, 4], [128, 104, 4]].map(([x, y, r]) => (
+          <path key={`${x}`} d={`M${x} ${y - r * 2} L${x + r * 0.5} ${y - r * 0.5} L${x + r * 2} ${y} L${x + r * 0.5} ${y + r * 0.5} L${x} ${y + r * 2} L${x - r * 0.5} ${y + r * 0.5} L${x - r * 2} ${y} L${x - r * 0.5} ${y - r * 0.5} Z`} fill="#D9F99D" />
+        ))}
+      </svg>
+      <span className="absolute left-4 top-4 rounded-full border border-lime-300/30 bg-black/40 px-2.5 py-1 text-[12px] font-black text-lime-300 backdrop-blur-sm">+1,500 credits</span>
     </div>
   );
 }
@@ -187,7 +209,7 @@ export function WhatsNewRow() {
   const cards = [
     <BannerCard key="lf" testId="wn-long-form" art={<FanArt />} title="Long Form is here" sub="A full YouTube video from one idea" cta="Try it"
       onClick={() => { trackLaunch("try_long_form", { placement: "whats_new_row" }); navigate("/long-form"); }} />,
-    hunt && <BannerCard key="yt" testId="wn-showcase" art={<img src={showcaseThumb(hunt)} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover object-top" />}
+    hunt && <BannerCard key="yt" testId="wn-showcase" art={<LazyLoopVideo src={FIRE_CLIP.src} poster={FIRE_CLIP.poster} className="absolute inset-0" />}
       title={`Made with Zyvo: ${hunt.title}`} cta="Watch on YouTube" href={hunt.youtube_url}
       onClick={() => trackLaunch("showcase_click", { placement: "whats_new_row", target: hunt.youtube_url, videoId: hunt.id })} />,
     tutorial && <BannerCard key="tut" testId="wn-tutorial" art={<img src={showcaseThumb(tutorial)} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
@@ -313,6 +335,9 @@ export function LongFormSection() {
           </button>
         ))}
       </div>
+
+      <TutorialCard className="mt-8" />
+      <ShowcaseRow id="made-with-zyvo" placement="home" title="Made with Zyvo" subtitle="Long Form videos on YouTube, each one started from a single idea." className="mt-9" />
     </section>
   );
 }
@@ -333,40 +358,4 @@ const TEMPLATES = [
 ];
 export function suiteTemplates(now = Date.now()) {
   return TEMPLATES.map((t) => ({ ...t, badge: t.addedAt && now - Date.parse(t.addedAt) < 30 * 86_400_000 ? "NEW" : null }));
-}
-
-/* ─── 7. Tools + trending models (compact) ─────────────────────── */
-const TOOL_PATHS = ["/workspace/video-generator", null, "/workspace/image-generator"];
-export function ToolsCompact() {
-  const navigate = useNavigate();
-  const open = (i) => (TOOL_PATHS[i] ? navigate(TOOL_PATHS[i]) : window.dispatchEvent(new CustomEvent("zyvo:open-create-menu")));
-  return (
-    <section className={`mt-12 w-full ${SECTION_X}`} data-testid="tools">
-      <SectionHeader title="Tools" subtitle="Image and video generators, and the models trending now." onAction={() => navigate("/workspace/image-generator")} />
-      <div className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-[1.45fr_1fr_1fr] md:gap-4 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
-        {SHOWCASE_ITEMS.map((item, i) => (
-          <div key={item.title} role="button" tabIndex={0} onClick={() => open(i)} onKeyDown={(e) => { if (e.key === "Enter") open(i); }}
-            className="h-[180px] w-[86%] shrink-0 snap-start md:h-[210px] md:w-auto">
-            <FeatureCard {...item} />
-          </div>
-        ))}
-      </div>
-      <div className="mt-4 grid gap-3 md:grid-cols-3 md:gap-4">
-        {TRENDING_MODELS.map((m) => (
-          <button key={m.name} type="button" onClick={() => navigate(m.path)}
-            className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-[#090A0A] p-2.5 text-left transition hover:border-purple-500/30">
-            <div className="relative aspect-video w-[112px] shrink-0 overflow-hidden rounded-xl">
-              <img src={m.image} alt="" loading="lazy" className="h-full w-full object-cover" />
-              <span className="absolute left-1.5 top-1.5 rounded-full border border-white/10 bg-black/60 px-1.5 py-px text-[9.5px] text-purple-300 backdrop-blur">{m.tag}</span>
-            </div>
-            <div className="min-w-0">
-              <p className="truncate bg-gradient-to-r from-white via-purple-100 to-purple-500 bg-clip-text text-[16px] font-bold leading-tight text-transparent">{m.name}</p>
-              <p className="mt-0.5 truncate text-xs text-white/40">{m.desc}</p>
-            </div>
-            <Play className="ml-auto mr-1 h-4 w-4 shrink-0 text-white/25 transition group-hover:text-white/60" />
-          </button>
-        ))}
-      </div>
-    </section>
-  );
 }
