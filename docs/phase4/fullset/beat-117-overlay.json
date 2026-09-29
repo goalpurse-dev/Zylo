@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "NO EVIDENCE?",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 17,
+ "scale": 154,
+ "box": {
+  "x": 446,
+  "y": 75,
+  "width": 1029,
+  "height": 211
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 3.61,
+  "bottom": 3.4
+ }
+}

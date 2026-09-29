@@ -1,0 +1,1764 @@
+{
+ "pass": {
+  "density": "balanced",
+  "costUsd": 0.00184065,
+  "usage": {
+   "inputTokens": 6875,
+   "outputTokens": 1349,
+   "calls": 4
+  },
+  "candidates": 63,
+  "picks": [
+   {
+    "sequence": 51,
+    "text": "300,000 YEARS",
+    "category": "NUMBER",
+    "callout": null
+   },
+   {
+    "sequence": 16,
+    "text": "SCHÖNINGEN",
+    "category": "NAME",
+    "callout": null
+   },
+   {
+    "sequence": 11,
+    "text": "BUT WHY?",
+    "category": "QUESTION",
+    "callout": null
+   },
+   {
+    "sequence": 37,
+    "text": "NOT HUNTED — SCAVENGED",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 30,
+    "text": "MYTH VS FACT",
+    "category": "CONTRAST",
+    "callout": null
+   },
+   {
+    "sequence": 41,
+    "text": "SPEAR",
+    "category": "PUNCH",
+    "callout": "spear"
+   },
+   {
+    "sequence": 57,
+    "text": "2 METERS",
+    "category": "NUMBER",
+    "callout": null
+   },
+   {
+    "sequence": 19,
+    "text": "27%",
+    "category": "NUMBER",
+    "callout": null
+   },
+   {
+    "sequence": 12,
+    "text": "THAT WEEK",
+    "category": "PUNCH",
+    "callout": null
+   },
+   {
+    "sequence": 13,
+    "text": "DANGEROUS ANIMAL",
+    "category": "PUNCH",
+    "callout": null
+   },
+   {
+    "sequence": 26,
+    "text": "CLOSE RANGE",
+    "category": "PUNCH",
+    "callout": null
+   },
+   {
+    "sequence": 36,
+    "text": "BONES PILE UP",
+    "category": "PUNCH",
+    "callout": null
+   },
+   {
+    "sequence": 39,
+    "text": "BUTCHERED LIMB BONES",
+    "category": "PUNCH",
+    "callout": null
+   },
+   {
+    "sequence": 38,
+    "text": "THROWN SOMETIMES",
+    "category": "QUESTION",
+    "callout": null
+   },
+   {
+    "sequence": 28,
+    "text": "NOSE-HEAVY",
+    "category": "PUNCH",
+    "callout": null
+   },
+   {
+    "sequence": 35,
+    "text": "CLUSTERING IS FACT",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 22,
+    "text": "THRUST-FORWARD ANGLE",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 46,
+    "text": "70,000 YEARS",
+    "category": "NUMBER",
+    "callout": null
+   },
+   {
+    "sequence": 45,
+    "text": "something tiny",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 55,
+    "text": "Why haft a point?",
+    "category": "QUESTION",
+    "callout": null
+   },
+   {
+    "sequence": 57,
+    "text": "survive being thrown",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 61,
+    "text": "one person's gamble",
+    "category": "CONTRAST",
+    "callout": null
+   },
+   {
+    "sequence": 65,
+    "text": "Range changes bravery",
+    "category": "PUNCH",
+    "callout": null
+   },
+   {
+    "sequence": 68,
+    "text": "outlast an animal?",
+    "category": "QUESTION",
+    "callout": null
+   },
+   {
+    "sequence": 70,
+    "text": "Daniel Lieberman",
+    "category": "NAME",
+    "callout": null
+   },
+   {
+    "sequence": 74,
+    "text": "run this long",
+    "category": "PUNCH",
+    "callout": null
+   },
+   {
+    "sequence": 76,
+    "text": "panting stops working",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 78,
+    "text": "sweat instead",
+    "category": "PUNCH",
+    "callout": null
+   },
+   {
+    "sequence": 79,
+    "text": "tactic isn't speed",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 42,
+    "text": "thirty meters back",
+    "category": "NUMBER",
+    "callout": null
+   },
+   {
+    "sequence": 64,
+    "text": "different kind of teamwork",
+    "category": "CONTRAST",
+    "callout": null
+   },
+   {
+    "sequence": 72,
+    "text": "long Achilles tendons",
+    "category": "NAME",
+    "callout": null
+   },
+   {
+    "sequence": 289,
+    "text": "outrun you easily",
+    "category": "CONTRAST",
+    "callout": null
+   },
+   {
+    "sequence": 80,
+    "text": "Track in the heat",
+    "category": "PUNCH",
+    "callout": null
+   },
+   {
+    "sequence": 99,
+    "text": "DESERT KITES",
+    "category": "NAME",
+    "callout": null
+   },
+   {
+    "sequence": 100,
+    "text": "MORE THAN A KILOMETER",
+    "category": "NUMBER",
+    "callout": null
+   },
+   {
+    "sequence": 101,
+    "text": "FIRE AND NOISE",
+    "category": "PUNCH",
+    "callout": null
+   },
+   {
+    "sequence": 102,
+    "text": "THE TRAP DOES THE KILLING",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 106,
+    "text": "DENSELY PACKED BONE LAYER",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 107,
+    "text": "STONE ALIGNMENTS",
+    "category": "NAME",
+    "callout": null
+   },
+   {
+    "sequence": 111,
+    "text": "WHERE THE ANIMALS MOVED",
+    "category": "QUESTION",
+    "callout": null
+   },
+   {
+    "sequence": 114,
+    "text": "A WHOLE COMMUNITY'S MEMORY",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 116,
+    "text": "HERE'S A COMPLICATION",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 117,
+    "text": "HOW DO YOU KNOW?",
+    "category": "QUESTION",
+    "callout": null
+   },
+   {
+    "sequence": 118,
+    "text": "NOT A LION'S CARCASS?",
+    "category": "CONTRAST",
+    "callout": null
+   },
+   {
+    "sequence": 119,
+    "text": "SOUTH AFRICAN CAVE SITES",
+    "category": "NAME",
+    "callout": null
+   },
+   {
+    "sequence": 120,
+    "text": "CARNIVORE TOOTH MARKS",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 90,
+    "text": "BOTH HAPPENED",
+    "category": "CONTRAST",
+    "callout": null
+   },
+   {
+    "sequence": 93,
+    "text": "CHASING ISN'T EFFICIENT",
+    "category": "PUNCH",
+    "callout": null
+   },
+   {
+    "sequence": 95,
+    "text": "DISTINCT CATEGORY",
+    "category": "NAME",
+    "callout": null
+   },
+   {
+    "sequence": 92,
+    "text": "FEED THROUGH WINTER",
+    "category": "QUESTION",
+    "callout": null
+   },
+   {
+    "sequence": 124,
+    "text": "NOT HUNTED — SCAVENGED",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 129,
+    "text": "Hunting and scavenging",
+    "category": "CONTRAST",
+    "callout": null
+   },
+   {
+    "sequence": 125,
+    "text": "a single bone",
+    "category": "NUMBER",
+    "callout": "bone"
+   },
+   {
+    "sequence": 132,
+    "text": "Was it used to ambush",
+    "category": "QUESTION",
+    "callout": null
+   },
+   {
+    "sequence": 136,
+    "text": "several kinds of proof",
+    "category": "NUMBER",
+    "callout": null
+   },
+   {
+    "sequence": 141,
+    "text": "which story it belongs to",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 558,
+    "text": "a bone or a blade",
+    "category": "PUNCH",
+    "callout": null
+   },
+   {
+    "sequence": 568,
+    "text": "They had a toolbox",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 138,
+    "text": "tiny fracture patterns",
+    "category": "NUMBER",
+    "callout": null
+   },
+   {
+    "sequence": 511,
+    "text": "NOT SEPARATE LIFESTYLES",
+    "category": "REVEAL",
+    "callout": null
+   },
+   {
+    "sequence": 130,
+    "text": "SAME AFTERNOON",
+    "category": "PUNCH",
+    "callout": null
+   },
+   {
+    "sequence": 123,
+    "text": "if a tooth puncture",
+    "category": "QUESTION",
+    "callout": null
+   }
+  ],
+  "target": 30,
+  "accepted": [
+   {
+    "sequence": 16,
+    "text": "SCHÖNINGEN",
+    "category": "NAME",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 35,
+    "text": "CLUSTERING IS FACT",
+    "category": "REVEAL",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 42,
+    "text": "30 METERS BACK",
+    "category": "NUMBER",
+    "callout": null,
+    "style": "BIG_STAT"
+   },
+   {
+    "sequence": 45,
+    "text": "SOMETHING TINY",
+    "category": "REVEAL",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 57,
+    "text": "SURVIVE BEING THROWN",
+    "category": "REVEAL",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 61,
+    "text": "ONE PERSON'S GAMBLE",
+    "category": "CONTRAST",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 70,
+    "text": "DANIEL LIEBERMAN",
+    "category": "NAME",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 72,
+    "text": "LONG ACHILLES TENDONS",
+    "category": "NAME",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 77,
+    "text": "PANTING STOPS WORKING",
+    "category": "REVEAL",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 79,
+    "text": "TACTIC ISN'T SPEED",
+    "category": "REVEAL",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 90,
+    "text": "BOTH HAPPENED",
+    "category": "CONTRAST",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 95,
+    "text": "DISTINCT CATEGORY",
+    "category": "NAME",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 107,
+    "text": "STONE ALIGNMENTS",
+    "category": "NAME",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 114,
+    "text": "A WHOLE COMMUNITY'S MEMORY",
+    "category": "REVEAL",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 116,
+    "text": "HERE'S A COMPLICATION",
+    "category": "REVEAL",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 117,
+    "text": "HOW DO YOU KNOW?",
+    "category": "QUESTION",
+    "callout": null,
+    "style": "QUESTION"
+   },
+   {
+    "sequence": 124,
+    "text": "NOT HUNTED — SCAVENGED",
+    "category": "REVEAL",
+    "callout": null,
+    "style": "HEADLINE"
+   },
+   {
+    "sequence": 125,
+    "text": "A SINGLE BONE",
+    "category": "PUNCH",
+    "callout": "bone",
+    "style": "CALLOUT"
+   }
+  ],
+  "rejected": [
+   {
+    "sequence": 51,
+    "text": "300,000 YEARS",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 11,
+    "text": "BUT WHY?",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 37,
+    "text": "NOT HUNTED — SCAVENGED",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 30,
+    "text": "MYTH VS FACT",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 41,
+    "text": "SPEAR",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 57,
+    "text": "2 METERS",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 19,
+    "text": "27%",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 36,
+    "text": "BONES PILE UP",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 39,
+    "text": "BUTCHERED LIMB BONES",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 22,
+    "text": "THRUST-FORWARD ANGLE",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 46,
+    "text": "70,000 YEARS",
+    "why": "already has text"
+   },
+   {
+    "sequence": 55,
+    "text": "WHY HAFT A POINT?",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 65,
+    "text": "RANGE CHANGES BRAVERY",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 68,
+    "text": "OUTLAST AN ANIMAL?",
+    "why": "already has text"
+   },
+   {
+    "sequence": 64,
+    "text": "DIFFERENT KIND OF TEAMWORK",
+    "why": "too long for this kind of caption"
+   },
+   {
+    "sequence": 289,
+    "text": "OUTRUN YOU EASILY",
+    "why": "no such beat"
+   },
+   {
+    "sequence": 80,
+    "text": "TRACK IN THE HEAT",
+    "why": "too long for this kind of caption"
+   },
+   {
+    "sequence": 99,
+    "text": "DESERT KITES",
+    "why": "already has text"
+   },
+   {
+    "sequence": 100,
+    "text": "MORE THAN A KILOMETER",
+    "why": "too long for this kind of caption"
+   },
+   {
+    "sequence": 106,
+    "text": "DENSELY PACKED BONE LAYER",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 111,
+    "text": "WHERE THE ANIMALS MOVED",
+    "why": "too long for this kind of caption"
+   },
+   {
+    "sequence": 118,
+    "text": "NOT A LION'S CARCASS?",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 119,
+    "text": "SOUTH AFRICAN CAVE SITES",
+    "why": "too long for this kind of caption"
+   },
+   {
+    "sequence": 120,
+    "text": "CARNIVORE TOOTH MARKS",
+    "why": "not from the narration"
+   },
+   {
+    "sequence": 132,
+    "text": "WAS IT USED TO AMBUSH",
+    "why": "too long for this kind of caption"
+   },
+   {
+    "sequence": 136,
+    "text": "SEVERAL KINDS OF PROOF",
+    "why": "too long for this kind of caption"
+   },
+   {
+    "sequence": 558,
+    "text": "A BONE OR A BLADE",
+    "why": "no such beat"
+   },
+   {
+    "sequence": 568,
+    "text": "THEY HAD A TOOLBOX",
+    "why": "no such beat"
+   },
+   {
+    "sequence": 511,
+    "text": "NOT SEPARATE LIFESTYLES",
+    "why": "no such beat"
+   },
+   {
+    "sequence": 130,
+    "text": "SAME AFTERNOON",
+    "why": "already has text"
+   },
+   {
+    "sequence": 123,
+    "text": "IF A TOOTH PUNCTURE",
+    "why": "too long for this kind of caption"
+   },
+   {
+    "sequence": 102,
+    "text": "THE TRAP DOES THE KILLING",
+    "why": "over the target"
+   },
+   {
+    "sequence": 141,
+    "text": "WHICH STORY IT BELONGS TO",
+    "why": "over the target"
+   },
+   {
+    "sequence": 129,
+    "text": "HUNTING AND SCAVENGING",
+    "why": "over the target"
+   },
+   {
+    "sequence": 12,
+    "text": "THAT WEEK",
+    "why": "over the target"
+   },
+   {
+    "sequence": 14,
+    "text": "DANGEROUS ANIMAL",
+    "why": "over the target"
+   },
+   {
+    "sequence": 26,
+    "text": "CLOSE RANGE",
+    "why": "over the target"
+   },
+   {
+    "sequence": 28,
+    "text": "NOSE-HEAVY",
+    "why": "over the target"
+   },
+   {
+    "sequence": 38,
+    "text": "THROWN SOMETIMES",
+    "why": "over the target"
+   },
+   {
+    "sequence": 78,
+    "text": "SWEAT INSTEAD",
+    "why": "over the target"
+   },
+   {
+    "sequence": 74,
+    "text": "RUN THIS LONG",
+    "why": "over the target"
+   },
+   {
+    "sequence": 92,
+    "text": "FEED THROUGH WINTER",
+    "why": "over the target"
+   },
+   {
+    "sequence": 93,
+    "text": "CHASING ISN'T EFFICIENT",
+    "why": "over the target"
+   },
+   {
+    "sequence": 101,
+    "text": "FIRE AND NOISE",
+    "why": "over the target"
+   },
+   {
+    "sequence": 138,
+    "text": "TINY FRACTURE PATTERNS",
+    "why": "over the target"
+   }
+  ]
+ },
+ "placed": {
+  "16": {
+   "text": "SCHÖNINGEN",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "SCHÖNINGEN",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 18,
+    "scale": 153,
+    "box": {
+     "x": 488,
+     "y": 787,
+     "width": 945,
+     "height": 212
+    },
+    "band": "bottom",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 4.13,
+     "bottom": 5.58
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "NAME"
+  },
+  "17": {
+   "text": "300,000 YEARS",
+   "wanted": "BIG_STAT",
+   "style": "BIG_STAT",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "BIG_STAT",
+    "text": "300,000",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 27,
+    "scale": 229,
+    "box": {
+     "x": 474,
+     "y": 0,
+     "width": 971,
+     "height": 315
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 6.38,
+     "bottom": 6.73
+    },
+    "label": {
+     "text": "YEARS",
+     "fill": "#FFFFFF",
+     "scale": 92,
+     "outlineRadius": 11,
+     "box": {
+      "x": 816,
+      "y": 315,
+      "width": 287,
+      "height": 128
+     }
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": false,
+   "category": "NUMBER"
+  },
+  "24": {
+   "text": "27% FROM TIP",
+   "wanted": "BIG_STAT",
+   "style": "BIG_STAT",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "BIG_STAT",
+    "text": "27%",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 27,
+    "scale": 229,
+    "box": {
+     "x": 730,
+     "y": 628,
+     "width": 462,
+     "height": 315
+    },
+    "band": "bottom",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 3.03,
+     "bottom": 0.21
+    },
+    "label": {
+     "text": "FROM TIP",
+     "fill": "#FFFFFF",
+     "scale": 92,
+     "outlineRadius": 11,
+     "box": {
+      "x": 748,
+      "y": 943,
+      "width": 426,
+      "height": 128
+     }
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": false,
+   "category": "NUMBER"
+  },
+  "31": {
+   "text": "BONES PILE UP",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "BONES PILE UP",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 14,
+    "scale": 123,
+    "box": {
+     "x": 1016,
+     "y": 809,
+     "width": 827,
+     "height": 169
+    },
+    "band": "bottom",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 7.04,
+     "bottom": 11.1
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": false,
+   "category": "PUNCH"
+  },
+  "35": {
+   "text": "CLUSTERING IS FACT",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "CLUSTERING IS FACT",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 10,
+    "scale": 77,
+    "box": {
+     "x": 1123,
+     "y": 126,
+     "width": 720,
+     "height": 107
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 8.87,
+     "bottom": 20.97
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "REVEAL"
+  },
+  "42": {
+   "text": "30 METERS BACK",
+   "wanted": "BIG_STAT",
+   "style": "BIG_STAT",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "BIG_STAT",
+    "text": "30",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 27,
+    "scale": 229,
+    "box": {
+     "x": 804,
+     "y": 0,
+     "width": 314,
+     "height": 315
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.06,
+     "bottom": 3.89
+    },
+    "label": {
+     "text": "METERS BACK",
+     "fill": "#FFFFFF",
+     "scale": 92,
+     "outlineRadius": 11,
+     "box": {
+      "x": 663,
+      "y": 315,
+      "width": 596,
+      "height": 128
+     }
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "NUMBER"
+  },
+  "45": {
+   "text": "SOMETHING TINY",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "SOMETHING TINY",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 14,
+    "scale": 123,
+    "box": {
+     "x": 458,
+     "y": 95,
+     "width": 1005,
+     "height": 169
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 4.07,
+     "bottom": 8.18
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "REVEAL"
+  },
+  "46": {
+   "text": "70,000 YEARS",
+   "wanted": "BIG_STAT",
+   "style": "BIG_STAT",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "BIG_STAT",
+    "text": "70,000",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 27,
+    "scale": 229,
+    "box": {
+     "x": 551,
+     "y": 0,
+     "width": 818,
+     "height": 315
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.05,
+     "bottom": 0.06
+    },
+    "label": {
+     "text": "YEARS",
+     "fill": "#FFFFFF",
+     "scale": 92,
+     "outlineRadius": 11,
+     "box": {
+      "x": 816,
+      "y": 315,
+      "width": 287,
+      "height": 128
+     }
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": false,
+   "category": "NUMBER"
+  },
+  "56": {
+   "text": "HAFTED POINT",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "HAFTED POINT",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 18,
+    "scale": 153,
+    "box": {
+     "x": 447,
+     "y": 73,
+     "width": 1028,
+     "height": 212
+    },
+    "band": "top",
+    "darkBand": true,
+    "edgeDensity": {
+     "top": 16.38,
+     "bottom": 15.85
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": false,
+   "category": "PUNCH"
+  },
+  "57": {
+   "text": "SURVIVE BEING THROWN",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": true,
+   "looked": true,
+   "costUsd": 0,
+   "layer": null,
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "REVEAL"
+  },
+  "61": {
+   "text": "ONE PERSON'S GAMBLE",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "ONE PERSON'S GAMBLE",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 142,
+    "box": {
+     "x": 207,
+     "y": 81,
+     "width": 1507,
+     "height": 197
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.04,
+     "bottom": 3.39
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "CONTRAST"
+  },
+  "68": {
+   "text": "OUTLAST ANIMAL?",
+   "wanted": "QUESTION",
+   "style": "QUESTION",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "QUESTION",
+    "text": "OUTLAST ANIMAL?",
+    "font": "Lilita One",
+    "fill": "#FFFFFF",
+    "outline": "#000000",
+    "outlineRadius": 18,
+    "scale": 153,
+    "box": {
+     "x": 293,
+     "y": 787,
+     "width": 1335,
+     "height": 212
+    },
+    "band": "bottom",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.04,
+     "bottom": 1.97
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": false,
+   "category": "QUESTION"
+  },
+  "70": {
+   "text": "DANIEL LIEBERMAN",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "DANIEL LIEBERMAN",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 18,
+    "scale": 153,
+    "box": {
+     "x": 272,
+     "y": 73,
+     "width": 1377,
+     "height": 212
+    },
+    "band": "top",
+    "darkBand": true,
+    "edgeDensity": {
+     "top": 19.29,
+     "bottom": 10.98
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "NAME"
+  },
+  "72": {
+   "text": "LONG ACHILLES TENDONS",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "LONG ACHILLES TENDONS",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 15,
+    "scale": 133,
+    "box": {
+     "x": 205,
+     "y": 88,
+     "width": 1511,
+     "height": 183
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 3.48,
+     "bottom": 9.85
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "NAME"
+  },
+  "77": {
+   "text": "PANTING STOPS WORKING",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "PANTING STOPS WORKING",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 14,
+    "scale": 124,
+    "box": {
+     "x": 208,
+     "y": 93,
+     "width": 1506,
+     "height": 170
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 1.57,
+     "bottom": 2.63
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "REVEAL"
+  },
+  "79": {
+   "text": "TACTIC ISN'T SPEED",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "TACTIC ISN'T SPEED",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 18,
+    "scale": 153,
+    "box": {
+     "x": 269,
+     "y": 787,
+     "width": 1383,
+     "height": 212
+    },
+    "band": "bottom",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.04,
+     "bottom": 1.48
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "REVEAL"
+  },
+  "90": {
+   "text": "BOTH HAPPENED",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "BOTH HAPPENED",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 18,
+    "scale": 153,
+    "box": {
+     "x": 378,
+     "y": 73,
+     "width": 1164,
+     "height": 212
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.83,
+     "bottom": 2.6
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "CONTRAST"
+  },
+  "95": {
+   "text": "DISTINCT CATEGORY",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "DISTINCT CATEGORY",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 18,
+    "scale": 153,
+    "box": {
+     "x": 233,
+     "y": 787,
+     "width": 1455,
+     "height": 212
+    },
+    "band": "bottom",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 12.75,
+     "bottom": 10.42
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "NAME"
+  },
+  "99": {
+   "text": "DESERT KITES",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "DESERT KITES",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 18,
+    "scale": 153,
+    "box": {
+     "x": 480,
+     "y": 73,
+     "width": 960,
+     "height": 212
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.12,
+     "bottom": 9.79
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": false,
+   "category": "PUNCH"
+  },
+  "105": {
+   "text": "MASS KILL LAYER",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "MASS KILL LAYER",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 18,
+    "scale": 153,
+    "box": {
+     "x": 77,
+     "y": 73,
+     "width": 1228,
+     "height": 212
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 7.95,
+     "bottom": 38.58
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": false,
+   "category": "PUNCH"
+  },
+  "107": {
+   "text": "STONE ALIGNMENTS",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "STONE ALIGNMENTS",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 18,
+    "scale": 153,
+    "box": {
+     "x": 253,
+     "y": 73,
+     "width": 1415,
+     "height": 212
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.06,
+     "bottom": 18.63
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "NAME"
+  },
+  "114": {
+   "text": "A WHOLE COMMUNITY'S MEMORY",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "A WHOLE COMMUNITY'S MEMORY",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 11,
+    "scale": 95,
+    "box": {
+     "x": 211,
+     "y": 827,
+     "width": 1500,
+     "height": 131
+    },
+    "band": "bottom",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.7,
+     "bottom": 9.73
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "REVEAL"
+  },
+  "116": {
+   "text": "HERE'S A COMPLICATION",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "HERE'S A COMPLICATION",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 15,
+    "scale": 131,
+    "box": {
+     "x": 208,
+     "y": 802,
+     "width": 1504,
+     "height": 181
+    },
+    "band": "bottom",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 6.01,
+     "bottom": 11.35
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "REVEAL"
+  },
+  "117": {
+   "text": "HOW DO YOU KNOW?",
+   "wanted": "QUESTION",
+   "style": "QUESTION",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "QUESTION",
+    "text": "HOW DO YOU KNOW?",
+    "font": "Lilita One",
+    "fill": "#FFFFFF",
+    "outline": "#000000",
+    "outlineRadius": 18,
+    "scale": 153,
+    "box": {
+     "x": 205,
+     "y": 73,
+     "width": 1510,
+     "height": 212
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.93,
+     "bottom": 0.95
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "QUESTION"
+  },
+  "124": {
+   "text": "NOT HUNTED — SCAVENGED",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "NOT HUNTED — SCAVENGED",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 10,
+    "scale": 80,
+    "box": {
+     "x": 467,
+     "y": 837,
+     "width": 985,
+     "height": 112
+    },
+    "band": "bottom",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 2.67,
+     "bottom": 15.05
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": true,
+   "category": "REVEAL"
+  },
+  "125": {
+   "text": "A SINGLE BONE",
+   "wanted": "CALLOUT",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0.00046004999999999993,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "A SINGLE BONE",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 18,
+    "scale": 153,
+    "box": {
+     "x": 431,
+     "y": 73,
+     "width": 1058,
+     "height": 212
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 3.01,
+     "bottom": 5.52
+    }
+   },
+   "faces": 0,
+   "callout": "bone",
+   "isNew": true,
+   "category": "PUNCH"
+  },
+  "130": {
+   "text": "SAME AFTERNOON",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "SAME AFTERNOON",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 14,
+    "scale": 123,
+    "box": {
+     "x": 77,
+     "y": 809,
+     "width": 1035,
+     "height": 169
+    },
+    "band": "bottom",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 1.96,
+     "bottom": 12.22
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": false,
+   "category": "PUNCH"
+  },
+  "140": {
+   "text": "DARK WOOD",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "DARK WOOD",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 18,
+    "scale": 153,
+    "box": {
+     "x": 509,
+     "y": 73,
+     "width": 901,
+     "height": 212
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.15,
+     "bottom": 8.87
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": false,
+   "category": "PUNCH"
+  },
+  "145": {
+   "text": "HUNTING STRATEGY",
+   "wanted": "HEADLINE",
+   "style": "HEADLINE",
+   "blocked": false,
+   "looked": true,
+   "costUsd": 0,
+   "layer": {
+    "type": "text",
+    "style": "HEADLINE",
+    "text": "HUNTING STRATEGY",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 18,
+    "scale": 153,
+    "box": {
+     "x": 257,
+     "y": 787,
+     "width": 1407,
+     "height": 212
+    },
+    "band": "bottom",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 2.1,
+     "bottom": 9.96
+    }
+   },
+   "faces": null,
+   "callout": null,
+   "isNew": false,
+   "category": "PUNCH"
+  }
+ },
+ "written": "2026-09-28T22:18:44.760Z"
+}

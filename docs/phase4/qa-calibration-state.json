@@ -1,0 +1,1671 @@
+{
+ "openai": {
+  "A:flux2-klein-9b-kv:7": {
+   "style": {
+    "pass": false,
+    "note": "The character has a filled body and a detailed helmet, which does not conform to the stickman style."
+   },
+   "cast": {
+    "pass": true,
+    "note": "The required stickman character is present."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text in the frame."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture as it includes a detailed helmet and a filled body."
+   },
+   "cost": 0.0022285499999999997,
+   "inputTokens": 14473,
+   "outputTokens": 96
+  },
+  "A:flux2-klein-9b-kv:69": {
+   "style": {
+    "pass": false,
+    "note": "The character has a filled body and is not a true stickman."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required people are not present; only one stickman is shown."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "Bayreuth, 1876",
+    "note": "The text rule is violated as there is additional text."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of an exterior theatre facade."
+   },
+   "cost": 0.00223305,
+   "inputTokens": 14487,
+   "outputTokens": 100
+  },
+  "A:flux2-klein-9b-kv:18": {
+   "style": {
+    "pass": false,
+    "note": "The hands are not stickman style; they are drawn with gloves and do not have the mitten shape required."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required archaeologist hands are not in the correct stickman style."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "",
+    "note": "There is no readable text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show only a few scattered iron fragments; it includes additional elements like a bucket and a sieve."
+   },
+   "cost": 0.00223485,
+   "inputTokens": 14479,
+   "outputTokens": 105
+  },
+  "A:flux2-klein-9b-kv:12": {
+   "style": {
+    "pass": false,
+    "note": "The characters are not true stickmen; they have filled bodies and detailed features."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking warriors are not depicted as stickmen."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "",
+    "note": "There is no readable text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show a true stickman representation of Viking warriors."
+   },
+   "cost": 0.0022238999999999996,
+   "inputTokens": 14478,
+   "outputTokens": 87
+  },
+  "A:flux2-klein-9b-kv:117": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not meet the stickman criteria; they have filled bodies and detailed features."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required characters (19th-century costume designer and Viking raider) are not represented as specified."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no text reading 'MYTH' present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not depict the intended picture of a backstage handoff."
+   },
+   "cost": 0.00223485,
+   "inputTokens": 14491,
+   "outputTokens": 102
+  },
+  "A:flux2-klein-9b-kv:57": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not meet the stickman criteria; they have filled trouser legs and sleeves."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking raider is not present."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of a side-by-side comparison with a Viking raider."
+   },
+   "cost": 0.00222885,
+   "inputTokens": 14483,
+   "outputTokens": 94
+  },
+  "A:flux2-klein-9b-kv:21": {
+   "style": {
+    "pass": false,
+    "note": "The stick figures do not meet the criteria for true stickmen; they have filled bodies and are not represented as thin black stick lines."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required people are present, but they do not conform to the stickman definition."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "793–1066",
+    "note": "The text rule is violated as there is additional text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of a nearly empty timeline with only one highlighted moment."
+   },
+   "cost": 0.0022437,
+   "inputTokens": 14482,
+   "outputTokens": 119
+  },
+  "A:flux2-klein-9b-kv:10": {
+   "style": {
+    "pass": false,
+    "note": "The character has filled trouser legs and a chunky cartoon body, which does not meet the stickman criteria."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking raider is not fully represented as a stickman."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "Did Vickings really wear horns?",
+    "note": "The text contains a spelling error ('Vickings' instead of 'Vikings')."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture as it does not represent a true stickman."
+   },
+   "cost": 0.0022457999999999996,
+   "inputTokens": 14488,
+   "outputTokens": 121
+  },
+  "A:flux2-klein-9b-kv:111": {
+   "style": {
+    "pass": false,
+    "note": "The character does not meet the stickman criteria; the body is filled and has chunky cartoon features."
+   },
+   "cast": {
+    "pass": true,
+    "note": "The required Viking raider is present."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text, but the text rule requires no text at all."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show a close-up of the helmet as intended."
+   },
+   "cost": 0.00223035,
+   "inputTokens": 14481,
+   "outputTokens": 97
+  },
+  "A:flux2-klein-9b-kv:125": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not meet the stickman criteria; they have filled bodies and are not true stick figures."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required people (the viewer as a tiny Viking raider) are not present."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text in the frame."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of a first-person point-of-view shot."
+   },
+   "cost": 0.0022347000000000005,
+   "inputTokens": 14486,
+   "outputTokens": 103
+  },
+  "A:qwen-image-2512:117": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not meet the stickman criteria; they have filled bodies and detailed features."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required characters (19th-century costume designer and Viking raider) are not represented as stickmen."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "MYTH",
+    "note": "The text rule is satisfied with exactly one piece of text."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture as described."
+   },
+   "cost": 0.0022360500000000003,
+   "inputTokens": 14491,
+   "outputTokens": 104
+  },
+  "A:qwen-image-2512:69": {
+   "style": {
+    "pass": false,
+    "note": "The stickman does not meet the criteria; the character has a filled body and facial features."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required people are not present; only one stickman is shown."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "Bayreuth, 1876",
+    "note": "The text rule is violated as there is additional text (the character's face) and the text is not in the specified format."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture; it is not an exterior theatre facade."
+   },
+   "cost": 0.00224685,
+   "inputTokens": 14487,
+   "outputTokens": 123
+  },
+  "A:qwen-image-2512:7": {
+   "style": {
+    "pass": false,
+    "note": "The stickman has a filled body and is not a true stickman as per the requirements."
+   },
+   "cast": {
+    "pass": true,
+    "note": "The required stickman is present."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text in the frame."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture as it does not meet the silhouette requirement."
+   },
+   "cost": 0.0022255499999999998,
+   "inputTokens": 14473,
+   "outputTokens": 91
+  },
+  "A:qwen-image-2512:18": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not meet the stickman criteria; they have filled bodies and gloves that do not conform to the thin black stick line requirement."
+   },
+   "cast": {
+    "pass": true,
+    "note": "An archaeologist's hands are present."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text in the frame."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show a close object detail of the tray as intended; it shows a wider view with a character."
+   },
+   "cost": 0.00223665,
+   "inputTokens": 14479,
+   "outputTokens": 108
+  },
+  "A:qwen-image-2512:12": {
+   "style": {
+    "pass": false,
+    "note": "The characters are not true stickmen; they have filled bodies and detailed features."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking warriors are not represented as stickmen."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not match the intended picture of a true stickman crowd scene."
+   },
+   "cost": 0.0022251,
+   "inputTokens": 14478,
+   "outputTokens": 89
+  },
+  "A:qwen-image-2512:21": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not meet the stickman criteria; they have filled bodies and are not true stick figures."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required people are present, but they do not conform to the stickman style."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "793–1066",
+    "note": "There is additional text (the numbers) that does not comply with the text rule."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of a nearly empty timeline."
+   },
+   "cost": 0.0022401,
+   "inputTokens": 14482,
+   "outputTokens": 113
+  },
+  "A:qwen-image-2512:57": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not meet the stickman criteria; they have filled trouser legs and sleeves."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking raider is not fully represented; the viewer is not depicted as a Viking raider."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of a side-by-side comparison with a bar fight."
+   },
+   "cost": 0.00223545,
+   "inputTokens": 14483,
+   "outputTokens": 105
+  },
+  "A:qwen-image-2512:111": {
+   "style": {
+    "pass": false,
+    "note": "The character does not meet the stickman criteria; it has filled trouser legs and a cartoon body."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking raider is not fully represented as a stickman."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of a close-up on a helmet with horns."
+   },
+   "cost": 0.00223155,
+   "inputTokens": 14481,
+   "outputTokens": 99
+  },
+  "A:qwen-image-2512:125": {
+   "style": {
+    "pass": false,
+    "note": "The character has filled trouser legs and a chunky body, which does not meet the stickman criteria."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking raider is not present; the character depicted does not match the brief."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text in the frame."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended first-person point-of-view shot."
+   },
+   "cost": 0.0022335,
+   "inputTokens": 14486,
+   "outputTokens": 101
+  },
+  "A:qwen-image-2512:10": {
+   "style": {
+    "pass": false,
+    "note": "The character is not a true stickman; it has filled trouser legs and a more cartoonish body."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking raider is not a true stickman."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "Did Vikings really wear horns?",
+    "note": "The text rule is violated as there is additional text."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture as it does not depict a true stickman."
+   },
+   "cost": 0.0022386,
+   "inputTokens": 14488,
+   "outputTokens": 109
+  },
+  "A:nano-banana-2-lite:117": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not meet the stickman criteria; they have filled bodies and detailed features."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required characters (19th-century costume designer and Viking raider) are not present."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "MYTH",
+    "note": "The text rule is satisfied with exactly one piece of text."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of a backstage handoff."
+   },
+   "cost": 0.0022360500000000003,
+   "inputTokens": 14491,
+   "outputTokens": 104
+  },
+  "A:nano-banana-2-lite:69": {
+   "style": {
+    "pass": false,
+    "note": "The stick figures do not have true stickman characteristics; they have filled trouser legs and sleeves."
+   },
+   "cast": {
+    "pass": true,
+    "note": "The required people are present."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "BAYREUTH 1876",
+    "note": "The text rule is violated as there is additional text."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show a wide establishing view as intended."
+   },
+   "cost": 0.00223065,
+   "inputTokens": 14487,
+   "outputTokens": 96
+  },
+  "A:nano-banana-2-lite:7": {
+   "style": {
+    "pass": false,
+    "note": "The character has a filled body and a detailed helmet, which does not conform to the true stickman style."
+   },
+   "cast": {
+    "pass": true,
+    "note": "The required stickman character is present."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text present, which fails the text rule."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture as a symbolic illustration with a true stickman silhouette."
+   },
+   "cost": 0.0022315499999999997,
+   "inputTokens": 14473,
+   "outputTokens": 101
+  },
+  "A:nano-banana-2-lite:18": {
+   "style": {
+    "pass": true,
+    "note": ""
+   },
+   "cast": {
+    "pass": true,
+    "note": ""
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text in the frame."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show a close object detail or an overhead view of the tray as intended."
+   },
+   "cost": 0.00221325,
+   "inputTokens": 14479,
+   "outputTokens": 69
+  },
+  "A:nano-banana-2-lite:12": {
+   "style": {
+    "pass": false,
+    "note": "The figures are not true stickmen; they have filled trouser legs and cartoonish bodies."
+   },
+   "cast": {
+    "pass": true,
+    "note": "The required Viking warriors are present."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "",
+    "note": "No readable text is present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show a true stickman representation as required."
+   },
+   "cost": 0.0022221,
+   "inputTokens": 14478,
+   "outputTokens": 84
+  },
+  "A:nano-banana-2-lite:21": {
+   "style": {
+    "pass": false,
+    "note": "The stickman has a filled body (colored shirt) and is not a true stickman as per the requirements."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required people are not present as the stickman does not meet the criteria."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "793–1066",
+    "note": "There is additional text (the number '1066') that violates the text rule."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture as it includes additional elements and does not adhere to the stickman style."
+   },
+   "cost": 0.0022461,
+   "inputTokens": 14482,
+   "outputTokens": 123
+  },
+  "A:nano-banana-2-lite:57": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not conform to the stickman style as required; they have filled trouser legs and sleeves."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The viewer is not depicted as a Viking raider; the character is not fully represented as specified."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "",
+    "note": "There is no readable text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not effectively show the intended picture of a side-by-side comparison with the specified elements."
+   },
+   "cost": 0.00223725,
+   "inputTokens": 14483,
+   "outputTokens": 108
+  },
+  "A:nano-banana-2-lite:10": {
+   "style": {
+    "pass": false,
+    "note": "The character does not meet the stickman criteria; it has filled trouser legs and a more cartoonish body."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking raider is not a true stickman."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "DID VIKINGS REALLY WEAR HORNS?",
+    "note": "The text rule is violated as there is additional text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of a mid-action pause."
+   },
+   "cost": 0.0022403999999999996,
+   "inputTokens": 14488,
+   "outputTokens": 112
+  },
+  "A:nano-banana-2-lite:111": {
+   "style": {
+    "pass": false,
+    "note": "The character has filled trouser legs and a chunky cartoon body, which does not meet the stickman criteria."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking raider is not fully represented as a stickman."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text in the frame."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of a close-up on a helmet with horns."
+   },
+   "cost": 0.00223335,
+   "inputTokens": 14481,
+   "outputTokens": 102
+  },
+  "A:nano-banana-2-lite:125": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not conform to the stickman style as required; they have filled elements and are not purely thin black stick lines."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking raider is not depicted as a tiny stickman; the character is not consistent with the brief."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text in the frame, which fails the text rule."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of a first-person point-of-view shot."
+   },
+   "cost": 0.0022449,
+   "inputTokens": 14486,
+   "outputTokens": 120
+  },
+  "A:nano-banana-2:117": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not meet the stickman criteria; they have filled bodies and detailed features."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required characters (19th-century costume designer and Viking raider) are not represented as specified."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "MYTH",
+    "note": "The text rule is violated as there is additional text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture as described."
+   },
+   "cost": 0.0022354500000000004,
+   "inputTokens": 14491,
+   "outputTokens": 103
+  },
+  "A:nano-banana-2:7": {
+   "style": {
+    "pass": false,
+    "note": "The character has a filled body (yellow shirt) and is not a true stickman."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The character does not meet the requirement of being a true stickman."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture as described."
+   },
+   "cost": 0.00222435,
+   "inputTokens": 14473,
+   "outputTokens": 89
+  },
+  "A:nano-banana-2:69": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not meet the stickman criteria; they have filled bodies and are not true stick figures."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required people are not represented as true stickmen."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "BAYREUTH, 1876\n\nBAYREUTH\n1876",
+    "note": "The text rule is violated as there is additional text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture as it includes additional elements and is not a wide shot."
+   },
+   "cost": 0.0022456499999999996,
+   "inputTokens": 14487,
+   "outputTokens": 121
+  },
+  "A:nano-banana-2:18": {
+   "style": {
+    "pass": false,
+    "note": "The stickman style is not consistent; the character has a filled body and is not a true stickman."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required archaeologist's hands are not present; the character is not depicted as an archaeologist."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text in the frame."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of an overhead view of an archaeologist's tray with iron fragments."
+   },
+   "cost": 0.00223905,
+   "inputTokens": 14479,
+   "outputTokens": 112
+  },
+  "A:nano-banana-2:12": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not meet the stickman criteria; they have filled bodies and are not true stick figures."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking warrior is present, but the style does not match the brief."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show a true stickman representation of a crowd of Viking warriors."
+   },
+   "cost": 0.0022316999999999997,
+   "inputTokens": 14478,
+   "outputTokens": 100
+  },
+  "A:nano-banana-2:21": {
+   "style": {
+    "pass": false,
+    "note": "The stick figures do not meet the criteria as they have filled bodies and are not true stickmen."
+   },
+   "cast": {
+    "pass": true,
+    "note": "The required people (stickmen) are present."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "793–1066",
+    "note": "There is additional text (the number 1066) which violates the text rule."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture as the timeline is not highlighted correctly and contains additional elements."
+   },
+   "cost": 0.0022389,
+   "inputTokens": 14482,
+   "outputTokens": 111
+  },
+  "A:nano-banana-2:57": {
+   "style": {
+    "pass": false,
+    "note": "The character on the left is not a true stickman; it has filled trouser legs and a more cartoonish body."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking raider is not present; the character is not depicted as a Viking."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is readable text in the form of facial expressions, which violates the text rule."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture as described."
+   },
+   "cost": 0.00223845,
+   "inputTokens": 14483,
+   "outputTokens": 110
+  },
+  "A:nano-banana-2:10": {
+   "style": {
+    "pass": false,
+    "note": "The character does not meet the stickman criteria; it has filled trouser legs and a more cartoonish body."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The character is not a Viking raider as required."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "DID VIKINGS REALLY WEAR HORNS?",
+    "note": "The text rule is violated as there is additional text."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of a Viking raider pausing mid-stride."
+   },
+   "cost": 0.0022421999999999997,
+   "inputTokens": 14488,
+   "outputTokens": 115
+  },
+  "A:nano-banana-2:111": {
+   "style": {
+    "pass": false,
+    "note": "The character does not meet the stickman criteria; it has filled trouser legs and a chunky body."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking raider is not fully represented as a stickman."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text in the frame."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of a close-up on the helmet with horns."
+   },
+   "cost": 0.00223275,
+   "inputTokens": 14481,
+   "outputTokens": 101
+  },
+  "A:nano-banana-2:125": {
+   "style": {
+    "pass": false,
+    "note": "The character has a filled body and is not a true stickman."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required Viking raider is not depicted as a tiny stickman."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show a first-person point-of-view shot."
+   },
+   "cost": 0.0022251,
+   "inputTokens": 14486,
+   "outputTokens": 87
+  },
+  "A:recraft-v4:117": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not meet the stickman criteria; they have filled bodies and are not true stick figures."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required characters (19th-century costume designer and Viking raider) are not present as specified."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "MYTH",
+    "note": "The text rule is violated as there is additional text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture as described."
+   },
+   "cost": 0.00223725,
+   "inputTokens": 14491,
+   "outputTokens": 106
+  },
+  "A:recraft-v4:7": {
+   "style": {
+    "pass": false,
+    "note": "The character has a filled body and features that do not conform to the true stickman style."
+   },
+   "cast": {
+    "pass": true,
+    "note": "The required stickman is present."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is readable text (the smiley face) which does not comply with the text rule."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture as it does not feature a horned silhouette burned into a stickman head."
+   },
+   "cost": 0.00223575,
+   "inputTokens": 14473,
+   "outputTokens": 108
+  },
+  "A:recraft-v4:69": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not conform to the true stickman style; they have filled bodies and are not represented as thin black stick lines."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The frame includes multiple characters, which are not required as no specific people are needed."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "Bayreuth, 1876",
+    "note": "The text rule is violated as there is additional text present."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show a wide establishing view of an exterior theatre facade at night."
+   },
+   "cost": 0.00224445,
+   "inputTokens": 14487,
+   "outputTokens": 119
+  },
+  "A:recraft-v4:12": {
+   "style": {
+    "pass": false,
+    "note": "The characters have filled bodies and are not true stickmen."
+   },
+   "cast": {
+    "pass": true,
+    "note": "A Viking warrior is present."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text in the image."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show a true crowd scene as required."
+   },
+   "cost": 0.0022185,
+   "inputTokens": 14478,
+   "outputTokens": 78
+  },
+  "A:recraft-v4:18": {
+   "style": {
+    "pass": false,
+    "note": "The characters do not meet the stickman criteria; the archaeologist has a filled body and detailed features."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required archaeologist's hands are present, but the character is not a true stickman."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "",
+    "note": "There is no readable text in the frame."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not show the intended picture of a close object detail; it includes a character and additional elements."
+   },
+   "cost": 0.00223785,
+   "inputTokens": 14479,
+   "outputTokens": 110
+  }
+ },
+ "haiku": {
+  "A:flux2-klein-9b-kv:18": {
+   "style": {
+    "pass": false,
+    "note": "The hands visible are rendered as filled black shapes (realistic gloves/mittens), not true stickman mitten hands. The overall image has substantial shading and 3D modeling (gradient shading on the tray, soil, and bucket), which violates the flat art requirement. This is illustrated/realistic art, not flat stickman style."
+   },
+   "cast": {
+    "pass": true,
+    "note": "An archaeologist's hands are visible in the frame, meeting the required people specification."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "",
+    "note": "No readable text is present in the frame. The requirement allows a lone drawn ? or ! symbol, which is also not present. Text rule passes."
+   },
+   "concept": {
+    "pass": true,
+    "note": "The frame shows an overhead view of an archaeologist working at a tray with scattered iron fragments/stones, a bucket, and a sifting tool, matching the intended picture of 'a close object detail, overhead view, framed as overhead on empty tray' with 'scattered iron fragments.'"
+   },
+   "cost": 0.003052,
+   "inputTokens": 1522,
+   "outputTokens": 306,
+   "latencyMs": 3699
+  },
+  "A:flux2-klein-9b-kv:12": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The figures have filled bodies in brown/tan with visible clothing details, colored sleeves, and detailed shading. They are not true stickmen with thin black stick lines. The art includes realistic shading and depth (gradient background, shaded clothing), not flat 2D style.",
+   "cost": 0.003285,
+   "inputTokens": 1520,
+   "outputTokens": 353,
+   "latencyMs": 3806
+  },
+  "A:flux2-klein-9b-kv:69": {
+   "style": {
+    "pass": false,
+    "note": "The stickman figure violates style requirements: it has a filled/solid colored body (greenish torso) rather than being composed of thin black stick lines only. The character has what appears to be a chunky cartoon body rather than true stickman construction with just circle head and thin line limbs."
+   },
+   "cast": {
+    "pass": true,
+    "note": "One stickman figure is present on stage as required. No specific named people are required by the brief."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "Bayreuth, 1876",
+    "note": "Exactly one piece of text is visible reading 'Bayreuth, 1876' spelled correctly with no other text present anywhere in the frame. Text rule PASS."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The brief specifies an 'exterior theatre facade' establishing shot at 'night' showing the marquee on the opera house. This image shows a stickman on an interior theatre stage with curtains and mountain backdrop scenery. This is an interior stage view, not an exterior facade view as required. The concept does not match the intended picture."
+   },
+   "cost": 0.003155,
+   "inputTokens": 1530,
+   "outputTokens": 325,
+   "latencyMs": 4411
+  },
+  "A:flux2-klein-9b-kv:7": {
+   "style": {
+    "pass": false,
+    "note": "The stickman does not meet true stickman criteria. The body has a filled blue shirt/torso area rather than just thin black lines for the body. The head, while circular, has facial features drawn in (eyes, frown mouth). The horned helmet/head apparatus is rendered with filled brown horns and multiple colored areas (brown, orange, red) rather than being a simple iconic silhouette. This is a cartoon-style character, not a pure stickman with thin black lines only."
+   },
+   "cast": {
+    "pass": true,
+    "note": "One stickman figure is present as required by the brief."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "No readable text visible",
+    "note": "The image contains no readable text, no numbers, and no symbols. The text rule passes as there is no text content to violate the 'no readable text' requirement."
+   },
+   "concept": {
+    "pass": false,
+    "note": "While the image attempts to show a horned figure with fire/flames, it does not match the brief's requirement of 'the horned silhouette burned large into a stickman head — one single frozen moment' as an 'iconic silhouette.' The character is rendered as a detailed, colored cartoon figure rather than a bold, iconic silhouette. The execution is too illustrative rather than symbolic and silhouette-based."
+   },
+   "cost": 0.003389,
+   "inputTokens": 1519,
+   "outputTokens": 374,
+   "latencyMs": 4847
+  },
+  "A:flux2-klein-9b-kv:117": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The figures are not true stickman style. They have filled/chunky cartoon bodies, detailed facial features with shading, realistic proportions, and colored clothing fills rather than thin black stick lines. The art is also not flat—it has depth, shading, and realistic visual treatment rather than pure 2D minimalist stickman aesthetic.",
+   "cost": 0.00435,
+   "inputTokens": 1535,
+   "outputTokens": 563,
+   "latencyMs": 6159
+  },
+  "A:flux2-klein-9b-kv:21": {
+   "style": {
+    "pass": false,
+    "note": "The stickmen have filled clothing (blue and green shirts/dresses) and filled mitten hands (black), not true thin black stick lines throughout. While the heads are circles and limbs are relatively thin, the torsos have colored fills that violate the pure stickman requirement."
+   },
+   "cast": {
+    "pass": true,
+    "note": "Two stickmen figures are present as required. No specific people were required, and these generic stickmen serve the purpose."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "793-1066\n1066",
+    "note": "The frame contains TWO text elements: '793-1066' and '1066'. The rule requires exactly one piece of text reading '793–1066' and NO other text anywhere. The additional '1066' label violates this requirement."
+   },
+   "concept": {
+    "pass": false,
+    "note": "While a timeline bar is present with 1066 marked, the brief specifies the timeline should be 'still nearly empty — one single frozen moment.' The presence of two stickmen figures, even as generic characters, adds narrative/character elements beyond the intended minimal timeline graphic. The frame reads more like a comparison or relationship between two figures rather than a stark, minimal timeline moment."
+   },
+   "cost": 0.003387,
+   "inputTokens": 1522,
+   "outputTokens": 373,
+   "latencyMs": 4909
+  },
+  "A:flux2-klein-9b-kv:57": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The figures are not true stickmen. They have filled/colored trouser legs (brown), filled sleeves, and chunky cartoon bodies rather than thin black stick lines. The heads have detailed facial features drawn in, not simple circles. The art includes shading and is more cartoon-style than flat geometric stickman art.",
+   "cost": 0.003882,
+   "inputTokens": 1527,
+   "outputTokens": 471,
+   "latencyMs": 5628
+  },
+  "A:flux2-klein-9b-kv:10": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The figure is not a true stickman. It has a filled/solid torso (cartoon body shape), filled brown legs (trouser-like appearance), and a filled brown tunic/shirt. True stickman style requires thin black lines for limbs only. Additionally, there is shading visible (gradient hills, shadow beneath figure) which violates the \"flat, no shading\" requirement.",
+   "cost": 0.003912,
+   "inputTokens": 1532,
+   "outputTokens": 476,
+   "latencyMs": 5399
+  },
+  "A:flux2-klein-9b-kv:111": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The Viking character is a chunky cartoon body with filled clothing elements (green shirt, brown trousers, sleeves), not a true stickman. True stickman requires circle head with thin black stick lines for limbs and mitten hands without fingers. This figure has a detailed cartoon face, shaded/filled body parts, and chunky proportions.",
+   "cost": 0.0036,
+   "inputTokens": 1525,
+   "outputTokens": 415,
+   "latencyMs": 4935
+  },
+  "A:flux2-klein-9b-kv:125": {
+   "style": {
+    "pass": false,
+    "note": "Not all characters are true stickmen. The left figure has a circle head and thin stick limbs (acceptable), but the right figure is a large brown filled shape with substantial bulk and shading - this is a chunky cartoon body, not a thin-lined stickman. Both figures have some stylization beyond pure stickmen form. The overall art shows shading and brown filled areas, not pure flat line art."
+   },
+   "cast": {
+    "pass": true,
+    "note": "The required viewer as a tiny Viking raider is present on the left (small angry figure with horns). The tiny figure in the center also appears to be a Viking raider for scale reference."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "",
+    "note": "No readable text is visible in the frame. The text rule is satisfied."
+   },
+   "concept": {
+    "pass": true,
+    "note": "The frame depicts a first-person POV shot where the viewer (as a tiny Viking on the left) glimpses curving horns on a distant large object (the massive horned figure on the right). The composition effectively shows one frozen moment capturing the sight of horns, matching the intended brief."
+   },
+   "cost": 0.003165,
+   "inputTokens": 1535,
+   "outputTokens": 326,
+   "latencyMs": 4158
+  },
+  "A:qwen-image-2512:7": {
+   "style": {
+    "pass": false,
+    "note": "The stickman figure violates the style requirements. While the body consists of thin stick lines and mitten hands, the helmet is rendered with realistic 3D shading, metallic detailing, and dimensional depth. This includes shadowing, rivets, and bronze/golden gradients that are not flat or appropriately stylized for a 2D stickman explainer video."
+   },
+   "cast": {
+    "pass": true,
+    "note": "One stickman figure is present as required."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "",
+    "note": "No readable text is present in the frame, which complies with the text rule."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The concept is only partially met. While the horned helmet is present and prominent, it is not presented as a symbolic silhouette 'burned large' into the stickman's head. Instead, the helmet appears as a separate, realistically rendered 3D object overlaid on top of the stickman, rather than being an integrated iconic silhouette that forms a unified image."
+   },
+   "cost": 0.003064,
+   "inputTokens": 1519,
+   "outputTokens": 309,
+   "latencyMs": 3660
+  },
+  "A:qwen-image-2512:117": {
+   "style": {
+    "pass": false,
+    "note": "This is NOT a true stickman style. The figures have filled cartoon bodies, detailed clothing (trouser legs filled in, detailed jacket and dress), rounded realistic faces with features, and chunky proportions. The art includes shading, color gradients, and 3D background elements. This is a flat 2D cartoon illustration, not minimalist stickman line art."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required cast is not correctly present. The person on the left appears to be wearing formal business attire (not recognizable as a 19th-century costume designer), and the person on the right is dressed as a Viking raider. However, neither figure matches the stickman requirement, and the context of a 'costume department rack/handoff' is not visually established - this appears to be a theatrical stage scene with a prop helmet, not a backstage costume department setting."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "MYTH",
+    "note": "The text 'MYTH' is present and spelled correctly, meeting the basic requirement. However, the frame fails the style requirement so fundamentally that this text rule becomes secondary."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not match the intended picture. Rather than a backstage costume department handoff, this depicts a theatrical stage performance or presentation with red curtains, footlights, and a mountainous backdrop. The scene suggests a myth being told or presented on stage, not a costume designer handing equipment to a viewer. The framing and context are entirely different from the brief."
+   },
+   "cost": 0.00362,
+   "inputTokens": 1535,
+   "outputTokens": 417,
+   "latencyMs": 5030
+  },
+  "A:qwen-image-2512:12": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The figures are not true stickmen as required. They have chunky cartoon bodies with filled brown/tan clothing, filled sleeves, and filled trouser areas. Heads are filled circles with faces, not simple circle heads. The art includes shading, realistic facial features, and a detailed illustrated style rather than flat 2D stickman style. Arms and legs are not thin black stick lines.",
+   "cost": 0.003525,
+   "inputTokens": 1520,
+   "outputTokens": 401,
+   "latencyMs": 4173
+  },
+  "A:qwen-image-2512:69": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The stickman violates the style requirements. It has a filled yellow/golden jacket (chunky cartoon body), filled black mitten hands, and chunky filled limbs rather than thin black stick lines. The background also contains shading, realistic mountain scenery, stage lighting, and 3D perspective elements, which violates the \"flat\" requirement. The overall composition is NOT flat 2D stickman style.",
+   "cost": 0.00395,
+   "inputTokens": 1530,
+   "outputTokens": 484,
+   "latencyMs": 5207
+  },
+  "A:qwen-image-2512:18": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The stickman violates the flat 2D stickman style requirement. The figure has: a filled/shaded circle head with a drawn face (smile), what appears to be filled or thickened body elements rather than thin stick lines, and the overall art includes realistic shading (the dirt, shadows on the tray, the realistic bucket). The scene contains 3D perspective and realistic texture details that contradict the requirement for flat art with no shading.",
+   "cost": 0.003527,
+   "inputTokens": 1522,
+   "outputTokens": 401,
+   "latencyMs": 4417
+  },
+  "A:qwen-image-2512:21": {
+   "style": {
+    "pass": false,
+    "note": "The stickmen fail the style requirement. They have colored filled clothing (green and orange shirts), which violates the 'true stickman' rule of thin black stick lines only. The bodies appear to have filled colored areas rather than being purely thin black lines. While the heads are circles and limbs are line-based, the colored clothing elements make these not true stickmen as specified."
+   },
+   "cast": {
+    "pass": true,
+    "note": "Three stickmen figures are present on the timeline bar as shown in the frame."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "793–1066",
+    "note": "The text reads exactly '793–1066' with the correct spelling and dash, and no other text appears anywhere in the frame. Meets the requirement of exactly one piece of text with correct spelling."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The concept does not fully match the brief. The brief specifies 'Timeline bar highlighted end labeled 1066, still nearly empty — one single frozen moment,' but the image shows three stickmen on the timeline and displays the full range '793–1066' rather than highlighting only the 1066 endpoint. The timeline does not appear nearly empty as intended."
+   },
+   "cost": 0.003232,
+   "inputTokens": 1522,
+   "outputTokens": 342,
+   "latencyMs": 4101
+  },
+  "A:qwen-image-2512:111": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The character is a cartoon figure with a filled body, detailed clothing with shading, and realistic facial features. This violates the requirement for a true stickman with only thin black stick lines for arms and legs, circle head, and mitten hands. The entire figure is chunky and cartoon-styled rather than flat stickman art.",
+   "cost": 0.00347,
+   "inputTokens": 1525,
+   "outputTokens": 389,
+   "latencyMs": 3976
+  },
+  "A:qwen-image-2512:10": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The figure is not a true stickman. It has a filled/colored body (green tunic, brown trouser legs), shaded/rendered features (defined face, hair, belt), and realistic proportions rather than simple circle head with thin black stick lines for limbs. The art includes shading, color fill, and cartoon styling that violates the flat stickman requirement.",
+   "cost": 0.003617,
+   "inputTokens": 1532,
+   "outputTokens": 417,
+   "latencyMs": 4593
+  },
+  "A:qwen-image-2512:125": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "Not a true stickman style. The figure has a filled/colored circular head (peachy tan), filled torso with colored shirt (green), filled/colored trouser legs (brown), and filled black hands/gloves. This is chunky cartoon style, not thin black stick lines. Additionally, there is shading visible (gray shading on the horns and subtle shading on the character), violating the \"flat\" requirement.",
+   "cost": 0.00403,
+   "inputTokens": 1535,
+   "outputTokens": 499,
+   "latencyMs": 5281
+  },
+  "A:qwen-image-2512:57": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The figures are not true stickmen. They have filled/thick bodies (torsos with shading, filled trouser legs, colored sleeves), detailed cartoon faces with defined features, and realistic proportions. True stickmen require thin black stick lines for arms and legs with circle heads and mitten hands without fingers. This is flat cartoon art, not stickman style.",
+   "cost": 0.004277,
+   "inputTokens": 1527,
+   "outputTokens": 550,
+   "latencyMs": 6661
+  },
+  "A:nano-banana-2-lite:69": {
+   "style": {
+    "pass": false,
+    "note": "The figures are not true stickmen. They have filled bodies (dark torsos), defined limbs with apparent clothing/thickness, and detailed faces with features. The art style is cartoon/illustrated rather than flat thin line stickman style. There is shading and dimension present."
+   },
+   "cast": {
+    "pass": true,
+    "note": "Multiple figures are present in the scene as shown in the frame."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "BAYREUTH 1876",
+    "note": "The text reads 'BAYREUTH 1876' instead of the required 'Bayreuth, 1876'. The requirements specify it should be spelled 'Bayreuth, 1876' (with comma), but the marquee displays it without the comma and with all capitals. This violates the 'spelled correctly' and exact text rule."
+   },
+   "concept": {
+    "pass": true,
+    "note": "The frame shows a wide establishing exterior view of a theatre facade with a marquee at night. The setting matches the intended picture of an opera house exterior with the Bayreuth 1876 reference frozen in a single moment."
+   },
+   "cost": 0.003155,
+   "inputTokens": 1530,
+   "outputTokens": 325,
+   "latencyMs": 3984
+  },
+  "A:nano-banana-2-lite:7": {
+   "style": {
+    "pass": false,
+    "note": "The figure has a filled/chunky cartoon body (gray torso), filled black legs/feet, and filled black mitts rather than thin stick lines. The face has shading and styling details. The helmet/horns have shading and rounded forms rather than pure flat lines. This violates the strict stickman requirements of thin black stick lines throughout."
+   },
+   "cast": {
+    "pass": true,
+    "note": "One stickman figure with a horned helmet is present as required."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "",
+    "note": "No readable text is present in the frame. The rule is satisfied."
+   },
+   "concept": {
+    "pass": true,
+    "note": "The frame shows a horned silhouette applied to a stickman head, presented as a single iconic moment. This matches the intended picture of 'The horned silhouette burned large into a stickman head — one single frozen moment.'"
+   },
+   "cost": 0.003034,
+   "inputTokens": 1519,
+   "outputTokens": 303,
+   "latencyMs": 3725
+  },
+  "A:nano-banana-2-lite:18": {
+   "style": {
+    "pass": false,
+    "note": "FAIL: The stickman has a filled circular head with a face (drawn as a smiley), not just a simple circle. The arms and legs appear as thin lines, but the stickman includes facial features which violates the true stickman requirement. Additionally, the overall image includes shading and 3D perspective (the tray is shown in 3D with depth), not flat 2D art."
+   },
+   "cast": {
+    "pass": true,
+    "note": "PASS: An archaeologist is present, shown by the hands visible at the bottom of the frame holding/framing the tray."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "",
+    "note": "PASS: No readable text is present in the frame. No drawn symbols (?, !) are visible either."
+   },
+   "concept": {
+    "pass": true,
+    "note": "PASS: The frame shows an overhead view of an archaeologist's tray with scattered iron fragments (small dark shapes on white surface). The framing is from the archaeologist's perspective looking down at the tray. This matches the intended picture of 'a close object detail, overhead view, framed as overhead on empty tray' with scattered artifacts."
+   },
+   "cost": 0.003327,
+   "inputTokens": 1522,
+   "outputTokens": 361,
+   "latencyMs": 4213
+  },
+  "A:nano-banana-2-lite:117": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The figures are not true stickmen. They have filled colored bodies (dark blue suit, green tunic), shaded faces with realistic facial features, and cartoon proportions. The art includes shading, gradient effects on the curtains, and detailed scenic elements. This violates the requirement for pure stickman style with thin black lines and flat art.",
+   "cost": 0.004335,
+   "inputTokens": 1535,
+   "outputTokens": 560,
+   "latencyMs": 6512
+  },
+  "A:nano-banana-2-lite:12": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The figures have filled torsos (brown/tan colored shirts), filled legs (gray trouser areas), and overall chunky cartoon bodies. The heads have facial features drawn in. This violates the true stickman requirement of thin black stick lines only with circle heads and simple mitten hands. The art also includes shading and realistic stylization beyond flat 2D stickman style.",
+   "cost": 0.003515,
+   "inputTokens": 1520,
+   "outputTokens": 399,
+   "latencyMs": 4865
+  },
+  "A:nano-banana-2-lite:21": {
+   "style": {
+    "pass": false,
+    "note": "The stickman does not meet the strict criteria. The figure has: filled/colored clothing (blue/grey shirt and black pants), which violates the 'thin black stick lines only' requirement. The arms and legs appear to have filled elements rather than being simple thin black lines. Additionally, there are black mittens/hands shown, but they appear as solid shapes rather than simple stick endpoints."
+   },
+   "cast": {
+    "pass": true,
+    "note": "One person/stickman figure is present as required. No specific people were required, and one generic figure is shown."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "793–1066\n1066",
+    "note": "Two separate pieces of text are visible: '793–1066' in the center and '1066' repeated in a label box at the end of the timeline bar. The text rule requires exactly one piece of text reading '793–1066' with NO other text anywhere. The additional '1066' label fails this requirement."
+   },
+   "concept": {
+    "pass": true,
+    "note": "The frame shows a horizontal timeline bar in flat graphic layout with a figure on the left, the timeline extending to the right with an end label, presenting a single frozen moment in time as intended."
+   },
+   "cost": 0.003372,
+   "inputTokens": 1522,
+   "outputTokens": 370,
+   "latencyMs": 4811
+  },
+  "A:nano-banana-2-lite:111": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The character has a chunky cartoon body with filled coloring (green tunic, brown details), not true stickman thin black lines. The body has dimensional shading and contours rather than flat simple lines. This fails the stickman requirement.",
+   "cost": 0.003395,
+   "inputTokens": 1525,
+   "outputTokens": 374,
+   "latencyMs": 3838
+  },
+  "A:nano-banana-2-lite:10": {
+   "style": {
+    "pass": false,
+    "note": "The character is not a true stickman. It has filled colored clothing (green tunic, brown leggings), a substantial cartoon body shape, and realistic/detailed facial features. The arms and legs are not thin black stick lines—they are part of a chunky cartoon illustration style. The art includes shading and is not flat."
+   },
+   "cast": {
+    "pass": true,
+    "note": "The required Viking raider is present as the main character, holding a shield and dressed appropriately for the role."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "DID VIKINGS REALLY WEAR HORNS?",
+    "note": "The text is present, spelled correctly, and is the only text visible in the frame."
+   },
+   "concept": {
+    "pass": true,
+    "note": "The frame shows the intended picture: a reaction shot of a Viking paused mid-stride with a question mark over their head, captured as a single frozen moment."
+   },
+   "cost": 0.003052,
+   "inputTokens": 1532,
+   "outputTokens": 304,
+   "latencyMs": 3442
+  },
+  "A:nano-banana-2-lite:57": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The left figure is styled somewhat minimally but the right panel shows cartoon-style characters with filled bodies, shading, and realistic facial features rather than true stickman proportions. The bodies are chunky and filled rather than thin stick lines. Not consistently true stickman style across the frame.",
+   "cost": 0.003817,
+   "inputTokens": 1527,
+   "outputTokens": 458,
+   "latencyMs": 5897
+  },
+  "A:nano-banana-2-lite:125": {
+   "style": {
+    "pass": false,
+    "note": "Style fails. While the large figure on the left is a proper stickman with circle head and thin black lines, the smaller Viking character on the right has a filled/colored green torso and brown legs (not thin black stick lines). The Viking also has a colored/filled backpack. Additionally, the art includes shading and colored fill elements rather than being purely flat line art."
+   },
+   "cast": {
+    "pass": false,
+    "note": "Cast fails. The brief requires 'the viewer as a Viking raider (tiny)' - meaning the viewer's perspective should be shown as a tiny Viking. The frame shows a large stickman (presumably the viewer) on the left and a tiny Viking figure on the right, which inverts the required relationship. The 'viewer' should be the tiny Viking raider, not the large figure."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "",
+    "note": "Text passes. No readable text is visible in the frame. There are no symbols or characters to transcribe."
+   },
+   "concept": {
+    "pass": false,
+    "note": "Concept fails. The brief requires a first-person POV shot where the viewer (a tiny Viking raider) spots curving horns on a distant object in a single frozen moment. This frame shows a large stickman figure observing a tiny Viking character with a horned creature above, which does not match the intended POV perspective. The composition should be from the tiny Viking's viewpoint seeing something with horns, not an external view of the Viking."
+   },
+   "cost": 0.00367,
+   "inputTokens": 1535,
+   "outputTokens": 427,
+   "latencyMs": 4771
+  },
+  "A:nano-banana-2:69": {
+   "style": {
+    "pass": false,
+    "note": "Fails stickman requirements. Figures have filled bodies/clothing (colored garments), thick cartoon construction, and realistic facial features. Not simple circle heads with thin black stick lines."
+   },
+   "cast": {
+    "pass": true,
+    "note": "Multiple people present as required; no specific cast required."
+   },
+   "text": {
+    "pass": false,
+    "ocr": "BAYREUTH, 1876\nBAYREUTH\n1876",
+    "note": "Text rule violated. Required text is 'Bayreuth, 1876' (one piece only), but frame contains three separate text elements: the main title at top, and the marquee sign showing 'BAYREUTH' and '1876' as two lines. This is more than one piece of text."
+   },
+   "concept": {
+    "pass": true,
+    "note": "Establishes exterior theatre facade at night with marquee, historical period (1876), location (Bayreuth), gathered crowd. Matches intended establishing shot concept."
+   },
+   "cost": 0.003,
+   "inputTokens": 1530,
+   "outputTokens": 294,
+   "latencyMs": 3675
+  },
+  "A:nano-banana-2:7": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The stickman fails true stickman criteria. While it has a circle head and stick limbs, the figure includes a filled yellow shirt/body, which violates the requirement for only thin black stick lines. The torso is colored/filled rather than being a minimalist stickman outline. Additionally, the horned helmet has shading/gradient fill and is overly detailed, not a flat illustration.",
+   "cost": 0.003599,
+   "inputTokens": 1519,
+   "outputTokens": 416,
+   "latencyMs": 4012
+  },
+  "A:nano-banana-2:117": {
+   "style": {
+    "pass": false,
+    "note": "The figures are cartoon-style with filled bodies, defined clothing details (trouser legs, sleeves, shirts), shaded faces, and realistic facial features. This violates the strict stickman requirement of thin black line limbs and simple circle heads. The background also contains shading and realistic landscape elements, contradicting the 'flat' art requirement."
+   },
+   "cast": {
+    "pass": false,
+    "note": "While a costumed character (partially Viking-styled) and a character in formal wear are present, neither matches the required brief. The person on the left appears to be a generic businessman/presenter, not a '19th-century costume designer (full)'. The person on the right wears green but lacks authentic full Viking raider costume elements. The 'viewer' role is ambiguous—no clear handoff framing positions either as the receiving viewer."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "MYTH",
+    "note": "Only one text element visible: 'MYTH' spelled correctly in yellow letters. No other text present on the frame."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The frame does not depict the intended picture. Missing: a costume department rack context, a clear handoff action ('handing helmet to viewer'), and a singular frozen moment of backstage transfer. Instead, it shows two figures on a stage with a Viking helmet displayed between them—resembling a presentation or reveal scene rather than a costume handoff."
+   },
+   "cost": 0.003605,
+   "inputTokens": 1535,
+   "outputTokens": 414,
+   "latencyMs": 5134
+  },
+  "A:nano-banana-2:12": {
+   "style": {
+    "pass": false,
+    "note": "Characters are not true stickmen. They have filled/chunky bodies with brown/tan colored torsos, filled trouser legs, defined sleeves, and chunky cartoon proportions rather than thin black stick lines. The artwork also includes shading and tonal variation (not flat), and faces have realistic details and expression rather than being minimal circle heads."
+   },
+   "cast": {
+    "pass": true,
+    "note": "Viking warriors are present and visible throughout the frame. The central figure wears a horned helmet and holds a shield, meeting the requirement for a Viking warrior (full)."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "",
+    "note": "No readable text is visible in the frame. The text rule is satisfied."
+   },
+   "concept": {
+    "pass": true,
+    "note": "The frame shows a crowd scene wide shot of viking warriors marching with horned helmets in a single frozen moment, matching the intended picture."
+   },
+   "cost": 0.002885,
+   "inputTokens": 1520,
+   "outputTokens": 273,
+   "latencyMs": 3189
+  },
+  "A:nano-banana-2:18": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The stickman figure fails the style requirement. While it has a circle head and thin limbs, it does NOT have the pure thin black stick lines. The body shows filled/solid coloring (olive/green colored torso), which violates the \"not filled trouser legs, sleeves or chunky cartoon bodies\" requirement. The art also includes shading (gray sky gradation, brown soil shading) rather than being purely flat. The face has minor detail that approaches realism rather than being strictly geometric.",
+   "cost": 0.004352,
+   "inputTokens": 1522,
+   "outputTokens": 566,
+   "latencyMs": 6006
+  },
+  "A:nano-banana-2:21": {
+   "style": {
+    "pass": false,
+    "note": "FAIL: The stickmen are not true stickmen. They have filled/colored torsos, filled arms and legs, and solid bodies rather than thin black stick lines. They appear as cartoon figures with colored clothing/bodies rather than minimalist stick figures with only circle heads and thin line limbs."
+   },
+   "cast": {
+    "pass": true,
+    "note": "PASS: Multiple people (15 stickmen total) are present as required. No specific individuals were required."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "793–1066",
+    "note": "PASS: Exactly one piece of text reading '793–1066' is present and spelled correctly. No other text is visible anywhere on the frame."
+   },
+   "concept": {
+    "pass": false,
+    "note": "FAIL: The frame shows a timeline bar with labeled endpoint (1066), but the timeline appears fully populated with figures across its length rather than showing 'still nearly empty — one single frozen moment' as required. The concept calls for a sparse, nearly empty timeline at a single frozen moment, not a crowded display of people."
+   },
+   "cost": 0.003217,
+   "inputTokens": 1522,
+   "outputTokens": 339,
+   "latencyMs": 4263
+  },
+  "A:nano-banana-2:10": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The figure fails the stickman requirements. It has a filled/chunky cartoon body with colored clothing (green shirt, brown pants/legs), is not drawn as thin black lines only, and includes realistic shading on the landscape and character. The art style is cartoon illustration, not flat stickman.",
+   "cost": 0.003592,
+   "inputTokens": 1532,
+   "outputTokens": 412,
+   "latencyMs": 4166
+  },
+  "A:nano-banana-2:57": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The figures are not true stickmen. They have filled/solid bodies, clothing with details (filled trouser legs, sleeves, colored garments), realistic cartoon facial features with expressions, and shading. The art is not flat—it has tonal shading and dimensional character design rather than simple thin black lines for limbs.",
+   "cost": 0.004057,
+   "inputTokens": 1527,
+   "outputTokens": 506,
+   "latencyMs": 5294
+  },
+  "A:nano-banana-2:111": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The character is not a true stickman. It has a filled cartoon body with shading and dimensional rendering (brown shaded arms and legs, torso shading, realistic face with defined features), rather than simple circle head with thin black stick lines for limbs. The art includes realistic facial features, colored fills, and detailed clothing, violating the flat stickman style requirement.",
+   "cost": 0.004115,
+   "inputTokens": 1525,
+   "outputTokens": 518,
+   "latencyMs": 5751
+  },
+  "A:nano-banana-2:125": {
+   "style": {
+    "pass": false,
+    "note": "The stickman figure shown is not a true stickman. It has a filled/colored torso (green shirt) and filled/colored legs (brown/tan pants), rather than just thin black stick lines. The arms appear to be thin sticks but the body construction violates the strict stickman requirements. The art is flat overall, but the figure itself doesn't meet the stickman definition."
+   },
+   "cast": {
+    "pass": false,
+    "note": "The required people are not present as specified. The brief requires 'the viewer as a Viking raider (tiny)' - this should be a tiny figure shown from first-person POV. While there is a small stickman figure, it is not depicted as a Viking raider (no Viking elements like helmet, axe, or armor visible), and the framing is unclear as a first-person POV shot."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "",
+    "note": "No readable text is present in the frame. The rule is satisfied."
+   },
+   "concept": {
+    "pass": false,
+    "note": "The intended picture is 'A first-person point-of-view shot...Viewer's eye catches curving horns on distant object — one single frozen moment.' While there are horns visible in the lower portion of the frame, the composition does not clearly establish a first-person POV perspective with the viewer as a tiny Viking in the foreground. The stickman figure appears to be positioned above the horns rather than being the viewer looking down at them. The framing does not convey the intended POV relationship."
+   },
+   "cost": 0.003755,
+   "inputTokens": 1535,
+   "outputTokens": 444,
+   "latencyMs": 5091
+  },
+  "A:recraft-v4:117": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The figures are not true stickmen. They have chunky cartoon bodies with filled clothing (brown/tan filled torsos, colored shirts), realistic shading on faces, and substantial body proportions rather than thin stick lines. The art includes realistic cartoon styling rather than flat minimalist stickmen design.",
+   "cost": 0.003865,
+   "inputTokens": 1535,
+   "outputTokens": 466,
+   "latencyMs": 5067
+  },
+  "A:recraft-v4:7": {
+   "style": {
+    "pass": false,
+    "note": "The figure does not meet strict stickman criteria. While it has a circular head and stick limbs, the design includes: orange and black patterned/filled areas on the head and horns (not simple outline), a filled blue cape/collar, and filled black mitts. True stickman style requires thin black stick lines only with minimal geometric shapes. The horns have patterned fill rather than being simple line outlines."
+   },
+   "cast": {
+    "pass": true,
+    "note": "One figure is present as required. No specific people are required per the brief."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "",
+    "note": "No readable text is present in the frame. The text rule is satisfied (no readable text required)."
+   },
+   "concept": {
+    "pass": true,
+    "note": "The frame shows a horned silhouette figure in a stickman form, presented as a single frozen moment. The orange and black horned head design creates an iconic silhouette effect with the stickman body, matching the intended symbolic illustration concept."
+   },
+   "cost": 0.003029,
+   "inputTokens": 1519,
+   "outputTokens": 302,
+   "latencyMs": 4055
+  },
+  "A:recraft-v4:69": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The stickmen do not meet the strict style requirement. They have colored filled bodies (yellow, green, red, orange, blue, pink) and thick limbs rather than thin black stick lines. Some appear to have filled clothing/trouser legs and sleeves. This is chunky cartoon bodies, not true stickman style with only thin black lines.",
+   "cost": 0.003645,
+   "inputTokens": 1530,
+   "outputTokens": 423,
+   "latencyMs": 4156
+  },
+  "A:recraft-v4:12": {
+   "style": {
+    "pass": false,
+    "note": "The figures do not meet the stickman requirements. They have filled-in bodies with shading (tan/beige coloring), not just thin black stick lines. The arms and legs appear chunky rather than thin lines. The main Viking has a filled torso, armor details, and shading. While relatively flat (not 3D), the figures are cartoon-styled rather than pure stickman style with thin black lines."
+   },
+   "cast": {
+    "pass": true,
+    "note": "A Viking warrior with horned helmet is clearly present in the center as the main figure, meeting the requirement for a full Viking warrior character."
+   },
+   "text": {
+    "pass": true,
+    "ocr": "",
+    "note": "No readable text is present in the frame. There are no drawn symbols (?, !) either, which is acceptable per the rule allowing their absence."
+   },
+   "concept": {
+    "pass": true,
+    "note": "The frame shows the intended picture: a crowd scene wide shot of Viking warriors marching, all wearing horned helmets, captured as a single frozen moment. The composition matches the brief."
+   },
+   "cost": 0.003055,
+   "inputTokens": 1520,
+   "outputTokens": 307,
+   "latencyMs": 3517
+  },
+  "A:recraft-v4:18": {
+   "style": "\n<parameter name=\"pass\">false",
+   "note": "The figure is not a true stickman. The body is rendered with filled shapes (rounded torso), not thin lines. The arms appear as solid black filled shapes rather than thin stick lines. The head has facial features (eyes and nose line) rather than being a simple circle. The overall style includes shading and dimensionality (the body appears rounded/3D) rather than being flat geometric line art.",
+   "cost": 0.003522,
+   "inputTokens": 1522,
+   "outputTokens": 400,
+   "latencyMs": 4771
+  }
+ }
+}

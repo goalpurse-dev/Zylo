@@ -1,0 +1,1778 @@
+[
+ {
+  "beatSequence": 1,
+  "versionId": "v2-4c-1",
+  "path": "docs/phase4/fullset/beat-001-base.jpg",
+  "sha256": "204cf43aea8ffbe758c83b80d6b18e452c267808a465be07904956c91bc1e13e",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 2,
+  "versionId": "v2-4c-2",
+  "path": "docs/phase4/fullset/beat-002-base.jpg",
+  "sha256": "f591c65126f681e6b21c1286de9fd7b1fe35e1f954fb9aabdbed2f1191b0b809",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 3,
+  "versionId": "v2-4c-3",
+  "path": "docs/phase4/fullset/beat-003-base.jpg",
+  "sha256": "7e92bbae9f2e3ceb3b093621e002ca6cc96b7a68574489dac294e61a89fd4b3c",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 4,
+  "versionId": "v2-4c-4",
+  "path": "docs/phase4/fullset/beat-004-base.jpg",
+  "sha256": "d6da57781bb54074a8cb81144c7909003350a75cc4d949eeb7b26a8136757e94",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 5,
+  "versionId": "v2-4c-5",
+  "path": "docs/phase4/fullset/beat-005-base.jpg",
+  "sha256": "acc2f204e2cf90203f8a9b9a8d29aa4111b6082ba084334fbeeb85ec0b42c523",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 6,
+  "versionId": "v2-4c-6",
+  "path": "docs/phase4/fullset/beat-006-base.jpg",
+  "sha256": "f13e213ac2b2e08fda90163fc1c64de44773a235559b6461062af581011eb0d5",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 7,
+  "versionId": "v2-4c-7",
+  "path": "docs/phase4/fullset/beat-007-base.jpg",
+  "sha256": "839ecb5c3c7b2cec6d3e62cbd278bb1c2418f63429cc7737f0df6b3309b24dcf",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 8,
+  "versionId": "v2-4c-8",
+  "path": "docs/phase4/fullset/beat-008-base.jpg",
+  "sha256": "541a142e42d886b64e1659a16a5eb6b1831e5b95b3f88902840188afd68734a5",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 9,
+  "versionId": "v2-4c-9",
+  "path": "docs/phase4/fullset/beat-009-base.jpg",
+  "sha256": "125ae0319802fefa87ac08487023d19a343c63639a2f0427a49048bebcfa484e",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 10,
+  "versionId": "v2-4c-10",
+  "path": "docs/phase4/fullset/beat-010-base.jpg",
+  "sha256": "95841429e93cffd9ce36cf630f7fd2a0ad5a8345f2e86ebc4c0dc6f9a6c50678",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 11,
+  "versionId": "v2-4c-11",
+  "path": "docs/phase4/fullset/beat-011-base.jpg",
+  "sha256": "282431b4ae23b99cf4a72867fecaa7b648857c3f93d0013f996bf0ddffe613fd",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 12,
+  "versionId": "v2-4c-12",
+  "path": "docs/phase4/fullset/beat-012-base.jpg",
+  "sha256": "fbccc9f156d0fab88e705b73eb5d8323000c0d2da1eb7fb2c1059c65486954c2",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 13,
+  "versionId": "v2-4c-13",
+  "path": "docs/phase4/fullset/beat-013-base.jpg",
+  "sha256": "9f35cc22360b38989b7aac84ce03e05bd21e53227f5ce6a4b90673c38092e6c2",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 14,
+  "versionId": "v2-4c-14",
+  "path": "docs/phase4/fullset/beat-014-base.jpg",
+  "sha256": "717a7316ec2b993e4c72bad70722df612783285ea2f5a06b6245a4d24cda95a7",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 15,
+  "versionId": "v2-4c-15",
+  "path": "docs/phase4/fullset/beat-015-base.jpg",
+  "sha256": "c069487fef9bbf7e34c2c90dae1c4026e63e1d30442703f4209102d779102873",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 16,
+  "versionId": "v2-4c-16",
+  "path": "docs/phase4/fullset/beat-016-base.jpg",
+  "sha256": "ecc64887cc19f13396e5118c966871e7973f050da74887e9b935e8a8809c8b9c",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 17,
+  "versionId": "v2-4c-17",
+  "path": "docs/phase4/fullset/beat-017-base.jpg",
+  "sha256": "68c56a29bc3369efe609a92b24d54cb2524656740f82faabc08e74892e3ae5c9",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 18,
+  "versionId": "v2-4c-18",
+  "path": "docs/phase4/fullset/beat-018-base.jpg",
+  "sha256": "dd0d12e31a3bb8bd9732339097fedaa892a1b881a63774e37582be32a3dcab46",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 19,
+  "versionId": "v2-4c-19",
+  "path": "docs/phase4/fullset/beat-019-base.jpg",
+  "sha256": "f0b931da2c22e8409feb19304f28767e20f7be1bd480cb1839a71a9e1b84aad4",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 20,
+  "versionId": "v2-4c-20",
+  "path": "docs/phase4/fullset/beat-020-base.jpg",
+  "sha256": "7f8df776a016f61a7eeb71d39f99a53c675933181568463dad5524b03012706a",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 21,
+  "versionId": "v2-4c-21",
+  "path": "docs/phase4/fullset/beat-021-base.jpg",
+  "sha256": "73dad3bfadf0a8106caaa8e3b9c7b6831872fe34d6162344452f004dbc8b9c7e",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 22,
+  "versionId": "v2-4c-22",
+  "path": "docs/phase4/fullset/beat-022-base.jpg",
+  "sha256": "a36bf0f4afdc769a0adb565e0f533ab0f951b8d126f06d5276220eda36e18039",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 23,
+  "versionId": "v2-4c-23",
+  "path": "docs/phase4/fullset/beat-023-base.jpg",
+  "sha256": "82b8b64951d30efba18bf38dabbbb8eec4bbabf42e5de04f00cd964a48f74bed",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 24,
+  "versionId": "v2-4c-24",
+  "path": "docs/phase4/fullset/beat-024-base.jpg",
+  "sha256": "3a9d9061016cf8f8b9bc742049fd446f71b3f63bd3073c3b8c25bcc1a5b49b32",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 25,
+  "versionId": "v2-4c-25",
+  "path": "docs/phase4/fullset/beat-025-base.jpg",
+  "sha256": "bca19a96725af92fcdce5d5ab36d21a6a843fe2fe9977d07487e149d0416d806",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 26,
+  "versionId": "v2-4c-26",
+  "path": "docs/phase4/fullset/beat-026-base.jpg",
+  "sha256": "71fac268574d9d1c4dae5c0300ee4277cb9dbab5985292d56f4aacbb435618f7",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 27,
+  "versionId": "v2-4c-27",
+  "path": "docs/phase4/fullset/beat-027-base.jpg",
+  "sha256": "a66f0a5e83bfe5e73b972bb56b6c4f268fd185e75dc69aaa4381e21ee98191c5",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 28,
+  "versionId": "v2-4c-28",
+  "path": "docs/phase4/fullset/beat-028-base.jpg",
+  "sha256": "94f1332cd030003764d7f41a17395f9b658cf67a89bb2a1d66f6da76df81f0e3",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 29,
+  "versionId": "v2-4c-29",
+  "path": "docs/phase4/fullset/beat-029-base.jpg",
+  "sha256": "86dea08cc549fab75055ae01413b6bfa786b00f933282657143179b3a851264b",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 30,
+  "versionId": "v2-4c-30",
+  "path": "docs/phase4/fullset/beat-030-base.jpg",
+  "sha256": "727fbd486c640192ed2cf21648d3a2d3f97506ec49e6778c994b563627b8a5d0",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 31,
+  "versionId": "v2-4c-31",
+  "path": "docs/phase4/fullset/beat-031-base.jpg",
+  "sha256": "2095ba09265d0752608b40a223dd4393b31aa8f4c9a974b3aa5acf500e89c5dd",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 32,
+  "versionId": "v2-4c-32",
+  "path": "docs/phase4/fullset/beat-032-base.jpg",
+  "sha256": "2ccbacfab2fc4ad9cd03c3c17e3a63da829a0ff2c5fbef8b3292099cee1dc717",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 33,
+  "versionId": "v2-4c-33",
+  "path": "docs/phase4/fullset/beat-033-base.jpg",
+  "sha256": "e5cf8a828a0c686b53d2e4c4a4b5b312872c1f3acf50b1d31c4d533958234043",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 34,
+  "versionId": "v2-4c-34",
+  "path": "docs/phase4/fullset/beat-034-base.jpg",
+  "sha256": "26dc5457f829580afc7c8ac512aec19c145d96cd98f836e48214741479c750c3",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 35,
+  "versionId": "v2-4c-35",
+  "path": "docs/phase4/fullset/beat-035-base.jpg",
+  "sha256": "9eb603b909729f052edf2636165fa68460d6653aaeed3a6470e401d3c4a3dc4a",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 36,
+  "versionId": "v2-4c-36",
+  "path": "docs/phase4/fullset/beat-036-base.jpg",
+  "sha256": "8de8b727aecb2d3266f7cbf05942754564ea6ab2f8e3a189fbe806799e26ad54",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 37,
+  "versionId": "v2-4c-37",
+  "path": "docs/phase4/fullset/beat-037-base.jpg",
+  "sha256": "66c8b276c7ad93b254e3c3c8a4ccbb907042f41382b7ae33a10cbd3f8c2d98fa",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 38,
+  "versionId": "v2-4c-38",
+  "path": "docs/phase4/fullset/beat-038-base.jpg",
+  "sha256": "950ef331163431b74d761ece6db66e51f7739a863bb7d4c7b0eb1975cb8165a5",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 39,
+  "versionId": "v2-4c-39",
+  "path": "docs/phase4/fullset/beat-039-base.jpg",
+  "sha256": "6e1c6950e4e8629f9f58ac2a994c5e12348566c36ea15d2cca52701245594f83",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 40,
+  "versionId": "v2-4c-40",
+  "path": "docs/phase4/fullset/beat-040-base.jpg",
+  "sha256": "f733efd006eb38871ad0f0ec316133cc68bb663ac4dd94dbdf01d89c295f2f91",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 41,
+  "versionId": "v2-4c-41",
+  "path": "docs/phase4/fullset/beat-041-base.jpg",
+  "sha256": "67fd5b638ee8853867544379966d540a72ddb7bdf1f50c3f4382d8cce52eb984",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 42,
+  "versionId": "v2-4c-42",
+  "path": "docs/phase4/fullset/beat-042-base.jpg",
+  "sha256": "a884fa9f910143f05b23ecc4361c2c7018eb8e400e58ca151538b49b03fe8e9a",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 43,
+  "versionId": "v2-4c-43",
+  "path": "docs/phase4/fullset/beat-043-base.jpg",
+  "sha256": "f358ee926043419de1091666189de7d203b71712ca29e349315ffe4464eb6a2f",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 44,
+  "versionId": "v2-4c-44",
+  "path": "docs/phase4/fullset/beat-044-base.jpg",
+  "sha256": "7a8af63b2e48a382ac6b0933566d483c193f4d6fe2f91df2141f461828724818",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 45,
+  "versionId": "v2-4c-45",
+  "path": "docs/phase4/fullset/beat-045-base.jpg",
+  "sha256": "13ed870d629a26c5daf51ea6ab92dac7c5983bc5d294a277fae5dbfd0045f594",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 46,
+  "versionId": "v2-4c-46",
+  "path": "docs/phase4/fullset/beat-046-base.jpg",
+  "sha256": "55f31f59c2b8b883c6f14e3a2e1a176975c5d5000f7985cca3f55e10e02c91f9",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 47,
+  "versionId": "v2-4c-47",
+  "path": "docs/phase4/fullset/beat-047-base.jpg",
+  "sha256": "0f4b6870c4c63c1c31ed90d154b140e204424a9ae021a1414fde59b52044a1bf",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 48,
+  "versionId": "v2-4c-48",
+  "path": "docs/phase4/fullset/beat-048-base.jpg",
+  "sha256": "07f72ead4621101fef60643ce4dcc3c13215f89ce54f56e314846adcaffc54fd",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 49,
+  "versionId": "v2-4c-49",
+  "path": "docs/phase4/fullset/beat-049-base.jpg",
+  "sha256": "614bc6329b1e023dc03ee773b15791096736e71a8ce52d4d6ce7f26329e7b75e",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 50,
+  "versionId": "v2-4c-50",
+  "path": "docs/phase4/fullset/beat-050-base.jpg",
+  "sha256": "183744d962250a1b7dbec4bf6afc79c5d80f3443124caf42a60ae468072c8a13",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 51,
+  "versionId": "v2-4c-51",
+  "path": "docs/phase4/fullset/beat-051-base.jpg",
+  "sha256": "e4d25260af9c486a6e63e5309b2ef97e0b3f87fc5a6afb371ffa5d8ab817817a",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 52,
+  "versionId": "v2-4c-52",
+  "path": "docs/phase4/fullset/beat-052-base.jpg",
+  "sha256": "4cf988e5984371020760c8335e4c3f3d76251bf3b2615dd7d696b53814659d82",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 53,
+  "versionId": "v2-4c-53",
+  "path": "docs/phase4/fullset/beat-053-base.jpg",
+  "sha256": "274ef0a4d5b7260a12ef6d1b1bffe420ab17464bc06b709bb5ef3d80fefdc195",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 54,
+  "versionId": "v2-4c-54",
+  "path": "docs/phase4/fullset/beat-054-base.jpg",
+  "sha256": "b6180897a87d2cb137f1ff3cee3e0bcce81b06480c15517a7325fe6d53cf04ea",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 55,
+  "versionId": "v2-4c-55",
+  "path": "docs/phase4/fullset/beat-055-base.jpg",
+  "sha256": "e1a00f6da6973b609bda47218dca6930a7e6d51d46f015840085e7fb06e87423",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 56,
+  "versionId": "v2-4c-56",
+  "path": "docs/phase4/fullset/beat-056-base.jpg",
+  "sha256": "d4c766a5f025e4f4d1ac0d45e6dfdd6ae5927a9f48fa3ef859e52649b80a8e5f",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 57,
+  "versionId": "v2-4c-57",
+  "path": "docs/phase4/fullset/beat-057-base.jpg",
+  "sha256": "d1331641878a056888f307b3b49d8185ce6afe57f10684427f825a4ae14ba7ef",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 58,
+  "versionId": "v2-4c-58",
+  "path": "docs/phase4/fullset/beat-058-base.jpg",
+  "sha256": "0a66660e2b1b1e9db44dbb0c2c273f743650f9452b7020a5be7eb1c835b9eb7b",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 59,
+  "versionId": "v2-4c-59",
+  "path": "docs/phase4/fullset/beat-059-base.jpg",
+  "sha256": "da677f68c919712b390712bcc15216a7ee386eeaf1ee56b4b5528e47da84f9ae",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 60,
+  "versionId": "v2-4c-60",
+  "path": "docs/phase4/fullset/beat-060-base.jpg",
+  "sha256": "1848bfa44daec102224f6e49621d2b231b9f52be8d658f2d9d4c28efe5a6ce6b",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 61,
+  "versionId": "v2-4c-61",
+  "path": "docs/phase4/fullset/beat-061-base.jpg",
+  "sha256": "260de84522e5f4b3d8a6d86523ea8cc55313fd978f170272a6dc1806f42d19a0",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 62,
+  "versionId": "v2-4c-62",
+  "path": "docs/phase4/fullset/beat-062-base.jpg",
+  "sha256": "b981bb997c6180b772806601508405ea304936538d66139963422304dcc266ae",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 63,
+  "versionId": "v2-4c-63",
+  "path": "docs/phase4/fullset/beat-063-base.jpg",
+  "sha256": "c51b13f947b6d43f8a722b26f4d20578a5ccbddf1a76f92535607352a01d78d8",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 64,
+  "versionId": "v2-4c-64",
+  "path": "docs/phase4/fullset/beat-064-base.jpg",
+  "sha256": "69fd9074ee52eb245c414a8114a36d83763883449b6ba234103330630e6e9e80",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 65,
+  "versionId": "v2-4c-65",
+  "path": "docs/phase4/fullset/beat-065-base.jpg",
+  "sha256": "a9668af34a4600bc7d8a369b823aa9ec41392390b0e446f50bd02d13074b6e33",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 66,
+  "versionId": "v2-4c-66",
+  "path": "docs/phase4/fullset/beat-066-base.jpg",
+  "sha256": "6f121ea22a13978085c1420d2e33c970cf33bdb2aa3bff8ae5bf79b4c98b4f29",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 67,
+  "versionId": "v2-4c-67",
+  "path": "docs/phase4/fullset/beat-067-base.jpg",
+  "sha256": "6b85f94295b9b2b0def2386976922438194568da60fcafa897e458422f634ebe",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 68,
+  "versionId": "v2-4c-68",
+  "path": "docs/phase4/fullset/beat-068-base.jpg",
+  "sha256": "dcafb4fbae2d5c5e919d1f56cd887799194806197a0c88c6ae91f06139106a7f",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 69,
+  "versionId": "v2-4c-69",
+  "path": "docs/phase4/fullset/beat-069-base.jpg",
+  "sha256": "88e56a0b9ba3f92d2c01fcba1238d70afe59d241e5c99668e0cb00ef7853a09b",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 70,
+  "versionId": "v2-4c-70",
+  "path": "docs/phase4/fullset/beat-070-base.jpg",
+  "sha256": "6fc2e5a97b0fc90e9b46ab9292bb95a46bca96c8cf70fe4e6163dc5aa66024f7",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 71,
+  "versionId": "v2-4c-71",
+  "path": "docs/phase4/fullset/beat-071-base.jpg",
+  "sha256": "4ede6c960c5c1a511049db5adb2d0c353aab93129dc52da12027ceef16dfb78f",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 72,
+  "versionId": "v2-4c-72",
+  "path": "docs/phase4/fullset/beat-072-base.jpg",
+  "sha256": "dbc9457283453bb6c44dfa81ea4ad222ed24d96737450c8feab203fe06aff51f",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 73,
+  "versionId": "v2-4c-73",
+  "path": "docs/phase4/fullset/beat-073-base.jpg",
+  "sha256": "28b288870ac3b36737c956bad9924d75faa8dde48aac64f68f53e3cd4485942b",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 74,
+  "versionId": "v2-4c-74",
+  "path": "docs/phase4/fullset/beat-074-base.jpg",
+  "sha256": "6525c721025314f5ebd887591625f40835637f94b7d688692376f01854db937d",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 75,
+  "versionId": "v2-4c-75",
+  "path": "docs/phase4/fullset/beat-075-base.jpg",
+  "sha256": "4d5c7fd6ae722fed8e81ac68970599289a3262185cd727dda9010f139eee5b35",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 76,
+  "versionId": "v2-4c-76",
+  "path": "docs/phase4/fullset/beat-076-base.jpg",
+  "sha256": "04f3e62777a4357e67543816ccb83c4ef2116c7e66027f784a3292652c14e817",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 77,
+  "versionId": "v2-4c-77",
+  "path": "docs/phase4/fullset/beat-077-base.jpg",
+  "sha256": "b678d3bb942fc83a0dd22bcf03abf0f8782de2b0db82eb3de9397c9f959a8e54",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 78,
+  "versionId": "v2-4c-78",
+  "path": "docs/phase4/fullset/beat-078-base.jpg",
+  "sha256": "c0fa200ea7594e007eb5e28e6d6f363cf6c4cb0cf0387403f6c1647fd836e003",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 79,
+  "versionId": "v2-4c-79",
+  "path": "docs/phase4/fullset/beat-079-base.jpg",
+  "sha256": "a29903a46fe74aa3fb58d0c95aa5f15adc9775bb9085fdaddb776f6092f8d23c",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 80,
+  "versionId": "v2-4c-80",
+  "path": "docs/phase4/fullset/beat-080-base.jpg",
+  "sha256": "6b49345988c44d6fdd3ff5be29dd4bff17fdcb6c148b811d0760802ae758e7e2",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 81,
+  "versionId": "v2-4c-81",
+  "path": "docs/phase4/fullset/beat-081-base.jpg",
+  "sha256": "604bc57062a6eec2086b154c94f154717531bad9b16e54fd6673e5733aacf2ab",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 82,
+  "versionId": "v2-4c-82",
+  "path": "docs/phase4/fullset/beat-082-base.jpg",
+  "sha256": "e4b84d2d9bf8ab6176cb8a0cc3efcd409156657a0be7f1bbdc74f1688ebcc9cf",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 83,
+  "versionId": "v2-4c-83",
+  "path": "docs/phase4/fullset/beat-083-base.jpg",
+  "sha256": "835ffe4e2cc22c7429d7c7d509ef55341b11ea3ba3fb57118b22233ad724d45a",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 84,
+  "versionId": "v2-4c-84",
+  "path": "docs/phase4/fullset/beat-084-base.jpg",
+  "sha256": "a4334b27194dae828dce359fc7bcb0c67a255abaa60a69aa48365e36f3164e69",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 85,
+  "versionId": "v2-4c-85",
+  "path": "docs/phase4/fullset/beat-085-base.jpg",
+  "sha256": "d73078aeefd57f039de5a68adcf6f8bfe9ef7cc6b819d1a42f339cc084f35e7a",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 86,
+  "versionId": "v2-4c-86",
+  "path": "docs/phase4/fullset/beat-086-base.jpg",
+  "sha256": "2ae7e0930d2d2ca902801762796ced265f84a498b966f5c8819071374827ceea",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 87,
+  "versionId": "v2-4c-87",
+  "path": "docs/phase4/fullset/beat-087-base.jpg",
+  "sha256": "6512491bab6e5144a30cd33ae59aff083232fa9b1de41c62624f1732678d2248",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 88,
+  "versionId": "v2-4c-88",
+  "path": "docs/phase4/fullset/beat-088-base.jpg",
+  "sha256": "4ad4049a22168b18db0e11603d7e61e850973148748afb830df05450626408a1",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 89,
+  "versionId": "v2-4c-89",
+  "path": "docs/phase4/fullset/beat-089-base.jpg",
+  "sha256": "09f4621dd63ec839f0ad8b440256c4c555f8af0a6cefb04dd445ad8742c69405",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 90,
+  "versionId": "v2-4c-90",
+  "path": "docs/phase4/fullset/beat-090-base.jpg",
+  "sha256": "40abde56eb127824ae44eefe7ab75b665d0e5cc20c71506570486274a3b1e76c",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 91,
+  "versionId": "v2-4c-91",
+  "path": "docs/phase4/fullset/beat-091-base.jpg",
+  "sha256": "82534fdd4f9308b50df38dbe302fdad5e7782db6f87e20fa0ff7b86d2f928efe",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 92,
+  "versionId": "v2-4c-92",
+  "path": "docs/phase4/fullset/beat-092-base.jpg",
+  "sha256": "0d05b063b92b7894a845c157f4730ebfa07d86f520d8a3eab35c01de2bffd127",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 93,
+  "versionId": "v2-4c-93",
+  "path": "docs/phase4/fullset/beat-093-base.jpg",
+  "sha256": "6b0c1531d985791783b4476263d54492f9f17f1304a744e6575943e0df57ea22",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 94,
+  "versionId": "v2-4c-94",
+  "path": "docs/phase4/fullset/beat-094-base.jpg",
+  "sha256": "900f1753bcd4e3fd4614063d7d5362158d6ef8e7b81c39c81a0205b8f83594c8",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 95,
+  "versionId": "v2-4c-95",
+  "path": "docs/phase4/fullset/beat-095-base.jpg",
+  "sha256": "15dad3cb253bc431a251c2ffb2594a73e4487c4ef7c6e87730e864928bdb9403",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 96,
+  "versionId": "v2-4c-96",
+  "path": "docs/phase4/fullset/beat-096-base.jpg",
+  "sha256": "c0ddd3674df5ee4f60aead553c3def580385ed9bcb07cc24c71663091dc965f2",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 97,
+  "versionId": "v2-4c-97",
+  "path": "docs/phase4/fullset/beat-097-base.jpg",
+  "sha256": "af6fc7da2fb9efcebe0ee14b0a5da4924fd54d2593c4984be22d0df222e7f928",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 98,
+  "versionId": "v2-4c-98",
+  "path": "docs/phase4/fullset/beat-098-base.jpg",
+  "sha256": "b3f780c326d4fd204adbd697e6117dde4912c8561f1ea17364b9cd0d84127342",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 99,
+  "versionId": "v2-4c-99",
+  "path": "docs/phase4/fullset/beat-099-base.jpg",
+  "sha256": "346caf0fd72f4d9626652ba7f16d1f155258390f1a30157ca7e4d076f5736ffd",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 100,
+  "versionId": "v2-4c-100",
+  "path": "docs/phase4/fullset/beat-100-base.jpg",
+  "sha256": "fe6c4d8feee1a32b743e1845863877fff4c08d482b7ad7915feec91ceefce4b2",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 101,
+  "versionId": "v2-4c-101",
+  "path": "docs/phase4/fullset/beat-101-base.jpg",
+  "sha256": "f98fe715482552468a6bbb77a90e3e03dac3722e61b202754a3762d25af9d8fb",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 102,
+  "versionId": "v2-4c-102",
+  "path": "docs/phase4/fullset/beat-102-base.jpg",
+  "sha256": "9c4da58bb8ff975bcd769f16a57bcca0b1f7f89d20d3c0fb8ad0b67b1a9a0c4d",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 103,
+  "versionId": "v2-4c-103",
+  "path": "docs/phase4/fullset/beat-103-base.jpg",
+  "sha256": "1f07696c01796e976a37cb30814997a279795998b8aabae4849bbe6a36b96320",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 104,
+  "versionId": "v2-4c-104",
+  "path": "docs/phase4/fullset/beat-104-base.jpg",
+  "sha256": "8334c2fba7e5687e42365b1cf2784f67190018ad5309a5a64cd7261363e17a04",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 105,
+  "versionId": "v2-4c-105",
+  "path": "docs/phase4/fullset/beat-105-base.jpg",
+  "sha256": "c9ab9e00cfd676748c0734a6865f71b55771d2f569952b79d1f2797146c5a16e",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 106,
+  "versionId": "v2-4c-106",
+  "path": "docs/phase4/fullset/beat-106-base.jpg",
+  "sha256": "d1ae228413a6b3070a54ee8455e227c7a4f1c954f7b3aa17e34cb082ffd2ea37",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 107,
+  "versionId": "v2-4c-107",
+  "path": "docs/phase4/fullset/beat-107-base.jpg",
+  "sha256": "5f6f13fddfa6b19c3a9ebe1b3ff4c7b148a4e277974e7c9cb3f2c8b1c22e2a55",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 108,
+  "versionId": "v2-4c-108",
+  "path": "docs/phase4/fullset/beat-108-base.jpg",
+  "sha256": "0a560ca7ad61cd1f1cb12b858beaefb4311d4fa90746794b5008daf921871bfb",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 109,
+  "versionId": "v2-4c-109",
+  "path": "docs/phase4/fullset/beat-109-base.jpg",
+  "sha256": "bd89543ae4b5de0505deac12063e55841bc6c9ce086827fbf45f583f4aa912ec",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 110,
+  "versionId": "v2-4c-110",
+  "path": "docs/phase4/fullset/beat-110-base.jpg",
+  "sha256": "46333d720180bea773824fd4b1b295a699b25337b98be1c690be8fc9851bb91c",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 111,
+  "versionId": "v2-4c-111",
+  "path": "docs/phase4/fullset/beat-111-base.jpg",
+  "sha256": "1422cd271580d1a53ccec0b3b6c316435b9995c7359b31c5955021b92ac2ee60",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 112,
+  "versionId": "v2-4c-112",
+  "path": "docs/phase4/fullset/beat-112-base.jpg",
+  "sha256": "df327c13debf854ec32141c8f49b063adc9045f1f26317b631cf7a26a1bb3890",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 113,
+  "versionId": "v2-4c-113",
+  "path": "docs/phase4/fullset/beat-113-base.jpg",
+  "sha256": "f3749bbe180c134d57cb98f6465a4d82b982e6bdee5e044040b9736904d5f459",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 114,
+  "versionId": "v2-4c-114",
+  "path": "docs/phase4/fullset/beat-114-base.jpg",
+  "sha256": "04bb295518da81312ff5ce64aa0549e0f7a5375abc9366aa2ce884df7058b236",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 115,
+  "versionId": "v2-4c-115",
+  "path": "docs/phase4/fullset/beat-115-base.jpg",
+  "sha256": "e00bfea5aa1ba6f59990bb8af1492970af314c014ecb592373350e5b845869d7",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 116,
+  "versionId": "v2-4c-116",
+  "path": "docs/phase4/fullset/beat-116-base.jpg",
+  "sha256": "b96d12a518e77461bc2ddb2dc77b7e1b1bf25bd1be4fd6d63a2aad830f08769e",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 117,
+  "versionId": "v2-4c-117",
+  "path": "docs/phase4/fullset/beat-117-base.jpg",
+  "sha256": "a6d46d24c5a57488c0ea092e6066cf8f6b6ade4510a072f7e83e363888c75e04",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 118,
+  "versionId": "v2-4c-118",
+  "path": "docs/phase4/fullset/beat-118-base.jpg",
+  "sha256": "6a312b9e601336fe73b0e20520e0093b8b19f30590c8797a09b6d52ad31aac3b",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 119,
+  "versionId": "v2-4c-119",
+  "path": "docs/phase4/fullset/beat-119-base.jpg",
+  "sha256": "e5417bb21d85c3561a794aea1d27b728426fc26282020dec90e64b1ea6022377",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 120,
+  "versionId": "v2-4c-120",
+  "path": "docs/phase4/fullset/beat-120-base.jpg",
+  "sha256": "018c0a562c42874b19a48857467b2bbff711b5e054ce9c434602f535fb01b355",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 121,
+  "versionId": "v2-4c-121",
+  "path": "docs/phase4/fullset/beat-121-base.jpg",
+  "sha256": "064bae0cd729782f2bd0c5a6b08d8171e1ec3fc95f72e1577e6ef48a07b99f08",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 122,
+  "versionId": "v2-4c-122",
+  "path": "docs/phase4/fullset/beat-122-base.jpg",
+  "sha256": "b681a3ee3db89d428ff4b58fb504058a63d54dc866cadd3718919e7889be168d",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 123,
+  "versionId": "v2-4c-123",
+  "path": "docs/phase4/fullset/beat-123-base.jpg",
+  "sha256": "fd2c8962fee896e64790dad579004db97e6620b7fda5dd3c767efdee486cd36d",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 124,
+  "versionId": "v2-4c-124",
+  "path": "docs/phase4/fullset/beat-124-base.jpg",
+  "sha256": "c837f9aacdc05cd8e4b28614803ec64f640e83800e71c080bbfea393647a8779",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 125,
+  "versionId": "v2-4c-125",
+  "path": "docs/phase4/fullset/beat-125-base.jpg",
+  "sha256": "cfb17bf93cbe46e699635b03553aaaa7e758a8d411fdc150e34e1bc12d131e44",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 126,
+  "versionId": "v2-4c-126",
+  "path": "docs/phase4/fullset/beat-126-base.jpg",
+  "sha256": "285bf70266e5a5a1f1dd6543c1f444e83225f687e4a2da3c72e1432813ad04f5",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 127,
+  "versionId": "v2-4c-127",
+  "path": "docs/phase4/fullset/beat-127-base.jpg",
+  "sha256": "86da8cd11d9ebbe3417db54b4427788605f41fd180036d91c27138a5dd96aa2c",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 128,
+  "versionId": "v2-4c-128",
+  "path": "docs/phase4/fullset/beat-128-base.jpg",
+  "sha256": "23b4aa892cfbdcb41a0bee1c0504760aff0f5dab502ff53b1ba83b86c9f9b30b",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 129,
+  "versionId": "v2-4c-129",
+  "path": "docs/phase4/fullset/beat-129-base.jpg",
+  "sha256": "a7b6fdcc192d22970c42c31d656cca915baa2d61146a145eb90f65134394f92c",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 130,
+  "versionId": "v2-4c-130",
+  "path": "docs/phase4/fullset/beat-130-base.jpg",
+  "sha256": "00db512de2da00f3c0d7ed5717595d64efa11b05e58a003d71b91baf58a05cda",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 131,
+  "versionId": "v2-4c-131",
+  "path": "docs/phase4/fullset/beat-131-base.jpg",
+  "sha256": "1fbe3f3d826a04a87b157af898943543b2cd7875e4988c2907b8fd24df78422e",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 132,
+  "versionId": "v2-4c-132",
+  "path": "docs/phase4/fullset/beat-132-base.jpg",
+  "sha256": "f1a65a64b2bfc6364b8a2ab89c6dc2383aacfc1c257f3e45cf9126937b8da99d",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 133,
+  "versionId": "v2-4c-133",
+  "path": "docs/phase4/fullset/beat-133-base.jpg",
+  "sha256": "456f3d2ef723c5227ec00624cedaccfc5ed1e22ce1732e795d3ae5c7de9c8dad",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 134,
+  "versionId": "v2-4c-134",
+  "path": "docs/phase4/fullset/beat-134-base.jpg",
+  "sha256": "39b76ff32a64a9a97d9377c318cbc3af0e469f11dcb9f3e73ef4336af7dd8184",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 135,
+  "versionId": "v2-4c-135",
+  "path": "docs/phase4/fullset/beat-135-base.jpg",
+  "sha256": "8976b8123de5ab906fd9f95d946ea041d16593ff33090a3e912491ce8794ba6d",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 136,
+  "versionId": "v2-4c-136",
+  "path": "docs/phase4/fullset/beat-136-base.jpg",
+  "sha256": "5b4a1bbcb11fa102c8d1c61a21d8c4131221942ed3a76a4e465a67e8f2e0e1f4",
+  "approved": true,
+  "createdAt": "2026-09-27T10:00:00Z"
+ },
+ {
+  "beatSequence": 17,
+  "versionId": "v2-4d-17",
+  "path": "docs/phase4/fix4d/beat-017-base.jpg",
+  "sha256": "bdd57fdd180958c96df5bfbc15597a5666b09e783f2dcdcae4e6561522f392cf",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 19,
+  "versionId": "v2-4d-19",
+  "path": "docs/phase4/fix4d/beat-019-base.jpg",
+  "sha256": "52795c6d1eaa3fbe12f939b2f315020389c5f133d483dd18cbf17d479b3be321",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 21,
+  "versionId": "v2-4d-21",
+  "path": "docs/phase4/fix4d/beat-021-base.jpg",
+  "sha256": "6f83902852725213c73aae5ea9b664508ef42fb8cf2124da2279a1ab4d9e6a49",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 22,
+  "versionId": "v2-4d-22",
+  "path": "docs/phase4/fix4d/beat-022-base.jpg",
+  "sha256": "30d25e2989c51b5b6abac8e2c7f6dc4958c0b638b2d8dd999adbcfd2000e7688",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 23,
+  "versionId": "v2-4d-23",
+  "path": "docs/phase4/fix4d/beat-023-base.jpg",
+  "sha256": "4989db5de35d5a9eacf09ccb0dc3c017218a90add4f28b0f6e4ac2334a449cf5",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 24,
+  "versionId": "v2-4d-24",
+  "path": "docs/phase4/fix4d/beat-024-base.jpg",
+  "sha256": "f637dade3b81272ebf97f55f8a57ca25150dda609652501e8339103390a0b7b0",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 27,
+  "versionId": "v2-4d-27",
+  "path": "docs/phase4/fix4d/beat-027-base.jpg",
+  "sha256": "ae363efe9039b7f3a08b1779b5601e5941ff62e99090138bae6b075c8a86a75d",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 28,
+  "versionId": "v2-4d-28",
+  "path": "docs/phase4/fix4d/beat-028-base.jpg",
+  "sha256": "0525c0f5e9d933b44fd285a221c7479456edb6518bb2345aeea92ef83232d5cc",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 29,
+  "versionId": "v2-4d-29",
+  "path": "docs/phase4/fix4d/beat-029-base.jpg",
+  "sha256": "c9e0401b22c98d6b9d531bfde6ce55c8efafcac1f6b3e7943b49005164ebe464",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 30,
+  "versionId": "v2-4d-30",
+  "path": "docs/phase4/fix4d/beat-030-base.jpg",
+  "sha256": "320caa31950b40ce737d35f5b215733b2d961a256d1ef19b196741e9e0e9f950",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 31,
+  "versionId": "v2-4d-31",
+  "path": "docs/phase4/fix4d/beat-031-base.jpg",
+  "sha256": "5b7ef6b62750a4c35a9c31b293755960c60dff127c1c520920c472cd28750c20",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 35,
+  "versionId": "v2-4d-35",
+  "path": "docs/phase4/fix4d/beat-035-base.jpg",
+  "sha256": "68b3ddb5511e616bf8160a357d514ec10b82b82d7e59fb959a8e1b35c6fb202f",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 36,
+  "versionId": "v2-4d-36",
+  "path": "docs/phase4/fix4d/beat-036-base.jpg",
+  "sha256": "d9cb0c9178b601d5d4e860feb42a5fceadd0f8b3db40c385bf46831feecb0429",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 37,
+  "versionId": "v2-4d-37",
+  "path": "docs/phase4/fix4d/beat-037-base.jpg",
+  "sha256": "5f8035ff2570bba4638e6026a64df2a36e10825ed46f56e85122f33887ffd196",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 38,
+  "versionId": "v2-4d-38",
+  "path": "docs/phase4/fix4d/beat-038-base.jpg",
+  "sha256": "33ee19488a957317b82baee8d1f162c5f222e1088ff54e29b4eba46503d38f52",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 39,
+  "versionId": "v2-4d-39",
+  "path": "docs/phase4/fix4d/beat-039-base.jpg",
+  "sha256": "efdd744653aff00a953bfa1faaad8d8e875020059ca7726b3dab0b43186ab71e",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 41,
+  "versionId": "v2-4d-41",
+  "path": "docs/phase4/fix4d/beat-041-base.jpg",
+  "sha256": "49b9b2927c8001347c07738c5d00a2962c68364e49461cb3c7e4fd56bfed5d00",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 42,
+  "versionId": "v2-4d-42",
+  "path": "docs/phase4/fix4d/beat-042-base.jpg",
+  "sha256": "e2e42ca37bf5137e0ee307f928c0b67da322c16caba744e3fcf8a079433c0743",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 43,
+  "versionId": "v2-4d-43",
+  "path": "docs/phase4/fix4d/beat-043-base.jpg",
+  "sha256": "194b4f8d0937733eb8554654cb6193861811c4206249adc93b0ffd63ce3eaf6e",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 44,
+  "versionId": "v2-4d-44",
+  "path": "docs/phase4/fix4d/beat-044-base.jpg",
+  "sha256": "4eeca494b7ed26d1a331e74b49c17eb8f670d27f25e0925ded028fdd67a0b6e5",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 46,
+  "versionId": "v2-4d-46",
+  "path": "docs/phase4/fix4d/beat-046-base.jpg",
+  "sha256": "cd31f7d66233e8b38f3f595d972ad450f3f340706e8630f64efbd75c783bb849",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 47,
+  "versionId": "v2-4d-47",
+  "path": "docs/phase4/fix4d/beat-047-base.jpg",
+  "sha256": "8e36450bf71caae88bcef255a0fcf4778c2038edaf74374b73f15b49f279b3ca",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 48,
+  "versionId": "v2-4d-48",
+  "path": "docs/phase4/fix4d/beat-048-base.jpg",
+  "sha256": "8f13d8e1de6214036dd068ea2000a49bf6db25b51439c21f35a9ceb8ae8aaa6c",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 49,
+  "versionId": "v2-4d-49",
+  "path": "docs/phase4/fix4d/beat-049-base.jpg",
+  "sha256": "0e7a2607b5985c87f3dc473ac29f6a06ea5adf99e9dec8d53283996ca0ef1b0e",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 50,
+  "versionId": "v2-4d-50",
+  "path": "docs/phase4/fix4d/beat-050-base.jpg",
+  "sha256": "4d678037d0b9a78134eb70bd80b5232aba6981fa97ea2cbf7bb8ac9d0371949c",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 51,
+  "versionId": "v2-4d-51",
+  "path": "docs/phase4/fix4d/beat-051-base.jpg",
+  "sha256": "c9579f3e16195f4404e267629208389bfd0a44cbc68e625b5fdfd5f690ecb35e",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 52,
+  "versionId": "v2-4d-52",
+  "path": "docs/phase4/fix4d/beat-052-base.jpg",
+  "sha256": "efa30f23a03e6c661bd2fa86e05628f42105047d87579fae942de5986558bbf7",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 53,
+  "versionId": "v2-4d-53",
+  "path": "docs/phase4/fix4d/beat-053-base.jpg",
+  "sha256": "71b136366f55baec415db12ffa0fbd0f462560607bf21173658c5faf20ffce0a",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 54,
+  "versionId": "v2-4d-54",
+  "path": "docs/phase4/fix4d/beat-054-base.jpg",
+  "sha256": "6d3b2cafd59afb1696d0ff9c567520fa8fd831f6d884bd5ef6fa1df043350705",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 58,
+  "versionId": "v2-4d-58",
+  "path": "docs/phase4/fix4d/beat-058-base.jpg",
+  "sha256": "52680402ddaeb00f81b9147165cb5e793d8f67baf1b87e82f67d39c9d6bc4e3d",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 60,
+  "versionId": "v2-4d-60",
+  "path": "docs/phase4/fix4d/beat-060-base.jpg",
+  "sha256": "95b60ea9a5b5634ea601a45c566b9fa025f72600b6a7b536720a16ee94011554",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 61,
+  "versionId": "v2-4d-61",
+  "path": "docs/phase4/fix4d/beat-061-base.jpg",
+  "sha256": "ca0339c8315ede272515fd26ceac58ce5b91170ec9f7e06278874459eaad7deb",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 64,
+  "versionId": "v2-4d-64",
+  "path": "docs/phase4/fix4d/beat-064-base.jpg",
+  "sha256": "ea8b956c968013a4d2971af0c7e75237eab379e01ff146ede45fdb46cef3f96d",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 66,
+  "versionId": "v2-4d-66",
+  "path": "docs/phase4/fix4d/beat-066-base.jpg",
+  "sha256": "f661849f6da7b80bf920d73be667d3a061167e356f08fb6dd1f8c246abc495ee",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 69,
+  "versionId": "v2-4d-69",
+  "path": "docs/phase4/fix4d/beat-069-base.jpg",
+  "sha256": "4384f5e5b803031b3d1ca47030a275a69514bddc9bc1e51aab11f866588d9287",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 73,
+  "versionId": "v2-4d-73",
+  "path": "docs/phase4/fix4d/beat-073-base.jpg",
+  "sha256": "30938951b63e6009a4d06bf119e6de8de786bb0f349d07d5fcc28af01684550b",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 82,
+  "versionId": "v2-4d-82",
+  "path": "docs/phase4/fix4d/beat-082-base.jpg",
+  "sha256": "24a7705bebf74b0639fa7c786d5e22b66b1b1a5fab7d14db27c0c79eb10fc8e7",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 83,
+  "versionId": "v2-4d-83",
+  "path": "docs/phase4/fix4d/beat-083-base.jpg",
+  "sha256": "2ce5446c37e0039ed82e2374ee45be6c7e7065e161d79987bcc53273a024f3f1",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 87,
+  "versionId": "v2-4d-87",
+  "path": "docs/phase4/fix4d/beat-087-base.jpg",
+  "sha256": "0e6cd64076aeee83e72750913ee76cc8da2a8a291ec7f864345862632666adef",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 92,
+  "versionId": "v2-4d-92",
+  "path": "docs/phase4/fix4d/beat-092-base.jpg",
+  "sha256": "6b143fb06c6b913d284e7d9bbf252566dfaa7c007f0466e11780d9663b28340b",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 93,
+  "versionId": "v2-4d-93",
+  "path": "docs/phase4/fix4d/beat-093-base.jpg",
+  "sha256": "f45b9fc28be378319b1a7ea8d9656a3c63231dc50b14af3ed978c4cc43f0b166",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 94,
+  "versionId": "v2-4d-94",
+  "path": "docs/phase4/fix4d/beat-094-base.jpg",
+  "sha256": "aa01e7bacdb382cf804520a4bc4d60b1679a79da4f56f32f967fe332e6246284",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 95,
+  "versionId": "v2-4d-95",
+  "path": "docs/phase4/fix4d/beat-095-base.jpg",
+  "sha256": "e8a72ff0e14ae3849956ffd41fd7bfb13f3a6925fc6b51f12f5ff8b766a0aee5",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 96,
+  "versionId": "v2-4d-96",
+  "path": "docs/phase4/fix4d/beat-096-base.jpg",
+  "sha256": "f7fbc8b60a827586b86ec250f4eafed65e41fe65cda6b0a7e01d1933a11c4f6f",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 98,
+  "versionId": "v2-4d-98",
+  "path": "docs/phase4/fix4d/beat-098-base.jpg",
+  "sha256": "4e099f345773fb362bfcd06542a36f9710af4fbc38fc90e405aa3ede7f47fb55",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 99,
+  "versionId": "v2-4d-99",
+  "path": "docs/phase4/fix4d/beat-099-base.jpg",
+  "sha256": "321346ccd620463473e14d07e32aa20c325b94dd34d8f3a75a68bd5be14d1fb8",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 100,
+  "versionId": "v2-4d-100",
+  "path": "docs/phase4/fix4d/beat-100-base.jpg",
+  "sha256": "9689ad52dafcdadbc8ddb2afbe7c354d5fbe8e5ae2ecca6ba33bd81c2fb57da7",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 101,
+  "versionId": "v2-4d-101",
+  "path": "docs/phase4/fix4d/beat-101-base.jpg",
+  "sha256": "285695a4369974ac9b8c1d1aa13693c725159855fec0098e7366a91a24f657f1",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 105,
+  "versionId": "v2-4d-105",
+  "path": "docs/phase4/fix4d/beat-105-base.jpg",
+  "sha256": "2a67e1411486c4496ba4633d8aab910ced3d41586fa8aeb0ef63a1799aad4e4b",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 108,
+  "versionId": "v2-4d-108",
+  "path": "docs/phase4/fix4d/beat-108-base.jpg",
+  "sha256": "ad1c20d502626680be9e3be793ef1c94b6fd6cf892946b5398be6ec57befd6d5",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 109,
+  "versionId": "v2-4d-109",
+  "path": "docs/phase4/fix4d/beat-109-base.jpg",
+  "sha256": "773dc764afa2d147e34c351811e151d8545432b95185fc7c7e9204169797c99a",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 110,
+  "versionId": "v2-4d-110",
+  "path": "docs/phase4/fix4d/beat-110-base.jpg",
+  "sha256": "98c78caef5aca27d861450835607a9da1035d475ec666f4ebda647bedf42cce9",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 111,
+  "versionId": "v2-4d-111",
+  "path": "docs/phase4/fix4d/beat-111-base.jpg",
+  "sha256": "8fa8b42bf4fa9c58045368497522ea80d99c05377a642888418f3ad18033fe3f",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 112,
+  "versionId": "v2-4d-112",
+  "path": "docs/phase4/fix4d/beat-112-base.jpg",
+  "sha256": "9929b3612e740e00579fd178cd97d858edfc4d569d4a000b9bb257e83cbb9ac4",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 113,
+  "versionId": "v2-4d-113",
+  "path": "docs/phase4/fix4d/beat-113-base.jpg",
+  "sha256": "a74075cd12e7208ecd66bb872d181b21ea0a9b875e567f83e2d86c2452d90245",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 114,
+  "versionId": "v2-4d-114",
+  "path": "docs/phase4/fix4d/beat-114-base.jpg",
+  "sha256": "b31deae59840ac8a47e6285522a4b1eefa95bfee5e13420ef069c9ccea7997ef",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 116,
+  "versionId": "v2-4d-116",
+  "path": "docs/phase4/fix4d/beat-116-base.jpg",
+  "sha256": "c04168a4b8a58116c90a3c0296139665789a8a3b1f6ec0153df1a9efa475f58b",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 117,
+  "versionId": "v2-4d-117",
+  "path": "docs/phase4/fix4d/beat-117-base.jpg",
+  "sha256": "14bf07ccfb88de8a7391312629fba465a6b9db62cbd09943cfc3b0902c6bb8b6",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 119,
+  "versionId": "v2-4d-119",
+  "path": "docs/phase4/fix4d/beat-119-base.jpg",
+  "sha256": "ed48b910f59e34a4509b9f882429c9ba02ed70f31c26cbed85a19fcd2c4bb3d4",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 125,
+  "versionId": "v2-4d-125",
+  "path": "docs/phase4/fix4d/beat-125-base.jpg",
+  "sha256": "5acb877bbfd4540ef17e8468a39f38421f919d5b261995e5b53ca319c2a3d46a",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 127,
+  "versionId": "v2-4d-127",
+  "path": "docs/phase4/fix4d/beat-127-base.jpg",
+  "sha256": "30f5d8b62be3d3219cb9b91d3d345972afe80fbf3c359bbff1e08a41569767be",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 128,
+  "versionId": "v2-4d-128",
+  "path": "docs/phase4/fix4d/beat-128-base.jpg",
+  "sha256": "ba01378d0dacbf9ea72dece39a2e2b5fc43481dbd4efd3f56d7179827a74f1d4",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 129,
+  "versionId": "v2-4d-129",
+  "path": "docs/phase4/fix4d/beat-129-base.jpg",
+  "sha256": "5203167049bb698ae26d3183cc46b44cbde43815631a990c36c712ddb3986b07",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 130,
+  "versionId": "v2-4d-130",
+  "path": "docs/phase4/fix4d/beat-130-base.jpg",
+  "sha256": "6ba1a52afb506c8b39755dc77777b3977dbdb2656464ca1598117380c255ee07",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 131,
+  "versionId": "v2-4d-131",
+  "path": "docs/phase4/fix4d/beat-131-base.jpg",
+  "sha256": "e8a6eb5e5bc9e7ebf4c0d5a0e8c1c52c119b6113042d23b2b540590c9121965f",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 132,
+  "versionId": "v2-4d-132",
+  "path": "docs/phase4/fix4d/beat-132-base.jpg",
+  "sha256": "cd79cfdf74a8f608e40b58aada6a2d53b8d72f247a901abbd603227bd823dc85",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 133,
+  "versionId": "v2-4d-133",
+  "path": "docs/phase4/fix4d/beat-133-base.jpg",
+  "sha256": "9628d55a0f43a6ed881fceff021f845dbec34b0b4c98063d5d8b890665493ec3",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 136,
+  "versionId": "v2-4d-136",
+  "path": "docs/phase4/fix4d/beat-136-base.jpg",
+  "sha256": "cbf4178185e208e85293871afa2470ee40a815361028044f59f146076dbbb9f1",
+  "approved": true,
+  "createdAt": "2026-09-27T12:00:00Z"
+ },
+ {
+  "beatSequence": 17,
+  "versionId": "v2-5a-17",
+  "path": "docs/phase4/fix5a/beat-017-base.jpg",
+  "sha256": "cdda960917e93a851060506b647c5d129146dc9a4cad4ed7f1428724d5ccff07",
+  "approved": true,
+  "createdAt": "2026-09-27T15:00:00Z"
+ },
+ {
+  "beatSequence": 24,
+  "versionId": "v2-5a-24",
+  "path": "docs/phase4/fix5a/beat-024-base.jpg",
+  "sha256": "645499f93f15d33b2fff2f30ab63f7264ba13538a15d523b2bff43ece96cfa36",
+  "approved": true,
+  "createdAt": "2026-09-27T15:00:00Z"
+ },
+ {
+  "beatSequence": 41,
+  "versionId": "v2-5a-41",
+  "path": "docs/phase4/fix5a/beat-041-base.jpg",
+  "sha256": "eac8497b4961bd1fb0ce006153685a377730e10088d47f8026e6d2c204c89bd4",
+  "approved": true,
+  "createdAt": "2026-09-27T15:00:00Z"
+ },
+ {
+  "beatSequence": 42,
+  "versionId": "v2-5a-42",
+  "path": "docs/phase4/fix5a/beat-042-base.jpg",
+  "sha256": "ec815d7bcd3052cdaf207a834921aebe1c6a9acdca311291709936566851f524",
+  "approved": true,
+  "createdAt": "2026-09-27T15:00:00Z"
+ },
+ {
+  "beatSequence": 46,
+  "versionId": "v2-5a-46",
+  "path": "docs/phase4/fix5a/beat-046-base.jpg",
+  "sha256": "21674bb1f63c8221835e55ddf27a7ede472b89af88cbcdb0bff7c70cd5a27b5f",
+  "approved": true,
+  "createdAt": "2026-09-27T15:00:00Z"
+ },
+ {
+  "beatSequence": 58,
+  "versionId": "v2-5a-58",
+  "path": "docs/phase4/fix5a/beat-058-base.jpg",
+  "sha256": "8cf6b87011990a4609d87415d8f81cd4d5891ac997769da67460be115ca37c27",
+  "approved": true,
+  "createdAt": "2026-09-27T15:00:00Z"
+ },
+ {
+  "beatSequence": 98,
+  "versionId": "v2-5a-98",
+  "path": "docs/phase4/fix5a/beat-098-base.jpg",
+  "sha256": "c8dea0a5f59abf1acb5b912e7a7fc3d9950792b7beeafc22a56a38799ceff611",
+  "approved": true,
+  "createdAt": "2026-09-27T15:00:00Z"
+ },
+ {
+  "beatSequence": 103,
+  "versionId": "v2-5a-103",
+  "path": "docs/phase4/fix5a/beat-103-base.jpg",
+  "sha256": "672fbd5e33dab7255d32017fd9334c8a5322674d4ddfdea8dbcb235d59695421",
+  "approved": true,
+  "createdAt": "2026-09-27T15:00:00Z"
+ },
+ {
+  "beatSequence": 119,
+  "versionId": "v2-5a-119",
+  "path": "docs/phase4/fix5a/beat-119-base.jpg",
+  "sha256": "0458bd4fd2a46feb649814128bd01e0df48f1cd722fd64249642dde1a65e17bc",
+  "approved": true,
+  "createdAt": "2026-09-27T15:00:00Z"
+ },
+ {
+  "beatSequence": 125,
+  "versionId": "v2-5a-125",
+  "path": "docs/phase4/fix5a/beat-125-base.jpg",
+  "sha256": "b2e23b6b7d72d6797b59624c6a0fde40c1b4a715a6d860f689a9b0df283947c3",
+  "approved": true,
+  "createdAt": "2026-09-27T15:00:00Z"
+ },
+ {
+  "beatSequence": 128,
+  "versionId": "v2-5a-128",
+  "path": "docs/phase4/fix5a/beat-128-base.jpg",
+  "sha256": "9ee3dc29202c8ede10764f028838ca4ba53701b915ecd63a45438d6da51951aa",
+  "approved": true,
+  "createdAt": "2026-09-27T15:00:00Z"
+ },
+ {
+  "beatSequence": 131,
+  "versionId": "v2-5a-131",
+  "path": "docs/phase4/fix5a/beat-131-base.jpg",
+  "sha256": "6e8b7dd67d4aef8396676dc86d4ff40a909bc4dd3d3310ed59c0798d86a0c136",
+  "approved": true,
+  "createdAt": "2026-09-27T15:00:00Z"
+ },
+ {
+  "beatSequence": 136,
+  "versionId": "v2-5a-136",
+  "path": "docs/phase4/fix5a/beat-136-base.jpg",
+  "sha256": "1bd0b811b1f9dd68b1079dff50081108005b864642ab6821ec2034bf61aa586a",
+  "approved": true,
+  "createdAt": "2026-09-27T15:00:00Z"
+ },
+ {
+  "beatSequence": 24,
+  "versionId": "v2-5b-24",
+  "path": "docs/phase4/fix5b/beat-024-base.jpg",
+  "sha256": "fd7691880db4e777008e8308121fee32aebf2d1ecac381e64bf13001c0d6ec23",
+  "approved": true,
+  "createdAt": "2026-09-27T19:00:00Z"
+ },
+ {
+  "beatSequence": 42,
+  "versionId": "v2-5b-42",
+  "path": "docs/phase4/fix5b/beat-042-base.jpg",
+  "sha256": "aea2a82af3cb4b85e7f73204d14d1d86dddab11d5f23f30ceda60da360b45b53",
+  "approved": true,
+  "createdAt": "2026-09-27T19:00:00Z"
+ },
+ {
+  "beatSequence": 47,
+  "versionId": "v2-5b-47",
+  "path": "docs/phase4/fix5b/beat-047-base.jpg",
+  "sha256": "e4ff741111a82a6a7d73c9747b01954bb05f8abfad5831e88622ac4f4cba51c1",
+  "approved": true,
+  "createdAt": "2026-09-27T19:00:00Z"
+ },
+ {
+  "beatSequence": 98,
+  "versionId": "v2-5b-98",
+  "path": "docs/phase4/fix5b/beat-098-base.jpg",
+  "sha256": "82dcde5e2d33d96ccd74b5edbf1a2d5c32baade3d4612d7a53e10d1921d0a427",
+  "approved": true,
+  "createdAt": "2026-09-27T19:00:00Z"
+ },
+ {
+  "beatSequence": 128,
+  "versionId": "v2-5b-128",
+  "path": "docs/phase4/fix5b/beat-128-base.jpg",
+  "sha256": "6fc0b283d442e777e806a8116abb8583d1e9d7f2b1630b613da7b521a5a4060b",
+  "approved": true,
+  "createdAt": "2026-09-27T19:00:00Z"
+ }
+]

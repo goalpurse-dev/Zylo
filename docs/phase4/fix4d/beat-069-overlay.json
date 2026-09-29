@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "ANCIENT NORSE WARRIOR",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 14,
+ "scale": 124,
+ "box": {
+  "x": 210,
+  "y": 95,
+  "width": 1501,
+  "height": 170
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 0.29,
+  "bottom": 5.13
+ }
+}

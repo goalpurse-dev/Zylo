@@ -150,3 +150,18 @@ test("resolveLookStepRoute is null before any VisualPlan has completed (nothing 
   const p = project();
   assert.equal(resolveLookStepRoute(p), null);
 });
+
+// Phase 5b — the final video's statuses outrank every earlier stage signal.
+import { humanizeProjectStatus } from "../src/pages/workspace/long-form/projectStage.js";
+test("Phase 5b: images_ready -> rendering -> complete | failed drive the card ('Done' when complete), outranking scene/storyboard state", () => {
+  const base = { current_visual_plan_version_id: "vp", _visualPlan: { status: "ready" }, _resumeState: { route: "generate", ready: 3, needsReview: 1, failed: 0, totalBeats: 10 } };
+  const label = (status, extra = {}) => humanizeProjectStatus(deriveProjectStageInfo({ ...base, status, ...extra }));
+  assert.equal(label("images_ready"), "Ready to render");
+  assert.equal(label("rendering"), "Rendering");
+  assert.equal(deriveProjectStageInfo({ ...base, status: "rendering" }).active, true);
+  assert.equal(label("complete"), "Done");
+  assert.equal(label("failed"), "Failed");
+  assert.equal(deriveProjectStageInfo({ ...base, status: "failed", status_reason: "Upload failed" }).reason, "Upload failed");
+  // Earlier statuses still fall through to the existing logic.
+  assert.equal(label("story_ready"), "Needs your review · 1 scene");
+});

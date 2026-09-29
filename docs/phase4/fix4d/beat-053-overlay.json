@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "900–1100 BCE",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 17,
+ "scale": 154,
+ "box": {
+  "x": 462,
+  "y": 75,
+  "width": 996,
+  "height": 211
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 0.4,
+  "bottom": 9.54
+ }
+}

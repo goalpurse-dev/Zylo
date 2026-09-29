@@ -1,0 +1,18 @@
+{
+ "endFrame": 1017,
+ "renderS": 81,
+ "A_1080p_current": {
+  "file": "docs/phase5/test30/myth-vs-reality-first30s-A-1080p-current.mp4",
+  "dims": "1920,1080",
+  "frames": 1019,
+  "mb": 4.8,
+  "url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/sign/long-form-renders/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/tests/phase5c/myth-vs-reality-first30s-A-1080p-current.mp4?token=eyJraWQiOiI4Y2JmM2UzOS0xYzg1LTQxN2ItOGEyYS01ZDdiOTgzMWE5MTAiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsb25nLWZvcm0tcmVuZGVycy9mNmVlM2ViMi03MjZiLTRmYWEtOWQyNS0xZWQ5NTdlYjQ2YWUvdGVzdHMvcGhhc2U1Yy9teXRoLXZzLXJlYWxpdHktZmlyc3QzMHMtQS0xMDgwcC1jdXJyZW50Lm1wNCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3OTA1Mjc0ODAsImV4cCI6MTc5MTEzMjI4MH0.UhiW_dvJ5VwOtZDD-VC5Ebmva_xaD4EsUd700etzIaQ"
+ },
+ "B_1440p_master": {
+  "file": "docs/phase5/test30/myth-vs-reality-first30s-B-1440p-master.mp4",
+  "dims": "2560,1440",
+  "frames": 1017,
+  "mb": 7.5,
+  "url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/sign/long-form-renders/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/tests/phase5c/myth-vs-reality-first30s-B-1440p-master.mp4?token=eyJraWQiOiI4Y2JmM2UzOS0xYzg1LTQxN2ItOGEyYS01ZDdiOTgzMWE5MTAiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsb25nLWZvcm0tcmVuZGVycy9mNmVlM2ViMi03MjZiLTRmYWEtOWQyNS0xZWQ5NTdlYjQ2YWUvdGVzdHMvcGhhc2U1Yy9teXRoLXZzLXJlYWxpdHktZmlyc3QzMHMtQi0xNDQwcC1tYXN0ZXIubXA0Iiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc5MDUyNzQ4MSwiZXhwIjoxNzkxMTMyMjgxfQ.qP6bs3l-bA5VFq-kir3KlX2tDp22Rdyj54R6voOMZoE"
+ }
+}

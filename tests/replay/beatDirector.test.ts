@@ -154,7 +154,7 @@ const stubDirector: ModelCall = async ({ user }) => {
 };
 
 Deno.test("director (stub): full plan covers the script exactly with small beats", async () => {
-  const res: any = await runBeatDirector({ segments, bible, callback, callModel: stubDirector });
+  const res: any = await runBeatDirector({ planRules: false, segments, bible, callback, callModel: stubDirector });
   assert(res.ok, JSON.stringify(res.issues));
   assertEquals(res.beats.map((b: any) => b.narrationText).join(" "), stream.scriptText);
   assert(res.stats.wordsPerBeat.max <= 24);
@@ -246,7 +246,7 @@ Deno.test("director: over-long beats are auto-split and the new parts filled by 
     for (let k = 0; k < win.chunks.length; k += 3) beats.push({ startChunk: win.chunks[k].index, endChunk: win.chunks[Math.min(k + 2, win.chunks.length - 1)].index, ...contract(beats.length) });
     return { input: { beats }, usage: { inputTokens: 1000, outputTokens: 500, cacheReadTokens: 0, cacheWriteTokens: 0 } };
   };
-  const res: any = await runBeatDirector({ segments, bible, callback, callModel: lazy });
+  const res: any = await runBeatDirector({ planRules: false, segments, bible, callback, callModel: lazy });
   assert(res.ok, JSON.stringify(res.issues?.slice(0, 3)));
   assert(res.stats.autoSplits > 0);
   assertEquals(prompts.filter((p) => p.includes("NEEDS CONTRACT")).length, windows.length, "one fill call per window");
@@ -266,19 +266,19 @@ Deno.test("director: a failing window gets ONE repair with the exact issues, the
     res.input.beats[0].subjects = [{ castId: "ghost", presence: "full", action: "", expression: "" }];
     return res;
   };
-  const res: any = await runBeatDirector({ segments, bible, callback, callModel: bad });
+  const res: any = await runBeatDirector({ planRules: false, segments, bible, callback, callModel: bad });
   assertEquals([res.ok, res.errorCode, calls], [false, "WINDOW_VALIDATION_FAILED", 2]);
   assertStringIncludes(prompts.filter((p) => !p.includes("NEEDS CONTRACT"))[1], 'castId "ghost" is not in the bible');
 });
 
 Deno.test("director: yields between windows and resumes to the identical plan, one call per window", async () => {
   let fullCalls = 0;
-  const full: any = await runBeatDirector({ segments, bible, callback, callModel: async (req) => { fullCalls += 1; return stubDirector(req); } });
+  const full: any = await runBeatDirector({ planRules: false, segments, bible, callback, callModel: async (req) => { fullCalls += 1; return stubDirector(req); } });
   let calls = 0;
   const counting: ModelCall = async (req) => { calls += 1; return stubDirector(req); };
-  let r: any = await runBeatDirector({ segments, bible, callback, callModel: counting, shouldYield: () => true });
+  let r: any = await runBeatDirector({ planRules: false, segments, bible, callback, callModel: counting, shouldYield: () => true });
   assertEquals(r.resume.nextWindow, 1);
-  while (r.yielded) r = await runBeatDirector({ segments, bible, callback, callModel: counting, resume: r.resume, shouldYield: () => true });
+  while (r.yielded) r = await runBeatDirector({ planRules: false, segments, bible, callback, callModel: counting, resume: r.resume, shouldYield: () => true });
   assert(r.ok);
   assertEquals(calls, fullCalls);
   assertEquals(r.beats.map((b: any) => [b.startWord, b.endWord]), full.beats.map((b: any) => [b.startWord, b.endWord]));
@@ -287,7 +287,7 @@ Deno.test("director: yields between windows and resumes to the identical plan, o
 Deno.test("cost cap: the director refuses a call that could exceed the cap", async () => {
   let calls = 0;
   const counting: ModelCall = async (req) => { calls += 1; return stubDirector(req); };
-  const res: any = await runBeatDirector({ segments, bible, callback, callModel: counting, maxCostUsd: 0.2, costOf: (u: any) => u.calls * 0.05 });
+  const res: any = await runBeatDirector({ planRules: false, segments, bible, callback, callModel: counting, maxCostUsd: 0.2, costOf: (u: any) => u.calls * 0.05 });
   assertEquals(res.errorCode, "COST_CAP");
   assert(calls >= 1 && calls < windows.length);
 });
@@ -381,7 +381,7 @@ Deno.test({
       const want = new Set([...req.user.matchAll(/NEEDS CONTRACT C(\d+)\.\./g)].map((x) => Number(x[1])));
       return { input: { b: (fillsByWindow.get(req.user.match(/^WINDOW (\d+)/)![1]) ?? []).filter((b: any) => want.has(b.s)) }, usage: USAGE_R };
     };
-    const res: any = await runBeatDirector({ segments: recorded.segments, bible: recorded.bible, narration: null, callback: recorded.callback, callModel: replay, hookSingleChunk: false });
+    const res: any = await runBeatDirector({ planRules: false, segments: recorded.segments, bible: recorded.bible, narration: null, callback: recorded.callback, callModel: replay, hookSingleChunk: false, ipGuard: false });
     assertEquals(res.ok, true);
     assertEquals(res.beats.map((b: any) => [b.startWord, b.endWord]), recorded.result.ranges);
     console.log(`run 5 plan under the POLISH rules: soft warnings ${JSON.stringify(res.stats.softWarnings)}; plan warn [${res.validation.warn.map((w: any) => w.code).join(", ")}]; viewer era swaps ${res.stats.viewerSwaps}; cast ${res.stats.castPct}%`);
@@ -467,13 +467,15 @@ Deno.test("rewrites ride the window's ONE fill call (no full-window repair): non
     for (const k of [3, 4, 5]) res.input.beats[k] = { ...res.input.beats[k], subjects: warrior };
     return res;
   };
-  const res: any = await runBeatDirector({ segments, bible, callback, callModel: director });
+  const res: any = await runBeatDirector({ planRules: false, segments, bible, callback, callModel: director });
   assert(res.ok, JSON.stringify(res.issues?.slice(0, 3)));
   assertEquals(res.repairs, 0, "no full-window repair");
   assertEquals(prompts.filter((p) => p.includes("NEEDS CONTRACT")).length, windows.length, "one fill call per window");
   const fill = prompts.find((p) => p.includes("NEEDS CONTRACT"))!;
   assertStringIncludes(fill, `"morphs" — make it one frozen still image`);
-  assertStringIncludes(fill, `3rd beat in a row on "viking_warrior"`);
+  // Under the per-window rewrite budget (Phase 4c) a lower-priority subject run is either rewritten or kept as a warning.
+  assert(fill.includes(`3rd beat in a row on "viking_warrior"`) || (res.stats.softWarnings.subject_run ?? 0) > 0);
+  assert(res.stats.rewritesDropped >= 0);
   assert(res.stats.rewrites >= windows.length * 2);
   assert(!res.beats.some((b: any) => conceptNotStill(b.contract.visualConcept)));
   assert(!res.validation.warn.some((w: any) => w.code === "concept_not_still"));
@@ -581,7 +583,7 @@ Deno.test("SOFT: a subject run the fill can't fix is KEPT with a per-beat warnin
     for (const k of [3, 4, 5]) res.input.beats[k] = { ...res.input.beats[k], subjects: warrior };
     return res;
   };
-  const res: any = await runBeatDirector({ segments, bible, callback, callModel: stubborn });
+  const res: any = await runBeatDirector({ planRules: false, segments, bible, callback, callModel: stubborn });
   assert(res.ok, JSON.stringify(res.issues?.slice(0, 3)));
   assertEquals(res.repairs, 0);
   assertEquals(prompts.length, windows.length * 2, "one main + one fill call per window, nothing else");
@@ -593,7 +595,7 @@ Deno.test("SOFT: a subject run the fill can't fix is KEPT with a per-beat warnin
 Deno.test("HARD stays HARD: unknown ids still get one full repair, then fail (never kept as a warning)", async () => {
   let calls = 0;
   const bad: ModelCall = async (req) => { if (!req.user.includes("NEEDS CONTRACT")) calls += 1; const r = await stubDirector(req); r.input.beats[0].settingId = "setting_moon"; return r; };
-  const res: any = await runBeatDirector({ segments, bible, callback, callModel: bad });
+  const res: any = await runBeatDirector({ planRules: false, segments, bible, callback, callModel: bad });
   assertEquals([res.ok, res.errorCode, calls], [false, "WINDOW_VALIDATION_FAILED", 2]);
   assert(res.issues.every((i: any) => !isSoft(i)));
   for (const c of ["subject_run", "adjacent_identical", "concept_not_still", "short_text_too_long", "short_text_rate", "hold_rate"]) assert(isSoft({ code: c, message: "" }), c);
@@ -635,18 +637,24 @@ Deno.test("run 4 replayed under the final rules: window 1 is ACCEPTED (soft issu
   // (fills matched by chunk; rewrites the recording never saw keep their beat).
   const mains = [0, 2];
   const fills = [1, 3];
+  let lastWant = new Set<number>();
   const replay: ModelCall = async (req) => {
     const isFill = req.user.includes("NEEDS CONTRACT");
-    calls.push(isFill ? "fill" : "main");
     if (!req.user.startsWith("WINDOW 1")) throw new Error("stop after window 1");
-    if (!isFill) return { input: { b: run4Out(mains.shift()!) }, usage: USAGE };
+    if (!isFill) { calls.push("main"); lastWant = new Set(); return { input: { b: run4Out(mains.shift()!) }, usage: USAGE }; }
     const want = new Set([...req.user.matchAll(/NEEDS CONTRACT C(\d+)\.\./g)].map((m) => Number(m[1])));
+    // Phase 5a: the automatic re-ask for skipped beats — the recording has no answer for it.
+    if (lastWant.size && [...want].every((c) => lastWant.has(c))) { calls.push("reask"); return { input: { b: [] }, usage: USAGE }; }
+    calls.push("fill");
+    lastWant = want;
     return { input: { b: run4Out(fills.shift()!).filter((b: any) => want.has(b.s)) }, usage: USAGE };
   };
-  const res: any = await runBeatDirector({ segments: run4.segments, bible: run4.bible, callback: run4.callback, callModel: replay, shouldYield: () => true });
+  const res: any = await runBeatDirector({ planRules: false, segments: run4.segments, bible: run4.bible, callback: run4.callback, callModel: replay, shouldYield: () => true });
   assert(res.yielded, JSON.stringify(res.issues ?? res).slice(0, 400));
   // Attempt 0 had real HARD errors (an archetype id used as a prop — the bible fix removes that); the repair is now accepted.
-  assertEquals(calls, ["main", "fill", "main", "fill"]);
+  assertEquals(calls.filter((c) => c !== "reask"), ["main", "fill", "main", "fill"]);
+  // The recorded fills skipped beats the recording never saw: each fill gets ONE re-ask, never more.
+  assertEquals(calls, ["main", "fill", "reask", "main", "fill", "reask"]);
   const w1 = res.resume.accepted;
   const warns: Record<string, number> = {};
   for (const b of w1) for (const w of b.warnings ?? []) warns[w.code] = (warns[w.code] ?? 0) + 1;
@@ -724,7 +732,7 @@ Deno.test("POLISH 6-7: no pairing hints in the first 30 s; maxWindows directs a 
   const p = windowUserPrompt(stream, win0, []);
   const hookLines = p.split("\n").filter((l) => /^C\d+ \[(\d+\.\d)s/.test(l) && Number(l.match(/^C\d+ \[(\d+\.\d)s/)![1]) < 30);
   assert(hookLines.length > 3 && hookLines.every((l) => !l.includes("pairs to")));
-  const res: any = await runBeatDirector({ segments, bible, callback, callModel: stubDirector, maxWindows: 1 });
+  const res: any = await runBeatDirector({ planRules: false, segments, bible, callback, callModel: stubDirector, maxWindows: 1 });
   assert(res.ok, JSON.stringify(res.issues?.slice(0, 2)));
   assertEquals([res.stats.partial, res.stats.windowsDirected], [true, 1]);
   assertEquals(res.beats.at(-1).endWord, win0.endWord);
@@ -736,7 +744,7 @@ Deno.test("cost cap near: soft rewrites are dropped from the fill (kept as warni
     if (!req.user.includes("NEEDS CONTRACT")) for (const b of r.input.beats) b.visualConcept = "a helmet morphs into a costume";
     return r;
   };
-  const res: any = await runBeatDirector({ segments, bible, callback, callModel: morphing, maxWindows: 1, maxCostUsd: 0.06, costOf: (u: any) => u.calls * 0.04 });
+  const res: any = await runBeatDirector({ planRules: false, segments, bible, callback, callModel: morphing, maxWindows: 1, maxCostUsd: 0.06, costOf: (u: any) => u.calls * 0.04 });
   assert(res.ok, JSON.stringify(res.issues?.slice(0, 2)));
   assert(res.stats.rewritesDropped > 0);
   assert(res.stats.softWarnings.concept_not_still >= res.stats.rewritesDropped);

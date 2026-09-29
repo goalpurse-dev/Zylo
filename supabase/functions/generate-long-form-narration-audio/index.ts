@@ -30,29 +30,29 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
-import { requireUser } from "../shared/auth.ts";
-import { computeScriptInputHash, computeRequestHash, synthesizeNarrationAudio, mapAlignmentToNarration, DEFAULT_ELEVENLABS_VOICE_SETTINGS } from "../_shared/stickman/narrationAudio.ts";
+import { requireUserOrAutopilot } from "../shared/auth.ts";
+import { computeScriptInputHash, computeRequestHash, synthesizeNarrationAudio, mapAlignmentToNarration, DEFAULT_ELEVENLABS_VOICE_SETTINGS, decodeBase64Native, narrationLeaseMs, NARRATION_MAX_ATTEMPTS } from "../_shared/stickman/narrationAudio.ts";
 import { logEvent } from "../_shared/systemLog.ts";
-import { recordCost } from "../_shared/costLedger.ts";
-import { settleReservationIfActive, releaseReservationIfActive } from "../_shared/longFormReservations.ts";
+import { recordCost, narrationCost } from "../_shared/costLedger.ts";
+import { releaseReservationIfActive, settleReservationIfActive } from "../_shared/longFormReservations.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ELEVENLABS_KEY = Deno.env.get("ELEVENLABS_KEY") ?? "";
+const SETTLE_AT_RENDER = (Deno.env.get("LONG_FORM_SETTLE_AT_RENDER") ?? "").trim().toLowerCase() === "true";
 
-// Disclosed estimate, not a provider-reported figure — ElevenLabs'
-// with-timestamps response carries no cost field (confirmed directly in
-// thirty-days-voice-generate's own response handling, which never reads
-// one either). A per-character ballpark keeps internal_cost_usd non-zero
-// and directionally honest for accounting, same spirit as this codebase's
-// other disclosed-placeholder prices (e.g. providers.ts's Seedream Pro
-// entry) — never presented to the user as an exact billed amount.
-const ELEVENLABS_ESTIMATED_USD_PER_CHARACTER = 0.0003;
+// Phase 6d-1: cost = the credits ElevenLabs reports in its character-cost
+// header x ELEVENLABS_USD_PER_CREDIT (costLedger.ts config); only when the
+// header is missing is it estimated from the character count.
 
-async function doGeneration(admin: any, projectId: string, rowId: string, text: string, segments: { id: string; text: string }[], voiceId: string, voiceModel: string, voiceSettings: Record<string, unknown> | null) {
+async function doGeneration(admin: any, projectId: string, rowId: string, text: string, segments: { id: string; text: string }[], voiceId: string, voiceModel: string, voiceSettings: Record<string, unknown> | null, settleAtNarration = true) {
   try {
     const synthesis = await synthesizeNarrationAudio({ elevenLabsKey: ELEVENLABS_KEY, text, voiceId, voiceModel, voiceSettings: voiceSettings ?? undefined });
-    const audioBytes = Uint8Array.from(atob(synthesis.audioBase64), (c) => c.charCodeAt(0));
+    // Heartbeat: the provider answered — extend the lease while we save.
+    const { data: cur } = await admin.from("long_form_narration_audio_versions").select("provider_metadata").eq("id", rowId).maybeSingle();
+    const prevMeta = cur?.provider_metadata ?? {};
+    await admin.from("long_form_narration_audio_versions").update({ lease_until: new Date(Date.now() + 120_000).toISOString(), provider_metadata: { ...prevMeta, phase: "saving", providerCharacterCost: synthesis.characterCost, characterCount: text.length } }).eq("id", rowId);
+    const audioBytes = await decodeBase64Native(synthesis.audioBase64, synthesis.mimeType);
     const path = `long-form/narration/${rowId}.mp3`;
     const { error: uploadError } = await admin.storage.from("generated").upload(path, audioBytes, { contentType: synthesis.mimeType, upsert: true });
     if (uploadError) throw uploadError;
@@ -60,9 +60,11 @@ async function doGeneration(admin: any, projectId: string, rowId: string, text: 
 
     const mapped = mapAlignmentToNarration(synthesis.rawAlignment, segments);
     // Cost ledger: characters sent + ElevenLabs' own character-cost (credits).
-    await recordCost(admin, { projectId, stage: "narration", provider: "elevenlabs", model: voiceModel, units: { calls: 1, characters: text.length, providerCredits: synthesis.characterCost }, usd: Number((text.length * ELEVENLABS_ESTIMATED_USD_PER_CHARACTER).toFixed(4)), sourceTable: "long_form_narration_audio_versions", sourceId: rowId });
-    const internalCostUsd = Number((text.length * ELEVENLABS_ESTIMATED_USD_PER_CHARACTER).toFixed(4));
-    const providerMetadata = { characterCount: text.length, model: voiceModel, providerCharacterCost: synthesis.characterCost, providerRequestId: synthesis.requestId, costBasis: synthesis.characterCost != null ? "estimated_per_character; providerCharacterCost is ElevenLabs' own character-cost header" : "estimated_per_character (ElevenLabs reports no per-request cost)" };
+    // Phase 6d-1: the credits ElevenLabs actually charged x $/credit (config), not a per-character guess.
+    const nc = narrationCost(text.length, synthesis.characterCost);
+    await recordCost(admin, { projectId, stage: "narration", provider: "elevenlabs", model: voiceModel, units: { calls: 1, characters: text.length, providerCredits: nc.credits }, usd: nc.usd, estimated: nc.estimated, sourceTable: "long_form_narration_audio_versions", sourceId: rowId });
+    const internalCostUsd = Number(nc.usd.toFixed(4));
+    const providerMetadata = { attempts: prevMeta.attempts ?? 1, resumedAt: prevMeta.resumedAt ?? null, characterCount: text.length, model: voiceModel, providerCharacterCost: synthesis.characterCost, providerRequestId: synthesis.requestId, costBasis: nc.estimated ? "credits estimated at 0.20/character x $/credit (no character-cost header)" : "ElevenLabs character-cost header (credits) x $/credit" };
 
     if (mapped.ok) {
       await admin.from("long_form_narration_audio_versions").update({
@@ -70,16 +72,14 @@ async function doGeneration(admin: any, projectId: string, rowId: string, text: 
         raw_provider_alignment: synthesis.rawAlignment, narration: mapped.segmentTimings,
         provider_metadata: providerMetadata, internal_cost_usd: internalCostUsd, ready_at: new Date().toISOString(),
       }).eq("id", rowId);
-      // Phase 0, Section B — Narration is, for now, the end of the last
-      // real stage in the currently-reachable pipeline (see
-      // longFormReservations.ts's NARRATION_IS_CURRENTLY_THE_LAST_REAL_STAGE
-      // and the backend audit's §8/Part 2 T8 — Visuals/Edit/Render don't
-      // exist yet). Settling here refunds reserved-minus-committed, which
-      // today is normally the full reservation, since nothing yet commits
-      // against it before this point. Move this call to the real
-      // "video complete" status once one exists — nothing else needs to
-      // change.
-      await settleReservationIfActive(admin, projectId, "narration_ready", logEvent);
+      // Phase 5b moved the settle to render completion (finish-long-form-render,
+      // RENDER_IS_THE_LAST_REAL_STAGE) — but users can't start a render until
+      // the Render button ships (Phase 6), so until LONG_FORM_SETTLE_AT_RENDER
+      // is switched on, narration-ready still settles (today's behavior).
+      // Phase 6c: with the flag on, a STICKMAN project keeps its reservation for the
+      // Scenes step (each scene draws from it) and settles at render (or after 7 idle
+      // days, settleIdleReservations). Legacy projects keep settling here (unchanged).
+      if (settleAtNarration) await settleReservationIfActive(admin, projectId, "narration_ready", logEvent);
     } else {
       // Section 10: the audio itself succeeded — preserve it. Only
       // alignment mapping failed; reconcile-long-form-narration-alignment
@@ -109,7 +109,9 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return err(req, "Method not allowed", 405);
   if (!ELEVENLABS_KEY) return err(req, "ELEVENLABS_KEY not configured", 500);
 
-  const { user, authError } = await requireUser(req);
+  // Phase 6b: the server watchdog (advance-long-form-autopilot cron) resumes
+  // stalled narration without any open page — internal secret + owner userId.
+  const { user, authError } = await requireUserOrAutopilot(req);
   if (!user) return err(req, authError || "Unauthorized", 401);
 
   const body = await req.json().catch(() => ({}));
@@ -155,11 +157,30 @@ Deno.serve(async (req) => {
 
   const { data: existing } = await admin.from("long_form_narration_audio_versions").select("*").eq("project_id", projectId).eq("request_hash", requestHash).maybeSingle();
 
+  // Phase 6b: the server watchdog only ever RESUMES the stalled row it found.
+  // If that row no longer matches the current script/voice (superseded), it
+  // is closed as failed — the watchdog never starts a new paid generation.
+  const resumeRowId = body?.resumeRowId ? String(body.resumeRowId) : null;
+  if (resumeRowId && existing?.id !== resumeRowId) {
+    await admin.from("long_form_narration_audio_versions").update({ status: "failed", last_error_code: "NARRATION_SUPERSEDED", last_error_at: new Date().toISOString() }).eq("id", resumeRowId).eq("status", "generating");
+    return ok(req, { ok: true, narrationAudioVersionId: resumeRowId, status: "failed", superseded: true, alreadyGenerated: false });
+  }
+
   if (existing?.status === "ready") {
     return ok(req, { ok: true, narrationAudioVersionId: existing.id, status: "ready", alreadyGenerated: true });
   }
   if (existing?.status === "generating" && existing.lease_until && new Date(existing.lease_until).getTime() > Date.now()) {
     return ok(req, { ok: true, narrationAudioVersionId: existing.id, status: "generating", alreadyGenerated: false });
+  }
+  // Phase 6a watchdog: a "generating" row whose lease expired was killed
+  // mid-run (nothing wrote a result). Resume it ONCE from the saved state
+  // (same row, same request); a second stall becomes a clear failure the
+  // user can retry for free.
+  const leaseMs = narrationLeaseMs(ttsInputText.length);
+  const attempts = Number(existing?.provider_metadata?.attempts ?? 1);
+  if (existing?.status === "generating" && !body?.retry && attempts >= NARRATION_MAX_ATTEMPTS) {
+    await admin.from("long_form_narration_audio_versions").update({ status: "failed", last_error_code: "NARRATION_STALLED", last_error_at: new Date().toISOString() }).eq("id", existing.id);
+    return ok(req, { ok: true, narrationAudioVersionId: existing.id, status: "failed", alreadyGenerated: false });
   }
   if (existing?.status === "alignment_failed") {
     // No new provider call needed — the caller should invoke
@@ -183,9 +204,10 @@ Deno.serve(async (req) => {
   }
 
   let rowId: string;
-  if (existing?.status === "failed") {
-    // Retry in place — same row, same request hash, no new insert needed.
-    await admin.from("long_form_narration_audio_versions").update({ status: "generating", lease_until: new Date(Date.now() + 3 * 60_000).toISOString(), last_error_code: null, last_error_at: null }).eq("id", existing.id);
+  if (existing?.status === "failed" || existing?.status === "generating") {
+    // failed -> a free Retry (fresh attempt budget); generating with an expired lease -> the watchdog's one resume.
+    const nextAttempts = existing.status === "failed" || body?.retry ? 1 : attempts + 1;
+    await admin.from("long_form_narration_audio_versions").update({ status: "generating", lease_until: new Date(Date.now() + leaseMs).toISOString(), last_error_code: null, last_error_at: null, provider_metadata: { ...(existing.provider_metadata ?? {}), attempts: nextAttempts, phase: "tts", resumedAt: new Date().toISOString() } }).eq("id", existing.id);
     rowId = existing.id;
   } else {
     const { count } = await admin.from("long_form_narration_audio_versions").select("id", { count: "exact", head: true }).eq("project_id", projectId);
@@ -193,13 +215,14 @@ Deno.serve(async (req) => {
       project_id: projectId, generation_profile_id: profile.id, script_version_id: scriptVersion.id, version: (count ?? 0) + 1,
       status: "generating", voice_provider: voiceSpec.provider, voice_id: voiceSpec.voiceId, voice_model: voiceSpec.voiceModel,
       voice_settings: voiceSpec.voiceSettings, language: voiceSpec.language,
-      script_input_hash: scriptInputHash, request_hash: requestHash, lease_until: new Date(Date.now() + 3 * 60_000).toISOString(),
+      script_input_hash: scriptInputHash, request_hash: requestHash, lease_until: new Date(Date.now() + leaseMs).toISOString(), provider_metadata: { attempts: 1, phase: "tts", characterCount: ttsInputText.length },
     }).select("id").single();
     if (insertError) return err(req, "Could not start narration generation.", 500, { reason: insertError.message });
     rowId = inserted.id;
   }
 
-  const work = doGeneration(admin, projectId, rowId, ttsInputText, segments, voiceSpec.voiceId, voiceSpec.voiceModel, effectiveVoiceSettings);
+  const settleAtNarration = !(SETTLE_AT_RENDER && profile.visual_recipe === "stickman_doodle_explainer");
+  const work = doGeneration(admin, projectId, rowId, ttsInputText, segments, voiceSpec.voiceId, voiceSpec.voiceModel, effectiveVoiceSettings, settleAtNarration);
   const rt = (globalThis as any).EdgeRuntime;
   if (rt?.waitUntil) rt.waitUntil(work); else await work;
 

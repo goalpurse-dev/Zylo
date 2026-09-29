@@ -157,10 +157,17 @@ export const LONG_FORM_STAGES = [
 // 'stickman_doodle_explainer' (see productionProfile.js) — every other
 // project, Atlantis included, keeps LONG_FORM_STAGES above unchanged. Never
 // exported as the default; callers must explicitly opt in via that check.
+// Phase 6a: ONE stepper for Stickman on every page — Idea · Script · Voice ·
+// Scenes · Edit, derived from the project's state (deriveStickmanStep in
+// projectStage.js), never from which page happens to be open.
+// Phase 6e: Idea (pay + pick the voice) -> ONE generating screen (script ->
+// voice -> scenes, no stops) -> Scenes (the first home) -> Edit -> Publish.
 export const LONG_FORM_STICKMAN_STAGES = [
   { key: "idea", label: "Idea" },
-  { key: "story", label: "Story" },
-  { key: "narration", label: "Narration" },
-  { key: "visuals", label: "Visuals" },
+  { key: "scenes", label: "Scenes" },
   { key: "edit", label: "Edit" },
+  { key: "publish", label: "Publish" },
 ];
+// Legacy page keys a Stickman page may still pass -> the Stickman step.
+// Script review + "Listen & change" are Editor panels now (Script / Voiceover).
+export const STICKMAN_STEP_FOR_PAGE = { idea: "idea", story: "scenes", research: "scenes", script: "scenes", writing: "scenes", generating: "scenes", look: "scenes", generate: "scenes", visuals: "scenes", scenes: "scenes", narration: "edit", voice: "edit", "script-review": "edit", edit: "edit", publish: "publish" };

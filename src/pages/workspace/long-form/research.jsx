@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { autopilotRedirectRoute } from "./autopilot";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CheckCircle2, ChevronDown, ExternalLink, RefreshCw, RotateCw, TriangleAlert } from "lucide-react";
@@ -230,6 +231,8 @@ export default function LongFormResearch() {
   const navigate = useNavigate();
 
   const [project, setProject] = useState(null);
+  // Phase 6a: a Stickman autopilot project never shows this legacy step.
+  useEffect(() => { const r = autopilotRedirectRoute(project); if (r) navigate(`/long-form/project/${project.id}/${r}`, { replace: true }); }, [project]); // eslint-disable-line react-hooks/exhaustive-deps
   const [storyPlan, setStoryPlan] = useState(null);
   const [research, setResearch] = useState(null);
   const [staleResearch, setStaleResearch] = useState(null);

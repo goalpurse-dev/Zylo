@@ -1,0 +1,25 @@
+{
+  "source": "Phase 4d: prop blocks for named objects the v6 bible lacked, written by hand in plain visual words. The bible prompt now asks the model for these; the bible was not rebuilt so the frozen plan keeps its ids.",
+  "addCast": [
+    { "id": "bog_worker", "role": "a bog worker (1940s laborer)", "identity": { "displayName": "A bog worker in the 1940s", "skinTone": "light warm beige", "faceMarks": "", "hair": "short brown hair under a flat grey cap", "outfit": "a muted brown work-jacket shape on the torso, and small dark brown rounded feet", "outfitShort": "a muted brown work-jacket shape", "sleeves": "", "build": "average adult proportions", "signature": "a long-handled spade" } }
+  ],
+  "contractOverrides": {
+    "98": { "visualConcept": "An old comic-book page with simple flat drawings of a space hero in a round glass bubble helmet and a striped suit holding a ray gun, facing a warrior with two curved horns", "_note": "Phase 5a hand fix (IP: was Loki-like); Phase 5b: stickman style, no detailed comic art" },
+    "24": { "visualConcept": "The viewer's raised open hand beside a low shelf holding five small empty iron helmets", "_note": "Phase 5b hand fix: helmets in the palm kept getting faces" },
+    "42": { "visualConcept": "A stack of sagas with a big red empty ring drawn across the stack", "_note": "Phase 5b: sagas -> plain books with blank covers via the compiler" },
+    "128": { "visualConcept": "A plain iron dome helmet with an eye guard rests on a low stand under glass", "_note": "Phase 5b hand fix: 'sits' gave the helmet legs" },
+    "103": { "visualConcept": "Split image: a plain football helmet with two painted-on horns beside a thin bronze Veksø helmet on a museum plinth", "_note": "Phase 5a hand fix: 'Minnesota football helmet' is blocked by the IP guard" },
+    "50": { "visualConcept": "Two bog workers lift two bronze horned helmets out of dripping bog mud", "subjects": [ { "castId": "bog_worker", "presence": "full", "action": "lifts a helmet from the mud", "expression": "surprised", "position": "left" }, { "castId": "bog_worker", "presence": "full", "action": "lifts a helmet from the mud", "expression": "curious", "position": "right" } ] }
+  },
+  "replace": {
+    "gjermundbu_helmet": "The Gjermundbu helmet: a rounded plain dull-grey iron dome helmet with a goggle-shaped iron eye-and-nose guard across its front, and no horns."
+  },
+  "add": [
+    { "id": "mail_neck_guard", "promptBlock": "A mail neck guard: a short curtain of small linked grey iron rings hanging from the back and sides of a plain iron helmet's rim.", "aliases": ["mail neck", "mail hanging", "neck-guard", "neck guard"] },
+    { "id": "nose_guard", "promptBlock": "An iron nose guard: a plain flat vertical iron bar hanging down from the front rim of a rounded iron helmet.", "aliases": ["nose guard"] },
+    { "id": "helmet_fragment", "promptBlock": "A Viking-age helmet fragment: a broken curved piece of rusty brown iron about the size of a hand, with jagged edges.", "aliases": ["fragment"] },
+    { "id": "horned_postcard", "promptBlock": "A horned-helmet tourist postcard: a small cream-colored card with a plain border and a simple flat drawing of a grey helmet with two curved horns.", "aliases": ["postcard"] },
+    { "id": "horned_lunchbox", "promptBlock": "A horned-helmet lunchbox: a small red metal lunchbox with a handle and a simple flat drawing of a helmet with two curved horns on its side.", "aliases": ["lunchbox"] },
+    { "id": "team_horned_logo", "promptBlock": "A football team's horned-helmet logo: an invented round emblem of a dark blue helmet with two cream-colored curved horns, in flat colors.", "aliases": ["team logo", "helmet logo", "football helmet logo"] }
+  ]
+}

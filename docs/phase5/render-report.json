@@ -1,0 +1,85 @@
+{
+ "edl": {
+  "clips": 136,
+  "totalFrames": 15702,
+  "motion": {
+   "push_in": 102,
+   "hold": 19,
+   "pan": 14,
+   "pull_out": 1
+  },
+  "overlays": 21
+ },
+ "renderSeconds": {
+  "segments": 495,
+  "final": 523,
+  "proxy": 563,
+  "workers": 8
+ },
+ "files": {
+  "final": {
+   "path": "docs/phase5/myth-vs-reality-v2.mp4",
+   "bytes": 166179432
+  },
+  "proxy": {
+   "path": "docs/phase5/myth-vs-reality-v2-proxy-640x360.mp4",
+   "bytes": 16360439
+  }
+ },
+ "checks": {
+  "duration": {
+   "videoFrames": 15702,
+   "edlFrames": 15702,
+   "videoMs": 523400,
+   "audioSourceMs": 523416,
+   "audioMp4Ms": 523377,
+   "diffFrames": -0.48,
+   "pass": true
+  },
+  "cuts": {
+   "maxErrFrames": 0,
+   "over1": 0,
+   "visibleBySceneDetect": "135/135",
+   "extraSceneChanges": 0,
+   "pass": true
+  },
+  "blackOrBlank": {
+   "blackRuns": 0,
+   "whiteRuns": 1,
+   "pass": false
+  },
+  "sync": {
+   "streamStarts": "video,0.000000\r; audio,0.000000",
+   "spots": [
+    {
+     "beat": 2,
+     "cutMs": 4833.333333333333,
+     "wordMs": 4818,
+     "word": "and",
+     "audioLagMs": 0,
+     "cutVsBeatMs": 15,
+     "visibleCut": true
+    },
+    {
+     "beat": 69,
+     "cutMs": 251966.66666666666,
+     "wordMs": 251959,
+     "word": "and",
+     "audioLagMs": 0,
+     "cutVsBeatMs": 8,
+     "visibleCut": true
+    },
+    {
+     "beat": 135,
+     "cutMs": 516266.6666666667,
+     "wordMs": 516282,
+     "word": "You're",
+     "audioLagMs": 0,
+     "cutVsBeatMs": -15,
+     "visibleCut": true
+    }
+   ],
+   "pass": true
+  }
+ }
+}

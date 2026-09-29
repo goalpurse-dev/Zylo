@@ -13,14 +13,16 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
-import { requireUser } from "../shared/auth.ts";
-import { runBeatDirector, anthropicModelCall, sonnetCostUsd, BEAT_DIRECTOR_MODEL } from "../_shared/stickman/beatDirector.ts";
+import { requireUserOrAutopilot } from "../shared/auth.ts";
+import { runBeatDirector, anthropicModelCall, sonnetCostUsd, BEAT_DIRECTOR_MODEL, planCostCapUsd } from "../_shared/stickman/beatDirector.ts";
 import { wordsPerMinuteForProfile } from "../../../src/lib/voicePace.ts";
 import { recordCost } from "../_shared/costLedger.ts";
+import { pickHeadlines, acceptHeadlines, applyTextPass, HEADLINE_MODEL } from "../_shared/stickman/headlines.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
+const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
 
 // Recording for offline replay: env-gated AND only for internal test
 // projects (owner email on the test domain every harness creates). Real users
@@ -47,13 +49,13 @@ const SELF_URL = `${SUPABASE_URL}/functions/v1/build-stickman-beat-plan`;
 // a tighter per-plan cap; the partial plan is stored as 'check_only'.
 type CheckOpts = { maxWindows?: number; maxCostUsd?: number };
 
-async function buildInBackground(admin: any, planId: string, projectId: string, input: { segments: any[]; bible: any; narration: any[] | null; callback: any; wordsPerMinute?: number }, resume: any | null, startedAt: number, check: CheckOpts = {}) {
+async function buildInBackground(admin: any, planId: string, projectId: string, input: { segments: any[]; sections?: Record<string, string>; bible: any; narration: any[] | null; callback: any; wordsPerMinute?: number }, resume: any | null, startedAt: number, check: CheckOpts = {}) {
   const t0 = Date.now();
   const record = RECORD && (await isTestProject(admin, projectId));
   const entries: any[] = [];
   const onExchange = record ? (e: any) => entries.push({ ...e, seq: entries.length, stage: "beat_director" }) : undefined;
   try {
-    const result: any = await runBeatDirector({ ...input, callModel: anthropicModelCall(ANTHROPIC_KEY, BEAT_DIRECTOR_MODEL, 150_000, onExchange), resume, shouldYield: () => Date.now() - t0 > YIELD_AFTER_MS, maxCostUsd: Math.min(MAX_COST_USD, check.maxCostUsd ?? MAX_COST_USD), costOf: sonnetCostUsd, maxWindows: check.maxWindows });
+    const result: any = await runBeatDirector({ ...input, sectionOfSegment: input.sections, callModel: anthropicModelCall(ANTHROPIC_KEY, BEAT_DIRECTOR_MODEL, 150_000, onExchange), resume, shouldYield: () => Date.now() - t0 > YIELD_AFTER_MS, maxCostUsd: check.maxCostUsd ?? planCostCapUsd(input.segments.reduce((n: number, s: any) => n + String(s.text ?? "").split(/\s+/).filter(Boolean).length, 0), MAX_COST_USD), costOf: sonnetCostUsd, maxWindows: check.maxWindows });
     const cost = sonnetCostUsd(result.usage);
     if (result.yielded) {
       await admin.from("long_form_beat_plan_versions").update({ stats: { resume: result.resume, startedAt, check }, estimated_model_cost_usd: cost }).eq("id", planId);
@@ -72,6 +74,22 @@ async function buildInBackground(admin: any, planId: string, projectId: string, 
       }).eq("id", planId);
       return;
     }
+    // Phase 6c-polish: the on-screen text pass — tops the plan up to the
+    // project's text density with HEADLINE beats and classifies the director's
+    // own text beats (HEADLINE vs IN_SCENE). Never fails the plan.
+    let textPass: any = null;
+    try {
+      const { data: proj } = await admin.from("long_form_projects").select("on_screen_text_density").eq("id", projectId).maybeSingle();
+      const density = proj?.on_screen_text_density ?? "balanced";
+      const picked = await pickHeadlines(OPENAI_KEY, result.beats, density);
+      const acc = acceptHeadlines(result.beats, picked.picks, density);
+      result.beats = applyTextPass(result.beats, acc.accepted);
+      textPass = { density, target: acc.target, total: acc.total, added: acc.accepted.length, rejected: acc.rejected.length, costUsd: picked.costUsd };
+      if (picked.costUsd) await recordCost(admin, { projectId, stage: "beats_text", provider: "openai", model: HEADLINE_MODEL, units: { ...picked.usage }, usd: picked.costUsd, sourceTable: "long_form_beat_plan_versions", sourceId: planId });
+    } catch (e) {
+      console.error("[build-stickman-beat-plan] text pass skipped:", String(e).slice(0, 200));
+      result.beats = applyTextPass(result.beats, []);
+    }
     const rows = result.beats.map((b: any) => ({
       beat_plan_version_id: planId, sequence: b.sequence, start_word: b.startWord, end_word: b.endWord,
       narration_text: b.narrationText, start_ms: b.startMs, end_ms: b.endMs, contract: b.contract, warnings: b.warnings ?? [],
@@ -83,7 +101,7 @@ async function buildInBackground(admin: any, planId: string, projectId: string, 
     const hasWarnings = result.beats.some((b: any) => b.warnings?.length) || result.validation.warn.length > 0;
     await admin.from("long_form_beat_plan_versions").update({
       status: result.stats.partial ? "check_only" : hasWarnings ? "ready_with_warnings" : "ready", timing_source: result.timingSource, estimated_model_cost_usd: cost,
-      stats: { ...result.stats, usage: result.usage, latencyMs: Date.now() - startedAt, bibleIndex: result.bibleIndex, syntheticWpm: result.timingSource === "synthetic" ? input.wordsPerMinute ?? null : null },
+      stats: { ...result.stats, textPass, usage: result.usage, latencyMs: Date.now() - startedAt, bibleIndex: result.bibleIndex, syntheticWpm: result.timingSource === "synthetic" ? input.wordsPerMinute ?? null : null },
       validation: result.validation, completed_at: new Date().toISOString(),
     }).eq("id", planId);
   } catch (e) {
@@ -115,7 +133,7 @@ async function loadInput(admin: any, plan: any) {
     : null;
   const doc = script.script_document;
   const { data: profile } = await admin.from("long_form_generation_profiles").select("voice_id, voice_model, voice_settings").eq("project_id", plan.project_id).eq("status", "active").maybeSingle();
-  return { segments: doc.narrationSegments.map((s: any) => ({ id: s.id, text: s.text })), bible: bible.bible, narration: audio?.narration ?? null, callback: callbackOf(doc), wordsPerMinute: wordsPerMinuteForProfile(profile).wordsPerMinute };
+  return { segments: doc.narrationSegments.map((s: any) => ({ id: s.id, text: s.text })), sections: Object.fromEntries(doc.narrationSegments.map((s: any) => [s.id, s.chapterId ?? s.id])), bible: bible.bible, narration: audio?.narration ?? null, callback: callbackOf(doc), wordsPerMinute: wordsPerMinuteForProfile(profile).wordsPerMinute };
 }
 
 Deno.serve(async (req) => {
@@ -139,7 +157,7 @@ Deno.serve(async (req) => {
     return ok(req, { ok: true, continued: plan.id }, 202);
   }
 
-  const { user, authError } = await requireUser(req);
+  const { user, authError } = await requireUserOrAutopilot(req, body); // Phase 6c: the Scenes autopilot builds the plan
   if (!user) return err(req, authError || "Unauthorized", 401);
   const projectId = String(body?.projectId ?? "").trim();
   if (!projectId) return err(req, "Missing projectId", 400);
@@ -182,7 +200,8 @@ Deno.serve(async (req) => {
 
   // Synthetic timings (no narration yet) run at the selected voice's measured pace.
   const pace = wordsPerMinuteForProfile(profile);
-  const work = buildInBackground(admin, plan.id, projectId, { segments, bible: bible.bible, narration: audio?.narration ?? null, callback, wordsPerMinute: pace.wordsPerMinute }, null, Date.now(), check);
+  const sections = Object.fromEntries((script?.script_document?.narrationSegments ?? []).map((s: any) => [s.id, s.chapterId ?? s.id]));
+  const work = buildInBackground(admin, plan.id, projectId, { segments, sections, bible: bible.bible, narration: audio?.narration ?? null, callback, wordsPerMinute: pace.wordsPerMinute }, null, Date.now(), check);
   const rt = (globalThis as any).EdgeRuntime;
   if (rt?.waitUntil) rt.waitUntil(work);
   else await work;

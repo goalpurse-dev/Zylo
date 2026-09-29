@@ -1,0 +1,1665 @@
+{
+ "fps": 30,
+ "audio": {
+  "url": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/narration/2f87db61-d5db-40ab-b14e-3b7acd1a0f04.mp3",
+  "durationMs": 523375,
+  "narrationId": "2f87db61-d5db-40ab-b14e-3b7acd1a0f04"
+ },
+ "clips": [
+  {
+   "id": "clip_mumoerdr0ca8z",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/001-v1.jpg",
+   "motion": "pan_left",
+   "sceneId": "73a66f95-ece1-43fc-9e9a-d60939d3f19c",
+   "startMs": 0,
+   "narration": "You're gripping a shield, screaming down a hillside toward a shieldwall,",
+   "startWord": 0,
+   "beatSequence": 1
+  },
+  {
+   "id": "clip_mumoerdr1tkni",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/002-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "3fff8914-c1b7-4085-9656-9a701a24d409",
+   "startMs": 4818,
+   "narration": "and two long curved horns jut off your helmet,",
+   "startWord": 11,
+   "beatSequence": 2
+  },
+  {
+   "id": "clip_mumoerdr2dc4d",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/003-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "2aacf3b9-981d-423a-95cc-d13dafa93b19",
+   "startMs": 10367,
+   "narration": "cutting the air on either side of your head.",
+   "startWord": 25,
+   "beatSequence": 3
+  },
+  {
+   "id": "clip_mumoerdr3r0vx",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/004-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "bbbbf887-d880-46cc-ae9c-0007c37c1c6a",
+   "startMs": 11876,
+   "narration": "The horns catch the firelight.",
+   "startWord": 29,
+   "beatSequence": 4
+  },
+  {
+   "id": "clip_mumoerdr4vcbs",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/005-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "e5f7524b-1156-4609-85a8-83dfdc9faeea",
+   "startMs": 14814,
+   "narration": "They look terrifying.",
+   "startWord": 34,
+   "beatSequence": 5
+  },
+  {
+   "id": "clip_mumoerdr50120",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/006-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "63cc8161-19fa-4d86-ab9d-7309e2b61168",
+   "startMs": 16927,
+   "narration": "They look exactly like every painting,",
+   "startWord": 37,
+   "beatSequence": 6
+  },
+  {
+   "id": "clip_mumoerdr6eguu",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/007-v1.jpg",
+   "motion": "hold",
+   "sceneId": "a84022fc-b1fe-439a-a419-dba63f877d4f",
+   "startMs": 19922,
+   "narration": "every movie poster,",
+   "startWord": 43,
+   "beatSequence": 7
+  },
+  {
+   "id": "clip_mumoey2f0p69i",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/007-v1.jpg",
+   "motion": "hold",
+   "sceneId": null,
+   "startMs": 21687,
+   "narration": "every Halloween costume you've ever seen of a Viking.",
+   "splitFrom": "clip_mumoerdr6eguu",
+   "startWord": 46,
+   "needsImage": true,
+   "beatSequence": 7
+  },
+  {
+   "id": "clip_mumoerdr7hjl8",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/008-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "5ab57739-376f-4c83-85ef-d4afc77d9a17",
+   "startMs": 26157,
+   "narration": "This is the image burned into your head.",
+   "startWord": 55,
+   "beatSequence": 8
+  },
+  {
+   "id": "clip_mumoerdr81y5c",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/009-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "94db71ef-eaca-49d8-85a8-152773a292be",
+   "startMs": 29918,
+   "narration": "A single wrong picture like this can quietly",
+   "startWord": 63,
+   "beatSequence": 9
+  },
+  {
+   "id": "clip_mumoerdr924r0",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/010-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "c7375959-29b4-449b-a460-4bf926674b28",
+   "startMs": 33889,
+   "narration": "rewrite an entire culture's history in our heads.",
+   "startWord": 71,
+   "beatSequence": 10
+  },
+  {
+   "id": "clip_mumoerdra6wyc",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/011-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "13fe07c9-b376-4ee8-a6e0-95b361d9c0d4",
+   "startMs": 38219,
+   "narration": "So did any Viking ever actually strap on horns",
+   "startWord": 79,
+   "beatSequence": 11
+  },
+  {
+   "id": "clip_mumoerdrbtk81",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/012-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "898b003a-3deb-4778-846f-26bc4ce3a007",
+   "startMs": 42213,
+   "narration": "before walking into battle?",
+   "startWord": 88,
+   "beatSequence": 12
+  },
+  {
+   "id": "clip_mumoerdrc7w3d",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/013-v1.jpg",
+   "motion": "pan_right",
+   "sceneId": "3529ce81-4617-41f3-9685-ac8a427eae6d",
+   "startMs": 45139,
+   "narration": "Here's the belief almost everyone carries around without question:",
+   "startWord": 92,
+   "beatSequence": 13
+  },
+  {
+   "id": "clip_mumoerdrd11nj",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/014-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "b53a7644-e4cf-49a3-bac7-778f5eb2910b",
+   "startMs": 50317,
+   "narration": "Viking raiders wore horned helmets into combat,",
+   "startWord": 101,
+   "beatSequence": 14
+  },
+  {
+   "id": "clip_mumoerdref9l5",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/015-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "9eb5cdea-f445-45f1-a764-ef898ff78b70",
+   "startMs": 54589,
+   "narration": "the horns curving up from the sides like a bull's.",
+   "startWord": 108,
+   "beatSequence": 15
+  },
+  {
+   "id": "clip_mumoerdrfhc5g",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/016-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "4f9d5bab-7b15-4064-8d6a-12975f8cbd6e",
+   "startMs": 58421,
+   "narration": "It feels obvious.",
+   "startWord": 118,
+   "beatSequence": 16
+  },
+  {
+   "id": "clip_mumoerdrgtlrq",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/017-v1.jpg",
+   "motion": "hold",
+   "sceneId": "12d77377-15ec-422a-ad37-911e805390e7",
+   "startMs": 60360,
+   "narration": "It's on flags, beer labels, football helmets.",
+   "startWord": 121,
+   "beatSequence": 17
+  },
+  {
+   "id": "clip_mumoerdrhh4o1",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/018-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "f31a7e85-6ba7-4fc2-b5da-750ae6dac81b",
+   "startMs": 65004,
+   "narration": "But archaeologists digging",
+   "startWord": 128,
+   "beatSequence": 18
+  },
+  {
+   "id": "clip_mumoerdri7b5j",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/019-v1.jpg",
+   "motion": "pan_right",
+   "sceneId": "9115c3af-af55-4aa8-bc2f-86c329d4cdc0",
+   "startMs": 67012,
+   "narration": "across Scandinavia for over a century have found",
+   "startWord": 131,
+   "beatSequence": 19
+  },
+  {
+   "id": "clip_mumoerdrjczug",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/020-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "2582a360-bf2d-4d04-b7e2-0f1b5b9bcb51",
+   "startMs": 70658,
+   "narration": "remarkably few actual Viking-age helmets at all.",
+   "startWord": 139,
+   "beatSequence": 20
+  },
+  {
+   "id": "clip_mumoerdrkdhmr",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/021-v1.jpg",
+   "motion": "hold",
+   "sceneId": "f4873db5-3847-4666-a4af-c2f86be9ba66",
+   "startMs": 75035,
+   "narration": "Total confirmed helmets from the entire Viking Age,",
+   "startWord": 146,
+   "beatSequence": 21
+  },
+  {
+   "id": "clip_mumoerdrlpa7l",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/022-v1.jpg",
+   "motion": "hold",
+   "sceneId": "2bd8f6e7-05fa-40de-80f7-3d72f07b6225",
+   "startMs": 79633,
+   "narration": "roughly 793 to 1066,",
+   "startWord": 154,
+   "beatSequence": 22
+  },
+  {
+   "id": "clip_mumoerdrmzhlb",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/023-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "1c80a7c1-721f-47c5-a7df-dae0ee7b35d9",
+   "startMs": 83197,
+   "narration": "that survive with enough of the skull intact to study?",
+   "startWord": 158,
+   "beatSequence": 23
+  },
+  {
+   "id": "clip_mumoerdrno9kv",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/024-v1.jpg",
+   "motion": "pull_out",
+   "sceneId": "46fd1e62-35dc-4e7f-824f-f18be3c50721",
+   "startMs": 87644,
+   "narration": "You can count them on one hand.",
+   "startWord": 168,
+   "beatSequence": 24
+  },
+  {
+   "id": "clip_mumoerdroc1fv",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/025-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "ac40747f-01fe-40eb-8920-d6e783a5efce",
+   "startMs": 89699,
+   "narration": "The best-preserved one is the Gjermundbu helmet,",
+   "startWord": 175,
+   "beatSequence": 25
+  },
+  {
+   "id": "clip_mumoerdrp77dn",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/026-v2.jpg",
+   "motion": "push_in",
+   "sceneId": "50601569-cc13-4179-aa80-7a43b2613af6",
+   "startMs": 92868,
+   "narration": "dug out of a burial mound in Norway in 1943,",
+   "startWord": 182,
+   "beatSequence": 26
+  },
+  {
+   "id": "clip_mumoerdrqxilz",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/027-v1.jpg",
+   "motion": "hold",
+   "sceneId": "451b565c-4055-4d34-b89a-397eae2dc2d0",
+   "startMs": 96909,
+   "narration": "dated to around the year 970.",
+   "startWord": 192,
+   "beatSequence": 27
+  },
+  {
+   "id": "clip_mumoerdrr7wno",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/028-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "e16abc32-e799-4a73-a6a0-34f96d53ccfa",
+   "startMs": 100101,
+   "narration": "It has a rounded iron cap,",
+   "startWord": 198,
+   "beatSequence": 28
+  },
+  {
+   "id": "clip_mumoerdrsnnuj",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/029-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "24987bc3-d710-4968-95bb-187e29af2767",
+   "startMs": 102574,
+   "narration": "a spectacled guard curving over the eyes",
+   "startWord": 204,
+   "beatSequence": 29
+  },
+  {
+   "id": "clip_mumoerdrttqsk",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/030-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "d377455f-ef5d-40f7-9bdf-df199f8687bd",
+   "startMs": 105442,
+   "narration": "and nose, and absolutely nothing where horns would attach.",
+   "startWord": 211,
+   "beatSequence": 30
+  },
+  {
+   "id": "clip_mumoerdruoavi",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/031-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "6fceb29a-8781-4524-ae72-368c8e71cfe5",
+   "startMs": 110086,
+   "narration": "No sockets. No rivet holes shaped for anything curved.",
+   "startWord": 220,
+   "beatSequence": 31
+  },
+  {
+   "id": "clip_mumoerdrvjgig",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/032-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "c63c0d69-b64e-4264-8921-65294202fc3b",
+   "startMs": 114265,
+   "narration": "Just a plain iron dome built to deflect a sword,",
+   "startWord": 229,
+   "beatSequence": 32
+  },
+  {
+   "id": "clip_mumoerdrw95mv",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/033-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "b3a84192-f79a-4d83-9cc5-f74ffc400936",
+   "startMs": 118421,
+   "narration": "not to look dramatic.",
+   "startWord": 239,
+   "beatSequence": 33
+  },
+  {
+   "id": "clip_mumoerdrxx5l0",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/034-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "97494d1f-8478-412a-be1a-e7486d1e6505",
+   "startMs": 120325,
+   "narration": "Why trust one helmet?",
+   "startWord": 243,
+   "beatSequence": 34
+  },
+  {
+   "id": "clip_mumoerdryd8gg",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/035-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "b8503fc9-2488-4070-a792-6c7b267eae42",
+   "startMs": 122369,
+   "narration": "Because it isn't alone.",
+   "startWord": 247,
+   "beatSequence": 35
+  },
+  {
+   "id": "clip_mumoerdrzy8lq",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/036-v1.jpg",
+   "motion": "pan_left",
+   "sceneId": "553885be-d1ae-43fc-8254-6c0b1e03c1e8",
+   "startMs": 124517,
+   "narration": "Fragments from Tjele in Denmark",
+   "startWord": 251,
+   "beatSequence": 36
+  },
+  {
+   "id": "clip_mumoerdr102wmi",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/037-v1.jpg",
+   "motion": "pan_right",
+   "sceneId": "4d6f068d-9d49-4d8d-80df-402552b14482",
+   "startMs": 127129,
+   "narration": "and a handful of other sites all show the same story:",
+   "startWord": 256,
+   "beatSequence": 37
+  },
+  {
+   "id": "clip_mumoerdr111h2z",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/038-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "f1e55880-5ab8-49d1-9e78-c3390cef870e",
+   "startMs": 131343,
+   "narration": "plain iron, sometimes mail hanging to protect the neck,",
+   "startWord": 267,
+   "beatSequence": 38
+  },
+  {
+   "id": "clip_mumoerdr12xnvk",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/039-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "e504d18f-1abc-4823-b8a6-de0193cabded",
+   "startMs": 135813,
+   "narration": "occasionally a nose guard.",
+   "startWord": 276,
+   "beatSequence": 39
+  },
+  {
+   "id": "clip_mumoerdr137n1o",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/040-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "52f97c20-57cc-4901-a6f3-35adad7cfbd9",
+   "startMs": 138483,
+   "narration": "Historian Roberta Frank,",
+   "startWord": 280,
+   "beatSequence": 40
+  },
+  {
+   "id": "clip_mumoerdr14svo0",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/041-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "7fb2e19c-5b1c-4cc3-893f-62376ba4ef23",
+   "startMs": 140423,
+   "narration": "who spent years tracing this myth through Old Norse literature,",
+   "startWord": 283,
+   "beatSequence": 41
+  },
+  {
+   "id": "clip_mumoerdr15qk4q",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/042-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "b7153824-6fc1-4bc6-9e6e-5f8be562a5e8",
+   "startMs": 145183,
+   "narration": "found zero contemporary written",
+   "startWord": 293,
+   "beatSequence": 42
+  },
+  {
+   "id": "clip_mumoerdr167g6n",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/043-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "fa9450d8-2eb4-4270-80e7-96dbc3630966",
+   "startMs": 148050,
+   "narration": "descriptions of horned battle helmets either. Not one saga.",
+   "startWord": 297,
+   "beatSequence": 43
+  },
+  {
+   "id": "clip_mumoerdr174ajd",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/044-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "f965fca1-51e6-467a-b93f-af865566de84",
+   "startMs": 153519,
+   "narration": "Not one carving from the era mentions warriors fighting in horns.",
+   "startWord": 306,
+   "beatSequence": 44
+  },
+  {
+   "id": "clip_mumoerdr18uzev",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/045-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "f52e3276-7475-40b7-ba4e-cb8531d423ae",
+   "startMs": 159335,
+   "narration": "So where do actual horned helmets in museums come from,",
+   "startWord": 317,
+   "beatSequence": 45
+  },
+  {
+   "id": "clip_mumoerdr193zrk",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/046-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "0289e5b5-7d85-4324-92cd-f41168406c06",
+   "startMs": 163561,
+   "narration": "if not the Viking Age?",
+   "startWord": 327,
+   "beatSequence": 46
+  },
+  {
+   "id": "clip_mumoerdr1a5sj2",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/047-v1.jpg",
+   "motion": "hold",
+   "sceneId": "915fa42c-63f2-4da0-ac63-6c17d8acc08a",
+   "startMs": 166731,
+   "narration": "Rewind about two thousand years",
+   "startWord": 332,
+   "beatSequence": 47
+  },
+  {
+   "id": "clip_mumoerdr1bw8ur",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/048-v1.jpg",
+   "motion": "pan_left",
+   "sceneId": "e2f58b91-2942-41ca-84e0-dcc5ab6c7699",
+   "startMs": 169204,
+   "narration": "before the first Viking ship ever launched.",
+   "startWord": 337,
+   "beatSequence": 48
+  },
+  {
+   "id": "clip_mumoerdr1cfjj3",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/049-v1.jpg",
+   "motion": "pan_right",
+   "sceneId": "9d22be39-9ee2-4efa-bfd0-f339bce1083d",
+   "startMs": 172861,
+   "narration": "In 1942,",
+   "startWord": 344,
+   "beatSequence": 49
+  },
+  {
+   "id": "clip_mumoerdr1dxlr3",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/050-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "866c196b-cdef-4d33-b415-8fe0e488c37f",
+   "startMs": 174765,
+   "narration": "workers draining a bog near Veksø in Denmark pulled up two bronze helmets,",
+   "startWord": 346,
+   "beatSequence": 50
+  },
+  {
+   "id": "clip_mumoerdr1e7lu7",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/051-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "7ac61d3f-c3ed-43b4-8faa-598d5478330c",
+   "startMs": 180790,
+   "narration": "each fitted with long, gently curving horns tipped with little round discs.",
+   "startWord": 359,
+   "beatSequence": 51
+  },
+  {
+   "id": "clip_mumoerdr1fne4z",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/052-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "87aa3963-d4aa-4b23-98b9-4fce38549afd",
+   "startMs": 187269,
+   "narration": "They're called the Veksø helmets,",
+   "startWord": 371,
+   "beatSequence": 52
+  },
+  {
+   "id": "clip_mumoerdr1gl9e6",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/053-v1.jpg",
+   "motion": "hold",
+   "sceneId": "dfc3bd46-a2e1-48fd-8fa0-b2df34d5caa2",
+   "startMs": 189927,
+   "narration": "and they've been dated to roughly 900 to 1100 BCE,",
+   "startWord": 376,
+   "beatSequence": 53
+  },
+  {
+   "id": "clip_mumoerdr1hna4n",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/054-v1.jpg",
+   "motion": "hold",
+   "sceneId": "f995e506-7179-430a-8cd5-cd0e667c0042",
+   "startMs": 195094,
+   "narration": "the Nordic Bronze Age.",
+   "startWord": 386,
+   "beatSequence": 54
+  },
+  {
+   "id": "clip_mumoerdr1ixdjp",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/055-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "c10ad91f-b52c-47fc-a32b-13a0c6efea6e",
+   "startMs": 197555,
+   "narration": "These weren't armor. The bronze is thin,",
+   "startWord": 390,
+   "beatSequence": 55
+  },
+  {
+   "id": "clip_mumoerdr1jl91k",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/056-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "b9301e3b-1608-4936-9760-6bc077446ee7",
+   "startMs": 201015,
+   "narration": "decorative, almost delicate.",
+   "startWord": 397,
+   "beatSequence": 56
+  },
+  {
+   "id": "clip_mumoerdr1ks6t2",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/057-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "d7faf19f-b83e-4896-958e-cf7b4d8995e1",
+   "startMs": 203824,
+   "narration": "They were likely worn by a priest or a chieftain in a religious ceremony,",
+   "startWord": 400,
+   "beatSequence": 57
+  },
+  {
+   "id": "clip_mumoerdr1ltvi5",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/058-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "6f437909-5fc9-4761-8855-dc00779599f5",
+   "startMs": 209165,
+   "narration": "maybe alongside sun-worship rituals,",
+   "startWord": 414,
+   "beatSequence": 58
+  },
+  {
+   "id": "clip_mumoerdr1m0uvn",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/059-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "cb747758-1b8b-43a1-9079-c6bff368996d",
+   "startMs": 212543,
+   "narration": "definitely not swung into a shield wall.",
+   "startWord": 418,
+   "beatSequence": 59
+  },
+  {
+   "id": "clip_mumoerdr1nyyra",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/060-v1.jpg",
+   "motion": "hold",
+   "sceneId": "f289288a-81dc-47e7-a47e-0d7bb7d8429c",
+   "startMs": 215910,
+   "narration": "That's over eighteen hundred years separating these horns",
+   "startWord": 425,
+   "beatSequence": 60
+  },
+  {
+   "id": "clip_mumoerdr1onou0",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/061-v1.jpg",
+   "motion": "hold",
+   "sceneId": "49e8d262-9652-44ef-a9e5-acddda11b824",
+   "startMs": 219869,
+   "narration": "from the first recorded Viking raid on Lindisfarne in 793.",
+   "startWord": 433,
+   "beatSequence": 61
+  },
+  {
+   "id": "clip_mumoerdr1plww3",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/062-v1.jpg",
+   "motion": "hold",
+   "sceneId": "9cdfdbf0-16fd-4d26-9d95-8d28b2edbd22",
+   "startMs": 225639,
+   "narration": "Would you mistake your great-great-great-grandparent's wedding",
+   "startWord": 443,
+   "beatSequence": 62
+  },
+  {
+   "id": "clip_mumoerdr1qwsqb",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/063-v1.jpg",
+   "motion": "hold",
+   "sceneId": "d750e2b3-b9cb-4f08-b2d3-d4108c5ffed2",
+   "startMs": 229436,
+   "narration": "china for something you use in a bar fight?",
+   "startWord": 449,
+   "beatSequence": 63
+  },
+  {
+   "id": "clip_mumoerdr1r05t6",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/064-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "60984d74-88f9-43aa-932b-0f3875a97756",
+   "startMs": 233325,
+   "narration": "That's roughly the gap we're talking about.",
+   "startWord": 458,
+   "beatSequence": 64
+  },
+  {
+   "id": "clip_mumoerdr1sj206",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/065-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "012b5b47-d406-40bd-8ea7-b459794e26d4",
+   "startMs": 236413,
+   "narration": "But 19th-century antiquarians didn't always draw",
+   "startWord": 465,
+   "beatSequence": 65
+  },
+  {
+   "id": "clip_mumoerdr1tdmnd",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/066-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "9837460c-b202-4f0e-8e2a-79ae48142f64",
+   "startMs": 240140,
+   "narration": "that line carefully.",
+   "startWord": 471,
+   "beatSequence": 66
+  },
+  {
+   "id": "clip_mumoerdr1utqes",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/067-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "2266e5d6-6417-4b01-9be7-a5f256c9532a",
+   "startMs": 242253,
+   "narration": "Early collectors and popular illustrators,",
+   "startWord": 474,
+   "beatSequence": 67
+  },
+  {
+   "id": "clip_mumoerdr1v6ywz",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/068-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "8bfdad4c-6baa-4854-bef2-37a92eb35af1",
+   "startMs": 245748,
+   "narration": "digging through old hoards without modern dating tools, lumped anything old",
+   "startWord": 479,
+   "beatSequence": 68
+  },
+  {
+   "id": "clip_mumoerdr1wm660",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/069-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "87018b5c-29c8-43a0-bad2-8506b410d1a4",
+   "startMs": 251959,
+   "narration": "and Nordic into one romantic bucket labeled ancient Norse warrior.",
+   "startWord": 490,
+   "beatSequence": 69
+  },
+  {
+   "id": "clip_mumoerdr1xhpu6",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/070-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "deb51800-38c2-40f3-96ff-d5ba972492a4",
+   "startMs": 258112,
+   "narration": "A ceremonial priest's headdress from the Bronze Age",
+   "startWord": 500,
+   "beatSequence": 70
+  },
+  {
+   "id": "clip_mumoerdr1yqd76",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/071-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "96a7f6ff-1f58-4a80-a768-803ad02f30f9",
+   "startMs": 262001,
+   "narration": "and a Viking raider a thousand years later got flattened",
+   "startWord": 508,
+   "beatSequence": 71
+  },
+  {
+   "id": "clip_mumoerdr1z87qk",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/072-v1.jpg",
+   "motion": "hold",
+   "sceneId": "2f25aa18-819c-49e2-8841-f0bc45f56b0a",
+   "startMs": 266890,
+   "narration": "into the same imagined figure.",
+   "startWord": 518,
+   "beatSequence": 72
+  },
+  {
+   "id": "clip_mumoerdr20xorg",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/073-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "bf3cf214-40e9-4938-a850-88ca881ed136",
+   "startMs": 269815,
+   "narration": "That mistake didn't stay buried in a museum basement.",
+   "startWord": 523,
+   "beatSequence": 73
+  },
+  {
+   "id": "clip_mumoerdr210anm",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/074-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "29af88e9-3047-4562-946e-ca061c9d9ce6",
+   "startMs": 273983,
+   "narration": "It walked straight onto a stage.",
+   "startWord": 532,
+   "beatSequence": 74
+  },
+  {
+   "id": "clip_mumoerdr22b6xe",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/075-v1.jpg",
+   "motion": "pan_right",
+   "sceneId": "91f3aab5-080f-45ba-af9d-0a370d1d8c57",
+   "startMs": 277350,
+   "narration": "In 1876, composer Richard Wagner's opera cycle Der Ring des",
+   "startWord": 538,
+   "beatSequence": 75
+  },
+  {
+   "id": "clip_mumoerdr23wfra",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/076-v1.jpg",
+   "motion": "pan_left",
+   "sceneId": "b2960156-d796-4ba4-9e72-3abc742f15d3",
+   "startMs": 283364,
+   "narration": "Nibelungen premiered in Bayreuth, Germany.",
+   "startWord": 548,
+   "beatSequence": 76
+  },
+  {
+   "id": "clip_mumoerdr24ptnj",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/077-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "45553b02-7f68-41f1-9724-fd4f233ecb91",
+   "startMs": 287741,
+   "narration": "Costume designer Carl Emil Doepler dressed the Norse gods",
+   "startWord": 553,
+   "beatSequence": 77
+  },
+  {
+   "id": "clip_mumoerdr25aaki",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/078-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "511497a8-340d-487e-b6de-5b1686ee2f2c",
+   "startMs": 292548,
+   "narration": "and warriors in flowing furs, winged helmets, and yes,",
+   "startWord": 562,
+   "beatSequence": 78
+  },
+  {
+   "id": "clip_mumoerdr261aiv",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/079-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "3c3bbbb0-20be-457f-8563-fd81f1e44c06",
+   "startMs": 297087,
+   "narration": "dramatic curved horns.",
+   "startWord": 571,
+   "beatSequence": 79
+  },
+  {
+   "id": "clip_mumoerdr27hs2h",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/080-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "84bf78e9-bdfb-4231-b3e2-e5af674afb7c",
+   "startMs": 299560,
+   "narration": "Wagner wanted mythic, larger-than-life figures towering over an audience",
+   "startWord": 574,
+   "beatSequence": 80
+  },
+  {
+   "id": "clip_mumoerdr28j6az",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/081-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "1b6cef00-5179-4c8a-be46-5e5743f663d3",
+   "startMs": 304819,
+   "narration": "from the back row of a theater.",
+   "startWord": 583,
+   "beatSequence": 81
+  },
+  {
+   "id": "clip_mumoerdr29b1nz",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/082-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "10b66e06-2715-4ce1-be53-4061ac11fec4",
+   "startMs": 307513,
+   "narration": "Historical accuracy wasn't the assignment.",
+   "startWord": 590,
+   "beatSequence": 82
+  },
+  {
+   "id": "clip_mumoerdr2aq9zy",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/083-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "669a9ad9-8a36-4471-be49-98e01121102f",
+   "startMs": 311030,
+   "narration": "Spectacle was. Why did that image spread so fast?",
+   "startWord": 595,
+   "beatSequence": 83
+  },
+  {
+   "id": "clip_mumoerdr2bdzb2",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/084-v1.jpg",
+   "motion": "pan_left",
+   "sceneId": "011da92c-da0b-4dec-aa35-4458fc8d589a",
+   "startMs": 315674,
+   "narration": "Because it landed inside the Romantic movement,",
+   "startWord": 604,
+   "beatSequence": 84
+  },
+  {
+   "id": "clip_mumoerdr2c0yei",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/085-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "10df0f9f-ec71-4da2-9bbc-fd6e169ea04c",
+   "startMs": 318786,
+   "narration": "when artists across Europe were painting Norse myth as noble and untamed.",
+   "startWord": 611,
+   "beatSequence": 85
+  },
+  {
+   "id": "clip_mumoerdr2dca51",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/086-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "6150ab96-b5c2-4d7a-853e-3f371408f1f9",
+   "startMs": 324579,
+   "narration": "Swedish painter Gustav Malmstrom",
+   "startWord": 623,
+   "beatSequence": 86
+  },
+  {
+   "id": "clip_mumoerdr2extkh",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/087-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "a52637ec-5328-4475-9daf-ed2d478e1d69",
+   "startMs": 327168,
+   "narration": "and others had already sketched horned figures decades earlier,",
+   "startWord": 627,
+   "beatSequence": 87
+  },
+  {
+   "id": "clip_mumoerdr2fd2h3",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/088-v1.jpg",
+   "motion": "pan_left",
+   "sceneId": "ba8fb3b5-1a63-44a6-b379-df132c7b6b7e",
+   "startMs": 331707,
+   "narration": "but Wagner's production put the look in front of thousands of paying theatergoers at once,",
+   "startWord": 636,
+   "beatSequence": 88
+  },
+  {
+   "id": "clip_mumoerdr2g0204",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/089-v1.jpg",
+   "motion": "pan_right",
+   "sceneId": "5c9db4a3-fffe-4346-b96e-b7febb8ac734",
+   "startMs": 337454,
+   "narration": "night after night.",
+   "startWord": 651,
+   "beatSequence": 89
+  },
+  {
+   "id": "clip_mumoerdr2hxjmg",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/090-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "0c13d317-d0ea-4745-9ca7-543ed6d01531",
+   "startMs": 339579,
+   "narration": "A single stage costume became the visual",
+   "startWord": 654,
+   "beatSequence": 90
+  },
+  {
+   "id": "clip_mumoerdr2ibu3b",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/091-v1.jpg",
+   "motion": "pan_right",
+   "sceneId": "b867a0db-fa34-48c4-8998-cded4e8c9997",
+   "startMs": 342783,
+   "narration": "template every illustrator copied afterward,",
+   "startWord": 661,
+   "beatSequence": 91
+  },
+  {
+   "id": "clip_mumoerdr2j212a",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/092-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "1d13638a-6b7c-4950-a081-416dd9423bd7",
+   "startMs": 346347,
+   "narration": "because it was already proven to work on an audience.",
+   "startWord": 666,
+   "beatSequence": 92
+  },
+  {
+   "id": "clip_mumoerdr2kqt6l",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/093-v1.jpg",
+   "motion": "pan_right",
+   "sceneId": "1257d278-3306-4af0-8de3-d6cb37b22ad9",
+   "startMs": 350051,
+   "narration": "From there it never stopped moving.",
+   "startWord": 676,
+   "beatSequence": 93
+  },
+  {
+   "id": "clip_mumoerdr2lle87",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/094-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "820c9e54-0a52-4a48-a87a-de8e161af398",
+   "startMs": 353360,
+   "narration": "By the early 1900s,",
+   "startWord": 682,
+   "beatSequence": 94
+  },
+  {
+   "id": "clip_mumoerdr2mr8f5",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/095-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "b4ea5cd5-850b-4cb8-8de4-2116c41cf355",
+   "startMs": 355275,
+   "narration": "horned helmets showed up on tourist postcards sold in Norway itself.",
+   "startWord": 686,
+   "beatSequence": 95
+  },
+  {
+   "id": "clip_mumoerdr2n87g6",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/096-v1.jpg",
+   "motion": "hold",
+   "sceneId": "987e73f3-6e28-4a20-be24-ae5a27a9e805",
+   "startMs": 360918,
+   "narration": "In 1939,",
+   "startWord": 697,
+   "beatSequence": 96
+  },
+  {
+   "id": "clip_mumoerdr2oks9c",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/097-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "81083fc0-2186-4f26-8509-8a4a810b4ade",
+   "startMs": 362822,
+   "narration": "cartoonist Alex Raymond drew the horned warrior",
+   "startWord": 699,
+   "beatSequence": 97
+  },
+  {
+   "id": "clip_mumoerdr2pn5w4",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/098-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "22d0f423-8121-4845-8fd1-2b6ba1e7dcee",
+   "startMs": 366699,
+   "narration": "in his Flash Gordon comics.",
+   "startWord": 706,
+   "beatSequence": 98
+  },
+  {
+   "id": "clip_mumoerdr2q00fk",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/099-v1.jpg",
+   "motion": "hold",
+   "sceneId": "bfb2b2ed-1eff-4c86-9b28-887d506bfd73",
+   "startMs": 369556,
+   "narration": "In 1948, the Minnesota Vikings didn't exist yet,",
+   "startWord": 711,
+   "beatSequence": 99
+  },
+  {
+   "id": "clip_mumoerdr2rxvp2",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/100-v1.jpg",
+   "motion": "hold",
+   "sceneId": "872f8c07-4d95-434f-896a-b18fd164810d",
+   "startMs": 374037,
+   "narration": "but when the NFL team formed in 1961,",
+   "startWord": 719,
+   "beatSequence": 100
+  },
+  {
+   "id": "clip_mumoerdr2se9s9",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/101-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "d2e92fbb-884e-4d51-95cf-608e8c98f8dc",
+   "startMs": 377868,
+   "narration": "they built their whole identity around that same horned image.",
+   "startWord": 727,
+   "beatSequence": 101
+  },
+  {
+   "id": "clip_mumoerdr2t55ux",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/102-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "648e38b1-7a67-43d0-8f20-6119aa3f2f5b",
+   "startMs": 383012,
+   "narration": "Have you ever questioned why a football team",
+   "startWord": 737,
+   "beatSequence": 102
+  },
+  {
+   "id": "clip_mumoerdr2u8g88",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/103-v1.jpg",
+   "motion": "hold",
+   "sceneId": "7e18149f-701b-4ce6-806c-0ae50c22829a",
+   "startMs": 385450,
+   "narration": "from Minnesota wears Bronze Age Danish ceremonial gear?",
+   "startWord": 745,
+   "beatSequence": 103
+  },
+  {
+   "id": "clip_mumoerdr2vglt9",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/104-v1.jpg",
+   "motion": "pan_left",
+   "sceneId": "7baee496-1690-4274-a0ff-48ab594ff9a4",
+   "startMs": 390395,
+   "narration": "Most people never do.",
+   "startWord": 753,
+   "beatSequence": 104
+  },
+  {
+   "id": "clip_mumoerdr2wfzm6",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/105-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "d8a4a38d-de04-43e5-b6e8-87839a7753aa",
+   "startMs": 392287,
+   "narration": "But can we really say never, with total certainty?",
+   "startWord": 757,
+   "beatSequence": 105
+  },
+  {
+   "id": "clip_mumoerdr2xf8z7",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/106-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "2a4abfd5-7527-42dd-9f27-d16c0512087a",
+   "startMs": 396571,
+   "narration": "Here's the honest complication.",
+   "startWord": 766,
+   "beatSequence": 106
+  },
+  {
+   "id": "clip_mumoerdr2yjaha",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/107-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "d20bae5b-9c4b-4167-91be-20ab8427a321",
+   "startMs": 398963,
+   "narration": "Most Viking-age helmets we'd expect to find were",
+   "startWord": 770,
+   "beatSequence": 107
+  },
+  {
+   "id": "clip_mumoerdr2z0diq",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/108-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "5dad2b32-9303-49d0-9ca8-da0659a1fa9c",
+   "startMs": 402156,
+   "narration": "probably never made of iron at all.",
+   "startWord": 778,
+   "beatSequence": 108
+  },
+  {
+   "id": "clip_mumoerdr30jboh",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/109-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "2f5c9877-5bb0-4d95-95f3-c36dbd33abbd",
+   "startMs": 405813,
+   "narration": "Leather, boiled and hardened,",
+   "startWord": 785,
+   "beatSequence": 109
+  },
+  {
+   "id": "clip_mumoerdr314z9w",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/110-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "7fe1264a-3ccd-4f94-b799-f2e475296f48",
+   "startMs": 408460,
+   "narration": "wood, and antler don't survive well underground for a thousand years,",
+   "startWord": 789,
+   "beatSequence": 110
+  },
+  {
+   "id": "clip_mumoerdr32aftx",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/111-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "f78576a6-34cc-43d1-9200-987cf91142af",
+   "startMs": 414160,
+   "narration": "especially in acidic Scandinavian soil.",
+   "startWord": 800,
+   "beatSequence": 111
+  },
+  {
+   "id": "clip_mumoerdr3346wx",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/112-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "f3a8b1a7-0a19-44e3-80b2-49fe9e69ef04",
+   "startMs": 417968,
+   "narration": "If a helmet had small horns made from antler lashed on with leather cord,",
+   "startWord": 805,
+   "beatSequence": 112
+  },
+  {
+   "id": "clip_mumoerdr348t0p",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/113-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "b55b8128-e313-4fa9-8907-f133dfa2fd1e",
+   "startMs": 423750,
+   "narration": "that cord and antler could rot into nothing within a few centuries,",
+   "startWord": 819,
+   "beatSequence": 113
+  },
+  {
+   "id": "clip_mumoerdr35awhn",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/114-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "1448410e-aede-446d-b7cd-a7ad0df7ea25",
+   "startMs": 428418,
+   "narration": "leaving no rivet holes, no discoloration, no trace at all.",
+   "startWord": 831,
+   "beatSequence": 114
+  },
+  {
+   "id": "clip_mumoerdr36koyd",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/115-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "5f370161-081f-4408-b488-1059482a13ba",
+   "startMs": 434084,
+   "narration": "So when archaeologists say no evidence,",
+   "startWord": 841,
+   "beatSequence": 115
+  },
+  {
+   "id": "clip_mumoerdr37i72x",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/116-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "5ad59abc-8db6-457f-a64d-13bf7ccbfbd0",
+   "startMs": 437137,
+   "narration": "they mean no surviving evidence.",
+   "startWord": 847,
+   "beatSequence": 116
+  },
+  {
+   "id": "clip_mumoerdr3847d7",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/117-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "f1a9f5d1-790d-4f04-96d8-5fc44b961ef3",
+   "startMs": 440504,
+   "narration": "Absence isn't automatically proof of absence.",
+   "startWord": 852,
+   "beatSequence": 117
+  },
+  {
+   "id": "clip_mumoerdr39vzpg",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/118-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "5586a2a2-a79a-4e33-a8a5-46eab81275fa",
+   "startMs": 444695,
+   "narration": "It just means if it happened, it happened in a material",
+   "startWord": 858,
+   "beatSequence": 118
+  },
+  {
+   "id": "clip_mumoerdr3a4e4z",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/119-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "9404371c-21d7-44cb-8c99-22f63ae8664c",
+   "startMs": 448944,
+   "narration": "that time was never going to let us keep.",
+   "startWord": 869,
+   "beatSequence": 119
+  },
+  {
+   "id": "clip_mumoerdr3bhxsr",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/120-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "d66e6699-ceb4-4a45-ab99-d40fd5d3ca29",
+   "startMs": 451940,
+   "narration": "So go back to that charge down the hillside,",
+   "startWord": 878,
+   "beatSequence": 120
+  },
+  {
+   "id": "clip_mumoerdr3cbcgk",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/121-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "023fd341-5463-48c9-afcc-88904e0db3e3",
+   "startMs": 455550,
+   "narration": "the helmet with two long curved horns catching the firelight.",
+   "startWord": 887,
+   "beatSequence": 121
+  },
+  {
+   "id": "clip_mumoerdr3d2koq",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/122-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "397c3850-2e3c-4d04-bbef-7c403fe5d0cd",
+   "startMs": 460717,
+   "narration": "That image didn't come from a Viking battlefield at all.",
+   "startWord": 897,
+   "beatSequence": 122
+  },
+  {
+   "id": "clip_mumoerdr3emy3p",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/123-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "66eef8e9-cacd-470b-9640-733cfd0a3a87",
+   "startMs": 464885,
+   "narration": "It came from a Bronze Age priest's ritual,",
+   "startWord": 907,
+   "beatSequence": 123
+  },
+  {
+   "id": "clip_mumoerdr3fyxtg",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/124-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "0ab3833d-ea67-486c-95c9-1aa417d00cd9",
+   "startMs": 468472,
+   "narration": "borrowed by a German opera designer in 1876,",
+   "startWord": 915,
+   "beatSequence": 124
+  },
+  {
+   "id": "clip_mumoerdr3gd1f1",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/125-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "1636a268-c94c-428b-87a0-d43e50c1774a",
+   "startMs": 473081,
+   "narration": "and sold to the entire world ever since.",
+   "startWord": 923,
+   "beatSequence": 125
+  },
+  {
+   "id": "clip_mumoerdr3hkw9p",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/126-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "23e0e4df-b772-4318-8c19-d9051261e036",
+   "startMs": 477168,
+   "narration": "Wagner's costume department gave you a myth so good, so visually perfect,",
+   "startWord": 931,
+   "beatSequence": 126
+  },
+  {
+   "id": "clip_mumoerdr3iov7k",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/127-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "42cbc677-cdd7-4d55-b8bc-2aa470951966",
+   "startMs": 483438,
+   "narration": "that even a total absence of battle evidence couldn't kill it.",
+   "startWord": 943,
+   "beatSequence": 127
+  },
+  {
+   "id": "clip_mumoerdr3j8xlx",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/128-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "7d8e022e-9624-4af8-b00f-0ca7845abf25",
+   "startMs": 488407,
+   "narration": "Somewhere in a Norwegian museum, a plain iron dome",
+   "startWord": 954,
+   "beatSequence": 128
+  },
+  {
+   "id": "clip_mumoerdr3kvr55",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/129-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "54c1248f-c213-465b-be21-567effd3dda6",
+   "startMs": 493039,
+   "narration": "with a simple eye guard sits under glass,",
+   "startWord": 963,
+   "beatSequence": 129
+  },
+  {
+   "id": "clip_mumoerdr3l1olv",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/130-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "31bb5f2c-19cb-43b3-98c4-917b31c5c407",
+   "startMs": 496301,
+   "narration": "unglamorous, undramatic, and true.",
+   "startWord": 971,
+   "beatSequence": 130
+  },
+  {
+   "id": "clip_mumoerdr3mx2hm",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/131-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "58e1fc69-538c-4de8-bcf9-d6620ca41f85",
+   "startMs": 499947,
+   "narration": "Nobody buys a postcard of it. Nobody puts it on a football helmet.",
+   "startWord": 975,
+   "beatSequence": 131
+  },
+  {
+   "id": "clip_mumoerdr3nyqkf",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/132-v1.jpg",
+   "motion": "hold",
+   "sceneId": "f9943443-e5d6-4013-8bac-856000993ba0",
+   "startMs": 504300,
+   "narration": "Real history is rarely as loud as the myth built on top of it.",
+   "startWord": 988,
+   "beatSequence": 132
+  },
+  {
+   "id": "clip_mumoerdr3o19be",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/133-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "c34a6e96-b941-403e-983f-154c9a93ffb0",
+   "startMs": 509002,
+   "narration": "Next time you see those curving horns on a lunchbox or a mascot,",
+   "startWord": 1002,
+   "beatSequence": 133
+  },
+  {
+   "id": "clip_mumoerdr3pwmz5",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/134-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "778a8b43-6058-4528-8cbb-09fca327b89c",
+   "startMs": 513878,
+   "narration": "you're not looking at Norse memory.",
+   "startWord": 1015,
+   "beatSequence": 134
+  },
+  {
+   "id": "clip_mumoerdr3qai3u",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/135-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "d546a79e-f8d5-4d98-a904-593c6f68a5c6",
+   "startMs": 516282,
+   "narration": "You're looking at a nineteenth-century costume designer's best sales pitch,",
+   "startWord": 1021,
+   "beatSequence": 135
+  },
+  {
+   "id": "clip_mumoerdr3rg2hb",
+   "image": "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/long-form/scenes/f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/136-v1.jpg",
+   "motion": "push_in",
+   "sceneId": "2d6e07ab-a650-4b1d-96ab-5144a1f936e9",
+   "startMs": 520879,
+   "narration": "one that's still working on you today.",
+   "startWord": 1031,
+   "beatSequence": 136
+  }
+ ],
+ "music": {
+  "url": null,
+  "duck": true,
+  "name": null,
+  "volume": 0.35,
+  "trackId": null
+ },
+ "texts": [
+  {
+   "x": 960,
+   "y": 181,
+   "id": "txt_mumoerdr3sd5to",
+   "text": "793–1066",
+   "endMs": 83197,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 79633
+  },
+  {
+   "x": 961,
+   "y": 179,
+   "id": "txt_mumoerds3teqov",
+   "text": "NORWAY 1943",
+   "endMs": 96909,
+   "scale": 153,
+   "style": "HEADLINE",
+   "startMs": 92868
+  },
+  {
+   "x": 961,
+   "y": 181,
+   "id": "txt_mumoerds3u5gdc",
+   "text": "C. 970",
+   "endMs": 100101,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 96909
+  },
+  {
+   "x": 960,
+   "y": 181,
+   "id": "txt_mumoerds3vtkw4",
+   "text": "TJELE + OTHER SITES",
+   "endMs": 127129,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 124517
+  },
+  {
+   "x": 961,
+   "y": 181,
+   "id": "txt_mumoerds3w086p",
+   "text": "ZERO",
+   "endMs": 148050,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 145183
+  },
+  {
+   "x": 961,
+   "y": 181,
+   "id": "txt_mumoerds3xf6dw",
+   "text": "1942",
+   "endMs": 174765,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 172861
+  },
+  {
+   "x": 960,
+   "y": 181,
+   "id": "txt_mumoerds3ypo0d",
+   "text": "THE VEKSØ HELMETS",
+   "endMs": 189927,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 187269
+  },
+  {
+   "x": 960,
+   "y": 181,
+   "id": "txt_mumoerds3zwfc9",
+   "text": "900–1100 BCE",
+   "endMs": 195094,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 189927
+  },
+  {
+   "x": 960,
+   "y": 181,
+   "id": "txt_mumoerds40w3uu",
+   "text": "1,800+ YEARS APART",
+   "endMs": 219869,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 215910
+  },
+  {
+   "x": 960,
+   "y": 181,
+   "id": "txt_mumoerds41s53r",
+   "text": "LINDISFARNE, 793",
+   "endMs": 225639,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 219869
+  },
+  {
+   "x": 961,
+   "y": 180,
+   "id": "txt_mumoerds42ufhm",
+   "text": "ANCIENT NORSE WARRIOR",
+   "endMs": 258112,
+   "scale": 124,
+   "style": "HEADLINE",
+   "startMs": 251959
+  },
+  {
+   "x": 961,
+   "y": 181,
+   "id": "txt_mumoerds43vvuu",
+   "text": "DER RING DES NIBELUNGEN, 1876",
+   "endMs": 283364,
+   "scale": 102,
+   "style": "HEADLINE",
+   "startMs": 277350
+  },
+  {
+   "x": 960,
+   "y": 181,
+   "id": "txt_mumoerds44f8rb",
+   "text": "DECADES EARLIER",
+   "endMs": 331707,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 327168
+  },
+  {
+   "x": 961,
+   "y": 181,
+   "id": "txt_mumoerds454zmi",
+   "text": "EARLY 1900S",
+   "endMs": 355275,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 353360
+  },
+  {
+   "x": 961,
+   "y": 181,
+   "id": "txt_mumoerds46cj4q",
+   "text": "1948",
+   "endMs": 374037,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 369556
+  },
+  {
+   "x": 960,
+   "y": 181,
+   "id": "txt_mumoerds47383r",
+   "text": "NOT VIKING",
+   "endMs": 464885,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 460717
+  },
+  {
+   "x": 961,
+   "y": 181,
+   "id": "txt_mumoerds489khq",
+   "text": "BRONZE AGE",
+   "endMs": 468472,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 464885
+  },
+  {
+   "x": 961,
+   "y": 181,
+   "id": "txt_mumoerds49s357",
+   "text": "1876",
+   "endMs": 473081,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 468472
+  },
+  {
+   "x": 961,
+   "y": 181,
+   "id": "txt_mumoerds4abur6",
+   "text": "NORWAY",
+   "endMs": 493039,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 488407
+  },
+  {
+   "x": 961,
+   "y": 181,
+   "id": "txt_mumoerds4b89hs",
+   "text": "NO POSTCARDS. NO MERCH.",
+   "endMs": 504300,
+   "scale": 121,
+   "style": "HEADLINE",
+   "startMs": 499947
+  },
+  {
+   "x": 961,
+   "y": 181,
+   "id": "txt_mumoerds4cd0xf",
+   "text": "NORSE MEMORY",
+   "endMs": 516282,
+   "scale": 154,
+   "style": "HEADLINE",
+   "startMs": 513878
+  },
+  {
+   "x": 960,
+   "y": 180,
+   "id": "txt_mumof0qr1sstb",
+   "text": "YOUR HEADLINE",
+   "endMs": 33000,
+   "scale": 150,
+   "style": "HEADLINE",
+   "startMs": 30000
+  },
+  {
+   "x": 960,
+   "y": 190,
+   "id": "txt_mumof1pw2cwsf",
+   "text": "300,000 YEARS",
+   "endMs": 37000,
+   "label": {
+    "y": 388,
+    "text": "YEARS",
+    "scale": 92
+   },
+   "scale": 230,
+   "style": "BIG_STAT",
+   "startMs": 34000
+  },
+  {
+   "x": 960,
+   "y": 180,
+   "id": "txt_mumof2ns35tn2",
+   "text": "BUT WHY?",
+   "endMs": 41000,
+   "scale": 150,
+   "style": "QUESTION",
+   "startMs": 38000
+  },
+  {
+   "x": 600,
+   "y": 300,
+   "id": "txt_mumof3ll4d94s",
+   "text": "LOOK HERE",
+   "arrow": {
+    "x1": 740,
+    "x2": 960,
+    "y1": 340,
+    "y2": 540,
+    "width": 10
+   },
+   "endMs": 45000,
+   "scale": 84,
+   "style": "CALLOUT",
+   "startMs": 42000
+  }
+ ],
+ "width": 1920,
+ "height": 1080,
+ "version": "STICKMAN_EDIT_V1",
+ "captions": {
+  "edits": {},
+  "style": "highlight",
+  "enabled": true
+ },
+ "transition": {
+  "ms": 200,
+  "kind": "cut"
+ }
+}

@@ -49,6 +49,9 @@ export type PostProcessResult = {
   original: { url: string };
   upscaled: { url: string; cost: number | null; latencyMs: number; model: string; factor: number } | null;
   final: { bytes: Uint8Array; width: number; height: number; fit: ReturnType<typeof coverFit> };
+  // Phase 5c: the full-res upscaled source (e.g. 2752x1536), KEPT — the 1440p
+  // master crops from it; 5a/5b only kept the 1920x1080 downscale.
+  master: { bytes: Uint8Array } | null;
 };
 
 // The standard step: optional upscale (per tier), then exact 1920x1080.
@@ -62,6 +65,7 @@ export async function postProcessSceneImage(args: { originalUrl: string; tier: S
     upscaled = { url: r.imageURL, cost: r.cost, latencyMs: r.latencyMs, model: up.model, factor: up.factor };
     sourceUrl = r.imageURL;
   }
-  const out = await toTarget(await args.fetchBytes(sourceUrl), config.target, config.jpegQuality);
-  return { original: { url: args.originalUrl }, upscaled, final: { bytes: out.bytes, width: config.target.width, height: config.target.height, fit: out.fit } };
+  const sourceBytes = await args.fetchBytes(sourceUrl);
+  const out = await toTarget(sourceBytes, config.target, config.jpegQuality);
+  return { original: { url: args.originalUrl }, upscaled, final: { bytes: out.bytes, width: config.target.width, height: config.target.height, fit: out.fit }, master: upscaled ? { bytes: sourceBytes } : null };
 }

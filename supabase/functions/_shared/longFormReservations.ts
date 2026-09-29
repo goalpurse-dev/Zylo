@@ -43,6 +43,18 @@ export async function releaseReservationIfActive(
 ): Promise<ReservationOutcome> {
   const active = await findActiveReservation(admin, projectId);
   if (!active) return { found: false };
+  // Phase 6a: while a Stickman autopilot is running, a stage failure is NOT
+  // terminal — the autopilot re-runs it from its checkpoint (the 6a check
+  // saw a draft failure release 366 credits 2 s before the retry succeeded).
+  // Only deleting the project releases then; a finally-failed autopilot keeps
+  // the reservation for its free Retry.
+  if (reason !== "project_deleted") {
+    const { data: p } = await admin.from("long_form_projects").select("autopilot").eq("id", projectId).maybeSingle();
+    if ((p as any)?.autopilot?.status === "running" || (p as any)?.autopilot?.status === "failed") {
+      await logEvent?.("longFormReservations", "info", "release_deferred_autopilot", { projectId, reservationId: active.id, reason });
+      return { found: true, ok: true, reservation: { deferred: true } };
+    }
+  }
   const { data, error } = await admin.rpc("release_long_form_reservation", {
     p_reservation_id: active.id,
     p_user_id: active.user_id,
@@ -56,12 +68,10 @@ export async function releaseReservationIfActive(
 }
 
 // Call at the point a project's paid work FINISHES — refunds reserved -
-// committed, keeping whatever was genuinely spent. "Finishes" today means
-// the last real stage in the currently-reachable pipeline (Narration ready)
-// — see NARRATION_IS_CURRENTLY_THE_LAST_REAL_STAGE below. Once a real
-// "video complete" status exists (Visuals/Edit/Render are built — see the
-// backend audit's Part 2, T8), settle from THAT status instead of
-// Narration's, without needing to change anything in this file.
+// committed, keeping whatever was genuinely spent. Phase 5b: "finishes" is
+// the final render completing (the video exists) — see
+// RENDER_IS_THE_LAST_REAL_STAGE and renderBillingDecision below; narration
+// no longer settles.
 export async function settleReservationIfActive(
   admin: SupabaseClient,
   projectId: string,
@@ -82,6 +92,44 @@ export async function settleReservationIfActive(
   return { found: true, ok: true, reservation: data };
 }
 
+// Phase 6c safety rule: with the settle moved to render (LONG_FORM_SETTLE_AT_RENDER),
+// a project that is abandoned before rendering would hold its credits forever.
+// An active reservation with no activity for RESERVATION_IDLE_SETTLE_DAYS is
+// auto-settled by the cron (keeps what was spent, refunds the rest). Deleting
+// a project still releases it (delete-long-form-project, "project_deleted").
+export const RESERVATION_IDLE_SETTLE_DAYS = 7;
+export function lastActivityAt(times: (string | null | undefined)[]): string | null {
+  const ms = times.map((t) => (t ? Date.parse(t) : NaN)).filter(Number.isFinite);
+  return ms.length ? new Date(Math.max(...ms)).toISOString() : null;
+}
+export function isReservationIdle(lastActivity: string | null, now: string, days = RESERVATION_IDLE_SETTLE_DAYS): boolean {
+  if (!lastActivity) return false;
+  return Date.parse(now) - Date.parse(lastActivity) >= days * 86_400_000;
+}
+
+// Cron: settle every active reservation whose project has been idle for 7 days.
+// Activity = the newest of: reservation created, project updated, autopilot
+// heartbeat, any cost-ledger row. A running autopilot is never idle.
+export async function settleIdleReservations(
+  admin: SupabaseClient,
+  now = new Date().toISOString(),
+  logEvent?: (source: string, level: string, event: string, data: Record<string, unknown>) => Promise<void>,
+): Promise<{ checked: number; settled: string[] }> {
+  const cutoff = new Date(Date.parse(now) - RESERVATION_IDLE_SETTLE_DAYS * 86_400_000).toISOString();
+  const { data: rows } = await admin.from("long_form_project_reservations").select("id, project_id, created_at").eq("status", "reserved").lt("created_at", cutoff).limit(50);
+  const settled: string[] = [];
+  for (const r of rows ?? []) {
+    const { data: p } = await admin.from("long_form_projects").select("updated_at, autopilot").eq("id", (r as any).project_id).maybeSingle();
+    if ((p as any)?.autopilot?.status === "running") continue;
+    const { data: ledger } = await admin.from("long_form_cost_ledger").select("created_at").eq("project_id", (r as any).project_id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    const last = lastActivityAt([(r as any).created_at, (p as any)?.updated_at, (p as any)?.autopilot?.heartbeatAt, (ledger as any)?.created_at]);
+    if (!isReservationIdle(last, now)) continue;
+    const out = await settleReservationIfActive(admin, (r as any).project_id, "idle_7_days", logEvent);
+    if (out.found && out.ok) settled.push((r as any).project_id);
+  }
+  return { checked: rows?.length ?? 0, settled };
+}
+
 // Draws down against an active reservation for a per-operation charge
 // (scene Retry/Edit). Returns "COMMITTED" if it drew from the reservation,
 // "NO_RESERVATION" if there is none (caller must fall back to a direct
@@ -96,7 +144,31 @@ export async function commitReservationSpend(admin: SupabaseClient, projectId: s
   return data as "COMMITTED" | "NO_RESERVATION";
 }
 
-// Named per the comment above settleReservationIfActive — grep this symbol
-// when Visuals/Edit/Render stop being a "proof screen" (see the backend
-// audit's §8) to find the one settle call site that needs to move.
-export const NARRATION_IS_CURRENTLY_THE_LAST_REAL_STAGE = true;
+// Phase 5b: the settle moved from narration-ready to render completion
+// (finish-long-form-render). Grep this symbol to find the one settle site.
+export const RENDER_IS_THE_LAST_REAL_STAGE = true;
+
+// What a render outcome does to the project's reservation (pure, tested):
+//   done                                  -> settle (keep what was spent, refund the rest)
+//   failed, terminal, nothing committed   -> release (a terminal failure before any spend)
+//   failed otherwise                      -> keep (work was paid for and is preserved;
+//                                            the render is resumable, a later success settles)
+export type RenderBilling = "settle" | "release" | "keep";
+export function renderBillingDecision(outcome: "done" | "failed", terminal: boolean, reservation: { committed_credits: number } | null): RenderBilling {
+  if (!reservation) return "keep";
+  if (outcome === "done") return "settle";
+  return terminal && Number(reservation.committed_credits) === 0 ? "release" : "keep";
+}
+
+export async function applyRenderBilling(
+  admin: SupabaseClient,
+  projectId: string,
+  outcome: "done" | "failed",
+  terminal: boolean,
+  logEvent?: (source: string, level: string, event: string, data: Record<string, unknown>) => Promise<void>
+): Promise<{ decision: RenderBilling; result?: ReservationOutcome }> {
+  const decision = renderBillingDecision(outcome, terminal, await findActiveReservation(admin, projectId));
+  if (decision === "settle") return { decision, result: await settleReservationIfActive(admin, projectId, "render_complete", logEvent) };
+  if (decision === "release") return { decision, result: await releaseReservationIfActive(admin, projectId, "render_failed_before_spend", logEvent) };
+  return { decision };
+}

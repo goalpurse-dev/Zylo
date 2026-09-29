@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "C. 970",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 17,
+ "scale": 154,
+ "box": {
+  "x": 738,
+  "y": 75,
+  "width": 445,
+  "height": 211
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 0.35,
+  "bottom": 7.28
+ }
+}

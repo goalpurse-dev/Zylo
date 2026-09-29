@@ -1,0 +1,108 @@
+{
+ "runs": {
+  "1:runware:504@1": {
+   "file": "docs/phase5/upscale/beat-001-runware-504-1.png",
+   "cost": 0.0006,
+   "width": 2752,
+   "height": 1536,
+   "sharpness": 78.3,
+   "latencyMs": 66320
+  },
+  "3:runware:504@1": {
+   "file": "docs/phase5/upscale/beat-003-runware-504-1.png",
+   "cost": 0.0006,
+   "width": 2752,
+   "height": 1536,
+   "sharpness": 130.1,
+   "latencyMs": 26859
+  },
+  "5:runware:504@1": {
+   "file": "docs/phase5/upscale/beat-005-runware-504-1.png",
+   "cost": 0.0006,
+   "width": 2752,
+   "height": 1536,
+   "sharpness": 132.7,
+   "latencyMs": 35909
+  },
+  "7:runware:504@1": {
+   "file": "docs/phase5/upscale/beat-007-runware-504-1.png",
+   "cost": 0.0006,
+   "width": 2752,
+   "height": 1536,
+   "sharpness": 214,
+   "latencyMs": 20337
+  },
+  "1:runware:503@1": {
+   "file": "docs/phase5/upscale/beat-001-runware-503-1.png",
+   "cost": 0.0045,
+   "width": 2752,
+   "height": 1536,
+   "sharpness": 84.2,
+   "latencyMs": 11994
+  },
+  "3:runware:503@1": {
+   "file": "docs/phase5/upscale/beat-003-runware-503-1.png",
+   "cost": 0.0051,
+   "width": 2752,
+   "height": 1536,
+   "sharpness": 146.5,
+   "latencyMs": 13346
+  },
+  "5:runware:503@1": {
+   "file": "docs/phase5/upscale/beat-005-runware-503-1.png",
+   "cost": 0.0045,
+   "width": 2752,
+   "height": 1536,
+   "sharpness": 146.4,
+   "latencyMs": 11889
+  },
+  "7:runware:503@1": {
+   "file": "docs/phase5/upscale/beat-007-runware-503-1.png",
+   "cost": 0.0045,
+   "width": 2752,
+   "height": 1536,
+   "sharpness": 228.2,
+   "latencyMs": 15203
+  },
+  "2:runware:504@1": {
+   "file": "docs/phase5/upscale/beat-002-runware-504-1.png",
+   "cost": 0.0006,
+   "width": 2752,
+   "height": 1536,
+   "sharpness": 94.2,
+   "latencyMs": 8939
+  },
+  "4:runware:504@1": {
+   "file": "docs/phase5/upscale/beat-004-runware-504-1.png",
+   "cost": 0.0006,
+   "width": 2752,
+   "height": 1536,
+   "sharpness": 98.2,
+   "latencyMs": 7341
+  },
+  "6:runware:504@1": {
+   "file": "docs/phase5/upscale/beat-006-runware-504-1.png",
+   "cost": 0.0006,
+   "width": 2752,
+   "height": 1536,
+   "sharpness": 142.1,
+   "latencyMs": 5855
+  },
+  "8:runware:504@1": {
+   "file": "docs/phase5/upscale/beat-008-runware-504-1.png",
+   "cost": 0.0006,
+   "width": 2752,
+   "height": 1536,
+   "sharpness": 151.7,
+   "latencyMs": 8329
+  },
+  "9:runware:504@1": {
+   "file": "docs/phase5/upscale/beat-009-runware-504-1.png",
+   "cost": 0.0006,
+   "width": 2752,
+   "height": 1536,
+   "sharpness": 181.9,
+   "latencyMs": 32154
+  }
+ }
+}

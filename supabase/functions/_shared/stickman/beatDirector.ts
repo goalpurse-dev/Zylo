@@ -11,6 +11,7 @@
 // Everything here is pure except runBeatDirector's injected callModel, so the
 // whole director is testable offline (unit tests + cassette replay).
 import { eraOf, viewerEra, SENTENCE_END } from "./viewerEra.ts";
+import { planRuleHits } from "./planRules.ts";
 
 /* ============================ Word stream ============================ */
 
@@ -469,7 +470,7 @@ export const BEAT_DIRECTOR_INSTRUCTIONS = `You are Zyvo's Beat Director for 2D s
 
 You never write or change narration. A beat is a range of consecutive chunks: s..e (inclusive), 1-3 chunks. Cover the window exactly: the first beat starts at the window's first chunk, each next beat starts at the previous e + 1, the last beat ends at the window's last chunk.
 
-SIZE — most chunks are 2.5-4.5 s, so MOST BEATS ARE ONE CHUNK. Pair two chunks only when the chunk line says "pairs to" a total of 6 s or less AND splitting would break one visual idea; 3 chunks only if all are tiny. Reference: a good video of this kind averages ~9 words and ~3.7 s per beat, never more than ~15 words. A beat must stay at or under 6.5 s; HOLD (a reason in "hold") may run to 9 s, about once a minute at most. Longer beats are split by code — don't rely on it. HOOK: in the first 30 seconds every beat is exactly ONE chunk (about 2.5-3.5 s each; code splits longer ones) — chunks there carry no "pairs to" note.
+SIZE — every chunk line gives its REAL spoken duration in seconds. A beat's chunks must add up to 6.0 s or less (hard limit 6.5 s); prefer 1 chunk when a single chunk is 3.5 s or longer (those lines say "single"). Most chunks are 2.5-4.5 s, so MOST BEATS ARE ONE CHUNK. Pair two chunks only when the line says "pairs to" a total of 6.0 s or less AND splitting would break one visual idea; 3 chunks only if all are tiny. Reference: a good video of this kind averages ~9 words and ~3.7 s per beat, never more than ~15 words. A beat must stay at or under 6.5 s; HOLD (a reason in "hold") may run to 9 s, about once a minute at most. Longer beats are split by code — don't rely on it. HOOK: in the first 30 seconds every beat is exactly ONE chunk (about 2.5-3.5 s each; code splits longer ones) — chunks there carry no "pairs to" note.
 
 WHERE TO CUT — cut on MEANING: a new claim, a change of action, a question, a reveal, a statistic, a comparison, a callback, a jump in time or place.
 
@@ -486,13 +487,30 @@ WHAT THE VIEWER SEES — v is what makes THIS exact line land. Use visual rhetor
 - past vs present: a mirrored SPLIT;
 - callbacks: re-use the EXACT composition, camera and subjects of the planted beat (treatment CALLBACK).
 
+HARD TREATMENTS NEED A CONCRETE RECIPE:
+- SYMBOLIC is always a concrete visual device: a thought bubble, an arrow, a balance scale, a split, a big red cross over something, a big number, a stamp. "This is the image burned into your head" → the viewer with a thought bubble containing a horned helmet.
+- POV states exactly what fills the frame: the viewer's hands in the foreground plus the specific object in the middle distance ("the viewer's hands on a shield rim in the foreground, a horned mascot logo on a stadium banner in the middle distance").
+- ESTABLISHING makes the named place the main subject (an opera house facade with a marquee, a bog at dawn), never a group of people.
+
 VARIETY — adjacent beats must differ in treatment, camera+framing, subjects or setting (unless HOLD or CALLBACK). Never more than 2 beats in a row on the same primary subject or object: vary the viewpoint across a run (the charger, then the enemy's view of the charger, then an enemy's reaction) instead of repeated close-ups of the same thing. And the same primary subject at most 3 times in any 8 consecutive beats.
 
-PEOPLE AND BALANCE — at least 55% of beats show a cast member (hands, back or tiny count). SYMBOLIC at most 15% of beats, OBJECT_DETAIL at most 20%; an object beat should often include a character's hands holding it or a face reacting to it.
+PEOPLE AND BALANCE — at least 55% of beats show a cast member (hands, back or tiny count). SYMBOLIC at most 15% of beats, OBJECT_DETAIL at most 20%; an object beat should often include a character's hands holding it or a face reacting to it. EVIDENCE beats (bones, tools, sites, marks) show a person DOING or REACTING to it — a researcher lifting, measuring or comparing it, a hunter using the tool — never just the artifact on a table. An object alone or an empty landscape at most 8% of beats, and each one has a clear focal subject and a visual device (an arrow, a scale, a highlight, a contrast).
+
+SPECIES AND PRESENCE — name the animal species from the passage (antelope, bison, horse, deer, mammoth…), never "an animal", "prey" or "the beast". Never draw an absence ("no prey nearby", "empty ground where a hunter would stand", "nobody"): draw what IS there that makes the point.
+
+ONE PICTURE — every beat is ONE continuous frame: not a comic grid, not panels, not a split screen. SPLIT/COMPARISON at most once every 15 beats, and then exactly two halves.
 
 CAST — use ONLY the ids listed (never a placeholder). "you" lines use the viewer avatar whose era/context matches the line: the period avatar (e.g. viewer_viking) in the battle, viewer_modern for every present-day line (lunchbox, mascot, costume, museum, "next time you see…", "today"; chunk lines marked (present day)). The wrong era is a validation issue. Every line spoken to the viewer ("you", "your head") shows that viewer avatar (hands, back or tiny count). A CROWD beat shows a group of archetype people, never the viewer alone. Generic people use their archetype ids. A prop someone wears or holds in the beat goes in that person's wear/hold (e.g. the viewer wearing the horned helmet), not in props; with 2+ people give each a pos. Omit cast for beats with nobody on screen; omit set for abstract graphics.
 
 TEXT — omit txt for most beats (NO_TEXT). SHORT_TEXT is exact on-screen text of at most 5 words (a year, a number, a key term), at most about 4 per minute. PROGRAMMATIC is for charts, bars and stat cards the editor renders. Never ask the image to render sentences. NO UNDECLARED TEXT: if v implies readable text (reads, labeled, says, a sign, marquee, caption, title, banner, headline, words, something crossed out, a question mark), declare txt SHORT_TEXT with the exact string — or describe the picture without text.
+
+NO TEXT INSIDE THE PICTURE — every word (SHORT_TEXT too) is laid over the image later, so the picture must carry the idea with no letters or numbers in it: a stamp "reading X", a labeled timeline dot or a title card shows nothing. FILLER GUARD: never "a person standing with a headline". SYMBOLIC, STAT_CARD and TIMELINE_BAR beats need a visual device that works without words — an object, a comparison, a scale, a gesture, a before/after (an empty shelf with one helmet; a long bar with a tiny sliver; two helmets far apart on an unlabeled line).
+
+OBJECTS AND PROPS — omit cast for a beat about an object, a map, a timeline or a chart: that picture then contains no people at all, and objects never get faces or limbs. A museum case holds only its object. Every named artifact that has a prop id goes in props (or in a person's wear/hold) — v then just says "the helmet" and never re-describes it.
+
+PLACES — at most 3 beats in a row at the same location (a HOLD counts once): cut away to a graphic, a close object or another place. Within any 10 beats use at least 3 different settings OR camera distances (wide / medium / close). The same composition (same place + same main subject + same framing) at most twice per section — a new moment needs a new picture, not the campfire again.
+
+IP GUARD — never depict real brand logos, sports team logos or mascots, trademarks or copyrighted characters (e.g. the Minnesota Vikings, the NFL, Flash Gordon, Disney, Marvel, product brands). Use generic equivalents: "a football team's horned-helmet logo", "a 1930s comic-book space hero". The narration may name them; the picture never shows the real mark. A replacement must look visibly different from any famous character: the 1930s space hero wears a round glass bubble helmet and a striped suit and holds a ray gun — never a horned golden helmet with a cape.
 
 
 MOTIF — the callback's planted beat gets motif "plant"; its payoff motif "payoff" and treatment CALLBACK.
@@ -533,7 +551,10 @@ function chunkLines(stream: WordStream, chunks: Chunk[], t0: number) {
     }
     const next = chunks[k + 1];
     const pair = next ? (next.endMs - c.startMs) / 1000 : null;
-    const pairNote = pair != null && pair <= 6 && c.startMs >= HOOK_WINDOW_MS ? `, pairs to ${pair.toFixed(1)}s` : "";
+    // Phase 4c: the pairing hint states the real total; a chunk of 3.5 s or
+    // more is marked "single" (code split most over-paired beats on real timings).
+    const own = (c.endMs - c.startMs) / 1000;
+    const pairNote = own >= 3.5 ? ", single" : pair != null && pair <= 6 && c.startMs >= HOOK_WINDOW_MS ? `, pairs to ${pair.toFixed(1)}s` : "";
     const era = lineEra(stream, c.startWord, c.endWord) === "modern" ? " (present day)" : "";
     lines.push(`C${c.index} [${((c.startMs - t0) / 1000).toFixed(1)}s, ${((c.endMs - c.startMs) / 1000).toFixed(1)}s long, ${c.wordCount}w${pairNote}] ${c.text}${era}`);
   });
@@ -576,9 +597,46 @@ export function fillUserPrompt(stream: WordStream, win: ChunkedWindow, beats: an
   ].join("\n");
 }
 
+// Phase 4d targeted re-direct: fresh contracts for chosen beats of a finished
+// plan (narration and timing fixed), with their neighbours as context. Each
+// target is addressed as B<sequence>; the model returns s = e = that number.
+export function redirectUserPrompt(beats: { sequence: number; narrationText: string; contract: any }[], targets: { sequence: number; fix: string }[], index: BibleIndex) {
+  const alias = (id: string | null) => {
+    const i = index.settings.findIndex((s) => s.id === id);
+    return i >= 0 ? settingAlias(i) : "no setting";
+  };
+  const fixOf = new Map(targets.map((t) => [t.sequence, t.fix]));
+  const show = new Set(targets.flatMap((t) => [t.sequence - 1, t.sequence, t.sequence + 1]));
+  const lines = beats.filter((b) => show.has(b.sequence)).map((b) => {
+    const c = b.contract;
+    const cast = (c.subjects ?? []).map((s: any) => s.castId).join(",") || "no cast";
+    const was = `${c.treatment}/${c.composition?.camera} [${cast}] ${alias(c.settingId ?? null)}: ${c.visualConcept}`;
+    const fix = fixOf.get(b.sequence);
+    return fix ? `NEEDS CONTRACT B${b.sequence} "${b.narrationText}" (fix: ${fix}) — was: ${was}` : `context B${b.sequence} "${b.narrationText}" — ${was}`;
+  });
+  return [
+    `REDIRECT: these beats of a finished plan rendered badly. Write a fresh contract for EACH beat marked NEEDS CONTRACT — its narration and timing are fixed, so set s = e = its B-number. Fix exactly what its note says, follow every rule (no text inside the picture, objects without people, props by id, IP guard, places), and differ from its context neighbours.`,
+    "",
+    lines.join("\n"),
+    "",
+    `Return "b" containing ONLY the ${targets.length} NEEDS CONTRACT beat(s), in order.`,
+  ].join("\n");
+}
+
 /* ============================ Normalisation ============================ */
 
 export const WORST_CALL_USD = 0.1;
+
+// Phase 6c: the per-plan cost cap scales with the script. A flat $0.275 cap
+// stopped the 148-beat f90160bc plan at window 5 of 6 ($0.26 spent) — twice,
+// and each stop threw the partial plan away. Measured ~$0.05 per window
+// (150-250 words each, incl. fills/repairs); $0.08 per window + one window of
+// headroom, never below the configured floor, never above $1.
+export const PLAN_CAP_PER_WINDOW_USD = 0.08;
+export function planCostCapUsd(words: number, floorUsd: number): number {
+  const windows = Math.ceil(Math.max(1, words) / 220) + 1;
+  return Math.min(1, Math.max(floorUsd, Number((windows * PLAN_CAP_PER_WINDOW_USD).toFixed(2))));
+}
 
 // Tool-use sometimes returns a large array JSON-encoded as a string (seen on
 // the first paid run's repair call — and that string wasn't valid JSON).
@@ -590,6 +648,17 @@ export function parseBeatsOutput(input: any): { beats: any[]; error: string | nu
       const parsed = JSON.parse(b);
       if (Array.isArray(parsed)) return { beats: parsed, error: null };
     } catch { /* fall through */ }
+    // Phase 4c: a valid array followed by a stray "}" cost a full-window
+    // repair ($0.06). Salvage the array when trimming trailing junk parses.
+    const start = b.indexOf("[");
+    const end = b.lastIndexOf("]");
+    for (let e = end; start >= 0 && e > start; e = b.lastIndexOf("]", e - 1)) {
+      try {
+        const parsed = JSON.parse(b.slice(start, e + 1));
+        if (Array.isArray(parsed) && parsed.length) return { beats: parsed, error: null };
+      } catch { /* try a shorter slice */ }
+      if (end - e > 4000) break;
+    }
     return { beats: [], error: '"b" came back as a string that is not a valid JSON array. Return "b" as a real JSON array of beat objects, and keep every field short.' };
   }
   return { beats: [], error: 'No "b" array was returned. Return "b" as a JSON array covering the whole window.' };
@@ -735,6 +804,23 @@ export function listedNouns(narration: string): string[] {
   return heads.length >= 2 ? heads : [];
 }
 
+// Phase 4b: concrete devices a SYMBOLIC beat can be built on, and the kinds
+// of place an ESTABLISHING beat must show.
+const SYMBOLIC_DEVICE = /\b(thought bubble|speech bubble|bubble|arrows?|balance|scales?|split|side by side|red[- ]cross(ed)?|big red x|crossed|big number|stamp(ed)?|magnifying glass|pie|bar|chart|icons?|silhouette|spotlight|mirror|frame|timeline|map|checklist|ribbon|trophy)\b/i;
+const ESTABLISHING_PLACE = /\b(facade|façade|house|opera|theatre|theater|building|museum|gallery|hall|bog|marsh|site|dig|trench|village|longhouse|harbou?r|coast|fjord|hill(side)?|field|battlefield|landscape|city|street|square|stadium|stage|church|castle|forest|valley|river|shore|camp)\b/i;
+
+// Phase 4d IP guard: real brands, team marks and copyrighted characters (the
+// image never shows them; generic equivalents instead). A named list, not a
+// guess — keyword checks prefer false negatives.
+export const IP_MARKS = /\b(Minnesota Vikings|Minnesota (?:football|team|helmet|logo|mascot)\w*|NFL|NBA|MLB|NHL|FIFA|Super Bowl|Flash Gordon|Ming the Merciless|H[äa]gar(?: the Horrible)?|Asterix|Obelix|Disney|Pixar|Marvel|DC Comics|Mickey Mouse|Donald Duck|Batman|Superman|Spider-?Man|Avengers|Star Wars|Harry Potter|Pok[ée]mon|Coca-?Cola|Pepsi|Nike|Adidas|McDonald'?s|LEGO|Budweiser|Heineken|Carlsberg|Tuborg)\b/i;
+// Phase 5a: a "generic" replacement that still looks like a famous character
+// (the 1930s hero came back as a horned golden helmet + cape = Loki).
+export const IP_LOOKALIKE = /\b(?:horned|winged)\s+(?:gold(?:en)?|yellow)\s+helmet\b[^.;]*\bcape\b|\bcape\b[^.;]*\b(?:horned|winged)\s+(?:gold(?:en)?|yellow)\s+helmet\b|\bbat[- ]eared cowl\b|\bred cape\b[^.;]*\bchest (?:emblem|shield)\b|\bweb[- ]patterned (?:suit|mask)\b|\bround black mouse ears\b/i;
+// A device that still reads when the image has NO text (all words are an
+// overlay): a stamp "reading X" or a labeled timeline dot is empty without it.
+const TEXTLESS_DEVICE = /\b(thought bubble|arrows?|balance|scales?|split|side by side|before|after|beside|next to|versus|compared?|pile|stack|row of|hourglass|magnifying glass|globe|crowd|hands?|holding|pointing|cracked|broken|empty|full|tiny|huge|giant|towering|shelf|helmets?|books?|shards?|bars? fill|sliver|gap)\b/i;
+const HEADLINE_TREATMENTS = new Set(["SYMBOLIC", "STAT_CARD", "TIMELINE_BAR"]);
+
 const isViewerId = (id: string) => /^viewer(_|$)/.test(id);
 const SECOND_PERSON_LINE = /\byou(?:'re|'ve|'d|'ll)?\b|\byour\b/i;
 
@@ -771,6 +857,14 @@ export function contentIssues(b: any, narration: string): { code: string; fix: s
   const shown = listed.filter((x) => seen.includes(x.slice(0, 4)));
   if (listed.length && shown.length < Math.ceil(listed.length / 2)) out.push({ code: "ungrounded_list", fix: `the line lists ${listed.join(", ")} — show those things` });
   if (b.treatment === "CROWD" && !(b.subjects ?? []).some((s: any) => !isViewerId(s.castId))) out.push({ code: "crowd_without_group", fix: "a CROWD needs a group of people (an archetype), not just the viewer" });
+  // Phase 4b: hard treatments need a concrete recipe (bake-off beats 7 and 125 came out vague).
+  if (b.treatment === "SYMBOLIC" && !SYMBOLIC_DEVICE.test(v)) out.push({ code: "concept_without_device", fix: "a SYMBOLIC beat needs a concrete device: a thought bubble, arrow, balance scale, split, big red cross, big number or stamp" });
+  if (b.treatment === "POV" && !(/\b(hands?|foreground)\b/i.test(v) && /\b(middle distance|distance|ahead|in front|background)\b/i.test(v))) out.push({ code: "concept_without_device", fix: "a POV beat states what fills the frame: the viewer's hands in the foreground and the specific object in the middle distance" });
+  if (b.treatment === "ESTABLISHING" && !ESTABLISHING_PLACE.test(v)) out.push({ code: "establishing_without_place", fix: "an ESTABLISHING beat makes the named place the main subject (a facade, a bog, a hall, a village), not people" });
+  // Phase 4d: filler (a person standing with a headline) and real IP.
+  if (HEADLINE_TREATMENTS.has(b.treatment) && b.textIntent?.mode && b.textIntent.mode !== "NO_TEXT" && !TEXTLESS_DEVICE.test(v)) out.push({ code: "filler_headline", fix: "the image must carry the idea with NO text in it (every word is an overlay): show an object, a comparison, a scale, a gesture or a before/after — never a person standing with a headline" });
+  const ip = `${v} ${b.composition?.framing ?? ""}`.match(IP_MARKS) ?? `${v} ${b.composition?.framing ?? ""}`.match(IP_LOOKALIKE);
+  if (ip) out.push({ code: "real_ip", fix: `"${ip[0]}" is a real brand, team mark or copyrighted character — show a generic equivalent ("a football team's horned-helmet logo", "a 1930s comic-book space hero"); the narration may name it, the image never shows it` });
   return out;
 }
 
@@ -865,7 +959,11 @@ export function chunkRangesToWords(raw: any[], win: ChunkedWindow): { beats: any
 // Hook rule (window-1 review): a multi-chunk beat that starts in the first
 // 30 s is split into single chunks (a valid HOLD is exempt). Re-timing an
 // existing plan turns it off (`hookSingleChunk: false`) — only bounds apply there.
-export function autoSplitBeats(beats: any[], win: ChunkedWindow, stream: WordStream, opts: { hookSingleChunk?: boolean } = {}): { beats: any[]; needFill: number[]; splits: number; merges: number } {
+// A short line that no neighbour can absorb becomes an automatic fast cut
+// down to this floor; anything shorter stays a HARD too_short (Phase 6c).
+export const PUNCH_FLOOR_MS = 1200;
+export const AUTO_PUNCH_REASON = "auto: short line, no neighbour fits";
+export function autoSplitBeats(beats: any[], win: ChunkedWindow, stream: WordStream, opts: { hookSingleChunk?: boolean } = {}): { beats: any[]; needFill: number[]; splits: number; merges: number; punches?: number } {
   const byIndex = new Map(win.chunks.map((c) => [c.index, c]));
   const out: any[] = [];
   const needFill: number[] = [];
@@ -909,6 +1007,7 @@ export function autoSplitBeats(beats: any[], win: ChunkedWindow, stream: WordStr
   // the neighbour with a written contract keeps it. Typically a whole short
   // sentence ("So what?") — chunks never cross sentence ends, beats may.
   let merges = 0;
+  let punches = 0;
   const fits = (a: any, b: any) => {
     const t = beatTiming(stream, a.startWord, b.endWord);
     return t.endMs - t.startMs <= MAX_BEAT_MS && b.endChunk - a.startChunk + 1 <= MAX_CHUNKS_PER_BEAT;
@@ -921,7 +1020,16 @@ export function autoSplitBeats(beats: any[], win: ChunkedWindow, stream: WordStr
     const next = out[i + 1];
     const intoPrev = prev && fits(prev, b);
     const intoNext = next && fits(b, next);
-    if (!intoPrev && !intoNext) continue;
+    if (!intoPrev && !intoNext) {
+      // Phase 6c: neither neighbour can take it (both already near 6.5 s / 3
+      // chunks) — a line this short is a natural fast cut, not a failed plan.
+      // The e2e plan failed three times on exactly this (a 3-word line in 1.5 s).
+      if (dur(b) >= PUNCH_FLOOR_MS) {
+        out[i] = { ...b, flags: { ...(b.flags ?? {}), punch: true, reason: AUTO_PUNCH_REASON }, warnings: [...(b.warnings ?? []), { code: "auto_punch", message: `A ${(dur(b) / 1000).toFixed(1)} s line with no neighbour to merge into — kept as a fast cut.` }] };
+        punches += 1;
+      }
+      continue;
+    }
     const usePrev = intoPrev && (!intoNext || dur(prev) <= dur(next));
     const [a, z] = usePrev ? [prev, b] : [b, next];
     const keeper = !a.needsFill ? a : !z.needsFill ? z : a;
@@ -931,7 +1039,7 @@ export function autoSplitBeats(beats: any[], win: ChunkedWindow, stream: WordStr
     i = Math.max(-1, i - 2);
   }
   out.forEach((b, i) => { if (b.needsFill) needFill.push(i); });
-  return { beats: out, needFill, splits, merges };
+  return { beats: out, needFill, splits, merges, punches };
 }
 
 // HARD issues for one window's beats (word ranges attached). `previousBeat` is
@@ -986,6 +1094,9 @@ export function validateWindowBeats(raw: any[], win: Window, stream: WordStream,
     if (subjectRunAt(all, i) && !exempt) {
       issues.push({ code: "subject_run", message: `Beat ${n} is the 3rd beat in a row on "${primarySubject(b)}" — show a different subject or viewpoint (e.g. what it faces, or someone's reaction).`, beat: n });
     }
+    if (locationRunAt(all, i) && !exempt && !inHook(stream, b)) {
+      issues.push({ code: "location_run", message: `Beat ${n} is the ${LOCATION_RUN_MAX + 1}th beat in a row at the same location — move to another place, a graphic or a close object (or flag HOLD).`, beat: n });
+    }
   }
 
   for (let i = prior.length; i < all.length; i++) {
@@ -1023,7 +1134,9 @@ export function windowAllowances(stream: WordStream, win: Window) {
 // timing bounds, unknown ids, schema) — one full-window repair, then fail.
 export const SOFT_CODES = new Set([
   "subject_run", "subject_repeat", "adjacent_identical", "concept_not_still", "short_text_too_long", "short_text_rate", "hold_rate",
-  "undeclared_text", "abstract_concept", "ungrounded_name", "wrong_era_viewer", "ungrounded_list", "viewer_missing", "crowd_without_group",
+  "undeclared_text", "abstract_concept", "ungrounded_name", "wrong_era_viewer", "ungrounded_list", "viewer_missing", "crowd_without_group", "concept_without_device", "establishing_without_place",
+  "filler_headline", "location_run",
+  // real_ip is HARD: one fix via the fill, then a window repair, then fail.
 ]);
 export const isSoft = (i: Issue) => SOFT_CODES.has(i.code);
 
@@ -1048,6 +1161,17 @@ function subjectRunAt(all: any[], i: number) {
   return i >= 2 && p != null && primarySubject(all[i - 1]) === p && primarySubject(all[i - 2]) === p;
 }
 
+// Max 3 consecutive beats at the same location (Phase 4d: 11 in a row at the dig site).
+// The hook (first 30 s) is one continuous scene by design and is exempt.
+const inHook = (stream: WordStream, b: any) => Number.isInteger(b.startWord) && beatTiming(stream, b.startWord, b.endWord).startMs < HOOK_WINDOW_MS;
+export const LOCATION_RUN_MAX = 3;
+function locationRunAt(all: any[], i: number) {
+  const s = all[i]?.settingId ?? null;
+  if (s == null || i < LOCATION_RUN_MAX) return false;
+  for (let k = 1; k <= LOCATION_RUN_MAX; k++) if ((all[i - k]?.settingId ?? null) !== s) return false;
+  return true;
+}
+
 // ...and max 3 times within any 8 consecutive beats.
 export const REPEAT_SPAN = 8;
 export const REPEAT_MAX = 3;
@@ -1055,6 +1179,30 @@ function subjectRepeatAt(all: any[], i: number) {
   const p = primarySubject(all[i]);
   if (p == null) return false;
   return all.slice(Math.max(0, i - (REPEAT_SPAN - 1)), i).filter((x) => primarySubject(x) === p).length >= REPEAT_MAX;
+}
+
+// Phase 4c: soft rewrites doubled each window's cost (14-16 beats re-filled
+// per window). A window rewrites at most a quarter of its beats (min 4), the
+// most severe first; the rest keep their issues as per-beat warnings.
+export const REWRITE_PRIORITY: Record<string, number> = {
+  real_ip: 11, filler_headline: 7, location_run: 4,
+  short_text_too_long: 10, undeclared_text: 9, concept_not_still: 8, short_text_rate: 8, viewer_missing: 7,
+  crowd_without_group: 6, concept_without_device: 6, establishing_without_place: 6, adjacent_identical: 5, subject_run: 5,
+  ungrounded_list: 4, subject_repeat: 3, abstract_concept: 3, ungrounded_name: 2,
+};
+export const rewriteBudget = (windowBeats: number) => Math.max(4, Math.ceil(windowBeats * 0.25));
+export function applyRewriteBudget(beats: any[], budget: number): number {
+  const marked = beats.map((b, i) => ({ b, i })).filter(({ b }) => b.rewrite);
+  if (marked.length <= budget) return 0;
+  const score = (b: any) => Math.max(0, ...(b.rewriteCodes ?? []).map((c: string) => REWRITE_PRIORITY[c] ?? 1));
+  const keep = new Set(marked.sort((x, y) => score(y.b) - score(x.b) || x.i - y.i).slice(0, budget).map(({ i }) => i));
+  let dropped = 0;
+  for (const { b, i } of marked) {
+    if (keep.has(i)) continue;
+    beats[i] = { ...b, ...(b.before ?? {}), needsFill: undefined, rewrite: undefined, fixReason: undefined, avoidSubject: undefined, before: undefined, rewriteCodes: undefined };
+    dropped += 1;
+  }
+  return dropped;
 }
 
 // Beats to rewrite in the window's one batched fill call (the SOFT rules'
@@ -1074,6 +1222,7 @@ export function markRewrites(beats: any[], previous: any | any[] | null, allowed
     const run = !exempt && subjectRunAt(all, i);
     const repeat = !exempt && !run && subjectRepeatAt(all, i);
     const same = !exempt && i > 0 && sameLook(all[i - 1], b);
+    const loc = !!stream && !exempt && locationRunAt(all, i) && !inHook(stream, b);
     const isText = b.textIntent?.mode === "SHORT_TEXT";
     const textWords = isText ? wordsIn(b.textIntent.text) : 0;
     const textLong = isText && (textWords === 0 || textWords > 5);
@@ -1081,6 +1230,7 @@ export function markRewrites(beats: any[], previous: any | any[] | null, allowed
     const content = contentIssues(b, stream ? beatNarration(stream, b) : "");
     const viewer = stream && index ? missingViewer(b, stream, index) : null;
     if (viewer) content.push({ code: "viewer_missing", fix: viewer });
+    if (loc) content.push({ code: "location_run", fix: `the ${LOCATION_RUN_MAX + 1}th beat in a row at the same location — move to another place, a graphic or a close object` });
     if (!content.length && !run && !repeat && !same && !textLong && !textOver) return;
     b.fixReason = [
       ...content.map((c) => c.fix),
@@ -1090,6 +1240,7 @@ export function markRewrites(beats: any[], previous: any | any[] | null, allowed
       textLong ? "SHORT_TEXT must be 1-5 words" : "",
       textOver ? "too many SHORT_TEXT beats in this window — use NO_TEXT or PROGRAMMATIC" : "",
     ].filter(Boolean).join("; ");
+    b.rewriteCodes = [...content.map((c) => c.code), ...(run ? ["subject_run"] : []), ...(repeat ? ["subject_repeat"] : []), ...(same ? ["adjacent_identical"] : []), ...(textLong ? ["short_text_too_long"] : []), ...(textOver ? ["short_text_rate"] : [])];
     b.needsFill = true;
     b.rewrite = true;
     // A beat rewritten for a subject run drops out of the run, so later beats
@@ -1123,7 +1274,7 @@ export type Beat = {
 export function assembleBeats(raw: any[], stream: WordStream): Beat[] {
   return raw.map((b, i) => {
     const { startMs, endMs } = beatTiming(stream, b.startWord, b.endWord);
-    const { startWord, endWord, startChunk: _s, endChunk: _e, parentConcept: _p, needsFill: _n, fixReason: _f, rewrite: _r, avoidSubject: _a, before: _b, warnings = [], ...contract } = b;
+    const { startWord, endWord, startChunk: _s, endChunk: _e, parentConcept: _p, needsFill: _n, fixReason: _f, rewrite: _r, avoidSubject: _a, before: _b, rewriteCodes: _rc, warnings = [], ...contract } = b;
     return {
       warnings,
       sequence: i + 1,
@@ -1313,10 +1464,15 @@ export async function runBeatDirector(opts: {
   costOf?: (usage: any) => number;
   // Check runs: direct only the first N windows (plan is partial, coverage not checked).
   maxWindows?: number;
+  // Phase 6e-fix: plan-level scene rules + one targeted re-direct (default on); segment id -> section (chapter) id.
+  planRules?: boolean;
+  sectionOfSegment?: Record<string, string>;
   // Replays of recordings made before the hook single-chunk rule pass false.
   hookSingleChunk?: boolean;
   // Synthetic-timing pace when no narration exists: the voice's measured wpm.
   wordsPerMinute?: number;
+  // Replays of recordings made before the Phase 4d IP guard pass false.
+  ipGuard?: boolean;
 }): Promise<DirectorResult & { timingSource: TimingSource; bibleIndex: BibleIndex }> {
   const stream = buildWordStream(opts.segments, opts.narration, opts.wordsPerMinute);
   const index = buildBibleIndex(opts.bible);
@@ -1331,6 +1487,7 @@ export async function runBeatDirector(opts: {
   let rewrites = opts.resume?.rewrites ?? 0;
   let viewerSwaps = opts.resume?.viewerSwaps ?? 0;
   let rewritesDropped = opts.resume?.rewritesDropped ?? 0;
+  let reasks = 0;
   const lastWindow = Math.min(windows.length, opts.maxWindows ?? windows.length);
   const partial = lastWindow < windows.length;
   const firstWindow = opts.resume?.nextWindow ?? 0;
@@ -1372,6 +1529,8 @@ export async function runBeatDirector(opts: {
         const prev = accepted.slice(-(REPEAT_SPAN - 1));
         viewerSwaps += fixViewerEras(beats, stream, index);
         rewrites += markRewrites(beats, prev, windowAllowances(stream, win).text, stream, index).length;
+        // Rewrite budget: the most severe soft issues get the fill; the rest stay warnings.
+        rewritesDropped += applyRewriteBudget(beats, rewriteBudget(beats.length));
         let needFill = beats.map((b, i) => (b.needsFill ? i : -1)).filter((i) => i >= 0);
         // Near the cost cap, soft rewrites are dropped from the fill (kept as
         // warnings) rather than failing the run; split parts always need a fill.
@@ -1389,17 +1548,26 @@ export async function runBeatDirector(opts: {
           if (!fillRes) return fail("COST_CAP", win.index, costCapIssue());
           const filled = parseBeatsOutput(fillRes.input);
           const byStart = new Map(filled.beats.map((b) => normalizeBeat(b, index)).map((f: any) => [f.startChunk, f]));
+          // Phase 5a: beats the model skipped get ONE automatic re-ask (just those beats).
+          const skipped = needFill.filter((idx) => !byStart.has(beats[idx].startChunk));
+          if (skipped.length && fits(skipped.length)) {
+            const again = await call(fillUserPrompt(stream, win, beats, skipped), skipped.length);
+            if (again) for (const b of parseBeatsOutput(again.input).beats.map((x) => normalizeBeat(x, index))) if (!byStart.has(b.startChunk)) byStart.set(b.startChunk, b);
+            reasks += 1;
+          }
           for (const idx of needFill) {
             const b = beats[idx];
             const f = byStart.get(b.startChunk);
             const range = { startChunk: b.startChunk, endChunk: b.endChunk, startWord: b.startWord, endWord: b.endWord };
-            if (f) beats[idx] = { ...f, ...range, flags: b.rewrite ? b.flags : f.flags };
+            // An auto fast cut keeps its PUNCH flag and warning through the fill.
+            const autoPunch = b.flags?.reason === AUTO_PUNCH_REASON;
+            if (f) beats[idx] = { ...f, ...range, flags: b.rewrite ? b.flags : autoPunch ? { ...(f.flags ?? {}), punch: true, reason: AUTO_PUNCH_REASON } : f.flags, ...(autoPunch ? { warnings: b.warnings } : {}) };
             else if (b.rewrite) beats[idx] = { ...b, needsFill: undefined, fixReason: undefined, rewrite: undefined };
             else issues.push({ code: "fill_missing", message: `No contract returned for split beat C${b.startChunk}..C${b.endChunk}.` });
           }
         }
         viewerSwaps += fixViewerEras(beats, stream, index);
-        if (!issues.length) issues = validateWindowBeats(beats, win, stream, index, prev);
+        if (!issues.length) issues = validateWindowBeats(beats, win, stream, index, prev).filter((i) => opts.ipGuard !== false || i.code !== "real_ip");
       }
       // SOFT issues already had their one fix (the fill call): keep the beats
       // and carry the rest as per-beat warnings. Only HARD issues repair/fail.
@@ -1423,11 +1591,36 @@ export async function runBeatDirector(opts: {
 
   copyPlantMotion(accepted);
   const assembled = assembleBeats(accepted, stream);
+  // Phase 6e-fix: plan-level scene rules (repetition, splits, empty frames,
+  // people, species, absences) -> ONE targeted re-direct call for the beats
+  // they hit, inside the plan's cost cap. A contract with an unknown id keeps
+  // the old one. The f90160bc replay: 74 of 148 beats would be re-directed.
+  let ruleHits = 0, ruleRedirects = 0;
+  if (!partial && opts.planRules !== false) {
+    const sectionOf = (b: Beat) => { const seg = stream.words[b.startWord]?.segmentId; return (seg && opts.sectionOfSegment?.[seg]) ?? seg ?? null; };
+    const hits = planRuleHits(assembled.map((b) => ({ sequence: b.sequence, narrationText: b.narrationText, contract: b.contract, section: sectionOf(b) })));
+    ruleHits = hits.length;
+    if (hits.length) {
+      const res = await call(redirectUserPrompt(assembled, hits.map((h) => ({ sequence: h.sequence, fix: h.fix })), index), hits.length);
+      const parsed = res ? parseBeatsOutput(res.input) : { beats: [], error: "skipped (cost cap)" };
+      const castIds = new Set(index.cast.map((c) => c.id)), settingIds = new Set(index.settings.map((s) => s.id)), propIds = new Set(index.props.map((p) => p.id));
+      for (const raw of parsed.beats ?? []) {
+        const nb = normalizeBeat(raw, index);
+        const target = assembled.find((b) => b.sequence === nb.startChunk);
+        if (!target || !hits.some((h) => h.sequence === nb.startChunk)) continue;
+        const { startChunk: _s, endChunk: _e, ...contract } = nb;
+        const bad = (contract.subjects ?? []).some((s: any) => !castIds.has(s.castId)) || (contract.settingId != null && !settingIds.has(contract.settingId)) || (contract.propIds ?? []).some((p: string) => !propIds.has(p)) || !String(contract.visualConcept ?? "").trim();
+        if (bad) continue;
+        target.contract = { ...contract, chunkRange: target.contract.chunkRange, motif: target.contract.motif ?? contract.motif, motionIntent: contract.motionIntent ?? target.contract.motionIntent };
+        ruleRedirects++;
+      }
+    }
+  }
   const validation = validatePlan(assembled, stream, partial);
   if (validation.hard.length) return fail("PLAN_VALIDATION_FAILED", windows.length - 1, validation.hard);
   const softWarnings: Record<string, number> = {};
   for (const b of assembled) for (const w of b.warnings) softWarnings[w.code] = (softWarnings[w.code] ?? 0) + 1;
-  return { ok: true, beats: assembled, validation, stats: { ...planStats(assembled), timingNote: stream.timingNote ?? null, partial, windowsDirected: lastWindow, viewerSwaps, rewritesDropped, softWarnings, beatsWithWarnings: assembled.filter((b) => b.warnings.length).length, timingSource: stream.timingSource, windows: windows.length, repairs, autoSplits, autoMerges, rewrites, chunks: windows.reduce((s, w) => s + w.chunks.length, 0) }, windows: windows.length, repairs, usage, timingSource: stream.timingSource, bibleIndex: index };
+  return { ok: true, beats: assembled, validation, stats: { ...planStats(assembled), ruleHits, ruleRedirects, timingNote: stream.timingNote ?? null, partial, windowsDirected: lastWindow, viewerSwaps, rewritesDropped, reasks, softWarnings, beatsWithWarnings: assembled.filter((b) => b.warnings.length).length, timingSource: stream.timingSource, windows: windows.length, repairs, autoSplits, autoMerges, rewrites, chunks: windows.reduce((s, w) => s + w.chunks.length, 0) }, windows: windows.length, repairs, usage, timingSource: stream.timingSource, bibleIndex: index };
 }
 
 /* ============================ Anthropic transport ============================ */

@@ -12,7 +12,7 @@ export default function CharacterLibraryDialog({ open, onClose, characters, sele
   const [notice, setNotice] = useState("");
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return characters.characters.filter((c) => !q || `${c.name} ${c.tag} ${c.role} ${c.fruit}`.toLowerCase().includes(q));
+    return characters.characters.filter((c) => !q || `${c.name} ${c.tag} ${c.role} ${c.fruit} ${c.collection ?? ""}`.toLowerCase().includes(q));
   }, [characters.characters, query]);
 
   const toggle = (id) => {
@@ -81,7 +81,7 @@ export default function CharacterLibraryDialog({ open, onClose, characters, sele
                   full && "opacity-40",
                 )}
               >
-                <img src={c.refImageUrl} alt="" className="aspect-[4/3] w-full rounded-lg bg-[#0D0F11] object-cover" loading="lazy" />
+                <img src={c.refImageUrl} alt="" className="aspect-[4/3] w-full rounded-lg bg-[#0D0F11] object-cover object-top" loading="lazy" />
                 {on && (
                   <span className="absolute right-3 top-3 grid h-5 w-5 place-items-center rounded-full bg-lime-300 text-[#11150D]" aria-hidden="true">
                     <Check className="h-3 w-3" />

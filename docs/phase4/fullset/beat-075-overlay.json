@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "DER RING DES NIBELUNGEN, 1876",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 12,
+ "scale": 102,
+ "box": {
+  "x": 208,
+  "y": 110,
+  "width": 1505,
+  "height": 141
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 4.76,
+  "bottom": 7.45
+ }
+}

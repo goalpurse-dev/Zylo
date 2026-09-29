@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "BRONZE AGE",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 17,
+ "scale": 154,
+ "box": {
+  "x": 518,
+  "y": 75,
+  "width": 885,
+  "height": 211
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 4.95,
+  "bottom": 8.01
+ }
+}

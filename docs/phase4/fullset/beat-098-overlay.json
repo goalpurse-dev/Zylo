@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "FLASH GORDON",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 17,
+ "scale": 154,
+ "box": {
+  "x": 422,
+  "y": 75,
+  "width": 1077,
+  "height": 211
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 7.13,
+  "bottom": 10.22
+ }
+}

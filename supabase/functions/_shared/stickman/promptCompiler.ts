@@ -10,13 +10,29 @@
 // Order: STYLE HEADER -> FRAME -> SUBJECTS -> PROPS -> SETTING -> LIGHTING ->
 // TEXT -> AVOID TAIL (the avoid tail goes to negativePrompt when the
 // renderer supports one, else it is appended).
-import { buildBibleIndex, TEXT_IMPLIED, SHORT_TEXT_PER_MINUTE } from "./beatDirector.ts";
+import { buildBibleIndex, TEXT_IMPLIED, SHORT_TEXT_PER_MINUTE, IP_MARKS, IP_LOOKALIKE } from "./beatDirector.ts";
 
 /* ============================ Style contract (recipe-level) ============================ */
 
 export const STYLE_CONTRACT_VERSION = "STICKMAN_DOODLE_EXPLAINER_V1";
 
-export const STYLE_HEADER = "Flat-color 2D doodle/stickman explainer illustration, 16:9 landscape frame. Uniform thin clean black outlines of identical weight everywhere; flat solid color fills only; no shading, no gradients, no texture, no highlights, no 3D, no photorealism. Every person is a stickman: a perfect circle head with no neck, two small black dot eyes, thin black eyebrows, one curved black mouth line, thin uniform black stick limbs, rounded black mitten hands and feet with no fingers or toes; clothing is simple flat color shapes over the stick body. Environments use two or three flat color layers only.";
+const STYLE_FLAT = "Uniform thin clean black outlines of identical weight everywhere; flat solid color fills only; no shading, no gradients, no texture, no highlights, no 3D, no photorealism.";
+export const STYLE_PEOPLE = "Every person is a stickman: a perfect circle head with no neck, two small black dot eyes, thin black eyebrows, one curved black mouth line, thin uniform black stick limbs, rounded black mitten hands and feet with no fingers or toes. Clothing is only a flat colored shape on the torso; arms and legs ALWAYS remain thin black stick lines, never filled trouser legs or sleeves; feet are small rounded mitten shapes (may be colored for shoes/boots).";
+const STYLE_ENV = "Environments use two or three flat color layers only.";
+// Phase 4d: FLUX gave helmets, books, hourglasses and globes faces and limbs.
+// Phase 5a: for EVERY beat, with or without cast (faces came back on helmets
+// held by the viewer, a carved sun and a helmet sketch).
+export const OBJECTS_NO_FACES = "Objects have no faces, eyes, mouths or limbs; helmets are empty with no head inside; display cases contain only their object.";
+// (a) The global art style — in every prompt.
+export const STYLE_GLOBAL = `Flat-color 2D doodle explainer illustration, 16:9 landscape frame. ${STYLE_FLAT} ${STYLE_ENV} ${OBJECTS_NO_FACES}`;
+// (a) + (b) the stickman construction paragraph — ONLY for beats with at least
+// one cast member. Phase 4d: the anatomy text made FLUX draw stickmen in place
+// of map pins, timeline marks, icons and museum objects on empty-cast beats.
+export const STYLE_HEADER = `${STYLE_GLOBAL} ${STYLE_PEOPLE}`;
+export const NO_PEOPLE_STYLE_HEADER = STYLE_GLOBAL;
+export const NO_PEOPLE_RULE = "This image contains no people and no stick figures.";
+// Phase 5b: pictured people are stickmen too (5a beat 98 came out as detailed comic art).
+export const PICTURED_PEOPLE_RULE = "This image contains no people and no stick figures; any people appear only as small flat drawings inside the artwork, drawn as simple stickmen in the same flat style — never detailed comic or realistic art.";
 
 export const AVOID_TAIL = "Avoid: shading, gradients, texture, realistic anatomy, fingers, necks, detailed faces, 3D rendering, painterly or sketchy lines, drop shadows, glow effects, multiple panels unless specified, character reference sheets, turnaround views, and any text not explicitly requested.";
 
@@ -43,7 +59,8 @@ export function castBlock(c: CastIdentity, presence: Presence): string {
   const face = c.faceMarks ? ` and ${c.faceMarks}` : "";
   switch (presence) {
     case "hands":
-      return `${c.displayName}, hands only: two rounded black mitten hands with ${c.sleeves}; no body or face in view.`;
+      // Phase 4b: arms are thin stick lines — never sleeves.
+      return `${c.displayName}, hands only: two rounded black mitten hands at the ends of thin black stick arms; no body or face in view.`;
     case "back":
       return `${c.displayName}, seen from behind: a ${c.skinTone} circle head with ${c.hair}, wearing ${c.outfitShort}.`;
     case "tiny":
@@ -55,10 +72,14 @@ export function castBlock(c: CastIdentity, presence: Presence): string {
 
 export function settingBlock(name: string, v: SettingVariant, opts: { dropMidground?: boolean } = {}): string {
   const mid = opts.dropMidground ? "" : ` midground ${v.midground};`;
-  return `Setting — ${name}: far background ${v.background};${mid} foreground ${v.foreground}. Flat palette: ${v.palette}. Signature objects: ${v.signatureObjects}.`;
+  return `Setting — ${name}: far background ${v.background};${mid} foreground ${v.foreground}. Flat palette: ${v.palette}. Typical things in this place: ${v.signatureObjects}.`;
 }
 export const lightingLine = (v: SettingVariant) => `Lighting: ${v.lighting}.`;
 export const NO_SETTING_BLOCK = "Setting: a plain flat off-white background with no scenery.";
+// A scene with no canonical setting describes its own place in the frame line
+// (e.g. an opera house facade); only graphics get the plain background.
+export const OWN_PLACE_SETTING_BLOCK = "Setting: the place described above, drawn in two or three flat color layers.";
+const GRAPHIC_TREATMENTS = new Set(["SYMBOLIC", "STAT_CARD", "TIMELINE_BAR", "ICON_ROW", "MAP", "SCALE", "COMPARISON", "SPLIT", "OBJECT_DETAIL"]);
 
 // Older bibles only have prose (canonicalAppearance / canonicalDescription).
 // The fallback strips what a standalone prompt must never carry (hex codes,
@@ -109,7 +130,53 @@ export function canonicalSetFromBible(bible: any, fixture?: any): CanonicalSet {
     else if (fixture?.props?.[id]) set.props[id] = { block: fixture.props[id], source: "fixture" };
     else set.props[id] = { block: sanitizeProse(o.canonicalDescription), source: "prose" };
   }
+  return repairStructuredBlocks(set);
+}
+
+// Safety net for bibles whose structured blocks break the standalone rules
+// (the Phase 3b rebuild used ids as display names and put the viewer into
+// setting foregrounds): deterministic, no model call.
+export const humanizeId = (id: string) => { const t = id.replace(/_+/g, " ").trim(); return t.charAt(0).toUpperCase() + t.slice(1); };
+const PERSON_IN_SETTING = /\b(avatar|viewer|stickman|stick figure|person|people|figure)\b/i;
+export function repairStructuredBlocks(set: CanonicalSet): CanonicalSet {
+  const ids = Object.keys(set.cast).concat(Object.keys(set.props)).filter((id) => /[_\d]/.test(id)).sort((a, b) => b.length - a.length);
+  for (const [id, c] of Object.entries(set.cast)) if (c.source === "structured" && (/_/.test(c.displayName) || c.displayName === id)) c.displayName = humanizeId(c.displayName === id ? id : c.displayName);
+  const names: Record<string, string> = Object.fromEntries(ids.map((id) => [id, set.cast[id]?.displayName ?? humanizeId(id)]));
+  const fix = (t: string) => ids.reduce((s, id) => s.split(id).join(names[id]), String(t ?? ""));
+  const castWords = Object.values(set.cast).map((c) => c.displayName);
+  for (const s of Object.values(set.settings)) {
+    if (s.source !== "structured") continue;
+    for (const v of Object.values(s.variants)) {
+      for (const k of ["background", "midground", "foreground", "palette", "signatureObjects", "lighting"] as const) v[k] = fix(v[k]);
+      // A setting describes only the place: a layer with a person in it is replaced.
+      for (const k of ["background", "midground", "foreground"] as const) if (PERSON_IN_SETTING.test(v[k]) || castWords.some((w) => v[k].includes(w))) v[k] = k === "foreground" ? "open ground" : "an empty stretch of the same place";
+    }
+  }
+  for (const p of Object.values(set.props)) {
+    if (p.source === "structured") p.block = fix(p.block);
+    p.block = plainWords(p.block);
+  }
   return set;
+}
+
+// Words that mislead the image model into drawing something else
+// ("spectacled" drew eyeglasses on a face inside the helmet).
+const PLAIN_WORDS: [RegExp, string][] = [
+  [/\b(?:a |an |the )?(?:spectacle[- ]shaped|spectacled|spectacle)\s+(?:eye[- ]?)?guard\b(?:\s+curving over the eyes(?: and nose)?)?/gi, "a goggle-shaped iron eye-and-nose guard"],
+  // An object that "sits" gets legs (5a beat 128: a helmet with little feet).
+  [/\b(helmets?|helmet cases?|skulls?|books?|objects?|artifacts?) sits?\b/gi, "$1 rests"],
+  [/\bsits (alone|under glass|on (?:a|the) (?:pedestal|plinth|shelf|stand))\b/gi, "rests $1"],
+  // "a carved sun disc" drew a sun with a face (Phase 4d beat 58).
+  [/\b(sun discs?)\b(?! with plain)/gi, "$1 with plain straight rays and no face"],
+];
+export function plainWords(text: string): string {
+  return PLAIN_WORDS.reduce((s, [re, to]) => s.replace(re, to), String(text ?? ""));
+}
+
+// The name a prop block starts with ("The Gjermundbu helmet: …" -> "the Gjermundbu helmet").
+export function propName(block: string): string {
+  const head = String(block ?? "").split(":")[0].trim();
+  return head.length && head.length <= 60 ? head.replace(/^(The|A|An)\b/, (w) => w.toLowerCase()) : "";
 }
 
 // A beat's settingVariant (free text from the director) -> a canonical
@@ -126,6 +193,7 @@ const TREATMENT_PHRASE: Record<string, string> = {
   OBJECT_DETAIL: "A close object detail", SYMBOLIC: "A symbolic illustration", COMPARISON: "A side-by-side comparison", SPLIT: "A split-screen comparison",
   MAP: "A simple flat map", TIMELINE_BAR: "A horizontal timeline bar", SCALE: "A scale comparison", STAT_CARD: "A single stat card",
   ICON_ROW: "A row of simple icons", CROWD: "A crowd scene", CALLBACK: "A callback scene",
+  __TIMELINE_V2: "A horizontal timeline with small unlabeled tick marks", __MAP_NO_PEOPLE: "A simple flat map with plain round pin markers",
 };
 const CAMERA_PHRASE: Record<string, string> = {
   EXTREME_WIDE: "extreme wide shot", WIDE: "wide shot", MEDIUM: "medium shot", CLOSE_UP: "close-up", EXTREME_CLOSE_UP: "extreme close-up",
@@ -147,9 +215,108 @@ export function textInstruction(contract: any): string {
     const zone = CENTER_TEXT.has(contract.treatment) ? "centered in the middle of the frame" : "centered across the upper third of the frame";
     return `Exactly one piece of text: "${String(contract.textIntent.text ?? "").trim()}" in heavy bold all-caps yellow letters with a thick black outline, ${zone}. No other text.`;
   }
-  if (mode === "PROGRAMMATIC") return `${NO_TEXT_INSTRUCTION} Keep the lower third of the frame as plain flat background for a later overlay.`;
+  // Text drawn later by code: the top zone for SHORT_TEXT overlays (V2, or a
+  // V3 fallback), the lower third for editor-rendered charts and labels.
+  if (mode === "PROGRAMMATIC") return contract.textIntent?.zone === "top"
+    ? `${NO_TEXT_INSTRUCTION} Leave the entire upper third of the frame empty for a later text overlay: only plain flat sky or wall there, with no heads, symbols, question marks or objects reaching into it.`
+    : `${NO_TEXT_INSTRUCTION} Keep the lower third of the frame as plain flat background for a later overlay.`;
   return NO_TEXT_INSTRUCTION;
 }
+
+/* ============================ People, cases, V2 text (Phase 4d) ============================ */
+
+// Pictures of people (a painting of warriors, a drawn figure) don't put a
+// person in the scene; everything else that names people does.
+const PICTURE_OF = /\b(?:(?:paintings?|drawings?|sketch(?:es)?|carvings?|canvases|comic panels?|posters?|postcards?|photos?)\s+(?:of|shows?|showing|with|depicting)\b|(?:painted|drawn|sketched|printed|carved)\s+)[^,.;]*/gi;
+const LIVE_PEOPLE = /\b(crowds?|audiences?|people|persons?|workers?|painters?|illustrators?|artists?|fans?|figures?|silhouettes?|actors?|warriors?|soldiers?|raiders?|priests?|collectors?|visitors?|viewers?|hands?|man|men|woman|women|child(?:ren)?|stick ?m[ae]n|battle|fights?|brawl|shield ?wall|someone|somebody|archaeologists?|historians?|designers?|composer|mascots?|he|she)\b/i;
+export type PeopleMode = "cast" | "live" | "none" | "pictured";
+export function peopleMode(contract: any, concept: string): PeopleMode {
+  if ((contract.subjects ?? []).length) return "cast";
+  if (contract.treatment === "CROWD") return "live";
+  const stripped = String(concept ?? "").replace(PICTURE_OF, " ");
+  if (LIVE_PEOPLE.test(stripped)) return "live";
+  return stripped === concept ? "none" : "pictured";
+}
+
+// FLUX filled museum cases with stickmen (Phase 4d review: 21, 38, 73, 130, 136).
+const CASE_WORDS = /\b(display cases?|glass cases?|cases?|vitrines?|under glass|pedestals?)\b/i;
+const CASE_OBJECT = /\b(?:an?|the|one|lone|single)\s+((?:[\w-]+\s+){0,3}?(?:helmets?|fragments?|skulls?|vases?|bottles?|artifacts?|artefacts?|objects?|relics?|swords?|shields?|books?|postcards?|lunchbox(?:es)?))\b/i;
+export function caseLine(text: string, concept: string, propBlocks: string[]): string | null {
+  // A mirror in a museum setting was drawn as a display case with a face in it (Phase 4d beat 136).
+  if (/\bmirror\b/i.test(concept)) return "The mirror is a simple upright framed mirror on a stand; there is no display case in this image.";
+  if (!CASE_WORDS.test(text)) return null;
+  const named = propBlocks.map(propName).filter(Boolean);
+  const obj = named.length ? named.join(" and ") : concept.match(CASE_OBJECT)?.[1] ?? null;
+  return obj ? `The display case contains only ${obj}; no person or stick figure is inside any case.` : "Every display case contains only objects; no person or stick figure is inside any case.";
+}
+
+// V2: every letter comes from the overlay, so the concept loses its text
+// phrases and digits ("Timeline dot 1948" drew "1948 1948").
+const NUMBER_TOKEN = /\b(?:c\.\s*)?\d[\d,.]*(?:\s*(?:–|-|to)\s*\d[\d,.]*)?(?:\s*(?:BCE|CE|AD|BC))?(?![\w])/g;
+export function scrubForNoText(concept: string): string {
+  let out = String(concept ?? "");
+  const phrase = findTextPhrase(out);
+  if (phrase) out = out.replace(phrase.match, "");
+  // Capitalized strings are text ("both stamped SOLD OUT of nothing"), with or without a verb.
+  out = out.replace(/,?\s*\b(?:both\s+)?(?:stamped|marked|labell?ed|reading|saying|printed)\s+(?:[A-Z0-9][A-Z0-9'’!?.-]*\s*){1,6}(?:of nothing)?/g, "").replace(/\b[A-Z]{2,}(?:\s+[A-Z]{2,})+\b/g, "");
+  out = neutralizeText(out).replace(NUMBER_TOKEN, "");
+  // Words left dangling where a number was ("highlighting", "lands on").
+  let prev = "";
+  while (prev !== out) {
+    prev = out;
+    out = tidy(out).replace(/\s+(?:on|at|of|to|from|around|along|marking|dated|reading|labeled|highlighting|showing|lands|and)\s*$/i, "");
+  }
+  return tidy(out);
+}
+// Setting blocks written for text-capable tiers invite lettering ("black for
+// text", "a label rectangle"): V2 drops the text role and blanks the labels.
+// Phase 6e-fix proof: "a small display blank label strip", "labeled butchered
+// bones" and "small labeled mounts" still drew caption cards with the prompt's
+// own words (f90160bc 54/87/88) — label strips/cards are dropped outright and
+// "labeled" objects are just the objects.
+export function scrubSettingForNoText(block: string): string {
+  return tidy(String(block ?? "")
+    .replace(/,?\s*[\w-]+ for (?:text|labels?|lettering)\b/gi, "")
+    .replace(/,?\s*(?:with\s+)?(?:an?\s+)?(?:small\s+|tiny\s+)?(?:display\s+)?(?:blank\s+)?(?:labels?|captions?|name|price)\s+(?:strips?|cards?|plaques?|tags?|plates?)\b/gi, "")
+    .replace(/\b(?:labell?ed|captioned|tagged)\s+/gi, "")
+    .replace(/\b(?<!blank )(labels?)\b/gi, "blank $1"));
+}
+export const V2_NO_TEXT_INSTRUCTION = "No letters, numbers or labels anywhere in the image; all text is added later as an overlay. No caption cards, tags or name plates beside objects. Every label, sign, stamp, poster, postcard, banner, marquee, book cover, book spine, book page or manuscript is blank or shows only wavy scribble lines.";
+// Phase 5a: text-bearing objects are described as blank in the V2 concept
+// ("a beer label" drew BOBER BEER, "a manuscript" drew letters).
+const LABEL_OWNERS = "beer|museum|price|shop|wine|bottle|name|luggage|tourist|souvenir|gift";
+const V2_BLANK: [RegExp, string][] = [
+  [new RegExp(`\\b(?<!blank )(${LABEL_OWNERS})[- ](labels?|stamps?|posters?|tickets?|tags?)\\b`, "gi"), "blank $1 $2"],
+  [new RegExp(`\\b(?<!blank |${LABEL_OWNERS.split("|").map((w) => `${w} `).join("|")})(labels?|stamps?|posters?|tickets?)\\b`, "gi"), "blank $1"],
+  [/\b(?<!comic-book |comic |comic-)(manuscripts?|book pages?|pages)\b(?! of wavy)/gi, "$1 of wavy scribble lines"],
+  // Named texts get their name written on them (5a beat 42 drew STACK OF SAGAS).
+  [/\b(?:stack|pile) of sagas\b/gi, "stack of plain old books with blank covers and spines"],
+  [/\bsagas?\b/gi, "plain old book"],
+  // Written-out quantities and stamping are drawn as digits and lettering.
+  [/\bzero\b/gi, "empty ring"],
+  [/\bstamped (across|over|on)\b/gi, "drawn as a flat picture $1"],
+  [/\b(postcards?)\b(?!\s+(?:rack|stand|with only))/gi, "$1 with only a simple picture and no writing"],
+];
+export function blankTextObjects(concept: string): string {
+  return V2_BLANK.reduce((s, [re, to]) => s.replace(re, to), String(concept ?? ""));
+}
+export const UNLABELED_TIMELINE = "The timeline is one plain line with small unlabeled tick marks and dots.";
+
+// Phase 6e-fix (from the f90160bc review: 10 uninvited split screens / comic
+// collages, and realistic hands/toes/anatomy in POV and close-up beats).
+export const SINGLE_FRAME_RULE = "One single continuous picture filling the whole frame — not a comic grid, not panels, no borders, no split screen, no inset boxes.";
+export const TWO_HALVES_RULE = "Exactly two halves side by side, divided by one thin vertical line — never more than two panels, never a comic grid.";
+export const HAND_RULE = "Hands, arms and feet are stickman parts: solid black rounded mitten hands and feet at the ends of thin black stick lines — no realistic skin, fingers, nails, toes, knuckles, muscles or anatomy, even up close; a body-part close-up is a flat, simple stick-line drawing, never a medical illustration.";
+const BODY_PART = /\b(hands?|palms?|fists?|fingers?|thumbs?|thumbnails?|arms?|foot|feet|toes?|legs?|tendons?|skin|knees?|heels?|soles?|ankles?|wrists?)\b/i;
+export function needsHandRule(c: any, concept: string): boolean {
+  if ((c.subjects ?? []).some((s: any) => s.presence === "hands")) return true;
+  const cam = String(c.composition?.camera ?? "");
+  return cam === "POV" || ((cam === "CLOSE_UP" || cam === "EXTREME_CLOSE_UP") && BODY_PART.test(concept)) || /\b(close[- ]?up|macro)\b/i.test(concept) && BODY_PART.test(concept);
+}
+export function frameRuleFor(c: any, composite: boolean): string {
+  return c.treatment === "SPLIT" || c.treatment === "COMPARISON" ? (composite ? SINGLE_FRAME_RULE : TWO_HALVES_RULE) : SINGLE_FRAME_RULE;
+}
+export const unlabelProp = (block: string) => scrubSettingForNoText(blankTextObjects(block));
 
 /* ============================ Lints ============================ */
 
@@ -157,11 +324,15 @@ export type RendererConfig = { name: string; supportsNegativePrompt: boolean; wa
 export const DEFAULT_RENDERER: RendererConfig = { name: "default", supportsNegativePrompt: false, warnChars: 2000, hardChars: 4000 };
 
 const ID_PATTERN = /\b(cast|set|prop|motif|viewer)_\w+/i;
-const RELATIVE = /\b(same as|previous|earlier|again|the character|as before)\b/i;
+// Back-references to other images only — "an earlier point on the timeline" or
+// "decades earlier" is content, not a reference (Phase 4c false positive).
+const RELATIVE = /\b(same as|as before|again|the character|(?:shown|seen|drawn|pictured) (?:earlier|before|previously)|the (?:earlier|previous) (?:beat|scene|image|shot|frame|panel|picture)|previous (?:beat|scene|image|shot|frame|panel))\b/i;
 const FACE_FEATURES = /\b(beard|mustache|moustache|stubble|teeth|eyelash(es)?|pupils?|lips|wrinkles?|nostrils?)\b/i;
+// Clothing that gives stick limbs volume (every model drew chunky bodies from these).
+export const BODY_VOLUME = /\b(trousers|pants|leggings|jeans|sleeves to the wrist|long sleeves|boots to the knee|knee[- ]high boots)\b/i;
 export const estimateTokens = (s: string) => Math.ceil(s.length / 4);
 
-export function lintPrompt(prompt: string, textSection: string, ctx: { bibleIds: string[]; requiredBlocks: string[] }): string[] {
+export function lintPrompt(prompt: string, textSection: string, ctx: { bibleIds: string[]; requiredBlocks: string[]; castBlocks?: string[] }): string[] {
   const errors: string[] = [];
   const id = prompt.match(ID_PATTERN);
   if (id) errors.push(`internal_id: "${id[0]}"`);
@@ -172,6 +343,11 @@ export function lintPrompt(prompt: string, textSection: string, ctx: { bibleIds:
   if (/["“”]/.test(outside)) errors.push("quoted_string_outside_text");
   const face = prompt.match(FACE_FEATURES);
   if (face) errors.push(`face_modifier_not_allowed: "${face[0]}"`);
+  // Phase 4b: cast blocks describe a torso shape only — limbs stay stick lines.
+  for (const b of ctx.castBlocks ?? []) {
+    const v = b.match(BODY_VOLUME);
+    if (v) errors.push(`cast_block_volume: "${v[0]}"`);
+  }
   for (const b of ctx.requiredBlocks) if (!prompt.includes(b)) errors.push(`canonical_block_missing_or_altered: "${b.slice(0, 50)}…"`);
   return [...new Set(errors)];
 }
@@ -211,8 +387,8 @@ function sanitizeConcept(concept: string, set: CanonicalSet): { text: string; ch
   return { text, changed: text !== concept };
 }
 
-function assemble(parts: { frame: string; subjects: string[]; props: string[]; setting: string; lighting: string | null; text: string }, renderer: RendererConfig) {
-  const positive = [STYLE_HEADER, parts.frame, ...(parts.subjects.length ? [`Subjects: ${parts.subjects.join(" ")}`] : []), ...(parts.props.length ? [`Props: ${parts.props.join(" ")}`] : []), parts.setting, ...(parts.lighting ? [parts.lighting] : []), parts.text].join("\n");
+function assemble(parts: { header?: string; frame: string; subjects: string[]; props: string[]; setting: string; lighting: string | null; rules?: string[]; text: string }, renderer: RendererConfig) {
+  const positive = [parts.header ?? STYLE_HEADER, parts.frame, ...(parts.subjects.length ? [`Subjects: ${parts.subjects.join(" ")}`] : []), ...(parts.props.length ? [`Props: ${parts.props.join(" ")}`] : []), parts.setting, ...(parts.lighting ? [parts.lighting] : []), ...(parts.rules ?? []), parts.text].join("\n");
   const prompt = renderer.supportsNegativePrompt ? positive : `${positive}\n${AVOID_TAIL}`;
   return { positive, prompt };
 }
@@ -289,6 +465,13 @@ export function resolveTextLeak(contract: any, concept: string, canAddShortText:
   if (textImplied(to)) to = neutralizeText(to);
   return { contract: withFraming(contract), concept: to || concept, resolution: { action: phrase ? "stripped" : "neutralized", from: concept, to } };
 }
+// Drawn "?" / "!" symbols (over a head or floating) — removed from the concept
+// of any beat that carries headline text.
+const DRAWN_SYMBOL = /,?\s*(?:with\s+)?(?:an?\s+|the\s+)?(?:big\s+|small\s+|floating\s+|giant\s+|little\s+)?(?:question|exclamation)\s+marks?(?:\s+floating)?(?:\s+(?:over|above|beside|next to)\s+[^,.;]+)?/gi;
+export function dropDrawnSymbols(concept: string): string {
+  return String(concept ?? "").replace(DRAWN_SYMBOL, "").replace(/\s{2,}/g, " ").replace(/\s+([,.;])/g, "$1").replace(/^[,;\s]+|[,;\s]+$/g, "").trim();
+}
+
 // Expression word -> explicit face construction, using only the style's own
 // parts (dot eyes, eyebrows, mouth line) and the allowed modifiers.
 export const FACE_MAP: [RegExp, string][] = [
@@ -329,16 +512,28 @@ export function layoutFor(subjects: any[]): string[] {
   return subjects.map((s, k) => POSITION_PREFIX[s.position ?? (s.presence === "tiny" ? "background" : defaults[k] ?? "background")]);
 }
 
-export function compileBeatPrompt(beat: { sequence: number; startMs: number; endMs: number; narrationText: string; contract: any }, set: CanonicalSet, opts: { renderer?: RendererConfig; plantFrame?: string | null; bibleIds?: string[]; canAddShortText?: () => boolean } = {}): CompiledPrompt {
+// noTextAnywhere (V2): the model draws no letters or digits at all — every
+// piece of text is a later overlay, and timelines use unlabeled tick marks.
+export function compileBeatPrompt(beat: { sequence: number; startMs: number; endMs: number; narrationText: string; contract: any }, set: CanonicalSet, opts: { renderer?: RendererConfig; plantFrame?: string | null; bibleIds?: string[]; canAddShortText?: () => boolean; noTextAnywhere?: boolean } = {}): CompiledPrompt {
   const renderer = opts.renderer ?? DEFAULT_RENDERER;
-  const sanitized = sanitizeConcept(beat.contract.visualConcept, set);
+  const sanitized = sanitizeConcept(plainWords(beat.contract.visualConcept), set);
   const leak = resolveTextLeak(beat.contract, sanitized.text, opts.canAddShortText ?? (() => false));
   const c = leak.contract;
-  const concept = leak.concept;
+  // A beat with headline text never also gets a drawn "?" / "!" over a head —
+  // it collided with the headline in every Phase 4c variant.
+  const textBeat = c.textIntent?.mode === "SHORT_TEXT" || (c.textIntent?.mode === "PROGRAMMATIC" && c.textIntent?.zone === "top");
+  const symbolFree = textBeat ? dropDrawnSymbols(leak.concept) : leak.concept;
+  const concept = opts.noTextAnywhere ? blankTextObjects(scrubForNoText(symbolFree) || symbolFree) : symbolFree;
   const changed = sanitized.changed;
-  const frame = c.treatment === "CALLBACK" && opts.plantFrame ? opts.plantFrame : frameLine(c, concept);
+  const people = peopleMode(c, concept);
+  // The cast decides, nothing else: no cast -> no stickman paragraph + the no-people sentence.
+  const noPeople = people !== "cast";
+  const header = noPeople ? NO_PEOPLE_STYLE_HEADER : STYLE_HEADER;
+  const frameC = opts.noTextAnywhere && c.treatment === "TIMELINE_BAR" ? { ...c, treatment: "__TIMELINE_V2" } : noPeople && c.treatment === "MAP" ? { ...c, treatment: "__MAP_NO_PEOPLE" } : c;
+  const frame = c.treatment === "CALLBACK" && opts.plantFrame ? opts.plantFrame : frameLine(frameC, concept);
 
   const blocksUsed: string[] = [];
+  const castBlocks: string[] = [];
   const carried = new Set<string>();
   const positions = layoutFor(c.subjects ?? []);
   const subjects = (c.subjects ?? []).map((s: any, k: number) => {
@@ -348,38 +543,49 @@ export function compileBeatPrompt(beat: { sequence: number; startMs: number; end
     const who = (s.outfit && base.variants?.[s.outfit]) || base;
     const block = castBlock(who, (s.presence ?? "full") as Presence);
     blocksUsed.push(block);
+    castBlocks.push(block);
     const worn = (s.wearing ?? []).filter((p: string) => set.props[p]).map((p: string) => { carried.add(p); blocksUsed.push(set.props[p].block); return ` Wearing: ${set.props[p].block}`; }).join("");
     const held = (s.holding ?? []).filter((p: string) => set.props[p]).map((p: string) => { carried.add(p); blocksUsed.push(set.props[p].block); return ` Holding: ${set.props[p].block}`; }).join("");
     const action = String(s.action ?? "").trim();
     const face = s.presence === "hands" || s.presence === "back" ? "" : ` Face: ${faceFor(s.expression, action)}.`;
     return `${positions[k]}${block}${worn}${held}${action ? ` Pose: ${action}.` : ""}${face}`;
   });
-  const props = (c.propIds ?? []).filter((p: string) => set.props[p] && !carried.has(p)).map((p: string) => { blocksUsed.push(set.props[p].block); return set.props[p].block; });
-  const text = textInstruction(c);
+  // Phase 6e-fix: with no text wanted, props are unlabelled ("labelled trays" drew "Butchered bones").
+  const props = (c.propIds ?? []).filter((p: string) => set.props[p] && !carried.has(p)).map((p: string) => { blocksUsed.push(set.props[p].block); return opts.noTextAnywhere ? unlabelProp(set.props[p].block) : set.props[p].block; });
+  const baseText = opts.noTextAnywhere && c.textIntent?.mode === "SHORT_TEXT" ? textInstruction({ ...c, textIntent: { ...c.textIntent, mode: "PROGRAMMATIC", zone: "top" } }) : textInstruction(c);
+  const text = opts.noTextAnywhere
+    ? `${baseText.replace(NO_TEXT_INSTRUCTION, V2_NO_TEXT_INSTRUCTION)}${c.treatment === "TIMELINE_BAR" ? ` ${UNLABELED_TIMELINE}` : ""}`
+    : baseText;
+  const peopleRule = people === "cast" ? null : people === "pictured" ? PICTURED_PEOPLE_RULE : NO_PEOPLE_RULE;
+  const allPropBlocks = (c.propIds ?? []).filter((p: string) => set.props[p]).map((p: string) => set.props[p].block);
+  const compositeSplit = Array.isArray(c.splitSettings) && c.splitSettings.length === 2 && (c.treatment === "SPLIT" || c.treatment === "COMPARISON");
+  const rulesFor = (settingText: string) => [peopleRule, caseLine(`${concept} ${c.composition?.framing ?? ""} ${settingText}`, concept, allPropBlocks), frameRuleFor(c, compositeSplit), needsHandRule(c, concept) ? HAND_RULE : null].filter((r): r is string => !!r);
 
   const buildSetting = (settingId: string | null, dropMidground: boolean) => {
     const s = settingId ? set.settings[settingId] : null;
-    if (!s) return { block: NO_SETTING_BLOCK, lighting: null as string | null };
+    if (!s) return { block: GRAPHIC_TREATMENTS.has(c.treatment) ? NO_SETTING_BLOCK : OWN_PLACE_SETTING_BLOCK, lighting: null as string | null };
     const v = s.variants[pickVariant(s.variants, c.settingVariant)];
-    return { block: settingBlock(s.name, v, { dropMidground }), lighting: v.lighting ? lightingLine(v) : null };
+    const block = settingBlock(s.name, v, { dropMidground });
+    return { block: opts.noTextAnywhere ? scrubSettingForNoText(block) : block, lighting: v.lighting ? lightingLine(v) : null };
   };
 
   const compileOne = (settingId: string | null, frameText: string) => {
     const trimmed: string[] = [];
     let st = buildSetting(settingId, false);
     let lighting = st.lighting;
-    let out = assemble({ frame: frameText, subjects, props, setting: st.block, lighting, text }, renderer);
+    const rules = rulesFor(st.block);
+    let out = assemble({ header, frame: frameText, subjects, props, setting: st.block, lighting, rules, text }, renderer);
     // Trim order when over the hard budget: setting midground -> lighting.
     // Never the style header, cast identity or text instruction.
     if (out.prompt.length > renderer.hardChars && settingId) {
       st = buildSetting(settingId, true);
       trimmed.push("setting_midground");
-      out = assemble({ frame: frameText, subjects, props, setting: st.block, lighting, text }, renderer);
+      out = assemble({ header, frame: frameText, subjects, props, setting: st.block, lighting, rules, text }, renderer);
     }
     if (out.prompt.length > renderer.hardChars && lighting) {
       lighting = null;
       trimmed.push("lighting");
-      out = assemble({ frame: frameText, subjects, props, setting: st.block, lighting, text }, renderer);
+      out = assemble({ header, frame: frameText, subjects, props, setting: st.block, lighting, rules, text }, renderer);
     }
     return { ...out, trimmed, settingBlock: st.block };
   };
@@ -387,7 +593,7 @@ export function compileBeatPrompt(beat: { sequence: number; startMs: number; end
   const splitSettings: string[] | null = Array.isArray(c.splitSettings) && c.splitSettings.length === 2 && (c.treatment === "SPLIT" || c.treatment === "COMPARISON") ? c.splitSettings : null;
   const main = compileOne(splitSettings ? splitSettings[0] : c.settingId ?? null, frame);
   const bibleIds = opts.bibleIds ?? [];
-  const lintErrors = lintPrompt(main.prompt, text, { bibleIds, requiredBlocks: blocksUsed });
+  const lintErrors = lintPrompt(main.prompt, text, { bibleIds, requiredBlocks: blocksUsed, castBlocks });
   const lintWarnings: string[] = [];
   if (main.prompt.length > renderer.warnChars) lintWarnings.push(`over_${renderer.warnChars}_chars`);
   // Never a contradictory text instruction: after resolution, a beat that
@@ -397,6 +603,17 @@ export function compileBeatPrompt(beat: { sequence: number; startMs: number; end
   if (main.prompt.length > renderer.hardChars) lintErrors.push(`over_${renderer.hardChars}_chars`);
   for (const [id, cast] of Object.entries(set.cast)) if ((c.subjects ?? []).some((s: any) => s.castId === id) && cast.source === "prose") lintWarnings.push(`cast_from_prose_fallback: ${id}`);
   if ((c.subjects ?? []).some((s: any) => !set.cast[s.castId])) lintErrors.push("cast_unknown");
+  // Phase 4d IP guard (HARD): the image never shows a real brand, team or
+  // copyrighted character — the narration may name them, the prompt may not.
+  const ip = main.positive.match(IP_MARKS) ?? main.positive.match(IP_LOOKALIKE);
+  if (ip) lintErrors.push(`ip_reference: "${ip[0].slice(0, 60)}"`);
+  // Header contract (HARD): the stickman paragraph iff the beat has cast.
+  const hasCast = people === "cast";
+  if (!main.positive.startsWith(STYLE_GLOBAL)) lintErrors.push("style_global_missing");
+  if (main.positive.includes(STYLE_PEOPLE) !== hasCast) lintErrors.push(hasCast ? "stickman_paragraph_missing" : "stickman_paragraph_without_cast");
+  if (!hasCast && !main.positive.includes("no stick figures")) lintErrors.push("no_people_sentence_missing");
+  // An empty-cast concept that names live people contradicts the no-people sentence (warning).
+  if (people === "live") lintWarnings.push("people_named_without_cast");
 
   let halves: CompiledPrompt["halves"];
   if (splitSettings) {
@@ -405,7 +622,7 @@ export function compileBeatPrompt(beat: { sequence: number; startMs: number; end
     halves = (["left", "right"] as const).map((side, k) => {
       const halfFrame = frameLine({ ...c, treatment: "STORY_SCENE" }, sanitizeConcept(concepts[k], set).text).replace(/^A story scene/, `The ${side} half of a split comparison (a standalone 8:9 panel)`);
       const h = compileOne(splitSettings[k], halfFrame);
-      for (const e of lintPrompt(h.prompt, text, { bibleIds, requiredBlocks: blocksUsed })) lintErrors.push(`${side}: ${e}`);
+      for (const e of lintPrompt(h.prompt, text, { bibleIds, requiredBlocks: blocksUsed, castBlocks })) lintErrors.push(`${side}: ${e}`);
       return { side, prompt: h.prompt, positivePrompt: h.positive, chars: h.prompt.length };
     });
   }
@@ -436,7 +653,10 @@ export function compilePlan(beats: any[], bible: any, opts: { fixture?: any; ren
   if (opts.annotations) {
     beats = beats.map((b) => {
       const ann = opts.annotations![String(b.sequence)];
-      return ann ? { ...b, contract: { ...b.contract, subjects: (b.contract.subjects ?? []).map((s: any) => ({ ...s, ...(ann[s.castId] ?? {}) })) } } : b;
+      if (!ann) return b;
+      // "_contract": beat-level overrides (e.g. a revised concept); other keys are per-cast additions.
+      const contract = { ...b.contract, ...(ann._contract ?? {}) };
+      return { ...b, contract: { ...contract, subjects: (contract.subjects ?? []).map((s: any) => ({ ...s, ...(ann[s.castId] ?? {}) })) } };
     });
   }
   // The plan's SHORT_TEXT allowance (~4/minute) bounds text-leak conversions.

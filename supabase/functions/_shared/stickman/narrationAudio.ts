@@ -88,6 +88,24 @@ export async function synthesizeNarrationAudio(args: { elevenLabsKey: string; te
   return { audioBase64, mimeType: "audio/mpeg", durationSeconds, rawAlignment, characterCost: cost != null && cost !== "" && Number.isFinite(Number(cost)) ? Number(cost) : null, requestId: res.headers.get("request-id") };
 }
 
+// Phase 6a narration fix — decode the (~12 MB) base64 MP3 NATIVELY. The old
+// `Uint8Array.from(atob(b64), c => c.charCodeAt(0))` ran a JS callback per
+// character: ~12.5M calls for a 1,434-word script, enough to cross the edge
+// runtime's CPU limit — the isolate was killed mid-run, no catch ran, and the
+// row sat at "generating" forever (the 2026-09-28 "stuck narration").
+export async function decodeBase64Native(b64: string, mime = "audio/mpeg"): Promise<Uint8Array> {
+  return new Uint8Array(await (await fetch(`data:${mime};base64,${b64}`)).arrayBuffer());
+}
+
+// Measured: 6,310 characters -> ready in 13 s (Phase 2b). Honest range for a
+// script of `chars` characters: [typical, slow] seconds.
+export function narrationEtaSeconds(chars: number): [number, number] {
+  return [Math.max(10, Math.round(chars / 700)), Math.max(30, Math.round(chars / 200) + 10)];
+}
+// The watchdog: no progress for (slow estimate + 90 s) -> the lease expires.
+export const narrationLeaseMs = (chars: number) => (narrationEtaSeconds(chars)[1] + 90) * 1000;
+export const NARRATION_MAX_ATTEMPTS = 2;
+
 // Pure — re-derivable from a stored raw_provider_alignment with NO new
 // provider call, which is exactly what Section 10's "reconcile alignment
 // separately" path needs.

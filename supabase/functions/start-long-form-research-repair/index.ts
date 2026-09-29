@@ -25,6 +25,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { requireUser } from "../shared/auth.ts";
+import { fetchActiveGenerationProfile, isStickmanProfile } from "../_shared/stickman/recipeProfile.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -71,6 +72,13 @@ Deno.serve(async (req) => {
   if (!projectId) return err(req, "Missing projectId", 400);
 
   const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+
+  // Phase 6a: research-lite is a helper for Stickman — it never gates, and
+  // the legacy "Research missing sections" repair never runs for Stickman
+  // (the stuck "How did ancient humans hunt" run started exactly this).
+  if (isStickmanProfile(await fetchActiveGenerationProfile(admin, projectId))) {
+    return err(req, "Stickman projects don't use repair research", 409, { code: "STICKMAN_NO_REPAIR" });
+  }
 
   const { data: project } = await admin.from("long_form_projects").select("*").eq("id", projectId).maybeSingle();
   if (!project) return err(req, "Project not found", 404);

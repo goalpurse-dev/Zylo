@@ -1,7 +1,8 @@
-// Built-in data for the Phase 2 mock backend. Placeholder content only —
-// Phase 3 serves the real character library, ideas and scripts.
+// Built-in data for the mock backend. Characters are the real library
+// (libraryData.js, generated from the fruit_characters seed); ideas, lines and
+// media are placeholders until Phase 3 serves them.
 
-const IMG = "/viral-builder/ai-fruit/characters";
+import { LIBRARY } from "./libraryData.js";
 
 /** Avatar for characters without artwork: the fruit emoji on a tinted card. */
 export function emojiAvatar(emoji, hue) {
@@ -9,39 +10,13 @@ export function emojiAvatar(emoji, hue) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
-const char = (id, name, fruit, emoji, tag, role, gender, voiceStyle, hue, image) => ({
-  id, name, fruit, emoji, tag, role, gender, voiceStyle, hue,
-  refImageUrl: image ? `${IMG}/${image}` : emojiAvatar(emoji, hue),
-});
-
-/** @type {import("../fruitStoryV2Api").Character[]} */
-export const CHARACTERS = [
-  char("mia",    "Mia Mango",      "mango",      "🥭", "Wife",         "Calm, patient schemer",      "female", "calm, low, deliberate", 38),
-  char("marco",  "Marco Mango",    "mango",      "🥭", "Husband",      "Charming, smooth liar",      "male",   "smooth, confident",     22, "bossmango.png"),
-  char("pia",    "Pia Peach",      "peach",      "🍑", "Rival",        "Glamorous other woman",      "female", "sweet, teasing",        12, "hotpeach.webp"),
-  char("rick",   "Rick Crisp",     "apple",      "🍎", "Boss",         "Loud CEO, bad liar",         "male",   "loud, blustering",      0),
-  char("bella",  "Bella Berry",    "strawberry", "🍓", "Intern",       "Sweet intern with secrets",  "female", "bright, nervous",       345),
-  char("marg",   "Margaret Crisp", "green apple","🍏", "Wife",         "Icy co-founder",             "female", "cold, precise",         95),
-  char("gloria", "Gloria Grape",   "grape",      "🍇", "Receptionist", "Office gossip, 19 years",    "female", "fast, gleeful",         275),
-  char("linda",  "Linda Lemon",    "lemon",      "🍋", "HR",           "Sour HR director",           "female", "clipped, formal",       55),
-  char("benny",  "Benny Banana",   "banana",     "🍌", "Boyfriend",    "Nervous over-explainer",     "male",   "fast, shaky",           48, "banana.png"),
-  char("pina",   "Big Pina",       "pineapple",  "🍍", "Kingpin",      "Cellblock kingpin",          "male",   "deep, slow, menacing",  42, "gangsterpineapple.png"),
-  char("coco",   "Coco",           "coconut",    "🥥", "Enforcer",     "Silent enforcer",            "male",   "rare, gravelly",        25),
-  char("olive",  "Olivia Orange",  "orange",     "🍊", "Mom",          "Protective mom",             "female", "warm, firm",            28, "orangemom.png"),
-  char("kiki",   "Kiki Kiwi",      "kiwi",       "🥝", "Friend",       "Loyal best friend",          "female", "upbeat, loyal",         88),
-  char("walt",   "Walt Melon",     "watermelon", "🍉", "Husband",      "Rich, clueless husband",     "male",   "cheerful, oblivious",   140),
-  char("ana",    "Ana Pineapple",  "pineapple",  "🍍", "Influencer",   "Lives for the drama",        "female", "bubbly, dramatic",      45, "ananasgirl.png"),
-  char("sally",  "Sally Strawberry","strawberry","🍓", "Mother-in-law","Never leaves, never forgets","female", "sweet, passive-aggressive", 350, "strawberrymom.png"),
-  char("andy",   "Andy Apple",     "apple",      "🍎", "Son",          "Spoiled only child",         "male",   "whiny, entitled",       5, "appleson.png"),
-  char("leo",    "Leo Lemon",      "lemon",      "🍋", "Kid",          "Says the quiet part loud",   "male",   "blunt, loud",           58, "lemonkid.webp"),
-  char("ollie",  "Ollie Orange",   "orange",     "🍊", "Kid",          "Tiny detective",             "male",   "curious, squeaky",      30, "orangekid.webp"),
-  char("brock",  "Brock Broccoli", "broccoli",   "🥦", "Landlord",     "Raises rent every scene",    "male",   "gruff, greedy",         120, "brockolliboss.png"),
-];
+/** The real character library (same data as the fruit_characters table). */
+export const CHARACTERS = LIBRARY;
 
 export const characterById = (id) => CHARACTERS.find((c) => c.id === id);
 export const firstName = (id) => (characterById(id)?.name ?? "Someone").split(" ")[0];
 
-/** Two pages of 5 ideas; getIdeas({seed}) walks through them. Library characters only. */
+/** Pages of 5 ideas; getIdeas({seed}) walks through them. Library characters only (tested). */
 export const IDEA_SETS = [
   [
     { id: "idea-revenge-dinner", title: "The perfect revenge dinner", summary: "She finds the photos, stays calm, and invites his lover to their anniversary dinner.", castIds: ["mia", "marco", "pia"] },

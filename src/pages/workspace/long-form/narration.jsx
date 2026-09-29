@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { AudioLines, CheckCircle2, Mic, Pause, Play, RotateCw, TriangleAlert, Volume2 } from "lucide-react";
+import { AudioLines, Mic, Pause, Play, RotateCw, TriangleAlert } from "lucide-react";
 import { fetchLongFormProject } from "./project";
 import { supabase } from "../../../lib/supabaseClient";
 import { fetchActiveGenerationProfile, isStickmanRecipeProfile } from "./productionProfile";
-import { fetchLatestNarrationAudio, generateNarrationAudio, reconcileNarrationAlignment, changeNarrationVoice, fetchBeatDirectorReadiness, STICKMAN_VOICE_OPTIONS } from "./narration";
+import { fetchLatestNarrationAudio, fetchNarrationStatus, generateNarrationAudio, reconcileNarrationAlignment, changeNarrationVoice, fetchBeatDirectorReadiness } from "./narration";
 import { LongFormActionFooter, LongFormCreationHeader } from "./shared";
+import VoiceLibraryDialog from "./VoiceLibraryDialog";
+import { findVoice } from "../../../lib/voiceCatalog";
+import { findNiche } from "./niches";
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -17,14 +20,39 @@ function formatDuration(seconds) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-function NarrationLoadingState({ heading, microCopy }) {
+const voiceName = (voiceId) => findVoice(voiceId)?.name ?? "Custom voice";
+
+// Phase 6b: display only. Everything here comes from the server (status,
+// start time, server clock, ETA range from the script's length) — recovery
+// of a stalled run is the server watchdog's job, never this page's.
+export function NarrationProgress({ serverStatus, nowMs, clockOffsetMs, voiceId, locking }) {
+  const startedMs = serverStatus?.startedAt ? Date.parse(serverStatus.startedAt) : null;
+  const elapsed = startedMs ? Math.max(0, (nowMs - clockOffsetMs - startedMs) / 1000) : null;
+  const [lo, hi] = serverStatus?.etaSeconds ?? [0, 0];
+  const round5 = (s) => Math.max(5, Math.round(s / 5) * 5);
+  const eta = hi ? `usually ${round5(lo)}–${round5(hi)} s` : null;
+  const status = locking ? "Locking your script…"
+    : serverStatus?.resuming ? "It paused — resuming from where it stopped…"
+    : elapsed != null && hi && elapsed > hi ? "Taking longer than usual — still working"
+    : "Recording the voiceover and timing every word";
+  const pct = elapsed != null && hi ? Math.min(95, Math.round((elapsed / hi) * 100)) : 4;
   return (
-    <div className="mx-auto flex max-w-[420px] flex-col items-center px-4 py-24 text-center">
-      <div className="mb-5 grid h-14 w-14 place-items-center rounded-2xl border border-lime-300/25 bg-lime-300/[0.06] text-lime-300">
+    <div data-testid="narration-progress" className="mx-auto mt-10 max-w-[480px] rounded-2xl border border-white/[0.09] bg-[#151719] p-6 text-center">
+      <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-lime-300/25 bg-lime-300/[0.06] text-lime-300">
         <AudioLines className="h-6 w-6 animate-pulse" strokeWidth={1.8} />
       </div>
-      <h1 className="text-[19px] font-bold text-white">{heading}</h1>
-      <p className="mt-2 text-[13.5px] leading-relaxed text-white/45">{microCopy}</p>
+      <h1 className="text-[19px] font-bold text-white">Preparing your narration…</h1>
+      <p className="mt-1.5 text-[13px] text-white/55">{status}</p>
+      {voiceId && <p className="mt-3 text-[13px] text-white/55">Voice: <span className="font-semibold text-white">{voiceName(voiceId)}</span></p>}
+      <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+        <div className="h-full rounded-full bg-lime-300 transition-[width] duration-1000" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="mt-2.5 flex items-center justify-between text-[12.5px] tabular-nums">
+        <span data-testid="narration-elapsed" className="font-semibold text-white/80">{elapsed != null ? `${formatDuration(elapsed)} elapsed` : "Starting…"}</span>
+        <span data-testid="narration-eta" className="text-white/45">{eta ?? "estimating…"}</span>
+      </div>
+      {serverStatus?.characterCount ? <p className="mt-3 text-[11.5px] text-white/30">{serverStatus.characterCount.toLocaleString("en-US")} characters of script{serverStatus?.attempt > 1 ? " · second attempt" : ""}</p> : null}
+      <p className="mt-4 text-[12px] leading-relaxed text-white/35">This runs on our servers — you can close this page and come back.</p>
     </div>
   );
 }
@@ -55,56 +83,6 @@ function TranscriptSegment({ segment, active, currentTime, onSeek }) {
   );
 }
 
-function VoicePickerModal({ current, onCancel, onConfirm, allowanceRemaining }) {
-  const [selected, setSelected] = useState(current);
-  const changed = selected.voiceId !== current.voiceId;
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center" onClick={onCancel}>
-      <div className="w-full max-w-[440px] rounded-t-2xl border border-white/10 bg-[#131516] p-5 sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-[16px] font-bold text-white">Change Voice</h2>
-        <p className="mt-1 text-[12.5px] text-white/45">Choosing a different voice regenerates your narration audio from scratch.</p>
-        <div className="mt-4 space-y-2">
-          {STICKMAN_VOICE_OPTIONS.map((v) => (
-            <button
-              key={v.voiceId}
-              type="button"
-              onClick={() => setSelected(v)}
-              className={`flex w-full items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-left transition ${
-                selected.voiceId === v.voiceId ? "border-lime-300/40 bg-lime-300/[0.06]" : "border-white/[0.08] bg-white/[0.02] hover:border-white/20"
-              }`}
-            >
-              <span>
-                <span className="block text-[13px] font-semibold text-white">{v.label}</span>
-                <span className="block text-[11.5px] text-white/40">{v.description}</span>
-              </span>
-              {selected.voiceId === v.voiceId && <CheckCircle2 className="h-4 w-4 shrink-0 text-lime-300" />}
-            </button>
-          ))}
-        </div>
-        {changed && (
-          <p className="mt-3 flex items-start gap-2 rounded-xl border border-amber-300/20 bg-amber-300/[0.05] px-3 py-2.5 text-[12px] leading-relaxed text-amber-200">
-            <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            {allowanceRemaining > 0
-              ? "This uses your included voice regeneration for this video."
-              : "You've used your included regeneration — this will cost additional credits."}
-          </p>
-        )}
-        <div className="mt-4 flex items-center justify-end gap-3">
-          <button type="button" onClick={onCancel} className="text-[12.5px] font-semibold text-white/45 hover:text-white">Cancel</button>
-          <button
-            type="button"
-            disabled={!changed}
-            onClick={() => onConfirm(selected)}
-            className={`rounded-xl px-4 py-2.5 text-[13px] font-semibold transition ${changed ? "bg-lime-300 text-[#11150D] hover:bg-lime-200" : "cursor-not-allowed bg-white/[0.06] text-white/30"}`}
-          >
-            Confirm Change
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function LongFormNarration() {
   const { id: projectId } = useParams();
   return <ProjectNarration key={projectId} projectId={projectId} />;
@@ -123,6 +101,11 @@ function ProjectNarration({ projectId }) {
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [actionError, setActionError] = useState(null);
   const reconcileAttemptedRef = useRef(false);
+  const [serverStatus, setServerStatus] = useState(null); // Phase 6a: server progress while preparing
+  const [locking, setLocking] = useState(false);
+  const clockOffsetRef = useRef(0);
+  const [nowTick, setNowTick] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setNowTick(Date.now()), 1000); return () => clearInterval(t); }, []);
   const audioRef = useRef(null);
   const pollTimerRef = useRef(null);
   const mountTokenRef = useRef(0);
@@ -146,13 +129,31 @@ function ProjectNarration({ projectId }) {
     const { data: scriptVersion } = await supabase.from("long_form_script_versions").select("locked_at,locked_generation_profile_id").eq("id", projectRow.current_script_version_id).maybeSingle();
     if (mountTokenRef.current !== token) return;
     if (!scriptVersion?.locked_at || !activeProfile || scriptVersion.locked_generation_profile_id !== activeProfile.id) {
+      // Phase 6b: the autopilot locks the finished script and starts the
+      // narration itself — show progress (and keep polling) while it does.
+      if (projectRow.autopilot?.status === "running") {
+        setLocking(true);
+        setPhase("generating");
+        pollTimerRef.current = setTimeout(() => refresh(token), POLL_INTERVAL_MS);
+        return;
+      }
       setPhase("not-locked");
       return;
     }
+    setLocking(false);
+    // Phase 6a: the script is locked, so the stepper shows Voice (never Script) here.
+    setProject({ ...projectRow, _scriptLocked: true });
 
     const row = await fetchLatestNarrationAudio(projectId, activeProfile.id);
     if (mountTokenRef.current !== token) return;
     setNarration(row);
+    // While it's being prepared, the server reports progress (display only —
+    // the server watchdog resumes a stalled run once, then marks it failed).
+    if (!row || row.status === "generating") {
+      const s = await fetchNarrationStatus(projectId);
+      if (mountTokenRef.current !== token) return;
+      if (s) { if (s.serverNow) clockOffsetRef.current = Date.now() - Date.parse(s.serverNow); setServerStatus(s); }
+    }
 
     let nextPhase = "generating";
     let delay = POLL_INTERVAL_MS;
@@ -201,16 +202,6 @@ function ProjectNarration({ projectId }) {
     if (playing) audioRef.current.pause(); else audioRef.current.play();
   };
 
-  const handleRegenerate = async () => {
-    setBusyAction("regenerate");
-    setActionError(null);
-    const result = await generateNarrationAudio(projectId, { manual: true });
-    setBusyAction(null);
-    if (!result.ok) { setActionError(result.message); return; }
-    reconcileAttemptedRef.current = false;
-    refresh(mountTokenRef.current);
-  };
-
   const handleRetryFailed = async () => {
     setBusyAction("retry");
     setActionError(null);
@@ -235,7 +226,6 @@ function ProjectNarration({ projectId }) {
 
   const stickman = isStickmanRecipeProfile(profile);
   const allowanceRemaining = project ? Math.max(0, (project.included_manual_tts_regenerations ?? 1) - (project.manual_tts_regenerations_used ?? 0)) : 0;
-  const canContinue = readiness?.ready === true;
 
   if (phase === "notfound") {
     return (
@@ -259,10 +249,7 @@ function ProjectNarration({ projectId }) {
     return (
       <div className="mx-auto max-w-[760px] px-4 py-8 lg:px-8 lg:py-10">
         <LongFormCreationHeader current="narration" project={project} stickman={stickman} />
-        <NarrationLoadingState
-          heading="Preparing your narration…"
-          microCopy="Zyvo is generating the voiceover and building the exact word-by-word timeline your video will be built on. This runs in the background — you can leave and come back."
-        />
+        <NarrationProgress serverStatus={serverStatus} nowMs={nowTick} clockOffsetMs={clockOffsetRef.current} voiceId={serverStatus?.voice?.voiceId ?? profile?.voice_id} locking={locking} />
       </div>
     );
   }
@@ -296,100 +283,100 @@ function ProjectNarration({ projectId }) {
           <p className="mt-2 text-[13.5px] leading-relaxed text-white/45">{narration?.last_error_code ? "The voice provider returned an error." : "Something went wrong."} Your Production Bible was unaffected.</p>
           {actionError && <p className="mt-3 text-[12.5px] text-red-300/80">{actionError}</p>}
         </div>
-        <LongFormActionFooter primaryLabel="Try Again" primaryLoadingLabel="Retrying…" onPrimary={handleRetryFailed} primaryLoading={busyAction === "retry"} />
+        <LongFormActionFooter primaryLabel="Retry (free)" primaryLoadingLabel="Retrying…" onPrimary={handleRetryFailed} primaryLoading={busyAction === "retry"} />
       </div>
     );
   }
 
-  // ready
+  // ready — Phase 6b "Listen & change": the player, the voice, and the
+  // script alongside (word-by-word highlight). Changing the voice reopens the
+  // same library as Step 1, with the regeneration cost stated up front.
+  const currentVoice = findVoice(profile?.voice_id);
+  const costNote = allowanceRemaining > 0
+    ? "Changing the voice is free — it uses your 1 included re-record (0 credits)"
+    : "Your included re-record is used — another voice change isn't available for this video";
+  const niche = findNiche(profile?.raw_setup_snapshot?.niche ?? null); // Setup stores the niche in the profile snapshot
   return (
-    <div className="mx-auto max-w-[760px] px-4 py-8 pb-40 lg:px-8 lg:py-10 lg:pb-28">
+    <div className="mx-auto max-w-[1100px] px-4 py-8 pb-40 lg:px-8 lg:py-10 lg:pb-28">
       <LongFormCreationHeader current="narration" project={project} stickman={stickman} />
-      {voiceModalOpen && (
-        <VoicePickerModal
-          current={STICKMAN_VOICE_OPTIONS.find((v) => v.voiceId === profile?.voice_id) ?? STICKMAN_VOICE_OPTIONS[0]}
-          allowanceRemaining={allowanceRemaining}
-          onCancel={() => setVoiceModalOpen(false)}
-          onConfirm={handleChangeVoice}
-        />
-      )}
+      <VoiceLibraryDialog
+        open={voiceModalOpen}
+        currentVoiceId={profile?.voice_id ?? null}
+        niche={niche}
+        costNote={costNote}
+        selectLabel={allowanceRemaining > 0 ? "Re-record with this voice" : "Use this voice"}
+        onClose={() => setVoiceModalOpen(false)}
+        onSelect={(v) => { if (allowanceRemaining > 0 && v.voiceId !== profile?.voice_id) handleChangeVoice(v); else setVoiceModalOpen(false); }}
+      />
 
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-6">
-        <h1 className="text-[24px] font-bold tracking-[-0.02em] text-white lg:text-[26px]">Narration Ready</h1>
-        <p className="mt-1.5 text-[14px] text-white/45">Your real voiceover and exact word timeline — this is the master clock the rest of your video will follow.</p>
+        <h1 className="text-[24px] font-bold tracking-[-0.02em] text-white lg:text-[26px]">Listen &amp; change</h1>
+        <p className="mt-1.5 text-[14px] text-white/45">Your voiceover, timed word by word — the clock the rest of your video follows.</p>
       </motion.div>
 
-      <div className="mb-6 rounded-2xl border border-white/[0.09] bg-[#151719] p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-lime-300/10 text-lime-300"><Mic className="h-4 w-4" /></span>
-            <div>
-              <p className="text-[13px] font-semibold text-white">{STICKMAN_VOICE_OPTIONS.find((v) => v.voiceId === profile?.voice_id)?.label ?? profile?.voice_id ?? "Voice"}</p>
-              <p className="text-[11.5px] text-white/40">{formatDuration(narration?.audio_duration_seconds)} • {segments.length} segments</p>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+        <div className="rounded-2xl border border-white/[0.09] bg-[#151719] p-5 lg:sticky lg:top-6">
+          <div className="flex items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-lime-300/10 text-lime-300"><Mic className="h-4 w-4" /></span>
+            <div className="min-w-0 flex-1">
+              <p data-testid="voice-name" className="truncate text-[15px] font-bold text-white">{currentVoice?.name ?? "Custom voice"}</p>
+              <p className="truncate text-[11.5px] text-white/40">{currentVoice ? currentVoice.tags.join(" · ") : profile?.voice_id}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={() => setVoiceModalOpen(true)} className="rounded-lg border border-white/10 px-3 py-1.5 text-[11.5px] font-semibold text-white/60 transition hover:bg-white/[0.05] hover:text-white">
-              Change Voice
-            </button>
-            <button
-              type="button"
-              disabled={busyAction === "regenerate"}
-              onClick={handleRegenerate}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-[11.5px] font-semibold text-white/60 transition hover:bg-white/[0.05] hover:text-white disabled:opacity-50"
-            >
-              {busyAction === "regenerate" ? <RotateCw className="h-3 w-3 animate-spin" /> : <Volume2 className="h-3 w-3" />}
-              Regenerate Voice
-            </button>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
-          <button type="button" onClick={togglePlay} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-lime-300 text-[#11150D]">
-            {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          <div className="mt-4 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+            <button type="button" aria-label={playing ? "Pause" : "Play"} onClick={togglePlay} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-lime-300 text-[#11150D]">
+              {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 translate-x-[1px]" />}
+            </button>
+            <div className="min-w-0 flex-1">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                <div className="h-full bg-lime-300" style={{ width: `${narration?.audio_duration_seconds ? Math.min(100, (currentTime / narration.audio_duration_seconds) * 100) : 0}%` }} />
+              </div>
+              <p className="mt-1.5 text-[11px] font-medium tabular-nums text-white/40">{formatDuration(currentTime)} / {formatDuration(narration?.audio_duration_seconds)} · {segments.length} segments</p>
+            </div>
+          </div>
+          {narration?.audio_url && (
+            <audio
+              ref={audioRef}
+              src={narration.audio_url}
+              className="hidden"
+              onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+              onPlay={() => setPlaying(true)}
+              onPause={() => setPlaying(false)}
+              onEnded={() => setPlaying(false)}
+            />
+          )}
+
+          <button
+            type="button"
+            data-testid="change-voice"
+            disabled={busyAction === "changeVoice"}
+            onClick={() => setVoiceModalOpen(true)}
+            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-3 py-2.5 text-[13px] font-semibold text-white/80 transition hover:border-lime-300/40 hover:text-white disabled:opacity-50"
+          >
+            {busyAction === "changeVoice" ? <RotateCw className="h-3.5 w-3.5 animate-spin" /> : <Mic className="h-3.5 w-3.5" />}
+            Change voice
           </button>
-          <div className="min-w-0 flex-1">
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-              <div className="h-full bg-lime-300" style={{ width: `${narration?.audio_duration_seconds ? Math.min(100, (currentTime / narration.audio_duration_seconds) * 100) : 0}%` }} />
-            </div>
-          </div>
-          <span className="shrink-0 text-[11px] font-medium text-white/40">{formatDuration(currentTime)} / {formatDuration(narration?.audio_duration_seconds)}</span>
+          <p className="mt-2 text-center text-[11.5px] text-white/35">
+            {allowanceRemaining > 0 ? "1 free re-record included (0 credits)." : "Included re-record used."}
+          </p>
+          {actionError && <p className="mt-3 text-[12px] text-red-300/80">{actionError}</p>}
         </div>
-        {narration?.audio_url && (
-          <audio
-            ref={audioRef}
-            src={narration.audio_url}
-            className="hidden"
-            onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-            onPlay={() => setPlaying(true)}
-            onPause={() => setPlaying(false)}
-            onEnded={() => setPlaying(false)}
-          />
-        )}
-        {actionError && <p className="mt-3 text-[12px] text-red-300/80">{actionError}</p>}
-        <p className="mt-3 text-[11px] text-white/25">
-          {allowanceRemaining > 0 ? "1 included voice regeneration available for this video." : "Included voice regeneration used — further regenerations cost additional credits."}
-        </p>
+
+        <div className="space-y-1 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-3">
+          <p className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-white/30">Script</p>
+          {segments.map((segment, i) => (
+            <TranscriptSegment key={segment.segmentId} segment={segment} active={i === activeSegmentIndex} currentTime={currentTime} onSeek={handleSeek} />
+          ))}
+        </div>
       </div>
 
-      <div className="mb-6 space-y-1 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-3">
-        <p className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-white/30">Transcript</p>
-        {segments.map((segment, i) => (
-          <TranscriptSegment key={segment.segmentId} segment={segment} active={i === activeSegmentIndex} currentTime={currentTime} onSeek={handleSeek} />
-        ))}
-      </div>
-
-      {!canContinue && (
-        <p className="mb-4 flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 text-[12.5px] text-white/45">
-          <RotateCw className="h-3.5 w-3.5 animate-spin" />
-          Preparing production intelligence (Production Bible) — this usually finishes within a minute of narration.
-        </p>
-      )}
-
+      {/* Phase 6e: the Voiceover panel of the Editor (no longer a stop in the flow —
+          the chain goes from the voice straight to the scenes by itself). */}
       <LongFormActionFooter
-        primaryLabel="Continue to Visuals"
-        onPrimary={() => navigate(`/long-form/project/${projectId}/visuals`)}
-        primaryDisabled={!canContinue}
+        primaryLabel="Back to Edit"
+        onPrimary={() => navigate(`/long-form/project/${projectId}/edit`)}
+        maxWidthClassName="max-w-[1100px]"
       />
     </div>
   );

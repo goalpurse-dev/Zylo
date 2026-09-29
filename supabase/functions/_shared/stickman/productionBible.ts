@@ -132,9 +132,9 @@ const STICKMAN_IDENTITY_SCHEMA = {
     skinTone: { type: "string", description: "Color of the circle head, e.g. 'light warm beige'." },
     faceMarks: { type: "string", description: "Empty string, or glasses when part of the identity (e.g. 'small rectangular black glasses'). No beards, mustaches or other facial detail." },
     hair: { type: "string", description: "e.g. 'short-cropped dark brown hair'." },
-    outfit: { type: "string", description: "Full flat-color clothing, e.g. 'a knee-length muted ochre wool tunic, slate-grey trousers and a dark brown belt'." },
+    outfit: { type: "string", description: "Clothing as a flat colored SHAPE on the torso only, e.g. 'a muted ochre tunic shape on the torso with a dark brown belt line, and small dark grey rounded feet'. Arms and legs are ALWAYS thin black stick lines: never trousers, pants, long sleeves or knee boots." },
     outfitShort: { type: "string", description: "The outfit in a few words, for tiny/back views." },
-    sleeves: { type: "string", description: "What the sleeves look like, for hands-only shots, e.g. 'long muted ochre wool sleeves'." },
+    sleeves: { type: "string", description: "Leave empty: arms are thin stick lines in this style (kept for compatibility)." },
     build: { type: "string", description: "e.g. 'stocky adult proportions'." },
     signature: { type: "string", description: "The accessory/prop they carry, e.g. 'a round wooden shield and a short axe'." },
   },
@@ -193,7 +193,7 @@ const OBJECT_LANGUAGE_SCHEMA = {
   properties: {
     id: { type: "string" },
     canonicalDescription: { type: "string", description: "Full canonical prose for this object, inserted verbatim wherever it appears." },
-    promptBlock: { type: "string", description: `ONE self-contained sentence naming the object and its look, inserted word-for-word into image prompts, e.g. 'The Gjermundbu helmet: a rounded dull-grey iron helmet with a spectacle-shaped guard and no horns.' ${NO_IDS}` },
+    promptBlock: { type: "string", description: `ONE self-contained sentence naming the object and its look, inserted word-for-word into image prompts, e.g. 'The Gjermundbu helmet: a rounded dull-grey iron dome helmet with a goggle-shaped iron eye-and-nose guard and no horns.' ${NO_IDS}` },
     whyRecurring: { type: "string", description: "Why this object matters enough to lock (tracked across beats, symbolic, or referred back to) — never a generic prop like 'a cup' or 'a chair'." },
   },
 };
@@ -242,7 +242,7 @@ const DRAFT_SCHEMA = {
         settingBlocks: { type: "array", items: SETTING_BLOCK_SCHEMA, maxItems: 6, description: "One canonical block per setting family (same order), inserted word-for-word into image prompts." },
       },
     },
-    objectLanguage: { type: "array", items: OBJECT_LANGUAGE_SCHEMA, maxItems: 5, description: "ONLY recurring or identity-critical objects — never every object mentioned." },
+    objectLanguage: { type: "array", items: OBJECT_LANGUAGE_SCHEMA, maxItems: 10, description: "Every named artifact or object the script depends on (a named helmet, a mail neck guard, a postcard, a lunchbox), plus recurring identity-critical objects — never incidental background objects." },
     palette: {
       type: "object", additionalProperties: false,
       required: ["primaryColors", "supportingColors", "environmentPaletteRules", "contrastRules", "colorApproach", "monochromeJustification"],
@@ -314,7 +314,9 @@ Only give a RECURRING CHARACTER a locked identity contract if they are genuinely
 
 ROLE ARCHETYPES are different and must NOT be skipped: every generic kind of person the script draws on (a Viking warrior, an archaeologist, a historian, an opera costume designer, a crowd member) gets one roleArchetypes entry with a locked stickman drawing, so every scene draws that role the same way. And whenever the narration places the viewer in a scene ("You're gripping a shield", "Next time you see..."), include the viewer's own stickman avatar — unless the hero IS that viewer. The viewer is era-bound: create ONE viewer avatar per era/context the "you" lines use, each with its own full canonical description (clothing, gear, hair of that era), e.g. id "viewer_viking" for "You're gripping a shield" in a Viking battle and id "viewer_modern" for bridge lines like "your Halloween costume" (the same person in present-day clothes). Present-day "you" lines (a lunchbox, a mascot, a costume, a museum, "next time you see…", "today") ALWAYS need their own viewer_modern, even when the episode opens in the past. Use id exactly "viewer" only when every "you" line shares one context. The viewer is never the hero: when the "you" avatar carries the episode, set hero.exists false and let the viewer_* archetypes carry it. Archetypes are PEOPLE only — objects (a horned helmet) belong in objectLanguage.
 
-PROMPT BLOCKS: image prompts are assembled by code from your canonical text, word-for-word, and must work with NOTHING else. So every archetype's "identity", every object's "promptBlock" and every world.settingBlocks entry must be fully self-contained: plain words and color NAMES (never hex codes), no ids, no "see…", "same as…" or references to other entries, and faces limited to the style (glasses only if part of the identity — no beards or mustaches). identity.displayName is plain words ("A Viking warrior", "The viewer as a Viking raider"), never the id. Each identity is ONE fixed look — no conditions ("when…", "in relevant shots"); a different look is an outfitVariant. Setting blocks describe only the PLACE (no people, no avatars); people are added per beat. Every person the script names gets a cast entry, even if mentioned only once: every kind of person (an archaeologist, a historian) and every named individual ("historian Roberta Frank", "composer Richard Wagner") gets an archetype (or a recurring character if genuinely recurring). continuityMode NONE only means there is no protagonist; it never means "no people": a script with people always produces archetypes.
+PROP BLOCKS FOR NAMED OBJECTS: every named artifact or object the script depends on (a named helmet, a mail neck guard, a nose guard, tourist postcards, a lunchbox) gets an objectLanguage entry whose promptBlock describes it in plain visual words — shapes, materials, colors — and avoids words the image model misreads (not \"spectacled\" but \"a goggle-shaped iron eye-and-nose guard\"). Objects never have faces. A real brand, team logo or copyrighted character is never an object block: use a generic equivalent (\"a football team's horned-helmet logo\").
+
+CAST CHECKLIST: the input's peopleThisScriptNames lists every person that needs a roleArchetypes entry — give each exactly ONE entry (a named person covers their own role, so no separate "painter" next to the painter Gustav Malmstrom), and spend no entries on anyone not on the list except the viewer avatars. PROMPT BLOCKS: image prompts are assembled by code from your canonical text, word-for-word, and must work with NOTHING else. STICKMAN BODIES: clothing is only a flat colored shape on the torso ("a green tunic shape on the torso", "a charcoal coat shape"); arms and legs are ALWAYS thin black stick lines, so never describe trousers, pants, long sleeves or knee boots; feet are small rounded shapes that may be colored. So every archetype's "identity", every object's "promptBlock" and every world.settingBlocks entry must be fully self-contained: plain words and color NAMES (never hex codes), no ids, no "see…", "same as…" or references to other entries, and faces limited to the style (glasses only if part of the identity — no beards or mustaches). identity.displayName is plain words ("A Viking warrior", "The viewer as a Viking raider"), never the id. Each identity is ONE fixed look — no conditions ("when…", "in relevant shots"); a different look is an outfitVariant. Setting blocks describe only the PLACE (no people, no avatars); people are added per beat. Every person the script names gets a cast entry, even if mentioned only once: every kind of person (an archaeologist, a historian) and every named individual ("historian Roberta Frank", "composer Richard Wagner") gets an archetype (or a recurring character if genuinely recurring). continuityMode NONE only means there is no protagonist; it never means "no people": a script with people always produces archetypes.
 
 Palette: default to FULL_COLOR or LIMITED_PALETTE. Only choose MONOCHROME when this specific episode's content genuinely calls for it, and always explain why — never default to grayscale just because a topic feels serious.
 
@@ -329,6 +331,9 @@ export function buildDraftPrompt(input: { topic: string; viewerPromise: string; 
     narrativeStrategy: input.narrativeStrategy || undefined,
     targetAudience: input.targetAudience || undefined,
     researchNotes: input.researchNotes || undefined,
+    // Phase 4c: the cast checklist computed in code — each needs exactly one
+    // roleArchetypes entry; a named person covers their own role.
+    peopleThisScriptNames: requiredPeople(input.finalScript).map((p) => (p.kind === "named" ? `${p.label} (the ${p.role}; covers "${p.role}" — no separate ${p.role} entry)` : `a ${p.key} (mentioned ${p.mentions} times)`)),
     finalScript: input.finalScript,
   });
 }
@@ -426,6 +431,101 @@ const PEOPLE_WORDS = /\b(people|person|man|woman|men|women|warriors?|soldiers?|r
 // Role word (either case) + a capitalised full name; the name itself must be capitalised.
 const NAMED_PERSON = /\b([Hh]istorian|[Cc]omposer|[Cc]artoonist|[Pp]ainter|[Aa]rchaeologist|[Dd]esigner|[Ss]cientist|[Rr]esearcher|[Kk]ing|[Qq]ueen|[Cc]hieftain|[Pp]oet|[Ww]riter|[Aa]rtist|[Ii]llustrator|[Dd]irector|[Ee]xplorer)s?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/g;
 
+/* ============================ Required people (Phase 4c) ============================ */
+
+// Words for the same kind of person count as one role.
+const ROLE_SYNONYMS: Record<string, string> = { raider: "warrior", soldier: "warrior", fighter: "warrior" };
+const GENERIC_PEOPLE = /^(people|person|man|men|woman|women|child|children|crowd|audience)$/;
+export type RequiredPerson = { kind: "named" | "role"; key: string; label: string; role: string; mentions: number };
+
+// The people a script names, as one checklist: every named individual
+// ("historian Roberta Frank" — who also covers "historian"), plus every other
+// kind of person mentioned at least twice. Once-mentioned generic roles are left out.
+export function requiredPeople(scriptText: string): RequiredPerson[] {
+  const out: RequiredPerson[] = [];
+  const coveredRoles = new Set<string>();
+  for (const m of scriptText.matchAll(NAMED_PERSON)) {
+    const role = m[1].toLowerCase();
+    const label = m[2];
+    coveredRoles.add(ROLE_SYNONYMS[role] ?? role);
+    if (!out.some((p) => p.label === label)) out.push({ kind: "named", key: label.split(/\s+/).pop()!.toLowerCase(), label, role, mentions: 1 });
+  }
+  const counts = new Map<string, number>();
+  for (const m of scriptText.match(PEOPLE_WORDS) ?? []) {
+    const base = m.toLowerCase().replace(/s$/, "");
+    const k = ROLE_SYNONYMS[base] ?? base;
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+  for (const [k, n] of counts) if (n >= 2 && !GENERIC_PEOPLE.test(k) && !coveredRoles.has(k)) out.push({ kind: "role", key: k, label: k, role: k, mentions: n });
+  return out;
+}
+
+// Who each entry IS: id, display name and the head of its role — not the
+// role's prose, which mentions other people ("draws horned warriors").
+const roleHead = (role: string) => String(role ?? "").split(/[(,;]| used | who | for | when /)[0];
+export function castTextOf(bible: StickmanProductionBible): string {
+  return [bible.hero?.semanticIdentity ?? "", ...(bible.recurringCharacters ?? []).map((c) => `${c.id} ${roleHead(c.role)}`), ...(bible.roleArchetypes ?? []).filter((a) => !/^viewer(_|$)/.test(a.id)).map((a) => `${a.id} ${roleHead(a.role)} ${a.identity?.displayName ?? ""}`)].join(" ").toLowerCase(); // viewer avatars never stand in for a role
+}
+export function castCovers(castText: string, p: RequiredPerson): boolean {
+  if (p.kind === "named") return castText.includes(p.key);
+  const synonyms = Object.entries(ROLE_SYNONYMS).filter(([, v]) => v === p.key).map(([k]) => k);
+  return [p.key, ...synonyms].some((w) => castText.includes(w));
+}
+
+// Role templates for code-added cast: a torso-shape outfit, a period-neutral
+// look, a plain display name. Unknown roles get the plain default.
+const ROLE_TEMPLATES: Record<string, { outfit: string; outfitShort: string; signature: string; hair: string }> = {
+  warrior: { outfit: "a muted ochre tunic shape on the torso with a dark brown belt line, and small dark grey rounded feet", outfitShort: "a muted ochre tunic shape", signature: "a round wooden shield and a short axe", hair: "short dark brown hair" },
+  historian: { outfit: "a brown tweed jacket shape on the torso with a white collar, and small dark brown rounded feet", outfitShort: "a brown jacket shape", signature: "an open book", hair: "short grey hair" },
+  composer: { outfit: "a black frock-coat shape on the torso with a white cravat, and small black rounded feet", outfitShort: "a black coat shape", signature: "a sheet of music", hair: "swept-back grey hair" },
+  designer: { outfit: "a deep charcoal coat shape on the torso with a burgundy cravat, and small black rounded feet", outfitShort: "a charcoal coat shape", signature: "a rolled-up costume sketch", hair: "neat medium brown hair" },
+  archaeologist: { outfit: "a khaki field-shirt shape on the torso with a dark grey tool-belt line, and small olive rounded feet", outfitShort: "a khaki shirt shape", signature: "a small trowel", hair: "short dark brown hair" },
+  painter: { outfit: "a paint-spotted blue smock shape on the torso, and small dark brown rounded feet", outfitShort: "a blue smock shape", signature: "a paintbrush", hair: "wavy brown hair" },
+  cartoonist: { outfit: "a white shirt shape on the torso with a dark tie line, and small black rounded feet", outfitShort: "a white shirt shape", signature: "a pencil", hair: "short black hair" },
+  priest: { outfit: "a long bronze-yellow robe shape on the torso, and small brown rounded feet", outfitShort: "a bronze-yellow robe shape", signature: "a slim ritual staff", hair: "shoulder-length dark brown hair" },
+};
+const DEFAULT_TEMPLATE = { outfit: "a plain muted grey tunic shape on the torso, and small dark grey rounded feet", outfitShort: "a muted grey tunic shape", signature: "nothing in hand", hair: "short dark brown hair" };
+const VIEWER_TEMPLATES: Record<string, { displayName: string; outfit: string; outfitShort: string; signature: string }> = {
+  modern: { displayName: "The viewer today", outfit: "a plain light grey T-shirt shape on the torso, and small dark blue rounded feet", outfitShort: "a light grey T-shirt shape", signature: "nothing in hand" },
+  past: { displayName: "The viewer in the story's era", outfit: "a muted forest-green tunic shape on the torso with a dark brown belt line, and small dark brown rounded feet", outfitShort: "a muted forest-green tunic shape", signature: "a round wooden shield" },
+};
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+const article = (w: string) => (/^[aeiou]/i.test(w) ? "An" : "A");
+
+function templateEntry(id: string, role: string, displayName: string, t: { outfit: string; outfitShort: string; signature: string; hair: string }): RoleArchetypeContract {
+  const identity: StickmanIdentity = { displayName, skinTone: "light warm beige", faceMarks: "", hair: t.hair, outfit: t.outfit, outfitShort: t.outfitShort, sleeves: "", build: "average adult proportions", signature: t.signature };
+  return { id, role, canonicalAppearance: `${displayName}: a stickman with a light warm beige circle head, ${t.hair}, wearing ${t.outfit}; carrying ${t.signature}.`, usedFor: "Added by code: the script names this person and the bible had no entry for them.", identity, outfitVariants: [] };
+}
+
+// Code fallback after the one repair: add every still-missing required
+// person and viewer context from a template (with a warning each), so a
+// bible never blocks on missing cast. Stays within 16 entries.
+export function addMissingCast(bible: StickmanProductionBible, scriptText: string): { bible: StickmanProductionBible; added: string[] } {
+  const archetypes = [...(bible.roleArchetypes ?? [])];
+  const added: string[] = [];
+  const room = () => archetypes.length < 16;
+  for (const p of requiredPeople(scriptText)) {
+    if (!room() || castCovers(castTextOf({ ...bible, roleArchetypes: archetypes }), p)) continue;
+    const t = ROLE_TEMPLATES[p.role] ?? DEFAULT_TEMPLATE;
+    const entry = p.kind === "named" ? templateEntry(slug(p.label), `${p.role} ${p.label}`, `${p.label}, ${article(p.role).toLowerCase()} ${p.role}`, t) : templateEntry(slug(p.key), `a ${p.key}`, `${article(p.key)} ${p.key}`, t);
+    archetypes.push(entry);
+    added.push(p.label);
+  }
+  const heroIsViewer = bible.hero?.exists && /viewer|second.person|\byou\b/i.test(`${bible.hero.semanticIdentity} ${bible.hero.canonicalAppearance}`);
+  if (!heroIsViewer) {
+    const viewers = archetypes.filter((a) => a.id === "viewer" || a.id.startsWith("viewer_"));
+    const contexts = youContexts(scriptText);
+    for (const era of contexts.keys()) {
+      if (!room() || viewers.some((v) => v.id !== "viewer" && viewerEra(v.id, v.role) === era) || (contexts.size === 1 && viewers.length)) continue;
+      const t = VIEWER_TEMPLATES[era];
+      const id = era === "modern" ? "viewer_modern" : "viewer_past";
+      archetypes.push({ ...templateEntry(id, era === "modern" ? "the viewer today (modern)" : "the viewer in the story's era", t.displayName, { ...t, hair: "short dark brown hair" }) });
+      added.push(id);
+    }
+  }
+  return { bible: { ...bible, roleArchetypes: archetypes }, added };
+}
+
 export function validateBible(bible: StickmanProductionBible, scriptText?: string): string[] {
   const errors: string[] = [];
   const archetypes = bible.roleArchetypes ?? [];
@@ -447,15 +547,11 @@ export function validateBible(bible: StickmanProductionBible, scriptText?: strin
     const youMentions = (scriptText.match(SECOND_PERSON) ?? []).length;
     if (castCount === 0 && (peopleMentions >= 3 || youMentions >= 5)) errors.push("NO_CAST_FOR_SCRIPT_WITH_PEOPLE — add roleArchetypes for the kinds of people the script shows (and id 'viewer' for 'you' scenes)");
     const heroIsViewer = bible.hero?.exists && /viewer|second.person|\byou\b/i.test(`${bible.hero.semanticIdentity} ${bible.hero.canonicalAppearance}`);
-    // A kind of person the script keeps returning to (>= 3 mentions) with no
-    // cast entry naming it — the 3b rebuild dropped "archaeologist". SOFT.
-    const castText = [bible.hero?.semanticIdentity ?? "", ...(bible.recurringCharacters ?? []).map((c) => `${c.id} ${c.role}`), ...archetypes.map((a) => `${a.id} ${a.role} ${a.identity?.displayName ?? ""}`)].join(" ").toLowerCase();
-    const nounCounts = new Map<string, number>();
-    for (const m of scriptText.match(PEOPLE_WORDS) ?? []) { const k = m.toLowerCase().replace(/s$/, ""); nounCounts.set(k, (nounCounts.get(k) ?? 0) + 1); }
-    for (const [noun, n] of nounCounts) if (n >= 1 && !/^(people|person|man|men|woman|women|child|children|crowd|audience)$/.test(noun) && !castText.includes(noun)) errors.push(`ROLE_NOT_CAST:${noun} — the script mentions ${noun}s ${n} time(s); add a roleArchetypes entry for them`);
-    // Named individuals ("historian Roberta Frank"): a role word followed by a
-    // capitalised name must have a cast entry naming their surname. SOFT.
-    for (const m of scriptText.matchAll(NAMED_PERSON)) { const surname = m[2].split(/\s+/).pop()!.toLowerCase(); if (!castText.includes(surname)) errors.push(`NAMED_PERSON_NOT_CAST:${m[2]} — the script names ${m[1]} ${m[2]}; add a roleArchetypes entry for them`); }
+    // Every person the script names needs a cast entry (Phase 4c checklist,
+    // shared with the draft prompt and the code fallback). SOFT: after the one
+    // repair, code adds any still-missing person from a role template.
+    const castText = castTextOf(bible);
+    for (const p of requiredPeople(scriptText)) if (!castCovers(castText, p)) errors.push(p.kind === "named" ? `NAMED_PERSON_NOT_CAST:${p.label} — the script names ${p.role} ${p.label}; add a roleArchetypes entry for them` : `ROLE_NOT_CAST:${p.key} — the script mentions ${p.key}s ${p.mentions} time(s); add a roleArchetypes entry for them`);
     const viewerArchetypes = archetypes.filter((a) => a.id === "viewer" || a.id.startsWith("viewer_"));
     // Run 4: a viewer HERO plus viewer_viking split the "you" lines across two ids.
     if (heroIsViewer && viewerArchetypes.length) errors.push("VIEWER_DUPLICATED_AS_HERO — the viewer lives only in the viewer_* archetypes; set hero.exists false (continuityMode ENSEMBLE or NONE)");
@@ -492,6 +588,9 @@ export function validateBible(bible: StickmanProductionBible, scriptText?: strin
     if (/_/.test(idn.displayName) || idn.displayName === p.id) errors.push(`PROMPT_BLOCK_NOT_STANDALONE:${p.id} — displayName must be plain words (e.g. "A Viking warrior"), never the id`);
     else if (hasId(Object.values(idn).join(" "))) errors.push(`PROMPT_BLOCK_NOT_STANDALONE:${p.id} — identity has an id, hex code or cross-reference`);
     if (/\b(when|if|in relevant|where the (script|narration))\b/i.test(`${idn.outfit} ${idn.signature}`)) errors.push(`PROMPT_BLOCK_NOT_STANDALONE:${p.id} — identity must describe ONE fixed look, no conditions ("when…", "in relevant shots")`);
+    // Phase 4b: clothing is a torso shape; limbs stay thin stick lines.
+    const volume = `${idn.outfit} ${idn.outfitShort}`.match(/\b(trousers|pants|leggings|jeans|sleeves to the wrist|long sleeves|boots to the knee|knee[- ]high boots)\b/i);
+    if (volume) errors.push(`PROMPT_BLOCK_NOT_STANDALONE:${p.id} — "${volume[0]}": clothing is a flat shape on the torso only; arms and legs stay thin black stick lines`);
   }
   for (const o of bible.objectLanguage ?? []) if (o.promptBlock && hasId(o.promptBlock)) errors.push(`PROMPT_BLOCK_NOT_STANDALONE:${o.id} — promptBlock has an id, hex code or cross-reference`);
   const castWords = people.flatMap((p) => [p.id, (p as any).identity?.displayName ?? ""]).filter(Boolean);
@@ -529,7 +628,7 @@ export function validateBible(bible: StickmanProductionBible, scriptText?: strin
     if (!rc.appearsForNarrativeReason.trim()) errors.push(`RECURRING_CHARACTER_MISSING_REASON:${rc.id}`);
     if (!rc.canonicalAppearance.trim()) errors.push(`RECURRING_CHARACTER_MISSING_APPEARANCE:${rc.id}`);
   }
-  if (bible.objectLanguage.length > 6) errors.push("TOO_MANY_LOCKED_OBJECTS");
+  if (bible.objectLanguage.length > 12) errors.push("TOO_MANY_LOCKED_OBJECTS");
   for (const obj of bible.objectLanguage) {
     if (!obj.whyRecurring.trim()) errors.push(`OBJECT_MISSING_REASON:${obj.id}`);
   }
@@ -573,7 +672,9 @@ async function callDraft(openaiKey: string, promptInput: string, repairNote?: st
     method: "POST",
     headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: OPENAI_MODEL, reasoning: { effort: "low" }, max_output_tokens: 6000, store: false,
+      // Phase 4c: 6000 truncated the bigger bible (every named person cast,
+      // identity + outfit variants per person); reasoning tokens count too.
+      model: OPENAI_MODEL, reasoning: { effort: "low" }, max_output_tokens: BIBLE_MAX_OUTPUT_TOKENS, store: false,
       instructions: PRODUCTION_BIBLE_INSTRUCTIONS + (repairNote ? `\n\nYour previous attempt had these problems — fix them exactly: ${repairNote}` : ""),
       input: promptInput,
       text: { format: { type: "json_schema", name: "stickman_production_bible_draft", strict: true, schema: DRAFT_SCHEMA } },
@@ -582,8 +683,22 @@ async function callDraft(openaiKey: string, promptInput: string, repairNote?: st
   });
   if (!res.ok) throw new Error(`PRODUCTION_BIBLE_CALL_FAILED: ${res.status} ${(await res.text()).slice(0, 300)}`);
   const payload = await res.json();
-  const draft = JSON.parse(extractOutputText(payload).trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, ""));
-  return { draft, inputTokens: payload.usage?.input_tokens ?? 0, outputTokens: payload.usage?.output_tokens ?? 0 };
+  return parseDraftPayload(payload);
+}
+
+export const BIBLE_MAX_OUTPUT_TOKENS = 16000;
+
+// A truncated or unparseable response is a named, reportable failure (it was
+// an uncaught JSON.parse throw -> a bare 500 with nothing logged).
+export function parseDraftPayload(payload: any): { draft: StickmanBibleDraft; inputTokens: number; outputTokens: number } {
+  const usage = { inputTokens: payload?.usage?.input_tokens ?? 0, outputTokens: payload?.usage?.output_tokens ?? 0 };
+  if (payload?.status === "incomplete") throw Object.assign(new Error(`PRODUCTION_BIBLE_TRUNCATED: ${payload?.incomplete_details?.reason ?? "incomplete"} after ${usage.outputTokens} output tokens`), usage);
+  const text = extractOutputText(payload).trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+  try {
+    return { draft: JSON.parse(text), ...usage };
+  } catch {
+    throw Object.assign(new Error(`PRODUCTION_BIBLE_UNPARSEABLE: ${text.length} chars, ends "${text.slice(-60)}"`), usage);
+  }
 }
 
 export type ProductionBibleCompileStats = { llmCalls: number; repairCalls: number; inputTokens: number; outputTokens: number; estimatedModelCostUsd: number; latencyMs: number };
@@ -615,6 +730,13 @@ export async function compileStickmanProductionBible(args: {
     bible = mergeDraftIntoBible(repair.draft, args);
     errors = validateBible(bible, args.finalScript);
   }
+  // Code fallback: anyone still missing is added from a role template, with
+  // a warning each — missing cast never blocks a bible (Phase 4c).
+  const fallback = addMissingCast(bible, args.finalScript);
+  if (fallback.added.length) {
+    bible = fallback.bible;
+    errors = [...validateBible(bible, args.finalScript), ...fallback.added.map((x) => `CAST_ADDED_BY_CODE:${x}`)];
+  }
 
   stats.estimatedModelCostUsd = Number(((stats.inputTokens * GPT5_MINI_INPUT_PER_M + stats.outputTokens * GPT5_MINI_OUTPUT_PER_M) / 1_000_000).toFixed(4));
   stats.latencyMs = Date.now() - startedAt;
@@ -629,5 +751,5 @@ export async function compileStickmanProductionBible(args: {
 // Keyword/classification-based checks (person vs object, role wording, era
 // labels): repaired once, then kept as warnings. They prefer false negatives,
 // since they gate a paid step. Everything else from validateBible is HARD.
-export const SOFT_BIBLE_CODES = ["ARCHETYPE_NOT_A_PERSON", "VIEWER_DUPLICATED_AS_HERO", "VIEWER_ERA_UNCLEAR", "PROMPT_BLOCK_NOT_STANDALONE", "ROLE_NOT_CAST", "NAMED_PERSON_NOT_CAST"];
+export const SOFT_BIBLE_CODES = ["ARCHETYPE_NOT_A_PERSON", "VIEWER_DUPLICATED_AS_HERO", "VIEWER_ERA_UNCLEAR", "PROMPT_BLOCK_NOT_STANDALONE", "ROLE_NOT_CAST", "NAMED_PERSON_NOT_CAST", "CAST_ADDED_BY_CODE"];
 export const isSoftBibleError = (e: string) => SOFT_BIBLE_CODES.some((c) => e === c || e.startsWith(`${c}:`) || e.startsWith(`${c} `));

@@ -17,6 +17,8 @@ const Router = import.meta.env.SSR ? StaticRouter : BrowserRouter;
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
+import { Toaster } from "sonner";
+import LongFormScriptReadyNotifier from "./components/LongFormScriptReadyNotifier";
 import AIFruitStory from "./pages/workspace/AIFruitStory";
 import SkeletonShorts from "./pages/workspace/SkeletonShorts";
 
@@ -349,6 +351,15 @@ const LongFormLookPage        = lazy(() => import("./pages/workspace/long-form/l
 const LongFormVisualWorldPage = lazy(() => import("./pages/workspace/long-form/visualWorld.jsx"));
 const LongFormNarrationPage   = lazy(() => import("./pages/workspace/long-form/narration.jsx"));
 const LongFormVisualsPage     = lazy(() => import("./pages/workspace/long-form/visuals.jsx"));
+// Phase 6a — Stickman: one continuous "Writing your script" screen + the Script review.
+const LongFormWritingPage      = lazy(() => import("./pages/workspace/long-form/writing.jsx"));
+const LongFormScenesPage       = lazy(() => import("./pages/workspace/long-form/scenes.jsx"));
+const StickmanRouteGuard       = lazy(() => import("./pages/workspace/long-form/StickmanRouteGuard.jsx"));
+const LongFormEditPage         = lazy(() => import("./pages/workspace/long-form/edit.jsx"));
+const LongFormGeneratingPage   = lazy(() => import("./pages/workspace/long-form/generating.jsx"));
+const LongFormIdeaPage         = lazy(() => import("./pages/workspace/long-form/idea.jsx"));
+const LongFormPublishPage      = lazy(() => import("./pages/workspace/long-form/publish.jsx"));
+const LongFormScriptReviewPage = lazy(() => import("./pages/workspace/long-form/scriptReview.jsx"));
 const LongFormProductionSetupPage = lazy(() => import("./pages/workspace/long-form/ProductionSetup.jsx"));
 const LongFormGeneratePage    = lazyRoute(() => import("./pages/workspace/long-form/generate.jsx"), "long-form-generate");
 
@@ -531,6 +542,9 @@ return (
 )}
 
   {!hideNav && <Navbar />}
+  {/* Phase 6a: toasts + "your script is ready" notifications. */}
+  <Toaster theme="dark" position="bottom-right" richColors />
+  <LongFormScriptReadyNotifier />
 
 {/* WelcomeModal disabled — WelcomeScreen in layout.jsx handles new user welcome */}
 {/* {showWelcomeModal && <WelcomeModal onClose={() => setShowWelcomeModal(false)} />} */}
@@ -894,14 +908,21 @@ return (
   <Route path="/long-form"                       element={<LongFormPage />} />
   <Route path="/long-form/new"                   element={<LongFormNewPage />} />
   <Route path="/long-form/create"                element={<LongFormProductionSetupPage />} />
-  <Route path="/long-form/project/:id/story"     element={<LongFormStoryPage />} />
-  <Route path="/long-form/project/:id/research"  element={<LongFormResearchPage />} />
-  <Route path="/long-form/project/:id/script"    element={<LongFormScriptPage />} />
-  <Route path="/long-form/project/:id/look"      element={<LongFormLookPage />} />
-  <Route path="/long-form/project/:id/visual-world" element={<LongFormVisualWorldPage />} />
-  <Route path="/long-form/project/:id/generate"     element={<LongFormGenerateRouteBoundary><LongFormGeneratePage /></LongFormGenerateRouteBoundary>} />
-  <Route path="/long-form/project/:id/narration"    element={<LongFormNarrationPage />} />
-  <Route path="/long-form/project/:id/visuals"      element={<LongFormVisualsPage />} />
+  <Route path="/long-form/project/:id/story"     element={<StickmanRouteGuard page="story"><LongFormStoryPage /></StickmanRouteGuard>} />
+  <Route path="/long-form/project/:id/research"  element={<StickmanRouteGuard page="research"><LongFormResearchPage /></StickmanRouteGuard>} />
+  <Route path="/long-form/project/:id/script"    element={<StickmanRouteGuard page="script"><LongFormScriptPage /></StickmanRouteGuard>} />
+  <Route path="/long-form/project/:id/look"      element={<StickmanRouteGuard page="look"><LongFormLookPage /></StickmanRouteGuard>} />
+  <Route path="/long-form/project/:id/visual-world" element={<StickmanRouteGuard page="visual-world"><LongFormVisualWorldPage /></StickmanRouteGuard>} />
+  <Route path="/long-form/project/:id/generate"     element={<StickmanRouteGuard page="generate"><LongFormGenerateRouteBoundary><LongFormGeneratePage /></LongFormGenerateRouteBoundary></StickmanRouteGuard>} />
+  <Route path="/long-form/project/:id/narration"    element={<StickmanRouteGuard page="narration"><LongFormNarrationPage /></StickmanRouteGuard>} />
+  <Route path="/long-form/project/:id/visuals"      element={<StickmanRouteGuard page="visuals"><LongFormVisualsPage /></StickmanRouteGuard>} />
+  <Route path="/long-form/project/:id/writing"      element={<StickmanRouteGuard page="writing"><LongFormWritingPage /></StickmanRouteGuard>} />
+  <Route path="/long-form/project/:id/scenes"       element={<StickmanRouteGuard page="scenes"><LongFormScenesPage /></StickmanRouteGuard>} />
+  <Route path="/long-form/project/:id/edit"         element={<StickmanRouteGuard page="edit"><LongFormEditPage /></StickmanRouteGuard>} />
+  <Route path="/long-form/project/:id/generating"   element={<StickmanRouteGuard page="generating"><LongFormGeneratingPage /></StickmanRouteGuard>} />
+  <Route path="/long-form/project/:id/idea"         element={<StickmanRouteGuard page="idea"><LongFormIdeaPage /></StickmanRouteGuard>} />
+  <Route path="/long-form/project/:id/publish"      element={<StickmanRouteGuard page="publish"><LongFormPublishPage /></StickmanRouteGuard>} />
+  <Route path="/long-form/project/:id/script-review" element={<StickmanRouteGuard page="script-review"><LongFormScriptReviewPage /></StickmanRouteGuard>} />
 
 
 </Route>

@@ -61,6 +61,105 @@ function stageInfoFromResumeState(resume) {
   return null; // "look"/"none" — fall through to the existing pointer logic below, which already handles Storyboard/Story/Idea correctly.
 }
 
+// Phase 5b — the final video's own statuses (long_form_projects.status):
+// images_ready -> rendering -> complete | failed. These outrank every earlier
+// stage signal: once a render exists, the card is about the video.
+const VIDEO_STATUS = {
+  images_ready: { statusLabel: "Ready to render", active: false },
+  rendering: { statusLabel: "Rendering", active: true },
+  complete: { statusLabel: "Done", active: false },
+  failed: { statusLabel: "Failed", active: false },
+};
+function stageInfoFromVideoStatus(project) {
+  const v = VIDEO_STATUS[project?.status];
+  if (!v) return null;
+  return { topLevel: "Video", statusLabel: v.statusLabel, route: "generate", active: v.active, startedAt: v.active ? project.updated_at ?? null : undefined, reason: project.status === "failed" ? project.status_reason ?? null : null };
+}
+
+// Phase 6e — the Stickman flow is Idea · Scenes · Edit · Publish. After
+// "Generate video" ONE generating screen runs everything with no stops
+// (script -> voice -> scenes); Scenes (player + grid) is the first home.
+// Derived from the project's server state only, identical on every page.
+// `stage` says which part of the generating screen is live.
+export function deriveStickmanStep(project) {
+  const ap = project?.autopilot ?? null;
+  if (["rendering", "complete"].includes(project?.status) || project?.final_video_path) {
+    return { key: "edit", route: "edit", statusLabel: project?.status === "rendering" ? "Rendering" : "Done", active: project?.status === "rendering" };
+  }
+  if (ap?.phase === "scenes") {
+    const sc = ap.scenes ?? {};
+    if (sc.status === "failed") return { key: "scenes", route: "generating", stage: "scenes", statusLabel: "Needs a retry", active: false };
+    if (sc.status === "running" && !sc.regenerating) return { key: "scenes", route: "generating", stage: "scenes", statusLabel: "Drawing scenes", active: true, startedAt: sc.startedAt };
+    return { key: "scenes", route: "scenes", statusLabel: sc.regenerating && sc.status === "running" ? "Redrawing scenes" : "Scenes ready", active: false };
+  }
+  // Older projects whose scenes exist without a Scenes run record.
+  if (project?.status === "images_ready" || project?.current_scene_generation_status || project?._hasScenes) {
+    return { key: "scenes", route: "scenes", statusLabel: "Scenes ready", active: false };
+  }
+  if (ap?.phase === "narration") {
+    if (ap.status === "running") return { key: "scenes", route: "generating", stage: "voice", statusLabel: "Recording voice", active: true, startedAt: ap.startedAt };
+    if (ap.status === "failed" || ap.narration?.status === "failed") return { key: "scenes", route: "generating", stage: "voice", statusLabel: "Needs a retry", active: false };
+    // A project from before 6e that stopped at the voice: its scenes still need drawing.
+    return { key: "scenes", route: "generating", stage: "voice", needsStart: true, statusLabel: "Ready to draw scenes", active: false };
+  }
+  if (project?._narrationReady || project?._scriptLocked || project?._script?.locked_at) {
+    return { key: "scenes", route: "generating", stage: "voice", needsStart: !!project?._narrationReady, statusLabel: project?._narrationReady ? "Ready to draw scenes" : "Recording voice", active: !project?._narrationReady };
+  }
+  if (ap) {
+    if (ap.status === "running") return { key: "scenes", route: "generating", stage: "script", statusLabel: "Writing script", active: true, startedAt: ap.startedAt };
+    if (ap.status === "failed") return { key: "scenes", route: "generating", stage: "script", statusLabel: "Needs a retry", active: false };
+    return { key: "scenes", route: "generating", stage: "script", needsStart: true, statusLabel: "Script ready", active: false };
+  }
+  if (project?.current_script_version_id) return { key: "scenes", route: "generating", stage: "script", needsStart: true, statusLabel: "Script ready", active: false };
+  return { key: "idea", route: "idea", statusLabel: "Idea", active: false };
+}
+const STICKMAN_TOP_LEVEL = { idea: "Idea", scenes: "Scenes", edit: "Edit", publish: "Publish" };
+
+// The new flow's pages, by the step they belong to. Script review and
+// "Listen & change" are panels of the Editor now (Script / Voiceover).
+export const STICKMAN_PAGE_STEP = { idea: "idea", generating: "scenes", scenes: "scenes", edit: "edit", narration: "edit", "script-review": "edit", publish: "publish" };
+// Legacy pages a Stickman project must never show (the old Story / Research /
+// Script / Look / Visual World / Generate screens, the "proof screen", and the
+// 6a-6c writing page — the generating screen replaced it).
+export const LEGACY_STICKMAN_PAGES = ["story", "research", "script", "look", "visual-world", "generate", "visuals", "writing"];
+export const STICKMAN_STEP_ORDER = ["idea", "scenes", "edit", "publish"];
+
+export function stickmanRouteForStep(step) {
+  return step.route;
+}
+// Scenes are all drawn (no first run still going) — Edit and Publish can open.
+export function scenesFinished(project) {
+  const ap = project?.autopilot;
+  if (["rendering", "complete"].includes(project?.status) || project?.final_video_path) return true;
+  if (ap?.phase === "scenes") return ap.scenes?.status === "done" || (ap.scenes?.status === "running" && !!ap.scenes?.regenerating);
+  return !!project?._hasScenes;
+}
+
+// Where a request for `page` on this Stickman project should land (the route
+// guard redirects when it differs). Legacy pages always go to the real step;
+// Idea is always a read-only summary; the generating screen only while
+// something is generating (or needs a retry / a start); Scenes, Edit (and its
+// Script / Voiceover panels) and Publish once the scenes are drawn.
+export function resolveStickmanPage(page, project) {
+  const step = deriveStickmanStep(project);
+  const home = stickmanRouteForStep(step);
+  if (page === "idea") return "idea";
+  if (!STICKMAN_PAGE_STEP[page]) return home;
+  if (page === "generating") return step.route === "generating" ? "generating" : home;
+  return scenesFinished(project) ? page : home;
+}
+
+// Which stepper steps can be opened (reached) — Back/Continue only ever move between these.
+export function reachableStickmanSteps(project) {
+  const step = deriveStickmanStep(project);
+  const done = scenesFinished(project);
+  return {
+    idea: "idea",
+    scenes: step.key === "idea" ? null : done ? "scenes" : "generating",
+    edit: done ? "edit" : null,
+    publish: done ? "publish" : null,
+  };
+}
 export function formatElapsedMinutes(startedAt) {
   if (!startedAt) return null;
   const startMs = typeof startedAt === "string" ? new Date(startedAt).getTime() : startedAt;
@@ -79,6 +178,13 @@ export function deriveProjectStageInfo(project) {
   // from an earlier stage must never pull a project that has genuinely
   // moved past Look back to Look (Part 3: "the user must never be dumped
   // backward to Storyboard simply because generation is incomplete").
+  // Phase 6a: Stickman projects never show the legacy Story/Look/Generate steps.
+  if (project?._stickman) {
+    const s = deriveStickmanStep(project);
+    return { topLevel: STICKMAN_TOP_LEVEL[s.key], statusLabel: s.statusLabel, route: s.route, active: s.active, startedAt: s.startedAt, stickmanStep: s.key };
+  }
+  const fromVideo = stageInfoFromVideoStatus(project);
+  if (fromVideo) return fromVideo;
   const fromResume = stageInfoFromResumeState(project._resumeState);
   if (fromResume) return fromResume;
 
@@ -153,6 +259,8 @@ export function resolveLookStepRoute(project) {
 export function humanizeProjectStatus(stage) {
   const { topLevel, statusLabel, resume } = stage;
 
+  if (topLevel === "Video") return statusLabel;
+  if (stage.stickmanStep) return statusLabel;
   if (topLevel === "Scenes") {
     if (resume?.needsReview > 0) return `Needs your review · ${resume.needsReview} scene${resume.needsReview === 1 ? "" : "s"}`;
     if (resume?.failed > 0) return `Needs your review · ${resume.failed} scene${resume.failed === 1 ? "" : "s"}`;

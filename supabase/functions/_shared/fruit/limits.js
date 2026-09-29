@@ -1,0 +1,27 @@
+// Limits for AI Fruit Story v2, enforced by the server. Must equal the UI's
+// src/components/viral-tools/ai-fruit-story-v2/api/limits.js (a test checks).
+export const LIMITS = Object.freeze({
+  maxCastSingle: 3,
+  minCastSeries: 2,
+  maxCastSeries: 5,
+  maxCharactersPerScene: 3,
+  maxPromptChars: 1000,
+  minLengthSec: 15,
+  maxLengthSec: 120,
+  lengthStepSec: 15,
+  minEpisodes: 3,
+  maxEpisodes: 10,
+  ideasPerCall: 5,
+});
+
+// Server-only limits.
+export const SERVER_LIMITS = Object.freeze({
+  maxScriptLines: 24,          // 2 min at ~5 s per line
+  maxLineChars: 300,
+  maxEditChars: 500,           // "change X" instruction
+  maxScenePromptChars: 2500,   // the editable picture prompt (also the builder's hard limit)
+  maxClipPromptChars: 1500,    // clip prompt builder's hard limit (Veo accepts 3,000)
+  picturesInFlightPerStory: 4,
+  clipsInFlightPerStory: 3,
+  jobsInFlightGlobal: 24,
+});

@@ -24,9 +24,11 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
-import { requireUser } from "../shared/auth.ts";
+import { requireUserOrAutopilot } from "../shared/auth.ts";
 import { compileStickmanProductionBible } from "../_shared/stickman/productionBible.ts";
 import { recordCost } from "../_shared/costLedger.ts";
+import { logEvent } from "../_shared/systemLog.ts";
+import { bibleBuildState, bibleBuildInFlight } from "../_shared/stickman/bibleBuild.ts";
 import { STICKMAN_DOODLE_EXPLAINER_V1 } from "../_shared/stickman/styleContract.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -38,7 +40,7 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return err(req, "Method not allowed", 405);
   if (!OPENAI_KEY) return err(req, "OPENAI_API_KEY not configured", 500);
 
-  const { user, authError } = await requireUser(req);
+  const { user, authError } = await requireUserOrAutopilot(req);
   if (!user) return err(req, authError || "Unauthorized", 401);
 
   const body = await req.json().catch(() => ({}));
@@ -89,7 +91,29 @@ Deno.serve(async (req) => {
   if (!segments.length) return err(req, "The final script has no narration segments to build a visual identity from.", 422);
   const finalScript = segments.map((s) => s.text).join(" ");
 
-  const compileResult = await compileStickmanProductionBible({
+  // Phase 6d-1: one build per script. A build already running (the lock's) is
+  // THE build — a second caller (Scenes, a retry) waits for it, never pays twice.
+  const buildCtx = { projectId, scriptVersionId: scriptVersion.id };
+  if (bibleBuildInFlight(await bibleBuildState(admin, projectId, scriptVersion.id))) {
+    await logEvent("build-stickman-production-bible", "info", "bible_build_joined", buildCtx);
+    return ok(req, { ok: true, inFlight: true, message: "The style guide is already being built." }, 202);
+  }
+  await logEvent("build-stickman-production-bible", "info", "bible_build_started", buildCtx);
+
+  // A provider failure (truncated/unparseable output, HTTP error, timeout) is
+  // reported with its reason — never a bare 500 (Phase 4c incident).
+  let compileResult: Awaited<ReturnType<typeof compileStickmanProductionBible>>;
+  try {
+    compileResult = await compileBible();
+  } catch (e: any) {
+    console.error("[build-stickman-production-bible] draft call failed:", projectId, e?.message);
+    if (e?.outputTokens) await recordCost(admin, { projectId, stage: "bible", provider: "openai", model: "gpt-5-mini", units: { calls: 1, inputTokens: e.inputTokens ?? 0, outputTokens: e.outputTokens }, usd: ((e.inputTokens ?? 0) * 0.25 + e.outputTokens * 2) / 1_000_000, sourceTable: "long_form_production_bibles" });
+    const code = String(e?.message ?? "").split(":")[0] || "PRODUCTION_BIBLE_CALL_FAILED";
+    await logEvent("build-stickman-production-bible", "warn", "bible_build_failed", { ...buildCtx, reason: code });
+    return err(req, "The Production Bible could not be generated right now — please try again.", 502, { code, detail: String(e?.message ?? e).slice(0, 300) });
+  }
+
+  async function compileBible() { return await compileStickmanProductionBible({
     openaiKey: OPENAI_KEY,
     projectId, generationProfileId: profile.id, scriptVersionId: scriptVersion.id,
     productionBibleVersion: 1, // the RPC below is the real authority on the next version number; this is only used inside the compiled bible's own self-description
@@ -102,12 +126,13 @@ Deno.serve(async (req) => {
     // full research/fact-graph dump.
     researchNotes: project.topic_model?.summary ? String(project.topic_model.summary).slice(0, 1000) : "",
     targetAudience: project.narrative_strategy?.targetAudience ?? "",
-  });
+  }); }
 
   // Cost ledger: the calls were paid whether or not the bible validated.
   await recordCost(admin, { projectId, stage: "bible", provider: "openai", model: "gpt-5-mini", units: { calls: compileResult.stats.llmCalls, inputTokens: compileResult.stats.inputTokens, outputTokens: compileResult.stats.outputTokens }, usd: compileResult.stats.estimatedModelCostUsd, sourceTable: "long_form_production_bibles" });
 
   if (!compileResult.ok) {
+    await logEvent("build-stickman-production-bible", "warn", "bible_build_failed", { ...buildCtx, reason: "validation" });
     console.error("[build-stickman-production-bible] validation failed after repair attempt:", projectId, compileResult.errors);
     return err(req, "Could not produce a valid Production Bible for this script — please try again.", 422, { errors: compileResult.errors, stats: compileResult.stats });
   }
@@ -120,10 +145,12 @@ Deno.serve(async (req) => {
     p_estimated_model_cost_usd: compileResult.stats.estimatedModelCostUsd, p_warnings: compileResult.warnings,
   });
   if (freezeError) {
+    await logEvent("build-stickman-production-bible", "warn", "bible_build_failed", { ...buildCtx, reason: "freeze" });
     const status = freezeError.message?.includes("FORBIDDEN") ? 403 : freezeError.message?.includes("PROJECT_NOT_FOUND") ? 404 : 500;
     return err(req, "Could not save the Production Bible.", status);
   }
 
+  await logEvent("build-stickman-production-bible", "info", "bible_build_done", buildCtx);
   return ok(req, {
     ok: true, bible: compileResult.bible, warnings: compileResult.warnings, stats: compileResult.stats,
     productionBibleId: frozen.id, bibleVersion: frozen.bible_version,

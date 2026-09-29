@@ -1,0 +1,5466 @@
+{
+ "version": "STICKMAN_EDL_V1",
+ "fps": 30,
+ "width": 1920,
+ "height": 1080,
+ "audio": {
+  "path": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/narration.mp3",
+  "durationMs": 523416,
+  "sha256": "10ee3699ebd93cb866d25b8ca81bc8c940f083eecb7d43070029bfbfd1e0dfd8"
+ },
+ "totalFrames": 15702,
+ "clips": [
+  {
+   "index": 0,
+   "beatSequence": 1,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-000.jpg",
+   "imageVersionId": "v2-4c-1",
+   "imageSha256": "204cf43aea8ffbe758c83b80d6b18e452c267808a465be07904956c91bc1e13e",
+   "startMs": 0,
+   "endMs": 4818,
+   "startFrame": 0,
+   "endFrame": 145,
+   "frames": 145,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0483,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "You're gripping a shield, screaming down a hillside toward a shieldwall,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-000.png",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "fa7ec695bbbabd007006476e1c51f8e9273de29e6617db9e99c7ab357603b85b",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 1,
+   "beatSequence": 2,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-001.jpg",
+   "imageVersionId": "v2-4c-2",
+   "imageSha256": "f591c65126f681e6b21c1286de9fd7b1fe35e1f954fb9aabdbed2f1191b0b809",
+   "startMs": 4818,
+   "endMs": 8788,
+   "startFrame": 145,
+   "endFrame": 264,
+   "frames": 119,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0397,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "and two long curved horns jut off your helmet,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-001.png",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "9567373edb998857fd15aafd0a4070bf023f2cf696e7795ddda6108cfd0c334c",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 2,
+   "beatSequence": 3,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-002.jpg",
+   "imageVersionId": "v2-4c-3",
+   "imageSha256": "7e92bbae9f2e3ceb3b093621e002ca6cc96b7a68574489dac294e61a89fd4b3c",
+   "startMs": 8788,
+   "endMs": 11876,
+   "startFrame": 264,
+   "endFrame": 356,
+   "frames": 92,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0153,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "cutting the air on either side of your head.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-002.png",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "98a9bb499919e90f7bd06babe52c5a340869fa08f643a02cbb35dd26b7a40bb8",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 3,
+   "beatSequence": 4,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-003.jpg",
+   "imageVersionId": "v2-4c-4",
+   "imageSha256": "d6da57781bb54074a8cb81144c7909003350a75cc4d949eeb7b26a8136757e94",
+   "startMs": 11876,
+   "endMs": 14814,
+   "startFrame": 356,
+   "endFrame": 444,
+   "frames": 88,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0293,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "The horns catch the firelight.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-003.png",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "71ff7877a347aa0546148ea674a0e11361d9169a9d415ba58a875cd071e7f015",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 4,
+   "beatSequence": 5,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-004.jpg",
+   "imageVersionId": "v2-4c-5",
+   "imageSha256": "acc2f204e2cf90203f8a9b9a8d29aa4111b6082ba084334fbeeb85ec0b42c523",
+   "startMs": 14814,
+   "endMs": 16927,
+   "startFrame": 444,
+   "endFrame": 508,
+   "frames": 64,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0107,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "They look terrifying.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-004.png",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "72d096f7d42792db5f90bd5e676bce7723c539c4033dde6446ceae57a16f708e",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 5,
+   "beatSequence": 6,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-005.jpg",
+   "imageVersionId": "v2-4c-6",
+   "imageSha256": "f13e213ac2b2e08fda90163fc1c64de44773a235559b6461062af581011eb0d5",
+   "startMs": 16927,
+   "endMs": 19922,
+   "startFrame": 508,
+   "endFrame": 598,
+   "frames": 90,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "They look exactly like every painting,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-005.png",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "cd5ae04b6415d36d83c0e50bb436f9e6ef3184d063ef82e6b28818c2089ae36b",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 6,
+   "beatSequence": 7,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-006.jpg",
+   "imageVersionId": "v2-4c-7",
+   "imageSha256": "839ecb5c3c7b2cec6d3e62cbd278bb1c2418f63429cc7737f0df6b3309b24dcf",
+   "startMs": 19922,
+   "endMs": 26157,
+   "startFrame": 598,
+   "endFrame": 785,
+   "frames": 187,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "every movie poster, every Halloween costume you've ever seen of a Viking.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-006.png",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "21b7fdae3d1f0d8f12015cb439107781b465ed308afc3202cd4a63730de1ef56",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 7,
+   "beatSequence": 8,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-007.jpg",
+   "imageVersionId": "v2-4c-8",
+   "imageSha256": "541a142e42d886b64e1659a16a5eb6b1831e5b95b3f88902840188afd68734a5",
+   "startMs": 26157,
+   "endMs": 29918,
+   "startFrame": 785,
+   "endFrame": 898,
+   "frames": 113,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0188,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "This is the image burned into your head.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-007.png",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "08ede8884f24c3d2460569d50aa3fdd002af3c4b5ae049dac7fa7d1c4b4ab2f9",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 8,
+   "beatSequence": 9,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-008.jpg",
+   "imageVersionId": "v2-4c-9",
+   "imageSha256": "125ae0319802fefa87ac08487023d19a343c63639a2f0427a49048bebcfa484e",
+   "startMs": 29918,
+   "endMs": 33889,
+   "startFrame": 898,
+   "endFrame": 1017,
+   "frames": 119,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0198,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "A single wrong picture like this can quietly",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-008.png",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "2c074ec88d73b39f55ea76e0adf30b954d8439f1471d96396c0d381da567d3dd",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 9,
+   "beatSequence": 10,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-009.jpg",
+   "imageVersionId": "v2-4c-10",
+   "imageSha256": "95841429e93cffd9ce36cf630f7fd2a0ad5a8345f2e86ebc4c0dc6f9a6c50678",
+   "startMs": 33889,
+   "endMs": 38219,
+   "startFrame": 1017,
+   "endFrame": 1147,
+   "frames": 130,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0433,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "rewrite an entire culture's history in our heads.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-009.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "a7241b81b3b325202d35287014dda0846f3ae25d00d0873dec0df088e2d36e35",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 10,
+   "beatSequence": 11,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-010.jpg",
+   "imageVersionId": "v2-4c-11",
+   "imageSha256": "282431b4ae23b99cf4a72867fecaa7b648857c3f93d0013f996bf0ddffe613fd",
+   "startMs": 38219,
+   "endMs": 42213,
+   "startFrame": 1147,
+   "endFrame": 1266,
+   "frames": 119,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0397,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "So did any Viking ever actually strap on horns",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-010.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "89c40cfec1a0e115c4b3879fa0cdb3b5b74fc656c3835d73ef1d6a23ff959dd1",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 11,
+   "beatSequence": 12,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-011.jpg",
+   "imageVersionId": "v2-4c-12",
+   "imageSha256": "fbccc9f156d0fab88e705b73eb5d8323000c0d2da1eb7fb2c1059c65486954c2",
+   "startMs": 42213,
+   "endMs": 45139,
+   "startFrame": 1266,
+   "endFrame": 1354,
+   "frames": 88,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0293,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "before walking into battle?",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-011.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "6465a27946894180026bcbb8da26b00e33a77ac38e1639f91619120f24201f1d",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 12,
+   "beatSequence": 13,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-012.jpg",
+   "imageVersionId": "v2-4c-13",
+   "imageSha256": "9f35cc22360b38989b7aac84ce03e05bd21e53227f5ce6a4b90673c38092e6c2",
+   "startMs": 45139,
+   "endMs": 50317,
+   "startFrame": 1354,
+   "endFrame": 1510,
+   "frames": 156,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.052,
+     "cx": 0.47528517110266155,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.052,
+     "cx": 0.5247148288973384,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "Here's the belief almost everyone carries around without question:",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-012.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "10e3e412e4c97b754704ea15e33e7e5aff5be7920f6b54f62f7ceaf673870edd",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 13,
+   "beatSequence": 14,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-013.jpg",
+   "imageVersionId": "v2-4c-14",
+   "imageSha256": "717a7316ec2b993e4c72bad70722df612783285ea2f5a06b6245a4d24cda95a7",
+   "startMs": 50317,
+   "endMs": 54589,
+   "startFrame": 1510,
+   "endFrame": 1638,
+   "frames": 128,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0427,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Viking raiders wore horned helmets into combat,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-013.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "27a421bc311f12f1e8bc84d1e869ee8d5667d8d69147848f7dd7576aa4b3bb77",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 14,
+   "beatSequence": 15,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-014.jpg",
+   "imageVersionId": "v2-4c-15",
+   "imageSha256": "c069487fef9bbf7e34c2c90dae1c4026e63e1d30442703f4209102d779102873",
+   "startMs": 54589,
+   "endMs": 58421,
+   "startFrame": 1638,
+   "endFrame": 1753,
+   "frames": 115,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0383,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "the horns curving up from the sides like a bull's.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-014.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "f4e5dfcd5b635d17f00377397a75bd9a1ff88e12b843393329ba0c261251b848",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 15,
+   "beatSequence": 16,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-015.jpg",
+   "imageVersionId": "v2-4c-16",
+   "imageSha256": "ecc64887cc19f13396e5118c966871e7973f050da74887e9b935e8a8809c8b9c",
+   "startMs": 58421,
+   "endMs": 60360,
+   "startFrame": 1753,
+   "endFrame": 1811,
+   "frames": 58,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0097,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "It feels obvious.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-015.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "5c944e4134fe7537a0b7e6d18584d028bdae4336a832fed086f42e4a6f7cb8f3",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 16,
+   "beatSequence": 17,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-016.jpg",
+   "imageVersionId": "v2-5a-17",
+   "imageSha256": "cdda960917e93a851060506b647c5d129146dc9a4cad4ed7f1428724d5ccff07",
+   "startMs": 60360,
+   "endMs": 65004,
+   "startFrame": 1811,
+   "endFrame": 1950,
+   "frames": 139,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "It's on flags, beer labels, football helmets.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-016.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "618daa124810109fbef8f67e50a3e48fe2bb63f38a54b009c7de6f715f2b40b3",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 17,
+   "beatSequence": 18,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-017.jpg",
+   "imageVersionId": "v2-4c-18",
+   "imageSha256": "dd0d12e31a3bb8bd9732339097fedaa892a1b881a63774e37582be32a3dcab46",
+   "startMs": 65004,
+   "endMs": 67012,
+   "startFrame": 1950,
+   "endFrame": 2010,
+   "frames": 60,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.02,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "But archaeologists digging",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-017.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "8fc7ace3d18ed3734546c4ba4f5f69003661f3ca1e9b5504326ec95ff2f6b7f9",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 18,
+   "beatSequence": 19,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-018.jpg",
+   "imageVersionId": "v2-4d-19",
+   "imageSha256": "52795c6d1eaa3fbe12f939b2f315020389c5f133d483dd18cbf17d479b3be321",
+   "startMs": 67012,
+   "endMs": 70658,
+   "startFrame": 2010,
+   "endFrame": 2120,
+   "frames": 110,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.0367,
+     "cx": 0.4822996045143243,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0367,
+     "cx": 0.5177003954856757,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "across Scandinavia for over a century have found",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-018.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "467470bd67f28d2f7610cd9aff59f52ae7c2a82910b793380ea91272f3414e93",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 19,
+   "beatSequence": 20,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-019.jpg",
+   "imageVersionId": "v2-4c-20",
+   "imageSha256": "7f8df776a016f61a7eeb71d39f99a53c675933181568463dad5524b03012706a",
+   "startMs": 70658,
+   "endMs": 75035,
+   "startFrame": 2120,
+   "endFrame": 2251,
+   "frames": 131,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0437,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "remarkably few actual Viking-age helmets at all.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-019.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "bedda112592498256f5e6783fec0df354be0760456e82abb6567a7e742d67ee4",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 20,
+   "beatSequence": 21,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-020.jpg",
+   "imageVersionId": "v2-4d-21",
+   "imageSha256": "6f83902852725213c73aae5ea9b664508ef42fb8cf2124da2279a1ab4d9e6a49",
+   "startMs": 75035,
+   "endMs": 79633,
+   "startFrame": 2251,
+   "endFrame": 2389,
+   "frames": 138,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "Total confirmed helmets from the entire Viking Age,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-020.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "7363e3d1bd8f13dd5136a09e92933ebecd80714a0d406c1c74195323b296de4c",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 21,
+   "beatSequence": 22,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-021.jpg",
+   "imageVersionId": "v2-4d-22",
+   "imageSha256": "30d25e2989c51b5b6abac8e2c7f6dc4958c0b638b2d8dd999adbcfd2000e7688",
+   "startMs": 79633,
+   "endMs": 83197,
+   "startFrame": 2389,
+   "endFrame": 2496,
+   "frames": 107,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "793–1066",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 616,
+     "y": 75,
+     "width": 688,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.06,
+     "bottom": 6.4
+    }
+   },
+   "narration": "roughly 793 to 1066,",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-021.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-021.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "03e81628c4bb376574949fe6732ae1d6a943e4509c65832733f2c9e2f4eab41d",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-021.png"
+  },
+  {
+   "index": 22,
+   "beatSequence": 23,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-022.jpg",
+   "imageVersionId": "v2-4d-23",
+   "imageSha256": "4989db5de35d5a9eacf09ccb0dc3c017218a90add4f28b0f6e4ac2334a449cf5",
+   "startMs": 83197,
+   "endMs": 87644,
+   "startFrame": 2496,
+   "endFrame": 2629,
+   "frames": 133,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0443,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "that survive with enough of the skull intact to study?",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-022.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "abe225e800044582ec28ea791bb59a95cf319b1d4dd0ac2e7fa0e8e19e6203bc",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 23,
+   "beatSequence": 24,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-023.jpg",
+   "imageVersionId": "v2-5b-24",
+   "imageSha256": "fd7691880db4e777008e8308121fee32aebf2d1ecac381e64bf13001c0d6ec23",
+   "startMs": 87644,
+   "endMs": 89699,
+   "startFrame": 2629,
+   "endFrame": 2691,
+   "frames": 62,
+   "motion": {
+    "kind": "pull_out",
+    "from": {
+     "scale": 1.0207,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow pull-back"
+   },
+   "overlay": null,
+   "narration": "You can count them on one hand.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-023.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "0ba8f74e14dadd38e8bfe4e3f31b447f2423f6448e15a8f6dc04efc3a8279db3",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 24,
+   "beatSequence": 25,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-024.jpg",
+   "imageVersionId": "v2-4c-25",
+   "imageSha256": "bca19a96725af92fcdce5d5ab36d21a6a843fe2fe9977d07487e149d0416d806",
+   "startMs": 89699,
+   "endMs": 92868,
+   "startFrame": 2691,
+   "endFrame": 2786,
+   "frames": 95,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0317,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "The best-preserved one is the Gjermundbu helmet,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-024.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "b0d4aa7f70f58caa51621301ea0055b818ef5e480fe78626d61eae65c2620144",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 25,
+   "beatSequence": 26,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-025.jpg",
+   "imageVersionId": "v2-4c-26",
+   "imageSha256": "71fac268574d9d1c4dae5c0300ee4277cb9dbab5985292d56f4aacbb435618f7",
+   "startMs": 92868,
+   "endMs": 96909,
+   "startFrame": 2786,
+   "endFrame": 2907,
+   "frames": 121,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.02,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "NORWAY, 1943",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 424,
+     "y": 75,
+     "width": 1072,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.8,
+     "bottom": 6.99
+    }
+   },
+   "narration": "dug out of a burial mound in Norway in 1943,",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-025.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-025.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "d26d3968799f96004a6b797355dac113dc4f9b18e14ce503abe73f0827c4eb8a",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-025.png"
+  },
+  {
+   "index": 26,
+   "beatSequence": 27,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-026.jpg",
+   "imageVersionId": "v2-4d-27",
+   "imageSha256": "ae363efe9039b7f3a08b1779b5601e5941ff62e99090138bae6b075c8a86a75d",
+   "startMs": 96909,
+   "endMs": 100101,
+   "startFrame": 2907,
+   "endFrame": 3003,
+   "frames": 96,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "C. 970",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 738,
+     "y": 75,
+     "width": 445,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.35,
+     "bottom": 7.28
+    }
+   },
+   "narration": "dated to around the year 970.",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-026.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-026.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "a166a3a11b005780a706f1636108219028f80d0195ddd237b9e7a72cf4e55124",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-026.png"
+  },
+  {
+   "index": 27,
+   "beatSequence": 28,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-027.jpg",
+   "imageVersionId": "v2-4d-28",
+   "imageSha256": "0525c0f5e9d933b44fd285a221c7479456edb6518bb2345aeea92ef83232d5cc",
+   "startMs": 100101,
+   "endMs": 102574,
+   "startFrame": 3003,
+   "endFrame": 3077,
+   "frames": 74,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0247,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "It has a rounded iron cap,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-027.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "31b82570682fd5fcf657e2c05ac8ee047e20ef1ee5911c6cd1fe2e444e19ccd3",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 28,
+   "beatSequence": 29,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-028.jpg",
+   "imageVersionId": "v2-4d-29",
+   "imageSha256": "c9e0401b22c98d6b9d531bfde6ce55c8efafcac1f6b3e7943b49005164ebe464",
+   "startMs": 102574,
+   "endMs": 105442,
+   "startFrame": 3077,
+   "endFrame": 3163,
+   "frames": 86,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0287,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "a spectacled guard curving over the eyes",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-028.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "b7da2cbb06559680a245e5d17dd1769773e34730080e0116de3c65bc1130cd19",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 29,
+   "beatSequence": 30,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-029.jpg",
+   "imageVersionId": "v2-4d-30",
+   "imageSha256": "320caa31950b40ce737d35f5b215733b2d961a256d1ef19b196741e9e0e9f950",
+   "startMs": 105442,
+   "endMs": 110086,
+   "startFrame": 3163,
+   "endFrame": 3303,
+   "frames": 140,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0467,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "and nose, and absolutely nothing where horns would attach.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-029.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "02ee460b1001457c59b4cfc460ce82d3219683c0a61d4e3f2c6c0e77d7928eb5",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 30,
+   "beatSequence": 31,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-030.jpg",
+   "imageVersionId": "v2-4d-31",
+   "imageSha256": "5b7ef6b62750a4c35a9c31b293755960c60dff127c1c520920c472cd28750c20",
+   "startMs": 110086,
+   "endMs": 114265,
+   "startFrame": 3303,
+   "endFrame": 3428,
+   "frames": 125,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0417,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "No sockets. No rivet holes shaped for anything curved.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-030.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "d40174b4b3fb87d23f0fe1930fd02e20eb32047ac9417386d37f8bc3a304f166",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 31,
+   "beatSequence": 32,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-031.jpg",
+   "imageVersionId": "v2-4c-32",
+   "imageSha256": "2ccbacfab2fc4ad9cd03c3c17e3a63da829a0ff2c5fbef8b3292099cee1dc717",
+   "startMs": 114265,
+   "endMs": 118421,
+   "startFrame": 3428,
+   "endFrame": 3553,
+   "frames": 125,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0417,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Just a plain iron dome built to deflect a sword,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-031.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "a4c7fa14dafde4f6e86750dec6438c7b0c26105a66fb64d036cf8c19b8cdc823",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 32,
+   "beatSequence": 33,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-032.jpg",
+   "imageVersionId": "v2-4c-33",
+   "imageSha256": "e5cf8a828a0c686b53d2e4c4a4b5b312872c1f3acf50b1d31c4d533958234043",
+   "startMs": 118421,
+   "endMs": 120325,
+   "startFrame": 3553,
+   "endFrame": 3610,
+   "frames": 57,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0095,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "not to look dramatic.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-032.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "9bb586b73be7b50a41e005c8c2dffcaf386552d09cfd848832daee425f27deb6",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 33,
+   "beatSequence": 34,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-033.jpg",
+   "imageVersionId": "v2-4c-34",
+   "imageSha256": "26dc5457f829580afc7c8ac512aec19c145d96cd98f836e48214741479c750c3",
+   "startMs": 120325,
+   "endMs": 122369,
+   "startFrame": 3610,
+   "endFrame": 3671,
+   "frames": 61,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0102,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "Why trust one helmet?",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-033.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "12492131978d71a11cd5cc8070b125702a9ff34bd2788b719ddfcbf062b53304",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 34,
+   "beatSequence": 35,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-034.jpg",
+   "imageVersionId": "v2-4d-35",
+   "imageSha256": "68b3ddb5511e616bf8160a357d514ec10b82b82d7e59fb959a8e1b35c6fb202f",
+   "startMs": 122369,
+   "endMs": 124517,
+   "startFrame": 3671,
+   "endFrame": 3736,
+   "frames": 65,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0108,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "Because it isn't alone.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-034.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "35d6914385951764d3e10de6121619d6b9d81d91e6bb3964a9e6699e1574430a",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 35,
+   "beatSequence": 36,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-035.jpg",
+   "imageVersionId": "v2-4d-36",
+   "imageSha256": "d9cb0c9178b601d5d4e860feb42a5fceadd0f8b3db40c385bf46831feecb0429",
+   "startMs": 124517,
+   "endMs": 127129,
+   "startFrame": 3736,
+   "endFrame": 3814,
+   "frames": 78,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.013,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow pan (overlay: no pan)"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "TJELE + OTHER SITES",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 252,
+     "y": 75,
+     "width": 1416,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 11.92,
+     "bottom": 12.49
+    }
+   },
+   "narration": "Fragments from Tjele in Denmark",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-035.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-035.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "fc1c5d7ddcafd983f129eef5de6b548ffb4f91364fc4465589d23a9002504021",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-035.png"
+  },
+  {
+   "index": 36,
+   "beatSequence": 37,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-036.jpg",
+   "imageVersionId": "v2-4d-37",
+   "imageSha256": "5f8035ff2570bba4638e6026a64df2a36e10825ed46f56e85122f33887ffd196",
+   "startMs": 127129,
+   "endMs": 131343,
+   "startFrame": 3814,
+   "endFrame": 3940,
+   "frames": 126,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.042,
+     "cx": 0.4798464491362764,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.042,
+     "cx": 0.5201535508637236,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "and a handful of other sites all show the same story:",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-036.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "13deca483f7ac8a882fc50f2fe35051fdccdde4c2d7a65d65d90ef999ada0514",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 37,
+   "beatSequence": 38,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-037.jpg",
+   "imageVersionId": "v2-4d-38",
+   "imageSha256": "33ee19488a957317b82baee8d1f162c5f222e1088ff54e29b4eba46503d38f52",
+   "startMs": 131343,
+   "endMs": 135813,
+   "startFrame": 3940,
+   "endFrame": 4074,
+   "frames": 134,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0447,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "plain iron, sometimes mail hanging to protect the neck,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-037.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "3bf62d284aea629dce27470519f3ca89d34055cc7a93be39e4957bf122dc609d",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 38,
+   "beatSequence": 39,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-038.jpg",
+   "imageVersionId": "v2-4d-39",
+   "imageSha256": "efdd744653aff00a953bfa1faaad8d8e875020059ca7726b3dab0b43186ab71e",
+   "startMs": 135813,
+   "endMs": 138483,
+   "startFrame": 4074,
+   "endFrame": 4154,
+   "frames": 80,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0267,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "occasionally a nose guard.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-038.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "e90cfc9a3bd0e32b04515a2b43fda17d2dd54ea2f1ab78ca195506d383f1bb7b",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 39,
+   "beatSequence": 40,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-039.jpg",
+   "imageVersionId": "v2-4c-40",
+   "imageSha256": "f733efd006eb38871ad0f0ec316133cc68bb663ac4dd94dbdf01d89c295f2f91",
+   "startMs": 138483,
+   "endMs": 140423,
+   "startFrame": 4154,
+   "endFrame": 4213,
+   "frames": 59,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0197,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Historian Roberta Frank,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-039.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "9b43852aa9a03303518179f739835e50b5b10ead946d4af9ac052b422f36790a",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 40,
+   "beatSequence": 41,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-040.jpg",
+   "imageVersionId": "v2-5a-41",
+   "imageSha256": "eac8497b4961bd1fb0ce006153685a377730e10088d47f8026e6d2c204c89bd4",
+   "startMs": 140423,
+   "endMs": 145183,
+   "startFrame": 4213,
+   "endFrame": 4355,
+   "frames": 142,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0473,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "who spent years tracing this myth through Old Norse literature,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-040.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "d3b99f98a73628291b6ffb8c96c9d5dbbb64e98014f67f44172afe76dcbf922c",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 41,
+   "beatSequence": 42,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-041.jpg",
+   "imageVersionId": "v2-5b-42",
+   "imageSha256": "aea2a82af3cb4b85e7f73204d14d1d86dddab11d5f23f30ceda60da360b45b53",
+   "startMs": 145183,
+   "endMs": 148050,
+   "startFrame": 4355,
+   "endFrame": 4442,
+   "frames": 87,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0145,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "ZERO",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 765,
+     "y": 75,
+     "width": 391,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.26,
+     "bottom": 30.59
+    }
+   },
+   "narration": "found zero contemporary written",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-041.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-041.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "87dddecd8eaa9f401892a1db6a30a19af9eb2fe821b0ebf5ab13aef516cf1de8",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-041.png"
+  },
+  {
+   "index": 42,
+   "beatSequence": 43,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-042.jpg",
+   "imageVersionId": "v2-4d-43",
+   "imageSha256": "194b4f8d0937733eb8554654cb6193861811c4206249adc93b0ffd63ce3eaf6e",
+   "startMs": 148050,
+   "endMs": 153519,
+   "startFrame": 4442,
+   "endFrame": 4606,
+   "frames": 164,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0273,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "descriptions of horned battle helmets either. Not one saga.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-042.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "53bf5c78c783af9c0cc6749ca19705919538d3d82cbb3f7a1a7ba20d49e79dc9",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 43,
+   "beatSequence": 44,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-043.jpg",
+   "imageVersionId": "v2-4d-44",
+   "imageSha256": "4eeca494b7ed26d1a331e74b49c17eb8f670d27f25e0925ded028fdd67a0b6e5",
+   "startMs": 153519,
+   "endMs": 159335,
+   "startFrame": 4606,
+   "endFrame": 4780,
+   "frames": 174,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.058,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Not one carving from the era mentions warriors fighting in horns.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-043.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "71ae3ff05f47415ee1246bc93a93c7d51e5a001940b610ccc4bfc735e5949b8e",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 44,
+   "beatSequence": 45,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-044.jpg",
+   "imageVersionId": "v2-4c-45",
+   "imageSha256": "13ed870d629a26c5daf51ea6ab92dac7c5983bc5d294a277fae5dbfd0045f594",
+   "startMs": 159335,
+   "endMs": 163561,
+   "startFrame": 4780,
+   "endFrame": 4907,
+   "frames": 127,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0212,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "So where do actual horned helmets in museums come from,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-044.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "727c2dd1c9cab02308120d722aee87d9b364fd1d3a6167c1e4a5fb2cc23fa720",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 45,
+   "beatSequence": 46,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-045.jpg",
+   "imageVersionId": "v2-5a-46",
+   "imageSha256": "21674bb1f63c8221835e55ddf27a7ede472b89af88cbcdb0bff7c70cd5a27b5f",
+   "startMs": 163561,
+   "endMs": 166731,
+   "startFrame": 4907,
+   "endFrame": 5002,
+   "frames": 95,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0158,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "if not the Viking Age?",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-045.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "31b741c32518850ee31ad5cf532b8ab74d06972ba53d53329b23f4cf696e2227",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 46,
+   "beatSequence": 47,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-046.jpg",
+   "imageVersionId": "v2-5b-47",
+   "imageSha256": "e4ff741111a82a6a7d73c9747b01954bb05f8abfad5831e88622ac4f4cba51c1",
+   "startMs": 166731,
+   "endMs": 169204,
+   "startFrame": 5002,
+   "endFrame": 5076,
+   "frames": 74,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "Rewind about two thousand years",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-046.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "c1b00a8df6d8ba0711310a42babc51bf61c8395cb4c8a0210820e4c88fa072b8",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 47,
+   "beatSequence": 48,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-047.jpg",
+   "imageVersionId": "v2-4d-48",
+   "imageSha256": "8f13d8e1de6214036dd068ea2000a49bf6db25b51439c21f35a9ceb8ae8aaa6c",
+   "startMs": 169204,
+   "endMs": 172861,
+   "startFrame": 5076,
+   "endFrame": 5186,
+   "frames": 110,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.0367,
+     "cx": 0.5177003954856757,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0367,
+     "cx": 0.4822996045143243,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "before the first Viking ship ever launched.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-047.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "31ae844e8d8566e915c5f861ab0adcffb10e069ebea7a9caed8c3422d0b37ccf",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 48,
+   "beatSequence": 49,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-048.jpg",
+   "imageVersionId": "v2-4d-49",
+   "imageSha256": "0e7a2607b5985c87f3dc473ac29f6a06ea5adf99e9dec8d53283996ca0ef1b0e",
+   "startMs": 172861,
+   "endMs": 174765,
+   "startFrame": 5186,
+   "endFrame": 5243,
+   "frames": 57,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0095,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow pan (overlay: no pan)"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "1942",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 783,
+     "y": 75,
+     "width": 355,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.63,
+     "bottom": 3.29
+    }
+   },
+   "narration": "In 1942,",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-048.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-048.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "b5433f67a06c46190bbcbeae392cf0ed2cbdf0621d4d17761d22a0c80ff63089",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-048.png"
+  },
+  {
+   "index": 49,
+   "beatSequence": 50,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-049.jpg",
+   "imageVersionId": "v2-4d-50",
+   "imageSha256": "4d678037d0b9a78134eb70bd80b5232aba6981fa97ea2cbf7bb8ac9d0371949c",
+   "startMs": 174765,
+   "endMs": 180790,
+   "startFrame": 5243,
+   "endFrame": 5424,
+   "frames": 181,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "workers draining a bog near Veksø in Denmark pulled up two bronze helmets,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-049.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "3d9e484a7cd4c66a8a2f77268139dc16f716af874783d86afd6442c3b89cc4c7",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 50,
+   "beatSequence": 51,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-050.jpg",
+   "imageVersionId": "v2-4d-51",
+   "imageSha256": "c9579f3e16195f4404e267629208389bfd0a44cbc68e625b5fdfd5f690ecb35e",
+   "startMs": 180790,
+   "endMs": 187269,
+   "startFrame": 5424,
+   "endFrame": 5618,
+   "frames": 194,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "each fitted with long, gently curving horns tipped with little round discs.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-050.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "3546f086c1f3f493f6803cd340e037319ce36b1d109a30415bd3b319a52b0b2a",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 51,
+   "beatSequence": 52,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-051.jpg",
+   "imageVersionId": "v2-4d-52",
+   "imageSha256": "efa30f23a03e6c661bd2fa86e05628f42105047d87579fae942de5986558bbf7",
+   "startMs": 187269,
+   "endMs": 189927,
+   "startFrame": 5618,
+   "endFrame": 5698,
+   "frames": 80,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.02,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "THE VEKSØ HELMETS",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 248,
+     "y": 75,
+     "width": 1424,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 4.14,
+     "bottom": 10.89
+    }
+   },
+   "narration": "They're called the Veksø helmets,",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-051.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-051.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "04c1df8a6adaef85bbb7a3e67e8070b27671bb52ef675f9167cbb821602b82fc",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-051.png"
+  },
+  {
+   "index": 52,
+   "beatSequence": 53,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-052.jpg",
+   "imageVersionId": "v2-4d-53",
+   "imageSha256": "71b136366f55baec415db12ffa0fbd0f462560607bf21173658c5faf20ffce0a",
+   "startMs": 189927,
+   "endMs": 195094,
+   "startFrame": 5698,
+   "endFrame": 5853,
+   "frames": 155,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "900–1100 BCE",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 462,
+     "y": 75,
+     "width": 996,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.4,
+     "bottom": 9.54
+    }
+   },
+   "narration": "and they've been dated to roughly 900 to 1100 BCE,",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-052.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-052.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "1afb5bba69044b85091b7367438f984e7c1b5a18704703f00547813f8dbc3bf5",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-052.png"
+  },
+  {
+   "index": 53,
+   "beatSequence": 54,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-053.jpg",
+   "imageVersionId": "v2-4d-54",
+   "imageSha256": "6d3b2cafd59afb1696d0ff9c567520fa8fd831f6d884bd5ef6fa1df043350705",
+   "startMs": 195094,
+   "endMs": 197555,
+   "startFrame": 5853,
+   "endFrame": 5927,
+   "frames": 74,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "the Nordic Bronze Age.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-053.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "be333f66b411d8056d9a2927db4de098b4df23eb6554d8b1a311b83f18e61785",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 54,
+   "beatSequence": 55,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-054.jpg",
+   "imageVersionId": "v2-4c-55",
+   "imageSha256": "e1a00f6da6973b609bda47218dca6930a7e6d51d46f015840085e7fb06e87423",
+   "startMs": 197555,
+   "endMs": 201015,
+   "startFrame": 5927,
+   "endFrame": 6030,
+   "frames": 103,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0343,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "These weren't armor. The bronze is thin,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-054.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "8e43e974bf8aba86b034c719fe87fc3a1bb1b961c92678367553a215b39156b8",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 55,
+   "beatSequence": 56,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-055.jpg",
+   "imageVersionId": "v2-4c-56",
+   "imageSha256": "d4c766a5f025e4f4d1ac0d45e6dfdd6ae5927a9f48fa3ef859e52649b80a8e5f",
+   "startMs": 201015,
+   "endMs": 203824,
+   "startFrame": 6030,
+   "endFrame": 6115,
+   "frames": 85,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0283,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "decorative, almost delicate.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-055.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "b22f7b6dd1578193f34b52c9088a8f59fd2635009dd0838b5a4217bca1bb7fe2",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 56,
+   "beatSequence": 57,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-056.jpg",
+   "imageVersionId": "v2-4c-57",
+   "imageSha256": "d1331641878a056888f307b3b49d8185ce6afe57f10684427f825a4ae14ba7ef",
+   "startMs": 203824,
+   "endMs": 209165,
+   "startFrame": 6115,
+   "endFrame": 6275,
+   "frames": 160,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0533,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "They were likely worn by a priest or a chieftain in a religious ceremony,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-056.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "e7dc3b36fda37350c3e0a0a98fc5c81c2c5ff8673a6bfea0db78d7bfe310caaa",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 57,
+   "beatSequence": 58,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-057.jpg",
+   "imageVersionId": "v2-5a-58",
+   "imageSha256": "8cf6b87011990a4609d87415d8f81cd4d5891ac997769da67460be115ca37c27",
+   "startMs": 209165,
+   "endMs": 212543,
+   "startFrame": 6275,
+   "endFrame": 6376,
+   "frames": 101,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0168,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "maybe alongside sun-worship rituals,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-057.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "b2435a54edab8af6a2c975b87f3088c576fb8215a492dbfc5ec666449488368f",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 58,
+   "beatSequence": 59,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-058.jpg",
+   "imageVersionId": "v2-4c-59",
+   "imageSha256": "da677f68c919712b390712bcc15216a7ee386eeaf1ee56b4b5528e47da84f9ae",
+   "startMs": 212543,
+   "endMs": 215910,
+   "startFrame": 6376,
+   "endFrame": 6477,
+   "frames": 101,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0168,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "definitely not swung into a shield wall.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-058.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "29b50a6151c059ebd41686c2533c8c6e9cda79753cfb8644acd02fe4cd427da3",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 59,
+   "beatSequence": 60,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-059.jpg",
+   "imageVersionId": "v2-4d-60",
+   "imageSha256": "95b60ea9a5b5634ea601a45c566b9fa025f72600b6a7b536720a16ee94011554",
+   "startMs": 215910,
+   "endMs": 219869,
+   "startFrame": 6477,
+   "endFrame": 6596,
+   "frames": 119,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "1,800+ YEARS APART",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 218,
+     "y": 75,
+     "width": 1484,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.01,
+     "bottom": 2.42
+    }
+   },
+   "narration": "That's over eighteen hundred years separating these horns",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-059.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-059.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "d2e8b0b7d82608d2d4a0bb6e1c137c603518950e1100d42670518991de80abcb",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-059.png"
+  },
+  {
+   "index": 60,
+   "beatSequence": 61,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-060.jpg",
+   "imageVersionId": "v2-4d-61",
+   "imageSha256": "ca0339c8315ede272515fd26ceac58ce5b91170ec9f7e06278874459eaad7deb",
+   "startMs": 219869,
+   "endMs": 225639,
+   "startFrame": 6596,
+   "endFrame": 6769,
+   "frames": 173,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "LINDISFARNE, 793",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 325,
+     "y": 75,
+     "width": 1270,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.68,
+     "bottom": 4.71
+    }
+   },
+   "narration": "from the first recorded Viking raid on Lindisfarne in 793.",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-060.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-060.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "0a09696b24bf0e18a78d954e927599303ed4e71c80bb8282c2784515890cb669",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-060.png"
+  },
+  {
+   "index": 61,
+   "beatSequence": 62,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-061.jpg",
+   "imageVersionId": "v2-4c-62",
+   "imageSha256": "b981bb997c6180b772806601508405ea304936538d66139963422304dcc266ae",
+   "startMs": 225639,
+   "endMs": 229436,
+   "startFrame": 6769,
+   "endFrame": 6883,
+   "frames": 114,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "Would you mistake your great-great-great-grandparent's wedding",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-061.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "f6287c36ecca3cef6ffdf7637a2e01b0f84e9e192d45b44949ee41aeabef01a8",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 62,
+   "beatSequence": 63,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-062.jpg",
+   "imageVersionId": "v2-4c-63",
+   "imageSha256": "c51b13f947b6d43f8a722b26f4d20578a5ccbddf1a76f92535607352a01d78d8",
+   "startMs": 229436,
+   "endMs": 233325,
+   "startFrame": 6883,
+   "endFrame": 7000,
+   "frames": 117,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "china for something you use in a bar fight?",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-062.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "10d3fc85d3cad5a1b3692d530f2ae8238fdf8627cafcd8794e6d821cb996ce9d",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 63,
+   "beatSequence": 64,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-063.jpg",
+   "imageVersionId": "v2-4d-64",
+   "imageSha256": "ea8b956c968013a4d2971af0c7e75237eab379e01ff146ede45fdb46cef3f96d",
+   "startMs": 233325,
+   "endMs": 236413,
+   "startFrame": 7000,
+   "endFrame": 7092,
+   "frames": 92,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "That's roughly the gap we're talking about.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-063.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "f97ea3d937b1db6ecaca95cec996f0e394b70de95f2c3023f2d4d33454b44d77",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 64,
+   "beatSequence": 65,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-064.jpg",
+   "imageVersionId": "v2-4c-65",
+   "imageSha256": "a9668af34a4600bc7d8a369b823aa9ec41392390b0e446f50bd02d13074b6e33",
+   "startMs": 236413,
+   "endMs": 240140,
+   "startFrame": 7092,
+   "endFrame": 7204,
+   "frames": 112,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0373,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "But 19th-century antiquarians didn't always draw",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-064.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "50cad4a621589f51c88f2f274721965347bcb1f9e7d42fa98311707840ae7efc",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 65,
+   "beatSequence": 66,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-065.jpg",
+   "imageVersionId": "v2-4d-66",
+   "imageSha256": "f661849f6da7b80bf920d73be667d3a061167e356f08fb6dd1f8c246abc495ee",
+   "startMs": 240140,
+   "endMs": 242253,
+   "startFrame": 7204,
+   "endFrame": 7268,
+   "frames": 64,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0213,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "that line carefully.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-065.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "a759b14beadf7482b798d35c9ebb0155e6de271837a9684f98efd93c12d90be3",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 66,
+   "beatSequence": 67,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-066.jpg",
+   "imageVersionId": "v2-4c-67",
+   "imageSha256": "6b85f94295b9b2b0def2386976922438194568da60fcafa897e458422f634ebe",
+   "startMs": 242253,
+   "endMs": 245748,
+   "startFrame": 7268,
+   "endFrame": 7372,
+   "frames": 104,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0347,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Early collectors and popular illustrators,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-066.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "3f8bcb6e5c6bf78280b9305960f4641004b0a672964fd4c29fe92c534f73badd",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 67,
+   "beatSequence": 68,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-067.jpg",
+   "imageVersionId": "v2-4c-68",
+   "imageSha256": "dcafb4fbae2d5c5e919d1f56cd887799194806197a0c88c6ae91f06139106a7f",
+   "startMs": 245748,
+   "endMs": 251959,
+   "startFrame": 7372,
+   "endFrame": 7559,
+   "frames": 187,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "digging through old hoards without modern dating tools, lumped anything old",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-067.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "33fe3b2c176900c0f85191102285d8cc48e64d45c69a9c56f80c2e0ce365b07f",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 68,
+   "beatSequence": 69,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-068.jpg",
+   "imageVersionId": "v2-4d-69",
+   "imageSha256": "4384f5e5b803031b3d1ca47030a275a69514bddc9bc1e51aab11f866588d9287",
+   "startMs": 251959,
+   "endMs": 258112,
+   "startFrame": 7559,
+   "endFrame": 7743,
+   "frames": 184,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.02,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "ANCIENT NORSE WARRIOR",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 14,
+    "scale": 124,
+    "box": {
+     "x": 210,
+     "y": 95,
+     "width": 1501,
+     "height": 170
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.29,
+     "bottom": 5.13
+    }
+   },
+   "narration": "and Nordic into one romantic bucket labeled ancient Norse warrior.",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-068.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-068.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "5d8fd3b88495f0192faa11d74426790dec822302269ea51499483ea245be4f9b",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-068.png"
+  },
+  {
+   "index": 69,
+   "beatSequence": 70,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-069.jpg",
+   "imageVersionId": "v2-4c-70",
+   "imageSha256": "6fc2e5a97b0fc90e9b46ab9292bb95a46bca96c8cf70fe4e6163dc5aa66024f7",
+   "startMs": 258112,
+   "endMs": 262001,
+   "startFrame": 7743,
+   "endFrame": 7860,
+   "frames": 117,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.039,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "A ceremonial priest's headdress from the Bronze Age",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-069.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "a049483b2059b0759114ccb0b3b3d17e79ffd238066c0c251c83b1cf9a1fbff3",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 70,
+   "beatSequence": 71,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-070.jpg",
+   "imageVersionId": "v2-4c-71",
+   "imageSha256": "4ede6c960c5c1a511049db5adb2d0c353aab93129dc52da12027ceef16dfb78f",
+   "startMs": 262001,
+   "endMs": 266890,
+   "startFrame": 7860,
+   "endFrame": 8007,
+   "frames": 147,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.049,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "and a Viking raider a thousand years later got flattened",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-070.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "089643a118b0e3a6d499a224588ee36ae9ec08bc84b9e1b8d4d91843563c73dc",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 71,
+   "beatSequence": 72,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-071.jpg",
+   "imageVersionId": "v2-4c-72",
+   "imageSha256": "dbc9457283453bb6c44dfa81ea4ad222ed24d96737450c8feab203fe06aff51f",
+   "startMs": 266890,
+   "endMs": 269815,
+   "startFrame": 8007,
+   "endFrame": 8094,
+   "frames": 87,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "into the same imagined figure.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-071.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "d81780f19db852b741168400c05a09340e49764ec787db2ca0d1b58220548566",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 72,
+   "beatSequence": 73,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-072.jpg",
+   "imageVersionId": "v2-4d-73",
+   "imageSha256": "30938951b63e6009a4d06bf119e6de8de786bb0f349d07d5fcc28af01684550b",
+   "startMs": 269815,
+   "endMs": 273983,
+   "startFrame": 8094,
+   "endFrame": 8219,
+   "frames": 125,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0208,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "That mistake didn't stay buried in a museum basement.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-072.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "e8d9aae0a185766e57a97f3b5f487cb32dae5d56060343591b7d795e78f2b532",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 73,
+   "beatSequence": 74,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-073.jpg",
+   "imageVersionId": "v2-4c-74",
+   "imageSha256": "6525c721025314f5ebd887591625f40835637f94b7d688692376f01854db937d",
+   "startMs": 273983,
+   "endMs": 277350,
+   "startFrame": 8219,
+   "endFrame": 8321,
+   "frames": 102,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.017,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "It walked straight onto a stage.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-073.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "13c9adaf5a7e8de42a5561e679ec5452aeaa3223dddabe25dff564f6ee779df2",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 74,
+   "beatSequence": 75,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-074.jpg",
+   "imageVersionId": "v2-4c-75",
+   "imageSha256": "4d5c7fd6ae722fed8e81ac68970599289a3262185cd727dda9010f139eee5b35",
+   "startMs": 277350,
+   "endMs": 283364,
+   "startFrame": 8321,
+   "endFrame": 8501,
+   "frames": 180,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.02,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow pan (overlay: no pan)"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "DER RING DES NIBELUNGEN, 1876",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 12,
+    "scale": 102,
+    "box": {
+     "x": 208,
+     "y": 110,
+     "width": 1505,
+     "height": 141
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 4.76,
+     "bottom": 7.45
+    }
+   },
+   "narration": "In 1876, composer Richard Wagner's opera cycle Der Ring des",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-074.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-074.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "448003eaf2c198cf2e109e6124dea6cd5c24ef197118daf892d9c75ce1136ce0",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-074.png"
+  },
+  {
+   "index": 75,
+   "beatSequence": 76,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-075.jpg",
+   "imageVersionId": "v2-4c-76",
+   "imageSha256": "04f3e62777a4357e67543816ccb83c4ef2116c7e66027f784a3292652c14e817",
+   "startMs": 283364,
+   "endMs": 287741,
+   "startFrame": 8501,
+   "endFrame": 8632,
+   "frames": 131,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.0437,
+     "cx": 0.5209351346172272,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0437,
+     "cx": 0.4790648653827728,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "Nibelungen premiered in Bayreuth, Germany.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-075.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "621e324c040ad9b8a70e517e864f7e10e5a9b795ae155f219917187f74c5e498",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 76,
+   "beatSequence": 77,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-076.jpg",
+   "imageVersionId": "v2-4c-77",
+   "imageSha256": "b678d3bb942fc83a0dd22bcf03abf0f8782de2b0db82eb3de9397c9f959a8e54",
+   "startMs": 287741,
+   "endMs": 292548,
+   "startFrame": 8632,
+   "endFrame": 8776,
+   "frames": 144,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.048,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Costume designer Carl Emil Doepler dressed the Norse gods",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-076.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "79dee08c8b69399d14698509ea035f94674042a66dcc681a911c5dccf6b5032d",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 77,
+   "beatSequence": 78,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-077.jpg",
+   "imageVersionId": "v2-4c-78",
+   "imageSha256": "c0fa200ea7594e007eb5e28e6d6f363cf6c4cb0cf0387403f6c1647fd836e003",
+   "startMs": 292548,
+   "endMs": 297087,
+   "startFrame": 8776,
+   "endFrame": 8913,
+   "frames": 137,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0457,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "and warriors in flowing furs, winged helmets, and yes,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-077.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "8b199f2c4b94fef6cc53281970f123702325915a2325cbb4ccbdbb58110317e1",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 78,
+   "beatSequence": 79,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-078.jpg",
+   "imageVersionId": "v2-4c-79",
+   "imageSha256": "a29903a46fe74aa3fb58d0c95aa5f15adc9775bb9085fdaddb776f6092f8d23c",
+   "startMs": 297087,
+   "endMs": 299560,
+   "startFrame": 8913,
+   "endFrame": 8987,
+   "frames": 74,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0247,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "dramatic curved horns.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-078.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "00ec467df075a7b8bc6199232ebf746cbe03c886ba92ed93db584babcecdbf65",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 79,
+   "beatSequence": 80,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-079.jpg",
+   "imageVersionId": "v2-4c-80",
+   "imageSha256": "6b49345988c44d6fdd3ff5be29dd4bff17fdcb6c148b811d0760802ae758e7e2",
+   "startMs": 299560,
+   "endMs": 304819,
+   "startFrame": 8987,
+   "endFrame": 9145,
+   "frames": 158,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0527,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Wagner wanted mythic, larger-than-life figures towering over an audience",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-079.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "fa17270d2e0778eefadf345fcf1e4bee1519e6476866ee5fbef130a38ba4a4f4",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 80,
+   "beatSequence": 81,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-080.jpg",
+   "imageVersionId": "v2-4c-81",
+   "imageSha256": "604bc57062a6eec2086b154c94f154717531bad9b16e54fd6673e5733aacf2ab",
+   "startMs": 304819,
+   "endMs": 307513,
+   "startFrame": 9145,
+   "endFrame": 9225,
+   "frames": 80,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0267,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "from the back row of a theater.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-080.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "9a7321b4dc9d06d85458cadfca677058782cb319619881f183cd60d5982f7b59",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 81,
+   "beatSequence": 82,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-081.jpg",
+   "imageVersionId": "v2-4d-82",
+   "imageSha256": "24a7705bebf74b0639fa7c786d5e22b66b1b1a5fab7d14db27c0c79eb10fc8e7",
+   "startMs": 307513,
+   "endMs": 311030,
+   "startFrame": 9225,
+   "endFrame": 9331,
+   "frames": 106,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0177,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "Historical accuracy wasn't the assignment.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-081.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "153986e318ac0a724cd56d80dc92133c88330fc1c7dbeb57bd4e6ba0779b0dea",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 82,
+   "beatSequence": 83,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-082.jpg",
+   "imageVersionId": "v2-4d-83",
+   "imageSha256": "2ce5446c37e0039ed82e2374ee45be6c7e7065e161d79987bcc53273a024f3f1",
+   "startMs": 311030,
+   "endMs": 315674,
+   "startFrame": 9331,
+   "endFrame": 9470,
+   "frames": 139,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0463,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Spectacle was. Why did that image spread so fast?",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-082.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "fe2a235f23cdeb3862888d5cb88a5dd396a5f03c1bc5f71f39c861da20a76b92",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 83,
+   "beatSequence": 84,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-083.jpg",
+   "imageVersionId": "v2-4c-84",
+   "imageSha256": "a4334b27194dae828dce359fc7bcb0c67a255abaa60a69aa48365e36f3164e69",
+   "startMs": 315674,
+   "endMs": 318786,
+   "startFrame": 9470,
+   "endFrame": 9564,
+   "frames": 94,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.0313,
+     "cx": 0.515175021817124,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0313,
+     "cx": 0.48482497818287595,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "Because it landed inside the Romantic movement,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-083.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "14a3055106c281d5c52c75eed4c8c5135b888e34d278a0bfae288f041b47b163",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 84,
+   "beatSequence": 85,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-084.jpg",
+   "imageVersionId": "v2-4c-85",
+   "imageSha256": "d73078aeefd57f039de5a68adcf6f8bfe9ef7cc6b819d1a42f339cc084f35e7a",
+   "startMs": 318786,
+   "endMs": 324579,
+   "startFrame": 9564,
+   "endFrame": 9737,
+   "frames": 173,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0577,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "when artists across Europe were painting Norse myth as noble and untamed.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-084.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "3f23fa7235cf2fb9717bcb419a61aabd7712dfe998cbc956ba1ea9f9890bb458",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 85,
+   "beatSequence": 86,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-085.jpg",
+   "imageVersionId": "v2-4c-86",
+   "imageSha256": "2ae7e0930d2d2ca902801762796ced265f84a498b966f5c8819071374827ceea",
+   "startMs": 324579,
+   "endMs": 327168,
+   "startFrame": 9737,
+   "endFrame": 9815,
+   "frames": 78,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.026,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Swedish painter Gustav Malmstrom",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-085.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "e2cde9beaac0dabbe14c14b2450241f356732ad8badf3583ab535fb9d773aab2",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 86,
+   "beatSequence": 87,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-086.jpg",
+   "imageVersionId": "v2-4d-87",
+   "imageSha256": "0e6cd64076aeee83e72750913ee76cc8da2a8a291ec7f864345862632666adef",
+   "startMs": 327168,
+   "endMs": 331707,
+   "startFrame": 9815,
+   "endFrame": 9951,
+   "frames": 136,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.02,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "DECADES EARLIER",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 339,
+     "y": 75,
+     "width": 1242,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 4.98,
+     "bottom": 24.9
+    }
+   },
+   "narration": "and others had already sketched horned figures decades earlier,",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-086.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-086.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "44e15f9e209216336e94134e4708c94d2182d6dc0478b0da8e06b14027d797d5",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-086.png"
+  },
+  {
+   "index": 87,
+   "beatSequence": 88,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-087.jpg",
+   "imageVersionId": "v2-4c-88",
+   "imageSha256": "4ad4049a22168b18db0e11603d7e61e850973148748afb830df05450626408a1",
+   "startMs": 331707,
+   "endMs": 337454,
+   "startFrame": 9951,
+   "endFrame": 10124,
+   "frames": 173,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.0577,
+     "cx": 0.5272761652642526,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0577,
+     "cx": 0.47272383473574736,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "but Wagner's production put the look in front of thousands of paying theatergoers at once,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-087.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "c308b57d7aea5a3c8a82f5d3299992352a835e546673200159f3c7f9ec344ba6",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 88,
+   "beatSequence": 89,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-088.jpg",
+   "imageVersionId": "v2-4c-89",
+   "imageSha256": "09f4621dd63ec839f0ad8b440256c4c555f8af0a6cefb04dd445ad8742c69405",
+   "startMs": 337454,
+   "endMs": 339579,
+   "startFrame": 10124,
+   "endFrame": 10187,
+   "frames": 63,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.021,
+     "cx": 0.4897159647404506,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.021,
+     "cx": 0.5102840352595495,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "night after night.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-088.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "af26540ab4eea6b98899745beb72491ae0092f9b920255dbc7c6203f9689c0ca",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 89,
+   "beatSequence": 90,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-089.jpg",
+   "imageVersionId": "v2-4c-90",
+   "imageSha256": "40abde56eb127824ae44eefe7ab75b665d0e5cc20c71506570486274a3b1e76c",
+   "startMs": 339579,
+   "endMs": 342783,
+   "startFrame": 10187,
+   "endFrame": 10283,
+   "frames": 96,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.032,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "A single stage costume became the visual",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-089.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "c8ca638d0c59f10da868b8158ebbb5b2bdbdc23f10ba9b314ab18fb2005c80c7",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 90,
+   "beatSequence": 91,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-090.jpg",
+   "imageVersionId": "v2-4c-91",
+   "imageSha256": "82534fdd4f9308b50df38dbe302fdad5e7782db6f87e20fa0ff7b86d2f928efe",
+   "startMs": 342783,
+   "endMs": 346347,
+   "startFrame": 10283,
+   "endFrame": 10390,
+   "frames": 107,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.0357,
+     "cx": 0.4827652795210968,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0357,
+     "cx": 0.5172347204789032,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "template every illustrator copied afterward,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-090.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "df65303bddc3a0d9697757016475ea279b8c360dc1f0089621bb162746885d7a",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 91,
+   "beatSequence": 92,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-091.jpg",
+   "imageVersionId": "v2-4d-92",
+   "imageSha256": "6b143fb06c6b913d284e7d9bbf252566dfaa7c007f0466e11780d9663b28340b",
+   "startMs": 346347,
+   "endMs": 350051,
+   "startFrame": 10390,
+   "endFrame": 10502,
+   "frames": 112,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0187,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "because it was already proven to work on an audience.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-091.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "632d8133e6dd468e18303e00799dffdc79ce29a56382edd64af16c83311ee3de",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 92,
+   "beatSequence": 93,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-092.jpg",
+   "imageVersionId": "v2-4d-93",
+   "imageSha256": "f45b9fc28be378319b1a7ea8d9656a3c63231dc50b14af3ed978c4cc43f0b166",
+   "startMs": 350051,
+   "endMs": 353360,
+   "startFrame": 10502,
+   "endFrame": 10601,
+   "frames": 99,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.033,
+     "cx": 0.48402710551790906,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.033,
+     "cx": 0.5159728944820909,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "From there it never stopped moving.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-092.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "5cf485aa73d19b73a5a940c18f1222f8f13686d09067f181b9d2eadcbce66d98",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 93,
+   "beatSequence": 94,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-093.jpg",
+   "imageVersionId": "v2-4d-94",
+   "imageSha256": "aa01e7bacdb382cf804520a4bc4d60b1679a79da4f56f32f967fe332e6246284",
+   "startMs": 353360,
+   "endMs": 355275,
+   "startFrame": 10601,
+   "endFrame": 10658,
+   "frames": 57,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.019,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "EARLY 1900S",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 501,
+     "y": 75,
+     "width": 919,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 2.95,
+     "bottom": 20.92
+    }
+   },
+   "narration": "By the early 1900s,",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-093.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-093.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "d38fc0ea97640a197f4025bb6cc16bd729e1bbda9da9a43ccd4c1bd243674e2b",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-093.png"
+  },
+  {
+   "index": 94,
+   "beatSequence": 95,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-094.jpg",
+   "imageVersionId": "v2-4d-95",
+   "imageSha256": "e8a72ff0e14ae3849956ffd41fd7bfb13f3a6925fc6b51f12f5ff8b766a0aee5",
+   "startMs": 355275,
+   "endMs": 360918,
+   "startFrame": 10658,
+   "endFrame": 10828,
+   "frames": 170,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0567,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "horned helmets showed up on tourist postcards sold in Norway itself.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-094.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "fa5f1a7bc3b170f08352f651272fec383db0897c8f0910a07840cd8569998580",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 95,
+   "beatSequence": 96,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-095.jpg",
+   "imageVersionId": "v2-4d-96",
+   "imageSha256": "f7fbc8b60a827586b86ec250f4eafed65e41fe65cda6b0a7e01d1933a11c4f6f",
+   "startMs": 360918,
+   "endMs": 362822,
+   "startFrame": 10828,
+   "endFrame": 10885,
+   "frames": 57,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "In 1939,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-095.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "69967991ef35748c1deb07593c29d52dd16192ce8c5f04f7c4dd0c6730b636e5",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 96,
+   "beatSequence": 97,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-096.jpg",
+   "imageVersionId": "v2-4c-97",
+   "imageSha256": "af6fc7da2fb9efcebe0ee14b0a5da4924fd54d2593c4984be22d0df222e7f928",
+   "startMs": 362822,
+   "endMs": 366699,
+   "startFrame": 10885,
+   "endFrame": 11001,
+   "frames": 116,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0387,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "cartoonist Alex Raymond drew the horned warrior",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-096.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "ac70227edace37cd2387a5776aaa161bf6779a36cdaa66a576caadcbacd578c1",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 97,
+   "beatSequence": 98,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-097.jpg",
+   "imageVersionId": "v2-5b-98",
+   "imageSha256": "82dcde5e2d33d96ccd74b5edbf1a2d5c32baade3d4612d7a53e10d1921d0a427",
+   "startMs": 366699,
+   "endMs": 369556,
+   "startFrame": 11001,
+   "endFrame": 11087,
+   "frames": 86,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0287,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "in his Flash Gordon comics.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-097.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "bab4912b608dd061573a33fa8b2fde9c6fa1c7d80814eb2a3184a2b1955017fd",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 98,
+   "beatSequence": 99,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-098.jpg",
+   "imageVersionId": "v2-4d-99",
+   "imageSha256": "321346ccd620463473e14d07e32aa20c325b94dd34d8f3a75a68bd5be14d1fb8",
+   "startMs": 369556,
+   "endMs": 374037,
+   "startFrame": 11087,
+   "endFrame": 11221,
+   "frames": 134,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "1948",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 780,
+     "y": 75,
+     "width": 361,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0,
+     "bottom": 7.35
+    }
+   },
+   "narration": "In 1948, the Minnesota Vikings didn't exist yet,",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-098.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-098.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "b738dfb47964df47ad84465f870e9d8ef4d1cdf24ecfcca34c9d06d3d52275e6",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-098.png"
+  },
+  {
+   "index": 99,
+   "beatSequence": 100,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-099.jpg",
+   "imageVersionId": "v2-4d-100",
+   "imageSha256": "9689ad52dafcdadbc8ddb2afbe7c354d5fbe8e5ae2ecca6ba33bd81c2fb57da7",
+   "startMs": 374037,
+   "endMs": 377868,
+   "startFrame": 11221,
+   "endFrame": 11336,
+   "frames": 115,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "but when the NFL team formed in 1961,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-099.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "29bb6f291a40ecaec49a33542da455bcdb71c5014f6225c5d61cf62818c3af3b",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 100,
+   "beatSequence": 101,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-100.jpg",
+   "imageVersionId": "v2-4d-101",
+   "imageSha256": "285695a4369974ac9b8c1d1aa13693c725159855fec0098e7366a91a24f657f1",
+   "startMs": 377868,
+   "endMs": 383012,
+   "startFrame": 11336,
+   "endFrame": 11490,
+   "frames": 154,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0513,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "they built their whole identity around that same horned image.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-100.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "151a82ef433a8f658e26283c8363630b44845334fef16a877ea08cb558b6dd88",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 101,
+   "beatSequence": 102,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-101.jpg",
+   "imageVersionId": "v2-4c-102",
+   "imageSha256": "9c4da58bb8ff975bcd769f16a57bcca0b1f7f89d20d3c0fb8ad0b67b1a9a0c4d",
+   "startMs": 383012,
+   "endMs": 385450,
+   "startFrame": 11490,
+   "endFrame": 11564,
+   "frames": 74,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0123,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "Have you ever questioned why a football team",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-101.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "d2530327092a0e5f4abf91e4073f4a7ccee3ddafabe58fd9a24a2016f61e2a41",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 102,
+   "beatSequence": 103,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-102.jpg",
+   "imageVersionId": "v2-5a-103",
+   "imageSha256": "672fbd5e33dab7255d32017fd9334c8a5322674d4ddfdea8dbcb235d59695421",
+   "startMs": 385450,
+   "endMs": 390395,
+   "startFrame": 11564,
+   "endFrame": 11712,
+   "frames": 148,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "from Minnesota wears Bronze Age Danish ceremonial gear?",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-102.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "53f6b36f8f864c6072da188767931c3e73a473f6600dc72cd148d34ff00d7195",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 103,
+   "beatSequence": 104,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-103.jpg",
+   "imageVersionId": "v2-4c-104",
+   "imageSha256": "8334c2fba7e5687e42365b1cf2784f67190018ad5309a5a64cd7261363e17a04",
+   "startMs": 390395,
+   "endMs": 392287,
+   "startFrame": 11712,
+   "endFrame": 11769,
+   "frames": 57,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.019,
+     "cx": 0.509322865554465,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.019,
+     "cx": 0.4906771344455349,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "Most people never do.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-103.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "92a2b7df4ef324d482777dea1a1f1f41b5c3e47f867e1dae8c4706349dd78441",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 104,
+   "beatSequence": 105,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-104.jpg",
+   "imageVersionId": "v2-4d-105",
+   "imageSha256": "2a67e1411486c4496ba4633d8aab910ced3d41586fa8aeb0ef63a1799aad4e4b",
+   "startMs": 392287,
+   "endMs": 396571,
+   "startFrame": 11769,
+   "endFrame": 11897,
+   "frames": 128,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0213,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "But can we really say never, with total certainty?",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-104.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "4c3b460c2f7be08d63530981b356e155ddcf277ebcd1ce3607ec27d81ccf625a",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 105,
+   "beatSequence": 106,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-105.jpg",
+   "imageVersionId": "v2-4c-106",
+   "imageSha256": "d1ae228413a6b3070a54ee8455e227c7a4f1c954f7b3aa17e34cb082ffd2ea37",
+   "startMs": 396571,
+   "endMs": 398963,
+   "startFrame": 11897,
+   "endFrame": 11969,
+   "frames": 72,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.024,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Here's the honest complication.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-105.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "285352b87caaac131f9a83401a4018236f57e9cc05459f64c540b097ccc36f81",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 106,
+   "beatSequence": 107,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-106.jpg",
+   "imageVersionId": "v2-4c-107",
+   "imageSha256": "5f6f13fddfa6b19c3a9ebe1b3ff4c7b148a4e277974e7c9cb3f2c8b1c22e2a55",
+   "startMs": 398963,
+   "endMs": 402156,
+   "startFrame": 11969,
+   "endFrame": 12065,
+   "frames": 96,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.032,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Most Viking-age helmets we'd expect to find were",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-106.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "75e3993ae2534bcab3e94bf5c35022a1dd41c01537eb3e92285a8abb649fd37f",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 107,
+   "beatSequence": 108,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-107.jpg",
+   "imageVersionId": "v2-4d-108",
+   "imageSha256": "ad1c20d502626680be9e3be793ef1c94b6fd6cf892946b5398be6ec57befd6d5",
+   "startMs": 402156,
+   "endMs": 405813,
+   "startFrame": 12065,
+   "endFrame": 12174,
+   "frames": 109,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0363,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "probably never made of iron at all.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-107.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "5dc8c15fbc46e4f92ccc6dc3bb207a343b1fc225542c56785a6571e23da5bbde",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 108,
+   "beatSequence": 109,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-108.jpg",
+   "imageVersionId": "v2-4d-109",
+   "imageSha256": "773dc764afa2d147e34c351811e151d8545432b95185fc7c7e9204169797c99a",
+   "startMs": 405813,
+   "endMs": 408460,
+   "startFrame": 12174,
+   "endFrame": 12254,
+   "frames": 80,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0267,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Leather, boiled and hardened,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-108.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "29bf8334d2aafcc16a48b739c8a05199393da1d971651bcfd8e4468f112c3fcf",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 109,
+   "beatSequence": 110,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-109.jpg",
+   "imageVersionId": "v2-4d-110",
+   "imageSha256": "98c78caef5aca27d861450835607a9da1035d475ec666f4ebda647bedf42cce9",
+   "startMs": 408460,
+   "endMs": 414160,
+   "startFrame": 12254,
+   "endFrame": 12425,
+   "frames": 171,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.057,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "wood, and antler don't survive well underground for a thousand years,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-109.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "7ff0f684157a575b6756472adbd32a38baac54dc2b593ddb26ae14233a6172cf",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 110,
+   "beatSequence": 111,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-110.jpg",
+   "imageVersionId": "v2-4d-111",
+   "imageSha256": "8fa8b42bf4fa9c58045368497522ea80d99c05377a642888418f3ad18033fe3f",
+   "startMs": 414160,
+   "endMs": 417968,
+   "startFrame": 12425,
+   "endFrame": 12539,
+   "frames": 114,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.038,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "especially in acidic Scandinavian soil.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-110.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "ad6893bbe584aa82427f7123488a4ab64e8ce548d4076470f0c82e4d3947ac13",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 111,
+   "beatSequence": 112,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-111.jpg",
+   "imageVersionId": "v2-4d-112",
+   "imageSha256": "9929b3612e740e00579fd178cd97d858edfc4d569d4a000b9bb257e83cbb9ac4",
+   "startMs": 417968,
+   "endMs": 423750,
+   "startFrame": 12539,
+   "endFrame": 12713,
+   "frames": 174,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.058,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "If a helmet had small horns made from antler lashed on with leather cord,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-111.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "091931f1966c889c1bc74921aaf0baf588bbf208543bce9726ae028e9fb60407",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 112,
+   "beatSequence": 113,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-112.jpg",
+   "imageVersionId": "v2-4d-113",
+   "imageSha256": "a74075cd12e7208ecd66bb872d181b21ea0a9b875e567f83e2d86c2452d90245",
+   "startMs": 423750,
+   "endMs": 428418,
+   "startFrame": 12713,
+   "endFrame": 12853,
+   "frames": 140,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0467,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "that cord and antler could rot into nothing within a few centuries,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-112.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "749a6816c8c38b27da3310c76e6a8f7bac616a57956a2a92a234800b176810af",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 113,
+   "beatSequence": 114,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-113.jpg",
+   "imageVersionId": "v2-4d-114",
+   "imageSha256": "b31deae59840ac8a47e6285522a4b1eefa95bfee5e13420ef069c9ccea7997ef",
+   "startMs": 428418,
+   "endMs": 434084,
+   "startFrame": 12853,
+   "endFrame": 13023,
+   "frames": 170,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0567,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "leaving no rivet holes, no discoloration, no trace at all.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-113.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "8ca6ce883cbad340c540107b091b7994faf206e5ce5e397b056e8493b3aa6714",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 114,
+   "beatSequence": 115,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-114.jpg",
+   "imageVersionId": "v2-4c-115",
+   "imageSha256": "e00bfea5aa1ba6f59990bb8af1492970af314c014ecb592373350e5b845869d7",
+   "startMs": 434084,
+   "endMs": 437137,
+   "startFrame": 13023,
+   "endFrame": 13114,
+   "frames": 91,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0152,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "So when archaeologists say no evidence,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-114.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "661536999fbc614e5417dedc27d4510724dcfd625a5a23c9305d5153238123e2",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 115,
+   "beatSequence": 116,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-115.jpg",
+   "imageVersionId": "v2-4d-116",
+   "imageSha256": "c04168a4b8a58116c90a3c0296139665789a8a3b1f6ec0153df1a9efa475f58b",
+   "startMs": 437137,
+   "endMs": 440504,
+   "startFrame": 13114,
+   "endFrame": 13215,
+   "frames": 101,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0168,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "they mean no surviving evidence.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-115.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "5220c920b07bff2e4e15caee7a0925c7130ad345900af7214b3e1a312c7808b6",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 116,
+   "beatSequence": 117,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-116.jpg",
+   "imageVersionId": "v2-4d-117",
+   "imageSha256": "14bf07ccfb88de8a7391312629fba465a6b9db62cbd09943cfc3b0902c6bb8b6",
+   "startMs": 440504,
+   "endMs": 444695,
+   "startFrame": 13215,
+   "endFrame": 13341,
+   "frames": 126,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.021,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "Absence isn't automatically proof of absence.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-116.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "e9c1cdf90a183d4618d6a9611441ec62f3f72d84c3f09e69e11449a0c319449f",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 117,
+   "beatSequence": 118,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-117.jpg",
+   "imageVersionId": "v2-4c-118",
+   "imageSha256": "6a312b9e601336fe73b0e20520e0093b8b19f30590c8797a09b6d52ad31aac3b",
+   "startMs": 444695,
+   "endMs": 448944,
+   "startFrame": 13341,
+   "endFrame": 13468,
+   "frames": 127,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0212,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "It just means if it happened, it happened in a material",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-117.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "9600aa4b125ea9a44e24b0998e1a579889fc8c0f2ca1d4c65af119ac4b878915",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 118,
+   "beatSequence": 119,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-118.jpg",
+   "imageVersionId": "v2-5a-119",
+   "imageSha256": "0458bd4fd2a46feb649814128bd01e0df48f1cd722fd64249642dde1a65e17bc",
+   "startMs": 448944,
+   "endMs": 451940,
+   "startFrame": 13468,
+   "endFrame": 13558,
+   "frames": 90,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.015,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "that time was never going to let us keep.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-118.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "5ee4d4a7c7742454207a3f8f06f358ec93305513b0a150532f3b174c96b982db",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 119,
+   "beatSequence": 120,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-119.jpg",
+   "imageVersionId": "v2-4c-120",
+   "imageSha256": "018c0a562c42874b19a48857467b2bbff711b5e054ce9c434602f535fb01b355",
+   "startMs": 451940,
+   "endMs": 455550,
+   "startFrame": 13558,
+   "endFrame": 13667,
+   "frames": 109,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0363,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "So go back to that charge down the hillside,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-119.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "c7d8e3dbbbaee7f7576d4ece9af373c2748f3dadc2dd717da68ce344f64d1d7d",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 120,
+   "beatSequence": 121,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-120.jpg",
+   "imageVersionId": "v2-4c-121",
+   "imageSha256": "064bae0cd729782f2bd0c5a6b08d8171e1ec3fc95f72e1577e6ef48a07b99f08",
+   "startMs": 455550,
+   "endMs": 460717,
+   "startFrame": 13667,
+   "endFrame": 13822,
+   "frames": 155,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0517,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "the helmet with two long curved horns catching the firelight.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-120.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "f151a54abe26ee22f29dd3dabe2e123144c460d79dbd1134106e5fc85f853181",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 121,
+   "beatSequence": 122,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-121.jpg",
+   "imageVersionId": "v2-4c-122",
+   "imageSha256": "b681a3ee3db89d428ff4b58fb504058a63d54dc866cadd3718919e7889be168d",
+   "startMs": 460717,
+   "endMs": 464885,
+   "startFrame": 13822,
+   "endFrame": 13947,
+   "frames": 125,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.02,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "NOT VIKING",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 525,
+     "y": 75,
+     "width": 870,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 1.44,
+     "bottom": 4.32
+    }
+   },
+   "narration": "That image didn't come from a Viking battlefield at all.",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-121.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-121.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "cf294b504566d5f5413768f1f2593fd7fdf255af715cac8cbecfce3e9d1e10dc",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-121.png"
+  },
+  {
+   "index": 122,
+   "beatSequence": 123,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-122.jpg",
+   "imageVersionId": "v2-4c-123",
+   "imageSha256": "fd2c8962fee896e64790dad579004db97e6620b7fda5dd3c767efdee486cd36d",
+   "startMs": 464885,
+   "endMs": 468472,
+   "startFrame": 13947,
+   "endFrame": 14054,
+   "frames": 107,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.02,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "BRONZE AGE",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 518,
+     "y": 75,
+     "width": 885,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 4.95,
+     "bottom": 8.01
+    }
+   },
+   "narration": "It came from a Bronze Age priest's ritual,",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-122.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-122.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "0d80d4eb566b353268cd0a34193a298dbb01f3ffe225b9c7271f77f727d8e408",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-122.png"
+  },
+  {
+   "index": 123,
+   "beatSequence": 124,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-123.jpg",
+   "imageVersionId": "v2-4c-124",
+   "imageSha256": "c837f9aacdc05cd8e4b28614803ec64f640e83800e71c080bbfea393647a8779",
+   "startMs": 468472,
+   "endMs": 473081,
+   "startFrame": 14054,
+   "endFrame": 14192,
+   "frames": 138,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.02,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "1876",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 788,
+     "y": 75,
+     "width": 345,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 6.55,
+     "bottom": 6.66
+    }
+   },
+   "narration": "borrowed by a German opera designer in 1876,",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-123.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-123.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "94827eddede276a0a437f5ab5cb17728506cf4bbb7d7e97f7338f3895e68622b",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-123.png"
+  },
+  {
+   "index": 124,
+   "beatSequence": 125,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-124.jpg",
+   "imageVersionId": "v2-5a-125",
+   "imageSha256": "b2e23b6b7d72d6797b59624c6a0fde40c1b4a715a6d860f689a9b0df283947c3",
+   "startMs": 473081,
+   "endMs": 477168,
+   "startFrame": 14192,
+   "endFrame": 14315,
+   "frames": 123,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0205,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "and sold to the entire world ever since.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-124.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "7343996f3ca3c27f29469a26869b9508389c562b1a91e78c16fa333c3a03072f",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 125,
+   "beatSequence": 126,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-125.jpg",
+   "imageVersionId": "v2-4c-126",
+   "imageSha256": "285bf70266e5a5a1f1dd6543c1f444e83225f687e4a2da3c72e1432813ad04f5",
+   "startMs": 477168,
+   "endMs": 483438,
+   "startFrame": 14315,
+   "endFrame": 14503,
+   "frames": 188,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Wagner's costume department gave you a myth so good, so visually perfect,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-125.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "06046eeffec9a89645894b38804bbfc4524aeb042a9e5eea5224eb6888abc928",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 126,
+   "beatSequence": 127,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-126.jpg",
+   "imageVersionId": "v2-4d-127",
+   "imageSha256": "30f5d8b62be3d3219cb9b91d3d345972afe80fbf3c359bbff1e08a41569767be",
+   "startMs": 483438,
+   "endMs": 488407,
+   "startFrame": 14503,
+   "endFrame": 14652,
+   "frames": 149,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0248,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "that even a total absence of battle evidence couldn't kill it.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-126.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "5ec56978979bd851e8cddf2ec558d829c3f118b30ec4f365610fcbe653d4a028",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 127,
+   "beatSequence": 128,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-127.jpg",
+   "imageVersionId": "v2-5b-128",
+   "imageSha256": "6fc0b283d442e777e806a8116abb8583d1e9d7f2b1630b613da7b521a5a4060b",
+   "startMs": 488407,
+   "endMs": 493039,
+   "startFrame": 14652,
+   "endFrame": 14791,
+   "frames": 139,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.02,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "NORWAY",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 621,
+     "y": 75,
+     "width": 679,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 8.3,
+     "bottom": 12.97
+    }
+   },
+   "narration": "Somewhere in a Norwegian museum, a plain iron dome",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-127.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-127.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "e4f9c847ab4f4456b7df5efa54c4952109d09d3002138aeb782bebda32e064ae",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-127.png"
+  },
+  {
+   "index": 128,
+   "beatSequence": 129,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-128.jpg",
+   "imageVersionId": "v2-4d-129",
+   "imageSha256": "5203167049bb698ae26d3183cc46b44cbde43815631a990c36c712ddb3986b07",
+   "startMs": 493039,
+   "endMs": 496301,
+   "startFrame": 14791,
+   "endFrame": 14889,
+   "frames": 98,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0327,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "with a simple eye guard sits under glass,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-128.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "7325dbca4ebf2e1f78822236e21fbbfee4ebb32bd18699c98e8e194b11ce7e87",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 129,
+   "beatSequence": 130,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-129.jpg",
+   "imageVersionId": "v2-4d-130",
+   "imageSha256": "6ba1a52afb506c8b39755dc77777b3977dbdb2656464ca1598117380c255ee07",
+   "startMs": 496301,
+   "endMs": 499947,
+   "startFrame": 14889,
+   "endFrame": 14998,
+   "frames": 109,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0363,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "unglamorous, undramatic, and true.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-129.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "9dcd6620157b551bd90257b5d12b277e7a6a7f72f30a2e1da9982dd5fdc0b807",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 130,
+   "beatSequence": 131,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-130.jpg",
+   "imageVersionId": "v2-5a-131",
+   "imageSha256": "6e8b7dd67d4aef8396676dc86d4ff40a909bc4dd3d3310ed59c0798d86a0c136",
+   "startMs": 499947,
+   "endMs": 504300,
+   "startFrame": 14998,
+   "endFrame": 15129,
+   "frames": 131,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.02,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "NO POSTCARDS. NO MERCH.",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 14,
+    "scale": 121,
+    "box": {
+     "x": 207,
+     "y": 97,
+     "width": 1507,
+     "height": 167
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.56,
+     "bottom": 22.84
+    }
+   },
+   "narration": "Nobody buys a postcard of it. Nobody puts it on a football helmet.",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-130.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-130.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "688557a88afa70df7f8d989770f3167ebeb7631b001b8ece645af761483695a4",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-130.png"
+  },
+  {
+   "index": 131,
+   "beatSequence": 132,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-131.jpg",
+   "imageVersionId": "v2-4d-132",
+   "imageSha256": "cd79cfdf74a8f608e40b58aada6a2d53b8d72f247a901abbd603227bd823dc85",
+   "startMs": 504300,
+   "endMs": 509002,
+   "startFrame": 15129,
+   "endFrame": 15270,
+   "frames": 141,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "Real history is rarely as loud as the myth built on top of it.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-131.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "b5fe678d3502a8c57c4eccf1359fc58fd903e1f0ba0c7f42319f52f9d0930e80",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 132,
+   "beatSequence": 133,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-132.jpg",
+   "imageVersionId": "v2-4d-133",
+   "imageSha256": "9628d55a0f43a6ed881fceff021f845dbec34b0b4c98063d5d8b890665493ec3",
+   "startMs": 509002,
+   "endMs": 513878,
+   "startFrame": 15270,
+   "endFrame": 15416,
+   "frames": 146,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0487,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Next time you see those curving horns on a lunchbox or a mascot,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-132.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "0c28dd2916f5020774646f32a93eeb41210098b80a2dcd908d82c6f966145e76",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 133,
+   "beatSequence": 134,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-133.jpg",
+   "imageVersionId": "v2-4c-134",
+   "imageSha256": "39b76ff32a64a9a97d9377c318cbc3af0e469f11dcb9f3e73ef4336af7dd8184",
+   "startMs": 513878,
+   "endMs": 516282,
+   "startFrame": 15416,
+   "endFrame": 15488,
+   "frames": 72,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.012,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "NORSE MEMORY",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 374,
+     "y": 75,
+     "width": 1173,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 7.54,
+     "bottom": 5.46
+    }
+   },
+   "narration": "you're not looking at Norse memory.",
+   "transitionIn": "cut",
+   "overlayImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovl-133.png",
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-133.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "7b1807384e5b62f8711c5adf063cc5a74180c53d90b130f4b348dba2c6c69700",
+   "overlayImageMaster": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/ovlm-133.png"
+  },
+  {
+   "index": 134,
+   "beatSequence": 135,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-134.jpg",
+   "imageVersionId": "v2-4c-135",
+   "imageSha256": "8976b8123de5ab906fd9f95d946ea041d16593ff33090a3e912491ce8794ba6d",
+   "startMs": 516282,
+   "endMs": 520879,
+   "startFrame": 15488,
+   "endFrame": 15626,
+   "frames": 138,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.046,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "You're looking at a nineteenth-century costume designer's best sales pitch,",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-134.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "db188a28127a3c68a9c8f99abe0e707cedf10d062c7792de34d14ed4b6720c3c",
+   "overlayImageMaster": null
+  },
+  {
+   "index": 135,
+   "beatSequence": 136,
+   "image": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/img-135.jpg",
+   "imageVersionId": "v2-5a-136",
+   "imageSha256": "1bd0b811b1f9dd68b1079dff50081108005b864642ab6821ec2034bf61aa586a",
+   "startMs": 520879,
+   "endMs": 523416,
+   "startFrame": 15626,
+   "endFrame": 15702,
+   "frames": 76,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.0127,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "one that's still working on you today.",
+   "transitionIn": "cut",
+   "overlayImage": null,
+   "masterImage": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae/fef44bf2-1926-4c64-88b5-3460c913129a/inputs/full-135.jpg",
+   "masterSize": {
+    "width": 2752,
+    "height": 1536
+   },
+   "masterSha256": "00ceddb1d3c45d184fa9d1a33559c8a18272df701c3b5120197518f052085c73",
+   "overlayImageMaster": null
+  }
+ ]
+}

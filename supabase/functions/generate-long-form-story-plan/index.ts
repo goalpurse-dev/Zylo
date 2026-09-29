@@ -32,14 +32,18 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
-import { requireUser } from "../shared/auth.ts";
+import { requireUserOrAutopilot } from "../shared/auth.ts";
 import { logEvent } from "../_shared/systemLog.ts";
 import { releaseReservationIfActive } from "../_shared/longFormReservations.ts";
 import { WORDS_PER_MINUTE } from "../../../src/lib/longFormPipelineConstants.ts";
 import { wordsPerMinuteForProfile } from "../../../src/lib/voicePace.ts";
 import { fetchActiveGenerationProfile, isStickmanProfile, nicheFromProfile } from "../_shared/stickman/recipeProfile.ts";
+import { nudgeAutopilot } from "../_shared/stickman/autopilotNudge.ts";
 import { nicheGuidanceFor } from "../_shared/stickman/nicheGuidance.ts";
 import { enforceStickmanTitleRules, validateStickmanSectionShape, validateStickmanCallbackTiming } from "../_shared/stickman/scriptChecks.ts";
+import { AsyncLocalStorage } from "node:async_hooks";
+import { recordCost } from "../_shared/costLedger.ts";
+import { GPT5_MINI_INPUT_PER_M, GPT5_MINI_OUTPUT_PER_M } from "../../../src/lib/longFormPipelineConstants.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -71,6 +75,10 @@ function parseJson(raw: string) {
   return JSON.parse(clean);
 }
 
+// Phase 6d-1: every call's tokens are summed per request (AsyncLocalStorage,
+// safe with concurrent requests in one isolate) and written to the cost ledger.
+type Usage = { calls: number; inputTokens: number; outputTokens: number };
+const usageStore = new AsyncLocalStorage<Usage>();
 async function callOpenAI(request: any, timeoutMs: number) {
   const response = await fetch(OPENAI_RESPONSES, {
     method: "POST",
@@ -79,8 +87,12 @@ async function callOpenAI(request: any, timeoutMs: number) {
     signal: AbortSignal.timeout(timeoutMs),
   });
   if (!response.ok) throw new Error(`OpenAI ${response.status}: ${(await response.text()).slice(0, 500)}`);
-  return response.json();
+  const payload = await response.json();
+  const acc = usageStore.getStore();
+  if (acc) { acc.calls++; acc.inputTokens += payload?.usage?.input_tokens ?? 0; acc.outputTokens += payload?.usage?.output_tokens ?? 0; }
+  return payload;
 }
+const storyPlanUsd = (u: Usage) => (u.inputTokens * GPT5_MINI_INPUT_PER_M + u.outputTokens * GPT5_MINI_OUTPUT_PER_M) / 1_000_000;
 
 // One retry with an explicit "your last output was invalid" correction —
 // the same repair shape thirty-days-planner uses for its critic/repair
@@ -609,7 +621,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
   if (req.method !== "POST") return err(req, "Method not allowed", 405);
 
-  const { user, authError } = await requireUser(req);
+  const { user, authError, internal } = await requireUserOrAutopilot(req);
   if (!user) return err(req, authError || "Unauthorized", 401);
   if (!OPENAI_KEY) return err(req, "Story Plan generation is not configured", 500);
 
@@ -665,6 +677,9 @@ Deno.serve(async (req) => {
     return err(req, "A Story Plan is already being generated for this project.", 409, { code: "GENERATION_IN_PROGRESS" });
   }
 
+  // Phase 6d-1: the story plan's calls go into the cost ledger (success or failure).
+  const usage: Usage = { calls: 0, inputTokens: 0, outputTokens: 0 };
+  return await usageStore.run(usage, async () => {
   try {
     const topicModel = await callWithRepair(
       {
@@ -825,6 +840,8 @@ Deno.serve(async (req) => {
       .select("*")
       .single();
     if (updateError || !updatedProject) throw new Error("Could not finalize project");
+    // Phase 6a: the Stickman autopilot starts research-lite right away.
+    if (isStickman) nudgeAutopilot(projectId);
 
     return ok(req, { project: updatedProject, storyPlan });
   } catch (error) {
@@ -836,8 +853,13 @@ Deno.serve(async (req) => {
     // create-long-form-production-setup already reserved credits for this
     // project (Story Plan runs on its own page, separate from Setup) —
     // exactly the "terminal failure before any spend" case.
-    await releaseReservationIfActive(admin, projectId, "story_plan_failed", logEvent);
+    // Phase 6a: an autopilot call is retried by the autopilot (and a final
+    // failure offers a FREE retry), so the reservation must stay in place.
+    if (!internal) await releaseReservationIfActive(admin, projectId, "story_plan_failed", logEvent);
     console.error("generate-long-form-story-plan failed", error);
     return err(req, "We couldn't create the Story Plan.", 500);
+  } finally {
+    if (usage.calls) await recordCost(admin, { projectId, stage: "story_plan", provider: "openai", model: OPENAI_MODEL, units: { ...usage }, usd: storyPlanUsd(usage), sourceTable: "long_form_projects", sourceId: projectId });
   }
+  });
 });

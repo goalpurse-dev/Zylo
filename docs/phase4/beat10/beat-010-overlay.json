@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "DID VIKINGS REALLY WEAR HORNS?",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 11,
+ "scale": 93,
+ "box": {
+  "x": 205,
+  "y": 116,
+  "width": 1511,
+  "height": 129
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 0.59,
+  "bottom": 4.15
+ }
+}

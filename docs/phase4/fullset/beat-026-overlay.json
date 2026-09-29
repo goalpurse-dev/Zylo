@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "NORWAY, 1943",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 17,
+ "scale": 154,
+ "box": {
+  "x": 424,
+  "y": 75,
+  "width": 1072,
+  "height": 211
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 0.8,
+  "bottom": 6.99
+ }
+}

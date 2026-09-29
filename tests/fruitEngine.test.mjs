@@ -1,0 +1,204 @@
+// AI Fruit Story v2 worker engine (stage 3b): offline replay of Runware
+// replies against an in-memory database with the same rules as the SQL.
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createEngine, TIMING } from "../supabase/functions/_shared/fruit/engine.js";
+import { webhookToken } from "../supabase/functions/_shared/fruit/runware.js";
+import { createMemoryDb } from "./helpers/fruitMemoryStore.mjs";
+
+const IMG = (taskUUID, cost = 0.0337) => ({ data: [{ taskType: "imageInference", taskUUID, imageURL: `https://im.runware.ai/${taskUUID}.jpg`, cost }] });
+const CLIP = (taskUUID, cost = 0.405) => ({ data: [{ taskType: "videoInference", taskUUID, status: "success", videoURL: `https://vm.runware.ai/${taskUUID}.mp4`, cost }] });
+const ACK = (taskUUID) => ({ data: [{ taskType: "imageInference", taskUUID }] });
+const ERR = (taskUUID, code, message) => ({ errors: [{ code, message, taskUUID }] });
+
+function setup({ balance = 1000, paidOff = false, submit, poll, storeFails = false } = {}) {
+  const db = createMemoryDb({ balance });
+  const sent = [];
+  const stored = [];
+  let n = 0;
+  const engine = createEngine({
+    store: db.store,
+    runware: {
+      submit: async (env) => { sent.push(env); return submit ? submit(env, sent.length) : { httpStatus: 200, body: ACK(env.taskUUID) }; },
+      poll: async (taskUUID) => (poll ? poll(taskUUID) : { httpStatus: 200, body: { data: [] } }),
+    },
+    media: { store: async ({ path }) => { if (storeFails) throw new Error("storage down"); stored.push(path); return `https://cdn.test/${path}`; } },
+    env: { FRUIT_PAID_CALLS: paidOff ? "off" : "", webhookBase: "https://fn.test/fruit-worker", webhookSecret: "s3cret" },
+    now: () => db.clock(),
+    uuid: () => `00000000-0000-4000-8000-${String(++n).padStart(12, "0")}`,
+    log: { error() {} },
+  });
+  return { db, engine, sent, stored };
+}
+
+const pictures = (db, storyId, credits = 3) =>
+  db.chargeStep(storyId, { from: ["draft"], to: "pictures", items: [...db.scenes.values()].filter((s) => s.story_id === storyId).map((s) => ({ scene_id: s.id, kind: "image", credits, request: { taskType: "imageInference", model: "google:nano-banana@2-lite", positivePrompt: `scene ${s.idx}` } })) });
+
+test("happy path: submit exactly the stored request, webhook completes, story ready, cost captured", async () => {
+  const { db, engine, sent, stored } = setup();
+  const storyId = db.addStory({ sceneCount: 3 });
+  pictures(db, storyId);
+  assert.equal(db.balance, 991);
+  await engine.kick({ storyId });
+  assert.equal(sent.length, 3);
+  for (const env of sent) {
+    assert.match(env.positivePrompt, /^scene \d$/);                        // byte-for-byte from the job
+    assert.equal(env.deliveryMethod, "async");
+    assert.equal(env.webhookURL, `https://fn.test/fruit-worker?action=webhook&t=${await webhookToken("s3cret", env.taskUUID)}`);
+  }
+  for (const env of sent) assert.equal(await engine.onResult(env.taskUUID, IMG(env.taskUUID)), "completed");
+  assert.equal(db.stories.get(storyId).status, "pictures_ready");
+  assert.deepEqual([...db.scenes.values()].map((s) => s.image_status), ["ready", "ready", "ready"]);
+  assert.equal(stored.length, 3);
+  assert.ok(stored.every((p) => p.startsWith(`fruit/user-1/${storyId}/`)));
+  assert.equal([...db.jobs.values()].reduce((s, j) => s + j.cost_usd, 0).toFixed(4), "0.1011");
+  assert.equal(db.balance, 991);
+  assert.ok(db.calls.every((c) => c.done?.ok === true), "every call records its result");
+  assert.ok(db.calls.every((c) => !/[?&]t=[0-9a-f]{64}/.test(JSON.stringify(c.request))), "webhook token never logged");
+});
+
+test("per-story concurrency: at most 4 pictures in flight, the rest start as others finish", async () => {
+  const { db, engine, sent } = setup();
+  const storyId = db.addStory({ sceneCount: 6 });
+  pictures(db, storyId);
+  await engine.kick({ storyId });
+  assert.equal(sent.length, 4);
+  await engine.onResult(sent[0].taskUUID, IMG(sent[0].taskUUID));
+  assert.equal(sent.length, 5);                                             // completion kicks the next one
+});
+
+test("duplicate and late webhooks change nothing", async () => {
+  const { db, engine, sent, stored } = setup();
+  const storyId = db.addStory({ sceneCount: 1 });
+  pictures(db, storyId);
+  await engine.kick({ storyId });
+  const T = sent[0].taskUUID;
+  assert.equal(await engine.onResult(T, IMG(T)), "completed");
+  assert.equal(await engine.onResult(T, IMG(T)), "ignored");
+  assert.equal(await engine.onResult("unknown-task", IMG("unknown-task")), "ignored");
+  assert.equal(stored.length, 1);
+  assert.equal([...db.jobs.values()][0].cost_usd, 0.0337);
+});
+
+test("provider busy: retried with backoff and a fresh taskUUID, then refunded once after 3 attempts", async () => {
+  const { db, engine, sent } = setup({ submit: (env) => ({ httpStatus: 400, body: ERR(env.taskUUID, "insufficientCredits", "Not enough credits") }) });
+  const storyId = db.addStory({ sceneCount: 1 });
+  pictures(db, storyId);
+  await engine.kick({ storyId });
+  const job = [...db.jobs.values()][0];
+  assert.equal(job.status, "queued");
+  assert.equal(job.attempt, 1);
+  await engine.kick({ storyId });
+  assert.equal(sent.length, 1, "not before the backoff");
+  db.advance(TIMING.retryDelaysSec[0] + 1);
+  await engine.kick({ storyId });
+  db.advance(TIMING.retryDelaysSec[1] + 1);
+  await engine.kick({ storyId });
+  assert.equal(sent.length, 3);
+  assert.equal(new Set(sent.map((e) => e.taskUUID)).size, 3, "fresh taskUUID per attempt");
+  assert.equal(job.status, "failed");
+  assert.equal(job.error_code, "PROVIDER_BUSY");
+  assert.equal(db.balance, 1000, "refunded");
+  assert.equal(db.ledger.filter((l) => l.op === "refund").length, 1);
+  assert.equal(db.stories.get(storyId).status, "pictures_ready");
+  assert.equal([...db.scenes.values()][0].image_status, "failed");
+});
+
+test("content policy on a clip: no retry, CLIP_BLOCKED, refunded", async () => {
+  const { db, engine } = setup({ submit: (env) => ({ httpStatus: 400, body: ERR(env.taskUUID, "contentModerationFailed", "Flagged by safety filter") }) });
+  const storyId = db.addStory({ sceneCount: 1, status: "pictures_ready" });
+  const [scene] = [...db.scenes.values()];
+  db.chargeStep(storyId, { from: ["pictures_ready"], to: "animating", items: [{ scene_id: scene.id, kind: "clip", credits: 25, request: { taskType: "videoInference", positivePrompt: "x" } }] });
+  await engine.kick({ storyId });
+  const job = [...db.jobs.values()][0];
+  assert.equal(job.error_code, "CLIP_BLOCKED");
+  assert.equal(job.attempt, 1);
+  assert.equal(db.balance, 1000);
+  assert.equal(db.stories.get(storyId).status, "clips_ready");
+});
+
+test("a lost submit is polled, then sent again; a success after a network error still completes", async () => {
+  let calls = 0;
+  const { db, engine, sent } = setup({
+    submit: () => { calls += 1; if (calls === 1) throw new Error("network reset"); return { httpStatus: 200, body: { data: [] } }; },
+    poll: () => ({ httpStatus: 200, body: { data: [] } }),
+  });
+  const storyId = db.addStory({ sceneCount: 1 });
+  pictures(db, storyId);
+  await engine.kick({ storyId });
+  const job = [...db.jobs.values()][0];
+  assert.equal(job.status, "submitting");
+  db.advance(TIMING.leaseSec + 1);
+  await engine.reconcile();                                                 // provider doesn't know it → requeued
+  assert.equal(job.status, "queued");
+  db.advance(TIMING.retryDelaysSec[0] + 1);
+  await engine.kick({ storyId });
+  assert.equal(sent.length, 2);
+  const T = sent[1].taskUUID;
+  assert.equal(await engine.onResult(T, IMG(T)), "completed");
+  assert.equal(db.balance, 997);
+});
+
+test("polling picks up a finished clip when the webhook never arrives", async () => {
+  const { db, engine } = setup({ poll: (T) => ({ httpStatus: 200, body: CLIP(T) }) });
+  const storyId = db.addStory({ sceneCount: 1, status: "pictures_ready" });
+  const [scene] = [...db.scenes.values()];
+  db.chargeStep(storyId, { from: ["pictures_ready"], to: "animating", items: [{ scene_id: scene.id, kind: "clip", credits: 25, request: { taskType: "videoInference", positivePrompt: "x" } }] });
+  await engine.kick({ storyId });
+  db.advance(TIMING.pollAfterSec.clip + 1);
+  const report = await engine.reconcile();
+  assert.equal(report.finalized, 1);
+  assert.equal(scene.clip_status, "ready");
+  assert.equal(db.stories.get(storyId).status, "clips_ready");
+  assert.equal([...db.jobs.values()][0].cost_usd, 0.405);
+});
+
+test("a job that never finishes is refunded with PROVIDER_TIMEOUT", async () => {
+  const { db, engine } = setup({ poll: (T) => ({ httpStatus: 200, body: { data: [{ taskUUID: T, status: "processing" }] } }) });
+  const storyId = db.addStory({ sceneCount: 1 });
+  pictures(db, storyId);
+  await engine.kick({ storyId });
+  db.advance(TIMING.pollAfterSec.image + 1);
+  await engine.reconcile();
+  assert.equal([...db.jobs.values()][0].status, "submitted");
+  db.advance(TIMING.giveUpAfterSec.image);
+  await engine.reconcile();
+  assert.equal([...db.jobs.values()][0].error_code, "PROVIDER_TIMEOUT");
+  assert.equal(db.balance, 1000);
+});
+
+test("storage outage: the result is kept and stored later; refunded if it never recovers", async () => {
+  const { db, engine, sent } = setup({ storeFails: true });
+  const storyId = db.addStory({ sceneCount: 1 });
+  pictures(db, storyId);
+  await engine.kick({ storyId });
+  const T = sent[0].taskUUID;
+  assert.equal(await engine.onResult(T, IMG(T)), "store_retry");
+  const job = [...db.jobs.values()][0];
+  assert.equal(job.status, "provider_done");
+  assert.equal(job.cost_usd, 0.0337);
+  db.advance(TIMING.storeGiveUpSec + 1);
+  await engine.reconcile();
+  assert.equal(job.status, "failed");
+  assert.equal(job.cost_usd, 0.0337, "cost counted once");
+  assert.equal(db.balance, 1000);
+});
+
+test("kill switch: nothing is sent, everything is refunded", async () => {
+  const { db, engine, sent } = setup({ paidOff: true });
+  const storyId = db.addStory({ sceneCount: 2 });
+  pictures(db, storyId);
+  await engine.kick({ storyId });
+  assert.equal(sent.length, 0);
+  assert.deepEqual([...db.jobs.values()].map((j) => j.error_code), ["PAID_CALLS_DISABLED", "PAID_CALLS_DISABLED"]);
+  assert.equal(db.balance, 1000);
+});
+
+test("a whole step is charged at once or not at all", () => {
+  const { db } = setup({ balance: 5 });
+  const storyId = db.addStory({ sceneCount: 2 });
+  assert.throws(() => pictures(db, storyId), /INSUFFICIENT_CREDITS/);
+  assert.equal(db.balance, 5);
+  assert.equal(db.jobs.size, 0);
+  assert.equal(db.stories.get(storyId).status, "draft");
+});

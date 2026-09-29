@@ -25,7 +25,7 @@ function toExistingIdeaRef(idea) {
   return { title: idea.title, topic: idea.topic, angle: idea.angle };
 }
 
-export async function fetchLongFormIdeas({ category, direction, count = 10, existingIdeas = [], discoverySessionId, nicheHint, styleId }) {
+export async function fetchLongFormIdeas({ category, direction, count = 10, existingIdeas = [], discoverySessionId, nicheHint, styleId, steer }) {
   if (!(await isAuthenticated())) {
     return { ok: false, errorType: IDEA_ENGINE_ERROR.AUTH_REQUIRED };
   }
@@ -41,6 +41,7 @@ export async function fetchLongFormIdeas({ category, direction, count = 10, exis
         discoverySessionId,
         nicheHint,
         styleId,
+        steer,
       },
     });
   } catch {

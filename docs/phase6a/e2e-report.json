@@ -1,0 +1,30 @@
+{
+ "projectId": "ae3b0e15-372d-44c2-8eda-035eb2374703",
+ "timings": {
+  "planS": 90,
+  "gapPlanToResearchS": 2,
+  "researchS": 122,
+  "gapResearchToScriptS": 132,
+  "scriptS": 298,
+  "totalToReviewS": 652
+ },
+ "statuses": {
+  "research": "ready",
+  "script": "ready",
+  "autopilot": "done",
+  "resumes": 1
+ },
+ "spendUsd": {
+  "research": 0.0997,
+  "script": 0.3408
+ },
+ "words": 1145,
+ "screenshots": [
+  "progress-early",
+  "progress-facts",
+  "progress-writing",
+  "review-top",
+  "review-full"
+ ],
+ "consoleErrors": []
+}

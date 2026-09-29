@@ -12,8 +12,10 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RUNWARE_API_KEY = Deno.env.get("RUNWARE_API_KEY") ?? "";
 const RUNWARE_URL = `${(Deno.env.get("RUNWARE_BASE_URL") || "https://api.runware.ai").replace(/\/+$/, "")}/v1`;
 
-const ALLOWED_MODELS = new Set(["runware:400@6", "alibaba:qwen-image@2512", "google:nano-banana@2-lite", "google:4@3", "recraft:v4@0", "runware:504@1"]);
-const ALLOWED_TASKS = new Set(["imageInference", "upscale"]);
+const ALLOWED_MODELS = new Set(["runware:400@6", "runware:400@3", "alibaba:qwen-image@2512", "google:nano-banana@2-lite", "google:4@3", "recraft:v4@0", "runware:504@1"]);
+const ALLOWED_TASKS = new Set(["imageInference", "upscale", "modelSearch"]);
+// Phase 5c: any Runware upscaler (runware:50x@y) may be tested; modelSearch is free and has no model.
+const UPSCALER = /^runware:(50\d|113)@\d+$/;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
@@ -21,7 +23,8 @@ Deno.serve(async (req) => {
   if (!RUNWARE_API_KEY) return err(req, "RUNWARE_API_KEY not configured", 500);
   const body = await req.json().catch(() => ({}));
   const task = body?.task;
-  if (!task || !ALLOWED_TASKS.has(task.taskType) || !ALLOWED_MODELS.has(task.model)) return err(req, "task/model not allowed", 400);
+  const modelOk = task?.taskType === "modelSearch" || ALLOWED_MODELS.has(task?.model) || (task?.taskType === "upscale" && UPSCALER.test(String(task?.model)));
+  if (!task || !ALLOWED_TASKS.has(task.taskType) || !modelOk) return err(req, "task/model not allowed", 400);
   if (task.numberResults && task.numberResults !== 1) return err(req, "numberResults must be 1", 400);
 
   const t0 = Date.now();
@@ -34,7 +37,7 @@ Deno.serve(async (req) => {
     });
     const json: any = await res.json().catch(() => null);
     const latencyMs = Date.now() - t0;
-    const result = Array.isArray(json?.data) ? json.data[0] : null;
+    const result = Array.isArray(json?.data) ? (task.taskType === "modelSearch" ? { results: json.data } : json.data[0]) : null;
     if (!res.ok || !result || json?.errors?.length) {
       return ok(req, { ok: false, latencyMs, status: res.status, error: json?.errors ?? json ?? null });
     }

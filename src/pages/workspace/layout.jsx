@@ -15,6 +15,10 @@ export default function WorkspaceLayout() {
   const noticeRef = useRef(null);
 
   const location = useLocation();
+  // Phase 6d-1: the mobile Edit page is a full-screen editor — no promo banner there.
+  const [narrow, setNarrow] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches);
+  useEffect(() => { const mq = window.matchMedia("(max-width: 767px)"); const on = () => setNarrow(mq.matches); mq.addEventListener("change", on); return () => mq.removeEventListener("change", on); }, []);
+  const hidePromo = narrow && /\/long-form\/project\/[^/]+\/(edit|publish)\/?$/.test(location.pathname);
   const [showWelcome, setShowWelcome] = useState(false);
   const [showRewards, setShowRewards] = useState(false);
   const [rewardsUserId, setRewardsUserId] = useState(null);
@@ -191,7 +195,7 @@ useEffect(() => {
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#090A0A]">
       <WorkspaceRouteSeo />
       <div ref={noticeRef} className="relative z-[70] w-full shrink-0">
-        <TopPromoBanner />
+        {!hidePromo && <TopPromoBanner />}
       </div>
 
       <div className="flex min-h-0 flex-1 overflow-hidden">

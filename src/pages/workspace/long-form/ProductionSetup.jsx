@@ -2,12 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import {
-  Atom, Brain, Check, ChevronDown, ChevronRight, Coins, Landmark, Lock, PawPrint, PenLine, RefreshCw, RotateCw, Search, Sparkles, X,
+  Atom, Brain, Check, ChevronDown, ChevronRight, Coins, Landmark, Lock, Mic, PawPrint, PenLine, RefreshCw, RotateCw, Search, Sparkles, X,
 } from "lucide-react";
 import { createDiscoverySession, fetchDiscoverySession, persistDiscoverySession } from "./discoverySession";
 import { createLongFormProject } from "./project";
 import { STICKMAN_RECIPE_VERSION, fetchProjectQuote, createProductionSetup } from "./productionProfile";
-import { STICKMAN_VOICE_OPTIONS } from "./narration";
+import VoiceLibraryDialog, { SampleButton, useVoiceSamplePlayer } from "./VoiceLibraryDialog";
+import { findVoice, isRecommendedForNiche, VOICE_CATALOG } from "../../../lib/voiceCatalog";
 import { NICHE_GROUPS, ALL_NICHES, NICHE_CATEGORY_COLORS, findNiche, recommendedStylesForNiche, exampleTopicForNiche } from "./niches";
 import { VISUAL_STYLES, isStyleSelectable, getVisualStyle } from "./visualStyles";
 import { LENGTH_OPTIONS, LENGTH_MIN_MINUTES, LENGTH_MAX_MINUTES, DEFAULT_LENGTH_MINUTES, visualsRange, estimateForLength } from "./lengthEstimates";
@@ -21,6 +22,9 @@ import GuestGenerateModal from "../../../components/ImageGenerator/GuestGenerate
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import { watchJob } from "../../../lib/jobs";
 import { REGENERATE_IDEAS_COST, REFRESH_THUMBNAILS_COST } from "../../../lib/longFormIdeaThumbnails";
+import { STICKMAN_RECIPE } from "./recipe";
+import { startAutopilot } from "./autopilot";
+import { cleanText } from "./textClean";
 
 // 2026-10-02 "Create New Video" UX rework — Section 7: rendered as three
 // primary option cards now (moved out of Advanced Settings). Quality/cost are
@@ -969,6 +973,7 @@ export default function ProductionSetup() {
   const [ideas, setIdeas] = useState([]);
   const [ideasLoading, setIdeasLoading] = useState(false);
   const [ideasError, setIdeasError] = useState(null);
+  const [ideaSteer, setIdeaSteer] = useState(""); // Phase 6a: "Steer the ideas (optional)"
   const [selectedIdeaId, setSelectedIdeaId] = useState(null);
   const ideasScrollRef = useRef(null);
   const [ideasScrollState, setIdeasScrollState] = useState({ atTop: true, atBottom: true, hiddenCount: 0 });
@@ -1004,7 +1009,10 @@ export default function ProductionSetup() {
   const [lengthMinutes, setLengthMinutes] = useState(DEFAULT_LENGTH_MINUTES);
   const [renderTier, setRenderTier] = useState("v3");
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [voice, setVoice] = useState(STICKMAN_VOICE_OPTIONS[0]);
+  // Phase 6b: the narration voice is chosen here (6 · Voice) — no preselection.
+  const [voice, setVoice] = useState(null);
+  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
+  const voicePlayer = useVoiceSamplePlayer();
   const [explanationDepth, setExplanationDepth] = useState("balanced");
   const [onScreenTextDensity, setOnScreenTextDensity] = useState(DEFAULT_ON_SCREEN_TEXT_DENSITY);
 
@@ -1161,7 +1169,7 @@ export default function ProductionSetup() {
         if (saved.explanationDepth) setExplanationDepth(saved.explanationDepth);
         if (saved.onScreenTextDensity) setOnScreenTextDensity(saved.onScreenTextDensity);
         if (saved.voiceId) {
-          const savedVoice = STICKMAN_VOICE_OPTIONS.find((v) => v.voiceId === saved.voiceId);
+          const savedVoice = findVoice(saved.voiceId);
           if (savedVoice) setVoice(savedVoice);
         }
         // Final-polish round 4, Section 4 — cached ideas/thumbnails hydrate
@@ -1211,7 +1219,7 @@ export default function ProductionSetup() {
   // before the user has changed anything.
   useEffect(() => {
     if (!bootstrapped) return;
-    savePersistedDraft({ topic, nicheId, visualStyleId, lengthMinutes, renderTier, explanationDepth, onScreenTextDensity, voiceId: voice.voiceId });
+    savePersistedDraft({ topic, nicheId, visualStyleId, lengthMinutes, renderTier, explanationDepth, onScreenTextDensity, voiceId: voice?.voiceId ?? null });
   }, [bootstrapped, topic, nicheId, visualStyleId, lengthMinutes, renderTier, explanationDepth, onScreenTextDensity, voice]);
 
   const niche = nicheId ? findNiche(nicheId) : null;
@@ -1219,12 +1227,12 @@ export default function ProductionSetup() {
   const recommendedStyleIds = useMemo(() => new Set(recommendedStylesForNiche(nicheId)), [nicheId]);
   const selectedStyle = getVisualStyle(visualStyleId);
   // "≈ X words" at the selected voice's measured pace (fallback 145 wpm).
-  const voicePace = wordsPerMinuteFor({ voiceId: voice.voiceId, voiceModel: voice.voiceModel, speed: DEFAULT_NARRATION_SPEED });
+  const voicePace = wordsPerMinuteFor(voice ? { voiceId: voice.voiceId, voiceModel: voice.voiceModel, speed: DEFAULT_NARRATION_SPEED } : null);
   const lengthEstimate = estimateForLength(lengthMinutes, voicePace.wordsPerMinute);
   const lengthVisuals = visualsRange(lengthEstimate.typicalScenes);
 
-  const canGenerate = Boolean(discoverySessionId) && Boolean(nicheId) && topic.trim().length > 0 && Boolean(selectedStyle);
-  const disabledReason = !nicheId ? "Pick a niche to continue" : topic.trim().length === 0 ? "Add a topic to continue" : null;
+  const canGenerate = Boolean(discoverySessionId) && Boolean(nicheId) && topic.trim().length > 0 && Boolean(selectedStyle) && Boolean(voice);
+  const disabledReason = !nicheId ? "Pick a niche to continue" : topic.trim().length === 0 ? "Add a topic to continue" : !voice ? "Pick a voice to continue" : null;
   // Shared by both Generate surfaces (the side-panel button on desktop, the
   // sticky bottom bar otherwise) — computed once here so the two never drift.
   const projectedBalance = quote && typeof credits === "number" ? Math.max(0, credits - quote.totalCredits) : null;
@@ -1288,12 +1296,15 @@ export default function ProductionSetup() {
       discoverySessionId,
       nicheHint: niche?.label,
       styleId: visualStyleId,
+      steer: ideaSteer.trim() || undefined,
     });
     setIdeasLoading(false);
     if (!result.ok) {
       if (result.errorType === IDEA_ENGINE_ERROR.AUTH_REQUIRED) setGuestModalOpen(true);
       else if (result.errorType === IDEA_ENGINE_ERROR.INSUFFICIENT_CREDITS) setIdeasError("Not enough credits to regenerate ideas.");
-      else setIdeasError("Couldn't generate ideas right now. Try again.");
+      else if (result.errorType === IDEA_ENGINE_ERROR.RATE_LIMITED || result.errorType === IDEA_ENGINE_ERROR.COOLDOWN) setIdeasError("Too many requests just now — try again in a minute.");
+      else if (result.errorType === IDEA_ENGINE_ERROR.NETWORK) setIdeasError("Connection lost while generating ideas. Try again.");
+      else setIdeasError("Couldn't generate ideas right now. Try again — you won't be charged twice.");
       return;
     }
     const newIdeas = result.ideas.map((idea) => createIdea(idea));
@@ -1478,6 +1489,14 @@ export default function ProductionSetup() {
     // to usefully restore, and keeping it around would just resurrect a
     // finished commitment's inputs the next time this page is opened fresh.
     clearPersistedDraft();
+    // Phase 6a: Stickman runs ONE continuous pipeline (story plan ->
+    // research-lite -> script) server-side — no Story Plan gate, no
+    // "Continue to Research", straight to the "Writing your script" screen.
+    if (selectedStyle.visualRecipe === STICKMAN_RECIPE) {
+      await startAutopilot(projectId);
+      navigate(`/long-form/project/${projectId}/generating`); // Phase 6e: one generating screen, no stops
+      return;
+    }
     navigate(`/long-form/project/${projectId}/story`);
   };
 
@@ -1506,6 +1525,10 @@ export default function ProductionSetup() {
         <div className="flex items-start justify-between gap-3">
           <dt className="text-white/40">Quality</dt>
           <dd className="text-right font-medium text-white">{RENDER_TIER_OPTIONS.find((o) => o.value === renderTier)?.label}</dd>
+        </div>
+        <div className="flex items-start justify-between gap-3">
+          <dt className="text-white/40">Voice</dt>
+          <dd data-testid="summary-voice" className="text-right font-medium text-white">{voice ? `${voice.name} · ${voice.tags[0]}` : "—"}</dd>
         </div>
       </dl>
       <div className="mt-4 border-t border-white/[0.08] pt-4">
@@ -1539,6 +1562,13 @@ export default function ProductionSetup() {
     <div className="mx-auto max-w-[1180px] px-4 lg:px-8" style={{ paddingBottom: barSpace }}>
       <GuestGenerateModal open={guestModalOpen} onClose={() => setGuestModalOpen(false)} onSignup={() => navigate("/signup")} />
       <NichePickerModal open={nicheModalOpen} onClose={() => setNicheModalOpen(false)} onSelect={handleSelectNiche} />
+      <VoiceLibraryDialog
+        open={voiceModalOpen}
+        currentVoiceId={voice?.voiceId ?? null}
+        niche={niche}
+        onClose={() => setVoiceModalOpen(false)}
+        onSelect={(v) => { setVoice(v); setVoiceModalOpen(false); }}
+      />
       <StylePickerModal
         open={styleModalOpen}
         currentId={visualStyleId}
@@ -1682,6 +1712,18 @@ export default function ProductionSetup() {
                   </>
                 ) : (
                   <div>
+                    {/* Phase 6a: optional steer, sent with the niche + style; kept across Regenerate. */}
+                    <label className="mb-3 block">
+                      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-white/35">Steer the ideas (optional)</span>
+                      <input
+                        type="text"
+                        value={ideaSteer}
+                        onChange={(e) => setIdeaSteer(e.target.value.slice(0, 120))}
+                        placeholder="e.g. pirates, weapons, kid-friendly"
+                        disabled={ideasLoading}
+                        className="w-full rounded-xl border border-white/[0.08] bg-[#101213] px-4 py-2.5 text-[14px] text-white outline-none transition placeholder:text-white/30 focus:border-[#BEF264]/50"
+                      />
+                    </label>
                     {!ideasLoading && (() => {
                       const isRegenerate = ideas.length > 0;
                       const cost = isRegenerate ? REGENERATE_IDEAS_COST : null;
@@ -1767,10 +1809,10 @@ export default function ProductionSetup() {
                                     />
                                     <div className="flex flex-1 flex-col gap-1 px-3 py-2.5">
                                       <div className="flex items-start justify-between gap-2">
-                                        <p className="line-clamp-2 text-[13px] font-bold leading-snug text-white">{idea.title}</p>
+                                        <p className="line-clamp-2 text-[13px] font-bold leading-snug text-white">{cleanText(idea.title)}</p>
                                         {selected && <Check className="h-4 w-4 shrink-0 text-lime-300" />}
                                       </div>
-                                      <p className="line-clamp-1 text-[11.5px] text-white/45">{idea.angle}</p>
+                                      <p className="line-clamp-1 text-[11.5px] text-white/45">{cleanText(idea.angle)}</p>
                                     </div>
                                   </div>
                                 );
@@ -1858,13 +1900,54 @@ export default function ProductionSetup() {
               </div>
             </div>
 
-            {/* Advanced Settings — final-polish round 2, Section 3: Voice
-                picker removed from here (it now belongs on the future
-                Narration step, where the voice actually gets used/heard).
-                `voice` state and STICKMAN_VOICE_OPTIONS are untouched and
-                still drive the creation payload below — it's just fixed at
-                its default (Josh, STICKMAN_VOICE_OPTIONS[0]) since nothing
-                on this page can change it anymore. */}
+            {/* ⑥ Voice — Phase 6b: chosen here, no preselection, so the
+                autopilot can run story -> research -> script -> narration
+                without stopping. The library modal has a sample per voice. */}
+            <div className="mb-7">
+              <SectionLabel n={6}>Voice</SectionLabel>
+              {!voice ? (
+                <button
+                  type="button"
+                  data-testid="choose-voice"
+                  onClick={() => setVoiceModalOpen(true)}
+                  className="group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border border-lime-300/35 bg-[#151719] p-5 text-left transition hover:border-lime-300/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-lime-300"
+                >
+                  <span className="pointer-events-none absolute inset-0 bg-lime-300/[0.035]" />
+                  <span className="relative z-10 flex w-full items-center gap-4">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-lime-300/10 text-lime-300">
+                      <Mic className="h-6 w-6" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[16px] font-bold text-white">Choose a voice</span>
+                      <span className="block text-[12.5px] text-white/50">
+                        {VOICE_CATALOG.length} narrators — listen to each one{niche ? `, with picks for ${niche.label}` : ""}.
+                      </span>
+                    </span>
+                    <ChevronRight className="h-5 w-5 shrink-0 text-lime-300 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </span>
+                </button>
+              ) : (
+                <div
+                  role="button"
+                  tabIndex={0}
+                  data-testid="chosen-voice"
+                  onClick={() => setVoiceModalOpen(true)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setVoiceModalOpen(true); } }}
+                  className="flex w-full cursor-pointer items-center gap-4 rounded-2xl border border-white/[0.08] bg-[#151719] p-4 text-left transition hover:border-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-lime-300"
+                >
+                  <SampleButton voice={voice} playingId={voicePlayer.playingId} onToggle={voicePlayer.toggle} />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2">
+                      <span className="block truncate text-[14.5px] font-bold text-white">{voice.name}</span>
+                      {isRecommendedForNiche(voice, niche) && <span className="rounded-full bg-lime-300/15 px-2 py-0.5 text-[10px] font-semibold text-lime-200">Recommended for this niche</span>}
+                    </span>
+                    <span className="block text-[12px] text-white/40">{voice.tags.join(" · ")} · ~{Math.round(voicePace.wordsPerMinute)} words/min</span>
+                  </span>
+                  <span className="shrink-0 text-[12.5px] font-semibold text-lime-300">Change</span>
+                </div>
+              )}
+            </div>
+
             <div className="mb-7 rounded-2xl border border-white/[0.08] bg-white/[0.02]">
               <button
                 type="button"

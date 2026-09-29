@@ -39,9 +39,11 @@ test("lock-long-form-script fires the Bible builder and narration audio generati
   assert.match(text, /Promise\.all\(\[bibleWork, narrationWork\]\)/);
 });
 
-test("lock-long-form-script requires the script to already be a finished draft (status: ready) before it can be locked", async () => {
+test("lock-long-form-script requires a finished draft: legacy needs status 'ready'; Stickman (Phase 6a) also accepts needs_attention/needs_research WITH a document", async () => {
   const text = await source(LOCK);
-  assert.match(text, /scriptVersion\.status !== "ready"/);
+  assert.ok(text.includes(`: scriptVersion.status === "ready";`), "legacy still requires ready");
+  assert.ok(text.includes(`["ready", "needs_attention", "needs_research"].includes(scriptVersion.status) && !!scriptVersion.script_document`), "stickman: a finished draft has a document");
+  assert.ok(text.includes("if (!finished) return err("));
 });
 
 test("lock-long-form-script never calls any image/video provider", async () => {

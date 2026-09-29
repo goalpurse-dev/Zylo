@@ -1,0 +1,56 @@
+{
+ "steps": [
+  {
+   "name": "opened",
+   "version": 1,
+   "clips": 136,
+   "texts": 21
+  },
+  {
+   "name": "move cut",
+   "before": 8788,
+   "after": 10367,
+   "prevClipMs": 5549,
+   "version": 2
+  },
+  {
+   "name": "split",
+   "clipsBefore": 136,
+   "clipsAfter": 137,
+   "newHalfAt": 21687,
+   "generateButton": true
+  },
+  {
+   "name": "text styles",
+   "added": [
+    "HEADLINE",
+    "BIG_STAT",
+    "QUESTION"
+   ]
+  },
+  {
+   "name": "captions",
+   "enabled": true,
+   "onScreen": 1
+  },
+  {
+   "name": "motion",
+   "clip1": "pan_left"
+  },
+  {
+   "name": "undo/redo",
+   "afterUndo": "push_in",
+   "afterRedo": "pan_left"
+  },
+  {
+   "name": "reload",
+   "version": 11,
+   "clips": 34,
+   "savedClips": 137,
+   "texts": 25,
+   "captions": true,
+   "motion": "pan_left"
+  }
+ ],
+ "errors": []
+}

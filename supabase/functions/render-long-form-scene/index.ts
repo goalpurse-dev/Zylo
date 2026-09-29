@@ -1,0 +1,210 @@
+// deno-lint-ignore-file no-explicit-any
+// render-long-form-scene/index.ts — internal (x-autopilot-secret) (Phase 6c).
+//
+// Draws ONE Stickman scene per invocation (so a scene's image work never
+// shares the edge CPU budget with another): claim the next queued scene (or
+// a given one) with a lease -> compile (style, cast, IP guard) -> render on
+// the project's tier (free code checks on V2, AI QA on V3/V4, the tier's
+// retries) -> Runware 2x upscale -> the text as an editable layer (never
+// burned in). The upscaled master is stored as-is (no re-encode at the edge);
+// the renderer scales it at render time. Credits are drawn from the project's
+// reservation per finished scene. Every finished scene nudges the autopilot,
+// which dispatches the next one at once; the cron watchdog re-queues a scene
+// whose worker died (lease expired) once, then marks it failed.
+//
+// POST { projectId, userId, sceneId? }
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { ok, err, cors } from "../shared/cors.ts";
+import { renderBeat, STICKMAN_RENDER_TIERS, STICKMAN_QA, compileOptionsFor, normalizeText, type QaVerdict } from "../_shared/stickman/renderTiers.ts";
+import { compileBeatPrompt, canonicalSetFromBible, plantFrameFor } from "../_shared/stickman/promptCompiler.ts";
+import { codeCheckImage, imageDHash } from "../_shared/stickman/imageChecks.ts";
+import { overlayText, scaleLayer, type OverlayLayer } from "../_shared/stickman/textOverlay.ts";
+import { placeTextLayer } from "../_shared/stickman/textPlacement.ts";
+import { DEFAULT_POSTPROCESS } from "../_shared/stickman/sceneImagePost.ts";
+import { SCENE_LEASE_S, sceneCredits } from "../_shared/stickman/scenes.ts";
+import { commitReservationSpend } from "../_shared/longFormReservations.ts";
+import { recordCost } from "../_shared/costLedger.ts";
+import { nudgeAutopilot } from "../_shared/stickman/autopilotNudge.ts";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const SECRET = Deno.env.get("LONG_FORM_AUTOPILOT_SECRET") ?? "";
+const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
+const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+const FONT_URL = `${SUPABASE_URL}/storage/v1/object/public/generated/assets/fonts/LilitaOne-Regular.ttf`;
+let fontBytes: Uint8Array | null = null;
+
+const fetchBytes = async (url: string) => { const r = await fetch(url); if (!r.ok) throw new Error(`fetch ${r.status}`); return new Uint8Array(await r.arrayBuffer()); };
+const runware = async (task: any) => {
+  const r = await fetch(`${SUPABASE_URL}/functions/v1/runware-bakeoff-proxy`, { method: "POST", headers: { Authorization: `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ task }) });
+  const j: any = await r.json().catch(() => null);
+  if (!j?.ok) throw new Error(`runware ${r.status}: ${JSON.stringify(j?.error ?? j).slice(0, 160)}`);
+  return j as { result: { imageURL: string; cost: number | null }; latencyMs: number };
+};
+
+// V3/V4 AI QA (the Phase 4b calibrated check): OCR decides text in code, the
+// rest is advisory. The image URL goes straight to the model (no decode here).
+const QA_SCHEMA = { type: "object", additionalProperties: false, required: ["ocr", "style", "cast", "concept"], properties: { ocr: { type: "string" }, style: { type: "boolean" }, cast: { type: "boolean" }, concept: { type: "boolean" } } };
+async function aiQa(imageURL: string, contract: any, castNames: string[]): Promise<QaVerdict & { cost: number }> {
+  const prompt = [
+    `Frame from a flat 2D stickman explainer. Intended picture: ${contract.visualConcept}`,
+    castNames.length ? `Required people: ${castNames.join("; ")}.` : "No specific people required.",
+    "ocr: transcribe ALL readable text exactly as written ('' if none; ignore a lone ? or !).",
+    "style: true stickmen — circle heads, arms and legs as thin black stick lines (not filled trouser legs or sleeves), mitten hands; flat, no shading or 3D.",
+    "cast: the required people are present. concept: it shows the intended picture.",
+  ].join("\n");
+  const res = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: STICKMAN_QA.model, temperature: 0, messages: [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: imageURL, detail: STICKMAN_QA.detail } }] }], response_format: { type: "json_schema", json_schema: { name: "qa", strict: true, schema: QA_SCHEMA } } }) });
+  const j: any = await res.json();
+  if (!res.ok) throw new Error(`qa ${res.status}`);
+  const out = JSON.parse(j.choices[0].message.content);
+  const cost = (j.usage.prompt_tokens * 0.15 + j.usage.completion_tokens * 0.6) / 1e6;
+  const t = contract.textIntent ?? { mode: "NO_TEXT" };
+  const ocr = String(out.ocr ?? "").replace(/[?!]/g, " ").trim();
+  const textOk = t.mode === "SHORT_TEXT" ? normalizeText(ocr) === normalizeText(t.text) : normalizeText(ocr) === "";
+  const score = (textOk ? 2 : 0) + [out.style, out.cast, out.concept].filter(Boolean).length;
+  return { pass: textOk, score: score / 5, ocrText: t.mode === "SHORT_TEXT" && !textOk ? ocr : (t.mode === "SHORT_TEXT" ? String(t.text) : ocr), notes: JSON.stringify({ style: out.style, cast: out.cast, concept: out.concept }), cost };
+}
+
+// A 768 px copy for the AI QA check: upload the render once, then read it
+// through a Supabase image transform (no decode/encode at the edge).
+async function qaCopyUrl(bytes: Uint8Array, name: string): Promise<string | null> {
+  const path = `long-form/qa/${name}.jpg`;
+  const { error } = await admin.storage.from("generated").upload(path, bytes, { contentType: "image/jpeg", upsert: true });
+  if (error) return null;
+  const url = `${SUPABASE_URL}/storage/v1/render/image/public/generated/${path}?width=${STICKMAN_QA.imageWidth}&height=${Math.round((STICKMAN_QA.imageWidth * 9) / 16)}&resize=contain&quality=85`;
+  // Warm the transform first: OpenAI gives up on slow downloads (a cold full-size
+  // storage URL timed out in the 6c-polish check); a warmed, cached copy is instant.
+  const warm = await fetch(url).catch(() => null);
+  if (!warm?.ok) return null;
+  await warm.body?.cancel();
+  return url;
+}
+
+async function drawScene(scene: any) {
+  const projectId = scene.project_id;
+  const tier = scene.tier as "V2" | "V3" | "V4";
+  const cfg = STICKMAN_RENDER_TIERS[tier];
+  const { data: plan } = await admin.from("long_form_beat_plan_versions").select("id, production_bible_id").eq("id", scene.beat_plan_version_id).single();
+  const { data: bible } = await admin.from("long_form_production_bibles").select("bible").eq("id", plan.production_bible_id).single();
+  const { data: beats } = await admin.from("long_form_beats").select("sequence, start_word, end_word, start_ms, end_ms, narration_text, contract").eq("beat_plan_version_id", plan.id).order("sequence");
+  const toBeat = (b: any) => ({ sequence: b.sequence, startWord: b.start_word, endWord: b.end_word, startMs: b.start_ms, endMs: b.end_ms, narrationText: b.narration_text, contract: b.contract });
+  const all = (beats ?? []).map(toBeat);
+  const beat = all.find((b: any) => b.sequence === scene.beat_sequence);
+  if (!beat) throw new Error("beat not found");
+  // "Edit description": the user's words become the picture, through the same compiler.
+  if (scene.description_override) beat.contract = { ...beat.contract, visualConcept: scene.description_override, userSummary: scene.description_override };
+  const set = canonicalSetFromBible(bible.bible);
+  const plantFrame = plantFrameFor(all, set);
+  const castNames = (beat.contract.subjects ?? []).map((s: any) => set.cast?.[s.castId]?.displayName).filter(Boolean);
+
+  let original: { url: string; bytes: Uint8Array } | null = null;
+  let masterUrl: string | null = null;
+  let layer: OverlayLayer | null = null;
+  let textBlocked = false;
+  const costs: { stage: string; model: string; usd: number }[] = [];
+  let qaCalls = 0;
+  const t0 = Date.now();
+  const timings: Record<string, number> = {};
+  const timed = async <T>(k: string, f: () => Promise<T>): Promise<T> => { const s = Date.now(); try { return await f(); } finally { timings[k] = (timings[k] ?? 0) + Date.now() - s; } };
+
+  const r = await renderBeat(tier, { startMs: beat.startMs, contract: beat.contract }, {
+    compile: (c) => { const p = compileBeatPrompt({ ...beat, contract: c }, set, { plantFrame, ...compileOptionsFor(tier, c) }); if (p.lintErrors.length) throw new Error(`prompt check: ${p.lintErrors.join("; ")}`); return p; },
+    render: async (task) => { const res = await timed("renderMs", () => runware(task)); costs.push({ stage: "images", model: task.model, usd: Number(res.result.cost ?? 0) }); return { imageURL: res.result.imageURL, cost: Number(res.result.cost ?? 0) }; },
+    codeCheck: async (url) => {
+      const bytes = await timed("fetchOriginalMs", () => fetchBytes(url));
+      original = { url, bytes };
+      const c = await timed("codeCheckMs", () => codeCheckImage(bytes, { width: cfg.width, height: cfg.height }));
+      return { pass: c.pass, soft: c.soft, score: c.pass ? 1 : c.soft ? Number((0.5 * (1 - (c.uniformShare ?? 1))).toFixed(3)) : 0, ocrText: "", notes: c.reasons.join("; "), cost: 0 };
+    },
+    // QA sees a 768 px copy (the Phase 4b calibration size): the full 1376 px
+    // render cost ~2.5x more ($0.0056 vs ~$0.0022 per check on f90160bc).
+    qa: async (url, contract) => {
+      const bytes = await timed("fetchOriginalMs", () => fetchBytes(url));
+      original = { url, bytes };
+      const small = await timed("qaCopyMs", () => qaCopyUrl(bytes, `${scene.id}-${++qaCalls}`));
+      // Fall back to the original render URL if the small copy can't be read.
+      const q = small ? await aiQa(small, contract, castNames).catch(() => aiQa(url, contract, castNames)) : await aiQa(url, contract, castNames);
+      costs.push({ stage: "qa", model: STICKMAN_QA.model, usd: q.cost });
+      return q;
+    },
+    postProcess: async (url) => {
+      const up = DEFAULT_POSTPROCESS.upscale[tier];
+      const res = await timed("upscaleMs", () => runware({ taskType: "upscale", model: up.model, upscaleFactor: up.factor, inputs: { image: url }, outputType: "URL", outputFormat: "JPG", outputQuality: 95 }));
+      costs.push({ stage: "image_upscale", model: up.model, usd: Number(res.result.cost ?? 0) });
+      masterUrl = res.result.imageURL;
+      return { bytes: await timed("fetchMasterMs", () => fetchBytes(res.result.imageURL)), cost: Number(res.result.cost ?? 0) };
+    },
+    // The text is an editable layer, placed on the small original (cheap), scaled to 1920x1080.
+    // Text upgrade: the contract's style (BIG STAT / QUESTION / CALLOUT / HEADLINE),
+    // placed clear of faces after one cheap look; no clear spot = no text.
+    overlay: async (bytes, text) => {
+      fontBytes ??= await fetchBytes(FONT_URL);
+      const src = original?.bytes?.length ? original.bytes : await fetchBytes(original!.url);
+      const p = await timed("overlayMs", () => placeTextLayer({ bytes: src, imageUrl: original!.url, text, intent: beat.contract.textIntent, font: fontBytes!, openaiKey: OPENAI_KEY }));
+      if (p.costUsd) costs.push({ stage: "qa", model: STICKMAN_QA.model, usd: p.costUsd });
+      layer = p.layer;
+      textBlocked = p.blocked;
+      return bytes;
+    },
+  });
+
+  for (const c of costs) await recordCost(admin, { projectId, stage: c.stage, provider: c.stage === "qa" ? "openai" : "runware", model: c.model, units: { calls: 1, images: c.stage === "qa" ? 0 : 1, beat: beat.sequence }, usd: c.usd, sourceTable: "long_form_scene_images", sourceId: scene.id });
+  const costUsd = Number(r.cost.toFixed(5));
+  if (r.failed) {
+    await admin.from("long_form_scene_images").update({ status: "failed", error: "image_failed", cost_usd: costUsd, qa: { steps: r.log.map((l) => l.step), wallMs: Date.now() - t0 }, lease_until: null }).eq("id", scene.id);
+    return { failed: true };
+  }
+  const path = `long-form/scenes/${projectId}/${String(beat.sequence).padStart(3, "0")}-v${scene.version}.jpg`;
+  const { error: upErr } = await timed("uploadMs", () => admin.storage.from("generated").upload(path, r.base, { contentType: "image/jpeg", upsert: true }));
+  if (upErr) throw new Error(`upload: ${upErr.message}`);
+  const imageUrl = admin.storage.from("generated").getPublicUrl(path).data.publicUrl;
+  const soft = r.log.some((l) => l.qa?.soft && !l.qa?.pass);
+  // Phase 6c-polish: the only user-facing flags are real image problems.
+  // text_mismatch: on V3/V4 the chosen render's words still failed the OCR check.
+  const finalQa = [...r.log].reverse().find((l) => l.imageURL === r.imageURL && l.qa)?.qa;
+  const textMismatch = cfg.qa !== "code" && finalQa != null && !finalQa.pass;
+  // A difference hash of the chosen render, for true near-duplicate flags.
+  let dhash: string | null = null;
+  try { const ob = original && (original as any).url === r.imageURL && (original as any).bytes?.length ? (original as any).bytes : await fetchBytes(r.imageURL); dhash = await timed("hashMs", () => imageDHash(ob)); } catch { /* optional */ }
+  // A regenerated scene keeps the words the user set (the free text edit), re-placed on the new picture.
+  let finalText = textBlocked ? null : r.overlayText;
+  if (scene.source !== "autopilot" && scene.overlay_text != null && scene.overlay_text !== r.overlayText && original) {
+    fontBytes ??= await fetchBytes(FONT_URL);
+    const src = (original as any).bytes?.length ? (original as any).bytes : await fetchBytes((original as any).url);
+    // The user's own words: always kept (re-placed, no look needed to decide).
+    layer = scaleLayer((await overlayText(src, scene.overlay_text, { font: fontBytes })).layer, 1920 / cfg.width);
+    finalText = scene.overlay_text;
+  }
+  // Credits from the reservation, per finished scene.
+  const credits = sceneCredits(tier);
+  const billed = await commitReservationSpend(admin, projectId, credits).catch((e) => (/CEILING/i.test(String(e?.message ?? e)) ? "CEILING_EXCEEDED" : "BILLING_ERROR"));
+  await admin.from("long_form_scene_images").update({
+    status: "ready", image_url: imageUrl, master_url: masterUrl, original_url: r.imageURL, overlay: layer, overlay_text: finalText,
+    warnings: [...(soft ? ["image_check_soft"] : []), ...(textMismatch ? ["text_mismatch"] : [])], cost_usd: costUsd, credits_charged: billed === "COMMITTED" ? credits : 0,
+    qa: { steps: r.log.map((l) => l.step), retries: r.retries, wallMs: Date.now() - t0, timings, billed, dhash }, ready_at: new Date().toISOString(), lease_until: null, error: null,
+  }).eq("id", scene.id);
+  return { failed: false, billed };
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
+  if (!SECRET || req.headers.get("x-autopilot-secret") !== SECRET) return err(req, "Unauthorized", 401);
+  const body = await req.json().catch(() => ({}));
+  const projectId = String(body?.projectId ?? "");
+  if (!projectId) return err(req, "Missing projectId", 400);
+  const { data: claimed, error } = await admin.rpc("claim_long_form_scene_image", { p_project_id: projectId, p_scene_id: body?.sceneId ?? null, p_lease_seconds: SCENE_LEASE_S });
+  if (error) return err(req, "claim failed", 500, { reason: error.message });
+  const scene = (claimed ?? [])[0];
+  if (!scene) return ok(req, { ok: true, claimed: false });
+  const work = drawScene(scene)
+    .catch(async (e) => {
+      console.error("[render-long-form-scene]", scene.id, String(e));
+      // Not charged. The watchdog does not retry an explicit failure; the review page offers Regenerate.
+      await admin.from("long_form_scene_images").update({ status: "failed", error: "image_failed", qa: { error: String(e).slice(0, 300) }, lease_until: null }).eq("id", scene.id);
+    })
+    .finally(() => nudgeAutopilot(projectId));
+  const rt = (globalThis as any).EdgeRuntime;
+  if (rt?.waitUntil) rt.waitUntil(work); else await work;
+  return ok(req, { ok: true, claimed: true, sceneId: scene.id, beatSequence: scene.beat_sequence }, 202);
+});

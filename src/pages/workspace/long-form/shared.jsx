@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ArrowLeft, ArrowRight, Check, Clapperboard, ImageOff, MoreVertical, Pencil, RotateCw, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { IDEA_CATEGORY_OPTIONS, PREVIEW_STATUS } from "./discoverIdeas";
-import { LONG_FORM_STAGES, LONG_FORM_STICKMAN_STAGES } from "./state";
-import { deriveProjectStageInfo, formatElapsedMinutes, formatProjectDuration, humanizeProjectStatus, resolveStoryStepRoute, resolveLookStepRoute } from "./projectStage";
+import { LONG_FORM_STAGES, LONG_FORM_STICKMAN_STAGES, STICKMAN_STEP_FOR_PAGE } from "./state";
+import { deriveProjectStageInfo, deriveStickmanStep, formatElapsedMinutes, formatProjectDuration, humanizeProjectStatus, resolveStoryStepRoute, resolveLookStepRoute, reachableStickmanSteps } from "./projectStage";
 import { deleteLongFormProject, selectStoryTitle } from "./project";
+import { cleanText } from "./textClean";
+import { StickmanProjectContext } from "./stickmanContext";
 
 // Top row for /long-form/new and every future Long Form creation-step page:
 // an explicit route back to the lobby (never navigate(-1) — these steps may
@@ -77,7 +79,15 @@ export function LongFormCreationHeader({ current, project, stickman = false }) {
 export function LongFormProgress({ current = "idea", project = null, stickman = false }) {
   const navigate = useNavigate();
   const stages = stickman ? LONG_FORM_STICKMAN_STAGES : LONG_FORM_STAGES;
-  const currentIndex = stages.findIndex((stage) => stage.key === current);
+  // Phase 6c: for Stickman the highlighted step is the PAGE's own step (so the
+  // stepper always matches the page); how far the project has got comes from
+  // the route guard's live facts (script locked / voice ready / scenes drawn).
+  const guarded = useContext(StickmanProjectContext);
+  const stickmanProject = stickman ? (guarded && (!project || guarded.id === project.id) ? { ...project, ...guarded } : project) : null;
+  const furthestKey = stickman ? (stickmanProject ? deriveStickmanStep(stickmanProject).key : "idea") : null;
+  const stickmanKey = stickman ? STICKMAN_STEP_FOR_PAGE[current] ?? furthestKey : null;
+  const furthestIndex = stickman ? stages.findIndex((stage) => stage.key === furthestKey) : -1;
+  const currentIndex = stages.findIndex((stage) => stage.key === (stickman ? stickmanKey : current));
   const storyRoute = project ? resolveStoryStepRoute(project) : null;
   const lookRoute = project ? resolveLookStepRoute(project) : null;
   const currentStage = stages[currentIndex] ?? stages[0];
@@ -94,7 +104,7 @@ export function LongFormProgress({ current = "idea", project = null, stickman = 
       <div className="hidden min-w-0 items-center gap-2 overflow-x-auto md:flex">
         {stages.map((stage, i) => {
         const active = i === currentIndex;
-        const done = i < currentIndex;
+        const done = i < currentIndex || (stickman && i <= furthestIndex && !active);
         // "story" and "look" have a real, safe destination once completed —
         // the furthest completed Story-family artifact (Story Plan /
         // Research / Narration; see resolveStoryStepRoute) and the
@@ -109,8 +119,13 @@ export function LongFormProgress({ current = "idea", project = null, stickman = 
         // codebase doesn't actually support yet. "generate"/"edit" are never
         // clickable from the stepper itself (they're not yet reached, or
         // they're the current step already).
-        const route = stage.key === "story" ? storyRoute : stage.key === "look" ? lookRoute : null;
-        const clickable = done && Boolean(route);
+        // Stickman: every reached step opens its own page (the guard keeps it honest).
+        // Stickman (6e): every reached step opens its saved page instantly (never re-runs anything).
+        const reach = stickman && stickmanProject ? reachableStickmanSteps(stickmanProject) : {};
+        const route = stickman
+          ? (project ? reach[stage.key] ?? null : null)
+          : stage.key === "story" ? storyRoute : stage.key === "look" ? lookRoute : null;
+        const clickable = !active && Boolean(route) && (done || stickman);
         const label = (
           <>
             <span className={`h-1.5 w-1.5 rounded-full ${active ? "bg-lime-300" : done ? "bg-lime-300/50" : "bg-white/15"}`} />
@@ -228,8 +243,8 @@ export function IdeaCard({ idea, selected, onUse, onDismiss }) {
         <span className="w-fit rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] font-medium text-white/40">
           {categoryLabel}
         </span>
-        <h3 className="text-[14.5px] font-bold leading-snug text-white">{idea.title}</h3>
-        <p className="flex-1 text-[12.5px] leading-relaxed text-white/45">{idea.angle}</p>
+        <h3 className="text-[14.5px] font-bold leading-snug text-white">{cleanText(idea.title)}</h3>
+        <p className="flex-1 text-[12.5px] leading-relaxed text-white/45">{cleanText(idea.angle)}</p>
 
         <button
           type="button"
@@ -258,6 +273,7 @@ export function IdeaCard({ idea, selected, onUse, onDismiss }) {
 }
 
 const STAGE_BADGE_CLASS = {
+  Video: "border-emerald-300/30 bg-emerald-300/10 text-emerald-300",
   Look: "border-lime-300/30 bg-lime-300/10 text-lime-300",
   Story: "border-sky-300/30 bg-sky-300/10 text-sky-300",
 };
@@ -403,7 +419,8 @@ export function ProjectCard({ project, onChanged }) {
 // API: secondaryLabel/onSecondary render "← Back"-style text on the left
 // (omitted entirely if no secondaryLabel is passed, and the primary CTA
 // takes the full row); primaryLabel/onPrimary/primaryDisabled/primaryLoading
-// drive the right-hand CTA. Generic on purpose — every current Idea/Story/
+// drive the right-hand CTA (omitted when there's no primaryLabel: Publish
+// keeps its primary actions in its cards). Generic on purpose — every current Idea/Story/
 // Research usage is just different label/handler values, nothing more.
 //
 // tertiaryLabel/onTertiary/tertiaryLoading is an OPTIONAL middle action (an
@@ -432,7 +449,7 @@ export function LongFormActionFooter({
 }) {
   if (tertiaryLabel) {
     return (
-      <div className="fixed inset-x-0 z-40 border-t border-white/[0.08] bg-[#101213]/97 px-4 py-3 backdrop-blur-xl bottom-[calc(78px+env(safe-area-inset-bottom))] lg:bottom-0">
+      <div data-long-form-footer className="fixed inset-x-0 z-40 border-t border-white/[0.08] bg-[#101213]/97 px-4 py-3 backdrop-blur-xl bottom-[calc(78px+env(safe-area-inset-bottom))] lg:bottom-0">
         <div className={`mx-auto flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 lg:px-4 ${maxWidthClassName}`}>
           {secondaryLabel && (
             <button
@@ -483,7 +500,7 @@ export function LongFormActionFooter({
   }
 
   return (
-    <div className="fixed inset-x-0 z-40 border-t border-white/[0.08] bg-[#101213]/97 px-4 py-3 backdrop-blur-xl bottom-[calc(78px+env(safe-area-inset-bottom))] lg:bottom-0">
+    <div data-long-form-footer className="fixed inset-x-0 z-40 border-t border-white/[0.08] bg-[#101213]/97 px-4 py-3 backdrop-blur-xl bottom-[calc(78px+env(safe-area-inset-bottom))] lg:bottom-0">
       <div className={`mx-auto flex items-center gap-3 lg:px-4 ${maxWidthClassName} ${secondaryLabel ? "justify-between" : "justify-end"}`}>
         {secondaryLabel && (
           <button
@@ -495,7 +512,7 @@ export function LongFormActionFooter({
             {secondaryLabel}
           </button>
         )}
-        <button
+        {primaryLabel && <button
           type="button"
           onClick={onPrimary}
           disabled={primaryDisabled || primaryLoading}
@@ -518,7 +535,7 @@ export function LongFormActionFooter({
               <ArrowRight className="h-4 w-4" />
             </>
           )}
-        </button>
+        </button>}
       </div>
     </div>
   );

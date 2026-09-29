@@ -16,9 +16,23 @@ research engines' own `meta.callLedger`. `long_form_project_cost_by_stage(projec
 | Production Bible | gpt-5-mini | **$0.011–0.024** per build | Five builds: $0.0109, $0.0191, $0.0113, $0.0181 (rejected), $0.0236 (new schema, one repair). A repair roughly doubles it. |
 | Beat plan | Claude Sonnet 5 | **$0.180** full plan | 115 beats, 9 calls, about $0.0016 per beat. The window-1 check was $0.074 for 30 beats; windows with many fill rewrites cost more. |
 | Narration | ElevenLabs `eleven_flash_v2_5` | **1,577 credits** for 6,310 characters | About 0.25 credits per character (`character-cost` header). A 541-character pace sample cost 135 credits. USD depends on the subscription plan; the code's placeholder of $0.0003/char ($1.89 here) is probably high. |
-| Images | — | **pending Phase 4** | About 115–129 images per episode at this pace. |
-| Image QA | — | pending Phase 4 | |
+| Images | Runware (tier model) | **V2 $0.00247 (8 steps) · V3/V4 $0.0337** per image | Measured in the Phase 4a bake-off and 4b verification (Runware-reported cost). See the tier table below. |
+| Image upscale | Runware Real-ESRGAN `runware:504@1` | **$0.0006** per image | 2×, then cropped to 1920×1080 in code; every tier. |
+| Text overlay | code (Lilita One) | $0 | V2 always; V3/V4 only as the OCR fallback. |
+| Image QA | gpt-4o-mini, detail high, 768 px | **$0.0022** per image | Text verdict from OCR in code (gating); style, cast and concept advisory. Claude Haiku 4.5 was $0.0035. |
 | Render | — | pending | |
+| Phase 4 test spend | — | 4a $1.70 · 4b $0.51 · 4c $0.065 | 4a: 54 renders, 54 upscales, QA. 4b: QA calibration $0.26 and verification $0.25. |
+
+## Scene-image tiers (Phase 4b, Stickman only)
+
+| Tier | Model | Text | Premium | Per image (render + upscale + QA) | 150-scene video* |
+|---|---|---|---|---|---|
+| V2 | FLUX.2 [klein] 9B KV `runware:400@6`, 1376×768, **8 steps**, CFG 3.5; "flames, fire" in the negative unless the concept mentions fire | programmatic overlay | — | $0.0053 ($0.00307 without QA: render $0.00247 + upscale $0.0006) | **$0.91** ($0.53 without QA) |
+| V3 | Nano Banana 2 Lite `google:nano-banana@2-lite`, 1376×768 | model + OCR check → retry → overlay | — | $0.0365 | **$6.30** |
+| V4 | as V3 | as V3 | best-of-2 for hook + SHORT_TEXT beats, strict QA + 1 retry | $0.0365 + extras | **≈ $8.00** |
+
+*150 scenes, +15% retries. V2 steps came from the Phase 4c tuning test (KV at 4 steps $0.00229/image incl. upscale; 9B Base $0.00746, 14–29 s; native 2048×1152 $0.00338, no upscale, but filled sleeves and rougher lines). V4 adds about 31 extra renders (about 8 hook beats + about 23 SHORT_TEXT beats) and about 15 strict-QA retries.
+V2 QA can be skipped (text is never model-rendered, and style QA is advisory), which halves V2’s cost. Not used for Stickman: Nano Banana 2 ($0.069), Recraft V4 ($0.04), Qwen-Image, Kling, Seedream.
 
 **Episode total so far (about 9 minutes, excluding images, QA and render):** about $0.44 in model calls
 (script, bible and beat plan) plus about 1,600 ElevenLabs credits.

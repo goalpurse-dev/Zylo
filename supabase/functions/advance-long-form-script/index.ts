@@ -42,9 +42,11 @@ import { logEvent } from "../_shared/systemLog.ts";
 import { releaseReservationIfActive } from "../_shared/longFormReservations.ts";
 import { WORDS_PER_MINUTE, GPT5_MINI_INPUT_PER_M, GPT5_MINI_OUTPUT_PER_M } from "../../../src/lib/longFormPipelineConstants.ts";
 import { fetchActiveGenerationProfile, isStickmanProfile, nicheFromProfile } from "../_shared/stickman/recipeProfile.ts";
+import { nudgeAutopilot } from "../_shared/stickman/autopilotNudge.ts";
 import { urlIsLive } from "../_shared/stickman/urlVerify.ts";
 import { nicheGuidanceFor } from "../_shared/stickman/nicheGuidance.ts";
 import { installCassetteRecorder } from "../_shared/stickman/cassette.ts";
+import { sourceIndex, factSources, isLiveUrl } from "../_shared/stickman/claimSources.ts";
 import {
   findBannedLecturePhrases,
   findNumberedListEnumerations,
@@ -1371,6 +1373,8 @@ STATE UNCERTAINTY ONCE: honesty about limits is good, but at most 2 hedging/caut
 
 FINDINGS, NOT METHODS: no lab/method jargon (use-wear, multiproxy, pyromarkers, phytoliths, lipid residues, assemblages, stratigraphy, residue analysis, isotopes...) unless the same sentence instantly translates it into something a viewer can picture. Prefer the finding over how it was measured: "the ash shows animal fat burned for hours", not "lipid pyromarkers in hearth sediment".
 
+STORY OVER METHOD (every section): tell it as people doing things — who hunted, what they held, what the animal did, what happened next, what was left behind — with concrete events a viewer can see. AT MOST ONE short sentence per section about how researchers know it (the lab, the polish, the residue, the dating, "the inference we draw"); never a run of method sentences, and never a sentence whose only content is the method. "A hunter drove the spear into a horse's ribs, again and again — the tip still shows the damage" beats "researchers examining use-wear infer repeated thrusting".
+
 No visual metadata: write narration only. Visual planning is done later from your text.`;
 
 const STICKMAN_DRAFT_INSTRUCTIONS_LIONS_EXEMPLAR = STICKMAN_DRAFT_INSTRUCTIONS.replace(STICKMAN_GOLD_EXAMPLE_SCRIPT, LIONS_RUN_B_EXEMPLAR);
@@ -1641,6 +1645,8 @@ async function stageDraft(admin: any, row: ScriptRow, project: any, storyPlan: a
       segments: (draft.narrationSegments ?? []).map((s: any) => ({ id: s.id, chapterId: s.chapterId, text: s.text, factIds: s.factIds })),
     };
     await admin.from("long_form_script_versions").update({ status: "failed", last_error_code: "DRAFT_VALIDATION_FAILED", last_error_at: new Date().toISOString(), meta, detail, worker_lock_until: null }).eq("id", row.id);
+    // Phase 6a: the Stickman autopilot re-runs the script from its checkpoint right away.
+    if (isStickman) nudgeAutopilot(project.id);
     // Phase 0, Section B — a terminal script failure with nothing committed
     // against the project's reservation yet.
     await releaseReservationIfActive(admin, row.project_id, "script_draft_validation_failed", logEvent);
@@ -1823,9 +1829,19 @@ async function stageClaimVerify(admin: any, row: ScriptRow) {
   // defaults to "unverifiable" rather than being silently left unchecked —
   // the fix pass then softens it, the same safe default as a real negative
   // result, never treated as implicitly fine just because it wasn't reached.
+  // Phase 6f: every verdict keeps the REAL URLs behind it — a research-backed
+  // claim gets its fact's sources (live-checked when research ran); a
+  // web-searched claim keeps the URL the search cited only if it answers live.
+  const { data: researchRow } = row.research_version_id ? await admin.from("long_form_research_versions").select("*").eq("id", row.research_version_id).maybeSingle() : { data: null };
+  const srcIndex = sourceIndex(researchRow);
+  const checked = await Promise.all(toCheck.map(async (c) => {
+    const v = verdictByClaimId.get(c.id) ?? { claimId: c.id, verdict: "unverifiable", correctedValue: null, sourceName: null, url: null };
+    const live = v.url ? await isLiveUrl(v.url) : false;
+    return { ...v, url: live ? v.url : null, sources: live ? [{ url: v.url, title: v.sourceName ?? null }] : [], ...(v.url && !live ? { droppedUrl: v.url } : {}) };
+  }));
   const newVerdicts = [
-    ...alreadyBacked.map((c) => ({ claimId: c.id, verdict: "supported", correctedValue: null, sourceName: "preferred source (research-lite)", url: null })),
-    ...toCheck.map((c) => verdictByClaimId.get(c.id) ?? { claimId: c.id, verdict: "unverifiable", correctedValue: null, sourceName: null, url: null }),
+    ...alreadyBacked.map((c) => { const sources = factSources(c.sourceFactId, researchRow, srcIndex); return { claimId: c.id, verdict: "supported", correctedValue: null, sourceName: sources[0]?.title ?? "preferred source (research-lite)", url: sources[0]?.url ?? null, sources }; }),
+    ...checked,
   ];
   const claimVerdicts = [...previousVerdicts, ...newVerdicts];
 
@@ -2951,6 +2967,7 @@ async function stageFinalizing(admin: any, row: ScriptRow, project: any, storyPl
   if (status === "failed") {
     const detail = { errors: result.errors, actualWords: computeActualWords(doc) };
     await admin.from("long_form_script_versions").update({ status, script_document: finalDocument, meta, last_error_code: "FINAL_VALIDATION_FAILED", last_error_at: new Date().toISOString(), detail, worker_lock_until: null }).eq("id", row.id);
+    if (isStickman) nudgeAutopilot(project.id); // Phase 6a: the autopilot retries or reports it
     return;
   }
 
@@ -2965,6 +2982,8 @@ async function stageFinalizing(admin: any, row: ScriptRow, project: any, storyPl
   // promotion on both ready and needs_attention: this is the most useful
   // thing to show/compare against, whatever its status.
   await admin.from("long_form_projects").update({ current_script_version_id: row.id, updated_at: new Date().toISOString() }).eq("id", project.id);
+  // Phase 6a: the Stickman autopilot marks the run done (and notifies) right away.
+  if (isStickman) nudgeAutopilot(project.id);
 }
 
 /* ============================ Dispatch + failure handling ============================ */

@@ -1,0 +1,300 @@
+{
+ "runs": {
+  "V3:7": {
+   "tier": "V3",
+   "seq": 7,
+   "file": "docs/phase4/images/4b-V3-7.jpg",
+   "imageURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/94ae9494-a121-4b94-8ce6-e80497c3f2f9.jpg",
+   "overlayText": null,
+   "cost": 0.0364911,
+   "steps": [
+    {
+     "step": "render",
+     "cost": 0.035891099999999995,
+     "qa": {
+      "pass": true,
+      "score": 1,
+      "notes": "{\"ocr\":\"\",\"style\":true,\"cast\":true,\"concept\":true}"
+     }
+    },
+    {
+     "step": "upscale 1920x1080",
+     "cost": 0.0006
+    }
+   ],
+   "prompt": "Flat-color 2D doodle/stickman explainer illustration, 16:9 landscape frame. Uniform thin clean black outlines of identical weight everywhere; flat solid color fills only; no shading, no gradients, no texture, no highlights, no 3D, no photorealism. Every person is a stickman: a perfect circle head with no neck, two small black dot eyes, thin black eyebrows, one curved black mouth line, thin uniform black stick limbs, rounded black mitten hands and feet with no fingers or toes. Clothing is only a flat colored shape on the torso; arms and legs ALWAYS remain thin black stick lines, never filled trouser legs or sleeves; feet are small rounded mitten shapes (may be colored for shoes/boots). Environments use two or three flat color layers only.\nA symbolic illustration, medium shot, framed as viewer centered, bubble upper right: The viewer with a big white thought bubble above his head containing one horned helmet — one single frozen moment.\nSubjects: The viewer as a Viking raider: a stickman with a light warm beige circle head, short straight dark brown hair with a fringe cut above the ears, wearing a muted forest-green tunic shape on the torso with a dark brown belt line, and small dark brown rounded feet; medium height, neutral adult proportions; carrying a round wooden shield strapped to the left arm. Pose: standing still, looking up at the bubble. Face: eyebrows raised, small open-mouth oval.\nProps: A theatrical horned helmet: an oversized stage-costume helmet in darkened brass with huge horns curving up and outward and large round decorative disks where the horns attach.\nSetting: a plain flat off-white background with no scenery.\nNo text anywhere in the image — no letters, numbers, labels, captions, signs, or watermarks.\nAvoid: shading, gradients, texture, realistic anatomy, fingers, necks, detailed faces, 3D rendering, painterly or sketchy lines, drop shadows, glow effects, multiple panels unless specified, character reference sheets, turnaround views, and any text not explicitly requested."
+  },
+  "V3:69": {
+   "tier": "V3",
+   "seq": 69,
+   "file": "docs/phase4/images/4b-V3-69.jpg",
+   "imageURL": "https://im.runware.ai/image/os/a04d20/ws/3/ii/779d26f7-4194-4410-b470-7ff9a0302ece.jpg",
+   "overlayText": null,
+   "cost": 0.03646575,
+   "steps": [
+    {
+     "step": "render",
+     "cost": 0.035865749999999995,
+     "qa": {
+      "pass": true,
+      "score": 1,
+      "notes": "{\"ocr\":\"BAYREUTH, 1876\",\"style\":true,\"cast\":true,\"concept\":true}"
+     }
+    },
+    {
+     "step": "upscale 1920x1080",
+     "cost": 0.0006
+    }
+   ],
+   "prompt": "Flat-color 2D doodle/stickman explainer illustration, 16:9 landscape frame. Uniform thin clean black outlines of identical weight everywhere; flat solid color fills only; no shading, no gradients, no texture, no highlights, no 3D, no photorealism. Every person is a stickman: a perfect circle head with no neck, two small black dot eyes, thin black eyebrows, one curved black mouth line, thin uniform black stick limbs, rounded black mitten hands and feet with no fingers or toes. Clothing is only a flat colored shape on the torso; arms and legs ALWAYS remain thin black stick lines, never filled trouser legs or sleeves; feet are small rounded mitten shapes (may be colored for shoes/boots). Environments use two or three flat color layers only.\nA wide establishing view, wide shot, framed as facade fills the frame: A grand opera house facade at night with a lit marquee over its doors and a few tiny stick figures at the entrance — one single frozen moment.\nSetting: the place described above, drawn in two or three flat color layers.\nExactly one piece of text: \"Bayreuth, 1876\" in heavy bold all-caps yellow letters with a thick black outline, centered across the upper third of the frame. No other text.\nAvoid: shading, gradients, texture, realistic anatomy, fingers, necks, detailed faces, 3D rendering, painterly or sketchy lines, drop shadows, glow effects, multiple panels unless specified, character reference sheets, turnaround views, and any text not explicitly requested."
+  },
+  "V3:125": {
+   "tier": "V3",
+   "seq": 125,
+   "file": "docs/phase4/images/4b-V3-125.jpg",
+   "imageURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/c8fc0617-2fc5-4587-bcb4-f5ba049e05a8.jpg",
+   "overlayText": null,
+   "cost": 0.03647355000000001,
+   "steps": [
+    {
+     "step": "render",
+     "cost": 0.035873550000000004,
+     "qa": {
+      "pass": true,
+      "score": 1,
+      "notes": "{\"ocr\":\"\",\"style\":true,\"cast\":true,\"concept\":true}"
+     }
+    },
+    {
+     "step": "upscale 1920x1080",
+     "cost": 0.0006
+    }
+   ],
+   "prompt": "Flat-color 2D doodle/stickman explainer illustration, 16:9 landscape frame. Uniform thin clean black outlines of identical weight everywhere; flat solid color fills only; no shading, no gradients, no texture, no highlights, no 3D, no photorealism. Every person is a stickman: a perfect circle head with no neck, two small black dot eyes, thin black eyebrows, one curved black mouth line, thin uniform black stick limbs, rounded black mitten hands and feet with no fingers or toes. Clothing is only a flat colored shape on the torso; arms and legs ALWAYS remain thin black stick lines, never filled trouser legs or sleeves; feet are small rounded mitten shapes (may be colored for shoes/boots). Environments use two or three flat color layers only.\nA first-person point-of-view shot, point-of-view angle, framed as hands at the bottom edge, blank banner in the middle: The viewer's hands in the foreground holding a lunchbox, a horned cartoon mascot on a stadium blank banner in the middle distance — one single frozen moment.\nSubjects: The viewer as a Viking raider, hands only: two rounded black mitten hands at the ends of thin black stick arms; no body or face in view. Pose: holding a lunchbox.\nSetting: the place described above, drawn in two or three flat color layers.\nNo text anywhere in the image — no letters, numbers, labels, captions, signs, or watermarks.\nAvoid: shading, gradients, texture, realistic anatomy, fingers, necks, detailed faces, 3D rendering, painterly or sketchy lines, drop shadows, glow effects, multiple panels unless specified, character reference sheets, turnaround views, and any text not explicitly requested."
+  },
+  "V3:117": {
+   "tier": "V3",
+   "seq": 117,
+   "file": "docs/phase4/images/4b-V3-117.jpg",
+   "imageURL": "https://im.runware.ai/image/os/a06dlim3/ws/3/ii/e13ba8c7-aead-495c-8cda-b73bba1fab44.jpg",
+   "overlayText": null,
+   "cost": 0.03653925000000001,
+   "steps": [
+    {
+     "step": "render",
+     "cost": 0.035939250000000006,
+     "qa": {
+      "pass": true,
+      "score": 1,
+      "notes": "{\"ocr\":\"\",\"style\":true,\"cast\":true,\"concept\":true}"
+     }
+    },
+    {
+     "step": "upscale 1920x1080",
+     "cost": 0.0006
+    }
+   ],
+   "prompt": "Flat-color 2D doodle/stickman explainer illustration, 16:9 landscape frame. Uniform thin clean black outlines of identical weight everywhere; flat solid color fills only; no shading, no gradients, no texture, no highlights, no 3D, no photorealism. Every person is a stickman: a perfect circle head with no neck, two small black dot eyes, thin black eyebrows, one curved black mouth line, thin uniform black stick limbs, rounded black mitten hands and feet with no fingers or toes. Clothing is only a flat colored shape on the torso; arms and legs ALWAYS remain thin black stick lines, never filled trouser legs or sleeves; feet are small rounded mitten shapes (may be colored for shoes/boots). Environments use two or three flat color layers only.\nA story scene, medium shot, framed as backstage handoff: Costume department rack, handing helmet to viewer — one single frozen moment.\nSubjects: On the left: A 19th-century costume designer: a stickman with a pale peach circle head, neat slicked-back medium brown hair with a side part, wearing a deep charcoal frock-coat shape on the torso with a white collar and a small burgundy cravat, and small black rounded feet; slim adult proportions, theatrical upright posture; carrying a rolled-up costume sketch. Pose: hands over costume. Face: eyebrows relaxed, small neutral mouth line. On the right: The viewer as a Viking raider: a stickman with a light warm beige circle head, short straight dark brown hair with a fringe cut above the ears, wearing a muted forest-green tunic shape on the torso with a dark brown belt line, and small dark brown rounded feet; medium height, neutral adult proportions; carrying a round wooden shield strapped to the left arm. Pose: receives, curious. Face: eyebrows raised, small open-mouth oval.\nProps: A theatrical horned helmet: an oversized stage-costume helmet in darkened brass with huge horns curving up and outward and large round decorative disks where the horns attach.\nSetting — a 19th-century opera theatre: far background tall deep burgundy stage curtains with gold trim; midground wooden stage boards in front of a simple painted mountain backdrop; foreground the dark edge of the orchestra pit. Flat palette: deep burgundy, gold, dark brown and warm black. Signature objects: burgundy curtains with gold trim and a painted mountain backdrop.\nLighting: a warm golden stage wash from above.\nNo text anywhere in the image — no letters, numbers, labels, captions, signs, or watermarks.\nAvoid: shading, gradients, texture, realistic anatomy, fingers, necks, detailed faces, 3D rendering, painterly or sketchy lines, drop shadows, glow effects, multiple panels unless specified, character reference sheets, turnaround views, and any text not explicitly requested."
+  },
+  "V3:10": {
+   "tier": "V3",
+   "seq": 10,
+   "file": "docs/phase4/images/4b-V3-10.jpg",
+   "imageURL": "https://im.runware.ai/image/os/a06dlim3/ws/3/ii/dbaf9c37-bcd4-4ac2-91f0-3f81deb8c510.jpg",
+   "overlayText": null,
+   "cost": 0.036513300000000005,
+   "steps": [
+    {
+     "step": "render",
+     "cost": 0.0359133,
+     "qa": {
+      "pass": true,
+      "score": 1,
+      "notes": "{\"ocr\":\"DID VIKINGS REALLY WEAR HORNS?\",\"style\":true,\"cast\":true,\"concept\":true}"
+     }
+    },
+    {
+     "step": "upscale 1920x1080",
+     "cost": 0.0006
+    }
+   ],
+   "prompt": "Flat-color 2D doodle/stickman explainer illustration, 16:9 landscape frame. Uniform thin clean black outlines of identical weight everywhere; flat solid color fills only; no shading, no gradients, no texture, no highlights, no 3D, no photorealism. Every person is a stickman: a perfect circle head with no neck, two small black dot eyes, thin black eyebrows, one curved black mouth line, thin uniform black stick limbs, rounded black mitten hands and feet with no fingers or toes. Clothing is only a flat colored shape on the torso; arms and legs ALWAYS remain thin black stick lines, never filled trouser legs or sleeves; feet are small rounded mitten shapes (may be colored for shoes/boots). Environments use two or three flat color layers only.\nA reaction shot, medium shot, framed as mid-action pause: Viewer viking pauses mid-stride, question mark over head — one single frozen moment.\nSubjects: The viewer as a Viking raider: a stickman with a light warm beige circle head, short straight dark brown hair with a fringe cut above the ears, wearing a muted forest-green tunic shape on the torso with a dark brown belt line, and small dark brown rounded feet; medium height, neutral adult proportions; carrying a round wooden shield strapped to the left arm. Pose: stopping, uncertain, questioning. Face: one eyebrow raised and one lowered, small wavy mouth line.\nSetting — a Viking-age hillside battlefield: far background low rolling grey-green hills under a pale grey-blue sky; midground a distant line of round wooden shields forming a shieldwall; foreground a trampled grassy slope. Flat palette: muted moss green, earth brown, pale grey-blue and dull steel grey. Signature objects: round wooden shields and a low grassy hill crest.\nLighting: cool diffused daylight with no strong shadows.\nExactly one piece of text: \"Did Vikings really wear horns?\" in heavy bold all-caps yellow letters with a thick black outline, centered across the upper third of the frame. No other text.\nAvoid: shading, gradients, texture, realistic anatomy, fingers, necks, detailed faces, 3D rendering, painterly or sketchy lines, drop shadows, glow effects, multiple panels unless specified, character reference sheets, turnaround views, and any text not explicitly requested."
+  },
+  "V3:111": {
+   "tier": "V3",
+   "seq": 111,
+   "file": "docs/phase4/images/4b-V3-111.jpg",
+   "imageURL": "https://im.runware.ai/image/os/a06dlim3/ws/3/ii/a81cb733-d5fc-4f0a-a8ab-8f1f8dd6d9c4.jpg",
+   "overlayText": null,
+   "cost": 0.036509700000000006,
+   "steps": [
+    {
+     "step": "render",
+     "cost": 0.0359097,
+     "qa": {
+      "pass": true,
+      "score": 1,
+      "notes": "{\"ocr\":\"\",\"style\":true,\"cast\":true,\"concept\":true}"
+     }
+    },
+    {
+     "step": "upscale 1920x1080",
+     "cost": 0.0006
+    }
+   ],
+   "prompt": "Flat-color 2D doodle/stickman explainer illustration, 16:9 landscape frame. Uniform thin clean black outlines of identical weight everywhere; flat solid color fills only; no shading, no gradients, no texture, no highlights, no 3D, no photorealism. Every person is a stickman: a perfect circle head with no neck, two small black dot eyes, thin black eyebrows, one curved black mouth line, thin uniform black stick limbs, rounded black mitten hands and feet with no fingers or toes. Clothing is only a flat colored shape on the torso; arms and legs ALWAYS remain thin black stick lines, never filled trouser legs or sleeves; feet are small rounded mitten shapes (may be colored for shoes/boots). Environments use two or three flat color layers only.\nA story scene, close-up, framed as close on helmet: Two long curved horns jut from the helmet, framed close — one single frozen moment.\nSubjects: The viewer as a Viking raider: a stickman with a light warm beige circle head, short straight dark brown hair with a fringe cut above the ears, wearing a muted forest-green tunic shape on the torso with a dark brown belt line, and small dark brown rounded feet; medium height, neutral adult proportions; carrying a round wooden shield strapped to the left arm. Wearing: A theatrical horned helmet: an oversized stage-costume helmet in darkened brass with huge horns curving up and outward and large round decorative disks where the horns attach. Pose: charges, firelit horns. Face: eyebrows relaxed, small neutral mouth line.\nSetting — a Viking-age hillside battlefield: far background low rolling grey-green hills under a pale grey-blue sky; midground a distant line of round wooden shields forming a shieldwall; foreground a trampled grassy slope. Flat palette: muted moss green, earth brown, pale grey-blue and dull steel grey. Signature objects: round wooden shields and a low grassy hill crest.\nLighting: cool diffused daylight with no strong shadows.\nNo text anywhere in the image — no letters, numbers, labels, captions, signs, or watermarks.\nAvoid: shading, gradients, texture, realistic anatomy, fingers, necks, detailed faces, 3D rendering, painterly or sketchy lines, drop shadows, glow effects, multiple panels unless specified, character reference sheets, turnaround views, and any text not explicitly requested."
+  },
+  "V2:7": {
+   "tier": "V2",
+   "seq": 7,
+   "file": "docs/phase4/images/4b-V2-7.jpg",
+   "imageURL": "https://im.runware.ai/image/os/a02d21/ws/3/ii/23ea0147-e491-4f6e-9934-f0f00c0ff637.jpg",
+   "overlayText": null,
+   "cost": 0.0044503,
+   "steps": [
+    {
+     "step": "render",
+     "cost": 0.0038502999999999996,
+     "qa": {
+      "pass": true,
+      "score": 1,
+      "notes": "{\"ocr\":\"\",\"style\":true,\"cast\":true,\"concept\":true}"
+     }
+    },
+    {
+     "step": "upscale 1920x1080",
+     "cost": 0.0006
+    }
+   ],
+   "prompt": "Flat-color 2D doodle/stickman explainer illustration, 16:9 landscape frame. Uniform thin clean black outlines of identical weight everywhere; flat solid color fills only; no shading, no gradients, no texture, no highlights, no 3D, no photorealism. Every person is a stickman: a perfect circle head with no neck, two small black dot eyes, thin black eyebrows, one curved black mouth line, thin uniform black stick limbs, rounded black mitten hands and feet with no fingers or toes. Clothing is only a flat colored shape on the torso; arms and legs ALWAYS remain thin black stick lines, never filled trouser legs or sleeves; feet are small rounded mitten shapes (may be colored for shoes/boots). Environments use two or three flat color layers only.\nA symbolic illustration, medium shot, framed as viewer centered, bubble upper right: The viewer with a big white thought bubble above his head containing one horned helmet — one single frozen moment.\nSubjects: The viewer as a Viking raider: a stickman with a light warm beige circle head, short straight dark brown hair with a fringe cut above the ears, wearing a muted forest-green tunic shape on the torso with a dark brown belt line, and small dark brown rounded feet; medium height, neutral adult proportions; carrying a round wooden shield strapped to the left arm. Pose: standing still, looking up at the bubble. Face: eyebrows raised, small open-mouth oval.\nProps: A theatrical horned helmet: an oversized stage-costume helmet in darkened brass with huge horns curving up and outward and large round decorative disks where the horns attach.\nSetting: a plain flat off-white background with no scenery.\nNo text anywhere in the image — no letters, numbers, labels, captions, signs, or watermarks.\nAvoid: shading, gradients, texture, realistic anatomy, fingers, necks, detailed faces, 3D rendering, painterly or sketchy lines, drop shadows, glow effects, multiple panels unless specified, character reference sheets, turnaround views, and any text not explicitly requested."
+  },
+  "V2:69": {
+   "tier": "V2",
+   "seq": 69,
+   "file": "docs/phase4/images/4b-V2-69.jpg",
+   "imageURL": "https://im.runware.ai/image/os/a01d21/ws/3/ii/11ad8f12-a5eb-4e89-9aa9-5a4ef1dee618.jpg",
+   "overlayText": "Bayreuth, 1876",
+   "cost": 0.00445165,
+   "steps": [
+    {
+     "step": "render",
+     "cost": 0.00385165,
+     "qa": {
+      "pass": true,
+      "score": 1,
+      "notes": "{\"ocr\":\"''\",\"style\":true,\"cast\":true,\"concept\":true}"
+     }
+    },
+    {
+     "step": "upscale 1920x1080",
+     "cost": 0.0006
+    },
+    {
+     "step": "programmatic text overlay",
+     "cost": 0
+    }
+   ],
+   "prompt": "Flat-color 2D doodle/stickman explainer illustration, 16:9 landscape frame. Uniform thin clean black outlines of identical weight everywhere; flat solid color fills only; no shading, no gradients, no texture, no highlights, no 3D, no photorealism. Every person is a stickman: a perfect circle head with no neck, two small black dot eyes, thin black eyebrows, one curved black mouth line, thin uniform black stick limbs, rounded black mitten hands and feet with no fingers or toes. Clothing is only a flat colored shape on the torso; arms and legs ALWAYS remain thin black stick lines, never filled trouser legs or sleeves; feet are small rounded mitten shapes (may be colored for shoes/boots). Environments use two or three flat color layers only.\nA wide establishing view, wide shot, framed as facade fills the frame: A grand opera house facade at night with a lit blank marquee over its doors and a few tiny stick figures at the entrance — one single frozen moment.\nSetting: the place described above, drawn in two or three flat color layers.\nNo text anywhere in the image — no letters, numbers, labels, captions, signs, or watermarks. Keep the upper third of the frame as plain, uncluttered flat background for a later text overlay.\nAvoid: shading, gradients, texture, realistic anatomy, fingers, necks, detailed faces, 3D rendering, painterly or sketchy lines, drop shadows, glow effects, multiple panels unless specified, character reference sheets, turnaround views, and any text not explicitly requested."
+  },
+  "V2:125": {
+   "tier": "V2",
+   "seq": 125,
+   "file": "docs/phase4/images/4b-V2-125.jpg",
+   "imageURL": "https://im.runware.ai/image/os/a08dlim3/ws/3/ii/2c079a1a-c244-4f27-afab-bbccff0e2e77.jpg",
+   "overlayText": null,
+   "cost": 0.004451650000000001,
+   "steps": [
+    {
+     "step": "render",
+     "cost": 0.0038516500000000003,
+     "qa": {
+      "pass": true,
+      "score": 1,
+      "notes": "{\"ocr\":\"\",\"style\":true,\"cast\":true,\"concept\":true}"
+     }
+    },
+    {
+     "step": "upscale 1920x1080",
+     "cost": 0.0006
+    }
+   ],
+   "prompt": "Flat-color 2D doodle/stickman explainer illustration, 16:9 landscape frame. Uniform thin clean black outlines of identical weight everywhere; flat solid color fills only; no shading, no gradients, no texture, no highlights, no 3D, no photorealism. Every person is a stickman: a perfect circle head with no neck, two small black dot eyes, thin black eyebrows, one curved black mouth line, thin uniform black stick limbs, rounded black mitten hands and feet with no fingers or toes. Clothing is only a flat colored shape on the torso; arms and legs ALWAYS remain thin black stick lines, never filled trouser legs or sleeves; feet are small rounded mitten shapes (may be colored for shoes/boots). Environments use two or three flat color layers only.\nA first-person point-of-view shot, point-of-view angle, framed as hands at the bottom edge, blank banner in the middle: The viewer's hands in the foreground holding a lunchbox, a horned cartoon mascot on a stadium blank banner in the middle distance — one single frozen moment.\nSubjects: The viewer as a Viking raider, hands only: two rounded black mitten hands at the ends of thin black stick arms; no body or face in view. Pose: holding a lunchbox.\nSetting: the place described above, drawn in two or three flat color layers.\nNo text anywhere in the image — no letters, numbers, labels, captions, signs, or watermarks.\nAvoid: shading, gradients, texture, realistic anatomy, fingers, necks, detailed faces, 3D rendering, painterly or sketchy lines, drop shadows, glow effects, multiple panels unless specified, character reference sheets, turnaround views, and any text not explicitly requested."
+  },
+  "V2:117": {
+   "tier": "V2",
+   "seq": 117,
+   "file": "docs/phase4/images/4b-V2-117.jpg",
+   "imageURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/d3ad03f8-fbf6-4e08-b747-bb5d31a22d25.jpg",
+   "overlayText": null,
+   "cost": 0.00445075,
+   "steps": [
+    {
+     "step": "render",
+     "cost": 0.00385075,
+     "qa": {
+      "pass": true,
+      "score": 1,
+      "notes": "{\"ocr\":\"\",\"style\":true,\"cast\":true,\"concept\":true}"
+     }
+    },
+    {
+     "step": "upscale 1920x1080",
+     "cost": 0.0006
+    }
+   ],
+   "prompt": "Flat-color 2D doodle/stickman explainer illustration, 16:9 landscape frame. Uniform thin clean black outlines of identical weight everywhere; flat solid color fills only; no shading, no gradients, no texture, no highlights, no 3D, no photorealism. Every person is a stickman: a perfect circle head with no neck, two small black dot eyes, thin black eyebrows, one curved black mouth line, thin uniform black stick limbs, rounded black mitten hands and feet with no fingers or toes. Clothing is only a flat colored shape on the torso; arms and legs ALWAYS remain thin black stick lines, never filled trouser legs or sleeves; feet are small rounded mitten shapes (may be colored for shoes/boots). Environments use two or three flat color layers only.\nA story scene, medium shot, framed as backstage handoff: Costume department rack, handing helmet to viewer — one single frozen moment.\nSubjects: On the left: A 19th-century costume designer: a stickman with a pale peach circle head, neat slicked-back medium brown hair with a side part, wearing a deep charcoal frock-coat shape on the torso with a white collar and a small burgundy cravat, and small black rounded feet; slim adult proportions, theatrical upright posture; carrying a rolled-up costume sketch. Pose: hands over costume. Face: eyebrows relaxed, small neutral mouth line. On the right: The viewer as a Viking raider: a stickman with a light warm beige circle head, short straight dark brown hair with a fringe cut above the ears, wearing a muted forest-green tunic shape on the torso with a dark brown belt line, and small dark brown rounded feet; medium height, neutral adult proportions; carrying a round wooden shield strapped to the left arm. Pose: receives, curious. Face: eyebrows raised, small open-mouth oval.\nProps: A theatrical horned helmet: an oversized stage-costume helmet in darkened brass with huge horns curving up and outward and large round decorative disks where the horns attach.\nSetting — a 19th-century opera theatre: far background tall deep burgundy stage curtains with gold trim; midground wooden stage boards in front of a simple painted mountain backdrop; foreground the dark edge of the orchestra pit. Flat palette: deep burgundy, gold, dark brown and warm black. Signature objects: burgundy curtains with gold trim and a painted mountain backdrop.\nLighting: a warm golden stage wash from above.\nNo text anywhere in the image — no letters, numbers, labels, captions, signs, or watermarks.\nAvoid: shading, gradients, texture, realistic anatomy, fingers, necks, detailed faces, 3D rendering, painterly or sketchy lines, drop shadows, glow effects, multiple panels unless specified, character reference sheets, turnaround views, and any text not explicitly requested."
+  },
+  "V2:10": {
+   "tier": "V2",
+   "seq": 10,
+   "file": "docs/phase4/images/4b-V2-10.jpg",
+   "imageURL": "https://im.runware.ai/image/os/a09dlim3/ws/3/ii/b048f3d7-81cc-4d26-8c16-e6d18d45ff10.jpg",
+   "overlayText": "Did Vikings really wear horns?",
+   "cost": 0.0044497,
+   "steps": [
+    {
+     "step": "render",
+     "cost": 0.0038496999999999997,
+     "qa": {
+      "pass": true,
+      "score": 1,
+      "notes": "{\"ocr\":\"\",\"style\":true,\"cast\":true,\"concept\":true}"
+     }
+    },
+    {
+     "step": "upscale 1920x1080",
+     "cost": 0.0006
+    },
+    {
+     "step": "programmatic text overlay",
+     "cost": 0
+    }
+   ],
+   "prompt": "Flat-color 2D doodle/stickman explainer illustration, 16:9 landscape frame. Uniform thin clean black outlines of identical weight everywhere; flat solid color fills only; no shading, no gradients, no texture, no highlights, no 3D, no photorealism. Every person is a stickman: a perfect circle head with no neck, two small black dot eyes, thin black eyebrows, one curved black mouth line, thin uniform black stick limbs, rounded black mitten hands and feet with no fingers or toes. Clothing is only a flat colored shape on the torso; arms and legs ALWAYS remain thin black stick lines, never filled trouser legs or sleeves; feet are small rounded mitten shapes (may be colored for shoes/boots). Environments use two or three flat color layers only.\nA reaction shot, medium shot, framed as mid-action pause: Viewer viking pauses mid-stride, question mark over head — one single frozen moment.\nSubjects: The viewer as a Viking raider: a stickman with a light warm beige circle head, short straight dark brown hair with a fringe cut above the ears, wearing a muted forest-green tunic shape on the torso with a dark brown belt line, and small dark brown rounded feet; medium height, neutral adult proportions; carrying a round wooden shield strapped to the left arm. Pose: stopping, uncertain, questioning. Face: one eyebrow raised and one lowered, small wavy mouth line.\nSetting — a Viking-age hillside battlefield: far background low rolling grey-green hills under a pale grey-blue sky; midground a distant line of round wooden shields forming a shieldwall; foreground a trampled grassy slope. Flat palette: muted moss green, earth brown, pale grey-blue and dull steel grey. Signature objects: round wooden shields and a low grassy hill crest.\nLighting: cool diffused daylight with no strong shadows.\nNo text anywhere in the image — no letters, numbers, labels, captions, signs, or watermarks. Keep the upper third of the frame as plain, uncluttered flat background for a later text overlay.\nAvoid: shading, gradients, texture, realistic anatomy, fingers, necks, detailed faces, 3D rendering, painterly or sketchy lines, drop shadows, glow effects, multiple panels unless specified, character reference sheets, turnaround views, and any text not explicitly requested."
+  },
+  "V2:111": {
+   "tier": "V2",
+   "seq": 111,
+   "file": "docs/phase4/images/4b-V2-111.jpg",
+   "imageURL": "https://im.runware.ai/image/os/a03d21/ws/3/ii/29be20ca-4952-4497-bd44-c86ae4b5267e.jpg",
+   "overlayText": null,
+   "cost": 0.0044497,
+   "steps": [
+    {
+     "step": "render",
+     "cost": 0.0038496999999999997,
+     "qa": {
+      "pass": true,
+      "score": 1,
+      "notes": "{\"ocr\":\"\",\"style\":true,\"cast\":true,\"concept\":true}"
+     }
+    },
+    {
+     "step": "upscale 1920x1080",
+     "cost": 0.0006
+    }
+   ],
+   "prompt": "Flat-color 2D doodle/stickman explainer illustration, 16:9 landscape frame. Uniform thin clean black outlines of identical weight everywhere; flat solid color fills only; no shading, no gradients, no texture, no highlights, no 3D, no photorealism. Every person is a stickman: a perfect circle head with no neck, two small black dot eyes, thin black eyebrows, one curved black mouth line, thin uniform black stick limbs, rounded black mitten hands and feet with no fingers or toes. Clothing is only a flat colored shape on the torso; arms and legs ALWAYS remain thin black stick lines, never filled trouser legs or sleeves; feet are small rounded mitten shapes (may be colored for shoes/boots). Environments use two or three flat color layers only.\nA story scene, close-up, framed as close on helmet: Two long curved horns jut from the helmet, framed close — one single frozen moment.\nSubjects: The viewer as a Viking raider: a stickman with a light warm beige circle head, short straight dark brown hair with a fringe cut above the ears, wearing a muted forest-green tunic shape on the torso with a dark brown belt line, and small dark brown rounded feet; medium height, neutral adult proportions; carrying a round wooden shield strapped to the left arm. Wearing: A theatrical horned helmet: an oversized stage-costume helmet in darkened brass with huge horns curving up and outward and large round decorative disks where the horns attach. Pose: charges, firelit horns. Face: eyebrows relaxed, small neutral mouth line.\nSetting — a Viking-age hillside battlefield: far background low rolling grey-green hills under a pale grey-blue sky; midground a distant line of round wooden shields forming a shieldwall; foreground a trampled grassy slope. Flat palette: muted moss green, earth brown, pale grey-blue and dull steel grey. Signature objects: round wooden shields and a low grassy hill crest.\nLighting: cool diffused daylight with no strong shadows.\nNo text anywhere in the image — no letters, numbers, labels, captions, signs, or watermarks.\nAvoid: shading, gradients, texture, realistic anatomy, fingers, necks, detailed faces, 3D rendering, painterly or sketchy lines, drop shadows, glow effects, multiple panels unless specified, character reference sheets, turnaround views, and any text not explicitly requested."
+  }
+ }
+}

@@ -1,0 +1,4105 @@
+{
+ "version": "STICKMAN_EDL_V1",
+ "fps": 30,
+ "width": 1920,
+ "height": 1080,
+ "audio": {
+  "path": "tests/fixtures/stickman/audio/myth-vs-reality/audio.mp3",
+  "durationMs": 523416
+ },
+ "totalFrames": 15702,
+ "clips": [
+  {
+   "index": 0,
+   "beatSequence": 1,
+   "image": "docs/phase4/fullset/beat-001-base.jpg",
+   "startMs": 0,
+   "endMs": 4818,
+   "startFrame": 0,
+   "endFrame": 145,
+   "frames": 145,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "You're gripping a shield, screaming down a hillside toward a shieldwall,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 1,
+   "beatSequence": 2,
+   "image": "docs/phase4/fullset/beat-002-base.jpg",
+   "startMs": 4818,
+   "endMs": 8788,
+   "startFrame": 145,
+   "endFrame": 264,
+   "frames": 119,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "and two long curved horns jut off your helmet,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 2,
+   "beatSequence": 3,
+   "image": "docs/phase4/fullset/beat-003-base.jpg",
+   "startMs": 8788,
+   "endMs": 11876,
+   "startFrame": 264,
+   "endFrame": 356,
+   "frames": 92,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "cutting the air on either side of your head.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 3,
+   "beatSequence": 4,
+   "image": "docs/phase4/fullset/beat-004-base.jpg",
+   "startMs": 11876,
+   "endMs": 14814,
+   "startFrame": 356,
+   "endFrame": 444,
+   "frames": 88,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "The horns catch the firelight.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 4,
+   "beatSequence": 5,
+   "image": "docs/phase4/fullset/beat-005-base.jpg",
+   "startMs": 14814,
+   "endMs": 16927,
+   "startFrame": 444,
+   "endFrame": 508,
+   "frames": 64,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "They look terrifying.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 5,
+   "beatSequence": 6,
+   "image": "docs/phase4/fullset/beat-006-base.jpg",
+   "startMs": 16927,
+   "endMs": 19922,
+   "startFrame": 508,
+   "endFrame": 598,
+   "frames": 90,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "They look exactly like every painting,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 6,
+   "beatSequence": 7,
+   "image": "docs/phase4/fullset/beat-007-base.jpg",
+   "startMs": 19922,
+   "endMs": 26157,
+   "startFrame": 598,
+   "endFrame": 785,
+   "frames": 187,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "every movie poster, every Halloween costume you've ever seen of a Viking.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 7,
+   "beatSequence": 8,
+   "image": "docs/phase4/fullset/beat-008-base.jpg",
+   "startMs": 26157,
+   "endMs": 29918,
+   "startFrame": 785,
+   "endFrame": 898,
+   "frames": 113,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "This is the image burned into your head.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 8,
+   "beatSequence": 9,
+   "image": "docs/phase4/fullset/beat-009-base.jpg",
+   "startMs": 29918,
+   "endMs": 33889,
+   "startFrame": 898,
+   "endFrame": 1017,
+   "frames": 119,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "A single wrong picture like this can quietly",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 9,
+   "beatSequence": 10,
+   "image": "docs/phase4/fullset/beat-010-base.jpg",
+   "startMs": 33889,
+   "endMs": 38219,
+   "startFrame": 1017,
+   "endFrame": 1147,
+   "frames": 130,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "rewrite an entire culture's history in our heads.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 10,
+   "beatSequence": 11,
+   "image": "docs/phase4/fullset/beat-011-base.jpg",
+   "startMs": 38219,
+   "endMs": 42213,
+   "startFrame": 1147,
+   "endFrame": 1266,
+   "frames": 119,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "So did any Viking ever actually strap on horns",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 11,
+   "beatSequence": 12,
+   "image": "docs/phase4/fullset/beat-012-base.jpg",
+   "startMs": 42213,
+   "endMs": 45139,
+   "startFrame": 1266,
+   "endFrame": 1354,
+   "frames": 88,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "before walking into battle?",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 12,
+   "beatSequence": 13,
+   "image": "docs/phase4/fullset/beat-013-base.jpg",
+   "startMs": 45139,
+   "endMs": 50317,
+   "startFrame": 1354,
+   "endFrame": 1510,
+   "frames": 156,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.4716981132075471,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5283018867924529,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "Here's the belief almost everyone carries around without question:",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 13,
+   "beatSequence": 14,
+   "image": "docs/phase4/fullset/beat-014-base.jpg",
+   "startMs": 50317,
+   "endMs": 54589,
+   "startFrame": 1510,
+   "endFrame": 1638,
+   "frames": 128,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Viking raiders wore horned helmets into combat,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 14,
+   "beatSequence": 15,
+   "image": "docs/phase4/fullset/beat-015-base.jpg",
+   "startMs": 54589,
+   "endMs": 58421,
+   "startFrame": 1638,
+   "endFrame": 1753,
+   "frames": 115,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "the horns curving up from the sides like a bull's.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 15,
+   "beatSequence": 16,
+   "image": "docs/phase4/fullset/beat-016-base.jpg",
+   "startMs": 58421,
+   "endMs": 60360,
+   "startFrame": 1753,
+   "endFrame": 1811,
+   "frames": 58,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "It feels obvious.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 16,
+   "beatSequence": 17,
+   "image": "docs/phase4/fix5a/beat-017-base.jpg",
+   "startMs": 60360,
+   "endMs": 65004,
+   "startFrame": 1811,
+   "endFrame": 1950,
+   "frames": 139,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "It's on flags, beer labels, football helmets.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 17,
+   "beatSequence": 18,
+   "image": "docs/phase4/fullset/beat-018-base.jpg",
+   "startMs": 65004,
+   "endMs": 67012,
+   "startFrame": 1950,
+   "endFrame": 2010,
+   "frames": 60,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "But archaeologists digging",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 18,
+   "beatSequence": 19,
+   "image": "docs/phase4/fix4d/beat-019-base.jpg",
+   "startMs": 67012,
+   "endMs": 70658,
+   "startFrame": 2010,
+   "endFrame": 2120,
+   "frames": 110,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.4716981132075471,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5283018867924529,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "across Scandinavia for over a century have found",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 19,
+   "beatSequence": 20,
+   "image": "docs/phase4/fullset/beat-020-base.jpg",
+   "startMs": 70658,
+   "endMs": 75035,
+   "startFrame": 2120,
+   "endFrame": 2251,
+   "frames": 131,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "remarkably few actual Viking-age helmets at all.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 20,
+   "beatSequence": 21,
+   "image": "docs/phase4/fix4d/beat-021-base.jpg",
+   "startMs": 75035,
+   "endMs": 79633,
+   "startFrame": 2251,
+   "endFrame": 2389,
+   "frames": 138,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "Total confirmed helmets from the entire Viking Age,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 21,
+   "beatSequence": 22,
+   "image": "docs/phase4/fix4d/beat-022-base.jpg",
+   "startMs": 79633,
+   "endMs": 83197,
+   "startFrame": 2389,
+   "endFrame": 2496,
+   "frames": 107,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "793–1066",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 616,
+     "y": 75,
+     "width": 688,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.06,
+     "bottom": 6.4
+    }
+   },
+   "narration": "roughly 793 to 1066,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 22,
+   "beatSequence": 23,
+   "image": "docs/phase4/fix4d/beat-023-base.jpg",
+   "startMs": 83197,
+   "endMs": 87644,
+   "startFrame": 2496,
+   "endFrame": 2629,
+   "frames": 133,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "that survive with enough of the skull intact to study?",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 23,
+   "beatSequence": 24,
+   "image": "docs/phase4/fix5a/beat-024-base.jpg",
+   "startMs": 87644,
+   "endMs": 89699,
+   "startFrame": 2629,
+   "endFrame": 2691,
+   "frames": 62,
+   "motion": {
+    "kind": "pull_out",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow pull-back"
+   },
+   "overlay": null,
+   "narration": "You can count them on one hand.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 24,
+   "beatSequence": 25,
+   "image": "docs/phase4/fullset/beat-025-base.jpg",
+   "startMs": 89699,
+   "endMs": 92868,
+   "startFrame": 2691,
+   "endFrame": 2786,
+   "frames": 95,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "The best-preserved one is the Gjermundbu helmet,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 25,
+   "beatSequence": 26,
+   "image": "docs/phase4/fullset/beat-026-base.jpg",
+   "startMs": 92868,
+   "endMs": 96909,
+   "startFrame": 2786,
+   "endFrame": 2907,
+   "frames": 121,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "NORWAY, 1943",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 424,
+     "y": 75,
+     "width": 1072,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.8,
+     "bottom": 6.99
+    }
+   },
+   "narration": "dug out of a burial mound in Norway in 1943,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 26,
+   "beatSequence": 27,
+   "image": "docs/phase4/fix4d/beat-027-base.jpg",
+   "startMs": 96909,
+   "endMs": 100101,
+   "startFrame": 2907,
+   "endFrame": 3003,
+   "frames": 96,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "C. 970",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 738,
+     "y": 75,
+     "width": 445,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.35,
+     "bottom": 7.28
+    }
+   },
+   "narration": "dated to around the year 970.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 27,
+   "beatSequence": 28,
+   "image": "docs/phase4/fix4d/beat-028-base.jpg",
+   "startMs": 100101,
+   "endMs": 102574,
+   "startFrame": 3003,
+   "endFrame": 3077,
+   "frames": 74,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "It has a rounded iron cap,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 28,
+   "beatSequence": 29,
+   "image": "docs/phase4/fix4d/beat-029-base.jpg",
+   "startMs": 102574,
+   "endMs": 105442,
+   "startFrame": 3077,
+   "endFrame": 3163,
+   "frames": 86,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "a spectacled guard curving over the eyes",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 29,
+   "beatSequence": 30,
+   "image": "docs/phase4/fix4d/beat-030-base.jpg",
+   "startMs": 105442,
+   "endMs": 110086,
+   "startFrame": 3163,
+   "endFrame": 3303,
+   "frames": 140,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "and nose, and absolutely nothing where horns would attach.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 30,
+   "beatSequence": 31,
+   "image": "docs/phase4/fix4d/beat-031-base.jpg",
+   "startMs": 110086,
+   "endMs": 114265,
+   "startFrame": 3303,
+   "endFrame": 3428,
+   "frames": 125,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "No sockets. No rivet holes shaped for anything curved.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 31,
+   "beatSequence": 32,
+   "image": "docs/phase4/fullset/beat-032-base.jpg",
+   "startMs": 114265,
+   "endMs": 118421,
+   "startFrame": 3428,
+   "endFrame": 3553,
+   "frames": 125,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Just a plain iron dome built to deflect a sword,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 32,
+   "beatSequence": 33,
+   "image": "docs/phase4/fullset/beat-033-base.jpg",
+   "startMs": 118421,
+   "endMs": 120325,
+   "startFrame": 3553,
+   "endFrame": 3610,
+   "frames": 57,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "not to look dramatic.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 33,
+   "beatSequence": 34,
+   "image": "docs/phase4/fullset/beat-034-base.jpg",
+   "startMs": 120325,
+   "endMs": 122369,
+   "startFrame": 3610,
+   "endFrame": 3671,
+   "frames": 61,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "Why trust one helmet?",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 34,
+   "beatSequence": 35,
+   "image": "docs/phase4/fix4d/beat-035-base.jpg",
+   "startMs": 122369,
+   "endMs": 124517,
+   "startFrame": 3671,
+   "endFrame": 3736,
+   "frames": 65,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "Because it isn't alone.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 35,
+   "beatSequence": 36,
+   "image": "docs/phase4/fix4d/beat-036-base.jpg",
+   "startMs": 124517,
+   "endMs": 127129,
+   "startFrame": 3736,
+   "endFrame": 3814,
+   "frames": 78,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.5283018867924529,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.4716981132075471,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "TJELE + OTHER SITES",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 252,
+     "y": 75,
+     "width": 1416,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 11.92,
+     "bottom": 12.49
+    }
+   },
+   "narration": "Fragments from Tjele in Denmark",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 36,
+   "beatSequence": 37,
+   "image": "docs/phase4/fix4d/beat-037-base.jpg",
+   "startMs": 127129,
+   "endMs": 131343,
+   "startFrame": 3814,
+   "endFrame": 3940,
+   "frames": 126,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.4716981132075471,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5283018867924529,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "and a handful of other sites all show the same story:",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 37,
+   "beatSequence": 38,
+   "image": "docs/phase4/fix4d/beat-038-base.jpg",
+   "startMs": 131343,
+   "endMs": 135813,
+   "startFrame": 3940,
+   "endFrame": 4074,
+   "frames": 134,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "plain iron, sometimes mail hanging to protect the neck,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 38,
+   "beatSequence": 39,
+   "image": "docs/phase4/fix4d/beat-039-base.jpg",
+   "startMs": 135813,
+   "endMs": 138483,
+   "startFrame": 4074,
+   "endFrame": 4154,
+   "frames": 80,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "occasionally a nose guard.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 39,
+   "beatSequence": 40,
+   "image": "docs/phase4/fullset/beat-040-base.jpg",
+   "startMs": 138483,
+   "endMs": 140423,
+   "startFrame": 4154,
+   "endFrame": 4213,
+   "frames": 59,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Historian Roberta Frank,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 40,
+   "beatSequence": 41,
+   "image": "docs/phase4/fix5a/beat-041-base.jpg",
+   "startMs": 140423,
+   "endMs": 145183,
+   "startFrame": 4213,
+   "endFrame": 4355,
+   "frames": 142,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "who spent years tracing this myth through Old Norse literature,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 41,
+   "beatSequence": 42,
+   "image": "docs/phase4/fix5a/beat-042-base.jpg",
+   "startMs": 145183,
+   "endMs": 148050,
+   "startFrame": 4355,
+   "endFrame": 4442,
+   "frames": 87,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "ZERO",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 765,
+     "y": 75,
+     "width": 391,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 7.53,
+     "bottom": 33.76
+    }
+   },
+   "narration": "found zero contemporary written",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 42,
+   "beatSequence": 43,
+   "image": "docs/phase4/fix4d/beat-043-base.jpg",
+   "startMs": 148050,
+   "endMs": 153519,
+   "startFrame": 4442,
+   "endFrame": 4606,
+   "frames": 164,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "descriptions of horned battle helmets either. Not one saga.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 43,
+   "beatSequence": 44,
+   "image": "docs/phase4/fix4d/beat-044-base.jpg",
+   "startMs": 153519,
+   "endMs": 159335,
+   "startFrame": 4606,
+   "endFrame": 4780,
+   "frames": 174,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Not one carving from the era mentions warriors fighting in horns.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 44,
+   "beatSequence": 45,
+   "image": "docs/phase4/fullset/beat-045-base.jpg",
+   "startMs": 159335,
+   "endMs": 163561,
+   "startFrame": 4780,
+   "endFrame": 4907,
+   "frames": 127,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "So where do actual horned helmets in museums come from,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 45,
+   "beatSequence": 46,
+   "image": "docs/phase4/fix5a/beat-046-base.jpg",
+   "startMs": 163561,
+   "endMs": 166731,
+   "startFrame": 4907,
+   "endFrame": 5002,
+   "frames": 95,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "if not the Viking Age?",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 46,
+   "beatSequence": 47,
+   "image": "docs/phase4/fix4d/beat-047-base.jpg",
+   "startMs": 166731,
+   "endMs": 169204,
+   "startFrame": 5002,
+   "endFrame": 5076,
+   "frames": 74,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "Rewind about two thousand years",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 47,
+   "beatSequence": 48,
+   "image": "docs/phase4/fix4d/beat-048-base.jpg",
+   "startMs": 169204,
+   "endMs": 172861,
+   "startFrame": 5076,
+   "endFrame": 5186,
+   "frames": 110,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.5283018867924529,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.4716981132075471,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "before the first Viking ship ever launched.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 48,
+   "beatSequence": 49,
+   "image": "docs/phase4/fix4d/beat-049-base.jpg",
+   "startMs": 172861,
+   "endMs": 174765,
+   "startFrame": 5186,
+   "endFrame": 5243,
+   "frames": 57,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.4716981132075471,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5283018867924529,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "1942",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 783,
+     "y": 75,
+     "width": 355,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.63,
+     "bottom": 3.29
+    }
+   },
+   "narration": "In 1942,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 49,
+   "beatSequence": 50,
+   "image": "docs/phase4/fix4d/beat-050-base.jpg",
+   "startMs": 174765,
+   "endMs": 180790,
+   "startFrame": 5243,
+   "endFrame": 5424,
+   "frames": 181,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "workers draining a bog near Veksø in Denmark pulled up two bronze helmets,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 50,
+   "beatSequence": 51,
+   "image": "docs/phase4/fix4d/beat-051-base.jpg",
+   "startMs": 180790,
+   "endMs": 187269,
+   "startFrame": 5424,
+   "endFrame": 5618,
+   "frames": 194,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "each fitted with long, gently curving horns tipped with little round discs.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 51,
+   "beatSequence": 52,
+   "image": "docs/phase4/fix4d/beat-052-base.jpg",
+   "startMs": 187269,
+   "endMs": 189927,
+   "startFrame": 5618,
+   "endFrame": 5698,
+   "frames": 80,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "THE VEKSØ HELMETS",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 248,
+     "y": 75,
+     "width": 1424,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 4.14,
+     "bottom": 10.89
+    }
+   },
+   "narration": "They're called the Veksø helmets,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 52,
+   "beatSequence": 53,
+   "image": "docs/phase4/fix4d/beat-053-base.jpg",
+   "startMs": 189927,
+   "endMs": 195094,
+   "startFrame": 5698,
+   "endFrame": 5853,
+   "frames": 155,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "900–1100 BCE",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 462,
+     "y": 75,
+     "width": 996,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.4,
+     "bottom": 9.54
+    }
+   },
+   "narration": "and they've been dated to roughly 900 to 1100 BCE,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 53,
+   "beatSequence": 54,
+   "image": "docs/phase4/fix4d/beat-054-base.jpg",
+   "startMs": 195094,
+   "endMs": 197555,
+   "startFrame": 5853,
+   "endFrame": 5927,
+   "frames": 74,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "the Nordic Bronze Age.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 54,
+   "beatSequence": 55,
+   "image": "docs/phase4/fullset/beat-055-base.jpg",
+   "startMs": 197555,
+   "endMs": 201015,
+   "startFrame": 5927,
+   "endFrame": 6030,
+   "frames": 103,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "These weren't armor. The bronze is thin,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 55,
+   "beatSequence": 56,
+   "image": "docs/phase4/fullset/beat-056-base.jpg",
+   "startMs": 201015,
+   "endMs": 203824,
+   "startFrame": 6030,
+   "endFrame": 6115,
+   "frames": 85,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "decorative, almost delicate.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 56,
+   "beatSequence": 57,
+   "image": "docs/phase4/fullset/beat-057-base.jpg",
+   "startMs": 203824,
+   "endMs": 209165,
+   "startFrame": 6115,
+   "endFrame": 6275,
+   "frames": 160,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "They were likely worn by a priest or a chieftain in a religious ceremony,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 57,
+   "beatSequence": 58,
+   "image": "docs/phase4/fix5a/beat-058-base.jpg",
+   "startMs": 209165,
+   "endMs": 212543,
+   "startFrame": 6275,
+   "endFrame": 6376,
+   "frames": 101,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "maybe alongside sun-worship rituals,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 58,
+   "beatSequence": 59,
+   "image": "docs/phase4/fullset/beat-059-base.jpg",
+   "startMs": 212543,
+   "endMs": 215910,
+   "startFrame": 6376,
+   "endFrame": 6477,
+   "frames": 101,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "definitely not swung into a shield wall.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 59,
+   "beatSequence": 60,
+   "image": "docs/phase4/fix4d/beat-060-base.jpg",
+   "startMs": 215910,
+   "endMs": 219869,
+   "startFrame": 6477,
+   "endFrame": 6596,
+   "frames": 119,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "1,800+ YEARS APART",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 218,
+     "y": 75,
+     "width": 1484,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.01,
+     "bottom": 2.42
+    }
+   },
+   "narration": "That's over eighteen hundred years separating these horns",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 60,
+   "beatSequence": 61,
+   "image": "docs/phase4/fix4d/beat-061-base.jpg",
+   "startMs": 219869,
+   "endMs": 225639,
+   "startFrame": 6596,
+   "endFrame": 6769,
+   "frames": 173,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "LINDISFARNE, 793",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 325,
+     "y": 75,
+     "width": 1270,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.68,
+     "bottom": 4.71
+    }
+   },
+   "narration": "from the first recorded Viking raid on Lindisfarne in 793.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 61,
+   "beatSequence": 62,
+   "image": "docs/phase4/fullset/beat-062-base.jpg",
+   "startMs": 225639,
+   "endMs": 229436,
+   "startFrame": 6769,
+   "endFrame": 6883,
+   "frames": 114,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "Would you mistake your great-great-great-grandparent's wedding",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 62,
+   "beatSequence": 63,
+   "image": "docs/phase4/fullset/beat-063-base.jpg",
+   "startMs": 229436,
+   "endMs": 233325,
+   "startFrame": 6883,
+   "endFrame": 7000,
+   "frames": 117,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "china for something you use in a bar fight?",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 63,
+   "beatSequence": 64,
+   "image": "docs/phase4/fix4d/beat-064-base.jpg",
+   "startMs": 233325,
+   "endMs": 236413,
+   "startFrame": 7000,
+   "endFrame": 7092,
+   "frames": 92,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "That's roughly the gap we're talking about.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 64,
+   "beatSequence": 65,
+   "image": "docs/phase4/fullset/beat-065-base.jpg",
+   "startMs": 236413,
+   "endMs": 240140,
+   "startFrame": 7092,
+   "endFrame": 7204,
+   "frames": 112,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "But 19th-century antiquarians didn't always draw",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 65,
+   "beatSequence": 66,
+   "image": "docs/phase4/fix4d/beat-066-base.jpg",
+   "startMs": 240140,
+   "endMs": 242253,
+   "startFrame": 7204,
+   "endFrame": 7268,
+   "frames": 64,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "that line carefully.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 66,
+   "beatSequence": 67,
+   "image": "docs/phase4/fullset/beat-067-base.jpg",
+   "startMs": 242253,
+   "endMs": 245748,
+   "startFrame": 7268,
+   "endFrame": 7372,
+   "frames": 104,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Early collectors and popular illustrators,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 67,
+   "beatSequence": 68,
+   "image": "docs/phase4/fullset/beat-068-base.jpg",
+   "startMs": 245748,
+   "endMs": 251959,
+   "startFrame": 7372,
+   "endFrame": 7559,
+   "frames": 187,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "digging through old hoards without modern dating tools, lumped anything old",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 68,
+   "beatSequence": 69,
+   "image": "docs/phase4/fix4d/beat-069-base.jpg",
+   "startMs": 251959,
+   "endMs": 258112,
+   "startFrame": 7559,
+   "endFrame": 7743,
+   "frames": 184,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "ANCIENT NORSE WARRIOR",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 14,
+    "scale": 124,
+    "box": {
+     "x": 210,
+     "y": 95,
+     "width": 1501,
+     "height": 170
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.29,
+     "bottom": 5.13
+    }
+   },
+   "narration": "and Nordic into one romantic bucket labeled ancient Norse warrior.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 69,
+   "beatSequence": 70,
+   "image": "docs/phase4/fullset/beat-070-base.jpg",
+   "startMs": 258112,
+   "endMs": 262001,
+   "startFrame": 7743,
+   "endFrame": 7860,
+   "frames": 117,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "A ceremonial priest's headdress from the Bronze Age",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 70,
+   "beatSequence": 71,
+   "image": "docs/phase4/fullset/beat-071-base.jpg",
+   "startMs": 262001,
+   "endMs": 266890,
+   "startFrame": 7860,
+   "endFrame": 8007,
+   "frames": 147,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "and a Viking raider a thousand years later got flattened",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 71,
+   "beatSequence": 72,
+   "image": "docs/phase4/fullset/beat-072-base.jpg",
+   "startMs": 266890,
+   "endMs": 269815,
+   "startFrame": 8007,
+   "endFrame": 8094,
+   "frames": 87,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "into the same imagined figure.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 72,
+   "beatSequence": 73,
+   "image": "docs/phase4/fix4d/beat-073-base.jpg",
+   "startMs": 269815,
+   "endMs": 273983,
+   "startFrame": 8094,
+   "endFrame": 8219,
+   "frames": 125,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "That mistake didn't stay buried in a museum basement.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 73,
+   "beatSequence": 74,
+   "image": "docs/phase4/fullset/beat-074-base.jpg",
+   "startMs": 273983,
+   "endMs": 277350,
+   "startFrame": 8219,
+   "endFrame": 8321,
+   "frames": 102,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "It walked straight onto a stage.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 74,
+   "beatSequence": 75,
+   "image": "docs/phase4/fullset/beat-075-base.jpg",
+   "startMs": 277350,
+   "endMs": 283364,
+   "startFrame": 8321,
+   "endFrame": 8501,
+   "frames": 180,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.4716981132075471,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5283018867924529,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "DER RING DES NIBELUNGEN, 1876",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 12,
+    "scale": 102,
+    "box": {
+     "x": 208,
+     "y": 110,
+     "width": 1505,
+     "height": 141
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 4.76,
+     "bottom": 7.45
+    }
+   },
+   "narration": "In 1876, composer Richard Wagner's opera cycle Der Ring des",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 75,
+   "beatSequence": 76,
+   "image": "docs/phase4/fullset/beat-076-base.jpg",
+   "startMs": 283364,
+   "endMs": 287741,
+   "startFrame": 8501,
+   "endFrame": 8632,
+   "frames": 131,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.5283018867924529,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.4716981132075471,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "Nibelungen premiered in Bayreuth, Germany.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 76,
+   "beatSequence": 77,
+   "image": "docs/phase4/fullset/beat-077-base.jpg",
+   "startMs": 287741,
+   "endMs": 292548,
+   "startFrame": 8632,
+   "endFrame": 8776,
+   "frames": 144,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Costume designer Carl Emil Doepler dressed the Norse gods",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 77,
+   "beatSequence": 78,
+   "image": "docs/phase4/fullset/beat-078-base.jpg",
+   "startMs": 292548,
+   "endMs": 297087,
+   "startFrame": 8776,
+   "endFrame": 8913,
+   "frames": 137,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "and warriors in flowing furs, winged helmets, and yes,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 78,
+   "beatSequence": 79,
+   "image": "docs/phase4/fullset/beat-079-base.jpg",
+   "startMs": 297087,
+   "endMs": 299560,
+   "startFrame": 8913,
+   "endFrame": 8987,
+   "frames": 74,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "dramatic curved horns.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 79,
+   "beatSequence": 80,
+   "image": "docs/phase4/fullset/beat-080-base.jpg",
+   "startMs": 299560,
+   "endMs": 304819,
+   "startFrame": 8987,
+   "endFrame": 9145,
+   "frames": 158,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Wagner wanted mythic, larger-than-life figures towering over an audience",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 80,
+   "beatSequence": 81,
+   "image": "docs/phase4/fullset/beat-081-base.jpg",
+   "startMs": 304819,
+   "endMs": 307513,
+   "startFrame": 9145,
+   "endFrame": 9225,
+   "frames": 80,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "from the back row of a theater.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 81,
+   "beatSequence": 82,
+   "image": "docs/phase4/fix4d/beat-082-base.jpg",
+   "startMs": 307513,
+   "endMs": 311030,
+   "startFrame": 9225,
+   "endFrame": 9331,
+   "frames": 106,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "Historical accuracy wasn't the assignment.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 82,
+   "beatSequence": 83,
+   "image": "docs/phase4/fix4d/beat-083-base.jpg",
+   "startMs": 311030,
+   "endMs": 315674,
+   "startFrame": 9331,
+   "endFrame": 9470,
+   "frames": 139,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Spectacle was. Why did that image spread so fast?",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 83,
+   "beatSequence": 84,
+   "image": "docs/phase4/fullset/beat-084-base.jpg",
+   "startMs": 315674,
+   "endMs": 318786,
+   "startFrame": 9470,
+   "endFrame": 9564,
+   "frames": 94,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.5283018867924529,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.4716981132075471,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "Because it landed inside the Romantic movement,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 84,
+   "beatSequence": 85,
+   "image": "docs/phase4/fullset/beat-085-base.jpg",
+   "startMs": 318786,
+   "endMs": 324579,
+   "startFrame": 9564,
+   "endFrame": 9737,
+   "frames": 173,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "when artists across Europe were painting Norse myth as noble and untamed.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 85,
+   "beatSequence": 86,
+   "image": "docs/phase4/fullset/beat-086-base.jpg",
+   "startMs": 324579,
+   "endMs": 327168,
+   "startFrame": 9737,
+   "endFrame": 9815,
+   "frames": 78,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Swedish painter Gustav Malmstrom",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 86,
+   "beatSequence": 87,
+   "image": "docs/phase4/fix4d/beat-087-base.jpg",
+   "startMs": 327168,
+   "endMs": 331707,
+   "startFrame": 9815,
+   "endFrame": 9951,
+   "frames": 136,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "DECADES EARLIER",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 339,
+     "y": 75,
+     "width": 1242,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 4.98,
+     "bottom": 24.9
+    }
+   },
+   "narration": "and others had already sketched horned figures decades earlier,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 87,
+   "beatSequence": 88,
+   "image": "docs/phase4/fullset/beat-088-base.jpg",
+   "startMs": 331707,
+   "endMs": 337454,
+   "startFrame": 9951,
+   "endFrame": 10124,
+   "frames": 173,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.5283018867924529,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.4716981132075471,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "but Wagner's production put the look in front of thousands of paying theatergoers at once,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 88,
+   "beatSequence": 89,
+   "image": "docs/phase4/fullset/beat-089-base.jpg",
+   "startMs": 337454,
+   "endMs": 339579,
+   "startFrame": 10124,
+   "endFrame": 10187,
+   "frames": 63,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.4716981132075471,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5283018867924529,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "night after night.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 89,
+   "beatSequence": 90,
+   "image": "docs/phase4/fullset/beat-090-base.jpg",
+   "startMs": 339579,
+   "endMs": 342783,
+   "startFrame": 10187,
+   "endFrame": 10283,
+   "frames": 96,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "A single stage costume became the visual",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 90,
+   "beatSequence": 91,
+   "image": "docs/phase4/fullset/beat-091-base.jpg",
+   "startMs": 342783,
+   "endMs": 346347,
+   "startFrame": 10283,
+   "endFrame": 10390,
+   "frames": 107,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.4716981132075471,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5283018867924529,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "template every illustrator copied afterward,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 91,
+   "beatSequence": 92,
+   "image": "docs/phase4/fix4d/beat-092-base.jpg",
+   "startMs": 346347,
+   "endMs": 350051,
+   "startFrame": 10390,
+   "endFrame": 10502,
+   "frames": 112,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "because it was already proven to work on an audience.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 92,
+   "beatSequence": 93,
+   "image": "docs/phase4/fix4d/beat-093-base.jpg",
+   "startMs": 350051,
+   "endMs": 353360,
+   "startFrame": 10502,
+   "endFrame": 10601,
+   "frames": 99,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.4716981132075471,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5283018867924529,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "From there it never stopped moving.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 93,
+   "beatSequence": 94,
+   "image": "docs/phase4/fix4d/beat-094-base.jpg",
+   "startMs": 353360,
+   "endMs": 355275,
+   "startFrame": 10601,
+   "endFrame": 10658,
+   "frames": 57,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "EARLY 1900S",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 501,
+     "y": 75,
+     "width": 919,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 2.95,
+     "bottom": 20.92
+    }
+   },
+   "narration": "By the early 1900s,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 94,
+   "beatSequence": 95,
+   "image": "docs/phase4/fix4d/beat-095-base.jpg",
+   "startMs": 355275,
+   "endMs": 360918,
+   "startFrame": 10658,
+   "endFrame": 10828,
+   "frames": 170,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "horned helmets showed up on tourist postcards sold in Norway itself.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 95,
+   "beatSequence": 96,
+   "image": "docs/phase4/fix4d/beat-096-base.jpg",
+   "startMs": 360918,
+   "endMs": 362822,
+   "startFrame": 10828,
+   "endFrame": 10885,
+   "frames": 57,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "In 1939,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 96,
+   "beatSequence": 97,
+   "image": "docs/phase4/fullset/beat-097-base.jpg",
+   "startMs": 362822,
+   "endMs": 366699,
+   "startFrame": 10885,
+   "endFrame": 11001,
+   "frames": 116,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "cartoonist Alex Raymond drew the horned warrior",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 97,
+   "beatSequence": 98,
+   "image": "docs/phase4/fix5a/beat-098-base.jpg",
+   "startMs": 366699,
+   "endMs": 369556,
+   "startFrame": 11001,
+   "endFrame": 11087,
+   "frames": 86,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "in his Flash Gordon comics.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 98,
+   "beatSequence": 99,
+   "image": "docs/phase4/fix4d/beat-099-base.jpg",
+   "startMs": 369556,
+   "endMs": 374037,
+   "startFrame": 11087,
+   "endFrame": 11221,
+   "frames": 134,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "1948",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 780,
+     "y": 75,
+     "width": 361,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0,
+     "bottom": 7.35
+    }
+   },
+   "narration": "In 1948, the Minnesota Vikings didn't exist yet,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 99,
+   "beatSequence": 100,
+   "image": "docs/phase4/fix4d/beat-100-base.jpg",
+   "startMs": 374037,
+   "endMs": 377868,
+   "startFrame": 11221,
+   "endFrame": 11336,
+   "frames": 115,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "but when the NFL team formed in 1961,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 100,
+   "beatSequence": 101,
+   "image": "docs/phase4/fix4d/beat-101-base.jpg",
+   "startMs": 377868,
+   "endMs": 383012,
+   "startFrame": 11336,
+   "endFrame": 11490,
+   "frames": 154,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "they built their whole identity around that same horned image.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 101,
+   "beatSequence": 102,
+   "image": "docs/phase4/fullset/beat-102-base.jpg",
+   "startMs": 383012,
+   "endMs": 385450,
+   "startFrame": 11490,
+   "endFrame": 11564,
+   "frames": 74,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "Have you ever questioned why a football team",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 102,
+   "beatSequence": 103,
+   "image": "docs/phase4/fix5a/beat-103-base.jpg",
+   "startMs": 385450,
+   "endMs": 390395,
+   "startFrame": 11564,
+   "endFrame": 11712,
+   "frames": 148,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "from Minnesota wears Bronze Age Danish ceremonial gear?",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 103,
+   "beatSequence": 104,
+   "image": "docs/phase4/fullset/beat-104-base.jpg",
+   "startMs": 390395,
+   "endMs": 392287,
+   "startFrame": 11712,
+   "endFrame": 11769,
+   "frames": 57,
+   "motion": {
+    "kind": "pan",
+    "from": {
+     "scale": 1.06,
+     "cx": 0.5283018867924529,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.4716981132075471,
+     "cy": 0.5
+    },
+    "source": "slow pan"
+   },
+   "overlay": null,
+   "narration": "Most people never do.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 104,
+   "beatSequence": 105,
+   "image": "docs/phase4/fix4d/beat-105-base.jpg",
+   "startMs": 392287,
+   "endMs": 396571,
+   "startFrame": 11769,
+   "endFrame": 11897,
+   "frames": 128,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "But can we really say never, with total certainty?",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 105,
+   "beatSequence": 106,
+   "image": "docs/phase4/fullset/beat-106-base.jpg",
+   "startMs": 396571,
+   "endMs": 398963,
+   "startFrame": 11897,
+   "endFrame": 11969,
+   "frames": 72,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Here's the honest complication.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 106,
+   "beatSequence": 107,
+   "image": "docs/phase4/fullset/beat-107-base.jpg",
+   "startMs": 398963,
+   "endMs": 402156,
+   "startFrame": 11969,
+   "endFrame": 12065,
+   "frames": 96,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Most Viking-age helmets we'd expect to find were",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 107,
+   "beatSequence": 108,
+   "image": "docs/phase4/fix4d/beat-108-base.jpg",
+   "startMs": 402156,
+   "endMs": 405813,
+   "startFrame": 12065,
+   "endFrame": 12174,
+   "frames": 109,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "probably never made of iron at all.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 108,
+   "beatSequence": 109,
+   "image": "docs/phase4/fix4d/beat-109-base.jpg",
+   "startMs": 405813,
+   "endMs": 408460,
+   "startFrame": 12174,
+   "endFrame": 12254,
+   "frames": 80,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Leather, boiled and hardened,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 109,
+   "beatSequence": 110,
+   "image": "docs/phase4/fix4d/beat-110-base.jpg",
+   "startMs": 408460,
+   "endMs": 414160,
+   "startFrame": 12254,
+   "endFrame": 12425,
+   "frames": 171,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "wood, and antler don't survive well underground for a thousand years,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 110,
+   "beatSequence": 111,
+   "image": "docs/phase4/fix4d/beat-111-base.jpg",
+   "startMs": 414160,
+   "endMs": 417968,
+   "startFrame": 12425,
+   "endFrame": 12539,
+   "frames": 114,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "especially in acidic Scandinavian soil.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 111,
+   "beatSequence": 112,
+   "image": "docs/phase4/fix4d/beat-112-base.jpg",
+   "startMs": 417968,
+   "endMs": 423750,
+   "startFrame": 12539,
+   "endFrame": 12713,
+   "frames": 174,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "If a helmet had small horns made from antler lashed on with leather cord,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 112,
+   "beatSequence": 113,
+   "image": "docs/phase4/fix4d/beat-113-base.jpg",
+   "startMs": 423750,
+   "endMs": 428418,
+   "startFrame": 12713,
+   "endFrame": 12853,
+   "frames": 140,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "that cord and antler could rot into nothing within a few centuries,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 113,
+   "beatSequence": 114,
+   "image": "docs/phase4/fix4d/beat-114-base.jpg",
+   "startMs": 428418,
+   "endMs": 434084,
+   "startFrame": 12853,
+   "endFrame": 13023,
+   "frames": 170,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "leaving no rivet holes, no discoloration, no trace at all.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 114,
+   "beatSequence": 115,
+   "image": "docs/phase4/fullset/beat-115-base.jpg",
+   "startMs": 434084,
+   "endMs": 437137,
+   "startFrame": 13023,
+   "endFrame": 13114,
+   "frames": 91,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "So when archaeologists say no evidence,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 115,
+   "beatSequence": 116,
+   "image": "docs/phase4/fix4d/beat-116-base.jpg",
+   "startMs": 437137,
+   "endMs": 440504,
+   "startFrame": 13114,
+   "endFrame": 13215,
+   "frames": 101,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "they mean no surviving evidence.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 116,
+   "beatSequence": 117,
+   "image": "docs/phase4/fix4d/beat-117-base.jpg",
+   "startMs": 440504,
+   "endMs": 444695,
+   "startFrame": 13215,
+   "endFrame": 13341,
+   "frames": 126,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "Absence isn't automatically proof of absence.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 117,
+   "beatSequence": 118,
+   "image": "docs/phase4/fullset/beat-118-base.jpg",
+   "startMs": 444695,
+   "endMs": 448944,
+   "startFrame": 13341,
+   "endFrame": 13468,
+   "frames": 127,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "It just means if it happened, it happened in a material",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 118,
+   "beatSequence": 119,
+   "image": "docs/phase4/fix5a/beat-119-base.jpg",
+   "startMs": 448944,
+   "endMs": 451940,
+   "startFrame": 13468,
+   "endFrame": 13558,
+   "frames": 90,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "that time was never going to let us keep.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 119,
+   "beatSequence": 120,
+   "image": "docs/phase4/fullset/beat-120-base.jpg",
+   "startMs": 451940,
+   "endMs": 455550,
+   "startFrame": 13558,
+   "endFrame": 13667,
+   "frames": 109,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "So go back to that charge down the hillside,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 120,
+   "beatSequence": 121,
+   "image": "docs/phase4/fullset/beat-121-base.jpg",
+   "startMs": 455550,
+   "endMs": 460717,
+   "startFrame": 13667,
+   "endFrame": 13822,
+   "frames": 155,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "the helmet with two long curved horns catching the firelight.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 121,
+   "beatSequence": 122,
+   "image": "docs/phase4/fullset/beat-122-base.jpg",
+   "startMs": 460717,
+   "endMs": 464885,
+   "startFrame": 13822,
+   "endFrame": 13947,
+   "frames": 125,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "NOT VIKING",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 525,
+     "y": 75,
+     "width": 870,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 1.44,
+     "bottom": 4.32
+    }
+   },
+   "narration": "That image didn't come from a Viking battlefield at all.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 122,
+   "beatSequence": 123,
+   "image": "docs/phase4/fullset/beat-123-base.jpg",
+   "startMs": 464885,
+   "endMs": 468472,
+   "startFrame": 13947,
+   "endFrame": 14054,
+   "frames": 107,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "BRONZE AGE",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 518,
+     "y": 75,
+     "width": 885,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 4.95,
+     "bottom": 8.01
+    }
+   },
+   "narration": "It came from a Bronze Age priest's ritual,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 123,
+   "beatSequence": 124,
+   "image": "docs/phase4/fullset/beat-124-base.jpg",
+   "startMs": 468472,
+   "endMs": 473081,
+   "startFrame": 14054,
+   "endFrame": 14192,
+   "frames": 138,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "1876",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 788,
+     "y": 75,
+     "width": 345,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 6.55,
+     "bottom": 6.66
+    }
+   },
+   "narration": "borrowed by a German opera designer in 1876,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 124,
+   "beatSequence": 125,
+   "image": "docs/phase4/fix5a/beat-125-base.jpg",
+   "startMs": 473081,
+   "endMs": 477168,
+   "startFrame": 14192,
+   "endFrame": 14315,
+   "frames": 123,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "and sold to the entire world ever since.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 125,
+   "beatSequence": 126,
+   "image": "docs/phase4/fullset/beat-126-base.jpg",
+   "startMs": 477168,
+   "endMs": 483438,
+   "startFrame": 14315,
+   "endFrame": 14503,
+   "frames": 188,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Wagner's costume department gave you a myth so good, so visually perfect,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 126,
+   "beatSequence": 127,
+   "image": "docs/phase4/fix4d/beat-127-base.jpg",
+   "startMs": 483438,
+   "endMs": 488407,
+   "startFrame": 14503,
+   "endFrame": 14652,
+   "frames": 149,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "that even a total absence of battle evidence couldn't kill it.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 127,
+   "beatSequence": 128,
+   "image": "docs/phase4/fix5a/beat-128-base.jpg",
+   "startMs": 488407,
+   "endMs": 493039,
+   "startFrame": 14652,
+   "endFrame": 14791,
+   "frames": 139,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "NORWAY",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 621,
+     "y": 75,
+     "width": 679,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 7.63,
+     "bottom": 11.39
+    }
+   },
+   "narration": "Somewhere in a Norwegian museum, a plain iron dome",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 128,
+   "beatSequence": 129,
+   "image": "docs/phase4/fix4d/beat-129-base.jpg",
+   "startMs": 493039,
+   "endMs": 496301,
+   "startFrame": 14791,
+   "endFrame": 14889,
+   "frames": 98,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "with a simple eye guard sits under glass,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 129,
+   "beatSequence": 130,
+   "image": "docs/phase4/fix4d/beat-130-base.jpg",
+   "startMs": 496301,
+   "endMs": 499947,
+   "startFrame": 14889,
+   "endFrame": 14998,
+   "frames": 109,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "unglamorous, undramatic, and true.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 130,
+   "beatSequence": 131,
+   "image": "docs/phase4/fix5a/beat-131-base.jpg",
+   "startMs": 499947,
+   "endMs": 504300,
+   "startFrame": 14998,
+   "endFrame": 15129,
+   "frames": 131,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "NO POSTCARDS. NO MERCH.",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 14,
+    "scale": 121,
+    "box": {
+     "x": 207,
+     "y": 97,
+     "width": 1507,
+     "height": 167
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 0.56,
+     "bottom": 22.84
+    }
+   },
+   "narration": "Nobody buys a postcard of it. Nobody puts it on a football helmet.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 131,
+   "beatSequence": 132,
+   "image": "docs/phase4/fix4d/beat-132-base.jpg",
+   "startMs": 504300,
+   "endMs": 509002,
+   "startFrame": 15129,
+   "endFrame": 15270,
+   "frames": 141,
+   "motion": {
+    "kind": "hold",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "hold"
+   },
+   "overlay": null,
+   "narration": "Real history is rarely as loud as the myth built on top of it.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 132,
+   "beatSequence": 133,
+   "image": "docs/phase4/fix4d/beat-133-base.jpg",
+   "startMs": 509002,
+   "endMs": 513878,
+   "startFrame": 15270,
+   "endFrame": 15416,
+   "frames": 146,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "Next time you see those curving horns on a lunchbox or a mascot,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 133,
+   "beatSequence": 134,
+   "image": "docs/phase4/fullset/beat-134-base.jpg",
+   "startMs": 513878,
+   "endMs": 516282,
+   "startFrame": 15416,
+   "endFrame": 15488,
+   "frames": 72,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": {
+    "type": "text",
+    "text": "NORSE MEMORY",
+    "font": "Lilita One",
+    "fill": "#FFD21F",
+    "outline": "#000000",
+    "outlineRadius": 17,
+    "scale": 154,
+    "box": {
+     "x": 374,
+     "y": 75,
+     "width": 1173,
+     "height": 211
+    },
+    "band": "top",
+    "darkBand": false,
+    "edgeDensity": {
+     "top": 7.54,
+     "bottom": 5.46
+    }
+   },
+   "narration": "you're not looking at Norse memory.",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 134,
+   "beatSequence": 135,
+   "image": "docs/phase4/fullset/beat-135-base.jpg",
+   "startMs": 516282,
+   "endMs": 520879,
+   "startFrame": 15488,
+   "endFrame": 15626,
+   "frames": 138,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.06,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "slow push-in"
+   },
+   "overlay": null,
+   "narration": "You're looking at a nineteenth-century costume designer's best sales pitch,",
+   "transitionIn": "cut"
+  },
+  {
+   "index": 135,
+   "beatSequence": 136,
+   "image": "docs/phase4/fix5a/beat-136-base.jpg",
+   "startMs": 520879,
+   "endMs": 523416,
+   "startFrame": 15626,
+   "endFrame": 15702,
+   "frames": 76,
+   "motion": {
+    "kind": "push_in",
+    "from": {
+     "scale": 1,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "to": {
+     "scale": 1.03,
+     "cx": 0.5,
+     "cy": 0.5
+    },
+    "source": "subtle push-in"
+   },
+   "overlay": null,
+   "narration": "one that's still working on you today.",
+   "transitionIn": "cut"
+  }
+ ]
+}

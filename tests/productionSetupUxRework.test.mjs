@@ -177,9 +177,9 @@ test("On-Screen Text copy is plain human language, never an internal enum token 
   for (const [key, opt] of Object.entries(ON_SCREEN_TEXT_GUIDANCE)) {
     assert.doesNotMatch(opt.description, /SHORT_TEXT_ALLOWED|NO_TEXT|PROGRAMMATIC_TEXT_REQUIRED/, `${key}'s description must be plain copy`);
   }
-  assert.equal(ON_SCREEN_TEXT_GUIDANCE.minimal.description, "Almost no text on screen.");
-  assert.equal(ON_SCREEN_TEXT_GUIDANCE.balanced.description, "Short stats and key phrases when they help.");
-  assert.equal(ON_SCREEN_TEXT_GUIDANCE.frequent.description, "More labels, numbers and highlights.");
+  assert.equal(ON_SCREEN_TEXT_GUIDANCE.minimal.description, "Text on about 1 in 10 scenes.");
+  assert.equal(ON_SCREEN_TEXT_GUIDANCE.balanced.description, "About 1 in 5 scenes: numbers, names and questions.");
+  assert.equal(ON_SCREEN_TEXT_GUIDANCE.frequent.description, "About 1 in 3 scenes, with more labels and highlights.");
 
   const pageText = await source(PAGE);
   assert.doesNotMatch(pageText, /stickman_doodle_explainer"|STICKMAN_DOODLE_EXPLAINER_V1"/);
@@ -789,24 +789,26 @@ test("root cause of missing mobile style/niche images: ImageWithFallback no long
   assert.equal(realAttrOccurrences.length, 0, "no <img> should carry loading=\"lazy\" anywhere on this page");
 });
 
-test("Voice is removed from Advanced Settings (only Explanation Depth and On-Screen Text remain), but the voice state/logic is kept (not deleted) and still defaults to Josh in the creation payload", async () => {
+test("Phase 6b: Voice is its own step (6 · Voice) with NO preselection; Generate waits for a voice; Advanced Settings has no voice", async () => {
   const text = await source(PAGE);
   const advancedIdx = text.indexOf('<span className="text-[13px] font-semibold text-white">Advanced Settings</span>');
   const advancedBodyEnd = text.indexOf("</LockedSection>");
   const advancedBody = text.slice(advancedIdx, advancedBodyEnd);
-  assert.doesNotMatch(advancedBody, /STICKMAN_VOICE_OPTIONS\.map/);
   assert.doesNotMatch(advancedBody, />Voice</);
   assert.match(advancedBody, />Explanation Depth</);
   assert.match(advancedBody, />On-Screen Text</);
-  // Voice state/logic itself must still exist, untouched, for the future
-  // Narration step, still defaulting to Josh (STICKMAN_VOICE_OPTIONS[0]) and
-  // still forwarded into the real creation payload.
-  assert.match(text, /import \{ STICKMAN_VOICE_OPTIONS \} from "\.\/narration";/);
-  assert.match(text, /const \[voice, setVoice\] = useState\(STICKMAN_VOICE_OPTIONS\[0\]\);/);
+  // Section 6 comes after Quality (5), opens the voice library, and nothing is preselected.
+  assert.ok(text.indexOf("<SectionLabel n={6}>Voice</SectionLabel>") > text.indexOf("<SectionLabel n={5}>Quality</SectionLabel>"));
+  assert.match(text, /const \[voice, setVoice\] = useState\(null\);/);
+  assert.match(text, />Choose a voice</);
+  assert.match(text, /<VoiceLibraryDialog/);
+  assert.match(text, /&& Boolean\(voice\);/);
+  assert.match(text, /"Pick a voice to continue"/);
+  assert.match(text, /data-testid="summary-voice"/);
+  // The chosen voice is forwarded into the real creation payload.
   assert.match(text, /voiceId: voice\.voiceId,/);
   assert.match(text, /voiceModel: voice\.voiceModel,/);
 });
-
 test("the Advanced Settings toggle uses a subtle inset focus-visible ring only (never a heavy border on tap/click)", async () => {
   const text = await source(PAGE);
   const idx = text.indexOf("setAdvancedOpen((v) => !v)");

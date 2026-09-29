@@ -8,7 +8,7 @@ export function Avatar({ character, size = "h-7 w-7", ring = true, className = "
     <img
       src={character.refImageUrl}
       alt=""
-      className={cx("shrink-0 rounded-full bg-[#111315] object-cover", ring && "ring-2 ring-[#0C0F0D]", size, className)}
+      className={cx("shrink-0 rounded-full bg-[#111315] object-cover object-top", ring && "ring-2 ring-[#0C0F0D]", size, className)}
       loading="lazy"
     />
   );

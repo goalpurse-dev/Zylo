@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "TJELE + OTHER SITES",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 17,
+ "scale": 154,
+ "box": {
+  "x": 252,
+  "y": 75,
+  "width": 1416,
+  "height": 211
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 11.92,
+  "bottom": 12.49
+ }
+}

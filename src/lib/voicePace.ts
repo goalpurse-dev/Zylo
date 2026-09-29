@@ -10,6 +10,10 @@
 // Imported by both the frontend and edge functions (like
 // longFormPipelineConstants.ts).
 import { WORDS_PER_MINUTE } from "./longFormPipelineConstants.ts";
+import { VOICE_SAMPLE_PACE } from "./voiceSamplePace.ts";
+
+// Josh's 92-word reference pace over his 43-word library-sample pace.
+const SAMPLE_TO_SCRIPT_RATIO = 146.6 / VOICE_SAMPLE_PACE["TxGEqnHWrfWFTfGW9XjX"].wpm;
 
 export type VoiceCalibration = {
   label: string;
@@ -25,15 +29,23 @@ export type VoiceCalibration = {
 export const VOICE_CALIBRATIONS: VoiceCalibration[] = [
   { label: "Josh", voiceId: "TxGEqnHWrfWFTfGW9XjX", voiceModel: "eleven_flash_v2_5", speed: 0.92, measuredWpm: 119, source: "Myth vs Reality full narration, 1,038 words, 2026-09-27 (tests/fixtures/stickman/audio/myth-vs-reality); its first 92 words alone ran 125.2" },
   { label: "Josh", voiceId: "TxGEqnHWrfWFTfGW9XjX", voiceModel: "eleven_flash_v2_5", speed: 1.0, measuredWpm: 146.6, source: "92-word cold-open sample, 2026-09-27 (tests/fixtures/stickman/audio/pace-samples/josh-flash_v2_5-speed-1.00); same passage at 0.92 ran 125.2, so a full script likely lands ~139" },
+  // Phase 6b: every library voice, from its fixed 43-word sample. A short
+  // sample has no paragraph pauses, so it runs fast (Josh: 157.2 on the
+  // sample vs 146.6 on the 92-word reference) — each voice's sample pace is
+  // scaled by that same measured ratio.
+  ...Object.entries(VOICE_SAMPLE_PACE)
+    .filter(([id]) => id !== "TxGEqnHWrfWFTfGW9XjX")
+    .map(([voiceId, p]) => ({
+      label: p.name, voiceId, voiceModel: "eleven_flash_v2_5", speed: 1.0,
+      measuredWpm: Math.round(p.wpm * SAMPLE_TO_SCRIPT_RATIO * 10) / 10,
+      source: `43-word library sample ${p.wpm} wpm x ${SAMPLE_TO_SCRIPT_RATIO.toFixed(3)} (Josh sample->reference), 2026-09-28 (tests/fixtures/stickman/audio/voice-samples/${voiceId}.json)`,
+    })),
 ];
 
 // Voices offered for Stickman narration that have no measurement yet —
 // they use WORDS_PER_MINUTE until calibrated with a short sample.
-export const UNCALIBRATED_VOICES = [
-  { label: "Rachel", voiceId: "21m00Tcm4TlvDq8ikWAM" },
-  { label: "Bella", voiceId: "EXAVITQu4vr4xnSDxMaL" },
-  { label: "Antoni", voiceId: "ErXwobaYiN019PkySvjV" },
-];
+// (Phase 6b: every catalog voice is now measured.)
+export const UNCALIBRATED_VOICES: { label: string; voiceId: string }[] = [];
 
 // ElevenLabs speed used for Stickman narration when a profile doesn't set one.
 // Phase 2c: 1.0 (146.6 wpm measured, in the genre's 140-155 band; 0.92 gave 119).

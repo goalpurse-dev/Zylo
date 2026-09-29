@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "1939",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 17,
+ "scale": 154,
+ "box": {
+  "x": 786,
+  "y": 75,
+  "width": 349,
+  "height": 211
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 0.01,
+  "bottom": 1.59
+ }
+}

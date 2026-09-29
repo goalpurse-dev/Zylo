@@ -7,6 +7,7 @@
 import { supabase } from "../../../lib/supabaseClient";
 import { safeResult } from "./connectionState";
 import { VISUAL_STYLES } from "./visualStyles";
+import { STICKMAN_RECIPE } from "./recipe";
 
 // Same query as fetchLongFormProject below, but distinguishes "project
 // genuinely doesn't exist" from "we couldn't tell" (network/auth/timeout) —
@@ -249,7 +250,10 @@ export async function fetchUserLongFormProjects(userId) {
       // exact video), a concept preview is still project-specific, and the
       // locked Visual Style is the cheapest real image better than a plain
       // icon. ProjectCard falls back to the clapperboard only when this is null.
-      _thumbnailUrl: finishedSceneUrl ?? conceptPreviewUrl ?? stylePreviewUrl ?? null,
+      // Phase 5b: a rendered video's thumbnail (its first beat's image) beats everything.
+      _thumbnailUrl: p.final_thumbnail_url ?? finishedSceneUrl ?? conceptPreviewUrl ?? stylePreviewUrl ?? null,
+      // Phase 6a: Stickman projects use the one Stickman stepper everywhere.
+      _stickman: visualRecipe === STICKMAN_RECIPE,
     };
   });
 }

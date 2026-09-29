@@ -1,0 +1,838 @@
+{
+ "beats": {
+  "1": {
+   "versionId": "v2-4c-1",
+   "file": "docs/phase5/upscale/beat-001-runware-504-1.png",
+   "width": 2752,
+   "height": 1536,
+   "cost": 0,
+   "reused": true
+  },
+  "2": {
+   "versionId": "v2-4c-2",
+   "file": "docs/phase5/upscale/beat-002-runware-504-1.png",
+   "width": 2752,
+   "height": 1536,
+   "cost": 0,
+   "reused": true
+  },
+  "3": {
+   "versionId": "v2-4c-3",
+   "file": "docs/phase5/upscale/beat-003-runware-504-1.png",
+   "width": 2752,
+   "height": 1536,
+   "cost": 0,
+   "reused": true
+  },
+  "4": {
+   "versionId": "v2-4c-4",
+   "file": "docs/phase5/upscale/beat-004-runware-504-1.png",
+   "width": 2752,
+   "height": 1536,
+   "cost": 0,
+   "reused": true
+  },
+  "5": {
+   "versionId": "v2-4c-5",
+   "file": "docs/phase5/upscale/beat-005-runware-504-1.png",
+   "width": 2752,
+   "height": 1536,
+   "cost": 0,
+   "reused": true
+  },
+  "6": {
+   "versionId": "v2-4c-6",
+   "file": "docs/phase5/upscale/beat-006-runware-504-1.png",
+   "width": 2752,
+   "height": 1536,
+   "cost": 0,
+   "reused": true
+  },
+  "7": {
+   "versionId": "v2-4c-7",
+   "file": "docs/phase5/upscale/beat-007-runware-504-1.png",
+   "width": 2752,
+   "height": 1536,
+   "cost": 0,
+   "reused": true
+  },
+  "8": {
+   "versionId": "v2-4c-8",
+   "file": "docs/phase5/upscale/beat-008-runware-504-1.png",
+   "width": 2752,
+   "height": 1536,
+   "cost": 0,
+   "reused": true
+  },
+  "9": {
+   "versionId": "v2-4c-9",
+   "file": "docs/phase5/upscale/beat-009-runware-504-1.png",
+   "width": 2752,
+   "height": 1536,
+   "cost": 0,
+   "reused": true
+  },
+  "10": {
+   "versionId": "v2-4c-10",
+   "original": "docs/phase4/fullset/beat-010-original.jpg",
+   "file": "docs/phase5/master-src/beat-010-full.jpg",
+   "cost": 0.0006
+  },
+  "11": {
+   "versionId": "v2-4c-11",
+   "original": "docs/phase4/fullset/beat-011-original.jpg",
+   "file": "docs/phase5/master-src/beat-011-full.jpg",
+   "cost": 0.0006
+  },
+  "12": {
+   "versionId": "v2-4c-12",
+   "original": "docs/phase4/fullset/beat-012-original.jpg",
+   "file": "docs/phase5/master-src/beat-012-full.jpg",
+   "cost": 0.0006
+  },
+  "13": {
+   "versionId": "v2-4c-13",
+   "original": "docs/phase4/fullset/beat-013-original.jpg",
+   "file": "docs/phase5/master-src/beat-013-full.jpg",
+   "cost": 0.0006
+  },
+  "14": {
+   "versionId": "v2-4c-14",
+   "original": "docs/phase4/fullset/beat-014-original.jpg",
+   "file": "docs/phase5/master-src/beat-014-full.jpg",
+   "cost": 0.0006
+  },
+  "15": {
+   "versionId": "v2-4c-15",
+   "original": "docs/phase4/fullset/beat-015-original.jpg",
+   "file": "docs/phase5/master-src/beat-015-full.jpg",
+   "cost": 0.0006
+  },
+  "16": {
+   "versionId": "v2-4c-16",
+   "original": "docs/phase4/fullset/beat-016-original.jpg",
+   "file": "docs/phase5/master-src/beat-016-full.jpg",
+   "cost": 0.0006
+  },
+  "17": {
+   "versionId": "v2-5a-17",
+   "original": "docs/phase4/fix5a/beat-017-original.jpg",
+   "file": "docs/phase5/master-src/beat-017-full.jpg",
+   "cost": 0.0006
+  },
+  "18": {
+   "versionId": "v2-4c-18",
+   "original": "docs/phase4/fullset/beat-018-original.jpg",
+   "file": "docs/phase5/master-src/beat-018-full.jpg",
+   "cost": 0.0006
+  },
+  "19": {
+   "versionId": "v2-4d-19",
+   "original": "docs/phase4/fix4d/beat-019-original.jpg",
+   "file": "docs/phase5/master-src/beat-019-full.jpg",
+   "cost": 0.0006
+  },
+  "20": {
+   "versionId": "v2-4c-20",
+   "original": "docs/phase4/fullset/beat-020-original.jpg",
+   "file": "docs/phase5/master-src/beat-020-full.jpg",
+   "cost": 0.0006
+  },
+  "21": {
+   "versionId": "v2-4d-21",
+   "original": "docs/phase4/fix4d/beat-021-original.jpg",
+   "file": "docs/phase5/master-src/beat-021-full.jpg",
+   "cost": 0.0006
+  },
+  "22": {
+   "versionId": "v2-4d-22",
+   "original": "docs/phase4/fix4d/beat-022-original.jpg",
+   "file": "docs/phase5/master-src/beat-022-full.jpg",
+   "cost": 0.0006
+  },
+  "23": {
+   "versionId": "v2-4d-23",
+   "original": "docs/phase4/fix4d/beat-023-original.jpg",
+   "file": "docs/phase5/master-src/beat-023-full.jpg",
+   "cost": 0.0006
+  },
+  "24": {
+   "versionId": "v2-5b-24",
+   "original": "docs/phase4/fix5b/beat-024-original.jpg",
+   "file": "docs/phase5/master-src/beat-024-full.jpg",
+   "cost": 0.0006
+  },
+  "25": {
+   "versionId": "v2-4c-25",
+   "original": "docs/phase4/fullset/beat-025-original.jpg",
+   "file": "docs/phase5/master-src/beat-025-full.jpg",
+   "cost": 0.0006
+  },
+  "26": {
+   "versionId": "v2-4c-26",
+   "original": "docs/phase4/fullset/beat-026-original.jpg",
+   "file": "docs/phase5/master-src/beat-026-full.jpg",
+   "cost": 0.0006
+  },
+  "27": {
+   "versionId": "v2-4d-27",
+   "original": "docs/phase4/fix4d/beat-027-original.jpg",
+   "file": "docs/phase5/master-src/beat-027-full.jpg",
+   "cost": 0.0006
+  },
+  "28": {
+   "versionId": "v2-4d-28",
+   "original": "docs/phase4/fix4d/beat-028-original.jpg",
+   "file": "docs/phase5/master-src/beat-028-full.jpg",
+   "cost": 0.0006
+  },
+  "29": {
+   "versionId": "v2-4d-29",
+   "original": "docs/phase4/fix4d/beat-029-original.jpg",
+   "file": "docs/phase5/master-src/beat-029-full.jpg",
+   "cost": 0.0006
+  },
+  "30": {
+   "versionId": "v2-4d-30",
+   "original": "docs/phase4/fix4d/beat-030-original.jpg",
+   "file": "docs/phase5/master-src/beat-030-full.jpg",
+   "cost": 0.0006
+  },
+  "31": {
+   "versionId": "v2-4d-31",
+   "original": "docs/phase4/fix4d/beat-031-original.jpg",
+   "file": "docs/phase5/master-src/beat-031-full.jpg",
+   "cost": 0.0006
+  },
+  "32": {
+   "versionId": "v2-4c-32",
+   "original": "docs/phase4/fullset/beat-032-original.jpg",
+   "file": "docs/phase5/master-src/beat-032-full.jpg",
+   "cost": 0.0006
+  },
+  "33": {
+   "versionId": "v2-4c-33",
+   "original": "docs/phase4/fullset/beat-033-original.jpg",
+   "file": "docs/phase5/master-src/beat-033-full.jpg",
+   "cost": 0.0006
+  },
+  "34": {
+   "versionId": "v2-4c-34",
+   "original": "docs/phase4/fullset/beat-034-original.jpg",
+   "file": "docs/phase5/master-src/beat-034-full.jpg",
+   "cost": 0.0006
+  },
+  "35": {
+   "versionId": "v2-4d-35",
+   "original": "docs/phase4/fix4d/beat-035-original.jpg",
+   "file": "docs/phase5/master-src/beat-035-full.jpg",
+   "cost": 0.0006
+  },
+  "36": {
+   "versionId": "v2-4d-36",
+   "original": "docs/phase4/fix4d/beat-036-original.jpg",
+   "file": "docs/phase5/master-src/beat-036-full.jpg",
+   "cost": 0.0006
+  },
+  "37": {
+   "versionId": "v2-4d-37",
+   "original": "docs/phase4/fix4d/beat-037-original.jpg",
+   "file": "docs/phase5/master-src/beat-037-full.jpg",
+   "cost": 0.0006
+  },
+  "38": {
+   "versionId": "v2-4d-38",
+   "original": "docs/phase4/fix4d/beat-038-original.jpg",
+   "file": "docs/phase5/master-src/beat-038-full.jpg",
+   "cost": 0.0006
+  },
+  "39": {
+   "versionId": "v2-4d-39",
+   "original": "docs/phase4/fix4d/beat-039-original.jpg",
+   "file": "docs/phase5/master-src/beat-039-full.jpg",
+   "cost": 0.0006
+  },
+  "40": {
+   "versionId": "v2-4c-40",
+   "original": "docs/phase4/fullset/beat-040-original.jpg",
+   "file": "docs/phase5/master-src/beat-040-full.jpg",
+   "cost": 0.0006
+  },
+  "41": {
+   "versionId": "v2-5a-41",
+   "original": "docs/phase4/fix5a/beat-041-original.jpg",
+   "file": "docs/phase5/master-src/beat-041-full.jpg",
+   "cost": 0.0006
+  },
+  "42": {
+   "versionId": "v2-5b-42",
+   "original": "docs/phase4/fix5b/beat-042-original.jpg",
+   "file": "docs/phase5/master-src/beat-042-full.jpg",
+   "cost": 0.0006
+  },
+  "43": {
+   "versionId": "v2-4d-43",
+   "original": "docs/phase4/fix4d/beat-043-original.jpg",
+   "file": "docs/phase5/master-src/beat-043-full.jpg",
+   "cost": 0.0006
+  },
+  "44": {
+   "versionId": "v2-4d-44",
+   "original": "docs/phase4/fix4d/beat-044-original.jpg",
+   "file": "docs/phase5/master-src/beat-044-full.jpg",
+   "cost": 0.0006
+  },
+  "45": {
+   "versionId": "v2-4c-45",
+   "original": "docs/phase4/fullset/beat-045-original.jpg",
+   "file": "docs/phase5/master-src/beat-045-full.jpg",
+   "cost": 0.0006
+  },
+  "46": {
+   "versionId": "v2-5a-46",
+   "original": "docs/phase4/fix5a/beat-046-original.jpg",
+   "file": "docs/phase5/master-src/beat-046-full.jpg",
+   "cost": 0.0006
+  },
+  "47": {
+   "versionId": "v2-5b-47",
+   "original": "docs/phase4/fix5b/beat-047-original.jpg",
+   "file": "docs/phase5/master-src/beat-047-full.jpg",
+   "cost": 0.0006
+  },
+  "48": {
+   "versionId": "v2-4d-48",
+   "original": "docs/phase4/fix4d/beat-048-original.jpg",
+   "file": "docs/phase5/master-src/beat-048-full.jpg",
+   "cost": 0.0006
+  },
+  "49": {
+   "versionId": "v2-4d-49",
+   "original": "docs/phase4/fix4d/beat-049-original.jpg",
+   "file": "docs/phase5/master-src/beat-049-full.jpg",
+   "cost": 0.0006
+  },
+  "50": {
+   "versionId": "v2-4d-50",
+   "original": "docs/phase4/fix4d/beat-050-original.jpg",
+   "file": "docs/phase5/master-src/beat-050-full.jpg",
+   "cost": 0.0006
+  },
+  "51": {
+   "versionId": "v2-4d-51",
+   "original": "docs/phase4/fix4d/beat-051-original.jpg",
+   "file": "docs/phase5/master-src/beat-051-full.jpg",
+   "cost": 0.0013
+  },
+  "52": {
+   "versionId": "v2-4d-52",
+   "original": "docs/phase4/fix4d/beat-052-original.jpg",
+   "file": "docs/phase5/master-src/beat-052-full.jpg",
+   "cost": 0.0006
+  },
+  "53": {
+   "versionId": "v2-4d-53",
+   "original": "docs/phase4/fix4d/beat-053-original.jpg",
+   "file": "docs/phase5/master-src/beat-053-full.jpg",
+   "cost": 0.0006
+  },
+  "54": {
+   "versionId": "v2-4d-54",
+   "original": "docs/phase4/fix4d/beat-054-original.jpg",
+   "file": "docs/phase5/master-src/beat-054-full.jpg",
+   "cost": 0.0006
+  },
+  "55": {
+   "versionId": "v2-4c-55",
+   "original": "docs/phase4/fullset/beat-055-original.jpg",
+   "file": "docs/phase5/master-src/beat-055-full.jpg",
+   "cost": 0.0006
+  },
+  "56": {
+   "versionId": "v2-4c-56",
+   "original": "docs/phase4/fullset/beat-056-original.jpg",
+   "file": "docs/phase5/master-src/beat-056-full.jpg",
+   "cost": 0.0006
+  },
+  "57": {
+   "versionId": "v2-4c-57",
+   "original": "docs/phase4/fullset/beat-057-original.jpg",
+   "file": "docs/phase5/master-src/beat-057-full.jpg",
+   "cost": 0.0006
+  },
+  "58": {
+   "versionId": "v2-5a-58",
+   "original": "docs/phase4/fix5a/beat-058-original.jpg",
+   "file": "docs/phase5/master-src/beat-058-full.jpg",
+   "cost": 0.0006
+  },
+  "59": {
+   "versionId": "v2-4c-59",
+   "original": "docs/phase4/fullset/beat-059-original.jpg",
+   "file": "docs/phase5/master-src/beat-059-full.jpg",
+   "cost": 0.0006
+  },
+  "60": {
+   "versionId": "v2-4d-60",
+   "original": "docs/phase4/fix4d/beat-060-original.jpg",
+   "file": "docs/phase5/master-src/beat-060-full.jpg",
+   "cost": 0.0006
+  },
+  "61": {
+   "versionId": "v2-4d-61",
+   "original": "docs/phase4/fix4d/beat-061-original.jpg",
+   "file": "docs/phase5/master-src/beat-061-full.jpg",
+   "cost": 0.0006
+  },
+  "62": {
+   "versionId": "v2-4c-62",
+   "original": "docs/phase4/fullset/beat-062-original.jpg",
+   "file": "docs/phase5/master-src/beat-062-full.jpg",
+   "cost": 0.0006
+  },
+  "63": {
+   "versionId": "v2-4c-63",
+   "original": "docs/phase4/fullset/beat-063-original.jpg",
+   "file": "docs/phase5/master-src/beat-063-full.jpg",
+   "cost": 0.0006
+  },
+  "64": {
+   "versionId": "v2-4d-64",
+   "original": "docs/phase4/fix4d/beat-064-original.jpg",
+   "file": "docs/phase5/master-src/beat-064-full.jpg",
+   "cost": 0.0006
+  },
+  "65": {
+   "versionId": "v2-4c-65",
+   "original": "docs/phase4/fullset/beat-065-original.jpg",
+   "file": "docs/phase5/master-src/beat-065-full.jpg",
+   "cost": 0.0006
+  },
+  "66": {
+   "versionId": "v2-4d-66",
+   "original": "docs/phase4/fix4d/beat-066-original.jpg",
+   "file": "docs/phase5/master-src/beat-066-full.jpg",
+   "cost": 0.0006
+  },
+  "67": {
+   "versionId": "v2-4c-67",
+   "original": "docs/phase4/fullset/beat-067-original.jpg",
+   "file": "docs/phase5/master-src/beat-067-full.jpg",
+   "cost": 0.0006
+  },
+  "68": {
+   "versionId": "v2-4c-68",
+   "original": "docs/phase4/fullset/beat-068-original.jpg",
+   "file": "docs/phase5/master-src/beat-068-full.jpg",
+   "cost": 0.0006
+  },
+  "69": {
+   "versionId": "v2-4d-69",
+   "original": "docs/phase4/fix4d/beat-069-original.jpg",
+   "file": "docs/phase5/master-src/beat-069-full.jpg",
+   "cost": 0.0006
+  },
+  "70": {
+   "versionId": "v2-4c-70",
+   "original": "docs/phase4/fullset/beat-070-original.jpg",
+   "file": "docs/phase5/master-src/beat-070-full.jpg",
+   "cost": 0.0006
+  },
+  "71": {
+   "versionId": "v2-4c-71",
+   "original": "docs/phase4/fullset/beat-071-original.jpg",
+   "file": "docs/phase5/master-src/beat-071-full.jpg",
+   "cost": 0.0006
+  },
+  "72": {
+   "versionId": "v2-4c-72",
+   "original": "docs/phase4/fullset/beat-072-original.jpg",
+   "file": "docs/phase5/master-src/beat-072-full.jpg",
+   "cost": 0.0006
+  },
+  "73": {
+   "versionId": "v2-4d-73",
+   "original": "docs/phase4/fix4d/beat-073-original.jpg",
+   "file": "docs/phase5/master-src/beat-073-full.jpg",
+   "cost": 0.0006
+  },
+  "74": {
+   "versionId": "v2-4c-74",
+   "original": "docs/phase4/fullset/beat-074-original.jpg",
+   "file": "docs/phase5/master-src/beat-074-full.jpg",
+   "cost": 0.0006
+  },
+  "75": {
+   "versionId": "v2-4c-75",
+   "original": "docs/phase4/fullset/beat-075-original.jpg",
+   "file": "docs/phase5/master-src/beat-075-full.jpg",
+   "cost": 0.0006
+  },
+  "76": {
+   "versionId": "v2-4c-76",
+   "original": "docs/phase4/fullset/beat-076-original.jpg",
+   "file": "docs/phase5/master-src/beat-076-full.jpg",
+   "cost": 0.0006
+  },
+  "77": {
+   "versionId": "v2-4c-77",
+   "original": "docs/phase4/fullset/beat-077-original.jpg",
+   "file": "docs/phase5/master-src/beat-077-full.jpg",
+   "cost": 0.0006
+  },
+  "78": {
+   "versionId": "v2-4c-78",
+   "original": "docs/phase4/fullset/beat-078-original.jpg",
+   "file": "docs/phase5/master-src/beat-078-full.jpg",
+   "cost": 0.0006
+  },
+  "79": {
+   "versionId": "v2-4c-79",
+   "original": "docs/phase4/fullset/beat-079-original.jpg",
+   "file": "docs/phase5/master-src/beat-079-full.jpg",
+   "cost": 0.0006
+  },
+  "80": {
+   "versionId": "v2-4c-80",
+   "original": "docs/phase4/fullset/beat-080-original.jpg",
+   "file": "docs/phase5/master-src/beat-080-full.jpg",
+   "cost": 0.0006
+  },
+  "81": {
+   "versionId": "v2-4c-81",
+   "original": "docs/phase4/fullset/beat-081-original.jpg",
+   "file": "docs/phase5/master-src/beat-081-full.jpg",
+   "cost": 0.0006
+  },
+  "82": {
+   "versionId": "v2-4d-82",
+   "original": "docs/phase4/fix4d/beat-082-original.jpg",
+   "file": "docs/phase5/master-src/beat-082-full.jpg",
+   "cost": 0.0006
+  },
+  "83": {
+   "versionId": "v2-4d-83",
+   "original": "docs/phase4/fix4d/beat-083-original.jpg",
+   "file": "docs/phase5/master-src/beat-083-full.jpg",
+   "cost": 0.0006
+  },
+  "84": {
+   "versionId": "v2-4c-84",
+   "original": "docs/phase4/fullset/beat-084-original.jpg",
+   "file": "docs/phase5/master-src/beat-084-full.jpg",
+   "cost": 0.0006
+  },
+  "85": {
+   "versionId": "v2-4c-85",
+   "original": "docs/phase4/fullset/beat-085-original.jpg",
+   "file": "docs/phase5/master-src/beat-085-full.jpg",
+   "cost": 0.0006
+  },
+  "86": {
+   "versionId": "v2-4c-86",
+   "original": "docs/phase4/fullset/beat-086-original.jpg",
+   "file": "docs/phase5/master-src/beat-086-full.jpg",
+   "cost": 0.0006
+  },
+  "87": {
+   "versionId": "v2-4d-87",
+   "original": "docs/phase4/fix4d/beat-087-original.jpg",
+   "file": "docs/phase5/master-src/beat-087-full.jpg",
+   "cost": 0.0006
+  },
+  "88": {
+   "versionId": "v2-4c-88",
+   "original": "docs/phase4/fullset/beat-088-original.jpg",
+   "file": "docs/phase5/master-src/beat-088-full.jpg",
+   "cost": 0.0006
+  },
+  "89": {
+   "versionId": "v2-4c-89",
+   "original": "docs/phase4/fullset/beat-089-original.jpg",
+   "file": "docs/phase5/master-src/beat-089-full.jpg",
+   "cost": 0.0006
+  },
+  "90": {
+   "versionId": "v2-4c-90",
+   "original": "docs/phase4/fullset/beat-090-original.jpg",
+   "file": "docs/phase5/master-src/beat-090-full.jpg",
+   "cost": 0.0006
+  },
+  "91": {
+   "versionId": "v2-4c-91",
+   "original": "docs/phase4/fullset/beat-091-original.jpg",
+   "file": "docs/phase5/master-src/beat-091-full.jpg",
+   "cost": 0.0006
+  },
+  "92": {
+   "versionId": "v2-4d-92",
+   "original": "docs/phase4/fix4d/beat-092-original.jpg",
+   "file": "docs/phase5/master-src/beat-092-full.jpg",
+   "cost": 0.0006
+  },
+  "93": {
+   "versionId": "v2-4d-93",
+   "original": "docs/phase4/fix4d/beat-093-original.jpg",
+   "file": "docs/phase5/master-src/beat-093-full.jpg",
+   "cost": 0.0006
+  },
+  "94": {
+   "versionId": "v2-4d-94",
+   "original": "docs/phase4/fix4d/beat-094-original.jpg",
+   "file": "docs/phase5/master-src/beat-094-full.jpg",
+   "cost": 0.0006
+  },
+  "95": {
+   "versionId": "v2-4d-95",
+   "original": "docs/phase4/fix4d/beat-095-original.jpg",
+   "file": "docs/phase5/master-src/beat-095-full.jpg",
+   "cost": 0.0006
+  },
+  "96": {
+   "versionId": "v2-4d-96",
+   "original": "docs/phase4/fix4d/beat-096-original.jpg",
+   "file": "docs/phase5/master-src/beat-096-full.jpg",
+   "cost": 0.0006
+  },
+  "97": {
+   "versionId": "v2-4c-97",
+   "original": "docs/phase4/fullset/beat-097-original.jpg",
+   "file": "docs/phase5/master-src/beat-097-full.jpg",
+   "cost": 0.0006
+  },
+  "98": {
+   "versionId": "v2-5b-98",
+   "original": "docs/phase4/fix5b/beat-098-original.jpg",
+   "file": "docs/phase5/master-src/beat-098-full.jpg",
+   "cost": 0.0006
+  },
+  "99": {
+   "versionId": "v2-4d-99",
+   "original": "docs/phase4/fix4d/beat-099-original.jpg",
+   "file": "docs/phase5/master-src/beat-099-full.jpg",
+   "cost": 0.0006
+  },
+  "100": {
+   "versionId": "v2-4d-100",
+   "original": "docs/phase4/fix4d/beat-100-original.jpg",
+   "file": "docs/phase5/master-src/beat-100-full.jpg",
+   "cost": 0.0006
+  },
+  "101": {
+   "versionId": "v2-4d-101",
+   "original": "docs/phase4/fix4d/beat-101-original.jpg",
+   "file": "docs/phase5/master-src/beat-101-full.jpg",
+   "cost": 0.0006
+  },
+  "102": {
+   "versionId": "v2-4c-102",
+   "original": "docs/phase4/fullset/beat-102-original.jpg",
+   "file": "docs/phase5/master-src/beat-102-full.jpg",
+   "cost": 0.0006
+  },
+  "103": {
+   "versionId": "v2-5a-103",
+   "original": "docs/phase4/fix5a/beat-103-original.jpg",
+   "file": "docs/phase5/master-src/beat-103-full.jpg",
+   "cost": 0.0006
+  },
+  "104": {
+   "versionId": "v2-4c-104",
+   "original": "docs/phase4/fullset/beat-104-original.jpg",
+   "file": "docs/phase5/master-src/beat-104-full.jpg",
+   "cost": 0.0006
+  },
+  "105": {
+   "versionId": "v2-4d-105",
+   "original": "docs/phase4/fix4d/beat-105-original.jpg",
+   "file": "docs/phase5/master-src/beat-105-full.jpg",
+   "cost": 0.0006
+  },
+  "106": {
+   "versionId": "v2-4c-106",
+   "original": "docs/phase4/fullset/beat-106-original.jpg",
+   "file": "docs/phase5/master-src/beat-106-full.jpg",
+   "cost": 0.0006
+  },
+  "107": {
+   "versionId": "v2-4c-107",
+   "original": "docs/phase4/fullset/beat-107-original.jpg",
+   "file": "docs/phase5/master-src/beat-107-full.jpg",
+   "cost": 0.0006
+  },
+  "108": {
+   "versionId": "v2-4d-108",
+   "original": "docs/phase4/fix4d/beat-108-original.jpg",
+   "file": "docs/phase5/master-src/beat-108-full.jpg",
+   "cost": 0.0006
+  },
+  "109": {
+   "versionId": "v2-4d-109",
+   "original": "docs/phase4/fix4d/beat-109-original.jpg",
+   "file": "docs/phase5/master-src/beat-109-full.jpg",
+   "cost": 0.0006
+  },
+  "110": {
+   "versionId": "v2-4d-110",
+   "original": "docs/phase4/fix4d/beat-110-original.jpg",
+   "file": "docs/phase5/master-src/beat-110-full.jpg",
+   "cost": 0.0006
+  },
+  "111": {
+   "versionId": "v2-4d-111",
+   "original": "docs/phase4/fix4d/beat-111-original.jpg",
+   "file": "docs/phase5/master-src/beat-111-full.jpg",
+   "cost": 0.0006
+  },
+  "112": {
+   "versionId": "v2-4d-112",
+   "original": "docs/phase4/fix4d/beat-112-original.jpg",
+   "file": "docs/phase5/master-src/beat-112-full.jpg",
+   "cost": 0.0006
+  },
+  "113": {
+   "versionId": "v2-4d-113",
+   "original": "docs/phase4/fix4d/beat-113-original.jpg",
+   "file": "docs/phase5/master-src/beat-113-full.jpg",
+   "cost": 0.0006
+  },
+  "114": {
+   "versionId": "v2-4d-114",
+   "original": "docs/phase4/fix4d/beat-114-original.jpg",
+   "file": "docs/phase5/master-src/beat-114-full.jpg",
+   "cost": 0.0006
+  },
+  "115": {
+   "versionId": "v2-4c-115",
+   "original": "docs/phase4/fullset/beat-115-original.jpg",
+   "file": "docs/phase5/master-src/beat-115-full.jpg",
+   "cost": 0.0006
+  },
+  "116": {
+   "versionId": "v2-4d-116",
+   "original": "docs/phase4/fix4d/beat-116-original.jpg",
+   "file": "docs/phase5/master-src/beat-116-full.jpg",
+   "cost": 0.0006
+  },
+  "117": {
+   "versionId": "v2-4d-117",
+   "original": "docs/phase4/fix4d/beat-117-original.jpg",
+   "file": "docs/phase5/master-src/beat-117-full.jpg",
+   "cost": 0.0006
+  },
+  "118": {
+   "versionId": "v2-4c-118",
+   "original": "docs/phase4/fullset/beat-118-original.jpg",
+   "file": "docs/phase5/master-src/beat-118-full.jpg",
+   "cost": 0.0006
+  },
+  "119": {
+   "versionId": "v2-5a-119",
+   "original": "docs/phase4/fix5a/beat-119-original.jpg",
+   "file": "docs/phase5/master-src/beat-119-full.jpg",
+   "cost": 0.0006
+  },
+  "120": {
+   "versionId": "v2-4c-120",
+   "original": "docs/phase4/fullset/beat-120-original.jpg",
+   "file": "docs/phase5/master-src/beat-120-full.jpg",
+   "cost": 0.0006
+  },
+  "121": {
+   "versionId": "v2-4c-121",
+   "original": "docs/phase4/fullset/beat-121-original.jpg",
+   "file": "docs/phase5/master-src/beat-121-full.jpg",
+   "cost": 0.0006
+  },
+  "122": {
+   "versionId": "v2-4c-122",
+   "original": "docs/phase4/fullset/beat-122-original.jpg",
+   "file": "docs/phase5/master-src/beat-122-full.jpg",
+   "cost": 0.0006
+  },
+  "123": {
+   "versionId": "v2-4c-123",
+   "original": "docs/phase4/fullset/beat-123-original.jpg",
+   "file": "docs/phase5/master-src/beat-123-full.jpg",
+   "cost": 0.0006
+  },
+  "124": {
+   "versionId": "v2-4c-124",
+   "original": "docs/phase4/fullset/beat-124-original.jpg",
+   "file": "docs/phase5/master-src/beat-124-full.jpg",
+   "cost": 0.0006
+  },
+  "125": {
+   "versionId": "v2-5a-125",
+   "original": "docs/phase4/fix5a/beat-125-original.jpg",
+   "file": "docs/phase5/master-src/beat-125-full.jpg",
+   "cost": 0.0006
+  },
+  "126": {
+   "versionId": "v2-4c-126",
+   "original": "docs/phase4/fullset/beat-126-original.jpg",
+   "file": "docs/phase5/master-src/beat-126-full.jpg",
+   "cost": 0.0006
+  },
+  "127": {
+   "versionId": "v2-4d-127",
+   "original": "docs/phase4/fix4d/beat-127-original.jpg",
+   "file": "docs/phase5/master-src/beat-127-full.jpg",
+   "cost": 0.0006
+  },
+  "128": {
+   "versionId": "v2-5b-128",
+   "original": "docs/phase4/fix5b/beat-128-original.jpg",
+   "file": "docs/phase5/master-src/beat-128-full.jpg",
+   "cost": 0.0006
+  },
+  "129": {
+   "versionId": "v2-4d-129",
+   "original": "docs/phase4/fix4d/beat-129-original.jpg",
+   "file": "docs/phase5/master-src/beat-129-full.jpg",
+   "cost": 0.0006
+  },
+  "130": {
+   "versionId": "v2-4d-130",
+   "original": "docs/phase4/fix4d/beat-130-original.jpg",
+   "file": "docs/phase5/master-src/beat-130-full.jpg",
+   "cost": 0.0006
+  },
+  "131": {
+   "versionId": "v2-5a-131",
+   "original": "docs/phase4/fix5a/beat-131-original.jpg",
+   "file": "docs/phase5/master-src/beat-131-full.jpg",
+   "cost": 0.0006
+  },
+  "132": {
+   "versionId": "v2-4d-132",
+   "original": "docs/phase4/fix4d/beat-132-original.jpg",
+   "file": "docs/phase5/master-src/beat-132-full.jpg",
+   "cost": 0.0006
+  },
+  "133": {
+   "versionId": "v2-4d-133",
+   "original": "docs/phase4/fix4d/beat-133-original.jpg",
+   "file": "docs/phase5/master-src/beat-133-full.jpg",
+   "cost": 0.0006
+  },
+  "134": {
+   "versionId": "v2-4c-134",
+   "original": "docs/phase4/fullset/beat-134-original.jpg",
+   "file": "docs/phase5/master-src/beat-134-full.jpg",
+   "cost": 0.0006
+  },
+  "135": {
+   "versionId": "v2-4c-135",
+   "original": "docs/phase4/fullset/beat-135-original.jpg",
+   "file": "docs/phase5/master-src/beat-135-full.jpg",
+   "cost": 0.0006
+  },
+  "136": {
+   "versionId": "v2-5a-136",
+   "original": "docs/phase4/fix5a/beat-136-original.jpg",
+   "file": "docs/phase5/master-src/beat-136-full.jpg",
+   "cost": 0.0006
+  }
+ }
+}

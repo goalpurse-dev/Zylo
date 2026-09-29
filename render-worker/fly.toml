@@ -1,0 +1,24 @@
+# Fly.io config for the Zyvo render worker — DRAFT, not deployed (Phase 6).
+# The worker is a batch job, not a web service: no [http_service], no ports.
+# Machines are started per render job via the Machines API (see
+# docs/phase5/fly-deploy-checklist.md) and destroy themselves when done.
+app = "zyvo-render"
+primary_region = "fra"   # pick the region closest to the Supabase project
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  WORK_DIR = "/tmp/render"
+  RENDER_HOST = "fly"
+  RENDER_MACHINE = "performance-8x"
+  CONCURRENCY = "7"
+  CRF = "23"
+  # USD per second of the machine above (Fly list price estimate — confirm before launch).
+  MACHINE_USD_PER_SECOND = "0.0000957"
+
+# Default machine size for `fly machine run` / Machines API launches.
+[[vm]]
+  cpu_kind = "performance"
+  cpus = 8
+  memory = "16gb"

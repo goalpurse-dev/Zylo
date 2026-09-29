@@ -1,14 +1,14 @@
 {
-  "_note": "Phase 3 handwritten canonical blocks for the frozen Myth vs Reality bible (tests/fixtures/stickman/beats/myth-vs-reality.recorded.json). A faithful clean-up of the bible's own prose into the new structured fields (bible schema: identity / settingBlocks / promptBlock): color names instead of hex codes, no internal ids or cross-references, only the style's allowed face modifiers. Future bibles produce these fields themselves.",
+  "_note": "Phase 3 handwritten canonical blocks for the frozen Myth vs Reality bible (tests/fixtures/stickman/beats/myth-vs-reality.recorded.json). A faithful clean-up of the bible's own prose into the new structured fields (bible schema: identity / settingBlocks / promptBlock): color names instead of hex codes, no internal ids or cross-references, only the style's allowed face modifiers. Future bibles produce these fields themselves. Phase 4b: outfits are flat torso SHAPES (arms and legs stay thin black stick lines; no trousers, sleeves or boot volume) — every model drew chunky cartoon bodies from the old full-clothing descriptions.",
   "cast": {
     "viewer_viking": {
       "displayName": "The viewer as a Viking raider",
       "skinTone": "light warm beige",
       "faceMarks": "",
       "hair": "short straight dark brown hair with a fringe cut above the ears",
-      "outfit": "a short-sleeved muted forest-green tunic to mid-thigh, a dark brown belt, mud-brown trousers and dark brown boots",
-      "outfitShort": "a muted forest-green tunic and mud-brown trousers",
-      "sleeves": "short muted forest-green tunic sleeves",
+      "outfit": "a muted forest-green tunic shape on the torso with a dark brown belt line, and small dark brown rounded feet",
+      "outfitShort": "a muted forest-green tunic shape on the torso",
+      "sleeves": "",
       "build": "medium height, neutral adult proportions",
       "signature": "a round wooden shield strapped to the left arm"
     },
@@ -17,9 +17,9 @@
       "skinTone": "light warm beige",
       "faceMarks": "",
       "hair": "short-cropped dark brown hair",
-      "outfit": "a knee-length muted ochre wool tunic, slate-grey trousers and a dark brown leather belt",
-      "outfitShort": "a muted ochre tunic and slate-grey trousers",
-      "sleeves": "long muted ochre wool sleeves",
+      "outfit": "a muted ochre tunic shape on the torso with a dark brown belt line, and small dark grey rounded feet",
+      "outfitShort": "a muted ochre tunic shape on the torso",
+      "sleeves": "",
       "build": "stocky adult proportions",
       "signature": "a round wooden shield and a short axe"
     },
@@ -28,9 +28,9 @@
       "skinTone": "warm tan",
       "faceMarks": "",
       "hair": "smooth shoulder-length dark brown hair drawn as one rounded shape around the head",
-      "outfit": "a calf-length bronze-yellow robe with two dark brown bands near the hem and a thin bronze neck ring",
-      "outfitShort": "a calf-length bronze-yellow robe",
-      "sleeves": "wide bronze-yellow robe sleeves",
+      "outfit": "a long bronze-yellow robe shape on the torso with two dark brown bands at its hem and a thin bronze neck ring, and small brown rounded feet",
+      "outfitShort": "a long bronze-yellow robe shape on the torso",
+      "sleeves": "",
       "build": "tall, upright formal stance",
       "signature": "a slim ritual staff topped with a small bronze circle"
     },
@@ -39,9 +39,9 @@
       "skinTone": "pale peach",
       "faceMarks": "",
       "hair": "neat slicked-back medium brown hair with a side part",
-      "outfit": "a tailored deep charcoal frock coat, a white shirt collar and a slim burgundy cravat",
-      "outfitShort": "a deep charcoal frock coat",
-      "sleeves": "deep charcoal frock-coat sleeves with white cuffs",
+      "outfit": "a deep charcoal frock-coat shape on the torso with a white collar and a small burgundy cravat, and small black rounded feet",
+      "outfitShort": "a deep charcoal coat shape on the torso",
+      "sleeves": "",
       "build": "slim adult proportions, theatrical upright posture",
       "signature": "a rolled-up costume sketch"
     },
@@ -50,9 +50,9 @@
       "skinTone": "light warm beige",
       "faceMarks": "small rectangular black glasses",
       "hair": "short tidy dark brown hair",
-      "outfit": "a short-sleeved khaki field shirt with a collar, olive-drab cargo trousers and a dark grey tool belt",
-      "outfitShort": "a khaki field shirt and olive-drab trousers",
-      "sleeves": "short khaki field-shirt sleeves",
+      "outfit": "a khaki field-shirt shape on the torso with a dark grey tool-belt line, and small olive rounded feet",
+      "outfitShort": "a khaki shirt shape on the torso",
+      "sleeves": "",
       "build": "medium adult proportions",
       "signature": "a small trowel"
     }

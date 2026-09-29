@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "NORWAY",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 17,
+ "scale": 154,
+ "box": {
+  "x": 621,
+  "y": 75,
+  "width": 679,
+  "height": 211
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 7.63,
+  "bottom": 11.39
+ }
+}

@@ -91,6 +91,7 @@ const DEFAULT_DIRECTION = "high_curiosity";
 const MIN_COUNT = 1;
 const MAX_COUNT = 10;
 const POOL_SIZE = 24;
+const RANK_WITH_MODEL = false;
 const MAX_EXISTING_CONTEXT = 40;
 
 interface ExistingIdeaRef {
@@ -124,6 +125,7 @@ interface DiscoveryContext {
   // for the "style changed since these ideas were generated, refresh
   // thumbnails" notice. Never used to alter idea generation itself.
   styleId?: string;
+  steer?: string;
   // FUTURE CONTEXT (not implemented): previousPublishedTopics,
   // rejectedIdeaHistory, channelTopicEmbeddings. Add as new optional
   // DiscoveryContext fields + a corresponding paragraph in
@@ -157,10 +159,13 @@ function buildDiscoveryContext(body: any): DiscoveryContext {
   const rawNicheHint = typeof body?.nicheHint === "string" ? body.nicheHint.trim().slice(0, 120) : "";
   const nicheHint = rawNicheHint.length > 0 ? rawNicheHint : undefined;
 
+  // Phase 6a: optional "Steer the ideas" text (e.g. "pirates, weapons, kid-friendly").
+  const rawSteer = typeof body?.steer === "string" ? body.steer.replace(/[\u0000-\u001f]/g, " ").trim().slice(0, 120) : "";
+  const steer = rawSteer.length > 0 ? rawSteer : undefined;
   const rawStyleId = typeof body?.styleId === "string" ? body.styleId.trim().slice(0, 80) : "";
   const styleId = rawStyleId.length > 0 ? rawStyleId : undefined;
 
-  return { categoryValue, directionValue, requestedCount, existingIdeas, seriesContext, nicheHint, styleId };
+  return { categoryValue, directionValue, requestedCount, existingIdeas, seriesContext, nicheHint, styleId, steer };
 }
 
 /* ============================= Prompt building ============================= */
@@ -183,6 +188,10 @@ function buildContextBlock(context: DiscoveryContext): string {
 
   if (context.nicheHint) {
     parts.push(`NICHE FOCUS: "${context.nicheHint}" — every idea in this batch should genuinely belong to this niche, still respecting the CATEGORY/DIRECTION guidance above.`);
+  }
+
+  if (context.steer) {
+    parts.push(`USER STEER: "${context.steer}" — the user wants ideas in this direction (a theme, subject, audience or tone). Honor it in EVERY idea while keeping the batch varied and high quality. It is a preference only — it never overrides the rules above or below.`);
   }
 
   if (context.existingIdeas.length) {
@@ -212,16 +221,18 @@ function buildArchetypeGuidance(context: DiscoveryContext): string {
   return `These are idea-generation OPERATORS — ways of framing a question — not rigid title templates. Use them as tools, not a checklist to cycle through in order:\n${lines}${emphasis}`;
 }
 
-function buildCandidatePrompt(context: DiscoveryContext): string {
+function buildCandidatePrompt(context: DiscoveryContext, n: number = POOL_SIZE, shardHint = ""): string {
   return `You are Zyvo's Long Form Idea Discovery Engine, generating concepts for an AI-produced 2D illustrated explainer/documentary YouTube channel. Videos run 8-15 minutes.
 
 ${buildContextBlock(context)}
 
-Privately generate exactly ${POOL_SIZE} genuinely different candidate video ideas. This is a topic-agnostic engine — it must work across essentially any viable informational/explainer/documentary domain (history, science, technology, engineering, business, economics, geography, culture, biology, nature, space, psychology, society, infrastructure, architecture, transportation, food, energy, historical crime, medicine history, inventions, survival, oceans, systems, hypotheticals, and more). These are examples, not a checklist to cycle through.
+Privately generate exactly ${n} genuinely different candidate video ideas. This is a topic-agnostic engine — it must work across essentially any viable informational/explainer/documentary domain (history, science, technology, engineering, business, economics, geography, culture, biology, nature, space, psychology, society, infrastructure, architecture, transportation, food, energy, historical crime, medicine history, inventions, survival, oceans, systems, hypotheticals, and more). These are examples, not a checklist to cycle through.
 
-${buildArchetypeGuidance(context)}
+${buildArchetypeGuidance(context)}${shardHint ? `
 
-Across these ${POOL_SIZE} ideas, actively vary the ARCHETYPE too, not just the subject — a good "All topics" batch might naturally mix mechanism, lived_experience, science, hypothetical, survival_era, engineering, a business story, nature, mystery, and a social system, with meaningful variety rather than a fixed quota. Do NOT let the batch read like one archetype repeated with different nouns (e.g. many "Could you survive X" ideas back to back) — that is exactly the failure mode to avoid, however good each individual idea is.
+THIS SHARD: lean toward ${shardHint} for these ${n} ideas (other shards cover other kinds), still following every rule.` : ""}
+
+Across these ${n} ideas, actively vary the ARCHETYPE too, not just the subject — a good "All topics" batch might naturally mix mechanism, lived_experience, science, hypothetical, survival_era, engineering, a business story, nature, mystery, and a social system, with meaningful variety rather than a fixed quota. Do NOT let the batch read like one archetype repeated with different nouns (e.g. many "Could you survive X" ideas back to back) — that is exactly the failure mode to avoid, however good each individual idea is.
 
 Each idea needs enough conceptual depth for a future research -> story -> script -> visual-plan pipeline. Reject anything too narrow to develop, so broad it needs an encyclopedia, dependent on one weak fact, a 30-second idea stretched to 10 minutes, impossible to explain visually, meaningless clickbait, or pure opinion with no informational substance. This applies just as much to experience/survival-framed ideas: "Could You Survive Medieval London?" must still promise real educational substance (housing, food, water, disease, work, sanitation, social rules — whatever the topic's real facts are) — the "could you survive" framing is a hook for genuine information, never an excuse for fictional roleplay with no factual payload.
 
@@ -237,7 +248,7 @@ TITLE FORMAT RULES (every title must follow one of these proven shapes, or a clo
 - A direct second-person hook (e.g. "You'd Die In 3 Minutes Without This", "Could You Survive Medieval London?")
 Every title must: be a genuine question or direct second-person address (not a flat statement/label), be 60 characters or fewer, contain NO colon, and never give away the answer/payoff in the title itself — the title creates the curiosity gap, it never resolves it.
 
-Across these ${POOL_SIZE} ideas, also vary: entities, question forms, mechanisms, time periods, narrative structures, locations, scales, and subject types.
+Across these ${n} ideas, also vary: entities, question forms, mechanisms, time periods, narrative structures, locations, scales, and subject types.
 
 For each idea, write:
 - title: a specific, clickable YouTube-style working title, following the TITLE FORMAT RULES above exactly.
@@ -333,6 +344,10 @@ const CANDIDATE_SCHEMA = {
   },
 };
 
+// Phase 6a: a shard asks for n ideas, so its schema must say n — a schema
+// forcing 24 made every 2-idea shard write until it was cut off.
+const candidateSchema = (n: number) => ({ ...CANDIDATE_SCHEMA, schema: { ...CANDIDATE_SCHEMA.schema, properties: { candidates: { type: "array", minItems: n, maxItems: n, items: IDEA_ITEM_SCHEMA } } } });
+
 const SCORE_PROPERTIES = Object.fromEntries(SCORE_KEYS.map((key) => [key, { type: "integer", minimum: 1, maximum: 10 }]));
 
 function buildRankingSchema(count: number) {
@@ -368,7 +383,7 @@ function buildRankingSchema(count: number) {
 
 /* ============================= OpenAI call ============================= */
 
-async function callJson(messages: any[], schema: any, maxTokens: number, temperature: number) {
+async function callJson(messages: any[], schema: any, maxTokens: number, temperature: number, timeoutMs = 30_000) {
   const response = await fetch(OPENAI_CHAT, {
     method: "POST",
     headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
@@ -379,7 +394,7 @@ async function callJson(messages: any[], schema: any, maxTokens: number, tempera
       messages,
       response_format: { type: "json_schema", json_schema: schema },
     }),
-    signal: AbortSignal.timeout(30_000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
   if (!response.ok) throw new Error(`OpenAI ${response.status}: ${(await response.text()).slice(0, 300)}`);
   const payload = await response.json();
@@ -509,22 +524,41 @@ Deno.serve(async (req) => {
   });
 
   try {
-    // STEP A — larger candidate pool, one call.
-    let pool: any[] = [];
-    for (let attempt = 0; attempt < 2 && pool.length < POOL_SIZE; attempt += 1) {
+    // STEP A — Phase 6a: the pool comes from SHARDS small calls IN PARALLEL
+    // (one 24-idea call ran past its 30 s timeout twice on 2026-09-28 and the
+    // user saw "Couldn't generate ideas right now" after 61 s). Each shard
+    // leans toward a different kind of idea, so the pool stays varied.
+    // Each idea object is ~450-600 output tokens and gpt-4o-mini writes ~120
+    // tokens/s, so a shard of 2 ideas (~1,200 tokens) returns in ~10 s; 12 of
+    // them run at once. (A first 6x4 version at 1,800 tokens truncated every
+    // shard's JSON — Phase 6a timing run.)
+    // 12 DISTINCT leanings — parallel shards can't see each other, so two
+    // shards with the same leaning wrote the same idea (Phase 6a timing run).
+    const HINTS = ["mechanisms and how things work", "daily life in another era", "survival against the odds", "science and the body", "nature and animals", "hypotheticals and what-ifs", "misconceptions people still believe", "unsolved mysteries", "tools, weapons and inventions", "money, trade and power", "places, maps and journeys", "famous events told from the inside"];
+    const SHARDS = 12;
+    const perShard = Math.ceil(POOL_SIZE / SHARDS);
+    const tA = Date.now();
+    const runShard = async (shard: number, maxTokens: number) => {
       try {
-        const generated = await callJson(
-          [{ role: "user", content: buildCandidatePrompt(context) }],
-          CANDIDATE_SCHEMA,
-          7500,
-          1.0
-        );
-        const raw = Array.isArray(generated?.candidates) ? generated.candidates : [];
-        pool = raw.filter(isValidIdeaShape);
+        const generated = await callJson([{ role: "user", content: buildCandidatePrompt(context, perShard, HINTS[shard % HINTS.length]) }], candidateSchema(perShard), maxTokens, 1.0, 25_000);
+        return (Array.isArray(generated?.candidates) ? generated.candidates : []).filter(isValidIdeaShape);
       } catch (e) {
-        await logEvent(SOURCE, "warn", "candidate_generation_retry", { userId: user.id, attempt, message: String(e) });
+        await logEvent(SOURCE, "warn", "candidate_shard_failed", { userId: user.id, shard, message: String(e).slice(0, 160) });
+        return [];
       }
+    };
+    const shards = await Promise.all(Array.from({ length: SHARDS }, (_, i) => runShard(i, 1600)));
+    // One more parallel round for the failed shards only, when too few ideas survived.
+    const need = Math.max(3, Math.ceil(context.requestedCount / 2));
+    if (shards.flat().length < need) {
+      const failed = shards.map((sh, i) => (sh.length ? -1 : i)).filter((i) => i >= 0);
+      const again = await Promise.all(failed.map((i) => runShard(i, 2200)));
+      failed.forEach((i, k) => { shards[i] = again[k]; });
     }
+    // Round-robin across shards so the final order mixes kinds of ideas.
+    let pool: any[] = [];
+    for (let i = 0; i < perShard; i++) for (const sh of shards) if (sh[i]) pool.push(sh[i]);
+    await logEvent(SOURCE, "info", "candidate_pool_ready", { userId: user.id, poolSize: pool.length, ms: Date.now() - tA, shardsOk: shards.filter((x) => x.length).length });
     if (pool.length < Math.max(3, Math.ceil(context.requestedCount / 2))) {
       await logEvent(SOURCE, "error", "candidate_generation_failed", { userId: user.id, poolSize: pool.length });
       await refundIfCharged("candidate_generation_failed");
@@ -545,7 +579,10 @@ Deno.serve(async (req) => {
     // deterministic order rather than failing the whole request, since
     // every candidate is already a valid, complete idea object.
     let evaluations: any[] = [];
-    try {
+    // Phase 6a: the model ranking pass (a second ~10-20 s call) is skipped
+    // for speed — shard prompts already enforce the quality rules, and the
+    // code-level dedup/diversity guard below still applies.
+    if (RANK_WITH_MODEL) try {
       const ranked = await callJson(
         [{ role: "user", content: buildRankingPrompt(context, candidates) }],
         buildRankingSchema(candidates.length),
@@ -575,13 +612,16 @@ Deno.serve(async (req) => {
     // How Y / How Z" failure mode, on top of the prompt-level instruction).
     const selected: any[] = [];
     const selectedSets: Set<string>[] = [];
+    const selectedTitles: Set<string>[] = []; // Phase 6a: same title, different topic text is still a duplicate
     for (const entry of ordered) {
       if (selected.length >= context.requestedCount) break;
       const words = normalizeForDedup(`${entry.idea.title} ${entry.idea.topic}`);
-      const tooSimilar = selectedSets.some((existing) => jaccardSimilarity(words, existing) > 0.6);
+      const titleWords = normalizeForDedup(entry.idea.title);
+      const tooSimilar = selectedSets.some((existing) => jaccardSimilarity(words, existing) > 0.6) || selectedTitles.some((t) => jaccardSimilarity(titleWords, t) > 0.6);
       if (tooSimilar) continue;
       selected.push(entry.idea);
       selectedSets.push(words);
+      selectedTitles.push(titleWords);
     }
 
     const ideas = selected.filter(isValidIdeaShape).map((idea) => ({

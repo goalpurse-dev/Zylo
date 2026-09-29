@@ -1,0 +1,549 @@
+{
+ "recordedAt": "2026-09-27T12:00:10.072Z",
+ "targets": [
+  23,
+  35,
+  44,
+  46,
+  50,
+  54,
+  64,
+  82,
+  92,
+  96,
+  98,
+  100,
+  101,
+  105,
+  109,
+  110,
+  111,
+  112,
+  113,
+  114,
+  117
+ ],
+ "ok": true,
+ "status": 200,
+ "latencyMs": 16023,
+ "request": {
+  "model": "claude-sonnet-5",
+  "max_tokens": 6000,
+  "system": [
+   {
+    "type": "text",
+    "text": "You are Zyvo's Beat Director for 2D stickman-doodle explainer videos. You receive the finished narration already split by code into CLAUSE CHUNKS (C-numbers, each with its duration), the video's Production Bible (the only cast, settings and props that exist, with ids), the callback plan, and a short summary of the beats already directed. You group the chunks of one window into BEATS: small scenes of about 3-4 seconds, each one visual idea.\n\nYou never write or change narration. A beat is a range of consecutive chunks: s..e (inclusive), 1-3 chunks. Cover the window exactly: the first beat starts at the window's first chunk, each next beat starts at the previous e + 1, the last beat ends at the window's last chunk.\n\nSIZE — every chunk line gives its REAL spoken duration in seconds. A beat's chunks must add up to 6.0 s or less (hard limit 6.5 s); prefer 1 chunk when a single chunk is 3.5 s or longer (those lines say \"single\"). Most chunks are 2.5-4.5 s, so MOST BEATS ARE ONE CHUNK. Pair two chunks only when the line says \"pairs to\" a total of 6.0 s or less AND splitting would break one visual idea; 3 chunks only if all are tiny. Reference: a good video of this kind averages ~9 words and ~3.7 s per beat, never more than ~15 words. A beat must stay at or under 6.5 s; HOLD (a reason in \"hold\") may run to 9 s, about once a minute at most. Longer beats are split by code — don't rely on it. HOOK: in the first 30 seconds every beat is exactly ONE chunk (about 2.5-3.5 s each; code splits longer ones) — chunks there carry no \"pairs to\" note.\n\nWHERE TO CUT — cut on MEANING: a new claim, a change of action, a question, a reveal, a statistic, a comparison, a callback, a jump in time or place.\n\nONE FROZEN MOMENT PER BEAT — v (visualConcept) describes ONE still image: a single frozen moment a stickman illustrator draws as one picture. No transformations, sequences, sounds or \"then\" — never \"morphs\", \"turns into\", \"becomes\", \"rewrites\", \"spreads\", \"merges\", \"swings open\", \"strides\", \"flies\", \"grows\", \"fades\", \"appears\", \"moves\", \"travels\", \"rushes\", \"whistles\", \"you hear\". All movement goes in motionIntent, which code adds later — never describe movement. Example: not \"the silhouette morphs across a painting, a poster and a costume\" but \"three frames side by side: a painting, a movie poster and a party costume, each showing the same horned figure\".\n\nGROUNDED AND DRAWABLE — v names WHO or WHAT is visible, their action or pose, and WHERE. When the line names concrete things (flags, beer labels, football helmets, a date, a place, a person), SHOW those things — every item of a list — \"on flags, beer labels, football helmets\" is a flag, a beer bottle label and a football helmet, each with horns. Never an abstract restatement: no picture built on \"history\", \"memory\", \"culture\", \"belief\", \"idea\" or \"the image in your head\" — draw the concrete thing that stands for it (a history book, a museum label, a person imagining a horned helmet in a thought bubble).\n\nWHAT THE VIEWER SEES — v is what makes THIS exact line land. Use visual rhetoric when it fits:\n- threat: POV of the danger approaching the subject;\n- negation or myth: the thing crossed out;\n- safety vs danger: a small safe zone against a looming threat;\n- a tiny share of something huge: a long bar with a tiny highlighted sliver;\n- huge numbers: a crowd receding to the horizon;\n- past vs present: a mirrored SPLIT;\n- callbacks: re-use the EXACT composition, camera and subjects of the planted beat (treatment CALLBACK).\n\nHARD TREATMENTS NEED A CONCRETE RECIPE:\n- SYMBOLIC is always a concrete visual device: a thought bubble, an arrow, a balance scale, a split, a big red cross over something, a big number, a stamp. \"This is the image burned into your head\" → the viewer with a thought bubble containing a horned helmet.\n- POV states exactly what fills the frame: the viewer's hands in the foreground plus the specific object in the middle distance (\"the viewer's hands on a shield rim in the foreground, a horned mascot logo on a stadium banner in the middle distance\").\n- ESTABLISHING makes the named place the main subject (an opera house facade with a marquee, a bog at dawn), never a group of people.\n\nVARIETY — adjacent beats must differ in treatment, camera+framing, subjects or setting (unless HOLD or CALLBACK). Never more than 2 beats in a row on the same primary subject or object: vary the viewpoint across a run (the charger, then the enemy's view of the charger, then an enemy's reaction) instead of repeated close-ups of the same thing. And the same primary subject at most 3 times in any 8 consecutive beats.\n\nPEOPLE AND BALANCE — at least 55% of beats show a cast member (hands, back or tiny count). SYMBOLIC at most 15% of beats, OBJECT_DETAIL at most 20%; an object beat should often include a character's hands holding it or a face reacting to it.\n\nCAST — use ONLY the ids listed (never a placeholder). \"you\" lines use the viewer avatar whose era/context matches the line: the period avatar (e.g. viewer_viking) in the battle, viewer_modern for every present-day line (lunchbox, mascot, costume, museum, \"next time you see…\", \"today\"; chunk lines marked (present day)). The wrong era is a validation issue. Every line spoken to the viewer (\"you\", \"your head\") shows that viewer avatar (hands, back or tiny count). A CROWD beat shows a group of archetype people, never the viewer alone. Generic people use their archetype ids. A prop someone wears or holds in the beat goes in that person's wear/hold (e.g. the viewer wearing the horned helmet), not in props; with 2+ people give each a pos. Omit cast for beats with nobody on screen; omit set for abstract graphics.\n\nTEXT — omit txt for most beats (NO_TEXT). SHORT_TEXT is exact on-screen text of at most 5 words (a year, a number, a key term), at most about 4 per minute. PROGRAMMATIC is for charts, bars and stat cards the editor renders. Never ask the image to render sentences. NO UNDECLARED TEXT: if v implies readable text (reads, labeled, says, a sign, marquee, caption, title, banner, headline, words, something crossed out, a question mark), declare txt SHORT_TEXT with the exact string — or describe the picture without text.\n\nNO TEXT INSIDE THE PICTURE — every word (SHORT_TEXT too) is laid over the image later, so the picture must carry the idea with no letters or numbers in it: a stamp \"reading X\", a labeled timeline dot or a title card shows nothing. FILLER GUARD: never \"a person standing with a headline\". SYMBOLIC, STAT_CARD and TIMELINE_BAR beats need a visual device that works without words — an object, a comparison, a scale, a gesture, a before/after (an empty shelf with one helmet; a long bar with a tiny sliver; two helmets far apart on an unlabeled line).\n\nOBJECTS AND PROPS — omit cast for a beat about an object, a map, a timeline or a chart: that picture then contains no people at all, and objects never get faces or limbs. A museum case holds only its object. Every named artifact that has a prop id goes in props (or in a person's wear/hold) — v then just says \"the helmet\" and never re-describes it.\n\nPLACES — at most 3 beats in a row at the same location (unless HOLD): cut away to a graphic, a close object or another place.\n\nIP GUARD — never depict real brand logos, sports team logos or mascots, trademarks or copyrighted characters (e.g. the Minnesota Vikings, the NFL, Flash Gordon, Disney, Marvel, product brands). Use generic equivalents: \"a football team's horned-helmet logo\", \"a 1930s comic-book space hero\". The narration may name them; the picture never shows the real mark.\n\n\nMOTIF — the callback's planted beat gets motif \"plant\"; its payoff motif \"payoff\" and treatment CALLBACK.\n\nBE TERSE — every string a few words; v one sentence of at most ~12 words; settings by S-number. Omit every optional field you don't need. Return \"b\" as a JSON array (never a string).\n\nPRODUCTION BIBLE INDEX (the only ids that exist):\n{\"visualPremise\":\"Flat 2D stickman explainer visuals that shift between imagined battlefield scenes, close museum object shots, and backstage/theatrical illustrations to show how an image was invented and spread.\",\"visualTone\":\"clear, slightly wry and investigative — warm enough to feel familiar when showing the myth, precise and neutral when showing archaeological evidence.\",\"cast\":[{\"id\":\"viewer_viking\",\"role\":\"viewer avatar for the battlefield/imagined Viking scenes\"},{\"id\":\"viewer_modern\",\"role\":\"viewer avatar for present-day narration and museum/comparison scenes\"},{\"id\":\"warrior\",\"role\":\"generic Viking-age warrior used to illustrate combat and contrast with archaeological helmets\"},{\"id\":\"archaeologist\",\"role\":\"the professional explaining archaeological evidence and preservation issues\"},{\"id\":\"priest\",\"role\":\"represents Bronze Age ceremonial wearers in explanatory reconstructions\"},{\"id\":\"illustrator\",\"role\":\"used when showing artists and illustrators who reproduced the horned image\"},{\"id\":\"roberta_frank\",\"role\":\"the historian who traced literary absence of horned battle helmets\"},{\"id\":\"richard_wagner\",\"role\":\"the composer whose production popularized the horned costume\"},{\"id\":\"carl_doepler\",\"role\":\"the costume designer who dressed Wagner's productions with horned and mythic helmets\"},{\"id\":\"gustav_malmstrom\",\"role\":\"the painter whose work contributed to Romantic horned imagery\"},{\"id\":\"alex_raymond\",\"role\":\"the cartoonist who reproduced the horned warrior in popular comics\"}],\"settings\":[{\"id\":\"S1\",\"label\":\"viking_battlefield\"},{\"id\":\"S2\",\"label\":\"museum_gallery\"},{\"id\":\"S3\",\"label\":\"bronze_age_site\"},{\"id\":\"S4\",\"label\":\"theater_stage\"},{\"id\":\"S5\",\"label\":\"artist_studio\"}],\"props\":[{\"id\":\"gjermundbu_helmet\",\"label\":\"The Gjermundbu helmet: a rounded iron dome helmet with a spectacle-shaped eye guard and plain iron surface, clearly built for deflecting blows and without any horn attachments.\"},{\"id\":\"vekso_helmets\",\"label\":\"The Veksø helmets: two thin bronze ceremonial helmets each fitted with long curved horns tipped by small round discs, dated to the Nordic Bronze Age and likely ritual rather than combat gear.\"},{\"id\":\"wagner_stage_helmet\",\"label\":\"Wagner's horned stage helmet: a theatrical costume helmet with exaggerated curved horns designed for spectacle rather than historical accuracy.\"},{\"id\":\"mail_neck_guard\",\"label\":\"A mail neck guard: a short curtain of small linked grey iron rings hanging from the back and sides of a plain iron helmet's rim.\"},{\"id\":\"nose_guard\",\"label\":\"An iron nose guard: a plain flat vertical iron bar hanging down from the front rim of a rounded iron helmet.\"},{\"id\":\"helmet_fragment\",\"label\":\"A Viking-age helmet fragment: a broken curved piece of rusty brown iron about the size of a hand, with jagged edges.\"},{\"id\":\"horned_postcard\",\"label\":\"A horned-helmet tourist postcard: a small cream-colored card with a plain border and a simple flat drawing of a grey helmet with two curved horns.\"},{\"id\":\"horned_lunchbox\",\"label\":\"A horned-helmet lunchbox: a small red metal lunchbox with a handle and a simple flat drawing of a helmet with two curved horns on its side.\"},{\"id\":\"team_horned_logo\",\"label\":\"A football team's horned-helmet logo: an invented round emblem of a dark blue helmet with two cream-colored curved horns, in flat colors.\"}],\"graphicLanguage\":{\"comparisonLayouts\":\"Use horizontal two-panel comparisons for 'what they expected vs what we found' moments; each panel keeps the same background band color to focus attention on the object differences.\",\"timelineConventions\":\"A simple flat horizontal timeline with three labeled dots: 'Bronze Age (c. 1000 BCE)', 'Viking Age (c. 793–1066)', '19th-century Romanticism (c. 1800s)'. Use pale grey line and small muted ochre dots.\",\"symbolicMetaphorLanguage\":\"Use a theatrical mask or marquee icon to symbolize 'stage/theatre invention' and a small magnifying glass icon to symbolize 'archaeological evidence'.\"},\"factualVisualConstraints\":[\"Show the Gjermundbu helmet as a rounded iron dome with spectacle guard and no horn attachments.\",\"Show the Veksø helmets as thin bronze ceremonial helmets with prominent curved horns.\",\"Do not present any authenticated Viking-age helmet with attached horns in museum closeups.\"]}\n\nCALLBACK PLAN: planted detail \"two long curved horns\" — plant in segment seg1, payoff in segment seg14.",
+    "cache_control": {
+     "type": "ephemeral"
+    }
+   }
+  ],
+  "messages": [
+   {
+    "role": "user",
+    "content": "REDIRECT: these beats of a finished plan rendered badly. Write a fresh contract for EACH beat marked NEEDS CONTRACT — its narration and timing are fixed, so set s = e = its B-number. Fix exactly what its note says, follow every rule (no text inside the picture, objects without people, props by id, IP guard, places), and differ from its context neighbours.\n\ncontext B22 \"roughly 793 to 1066,\" — TIMELINE_BAR/FLAT_GRAPHIC [no cast] no setting: Timeline bar highlighting 793 to 1066\nNEEDS CONTRACT B23 \"that survive with enough of the skull intact to study?\" (fix: the image drew a literal skull — show the helmet fragment object instead (no skull, no bones)) — was: OBJECT_DETAIL/CLOSE_UP [archaeologist] S3: Archaeologist examines a fragmented skull-shaped helmet cast\ncontext B24 \"You can count them on one hand.\" — SCALE/CLOSE_UP [viewer_modern] S2: Five helmets laid out, countable on one raised hand\ncontext B34 \"Why trust one helmet?\" — REACTION/CLOSE_UP [viewer_modern] S2: Viewer modern raises an eyebrow, skeptical of one helmet\nNEEDS CONTRACT B35 \"Because it isn't alone.\" (fix: it repeats its neighbours' composition (a person beside a display case) — change the subject, viewpoint or place) — was: REACTION/MEDIUM [archaeologist] S2: Archaeologist gestures, presenting more evidence beyond one helmet\ncontext B36 \"Fragments from Tjele in Denmark\" — MAP/FLAT_GRAPHIC [no cast] S2: Map with pins at several Danish sites, fragments illustrated at each\ncontext B43 \"descriptions of horned battle helmets either. Not one saga.\" — SYMBOLIC/CLOSE_UP [no cast] no setting: Single saga book with a red cross over a horned helmet icon\nNEEDS CONTRACT B44 \"Not one carving from the era mentions warriors fighting in horns.\" (fix: the image drew live people fighting — show a flat stone slab carving (an object) of warriors without horns; nobody alive in the frame; a stickman appeared where an object should be — objects only, omit cast unless a person is truly needed) — was: OBJECT_DETAIL/CLOSE_UP [no cast] S3: Stone carving of warriors fighting, none wearing horns\ncontext B45 \"So where do actual horned helmets in museums come from,\" — REACTION/CLOSE_UP [viewer_modern] S2: Viewer modern stares at museum horned helmet display, puzzled\nNEEDS CONTRACT B46 \"if not the Viking Age?\" (fix: it repeats its neighbours' composition (a person beside a display case) — change the subject, viewpoint or place) — was: REACTION/MEDIUM [viewer_modern] S2: Viewer modern shrugs before a locked glass case labeled Viking Age\ncontext B47 \"Rewind about two thousand years\" — TIMELINE_BAR/FLAT_GRAPHIC [no cast] no setting: Timeline arrow rewinds past the Viking dot toward an earlier point\ncontext B49 \"In 1942,\" — ESTABLISHING/WIDE [no cast] S3: Title card reading the year over misty bog\nNEEDS CONTRACT B50 \"workers draining a bog near Veksø in Denmark pulled up two bronze helmets,\" (fix: the workers were drawn as the priest and the warrior — show only workers' hands (or tiny distant figures) lifting two bronze helmets from bog mud, never the priest or warrior) — was: STORY_SCENE/WIDE [priest,warrior] S3: Workers in a drained Danish bog near Veksø lift two bronze helmets from mud\ncontext B51 \"each fitted with long, gently curving horns tipped with little round discs.\" — OBJECT_DETAIL/EXTREME_CLOSE_UP [no cast] S3: Close on Veksø helmet: long curving horns tipped with round discs\ncontext B53 \"and they've been dated to roughly 900 to 1100 BCE,\" — TIMELINE_BAR/FLAT_GRAPHIC [no cast] no setting: Timeline dot marks Nordic Bronze Age beside the helmets\nNEEDS CONTRACT B54 \"the Nordic Bronze Age.\" (fix: a stickman appeared where an object should be — objects only, omit cast unless a person is truly needed; it rendered as a person standing with a headline — carry the idea with an object, comparison, scale, gesture or before/after that works with NO text in the picture) — was: TIMELINE_BAR/FLAT_GRAPHIC [no cast] no setting: Timeline dot labeled Nordic Bronze Age beside the two horned helmets\ncontext B55 \"These weren't armor. The bronze is thin,\" — OBJECT_DETAIL/CLOSE_UP [priest] S3: Thin bronze helmet held up, light shining through delicate metal\ncontext B63 \"china for something you use in a bar fight?\" — COMPARISON/CLOSE_UP [no cast] no setting: Close on a broken bottle mid-swing in a bar fight brawl\nNEEDS CONTRACT B64 \"That's roughly the gap we're talking about.\" (fix: it repeats its neighbours' composition (a person beside a display case) — change the subject, viewpoint or place) — was: REACTION/CLOSE_UP [viewer_modern] S2: Viewer modern shrugs, comparing china to broken bottle\ncontext B65 \"But 19th-century antiquarians didn't always draw\" — STORY_SCENE/CLOSE_UP [illustrator] S5: Illustrator's hands sketch a warrior wearing horned helmet, blurring dates\ncontext B81 \"from the back row of a theater.\" — POV/POV [no cast] S4: POV from back row: tiny distant stage glows far below\nNEEDS CONTRACT B82 \"Historical accuracy wasn't the assignment.\" (fix: it rendered as a person standing with a headline — carry the idea with an object, comparison, scale, gesture or before/after that works with NO text in the picture) — was: SYMBOLIC/CLOSE_UP [no cast] no setting: Stamp reading NOT ACCURATE slams across an open history book\ncontext B83 \"Spectacle was. Why did that image spread so fast?\" — OBJECT_DETAIL/CLOSE_UP [no cast] S4: Wagner's stage helmet held high under a spotlight\ncontext B91 \"template every illustrator copied afterward,\" — CROWD/WIDE [illustrator] S5: Row of illustrators all copying the same horned template\nNEEDS CONTRACT B92 \"because it was already proven to work on an audience.\" (fix: it rendered as a person standing with a headline — carry the idea with an object, comparison, scale, gesture or before/after that works with NO text in the picture) — was: SYMBOLIC/CLOSE_UP [no cast] no setting: Stamp marks the template as proven, audience silhouette below\ncontext B93 \"From there it never stopped moving.\" — MAP/WIDE [no cast] no setting: Arrow launches from the stage template onward across a map\ncontext B95 \"horned helmets showed up on tourist postcards sold in Norway itself.\" — OBJECT_DETAIL/CLOSE_UP [viewer_modern] no setting: Tourist's hand picks a horned-helmet postcard from a Norway rack\nNEEDS CONTRACT B96 \"In 1939,\" (fix: a stickman appeared where an object should be — objects only, omit cast unless a person is truly needed; letters appeared in the picture — nothing that needs text; it rendered as a person standing with a headline — carry the idea with an object, comparison, scale, gesture or before/after that works with NO text in the picture) — was: TIMELINE_BAR/FLAT_GRAPHIC [no cast] no setting: Timeline dot lands on 1939 along the horizontal bar\ncontext B97 \"cartoonist Alex Raymond drew the horned warrior\" — STORY_SCENE/CLOSE_UP [alex_raymond] S5: Alex Raymond's hands draw the horned warrior at his desk\nNEEDS CONTRACT B98 \"in his Flash Gordon comics.\" (fix: it showed a real team logo / copyrighted character — use a generic equivalent (the team_horned_logo prop; a 1930s comic-book space hero), never the real mark; it rendered as a person standing with a headline — carry the idea with an object, comparison, scale, gesture or before/after that works with NO text in the picture) — was: OBJECT_DETAIL/CLOSE_UP [no cast] no setting: Flash Gordon comic panel shows the horned warrior in print\ncontext B99 \"In 1948, the Minnesota Vikings didn't exist yet,\" — TIMELINE_BAR/FLAT_GRAPHIC [no cast] no setting: Timeline dot 1948 with no team logo, empty banner\nNEEDS CONTRACT B100 \"but when the NFL team formed in 1961,\" (fix: a stickman appeared where an object should be — objects only, omit cast unless a person is truly needed; it showed a real team logo / copyrighted character — use a generic equivalent (the team_horned_logo prop; a 1930s comic-book space hero), never the real mark; letters appeared in the picture — nothing that needs text) — was: TIMELINE_BAR/FLAT_GRAPHIC [no cast] no setting: 1961 timeline dot with a Minnesota Vikings shield logo on a banner\nNEEDS CONTRACT B101 \"they built their whole identity around that same horned image.\" (fix: it showed a real team logo / copyrighted character — use a generic equivalent (the team_horned_logo prop; a 1930s comic-book space hero), never the real mark) — was: OBJECT_DETAIL/CLOSE_UP [no cast] S2: Minnesota Vikings horned helmet logo centered on a locker room wall\ncontext B102 \"Have you ever questioned why a football team\" — REACTION/CLOSE_UP [viewer_modern] S2: Viewer stares at a horned football helmet, puzzled expression\ncontext B104 \"Most people never do.\" — CROWD/WIDE [viewer_modern] no setting: Crowd of football fans fills stadium seats, none questioning anything\nNEEDS CONTRACT B105 \"But can we really say never, with total certainty?\" (fix: it repeats its neighbours' composition (a person beside a display case) — change the subject, viewpoint or place) — was: REACTION/CLOSE_UP [viewer_modern] S2: Viewer modern raises a hand mid-question, eyebrow arched\ncontext B106 \"Here's the honest complication.\" — STORY_SCENE/MEDIUM [archaeologist] S3: Archaeologist holds up a hand, about to explain a complication\ncontext B108 \"probably never made of iron at all.\" — OBJECT_DETAIL/OVERHEAD [no cast] S3: Dig site shows an outline where an iron helmet would sit, empty\nNEEDS CONTRACT B109 \"Leather, boiled and hardened,\" (fix: a stickman appeared where an object should be — objects only, omit cast unless a person is truly needed; it rendered as a person standing with a headline — carry the idea with an object, comparison, scale, gesture or before/after that works with NO text in the picture) — was: OBJECT_DETAIL/CLOSE_UP [no cast] S3: Close on hardened leather strip laid beside a dig outline\nNEEDS CONTRACT B110 \"wood, and antler don't survive well underground for a thousand years,\" (fix: an object got a face — objects never have faces or limbs; a stickman appeared where an object should be — objects only, omit cast unless a person is truly needed; it rendered as a person standing with a headline — carry the idea with an object, comparison, scale, gesture or before/after that works with NO text in the picture) — was: OBJECT_DETAIL/OVERHEAD [no cast] S3: Three objects laid in dirt: leather, wood, antler, all crumbling\nNEEDS CONTRACT B111 \"especially in acidic Scandinavian soil.\" (fix: it rendered as a person standing with a headline — carry the idea with an object, comparison, scale, gesture or before/after that works with NO text in the picture) — was: OBJECT_DETAIL/CLOSE_UP [archaeologist] S3: Archaeologist's hand crumbles dark Scandinavian soil labeled acidic\nNEEDS CONTRACT B112 \"If a helmet had small horns made from antler lashed on with leather cord,\" (fix: it rendered as a person standing with a headline — carry the idea with an object, comparison, scale, gesture or before/after that works with NO text in the picture) — was: STORY_SCENE/CLOSE_UP [priest] S3: Priest wears a helmet with small antler horns tied by leather cord\nNEEDS CONTRACT B113 \"that cord and antler could rot into nothing within a few centuries,\" (fix: a stickman appeared where an object should be — objects only, omit cast unless a person is truly needed; it rendered as a person standing with a headline — carry the idea with an object, comparison, scale, gesture or before/after that works with NO text in the picture) — was: OBJECT_DETAIL/CLOSE_UP [no cast] S3: Leather cord and antler dissolve into dust on the ground\nNEEDS CONTRACT B114 \"leaving no rivet holes, no discoloration, no trace at all.\" (fix: a stickman appeared where an object should be — objects only, omit cast unless a person is truly needed; it rendered as a person standing with a headline — carry the idea with an object, comparison, scale, gesture or before/after that works with NO text in the picture) — was: OBJECT_DETAIL/OVERHEAD [no cast] S3: Empty patch of dirt shows no rivet holes, no marks at all\ncontext B115 \"So when archaeologists say no evidence,\" — REACTION/MEDIUM [archaeologist] S3: Archaeologist shrugs beside an empty excavation tray\ncontext B116 \"they mean no surviving evidence.\" — SYMBOLIC/CLOSE_UP [no cast] S3: Magnifying glass hovers over bare dirt, finding nothing\nNEEDS CONTRACT B117 \"Absence isn't automatically proof of absence.\" (fix: it rendered as a person standing with a headline — carry the idea with an object, comparison, scale, gesture or before/after that works with NO text in the picture) — was: SYMBOLIC/FLAT_GRAPHIC [no cast] no setting: Big red stamp reading NO EVIDENCE crossed with a question mark\ncontext B118 \"It just means if it happened, it happened in a material\" — SYMBOLIC/CLOSE_UP [warrior] no setting: Warrior's sketched horned helmet sits beside a large hourglass on a table\n\nReturn \"b\" containing ONLY the 21 NEEDS CONTRACT beat(s), in order."
+   }
+  ],
+  "tools": [
+   {
+    "name": "direct_beats",
+    "description": "Returns the beats.",
+    "input_schema": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "b"
+     ],
+     "properties": {
+      "b": {
+       "type": "array",
+       "description": "The beats, in order.",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "s",
+         "e",
+         "v",
+         "t",
+         "c",
+         "f"
+        ],
+        "properties": {
+         "s": {
+          "type": "integer",
+          "description": "startChunk (C-number)."
+         },
+         "e": {
+          "type": "integer",
+          "description": "endChunk (inclusive). 1-3 consecutive chunks."
+         },
+         "v": {
+          "type": "string",
+          "description": "visualConcept: ONE still image, a single frozen moment (max ~12 words)."
+         },
+         "t": {
+          "type": "string",
+          "enum": [
+           "STORY_SCENE",
+           "REACTION",
+           "POV",
+           "ESTABLISHING",
+           "OBJECT_DETAIL",
+           "SYMBOLIC",
+           "COMPARISON",
+           "SPLIT",
+           "MAP",
+           "TIMELINE_BAR",
+           "SCALE",
+           "STAT_CARD",
+           "ICON_ROW",
+           "CROWD",
+           "CALLBACK"
+          ],
+          "description": "treatment"
+         },
+         "c": {
+          "type": "string",
+          "enum": [
+           "EXTREME_WIDE",
+           "WIDE",
+           "MEDIUM",
+           "CLOSE_UP",
+           "EXTREME_CLOSE_UP",
+           "OVERHEAD",
+           "POV",
+           "OVER_THE_SHOULDER",
+           "LOW_ANGLE",
+           "FLAT_GRAPHIC"
+          ],
+          "description": "composition.camera"
+         },
+         "f": {
+          "type": "string",
+          "description": "composition.framing, 2-4 words."
+         },
+         "cast": {
+          "type": "array",
+          "description": "subjects on screen; omit if none.",
+          "items": {
+           "type": "object",
+           "additionalProperties": false,
+           "required": [
+            "id",
+            "a"
+           ],
+           "properties": {
+            "id": {
+             "type": "string",
+             "enum": [
+              "viewer_viking",
+              "viewer_modern",
+              "warrior",
+              "archaeologist",
+              "priest",
+              "illustrator",
+              "roberta_frank",
+              "richard_wagner",
+              "carl_doepler",
+              "gustav_malmstrom",
+              "alex_raymond"
+             ],
+             "description": "castId"
+            },
+            "a": {
+             "type": "string",
+             "description": "action + expression, max 4 words"
+            },
+            "p": {
+             "type": "string",
+             "enum": [
+              "full",
+              "hands",
+              "back",
+              "tiny"
+             ],
+             "description": "presence; omit for full"
+            },
+            "pos": {
+             "type": "string",
+             "enum": [
+              "left",
+              "right",
+              "center",
+              "foreground",
+              "background"
+             ],
+             "description": "where in the frame, when 2+ people; omit otherwise"
+            },
+            "wear": {
+             "type": "array",
+             "items": {
+              "type": "string",
+              "enum": [
+               "gjermundbu_helmet",
+               "vekso_helmets",
+               "wagner_stage_helmet",
+               "mail_neck_guard",
+               "nose_guard",
+               "helmet_fragment",
+               "horned_postcard",
+               "horned_lunchbox",
+               "team_horned_logo"
+              ]
+             },
+             "description": "props this person WEARS in this beat (e.g. a helmet); omit if none"
+            },
+            "hold": {
+             "type": "array",
+             "items": {
+              "type": "string",
+              "enum": [
+               "gjermundbu_helmet",
+               "vekso_helmets",
+               "wagner_stage_helmet",
+               "mail_neck_guard",
+               "nose_guard",
+               "helmet_fragment",
+               "horned_postcard",
+               "horned_lunchbox",
+               "team_horned_logo"
+              ]
+             },
+             "description": "props this person HOLDS in this beat; omit if none"
+            }
+           }
+          }
+         },
+         "set": {
+          "type": [
+           "string",
+           "null"
+          ],
+          "enum": [
+           "S1",
+           "S2",
+           "S3",
+           "S4",
+           "S5",
+           null
+          ],
+          "description": "setting (S-number); omit for abstract graphics."
+         },
+         "sv": {
+          "type": "string",
+          "description": "settingVariant; omit if none."
+         },
+         "props": {
+          "type": "array",
+          "items": {
+           "type": "string",
+           "enum": [
+            "gjermundbu_helmet",
+            "vekso_helmets",
+            "wagner_stage_helmet",
+            "mail_neck_guard",
+            "nose_guard",
+            "helmet_fragment",
+            "horned_postcard",
+            "horned_lunchbox",
+            "team_horned_logo"
+           ]
+          },
+          "description": "propIds; omit if none."
+         },
+         "txt": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+           "m",
+           "t"
+          ],
+          "description": "textIntent; omit for NO_TEXT.",
+          "properties": {
+           "m": {
+            "type": "string",
+            "enum": [
+             "NO_TEXT",
+             "SHORT_TEXT",
+             "PROGRAMMATIC"
+            ]
+           },
+           "t": {
+            "type": [
+             "string",
+             "null"
+            ],
+            "description": "exact on-screen text (<= 5 words) for SHORT_TEXT; what to render for PROGRAMMATIC."
+           }
+          }
+         },
+         "motif": {
+          "type": "string",
+          "enum": [
+           "plant",
+           "payoff"
+          ],
+          "description": "Only on the callback's plant / payoff beat; omit otherwise."
+         },
+         "hold": {
+          "type": "string",
+          "description": "HOLD reason (beat may run to 9 s); omit otherwise."
+         },
+         "punch": {
+          "type": "string",
+          "description": "PUNCH reason (beat may be under 1.8 s); omit otherwise."
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  ],
+  "tool_choice": {
+   "type": "tool",
+   "name": "direct_beats"
+  }
+ },
+ "response": {
+  "model": "claude-sonnet-5",
+  "id": "msg_011CfTuYLYtYAq6oW2h81Aas",
+  "type": "message",
+  "role": "assistant",
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_01Gmky7P8eCbuNbknqayL3cE",
+    "name": "direct_beats",
+    "input": {
+     "b": [
+      {
+       "s": 23,
+       "e": 23,
+       "v": "A jagged rusty helmet fragment sits alone under a magnifying glass",
+       "t": "OBJECT_DETAIL",
+       "c": "CLOSE_UP",
+       "f": "tight on fragment",
+       "set": "S3",
+       "props": [
+        "helmet_fragment"
+       ]
+      },
+      {
+       "s": 35,
+       "e": 35,
+       "v": "Archaeologist points toward a map of scattered dig sites in distance",
+       "t": "REACTION",
+       "c": "WIDE",
+       "f": "archaeologist gesturing at map",
+       "set": "S3",
+       "cast": [
+        {
+         "id": "archaeologist",
+         "a": "gestures toward distant sites"
+        }
+       ]
+      },
+      {
+       "s": 44,
+       "e": 44,
+       "v": "Flat stone slab carved with warriors fighting, none wearing horns",
+       "t": "OBJECT_DETAIL",
+       "c": "CLOSE_UP",
+       "f": "close on carved stone",
+       "set": "S3"
+      },
+      {
+       "s": 50,
+       "e": 50,
+       "v": "Workers hands lift two bronze horned helmets from dripping bog mud",
+       "t": "STORY_SCENE",
+       "c": "CLOSE_UP",
+       "f": "hands only, bog mud",
+       "set": "S3",
+       "cast": [
+        {
+         "id": "warrior",
+         "a": "hands lift muddy helmet",
+         "p": "hands"
+        }
+       ],
+       "props": [
+        "vekso_helmets"
+       ]
+      },
+      {
+       "s": 54,
+       "e": 54,
+       "v": "Two horned bronze helmets flank a single timeline dot, nothing else",
+       "t": "TIMELINE_BAR",
+       "c": "FLAT_GRAPHIC",
+       "f": "dot between two helmets",
+       "props": [
+        "vekso_helmets"
+       ]
+      },
+      {
+       "s": 64,
+       "e": 64,
+       "v": "A porcelain teacup and a broken bottle sit side by side on shelf",
+       "t": "COMPARISON",
+       "c": "CLOSE_UP",
+       "f": "teacup beside broken bottle"
+      },
+      {
+       "s": 82,
+       "e": 82,
+       "v": "An open history book with a theatrical mask paperweight pinning its pages",
+       "t": "SYMBOLIC",
+       "c": "CLOSE_UP",
+       "f": "mask atop open book"
+      },
+      {
+       "s": 92,
+       "e": 92,
+       "v": "A trophy stamped with the horned template sits above a silhouetted crowd",
+       "t": "SYMBOLIC",
+       "c": "CLOSE_UP",
+       "f": "trophy over crowd silhouette",
+       "set": "S4"
+      },
+      {
+       "s": 96,
+       "e": 96,
+       "v": "A single unmarked timeline dot sits alone on the pale grey line",
+       "t": "TIMELINE_BAR",
+       "c": "FLAT_GRAPHIC",
+       "f": "lone dot on bar"
+      },
+      {
+       "s": 98,
+       "e": 98,
+       "v": "A 1930s comic-book space hero panel shows the horned warrior in print",
+       "t": "OBJECT_DETAIL",
+       "c": "CLOSE_UP",
+       "f": "close on comic panel"
+      },
+      {
+       "s": 100,
+       "e": 100,
+       "v": "An empty banner unfurls beside a blank timeline dot marked 1961",
+       "t": "TIMELINE_BAR",
+       "c": "FLAT_GRAPHIC",
+       "f": "blank banner on bar"
+      },
+      {
+       "s": 101,
+       "e": 101,
+       "v": "The invented horned team logo centered on a locker room wall",
+       "t": "OBJECT_DETAIL",
+       "c": "CLOSE_UP",
+       "f": "logo on wall",
+       "set": "S2",
+       "props": [
+        "team_horned_logo"
+       ]
+      },
+      {
+       "s": 105,
+       "e": 105,
+       "v": "A lone stadium seat sits empty, spotlighted apart from the crowd",
+       "t": "REACTION",
+       "c": "WIDE",
+       "f": "empty seat isolated",
+       "set": "S2"
+      },
+      {
+       "s": 109,
+       "e": 109,
+       "v": "A strip of hardened leather curls beside an empty dig outline",
+       "t": "OBJECT_DETAIL",
+       "c": "CLOSE_UP",
+       "f": "leather beside outline",
+       "set": "S3",
+       "props": [
+        "helmet_fragment"
+       ]
+      },
+      {
+       "s": 110,
+       "e": 110,
+       "v": "Leather, wood and antler laid in dirt, all crumbling to dust",
+       "t": "OBJECT_DETAIL",
+       "c": "OVERHEAD",
+       "f": "three objects crumbling"
+      },
+      {
+       "s": 111,
+       "e": 111,
+       "v": "A handful of dark soil crumbles apart over an empty dig tray",
+       "t": "OBJECT_DETAIL",
+       "c": "CLOSE_UP",
+       "f": "soil crumbling in hand",
+       "set": "S3"
+      },
+      {
+       "s": 112,
+       "e": 112,
+       "v": "Small antler horns lashed with leather cord rest on a bare helmet dome",
+       "t": "OBJECT_DETAIL",
+       "c": "CLOSE_UP",
+       "f": "antler horns on helmet",
+       "set": "S3"
+      },
+      {
+       "s": 113,
+       "e": 113,
+       "v": "Leather cord and antler dissolve into a small patch of dust",
+       "t": "OBJECT_DETAIL",
+       "c": "CLOSE_UP",
+       "f": "cord and antler dissolving",
+       "set": "S3"
+      },
+      {
+       "s": 114,
+       "e": 114,
+       "v": "A bare patch of smooth dirt with no rivet holes or marks",
+       "t": "OBJECT_DETAIL",
+       "c": "OVERHEAD",
+       "f": "blank dirt patch",
+       "set": "S3"
+      },
+      {
+       "s": 117,
+       "e": 117,
+       "v": "An empty picture frame hangs beside a small question mark shadow",
+       "t": "SYMBOLIC",
+       "c": "CLOSE_UP",
+       "f": "empty frame with shadow"
+      }
+     ]
+    },
+    "caller": {
+     "type": "direct"
+    }
+   }
+  ],
+  "container": null,
+  "stop_reason": "tool_use",
+  "stop_sequence": null,
+  "stop_details": null,
+  "usage": {
+   "input_tokens": 5369,
+   "cache_creation_input_tokens": 6618,
+   "cache_read_input_tokens": 0,
+   "cache_creation": {
+    "ephemeral_5m_input_tokens": 6618,
+    "ephemeral_1h_input_tokens": 0
+   },
+   "output_tokens": 1784,
+   "output_tokens_details": {
+    "thinking_tokens": 0
+   },
+   "service_tier": "standard",
+   "inference_geo": "global"
+  },
+  "diagnostics": null
+ }
+}

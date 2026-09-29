@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "DECADES EARLIER",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 17,
+ "scale": 154,
+ "box": {
+  "x": 339,
+  "y": 75,
+  "width": 1242,
+  "height": 211
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 4.93,
+  "bottom": 13.9
+ }
+}

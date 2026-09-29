@@ -1,0 +1,470 @@
+{
+  "rebuiltAt": "2026-09-27T11:23:30.887Z",
+  "productionBibleId": "0ca9e3e2-596d-4f28-99cd-6c4ada48ecaa",
+  "stats": {
+    "llmCalls": 2,
+    "repairCalls": 1,
+    "inputTokens": 13454,
+    "outputTokens": 12342,
+    "estimatedModelCostUsd": 0.028,
+    "latencyMs": 104644
+  },
+  "warnings": [
+    "PROMPT_BLOCK_NOT_STANDALONE:viking_battlefield — a setting block describes only the place; people are added per beat"
+  ],
+  "bible": {
+    "productionBibleVersion": 1,
+    "recipeId": "stickman_doodle_explainer",
+    "recipeVersion": "STICKMAN_DOODLE_EXPLAINER_V1",
+    "visualPremise": "Flat 2D stickman explainer visuals that shift between imagined battlefield scenes, close museum object shots, and backstage/theatrical illustrations to show how an image was invented and spread.",
+    "visualTone": "clear, slightly wry and investigative — warm enough to feel familiar when showing the myth, precise and neutral when showing archaeological evidence.",
+    "styleContract": {
+      "medium": "Flat-color 2D doodle/stickman illustration",
+      "illustrationStyle": "Simplified stickman/doodle explainer construction — circle heads, dot eyes, stick limbs, mitten hands — never a detailed or semi-realistic character",
+      "lineLanguage": "Uniform thin, clean black outlines of identical weight everywhere; no sketchiness, no variable line weight, no cross-hatching",
+      "shapeLanguage": "Simple geometric primitives — circles, rounded rectangles, straight or gently curved lines — never intricate or organic detail",
+      "detailLevel": "Minimal — enough to read instantly at a glance, never busy or cluttered",
+      "shadingPolicy": "None — flat solid fills only, no gradients, no soft shadow rendering, no highlights",
+      "texturePolicy": "None — flat, texture-free surfaces throughout",
+      "dimensionality": "2D flat, no 3D rendering, no depth shading, no perspective distortion beyond simple flat-layer staging",
+      "realismLevel": "Non-realistic, iconographic — identity is carried by a handful of discrete flat features, never facial realism",
+      "backgroundStrategy": "2-3 flat color layers (background/midground/foreground), never a fully rendered or photographic environment",
+      "forbiddenStyleTraits": [
+        "photorealistic or photographic rendering",
+        "3D render or CGI look",
+        "painterly or watercolor texture",
+        "anime or manga stylization",
+        "pencil-sketch or hand-drawn sketchiness",
+        "cel-shading with rendered shadows",
+        "gradient mesh or airbrushed shading",
+        "drop shadows or glow/bloom effects",
+        "realistic anatomy, fingers, or necks on stickman characters"
+      ],
+      "colorStrategy": "Assign a single dominant background band color per setting family and reserve bronze/iron accents specifically for artifact closeups. Viewer avatars and role archetypes reuse their canonical clothing colors consistently across scenes so viewers recognize roles at a glance.",
+      "lightingStrategy": "Flat, stage-like lighting: warm rim light for battlefield dusk, even neutral light for museum interiors, a single pale spotlight on stage, and cool daylight for bog/bronze-age sites. No gradients or shading, only flat color blocks to imply time/mood."
+    },
+    "palette": {
+      "primaryColors": [
+        "muted forest-green",
+        "warm orange",
+        "muddy brown",
+        "pale grey"
+      ],
+      "supportingColors": [
+        "muted teal",
+        "deep maroon",
+        "muted ochre",
+        "off-white"
+      ],
+      "environmentPaletteRules": "Use one dominant background band color per scene family (battlefield = warm orange; museum = off-white; theater = deep maroon; bronze-age = muted teal). Foreground artifacts use bronze accent or muddy brown as appropriate. Characters use the muted clothing palette so artifacts stand out.",
+      "contrastRules": "Keep characters and objects in mid-to-high contrast against the background band; museum cases and artifact pedestals are pale grey against off-white walls for legibility.",
+      "colorApproach": "FULL_COLOR",
+      "monochromeJustification": ""
+    },
+    "continuityMode": "NONE",
+    "hero": {
+      "exists": false,
+      "subjectType": "none",
+      "semanticIdentity": "",
+      "canonicalAppearance": "",
+      "headFaceConstruction": "",
+      "bodyConstruction": "",
+      "skinTone": "",
+      "hair": "",
+      "outfit": "",
+      "accessories": [],
+      "persistentIdentifyingFeatures": [],
+      "bodyProportions": "",
+      "emotionalExpressionLanguage": "",
+      "forbiddenMutations": [],
+      "reasoning": "The episode does not follow a single individual's throughline. It moves between a viewer-planted imagined moment, object-focused archaeology, and historical/artist vignettes. Visual continuity is carried by consistent role archetypes (the viewer avatars, a warrior type, an archaeologist, named historical figures) rather than a single hero."
+    },
+    "recurringCharacters": [],
+    "roleArchetypes": [
+      {
+        "identity": {
+          "displayName": "The viewer as a Viking raider",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "short-cropped dark brown hair",
+          "outfit": "a muted forest-green tunic shape on the torso with a thin dark brown belt line, and small dark grey rounded feet",
+          "outfitShort": "green tunic",
+          "sleeves": "",
+          "build": "average adult proportions",
+          "signature": "a round wooden shield with a simple black boss drawn as a flat brown circle"
+        },
+        "outfitVariants": [],
+        "id": "viewer_viking",
+        "role": "viewer avatar for the battlefield/imagined Viking scenes",
+        "canonicalAppearance": "The viewer as a Viking raider: light warm beige circle head, short-cropped dark brown hair, a muted forest-green tunic shape on the torso with a thin dark brown belt line, thin black stick-line arms and legs, small dark grey rounded feet, holding a round wooden shield with a simple black boss.",
+        "usedFor": "All 'you' lines that place the viewer in a Viking-age charge or imagined battlefield."
+      },
+      {
+        "identity": {
+          "displayName": "The viewer as a modern museum visitor",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "short-cropped dark brown hair",
+          "outfit": "a muted navy shirt shape on the torso with small dark grey rounded feet",
+          "outfitShort": "navy shirt",
+          "sleeves": "",
+          "build": "average adult proportions",
+          "signature": "a small guide brochure held as a flat pale grey rectangle"
+        },
+        "outfitVariants": [],
+        "id": "viewer_modern",
+        "role": "viewer avatar for present-day narration and museum/comparison scenes",
+        "canonicalAppearance": "The viewer as a modern museum visitor: light warm beige circle head, short-cropped dark brown hair, a muted navy shirt shape on the torso, thin black stick-line arms and legs, small dark grey rounded feet, holding a flat pale grey brochure.",
+        "usedFor": "Present-day 'next time you see...' lines, museum shots, and contemporary callbacks."
+      },
+      {
+        "identity": {
+          "displayName": "A warrior",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "short-cropped dark brown hair",
+          "outfit": "a muted ochre tunic shape on the torso with a dark brown belt line, and small dark grey rounded feet",
+          "outfitShort": "ochre tunic",
+          "sleeves": "",
+          "build": "stocky adult proportions",
+          "signature": "a round wooden shield and a simple straight spear drawn as a thin black line with a small grey spearhead"
+        },
+        "outfitVariants": [],
+        "id": "warrior",
+        "role": "generic Viking-age warrior used to illustrate combat and contrast with archaeological helmets",
+        "canonicalAppearance": "A warrior: light warm beige circle head, short-cropped dark brown hair, a muted ochre tunic shape on the torso with a dark brown belt line, thin black stick-line arms and legs, small dark grey rounded feet, carrying a round wooden shield and a spear.",
+        "usedFor": "All scenes that need a generic Viking warrior figure."
+      },
+      {
+        "identity": {
+          "displayName": "An archaeologist",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "short-cropped dark brown hair",
+          "outfit": "a muted khaki shirt shape on the torso with small dark grey rounded feet",
+          "outfitShort": "khaki shirt",
+          "sleeves": "",
+          "build": "average adult proportions",
+          "signature": "a flat pale grey trowel and a small pale brown clipboard"
+        },
+        "outfitVariants": [],
+        "id": "archaeologist",
+        "role": "the professional explaining archaeological evidence and preservation issues",
+        "canonicalAppearance": "An archaeologist: light warm beige circle head, short-cropped dark brown hair, a muted khaki shirt shape on the torso, thin black stick-line arms and legs, small dark grey rounded feet, holding a pale brown clipboard and a pale grey trowel.",
+        "usedFor": "Explanatory closeups on digs, evidence, and preservation."
+      },
+      {
+        "identity": {
+          "displayName": "A priest",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "short-cropped dark brown hair",
+          "outfit": "a muted deep ochre ceremonial robe shape on the torso with small dark grey rounded feet",
+          "outfitShort": "deep ochre robe",
+          "sleeves": "",
+          "build": "slender adult proportions",
+          "signature": "a thin bronze staff drawn as a black line topped with a small flat bronze circle"
+        },
+        "outfitVariants": [],
+        "id": "priest",
+        "role": "represents Bronze Age ceremonial wearers in explanatory reconstructions",
+        "canonicalAppearance": "A priest: light warm beige circle head, short-cropped dark brown hair, a muted deep ochre ceremonial robe shape on the torso, thin black stick-line arms and legs, small dark grey rounded feet, holding a thin bronze staff with a small bronze disk top.",
+        "usedFor": "Bronze Age ritual reconstructions and explanatory comparisons."
+      },
+      {
+        "identity": {
+          "displayName": "An illustrator",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "short-cropped dark brown hair",
+          "outfit": "a muted charcoal smock shape on the torso with small dark grey rounded feet",
+          "outfitShort": "charcoal smock",
+          "sleeves": "",
+          "build": "average adult proportions",
+          "signature": "a flat pale grey pencil and a small pale paper square"
+        },
+        "outfitVariants": [],
+        "id": "illustrator",
+        "role": "used when showing artists and illustrators who reproduced the horned image",
+        "canonicalAppearance": "An illustrator: light warm beige circle head, short-cropped dark brown hair, a muted charcoal smock shape on the torso, thin black stick-line arms and legs, small dark grey rounded feet, holding a pale grey pencil and a pale paper square.",
+        "usedFor": "Shots of artists copying or inventing the horned look."
+      },
+      {
+        "identity": {
+          "displayName": "Roberta Frank (the historian)",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "short-cropped dark brown hair",
+          "outfit": "a muted teal blouse shape on the torso with small dark grey rounded feet",
+          "outfitShort": "teal blouse",
+          "sleeves": "",
+          "build": "average adult proportions",
+          "signature": "a thin pale grey book held open as a flat rectangle"
+        },
+        "outfitVariants": [],
+        "id": "roberta_frank",
+        "role": "the historian who traced literary absence of horned battle helmets",
+        "canonicalAppearance": "Roberta Frank (the historian): light warm beige circle head, short-cropped dark brown hair, a muted teal blouse shape on the torso, thin black stick-line arms and legs, small dark grey rounded feet, holding an open pale grey book.",
+        "usedFor": "Narration beats referencing historical literature and scholarship."
+      },
+      {
+        "identity": {
+          "displayName": "Richard Wagner (the composer)",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "short-cropped dark brown hair",
+          "outfit": "a muted maroon coat shape on the torso with small dark grey rounded feet",
+          "outfitShort": "maroon coat",
+          "sleeves": "",
+          "build": "average adult proportions",
+          "signature": "a small pale grey musical score as a flat rectangle"
+        },
+        "outfitVariants": [],
+        "id": "richard_wagner",
+        "role": "the composer whose production popularized the horned costume",
+        "canonicalAppearance": "Richard Wagner (the composer): light warm beige circle head, short-cropped dark brown hair, a muted maroon coat shape on the torso, thin black stick-line arms and legs, small dark grey rounded feet, holding a pale grey musical score.",
+        "usedFor": "Theater and cultural-amplification beats."
+      },
+      {
+        "identity": {
+          "displayName": "Carl Emil Doepler (the designer)",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "short-cropped dark brown hair",
+          "outfit": "a muted slate-blue coat shape on the torso with small dark grey rounded feet",
+          "outfitShort": "slate-blue coat",
+          "sleeves": "",
+          "build": "average adult proportions",
+          "signature": "a small flat sketch sheet drawn pale grey"
+        },
+        "outfitVariants": [],
+        "id": "carl_doepler",
+        "role": "the costume designer who dressed Wagner's productions with horned and mythic helmets",
+        "canonicalAppearance": "Carl Emil Doepler (the designer): light warm beige circle head, short-cropped dark brown hair, a muted slate-blue coat shape on the torso, thin black stick-line arms and legs, small dark grey rounded feet, holding a pale grey sketch sheet.",
+        "usedFor": "All shots referencing the 1876 stage costumes and design influence."
+      },
+      {
+        "identity": {
+          "displayName": "Gustav Malmstrom (the painter)",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "short-cropped dark brown hair",
+          "outfit": "a muted olive-brown jacket shape on the torso with small dark grey rounded feet",
+          "outfitShort": "olive jacket",
+          "sleeves": "",
+          "build": "average adult proportions",
+          "signature": "a flat pale grey paintbrush and a small pale canvas square"
+        },
+        "outfitVariants": [],
+        "id": "gustav_malmstrom",
+        "role": "the painter whose work contributed to Romantic horned imagery",
+        "canonicalAppearance": "Gustav Malmstrom (the painter): light warm beige circle head, short-cropped dark brown hair, a muted olive-brown jacket shape on the torso, thin black stick-line arms and legs, small dark grey rounded feet, holding a pale grey paintbrush and a small pale canvas.",
+        "usedFor": "Illustration and Romantic art beats."
+      },
+      {
+        "identity": {
+          "displayName": "Alex Raymond (the cartoonist)",
+          "skinTone": "light warm beige",
+          "faceMarks": "",
+          "hair": "short-cropped dark brown hair",
+          "outfit": "a muted dark grey shirt shape on the torso with small dark grey rounded feet",
+          "outfitShort": "dark grey shirt",
+          "sleeves": "",
+          "build": "average adult proportions",
+          "signature": "a flat pale grey comic panel sheet"
+        },
+        "outfitVariants": [],
+        "id": "alex_raymond",
+        "role": "the cartoonist who reproduced the horned warrior in popular comics",
+        "canonicalAppearance": "Alex Raymond (the cartoonist): light warm beige circle head, short-cropped dark brown hair, a muted dark grey shirt shape on the torso, thin black stick-line arms and legs, small dark grey rounded feet, holding a pale grey comic panel sheet.",
+        "usedFor": "Popular-culture spread examples such as comics and media."
+      }
+    ],
+    "world": {
+      "settingFamilies": [
+        "viking_battlefield",
+        "museum_gallery",
+        "bronze_age_site",
+        "theater_stage",
+        "artist_studio"
+      ],
+      "architecture": "simple flat silhouettes: low timber longhouses for exterior Viking references, plain modern museum gallery interiors with pedestals, and a proscenium theater arch for stage scenes.",
+      "geography": "Northern European coastal hills and bog landscapes, neutral studio interiors for theater and studio shots.",
+      "era": "mix of Viking Age (c. 8th–11th century), Bronze Age (c. 2nd–1st millennium BCE), and 19th-century/modern settings.",
+      "recurringEnvironmentConstruction": "2-3 flat layers: sky/background color band, a midground band with simple silhouette shapes (hillline, museum wall, stage arch), and a foreground area with small tangible props (a pedestal, a dug-up patch, a prop helmet).",
+      "environmentalColorRules": "Backgrounds are muted single-color bands; foreground props use the episode's palette colors with no gradients or texture.",
+      "weatherTimeConventions": "Battlefield scenes use warm late-afternoon orange band in the sky; museum interiors are cool neutral off-white walls; theater stage uses deep maroon background with stage spot pale rectangle.",
+      "historicalScientificConstraints": [
+        "Do not depict rivets or attachment points on confirmed Viking-age helmets where none were reported (Gjermundbu helmet is a plain iron dome without horn sockets).",
+        "Bronze Age Veksø helmets are decorative thin bronze with prominent attached horns and must look delicate, not combat-ready."
+      ],
+      "settingBlocks": [
+        {
+          "family": "viking_battlefield",
+          "name": "a coastal hillside battlefield at dusk",
+          "variants": [
+            {
+              "name": "default",
+              "background": "a warm orange sky band indicating late-afternoon light",
+              "midground": "a simple dark green rounded hill silhouette with a faint pale grey line of distant ships on the horizon",
+              "foreground": "a muddy ground patch with simple stickman footprints and one flat dark brown shield lying on the ground",
+              "palette": "warm orange, dark green, muddy brown, pale grey",
+              "signatureObjects": "a flat brown round shield on the ground and a thin black spear butt",
+              "lighting": "flat color blocks implying warm rim light from the horizon"
+            }
+          ]
+        },
+        {
+          "family": "museum_gallery",
+          "name": "a modern museum gallery interior",
+          "variants": [
+            {
+              "name": "default",
+              "background": "a cool off-white wall band",
+              "midground": "a flat pale grey pedestal with a clear glass case silhouette",
+              "foreground": "a small pale label rectangle on the pedestal and the artifact inside the case",
+              "palette": "off-white, pale grey, glass-blue accent, black for text",
+              "signatureObjects": "a pale grey pedestal with a small object inside a glass case",
+              "lighting": "even neutral gallery lighting indicated by a pale overhead rectangle"
+            }
+          ]
+        },
+        {
+          "family": "bronze_age_site",
+          "name": "a bog-edge Bronze Age ritual site",
+          "variants": [
+            {
+              "name": "default",
+              "background": "a muted teal sky band",
+              "midground": "a dark peat-brown shoreline silhouette with a few simple reed clumps",
+              "foreground": "a shallow dig-hole showing dark brown peat layers and a single flat bronze object partly exposed",
+              "palette": "muted teal, peat brown, bronze accent, reed green",
+              "signatureObjects": "a thin flat bronze object partly exposed in the peat",
+              "lighting": "cool flat daylight"
+            }
+          ]
+        },
+        {
+          "family": "theater_stage",
+          "name": "a proscenium theater stage",
+          "variants": [
+            {
+              "name": "default",
+              "background": "deep maroon stage curtain band",
+              "midground": "a simple black stage floor silhouette and a pale rectangular spotlight pool",
+              "foreground": "a dramatic horned helmet prop on a small dark prop stand",
+              "palette": "deep maroon, black, pale yellow spotlight",
+              "signatureObjects": "a dramatic horned helmet prop and a small music stand",
+              "lighting": "single flat pale yellow spotlight pool"
+            }
+          ]
+        },
+        {
+          "family": "artist_studio",
+          "name": "an illustrator's/artist's studio",
+          "variants": [
+            {
+              "name": "default",
+              "background": "a warm beige wall band with a pegboard silhouette",
+              "midground": "a simple worktable silhouette with flat paper and paint shapes",
+              "foreground": "a small easel with a sketch sheet and a pale cup of brushes",
+              "palette": "warm beige, pale grey, muted ochre, pale paper white",
+              "signatureObjects": "an easel with a sketch sheet and scattered postcard prints",
+              "lighting": "flat warm window light indicated by a pale rectangle"
+            }
+          ]
+        }
+      ]
+    },
+    "objectLanguage": [
+      {
+        "id": "gjermundbu_helmet",
+        "canonicalDescription": "The Gjermundbu helmet: a rounded iron dome helmet with a spectacle-shaped eye guard and plain iron surface, clearly built for deflecting blows and without any horn attachments.",
+        "promptBlock": "The Gjermundbu helmet: a rounded iron dome helmet with a spectacle-shaped eye guard and plain iron surface, with no horn sockets or decorative horns.",
+        "whyRecurring": "Used repeatedly as the clearest, best-preserved Viking-age helmet example that contradicts the horned-helmet myth."
+      },
+      {
+        "id": "vekso_helmets",
+        "canonicalDescription": "The Veksø helmets: two thin bronze ceremonial helmets each fitted with long curved horns tipped by small round discs, dated to the Nordic Bronze Age and likely ritual rather than combat gear.",
+        "promptBlock": "The Veksø helmets: two thin bronze ceremonial helmets with long curved horns tipped with small round discs, delicate and decorative rather than combat-ready.",
+        "whyRecurring": "These Bronze Age horned helmets are the older ritual objects that later viewers and artists misapplied to Viking imagery."
+      },
+      {
+        "id": "wagner_stage_helmet",
+        "canonicalDescription": "Wagner's horned stage helmet: a theatrical costume helmet with exaggerated curved horns designed for spectacle rather than historical accuracy.",
+        "promptBlock": "A Wagner-style horned stage helmet: a theatrical costume helmet with large exaggerated curved horns, clearly designed for spectacle.",
+        "whyRecurring": "Represents the 19th-century theatrical costume look that popularized horned Vikings to mass audiences."
+      }
+    ],
+    "graphicLanguage": {
+      "backgroundBehavior": "Clean, uncluttered flat backgrounds (often light/white or the episode's own environment palette) — never assumed to be white-only; the Production Bible's graphic language decides per episode",
+      "lineStyle": "The exact same line weight and fill language as narrative scenes — a graphic must never look like a different visual universe from the story frames around it",
+      "arrowsConnectors": "Simple flat-filled arrow shapes and thin connector lines, same line language as everything else",
+      "characterUseInsideGraphics": "Stickman characters, objects, and simplified environments are explicitly ALLOWED and encouraged inside a graphic when they clarify the point — a graphic is a composition family, never a text-only template",
+      "whitespaceBehavior": "Generous but not empty — whitespace isolates the one idea a graphic communicates, it is never filler",
+      "colorUse": "Uses this episode's own palette (muted forest-green, warm orange, muddy brown, pale grey) as flat fills, consistent with narrative scenes — never a separate infographic color scheme.",
+      "diagramConventions": "When comparing helmets, present two flat side-by-side object blocks with labels: left block for archaeological helmets (Gjermundbu) and right block for ritual/ceremonial helmets (Veksø), with a thin black divider line and small pale grey caption rectangles.",
+      "comparisonLayouts": "Use horizontal two-panel comparisons for 'what they expected vs what we found' moments; each panel keeps the same background band color to focus attention on the object differences.",
+      "timelineConventions": "A simple flat horizontal timeline with three labeled dots: 'Bronze Age (c. 1000 BCE)', 'Viking Age (c. 793–1066)', '19th-century Romanticism (c. 1800s)'. Use pale grey line and small muted ochre dots.",
+      "mapConventions": "A minimalist coastline silhouette for Scandinavia with small pale location dots for finds (Gjermundbu in Norway, Veksø in Denmark) and pale grey labels.",
+      "symbolicMetaphorLanguage": "Use a theatrical mask or marquee icon to symbolize 'stage/theatre invention' and a small magnifying glass icon to symbolize 'archaeological evidence'.",
+      "overlayTextBehavior": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+    },
+    "cameraLanguage": {
+      "allowedShotFamilies": [
+        "WIDE",
+        "MEDIUM",
+        "CLOSE_UP",
+        "OVERHEAD",
+        "POV",
+        "SPLIT_SCREEN",
+        "CUTAWAY",
+        "DIAGRAM_LAYOUT"
+      ],
+      "simplicityReadabilityRules": "Every frame must read clearly at thumbnail size — avoid busy multi-subject compositions unless the beat's own visual concept specifically requires comparing multiple subjects at once",
+      "framingConventions": "Establishing shots: wide two-thirds background band with small stickmen. Closeups: tight crop on object pedestal showing the helmet promptBlock. Dramatic imagined moments use three-quarter viewpoint of the viewer_viking charging with horns exaggerated for visceral effect.",
+      "visualHierarchyRules": "Objects that carry factual weight (Gjermundbu, Veksø) must be centered and occupy roughly the central third of the frame in closeups. Theatrical props or costume images are slightly offset to imply 'constructed' status.",
+      "whenEstablishingVsCloseupVsDiagram": "Use establishing battlefield and theater stage scenes for the hook and spectacle; switch to museum-gallery closeups for the archaeological evidence beat; use two-panel diagrams for direct comparisons and the timeline for chronology beats."
+    },
+    "textPolicy": {
+      "providerGeneratedTextDefault": "OFF",
+      "exactTextHandledDownstream": true,
+      "exceptionsPolicy": "A short (<=5 word) exact phrase may be requested directly of the image model only when it is naturally part of the drawn artwork itself (e.g. a sign, a clock face) AND the configured renderer has demonstrated adequate text fidelity for this recipe — otherwise all text is composited as a deterministic overlay after the base image."
+    },
+    "continuityRules": {
+      "neverDrift": [
+        "the recipe's own universal style (flat 2D, uniform outline, flat fills, no shading/gradients/texture)",
+        "Do not add horns, sockets, or rivet-hole details to the Gjermundbu helmet canonicalAppearance or promptBlock.",
+        "Do not change the viewer avatars' tunic/outfit colors or hair descriptions across scenes.",
+        "Do not depict Bronze Age Veksø helmets as thick or battle-ready; they must look thin and decorative."
+      ],
+      "allowedToVary": [
+        "Facial expression (open mouth for shouting, neutral for narration) for archetypes as needed.",
+        "Scale and crop of objects for closeups vs. distance shots."
+      ],
+      "episodeWideConsistencyRules": [
+        "All object promptBlocks are self-contained and used verbatim for object closeups.",
+        "Setting blocks contain no humans; people are added by role archetypes per scene."
+      ]
+    },
+    "factualVisualConstraints": [
+      "Show the Gjermundbu helmet as a rounded iron dome with spectacle guard and no horn attachments.",
+      "Show the Veksø helmets as thin bronze ceremonial helmets with prominent curved horns.",
+      "Do not present any authenticated Viking-age helmet with attached horns in museum closeups."
+    ],
+    "negativeRules": [
+      "accidental 3D render or CGI look",
+      "photorealistic drift away from flat 2D",
+      "painterly, sketchy, or textured drift away from flat solid fills",
+      "random or unrequested generated typography",
+      "stickman construction mutating into a more detailed/realistic character mid-episode",
+      "shading, gradients, or texture appearing despite the flat-fill policy",
+      "Never imply the Gjermundbu helmet had horn sockets or was decorative.",
+      "Never present Bronze Age horned helmets as evidence of Viking battle gear without labeling them as Bronze Age ritual objects.",
+      "Never depict a Viking-age warrior on the battlefield actually wearing the Veksø-style bronze horned helmets."
+    ],
+    "projectId": "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae",
+    "generationProfileId": "9c0f897e-a6e6-40ca-8766-300abeec366b",
+    "scriptVersionId": "b3669868-54a6-4814-bd61-323efed108b0"
+  }
+}

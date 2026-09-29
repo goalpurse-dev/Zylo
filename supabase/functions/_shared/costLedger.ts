@@ -8,8 +8,19 @@
 // ledgers in meta.callLedger; long_form_project_cost_by_stage reads those.
 
 export type CostStage = "story_plan" | "research" | "script" | "bible" | "beats" | "narration" | "images" | "qa" | "render" | "other";
-export type CostUnits = { calls?: number; inputTokens?: number; outputTokens?: number; cacheReadTokens?: number; cacheWriteTokens?: number; characters?: number; providerCredits?: number | null; images?: number };
+export type CostUnits = { calls?: number; seconds?: number; inputTokens?: number; outputTokens?: number; cacheReadTokens?: number; cacheWriteTokens?: number; characters?: number; providerCredits?: number | null; images?: number };
 export type CostEntry = { projectId: string; stage: CostStage; provider: string; model?: string | null; units: CostUnits; usd: number; estimated?: boolean; sourceTable?: string; sourceId?: string | null };
+
+// Phase 6d-1 (config): ElevenLabs is priced from ITS OWN character-cost header
+// (the credits it actually charged) at our plan's $/credit — not the old
+// per-character USD guess. Measured: 0.20 credits per character on our model.
+export const ELEVENLABS_USD_PER_CREDIT = 0.0002;
+export const ELEVENLABS_CREDITS_PER_CHARACTER_FALLBACK = 0.2;
+export function narrationCost(characters: number, providerCredits: number | null | undefined): { usd: number; credits: number; estimated: boolean } {
+  const known = providerCredits != null && Number.isFinite(Number(providerCredits)) && Number(providerCredits) > 0;
+  const credits = known ? Number(providerCredits) : characters * ELEVENLABS_CREDITS_PER_CHARACTER_FALLBACK;
+  return { usd: Number((credits * ELEVENLABS_USD_PER_CREDIT).toFixed(6)), credits, estimated: !known };
+}
 
 export function ledgerRow(e: CostEntry) {
   return {

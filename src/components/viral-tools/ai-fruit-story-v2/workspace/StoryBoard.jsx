@@ -82,7 +82,7 @@ function CharacterRefs({ castIds, byId }) {
           if (!c) return null;
           return (
             <li key={id} className="flex items-center gap-2.5 rounded-xl border border-white/[0.07] bg-white/[0.035] p-2 pr-3">
-              <img src={c.refImageUrl} alt={`${c.name} reference`} className="h-[58px] w-[44px] rounded-lg object-cover" />
+              <img src={c.refImageUrl} alt={`${c.name} reference`} className="h-[58px] w-[44px] rounded-lg object-cover object-top" />
               <span>
                 <span className="block text-[12px] font-black text-white">{c.name}</span>
                 <span className="block max-w-[220px] text-[10px] font-semibold leading-relaxed text-white/40">{c.tag}. Locked reference, same look in every scene.</span>

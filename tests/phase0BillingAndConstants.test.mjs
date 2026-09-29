@@ -145,15 +145,35 @@ test("delete-long-form-project releases an active reservation AFTER the soft-del
   assert.ok(deleteIdx > -1 && releaseIdx > deleteIdx, "release must be called AFTER the delete update, not before");
 });
 
-test("generate-long-form-narration-audio settles the reservation on 'ready' (the current end of the real pipeline) and releases it on a genuine 'failed' — never on alignment_failed, since real usable audio exists then", async () => {
+test("Phase 5b: narration no longer settles on 'ready' (render completion does); it still releases on a genuine 'failed' — never on alignment_failed, since real usable audio exists then", async () => {
   const text = await source("supabase/functions/generate-long-form-narration-audio/index.ts");
-  assert.match(text, /import \{ settleReservationIfActive, releaseReservationIfActive \} from "\.\.\/_shared\/longFormReservations\.ts";/);
-  const readyBlock = text.slice(text.indexOf('status: "ready"'), text.indexOf('status: "alignment_failed"'));
-  assert.match(readyBlock, /settleReservationIfActive\(admin, projectId, "narration_ready"/);
+  assert.ok(text.includes("import { releaseReservationIfActive, settleReservationIfActive } from \"../_shared/longFormReservations.ts\";"));
+  // Phase 6c: with LONG_FORM_SETTLE_AT_RENDER=true a STICKMAN project keeps its reservation past narration
+  // (scenes draw from it; render or 7 idle days settle it); legacy projects still settle at narration-ready.
+  assert.ok(text.includes("if (settleAtNarration) await settleReservationIfActive(admin, projectId, \"narration_ready\", logEvent);"));
+  assert.ok(text.includes("const settleAtNarration = !(SETTLE_AT_RENDER && profile.visual_recipe === \"stickman_doodle_explainer\");"));
+  assert.equal((text.match(/settleReservationIfActive\(/g) || []).length, 1, "exactly one, switch-guarded, settle call");
   const alignmentFailedBlock = text.slice(text.indexOf('status: "alignment_failed"'), text.indexOf("} catch (e) {"));
   assert.doesNotMatch(alignmentFailedBlock, /releaseReservationIfActive|settleReservationIfActive/, "alignment_failed preserves real audio — must not release/settle");
   const catchBlock = text.slice(text.indexOf("} catch (e) {"));
-  assert.match(catchBlock, /releaseReservationIfActive\(admin, projectId, "narration_failed"/);
+  assert.ok(catchBlock.includes("releaseReservationIfActive(admin, projectId, \"narration_failed\""));
+});
+
+test("Phase 5b: finish-long-form-render settles on 'done' and applies renderBillingDecision on failure (release only for a terminal failure before any spend)", async () => {
+  const text = await source("supabase/functions/finish-long-form-render/index.ts");
+  const helper = await source("supabase/functions/_shared/longFormReservations.ts");
+  assert.match(helper, /export const RENDER_IS_THE_LAST_REAL_STAGE = true/);
+  assert.doesNotMatch(helper, /NARRATION_IS_CURRENTLY_THE_LAST_REAL_STAGE/);
+  assert.ok(helper.includes("if (outcome === \"done\") return \"settle\";"));
+  assert.ok(helper.includes("return terminal && Number(reservation.committed_credits) === 0 ? \"release\" : \"keep\";"));
+  const doneBlock = text.slice(text.indexOf('if (b.outcome === "done")'), text.indexOf("const terminal ="));
+  assert.ok(doneBlock.includes("applyRenderBilling(admin, job.project_id, \"done\", true"));
+  assert.match(doneBlock, /status: "complete"/);
+  const failBlock = text.slice(text.indexOf("const terminal ="));
+  assert.ok(failBlock.includes("applyRenderBilling(admin, job.project_id, \"failed\", terminal"));
+  // Phase 6f: a failed render of an EDIT (EDL v2) never marks the project failed; older renders still do.
+  assert.ok(failBlock.includes('...(editRender ? {} : { status: "failed" }), status_reason: userReason'), "an edit render keeps the project status");
+  assert.match(text, /stage: "render"/);
 });
 
 test("every terminal script-generation failure path releases the reservation (draft validation, stage-attempts-exhausted, model-call-cap, cost-ceiling, missing-prerequisites)", async () => {

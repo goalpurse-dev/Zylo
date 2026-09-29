@@ -24,13 +24,13 @@ test("isStickmanRecipeProfile is false for null/legacy profiles and true only fo
 // resolves under Vite, not plain Node ESM — this reads the source directly
 // (same established workaround onScreenTextDensity.test.mjs already uses)
 // rather than importing it.
-test("LONG_FORM_STICKMAN_STAGES replaces Look/Generate with Narration/Visuals, never mutates the legacy 5-stage list", async () => {
+test("LONG_FORM_STICKMAN_STAGES is Idea · Scenes · Edit · Publish (Phase 6e), never mutates the legacy 5-stage list", async () => {
   const text = await source("src/pages/workspace/long-form/state.js");
   const legacyBlock = text.slice(text.indexOf("LONG_FORM_STAGES = ["), text.indexOf("];", text.indexOf("LONG_FORM_STAGES = [")));
   const stickmanBlock = text.slice(text.indexOf("LONG_FORM_STICKMAN_STAGES = ["), text.indexOf("];", text.indexOf("LONG_FORM_STICKMAN_STAGES = [")));
   for (const key of ["idea", "story", "look", "generate", "edit"]) assert.match(legacyBlock, new RegExp(`key: "${key}"`));
-  for (const key of ["idea", "story", "narration", "visuals", "edit"]) assert.match(stickmanBlock, new RegExp(`key: "${key}"`));
-  assert.doesNotMatch(stickmanBlock, /key: "look"|key: "generate"/);
+  for (const key of ["idea", "scenes", "edit", "publish"]) assert.match(stickmanBlock, new RegExp(`key: "${key}"`));
+  assert.doesNotMatch(stickmanBlock, /key: "look"|key: "generate"|key: "story"|key: "narration"|key: "visuals"/);
 });
 
 test("STICKMAN_RECIPE_VERSION matches the one real recipe registered in the pacing table create-long-form-production-setup reads", async () => {

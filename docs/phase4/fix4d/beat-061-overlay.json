@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "LINDISFARNE, 793",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 17,
+ "scale": 154,
+ "box": {
+  "x": 325,
+  "y": 75,
+  "width": 1270,
+  "height": 211
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 0.68,
+  "bottom": 4.71
+ }
+}

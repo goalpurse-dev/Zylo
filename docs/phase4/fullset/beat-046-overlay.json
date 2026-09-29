@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "VIKING AGE",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 17,
+ "scale": 154,
+ "box": {
+  "x": 531,
+  "y": 75,
+  "width": 859,
+  "height": 211
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 0.81,
+  "bottom": 7.34
+ }
+}

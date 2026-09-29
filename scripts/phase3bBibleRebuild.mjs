@@ -7,7 +7,8 @@ import { createClient } from "@supabase/supabase-js";
 import { writeFile, access } from "node:fs/promises";
 
 const PROJECT_ID = "f6ee3eb2-726b-4faa-9d25-1ed957eb46ae";
-const OUT = new URL("../tests/fixtures/stickman/bibles/myth-vs-reality.rebuilt-v3.json", import.meta.url);
+const outArg = process.argv.indexOf("--out");
+const OUT = new URL(`../tests/fixtures/stickman/bibles/${outArg > 0 ? process.argv[outArg + 1] : "myth-vs-reality.rebuilt-v3"}.json`, import.meta.url);
 try { await access(OUT); console.log("rebuilt fixture exists — not rebuilding"); process.exit(1); } catch { /* go */ }
 
 const { data: project } = await admin.from("long_form_projects").select("user_id").eq("id", PROJECT_ID).single();

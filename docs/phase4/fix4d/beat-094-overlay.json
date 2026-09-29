@@ -1,0 +1,21 @@
+{
+ "type": "text",
+ "text": "EARLY 1900S",
+ "font": "Lilita One",
+ "fill": "#FFD21F",
+ "outline": "#000000",
+ "outlineRadius": 17,
+ "scale": 154,
+ "box": {
+  "x": 501,
+  "y": 75,
+  "width": 919,
+  "height": 211
+ },
+ "band": "top",
+ "darkBand": false,
+ "edgeDensity": {
+  "top": 2.95,
+  "bottom": 20.92
+ }
+}

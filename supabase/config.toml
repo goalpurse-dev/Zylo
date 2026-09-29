@@ -156,3 +156,13 @@ verify_jwt = false
 
 [functions.resend-webhook]
 verify_jwt = false
+
+[functions.fruit-story-api]
+verify_jwt = true
+
+[functions.fruit-worker]
+verify_jwt = false
+
+# Phase 6a: called by the cron sweep and stage nudges with x-autopilot-secret (no user JWT).
+[functions.advance-long-form-autopilot]
+verify_jwt = false

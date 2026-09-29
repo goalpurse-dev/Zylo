@@ -1,0 +1,164 @@
+{
+  "reviewedBy": "eye review of all 136 V2 frames (Phase 4d step 0), plus the user's own review list",
+  "tags": {
+    "OBJECT_HAS_FACE": [
+      24,
+      28,
+      29,
+      30,
+      31,
+      39,
+      43,
+      51,
+      52,
+      58,
+      110,
+      119,
+      125,
+      127,
+      128,
+      129,
+      130,
+      132
+    ],
+    "FIGURE_IN_CASE": [
+      17,
+      19,
+      21,
+      22,
+      27,
+      36,
+      37,
+      38,
+      42,
+      44,
+      47,
+      48,
+      49,
+      53,
+      54,
+      60,
+      61,
+      66,
+      69,
+      73,
+      83,
+      87,
+      93,
+      94,
+      96,
+      99,
+      100,
+      108,
+      109,
+      110,
+      113,
+      114,
+      116,
+      127,
+      130,
+      131,
+      133,
+      136
+    ],
+    "REAL_BRAND_IP": [
+      98,
+      100,
+      101
+    ],
+    "STRAY_TEXT": [
+      17,
+      22,
+      27,
+      41,
+      42,
+      52,
+      61,
+      95,
+      96,
+      99,
+      100,
+      131
+    ],
+    "FILLER": [
+      54,
+      82,
+      92,
+      96,
+      98,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      117
+    ],
+    "REPEAT": [
+      35,
+      46,
+      64,
+      105
+    ],
+    "WRONG_CONCEPT": [
+      23,
+      44,
+      50
+    ]
+  },
+  "notes": {
+    "17": "icons drawn as three people; BEER label text",
+    "23": "a literal skull instead of a helmet fragment",
+    "44": "live people fighting instead of a stone carving",
+    "50": "the workers are drawn as the priest and the warrior",
+    "98": "Flash Gordon by name; cartoon hero",
+    "100": "Minnesota Vikings logo on the banner",
+    "101": "Minnesota Vikings mascot character",
+    "FIGURE_IN_CASE": "includes stickmen drawn in place of map pins, timeline marks, icons and props on beats with no cast, not only display cases"
+  },
+  "afterPhase4d": {
+    "reviewedBy": "eye review of the 68 re-rendered frames (docs/phase4/fix4d)",
+    "tags": {
+      "OBJECT_HAS_FACE": [
+        24,
+        58,
+        119,
+        128
+      ],
+      "FIGURE_IN_CASE": [
+        24,
+        46,
+        136
+      ],
+      "REAL_BRAND_IP": [
+        98
+      ],
+      "STRAY_TEXT": [
+        17,
+        41,
+        42,
+        125,
+        131
+      ],
+      "FILLER": [],
+      "REPEAT": [
+        46
+      ],
+      "WRONG_CONCEPT": []
+    },
+    "notes": {
+      "17": "beer label drawn with letters",
+      "24": "cast beat: helmets on the palm got faces, a figure in the case",
+      "41": "manuscript scribble",
+      "42": "a drawn 0",
+      "46": "director skipped it; old concept kept",
+      "58": "carved sun disc has a face",
+      "98": "generic hero now closely resembles Marvel's Loki (horned gold helmet, cape) and has a detailed face",
+      "119": "a face inside the faded helmet sketch",
+      "125": "tiny lettering on the stamp",
+      "128": "cast beat: helmet goggles read as eyes",
+      "131": "SOLD OUT sign lettering",
+      "136": "a grinning face in the mirror/case"
+    }
+  }
+}

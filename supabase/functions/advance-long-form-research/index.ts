@@ -47,6 +47,7 @@ import { releaseReservationIfActive } from "../_shared/longFormReservations.ts";
 import { GPT5_MINI_INPUT_PER_M, GPT5_MINI_OUTPUT_PER_M } from "../../../src/lib/longFormPipelineConstants.ts";
 import { fetchActiveGenerationProfile, isStickmanProfile, nicheFromProfile } from "../_shared/stickman/recipeProfile.ts";
 import { urlIsLive } from "../_shared/stickman/urlVerify.ts";
+import { nudgeAutopilot } from "../_shared/stickman/autopilotNudge.ts";
 import { nicheGuidanceFor } from "../_shared/stickman/nicheGuidance.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -2349,7 +2350,13 @@ async function stageFinalizing(admin: any, row: ResearchRow, project: any, story
 
   const weakChapterCount = (row.coverage?.chapterCoverage ?? []).filter((c: any) => c.status === "weak").length;
   const totalChapters = storyPlan.chapters.length;
-  const needsAttention = finalSourcesFull.length === 0 || finalFacts.length === 0 || (totalChapters > 0 && weakChapterCount / totalChapters > 0.4);
+  const thin = finalSourcesFull.length === 0 || finalFacts.length === 0 || (totalChapters > 0 && weakChapterCount / totalChapters > 0.4);
+  // Phase 6a: for Stickman, research-lite is a HELPER, never a gate — a thin
+  // result is recorded (meta.liteThinCoverage) and the script goes ahead;
+  // "needs_attention" would put the legacy "More evidence needed" gate (and
+  // its repair research) in front of a Stickman user. Legacy is unchanged.
+  const isStickman = isStickmanProfile(await fetchActiveGenerationProfile(admin, project.id));
+  const needsAttention = thin && !isStickman;
   const status = needsAttention ? "needs_attention" : "ready";
 
   if (finalSourcesFull.length) {
@@ -2394,7 +2401,7 @@ async function stageFinalizing(admin: any, row: ResearchRow, project: any, story
 
   const completedAt = new Date();
   const totalMs = row.research_started_at ? completedAt.getTime() - new Date(row.research_started_at).getTime() : null;
-  const meta = { ...(row.meta ?? {}), totalSources: finalSourcesFull.length, totalFacts: finalFacts.length, timings: { ...(row.meta?.timings ?? {}), totalMs } };
+  const meta = { ...(row.meta ?? {}), totalSources: finalSourcesFull.length, totalFacts: finalFacts.length, timings: { ...(row.meta?.timings ?? {}), totalMs }, ...(isStickman && thin ? { liteThinCoverage: true } : {}) };
 
   await admin
     .from("long_form_research_versions")
@@ -2402,6 +2409,8 @@ async function stageFinalizing(admin: any, row: ResearchRow, project: any, story
     .eq("id", row.id);
 
   await admin.from("long_form_projects").update({ current_research_version_id: row.id, updated_at: completedAt.toISOString() }).eq("id", project.id);
+  // Phase 6a: the Stickman autopilot starts the script right away (not on its next 1-minute tick).
+  if (isStickman) nudgeAutopilot(project.id);
 
   // Auto-chain into a new ScriptVersion — only for repair rows
   // (parent_research_version_id set). The whole point of a targeted repair
