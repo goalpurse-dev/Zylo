@@ -2,7 +2,8 @@ import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-const models = [
+export const TRENDING_MODELS = [
+
   {
     name: "Nano Banana 2",
     desc: "Best and realistic image generation",
@@ -29,6 +30,8 @@ const models = [
     path: "/workspace/video-generator",
   },
 ];
+
+const models = TRENDING_MODELS;
 
 // Duplicate for seamless infinite loop
 const loopedModels = [...models, ...models];

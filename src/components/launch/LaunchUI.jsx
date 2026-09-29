@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { ArrowRight, Clapperboard, PlayCircle, X } from "lucide-react";
+import { ArrowRight, Clapperboard, FileText, Images, Lightbulb, Mic, PlayCircle, X } from "lucide-react";
 import { fetchShowcase, LONG_FORM_PREVIEW, showcaseThumb, trackLaunch } from "./launch";
 
 function useReducedMotion() {
@@ -151,26 +151,116 @@ export function LongFormLaunchBanner() {
   );
 }
 
-// "What's new" — shown once per user (the layout decides when).
+// "What's new" — shown once per user (the layout decides when). Three real
+// f90160bc thumbnails deal in like cards, the five steps light up once, then
+// only a slow float remains; reduced motion shows the finished state.
+const SHOWCASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/showcase`;
+const FAN = [`${SHOWCASE_STORAGE}/launch/spear-or-patience.jpg`, `${SHOWCASE_STORAGE}/launch/how-did-this-kill.jpg`, `${SHOWCASE_STORAGE}/launch/what-does-it-prove.jpg`];
+const PROOF = [[Lightbulb, "Idea"], [FileText, "Script"], [Mic, "Voice"], [Clapperboard, "150 scenes"], [Images, "Thumbnails"]];
+const CHIPS = ["8–15 min", "Voice + captions", "3 thumbnails", "YouTube-ready"];
+const FONT_HREF = "https://fonts.googleapis.com/css2?family=Lilita+One&display=swap";
+const FAN_POSE = ["translateX(-66%) translateY(8px) rotate(-8deg)", "scale(1.14)", "translateX(66%) translateY(8px) rotate(8deg)"];
+const WN_CSS = `
+.wn-deal{opacity:0;transform:translateY(46px) scale(.82);animation:wnDeal .62s cubic-bezier(.34,1.5,.64,1) forwards}
+@keyframes wnDeal{60%{opacity:1}to{opacity:1;transform:none}}
+.wn-float{animation:wnFloat 6s ease-in-out infinite}
+@keyframes wnFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.wn-step{animation:wnLit .35s ease-out forwards}
+@keyframes wnLit{to{background:rgba(190,242,100,.12);border-color:rgba(190,242,100,.5);color:#BEF264}}
+.wn-label{animation:wnLabel .35s ease-out forwards}
+@keyframes wnLabel{to{color:rgba(255,255,255,.9)}}
+.wn-link::after{content:"";position:absolute;inset:0;background:#BEF264;transform:scaleX(0);transform-origin:left;animation:wnFill .3s ease-out forwards;animation-delay:inherit}
+@keyframes wnFill{to{transform:scaleX(1)}}
+.wn-card{transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s}
+@media (hover:hover){.wn-slot:hover{z-index:20!important}.wn-slot:hover .wn-card{transform:translateY(-12px) scale(1.06);box-shadow:0 24px 50px rgba(0,0,0,.6),0 0 0 1px rgba(190,242,100,.45)}}
+.wn-still .wn-deal,.wn-still .wn-float{animation:none;opacity:1;transform:none}
+.wn-still .wn-step{animation:none;background:rgba(190,242,100,.12);border-color:rgba(190,242,100,.5);color:#BEF264}
+.wn-still .wn-label{animation:none;color:rgba(255,255,255,.9)}
+.wn-still .wn-link::after{animation:none;transform:scaleX(1)}
+`;
+
 export function WhatsNewModal({ open, onClose }) {
   const navigate = useNavigate();
-  const go = (event, path) => { trackLaunch(event, { placement: "whats_new" }); onClose(); navigate(path); };
+  const reduced = useReducedMotion();
+  const [huntUrl, setHuntUrl] = useState(null);
+  useEffect(() => {
+    if (!open) return;
+    if (!document.querySelector(`link[href="${FONT_HREF}"]`)) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = FONT_HREF;
+      document.head.appendChild(link);
+    }
+    fetchShowcase("home").then((rows) => setHuntUrl(rows.find((r) => /hunt/i.test(r.title))?.youtube_url ?? null));
+  }, [open]);
+  const close = () => { trackLaunch("whats_new_dismiss", { placement: "whats_new" }); onClose(); };
+  const make = () => { trackLaunch("try_long_form", { placement: "whats_new" }); onClose(); navigate("/long-form/create"); };
+  const stepDelay = (k) => `${(1.0 + k * 0.3).toFixed(2)}s`;
   return (
-    <Dialog open={open} onClose={() => { trackLaunch("whats_new_dismiss", { placement: "whats_new" }); onClose(); }} className="relative z-[300]">
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-[6px]" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-end justify-center p-4 sm:items-center">
-        <DialogPanel className="relative w-full max-w-[460px] overflow-hidden rounded-[22px] border border-white/[0.1] bg-[#121416] p-5 shadow-[0_24px_80px_rgba(0,0,0,.6)] sm:p-6" data-testid="whats-new">
-          <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-lime-300/60 to-transparent" />
-          <button type="button" aria-label="Close" onClick={() => { trackLaunch("whats_new_dismiss", { placement: "whats_new" }); onClose(); }} className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-white/[0.06] text-white/55 transition hover:bg-white/10 hover:text-white">
+    <Dialog open={open} onClose={close} className="relative z-[300]">
+      <style>{WN_CSS}</style>
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" aria-hidden="true" />
+      <div className="fixed inset-0 flex items-end justify-center p-3 sm:items-center sm:p-4">
+        <DialogPanel
+          data-testid="whats-new"
+          className={`relative w-full max-w-[560px] overflow-hidden rounded-[28px] border border-lime-300/[0.13] bg-[#0C0F0D] px-5 pb-5 pt-6 text-center shadow-2xl shadow-black/30 sm:px-8 sm:pb-7 sm:pt-8 ${reduced ? "wn-still" : ""}`}
+        >
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[radial-gradient(ellipse_at_50%_0%,rgba(190,242,100,.14),transparent_70%)]" />
+          <div className="pointer-events-none absolute -bottom-24 -right-20 h-64 w-64 rounded-full bg-[#7A3BFF]/20 blur-3xl" />
+          <button type="button" aria-label="Close" onClick={close} className="absolute right-3 top-3 z-30 grid h-8 w-8 place-items-center rounded-full bg-white/[0.06] text-white/55 transition hover:bg-white/10 hover:text-white">
             <X className="h-4 w-4" />
           </button>
-          <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-lime-300"><Clapperboard className="h-3.5 w-3.5" /> What's new</p>
-          <DialogTitle className="mt-2 text-[21px] font-extrabold tracking-[-0.02em] text-white">Long Form is here</DialogTitle>
-          <p className="mt-1.5 text-[13.5px] leading-relaxed text-white/55">Turn one idea into a full YouTube explainer video — script, voice, scenes and thumbnail.</p>
-          <LongFormPreview className="mt-4" />
-          <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <button type="button" onClick={() => go("whats_new_examples", "/long-form#made-with-zyvo")} className="rounded-xl border border-white/[0.12] px-4 py-2.5 text-[13.5px] font-semibold text-white/80 transition hover:bg-white/[0.06] hover:text-white">See examples</button>
-            <button type="button" onClick={() => go("try_long_form", "/long-form")} className="inline-flex items-center justify-center gap-2 rounded-xl bg-lime-300 px-5 py-2.5 text-[13.5px] font-bold text-[#11150D] transition hover:bg-lime-200" data-testid="whats-new-try">Try Long Form <ArrowRight className="h-4 w-4" /></button>
+          <p className="relative text-[11px] font-bold uppercase tracking-widest text-lime-300">New · Long Form</p>
+          <DialogTitle className="relative mx-auto mt-2 max-w-[15ch] text-[31px] leading-[1.04] text-white sm:text-[44px]" style={{ fontFamily: "'Lilita One', system-ui, sans-serif" }}>
+            Your next YouTube video, made for you.
+          </DialogTitle>
+
+          <div className="relative mx-auto mt-3 h-[150px] w-full sm:mt-5 sm:h-[208px]">
+            <div className="absolute left-1/2 top-1/2 h-[80%] w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-lime-300/25 blur-3xl" />
+            {FAN.map((src, k) => (
+              <div key={src} className="wn-slot absolute left-1/2 top-1/2 aspect-video w-[138px] sm:w-[208px]"
+                style={{ zIndex: k === 1 ? 3 : k + 1, transform: `translate(-50%,-50%) ${FAN_POSE[k]}` }}>
+                <div className="wn-deal h-full w-full" style={{ animationDelay: `${(0.1 + k * 0.12).toFixed(2)}s` }}>
+                  <div className="wn-float h-full w-full" style={{ animationDelay: `${1 + k * 0.6}s` }}>
+                    <img src={src} alt="" className="wn-card h-full w-full rounded-[12px] border border-white/20 object-cover shadow-[0_14px_34px_rgba(0,0,0,.55),0_2px_8px_rgba(0,0,0,.4)]" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="relative mx-auto mt-3 flex max-w-[470px] items-start justify-center">
+            {PROOF.map(([Icon, label], k) => (
+              <div key={label} className="contents">
+                <div className="flex flex-col items-center gap-1.5">
+                  <span className="wn-step grid h-7 w-7 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-white/35 sm:h-9 sm:w-9" style={{ animationDelay: stepDelay(k) }}>
+                    <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  </span>
+                  <span className="wn-label whitespace-nowrap text-[9.5px] font-semibold text-white/35 sm:text-[11px]" style={{ animationDelay: stepDelay(k) }}>{label}</span>
+                </div>
+                {k < PROOF.length - 1 && (
+                  <span className="wn-link relative mx-1 mt-3.5 h-0.5 min-w-[8px] flex-1 overflow-hidden rounded-full bg-white/10 sm:mt-[18px]" style={{ animationDelay: `${(1.15 + k * 0.3).toFixed(2)}s` }} />
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="relative mt-4 flex flex-wrap justify-center gap-1.5 sm:mt-5">
+            {CHIPS.map((c) => <span key={c} className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold text-white/70 sm:text-[12px]">{c}</span>)}
+          </div>
+
+          <div className="relative mt-5 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:justify-center">
+            <button type="button" onClick={make} data-testid="whats-new-try"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-lime-300 px-6 text-sm font-black text-[#11150D] shadow-[0_0_28px_rgba(190,242,100,.22)] transition hover:bg-lime-200">
+              Make my first video <ArrowRight className="h-4 w-4" />
+            </button>
+            {huntUrl && (
+              <a href={huntUrl} target="_blank" rel="noopener noreferrer" onClick={() => trackLaunch("showcase_click", { placement: "whats_new", target: huntUrl })}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-5 text-sm font-semibold text-white/85 transition hover:bg-white/[0.08] hover:text-white">
+                <svg viewBox="0 0 24 17" className="h-3 w-4" aria-hidden="true"><rect width="24" height="17" rx="4.5" fill="#FF0033" /><path d="M9.6 4.8v7.4l6.2-3.7z" fill="#fff" /></svg>
+                Watch one on YouTube
+              </a>
+            )}
           </div>
         </DialogPanel>
       </div>

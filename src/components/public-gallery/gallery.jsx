@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { trackLaunch } from "../launch/launch";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // COMMUNITY NICHES DATA
@@ -325,22 +326,46 @@ function NicheModal({ item, onClose }) {
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
-export default function PublicGallery() {
+// Long Form videos (showcase rows) get their own tab: 16:9 cards using the
+// video's own thumbnail, opening YouTube in a new tab.
+function LongFormCard({ item }) {
+  return (
+    <a
+      href={item.youtube_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => trackLaunch("showcase_click", { placement: "community", target: item.youtube_url, videoId: item.id })}
+      className="group relative block aspect-video overflow-hidden rounded-[18px] border border-white/[0.07] bg-[#0d0f10] transition hover:border-white/20"
+    >
+      <img src={item.thumbnail_url} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 to-transparent" />
+      <div className="pointer-events-none absolute bottom-3 left-3 right-3 flex items-center gap-2">
+        <svg viewBox="0 0 24 17" className="h-3 w-4 shrink-0" aria-hidden="true"><rect width="24" height="17" rx="4.5" fill="#FF0033" /><path d="M9.6 4.8v7.4l6.2-3.7z" fill="#fff" /></svg>
+        <span className="truncate text-[12px] font-semibold text-white/85">{item.title}</span>
+      </div>
+    </a>
+  );
+}
+
+// `excludeCategories` hides niches whose clips show real people or brands;
+// `dense` fits more short cards per row.
+export default function PublicGallery({ hideHeader = false, longFormItems = [], excludeCategories = [], dense = false } = {}) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedItem, setSelectedItem] = useState(null);
+  const longForm = longFormItems.filter((v) => v.thumbnail_url && v.youtube_url);
 
-  const categories = ["All", ...COMMUNITY_NICHES.map((n) => n.category)];
+  const categories = ["All", ...(longForm.length ? ["Long Form"] : []), ...COMMUNITY_NICHES.map((n) => n.category).filter((c) => !excludeCategories.includes(c))];
 
   const filteredVideos = (
     activeCategory === "All"
       ? ALL_VIDEOS
       : ALL_VIDEOS.filter((v) => v.niche.category === activeCategory)
-  ).filter((v) => v.src || v.thumbnail);
+  ).filter((v) => (v.src || v.thumbnail) && !excludeCategories.includes(v.niche.category));
 
   return (
     <section className="w-full px-4 md:px-[50px]">
       {/* Header */}
-      <div className="mb-5 flex items-center gap-3">
+      {!hideHeader && <div className="mb-5 flex items-center gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-2xl font-bold text-white">
             <span>👥</span> Community Creations
@@ -349,7 +374,7 @@ export default function PublicGallery() {
             Watch how the community uses different niches to create engaging content.
           </p>
         </div>
-      </div>
+      </div>}
 
       {/* Filter tabs */}
       <div className="mb-5 flex flex-wrap gap-2">
@@ -368,8 +393,12 @@ export default function PublicGallery() {
         ))}
       </div>
 
-      {/* Video grid */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+      {activeCategory === "Long Form" ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3" data-testid="community-long-form">
+          {longForm.map((item) => <LongFormCard key={item.id} item={item} />)}
+        </div>
+      ) : (
+      <div className={dense ? "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6" : "grid grid-cols-2 gap-3 md:grid-cols-3"}>
         {filteredVideos.map((item) => (
           <VideoCard
             key={item.id}
@@ -378,6 +407,7 @@ export default function PublicGallery() {
           />
         ))}
       </div>
+      )}
 
       {/* Click modal */}
       <NicheModal item={selectedItem} onClose={() => setSelectedItem(null)} />

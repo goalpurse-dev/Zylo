@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
+export const SHOWCASE_ITEMS = [
+  { title: "Create Viral Video",          button: "Create Video",    video: "/showcase/bigcard.mp4",  image: "/showcase/bigcard.webp",  big: true,  badge: "Try Now" },
+  { title: "Millions of Views Per Week",  button: "Start Creating",  image: "/showcase/card2.webp",   hoverVideo: "/showcase/card2.mp4", badge: "Try Now" },
+  { title: "Create Unmatched Images",     button: "Create Image",    image: "/showcase/card3.webp",   hoverVideo: "/showcase/card3.mp4", badge: "Try Now" },
+];
+
 export default function ViralShowcase() {
   const scrollRef = useRef(null);
   const isUserInteracting = useRef(false);
 
-  const items = [
-    { title: "Create Viral Video",          button: "Create Video",    video: "/showcase/bigcard.mp4",  image: "/showcase/bigcard.webp",  big: true,  badge: "Try Now" },
-    { title: "Millions of Views Per Week",  button: "Start Creating",  image: "/showcase/card2.webp",   hoverVideo: "/showcase/card2.mp4", badge: "Try Now" },
-    { title: "Create Unmatched Images",     button: "Create Image",    image: "/showcase/card3.webp",   hoverVideo: "/showcase/card3.mp4", badge: "Try Now" },
-  ];
+  const items = SHOWCASE_ITEMS;
 
   const looped = [...items, ...items];
 
@@ -82,7 +84,7 @@ export default function ViralShowcase() {
   );
 }
 
-function FeatureCard({ title, button, video, image, hoverVideo, big, mobile, badge }) {
+export function FeatureCard({ title, button, video, image, hoverVideo, big, mobile, badge }) {
   const [hovered, setHovered] = useState(false);
   const [videoInRange, setVideoInRange] = useState(false);
   const cardRef = useRef(null);

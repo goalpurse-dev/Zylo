@@ -1278,6 +1278,17 @@ export default function ProductionSetup() {
     setSelectedIdeaId(null);
   };
 
+  // Home "Pick a niche" links here as /long-form/create?niche=<id>: preselect
+  // it once the saved draft has been restored (so the link wins over it).
+  const nicheParamApplied = useRef(false);
+  useEffect(() => {
+    if (!bootstrapped || nicheParamApplied.current) return;
+    nicheParamApplied.current = true;
+    const id = new URLSearchParams(window.location.search).get("niche");
+    if (id && findNiche(id) && id !== nicheId) handleSelectNiche(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bootstrapped]);
+
   // Final-polish round 4, Section 4 — this is BOTH the free first-batch
   // click and the paid "Regenerate" click (same server call; the price is
   // decided server-side by whether this draft's session has used its one

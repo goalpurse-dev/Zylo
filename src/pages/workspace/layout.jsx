@@ -9,6 +9,7 @@ import WelcomeScreen from "../../components/WelcomeScreen";
 import CreatorRewardsModal from "../../components/CreatorRewardsModal";
 import WorkspaceRouteSeo from "../../components/seo/WorkspaceRouteSeo.jsx";
 import { WhatsNewModal } from "../../components/launch/LaunchUI.jsx";
+import AnnouncementBar from "../../components/launch/AnnouncementBar.jsx";
 import { LONG_FORM_ANNOUNCEMENT, trackLaunch } from "../../components/launch/launch";
 
 // ── Promo banner ──────────────────────────────────────────────
@@ -22,6 +23,7 @@ export default function WorkspaceLayout() {
   useEffect(() => { const mq = window.matchMedia("(max-width: 767px)"); const on = () => setNarrow(mq.matches); mq.addEventListener("change", on); return () => mq.removeEventListener("change", on); }, []);
   const hidePromo = narrow && /\/long-form\/project\/[^/]+\/(edit|publish)\/?$/.test(location.pathname);
   const [showWelcome, setShowWelcome] = useState(false);
+  const isHomeV2 = location.pathname === "/home-v2";
   const [showRewards, setShowRewards] = useState(false);
   const [rewardsUserId, setRewardsUserId] = useState(null);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
@@ -80,6 +82,11 @@ export default function WorkspaceLayout() {
     run();
   }, []);
 
+  // Home v2 review: /home-v2?whatsnew=1 opens the popup (nothing is marked seen).
+  useEffect(() => {
+    if (isHomeV2 && new URLSearchParams(location.search).get("whatsnew") === "1") setShowWhatsNew(true);
+  }, [isHomeV2, location.search]);
+
   /* ================= RESET HEADER ================= */
   useEffect(() => {
     setShowTopRow(true);
@@ -120,6 +127,8 @@ useEffect(() => {
   /* ================= TITLE ================= */
   const titleMap = {
     "/workspace": "Home",
+    "/workspace/home": "Home",
+    "/home-v2": "Home",
     "/workspace/creations": "Creations",
     "/workspace/creations/viral-videos": "Viral Videos",
     "/workspace/pricing": "Pricing",
@@ -206,7 +215,7 @@ useEffect(() => {
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#090A0A]">
       <WorkspaceRouteSeo />
       <div ref={noticeRef} className="relative z-[70] w-full shrink-0">
-        {!hidePromo && <TopPromoBanner />}
+        {!hidePromo && (isHomeV2 ? <AnnouncementBar /> : <TopPromoBanner />)}
       </div>
 
       <div className="flex min-h-0 flex-1 overflow-hidden">

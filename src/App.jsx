@@ -53,6 +53,7 @@ const TextToVoice = lazy(() => import("./pages/tools/TextToVoice"));
 
 // already lazy
 const Workspace = lazy(() => import("./pages/workspace/home.jsx"));
+const HomeV2 = lazy(() => import("./pages/workspace/HomeV2.jsx")); // hidden review route
 
 // 🔥 ALSO lazy these workspace pages (important for performance)
 const WorkspaceLayout = lazy(() => import("./pages/workspace/layout.jsx"));
@@ -875,6 +876,7 @@ return (
   />
 
   {/* PUBLIC ROUTES */}
+  <Route path="/home-v2" element={<HomeV2 />} />
   <Route path="/workspace/library" element={<Navigate to="/workspace/creations" replace />} />
   <Route path="/workspace/creations" element={<Creations />} />
   <Route path="/workspace/creations/viral-videos" element={<Creations />} />

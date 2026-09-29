@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 
-const SUITE_ITEMS = [
+export const SUITE_ITEMS = [
   { name: "Behind the Scenes", desc: "Miniature cities destroyed by real practical FX", badge: "NEW", image: "/behind-the-scenes/poster.webp", path: "/workspace/behind-the-scenes" },
   { name: "Cartoon Drive By", desc: "Drive past lost cartoon worlds in real life", badge: "NEW", image: cartoonDrivePreview, path: "/workspace/cartoon-drive-by" },
   { name: "2AM Worlds", desc: "TikTok slideshows of worlds at 2AM", badge: "NEW", image: "/template/2am-world/preview.png", path: "/workspace/two-am" },
@@ -33,16 +33,14 @@ const MAX_RENDER_FPS = 30;
 const MAX_CARD_TILT = 18;
 const HEIGHT_FOCUS_OFFSET = -0.28;
 
-function circularOffset(index, centerIndex) {
-  const total = SUITE_ITEMS.length;
+function circularOffset(index, centerIndex, total) {
   let offset = index - centerIndex;
   if (offset > total / 2) offset -= total;
   if (offset < -total / 2) offset += total;
   return offset;
 }
 
-function wrapPhase(phase) {
-  const total = SUITE_ITEMS.length;
+function wrapPhase(phase, total) {
   return ((phase % total) + total) % total;
 }
 
@@ -185,8 +183,10 @@ function SuiteCard({ item, offset, active, onClick }) {
   );
 }
 
-export default function ZyvoSuiteCarousel() {
+// `items` defaults to today's list; Home v2 passes the merged templates list.
+export default function ZyvoSuiteCarousel({ items: suiteItems = SUITE_ITEMS, subtitle = null } = {}) {
   const navigate = useNavigate();
+  const total = suiteItems.length;
   // Start centered on the first item (Behind the Scenes) so it's the one
   // visible immediately, instead of the middle item, before rotation drifts.
   const [phase, setPhase] = useState(0);
@@ -195,10 +195,10 @@ export default function ZyvoSuiteCarousel() {
   const desktopSectionRef = useRef(null);
 
   const orderedItems = useMemo(
-    () => SUITE_ITEMS
-      .map((item, index) => ({ ...item, index, offset: circularOffset(index, phase) }))
+    () => suiteItems
+      .map((item, index) => ({ ...item, index, offset: circularOffset(index, phase, total) }))
       .sort((a, b) => Math.abs(b.offset) - Math.abs(a.offset)),
-    [phase]
+    [phase, suiteItems, total]
   );
 
   useEffect(() => {
@@ -225,7 +225,7 @@ export default function ZyvoSuiteCarousel() {
         if (lastFrame === undefined) lastFrame = now;
         const elapsedSeconds = Math.min((now - lastFrame) / 1000, 0.1);
         lastFrame = now;
-        phaseRef.current = wrapPhase(phaseRef.current + elapsedSeconds * ROTATION_SPEED);
+        phaseRef.current = wrapPhase(phaseRef.current + elapsedSeconds * ROTATION_SPEED, total);
 
         if (now - lastRender >= 1000 / MAX_RENDER_FPS) {
           setPhase(phaseRef.current);
@@ -242,15 +242,15 @@ export default function ZyvoSuiteCarousel() {
       observer.disconnect();
       window.cancelAnimationFrame(frameId);
     };
-  }, []);
+  }, [total]);
 
   function goPrev() {
-    phaseRef.current = wrapPhase(Math.round(phaseRef.current) - 1);
+    phaseRef.current = wrapPhase(Math.round(phaseRef.current) - 1, total);
     setPhase(phaseRef.current);
   }
 
   function goNext() {
-    phaseRef.current = wrapPhase(Math.round(phaseRef.current) + 1);
+    phaseRef.current = wrapPhase(Math.round(phaseRef.current) + 1, total);
     setPhase(phaseRef.current);
   }
 
@@ -273,7 +273,7 @@ export default function ZyvoSuiteCarousel() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {SUITE_ITEMS.map((item) => (
+              {suiteItems.map((item) => (
                 <MobileSuiteCard key={item.name} item={item} variant="grid" onClick={() => navigate(item.path)} />
               ))}
             </div>
@@ -281,7 +281,10 @@ export default function ZyvoSuiteCarousel() {
         ) : (
           <div>
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-[20px] font-black tracking-tight text-white">zyvo suite</h2>
+              <div>
+                <h2 className={subtitle ? "bg-gradient-to-r from-[#ffb4e8] via-[#ff4ed1] to-[#8f58ff] bg-clip-text text-[22px] font-black tracking-tight text-transparent" : "text-[20px] font-black tracking-tight text-white"}>zyvo suite</h2>
+                {subtitle && <p className="mt-0.5 text-[12.5px] text-white/40">{subtitle}</p>}
+              </div>
               <button
                 type="button"
                 onClick={() => setShowMobileMore(true)}
@@ -295,7 +298,7 @@ export default function ZyvoSuiteCarousel() {
             </div>
 
             <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {SUITE_ITEMS.map((item) => (
+              {suiteItems.map((item) => (
                 <MobileSuiteCard key={item.name} item={item} onClick={() => navigate(item.path)} />
               ))}
             </div>
@@ -317,6 +320,7 @@ export default function ZyvoSuiteCarousel() {
           zyvo suite
         </h2>
         <CurvedTitleLine />
+        {subtitle && <p className="mt-1 text-sm text-white/40">{subtitle}</p>}
       </div>
 
       <div className="relative mt-0">

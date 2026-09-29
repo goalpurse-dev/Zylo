@@ -2,17 +2,19 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import CreatorRewardsModal from "../CreatorRewardsModal.jsx";
 
-export default function TopPromoBanner() {
+// `onDismiss` (the announcement bar system) replaces the session-only close.
+export default function TopPromoBanner({ onDismiss } = {}) {
   const { user } = useAuth();
   const [visible, setVisible] = useState(false);
   const [rewardsModalOpen, setRewardsModalOpen] = useState(false);
 
   useEffect(() => {
-   const dismissed = sessionStorage.getItem("free_credits_banner_closed");
+   const dismissed = !onDismiss && sessionStorage.getItem("free_credits_banner_closed");
     if (!dismissed) setVisible(true);
-  }, []);
+  }, [onDismiss]);
 
   const handleClose = () => {
+    if (onDismiss) { onDismiss(); return; }
     sessionStorage.setItem("free_credits_banner_closed", "true");
     setVisible(false);
   };
