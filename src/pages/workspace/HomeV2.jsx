@@ -31,9 +31,9 @@ export default function HomeV2() {
 
       <LongFormSection />
 
-      {/* Short Form: the zyvo suite coverflow is the templates section */}
+      {/* Short Form: the "short form suite" coverflow is the templates section */}
       <div className="mt-12">
-        <ZyvoSuiteCarousel items={suiteTemplates()} subtitle="Short Form templates for TikTok, Reels & Shorts" />
+        <ZyvoSuiteCarousel title="short form suite" items={suiteTemplates()} subtitle="Short Form templates for TikTok, Reels & Shorts" />
       </div>
 
       {/* Hidden for users without projects */}

@@ -30,17 +30,33 @@ export function showcaseThumb(video) {
   return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null;
 }
 
-// Active showcase rows for one placement ('home' | 'long_form'), in order.
+// A real YouTube watch link (11-character video id), or null. Links come only
+// from showcase_videos; a row without one is never shown (no broken links).
+export function validYoutubeUrl(url) {
+  const s = String(url ?? "").trim();
+  if (!/^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//.test(s)) return null;
+  const id = youtubeId(s);
+  return id && /^[\w-]{11}$/.test(id) ? s : null;
+}
+
+// Active showcase rows with a valid link, for one placement ('home' |
+// 'long_form'), in order. Cached for 30 s only (dedupes one page's calls),
+// so a changed link shows on the next visit without a full reload.
+const CACHE_MS = 30_000;
 const cache = new Map();
 export function fetchShowcase(placement, kind = "example") {
   const key = `${placement}:${kind}`;
-  if (!cache.has(key)) {
-    cache.set(key, supabase.from("showcase_videos").select("id, title, youtube_url, thumbnail_url, kind, niche")
-      .eq("is_active", true).eq("kind", kind).contains("placements", [placement])
-      .order("sort_order").order("created_at")
-      .then(({ data, error }) => { if (error) { cache.delete(key); return []; } return data ?? []; }));
-  }
-  return cache.get(key);
+  const hit = cache.get(key);
+  if (hit && Date.now() - hit.at < CACHE_MS) return hit.rows;
+  const rows = supabase.from("showcase_videos").select("id, title, youtube_url, thumbnail_url, kind, niche")
+    .eq("is_active", true).eq("kind", kind).contains("placements", [placement])
+    .order("sort_order").order("created_at")
+    .then(({ data, error }) => {
+      if (error) { cache.delete(key); return []; }
+      return (data ?? []).map((r) => ({ ...r, youtube_url: validYoutubeUrl(r.youtube_url) })).filter((r) => r.youtube_url);
+    });
+  cache.set(key, { at: Date.now(), rows });
+  return rows;
 }
 
 // Click tracking: Vercel Analytics (existing) + our marketing_events table,

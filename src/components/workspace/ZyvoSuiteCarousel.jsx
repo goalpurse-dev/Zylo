@@ -184,7 +184,7 @@ function SuiteCard({ item, offset, active, onClick }) {
 }
 
 // `items` defaults to today's list; Home v2 passes the merged templates list.
-export default function ZyvoSuiteCarousel({ items: suiteItems = SUITE_ITEMS, subtitle = null } = {}) {
+export default function ZyvoSuiteCarousel({ items: suiteItems = SUITE_ITEMS, subtitle = null, title = "zyvo suite" } = {}) {
   const navigate = useNavigate();
   const total = suiteItems.length;
   // Start centered on the first item (Behind the Scenes) so it's the one
@@ -282,13 +282,13 @@ export default function ZyvoSuiteCarousel({ items: suiteItems = SUITE_ITEMS, sub
           <div>
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h2 className={subtitle ? "bg-gradient-to-r from-[#ffb4e8] via-[#ff4ed1] to-[#8f58ff] bg-clip-text text-[22px] font-black tracking-tight text-transparent" : "text-[20px] font-black tracking-tight text-white"}>zyvo suite</h2>
+                <h2 className={subtitle ? "bg-gradient-to-r from-[#ffb4e8] via-[#ff4ed1] to-[#8f58ff] bg-clip-text text-[22px] font-black tracking-tight text-transparent" : "text-[20px] font-black tracking-tight text-white"}>{title}</h2>
                 {subtitle && <p className="mt-0.5 text-[12.5px] text-white/40">{subtitle}</p>}
               </div>
               <button
                 type="button"
                 onClick={() => setShowMobileMore(true)}
-                aria-label="Open zyvo suite quick start"
+                aria-label={`Open ${title} quick start`}
                 data-testid="zyvo-mobile-more"
                 className="flex items-center gap-1 rounded-full px-2 py-1 text-[13px] font-extrabold text-white transition hover:bg-white/10"
               >
@@ -317,7 +317,7 @@ export default function ZyvoSuiteCarousel({ items: suiteItems = SUITE_ITEMS, sub
     >
       <div className="relative z-20 mb-[-22px] flex flex-col items-center text-center">
         <h2 className="bg-gradient-to-r from-[#ffb4e8] via-[#ff4ed1] to-[#8f58ff] bg-clip-text text-[32px] font-black tracking-tight text-transparent md:text-[44px]">
-          zyvo suite
+          {title}
         </h2>
         <CurvedTitleLine />
         {subtitle && <p className="mt-1 text-sm text-white/40">{subtitle}</p>}

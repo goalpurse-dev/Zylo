@@ -39,9 +39,9 @@ the Long Form page and the "Watch the tutorial" card all read the
 ## The two seeded videos
 
 "Did Vikings Really Wear Horned Helmets?" and "How Did Early Humans Hunt?"
-already have our own thumbnails. Their **youtube_url** values are placeholders
-(`REPLACE_VIKINGS`, `REPLACE_EARLY_HUMANS`). Paste the real links before the
-launch goes live.
+already have our own thumbnails and their real YouTube links. A row whose
+**youtube_url** is not a valid YouTube watch link is not shown anywhere on
+the site.
 
 ## See what gets clicked
 

@@ -16,10 +16,10 @@ import shipClip from "../../assets/home/latest/video9.16-fast.mp4";
 
 const STORAGE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/showcase`;
 export const HUNT_THUMBS = [`${STORAGE}/launch/spear-or-patience.jpg`, `${STORAGE}/launch/how-did-this-kill.jpg`, `${STORAGE}/launch/what-does-it-prove.jpg`];
-// Real f90160bc clips, no burned-in captions: the boar hunt (path card) and
-// the hunters around the fire (Made with Zyvo).
+// Real f90160bc clip, no burned-in captions: the boar hunt (path card).
 export const HUNT_CLIP = { src: `${STORAGE}/preview/hunt-boar-v2.mp4`, poster: `${STORAGE}/preview/hunt-boar-v2.jpg` };
-export const FIRE_CLIP = { src: `${STORAGE}/preview/hunt-fire-960.mp4`, poster: `${STORAGE}/preview/hunt-fire-poster.jpg` };
+// Three real stills from the same video for the calm "Made with Zyvo" card.
+const HUNT_STILLS = [`${STORAGE}/launch/still-hunt.jpg`, `${STORAGE}/launch/still-fire.jpg`, `${STORAGE}/launch/still-chase.jpg`];
 const SECTION_X = "px-4 md:px-[50px]";
 
 // Today's Home section header, one component: title + one-line subtitle + "See all →".
@@ -70,6 +70,38 @@ export function LazyLoopVideo({ src, poster, className = "" }) {
         <video src={src} poster={poster} muted loop playsInline autoPlay preload="none" onCanPlay={() => setReady(true)}
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${ready ? "opacity-100" : "opacity-0"}`} />
       )}
+    </div>
+  );
+}
+
+export function CrossfadeStills({ images, interval = 7000, className = "" }) {
+  const ref = useRef(null);
+  const reduced = useReducedMotion();
+  const [index, setIndex] = useState(0);
+  const [visible, setVisible] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.3 });
+    io.observe(el);
+    const host = el.parentElement;
+    const on = () => setHovered(true), off = () => setHovered(false);
+    host?.addEventListener("mouseenter", on);
+    host?.addEventListener("mouseleave", off);
+    return () => { io.disconnect(); host?.removeEventListener("mouseenter", on); host?.removeEventListener("mouseleave", off); };
+  }, []);
+  useEffect(() => {
+    if (reduced || !visible || hovered || images.length < 2) return undefined;
+    const t = setInterval(() => setIndex((i) => (i + 1) % images.length), interval);
+    return () => clearInterval(t);
+  }, [reduced, visible, hovered, images.length, interval]);
+  return (
+    <div ref={ref} className={`overflow-hidden ${className}`} data-testid="crossfade-stills">
+      {(reduced ? images.slice(0, 1) : images).map((src, i) => (
+        <img key={src} src={src} alt="" loading="lazy" decoding="async"
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[600ms] ease-in-out ${i === index ? "opacity-100" : "opacity-0"}`} />
+      ))}
     </div>
   );
 }
@@ -211,7 +243,7 @@ export function WhatsNewRow() {
   const cards = [
     <BannerCard key="lf" testId="wn-long-form" art={<FanArt />} title="Long Form is here" sub="A full YouTube video from one idea" cta="Try it"
       onClick={() => { trackLaunch("try_long_form", { placement: "whats_new_row" }); navigate("/long-form"); }} />,
-    hunt && <BannerCard key="yt" testId="wn-showcase" art={<LazyLoopVideo src={FIRE_CLIP.src} poster={FIRE_CLIP.poster} className="absolute inset-0" />}
+    hunt && <BannerCard key="yt" testId="wn-showcase" art={<CrossfadeStills images={HUNT_STILLS} className="absolute inset-0" />}
       title={`Made with Zyvo: ${hunt.title}`} cta="Watch on YouTube" href={hunt.youtube_url}
       onClick={() => trackLaunch("showcase_click", { placement: "whats_new_row", target: hunt.youtube_url, videoId: hunt.id })} />,
     tutorial && <BannerCard key="tut" testId="wn-tutorial" art={<img src={showcaseThumb(tutorial)} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}

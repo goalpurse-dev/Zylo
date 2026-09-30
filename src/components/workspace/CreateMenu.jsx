@@ -1,9 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
-import { ArrowRight, Pin, X } from "lucide-react";
-import { NewBadge } from "../launch/LaunchUI.jsx";
-import { isLongFormNew, LONG_FORM_PREVIEW, trackLaunch } from "../launch/launch";
+import { Pin, X } from "lucide-react";
+import { HIDDEN_SHORT_FORM_TOOLS } from "../../data/homeContent";
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 import { getWorkspaceRouteSeoPolicy } from "../../data/routeSeoPolicy.js";
 
@@ -362,24 +361,8 @@ function ToolGridItem({ tool, active, onClick, pinned, onTogglePin, pinDisabled 
   );
 }
 
-/* ─── Long Form card (launch): a small door from the Short Form list ───────── */
-function LongFormMenuCard({ onGo, placement, className = "" }) {
-  return (
-    <button
-      type="button"
-      onClick={() => { trackLaunch("try_long_form", { placement }); onGo("/long-form"); }}
-      className={`group relative flex w-full items-center gap-3 overflow-hidden rounded-[16px] border border-lime-300/25 bg-lime-300/[0.06] p-2.5 text-left transition hover:border-lime-300/45 hover:bg-lime-300/[0.09] active:scale-[0.99] ${className}`}
-      data-testid="short-form-long-form-card"
-    >
-      <img src={LONG_FORM_PREVIEW.poster} alt="" className="aspect-video w-[72px] shrink-0 rounded-[10px] object-cover" />
-      <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-1.5 text-[12.5px] font-bold text-white">Long Form {isLongFormNew() && <NewBadge />}</span>
-        <span className="mt-0.5 block text-[10.5px] leading-snug text-white/45">Full YouTube videos from one idea</span>
-      </span>
-      <ArrowRight className="h-3.5 w-3.5 shrink-0 text-lime-300/70 transition group-hover:translate-x-0.5" />
-    </button>
-  );
-}
+// The Short Form menu's tools: hidden ones (by label) come from src/data/homeContent.js.
+const MENU_TOOLS = CREATE_TOOLS.filter((t) => !HIDDEN_SHORT_FORM_TOOLS.includes(t.label));
 
 /* ─── Desktop Create panel ────────────────────────────────────────────────── */
 export function DesktopCreatePanel({ open, onClose, pinnedIds = [], onTogglePin, pinLimitReached = false }) {
@@ -390,8 +373,7 @@ export function DesktopCreatePanel({ open, onClose, pinnedIds = [], onTogglePin,
 
   return (
     <DesktopPanel open={open} onClose={onClose} title="Short Form" subtitle="Choose a tool to start" sectionLabel="Viral Tools" grid>
-      <LongFormMenuCard onGo={go} placement="short_form_panel" className="mb-1" />
-      {CREATE_TOOLS.map((tool) => (
+      {MENU_TOOLS.map((tool) => (
         <ToolGridItem key={tool.id} tool={tool} active={location.pathname.startsWith(tool.path)} onClick={() => go(tool.path)} pinned={pinnedIds.includes(tool.id)} onTogglePin={() => onTogglePin?.(tool.id)} pinDisabled={pinLimitReached && !pinnedIds.includes(tool.id)} />
       ))}
       <div className="mt-0.5 rounded-[14px] border border-dashed border-white/[0.07] py-5 text-center">
@@ -525,9 +507,8 @@ export default function MobileCreateMenu({ open, onClose, anchorBottom = 72 }) {
           </button>
         </div>
 
-        <LongFormMenuCard onGo={go} placement="short_form_mobile" className="mb-2" />
         <div className="grid grid-cols-2 gap-2">
-            {CREATE_TOOLS.map((tool, i) => (
+            {MENU_TOOLS.map((tool, i) => (
               <button
                 key={tool.id}
                 type="button"

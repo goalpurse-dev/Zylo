@@ -56,10 +56,10 @@ create policy marketing_events_insert on public.marketing_events for insert to a
   with check (user_id is null or user_id = auth.uid());
 grant insert on public.marketing_events to anon, authenticated;
 
--- Seed (placeholder YouTube links — replace in the dashboard; see docs/showcase.md).
+-- Seed: the two launch videos (links can be changed in the dashboard; see docs/showcase.md).
 insert into public.showcase_videos (title, youtube_url, thumbnail_url, kind, placements, niche, sort_order)
 select * from (values
-  ('Did Vikings Really Wear Horned Helmets?', 'https://www.youtube.com/watch?v=REPLACE_VIKINGS', null::text, 'example', array['home', 'long_form'], 'Myth vs Reality', 10),
-  ('How Did Early Humans Hunt?', 'https://www.youtube.com/watch?v=REPLACE_EARLY_HUMANS', null::text, 'example', array['home', 'long_form'], 'History', 20)
+  ('Did Vikings Really Wear Horned Helmets?', 'https://www.youtube.com/watch?v=2DFxSoSB5hY', null::text, 'example', array['home', 'long_form'], 'Myth vs Reality', 10),
+  ('How Did Early Humans Hunt?', 'https://www.youtube.com/watch?v=-4oDXegn9vw', null::text, 'example', array['home', 'long_form'], 'History', 20)
 ) as v(title, youtube_url, thumbnail_url, kind, placements, niche, sort_order)
 where not exists (select 1 from public.showcase_videos s where s.title = v.title);

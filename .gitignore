@@ -8,3 +8,7 @@ dist-ssr
 
 # Generated render / proof videos (hundreds of MB; GitHub rejects files > 100 MB)
 *.mp4
+
+# IP art replacement: originals backup + new art under review (large, not committed)
+art-backup/
+art-review/
