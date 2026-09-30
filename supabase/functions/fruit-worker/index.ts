@@ -20,6 +20,7 @@ import { planStory } from "../_shared/fruit/plannerService.js";
 import { validateCreateStory } from "../_shared/fruit/validation.js";
 import { FruitError, MESSAGES } from "../_shared/fruit/errors.js";
 import { FINAL_TIMEOUT_MIN, FINAL_USD_PER_SECOND, storyUpdateForReport } from "../_shared/fruit/final.js";
+import { raiseProviderAlert } from "../_shared/fruit/alerts.js";
 import { buildClipRequest, fallbackClipTask } from "../_shared/fruit/clips.js";
 import { rewriteClipPrompt } from "../_shared/fruit/smallTasks.js";
 import { buildEnvelope, parseRunware } from "../_shared/fruit/runware.js";
@@ -33,6 +34,7 @@ const WORKER_SECRET = Deno.env.get("FRUIT_WORKER_SECRET") ?? "";
 const PAID_CALLS = Deno.env.get("FRUIT_PAID_CALLS") ?? "";
 
 const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+const ALERT_ENV = { RESEND_API_KEY: Deno.env.get("RESEND_API_KEY") ?? "", ALERT_EMAIL: Deno.env.get("FRUIT_ALERT_EMAIL") || Deno.env.get("CONTACT_TO_EMAIL") || "" };
 
 async function runwarePost(tasks: unknown[]) {
   const res = await fetch(RUNWARE_URL, {
@@ -54,6 +56,10 @@ const engine = createEngine({
   env: { FRUIT_PAID_CALLS: PAID_CALLS, webhookBase: `${SUPABASE_URL}/functions/v1/fruit-worker`, webhookSecret: WORKER_SECRET },
   // A clip that finally fails on Wan2.6 Flash is re-sent once on Seedance 2.0 Mini.
   fallbackClip: fallbackClipTask,
+  // Runware refused because our balance is out: the job is already refunded; alert the admin.
+  onProviderBalance: ({ job, code, message }: any) => raiseProviderAlert(admin, ALERT_ENV, {
+    provider: "runware", code, message, context: { jobId: job.id, storyId: job.story_id, kind: job.kind, model: job.request?.model },
+  }),
   // One content-policy rewrite per clip (gpt-5-mini), keeping the exact line.
   rewriteClip: async (job: any) => {
     const { data: scene } = await admin.from("fruit_story_scenes").select("line").eq("id", job.scene_id).single();

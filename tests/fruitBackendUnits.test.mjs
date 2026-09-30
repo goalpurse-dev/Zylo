@@ -150,7 +150,7 @@ test("Runware replies are normalized: success, pending, errors, content policy",
     { state: "success", url: "https://im.runware.ai/x.jpg", cost: 0.0337 });
   assert.equal(parseRunware({ data: [{ taskType: "videoInference", taskUUID: T, status: "processing" }] }, T).state, "pending");
   assert.equal(parseRunware({ data: [{ taskType: "videoInference", taskUUID: T }] }, T).state, "accepted");
-  const busy = parseRunware({ errors: [{ code: "insufficientCredits", message: "Not enough credits", taskUUID: T }] }, T, 400);
+  const busy = parseRunware({ errors: [{ code: "rateLimitExceeded", message: "Too many requests", taskUUID: T }] }, T, 429);
   assert.equal(busy.retryable, true);
   const policy = parseRunware({ errors: [{ code: "contentModerationFailed", message: "Prompt flagged by safety filter", taskUUID: T }] }, T, 400);
   assert.deepEqual([policy.contentPolicy, policy.retryable], [true, false]);

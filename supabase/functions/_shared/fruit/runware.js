@@ -21,12 +21,16 @@ export function redactEnvelope(envelope) {
 
 export const getResponseTask = (taskUUID) => ({ taskType: "getResponse", taskUUID });
 
+import { OUT_OF_BALANCE } from "./alerts.js";
+
 const CONTENT_POLICY = /moderat|safety|policy|nsfw|inappropriate|prohibited|violat|content.?filter|sensitive|blocked/i;
 const RETRYABLE = /insufficient.?credits|rate.?limit|concurren|too many|timeout|timed out|temporar|unavailable|overloaded|busy|try again|internal|server error|capacity/i;
 
 function classify(code, message, httpStatus) {
   const text = `${code ?? ""} ${message ?? ""}`;
   if (CONTENT_POLICY.test(text)) return { retryable: false, contentPolicy: true };
+  // Our Runware account can't pay: retrying or falling back won't help.
+  if (httpStatus === 402 || OUT_OF_BALANCE.test(text)) return { retryable: false, contentPolicy: false, providerBalance: true };
   if (RETRYABLE.test(text) || httpStatus === 429 || (httpStatus >= 500 && httpStatus < 600) || httpStatus === 402) {
     return { retryable: true, contentPolicy: false };
   }

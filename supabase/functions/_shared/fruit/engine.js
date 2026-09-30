@@ -23,7 +23,7 @@ export const TIMING = Object.freeze({
   storeGiveUpSec: 15 * 60,              // provider result we can't store (URL expires)
 });
 
-const failCode = (kind, cls) => cls.contentPolicy
+const failCode = (kind, cls) => cls.providerBalance ? "PROVIDER_UNAVAILABLE" : cls.contentPolicy
   ? (kind === "clip" ? "CLIP_BLOCKED" : "IMAGE_FAILED")
   : cls.retryable ? "PROVIDER_BUSY" : (kind === "clip" ? "CLIP_FAILED" : "IMAGE_FAILED");
 
@@ -31,7 +31,8 @@ const ageSec = (now, iso) => (iso ? (now.getTime() - new Date(iso).getTime()) / 
 
 //   rewriteClip (optional) async (job) -> new request | null   one content-policy rewrite for clips
 //   fallbackClip (optional) (request) -> fallback request | null   e.g. clips.js#fallbackClipTask
-export function createEngine({ store, runware, media, env, rewriteClip = null, fallbackClip = null, now = () => new Date(), uuid = () => crypto.randomUUID(), log = console }) {
+//   onProviderBalance (optional) async ({job, code, message}) -> void   admin alert (alerts.js)
+export function createEngine({ store, runware, media, env, rewriteClip = null, fallbackClip = null, onProviderBalance = null, now = () => new Date(), uuid = () => crypto.randomUUID(), log = console }) {
   const paidOff = String(env.FRUIT_PAID_CALLS ?? "").toLowerCase() === "off";
 
   async function webhookFor(taskUUID) {
@@ -41,6 +42,13 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
   }
 
   async function fail(job, cls, { cost = 0, code, message } = {}) {
+    // Our provider account is out of balance: refund now (no retries, no
+    // fallback on the same account), tell the admin; the user retries later.
+    if (cls.providerBalance) {
+      await store.refundJob(job.id, "PROVIDER_UNAVAILABLE", MESSAGES.PROVIDER_UNAVAILABLE, cost);
+      if (onProviderBalance) await onProviderBalance({ job, code, message }).catch((e) => log.error?.("[fruit] alert hook failed:", e?.message ?? e));
+      return "refunded";
+    }
     // A clip refused by the content filter gets ONE safe rewrite (the exact line kept), then fails.
     if (cls.contentPolicy && job.kind === "clip" && rewriteClip && !(await store.wasRewritten(job.id))) {
       const next = await rewriteClip(job);

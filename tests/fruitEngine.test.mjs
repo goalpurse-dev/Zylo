@@ -81,7 +81,7 @@ test("duplicate and late webhooks change nothing", async () => {
 });
 
 test("provider busy: retried with backoff and a fresh taskUUID, then refunded once after 3 attempts", async () => {
-  const { db, engine, sent } = setup({ submit: (env) => ({ httpStatus: 400, body: ERR(env.taskUUID, "insufficientCredits", "Not enough credits") }) });
+  const { db, engine, sent } = setup({ submit: (env) => ({ httpStatus: 429, body: ERR(env.taskUUID, "rateLimitExceeded", "Too many requests") }) });
   const storyId = db.addStory({ sceneCount: 1 });
   pictures(db, storyId);
   await engine.kick({ storyId });

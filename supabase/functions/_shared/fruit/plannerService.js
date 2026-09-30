@@ -6,7 +6,8 @@ import { callLlm, LlmError } from "./llm.js";
 import { runPlanner } from "./planner.js";
 import { runSeriesPlanner } from "./series.js";
 import { FRUIT_MODELS } from "./models.js";
-import { FruitError } from "./errors.js";
+import { FruitError, MESSAGES } from "./errors.js";
+import { llmOutOfBalance, raiseProviderAlert } from "./alerts.js";
 
 /** Logs one LLM exchange; never throws (logging must not break the request). */
 async function logCall(admin, row) {
@@ -44,6 +45,11 @@ function loggedLlm({ admin, env, userId, model, purposePrefix, seriesId }) {
         error: String(e?.message ?? e).slice(0, 500), cost_usd: d?.costUsd ?? 0, input_tokens: d?.usage?.inputTokens ?? null,
         output_tokens: d?.usage?.outputTokens ?? null, latency_ms: d?.latencyMs ?? Date.now() - t0, completed_at: new Date().toISOString(),
       }));
+      // Our LLM account is out of balance: tell the admin, and the user "short break, nothing charged".
+      if (llmOutOfBalance(d)) {
+        await raiseProviderAlert(admin, env, { provider: model.provider, code: `http_${d?.httpStatus ?? "?"}`, message: String(e?.message ?? e), context: { model: model.model, purpose: purposePrefix + purpose, userId } });
+        throw new FruitError("PROVIDER_UNAVAILABLE", MESSAGES.PROVIDER_UNAVAILABLE, 503);
+      }
       throw new FruitError("PLANNER_FAILED", undefined, 502);
     }
   };

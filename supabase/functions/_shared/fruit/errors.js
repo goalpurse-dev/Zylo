@@ -28,6 +28,7 @@ export const MESSAGES = Object.freeze({
   PROVIDER_BUSY: "The video service is busy. Your credits were refunded. Try again in a few minutes.",
   PROVIDER_TIMEOUT: "This took too long and was stopped. Your credits were refunded. Tap Retry.",
   FINAL_FAILED: "We couldn't join your clips. This is free, so just try again.",
+  PROVIDER_UNAVAILABLE: "AI Fruit Story is taking a short break on our side. You weren't charged. Try again in a few minutes.",
   SERVER_FAILED: "Something went wrong on our side. Nothing was charged. Try again.",
 });
 
@@ -37,7 +38,7 @@ export const fruitError = (code, message = MESSAGES[code] ?? MESSAGES.SERVER_FAI
 const STATUS = {
   UNAUTHORIZED: 401, PLAN_UPGRADE_REQUIRED: 403, INSUFFICIENT_CREDITS: 402, RATE_LIMITED: 429,
   NOT_FOUND: 404, WRONG_STATUS: 409, STAGE_NOT_READY: 501, PAID_CALLS_DISABLED: 503,
-  PLANNER_FAILED: 502, FINAL_FAILED: 502, SERVER_FAILED: 500,
+  PLANNER_FAILED: 502, FINAL_FAILED: 502, PROVIDER_UNAVAILABLE: 503, SERVER_FAILED: 500,
 };
 
 const PLAN_NAMES = { starter: "Starter", pro: "Pro", generative: "Generative" };

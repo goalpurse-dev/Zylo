@@ -17,6 +17,8 @@ import { FruitError, MESSAGES, errorBody, fromDbError, fruitError } from "../_sh
 import { episodeStatuses, stepBlocker, toRecentSingle, toStory } from "../_shared/fruit/storyState.js";
 import { FINAL_MACHINE, buildFinalJob, finalMachineConfig, finalPath, storyUpdateForReport } from "../_shared/fruit/final.js";
 import { webhookToken } from "../_shared/fruit/runware.js";
+import { providerOnHold } from "../_shared/fruit/alerts.js";
+import { FRUIT_MODELS } from "../_shared/fruit/models.js";
 import { validateCreateStory, validateEditInstruction, validateId, validateScenePrompt, validateSeriesPlan } from "../_shared/fruit/validation.js";
 import { planStep } from "../_shared/fruit/steps.js";
 import { planSeries, planStory } from "../_shared/fruit/plannerService.js";
@@ -32,6 +34,8 @@ const LLM_ENV = {
   ANTHROPIC_API_KEY: Deno.env.get("ANTHROPIC_API_KEY") ?? "",
   OPENAI_API_KEY: Deno.env.get("OPENAI_API_KEY") ?? "",
   FRUIT_PAID_CALLS: Deno.env.get("FRUIT_PAID_CALLS") ?? "",
+  RESEND_API_KEY: Deno.env.get("RESEND_API_KEY") ?? "",
+  ALERT_EMAIL: Deno.env.get("FRUIT_ALERT_EMAIL") || Deno.env.get("CONTACT_TO_EMAIL") || "",
 };
 // Final video: a per-job machine on the Long Form render app (same image family, own tag).
 const FLY_API_TOKEN = Deno.env.get("FLY_API_TOKEN") ?? "";
@@ -120,6 +124,8 @@ async function runStep(ctx: Ctx, step: string, storyId: string, extra: Record<st
   requirePaid(ctx);
   if (PAID_CALLS_OFF) throw fruitError("PAID_CALLS_DISABLED");
   await rateLimit(ctx.userId, "step");
+  // Out-of-credit guard: while Runware just refused us for balance, don't charge for work that can't run.
+  if (await providerOnHold(admin, "runware")) throw fruitError("PROVIDER_UNAVAILABLE");
   const { row, scenes } = await loadStory(ctx.userId, storyId);
   const story: any = { ...toStory(row, scenes), locations: row.locations };   // locations: builder only, not the contract
   const staging = new Map(scenes.map((s: any) => [s.id, { locationId: s.location_id, action: s.action, emotion: s.emotion, shot: s.shot, placement: s.placement }]));
@@ -160,6 +166,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const [need, planName] = QUALITY_PLAN[input.quality];
     if ((PLAN_RANK[ctx.plan] ?? 0) < need) throw fruitError("PLAN_UPGRADE_REQUIRED", `${input.quality.toUpperCase()} needs the ${planName} plan.`);
     await rateLimit(ctx.userId, "story");
+    if (await providerOnHold(admin, FRUIT_MODELS.planner.provider)) throw fruitError("PROVIDER_UNAVAILABLE");
 
     // An episode: the series cast, its bible, the earlier episodes, and this one's plan.
     let series: any;
@@ -302,6 +309,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const input = validateSeriesPlan(ctx.body?.input, lib);
     await rateLimit(ctx.userId, "series");
     if (PAID_CALLS_OFF) throw fruitError("PAID_CALLS_DISABLED");
+    if (await providerOnHold(admin, FRUIT_MODELS.planner.provider)) throw fruitError("PROVIDER_UNAVAILABLE");
     const row = must(await admin.from("fruit_series").insert({
       user_id: ctx.userId, concept: input.concept, cast_ids: input.castIds, tone: input.tone, opener: input.opener, episode_count: input.episodeCount,
     }).select("id").single());
