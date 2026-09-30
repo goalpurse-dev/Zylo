@@ -23,9 +23,10 @@ function setCachedPlan(userId, code) {
 }
 
 /**
- * /workspace/ai-fruit-story — shows v2 when VITE_FRUIT_V2=true and the
- * signed-in user's server-side fruit_v2 flag is on (src/lib/featureFlags.js);
- * everyone else gets the current tool (AIFruitStoryV1 below).
+ * /workspace/ai-fruit-story — shows v2 when the global switch
+ * public.global_feature_flags.fruit_v2 is on (everyone, guests included) or
+ * the user's own fruit_v2 flag is on (src/lib/featureFlags.js). Otherwise the
+ * original tool (AIFruitStoryV1 below), kept as the fallback.
  *
  * Dev builds only: ?fruitV2Preview=1[&plan=pro][&credits=40][&fail=scene3][&viewer=guest|noPlan][&recent=empty]
  * opens v2 with mock data and no sign-in, for screenshots and QA.

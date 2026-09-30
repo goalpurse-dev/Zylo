@@ -108,7 +108,7 @@ export function bestLongFormTier(tiers, planCode) {
 
 /**
  * The tier Setup starts on: V3 when the plan has it (Pro and Generative — V4's
- * 90 credits a minute is always the user's own pick), else the best allowed
+ * higher price per minute is always the user's own pick), else the best allowed
  * (Starter → V2); null when none is.
  */
 export function defaultLongFormTier(tiers, planCode) {

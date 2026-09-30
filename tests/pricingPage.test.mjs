@@ -31,7 +31,7 @@ const PRICES = summarizeStripePrices(stripeById(), "inferred_by_currency");
 const LF_ROWS = [
   { tool_key: "longform:v2", flat_credits: 25, min_plan: "starter" },
   { tool_key: "longform:v3", flat_credits: 75, min_plan: "pro" },
-  { tool_key: "longform:v4", flat_credits: 90, min_plan: "generative" },
+  { tool_key: "longform:v4", flat_credits: 110, min_plan: "generative" },
 ];
 
 test("the webhook grants the page promise (750 / 1,600 / 3,200) to new subscriptions; earlier ones keep theirs", () => {
@@ -93,9 +93,9 @@ test("Long Form counts per plan: rounded down, — where the plan lacks the tier
   });
   assert.deepEqual(grid("v2", 10), [3, 6, 12]);
   assert.deepEqual(grid("v3", 10), ["—", 2, 4]);
-  assert.deepEqual(grid("v4", 10), ["—", "—", 3]);
+  assert.deepEqual(grid("v4", 10), ["—", "—", 2]);
   assert.deepEqual(grid("v2", 8), [3, 8, 16]);
-  assert.deepEqual(grid("v4", 15), ["—", "—", 2]);
+  assert.deepEqual(grid("v4", 15), ["—", "—", 1]);
   assert.deepEqual(LONG_FORM_LENGTHS, [8, 10, 12, 15]);
   assert.equal(longFormOutputs(null, "pro", "v2", 10), null, "loading, not zero");
   assert.equal(tiersFromRows(LF_ROWS.slice(0, 2)), null, "a missing tier row fails closed");

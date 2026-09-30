@@ -165,7 +165,10 @@ if (!user?.id) {
   "line_items[0][price]": finalPriceId,
   "line_items[0][quantity]": "1",
   allow_promotion_codes: "true",
-  "automatic_tax[enabled]": "true",
+  // Automatic tax is off: not VAT-registered yet (turnover under the Finnish
+  // EUR 20,000 limit), so no VAT is charged and checkout doesn't ask for an address.
+  // Turn back on after VAT registration.
+  // "automatic_tax[enabled]": "true",
   "customer_update[address]": "auto"
 });
 

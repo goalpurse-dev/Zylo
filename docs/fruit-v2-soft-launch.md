@@ -34,7 +34,7 @@ Status on 2026-09-30:
 
 | Var | Value | Why |
 |---|---|---|
-| `VITE_FRUIT_V2` | `true` | Global switch. v2 shows only when this is true AND the user's `fruit_v2` flag is true. It's build-time, so changing it needs a redeploy. |
+| `VITE_FRUIT_V2` | leave unset | Emergency override only: `false` turns v2 off for everyone in that build (needs a redeploy). Unset = follow the database switch below. |
 | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | unchanged | Already set. |
 
 Nothing else is needed on Vercel. Every Fruit secret is a Supabase edge secret.
@@ -109,14 +109,14 @@ WHERE created_at > now() - interval '1 day' AND purpose IN ('planner', 'planner_
 | Speed | Action | Effect |
 |---|---|---|
 | ~10 s | `FRUIT_PAID_CALLS=off` (§5) | No new paid work: queued jobs are refunded, jobs already at the provider finish, and the UI says generation is switched off. Stories and finals stay viewable. |
-| ~10 s | `UPDATE public.user_feature_flags SET flags = flags - 'fruit_v2';` | Everyone falls back to v1 on their next page load. Their v2 stories stay in the database. |
-| ~2 min | Vercel env `VITE_FRUIT_V2=false`, then redeploy | v2 code is off for everyone, whatever the flags say. |
+| ~10 s | `UPDATE public.global_feature_flags SET enabled = false, updated_at = now() WHERE key = 'fruit_v2';` | Everyone falls back to v1 on their next page load (users with a per-user `fruit_v2` flag keep v2). Their v2 stories stay in the database. Back on: the same line with `enabled = true`. |
+| ~2 min | Vercel env `VITE_FRUIT_V2=false`, then redeploy | v2 code is off for everyone, whatever the switch and flags say. |
 | ~2 min | Vercel "Promote" the previous production deployment | Undoes the push entirely (UI and Pricing page). The backend stays; it only serves flagged v2. |
 | Last resort | `select cron.unschedule('fruit-story-reconcile');` | Stops the reconciler. Only do this with paid calls off, because refunds for stuck jobs stop too. |
 
 ## 8. After a week of clean numbers
 
-1. Roll out to everyone: set the flag for all paid users, or make `isFruitV2Enabled` ignore the per-user flag.
+1. Rolled out to everyone on 2026-10-01 with `public.global_feature_flags.fruit_v2 = true` (switch above).
 2. Remove v1 (`AIFruitStoryV1`) and retire the v1 tool keys once no v1 jobs remain.
 3. Update `/blog/ai-fruit-story-pricing` (it still describes v1 costs).
 4. Set `TUTORIAL_URL` when the tutorial is ready.

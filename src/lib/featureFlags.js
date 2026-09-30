@@ -1,20 +1,30 @@
-// Feature flags: a build-time global switch plus a per-user flag stored
-// server-side in public.user_feature_flags (readable by its owner only, never
-// writable from the browser; see supabase/migrations/20261012150000_user_feature_flags.sql).
+// Feature flags: a global switch in the database, a per-user flag, and an
+// optional build-time emergency override.
 //
-// A flag is on for a user only when BOTH are true:
-//   1. the global switch for that feature is on in this build, and
-//   2. the user's own row has { "<flag>": true }.
+// A flag is on when:
+//   - the build override is not "false" (VITE_FRUIT_V2=false turns fruit_v2
+//     off for everyone in that build; unset = follow the database), AND
+//   - the global switch public.global_feature_flags[<flag>] is on (everyone,
+//     guests included), OR the user's own public.user_feature_flags row has
+//     { "<flag>": true } (testers keep the feature when the switch is off).
+//
+// Both tables are read-only from the browser; flip them with SQL
+// (supabase/migrations/20261001120000_global_feature_flags.sql and
+// 20261012150000_user_feature_flags.sql). The global switch is read on page
+// load, so a flip reaches every user on their next page load, no redeploy.
 import { useEffect, useState } from "react";
 import { supabase } from "./supabaseClient";
 
-/** Build-time global switches (Vite env). */
-export const GLOBAL_FLAGS = {
-  fruit_v2: import.meta.env.VITE_FRUIT_V2 === "true",
+/** Build-time overrides (Vite env): only an explicit "false" does anything. */
+export const BUILD_OFF = {
+  fruit_v2: import.meta.env.VITE_FRUIT_V2 === "false",
 };
 
 const CACHE_KEY = "zyvo_feature_flags_v1";
+const GLOBAL_CACHE_KEY = "zyvo_global_flags_v1";
+const GLOBAL_TTL_MS = 30 * 1000;
 const memory = new Map(); // userId -> Promise<flags>
+let globalMemory = null; // { at, promise }
 
 function readCache(userId) {
   try {
@@ -30,6 +40,15 @@ function writeCache(userId, flags) {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ userId, flags }));
   } catch {
     // Storage unavailable — the network value is still used.
+  }
+}
+
+function readGlobalCache() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(GLOBAL_CACHE_KEY) || "null");
+    return cached && typeof cached === "object" ? cached : null;
+  } catch {
+    return null;
   }
 }
 
@@ -54,41 +73,62 @@ export function fetchUserFlags(userId) {
   return memory.get(userId);
 }
 
-/** Pure check: global switch on AND the user's flag set. */
-export function isFeatureEnabled(name, userFlags) {
-  return GLOBAL_FLAGS[name] === true && userFlags?.[name] === true;
+/**
+ * The global switches { fruit_v2: true, ... } (fresh every 30 s). On a failure
+ * the last known value is used, else {} (every switch off).
+ */
+export function fetchGlobalFlags() {
+  if (!globalMemory || Date.now() - globalMemory.at > GLOBAL_TTL_MS) {
+    globalMemory = {
+      at: Date.now(),
+      promise: (async () => {
+        const { data, error } = await supabase.from("global_feature_flags").select("key, enabled");
+        if (error || !Array.isArray(data)) throw new Error(error?.message || "GLOBAL_FLAGS_UNAVAILABLE");
+        const flags = Object.fromEntries(data.map((r) => [r.key, r.enabled === true]));
+        try { localStorage.setItem(GLOBAL_CACHE_KEY, JSON.stringify(flags)); } catch { /* non-fatal */ }
+        return flags;
+      })().catch(() => readGlobalCache() ?? {}),
+    };
+  }
+  return globalMemory.promise;
 }
 
-/** AI Fruit Story v2 is shown only when VITE_FRUIT_V2=true AND the user's fruit_v2 flag is true. */
-export function isFruitV2Enabled(userFlags) {
-  return isFeatureEnabled("fruit_v2", userFlags);
+/** Pure check (tested): build override, then global switch OR the user's flag. */
+export function isFeatureEnabled(name, userFlags, globalFlags = {}) {
+  if (BUILD_OFF[name] === true) return false;
+  return globalFlags?.[name] === true || userFlags?.[name] === true;
+}
+
+/** AI Fruit Story v2 for this user (see isFeatureEnabled). */
+export function isFruitV2Enabled(userFlags, globalFlags) {
+  return isFeatureEnabled("fruit_v2", userFlags, globalFlags);
 }
 
 /**
- * { enabled, loading } for one flag and the given user. When the global
- * switch is off this never touches the network and reports loading=false.
- * The last known value for this user is used immediately (no flash), then
+ * { enabled, loading } for one flag and the given user (or a guest, userId
+ * null). The last known values are used immediately (no flash), then
  * refreshed from the server.
  */
 export function useFeatureFlag(name, userId) {
-  const globalOn = GLOBAL_FLAGS[name] === true;
   const [state, setState] = useState(() => {
-    if (!globalOn || !userId) return { enabled: false, loading: false };
-    const cached = readCache(userId);
-    return cached ? { enabled: cached[name] === true, loading: false } : { enabled: false, loading: true };
+    if (BUILD_OFF[name] === true) return { enabled: false, loading: false };
+    const cachedGlobal = readGlobalCache();
+    const cachedUser = userId ? readCache(userId) : {};
+    if (!cachedGlobal || !cachedUser) return { enabled: false, loading: true };
+    return { enabled: isFeatureEnabled(name, cachedUser, cachedGlobal), loading: false };
   });
 
   useEffect(() => {
-    if (!globalOn || !userId) {
+    if (BUILD_OFF[name] === true) {
       setState({ enabled: false, loading: false });
       return undefined;
     }
     let cancelled = false;
-    fetchUserFlags(userId).then((flags) => {
-      if (!cancelled) setState({ enabled: isFeatureEnabled(name, flags), loading: false });
+    Promise.all([fetchGlobalFlags(), fetchUserFlags(userId)]).then(([globalFlags, userFlags]) => {
+      if (!cancelled) setState({ enabled: isFeatureEnabled(name, userFlags, globalFlags), loading: false });
     });
     return () => { cancelled = true; };
-  }, [globalOn, name, userId]);
+  }, [name, userId]);
 
   return state;
 }
