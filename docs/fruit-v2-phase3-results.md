@@ -1,4 +1,4 @@
-# AI Fruit Story v2: Phase 3 results (stages 3b–3e)
+# AI Fruit Story v2: Phase 3 results (stages 3b–3i + a full 30 s story)
 
 Date: 2026-09-30. Everything below ran on production through the real API as the owner's
 account (flagged, v2 only). Plan: [fruit-v2-phase3-plan.md](fruit-v2-phase3-plan.md).
@@ -12,7 +12,11 @@ account (flagged, v2 only). Plan: [fruit-v2-phase3-plan.md](fruit-v2-phase3-plan
 | 3d scene pictures | $0.40 | $0.288 |
 | 3e clips + bake-off | $2.20 | $2.030 |
 | 3e confirmation (Wan V2, 3 clips) | $1.00 | $0.753 |
-| **Phase 3 total** | **$4.00** | **$3.18** |
+| 3f final video on Fly.io | $0.10 | $0.001 |
+| 3g series (3-episode plan + episode 1 pictures) | $0.30 | $0.127 |
+| 3i framing fix check (2 pictures) | $0.10 | $0.069 |
+| **Phase 3 total** | **$4.00** | **$3.37** |
+| Full 30 s V2 story (approved outside the $4) | $2.00 | $1.782 |
 
 ## Models (in `supabase/functions/_shared/fruit/models.js`)
 
@@ -64,54 +68,75 @@ LTX-2.3 ($0.04/s listed; refused once by Runware for low available balance, not 
   a human watching with sound.
 - **Seedance multi-shot cuts:** Seedance 2.0 cut to a second shot in one clip and lost the last
   word. The no-cut rule is now in every clip prompt (not yet re-tested on Seedance).
-- **Framing:** the picture model sometimes ignores "waist up"; one scene came out with the
-  speaker's head at ~18% of the frame height (target ≥ 25%).
+- **Framing:** fixed in two steps. (1) Speaker-first staging (3i): the speaker in front,
+  facing the camera, listeners behind and smaller; heads went from ~22–28% to ~33–36% of the
+  frame. (2) After the 30 s story: "medium two-shot" still produced full-body shots and
+  "over-the-shoulder" drew the foreground listener as a human, so the shot text now says
+  "chest up, never full body" and names the listener's fruit head. (2) is tested offline only.
 - **Wan audio:** Wan's docs promise ambient audio only; in practice it spoke the dialogue in
   all 4 Wan clips so far (bake-off + confirmation), transcripts exact.
-- **Provider balance:** a low Runware balance refuses jobs. Users would get an automatic refund,
-  but there is no friendly "service busy" state or admin alert yet.
+- **Provider balance:** handled (see below). Not yet seen live: the guard was tested offline.
 
-## Pricing proposal (not applied)
+## Prices (applied 2026-09-30, migration 20260930162500)
 
-Rule, same as Long Form Phase 7 (`docs/phase7/pricing-proposal.md`):
-- ~50% margin (the floor) at our **cheapest credit**, which is Starter billed yearly: $16 / 750 = **$0.02133**.
-- Plus ~10% overhead for failed and retried work.
-- So credits = real cost × 1.10 × 2 ÷ $0.02133, rounded up.
+Rule: ~50% margin at our cheapest credit (Starter yearly, $16 / 750 = **$0.02133**) after ~10%
+overhead for failed work. The `$0.02` `CREDIT_RETAIL_USD` in `src/lib/pricing.ts` is a legacy
+constant; no product sells a credit that cheap.
 
-The `$0.02` in `src/lib/pricing.ts` (`CREDIT_RETAIL_USD`) is a legacy "retail" constant used
-to turn dollar targets into credits. No current product sells a credit at $0.02 (packs are
-$0.0222–0.0240, monthly plans $0.0263–0.0267), so **$0.02133 is the right floor**.
+| Item | Real cost | Price | Margin at $0.02133 |
+|---|---|---|---|
+| Picture / edit / regenerate | $0.035 | **4 cr** | 55% |
+| V2 clip, Wan2.6 Flash | $0.050/s | **5 cr/s** (owner's choice) | 48% (Seedance fallback clips: 16%) |
+| V3 clip, Seedance 2.0 Mini | $0.082/s | **9 cr/s** | 53% |
+| V4 clip, Veo 3.1 Fast | $0.15/s | **16 cr/s** | 52% |
+| Story writing, series plans, final video | ≈ $0.001–0.02 | free | absorbed |
 
-| Item | Real cost | Cost + 10% | Price | Revenue at $0.02133 | Margin | Today |
-|---|---|---|---|---|---|---|
-| Picture (new / regenerate) | $0.0346 | $0.0381 | **4 cr** | $0.0853 | **55%** | 3 cr |
-| Edit (picture + gpt-5-mini) | $0.0352 | $0.0387 | **4 cr** | $0.0853 | **55%** | 3 cr |
-| V2 clip, Wan2.6 Flash | $0.0504/s | $0.0554/s | **6 cr/s** | $0.128/s | **57%** | 5 cr/s |
-| V3 clip, Seedance 2.0 Mini | $0.0817/s | $0.0899/s | **9 cr/s** | $0.192/s | **53%** | 8 cr/s |
-| V4 clip, Veo 3.1 Fast | $0.15/s | $0.165/s | **16 cr/s** | $0.341/s | **52%** | 10 cr/s |
-| Story writing, series plans | ≈ $0.011–0.02 | | free | | absorbed | free |
+Default story length in the UI is 20 s (15 s–2 min, 5 s steps). The UI's cost card and every
+price chip read these rows through `useToolPriceQuotes`; per-second rows make every clip price
+exact (CEIL(rate × seconds)).
 
-- V2 at 5 cr/s would be 48%, below the floor.
-- A V2 clip that falls back to Seedance Mini earns 30% margin at 6 cr/s. That should be rare.
+## Stages 3f–3i
 
-**Per 30 s story (6 scenes, no retries):**
-- V2: 24 + 180 = **204 credits** ($4.35), real cost ≈ $1.74.
-- V3: 24 + 270 = **294 credits** ($6.27), real cost ≈ $2.67.
-- V4: 24 + 480 = **504 credits** ($10.75), real cost ≈ $4.72.
+- **3f final video (Fly.io):** `render-worker/src/fruitFinal.mjs` in the Long Form image (tag
+  `zyvo-render:fruit-final`), one performance-4x machine per final, auto-destroyed. Trims each
+  clip's leading/trailing silence (keeps 0.25 s), normalizes to 720p30 + loudness, burns in the
+  exact lines as captions (Lilita One), joins, uploads to a one-time signed URL, reports with an
+  HMAC token. Holds no Supabase key. Test: 15 s of clips → 11.1 s final in 24 s, $0.001.
+  Expected: ≈ $0.001–0.002 per final, ≈ $1–2/month at 1,000 finals.
+- **3g series:** `createSeriesPlan` (free, Sonnet 5, validated, one repair) writes title, logline,
+  a bible with fixed roles, and N episodes with cliffhangers. Episodes unlock in order; an
+  episode is written from the bible, earlier episodes, its own plan, picks up the last
+  cliffhanger and lands its own. Test: 3-episode plan ($0.011) + episode 1 at 15 s with pictures.
+- **3h UI:** the v2 UI runs on the real backend for flagged users (`supabaseAdapter.js`):
+  realtime story updates with a poll fallback, Preview banner only on the dev mock, Recent shows
+  real stories plus earlier-version (v1) stories read-only. QA: signed-in Playwright pass at 1440
+  and 390 px (Recent, final, v1 story, settings cost card, series plan/roadmap/episode board).
+- **Out-of-credit guard:** a provider refusal for OUR balance (Runware, Anthropic, OpenAI) is
+  refunded at once (no retries or fallback) with "short break, you weren't charged"; new paid
+  steps are refused before charging for 10 minutes after a refusal; one alert row per provider
+  (`fruit_provider_alerts`) and an admin email when an alert opens.
+- **3i framing:** see Known issues.
+- **Prompt fixes:** no doubled names ("Gloria Grape Gloria freezes"); the 170 library voices now
+  describe only how a voice sounds, and the clip prompt says "in her <voice> voice, delivered in
+  a <emotion> tone".
 
-## Launch checklist (what's left before Fruit Story v2 goes live)
+## Full 30 s story on V2 (results page: https://claude.ai/artifact/MBspxtJnYFfBBqbuSh6j5H)
 
-Phase 3 budget left after the confirmation run: $0.82 of $4.00.
+- Random 3-character idea ("The IT guy reads everything": Ken, Rick, Linda) → "Ken Reads
+  Everything": 6 scenes, 31 s of clips → **26.2 s final** (4.9 s of silence trimmed), captions on.
+- **Real cost $1.78** (script $0.017, pictures $0.207, clips $1.553, final $0.001).
+  **179 credits** charged → $3.82 at the cheapest credit → **53% margin**. 3.6 min wall clock
+  (script 12 s, pictures 36 s, clips 126 s, final 23 s). 6/6 clips on Wan, no fallback, no retries.
+- Transcripts: 5/6 exact; the 6th is a speech-to-text homophone ("scent mail" for "sent mail").
+- Weak spots, all from the pictures: scenes 1 and 6 came out full body (small faces, weak lip
+  read); scene 5 (over-the-shoulder) drew a human listener and Linda's face drifted. Builder fixed
+  after the run (tested offline). The clip model also drew an Apple logo on a laptop.
 
-| # | Task | What it is | Est. API cost | Est. time |
-|---|---|---|---|---|
-| 1 | Prices | Apply the pricing table above (`tool_prices` rows) after approval | $0 | 1 h |
-| 2 | **3f: final video** | Join the clips, trim leading/trailing silence (keep a short pause), optional captions from the known lines, MP4 in permanent storage. On Fly.io, reusing the Long Form `render-worker` (Node 22 + ffmpeg, per-job machines; its `fly.toml` still says draft, so deploy is part of this). Test on the 3e clips | ≤ $0.10 test; ~$0.003–0.006 per final on performance-8x (≈ $5/month at 1,000 finals) | 0.5–1 day |
-| 3 | **3g: series** | Series planner (title, logline, N episodes with cliffhangers, locked roles); episodes unlock in order; each episode is planned from the bible, previous summaries and its own plan. Test: a 3-episode plan + episode 1 script and pictures at 15 s | ≤ $0.30 | 0.5–1 day |
-| 4 | **3h: connect the UI** | Real adapter in the v2 UI; realtime `subscribeStory`; switch UI price quotes to the `image:fruit-story` / `video:fruit-story-*` keys; drop the Preview banner for real stories; Recent = real history + old v1 stories read-only; still flag-gated | $0 | 1 day |
-| 5 | Provider balance guard | Friendly "service busy, refunded" state and an admin alert when Runware refuses for low balance (seen in 3e) | $0 | 0.5 day |
-| 6 | Framing follow-up | Stronger "waist up" enforcement, or the planner prefers close-ups when 3 characters are in frame | ~$0.10 to verify | 2–3 h |
-| 7 | Full-length check | One real 30 s story per tier end to end, after 1–4 | ≈ $1.7 (V2) + $2.7 (V3) + $4.7 (V4) ≈ **$9**, outside the Phase 3 budget | 2 h |
-| 8 | Mobile QA | v2 UI with real data on phone widths; slow-network behavior of realtime updates | $0 | 0.5 day |
-| 9 | Rollout | Enable `fruit_v2` for internal testers, then everyone; remove v1 (`AIFruitStoryV1`) and retire the v1 tool keys (`image:fruit-v2`, `video:fruit-v2/v3/v4`, `video:fruitveo31lite`) once no v1 jobs remain | $0 | 0.5 day + watch period |
-| 10 | Optional | Test Seedance 2.0 Mini 480p and LTX-2.3 as cheaper V2/V3 options | ≈ $0.35 | 1 h |
+## Launch checklist (what's left)
+
+| # | Task | Est. API cost | Est. time |
+|---|---|---|---|
+| 1 | Re-check framing on 3-character "medium two-shot" / "over-the-shoulder" scenes (builder fixed after the 30 s story, tested offline) | ≈ $0.07 | 1 h |
+| 2 | Owner test by hand on the flagged account (single, series, edits, regenerate, final, download) | your usage | 1 h |
+| 3 | Rollout: `fruit_v2` for internal testers, then everyone; remove v1 and its tool keys once no v1 jobs remain | $0 | 0.5 day + watch |
+| 4 | Optional: V3/V4 30 s stories (≈ $2.7 / $4.7); Seedance 480p and LTX-2.3 tests (≈ $0.35) | as listed | 2 h |

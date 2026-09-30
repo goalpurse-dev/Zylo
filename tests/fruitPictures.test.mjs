@@ -20,7 +20,7 @@ test("scene content comes first, then who each reference image is, then setting,
   for (const s of order) { const i = p.indexOf(s); assert.ok(i > at, `"${s}" in order`); at = i; }
   assert.match(p, /mouth open mid-sentence/);
   assert.match(p, /Only these 2 characters/);
-  assert.match(p, /Framing: chest up or closer on the speaker; their head is a quarter to a third of the frame height, eyes and mouth sharp and clearly visible\./);
+  assert.match(p, /Framing: chest up or closer on the speaker, never a full-body shot; their head is a quarter to a third of the frame height, eyes and mouth sharp and clearly visible\./);
   assert.match(p, /Staging: Mia Mango stands closest to the camera, body and face turned toward the camera \(at most a slight three-quarter turn\), large in the frame\. Marco Mango is further back beside or behind Mia Mango, smaller/);
   assert.match(p, /speaking toward the camera\./);
   assert.doesNotMatch(p, /talking to Marco/, "no 'talking to' (it turned speakers to profile)");
@@ -114,6 +114,12 @@ test("staging: a lone speaker faces the camera; over-the-shoulder keeps its own 
   const ots = buildScenePrompt({ story, scene: { ...scene, shot: "over-the-shoulder" }, library: LIB });
   assert.doesNotMatch(ots, /Staging:/);
   const three = buildScenePrompt({ story, scene: { ...scene, presentIds: ["mia", "marco", "pia"], shot: "medium two-shot" }, library: LIB });
-  assert.match(three, /Medium shot, the speaker waist up in the foreground/);
+  assert.match(three, /Medium shot framed chest up on the speaker in the foreground, never full body/);
   assert.match(three, /Marco Mango and Pia Peach are further back beside or behind Mia Mango, smaller and slightly softer/);
+});
+
+test("over-the-shoulder names the listener's fruit head (the 30 s story drew a human from behind)", () => {
+  const p = buildScenePrompt({ story, scene: { ...scene, shot: "over-the-shoulder" }, library: LIB });
+  assert.match(p, /Over-the-shoulder shot: the back of Marco Mango's mango head and one shoulder, out of focus, in the near foreground at the frame edge; Mia Mango faces the camera, chest up and sharp\./);
+  assert.match(p, /no human heads/);
 });
