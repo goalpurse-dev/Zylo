@@ -57,9 +57,11 @@ function ExampleCaption({ e }) {
 // Desktop: right column width --r; each Long Form card = r·9/16 video + --c
 // caption; the stack = 2 cards + --g gap. The Fruit video is exactly that tall
 // minus its own caption, and 9:16 wide, so both sides end on the same line.
-// (+2px: the second card's 1px top and bottom border.)
-const FRUIT_H = "md:h-[calc(2*(var(--r)*9/16_+_var(--c))_+_var(--g)_-_var(--c)_+_2px)]";
-const FRUIT_W = "md:w-[calc((2*(var(--r)*9/16_+_var(--c))_+_var(--g)_-_var(--c)_+_2px)*9/16)]";
+// Borders: each card has a 1px border, so a Long Form video is (r − 2px) wide
+// and each card is 2px taller than video + caption; the Fruit card gets the
+// same 2px back so the two sides end on the same pixel.
+const FRUIT_H = "md:h-[calc(2*((var(--r)_-_2px)*9/16_+_var(--c))_+_var(--g)_-_var(--c)_+_2px)]";
+const FRUIT_W = "md:w-[calc((2*((var(--r)_-_2px)*9/16_+_var(--c))_+_var(--g)_-_var(--c)_+_2px)*9/16)]";
 
 export function MadeWithZyvo() {
   const { fruit, longForm } = EXAMPLES;
