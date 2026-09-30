@@ -58,7 +58,7 @@ const items = [
   {
     title:  "Face ASMR",
     views:  "2.1M",
-    image:  "/face/neypreview.png",
+    image:  "/face/face-preview.png",
     accent: "#EC4899",
     rank:   7,
     path:   "/workspace/face-asmr",

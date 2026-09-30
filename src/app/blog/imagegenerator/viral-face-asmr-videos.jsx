@@ -65,9 +65,9 @@ export default function ViralFaceAsmrVideos() {
         {/* Hero image grid */}
         <div className="mb-16 grid grid-cols-3 gap-3 rounded-2xl overflow-hidden">
           {[
-            "/face/messi.png",
+            "/face/face-02.png",
             "/face/cleanwhitemarbe.png",
-            "/face/taylor.png",
+            "/face/face-08.png",
           ].map((src, i) => (
             <div key={i} className="aspect-[9/14] overflow-hidden rounded-xl border border-[#ECE8F2]">
               <img src={src} alt="Face ASMR viral video example" className="w-full h-full object-cover object-top" loading="lazy" />

@@ -1,14 +1,16 @@
 import { supabase } from "../../../lib/supabaseClient";
 import { NICHE_GROUPS, findNiche, nicheImagePath } from "./niches";
+import { optUrl } from "../../../lib/optImage";
 
 // A project's cover: its chosen YouTube thumbnail, else its first finished
 // scene, else its niche's art (older projects saved a group id, e.g.
 // "history": use that group's first niche). Never one shared fallback.
 export function nicheImageFor(niche) {
   if (!niche) return null;
-  if (findNiche(niche)) return nicheImagePath(niche);
+  // The 480 px WebP variant (cards show niche art at 16:9, up to ~300 px wide).
+  if (findNiche(niche)) return optUrl(nicheImagePath(niche), 480);
   const group = NICHE_GROUPS.find((g) => g.id === niche);
-  return group?.niches?.[0] ? nicheImagePath(group.niches[0].id) : null;
+  return group?.niches?.[0] ? optUrl(nicheImagePath(group.niches[0].id), 480) : null;
 }
 
 // project id -> cover url, for the signed-in user's own projects.

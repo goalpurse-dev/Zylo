@@ -97,7 +97,7 @@ function Viewer({ scene, index, onClose }) {
 }
 
 const DEMO_VIDEOS = ["/face/1.mp4", "/face/2.mp4"];
-const BG_THUMB    = "/face/ronaldo.png";
+const BG_THUMB    = "/face/face-01.png";
 
 const FEATURES = [
   { icon: "🎵", label: "Real ASMR Audio" },

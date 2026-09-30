@@ -10,7 +10,8 @@ import CreatorRewardsModal from "../CreatorRewardsModal.jsx";
 import { ShowcaseRow, TutorialCard } from "../launch/LaunchUI.jsx";
 import { fetchUserLongFormProjects } from "../../pages/workspace/long-form/project";
 import { fetchProjectCovers } from "../../pages/workspace/long-form/projectCovers";
-import { HIDDEN_TEMPLATES } from "../../data/homeContent";
+import { FEATURED_TEMPLATE, HIDDEN_TEMPLATES } from "../../data/homeContent";
+import { optImg } from "../../lib/optImage";
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 import shipClip from "../../assets/home/latest/video9.16-fast.mp4";
 
@@ -64,7 +65,7 @@ export function LazyLoopVideo({ src, poster, className = "" }) {
     if (inView) v.play().catch(() => {}); else v.pause();
   }, [inView]);
   return (
-    <div ref={ref} className={`overflow-hidden ${className.split(" ").includes("absolute") ? "" : "relative"} ${className}`}>
+    <div ref={ref} className={`overflow-hidden bg-[#0d0f10] ${className.split(" ").includes("absolute") ? "" : "relative"} ${className}`}>
       <img src={poster} alt="" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
       {!reduced && (inView || ready) && (
         <video src={src} poster={poster} muted loop playsInline autoPlay preload="none" onCanPlay={() => setReady(true)}
@@ -77,9 +78,12 @@ export function LazyLoopVideo({ src, poster, className = "" }) {
 export function CrossfadeStills({ images, interval = 7000, className = "" }) {
   const ref = useRef(null);
   const reduced = useReducedMotion();
-  const [index, setIndex] = useState(0);
+  const [layers, setLayers] = useState([images[0], null]); // src per layer
+  const [front, setFront] = useState(0); // the top layer
+  const [entering, setEntering] = useState(false); // top layer at 0 before its fade
   const [visible, setVisible] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const index = useRef(0);
   useEffect(() => {
     const el = ref.current;
     if (!el) return undefined;
@@ -93,14 +97,29 @@ export function CrossfadeStills({ images, interval = 7000, className = "" }) {
   }, []);
   useEffect(() => {
     if (reduced || !visible || hovered || images.length < 2) return undefined;
-    const t = setInterval(() => setIndex((i) => (i + 1) % images.length), interval);
-    return () => clearInterval(t);
-  }, [reduced, visible, hovered, images.length, interval]);
+    let cancelled = false;
+    const t = setInterval(async () => {
+      const next = (index.current + 1) % images.length;
+      const img = new Image();
+      img.src = images[next];
+      try { await img.decode(); } catch { return; } // not ready: try again next tick
+      if (cancelled) return;
+      index.current = next;
+      const back = 1 - front;
+      // The decoded still goes on top at opacity 0, then fades in over the
+      // old one (which stays fully visible underneath: no dip, no flash).
+      setLayers((l) => { const c = [...l]; c[back] = images[next]; return c; });
+      setEntering(true);
+      setFront(back);
+      requestAnimationFrame(() => requestAnimationFrame(() => { if (!cancelled) setEntering(false); }));
+    }, interval);
+    return () => { cancelled = true; clearInterval(t); };
+  }, [reduced, visible, hovered, images, interval, front]);
   return (
-    <div ref={ref} className={`overflow-hidden ${className}`} data-testid="crossfade-stills">
-      {(reduced ? images.slice(0, 1) : images).map((src, i) => (
-        <img key={src} src={src} alt="" loading="lazy" decoding="async"
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[600ms] ease-in-out ${i === index ? "opacity-100" : "opacity-0"}`} />
+    <div ref={ref} className={`overflow-hidden bg-[#0d0f10] ${className}`} data-testid="crossfade-stills">
+      {layers.map((src, i) => src && (
+        <img key={i} src={src} alt="" decoding="async" loading={i === 0 ? "lazy" : undefined}
+          className={`absolute inset-0 h-full w-full object-cover ${i === front ? `z-10 ${entering ? "opacity-0" : "opacity-100 transition-opacity duration-[600ms] ease-in-out"}` : "z-0 opacity-100"}`} />
       ))}
     </div>
   );
@@ -110,7 +129,7 @@ export function CrossfadeStills({ images, interval = 7000, className = "" }) {
 function PathCard({ onClick, media, icon: Icon, name, line, cta, primary, isNew, testId }) {
   return (
     <button type="button" onClick={onClick} data-testid={testId}
-      className={`group relative h-[230px] w-full overflow-hidden rounded-[24px] border bg-[#101312] text-left shadow-[0_24px_80px_rgba(0,0,0,.45)] transition duration-300 hover:-translate-y-0.5 sm:h-[270px] lg:h-[300px] ${
+      className={`group relative h-[230px] w-full overflow-hidden rounded-[24px] border bg-[#101312] text-left shadow-[0_24px_80px_rgba(0,0,0,.45)] transition duration-300 hover:-translate-y-0.5 sm:h-[250px] lg:h-[270px] 2xl:h-[300px] ${
         primary ? "border-lime-300/30 hover:border-lime-300/55" : "border-white/10 hover:border-white/25"}`}>
       <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-[1.03]">{media}</div>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-black/90 via-black/45 to-transparent" />
@@ -138,16 +157,16 @@ function PathCard({ onClick, media, icon: Icon, name, line, cta, primary, isNew,
 export function PathCards() {
   const navigate = useNavigate();
   return (
-    <div className={`relative z-10 mx-auto mt-7 grid w-full max-w-[1240px] gap-4 md:mt-9 md:grid-cols-2 md:gap-5 ${SECTION_X}`}>
+    <div className={`relative z-10 mx-auto mt-5 grid w-full max-w-[1240px] gap-4 md:mt-6 md:grid-cols-2 md:gap-5 ${SECTION_X}`}>
       <PathCard
         testId="path-short"
         onClick={() => { trackLaunch("path_short_form", { placement: "home_hero" }); window.dispatchEvent(new CustomEvent("zyvo:open-create-menu")); }}
         icon={Sparkles} name="Short Form" line="Viral 9:16 clips for TikTok, Reels & Shorts" cta="Browse templates"
         media={(
           <div className="grid h-full grid-cols-3 gap-1.5">
-            <img src="/behind-the-scenes/poster.webp" alt="" className="h-full w-full object-cover" />
+            <img {...optImg("/behind-the-scenes/poster.webp", "200px", 480)} alt="" className="h-full w-full object-cover" />
             <LazyLoopVideo src={shipClip} poster={cartoonDrivePreview} className="h-full" />
-            <img src="/viral-builder/ai-fruit/presets/kicked-out.webp" alt="" className="h-full w-full object-cover" />
+            <img {...optImg("/viral-builder/ai-fruit/presets/kicked-out.webp", "200px", 480)} alt="" className="h-full w-full object-cover" />
           </div>
         )}
       />
@@ -253,7 +272,7 @@ export function WhatsNewRow() {
       onClick={() => { trackLaunch("earn_credits_click", { placement: "whats_new_row" }); setRewardsOpen(true); }} />,
   ].filter(Boolean);
   return (
-    <section className={`mt-10 w-full ${SECTION_X}`} data-testid="whats-new-row">
+    <section className={`mt-8 w-full ${SECTION_X}`} data-testid="whats-new-row">
       <SectionHeader title="What's new" subtitle="Fresh on Zyvo this week." />
       <div className={`-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:grid md:gap-4 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden ${cards.length >= 4 ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
         {cards}
@@ -340,7 +359,7 @@ export function HowItWorks({ className = "" }) {
               </div>
             </div>
             <div className="mt-4 aspect-[16/9] overflow-hidden rounded-[14px] border border-white/10 bg-[#0d0f10]">
-              <img src={s.image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover object-top" />
+              <img {...optImg(s.image, "(max-width: 768px) 86vw, 33vw", 960)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover object-top" />
             </div>
           </div>
         ))}
@@ -367,7 +386,7 @@ export function LongFormSection() {
           <button key={n.id} type="button" onClick={() => { trackLaunch("niche_pick", { placement: "home", target: n.id }); navigate(`/long-form/create?niche=${n.id}`); }}
             className="group w-[190px] shrink-0 snap-start text-left md:w-[232px]">
             <div className="aspect-video overflow-hidden rounded-[14px] border border-white/10 bg-[#0d0f10] transition group-hover:border-lime-300/45">
-              <img src={`/images/niches/${n.id}.webp`} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
+              <img {...optImg(`/images/niches/${n.id}.webp`, "232px", 480)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
             </div>
             <p className="mt-2 truncate text-[13px] font-semibold text-white/85 group-hover:text-white">{n.label}</p>
           </button>
@@ -392,11 +411,56 @@ const TEMPLATES = [
   { name: "Video Generator", desc: "Create cinematic videos in seconds", image: "/home/videogen.png", path: "/workspace/video-generator", addedAt: null },
   { name: "Clay Rescue", desc: "Giant hands save tiny clay worlds", image: "/clayrescue/smallpreview.webp", path: "/workspace/clay-rescue", addedAt: "2026-06-01" },
   { name: "AI Cooking Matic", desc: "Viral cooking videos on autopilot", image: "/templates/AICOOKING/thumbnail.png", path: "/workspace/ai-cooking-matic", addedAt: "2026-06-17" },
-  { name: "30 Days", desc: "Thirty days inside any world", image: "/template/2am-world/preview.png", path: "/workspace/thirty-days", addedAt: "2026-09-27" },
+  { name: "30 Days", desc: "Thirty days inside any world", image: "/template/thirty-days/preview.png", path: "/workspace/thirty-days", addedAt: "2026-09-27" },
   { name: "2AM Worlds", desc: "TikTok slideshows of worlds at 2AM", image: "/template/2am-world/preview.png", path: "/workspace/two-am", addedAt: "2026-07-26" },
-  { name: "Face ASMR", desc: "Viral face reveal ASMR videos", image: "/face/neypreview.png", path: "/workspace/face-asmr", addedAt: "2026-05-24" },
-  { name: "Nationality Swap", desc: "Reimagine football stars around the world", image: "/template/nationality-swap/preview.png", path: "/workspace/footballer-nationality-swap", addedAt: "2026-07-12" },
+  { name: "Face ASMR", desc: "Viral face reveal ASMR videos", image: "/face/face-preview.png", path: "/workspace/face-asmr", addedAt: "2026-05-24" },
+  { name: "Kit Swap", desc: "Swap a player's kit for any country", image: "/template/kit-swap/preview.png", path: "/workspace/footballer-nationality-swap", addedAt: "2026-07-12" },
 ];
 export function suiteTemplates(now = Date.now()) {
   return TEMPLATES.filter((t) => !HIDDEN_TEMPLATES.includes(t.name)).map((t) => ({ ...t, badge: t.addedAt && now - Date.parse(t.addedAt) < 30 * 86_400_000 ? "NEW" : null }));
+}
+
+/* ─── Featured Short Form template (under the short form suite) ─── */
+export function FeaturedTemplate() {
+  const navigate = useNavigate();
+  const t = FEATURED_TEMPLATE;
+  if (!t?.examples?.length) return null;
+  const go = () => { trackLaunch("featured_template", { placement: "home_featured", target: t.path }); navigate(t.path); };
+  return (
+    <section className={`relative mt-10 w-full overflow-hidden py-8 md:py-10 ${SECTION_X}`} data-testid="featured-template">
+      <div className="pointer-events-none absolute inset-x-[8%] top-0 h-px bg-gradient-to-r from-transparent via-lime-300/50 to-transparent" />
+      <div className="pointer-events-none absolute left-[8%] top-0 h-64 w-64 rounded-full bg-lime-300/[0.07] blur-[90px]" />
+      <div className="relative mx-auto max-w-[1380px]">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3 md:mb-6">
+          <div>
+            <div className="mb-2 flex flex-wrap items-center gap-2.5">
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-lime-300">{t.eyebrow}</p>
+              <span className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/15 px-2.5 py-0.5">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-70 motion-reduce:animate-none" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-500" />
+                </span>
+                <span className="text-[9px] font-bold tracking-widest text-red-400">LIVE</span>
+              </span>
+            </div>
+            <h2 className="text-[28px] font-black tracking-[-0.045em] text-white sm:text-[34px] md:text-[42px]">{t.name}</h2>
+          </div>
+          <button type="button" onClick={go} className="flex shrink-0 items-center gap-1.5 rounded-full bg-lime-300 px-4 py-2.5 text-[13px] font-black text-[#11150D] transition hover:bg-lime-200 active:scale-95">
+            Try Template <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:gap-3 sm:px-0 [&::-webkit-scrollbar]:hidden">
+          {t.examples.map((ex) => (
+            <button key={ex.video ?? ex.image} type="button" onClick={go}
+              className="group relative aspect-[9/16] w-[clamp(150px,52vw,220px)] shrink-0 snap-start overflow-hidden rounded-[14px] border border-white/[0.11] bg-[#0d0f10] text-left shadow-[0_22px_65px_rgba(0,0,0,.38)] transition duration-500 hover:-translate-y-1 hover:border-white/20 sm:w-[240px] lg:w-[280px]">
+              {ex.video
+                ? <LazyLoopVideo src={ex.video} poster={ex.poster} className="absolute inset-0" />
+                : <img src={ex.image} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />}
+              <div className="pointer-events-none absolute inset-0 rounded-[14px] ring-1 ring-inset ring-white/[0.06]" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }

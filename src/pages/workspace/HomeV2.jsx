@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Glow from "../../components/workspace/Glow.jsx";
 import ZyvoSuiteCarousel from "../../components/workspace/ZyvoSuiteCarousel.jsx";
 import PublicGallery from "../../components/public-gallery/gallery.jsx";
-import { JumpBackInV2, LongFormSection, PathCards, SectionHeader, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
+import { FeaturedTemplate, JumpBackInV2, LongFormSection, PathCards, SectionHeader, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
 import { fetchShowcase } from "../../components/launch/launch";
 import { HIDDEN_COMMUNITY_CATEGORIES } from "../../data/homeContent";
 
@@ -23,7 +23,7 @@ export default function HomeV2() {
       <div className="relative isolate flex flex-col overflow-hidden bg-[#090A0A] pb-2">
         <div className="pointer-events-none absolute -left-40 -top-24 -z-10 h-[520px] w-[720px] rounded-full bg-[radial-gradient(closest-side,rgba(122,59,255,0.22),transparent)]" />
         <div className="pointer-events-none absolute -right-40 -top-10 -z-10 h-[480px] w-[680px] rounded-full bg-[radial-gradient(closest-side,rgba(190,242,100,0.10),transparent)]" />
-        <Glow />
+        <Glow compact />
         <PathCards />
       </div>
 
@@ -35,6 +35,9 @@ export default function HomeV2() {
       <div className="mt-12">
         <ZyvoSuiteCarousel title="short form suite" items={suiteTemplates()} subtitle="Short Form templates for TikTok, Reels & Shorts" />
       </div>
+
+      {/* Featured template (src/data/homeContent.js: FEATURED_TEMPLATE) */}
+      <FeaturedTemplate />
 
       {/* Hidden for users without projects */}
       <JumpBackInV2 />

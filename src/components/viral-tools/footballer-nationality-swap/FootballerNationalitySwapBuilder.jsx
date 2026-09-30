@@ -383,7 +383,7 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
               className="shrink-0 w-[52px] h-[52px] rounded-2xl overflow-hidden p-[2px] shadow-[0_0_20px_rgba(245,158,11,0.5)]"
               style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(245,158,11,0.9) 100%)" }}
             >
-              <img src="/face/ronaldo.png" alt="" className="w-full h-full object-cover rounded-[10px]" />
+              <img src="/face/face-01.png" alt="" className="w-full h-full object-cover rounded-[10px]" />
             </div>
             <div>
               <h1 className="text-white font-black text-[17px] leading-tight tracking-tight">Nationality Swap</h1>

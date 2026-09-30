@@ -4,21 +4,21 @@ import { displayImageUrl } from "./utils/twoAmHelpers";
 
 const WORLD_PREVIEWS = [
   {
-    id: "ninjago",
-    label: "Ninjago",
+    id: "mountain-ninja-city",
+    label: "Mountain Ninja City",
     offset: 0,
     images: Array.from(
       { length: 6 },
-      (_, index) => `/template/2am-world/ninjago%20(${index + 1}).png`,
+      (_, index) => `/template/2am-world/mountain-ninja-city%20(${index + 1}).png`,
     ),
   },
   {
-    id: "pokemon",
-    label: "Pokémon",
+    id: "seaside-creature-town",
+    label: "Seaside Creature Town",
     offset: 3,
     images: Array.from(
       { length: 6 },
-      (_, index) => `/template/2am-world/pokemon%20(${index + 2}).png`,
+      (_, index) => `/template/2am-world/seaside-creature-town%20(${index + 2}).png`,
     ),
   },
 ];

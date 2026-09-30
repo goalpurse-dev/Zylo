@@ -1,5 +1,6 @@
-import Logo from "../../assets/Logo.png";
-import Credit from "/icons/credits.png";
+import Logo from "../../assets/logo-mark.webp";
+import { optUrl } from "../../lib/optImage";
+const Credit = optUrl("/icons/credits.png", 96);
 
 import { useAuth } from "../../context/AuthContext";
 import { useProfileCredits } from "../../hooks/useProfileCredits";

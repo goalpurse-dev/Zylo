@@ -497,7 +497,7 @@ const GUIDES = {
     category: "2AM Worlds",
     date: "July 27, 2026",
     readTime: "6 min read",
-    hero: PREVIEW("pokemon (5).png"),
+    hero: PREVIEW("seaside-creature-town (5).png"),
     heroAlt: "A cinematic 2AM Pokémon-inspired AI image of a quiet route at night",
     intro: [
       "2AM Pokémon images reimagine the routes, towns, and regions of the Pokémon world as quiet, cinematic night scenes. Here's how to get a strong result with Zyvo's 2AM Worlds generator — and a few prompt ideas specific to Pokémon.",
@@ -539,7 +539,7 @@ const GUIDES = {
     category: "2AM Worlds",
     date: "July 27, 2026",
     readTime: "6 min read",
-    hero: PREVIEW("ninjago (3).png"),
+    hero: PREVIEW("mountain-ninja-city (3).png"),
     heroAlt: "A cinematic 2AM Ninjago-inspired AI image of a quiet monastery courtyard at night",
     intro: [
       "2AM Ninjago images reimagine the neon streets, temples, and quiet monastery courtyards of the Ninjago universe as cinematic late-night scenes. Here's how to get a strong result with Zyvo.",

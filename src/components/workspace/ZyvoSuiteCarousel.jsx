@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { optImg } from "../../lib/optImage";
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 
 export const SUITE_ITEMS = [
@@ -12,8 +13,8 @@ export const SUITE_ITEMS = [
   { name: "Cartoon Drive By", desc: "Drive past lost cartoon worlds in real life", badge: "NEW", image: cartoonDrivePreview, path: "/workspace/cartoon-drive-by" },
   { name: "2AM Worlds", desc: "TikTok slideshows of worlds at 2AM", badge: "NEW", image: "/template/2am-world/preview.png", path: "/workspace/two-am" },
   { name: "AI Fruit Story", desc: "Characters, stories, viral content & more", badge: "NEW", image: "/viral-builder/ai-fruit/presets/kicked-out.webp", path: "/workspace/ai-fruit-story" },
-  { name: "Face ASMR", desc: "Viral face reveal ASMR videos", badge: "TRENDING", image: "/face/neypreview.png", path: "/workspace/face-asmr" },
-  { name: "Nationality Swap", desc: "Reimagine football stars around the world", badge: "NEW", image: "/template/nationality-swap/preview.png", path: "/workspace/footballer-nationality-swap" },
+  { name: "Face ASMR", desc: "Viral face reveal ASMR videos", badge: "TRENDING", image: "/face/face-preview.png", path: "/workspace/face-asmr" },
+  { name: "Kit Swap", desc: "Swap a player's kit for any country", badge: "NEW", image: "/template/kit-swap/preview.png", path: "/workspace/footballer-nationality-swap" },
   { name: "Micro Camera", desc: "Animal bodycam goes underground", badge: "NEW", image: "/viral-builder/micro-camera/preview1.png", path: "/workspace/micro-camera-animal" },
   { name: "Video Generator", desc: "Create cinematic videos in seconds", badge: null, image: "/home/videogen.png", path: "/workspace/video-generator" },
   { name: "Clay Rescue", desc: "Giant hands save tiny clay worlds", badge: "NEW", image: "/clayrescue/smallpreview.webp", path: "/workspace/clay-rescue" },
@@ -105,7 +106,7 @@ function MobileSuiteCard({ item, variant = "rail", onClick }) {
           : "h-[156px] w-[160px] shrink-0 rounded-[14px] sm:h-[156px] sm:w-[160px]"
       }`}
     >
-      <img src={item.image} alt={item.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+      <img {...optImg(item.image, "160px", 480)} alt={item.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/82 via-black/8 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-20 bg-[radial-gradient(ellipse_at_bottom,rgba(255,255,255,.24),transparent_64%)] opacity-70 blur-sm" />
       {item.badge && (
@@ -159,7 +160,7 @@ function SuiteCard({ item, offset, active, onClick }) {
         className="absolute inset-x-0 overflow-hidden transition-[height,top,transform] duration-100 ease-linear will-change-[height,top,transform]"
       >
         <img
-          src={item.image}
+          {...optImg(item.image, "224px", 480)}
           alt={item.name}
           loading="lazy"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"

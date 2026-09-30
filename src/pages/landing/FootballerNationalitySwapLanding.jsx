@@ -85,7 +85,7 @@ export default function FootballerNationalitySwapLanding() {
               <div className="absolute -inset-8 rounded-full bg-amber-300/10 blur-3xl" />
               <div className="relative overflow-hidden rounded-[34px] border border-white/15 bg-[#111318] p-2 shadow-[0_36px_90px_rgba(0,0,0,0.65)]">
                 <img
-                  src="/template/nationality-swap/preview.png"
+                  src="/template/kit-swap/preview.png"
                   alt="AI-generated media-day photo of a footballer wearing a different nation's jersey, holding a name card"
                   width="620"
                   height="620"

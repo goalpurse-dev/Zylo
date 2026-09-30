@@ -48,7 +48,7 @@ async function handleSubscribe(tier, billing) {
   });
 }
 
-export default function TwoAmPaywall({ open, onClose, isGuest, dismissable = true, toolName = "2AM Worlds", previewSrc = "/template/2am-world/pokemon (7).png" }) {
+export default function TwoAmPaywall({ open, onClose, isGuest, dismissable = true, toolName = "2AM Worlds", previewSrc = "/template/2am-world/seaside-creature-town (7).png" }) {
   const navigate = useNavigate();
   const [billing, setBilling] = useState("yearly");
 

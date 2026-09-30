@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { createElement, useEffect, useState } from "react";
 import { ChevronRight, Clapperboard, DollarSign, Folder, Home, LayoutGrid, Pin, Sparkles } from "lucide-react";
-import Logo from "../../assets/Logo.png";
+import Logo from "../../assets/logo-mark.webp";
+import { optImg } from "../../lib/optImage";
 import { ALL_PINNABLE_TOOLS, DesktopCreatePanel, DesktopWorkspacePanel } from "./CreateMenu";
 import "../../styles/workspace-shell.css";
 import { NewBadge } from "../launch/LaunchUI.jsx";
@@ -52,7 +53,7 @@ function PinnedToolItem({ tool, active, onClick }) {
     >
       <span className={`grid h-7 w-7 shrink-0 place-items-center overflow-hidden text-white/50 ${tool.transparentIcon ? "" : "rounded-[8px] border border-white/[0.07] bg-white/[0.035]"}`}>
         {tool.preview ? (
-          <img src={tool.preview} alt="" className={`h-full w-full object-contain ${tool.previewPosition ?? "object-top"} ${tool.imageClassName ?? ""}`} />
+          <img {...optImg(tool.preview, "64px", 96)} alt="" className={`h-full w-full object-contain ${tool.previewPosition ?? "object-top"} ${tool.imageClassName ?? ""}`} />
         ) : (
           tool.icon
         )}

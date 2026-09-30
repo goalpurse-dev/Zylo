@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Clapperboard, Home, Folder, LayoutGrid, Sparkles, X } from "lucide-react";
 import { createPortal } from "react-dom";
 import MobileCreateMenu, { WORKSPACE_TOOLS } from "./CreateMenu";
-import { NewBadge } from "../launch/LaunchUI.jsx";
 import { isLongFormNew, trackLaunch } from "../launch/launch";
 
 /* ─── Workspace pop-up menu (image + video) ──────────────────────────────── */
@@ -124,7 +123,7 @@ function NavItem({ name, icon: Icon, iconSrc, active, onClick, expanded, badge }
       type="button"
       onClick={onClick || undefined}
       aria-expanded={expanded}
-      className="ftg-nav-item flex w-[52px] shrink-0 flex-col items-center gap-1 rounded-xl py-1 transition active:scale-95"
+      className="ftg-nav-item flex w-[60px] shrink-0 flex-col items-center gap-1 rounded-xl py-1 transition active:scale-95"
     >
       <span className={`relative grid h-6 w-6 place-items-center transition-colors ${
         active ? "text-lime-300" : "text-white"
@@ -145,9 +144,9 @@ function NavItem({ name, icon: Icon, iconSrc, active, onClick, expanded, badge }
             }}
           />
         ) : isValidElement(Icon) ? Icon : <Icon size={23} strokeWidth={1.9} />}
-        {badge && <NewBadge className="absolute -right-4 -top-1.5" />}
+        {badge && <span aria-label="New" className="absolute -right-1 -top-0.5 h-2 w-2 rounded-full bg-lime-300 ring-2 ring-[#1a1c1e]" data-testid="nav-new-dot" />}
       </span>
-      <span className={`w-full text-center text-[11px] font-medium leading-4 tracking-[0.1px] ${
+      <span className={`w-full whitespace-nowrap text-center text-[11px] font-medium leading-4 tracking-[0.1px] ${
         active ? "text-lime-300" : "text-white/55"
       }`}>
         {name}
@@ -232,7 +231,7 @@ export default function MobileBottomNav({ hidden }) {
 
           {/* Short Form — same orb everywhere, raised only on Home */}
           <NavItem
-            name="Short Form"
+            name="Short"
             icon={Sparkles}
             active={createOpen || (!anyMenuOpen && createActive)}
             expanded={createOpen}
@@ -241,7 +240,7 @@ export default function MobileBottomNav({ hidden }) {
 
           {/* Long Form */}
           <NavItem
-            name="Long Form"
+            name="Long"
             icon={Clapperboard}
             active={!anyMenuOpen && location.pathname.startsWith("/long-form")}
             badge={isLongFormNew()}

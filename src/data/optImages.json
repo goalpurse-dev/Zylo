@@ -1,0 +1,310 @@
+{
+ "/behind-the-scenes/poster.webp": [
+  240,
+  480,
+  960
+ ],
+ "/clayrescue/smallpreview.webp": [
+  240,
+  480,
+  960
+ ],
+ "/community-posters/cr-1.jpg": [
+  240,
+  480,
+  540
+ ],
+ "/community-posters/cr-2.jpg": [
+  240,
+  480,
+  540
+ ],
+ "/community-posters/fa-1.jpg": [
+  240,
+  480,
+  540
+ ],
+ "/community-posters/fa-2.jpg": [
+  240,
+  480,
+  540
+ ],
+ "/community-posters/fa-3.jpg": [
+  240,
+  480,
+  540
+ ],
+ "/community-posters/fs-1.jpg": [
+  240,
+  480,
+  540
+ ],
+ "/community-posters/fs-2.jpg": [
+  240,
+  480,
+  540
+ ],
+ "/community-posters/lg-1.jpg": [
+  240,
+  480,
+  540
+ ],
+ "/community-posters/lg-2.jpg": [
+  240,
+  480,
+  540
+ ],
+ "/community-posters/mc-1.jpg": [
+  240,
+  480,
+  540
+ ],
+ "/community-posters/mc-2.jpg": [
+  240,
+  480,
+  540
+ ],
+ "/community-posters/sd-1.jpg": [
+  240,
+  480,
+  540
+ ],
+ "/community-posters/sk-1.jpg": [
+  240,
+  480,
+  540
+ ],
+ "/community-posters/sk-2.jpg": [
+  240,
+  480,
+  540
+ ],
+ "/face/face-01.png": [
+  240,
+  480,
+  768
+ ],
+ "/face/face-preview.png": [
+  240,
+  480,
+  960
+ ],
+ "/home/click.png": [
+  96,
+  192
+ ],
+ "/home/v2/step-idea.jpg": [
+  240,
+  480,
+  960
+ ],
+ "/home/v2/step-publish.jpg": [
+  240,
+  480,
+  960
+ ],
+ "/home/v2/step-scenes.jpg": [
+  240,
+  480,
+  960
+ ],
+ "/home/videogen.png": [
+  240,
+  480,
+  960
+ ],
+ "/icons/connection-transparent.png": [
+  96,
+  192
+ ],
+ "/icons/credits.png": [
+  96,
+  192
+ ],
+ "/icons/image-generator-transparent.png": [
+  96,
+  192
+ ],
+ "/icons/publish-transparent.png": [
+  96,
+  192
+ ],
+ "/icons/stats-transparent.png": [
+  96,
+  192
+ ],
+ "/icons/video-generator-transparent.png": [
+  96,
+  192
+ ],
+ "/images/niches/ancient_humans_prehistory.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/ancient_medicine_science.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/animal_behavior_predator_prey.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/countries_cultures.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/daily_life_past_eras.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/dark_brutal_history.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/everyday_science.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/evolution_quirks.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/extinct_animals.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/how_systems_work.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/jobs_careers.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/military_logistics_history.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/money_psychology_economics.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/mysteries_unexplained.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/myth_vs_reality.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/psychology_human_behavior.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/sleep_health_habits.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/space_cosmic_scale.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/survival_scenarios.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/technology_attention_economy.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/the_body_explained.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/timeline_history.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/what_if_hypotheticals.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/why_dont_we_eat_x.webp": [
+  240,
+  480,
+  960
+ ],
+ "/images/niches/you_vs_x.webp": [
+  240,
+  480,
+  960
+ ],
+ "/library/anime.webp": [
+  240,
+  480,
+  768
+ ],
+ "/library/cartoon.webp": [
+  240,
+  480,
+  768
+ ],
+ "/template/2am-world/preview.png": [
+  240,
+  480,
+  960
+ ],
+ "/template/kit-swap/preview.png": [
+  240,
+  480,
+  960
+ ],
+ "/template/thirty-days/preview.png": [
+  240,
+  480,
+  960
+ ],
+ "/templates/AICOOKING/thumbnail.png": [
+  240,
+  480,
+  880
+ ],
+ "/viral-builder/ai-fruit/characters/bossmango.png": [
+  240,
+  480,
+  768
+ ],
+ "/viral-builder/ai-fruit/presets/kicked-out.webp": [
+  240,
+  480,
+  768
+ ],
+ "/viral-builder/micro-camera/preview1.png": [
+  240,
+  480,
+  960
+ ]
+}

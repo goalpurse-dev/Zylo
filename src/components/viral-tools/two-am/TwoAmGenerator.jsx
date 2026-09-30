@@ -17,7 +17,7 @@ import {
 import TwoAmAdvancedSettings from "./TwoAmAdvancedSettings";
 import TwoAmUpgradeModal from "./TwoAmUpgradeModal";
 
-const PLACEHOLDERS = ["Pokémon Alola", "Kai from Ninjago", "Naruto Shippuden", "Hogwarts", "SpongeBob Bikini Bottom", "GTA Vice City"];
+const PLACEHOLDERS = ["A seaside creature town", "A mountain ninja city", "A wizard school at midnight", "An underwater cartoon town", "A neon beach city", "A snowy mountain village"];
 export default function TwoAmGenerator({ phase, initialPrompt = "", planCode = "free", onGenerate, onRequestAuth }) {
   const [prompt, setPrompt] = useState(initialPrompt);
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState("");

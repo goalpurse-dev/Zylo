@@ -38,19 +38,18 @@ const BACKGROUNDS = [
   { id: "matte-black",   emoji: "🌑", label: "Matte Black",        preview: "/face/matteblackstone.png" },
 ];
 
-const CELEBRITIES = ["Ronaldo", "Messi", "Taylor Swift", "Drake", "Elon Musk",
-  "Billie Eilish", "LeBron James", "Rihanna", "Kanye West"];
+const CELEBRITIES = ["Face 1", "Face 2", "Face 3", "Face 4", "Face 5", "Face 6", "Face 7", "Face 8", "Face 9"];
 
 const PREVIEWS = [
-  "/face/ronaldo.png",
-  "/face/messi.png",
-  "/face/mbappe.png",
-  "/face/haaland.png",
-  "/face/neymar.png",
-  "/face/taylor.png",
-  "/face/ariana.png",
-  "/face/billie.png",
-  "/face/the rock.png",
+  "/face/face-01.png",
+  "/face/face-02.png",
+  "/face/face-04.png",
+  "/face/face-05.png",
+  "/face/face-03.png",
+  "/face/face-08.png",
+  "/face/face-07.png",
+  "/face/face-06.png",
+  "/face/face-09.png",
 ];
 
 /* ── Active length button: white border + inset glow ── */
@@ -326,7 +325,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
               style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(122,59,255,0.9) 100%)" }}
             >
               <img
-                src="/face/ronaldo.png"
+                src="/face/face-01.png"
                 alt=""
                 className="w-full h-full object-cover rounded-[10px]"
               />

@@ -4,13 +4,13 @@ const STYLE_THUMBS = {
   anime: "/images/thumbs/anime.webp",
   clay: "/images/thumbs/clay.webp",
   comic: "/images/thumbs/comic.webp",
-  disney: "/images/thumbs/disney.webp",
-  lego: "/images/thumbs/lego.webp",
+  disney: "/images/thumbs/classic-3d-animation.webp",
+  lego: "/images/thumbs/toy-diorama.webp",
   lowpoly: "/images/thumbs/lowpoly.webp",
   noir: "/images/thumbs/noir.webp",
   cartoon: "/images/thumbs/3dcartoon.webp",
-  minecraft: "/images/thumbs/minecraft.webp",
-  ghibli: "/images/thumbs/ghibli.webp",
+  minecraft: "/images/thumbs/voxel-world.webp",
+  ghibli: "/images/thumbs/hand-painted-anime.webp",
   cyberpunk: "/images/thumbs/cyberpunk.webp",
   pixelart: "/images/thumbs/pixelart.webp",
   realistic: "/images/thumbs/realistic.webp",
@@ -131,8 +131,8 @@ shot on vintage film camera, archival quality
 
 
     Minecraft: {
-    label: "Minecraft",
-    promptHint: "Minecraft-style blocky, pixelated, low-poly aesthetic",
+    label: "Voxel World",
+    promptHint: "blocky voxel world built from small cubes, pixelated low-poly aesthetic",
     img: STYLE_THUMBS.minecraft,
   },
 
@@ -164,20 +164,20 @@ shot on vintage film camera, archival quality
   },
 
   Disney: {
-    label: "Disney",
-    promptHint: "Disney-inspired animation style, soft shading, friendly proportions",
+    label: "Classic 3D Animation",
+    promptHint: "classic 3D animated feature film look, soft shading, friendly rounded proportions",
     img: STYLE_THUMBS.disney,
   },
 
     Ghibli: {
-    label: "Ghibli",
-    promptHint: "Studio Ghibli-style animation, soft shading, whimsical aesthetic",
+    label: "Hand-Painted Anime",
+    promptHint: "hand-painted anime background art, soft watercolor shading, whimsical aesthetic",
     img: STYLE_THUMBS.ghibli,
   },
 
   Lego: {
-    label: "Lego",
-    promptHint: "LEGO-style build, plastic bricks, toy-like proportions",
+    label: "Toy Diorama",
+    promptHint: "miniature toy diorama, soft vinyl and clay toy figures, tilt-shift macro look",
     img: STYLE_THUMBS.lego
   },
 

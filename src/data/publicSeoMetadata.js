@@ -614,7 +614,7 @@ export const PUBLIC_SEO_METADATA = {
     title: "Footballer Nationality Swap AI – Create Viral Media-Day Videos | Zyvo",
     description: "Picture any footballer representing a different nation. Generate a photorealistic jersey swap and a talking media-day introduction clip with Zyvo.",
     type: "website",
-    image: `${SITE_URL}/template/nationality-swap/preview.png`,
+    image: `${SITE_URL}/template/kit-swap/preview.png`,
   },
   "/behind-the-scenes-video-maker": {
     title: "Behind the Scenes AI Video Maker – Miniature Disaster Movie Set Videos | Zyvo",

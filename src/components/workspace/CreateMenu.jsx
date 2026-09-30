@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { Pin, X } from "lucide-react";
 import { HIDDEN_SHORT_FORM_TOOLS } from "../../data/homeContent";
+import { optImg } from "../../lib/optImage";
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
 import { getWorkspaceRouteSeoPolicy } from "../../data/routeSeoPolicy.js";
 
@@ -30,7 +31,7 @@ export const CREATE_TOOLS = [
     label: "Face ASMR",
     sublabel: "",
     path: "/workspace/face-asmr",
-    preview: "/face/ronaldo.png",
+    preview: "/face/face-01.png",
     previewPosition: "object-center",
     color: "#bef264",
   },
@@ -63,10 +64,10 @@ export const CREATE_TOOLS = [
   },
   {
     id: "footballer-nationality-swap",
-    label: "Nationality Swap",
+    label: "Kit Swap",
     sublabel: "",
     path: "/workspace/footballer-nationality-swap",
-    preview: "/template/nationality-swap/preview.png",
+    preview: "/template/kit-swap/preview.png",
     previewPosition: "object-center",
     color: "#bef264",
   },
@@ -84,8 +85,7 @@ export const CREATE_TOOLS = [
     label: "30 Days",
     sublabel: "",
     path: "/workspace/thirty-days",
-    // Temporary launch art; replace with a dedicated 30 Days preview asset.
-    preview: "/template/2am-world/preview.png",
+    preview: "/template/thirty-days/preview.png",
     previewPosition: "object-center",
     color: "#c4b5fd",
   },
@@ -164,6 +164,8 @@ export const PUBLISH_TOOLS = [
 
 /* ─── Shared panel shell ──────────────────────────────────────────────────── */
 function DesktopPanel({ open, onClose, title, subtitle, sectionLabel, grid, children }) {
+  const [opened, setOpened] = useState(open);
+  useEffect(() => { if (open) setOpened(true); }, [open]);
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
@@ -211,7 +213,7 @@ function DesktopPanel({ open, onClose, title, subtitle, sectionLabel, grid, chil
           {sectionLabel && (
             <p className="px-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-white/25">{sectionLabel}</p>
           )}
-          <div className={grid ? "grid grid-cols-1 gap-2" : "space-y-2"}>{children}</div>
+          <div className={grid ? "grid grid-cols-1 gap-2" : "space-y-2"}>{opened ? children : null}</div>
         </div>
       </div>
     </>,
@@ -285,7 +287,7 @@ function ToolRow({ tool, active, onClick, pinned, onTogglePin, pinDisabled }) {
             boxShadow: active && !tool.transparentIcon ? `0 0 16px -2px ${tool.color}99` : undefined,
           }}
         >
-          <img src={tool.preview} alt={tool.label} className={`h-full w-full object-contain ${tool.previewPosition ?? "object-top"} ${tool.imageClassName ?? ""}`} />
+          <img {...optImg(tool.preview, "96px", 96)} alt={tool.label} loading="lazy" className={`h-full w-full object-contain ${tool.previewPosition ?? "object-top"} ${tool.imageClassName ?? ""}`} />
         </div>
       ) : (
         <div
@@ -340,7 +342,7 @@ function ToolGridItem({ tool, active, onClick, pinned, onTogglePin, pinDisabled 
           className={`relative flex-shrink-0 overflow-hidden transition ${tool.transparentIcon ? "h-8 w-8" : "h-9 w-9 rounded-[10px] ring-1 ring-white/10 group-hover:ring-white/20"}`}
           style={{ background: tool.transparentIcon ? "transparent" : `linear-gradient(135deg, ${tool.color}55, ${tool.color}22)`, boxShadow: active && !tool.transparentIcon ? `0 0 14px -2px ${tool.color}99` : undefined }}
         >
-          <img src={tool.preview} alt={tool.label} className={`h-full w-full object-cover ${tool.previewPosition ?? "object-top"}`} />
+          <img {...optImg(tool.preview, "96px", 96)} alt={tool.label} loading="lazy" className={`h-full w-full object-cover ${tool.previewPosition ?? "object-top"}`} />
         </div>
       ) : (
         <div
@@ -527,7 +529,7 @@ export default function MobileCreateMenu({ open, onClose, anchorBottom = 72 }) {
                   location.pathname.startsWith(tool.path) ? "border-lime-300/35" : "border-white/10"
                 }`}>
                   <img
-                    src={tool.preview}
+                    {...optImg(tool.preview, "96px", 96)}
                     alt={tool.label}
                     className={`h-full w-full object-cover ${tool.previewPosition ?? "object-top"}`}
                   />

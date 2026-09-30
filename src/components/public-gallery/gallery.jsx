@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { trackLaunch } from "../launch/launch";
+import { optImg, optUrl } from "../../lib/optImage";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // COMMUNITY NICHES DATA
@@ -188,7 +189,7 @@ function VideoCard({ item, onClick }) {
       {/* Thumbnail image (used for image-only cards or as poster for videos) */}
       {item.thumbnail && (
         <img
-          src={item.thumbnail}
+          {...optImg(item.thumbnail, "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px", 480)}
           alt={niche.category}
           className="absolute inset-0 h-full w-full object-cover"
           loading="lazy"
@@ -201,7 +202,7 @@ function VideoCard({ item, onClick }) {
         <video
           ref={videoRef}
           src={item.src}
-          poster={item.thumbnail || undefined}
+          poster={item.thumbnail ? optUrl(item.thumbnail, 480) : undefined}
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ${
             videoReady ? "opacity-100" : "opacity-0"
           }`}
@@ -277,7 +278,7 @@ function NicheModal({ item, onClose }) {
             <video
               ref={videoRef}
               src={item.src}
-              poster={item.thumbnail || undefined}
+              poster={item.thumbnail ? optUrl(item.thumbnail, 480) : undefined}
               className="h-full max-h-[55dvh] w-full object-contain md:max-h-none"
               controls
               playsInline

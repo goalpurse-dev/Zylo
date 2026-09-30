@@ -26,14 +26,14 @@ const BACKGROUNDS = [
 ];
 
 const CELEBRITIES = [
-  { src: "/face/messi.png",    name: "Messi" },
-  { src: "/face/ronaldo.png",  name: "Ronaldo" },
-  { src: "/face/neymar.png",   name: "Neymar" },
-  { src: "/face/mbappe.png",   name: "Mbappé" },
-  { src: "/face/ariana.png",   name: "Ariana" },
-  { src: "/face/billie.png",   name: "Billie" },
-  { src: "/face/taylor.png",   name: "Taylor" },
-  { src: "/face/haaland.png",  name: "Haaland" },
+  { src: "/face/face-02.png",    name: "Face 2" },
+  { src: "/face/face-01.png",  name: "Face 1" },
+  { src: "/face/face-03.png",   name: "Face 3" },
+  { src: "/face/face-04.png",   name: "Face 4" },
+  { src: "/face/face-07.png",   name: "Face 7" },
+  { src: "/face/face-06.png",   name: "Face 6" },
+  { src: "/face/face-08.png",   name: "Face 8" },
+  { src: "/face/face-05.png",  name: "Face 5" },
 ];
 
 const HOW_STEPS = [

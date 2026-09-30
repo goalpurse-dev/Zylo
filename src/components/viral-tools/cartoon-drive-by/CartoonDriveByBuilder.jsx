@@ -17,10 +17,10 @@ import {
 } from "./api/cartoonDriveByApi";
 
 const WORLD_EXAMPLES = [
-  "A pineapple home and stone tiki house beneath the sea",
-  "A cheerful yellow family's suburban cartoon neighborhood",
-  "A blocky fantasy kingdom with a distant mountain castle",
-  "A colorful racing-game highway approaching a mushroom castle",
+  "A candy-coloured seaside village",
+  "A sleepy cartoon suburb at dusk",
+  "A floating kingdom above the clouds",
+  "A neon racetrack city",
 ];
 
 const MOODS = [

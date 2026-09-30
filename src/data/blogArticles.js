@@ -2069,7 +2069,7 @@ export const blogArticles = [
     "title": "Footballer Nationality Swap AI",
     "slug": "/footballer-nationality-swap-ai",
     "description": "Picture any footballer representing a different nation with a photorealistic jersey swap and a talking media-day introduction clip.",
-    "image": "/template/nationality-swap/preview.png",
+    "image": "/template/kit-swap/preview.png",
     "category": "AI Video",
     "tags": [
       "footballer",
@@ -3695,7 +3695,7 @@ export const blogArticles = [
     "title": "How to Create 2AM Pokémon AI Images",
     "slug": "/blog/how-to-create-2am-pokemon-ai-images",
     "description": "A practical walkthrough for generating nostalgic, late-night Pokémon-inspired AI scenes.",
-    "image": "/template/2am-world/pokemon (7).png",
+    "image": "/template/2am-world/seaside-creature-town (7).png",
     "category": "2AM Worlds",
     "tags": [
       "create",
@@ -3718,7 +3718,7 @@ export const blogArticles = [
     "title": "How to Create 2AM Ninjago AI Images",
     "slug": "/blog/how-to-create-2am-ninjago-ai-images",
     "description": "How to turn Ninjago characters and locations into a cinematic 2AM AI image set.",
-    "image": "/template/2am-world/ninjago (3).png",
+    "image": "/template/2am-world/mountain-ninja-city (3).png",
     "category": "2AM Worlds",
     "tags": [
       "create",

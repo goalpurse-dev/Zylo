@@ -6,7 +6,7 @@ const STEPS = [
   {
     icon: Sparkles,
     title: "Name any universe",
-    text: "LEGO Ninjago, Pokémon, Hogwarts, Naruto, One Piece, Minecraft — or type in any fictional world you want to visit.",
+    text: "A brick-built ninja world, a creature-catching island, a wizard castle, a pirate sea, a blocky survival world — or type in any world you want to visit.",
   },
   {
     icon: Wand2,
@@ -31,7 +31,7 @@ const QUALITY_TIERS = [
   { tag: "Best", label: "V4", detail: "4K scenes · Seedance 2.0", plan: "Generative" },
 ];
 
-const UNIVERSES = ["LEGO Ninjago", "Pokémon", "Hogwarts", "Naruto", "One Piece", "Minecraft", "Or type your own"];
+const UNIVERSES = ["A brick-built ninja world", "A creature-catching island", "A wizard castle", "A pirate sea", "A blocky survival world", "Or type your own"];
 
 const FEATURES = [
   "8 scenes per story, 2 scenes on each milestone day",
@@ -50,7 +50,7 @@ const FAQS = [
   },
   {
     q: "Can I use any fictional world, or only the examples shown?",
-    a: "The examples — LEGO Ninjago, Pokémon, Hogwarts, Naruto, One Piece, Minecraft — are just starting points. You can type in any world you want to visit.",
+    a: "The examples are just starting points. You can type in any world you want to visit.",
   },
   {
     q: "Do I have to write the premise myself?",
