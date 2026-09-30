@@ -13,8 +13,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { cors } from "../shared/cors.ts";
-import { FruitError, errorBody, fromDbError, fruitError } from "../_shared/fruit/errors.js";
-import { episodeStatuses, toRecentSingle, toStory } from "../_shared/fruit/storyState.js";
+import { FruitError, MESSAGES, errorBody, fromDbError, fruitError } from "../_shared/fruit/errors.js";
+import { episodeStatuses, stepBlocker, toRecentSingle, toStory } from "../_shared/fruit/storyState.js";
+import { FINAL_MACHINE, buildFinalJob, finalMachineConfig, finalPath, storyUpdateForReport } from "../_shared/fruit/final.js";
+import { webhookToken } from "../_shared/fruit/runware.js";
 import { validateCreateStory, validateEditInstruction, validateId, validateScenePrompt, validateSeriesPlan } from "../_shared/fruit/validation.js";
 import { planStep } from "../_shared/fruit/steps.js";
 import { planStory } from "../_shared/fruit/plannerService.js";
@@ -31,6 +33,10 @@ const LLM_ENV = {
   OPENAI_API_KEY: Deno.env.get("OPENAI_API_KEY") ?? "",
   FRUIT_PAID_CALLS: Deno.env.get("FRUIT_PAID_CALLS") ?? "",
 };
+// Final video: a per-job machine on the Long Form render app (same image family, own tag).
+const FLY_API_TOKEN = Deno.env.get("FLY_API_TOKEN") ?? "";
+const FLY_APP = Deno.env.get("FLY_RENDER_APP") ?? "zyvo-render";
+const FRUIT_FINAL_IMAGE = Deno.env.get("FRUIT_FINAL_IMAGE") ?? `registry.fly.io/${FLY_APP}:fruit-final`;
 const PLAN_RANK: Record<string, number> = { starter: 1, affiliate: 1, pro: 2, generative: 3 };
 const QUALITY_PLAN: Record<string, [number, string]> = { v2: [1, "Starter"], v3: [2, "Pro"], v4: [3, "Generative"] };
 
@@ -219,10 +225,54 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     return runStep(ctx, "reclip", row.id, { sceneId });
   },
 
+  /** Free: joins the clips on a per-job Fly machine (render-worker/src/fruitFinal.mjs). */
   async buildFinal(ctx) {
     requirePaid(ctx);
-    validateId(ctx.body?.storyId);
-    throw fruitError("STAGE_NOT_READY", "The final video isn't switched on yet.");   // stage 3f
+    const storyId = validateId(ctx.body?.storyId);
+    const captions = ctx.body?.captions !== false;
+    await rateLimit(ctx.userId, "step");
+    const { row, scenes } = await loadStory(ctx.userId, storyId);
+    const story = toStory(row, scenes);
+    const blocker = stepBlocker("final", story, story.scenes);
+    if (blocker) throw new FruitError("WRONG_STATUS", blocker, 409);
+    if (!FLY_API_TOKEN) throw fruitError("FINAL_FAILED");
+
+    const callId = crypto.randomUUID();
+    const path = finalPath(ctx.userId, storyId, callId);
+    const { data: signed, error: signErr } = await admin.storage.from("generated").createSignedUploadUrl(path);
+    if (signErr || !signed?.signedUrl) { console.error("[fruit-story-api] signed upload:", signErr?.message); throw fruitError("FINAL_FAILED"); }
+    const job = buildFinalJob({
+      story: row, scenes, callId, captions,
+      uploadUrl: signed.signedUrl,
+      callbackUrl: `${SUPABASE_URL}/functions/v1/fruit-worker`,
+      token: await webhookToken(WORKER_SECRET, `final:${callId}`),
+    });
+    const moved = must(await admin.from("fruit_stories")
+      .update({ status: "building", final_status: "building", final_captions: captions, final_requested_at: new Date().toISOString(), final_error: null, final_call_id: callId })
+      .eq("id", storyId).in("status", ["clips_ready", "final_ready"]).select("id"));
+    if (!moved.length) throw fruitError("WRONG_STATUS");
+    must(await admin.from("fruit_ai_calls").insert({
+      id: callId, user_id: ctx.userId, story_id: storyId, provider: "fly", model: `${FINAL_MACHINE.cpu_kind}-${FINAL_MACHINE.cpus}x`, purpose: "final",
+      request: { ...job, uploadUrl: "(signed, one-time)", token: "(hmac)", path },
+    }));
+
+    const t0 = Date.now();
+    const res = await fetch(`https://api.machines.dev/v1/apps/${FLY_APP}/machines`, {
+      method: "POST", headers: { Authorization: `Bearer ${FLY_API_TOKEN}`, "Content-Type": "application/json" },
+      body: JSON.stringify(finalMachineConfig({ image: FRUIT_FINAL_IMAGE, job })),
+      signal: AbortSignal.timeout(30_000),
+    }).catch((e) => ({ ok: false, status: 0, text: async () => String(e?.message ?? e) }) as any);
+    if (!res.ok) {
+      const detail = (await res.text()).slice(0, 500);
+      console.error(`[fruit-story-api] Fly machine start failed ${res.status}:`, detail);
+      await admin.from("fruit_ai_calls").update({ ok: false, http_status: res.status, error: `machine start: ${detail}`, cost_usd: 0, latency_ms: Date.now() - t0, completed_at: new Date().toISOString() }).eq("id", callId);
+      await admin.from("fruit_stories").update(storyUpdateForReport({ ok: false }, null, MESSAGES.FINAL_FAILED)).eq("id", storyId).eq("final_call_id", callId);
+      throw fruitError("FINAL_FAILED");
+    }
+    const machine = await res.json().catch(() => ({}));
+    await admin.from("fruit_ai_calls").update({ http_status: res.status, response: { machineId: machine?.id ?? null, region: machine?.region ?? null } }).eq("id", callId);
+    const fresh = await loadStory(ctx.userId, storyId);
+    return toStory(fresh.row, fresh.scenes);
   },
 
   async createSeriesPlan(ctx) {

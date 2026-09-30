@@ -5,6 +5,7 @@
 //   POST ?action=webhook&t=<hmac>   Runware task result (auth: HMAC of taskUUID)
 //   POST {action:"kick", storyId?}  start queued jobs    (auth: x-fruit-worker-secret)
 //   POST {action:"reconcile"}       cron, every minute   (auth: x-fruit-worker-secret)
+//   POST {action:"final_done", callId, token, ok, …}  the Fly final-video machine's report (auth: HMAC of callId)
 //   POST {action:"planner_test"}    blind test: run the planner with a chosen model, save nothing
 //                                   but the logged calls (auth: service-role bearer)
 //
@@ -17,7 +18,8 @@ import { createSupabaseMedia, createSupabaseStore } from "../_shared/fruit/supab
 import { getResponseTask, sameToken, webhookToken } from "../_shared/fruit/runware.js";
 import { planStory } from "../_shared/fruit/plannerService.js";
 import { validateCreateStory } from "../_shared/fruit/validation.js";
-import { FruitError } from "../_shared/fruit/errors.js";
+import { FruitError, MESSAGES } from "../_shared/fruit/errors.js";
+import { FINAL_TIMEOUT_MIN, FINAL_USD_PER_SECOND, storyUpdateForReport } from "../_shared/fruit/final.js";
 import { buildClipRequest, fallbackClipTask } from "../_shared/fruit/clips.js";
 import { rewriteClipPrompt } from "../_shared/fruit/smallTasks.js";
 import { buildEnvelope, parseRunware } from "../_shared/fruit/runware.js";
@@ -149,6 +151,41 @@ async function plannerTest(body: any) {
   return out;
 }
 
+/**
+ * The Fly machine's report for a final build. Only the build in flight
+ * (fruit_stories.final_call_id) may change the story; a late report from an
+ * older build is logged and ignored. Free either way: nothing to refund.
+ */
+async function finalDone(callId: string, report: any) {
+  const { data: call } = await admin.from("fruit_ai_calls").select("id, story_id, request, created_at, completed_at").eq("id", callId).eq("purpose", "final").maybeSingle();
+  if (!call) return { applied: false, reason: "unknown build" };
+  if (!call.completed_at) {
+    await admin.from("fruit_ai_calls").update({
+      ok: Boolean(report?.ok), error: report?.ok ? null : String(report?.error ?? "failed").slice(0, 500),
+      response: { ...(call.request?.path ? { path: call.request.path } : {}), durationSec: report?.durationSec ?? null, trimmedSec: report?.trimmedSec ?? null, trimmedPerClip: report?.trimmedPerClip ?? null, sizeBytes: report?.sizeBytes ?? null, seconds: report?.seconds ?? null },
+      // Billed machine time includes boot + image pull, so charge the wall clock since start when it's longer.
+      cost_usd: Math.max(Number(report?.costUsd) || 0, ((Date.now() - new Date(call.created_at).getTime()) / 1000) * FINAL_USD_PER_SECOND),
+      latency_ms: Date.now() - new Date(call.created_at).getTime(), completed_at: new Date().toISOString(),
+    }).eq("id", callId);
+  }
+  const publicUrl = report?.ok ? admin.storage.from("generated").getPublicUrl(call.request.path).data.publicUrl : null;
+  const { data: moved } = await admin.from("fruit_stories")
+    .update(storyUpdateForReport(report, publicUrl, MESSAGES.FINAL_FAILED))
+    .eq("id", call.story_id).eq("final_call_id", callId).eq("status", "building").select("id");
+  return { applied: Boolean(moved?.length) };
+}
+
+/** Builds that never reported (machine died) fail after FINAL_TIMEOUT_MIN; the user retries for free. */
+async function failStaleFinals() {
+  const cutoff = new Date(Date.now() - FINAL_TIMEOUT_MIN * 60_000).toISOString();
+  const { data: stale } = await admin.from("fruit_stories").select("id, final_call_id").eq("status", "building").lt("final_requested_at", cutoff);
+  for (const s of stale ?? []) {
+    await admin.from("fruit_stories").update(storyUpdateForReport({ ok: false }, null, MESSAGES.FINAL_FAILED)).eq("id", s.id).eq("status", "building");
+    if (s.final_call_id) await admin.from("fruit_ai_calls").update({ ok: false, error: "timed out", completed_at: new Date().toISOString() }).eq("id", s.final_call_id).is("completed_at", null);
+  }
+  return stale?.length ?? 0;
+}
+
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
 function background(p: Promise<unknown>) {
@@ -178,6 +215,17 @@ Deno.serve(async (req) => {
     return json({ ok: true });
   }
 
+  if (action === "final_done") {
+    const callId = typeof body?.callId === "string" ? body.callId : "";
+    if (!callId || !sameToken(String(body?.token ?? ""), await webhookToken(WORKER_SECRET, `final:${callId}`))) return json({ ok: false }, 401);
+    try {
+      return json({ ok: true, ...(await finalDone(callId, body)) });
+    } catch (e) {
+      console.error("[fruit-worker] final_done failed:", (e as Error)?.message ?? e);
+      return json({ ok: false, error: "worker failed" }, 500);
+    }
+  }
+
   if (["clip_test", "raw_test", "raw_poll"].includes(action)) {
     if (!sameToken((req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, ""), SERVICE_KEY)) return json({ ok: false }, 401);
     try {
@@ -202,7 +250,7 @@ Deno.serve(async (req) => {
   if (!sameToken(req.headers.get("x-fruit-worker-secret") ?? "", WORKER_SECRET)) return json({ ok: false }, 401);
   try {
     if (action === "kick") return json({ ok: true, ...(await engine.kick({ storyId: typeof body?.storyId === "string" ? body.storyId : null })) });
-    if (action === "reconcile") return json({ ok: true, ...(await engine.reconcile()) });
+    if (action === "reconcile") return json({ ok: true, ...(await engine.reconcile()), finalsTimedOut: await failStaleFinals() });
     return json({ ok: false, error: "unknown action" }, 400);
   } catch (e) {
     console.error(`[fruit-worker] ${action} failed:`, (e as Error)?.message ?? e);

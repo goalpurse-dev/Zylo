@@ -72,3 +72,20 @@ fly deploy --build-only --push            # image to registry.fly.io/zyvo-render
 Final MP4s run about 70–90 MB. The `long-form-renders` bucket allows 1 GB, but
 Supabase also enforces a project-wide upload limit (Dashboard → Storage →
 Settings), and that limit must be at least as large.
+
+## AI Fruit Story final video (same image, tag `fruit-final`)
+
+`src/fruitFinal.mjs` joins a Fruit story's clips into the final MP4. One
+per-job machine (performance-4x, run once, auto-destroyed) started by
+`fruit-story-api` → `buildFinal`, with the job in `FRUIT_FINAL_JOB`:
+
+1. Download each clip (public URLs), trim leading/trailing silence
+   (`silencedetect`, keeps 0.25 s; pauses inside a line stay).
+2. Normalize to 720p 30 fps, AAC 48 kHz stereo, `loudnorm`; optional captions
+   burned in from the exact lines (Lilita One, one centered `drawtext` per line).
+3. Concat, upload to a one-time signed upload URL, report to `fruit-worker`
+   (`final_done`, HMAC token). No Supabase key is used.
+
+A 3-clip, 15 s story takes ~6 s of ffmpeg and ~20–25 s of machine time
+(≈ $0.001). Build: `fly deploy --build-only --push --image-label fruit-final -a zyvo-render`.
+Local test: `node src/fruitFinal.mjs --local out.mp4 job.json`.
