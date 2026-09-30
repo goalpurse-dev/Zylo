@@ -91,12 +91,14 @@ export function headlineProblems(headline: string, title: string, topicWords: st
 }
 
 // When the model still breaks a rule: a question about the hook object.
-export function fixHeadline(headline: string, title: string, hookObject: string, topicWords: string[] = []): string {
+export function fixHeadline(headline: string, title: string, hookObject: string, topicWords: string[] = [], hookHeld = true): string {
   const h = String(headline ?? "").toUpperCase().replace(/\s+/g, " ").trim();
   const cut = h.split(" ").slice(0, 3).join(" ");
   const q = QUESTION.test(cut) ? cut : `${cut.replace(/[.!,]+$/, "")}?`;
   if (cut && !headlineProblems(cut, title, topicWords).length) return cut;
   if (cut && !headlineProblems(q, title, topicWords).length) return q;
+  // "WHO MADE THIS?" only fits a held object; for rain, a place or a situation keep the model's own question.
+  if (!hookHeld && cut && !headlineProblems(q, title, topicWords).some((p) => p !== "a vague question")) return q;
   const noun = words(hookObject).filter((w) => !/^(plain|small|big|large|round|iron|old|horned|shiny|curved|two)$/.test(w)).pop() ?? "IT";
   return `WHO MADE ${noun.toUpperCase().endsWith("S") ? "THESE" : "THIS"}?`;
 }
@@ -113,7 +115,16 @@ export function scrubScene(scene: string, hookObject = ""): string {
   if (hookObject) s = s.replace(/\b(a|an|the)\s+((small|plain|simple|round|old|iron|metal|mysterious|strange),?\s+){0,3}(dome|object|item|thing|artifact|artefact)\b/gi, `$1 ${hookObject.replace(/^(a|an|the)\s+/i, "")}`);
   return s.replace(/\s+([,.;])/g, "$1").replace(/[,;]\s*[,;.]/g, ".").replace(/\s{2,}/g, " ").trim();
 }
-const mentions = (scene: string, hookObject: string) => { const w = words(hookObject).map(stem); const head = w[w.length - 1]; return !!head && words(scene).map(stem).includes(head); };
+// A held object must be named (its head noun); weather, a place or a situation ("heavy rain pouring
+// down on a camp") is there when any of its key words is ("rain") — never re-appended with extras.
+const HOOK_FILLER = /^(heavy|light|large|small|big|down|pouring|over|onto|with|from|into|their|the|and|prehistoric|early|ancient)$/;
+const mentions = (scene: string, hookObject: string, held = true) => {
+  const w = words(hookObject).map(stem);
+  const inScene = new Set(words(scene).map(stem));
+  if (!held) return w.some((x) => x.length >= 4 && !HOOK_FILLER.test(x) && inScene.has(x));
+  const head = w[w.length - 1];
+  return !!head && inScene.has(head);
+};
 // The pack's background style: flat, saturated, 2-3 tones, the place only as a band — never a white/grey room.
 const ROOM = /\b(room|interior|gallery|hall|office|studio|kitchen|museum)\b/i;
 const PALE_FIRST = /^(flat\s+)?(plain\s+|pale\s+|light\s+|soft\s+)*(white|grey|gray|off-white|cream|beige)\b/i;
@@ -126,7 +137,10 @@ export function normalizeBackground(bg: string, fallback: string): { background:
 }
 const FALLBACK_BACKGROUNDS = ["flat deep royal blue", "flat saturated crimson red", "flat bright teal", "flat rich violet", "flat vivid orange", "flat emerald green"];
 
-export function normalizeConcepts(raw: any[], title: string, castIds: string[], hookObject = "", topicWords: string[] = []): { concepts: ThumbConcept[]; problems: string[] } {
+// opts.trusted[i]: the concept passed the model's own "makes sense from the title alone" self-check —
+// its question headline is kept even when it shares no word with the title ("NO ROOF?" for a rain video).
+export function normalizeConcepts(raw: any[], title: string, castIds: string[], hookObject = "", topicWords: string[] = [], opts: { trusted?: boolean[]; hookHeld?: boolean } = {}): { concepts: ThumbConcept[]; problems: string[] } {
+  const held = opts.hookHeld !== false;
   const problems: string[] = [];
   const seen = new Set<string>();
   const concepts: ThumbConcept[] = [];
@@ -138,17 +152,17 @@ export function normalizeConcepts(raw: any[], title: string, castIds: string[], 
       archetype = ARCHETYPES.find((a) => !seen.has(a))!;
     }
     seen.add(archetype);
-    const hp = headlineProblems(c?.headline, title, topic);
+    const hp = headlineProblems(c?.headline, title, topic).filter((p) => !(p === "a vague question" && opts.trusted?.[i]));
     if (hp.length) problems.push(`#${i + 1}: headline "${c?.headline}" ${hp.join("; ")}`);
     const cast = (Array.isArray(c?.cast) ? c.cast : []).map(String).filter((id: string) => castIds.includes(id));
     if (cast.length > MAX_MAIN_CHARACTERS) problems.push(`#${i + 1}: ${cast.length} main characters (max ${MAX_MAIN_CHARACTERS})`);
     const main = castIds.includes(String(c?.mainCharacter)) ? String(c.mainCharacter) : cast[0] ?? null;
     const keep = [...new Set([main, ...cast].filter(Boolean) as string[])].slice(0, MAX_MAIN_CHARACTERS);
     let scene = scrubScene(c?.scene, hookObject);
-    if (hookObject && !mentions(scene, hookObject)) { problems.push(`#${i + 1}: scene misses the hook object`); scene = `${scene.replace(/\.?$/, ".")} ${hookObject.replace(/^./, (x) => x.toUpperCase())}, large and clear in the frame.`; }
+    if (hookObject && !mentions(scene, hookObject, held)) { problems.push(`#${i + 1}: scene misses the hook object`); scene = `${scene.replace(/\.?$/, ".")} ${hookObject.replace(/^./, (x) => x.toUpperCase())}, large and clear in the frame.`; }
     const bg = normalizeBackground(c?.background, FALLBACK_BACKGROUNDS[i % FALLBACK_BACKGROUNDS.length]);
     if (bg.problem) problems.push(`#${i + 1}: ${bg.problem}`);
-    concepts.push({ archetype, headline: hp.length ? fixHeadline(c?.headline, title, hookObject, topic) : String(c.headline).trim(), scene, cast: keep, mainCharacter: main, expression: String(c?.expression ?? "").slice(0, 80) || "shocked", background: bg.background });
+    concepts.push({ archetype, headline: hp.length ? fixHeadline(c?.headline, title, hookObject, topic, held) : String(c.headline).trim(), scene, cast: keep, mainCharacter: main, expression: String(c?.expression ?? "").slice(0, 80) || "shocked", background: bg.background });
   }
   if (concepts.length < 3) problems.push(`${concepts.length} concepts (need 3)`);
   return { concepts, problems };
@@ -156,16 +170,20 @@ export function normalizeConcepts(raw: any[], title: string, castIds: string[], 
 
 /* ============================ Prompt: the pack's exact shape ============================ */
 
-export function subjectBlock(c: ThumbConcept, hookObject: string, cast: { id: string; block: string; name: string }[]): string {
+// held=false: the hook is weather, a place or a situation ("heavy rain pouring down"), never "held in hands".
+export function subjectBlock(c: ThumbConcept, hookObject: string, cast: { id: string; block: string; name: string }[], held = true): string {
   const main = cast.find((p) => p.id === c.mainCharacter) ?? cast[0];
   const people = cast.length
     ? ` The characters (these only, no extras or bystanders): ${cast.map((p) => p.block).join(" ")} ${main.name} is the LARGEST figure, closest to the viewer, with an extreme ${c.expression ?? "shocked"} face; every visible character has a full face (eyes, eyebrows, mouth), never a blank head.`
     : "";
-  const hook = hookObject ? ` ${hookObject.replace(/^./, (x) => x.toUpperCase())} is large and clear, worn properly on a head or held firmly in mitten hands — never floating, with every part attached where it belongs.` : "";
+  const Hook = hookObject.replace(/^./, (x) => x.toUpperCase());
+  const hook = !hookObject ? "" : held
+    ? ` ${Hook} is large and clear, worn properly on a head or held firmly in mitten hands — never floating, with every part attached where it belongs.`
+    : ` ${Hook} is large and clear, filling the scene, readable at a glance.`;
   return `${c.scene.replace(/\.?$/, ".")}${hook}${people}`;
 }
-export function thumbnailPromptV2(c: ThumbConcept, hookObject: string, cast: { id: string; block: string; name: string }[]): string {
-  return `${PACK_HEADER} BACKGROUND: ${String(c.background ?? FALLBACK_BACKGROUNDS[0]).replace(/\.?$/, ".")} SUBJECT: ${subjectBlock(c, hookObject, cast)} ${PACK_COMPOSITION}`;
+export function thumbnailPromptV2(c: ThumbConcept, hookObject: string, cast: { id: string; block: string; name: string }[], held = true): string {
+  return `${PACK_HEADER} BACKGROUND: ${String(c.background ?? FALLBACK_BACKGROUNDS[0]).replace(/\.?$/, ".")} SUBJECT: ${subjectBlock(c, hookObject, cast, held)} ${PACK_COMPOSITION}`;
 }
 
 /* ============================ Checks (free, in code) + the look ============================ */

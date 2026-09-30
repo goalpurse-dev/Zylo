@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { ArrowLeft, ArrowRight, Check, Clapperboard, ImageOff, MoreVertical, Pencil, RotateCw, Trash2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ImageOff, MoreVertical, Pencil, RotateCw, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { IDEA_CATEGORY_OPTIONS, PREVIEW_STATUS } from "./discoverIdeas";
 import { LONG_FORM_STAGES, LONG_FORM_STICKMAN_STAGES, STICKMAN_STEP_FOR_PAGE } from "./state";
@@ -302,6 +302,16 @@ function formatProjectDate(dateStr) {
 // raw topLevel/statusLabel pair, e.g. never "Story · Script Ready" or
 // "Scenes · 111 need review" again), with the real "Xm ago"/live-elapsed
 // treatment kept only for genuinely active work.
+// A neutral cover until a video has its own picture (no idea thumbnail, no scene yet):
+// the title on a plain dark card — never another video's niche art.
+export function NeutralCover({ title, className = "" }) {
+  return (
+    <div data-testid="neutral-cover" className={`absolute inset-0 flex items-center justify-center bg-[#16191b] px-4 ${className}`}>
+      <p className="line-clamp-3 text-center text-[13px] font-bold leading-snug text-white/75">{title || "Untitled video"}</p>
+    </div>
+  );
+}
+
 export function ProjectCard({ project, onChanged }) {
   const navigate = useNavigate();
   const stage = deriveProjectStageInfo(project);
@@ -309,7 +319,6 @@ export function ProjectCard({ project, onChanged }) {
   const duration = formatProjectDuration(project);
   const elapsed = stage.active ? formatElapsedMinutes(stage.startedAt) : null;
   const title = project.selected_title || project.selected_idea_title || project.topic;
-  const tint = tintForIdea(project.id);
   const createdLabel = formatProjectDate(project.created_at);
   const metaLine = [duration, createdLabel].filter(Boolean).join(" · ");
   const [busy, setBusy] = useState(false);
@@ -339,12 +348,7 @@ export function ProjectCard({ project, onChanged }) {
         {project._thumbnailUrl ? (
           <img src={project._thumbnailUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
         ) : (
-          <>
-            <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${tint}33, ${tint}0d)` }} />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Clapperboard className="h-8 w-8 opacity-40" style={{ color: tint }} strokeWidth={1.5} />
-            </div>
-          </>
+          <NeutralCover title={title} />
         )}
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">

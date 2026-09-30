@@ -9,7 +9,8 @@ import { NICHE_GROUPS } from "../../pages/workspace/long-form/niches";
 import CreatorRewardsModal from "../CreatorRewardsModal.jsx";
 import { ShowcaseRow, TutorialCard } from "../launch/LaunchUI.jsx";
 import { fetchUserLongFormProjects } from "../../pages/workspace/long-form/project";
-import { fetchProjectCovers } from "../../pages/workspace/long-form/projectCovers";
+import { coverFor, fetchProjectCovers, projectTitle } from "../../pages/workspace/long-form/projectCovers";
+import { NeutralCover } from "../../pages/workspace/long-form/shared";
 import { FEATURED_TEMPLATE, HIDDEN_TEMPLATES } from "../../data/homeContent";
 import { optImg } from "../../lib/optImage";
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
@@ -252,13 +253,13 @@ export function JumpBackInV2() {
     if (!user?.id) { setItems([]); return undefined; }
     let live = true;
     (async () => {
-      // Cover: chosen thumbnail -> first finished scene -> niche art.
+      // Cover: chosen thumbnail -> first finished scene -> the chosen idea's thumbnail -> a neutral title cover.
       const [projects, coverOf, { data: jobs }] = await Promise.all([
         fetchUserLongFormProjects(user.id),
         fetchProjectCovers(),
         supabase.from("jobs").select("id, result_url, prompt, created_at, tool_key").eq("user_id", user.id).not("result_url", "is", null).order("created_at", { ascending: false }).limit(8),
       ]);
-      const long = (projects ?? []).slice(0, 8).map((p) => ({ key: `lf-${p.id}`, kind: "long", at: p.updated_at, title: sentence(p.topic), meta: LF_STATUS[p.status] ?? sentence(String(p.status).replace(/_/g, " ")), image: coverOf.get(p.id) ?? p._thumbnailUrl ?? null, go: `/long-form/project/${p.id}` }));
+      const long = (projects ?? []).slice(0, 8).map((p) => ({ key: `lf-${p.id}`, kind: "long", at: p.updated_at, title: sentence(p.topic), meta: LF_STATUS[p.status] ?? sentence(String(p.status).replace(/_/g, " ")), image: coverFor(coverOf, p), coverTitle: projectTitle(p), go: `/long-form/project/${p.id}` }));
       const short = (jobs ?? []).map((j) => ({ key: `job-${j.id}`, kind: "short", at: j.created_at, title: sentence(String(j.prompt ?? "").slice(0, 60)), meta: "Short Form", image: j.result_url, go: "/workspace/creations" }));
       if (live) setItems([...long, ...short].sort((a, b) => Date.parse(b.at) - Date.parse(a.at)).slice(0, 8));
     })();
@@ -275,6 +276,7 @@ export function JumpBackInV2() {
             <div className="relative aspect-video overflow-hidden bg-[#0d0f10]">
               {it.image
                 ? <img src={it.image} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
+                : it.coverTitle ? <NeutralCover title={it.coverTitle} />
                 : <div className="grid h-full place-items-center text-white/30"><Clapperboard className="h-8 w-8" strokeWidth={1.5} /></div>}
               <span className={`absolute left-2.5 top-2.5 rounded-md border px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide backdrop-blur-sm ${
                 it.kind === "long" ? "border-lime-300/35 bg-black/60 text-lime-300" : "border-white/15 bg-black/60 text-white/80"}`}>{it.kind === "long" ? "Long" : "Short"}</span>

@@ -6,8 +6,8 @@
 // creation flow (/long-form/project/:id/...).
 import { supabase } from "../../../lib/supabaseClient";
 import { safeResult } from "./connectionState";
-import { VISUAL_STYLES } from "./visualStyles";
 import { STICKMAN_RECIPE } from "./recipe";
+import { smallCover } from "./projectCovers";
 
 // Same query as fetchLongFormProject below, but distinguishes "project
 // genuinely doesn't exist" from "we couldn't tell" (network/auth/timeout) —
@@ -224,9 +224,10 @@ export async function fetchUserLongFormProjects(userId) {
   for (const session of discoverySessionsRes.data ?? []) {
     const allIdeas = [...(session.ideas ?? []), ...(session.idea_batches ?? []).flatMap((b) => b.ideas ?? [])];
     for (const idea of allIdeas) {
-      if (idea?.conceptPreview?.status === "ready" && idea.conceptPreview.imageUrl) {
-        conceptPreviewByIdeaId.set(idea.id, idea.conceptPreview.imageUrl);
-      }
+      // The chosen idea's own thumbnail (or its older concept preview).
+      const url = idea?.thumbnail?.status === "ready" && idea.thumbnail.imageUrl ? idea.thumbnail.imageUrl
+        : idea?.conceptPreview?.status === "ready" ? idea.conceptPreview.imageUrl : null;
+      if (url) conceptPreviewByIdeaId.set(idea.id, smallCover(url));
     }
   }
 
@@ -234,7 +235,6 @@ export async function fetchUserLongFormProjects(userId) {
     const conceptPreviewUrl = p.selected_idea_id ? conceptPreviewByIdeaId.get(p.selected_idea_id) ?? null : null;
     const finishedSceneUrl = finishedSceneUrlByProject.get(p.id) ?? null;
     const visualRecipe = visualRecipeByProject.get(p.id) ?? null;
-    const stylePreviewUrl = visualRecipe ? VISUAL_STYLES.find((s) => s.visualRecipe === visualRecipe)?.previewAssetUrl ?? null : null;
     return {
       ...p,
       _script: p.current_script_version_id ? scriptById.get(p.current_script_version_id) ?? null : null,
@@ -251,7 +251,8 @@ export async function fetchUserLongFormProjects(userId) {
       // locked Visual Style is the cheapest real image better than a plain
       // icon. ProjectCard falls back to the clapperboard only when this is null.
       // Phase 5b: a rendered video's thumbnail (its first beat's image) beats everything.
-      _thumbnailUrl: p.final_thumbnail_url ?? finishedSceneUrl ?? conceptPreviewUrl ?? stylePreviewUrl ?? null,
+      // V2 launch fixes: no style/niche art — the chosen idea's thumbnail, else a neutral title cover (null).
+      _thumbnailUrl: p.final_thumbnail_url ?? finishedSceneUrl ?? conceptPreviewUrl ?? null,
       // Phase 6a: Stickman projects use the one Stickman stepper everywhere.
       _stickman: visualRecipe === STICKMAN_RECIPE,
     };

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowRight, Clapperboard } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { fetchUserLongFormProjects } from "./project";
-import { fetchProjectCovers } from "./projectCovers";
+import { coverFor, fetchProjectCovers, projectTitle } from "./projectCovers";
 import { deriveProjectStageInfo } from "./projectStage";
-import { ProjectCard } from "./shared";
+import { NeutralCover, ProjectCard } from "./shared";
 import { useAuth } from "../../../context/AuthContext";
 import { TutorialCard } from "../../../components/launch/LaunchUI.jsx";
 import { fetchShowcase, showcaseThumb, trackLaunch } from "../../../components/launch/launch";
@@ -38,10 +38,10 @@ function RecentCard({ project, onOpen }) {
   return (
     <button type="button" onClick={() => onOpen(`/long-form/project/${project.id}/${stage.route}`)} title={stage.statusLabel} data-testid="recent-card"
       className="group w-[240px] shrink-0 snap-start text-left sm:w-auto">
-      <div className="aspect-video overflow-hidden rounded-[14px] border border-white/10 bg-[#0d0f10] transition group-hover:border-white/25">
+      <div className="relative aspect-video overflow-hidden rounded-[14px] border border-white/10 bg-[#0d0f10] transition group-hover:border-white/25">
         {project._thumbnailUrl
           ? <img src={project._thumbnailUrl} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
-          : <div className="grid h-full place-items-center text-lime-300/50"><Clapperboard className="h-7 w-7" strokeWidth={1.5} /></div>}
+          : <NeutralCover title={projectTitle(project)} />}
       </div>
       <p className="mt-2 truncate text-[13.5px] font-semibold text-white">{sentence(project.topic)}</p>
       <div className="mt-1 flex items-center gap-2">
@@ -105,7 +105,7 @@ export default function LongForm() {
   const reloadProjects = () => {
     if (!user?.id) return;
     Promise.all([fetchUserLongFormProjects(user.id), fetchProjectCovers()]).then(([list, covers]) =>
-      setProjects((list ?? []).map((p) => ({ ...p, _thumbnailUrl: covers.get(p.id) ?? p._thumbnailUrl }))));
+      setProjects((list ?? []).map((p) => ({ ...p, _thumbnailUrl: coverFor(covers, p) }))));
   };
 
   useEffect(() => {

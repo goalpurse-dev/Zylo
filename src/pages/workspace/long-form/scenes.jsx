@@ -14,6 +14,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Check, Coins, Maximize2, PenLine, RotateCw, Sparkles, TriangleAlert, Type, Undo2 } from "lucide-react";
+import { supabase } from "../../../lib/supabaseClient";
 import { fetchLongFormProject } from "./project";
 import { CreditsError, LongFormActionFooter, LongFormCreationHeader } from "./shared";
 import { formatClock, formatEta, watchProject, unwatchProject } from "./autopilot";
@@ -181,6 +182,19 @@ export function ScenesPage({ projectId, embedded = false, onDone = null }) {
     poll();
     return () => { alive = false; clearTimeout(timer); };
   }, [projectId, load, replay, pendingCount]);
+
+  // Realtime: a scene row changed -> refresh at once (the poll above stays as the fallback).
+  useEffect(() => {
+    if (replay) return undefined;
+    let timer;
+    const channel = supabase.channel(`lf-scenes-${projectId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "long_form_scene_images", filter: `project_id=eq.${projectId}` }, () => {
+        clearTimeout(timer);
+        timer = setTimeout(load, 400);
+      })
+      .subscribe();
+    return () => { clearTimeout(timer); supabase.removeChannel(channel); };
+  }, [projectId, load, replay]);
 
   // A redraw landed -> fade the new picture in and offer Undo for 10 s.
   useEffect(() => {

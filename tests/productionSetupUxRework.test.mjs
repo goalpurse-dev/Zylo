@@ -121,11 +121,12 @@ test("Topic is one field with a segmented control (Write my own / Get ideas for 
   assert.doesNotMatch(text, /"discovery"\)/); // no leftover creationMode==="discovery" branching
 });
 
-test("selecting a generated idea fills the SAME topic textarea (editable) and switches back to write mode — never a separate read-only 'selected idea' card", async () => {
+test("selecting a generated idea fills the SAME topic textarea (editable, via Edit this idea) and keeps the ideas grid open with the card selected", async () => {
   const text = await source(PAGE);
   const fn = text.slice(text.indexOf("const handleUseIdea = (idea) =>"), text.indexOf("const handleGenerateVideo ="));
   assert.match(fn, /setTopic\(idea\.topic\);/);
-  assert.match(fn, /setTopicMode\("write"\);/);
+  assert.doesNotMatch(fn, /setTopicMode\("write"\);/);
+  assert.match(text, /data-testid="selected-idea"/);
 });
 
 test("the idea list shows loading skeletons while generating and offers Regenerate afterward", async () => {
@@ -437,7 +438,10 @@ test("project cards: thumbnail priority is finished-scene > concept-preview > lo
   assert.match(sharedText, /onClick=\{handleDelete\}[\s\S]{0,400}?Delete/);
 
   const projectText = await source("src/pages/workspace/long-form/project.js");
-  assert.match(projectText, /finishedSceneUrl \?\? conceptPreviewUrl \?\? stylePreviewUrl \?\? null/);
+  // V2 launch fixes: no style/niche art as a cover — the chosen idea's thumbnail, else a neutral title cover.
+  assert.match(projectText, /finishedSceneUrl \?\? conceptPreviewUrl \?\? null/);
+  assert.doesNotMatch(projectText, /stylePreviewUrl/);
+  assert.match(sharedText, /<NeutralCover title=\{title\} \/>/);
 
   const stageText = await source("src/pages/workspace/long-form/projectStage.js");
   assert.match(stageText, /export function humanizeProjectStatus/);
@@ -949,11 +953,15 @@ test("ProductionSetup.jsx: cached ideas + thumbnails hydrate straight from the s
   assert.match(text, /persistDiscoverySession\(discoverySessionId, \{ ideas: ideasRef\.current \}\);/);
 });
 
-test("ProductionSetup.jsx: selecting an idea fills the topic + switches to Write my own + sets the summary-panel preview to that idea's own thumbnail once ready, and it's persisted (selected_idea_id) so it survives a reload", async () => {
+// V2 launch fixes: picking an idea STAYS on "Get ideas for me" (card selected, summary shows it);
+// "Edit this idea" is the way into Write my own.
+test("ProductionSetup.jsx: selecting an idea fills the topic, stays on Get ideas for me, sets the summary-panel preview to that idea's own thumbnail once ready, and it's persisted (selected_idea_id) so it survives a reload", async () => {
   const text = await source(PAGE);
   const fn = text.slice(text.indexOf("const handleUseIdea = (idea) => {"), text.indexOf("// Scroll affordances for the ideas grid"));
   assert.match(fn, /setTopic\(idea\.topic\);/);
-  assert.match(fn, /setTopicMode\("write"\);/);
+  assert.doesNotMatch(fn, /setTopicMode\(/);
+  assert.match(text, /data-testid="edit-idea" onClick=\{\(\) => setTopicMode\("write"\)\}/);
+  assert.match(text, /existing\.selected_idea_id && !nicheChangedByLink \? "ideas" : prevMode/);
   assert.match(fn, /setSelectedIdeaThumbnailUrl\(idea\.thumbnail\?\.status === PREVIEW_STATUS\.READY \? idea\.thumbnail\.imageUrl : null\);/);
   assert.match(fn, /persistDiscoverySession\(discoverySessionId, \{ selected_idea_id: idea\.id \}\);/);
 });

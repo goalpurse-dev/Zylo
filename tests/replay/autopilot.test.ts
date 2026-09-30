@@ -62,3 +62,17 @@ Deno.test("progress never goes backwards; ETA is an honest range from measured t
   assertEquals(decideAutopilot(input({ nowS: 500, plan, research: research({ status: "ready" }), script: script({ stage: "claim_verify", stage_started_at: at(480) }) })).uiStage, "verify");
   assertEquals(decideAutopilot(input({ nowS: 120, plan, research: research({ stage: "finalizing" }) })).uiStage, "research");
 });
+
+// 3f65a0c7: the script worker went critic (Polishing) -> back to a draft/verify stage and the
+// step list jumped backwards. The furthest stage reached (stageMax) wins; progress stays monotonic.
+Deno.test("the step list never goes backwards: stageMax holds Polishing when the worker returns to a draft", () => {
+  const polishing = decideAutopilot(input({ nowS: 700, plan, research: research({ status: "ready" }), script: script({ status: "critiquing", stage: "critic", stage_started_at: at(650) }) }));
+  assertEquals(polishing.uiStage, "polish");
+  const back = input({ nowS: 720, plan, research: research({ status: "ready" }), script: script({ status: "drafting", stage: "draft", stage_started_at: at(715) }) });
+  back.autopilot = { ...back.autopilot, stageMax: polishing.uiStage, progressMax: polishing.progress };
+  const d = decideAutopilot(back);
+  assertEquals(d.uiStage, "polish");
+  assert(d.progress >= polishing.progress);
+  // Without a recorded max (a brand-new chain) the worker's own stage is shown.
+  assertEquals(decideAutopilot(input({ nowS: 720, plan, research: research({ status: "ready" }), script: script({ stage: "draft", stage_started_at: at(715) }) })).uiStage, "write");
+});

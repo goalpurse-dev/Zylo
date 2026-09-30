@@ -218,7 +218,7 @@ function SummaryPreviewImage({ niche, style, ideaThumbnailUrl }) {
   if (ideaThumbnailUrl) {
     return (
       <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-white/[0.08]">
-        <img src={ideaThumbnailUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <img src={ideaThumbSrc(ideaThumbnailUrl, 0)} alt="" onError={(e) => { if (e.currentTarget.src !== ideaThumbnailUrl) e.currentTarget.src = ideaThumbnailUrl; }} className="absolute inset-0 h-full w-full object-cover" />
       </div>
     );
   }
@@ -472,12 +472,38 @@ function IdeaSkeleton() {
 // (fading in) once ready, or — on failure — a clean fallback (the selected
 // niche's own image, dimmed, with a small retry icon) rather than ever
 // showing a broken image. `onRetry` re-submits just this one idea's job.
+// The idea images are full-size PNGs (~7 MB each: 6 cards = ~42 MB, so most
+// cards sat blank grey while loading). Cards load a 640 px copy from the
+// storage image transform (~40–300 KB); a failed load retries once, then the
+// original file, and only then the niche art.
+const ideaThumbSrc = (url, attempt) => {
+  if (!url?.includes("/storage/v1/object/public/") || attempt >= 2) return url;
+  const small = `${url.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/")}?width=640&height=360&resize=cover&quality=72`;
+  return attempt === 1 ? `${small}&r=1` : small;
+};
+function IdeaThumbImage({ idea, fallbackSrc, fallbackGroupId }) {
+  const url = idea.thumbnail.imageUrl;
+  const [attempt, setAttempt] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+  const imgRef = useRef(null);
+  const src = ideaThumbSrc(url, attempt);
+  useEffect(() => { setAttempt(0); }, [url]);
+  useEffect(() => { const el = imgRef.current; setLoaded(!!(el?.complete && el.naturalWidth > 0)); }, [src]);
+  if (attempt >= 3) return <ImageWithFallback src={fallbackSrc} alt="" groupId={fallbackGroupId} className="h-full w-full object-cover" dim />;
+  return (
+    <>
+      {!loaded && <div className="absolute inset-0 animate-pulse bg-white/[0.06]" />}
+      <img ref={imgRef} src={src} alt="" decoding="async" onLoad={() => setLoaded(true)} onError={() => setAttempt((a) => a + 1)}
+        className={`h-full w-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`} />
+    </>
+  );
+}
 function IdeaThumbnail({ idea, fallbackSrc, fallbackGroupId, onRetry }) {
   const status = idea.thumbnail?.status;
   if (status === PREVIEW_STATUS.READY && idea.thumbnail.imageUrl) {
     return (
       <div className="relative aspect-video w-full overflow-hidden bg-white/[0.03]">
-        <img src={idea.thumbnail.imageUrl} alt="" className="zyvo-idea-thumb-fade h-full w-full object-cover" />
+        <IdeaThumbImage idea={idea} fallbackSrc={fallbackSrc} fallbackGroupId={fallbackGroupId} />
         <ThumbnailHeadlineOverlay text={idea.thumbnailConcept?.headline} />
       </div>
     );
@@ -1003,6 +1029,9 @@ export default function ProductionSetup() {
   useEffect(() => { ideasRef.current = ideas; }, [ideas]);
   const selectedIdeaIdRef = useRef(selectedIdeaId);
   useEffect(() => { selectedIdeaIdRef.current = selectedIdeaId; }, [selectedIdeaId]);
+  const selectedIdea = selectedIdeaId ? ideas.find((idea) => idea.id === selectedIdeaId) ?? null : null;
+  // The summary names the picked idea by its title until its text is edited in Write my own.
+  const summaryTopic = selectedIdea && topic === selectedIdea.topic ? cleanText(selectedIdea.title) : topic;
   const ideaThumbnailWatchersRef = useRef(new Map());
   useEffect(() => () => { ideaThumbnailWatchersRef.current.forEach((unsub) => unsub()); }, []);
   const persistIdeasTimerRef = useRef(null);
@@ -1192,7 +1221,8 @@ export default function ProductionSetup() {
         const hydratedIdeas = Array.isArray(existing.ideas) ? existing.ideas : [];
         if (hydratedIdeas.length > 0) {
           setIdeas(hydratedIdeas);
-          setTopicMode((prevMode) => (existing.selected_idea_id && !nicheChangedByLink ? "write" : prevMode));
+          // A picked idea reopens on "Get ideas for me" with its card selected (not in Write my own).
+          setTopicMode((prevMode) => (existing.selected_idea_id && !nicheChangedByLink ? "ideas" : prevMode));
           if (existing.selected_idea_id && !nicheChangedByLink) {
             setSelectedIdeaId(existing.selected_idea_id);
             const selected = hydratedIdeas.find((idea) => idea.id === existing.selected_idea_id);
@@ -1385,10 +1415,11 @@ export default function ProductionSetup() {
     });
   };
 
+  // Picking an idea stays on "Get ideas for me": the card is marked selected and the summary
+  // shows it; "Edit this idea" opens it in Write my own to tweak.
   const handleUseIdea = (idea) => {
     setTopic(idea.topic);
     setSelectedIdeaId(idea.id);
-    setTopicMode("write");
     setSelectedIdeaThumbnailUrl(idea.thumbnail?.status === PREVIEW_STATUS.READY ? idea.thumbnail.imageUrl : null);
     persistDiscoverySession(discoverySessionId, { selected_idea_id: idea.id });
   };
@@ -1540,7 +1571,7 @@ export default function ProductionSetup() {
         </div>
         <div className="flex items-start justify-between gap-3">
           <dt className="shrink-0 text-white/40">Topic</dt>
-          <dd className="truncate text-right font-medium text-white" title={topic}>{topic || "—"}</dd>
+          <dd className="truncate text-right font-medium text-white" title={summaryTopic}>{summaryTopic || "—"}</dd>
         </div>
         <div className="flex items-start justify-between gap-3">
           <dt className="text-white/40">Length</dt>
@@ -1848,6 +1879,13 @@ export default function ProductionSetup() {
                             <div className={`pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#151719] to-transparent transition-opacity duration-150 ${ideasScrollState.atBottom ? "opacity-0" : "opacity-100"}`} />
                           </>
                         )}
+                      </div>
+                    )}
+                    {!ideasLoading && selectedIdea && (
+                      <div data-testid="selected-idea" className="mt-3 flex items-center gap-2 rounded-xl border border-lime-300/30 bg-lime-300/[0.05] px-3 py-2">
+                        <Check className="h-4 w-4 shrink-0 text-lime-300" />
+                        <p className="min-w-0 flex-1 truncate text-[12.5px] text-white"><span className="text-white/45">Selected: </span>{cleanText(selectedIdea.title)}</p>
+                        <button type="button" data-testid="edit-idea" onClick={() => setTopicMode("write")} className="shrink-0 text-[12.5px] font-semibold text-lime-300 underline-offset-2 hover:underline">Edit this idea</button>
                       </div>
                     )}
                     {!ideasLoading && ideas.length > 0 && !ideasScrollState.atBottom && ideasScrollState.hiddenCount > 0 && (

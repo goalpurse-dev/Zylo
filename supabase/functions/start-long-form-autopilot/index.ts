@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     });
     if (!r.ok) return err(req, "Couldn't start a new script. Try again.", r.status === 429 ? 429 : 500);
     await r.body?.cancel();
-    autopilot = { ...current, status: "running", startedAt: now, resumes: 0, failedReason: null, doneAt: null, scriptVersionId: null, phase: null, narration: null, dispatched: { ...(current.dispatched ?? {}), script: now }, progressMax: 0.35, lockUntil: null, regenerations: (current.regenerations ?? 0) + 1 };
+    autopilot = { ...current, status: "running", startedAt: now, resumes: 0, failedReason: null, doneAt: null, scriptVersionId: null, phase: null, narration: null, dispatched: { ...(current.dispatched ?? {}), script: now }, progressMax: 0.35, stageMax: "write", lockUntil: null, regenerations: (current.regenerations ?? 0) + 1 };
   } else if (body?.retry === true && current?.phase === "narration" && current.status === "failed") {
     // Phase 6e: the voiceover failed -> a free Retry re-records it (the generator's
     // own free retry), then the chain goes on to the scenes by itself.
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
     autopilot = { ...current, status: "running", resumes: 0, failedReason: null, dispatched: {}, lockUntil: null, retries: (current.retries ?? 0) + 1, retriedAt: now };
   } else {
     if (current) return ok(req, { autopilot: current }); // idempotent: a double click never starts a second chain
-    autopilot = { status: "running", startedAt: now, resumes: 0, dispatched: {}, progressMax: 0 };
+    autopilot = { status: "running", startedAt: now, resumes: 0, dispatched: {}, progressMax: 0, stageMax: undefined };
   }
   await admin.from("long_form_projects").update({ autopilot }).eq("id", projectId);
   await logEvent("start-long-form-autopilot", "info", body?.retry ? "autopilot_retry" : "autopilot_started", { projectId });

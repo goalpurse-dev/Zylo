@@ -100,3 +100,26 @@ Deno.test("pack-proof fixes: orange keeps a yellow headline (white only on yello
   for (let y = 1; y <= 720; y++) for (let x = 1; x <= 640; x++) split.setPixelAt(x, y, Image.rgbaToColor(230, 180, 40, 255));
   assert(!checkThumb(split, {}, 0).greyOk || checkThumb(split, {}, 0, "VERSUS").greyOk);
 });
+
+// 3f65a0c7 ("What Did Prehistoric Humans Do When It Rained?"): the hook is the main question (rain,
+// not a held object). A question that passed the model's own "makes sense from the title alone"
+// self-check is kept (no "WHO MADE THIS?"), and a scene that shows the rain isn't re-appended with
+// "…on a prehistoric camp" (which drew extra people).
+Deno.test("rain hook: trusted question headlines kept, a weather hook counts as shown by its key word, never 'held'", () => {
+  const title = "What Did Humans Do When It Rained 10,000 Years Ago?";
+  const hook = "heavy rain pouring down on a prehistoric camp";
+  const raw = [
+    { archetype: "DANGER", headline: "CAUGHT IN THE STORM?", scene: "A stickman crouches in the open with heavy rain streaking down all around him.", cast: ["hunter"], mainCharacter: "hunter", expression: "panic", background: "flat charcoal grey" },
+    { archetype: "VERSUS", headline: "RAIN VS FIRE?", scene: "Split frame: soaked in pouring rain on the left, dry under a hide shelter on the right.", cast: ["hunter"], mainCharacter: "hunter", expression: "misery", background: "split flat blue and orange" },
+    { archetype: "SCALE", headline: "NO ROOF FOR MILES?", scene: "A tiny stickman under a huge sheet of rain on an open plain.", cast: ["hunter"], mainCharacter: "hunter", expression: "dread", background: "flat slate blue" },
+  ];
+  const { concepts, problems } = normalizeConcepts(raw, title, ["hunter"], hook, ["Hunter"], { trusted: [true, true, true], hookHeld: false });
+  assertEquals(concepts.map((c) => c.headline), ["CAUGHT IN THE STORM?", "RAIN VS FIRE?", "NO ROOF FOR MILES?"]);
+  assert(!problems.some((p) => /misses the hook/.test(p)), problems.join("; "));
+  assert(concepts.every((c) => !/prehistoric camp/.test(c.scene)));
+  // Untrusted, the same vague question is still replaced — but never by the held-object fallback.
+  const untrusted = normalizeConcepts(raw, title, ["hunter"], hook, ["Hunter"], { hookHeld: false });
+  assert(untrusted.concepts.every((c) => !/WHO MADE/.test(c.headline)), untrusted.concepts.map((c) => c.headline).join(", "));
+  const prompt = thumbnailPromptV2(concepts[0], hook, [{ id: "hunter", name: "Hunter", block: "A hunter stickman." }], false);
+  assert(!/held firmly in mitten hands/.test(prompt) && /filling the scene/.test(prompt));
+});

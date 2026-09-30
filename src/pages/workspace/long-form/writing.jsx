@@ -37,6 +37,7 @@ export default function LongFormWritingPage({ embedded = false, projectId: embed
   const [retrying, setRetrying] = useState(false);
   const offsetRef = useRef(0); // local clock - server clock
   const inFlight = useRef(false);
+  const stageMaxRef = useRef({ run: null, idx: -1 }); // furthest step shown this run
 
   useEffect(() => { fetchLongFormProject(projectId).then(setProject); }, [projectId]);
 
@@ -49,6 +50,14 @@ export default function LongFormWritingPage({ embedded = false, projectId: embed
       inFlight.current = false;
       if (!alive || !v) return;
       if (v.serverNow) offsetRef.current = Date.now() - Date.parse(v.serverNow);
+      // The steps never go backwards on screen either (the server keeps its own furthest
+      // stage; this covers a poll that lands before it's saved). A new run starts fresh.
+      const idx = (v.stages ?? []).findIndex((s) => s.state === "active" || s.state === "failed");
+      if (stageMaxRef.current.run !== v.startedAt) stageMaxRef.current = { run: v.startedAt, idx: -1 };
+      if (idx >= 0 && idx < stageMaxRef.current.idx) {
+        const max = stageMaxRef.current.idx;
+        v.stages = v.stages.map((s, i) => ({ ...s, state: i < max ? "done" : i === max ? (v.status === "failed" ? "failed" : "active") : "todo" }));
+      } else if (idx >= 0) stageMaxRef.current.idx = idx;
       setView(v);
       setProgress((p) => Math.max(p, v.progress ?? 0)); // never backwards
       if (v.status === "done") {

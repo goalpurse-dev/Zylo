@@ -12,8 +12,10 @@
 //     -> Nano Banana 2 Lite (every tier) -> 2x upscale -> 1920x1080
 //     -> free checks (top third clear, face >= 8%, contrast >= 0.35, no grey room)
 //        + one look (no words, no extras or blank heads, the hook object visible)
-//     -> ONE re-render if a check fails, the best kept (flagged if it still fails)
+//     -> ONE re-render if a check fails (its own invocation), the best kept (flagged if it still fails)
 //     -> the headline drawn by code (Lilita One, top third) -> 1920x1080 + 1280x720 (<= 2 MB).
+//   A draw whose worker was killed (no error ever reaches its catch) is caught by
+//   the watchdog in list/start: re-dispatched once, then failed -> "Try again (free)".
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Image } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
@@ -63,6 +65,8 @@ export async function makeConcepts(project: any, projectId: string) {
   const set = canonicalSetFromBible(bibleRow?.bible ?? {});
   const castIds = Object.keys(set.cast);
   const title = meta?.title ?? project.selected_title ?? sp.recommendedTitle ?? sd.title ?? project.topic ?? "";
+  // The video's MAIN QUESTION: the idea the viewer chose (else the title). Every thumbnail is about this.
+  const mainQuestion = String(project.selected_idea_title ?? project.selected_title ?? title ?? "").trim();
   const segs = sd.narrationSegments ?? [];
   const chapters = (sd.chapters ?? []).map((c: any) => c.title).filter(Boolean);
   const lastCh = (sd.chapters ?? []).at(-1);
@@ -72,6 +76,8 @@ export async function makeConcepts(project: any, projectId: string) {
   const examples = fewShot.map((e) => `- ${e.archetype} · headline "${e.headline}" · BACKGROUND: ${e.background} SUBJECT: ${e.subject}`).join("\n");
   const prompt = [
     `Design 3 YouTube thumbnail concepts for THIS video (a narrated stickman explainer). Each must make a viewer NEED to click, built from the video's own story, characters and places.`,
+    `THE VIDEO'S MAIN QUESTION (what the viewer chose to watch — every thumbnail is about THIS): ${mainQuestion}`,
+    `Topic: ${String(project.topic ?? "").slice(0, 300)}`,
     `The job of a thumbnail: stop the scroll in under one second and create a question the viewer needs answered. It's judged at 120 px wide on a phone. One idea, instantly readable; at most 2 main characters.`,
     `Title: ${title}`,
     `Viewer promise: ${sp.viewerPromise ?? ""}`,
@@ -82,26 +88,49 @@ export async function makeConcepts(project: any, projectId: string) {
     `The reveal / ending: ${String(reveal).slice(0, 500)}`,
     `Cast (the video's own characters — use ONLY these ids, at most 2 per thumbnail): ${castIds.map((id) => `${id} = ${set.cast[id].displayName}`).join("; ")}`,
     `Places in the video (suggest one only as a simple flat shape band in the background): ${Object.values(set.settings).map((s: any) => s.name).join("; ")}`,
-    `"hookObject": the ONE object at the heart of the video's hook or myth, named plainly by what it is with its key feature (e.g. for other topics: "a wooden pillory", "a giant red alarm clock"). EVERY concept shows it large and clear, worn on a head or held in hands — never floating.`,
+    `THE HOOK IS THE MAIN QUESTION, not a detail from the middle of the script. A stranger who only knows the title must understand the topic from the thumbnail alone (for "What did prehistoric humans do when it rained?": visible heavy rain + early humans + a survival struggle — not a lump, a tool or a smear they'd have to watch the video to recognise).`,
+    `"hookObject": the ONE visual that shows the MAIN QUESTION at a glance, named plainly (for a rain video: "heavy rain pouring down on early humans"; other topics: "a wooden pillory", "a giant red alarm clock"). "hookHeld": true if it is an object worn on a head or held in hands, false if it is weather, a place or a situation. EVERY concept shows it large and clear (a held object: worn or held in hands, never floating).`,
+    `At least 1 of the 3 concepts directly visualizes the title question itself ("answersTitle": true).`,
     `Exactly 3 concepts, each a DIFFERENT archetype: ${ARCHETYPES.map((a) => `${a} — ${ARCHETYPE_DEFINITIONS[a]}`).join(" ")}`,
-    `"headline": 1-3 words (max 4 for a question), ALL CAPS, usually a question, never giving the answer, complementing the title (${title}) instead of repeating it. About THIS video — never generic lines that fit any video ("THINK AGAIN", "THE TRUTH", "NO WAY"). Never copy an example's headline.`,
+    `"headline": 1-3 words (max 4 for a question), ALL CAPS, usually a question, never giving the answer, complementing the title (${title}) instead of repeating it. It speaks to the MAIN QUESTION — never an obscure object or a detail only the video explains (for the rain video, good: "SOAKED FOR DAYS?", "NO ROOF?", "HOW DID THEY STAY DRY?"; bad: "WHY SAVE THIS LUMP?"). About THIS video — never generic lines that fit any video ("THINK AGAIN", "THE TRUTH", "NO WAY"). Never copy an example's headline.`,
     `"scene": 1-2 sentences in the pack's SUBJECT style: what is visible, the hook object big and attached properly, one focal point, an extreme readable emotion, the main character LARGE and CENTERED in the bottom two-thirds, nothing reaching into the top third. Name objects plainly ("a plain round iron helmet" — never "dome", "object", "item"). Only the chosen cast appear; no extras. NO text, signs, labels, symbols, arrows or question marks in the picture.`,
     `"cast": 1-2 cast ids; "mainCharacter": the one drawn LARGEST; "expression": that face in 2-4 words (e.g. "jaw-dropping shock"). "background": the pack's BACKGROUND style — ${BACKGROUND_STYLE} Write it like the examples ("flat deep maroon red with a flat dark-grey medieval town square band at the bottom"); a place only as a flat band, never a white or grey room.`,
     ...(examples ? [`Examples from the Zyvo thumbnail pack (same niche — style only, never copy):\n${examples}`] : []),
+    `SELF-CHECK before answering, for each concept: "Does this thumbnail make sense to someone who only knows the title?" If not, reject it and rewrite it until it does. Then fill "strangerReads" (what that stranger understands from it, one short sentence), "makesSenseFromTitleOnly" (true only if it does) and "answersTitle".`,
   ].join("\n");
-  const schema = { type: "object", additionalProperties: false, required: ["hookObject", "concepts"], properties: {
-    hookObject: { type: "string" },
-    concepts: { type: "array", items: { type: "object", additionalProperties: false, required: ["archetype", "headline", "scene", "cast", "mainCharacter", "expression", "background"], properties: {
+  const schema = { type: "object", additionalProperties: false, required: ["hookObject", "hookHeld", "concepts"], properties: {
+    hookObject: { type: "string" }, hookHeld: { type: "boolean" },
+    concepts: { type: "array", items: { type: "object", additionalProperties: false, required: ["archetype", "headline", "scene", "cast", "mainCharacter", "expression", "background", "answersTitle", "strangerReads", "makesSenseFromTitleOnly"], properties: {
       archetype: { type: "string", enum: [...ARCHETYPES] }, headline: { type: "string" }, scene: { type: "string" }, cast: { type: "array", items: { type: "string" } },
-      mainCharacter: { type: "string" }, expression: { type: "string" }, background: { type: "string" } } } } } };
-  const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({ model: CONCEPT_MODEL, max_tokens: 2000, tools: [{ name: "thumbnail_concepts", description: "The 3 thumbnail concepts.", input_schema: schema }], tool_choice: { type: "tool", name: "thumbnail_concepts" }, messages: [{ role: "user", content: prompt }] }) });
-  const j: any = await r.json().catch(() => null);
-  if (!r.ok) throw new Error(`concepts ${r.status}: ${JSON.stringify(j).slice(0, 200)}`);
-  const usd = ((j.usage?.input_tokens ?? 0) * SONNET_IN_PER_M + (j.usage?.output_tokens ?? 0) * SONNET_OUT_PER_M) / 1e6;
-  await recordCost(admin, { projectId, stage: "other", provider: "anthropic", model: CONCEPT_MODEL, units: { calls: 1, inputTokens: j.usage?.input_tokens ?? 0, outputTokens: j.usage?.output_tokens ?? 0, purpose: "thumbnail concepts" } as any, usd, estimated: false, sourceTable: "long_form_thumbnails", sourceId: null });
-  const out = (j.content ?? []).find((c: any) => c.type === "tool_use")?.input ?? {};
+      mainCharacter: { type: "string" }, expression: { type: "string" }, background: { type: "string" },
+      answersTitle: { type: "boolean" }, strangerReads: { type: "string" }, makesSenseFromTitleOnly: { type: "boolean" } } } } } };
+  let usd = 0;
+  const ask = async (content: string) => {
+    const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({ model: CONCEPT_MODEL, max_tokens: 2400, tools: [{ name: "thumbnail_concepts", description: "The 3 thumbnail concepts.", input_schema: schema }], tool_choice: { type: "tool", name: "thumbnail_concepts" }, messages: [{ role: "user", content }] }) });
+    const j: any = await r.json().catch(() => null);
+    if (!r.ok) throw new Error(`concepts ${r.status}: ${JSON.stringify(j).slice(0, 200)}`);
+    const callUsd = ((j.usage?.input_tokens ?? 0) * SONNET_IN_PER_M + (j.usage?.output_tokens ?? 0) * SONNET_OUT_PER_M) / 1e6;
+    usd += callUsd;
+    await recordCost(admin, { projectId, stage: "other", provider: "anthropic", model: CONCEPT_MODEL, units: { calls: 1, inputTokens: j.usage?.input_tokens ?? 0, outputTokens: j.usage?.output_tokens ?? 0, purpose: "thumbnail concepts" } as any, usd: callUsd, estimated: false, sourceTable: "long_form_thumbnails", sourceId: null });
+    return (j.content ?? []).find((c: any) => c.type === "tool_use")?.input ?? {};
+  };
+  let out = await ask(prompt);
+  // The self-check, enforced: a concept that only makes sense after watching, or no concept
+  // that shows the title question itself -> ONE rewrite with the reasons.
+  const selfCheckFails = (o: any) => {
+    const cs: any[] = Array.isArray(o?.concepts) ? o.concepts : [];
+    const why = cs.flatMap((c: any, i: number) => (c?.makesSenseFromTitleOnly === false ? [`#${i + 1} ("${c?.headline}") doesn't make sense from the title alone: ${c?.strangerReads ?? ""}`] : []));
+    if (cs.length && !cs.some((c: any) => c?.answersTitle === true)) why.push("none of the 3 directly visualizes the title question");
+    return why;
+  };
+  const fails = selfCheckFails(out);
+  if (fails.length) {
+    await logEvent("long-form-thumbnails", "info", "thumbnail_concepts_rewrite", { projectId, reasons: fails });
+    out = await ask(`${prompt}\n\nYOUR LAST ANSWER FAILED THE SELF-CHECK — rewrite all 3 so each makes sense to someone who only knows the title ("${mainQuestion}"):\n- ${fails.join("\n- ")}`);
+  }
   const hookObject = String(out.hookObject ?? "").trim();
+  const hookHeld = out.hookHeld !== false;
   // Sonnet sometimes returns the nested array as a JSON STRING (f90160bc, twice), or wrapped / with a
   // trailing comma: every form becomes the array; a reply that still yields < 3 concepts is logged as it came.
   const asArray = (v: any): any[] => {
@@ -117,13 +146,14 @@ export async function makeConcepts(project: any, projectId: string) {
   const raw = asArray(out.concepts ?? out);
   if (raw.length < 3) await logEvent("long-form-thumbnails", "warn", "thumbnail_concepts_shape", { projectId, message: `${raw.length} concepts parsed`, type: typeof out.concepts, sample: JSON.stringify(out).slice(0, 1500) });
   const castNames = castIds.map((id) => set.cast[id].displayName);
-  const { concepts, problems } = normalizeConcepts(raw, title, castIds, hookObject, castNames);
+  const { concepts, problems } = normalizeConcepts(raw, title, castIds, hookObject, castNames, { trusted: raw.map((x: any) => x?.makesSenseFromTitleOnly === true), hookHeld: out.hookHeld !== false });
   // Each concept's own cast blocks from the Bible (verbatim, never re-authored).
-  const items = concepts.map((c: ThumbConcept) => {
+  const items = concepts.map((c: ThumbConcept, i: number) => {
     const cast = c.cast.map((id) => ({ id, name: set.cast[id].displayName, block: castBlock(set.cast[id], "full") }));
-    return { concept: { ...c, hookObject }, prompt: thumbnailPromptV2(c, hookObject, cast) };
+    const check = raw[i] ?? {}; // normalizeConcepts keeps the order (it may change an archetype)
+    return { concept: { ...c, hookObject, hookHeld, answersTitle: check.answersTitle === true, strangerReads: String(check.strangerReads ?? "").slice(0, 200) }, prompt: thumbnailPromptV2(c, hookObject, cast, hookHeld) };
   });
-  return { title, hookObject, items, problems, usd, raw };
+  return { title, mainQuestion, hookObject, items, problems, usd, raw };
 }
 
 /* ---------------- one thumbnail ---------------- */
@@ -153,7 +183,7 @@ async function shoot(row: any) {
   img.crop(Math.floor((img.width - W) / 2), Math.floor((img.height - H) / 2), W, H);
   const look = await lookAt(gen.url, row.concept?.hookObject ?? "", row.project_id, row.id);
   // Pack prompts (the proof set): their main object is often a creature or a star, not something worn or held.
-  if (row.concept?.pack) delete look.hookAttached;
+  if (row.concept?.pack || row.concept?.hookHeld === false) delete look.hookAttached;
   // The hard top-third stop, by code first ($0): content in the top third is moved down.
   const fixed = row.version === 2 ? clearTopThird(img) : { img, shiftPx: 0, scale: 1 };
   const final = fixed?.img ?? img;
@@ -186,16 +216,24 @@ async function store(row: any, base: Image | null, c: Awaited<ReturnType<typeof 
 }
 
 async function draw(row: any) {
-  await admin.from("long_form_thumbnails").update({ status: "rendering" }).eq("id", row.id);
-  let best = await shoot(row);
-  let cost = best.cost;
-  const tries = [best.checks];
-  // One re-render if any check fails; the better of the two is kept.
-  if (!best.checks.pass) {
-    const again = await shoot(row);
-    cost += again.cost; tries.push(again.checks);
-    if (again.checks.score > best.checks.score) best = again;
+  await admin.from("long_form_thumbnails").update({ status: "rendering", draw_started_at: new Date().toISOString() }).eq("id", row.id);
+  // The re-render runs in its OWN invocation: two 4K decodes in one worker got it
+  // killed mid-draw (3f65a0c7 #3 stuck on "Drawing…"). The first try is kept in the row.
+  const retake = row.checks?.retake === true && !!row.image_url;
+  const shot = await shoot(row);
+  let best: { img: Image; checks: any } = shot;
+  const cost = (retake ? Number(row.cost_usd ?? 0) : 0) + shot.cost;
+  const tries = retake ? [row.checks.first, shot.checks] : [shot.checks];
+  if (!retake && !shot.checks.pass) {
+    const dir = `long-form/thumbnails/${row.project_id}/${row.id}`;
+    await admin.storage.from("generated").upload(`${dir}-try1.jpg`, await shot.img.encodeJPEG(92), { contentType: "image/jpeg", upsert: true });
+    const firstUrl = admin.storage.from("generated").getPublicUrl(`${dir}-try1.jpg`).data.publicUrl;
+    await admin.from("long_form_thumbnails").update({ status: "queued", image_url: firstUrl, checks: { retake: true, first: shot.checks }, cost_usd: cost, draw_started_at: new Date().toISOString() }).eq("id", row.id);
+    dispatchDraw(row.id);
+    return;
   }
+  // The better of the two is kept.
+  if (retake && !(shot.checks.score > (row.checks.first?.score ?? -1))) best = { img: await Image.decode(await fetchBytes(row.image_url)) as Image, checks: row.checks.first };
   const c = await compose(best.img, row.headline);
   const saved = await store(row, best.img, c, "v1");
   await admin.from("long_form_thumbnails").update({ status: "ready", ...saved, checks: { ...best.checks, tries: tries.length, all: tries }, flagged: !best.checks.pass, cost_usd: cost, ready_at: new Date().toISOString(), error: null }).eq("id", row.id);
@@ -203,6 +241,28 @@ async function draw(row: any) {
 
 // Fire-and-forget: one image draw (its own invocation, so each gets the full function time).
 const dispatchDraw = (id: string) => { fetch(`${SUPABASE_URL}/functions/v1/long-form-thumbnails`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}`, "x-autopilot-secret": SECRET }, body: JSON.stringify({ action: "draw", id }) }).then((x) => x.body?.cancel()).catch(() => {}); };
+// A draw whose worker died leaves its row queued/rendering forever (no error reaches the catch).
+// Past STUCK_MS: one automatic re-dispatch, then "failed" (the page offers Try again · free).
+const STUCK_MS = 180_000;
+async function sweepStuck(rows: any[], ownerId: string): Promise<boolean> {
+  const now = Date.now();
+  let changed = false;
+  for (const r of rows) {
+    if (!(r.status === "queued" || r.status === "rendering") || !r.prompt) continue;
+    if (now - Date.parse(r.draw_started_at ?? r.created_at) < STUCK_MS) continue;
+    changed = true;
+    if ((r.attempts ?? 0) < 1) {
+      await admin.from("long_form_thumbnails").update({ status: "queued", attempts: (r.attempts ?? 0) + 1, draw_started_at: new Date().toISOString(), error: "retrying: stuck" }).eq("id", r.id);
+      await logEvent("long-form-thumbnails", "warn", "thumbnail_stuck_retry", { projectId: r.project_id, id: r.id });
+      dispatchDraw(r.id);
+    } else {
+      await admin.from("long_form_thumbnails").update({ status: "failed", error: "timed out" }).eq("id", r.id);
+      if (r.credits_charged > 0) { await admin.rpc("deduct_credits", { uid: ownerId, amount: -r.credits_charged }); await admin.from("long_form_thumbnails").update({ credits_charged: 0 }).eq("id", r.id); }
+      await logEvent("long-form-thumbnails", "error", "thumbnail_stuck_failed", { projectId: r.project_id, id: r.id });
+    }
+  }
+  return changed;
+}
 const view = (r: any) => ({ id: r.id, batch: r.batch, slot: r.slot, status: r.status, headline: r.headline, imageUrl: r.image_url, pngUrl: r.png_url, fullUrl: r.full_url, selected: r.selected, creditsCharged: r.credits_charged, archetype: r.concept?.archetype ?? null, flagged: r.flagged });
 
 Deno.serve(async (req) => {
@@ -218,7 +278,7 @@ Deno.serve(async (req) => {
     catch (e) {
       // One automatic free retry before a failure is ever shown.
       if ((row.attempts ?? 0) < 1) {
-        await admin.from("long_form_thumbnails").update({ status: "queued", attempts: (row.attempts ?? 0) + 1, error: `retrying: ${String((e as any)?.message ?? e).slice(0, 160)}` }).eq("id", row.id);
+        await admin.from("long_form_thumbnails").update({ status: "queued", attempts: (row.attempts ?? 0) + 1, draw_started_at: new Date().toISOString(), error: `retrying: ${String((e as any)?.message ?? e).slice(0, 160)}` }).eq("id", row.id);
         await logEvent("long-form-thumbnails", "warn", "thumbnail_auto_retry", { projectId: row.project_id, id: row.id, message: String((e as any)?.message ?? e).slice(0, 200) });
         dispatchDraw(row.id);
         return ok(req, { ok: false, retrying: true });
@@ -231,19 +291,25 @@ Deno.serve(async (req) => {
     }
   }
 
-  // Internal (the autopilot secret): the FREE retry for a project, as its owner — never a user login, never a charge.
-  const internal = !!SECRET && req.headers.get("x-autopilot-secret") === SECRET && action === "retry";
+  // Internal (the autopilot secret or the service role): the FREE retry, or a FREE re-made batch
+  // (start + regenerate) for a project — never a user login, never a charge.
+  const trusted = (!!SECRET && req.headers.get("x-autopilot-secret") === SECRET) || req.headers.get("authorization") === `Bearer ${SERVICE_KEY}`;
+  const internal = trusted && (action === "retry" || action === "start" || action === "headline");
   const { user, authError } = internal ? { user: null as any, authError: null } : await requireUser(req);
   if (!internal && !user) return err(req, authError || "Unauthorized", 401);
   const projectId = String(body?.projectId ?? "").trim();
   if (!projectId || !["list", "start", "headline", "select", "retry"].includes(action)) return err(req, "Bad request", 400);
-  const { data: project } = await admin.from("long_form_projects").select("id, user_id, topic, selected_title, current_script_version_id, current_story_plan_version_id").eq("id", projectId).maybeSingle();
+  const { data: project } = await admin.from("long_form_projects").select("id, user_id, topic, selected_title, selected_idea_title, current_script_version_id, current_story_plan_version_id").eq("id", projectId).maybeSingle();
   if (!project || (!internal && project.user_id !== user.id)) return err(req, "Project not found", 404);
   const { data: profile } = await admin.from("long_form_generation_profiles").select("render_tier").eq("project_id", projectId).eq("status", "active").maybeSingle();
   const tier = tierOf(profile?.render_tier);
   const perImage = THUMB_CREDITS[tier] ?? 6;
-  const { data: rows } = await admin.from("long_form_thumbnails").select("*").eq("project_id", projectId).order("batch", { ascending: false }).order("slot");
+  let { data: rows } = await admin.from("long_form_thumbnails").select("*").eq("project_id", projectId).order("batch", { ascending: false }).order("slot");
   const lastBatch = rows?.[0]?.batch ?? 0;
+  // Watchdog: a draw that never finished (worker killed) is re-dispatched once, then failed.
+  if (await sweepStuck((rows ?? []).filter((r: any) => r.batch === lastBatch), project.user_id)) {
+    rows = (await admin.from("long_form_thumbnails").select("*").eq("project_id", projectId).order("batch", { ascending: false }).order("slot")).data;
+  }
   const latest = (rows ?? []).filter((r: any) => r.batch === lastBatch);
   const selected = (rows ?? []).find((r: any) => r.selected) ?? null;
 
@@ -255,7 +321,7 @@ Deno.serve(async (req) => {
     const allFailed = latest.length > 0 && latest.every((r: any) => r.status === "failed");
     if (!regenerate && lastBatch > 0 && !allFailed) return ok(req, { ok: true, thumbnails: latest.map(view) });
     if (latest.some((r: any) => r.status === "queued" || r.status === "rendering")) return ok(req, { ok: true, busy: true, thumbnails: latest.map(view) });
-    const charge = regenerate ? perImage : 0;
+    const charge = regenerate && !internal ? perImage : 0;
     if (charge) {
       const { error: chargeError } = await admin.rpc("deduct_credits", { uid: user.id, amount: charge * 3 });
       if (chargeError) return err(req, /INSUFFICIENT/i.test(chargeError.message) ? NOT_ENOUGH_CREDITS : "Couldn't charge the credits. Try again.", /INSUFFICIENT/i.test(chargeError.message) ? 402 : 500);

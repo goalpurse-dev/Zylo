@@ -60,6 +60,9 @@ export type AutopilotRecord = {
   dispatched?: { plan?: string; research?: string; script?: string };
   resumeLog?: { at: string; stage: string; reason: string }[];
   progressMax?: number;
+  // The furthest UI stage shown so far: the step list never goes backwards (a critic pass
+  // can send the script worker back to a draft/verify stage — 3f65a0c7 jumped from Polishing back).
+  stageMax?: UiStage;
   failedReason?: string | null;
   doneAt?: string | null;
   scriptVersionId?: string | null;
@@ -120,7 +123,9 @@ function progressAndEta(stage: UiStage, stageStartMs: number, nowMs: number, pre
 export function decideAutopilot(input: AutopilotInput): AutopilotDecision {
   const now = ms(input.now);
   const ap = input.autopilot;
-  const base = (action: AutopilotAction, uiStage: UiStage, workerStage: string, heartbeatAt: string | null, stale = false): AutopilotDecision => {
+  const order = UI_STAGES.map((s) => s.key);
+  const base = (action: AutopilotAction, workerUi: UiStage, workerStage: string, heartbeatAt: string | null, stale = false): AutopilotDecision => {
+    const uiStage = ap.stageMax && order.indexOf(ap.stageMax) > order.indexOf(workerUi) ? ap.stageMax : workerUi;
     const pe = progressAndEta(uiStage, ms(heartbeatAt), now, ap.progressMax ?? 0);
     return { action, uiStage, workerStage, heartbeatAt, stale, etaSeconds: pe.eta, progress: action.kind === "done" ? 1 : pe.progress };
   };

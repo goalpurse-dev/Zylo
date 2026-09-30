@@ -4,7 +4,7 @@
 // what renders. Images load as small WebP thumbnails (Supabase image
 // transforms, width+height+contain) with a blur-up, lazily below the fold; the full
 // image only on demand. Always 16:9 and object-contain: a scene image is NEVER cropped.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const FONT_HREF = "https://fonts.googleapis.com/css2?family=Lilita+One&display=swap";
 export function useOverlayFont() {
@@ -62,24 +62,37 @@ export function OverlayLayer({ layer }) {
 // A tiny (32 px) blurred copy shows at once; the thumbnail fades in over it.
 const tiny = (thumbUrl) => (thumbUrl ? thumbUrl.replace(/width=\d+/, "width=32").replace(/height=\d+/, "height=18") : null);
 
+// A finished scene is never left blurred: "loaded" belongs to the exact src (a reset
+// can't land after a cached image's load event), a cached image is caught on mount
+// via img.complete, and a failed load retries once, then falls back to the full image.
+const bust = (u) => `${u}${u.includes("?") ? "&" : "?"}r=1`;
 export function SceneThumb({ scene, busy = false, eager = false, className = "" }) {
-  const [loaded, setLoaded] = useState(false);
-  const src = scene.thumbUrl ?? scene.imageUrl;
-  useEffect(() => setLoaded(false), [src]);
+  const imgRef = useRef(null);
+  const base = scene.thumbUrl ?? scene.imageUrl;
+  const [fail, setFail] = useState({ base, n: 0 });
+  const n = fail.base === base ? fail.n : 0;
+  const src = !base ? null : n === 0 ? base : n === 1 ? bust(base) : scene.imageUrl && scene.imageUrl !== base ? scene.imageUrl : null;
+  const [loadedSrc, setLoadedSrc] = useState(null);
+  const loaded = !!src && loadedSrc === src;
+  useEffect(() => {
+    const el = imgRef.current;
+    if (src && el?.complete && el.naturalWidth > 0) setLoadedSrc(src);
+  }, [src]);
   return (
     <div className={`relative aspect-video overflow-hidden rounded-xl bg-black ${className}`}>
       {src ? (
         <>
-          {tiny(scene.thumbUrl) && <img src={tiny(scene.thumbUrl)} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-contain blur-md" />}
+          {!loaded && tiny(scene.thumbUrl) && <img src={tiny(scene.thumbUrl)} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-contain blur-md" />}
           <img
-            src={src} alt="" loading={eager ? "eager" : "lazy"} decoding="async" onLoad={() => setLoaded(true)}
+            ref={imgRef} src={src} alt="" loading={eager ? "eager" : "lazy"} decoding="async" onLoad={() => setLoadedSrc(src)}
+            onError={() => setFail({ base, n: n + 1 })}
             className={`absolute inset-0 h-full w-full object-contain transition-[opacity,filter] duration-700 ${loaded ? "opacity-100" : "opacity-0"} ${busy ? "blur-sm" : ""}`}
           />
           {loaded && <OverlayLayer layer={scene.overlay} />}
           {busy && <div className="zyvo-shimmer absolute inset-0" />}
         </>
-      ) : scene.status === "failed" ? (
-        <div className="flex h-full w-full items-center justify-center text-[11.5px] text-white/40">Couldn't draw this scene</div>
+      ) : scene.status === "failed" || (base && !src) ? (
+        <div className="flex h-full w-full items-center justify-center text-[11.5px] text-white/40">{scene.status === "failed" ? "Couldn't draw this scene" : "Couldn't load this picture"}</div>
       ) : (
         <div className="zyvo-shimmer absolute inset-0" />
       )}

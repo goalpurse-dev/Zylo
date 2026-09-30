@@ -221,6 +221,7 @@ async function advanceOne(projectId: string) {
       break;
   }
   ap.progressMax = Math.max(ap.progressMax ?? 0, d.progress);
+  ap.stageMax = d.uiStage; // already the furthest of (this stage, the last furthest)
   ap.heartbeatAt = now;
   ap.lockUntil = null;
   await admin.from("long_form_projects").update({ autopilot: ap }).eq("id", projectId);
