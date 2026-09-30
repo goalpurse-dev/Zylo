@@ -24,7 +24,7 @@ import { quoteFor } from "./pricing/useFruitV2Prices";
 import FinalView from "./workspace/FinalView";
 import IdleView from "./workspace/IdleView";
 import { Roadmap, SeriesPreview, WritingPlan } from "./workspace/SeriesViews";
-import StoryBoard from "./workspace/StoryBoard";
+import StoryBoard, { WritingBoard } from "./workspace/StoryBoard";
 
 /**
  * AI Fruit Story v2 (lime). Rendered by /workspace/ai-fruit-story when the
@@ -131,13 +131,13 @@ export default function FruitStoryV2Page({ preview = null }) {
             {short ? (
               <PrimaryButton className="flex-1" onClick={() => flow.setNoCredits({ needed: est.total })}>Add credits</PrimaryButton>
             ) : (
-              <PrimaryButton className="flex-1" price={quoteFor(flow.quotes, est.pictures)} busy={flow.acting === "start" ? "Writing your script…" : null} onClick={flow.startSingle}>
+              <PrimaryButton className="flex-1" price={quoteFor(flow.quotes, est.pictures)} priceOf={{ value: est.total, approx: !flow.scriptScenes }} busy={flow.acting === "start" ? "Writing your script…" : null} onClick={flow.startSingle}>
                 Make scene pictures
               </PrimaryButton>
             )}
           </div>
           <FootNote tone={short ? "warn" : "muted"}>
-            {short ? `You need ${(est.total - account.balance).toLocaleString()} more credits for this video. Pick a shorter length or V2, or add credits.` : "You only pay for video after you approve the pictures."}
+            {short ? `You need ${(est.total - account.balance).toLocaleString()} more credits for this video. Pick a shorter length or V2, or add credits.` : `Pictures now (${est.pictures ?? "…"}), the rest (about ${est.video ?? "…"}) only when you animate, after you've approved the pictures.`}
           </FootNote>
         </>
       );
@@ -214,13 +214,13 @@ export default function FruitStoryV2Page({ preview = null }) {
             {short ? (
               <PrimaryButton className="flex-1" onClick={() => flow.setNoCredits({ needed: est.total })}>Add credits</PrimaryButton>
             ) : (
-              <PrimaryButton className="flex-1" price={quoteFor(flow.quotes, est.pictures)} busy={flow.acting === "start" ? "Writing the episode…" : null} onClick={flow.startEpisodeStory} disabled={!currentEpisode}>
+              <PrimaryButton className="flex-1" price={quoteFor(flow.quotes, est.pictures)} priceOf={{ value: est.total, approx: true }} busy={flow.acting === "start" ? "Writing the episode…" : null} onClick={flow.startEpisodeStory} disabled={!currentEpisode}>
                 Make scene pictures
               </PrimaryButton>
             )}
           </div>
           <FootNote tone={short ? "warn" : "muted"}>
-            {short ? `You need ${(est.total - account.balance).toLocaleString()} more credits for this episode. Pick a shorter length or V2, or add credits.` : "You only pay for video after you approve the pictures."}
+            {short ? `You need ${(est.total - account.balance).toLocaleString()} more credits for this episode. Pick a shorter length or V2, or add credits.` : `Pictures now (${est.pictures ?? "…"}), the rest (about ${est.video ?? "…"}) only when you animate, after you've approved the pictures.`}
           </FootNote>
         </>
       );
@@ -233,7 +233,13 @@ export default function FruitStoryV2Page({ preview = null }) {
   let resultFooter = null;
   const storyExpected = (mode === "single" && single.storyId) || (mode === "series" && series.view === "episode" && series.storyId);
 
-  if (storyExpected) {
+  if (flow.acting === "start" && !story) {
+    // The script is being written: show the storyboard right away.
+    resultTabLabel = "Your video";
+    result = mode === "series"
+      ? <WritingBoard sceneCount={flow.episodeEstimate.sceneCount} label="Writing the episode…" />
+      : <WritingBoard sceneCount={flow.scriptScenes?.count ?? flow.singleEstimate.sceneCount} aspect={single.aspect} />;
+  } else if (storyExpected) {
     resultTabLabel = "Your video";
     if (!story) {
       result = <LoadingOrError status={flow.storyStatus} onRetry={flow.reloadStory} what="this video" />;

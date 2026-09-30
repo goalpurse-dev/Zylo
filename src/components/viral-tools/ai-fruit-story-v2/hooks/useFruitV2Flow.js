@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as api from "../api/fruitStoryV2Api";
 import { errorText } from "../constants";
-import { animateAllPrice, clipPrice, estimateLineSec, estimateStory, picturePrice, sceneCountForLength } from "../pricing/fruitV2Estimates";
+import { animateAllPrice, clipPrice, clipSecondsFor, estimateStory, picturePrice, sceneCountForLength } from "../pricing/fruitV2Estimates";
 import useFruitV2Prices from "../pricing/useFruitV2Prices";
 import { storyStepBlocker, wizardBlocker } from "../rules";
 import { parseScript } from "../script/parseScript";
@@ -132,7 +132,8 @@ export default function useFruitV2Flow(account, characters = []) {
   );
   const scriptLines = scriptParse.script;
   const scriptScenes = single.method === "script"
-    ? { count: scriptLines.length, lengthSec: Math.max(15, scriptLines.reduce((sum, r) => sum + estimateLineSec(r.line), 0)) }
+    // The same clip lengths the server will charge for these exact lines.
+    ? { count: scriptLines.length, lengthSec: scriptLines.reduce((sum, r) => sum + clipSecondsFor(r.line, single.tierId), 0) }
     : null;
   const singleEstimate = estimateStory({
     lengthSec: scriptScenes?.lengthSec ?? single.lengthSec,
@@ -145,6 +146,7 @@ export default function useFruitV2Flow(account, characters = []) {
     if (!guard()) return;
     const pictures = singleEstimate.pictures;
     if (singleEstimate.total != null && singleEstimate.total > account.balance) { setNoCredits({ needed: singleEstimate.total }); return; }
+    setTab("result");   // phones: jump to the storyboard while the script is written
     const created = await run("start", async () => {
       const input = {
         source: single.method,
@@ -164,7 +166,7 @@ export default function useFruitV2Flow(account, characters = []) {
       account.spend(pictures ?? 0);
       return started;
     }, "We couldn't write the script. Nothing was charged. Try again.");
-    if (created) { live.replace(created); setTab("result"); }
+    if (created) { live.replace(created); setTab("result"); } else setTab("build");   // failed: the error is on the Build tab
   };
 
   // ── Pipeline (single video or episode) ─────────────────────────────────
@@ -283,6 +285,7 @@ export default function useFruitV2Flow(account, characters = []) {
   const startEpisodeStory = async () => {
     if (!guard() || !seriesData) return;
     if (episodeEstimate.total != null && episodeEstimate.total > account.balance) { setNoCredits({ needed: episodeEstimate.total }); return; }
+    setTab("result");   // phones: jump to the storyboard while the episode is written
     const created = await run("start", async () => {
       const draft = await api.createStory({
         source: "idea",
@@ -299,7 +302,7 @@ export default function useFruitV2Flow(account, characters = []) {
       account.spend(episodeEstimate.pictures ?? 0);
       return started;
     }, "We couldn't write this episode. Nothing was charged. Try again.");
-    if (created) { live.replace(created); setTab("result"); }
+    if (created) { live.replace(created); setTab("result"); } else setTab("build");   // failed: the error is on the Build tab
   };
 
   const backToSeries = () => {

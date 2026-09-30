@@ -91,6 +91,7 @@ import { createSupabaseAdapter } from "./supabaseAdapter.js";
  * @property {StoryStatus} status
  * @property {Scene[]} scenes
  * @property {FinalVideo} final
+ * @property {number|null} [spentCredits] Credits this story has cost so far (charges minus refunds; real backend only)
  * @property {string} [seriesId]
  * @property {number} [episodeNumber]
  * @property {string} createdAt    ISO timestamp

@@ -77,6 +77,9 @@ export default function FinalView({ story, byId, isEpisode, series, onCaptions, 
         <div className="flex flex-col gap-3">
           <Box title={`${total} seconds, ${story.scenes.length} scenes`}>
             We joined your clips in order and trimmed {story.final.trimmedSec} seconds of silence between lines, so the story never drags.
+            {Number.isFinite(story.spentCredits) && (
+              <span className="mt-1.5 block font-bold text-white/75">This video cost {story.spentCredits} credits.</span>
+            )}
           </Box>
 
           <Box

@@ -8,6 +8,8 @@ import { FOCUS, PRESS, cx } from "./styles";
  * Generate button).
  *
  *   price:   number | { status: "loading" | "ready" | "error", value, onRetry }
+ *   priceOf: optional { value, approx } shown after the price: "24 of ~174"
+ *            (a step's price out of the whole job's)
  *            "loading" disables the button and shows a skeleton;
  *            "error" turns it into "Couldn't load price — Retry".
  *   busy:    string label shown with a spinner while work runs (disabled)
@@ -19,6 +21,7 @@ export default function PrimaryButton({
   children,
   onClick,
   price,
+  priceOf = null,
   busy,
   variant = "primary",
   disabled = false,
@@ -72,7 +75,10 @@ export default function PrimaryButton({
             <span className="flex items-center gap-1 text-[13px] font-semibold">
               <CreditIcon className="h-4 w-4" />
               <QuotedCredits status={quote.status} value={quote.value} onRetry={quote.onRetry} />
-              <span className="sr-only"> credits</span>
+              {priceOf?.value != null && quote.status === "ready" && (
+                <span className="opacity-60">of {priceOf.approx ? "~" : ""}{priceOf.value.toLocaleString()}</span>
+              )}
+              <span className="sr-only"> credits{priceOf?.value != null ? ` of about ${priceOf.value} for the whole video` : ""}</span>
             </span>
           )}
           {chevron && <ChevronRight className="h-4 w-4" aria-hidden="true" />}

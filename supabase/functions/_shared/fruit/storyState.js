@@ -84,12 +84,18 @@ export function toScene(row) {
 }
 
 /** @returns {import("../../../../src/components/viral-tools/ai-fruit-story-v2/api/fruitStoryV2Api.js").Story} */
-export function toStory(row, sceneRows) {
+/** Credits a story has cost so far: every charge minus every refund (fruit_credit_ledger rows). */
+export function spentFromLedger(rows) {
+  return (rows ?? []).reduce((sum, r) => sum + (r.operation === "refund" ? -1 : 1) * (Number(r.credits) || 0), 0);
+}
+
+export function toStory(row, sceneRows, spentCredits = null) {
   const scenes = [...sceneRows].sort((a, b) => a.idx - b.idx).map(toScene);
   const story = {
     id: row.id,
     title: row.title,
     castIds: row.cast_ids,
+    spentCredits,
     quality: row.quality,
     lengthSec: row.length_sec,
     aspect: row.aspect,

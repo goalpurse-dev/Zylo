@@ -61,32 +61,38 @@ export default function SettingsFields({ value, onChange, allowedTiers, onLocked
         </div>
       )}
 
-      <CostCard est={est} lengthSec={lengthSec} tierId={value.tierId} quotes={quotes} balance={balance} short={short} />
+      <CostCard est={est} lengthSec={lengthSec} tierId={value.tierId} quotes={quotes} balance={balance} short={short} exact={Boolean(scriptScenes)} />
     </>
   );
 }
 
-function CostCard({ est, lengthSec, tierId, quotes, balance, short }) {
+/**
+ * The whole video's price first, then how it splits: pictures now, video when
+ * animating. An upper bound: the planner never makes more seconds of clips than
+ * the chosen length, and a script's clips are sized by the server's own rule.
+ */
+function CostCard({ est, lengthSec, tierId, quotes, balance, short, exact = false }) {
   const status = quotes.status === "error" ? "error" : est.total == null ? "loading" : "ready";
+  const about = exact ? "" : "about ";
   return (
     <div>
       <SectionLabel>Cost</SectionLabel>
       <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5">
-        <Row label={`${est.sceneCount} scene pictures`}>
-          <QuotedCredits status={status} value={est.pictures} onRetry={quotes.retry} />
-        </Row>
-        <Row label={`About ${formatLength(lengthSec)} of ${TIERS[tierId].label} video`}>
-          <QuotedCredits status={status} value={est.video} onRetry={quotes.retry}>{(v) => `~${v}`}</QuotedCredits>
-        </Row>
-        <div className="mt-2 flex items-center justify-between border-t border-dashed border-white/10 pt-2">
-          <span className="text-[12px] font-black text-white">Estimated total</span>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[12px] font-black text-white">Full video</span>
           <span className="flex items-center gap-1 text-[16px] font-black tabular-nums text-lime-300">
+            {!exact && <span className="text-[12px] font-bold text-lime-300/70">about</span>}
             <CreditIcon className="h-4 w-4" />
             <QuotedCredits status={status} value={est.total} onRetry={quotes.retry} />
           </span>
         </div>
+        {status === "ready" && (
+          <p className="mt-1 text-[11px] font-semibold leading-relaxed text-white/55">
+            {est.pictures} now for the {est.sceneCount} scene pictures, {about}{est.video} when you animate {formatLength(lengthSec)} of {TIERS[tierId].label} video.
+          </p>
+        )}
         <p className="mt-2 text-[10px] leading-relaxed text-white/35">
-          The exact video price depends on how long each line is. You&apos;ll see it before animating.
+          {exact ? "Your lines set each clip's length, so this is the price." : "Never more than this: the script is written to fit the length you pick."}
           {" "}You have {balance.toLocaleString()} credits.
           {est.total != null && !short && ` After this: about ${(balance - est.total).toLocaleString()}.`}
         </p>

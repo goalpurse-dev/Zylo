@@ -6,7 +6,7 @@ import { LIMITS as UI_LIMITS } from "../src/components/viral-tools/ai-fruit-stor
 import { FRUIT_MODELS, videoModel } from "../supabase/functions/_shared/fruit/models.js";
 import { BUFFER_SEC, clipDurationSec, estimateSpeechSec, maxWordsFor } from "../supabase/functions/_shared/fruit/duration.js";
 import { validateCreateStory, validateSeriesPlan, validateEditInstruction, validateScenePrompt, validateId } from "../supabase/functions/_shared/fruit/validation.js";
-import { stepBlocker, toStory, episodeStatuses } from "../supabase/functions/_shared/fruit/storyState.js";
+import { stepBlocker, toStory, episodeStatuses, spentFromLedger } from "../supabase/functions/_shared/fruit/storyState.js";
 import { planStep, NOT_READY_BUILDERS } from "../supabase/functions/_shared/fruit/steps.js";
 import { fromDbError, errorBody, FruitError } from "../supabase/functions/_shared/fruit/errors.js";
 import { buildEnvelope, parseRunware, redactEnvelope, sameToken, webhookToken } from "../supabase/functions/_shared/fruit/runware.js";
@@ -108,7 +108,8 @@ test("rows map to the exact contract Story shape", () => {
   const scenes = [{ id: "b", idx: 1, title: "", speaker_id: "mia", line: "Two.", present_ids: ["mia"], duration_sec: 4, image_status: "queued", image_url: null, image_prompt: "", clip_status: "none", clip_url: null, error: null },
     { id: "a", idx: 0, title: "", speaker_id: "mia", line: "One.", present_ids: ["mia"], duration_sec: 4, image_status: "queued", image_url: null, image_prompt: "", clip_status: "none", clip_url: null, error: null }];
   const s = toStory(row, scenes);
-  assert.deepEqual(Object.keys(s).sort(), ["aspect", "castIds", "createdAt", "final", "id", "lengthSec", "quality", "scenes", "status", "title"]);
+  assert.deepEqual(Object.keys(s).sort(), ["aspect", "castIds", "createdAt", "final", "id", "lengthSec", "quality", "scenes", "spentCredits", "status", "title"]);
+  assert.equal(toStory(row, scenes, spentFromLedger([{ operation: "charge", credits: 24 }, { operation: "charge", credits: 30 }, { operation: "refund", credits: 30 }, { operation: "charge", credits: 165 }])).spentCredits, 189, "charges minus refunds");
   assert.deepEqual(s.scenes.map((x) => x.line), ["One.", "Two."]);
   assert.deepEqual(Object.keys(s.scenes[0]).sort(), ["clipStatus", "clipUrl", "durationSec", "error", "id", "imagePrompt", "imageStatus", "imageUrl", "index", "line", "presentIds", "speakerId", "title"]);
   assert.equal(s.final.trimmedSec, 0);

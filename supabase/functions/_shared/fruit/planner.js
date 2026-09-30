@@ -6,13 +6,20 @@
 // the model write lines: it only stages the user's lines (who is in frame,
 // where, doing what), and the code copies the lines in unchanged.
 import { FruitError } from "./errors.js";
-import { clipDurationSec, maxWordsFor, wordCount } from "./duration.js";
+import { BUFFER_SEC, WORDS_PER_SECOND, clipDurationSec, maxWordsFor, wordCount } from "./duration.js";
 import { videoModel } from "./models.js";
 
 import { LEGACY_SHOTS, SPEAKING_SHOTS } from "./shots.js";
 export { SPEAKING_SHOTS };
 export const SHOTS = [...SPEAKING_SHOTS, ...LEGACY_SHOTS];
 export const LINE_WORDS = { min: 3, targetMin: 6, targetMax: 14, max: 16 };
+
+/**
+ * Words per line so the clips fit the chosen length: each clip is the line's
+ * speech + a 0.8 s buffer, snapped UP to whole seconds, so leave ~0.3 s for pauses.
+ */
+export const wordBudget = (lengthSec, sceneCount) =>
+  Math.max(LINE_WORDS.targetMin, Math.floor((lengthSec / sceneCount - BUFFER_SEC - 0.3) * WORDS_PER_SECOND));
 
 /**
  * Lines that refer to a place (glass walls, a locked door, inside/outside)
@@ -131,7 +138,8 @@ export function buildPlannerPrompt(p) {
     parts.push(`THE USER WROTE THESE LINES. They are final: do not write, change or reorder lines. Only stage each one.\n${p.script.map((r, i) => `${i + 1}. ${r.speakerId}: ${r.line}`).join("\n")}`);
     parts.push(`Return exactly ${count} scenes, one per line, in the same order. The speaker of each line must be in that scene's presentIds.`);
   } else {
-    parts.push(`Write exactly ${count} scenes for a video of about ${p.lengthSec} seconds.`);
+    const words = wordBudget(p.lengthSec, count);
+    parts.push(`Write exactly ${count} scenes for a video of ${p.lengthSec} seconds. The clips must add up to AT MOST ${p.lengthSec} seconds, never more (the user pays per second and was quoted for ${p.lengthSec}). That leaves about ${Math.floor(p.lengthSec / count)} seconds per scene: keep each line to about ${words} words, with few commas.`);
   }
   return { system: SYSTEM, user: parts.join("\n\n"), sceneCount: count };
 }
@@ -238,8 +246,12 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
   let durations = [];
   try { durations = normalized.map((s) => clipDurationSec(s.line, allowed)); } catch { /* reported via word limits */ }
   const total = durations.reduce((a, b) => a + b, 0);
-  if (source !== "script" && durations.length && (total < 0.75 * lengthSec || total > 1.35 * lengthSec)) {
-    errors.push(`the spoken lines add up to about ${total} seconds; aim for about ${lengthSec} (make lines ${total < lengthSec ? "a little longer" : "shorter"})`);
+  // Never longer than the length the user chose (and was quoted for); not much shorter either.
+  if (source !== "script" && durations.length && total > lengthSec) {
+    const over = durations.map((d, i) => [d, i]).filter(([d]) => d > lengthSec / durations.length).map(([d, i]) => `scene ${i + 1} (${d} s)`);
+    errors.push(`the clips add up to ${total} seconds but the video is ${lengthSec} seconds: they must add up to AT MOST ${lengthSec}. Shorten lines to about ${wordBudget(lengthSec, durations.length)} words${over.length ? `, starting with ${over.join(", ")}` : ""}`);
+  } else if (source !== "script" && durations.length && total < 0.75 * lengthSec) {
+    errors.push(`the clips add up to only ${total} seconds; aim for close to ${lengthSec} (make lines a little longer, never past ${lengthSec} in total)`);
   }
   const plan = {
     title,

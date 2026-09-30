@@ -180,11 +180,6 @@ function SceneCard({ scene, story, byId, prices, inClips, onEdit, onRegenerate, 
           </div>
         )}
 
-        {!story.readOnly && scene.imageStatus === "ready" && scene.clipStatus !== "ready" && (
-          <p className="pointer-events-none absolute inset-x-3 bottom-3 text-center text-[12px] font-black leading-snug text-white [text-shadow:0_2px_0_#000,0_0_8px_#000]">
-            <span className="text-lime-300">{speakerName}:</span> {scene.line}
-          </p>
-        )}
       </div>
 
       {story.readOnly ? (
@@ -240,5 +235,46 @@ function ActionButton({ children, onClick, disabled, price, label }) {
         </span>
       )}
     </button>
+  );
+}
+
+/**
+ * Shown the moment "Make scene pictures" is pressed, while the script is being
+ * written: the storyboard with empty scene cards, so the user sees where their
+ * video will appear (instead of Recent creations).
+ */
+export function WritingBoard({ sceneCount, aspect = "9:16", label = "Writing your script…" }) {
+  const reduce = useReducedMotion();
+  return (
+    <div className="flex flex-col gap-4" aria-busy="true">
+      <WorkspaceHeader title={label} subtitle="Every scene gets a line and a picture. The pictures start as soon as the script is ready." />
+      <div className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-[#111315] px-4 py-3">
+        <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-lime-300/20 border-t-lime-300/70 motion-reduce:animate-none" />
+        <span className="text-[12px] font-black text-white">{label}</span>
+        <span className="ml-auto text-[11px] font-semibold text-white/35">{sceneCount} scenes</span>
+      </div>
+      <div className={cx("grid gap-3", aspect === "16:9" ? "grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3" : "grid-cols-2 md:grid-cols-3 2xl:grid-cols-4")}>
+        {Array.from({ length: sceneCount }, (_, i) => (
+          <article key={i} className="flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-[#111315]" aria-label={`Scene ${i + 1}, being written`}>
+            <div className="px-3 pb-2 pt-2.5 text-[11px] font-black text-white">Scene {i + 1}</div>
+            <div className={cx("relative mx-2 overflow-hidden rounded-xl bg-[#0D0F11]", aspect === "16:9" ? "aspect-video" : "aspect-[9/16]")}>
+              {!reduce && (
+                <Motion.div
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-[linear-gradient(100deg,transparent_30%,rgba(190,242,100,0.06)_50%,transparent_70%)] bg-[length:250%_100%]"
+                  animate={{ backgroundPosition: ["150% 0%", "-100% 0%"] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: "linear", delay: i * 0.12 }}
+                />
+              )}
+              <span className="absolute inset-0 grid place-items-center text-[11px] font-bold text-white/35">Writing…</span>
+            </div>
+            <div className="mx-3 mb-3 mt-2.5 flex flex-col gap-1.5" aria-hidden="true">
+              <span className="h-2 w-5/6 rounded-full bg-white/[0.06]" />
+              <span className="h-2 w-3/5 rounded-full bg-white/[0.06]" />
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
   );
 }

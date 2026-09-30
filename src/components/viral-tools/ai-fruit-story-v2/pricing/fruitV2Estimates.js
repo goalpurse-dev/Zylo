@@ -1,3 +1,4 @@
+import { clipDurationSec } from "../../../../../supabase/functions/_shared/fruit/duration.js";
 // ╔════════════════════════════════════════════════════════════════════════╗
 // ║ AI FRUIT STORY v2 — PRICES (the ONLY price file)                       ║
 // ║                                                                        ║
@@ -11,11 +12,11 @@
 // ║ decided by the lines).                                                 ║
 // ╚════════════════════════════════════════════════════════════════════════╝
 
-/** Quality tiers: server tool keys and the clip length each is quoted at. */
+/** Quality tiers: server tool keys, the clip length each is quoted at, and the lengths the model accepts (models.js). */
 export const TIERS = {
-  v2: { id: "v2", label: "V2", tag: "Fast & cheap", minPlan: "starter", toolKey: "video:fruit-story-v2", quoteSec: 5, dims: { "9:16": [720, 1280], "16:9": [1280, 720] } },
-  v3: { id: "v3", label: "V3", tag: "Sharper", minPlan: "pro", toolKey: "video:fruit-story-v3", quoteSec: 5, dims: { "9:16": [720, 1280], "16:9": [1280, 720] } },
-  v4: { id: "v4", label: "V4", tag: "Best quality", minPlan: "generative", toolKey: "video:fruit-story-v4", quoteSec: 4, dims: { "9:16": [720, 1280], "16:9": [1280, 720] } },
+  v2: { id: "v2", label: "V2", tag: "Fast & cheap", minPlan: "starter", toolKey: "video:fruit-story-v2", quoteSec: 5, durations: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], dims: { "9:16": [720, 1280], "16:9": [1280, 720] } },
+  v3: { id: "v3", label: "V3", tag: "Sharper", minPlan: "pro", toolKey: "video:fruit-story-v3", quoteSec: 5, durations: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], dims: { "9:16": [720, 1280], "16:9": [1280, 720] } },
+  v4: { id: "v4", label: "V4", tag: "Best quality", minPlan: "generative", toolKey: "video:fruit-story-v4", quoteSec: 4, durations: [4, 6, 8], dims: { "9:16": [720, 1280], "16:9": [1280, 720] } },
 };
 export const TIER_IDS = ["v2", "v3", "v4"];
 
@@ -101,8 +102,23 @@ export function videosPerMonth(planCredits, lengthSec, tierId, prices) {
   return total ? Math.floor(planCredits / total) : null;
 }
 
-/** Expected clip length for one line (4–6 s by word count). ESTIMATE; the backend decides. */
-export function estimateLineSec(line) {
-  const words = String(line).trim().split(/\s+/).filter(Boolean).length;
-  return words > 7 ? 6 : words > 4 ? 5 : 4;
+/**
+ * Clip seconds for one line on a tier: the SAME rule the server uses to size
+ * and charge the clip (speech at 2.6 words/s + 0.8 s, snapped up to the
+ * model's allowed lengths), so a script's price here is what gets charged.
+ */
+export function clipSecondsFor(line, tierId) {
+  const allowed = TIERS[tierId]?.durations ?? TIERS.v2.durations;
+  try { return clipDurationSec(line, allowed); } catch { return allowed.at(-1); }
+}
+
+/**
+ * The whole video for a story that exists: pictures (one per scene) + every
+ * clip at its planned length. Exact unless the user edits or regenerates.
+ */
+export function storyTotals(story, prices) {
+  const picture = picturePrice(prices);
+  const video = animateAllPrice(story, prices);
+  const pictures = picture == null || !story?.scenes?.length ? null : picture * story.scenes.length;
+  return { pictures, video, total: pictures == null || video == null ? null : pictures + video };
 }

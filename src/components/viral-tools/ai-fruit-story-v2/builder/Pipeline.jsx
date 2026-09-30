@@ -1,7 +1,7 @@
 import { Check, Download } from "lucide-react";
 import { PrimaryButton, cx } from "../../../ui/zyvo";
 import { formatLength } from "../constants";
-import { TIERS, animateAllPrice, picturePrice } from "../pricing/fruitV2Estimates";
+import { TIERS, animateAllPrice, picturePrice, storyTotals } from "../pricing/fruitV2Estimates";
 import { quoteFor } from "../pricing/useFruitV2Prices";
 import { AvatarStack } from "../shared/Avatar";
 import { FootNote } from "./BuilderPanel";
@@ -84,6 +84,9 @@ function Pill({ children, lime = false }) {
 export function PipelineActions({ story, quotes, balance, acting, isEpisode, handlers }) {
   const n = story.scenes.length;
   const done = (key) => story.scenes.filter((s) => s[key] === "ready").length;
+  const totals = storyTotals(story, quotes.prices);
+  // What this video has cost so far (server ledger: charges minus refunds).
+  const spent = Number.isFinite(story.spentCredits) ? story.spentCredits : null;
 
   if (story.readOnly) {
     return (
@@ -97,10 +100,12 @@ export function PipelineActions({ story, quotes, balance, acting, isEpisode, han
     const price = picturePrice(quotes.prices);
     return (
       <>
-        <PrimaryButton price={quoteFor(quotes, price == null ? null : price * n)} busy={acting === "pictures" ? "Starting…" : null} onClick={handlers.onMakePictures}>
+        <PrimaryButton price={quoteFor(quotes, price == null ? null : price * n)} priceOf={{ value: totals.total, approx: false }} busy={acting === "pictures" ? "Starting…" : null} onClick={handlers.onMakePictures}>
           Make scene pictures
         </PrimaryButton>
-        <FootNote>You only pay for video after you approve the pictures.</FootNote>
+        <FootNote>
+          {totals.total != null ? `Full video: ${totals.total} credits. ${totals.pictures} now for the pictures, ${totals.video} when you animate, after you approve them.` : "You only pay for video after you approve the pictures."}
+        </FootNote>
       </>
     );
   }
@@ -124,14 +129,18 @@ export function PipelineActions({ story, quotes, balance, acting, isEpisode, han
       return (
         <>
           <PrimaryButton onClick={handlers.onAddCredits}>Add credits</PrimaryButton>
-          <FootNote tone="warn">Animating costs {price} credits. You have {balance.toLocaleString()}.</FootNote>
+          <FootNote tone="warn">Animating costs {price} credits{spent != null ? ` (total for the video: ${spent + price})` : ""}. You have {balance.toLocaleString()}.</FootNote>
         </>
       );
     }
     return (
       <>
         <PrimaryButton price={quoteFor(quotes, price)} busy={acting === "animate" ? "Starting…" : null} onClick={handlers.onAnimate}>Animate all scenes</PrimaryButton>
-        <FootNote>Happy with every scene? Animate them all at once.</FootNote>
+        <FootNote>
+          {spent != null && price != null
+            ? <>Spent so far: <b className="text-white/80">{spent}</b> · Animating: <b className="text-white/80">{price}</b> · Total: <b className="text-lime-300">{spent + price}</b> credits</>
+            : "Happy with every scene? Animate them all at once."}
+        </FootNote>
       </>
     );
   }
@@ -164,6 +173,7 @@ export function PipelineActions({ story, quotes, balance, acting, isEpisode, han
   }
   if (story.status === "final_ready") {
     return (
+      <>
       <div className="flex gap-2">
         <PrimaryButton variant="secondary" className="flex-1" onClick={isEpisode ? handlers.onBackToSeries : handlers.onNewStory}>
           {isEpisode ? "Back to series" : "New story"}
@@ -173,6 +183,7 @@ export function PipelineActions({ story, quotes, balance, acting, isEpisode, han
           Download video
         </PrimaryButton>
       </div>
+      </>
     );
   }
   return (

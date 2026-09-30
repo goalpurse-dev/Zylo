@@ -173,3 +173,13 @@ test("the mock can start empty (dev preview of a new account)", async () => {
   const api = createMockAdapter({ timeScale: 0.001, paint: null, empty: true });
   assert.deepEqual(await api.listRecent({ type: "single" }), []);
 });
+
+test("the full-video price is an upper bound: script clips use the server's own clip rule; a story's total is exact", async () => {
+  const { clipSecondsFor, storyTotals } = await import("../src/components/viral-tools/ai-fruit-story-v2/pricing/fruitV2Estimates.js");
+  const { clipDurationSec } = await import("../supabase/functions/_shared/fruit/duration.js");
+  const lines = ["Why is there a wedding cake at your engagement party, Benny?", "Okay, don't freak out, but this might actually be our wedding.", "I've had this dress hidden in that tent since noon."];
+  for (const l of lines) assert.equal(clipSecondsFor(l, "v2"), clipDurationSec(l, [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]));
+  assert.equal(clipSecondsFor(lines[1], "v4"), 6);
+  const story = { quality: "v2", scenes: [6, 6, 5, 5, 5, 6].map((durationSec) => ({ durationSec })) };
+  assert.deepEqual(storyTotals(story, PRICES), { pictures: 24, video: 165, total: 189 }, "The Surprise Wedding Switch: 24 + 165");
+});

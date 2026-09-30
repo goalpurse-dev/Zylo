@@ -16,7 +16,7 @@ const GOOD = {
   locations,
   scenes: [
     scene("mia", "Funny, the waiter said you booked two tables tonight.", ["mia", "marco"]),
-    scene("marco", "One was for us, the other one is a work thing.", ["marco", "mia"]),
+    scene("marco", "One was for us, the other is for work.", ["marco", "mia"]),
     scene("pia", "Your work thing is wearing the necklace you bought, Marco.", ["pia", "marco", "mia"]),
   ],
 };
@@ -51,8 +51,8 @@ test("strict schema: every property required, no extra keys, cast ids enumerated
 test("a good plan passes and gets clip durations", () => {
   const { plan, errors } = validatePlan(GOOD, { ...base, sceneCount: 3 });
   assert.deepEqual(errors, []);
-  assert.deepEqual(plan.scenes.map((s) => s.durationSec), [5, 6, 5]);   // 11 words + comma = 5.2 s → 6
-  assert.equal(plan.lengthSec, 16);
+  assert.deepEqual(plan.scenes.map((s) => s.durationSec), [5, 5, 5]);
+  assert.equal(plan.lengthSec, 15, "never more than the chosen 15 s");
   assert.equal(plan.scenes[0].title, "The first crack");
 });
 
@@ -103,7 +103,16 @@ test("lines that are too long or add up to the wrong length are sent back", () =
   assert.match(validatePlan(long, { ...base, sceneCount: 3 }).errors.join("\n"), /line must be 6 to 14 words/);
   const short = { ...GOOD, scenes: GOOD.scenes.map((s) => ({ ...s, line: "No way." })) };
   const errs = validatePlan(short, { ...base, sceneCount: 3, lengthSec: 30 }).errors.join("\n");
-  assert.match(errs, /aim for about 30/);
+  assert.match(errs, /aim for close to 30/);
+});
+
+test("the clips may never add up to more than the chosen length (the user was quoted for it)", () => {
+  const over = { ...GOOD, scenes: [GOOD.scenes[0], { ...GOOD.scenes[1], line: "One was for us, the other one is a work thing, babe." }, GOOD.scenes[2]] };
+  const { errors } = validatePlan(over, { ...base, sceneCount: 3 });
+  assert.ok(errors.join("\n").includes("the clips add up to 16 seconds but the video is 15 seconds: they must add up to AT MOST 15. Shorten lines to about 10 words, starting with scene 2 (6 s)"), errors.join("\n"));
+  const { user } = buildPlannerPrompt({ ...base, lengthSec: 30 });
+  assert.ok(user.includes("Write exactly 6 scenes for a video of 30 seconds. The clips must add up to AT MOST 30 seconds, never more"));
+  assert.match(user, /keep each line to about 10 words/);
 });
 
 test("every location needs a time of day and lighting", () => {

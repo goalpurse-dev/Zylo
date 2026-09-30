@@ -14,7 +14,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { cors } from "../shared/cors.ts";
 import { FruitError, MESSAGES, errorBody, fromDbError, fruitError } from "../_shared/fruit/errors.js";
-import { episodeStatuses, stepBlocker, toRecentSingle, toStory } from "../_shared/fruit/storyState.js";
+import { episodeStatuses, spentFromLedger, stepBlocker, toRecentSingle, toStory } from "../_shared/fruit/storyState.js";
 import { FINAL_MACHINE, buildFinalJob, finalMachineConfig, finalPath, storyUpdateForReport } from "../_shared/fruit/final.js";
 import { webhookToken } from "../_shared/fruit/runware.js";
 import { providerOnHold } from "../_shared/fruit/alerts.js";
@@ -101,7 +101,8 @@ async function loadStory(userId: string, storyId: string) {
   const story = must(await admin.from("fruit_stories").select("*").eq("id", storyId).eq("user_id", userId).is("deleted_at", null).maybeSingle());
   if (!story) throw fruitError("NOT_FOUND");
   const scenes = must(await admin.from("fruit_story_scenes").select("*").eq("story_id", storyId).order("idx"));
-  return { row: story, scenes };
+  const ledger = must(await admin.from("fruit_credit_ledger").select("operation, credits").eq("story_id", storyId));
+  return { row: story, scenes, spent: spentFromLedger(ledger) };
 }
 
 async function loadSceneStory(userId: string, sceneId: string) {
@@ -136,7 +137,7 @@ async function runStep(ctx: Ctx, step: string, storyId: string, extra: Record<st
   }));
   kickWorker(storyId);
   const fresh = await loadStory(ctx.userId, storyId);
-  return toStory(fresh.row, fresh.scenes);
+  return toStory(fresh.row, fresh.scenes, fresh.spent);
 }
 
 /* ─── actions ─────────────────────────────────────────────────────────── */
@@ -214,14 +215,14 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
       })),
       p_call_ids: callIds,
     }));
-    const { row, scenes } = await loadStory(ctx.userId, storyId);
-    return toStory(row, scenes);
+    const { row, scenes, spent } = await loadStory(ctx.userId, storyId);
+    return toStory(row, scenes, spent);
   },
 
   async getStory(ctx) {
     await rateLimit(ctx.userId, "read");
-    const { row, scenes } = await loadStory(ctx.userId, validateId(ctx.body?.storyId));
-    return toStory(row, scenes);
+    const { row, scenes, spent } = await loadStory(ctx.userId, validateId(ctx.body?.storyId));
+    return toStory(row, scenes, spent);
   },
 
   generateScenePictures: (ctx) => runStep(ctx, "pictures", validateId(ctx.body?.storyId)),
@@ -309,7 +310,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const machine = await res.json().catch(() => ({}));
     await admin.from("fruit_ai_calls").update({ http_status: res.status, response: { machineId: machine?.id ?? null, region: machine?.region ?? null } }).eq("id", callId);
     const fresh = await loadStory(ctx.userId, storyId);
-    return toStory(fresh.row, fresh.scenes);
+    return toStory(fresh.row, fresh.scenes, fresh.spent);
   },
 
   /** Free: the series outline (title, logline, bible with fixed roles, episodes with cliffhangers). */
