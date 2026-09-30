@@ -15,11 +15,12 @@ export const SHOTS = [...SPEAKING_SHOTS, ...LEGACY_SHOTS];
 export const LINE_WORDS = { min: 3, targetMin: 6, targetMax: 14, max: 16 };
 
 /**
- * Words per line so the clips fit the chosen length: each clip is the line's
- * speech + a 0.8 s buffer, snapped UP to whole seconds, so leave ~0.3 s for pauses.
+ * Most words per line so the clips fit the chosen length: each clip is the
+ * line's speech + a 0.8 s buffer, snapped UP to whole seconds, and commas add
+ * pauses, so leave 0.5 s. At 5 s per scene that's 9 words (10 often became 6 s).
  */
 export const wordBudget = (lengthSec, sceneCount) =>
-  Math.max(LINE_WORDS.targetMin, Math.floor((lengthSec / sceneCount - BUFFER_SEC - 0.3) * WORDS_PER_SECOND));
+  Math.max(LINE_WORDS.targetMin, Math.floor((lengthSec / sceneCount - BUFFER_SEC - 0.5) * WORDS_PER_SECOND));
 
 /**
  * Lines that refer to a place (glass walls, a locked door, inside/outside)
@@ -139,7 +140,7 @@ export function buildPlannerPrompt(p) {
     parts.push(`Return exactly ${count} scenes, one per line, in the same order. The speaker of each line must be in that scene's presentIds.`);
   } else {
     const words = wordBudget(p.lengthSec, count);
-    parts.push(`Write exactly ${count} scenes for a video of ${p.lengthSec} seconds. The clips must add up to AT MOST ${p.lengthSec} seconds, never more (the user pays per second and was quoted for ${p.lengthSec}). That leaves about ${Math.floor(p.lengthSec / count)} seconds per scene: keep each line to about ${words} words, with few commas.`);
+    parts.push(`Write exactly ${count} scenes for a video of ${p.lengthSec} seconds. The clips must add up to AT MOST ${p.lengthSec} seconds, never more (the user pays per second and was quoted for ${p.lengthSec}). That leaves ${Math.floor(p.lengthSec / count)} seconds per scene: every line AT MOST ${words} words, with at most one comma.`);
   }
   return { system: SYSTEM, user: parts.join("\n\n"), sceneCount: count };
 }
@@ -249,7 +250,7 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
   // Never longer than the length the user chose (and was quoted for); not much shorter either.
   if (source !== "script" && durations.length && total > lengthSec) {
     const over = durations.map((d, i) => [d, i]).filter(([d]) => d > lengthSec / durations.length).map(([d, i]) => `scene ${i + 1} (${d} s)`);
-    errors.push(`the clips add up to ${total} seconds but the video is ${lengthSec} seconds: they must add up to AT MOST ${lengthSec}. Shorten lines to about ${wordBudget(lengthSec, durations.length)} words${over.length ? `, starting with ${over.join(", ")}` : ""}`);
+    errors.push(`the clips add up to ${total} seconds but the video is ${lengthSec} seconds: they must add up to AT MOST ${lengthSec}. Every line must be at most ${wordBudget(lengthSec, durations.length)} words with at most one comma${over.length ? `; too long now: ${over.join(", ")}` : ""}`);
   } else if (source !== "script" && durations.length && total < 0.75 * lengthSec) {
     errors.push(`the clips add up to only ${total} seconds; aim for close to ${lengthSec} (make lines a little longer, never past ${lengthSec} in total)`);
   }

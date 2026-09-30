@@ -109,10 +109,10 @@ test("lines that are too long or add up to the wrong length are sent back", () =
 test("the clips may never add up to more than the chosen length (the user was quoted for it)", () => {
   const over = { ...GOOD, scenes: [GOOD.scenes[0], { ...GOOD.scenes[1], line: "One was for us, the other one is a work thing, babe." }, GOOD.scenes[2]] };
   const { errors } = validatePlan(over, { ...base, sceneCount: 3 });
-  assert.ok(errors.join("\n").includes("the clips add up to 16 seconds but the video is 15 seconds: they must add up to AT MOST 15. Shorten lines to about 10 words, starting with scene 2 (6 s)"), errors.join("\n"));
+  assert.ok(errors.join("\n").includes("the clips add up to 16 seconds but the video is 15 seconds: they must add up to AT MOST 15. Every line must be at most 9 words with at most one comma; too long now: scene 2 (6 s)"), errors.join("\n"));
   const { user } = buildPlannerPrompt({ ...base, lengthSec: 30 });
   assert.ok(user.includes("Write exactly 6 scenes for a video of 30 seconds. The clips must add up to AT MOST 30 seconds, never more"));
-  assert.match(user, /keep each line to about 10 words/);
+  assert.match(user, /every line AT MOST 9 words/);
 });
 
 test("every location needs a time of day and lighting", () => {
