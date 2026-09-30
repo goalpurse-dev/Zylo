@@ -27,13 +27,13 @@ export function AvatarStack({ ids, byId, size = "h-7 w-7", max = 5 }) {
 }
 
 /** Cast member chip, optionally removable. */
-export function CastChip({ character, onRemove, disabled = false }) {
+export function CastChip({ character, onRemove, disabled = false, role = null }) {
   if (!character) return null;
   return (
     <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] py-1 pl-1 pr-2.5 text-[11px] font-bold text-white/80">
       <Avatar character={character} size="h-6 w-6" ring={false} />
       {character.name}
-      <span className="font-semibold text-white/35">{character.tag}</span>
+      <span className="font-semibold text-white/35">{role ?? character.tag}</span>
       {onRemove && (
         <button
           type="button"

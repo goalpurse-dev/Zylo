@@ -5,7 +5,7 @@ import { Avatar } from "../shared/Avatar";
 import WorkspaceHeader from "./WorkspaceHeader";
 
 /** Episode plan: title, what happens, cliffhanger, Made / Up next / Locked. */
-export function Roadmap({ series, byId = () => null }) {
+export function Roadmap({ series, byId = () => null, onOpenEpisode = null }) {
   return (
     <div className="flex flex-col gap-4">
       <WorkspaceHeader title="Episode plan" subtitle="Each episode ends on a cliffhanger that the next one picks up." />
@@ -38,6 +38,11 @@ export function Roadmap({ series, byId = () => null }) {
               {ep.status === "locked" && <Lock className="h-3 w-3" aria-hidden="true" />}
               {ep.status === "made" ? "Made" : ep.status === "next" ? "Up next" : "Locked"}
             </span>
+            {ep.status === "made" && onOpenEpisode && (
+              <button type="button" onClick={() => onOpenEpisode(ep.number)} className="col-start-2 justify-self-start rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[11px] font-bold text-white/80 transition hover:text-white sm:col-start-auto sm:justify-self-end">
+                Watch
+              </button>
+            )}
           </li>
         ))}
       </ol>

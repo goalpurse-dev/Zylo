@@ -160,7 +160,7 @@ export function SeriesPlanPanel({ series, byId }) {
       <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-3">
         <p className="text-[12px] leading-relaxed text-white/60">{series.logline}</p>
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {series.castIds.map((id) => <CastChip key={id} character={byId(id)} />)}
+          {series.castIds.map((id) => <CastChip key={id} character={byId(id)} role={series.bible?.characters?.find((c) => c.id === id)?.role ?? null} />)}
         </div>
       </div>
       <p className="text-[10px] leading-relaxed text-white/30">The full episode plan is on the right. Episodes unlock in order so every cliffhanger lands.</p>
