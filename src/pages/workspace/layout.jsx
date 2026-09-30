@@ -25,7 +25,8 @@ export default function WorkspaceLayout() {
   const [showRewards, setShowRewards] = useState(false);
   const [rewardsUserId, setRewardsUserId] = useState(null);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
-  const whatsNewChecked = useRef(false); // StrictMode runs the effect twice in dev
+  // "What's new": eligible this load (null until known), and this session's key.
+  const [whatsNew, setWhatsNew] = useState(null);
 
   // Clean up trailing # left by Supabase OAuth token exchange
   useEffect(() => {
@@ -67,18 +68,27 @@ export default function WorkspaceLayout() {
         setShowWelcome(true);
       } else if (!hasSeenRewards) {
         setShowRewards(true);
-      } else if (profile && !whatsNewChecked.current && !(profile.seen_announcements ?? []).includes(LONG_FORM_ANNOUNCEMENT)) {
-        whatsNewChecked.current = true;
-        // Long Form launch: once per user (stored on the profile, so once across
-        // devices), and never on top of the signup Welcome / Rewards popups.
-        setShowWhatsNew(true);
-        trackLaunch("whats_new_shown", { placement: "whats_new" });
-        supabase.rpc("mark_announcement_seen", { p_key: LONG_FORM_ANNOUNCEMENT }).then(() => {}, () => {});
+      } else if (profile && !(profile.seen_announcements ?? []).includes(LONG_FORM_ANNOUNCEMENT)) {
+        // "What's new" (Long Form launch): on Home, once per fresh session
+        // (new browser session or new login), never on top of the Welcome /
+        // Rewards popups, and never again after "Don't show this again" (on
+        // the profile) or once the user has any Long Form project.
+        const { count } = await supabase.from("long_form_projects").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+        if (!count) setWhatsNew({ sessionKey: `zyvo:whats-new:${user.id}:${user.last_sign_in_at ?? ""}` });
       }
     };
 
     run();
   }, []);
+
+  // Show it when Home is reached in a session that hasn't shown it yet.
+  useEffect(() => {
+    if (!whatsNew || location.pathname !== "/workspace/home") return;
+    try { if (sessionStorage.getItem(whatsNew.sessionKey)) return; sessionStorage.setItem(whatsNew.sessionKey, "1"); } catch { /* no storage: show once this load */ }
+    setWhatsNew(null);
+    setShowWhatsNew(true);
+    trackLaunch("whats_new_shown", { placement: "whats_new" });
+  }, [whatsNew, location.pathname]);
 
   /* ================= RESET HEADER ================= */
   useEffect(() => {
@@ -273,7 +283,10 @@ useEffect(() => {
           }} />
         )}
 
-        <WhatsNewModal open={showWhatsNew} onClose={() => setShowWhatsNew(false)} />
+        <WhatsNewModal open={showWhatsNew} onClose={({ dontShowAgain } = {}) => {
+          setShowWhatsNew(false);
+          if (dontShowAgain) supabase.rpc("mark_announcement_seen", { p_key: LONG_FORM_ANNOUNCEMENT }).then(() => {}, () => {});
+        }} />
 
         {/* MOBILE NAV */}
         <MobileBottomNav hidden={isSelectorOpen} />

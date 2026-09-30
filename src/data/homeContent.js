@@ -33,5 +33,6 @@ export const FEATURED_TEMPLATE = {
     { video: `${SHOWCASE}/featured/cartoon-drive-by/ship.mp4`, poster: `${SHOWCASE}/featured/cartoon-drive-by/ship.webp` },
     { video: `${SHOWCASE}/featured/cartoon-drive-by/gas-station.mp4`, poster: `${SHOWCASE}/featured/cartoon-drive-by/gas-station.webp` }, // brand-like sign blurred out
     { image: `${SHOWCASE}/featured/cartoon-drive-by/plane-window-v2.webp` },
+    { video: `${SHOWCASE}/featured/cartoon-drive-by/seashell-village.mp4`, poster: `${SHOWCASE}/featured/cartoon-drive-by/seashell-village.webp` }, // made with the template itself (V2)
   ],
 };

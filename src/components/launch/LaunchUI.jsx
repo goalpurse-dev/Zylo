@@ -183,6 +183,7 @@ export function WhatsNewModal({ open, onClose }) {
   const navigate = useNavigate();
   const reduced = useReducedMotion();
   const [huntUrl, setHuntUrl] = useState(null);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   useEffect(() => {
     if (!open) return;
     if (!document.querySelector(`link[href="${FONT_HREF}"]`)) {
@@ -193,8 +194,8 @@ export function WhatsNewModal({ open, onClose }) {
     }
     fetchShowcase("home").then((rows) => setHuntUrl(rows.find((r) => /hunt/i.test(r.title))?.youtube_url ?? null));
   }, [open]);
-  const close = () => { trackLaunch("whats_new_dismiss", { placement: "whats_new" }); onClose(); };
-  const make = () => { trackLaunch("try_long_form", { placement: "whats_new" }); onClose(); navigate("/long-form/create"); };
+  const close = () => { trackLaunch("whats_new_dismiss", { placement: "whats_new", dontShowAgain }); onClose({ dontShowAgain }); };
+  const make = () => { trackLaunch("try_long_form", { placement: "whats_new" }); onClose({ dontShowAgain }); navigate("/long-form/create"); };
   const stepDelay = (k) => `${(1.0 + k * 0.3).toFixed(2)}s`;
   return (
     <Dialog open={open} onClose={close} className="relative z-[300]">
@@ -262,6 +263,10 @@ export function WhatsNewModal({ open, onClose }) {
               </a>
             )}
           </div>
+          <label className="relative mt-4 inline-flex cursor-pointer select-none items-center gap-2 text-[12.5px] text-white/55 hover:text-white/75" data-testid="whats-new-dont-show">
+            <input type="checkbox" checked={dontShowAgain} onChange={(e) => setDontShowAgain(e.target.checked)} className="h-4 w-4 rounded accent-lime-300" />
+            Don't show this again
+          </label>
         </DialogPanel>
       </div>
     </Dialog>
