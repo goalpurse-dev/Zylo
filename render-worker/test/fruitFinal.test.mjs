@@ -89,3 +89,25 @@ test("ASS: one line at a time, each chunk from its first word, current word lime
   assert.equal(plain.length, 3);
   assert.ok(!plain.join("").includes("&H0064F2BE&"));
 });
+
+// "The Surprise Wedding Switch", clip 2 (Benny): real Whisper words vs the audio.
+const BENNY = "Okay, don't freak out, but this might actually be our wedding.";
+const BENNY_WORDS = [["Okay", 0, 0.48], ["don't", 0.58, 0.86], ["freak", 0.86, 1.1], ["out", 1.1, 1.44], ["but", 1.68, 1.86], ["this", 1.86, 2.18], ["might", 2.18, 2.42], ["actually", 2.42, 2.96], ["be", 2.96, 3.18], ["our", 3.18, 3.5], ["wedding", 3.5, 3.72]].map(([word, start, end]) => ({ word, start, end }));
+
+test("Whisper's words are stretched onto the measured speech span (Benny talked to 4.57 s, Whisper said 3.72 s)", async () => {
+  const { fitToSpan } = await import("../src/fruitCaptions.mjs");
+  const { words } = timedWords(BENNY, BENNY_WORDS, { start: 0, end: 4.57 }, 6.04);
+  assert.ok(Math.abs(words.at(-1).end - 4.57) < 1e-6, "the last word ends when the audio does");
+  assert.equal(words[0].start, 0);
+  const late = timedWords(BENNY, BENNY_WORDS, { start: 0.56, end: 4.59 }, 6.04).words;
+  assert.ok(Math.abs(late[0].start - 0.56) < 1e-6, "Whisper's 0.00 first word moves to where speech starts");
+  assert.deepEqual(fitToSpan(BENNY_WORDS.map((w) => ({ ...w, text: w.word })), { start: 0, end: 0.1 }).length, 11, "a tiny span leaves words as they are");
+});
+
+test("no blank while talking: every chunk stays until the next, the last until the clip ends", () => {
+  const { words } = timedWords(BENNY, BENNY_WORDS, { start: 0, end: 4.57 }, 6.04);
+  const events = buildAss({ words, width: 720, height: 1280, durationSec: 4.82 }).split("\n").filter((l) => l.startsWith("Dialogue:"));
+  const span = (e) => e.split(",").slice(1, 3);
+  for (let i = 1; i < events.length; i++) assert.equal(span(events[i])[0], span(events[i - 1])[1], `gap before event ${i}`);
+  assert.equal(span(events.at(-1))[1], "0:00:04.82", "the last chunk holds to the end of the clip");
+});

@@ -67,6 +67,21 @@ export function alignWords(line, transcript) {
 }
 
 /**
+ * Whisper's word times keep the right ORDER and spacing but drift at the ends:
+ * the first word usually "starts" at 0.00 and the last one ends early (in
+ * "The Surprise Wedding Switch" the speech ran to 4.57 s while Whisper said
+ * 3.72 s, so the caption vanished while Benny was still talking). Stretch the
+ * words linearly onto the speech span measured from the audio (silencedetect).
+ */
+export function fitToSpan(words, speech) {
+  const w0 = words[0].start, w1 = words[words.length - 1].end;
+  if (!(speech.end - speech.start > 0.3) || !(w1 - w0 > 0.3)) return words;
+  const k = (speech.end - speech.start) / (w1 - w0);
+  const at = (t) => speech.start + (t - w0) * k;
+  return words.map((w) => ({ ...w, start: at(w.start), end: at(w.end) }));
+}
+
+/**
  * Timed words for one clip, in the clip's own time.
  * @param {string} line
  * @param {object[]|null} transcript  [{word,start,end}] from speech-to-text, or null
@@ -75,7 +90,7 @@ export function alignWords(line, transcript) {
  */
 export function timedWords(line, transcript, speech, durationSec) {
   const aligned = alignWords(line, transcript);
-  if (aligned) return { words: aligned, source: "speech-to-text" };
+  if (aligned) return { words: speech ? fitToSpan(aligned, speech) : aligned, source: "speech-to-text" };
   const T = (transcript ?? []).filter((w) => Number.isFinite(w?.start));
   const span = T.length >= 2 ? { start: T[0].start, end: T[T.length - 1].end } : speech ?? { start: 0, end: durationSec };
   return { words: evenWords(lineWords(line), span.start, Math.max(span.start + 0.5, span.end)), source: T.length >= 2 ? "speech-span" : "silence" };
@@ -126,9 +141,9 @@ export function buildAss({ words, width, height, durationSec, highlight = true, 
   chunks.forEach((chunk, ci) => {
     const text = chunk.map((w) => w.text).join(" ");
     const size = Math.min(base, Math.floor((width * 0.88) / (Math.max(1, text.length) * 0.5)));
-    const next = chunks[ci + 1]?.[0]?.start ?? Infinity;
-    const lastEnd = chunk.at(-1).end;
-    const end = Math.min(durationSec, next - lastEnd > 0.6 ? lastEnd + 0.3 : Math.min(next, lastEnd + 0.6));
+    // On screen until the next chunk starts; the last one holds to the end of the
+    // clip. Never a blank while someone may still be talking.
+    const end = Math.min(durationSec, chunks[ci + 1]?.[0]?.start ?? durationSec);
     const head = `{\\an5\\pos(${x},${y})\\fs${size}}`;
     if (!highlight) {
       events.push([chunk[0].start, end, head + assText(text)]);

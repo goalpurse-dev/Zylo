@@ -9,7 +9,8 @@ import fs from "fs";
 const budget = openBudget("3f");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // --story full30: the 30 s story; default: the 3e "Glass Walls" story.
-const storyId = process.argv.includes("--story=full30")
+const idArg = process.argv.find((x) => x.startsWith("--story-id="))?.slice(11);
+const storyId = idArg ? idArg : process.argv.includes("--story=full30")
   ? JSON.parse(fs.readFileSync(`${ROOT}/data/fruit-phase3/full30-results.json`, "utf8")).storyId
   : JSON.parse(fs.readFileSync(`${ROOT}/data/fruit-phase3/3d-results.json`, "utf8")).story.id;
 const captions = !process.argv.includes("--no-captions");
@@ -31,9 +32,10 @@ const { data: calls } = await db.from("fruit_ai_calls").select("*").eq("story_id
 const call = calls[0];
 budget.record(Number(call.cost_usd ?? 0), `3f final (${captions ? "captions" : "no captions"})`, 0.02);
 const out = { storyId, captions, status: story.status, final: story.final, wallSec: (Date.now() - t0) / 1000, call: { id: call.id, ok: call.ok, error: call.error, costUsd: Number(call.cost_usd), latencyMs: call.latency_ms, response: call.response, model: call.model } };
-const words = (await db.from("fruit_ai_calls").select("scene_id, ok, cost_usd, response").eq("story_id", storyId).eq("purpose", "caption_words")).data ?? [];
+const words = (await db.from("fruit_ai_calls").select("scene_id, ok, cost_usd, response, created_at").eq("story_id", storyId).eq("purpose", "caption_words")).data ?? [];
 out.captionWords = { calls: words.length, ok: words.filter((w) => w.ok).length, costUsd: words.reduce((a, w) => a + Number(w.cost_usd ?? 0), 0) };
-budget.record(out.captionWords.costUsd, "3f caption word timestamps", 0);
-writeJson(`data/fruit-phase3/3f-final${process.argv.includes("--story=full30") ? "-full30" : ""}${captions ? "" : "-nocap"}.json`, out);
+// Word timestamps are logged when first made (and cached); only new ones are spend.
+out.captionWords.newThisRun = words.filter((w) => new Date(w.created_at ?? 0) >= new Date(Date.now() - (Date.now() - t0) - 5000)).length;
+writeJson(`data/fruit-phase3/3f-final${idArg ? `-${idArg.slice(0, 8)}` : process.argv.includes("--story=full30") ? "-full30" : ""}${captions ? "" : "-nocap"}.json`, out);
 console.log(JSON.stringify(out, null, 1));
 console.log(budget.summary());
