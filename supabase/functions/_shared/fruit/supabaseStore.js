@@ -74,6 +74,25 @@ export function createSupabaseStore(admin) {
       return rows.length > 0;
     },
 
+    async wasRewritten(jobId) {
+      const { count, error } = await admin.from("fruit_ai_calls").select("id", { count: "exact", head: true }).eq("job_id", jobId).eq("purpose", "clip_rewrite");
+      if (error) throw new Error(`was rewritten: ${error.message}`);
+      return (count ?? 0) > 0;
+    },
+
+    // Swaps in the rewritten request and queues the job again; the scene's
+    // clip_prompt follows, so what is saved stays what is sent.
+    async replaceRequest(id, taskUUID, request, cost, note = "content policy: rewritten once") {
+      const job = must(await admin.from("fruit_jobs").select("*").eq("id", id).maybeSingle(), "read job");
+      if (!job || job.task_uuid !== taskUUID || !["submitting", "submitted"].includes(job.status)) return false;
+      const rows = must(await admin.from("fruit_jobs")
+        .update({ status: "queued", request, next_attempt_at: new Date().toISOString(), cost_usd: Number(job.cost_usd) + (cost || 0), lease_until: null, submitted_at: null, error: note })
+        .eq("id", id).eq("task_uuid", taskUUID).in("status", ["submitting", "submitted"]).select("*"), "replace request");
+      if (!rows.length) return false;
+      must(await admin.from("fruit_story_scenes").update({ clip_prompt: request.positivePrompt, clip_status: "queued" }).eq("id", job.scene_id).eq("clip_job_id", id), "scene prompt");
+      return true;
+    },
+
     async refundJob(id, code, message, cost) {
       return must(await admin.rpc("fruit_refund_job", { p_job_id: id, p_error_code: code, p_error: message, p_cost_usd: cost || 0 }), "refund job");
     },

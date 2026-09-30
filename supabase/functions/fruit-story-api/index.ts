@@ -16,17 +16,28 @@ import { cors } from "../shared/cors.ts";
 import { FruitError, errorBody, fromDbError, fruitError } from "../_shared/fruit/errors.js";
 import { episodeStatuses, toRecentSingle, toStory } from "../_shared/fruit/storyState.js";
 import { validateCreateStory, validateEditInstruction, validateId, validateScenePrompt, validateSeriesPlan } from "../_shared/fruit/validation.js";
-import { NOT_READY_BUILDERS, planStep } from "../_shared/fruit/steps.js";
+import { planStep } from "../_shared/fruit/steps.js";
+import { planStory } from "../_shared/fruit/plannerService.js";
+import { buildPictureRequest } from "../_shared/fruit/pictures.js";
+import { buildClipRequest } from "../_shared/fruit/clips.js";
+import { cleanEditInstruction } from "../_shared/fruit/smallTasks.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const WORKER_SECRET = Deno.env.get("FRUIT_WORKER_SECRET") ?? "";
 const PAID_CALLS_OFF = (Deno.env.get("FRUIT_PAID_CALLS") ?? "").toLowerCase() === "off";
+const LLM_ENV = {
+  ANTHROPIC_API_KEY: Deno.env.get("ANTHROPIC_API_KEY") ?? "",
+  OPENAI_API_KEY: Deno.env.get("OPENAI_API_KEY") ?? "",
+  FRUIT_PAID_CALLS: Deno.env.get("FRUIT_PAID_CALLS") ?? "",
+};
+const PLAN_RANK: Record<string, number> = { starter: 1, affiliate: 1, pro: 2, generative: 3 };
+const QUALITY_PLAN: Record<string, [number, string]> = { v2: [1, "Starter"], v3: [2, "Pro"], v4: [3, "Generative"] };
 
 const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
-// Stage 3b: builders refuse; 3d (pictures) and 3e (clips) plug in the real ones.
-const BUILDERS = NOT_READY_BUILDERS;
+// Pictures (stage 3d) and clips (stage 3e) are on.
+const BUILDERS = { picture: buildPictureRequest, clip: buildClipRequest };
 
 const PAID_PLANS = new Set(["starter", "pro", "generative", "affiliate"]);
 const RATE = {
@@ -104,8 +115,9 @@ async function runStep(ctx: Ctx, step: string, storyId: string, extra: Record<st
   if (PAID_CALLS_OFF) throw fruitError("PAID_CALLS_DISABLED");
   await rateLimit(ctx.userId, "step");
   const { row, scenes } = await loadStory(ctx.userId, storyId);
-  const story = toStory(row, scenes);
-  const plan = planStep(step as any, { story, scenes: story.scenes, library: await libraryMap(), builders: BUILDERS, ...extra });
+  const story: any = { ...toStory(row, scenes), locations: row.locations };   // locations: builder only, not the contract
+  const staging = new Map(scenes.map((s: any) => [s.id, { locationId: s.location_id, action: s.action, emotion: s.emotion, shot: s.shot, placement: s.placement }]));
+  const plan = planStep(step as any, { story, scenes: story.scenes, library: await libraryMap(), builders: BUILDERS, staging, ...extra });
   must(await admin.rpc("fruit_charge_step", {
     p_user_id: ctx.userId, p_story_id: storyId, p_step: plan.step, p_from_statuses: plan.from, p_to_status: plan.to, p_items: plan.items,
   }));
@@ -132,17 +144,44 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
 
   async createStory(ctx) {
     requirePaid(ctx);
+    const rows = await library();
+    const lib = new Map(rows.map((c: any) => [c.id, c]));
+    const raw = ctx.body?.input;
+    const idea = raw?.source === "idea" && typeof raw?.ideaId === "string"
+      ? must(await admin.from("fruit_ideas").select("*").eq("id", raw.ideaId).eq("active", true).maybeSingle())
+      : null;
+    const input = validateCreateStory(raw, lib, (id: string) => (idea && idea.id === id ? { castIds: idea.cast_ids } : null));
+    const [need, planName] = QUALITY_PLAN[input.quality];
+    if ((PLAN_RANK[ctx.plan] ?? 0) < need) throw fruitError("PLAN_UPGRADE_REQUIRED", `${input.quality.toUpperCase()} needs the ${planName} plan.`);
+    if (input.source === "episode") throw fruitError("STAGE_NOT_READY", "Series episodes aren't switched on yet.");   // stage 3g
     await rateLimit(ctx.userId, "story");
-    const lib = await libraryMap();
-    const ideaIds = ctx.body?.input?.source === "idea" && typeof ctx.body?.input?.ideaId === "string"
-      ? must(await admin.from("fruit_ideas").select("id, cast_ids").eq("id", ctx.body.input.ideaId).eq("active", true))
-      : [];
-    const input = validateCreateStory(ctx.body?.input, lib, (id: string) => {
-      const idea = ideaIds.find((i: any) => i.id === id);
-      return idea ? { castIds: idea.cast_ids } : null;
+
+    const cast = input.castIds.map((id: string) => lib.get(id));
+    const { plan, attempts, callIds, costUsd, model } = await planStory({
+      admin, env: LLM_ENV, userId: ctx.userId,
+      plannerInput: {
+        source: input.source, cast, lengthSec: input.lengthSec, quality: input.quality,
+        idea: idea ? { title: idea.title, summary: idea.summary } : undefined,
+        prompt: input.prompt, script: input.script,
+      },
     });
-    void input;
-    throw fruitError("STAGE_NOT_READY", "Writing stories isn't switched on yet.");   // stage 3c: planner
+    const storyId = must(await admin.rpc("fruit_create_story", {
+      p_user_id: ctx.userId,
+      p_story: {
+        source: input.source,
+        input: { source: input.source, ideaId: input.ideaId ?? null, prompt: input.prompt ?? null, script: input.script ?? null },
+        title: plan.title, cast_ids: input.castIds, quality: input.quality, aspect: input.aspect,
+        length_sec: Math.min(180, Math.max(5, plan.lengthSec)), locations: plan.locations,
+        planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd },
+      },
+      p_scenes: plan.scenes.map((sc: any) => ({
+        title: sc.title, speaker_id: sc.speakerId, line: sc.line, present_ids: sc.presentIds, location_id: sc.locationId,
+        action: sc.action, emotion: sc.emotion, shot: sc.shot, placement: sc.placement, duration_sec: sc.durationSec,
+      })),
+      p_call_ids: callIds,
+    }));
+    const { row, scenes } = await loadStory(ctx.userId, storyId);
+    return toStory(row, scenes);
   },
 
   async getStory(ctx) {
@@ -155,8 +194,11 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
 
   async editScene(ctx) {
     const sceneId = validateId(ctx.body?.sceneId, "scene");
-    const instruction = validateEditInstruction(ctx.body?.instruction);
+    const raw = validateEditInstruction(ctx.body?.instruction);
+    requirePaid(ctx);
+    if (PAID_CALLS_OFF) throw fruitError("PAID_CALLS_DISABLED");
     const { row } = await loadSceneStory(ctx.userId, sceneId);
+    const instruction = await cleanEditInstruction({ admin, env: LLM_ENV, userId: ctx.userId, storyId: row.id, sceneId, instruction: raw });
     return runStep(ctx, "edit", row.id, { sceneId, instruction });
   },
 

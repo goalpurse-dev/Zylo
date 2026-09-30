@@ -17,7 +17,9 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const LEDGER = path.join(ROOT, "data/fruit-phase3/spend.json");
 
 export const PHASE3_TOTAL_USD = 4.0;
-export const STAGE_CAPS_USD = Object.freeze({ "3b": 0, "3c": 0.4, "3d": 0.4, "3e": 1.8, "3f": 0.1, "3g": 0.3 });
+// 3e: $1.80 + up to $0.40 from the buffer (approved 2026-09-30).
+// 3e2: Wan2.6 Flash confirmation run (approved 2026-09-30). The $4.00 Phase 3 total is enforced on real spend.
+export const STAGE_CAPS_USD = Object.freeze({ "3b": 0, "3c": 0.4, "3d": 0.4, "3e": 2.2, "3e2": 1.0, "3f": 0.1, "3g": 0.3 });
 
 export class PaidCallBlocked extends Error {}
 

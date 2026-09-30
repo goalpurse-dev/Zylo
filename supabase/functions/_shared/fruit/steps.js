@@ -18,20 +18,22 @@ const blocked = (message) => new FruitError("VALIDATION", message, 409);
  * @param {{story: object, scenes: object[], sceneId?: string, instruction?: string, prompt?: string, library: Map, builders: object}} ctx
  *   story/scenes are contract-shaped (toStory)
  */
-export function planStep(step, { story, scenes, sceneId, instruction, prompt, library, builders }) {
+export function planStep(step, { story, scenes, sceneId, instruction, prompt, library, builders, staging }) {
   const scene = sceneId ? scenes.find((s) => s.id === sceneId) : null;
   if (sceneId && !scene) throw new FruitError("NOT_FOUND", "This scene doesn't exist anymore.", 404);
   const reason = stepBlocker(step, story, scenes, scene);
   if (reason) throw blocked(reason);
   const rule = STEPS[step];
 
+  // Builders get the contract scene plus its staging (location, action, emotion, shot).
+  const full = (s) => ({ ...s, ...(staging?.get(s.id) ?? {}) });
   const pictureItem = (s, mode) => {
-    const built = builders.picture({ story, scene: s, scenes, library, mode, instruction, prompt });
-    return { scene_id: s.id, kind: "image", tool_key: FRUIT_MODELS.image.toolKey, price_input: built.priceInput, request: built.request, prompt: built.prompt };
+    const built = builders.picture({ story, scene: full(s), scenes, library, mode, instruction, prompt });
+    return { scene_id: s.id, kind: "image", tool_key: FRUIT_MODELS.image.toolKey, price_input: built.priceInput, request: built.request, prompt: built.prompt, sent: built.sent ?? built.prompt };
   };
   const clipItem = (s) => {
-    const built = builders.clip({ story, scene: s, library });
-    return { scene_id: s.id, kind: "clip", tool_key: videoModel(story.quality).toolKey, price_input: built.priceInput, request: built.request, prompt: built.prompt };
+    const built = builders.clip({ story, scene: full(s), library });
+    return { scene_id: s.id, kind: "clip", tool_key: videoModel(story.quality).toolKey, price_input: built.priceInput, request: built.request, prompt: built.prompt, sent: built.sent ?? built.prompt };
   };
 
   let items;
@@ -43,8 +45,13 @@ export function planStep(step, { story, scenes, sceneId, instruction, prompt, li
   else if (step === "reclip") items = [clipItem(scene)];
   else throw blocked("Unknown step.");
 
+  // What is saved is what is sent: the request carries exactly the built prompt,
+  // and the scene stores it (null = an edit, which keeps the scene description;
+  // the exact edit prompt is in the job request).
   for (const it of items) {
-    if (it.request?.positivePrompt !== it.prompt) throw new Error(`builder broke saved==sent for scene ${it.scene_id}`);
+    if (it.request?.positivePrompt !== it.sent) throw new Error(`builder broke saved==sent for scene ${it.scene_id}`);
+    if (it.prompt !== null && it.prompt !== it.sent) throw new Error(`builder broke saved==sent for scene ${it.scene_id}`);
+    delete it.sent;
   }
   return { step, from: rule.from, to: rule.to, items };
 }

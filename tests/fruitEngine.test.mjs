@@ -202,3 +202,53 @@ test("a whole step is charged at once or not at all", () => {
   assert.equal(db.jobs.size, 0);
   assert.equal(db.stories.get(storyId).status, "draft");
 });
+
+test("content policy on a clip: ONE safe rewrite keeping the exact line, then refund if refused again", async () => {
+  let n = 0;
+  const { db, engine, sent } = setup({ submit: (env) => (++n <= 2 ? { httpStatus: 400, body: ERR(env.taskUUID, "contentModerationFailed", "Flagged by safety filter") } : { httpStatus: 200, body: ACK(env.taskUUID) }) });
+  const storyId = db.addStory({ sceneCount: 1, status: "pictures_ready" });
+  const [scene] = [...db.scenes.values()];
+  db.chargeStep(storyId, { from: ["pictures_ready"], to: "animating", items: [{ scene_id: scene.id, kind: "clip", credits: 25, request: { taskType: "videoInference", positivePrompt: 'Rick says: "You are fired."' } }] });
+  const rewrites = [];
+  const eng2 = (await import("../supabase/functions/_shared/fruit/engine.js")).createEngine({
+    store: db.store, media: { store: async ({ path }) => path },
+    runware: { submit: async (env) => { sent.push(env); return n++ < 2 ? { httpStatus: 400, body: ERR(env.taskUUID, "contentModerationFailed", "Flagged") } : { httpStatus: 200, body: ACK(env.taskUUID) }; }, poll: async () => ({ httpStatus: 200, body: { data: [] } }) },
+    env: {}, now: () => db.clock(), log: { error() {} },
+    rewriteClip: async (job) => { rewrites.push(job.id); db.calls.push({ job: job.id, purpose: "clip_rewrite" }); return { ...job.request, positivePrompt: 'In a cartoon office, Rick says: "You are fired."' }; },
+  });
+  n = 0;
+  await eng2.kick({ storyId });
+  const job = [...db.jobs.values()][0];
+  assert.equal(rewrites.length, 1);
+  assert.equal(job.status, "queued");
+  assert.equal(job.request.positivePrompt, 'In a cartoon office, Rick says: "You are fired."');
+  assert.equal(scene.clip_prompt, job.request.positivePrompt, "saved == sent after the rewrite");
+  await eng2.kick({ storyId });                                           // refused again: no second rewrite
+  assert.equal(rewrites.length, 1);
+  assert.equal(job.error_code, "CLIP_BLOCKED");
+  assert.equal(db.balance, 1000);
+});
+
+test("a clip that finally fails on its model is re-sent once on the fallback model, then completes", async () => {
+  const { createEngine: make } = await import("../supabase/functions/_shared/fruit/engine.js");
+  const db = createMemoryDb();
+  const sent = [];
+  const eng = make({
+    store: db.store, media: { store: async ({ path }) => path }, env: {}, now: () => db.clock(), log: { error() {} },
+    uuid: (() => { let i = 0; return () => `00000000-0000-4000-8000-${String(++i).padStart(12, "0")}`; })(),
+    runware: { submit: async (env) => { sent.push(env); return env.model === "wan" ? { httpStatus: 400, body: ERR(env.taskUUID, "invalidInput", "unsupported frame") } : { httpStatus: 200, body: ACK(env.taskUUID) }; }, poll: async () => ({ httpStatus: 200, body: { data: [] } }) },
+    fallbackClip: (req) => (req.model === "wan" ? { ...req, model: "seedance" } : null),
+  });
+  const storyId = db.addStory({ sceneCount: 1, status: "pictures_ready" });
+  const [scene] = [...db.scenes.values()];
+  db.chargeStep(storyId, { from: ["pictures_ready"], to: "animating", items: [{ scene_id: scene.id, kind: "clip", credits: 30, request: { taskType: "videoInference", model: "wan", positivePrompt: "p" } }] });
+  await eng.kick({ storyId });
+  const job = [...db.jobs.values()][0];
+  assert.equal(job.request.model, "seedance");
+  assert.equal(job.status, "queued");
+  await eng.kick({ storyId });
+  assert.deepEqual(sent.map((e) => e.model), ["wan", "seedance"]);
+  const T = sent[1].taskUUID;
+  assert.equal(await eng.onResult(T, CLIP(T)), "completed");
+  assert.equal(db.balance, 970, "charged once at the tier price, no refund");
+});

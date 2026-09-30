@@ -29,7 +29,9 @@ const failCode = (kind, cls) => cls.contentPolicy
 
 const ageSec = (now, iso) => (iso ? (now.getTime() - new Date(iso).getTime()) / 1000 : Infinity);
 
-export function createEngine({ store, runware, media, env, now = () => new Date(), uuid = () => crypto.randomUUID(), log = console }) {
+//   rewriteClip (optional) async (job) -> new request | null   one content-policy rewrite for clips
+//   fallbackClip (optional) (request) -> fallback request | null   e.g. clips.js#fallbackClipTask
+export function createEngine({ store, runware, media, env, rewriteClip = null, fallbackClip = null, now = () => new Date(), uuid = () => crypto.randomUUID(), log = console }) {
   const paidOff = String(env.FRUIT_PAID_CALLS ?? "").toLowerCase() === "off";
 
   async function webhookFor(taskUUID) {
@@ -39,11 +41,22 @@ export function createEngine({ store, runware, media, env, now = () => new Date(
   }
 
   async function fail(job, cls, { cost = 0, code, message } = {}) {
+    // A clip refused by the content filter gets ONE safe rewrite (the exact line kept), then fails.
+    if (cls.contentPolicy && job.kind === "clip" && rewriteClip && !(await store.wasRewritten(job.id))) {
+      const next = await rewriteClip(job);
+      if (next && (await store.replaceRequest(job.id, job.task_uuid, next, cost))) return "rewritten";
+    }
     const retryable = cls.retryable && !cls.contentPolicy;
     if (retryable && job.attempt < job.max_attempts) {
       const delay = TIMING.retryDelaysSec[Math.min(job.attempt - 1, TIMING.retryDelaysSec.length - 1)];
       await store.requeueJob(job.id, job.task_uuid, delay, `${code ?? "error"}: ${message ?? ""}`.slice(0, 500), cost);
       return "requeued";
+    }
+    // Giving up on this model: a clip gets one re-send on its tier's fallback model
+    // (V2: Wan2.6 Flash -> Seedance 2.0 Mini). The fallback request has no fallback, so this can't loop.
+    const fallback = job.kind === "clip" && fallbackClip ? fallbackClip(job.request) : null;
+    if (fallback && (await store.replaceRequest(job.id, job.task_uuid, fallback, cost, `fallback after ${code ?? "error"}: ${message ?? ""}`.slice(0, 500)))) {
+      return "fallback";
     }
     const finalCode = failCode(job.kind, cls);
     await store.refundJob(job.id, finalCode, MESSAGES[finalCode], cost);

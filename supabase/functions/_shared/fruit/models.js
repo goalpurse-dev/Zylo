@@ -3,7 +3,9 @@
 // Runware facts checked against runware.ai/docs on 2026-09-27.
 
 export const FRUIT_MODELS = Object.freeze({
-  // Story + series planner. Decided by the blind test in stage 3c.
+  // Story + series planner. Blind test 2026-09-30 (stage 3c): Claude Sonnet 5 won
+  // 2 of 3 rounds (idea + prompt; the script round only compared staging) and
+  // costs ~$0.01 per 15 s story vs ~$0.026 for GPT-5.6 Sol.
   planner: { provider: "anthropic", model: "claude-sonnet-5" },
   plannerCandidates: Object.freeze([
     { provider: "anthropic", model: "claude-sonnet-5" },
@@ -25,7 +27,18 @@ export const FRUIT_MODELS = Object.freeze({
   // Clips: image-to-video, the scene picture as the first frame, native audio.
   // None of these models accepts frameImages together with referenceImages.
   video: Object.freeze({
+    // Decided after the 3e bake-off (2026-09-30): measured $0.0504/s Wan2.6 Flash,
+    // $0.0817/s Seedance 2.0 Mini, $0.15/s Veo 3.1 Fast (720p, i2v, audio).
     v2: Object.freeze({
+      air: "alibaba:wan@2.6-flash",
+      toolKey: "video:fruit-story-v2",
+      sizes: { "9:16": [720, 1280], "16:9": [1280, 720] },
+      durations: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],   // Wan accepts 2-15; clips are never under 4 s
+      audio: "alibaba",             // providerSettings.alibaba.audio = true
+      providerPromptMax: 1500,
+      fallback: "v2-fallback",      // a failed Wan clip is re-sent once on Seedance 2.0 Mini (same price to the user)
+    }),
+    "v2-fallback": Object.freeze({
       air: "bytedance:seedance@2.0-mini",
       toolKey: "video:fruit-story-v2",
       sizes: { "9:16": [720, 1280], "16:9": [1280, 720] },
@@ -34,7 +47,7 @@ export const FRUIT_MODELS = Object.freeze({
       providerPromptMax: 10000,
     }),
     v3: Object.freeze({
-      air: "bytedance:seedance@2.0-fast",
+      air: "bytedance:seedance@2.0-mini",
       toolKey: "video:fruit-story-v3",
       sizes: { "9:16": [720, 1280], "16:9": [1280, 720] },
       durations: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],

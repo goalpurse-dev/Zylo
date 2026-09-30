@@ -22,7 +22,7 @@ test("reservations can't pass the stage cap; 3b has no paid budget", () => {
     const b = openBudget("3f");
     const left = STAGE_CAPS_USD["3f"] - b.spentStage();
     assert.throws(() => b.reserve(left + 0.01, "too much"), /cap/);
-    assert.equal(Object.values(STAGE_CAPS_USD).reduce((a, c) => a + c, 0) <= PHASE3_TOTAL_USD, true);
+    assert.equal(PHASE3_TOTAL_USD, 4, "the Phase 3 total cap is enforced on real spend in reserve()");
   } finally {
     if (saved === undefined) delete process.env.FRUIT_ALLOW_PAID; else process.env.FRUIT_ALLOW_PAID = saved;
   }

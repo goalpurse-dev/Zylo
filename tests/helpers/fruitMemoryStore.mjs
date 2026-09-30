@@ -93,6 +93,14 @@ export function createMemoryDb({ balance = 1000 } = {}) {
       setScene(j, j.kind === "image" ? { image_status: "queued" } : { clip_status: "queued" });
       return true;
     },
+    async wasRewritten(jobId) { return db.calls.some((c) => c.job === jobId && c.purpose === "clip_rewrite"); },
+    async replaceRequest(jobId, taskUUID, request, cost) {
+      const j = db.jobs.get(jobId);
+      if (!j || j.task_uuid !== taskUUID || !["submitting", "submitted"].includes(j.status)) return false;
+      Object.assign(j, { status: "queued", request, next_attempt_at: db.clock().toISOString(), cost_usd: j.cost_usd + (cost || 0), lease_until: null, submitted_at: null });
+      setScene(j, { clip_status: "queued", clip_prompt: request.positivePrompt });
+      return true;
+    },
     async refundJob(jobId, code, message, cost) {
       const j = db.jobs.get(jobId);
       if (!j || ["succeeded", "failed", "canceled"].includes(j.status) || j.refunded_at) return false;
