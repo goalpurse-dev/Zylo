@@ -4,7 +4,7 @@
 // (artifact pages can't load external images); videos are referenced by a
 // relative path and published alongside the page.
 //
-// spec: {title, intro, stats:[{value, label, tone?}], sections:[{heading, text?, layout?: "grid"|"list",
+// spec: {title, intro, stats:[{value, label, tone?}], sections:[{heading, text?, html? (raw block, e.g. a table), layout?: "grid"|"list",
 //        cards:[{image?: localPathOrUrl, video?: relPath, title, tone?, body?: [lines], meta?: [[k,v]], prompt?, note?}]}],
 //        decisions:[string]}
 import fs from "fs";
@@ -33,7 +33,7 @@ export async function renderResultsPage(spec) {
   for (const s of spec.sections) {
     const cards = [];
     for (const c of s.cards ?? []) cards.push(await card(c));
-    sections.push(`<section><h2>${esc(s.heading)}</h2>${s.text ? `<p>${s.text}</p>` : ""}<div class="${s.layout === "list" ? "list" : "grid"}">${cards.join("\n")}</div></section>`);
+    sections.push(`<section><h2>${esc(s.heading)}</h2>${s.text ? `<p>${s.text}</p>` : ""}${s.html ? `<div class="htmlblock">${s.html}</div>` : ""}${cards.length ? `<div class="${s.layout === "list" ? "list" : "grid"}">${cards.join("\n")}</div>` : ""}</section>`);
   }
   const decisions = (spec.decisions ?? []).map((d) => `<li>${d}</li>`).join("");
   return `<title>${esc(spec.title)}</title>
@@ -68,6 +68,13 @@ dl div{display:contents}dt{color:var(--muted)}dd{margin:0;color:var(--text);font
 details{margin-top:8px}summary{cursor:pointer;color:var(--lime);font-size:12px}
 summary:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
 pre{margin:6px 0 0;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#0B0D0C;color:var(--text);font:11.5px/1.5 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto}
+.htmlblock{margin:10px 0 14px;overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.htmlblock table{border-collapse:collapse;width:100%;min-width:640px;font-size:12.5px;font-variant-numeric:tabular-nums}
+.htmlblock th,.htmlblock td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.htmlblock th:first-child,.htmlblock td:first-child{text-align:left;white-space:normal}
+.htmlblock th{color:var(--muted);font-weight:700;font-size:11.5px}
+.htmlblock td.bad{color:var(--bad);font-weight:800}.htmlblock tr.group td{background:rgba(255,255,255,.03);color:var(--text);font-weight:800;text-align:left}
+.htmlblock .sub{color:var(--muted);font-size:11px}
 .decisions{margin-top:34px;border:1px solid rgba(190,242,100,.35);border-radius:12px;background:var(--panel);padding:14px 18px}
 .decisions h2{margin-top:0;color:var(--lime)}
 .decisions ol{margin:0;padding-left:20px;color:var(--text);font-size:13.5px;line-height:1.65}
