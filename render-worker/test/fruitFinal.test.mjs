@@ -1,7 +1,8 @@
-// AI Fruit Story v2 final video: trim window, caption wrap, ffmpeg args (offline).
+// AI Fruit Story v2 final video: trim window, timed captions, ffmpeg args (offline).
 import test from "node:test";
 import assert from "node:assert/strict";
-import { KEEP_SEC, MIN_CLIP_SEC, parseSilences, segmentArgs, trimWindow, wrapCaption } from "../src/fruitFinalPlan.mjs";
+import { KEEP_SEC, MIN_CLIP_SEC, parseSilences, segmentArgs, trimWindow } from "../src/fruitFinalPlan.mjs";
+import { alignWords, buildAss, chunkWords, evenWords, timedWords } from "../src/fruitCaptions.mjs";
 
 const STDERR = `
 [silencedetect @ 0x1] silence_start: 0
@@ -17,38 +18,74 @@ test("silences parse, and one still open at the end closes at the clip length", 
 
 test("only leading and trailing silence is cut, keeping 0.25 s each side; pauses inside stay", () => {
   const w = trimWindow(parseSilences(STDERR, 5), 5);
-  assert.deepEqual(w, { start: 0.59, end: 4.15, trimmedSec: 1.44 });
+  assert.deepEqual(w, { start: 0.59, end: 4.15, trimmedSec: 1.44, speech: { start: 0.84, end: 3.9 } });
   assert.equal(KEEP_SEC, 0.25);
   assert.ok(w.start < 2.1 && w.end > 2.4, "the pause inside the line is kept");
 });
 
 test("no speech, or no silence, keeps the whole clip; a tiny line keeps at least 1.2 s", () => {
-  assert.deepEqual(trimWindow([{ start: 0, end: 5 }], 5), { start: 0, end: 5, trimmedSec: 0 });
-  assert.deepEqual(trimWindow([], 4), { start: 0, end: 4, trimmedSec: 0 });
+  assert.deepEqual(trimWindow([{ start: 0, end: 5 }], 5), { start: 0, end: 5, trimmedSec: 0, speech: null });
+  assert.deepEqual(trimWindow([], 4), { start: 0, end: 4, trimmedSec: 0, speech: { start: 0, end: 4 } });
   const tiny = trimWindow([{ start: 0, end: 2.2 }, { start: 2.5, end: 5 }], 5);
   assert.ok(Math.abs(tiny.end - tiny.start - MIN_CLIP_SEC) < 0.002, JSON.stringify(tiny));
 });
 
-test("captions wrap into at most 3 lines and keep every word in order", () => {
-  const line = "This is not what it— Gloria, put the phone down.";
-  const lines = wrapCaption(line, 20);
-  assert.ok(lines.length <= 3 && lines.every((l) => l.length <= 20), lines.join(" | "));
-  assert.equal(lines.join(" "), line);
-  const long = wrapCaption("word ".repeat(40).trim(), 20);
-  assert.ok(long.length <= 3);
-});
-
-test("segment args: trimmed, 720p, 30 fps, one centered drawtext per caption line, silent track if no audio", () => {
-  const a = segmentArgs({ input: "in.mp4", output: "out.mp4", start: 0.5, end: 3.25, aspect: "9:16", captionFiles: ["/w/c0.txt", "/w/c1.txt"], fontFile: "/f/Lilita.ttf" });
+test("segment args: trimmed, 720p, 30 fps, captions from an ASS file with the bundled font, silent track if no audio", () => {
+  const a = segmentArgs({ input: "in.mp4", output: "out.mp4", start: 0.5, end: 3.25, aspect: "9:16", assFile: "/w/cap-0.ass", fontsDir: "/fonts" });
   const vf = a[a.indexOf("-vf") + 1];
   assert.deepEqual(a.slice(a.indexOf("-ss"), a.indexOf("-ss") + 4), ["-ss", "0.500", "-to", "3.250"]);
   assert.match(vf, /^scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280/);
-  assert.match(vf, /fps=30/);
-  assert.equal((vf.match(/drawtext=/g) ?? []).length, 2);
-  assert.match(vf, /textfile='\/w\/c0\.txt'.*x=\(w-text_w\)\/2/);
+  assert.ok(vf.endsWith("fps=30,ass='/w/cap-0.ass':fontsdir='/fonts',format=yuv420p"), vf);
   assert.ok(a.includes("0:a:0"));
-  const silent = segmentArgs({ input: "in.mp4", output: "out.mp4", start: 0, end: 4, aspect: "16:9", hasAudio: false, fontFile: "/f" });
+  const win = segmentArgs({ input: "in.mp4", output: "out.mp4", start: 0, end: 1, aspect: "9:16", assFile: "C:\\t\\cap.ass" });
+  assert.ok(win[win.indexOf("-vf") + 1].includes("ass='C\\:/t/cap.ass'"), "Windows paths are escaped for the filter");
+  const silent = segmentArgs({ input: "in.mp4", output: "out.mp4", start: 0, end: 4, aspect: "16:9", hasAudio: false });
   assert.ok(silent.includes("anullsrc=r=48000:cl=stereo") && silent.includes("1:a:0"));
-  assert.doesNotMatch(silent[silent.indexOf("-vf") + 1], /drawtext/);
+  assert.ok(!silent[silent.indexOf("-vf") + 1].includes("ass="));
   assert.match(silent[silent.indexOf("-vf") + 1], /^scale=1280:720/);
+});
+
+const LINE = "Nineteen years and you still don't knock, Gloria.";
+const TR = [["19", 0.52, 0.9], ["years", 0.9, 1.2], ["and", 1.2, 1.3], ["you", 1.3, 1.42], ["still", 1.42, 1.7], ["don't", 1.7, 1.9], ["knock,", 1.9, 2.3], ["Gloria.", 2.5, 3.1]]
+  .map(([word, start, end]) => ({ word, start, end }));
+
+test("captions keep the exact line and take the transcript's word times (numbers and punctuation match)", () => {
+  const w = alignWords(LINE, TR);
+  assert.deepEqual(w.map((x) => x.text), ["Nineteen", "years", "and", "you", "still", "don't", "knock,", "Gloria."]);
+  assert.equal(w[0].start, 0.52);
+  assert.equal(w[7].start, 2.5);
+  const missing = alignWords(LINE, TR.filter((x) => x.word !== "still"));
+  assert.ok(missing[4].start >= missing[3].end - 1e-9 && missing[4].end <= missing[5].start + 1e-9, "an unheard word sits between its neighbours");
+  assert.equal(alignWords(LINE, [{ word: "banana", start: 0, end: 1 }]), null, "mostly unmatched: no alignment");
+});
+
+test("no usable transcript: the line is spread over the detected speech; nothing starts before speech", () => {
+  const t = timedWords(LINE, null, { start: 0.8, end: 3.2 }, 5);
+  assert.equal(t.source, "silence");
+  assert.equal(t.words[0].start, 0.8);
+  assert.ok(Math.abs(t.words.at(-1).end - 3.2) < 1e-9);
+  const e = evenWords(["a", "longerword"], 0, 1);
+  assert.ok(e[1].end - e[1].start > e[0].end - e[0].start, "longer words get more time");
+  assert.equal(timedWords(LINE, TR, null, 5).source, "speech-to-text");
+});
+
+test("chunks: 2 to 4 words, short enough for one line, broken after punctuation", () => {
+  const chunks = chunkWords(alignWords(LINE, TR));
+  assert.deepEqual(chunks.map((c) => c.map((w) => w.text).join(" ")), ["Nineteen years and", "you still don't", "knock, Gloria."]);
+  for (const c of chunks) assert.ok(c.length >= 2 && c.length <= 4 && c.map((w) => w.text).join(" ").length <= 18);
+});
+
+test("ASS: one line at a time, each chunk from its first word, current word lime, lower third", () => {
+  const words = alignWords(LINE, TR);
+  const ass = buildAss({ words, width: 720, height: 1280, durationSec: 3.5 });
+  const events = ass.split("\n").filter((l) => l.startsWith("Dialogue:"));
+  assert.equal(events.length, 8, "one event per word (the highlight moves word by word)");
+  assert.ok(events[0].startsWith("Dialogue: 0,0:00:00.52,0:00:00.90,Cap,,0,0,0,,{\\an5\\pos(360,998)\\fs"), events[0]);
+  assert.ok(events[0].endsWith("{\\c&H0064F2BE&}Nineteen{\\c&H00FFFFFF&} years and"), events[0]);
+  const times = events.map((e) => e.split(",").slice(1, 3));
+  for (let i = 1; i < times.length; i++) assert.ok(times[i][0] >= times[i - 1][1], "no two lines on screen at once");
+  assert.match(ass, /Style: Cap,Lilita One,79,/);
+  const plain = buildAss({ words, width: 720, height: 1280, durationSec: 3.5, highlight: false }).split("\n").filter((l) => l.startsWith("Dialogue:"));
+  assert.equal(plain.length, 3);
+  assert.ok(!plain.join("").includes("&H0064F2BE&"));
 });

@@ -6,15 +6,14 @@ import { FRUIT_MODELS, videoModel } from "./models.js";
 import { SERVER_LIMITS } from "./limits.js";
 import { clipDurationSec } from "./duration.js";
 import { pronounOf, toneOf, withSubject } from "./wording.js";
+import { shotOf } from "./shots.js";
 
 export const CLIP_PROMPT_MAX = SERVER_LIMITS.maxClipPromptChars;   // 1,500 (Veo accepts 3,000)
 
 const CAMERA_MOVE = {
   "close-up": "a very slow push-in on the speaker's face",
   "medium close-up": "a slow push-in toward the speaker",
-  "medium two-shot": "a gentle, slow dolly-in",
-  "over-the-shoulder": "a subtle handheld drift over the listener's shoulder",
-  wide: "a slow push-in",
+  "chest-up": "a gentle, slow dolly-in",
 };
 
 // Seedance 2.0 makes multi-shot clips unless told not to (3e: a cut lost the last word).
@@ -30,10 +29,10 @@ function build(tier, { scene, speaker, others }) {
     `${speaker.name}, the ${speaker.fruit} ${sex(speaker)} facing the camera, says in ${pronounOf(speaker)} ${voiceOf(speaker)} voice, delivered in ${toneOf(scene.emotion)}: "${scene.line}"`,
     `Only ${speaker.name} speaks, lips moving in sync with every word.${others.length ? ` ${listeners} ${others.length > 1 ? "stay" : "stays"} silent with ${others.length > 1 ? "mouths" : "mouth"} closed, reacting only with small expressions.` : ""}${where}`,
     `${withSubject(speaker.name, speaker, scene.action)}.`,
-    `Camera: ${CAMERA_MOVE[scene.shot] ?? CAMERA_MOVE["medium two-shot"]}.`,
+    `Camera: ${CAMERA_MOVE[shotOf(scene.shot)]}.`,
     NO_CUT,
     tier <= 1 ? "Keep every character, outfit and the setting exactly as in the first frame. Smooth, natural motion; no warping or melting." : "Keep everything exactly as in the first frame.",
-    `Audio: only ${speaker.name}'s voice saying the line, with quiet room tone. No music. No subtitles, captions or on-screen text.`,
+    `Audio: only ${speaker.name}'s voice saying the line, with quiet room tone. No music. No subtitles, captions or on-screen text. Plain unbranded props, no logos.`,
   ];
   return parts.join(" ");
 }

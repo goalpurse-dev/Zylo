@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { Film, Sparkles } from "lucide-react";
 import { ErrorBanner, PrimaryButton, ProgressBar, SegmentedControl } from "../../../ui/zyvo";
 import { formatLength, timeAgo } from "../constants";
 import { Avatar } from "../shared/Avatar";
@@ -67,17 +67,18 @@ export default function IdleView({ recentTab, onRecentTab, recent, byId, onOpenS
 function RecentCard({ item, byId, onOpen }) {
   const isSeries = item.type === "series";
   const finished = isSeries && item.madeCount >= item.episodeCount;
-  const thumbs = item.thumbUrls?.length ? item.thumbUrls : null;
+  // The story's first 3 scene pictures; a scene without a picture yet is a blank tile.
+  const thumbs = [0, 1, 2].map((i) => item.thumbUrls?.[i] ?? null);
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111315]/95 shadow-[0_8px_32px_rgba(0,0,0,.45)]">
       <div className="grid grid-cols-3 gap-0.5 p-0.5" aria-hidden="true">
-        {thumbs
-          ? thumbs.slice(0, 3).map((src, i) => <img key={i} src={src} alt="" className="aspect-[9/14] w-full rounded-xl object-cover" loading="lazy" />)
-          : item.castIds.slice(0, 3).map((id) => (
-            <div key={id} className="grid aspect-[9/14] place-items-center rounded-xl bg-white/[0.04]">
-              <Avatar character={byId(id)} size="h-12 w-12" ring={false} />
+        {thumbs.map((src, i) => (src
+          ? <img key={i} src={src} alt="" className="aspect-[9/14] w-full rounded-xl object-cover" loading="lazy" />
+          : (
+            <div key={i} className="grid aspect-[9/14] place-items-center rounded-xl bg-white/[0.04]">
+              <Film className="h-5 w-5 text-white/15" />
             </div>
-          ))}
+          )))}
       </div>
       <div className="flex flex-1 flex-col gap-1 px-3.5 pb-3.5 pt-2.5">
         <h4 className="text-[13px] font-black leading-snug text-white">{item.title}</h4>

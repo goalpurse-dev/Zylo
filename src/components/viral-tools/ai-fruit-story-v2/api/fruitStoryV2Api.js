@@ -1,11 +1,12 @@
 // AI Fruit Story v2 — data contract.
 //
-// The UI talks ONLY to the functions exported here. Phase 2 backs them with
-// the in-memory mock adapter (./mock/mockAdapter.js); Phase 3 replaces the
-// adapter with the real backend (setFruitStoryV2Adapter) without touching
-// any UI component. Every function is async unless noted.
+// The UI talks ONLY to the functions exported here. They run on the real
+// backend (./supabaseAdapter.js) by default. Only the dev preview
+// (?fruitV2Preview=1) and tests install the in-memory mock
+// (./mock/mockAdapter.js) with setFruitStoryV2Adapter, so real accounts never
+// see mock data. Every function is async unless noted.
 
-import { createMockAdapter } from "./mock/mockAdapter.js";
+import { createSupabaseAdapter } from "./supabaseAdapter.js";
 //
 // ── Types ────────────────────────────────────────────────────────────────
 //
@@ -195,8 +196,9 @@ export { LIMITS } from "./limits.js";
 
 // ── Adapter wiring ───────────────────────────────────────────────────────
 
-/** @type {FruitStoryV2Adapter} */
-let adapter = createMockAdapter();
+/** @type {FruitStoryV2Adapter|null} Created on first use, so a module reload can't fall back to mock data. */
+let adapter = null;
+const current = () => adapter ?? (adapter = createSupabaseAdapter());
 
 /** Phase 3: install the real backend. Tests can install a fresh mock. */
 export function setFruitStoryV2Adapter(next) {
@@ -205,36 +207,36 @@ export function setFruitStoryV2Adapter(next) {
 
 /** True while the UI is running on mock data (nothing is charged or saved). */
 export function isMockBackend() {
-  return adapter.isMock === true;
+  return current().isMock === true;
 }
 
 /** @returns {Promise<Character[]>} */
-export const listCharacters = () => adapter.listCharacters();
+export const listCharacters = () => current().listCharacters();
 /** @param {{seed?: number}} [opts] @returns {Promise<Idea[]>} */
-export const getIdeas = (opts = {}) => adapter.getIdeas(opts);
+export const getIdeas = (opts = {}) => current().getIdeas(opts);
 /** @param {CreateStoryInput} input @returns {Promise<Story>} */
-export const createStory = (input) => adapter.createStory(input);
+export const createStory = (input) => current().createStory(input);
 /** @param {string} storyId @returns {Promise<Story>} */
-export const generateScenePictures = (storyId) => adapter.generateScenePictures(storyId);
+export const generateScenePictures = (storyId) => current().generateScenePictures(storyId);
 /** @param {string} sceneId @param {string} instruction @returns {Promise<Story>} */
-export const editScene = (sceneId, instruction) => adapter.editScene(sceneId, instruction);
+export const editScene = (sceneId, instruction) => current().editScene(sceneId, instruction);
 /** @param {string} sceneId @param {string} prompt @returns {Promise<Story>} */
-export const regenerateScene = (sceneId, prompt) => adapter.regenerateScene(sceneId, prompt);
+export const regenerateScene = (sceneId, prompt) => current().regenerateScene(sceneId, prompt);
 /** @param {string} storyId @returns {Promise<Story>} */
-export const animateAll = (storyId) => adapter.animateAll(storyId);
+export const animateAll = (storyId) => current().animateAll(storyId);
 /** @param {string} sceneId @returns {Promise<Story>} */
-export const regenerateClip = (sceneId) => adapter.regenerateClip(sceneId);
+export const regenerateClip = (sceneId) => current().regenerateClip(sceneId);
 /** @param {string} storyId @param {{captions: boolean}} opts @returns {Promise<Story>} */
-export const buildFinal = (storyId, opts) => adapter.buildFinal(storyId, opts);
+export const buildFinal = (storyId, opts) => current().buildFinal(storyId, opts);
 /** @param {string} storyId @returns {Promise<Story>} */
-export const getStory = (storyId) => adapter.getStory(storyId);
+export const getStory = (storyId) => current().getStory(storyId);
 /** Synchronous. @param {string} storyId @param {(story: Story) => void} onChange @returns {() => void} unsubscribe */
-export const subscribeStory = (storyId, onChange) => adapter.subscribeStory(storyId, onChange);
+export const subscribeStory = (storyId, onChange) => current().subscribeStory(storyId, onChange);
 /** @returns {Promise<RecentSeries[]>} */
-export const listSeries = () => adapter.listSeries();
+export const listSeries = () => current().listSeries();
 /** @param {SeriesPlanInput} input @returns {Promise<Series>} */
-export const createSeriesPlan = (input) => adapter.createSeriesPlan(input);
+export const createSeriesPlan = (input) => current().createSeriesPlan(input);
 /** @param {string} seriesId @returns {Promise<Series>} */
-export const getSeries = (seriesId) => adapter.getSeries(seriesId);
+export const getSeries = (seriesId) => current().getSeries(seriesId);
 /** @param {{type: "single"|"series"}} opts */
-export const listRecent = (opts) => adapter.listRecent(opts);
+export const listRecent = (opts) => current().listRecent(opts);

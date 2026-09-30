@@ -168,7 +168,7 @@ async function finalDone(callId: string, report: any) {
   if (!call.completed_at) {
     await admin.from("fruit_ai_calls").update({
       ok: Boolean(report?.ok), error: report?.ok ? null : String(report?.error ?? "failed").slice(0, 500),
-      response: { ...(call.request?.path ? { path: call.request.path } : {}), durationSec: report?.durationSec ?? null, trimmedSec: report?.trimmedSec ?? null, trimmedPerClip: report?.trimmedPerClip ?? null, sizeBytes: report?.sizeBytes ?? null, seconds: report?.seconds ?? null },
+      response: { ...(call.request?.path ? { path: call.request.path } : {}), durationSec: report?.durationSec ?? null, trimmedSec: report?.trimmedSec ?? null, trimmedPerClip: report?.trimmedPerClip ?? null, captionSources: report?.captionSources ?? null, sizeBytes: report?.sizeBytes ?? null, seconds: report?.seconds ?? null },
       // Billed machine time includes boot + image pull, so charge the wall clock since start when it's longer.
       cost_usd: Math.max(Number(report?.costUsd) || 0, ((Date.now() - new Date(call.created_at).getTime()) / 1000) * FINAL_USD_PER_SECOND),
       latency_ms: Date.now() - new Date(call.created_at).getTime(), completed_at: new Date().toISOString(),

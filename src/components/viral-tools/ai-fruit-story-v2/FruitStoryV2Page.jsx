@@ -35,12 +35,11 @@ import StoryBoard from "./workspace/StoryBoard";
  * (420/460px) and the result view sit side by side and scroll on their own.
  */
 export default function FruitStoryV2Page({ preview = null }) {
-  // Real users get the real backend. Dev preview (?fruitV2Preview=1) stays on
-  // the mock, and ?fail=… installs a mock that fails those steps once.
+  // Real users get the real backend (the API's default). Only the dev preview
+  // (?fruitV2Preview=1) runs on the mock; ?fail=… makes those steps fail once.
   // Runs during the first render, before any effect talks to the API.
   useState(() => {
-    if (!preview) setFruitStoryV2Adapter(createSupabaseAdapter());
-    else if (preview.fail) setFruitStoryV2Adapter(createMockAdapter({ fail: preview.fail }));
+    setFruitStoryV2Adapter(preview ? createMockAdapter({ fail: preview.fail || "" }) : createSupabaseAdapter());
   });
   const navigate = useNavigate();
   const account = useAccount(preview);

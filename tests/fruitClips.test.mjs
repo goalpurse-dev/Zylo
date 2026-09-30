@@ -120,3 +120,15 @@ test("a failed Wan clip falls back once to Seedance 2.0 Mini with the same promp
   assert.equal(fallbackClipTask(fb), null, "no second fallback");
   assert.equal(fallbackClipTask(buildClipRequest({ story, scene, library: LIB, quality: "v4" }).request), null, "V4 has no fallback");
 });
+
+test("planner shots: close-up, medium close-up, chest-up only", async () => {
+  const { plannerSchema, SPEAKING_SHOTS } = await import("../supabase/functions/_shared/fruit/planner.js");
+  assert.deepEqual(SPEAKING_SHOTS, ["close-up", "medium close-up", "chest-up"]);
+  assert.deepEqual(plannerSchema(["mia"]).properties.scenes.items.properties.shot.enum, ["close-up", "medium close-up", "chest-up"]);
+  const old = buildClipPrompt({ scene: { ...scene, shot: "over-the-shoulder" }, library: LIB });
+  assert.match(old, /Camera: a gentle, slow dolly-in./);
+});
+
+test("every clip prompt asks for plain unbranded props (Wan drew an Apple logo in the 30 s story)", () => {
+  assert.match(buildClipPrompt({ scene, library: LIB }), /Plain unbranded props, no logos\./);
+});

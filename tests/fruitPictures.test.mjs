@@ -108,18 +108,16 @@ test("the picture prompt names the speaker once, even when the action starts wit
   }
 });
 
-test("staging: a lone speaker faces the camera; over-the-shoulder keeps its own staging; 3 characters stay speaker-first", () => {
+test("staging: a lone speaker faces the camera; 3 characters stay speaker-first; old shot names are drawn chest-up", () => {
   const alone = buildScenePrompt({ story, scene: { ...scene, presentIds: ["mia"] }, library: LIB });
-  assert.match(alone, /Mia Mango is alone in the frame, body and face turned toward the camera\./);
-  const ots = buildScenePrompt({ story, scene: { ...scene, shot: "over-the-shoulder" }, library: LIB });
-  assert.doesNotMatch(ots, /Staging:/);
-  const three = buildScenePrompt({ story, scene: { ...scene, presentIds: ["mia", "marco", "pia"], shot: "medium two-shot" }, library: LIB });
-  assert.match(three, /Medium shot framed chest up on the speaker in the foreground, never full body/);
+  assert.match(alone, /Mia Mango is alone in the frame, body and face turned toward the camera./);
+  const three = buildScenePrompt({ story, scene: { ...scene, presentIds: ["mia", "marco", "pia"], shot: "chest-up" }, library: LIB });
+  assert.match(three, /Chest-up shot on the speaker in the foreground, never full body/);
   assert.match(three, /Marco Mango and Pia Peach are further back beside or behind Mia Mango, smaller and slightly softer/);
-});
-
-test("over-the-shoulder names the listener's fruit head (the 30 s story drew a human from behind)", () => {
-  const p = buildScenePrompt({ story, scene: { ...scene, shot: "over-the-shoulder" }, library: LIB });
-  assert.match(p, /Over-the-shoulder shot: the back of Marco Mango's mango head and one shoulder, out of focus, in the near foreground at the frame edge; Mia Mango faces the camera, chest up and sharp\./);
-  assert.match(p, /no human heads/);
+  for (const old of ["over-the-shoulder", "medium two-shot", "wide"]) {
+    const p = buildScenePrompt({ story, scene: { ...scene, shot: old }, library: LIB });
+    assert.match(p, /Chest-up shot on the speaker/, old);
+    assert.doesNotMatch(p, /over-the-shoulder|head to toe/i, old);
+  }
+  assert.match(three, /plain unbranded props/);
 });

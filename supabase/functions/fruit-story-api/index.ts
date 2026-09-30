@@ -18,6 +18,7 @@ import { episodeStatuses, stepBlocker, toRecentSingle, toStory } from "../_share
 import { FINAL_MACHINE, buildFinalJob, finalMachineConfig, finalPath, storyUpdateForReport } from "../_shared/fruit/final.js";
 import { webhookToken } from "../_shared/fruit/runware.js";
 import { providerOnHold } from "../_shared/fruit/alerts.js";
+import { captionWordsForClips } from "../_shared/fruit/captionWords.js";
 import { FRUIT_MODELS } from "../_shared/fruit/models.js";
 import { validateCreateStory, validateEditInstruction, validateId, validateScenePrompt, validateSeriesPlan } from "../_shared/fruit/validation.js";
 import { planStep } from "../_shared/fruit/steps.js";
@@ -266,7 +267,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
 
     const callId = crypto.randomUUID();
     const path = finalPath(ctx.userId, storyId, callId);
-    const { data: signed, error: signErr } = await admin.storage.from("generated").createSignedUploadUrl(path);
+    const { data: signed, error: signErr } = await admin.storage.from("generated").createSignedUploadUrl(path, { upsert: true });
     if (signErr || !signed?.signedUrl) { console.error("[fruit-story-api] signed upload:", signErr?.message); throw fruitError("FINAL_FAILED"); }
     const job = buildFinalJob({
       story: row, scenes, callId, captions,
@@ -274,13 +275,22 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
       callbackUrl: `${SUPABASE_URL}/functions/v1/fruit-worker`,
       token: await webhookToken(WORKER_SECRET, `final:${callId}`),
     });
+    // Captions are timed to the speech: word timestamps per clip (cached per clip URL).
+    if (captions) {
+      const ordered = [...scenes].sort((a: any, b: any) => a.idx - b.idx);
+      const words = await captionWordsForClips({
+        admin, apiKey: LLM_ENV.OPENAI_API_KEY, paidOff: PAID_CALLS_OFF, userId: ctx.userId, storyId,
+        clips: ordered.map((s: any) => ({ sceneId: s.id, url: s.clip_url, durationSec: Number(s.duration_sec) })),
+      });
+      job.clips.forEach((c: any, i: number) => { c.words = words[i]; });
+    }
     const moved = must(await admin.from("fruit_stories")
       .update({ status: "building", final_status: "building", final_captions: captions, final_requested_at: new Date().toISOString(), final_error: null, final_call_id: callId })
       .eq("id", storyId).in("status", ["clips_ready", "final_ready"]).select("id"));
     if (!moved.length) throw fruitError("WRONG_STATUS");
     must(await admin.from("fruit_ai_calls").insert({
       id: callId, user_id: ctx.userId, story_id: storyId, provider: "fly", model: `${FINAL_MACHINE.cpu_kind}-${FINAL_MACHINE.cpus}x`, purpose: "final",
-      request: { ...job, uploadUrl: "(signed, one-time)", token: "(hmac)", path },
+      request: { ...job, clips: job.clips.map((c: any) => ({ url: c.url, line: c.line, words: c.words ? c.words.length : null })), uploadUrl: "(signed, one-time)", token: "(hmac)", path },
     }));
 
     const t0 = Date.now();

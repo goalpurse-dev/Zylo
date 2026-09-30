@@ -5,6 +5,7 @@
 import { FRUIT_MODELS } from "./models.js";
 import { SERVER_LIMITS } from "./limits.js";
 import { withSubject } from "./wording.js";
+import { shotOf } from "./shots.js";
 
 export const PICTURE_PROMPT_MAX = SERVER_LIMITS.maxScenePromptChars;   // 2,500 (Nano Banana accepts 45,000)
 
@@ -12,19 +13,11 @@ const SHOT_TEXT = {
   "close-up": "Close-up on the speaker's face and shoulders",
   "medium close-up": "Medium close-up, chest up",
   // The 30 s story showed "medium/waist up" still gave full-body shots: say chest up.
-  "medium two-shot": "Medium shot framed chest up on the speaker in the foreground, never full body",
-  wide: "Wide shot showing the characters head to toe and the room",
+  "chest-up": "Chest-up shot on the speaker in the foreground, never full body",
 };
 
-/** Shot line. Over-the-shoulder names the listener and their fruit head (else the model draws a human from behind). */
-function shotText(shot, speaker, others, short = false) {
-  if (shot === "over-the-shoulder" && others.length) {
-    const l = others[0];
-    if (short) return `Over-the-shoulder: ${l.name}'s ${l.fruit} head blurred in front; ${speaker.name} faces the camera`;
-    return `Over-the-shoulder shot: the back of ${l.name}'s ${l.fruit} head and one shoulder, out of focus, in the near foreground at the frame edge; ${speaker.name} faces the camera, chest up and sharp`;
-  }
-  return SHOT_TEXT[shot] ?? SHOT_TEXT["medium close-up"];
-}
+/** Shot line (older rows with wide / over-the-shoulder / two-shot are drawn chest-up). */
+const shotText = (shot) => SHOT_TEXT[shotOf(shot)];
 // Lip sync needs a big, clear mouth: chest up or closer, the speaker's head
 // a quarter to a third of the frame height, face toward the camera. 3d/3g
 // showed the model shrinks the speaker when everyone must fit side by side,
@@ -33,16 +26,15 @@ function shotText(shot, speaker, others, short = false) {
 const FACE = "Framing: chest up or closer on the speaker, never a full-body shot; their head is a quarter to a third of the frame height, eyes and mouth sharp and clearly visible. Keep the room as a soft background.";
 const FACE_SHORT = "Chest up on the speaker, never full body; face large, sharp, toward the camera.";
 
-/** Speaker in front and facing the camera; listeners behind, smaller (not for over-the-shoulder). */
-function stage(speaker, others, shot, short = false) {
-  if (shot === "over-the-shoulder") return "";
+/** Speaker in front and facing the camera; listeners behind, smaller. */
+function stage(speaker, others, short = false) {
   if (!others.length) return `${speaker.name} is alone in the frame, body and face turned toward the camera.`;
   const names = others.map((c) => c.name).join(" and ");
   if (short) return `${speaker.name} in front, facing the camera; ${names} behind, smaller.`;
   return `Staging: ${speaker.name} stands closest to the camera, body and face turned toward the camera (at most a slight three-quarter turn), large in the frame. ${names} ${others.length > 1 ? "are" : "is"} further back beside or behind ${speaker.name}, smaller and slightly softer, looking at ${speaker.name}.`;
 }
 const STYLE = "Style: premium 3D animated feature-film look, the same character design as the reference images, soft cinematic lighting, sharp focus, rich color.";
-const NEGATIVE = "No text, no captions, no subtitles, no speech bubbles, no logos, no watermark, no extra characters, no human skin, no human heads.";
+const NEGATIVE = "No text, no captions, no subtitles, no speech bubbles, no logos or brand marks (plain unbranded props), no watermark, no extra characters, no human skin, no human heads.";
 
 const who = (c) => `${c.name} (the ${c.fruit} ${c.gender === "female" ? "woman" : "man"})`;
 
@@ -64,9 +56,9 @@ function build(tier, { story, scene, cast, location }) {
     ? `Time of day: ${location.timeOfDay}${location.lighting ? `; lighting: ${location.lighting}` : ""}. Keep exactly this time of day and lighting.`
     : "";
   const parts = [
-    `${aspect}. ${shotText(scene.shot, speaker, others, tier === 2)}. ${tier === 2 ? FACE_SHORT : FACE}`,
+    `${aspect}. ${shotText(scene.shot)}. ${tier === 2 ? FACE_SHORT : FACE}`,
     `${withSubject(who(speaker), speaker, scene.action)}, looking ${scene.emotion}, mouth open mid-sentence, speaking toward the camera.`,
-    stage(speaker, others, scene.shot, tier === 2),
+    stage(speaker, others, tier === 2),
     others.length ? `${listeners} ${others.length > 1 ? "listen and react" : "listens and reacts"} silently, mouth${others.length > 1 ? "s" : ""} closed.` : "",
     scene.placement ? `Positions: ${scene.placement.replace(/\.$/, "")}.` : "",
     `Setting: ${String(location.description).replace(/\.+$/, "")}.`,

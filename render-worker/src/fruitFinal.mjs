@@ -17,7 +17,8 @@ import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { FRAME, parseSilences, segmentArgs, trimWindow, wrapCaption } from "./fruitFinalPlan.mjs";
+import { FRAME, parseSilences, segmentArgs, trimWindow } from "./fruitFinalPlan.mjs";
+import { buildAss, timedWords } from "./fruitCaptions.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FFMPEG = process.env.FFMPEG ?? "ffmpeg";
@@ -70,19 +71,22 @@ export async function buildFinal(job, dir) {
       const { err } = await run(FFMPEG, ["-hide_banner", "-nostats", "-i", input, "-af", "silencedetect=noise=-35dB:d=0.15", "-vn", "-f", "null", "-"]);
       win = trimWindow(parseSilences(err, durationSec), durationSec);
     }
-    const captionFiles = [];
+    // Captions: the exact line, timed by the clip's word timestamps (or spread
+    // over the detected speech), shifted into the trimmed segment's time.
+    let assFile = null;
+    let captionSource = null;
     if (job.captions && clip.line) {
-      const [w] = FRAME[job.aspect] ?? FRAME["9:16"];
-      const lines = wrapCaption(clip.line, w >= 1280 ? 34 : 20);
-      for (const [n, text] of lines.entries()) {
-        const f = path.join(dir, `cap-${i}-${n}.txt`);
-        await writeFile(f, text, "utf8");
-        captionFiles.push(f);
-      }
+      const [w, h] = FRAME[job.aspect] ?? FRAME["9:16"];
+      const { words, source } = timedWords(clip.line, clip.words ?? null, win.speech ?? null, durationSec);
+      const segSec = win.end - win.start;
+      const shifted = words.map((x) => ({ ...x, start: Math.max(0, x.start - win.start), end: Math.min(segSec, Math.max(0, x.end - win.start)) }));
+      assFile = path.join(dir, `cap-${i}.ass`);
+      await writeFile(assFile, buildAss({ words: shifted, width: w, height: h, durationSec: segSec, highlight: job.highlight !== false }), "utf8");
+      captionSource = source;
     }
     const output = path.join(dir, `seg-${i}.mp4`);
-    await run(FFMPEG, segmentArgs({ input, output, start: win.start, end: win.end, aspect: job.aspect, captionFiles, fontFile: FONT, hasAudio, threads }));
-    return { output, trimmedSec: win.trimmedSec, keptSec: win.end - win.start };
+    await run(FFMPEG, segmentArgs({ input, output, start: win.start, end: win.end, aspect: job.aspect, assFile, fontsDir: path.dirname(FONT), hasAudio, threads }));
+    return { output, trimmedSec: win.trimmedSec, keptSec: win.end - win.start, captionSource };
   });
   const list = path.join(dir, "list.txt");
   await writeFile(list, segments.map((s) => `file '${s.output.replace(/\\/g, "/")}'`).join("\n"));
@@ -93,9 +97,26 @@ export async function buildFinal(job, dir) {
     file: final,
     durationSec: Math.round(durationSec * 100) / 100,
     trimmedPerClip: segments.map((s) => Math.round(s.trimmedSec * 100) / 100),
+    captionSources: segments.map((s) => s.captionSource),
     trimmedSec: Math.round(segments.reduce((a, s) => a + s.trimmedSec, 0) * 100) / 100,
     sizeBytes: (await stat(final)).size,
   };
+}
+
+/** PUT to the signed upload URL; up to 3 tries (Storage answered 520 once on a 10 MB final). */
+async function upload(url, body) {
+  let last = "";
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const t = Date.now();
+    try {
+      const res = await fetch(url, { method: "PUT", headers: { "Content-Type": "video/mp4", "x-upsert": "true" }, body, signal: AbortSignal.timeout(90_000) });
+      if (res.ok) return;
+      last = `HTTP ${res.status}: ${(await res.text()).replace(/\s+/g, " ").slice(0, 160)}`;
+    } catch (e) { last = String(e?.message ?? e); }
+    console.error(`[fruit-final] upload try ${attempt} failed after ${((Date.now() - t) / 1000).toFixed(1)}s: ${last}`);
+    if (attempt < 3) await new Promise((r) => setTimeout(r, attempt * 3000));
+  }
+  throw new Error(`upload ${last}`);
 }
 
 async function report(job, body) {
@@ -126,10 +147,11 @@ async function main() {
       console.log(JSON.stringify({ ...out, file: process.argv[local + 1], ms: Date.now() - t0 }));
       return;
     }
-    const up = await fetch(job.uploadUrl, { method: "PUT", headers: { "Content-Type": "video/mp4", "x-upsert": "false" }, body: await readFile(out.file), signal: AbortSignal.timeout(120_000) });
-    if (!up.ok) throw new Error(`upload HTTP ${up.status}: ${(await up.text()).slice(0, 200)}`);
+    console.log(`[fruit-final] built ${out.durationSec}s, ${(out.sizeBytes / 1e6).toFixed(1)} MB in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+    await upload(job.uploadUrl, await readFile(out.file));
+    console.log(`[fruit-final] uploaded at ${((Date.now() - t0) / 1000).toFixed(1)}s`);
     const seconds = (Date.now() - t0) / 1000;
-    await report(job, { ok: true, durationSec: out.durationSec, trimmedSec: out.trimmedSec, trimmedPerClip: out.trimmedPerClip, sizeBytes: out.sizeBytes, seconds, costUsd: seconds * USD_PER_SECOND });
+    await report(job, { ok: true, durationSec: out.durationSec, trimmedSec: out.trimmedSec, trimmedPerClip: out.trimmedPerClip, captionSources: out.captionSources, sizeBytes: out.sizeBytes, seconds, costUsd: seconds * USD_PER_SECOND });
   } catch (e) {
     console.error("[fruit-final] failed:", e?.message ?? e);
     if (local > -1) throw e;

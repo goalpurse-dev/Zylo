@@ -9,9 +9,9 @@ import { FruitError } from "./errors.js";
 import { clipDurationSec, maxWordsFor, wordCount } from "./duration.js";
 import { videoModel } from "./models.js";
 
-export const SHOTS = ["close-up", "medium close-up", "medium two-shot", "over-the-shoulder", "wide"];
-/** Every scene has a spoken line, so the speaker's face must be large for lip sync: no wide shots. */
-export const SPEAKING_SHOTS = SHOTS.filter((s) => s !== "wide");
+import { LEGACY_SHOTS, SPEAKING_SHOTS } from "./shots.js";
+export { SPEAKING_SHOTS };
+export const SHOTS = [...SPEAKING_SHOTS, ...LEGACY_SHOTS];
 export const LINE_WORDS = { min: 3, targetMin: 6, targetMax: 14, max: 16 };
 
 /**
@@ -75,7 +75,7 @@ STAGING (for each scene)
 - locationId: one of the story's locations. Use 1 to 3 locations per story and reuse them; don't jump around.
 - action: one small physical action for the speaker that fits a 4 to 8 second clip (up to 12 words). Start with the verb and don't name the speaker (e.g. "raises her phone to film them").
 - emotion: one or two words (e.g. "icy calm", "smug", "panicked"). This alone decides how the line is delivered; the voice notes only say how the character sounds.
-- shot: one of ${SPEAKING_SHOTS.join(", ")}. Every scene has a spoken line, so the speaker's face must be large and facing the camera for lip sync. Never a wide shot.
+- shot: one of ${SPEAKING_SHOTS.join(", ")}. Every scene has a spoken line, so the speaker's face must be large and facing the camera for lip sync. Never wide, never over-the-shoulder.
 - placement: WHERE each character in the frame is relative to the setting, whenever it matters to the line or the reveal (inside or outside, behind the glass, at the door, across the table), e.g. "Gloria stands outside the glass wall looking in; Rick and Bella are inside the office". Required whenever the line mentions glass, windows, walls, a door, a lock, inside or outside. Leave it empty only when position doesn't matter.
 - beat: a 2 to 4 word label for the scene (e.g. "Caught red-handed").
 
@@ -208,8 +208,7 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     if (present.length < 1 || present.length > 3) errors.push(`scene ${n}: 1 to 3 characters in frame (got ${present.length})`);
     for (const id of present) { if (!castIds.includes(id)) errors.push(`scene ${n}: "${id}" is not in the cast`); seen.add(id); }
     if (!locIds.has(s?.locationId)) errors.push(`scene ${n}: locationId "${s?.locationId}" is not one of the locations`);
-    if (!SHOTS.includes(s?.shot)) errors.push(`scene ${n}: shot must be one of ${SPEAKING_SHOTS.join(", ")}`);
-    else if (!SPEAKING_SHOTS.includes(s.shot)) errors.push(`scene ${n}: this scene has a spoken line, so use ${SPEAKING_SHOTS.join(", ")} with the speaker's face large (never wide)`);
+    if (!SPEAKING_SHOTS.includes(s?.shot)) errors.push(`scene ${n}: this scene has a spoken line, so use ${SPEAKING_SHOTS.join(", ")} with the speaker's face large (never wide or over-the-shoulder)`);
     const placement = String(s?.placement ?? "").trim();
     if (words(placement) > 30) errors.push(`scene ${n}: placement must be at most 30 words`);
     for (const g of PLACE_GROUPS) {

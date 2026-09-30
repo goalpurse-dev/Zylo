@@ -10,7 +10,7 @@ import { loadIdeas } from "../scripts/fruit-story/ideas/build.mjs";
 const byId = new Map(CHARACTERS.map((c) => [c.id, c]));
 const cast = ["mia", "marco", "pia"].map((id) => byId.get(id));
 const locations = [{ id: "loc1", description: "An elegant candlelit restaurant table for two, white tablecloth, wine glasses", timeOfDay: "evening", lighting: "warm golden candlelight" }];
-const scene = (speakerId, line, presentIds, extra = {}) => ({ speakerId, line, presentIds, locationId: "loc1", action: "sets down her wine glass slowly", emotion: "icy calm", shot: "medium two-shot", placement: "", beat: "The first crack", ...extra });
+const scene = (speakerId, line, presentIds, extra = {}) => ({ speakerId, line, presentIds, locationId: "loc1", action: "sets down her wine glass slowly", emotion: "icy calm", shot: "chest-up", placement: "", beat: "The first crack", ...extra });
 const GOOD = {
   title: "The Anniversary Table",
   locations,
@@ -67,7 +67,7 @@ test("validation catches cast, framing, length, slop and missing cast members", 
   };
   const { errors } = validatePlan(bad, { ...base, sceneCount: 3 });
   const text = errors.join("\n");
-  for (const re of [/overused phrase "we need to talk"/, /scene 2: line must be/, /scene 2: 1 to 3 characters/, /"rick" is not in the cast/, /scene 3: the speaker must be in presentIds/, /locationId "loc9"/, /shot must be one of/, /plain spoken words/]) {
+  for (const re of [/overused phrase "we need to talk"/, /scene 2: line must be/, /scene 2: 1 to 3 characters/, /"rick" is not in the cast/, /scene 3: the speaker must be in presentIds/, /locationId "loc9"/, /use close-up, medium close-up, chest-up/, /plain spoken words/]) {
     assert.match(text, re);
   }
 });
@@ -75,7 +75,7 @@ test("validation catches cast, framing, length, slop and missing cast members", 
 test("script mode: lines stay byte-identical even if the model tries to change them", async () => {
   const script = [{ speakerId: "mia", line: "Tonight has to be perfect.  " }, { speakerId: "marco", line: "Work was crazy — sorry I'm late!" }];
   const llm = async () => ({ data: { title: "My Script", locations, scenes: [
-    { presentIds: ["mia", "marco"], locationId: "loc1", action: "lights a candle", emotion: "hopeful", shot: "medium two-shot", beat: "Big night", line: "HACKED LINE", speakerId: "pia" },
+    { presentIds: ["mia", "marco"], locationId: "loc1", action: "lights a candle", emotion: "hopeful", shot: "chest-up", beat: "Big night", line: "HACKED LINE", speakerId: "pia" },
     { presentIds: ["marco", "mia"], locationId: "loc1", action: "rushes in with flowers", emotion: "flustered", shot: "medium close-up", placement: "", beat: "Late again" },
   ] }, costUsd: 0.01 });
   const { plan } = await runPlanner({ ...base, source: "script", script, llm });
@@ -124,7 +124,7 @@ test("lines about places need spatial staging (inside/outside, behind the glass,
   const staged = { ...GOOD, scenes: [scene("mia", "The door's locked, Marco, but these walls are glass.", ["mia", "marco"], { placement: "Mia stands outside the glass wall by the locked door, looking in at Marco inside" }), GOOD.scenes[1], GOOD.scenes[2]] };
   assert.doesNotMatch(validatePlan(staged, { ...base, sceneCount: 3 }).errors.join("\n"), /placement/);
   const script = [{ speakerId: "mia", line: "I can see you through the window." }, { speakerId: "marco", line: "Then come inside." }];
-  const out = { title: "Window", locations, scenes: script.map(() => ({ presentIds: ["mia", "marco"], locationId: "loc1", action: "waves", emotion: "tense", shot: "medium two-shot", placement: "", beat: "At the window" })) };
+  const out = { title: "Window", locations, scenes: script.map(() => ({ presentIds: ["mia", "marco"], locationId: "loc1", action: "waves", emotion: "tense", shot: "chest-up", placement: "", beat: "At the window" })) };
   assert.match(validatePlan(out, { ...base, source: "script", script, sceneCount: 2 }).errors.join("\n"), /scene 1: the line mentions glass, windows or walls/, "script mode is staged too");
 });
 
