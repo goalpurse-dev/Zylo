@@ -62,7 +62,7 @@ Yes — describing a color palette or common-room mood (a warm fireside common r
 
 ## Related links
 
-- 2AM in Studio Ghibli: The Viral Painterly AI World Trend → /blog/2am-studio-ghibli-ai-images
+- 2AM Hand-Painted Anime: The Viral Painterly AI World Trend → /blog/2am-hand-painted-anime-images
 - 2AM in SpongeBob's Bikini Bottom: The Viral Underwater AI World → /blog/2am-in-bikini-bottom-ai-images
 - 50 2AM World AI Prompt Ideas → /blog/best-2am-world-ai-prompts
 - What Is the 2AM Worlds AI Trend? → /blog/what-is-the-2am-worlds-ai-trend

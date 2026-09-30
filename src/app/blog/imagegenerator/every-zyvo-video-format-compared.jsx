@@ -29,7 +29,7 @@ const FORMATS = [
   { name: "Micro Camera Animal", output: "POV journey through an underground world", best: "Calm, documentary-style curiosity", learn: "/blog/what-is-micro-camera-animal", make: "/micro-camera-animal-maker" },
   { name: "Face ASMR", output: "Single satisfying texture video", best: "Personal, sensory content using your own photo", learn: "/blog/what-is-face-asmr", make: "/face-asmr-maker" },
   { name: "Cartoon Drive-By", output: "Continuous 10s vertical video", best: "Atmospheric travel-style visuals", learn: "/blog/cartoon-drive-by-explained", make: "/cartoon-drive-by-video-maker" },
-  { name: "Footballer Nationality Swap", output: "6s talking clips, stitched into a sequence", best: "Sports content and quick novelty cameos", learn: "/blog/footballer-nationality-swap-explained", make: "/footballer-nationality-swap-ai" },
+  { name: "Kit Swap", output: "6s talking clips, stitched into a sequence", best: "Sports content and quick novelty cameos", learn: "/blog/kit-swap-explained", make: "/kit-swap-ai" },
   { name: "30 Days", output: "7-scene narrated video, ~35s total", best: "Placing yourself inside any fictional universe as the protagonist", learn: "/30-days-video-maker", make: "/30-days-video-maker" },
 ];
 

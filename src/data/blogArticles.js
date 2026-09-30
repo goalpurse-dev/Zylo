@@ -134,8 +134,8 @@ export const blogArticles = [
     "popular": false
   },
   {
-    "title": "How Long Does a Footballer Nationality Swap Video Take to Make?",
-    "slug": "/blog/footballer-nationality-swap-time",
+    "title": "How Long Does a Kit Swap Video Take to Make?",
+    "slug": "/blog/kit-swap-time",
     "description": "From naming a player to a finished, stitched sequence — what actually takes time, step by step.",
     "image": "/blog-assets/footballer-swap-time-hero.png",
     "category": "AI Video",
@@ -144,7 +144,7 @@ export const blogArticles = [
     "updatedAt": "2026-08-21T16:00:00.000Z",
     "featured": false,
     "popular": false,
-    "relatedTool": { "name": "Footballer Nationality Swap", "href": "/footballer-nationality-swap-ai" }
+    "relatedTool": { "name": "Kit Swap", "href": "/kit-swap-ai" }
   },
   {
     "title": "Is Face ASMR Safe? Photo Privacy Basics Before You Upload",
@@ -211,8 +211,8 @@ export const blogArticles = [
     "relatedTool": { "name": "Cartoon Drive-By Video Maker", "href": "/cartoon-drive-by-video-maker" }
   },
   {
-    "title": "15 Footballer Nationality Swap Video Ideas You Can Try",
-    "slug": "/blog/footballer-nationality-swap-ideas",
+    "title": "15 Kit Swap Video Ideas You Can Try",
+    "slug": "/blog/kit-swap-ideas",
     "description": "Fifteen structural concepts, from rival-nation swaps to full world-tour sequences.",
     "image": "/blog-assets/footballer-swap-ideas-hero.png",
     "category": "AI Video",
@@ -221,7 +221,7 @@ export const blogArticles = [
     "updatedAt": "2026-08-21T14:00:00.000Z",
     "featured": false,
     "popular": false,
-    "relatedTool": { "name": "Footballer Nationality Swap", "href": "/footballer-nationality-swap-ai" }
+    "relatedTool": { "name": "Kit Swap", "href": "/kit-swap-ai" }
   },
   {
     "title": "Is Zyvo Free? Pricing, Plans, and Credits Explained",
@@ -415,8 +415,8 @@ export const blogArticles = [
     "relatedTool": { "name": "Zyvo Image Generator", "href": "/image-generator" }
   },
   {
-    "title": "2AM in Hogwarts: The Viral Wizarding World AI Trend",
-    "slug": "/blog/2am-in-hogwarts-ai-images",
+    "title": "2AM Wizard School: The Viral Magic Academy AI Trend",
+    "slug": "/blog/2am-wizard-school-ai-images",
     "description": "Turn a torchlit magical school courtyard into a cinematic 2AM AI image set.",
     "image": "/blog-assets/2am-hogwarts-hero.png",
     "category": "2AM Worlds",
@@ -2066,8 +2066,8 @@ export const blogArticles = [
     }
   },
   {
-    "title": "Footballer Nationality Swap AI",
-    "slug": "/footballer-nationality-swap-ai",
+    "title": "Kit Swap AI: football kits from any country",
+    "slug": "/kit-swap-ai",
     "description": "Picture any footballer representing a different nation with a photorealistic jersey swap and a talking media-day introduction clip.",
     "image": "/template/kit-swap/preview.png",
     "category": "AI Video",
@@ -2083,8 +2083,8 @@ export const blogArticles = [
     "featured": false,
     "popular": false,
     "relatedTool": {
-      "name": "Footballer Nationality Swap",
-      "href": "/footballer-nationality-swap-ai"
+      "name": "Kit Swap",
+      "href": "/kit-swap-ai"
     }
   },
   {
@@ -2362,8 +2362,8 @@ export const blogArticles = [
     }
   },
   {
-    "title": "What Is Footballer Nationality Swap? (And How It Works)",
-    "slug": "/blog/footballer-nationality-swap-explained",
+    "title": "What Is Kit Swap? (And How It Works)",
+    "slug": "/blog/kit-swap-explained",
     "description": "Why the format works, what actually gets generated, and how to create a clip in Zyvo.",
     "image": "/blog-assets/footballer-nationality-swap-explained-hero.png",
     "category": "AI Video",
@@ -2379,13 +2379,13 @@ export const blogArticles = [
     "featured": false,
     "popular": false,
     "relatedTool": {
-      "name": "Footballer Nationality Swap",
-      "href": "/footballer-nationality-swap-ai"
+      "name": "Kit Swap",
+      "href": "/kit-swap-ai"
     }
   },
   {
-    "title": "5 Tips for the Most Believable Footballer Nationality Swap Video",
-    "slug": "/blog/footballer-nationality-swap-tips",
+    "title": "5 Tips for the Most Believable Kit Swap Video",
+    "slug": "/blog/kit-swap-tips",
     "description": "Jersey contrast, expression, background style, and spoken-line length — five choices that make the clip land.",
     "image": "/blog-assets/footballer-nationality-swap-tips-hero.png",
     "category": "AI Video",
@@ -2401,8 +2401,8 @@ export const blogArticles = [
     "featured": false,
     "popular": false,
     "relatedTool": {
-      "name": "Footballer Nationality Swap",
-      "href": "/footballer-nationality-swap-ai"
+      "name": "Kit Swap",
+      "href": "/kit-swap-ai"
     }
   },
   {
@@ -3513,8 +3513,8 @@ export const blogArticles = [
     }
   },
   {
-    "title": "How to Create 2AM Naruto AI Images",
-    "slug": "/blog/how-to-create-2am-naruto-ai-images",
+    "title": "How to Create 2AM Anime Village Images",
+    "slug": "/blog/how-to-create-2am-anime-village-images",
     "description": "How to prompt 2AM Naruto-inspired scenes by location and character, with ready-to-use prompts.",
     "image": "/blog-assets/2am-naruto-hero.png",
     "category": "2AM Worlds",
@@ -3536,8 +3536,8 @@ export const blogArticles = [
     }
   },
   {
-    "title": "2AM in Minecraft: The Viral AI World Every Player Will Recognize",
-    "slug": "/blog/2am-minecraft-ai-images",
+    "title": "2AM Voxel World: The Viral Blocky AI World Trend",
+    "slug": "/blog/2am-voxel-world-ai-images",
     "description": "Turn the 'still playing at 2AM' Minecraft feeling into a blocky, moonlit AI image set.",
     "image": "/blog-assets/2am-minecraft-hero.png",
     "category": "2AM Worlds",
@@ -3558,8 +3558,8 @@ export const blogArticles = [
     }
   },
   {
-    "title": "2AM in GTA: The Viral Open-World Vice City AI World",
-    "slug": "/blog/2am-gta-ai-images",
+    "title": "2AM Neon City: The Viral Open-World AI World",
+    "slug": "/blog/2am-neon-city-ai-images",
     "description": "Turn a neon, palm-tree-lined open-world city into a cinematic 2AM AI image set.",
     "image": "/blog-assets/2am-gta-hero.png",
     "category": "2AM Worlds",
@@ -3603,8 +3603,8 @@ export const blogArticles = [
     }
   },
   {
-    "title": "2AM in Studio Ghibli: The Viral Painterly AI World Trend",
-    "slug": "/blog/2am-studio-ghibli-ai-images",
+    "title": "2AM Hand-Painted Anime: The Viral Painterly AI World Trend",
+    "slug": "/blog/2am-hand-painted-anime-images",
     "description": "Turn a painterly, lantern-lit countryside town into a cinematic 2AM AI image set.",
     "image": "/blog-assets/2am-ghibli-hero.png",
     "category": "2AM Worlds",
@@ -3626,8 +3626,8 @@ export const blogArticles = [
     }
   },
   {
-    "title": "2AM in Fortnite: The Viral Battle Royale AI World",
-    "slug": "/blog/2am-fortnite-ai-images",
+    "title": "2AM Battle Island: The Viral Battle Royale AI World",
+    "slug": "/blog/2am-battle-island-ai-images",
     "description": "Turn a colorful abandoned battle-royale island into a cinematic 2AM AI image set.",
     "image": "/blog-assets/2am-fortnite-hero.png",
     "category": "2AM Worlds",
@@ -3692,8 +3692,8 @@ export const blogArticles = [
     }
   },
   {
-    "title": "How to Create 2AM Pokémon AI Images",
-    "slug": "/blog/how-to-create-2am-pokemon-ai-images",
+    "title": "How to Create 2AM Creature Town Images",
+    "slug": "/blog/how-to-create-2am-creature-town-images",
     "description": "A practical walkthrough for generating nostalgic, late-night Pokémon-inspired AI scenes.",
     "image": "/template/2am-world/seaside-creature-town (7).png",
     "category": "2AM Worlds",
@@ -3711,12 +3711,12 @@ export const blogArticles = [
     "popular": false,
     "relatedTool": {
       "name": "2AM Worlds AI Generator",
-      "href": "/2am-in-pokemon-ai-generator"
+      "href": "/2am-creature-town-ai-generator"
     }
   },
   {
-    "title": "How to Create 2AM Ninjago AI Images",
-    "slug": "/blog/how-to-create-2am-ninjago-ai-images",
+    "title": "How to Create 2AM Ninja City Images",
+    "slug": "/blog/how-to-create-2am-ninja-city-images",
     "description": "How to turn Ninjago characters and locations into a cinematic 2AM AI image set.",
     "image": "/template/2am-world/mountain-ninja-city (3).png",
     "category": "2AM Worlds",
@@ -3734,7 +3734,7 @@ export const blogArticles = [
     "popular": false,
     "relatedTool": {
       "name": "2AM Worlds AI Generator",
-      "href": "/2am-in-ninjago-ai-generator"
+      "href": "/2am-ninja-city-ai-generator"
     }
   },
   {
@@ -3926,8 +3926,8 @@ export const blogArticles = [
     "popular": false
   },
   {
-    "title": "10 Mistakes Killing Your Footballer Nationality Swap Video Views",
-    "slug": "/blog/footballer-nationality-swap-mistakes",
+    "title": "10 Mistakes Killing Your Kit Swap Video Views",
+    "slug": "/blog/kit-swap-mistakes",
     "description": "The structural choices that quietly hold results back, with a specific fix for each one.",
     "image": "/blog-assets/footballer-swap-time-stadium.png",
     "category": "AI Video",
@@ -3936,11 +3936,11 @@ export const blogArticles = [
     "updatedAt": "2026-08-21T19:00:00.000Z",
     "featured": false,
     "popular": false,
-    "relatedTool": { "name": "Footballer Nationality Swap", "href": "/footballer-nationality-swap-ai" }
+    "relatedTool": { "name": "Kit Swap", "href": "/kit-swap-ai" }
   },
   {
-    "title": "How to Turn One Footballer Nationality Swap Video Into a Series",
-    "slug": "/blog/footballer-nationality-swap-series",
+    "title": "How to Turn One Kit Swap Video Into a Series",
+    "slug": "/blog/kit-swap-series",
     "description": "A simple structure for turning single clips into an ongoing world-tour format.",
     "image": "/blog-assets/footballer-swap-ideas-jerseys.png",
     "category": "AI Video",
@@ -3949,7 +3949,7 @@ export const blogArticles = [
     "updatedAt": "2026-08-21T19:00:00.000Z",
     "featured": false,
     "popular": false,
-    "relatedTool": { "name": "Footballer Nationality Swap", "href": "/footballer-nationality-swap-ai" }
+    "relatedTool": { "name": "Kit Swap", "href": "/kit-swap-ai" }
   },
   {
     "title": "How to Turn One Cartoon Drive-By Video Into a Series",
@@ -4139,8 +4139,8 @@ export const blogArticles = [
     "popular": false
   },
   {
-    "title": "AI Fruit Story vs Footballer Nationality Swap: Scripted Drama or One-Line Cameo?",
-    "slug": "/blog/fruit-story-vs-footballer-nationality-swap",
+    "title": "AI Fruit Story vs Kit Swap: Scripted Drama or One-Line Cameo?",
+    "slug": "/blog/fruit-story-vs-kit-swap",
     "description": "Both formats build content around a talking character, at opposite paces.",
     "image": "/blog-assets/fruit-story-vs-footballer-hero.png",
     "category": "Fruit Stories",
@@ -4202,8 +4202,8 @@ export const blogArticles = [
     "relatedTool": { "name": "AI Image Generator", "href": "/image-generator" }
   },
   {
-    "title": "Minecraft-Style AI Photos: Turn Any Prompt Into Blocky Art",
-    "slug": "/blog/minecraft-style-ai-images",
+    "title": "Voxel-Style AI Photos: Turn Any Prompt Into Blocky Art",
+    "slug": "/blog/voxel-style-ai-images",
     "description": "How the blocky voxel image style works and where it performs best.",
     "image": "/blog-assets/minecraft-style-ai-hero.png",
     "category": "AI Images",
@@ -4228,8 +4228,8 @@ export const blogArticles = [
     "relatedTool": { "name": "AI Image Generator", "href": "/image-generator" }
   },
   {
-    "title": "Disney vs Ghibli: Which Animated AI Style Should You Use?",
-    "slug": "/blog/disney-vs-ghibli-ai-images",
+    "title": "Classic 3D vs Hand-Painted Anime: Which Animated AI Style Should You Use?",
+    "slug": "/blog/classic-3d-vs-hand-painted-anime-images",
     "description": "Bold storybook sparkle versus soft watercolor calm, compared.",
     "image": "/blog-assets/disney-vs-ghibli-hero.png",
     "category": "AI Images",

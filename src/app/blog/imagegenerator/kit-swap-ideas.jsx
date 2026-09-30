@@ -4,22 +4,22 @@ import RelatedArticles from "../RelatedArticles";
 
 const related = [
   {
-    title: "What Is Footballer Nationality Swap? (And How It Works)",
+    title: "What Is Kit Swap? (And How It Works)",
     description: "Why the format works, what actually gets generated, and how to create a clip in Zyvo.",
     date: "13.08.2026",
-    slug: "/blog/footballer-nationality-swap-explained",
+    slug: "/blog/kit-swap-explained",
   },
   {
-    title: "5 Tips for the Most Believable Footballer Nationality Swap Video",
+    title: "5 Tips for the Most Believable Kit Swap Video",
     description: "Jersey contrast, expression, background style, and spoken-line length — five choices that make the clip land.",
     date: "13.08.2026",
-    slug: "/blog/footballer-nationality-swap-tips",
+    slug: "/blog/kit-swap-tips",
   },
   {
-    title: "How to Turn One Footballer Nationality Swap Video Into a Series",
+    title: "How to Turn One Kit Swap Video Into a Series",
     description: "A simple structure for turning single clips into an ongoing world-tour format.",
     date: "21.08.2026",
-    slug: "/blog/footballer-nationality-swap-series",
+    slug: "/blog/kit-swap-series",
   },
   {
     title: "What Is Zyvo? The AI Content Creation Platform Explained",
@@ -55,7 +55,7 @@ export default function FootballerNationalitySwapIdeas() {
         <nav className="mb-8 text-[13px] text-[#888]">
           <Link to="/blog" className="hover:text-[#7A3BFF]">Blog</Link>
           <span className="mx-2">/</span>
-          <span>Footballer Nationality Swap Ideas</span>
+          <span>Kit Swap Ideas</span>
         </nav>
 
         <header className="mb-16 max-w-4xl">
@@ -63,10 +63,10 @@ export default function FootballerNationalitySwapIdeas() {
             Video Ideas
           </span>
           <h1 className="text-[42px] font-bold text-[#110829] leading-tight mb-6">
-            15 Footballer Nationality Swap Video Ideas You Can Try
+            15 Kit Swap Video Ideas You Can Try
           </h1>
           <p className="text-[19px] text-[#4A4A55] leading-relaxed">
-            Fifteen structural concepts — from rival-nation swaps to full world-tour sequences — to build your next Footballer Nationality Swap video around.
+            Fifteen structural concepts — from rival-nation swaps to full world-tour sequences — to build your next Kit Swap video around.
           </p>
           <p className="text-[13px] text-[#999] mt-5">Aug 21, 2026 · 6 min read · Video Ideas</p>
         </header>
@@ -101,7 +101,7 @@ export default function FootballerNationalitySwapIdeas() {
           <section>
             <p className="text-[17px] leading-relaxed">
               Every idea below is a structural concept, not a specific real-world matchup — combine any of these with the tips in{" "}
-              <Link to="/blog/footballer-nationality-swap-tips" className="text-[#7A3BFF] hover:underline font-semibold">the presentation guide</Link>{" "}
+              <Link to="/blog/kit-swap-tips" className="text-[#7A3BFF] hover:underline font-semibold">the presentation guide</Link>{" "}
               for a stronger result. As with every generation, this is fan-made, fictional content — not affiliated with or endorsed by any player, club, or federation.
             </p>
           </section>
@@ -124,13 +124,13 @@ export default function FootballerNationalitySwapIdeas() {
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Generate Your First Swap</h2>
             <p className="text-[16px] leading-relaxed mb-6">
               Pick a concept above and generate it in{" "}
-              <Link to="/footballer-nationality-swap-ai" className="text-[#7A3BFF] hover:underline font-semibold">Zyvo's Footballer Nationality Swap tool</Link>.
+              <Link to="/kit-swap-ai" className="text-[#7A3BFF] hover:underline font-semibold">Zyvo's Kit Swap tool</Link>.
             </p>
             <Link
-              to="/footballer-nationality-swap-ai"
+              to="/kit-swap-ai"
               className="inline-block bg-gradient-to-r from-[#7A3BFF] to-[#A855F7] text-white font-bold text-[15px] px-8 py-4 rounded-[14px] hover:opacity-90 transition"
             >
-              Open Footballer Nationality Swap →
+              Open Kit Swap →
             </Link>
           </section>
 

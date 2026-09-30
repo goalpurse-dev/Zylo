@@ -14,7 +14,7 @@ export const SUITE_ITEMS = [
   { name: "2AM Worlds", desc: "TikTok slideshows of worlds at 2AM", badge: "NEW", image: "/template/2am-world/preview.png", path: "/workspace/two-am" },
   { name: "AI Fruit Story", desc: "Characters, stories, viral content & more", badge: "NEW", image: "/viral-builder/ai-fruit/presets/kicked-out.webp", path: "/workspace/ai-fruit-story" },
   { name: "Face ASMR", desc: "Viral face reveal ASMR videos", badge: "TRENDING", image: "/face/face-preview.png", path: "/workspace/face-asmr" },
-  { name: "Kit Swap", desc: "Swap a player's kit for any country", badge: "NEW", image: "/template/kit-swap/preview.png", path: "/workspace/footballer-nationality-swap" },
+  { name: "Kit Swap", desc: "Swap a player's kit for any country", badge: "NEW", image: "/template/kit-swap/preview.png", path: "/workspace/kit-swap" },
   { name: "Micro Camera", desc: "Animal bodycam goes underground", badge: "NEW", image: "/viral-builder/micro-camera/preview1.png", path: "/workspace/micro-camera-animal" },
   { name: "Video Generator", desc: "Create cinematic videos in seconds", badge: null, image: "/home/videogen.png", path: "/workspace/video-generator" },
   { name: "Clay Rescue", desc: "Giant hands save tiny clay worlds", badge: "NEW", image: "/clayrescue/smallpreview.webp", path: "/workspace/clay-rescue" },

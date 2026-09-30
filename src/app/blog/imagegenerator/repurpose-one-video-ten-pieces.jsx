@@ -24,7 +24,7 @@ const related = [
 ];
 
 const SOURCES = [
-  { title: "A multi-scene generation, split apart", desc: "A Fruit Story series, a 2AM Worlds six-image set, or a stitched Nationality Swap sequence is already several individual scenes — each one can stand alone as its own post instead of only existing inside the combined video." },
+  { title: "A multi-scene generation, split apart", desc: "A Fruit Story series, a 2AM Worlds six-image set, or a stitched Kit Swap sequence is already several individual scenes — each one can stand alone as its own post instead of only existing inside the combined video." },
   { title: "One premise, several formats", desc: "The same idea can become a full video, a single-image teaser, a caption-only text post, and a comment reply — one generation session, four different post types." },
   { title: "The same world, different angles", desc: "A single 2AM World or Cartoon Drive-By destination can be posted from its still image, its animated version, and a 'making of' caption explaining the prompt behind it." },
   { title: "A series' individual episodes", desc: "Behind the Scenes, Clay Rescue, and Micro Camera Animal series each naturally produce standalone episodes — post them individually across the week instead of all at once." },

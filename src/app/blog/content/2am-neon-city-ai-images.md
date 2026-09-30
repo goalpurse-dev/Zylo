@@ -63,7 +63,7 @@ Yes — adding a specific era ("1980s," "modern," "retro") or mood ("quiet," "el
 ## Related links
 
 - 25 Incredible AI Worlds at 2AM → /blog/ai-worlds-at-2am-ideas
-- 2AM in Minecraft: The Viral AI World Every Player Will Recognize → /blog/2am-minecraft-ai-images
+- 2AM Voxel World: The Viral Blocky AI World Trend → /blog/2am-voxel-world-ai-images
 - What Is the 2AM Worlds AI Trend? → /blog/what-is-the-2am-worlds-ai-trend
 - How to Go Viral on TikTok With AI World Slideshows → /blog/how-to-go-viral-tiktok-ai-worlds
 

@@ -62,9 +62,9 @@ Yes — describing a built structure (a fort, a tower, stacked materials) alongs
 
 ## Related links
 
-- 2AM in Minecraft: The Viral AI World Every Player Will Recognize → /blog/2am-minecraft-ai-images
-- 2AM in GTA: The Viral Open-World Vice City AI World → /blog/2am-gta-ai-images
-- 2AM in Hogwarts: The Viral Wizarding World AI Trend → /blog/2am-in-hogwarts-ai-images
+- 2AM Voxel World: The Viral Blocky AI World Trend → /blog/2am-voxel-world-ai-images
+- 2AM Neon City: The Viral Open-World AI World → /blog/2am-neon-city-ai-images
+- 2AM Wizard School: The Viral Magic Academy AI Trend → /blog/2am-wizard-school-ai-images
 - 50 2AM World AI Prompt Ideas → /blog/best-2am-world-ai-prompts
 - What Is the 2AM Worlds AI Trend? → /blog/what-is-the-2am-worlds-ai-trend
 

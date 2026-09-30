@@ -10,10 +10,10 @@ const related = [
     slug: "/blog/skeleton-xray-ai-trend",
   },
   {
-    title: "Minecraft-Style AI Photos: Turn Any Prompt Into Blocky Art",
+    title: "Voxel-Style AI Photos: Turn Any Prompt Into Blocky Art",
     description: "How the blocky voxel style works and where it shines.",
     date: "23.08.2026",
-    slug: "/blog/minecraft-style-ai-images",
+    slug: "/blog/voxel-style-ai-images",
   },
   {
     title: "Noir vs Cyberpunk: The Two Moodiest AI Image Styles Compared",
@@ -104,7 +104,7 @@ export default function HiddenAiImageStyles() {
             <h2 className="text-[28px] font-bold text-[#110829] mb-4">Two more worth their own deep dive</h2>
             <p className="text-[17px] leading-relaxed">
               Minecraft and the moodier Noir/Cyberpunk pairing are distinct enough to deserve their own breakdown — see{" "}
-              <Link to="/blog/minecraft-style-ai-images" className="text-[#7A3BFF] hover:underline font-semibold">the blocky voxel style explained</Link>{" "}
+              <Link to="/blog/voxel-style-ai-images" className="text-[#7A3BFF] hover:underline font-semibold">the blocky voxel style explained</Link>{" "}
               and{" "}
               <Link to="/blog/noir-vs-cyberpunk-ai-images" className="text-[#7A3BFF] hover:underline font-semibold">Noir vs Cyberpunk compared</Link>.
             </p>

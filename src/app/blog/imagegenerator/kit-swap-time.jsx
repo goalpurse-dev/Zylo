@@ -4,22 +4,22 @@ import RelatedArticles from "../RelatedArticles";
 
 const related = [
   {
-    title: "What Is Footballer Nationality Swap? (And How It Works)",
+    title: "What Is Kit Swap? (And How It Works)",
     description: "Why the format works, what actually gets generated, and how to create one in Zyvo.",
     date: "13.08.2026",
-    slug: "/blog/footballer-nationality-swap-explained",
+    slug: "/blog/kit-swap-explained",
   },
   {
-    title: "15 Footballer Nationality Swap Video Ideas You Can Try",
+    title: "15 Kit Swap Video Ideas You Can Try",
     description: "Fifteen structural concepts, from rival-nation swaps to full world-tour sequences.",
     date: "21.08.2026",
-    slug: "/blog/footballer-nationality-swap-ideas",
+    slug: "/blog/kit-swap-ideas",
   },
   {
-    title: "5 Tips for the Most Believable Footballer Nationality Swap Video",
+    title: "5 Tips for the Most Believable Kit Swap Video",
     description: "Background style, expression, jersey contrast, and spoken-line length.",
     date: "13.08.2026",
-    slug: "/blog/footballer-nationality-swap-tips",
+    slug: "/blog/kit-swap-tips",
   },
 ];
 
@@ -32,7 +32,7 @@ const STEPS = [
 
 const FAQS = [
   {
-    q: "How long does one Footballer Nationality Swap clip take?",
+    q: "How long does one Kit Swap clip take?",
     a: "A single 6-second scene generates quickly. A full sequence of 3 to 5 stitched scenes takes longer since each scene generates individually before being combined.",
   },
   {
@@ -53,7 +53,7 @@ export default function FootballerNationalitySwapTime() {
         <nav className="mb-8 text-[13px] text-[#888]">
           <Link to="/blog" className="hover:text-[#7A3BFF]">Blog</Link>
           <span className="mx-2">/</span>
-          <span>Footballer Nationality Swap Time</span>
+          <span>Kit Swap Time</span>
         </nav>
 
         <header className="mb-16 max-w-4xl">
@@ -61,7 +61,7 @@ export default function FootballerNationalitySwapTime() {
             Getting Started
           </span>
           <h1 className="text-[42px] font-bold text-[#110829] leading-tight mb-6">
-            How Long Does a Footballer Nationality Swap Video Take to Make?
+            How Long Does a Kit Swap Video Take to Make?
           </h1>
           <p className="text-[19px] text-[#4A4A55] leading-relaxed">
             From naming a player to a finished, stitched sequence — what actually takes time, step by step.
@@ -98,7 +98,7 @@ export default function FootballerNationalitySwapTime() {
 
           <section>
             <p className="text-[17px] leading-relaxed">
-              A single Footballer Nationality Swap clip is quick to set up — most of the time is generation time running in the background, not manual work.
+              A single Kit Swap clip is quick to set up — most of the time is generation time running in the background, not manual work.
             </p>
           </section>
 
@@ -123,13 +123,13 @@ export default function FootballerNationalitySwapTime() {
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Generate Your First Swap</h2>
             <p className="text-[16px] leading-relaxed mb-6">
               Start with a single scene to see the full timeline, then build up to a stitched sequence. For premise ideas, see{" "}
-              <Link to="/blog/footballer-nationality-swap-ideas" className="text-[#7A3BFF] hover:underline font-semibold">15 video ideas</Link>.
+              <Link to="/blog/kit-swap-ideas" className="text-[#7A3BFF] hover:underline font-semibold">15 video ideas</Link>.
             </p>
             <Link
-              to="/footballer-nationality-swap-ai"
+              to="/kit-swap-ai"
               className="inline-block bg-gradient-to-r from-[#7A3BFF] to-[#A855F7] text-white font-bold text-[15px] px-8 py-4 rounded-[14px] hover:opacity-90 transition"
             >
-              Open Footballer Nationality Swap →
+              Open Kit Swap →
             </Link>
           </section>
 

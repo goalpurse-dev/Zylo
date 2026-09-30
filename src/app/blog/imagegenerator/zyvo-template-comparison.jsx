@@ -49,7 +49,7 @@ const TOOLS = [
   { name: "Micro Camera Animal", output: "POV video sequence", bestFor: "Curiosity-driven documentary content", guide: "/blog/what-is-micro-camera-animal", href: "/micro-camera-animal-maker" },
   { name: "Face ASMR", output: "Short texture-transformation video", bestFor: "Content using your own face", guide: "/blog/what-is-face-asmr", href: "/face-asmr-maker" },
   { name: "Cartoon Drive-By", output: "10-second continuous vertical video", bestFor: "Travel-style, motion-driven content", guide: "/blog/cartoon-drive-by-explained", href: "/cartoon-drive-by-video-maker" },
-  { name: "Footballer Nationality Swap", output: "6-second talking clips, stitchable", bestFor: "Sports content", guide: "/blog/footballer-nationality-swap-explained", href: "/footballer-nationality-swap-ai" },
+  { name: "Kit Swap", output: "6-second talking clips, stitchable", bestFor: "Sports content", guide: "/blog/kit-swap-explained", href: "/kit-swap-ai" },
   { name: "AI Image Generator", output: "Single images, any style", bestFor: "General-purpose visuals, any use case", guide: "/blog/ai-image-generator-prompt-formula", href: "/image-generator" },
 ];
 

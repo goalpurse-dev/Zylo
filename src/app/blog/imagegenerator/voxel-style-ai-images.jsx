@@ -4,10 +4,10 @@ import RelatedArticles from "../RelatedArticles";
 
 const related = [
   {
-    title: "2AM in Minecraft: The Viral AI World Every Player Will Recognize",
+    title: "2AM Voxel World: The Viral Blocky AI World Trend",
     description: "Turn the 'still playing at 2AM' Minecraft feeling into a blocky, moonlit AI image set.",
     date: "Aug 10, 2026",
-    slug: "/blog/2am-minecraft-ai-images",
+    slug: "/blog/2am-voxel-world-ai-images",
   },
   {
     title: "10 AI Image Styles You Didn't Know You Could Generate",
@@ -46,7 +46,7 @@ export default function MinecraftStyleAiImages() {
             Style Guide
           </span>
           <h1 className="text-[42px] font-bold text-[#110829] leading-tight mb-6">
-            Minecraft-Style AI Photos: Turn Any Prompt Into Blocky Art
+            Voxel-Style AI Photos: Turn Any Prompt Into Blocky Art
           </h1>
           <p className="text-[19px] text-[#4A4A55] leading-relaxed">
             A dedicated blocky, voxel-based image style — good for a lot more than just landscapes. Here's how it works and where it performs best.
@@ -103,7 +103,7 @@ export default function MinecraftStyleAiImages() {
             <h2 className="text-[28px] font-bold text-[#110829] mb-4">Beyond a still image</h2>
             <p className="text-[17px] leading-relaxed">
               If the blocky-world nostalgia angle is what draws you in, Zyvo's 2AM Worlds format takes the same feeling further into a full cinematic six-image set — see{" "}
-              <Link to="/blog/2am-minecraft-ai-images" className="text-[#7A3BFF] hover:underline font-semibold">2AM in Minecraft</Link>.
+              <Link to="/blog/2am-voxel-world-ai-images" className="text-[#7A3BFF] hover:underline font-semibold">2AM in Minecraft</Link>.
             </p>
           </section>
 

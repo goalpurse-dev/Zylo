@@ -43,7 +43,7 @@ const DECISIONS = [
   { if_: "You want a curiosity-driven documentary feel", then: "Micro Camera Animal", why: "A tiny camera follows a real animal into its own hidden underground world.", href: "/micro-camera-animal-maker" },
   { if_: "You want to use your own face in content", then: "Face ASMR", why: "Turn your own uploaded photo into a satisfying, glossy ASMR texture video.", href: "/face-asmr-maker" },
   { if_: "You want travel-style visual content", then: "Cartoon Drive-By", why: "A fictional cartoon or game-inspired destination, passed from inside a moving vehicle.", href: "/cartoon-drive-by-video-maker" },
-  { if_: "You're building sports content", then: "Footballer Nationality Swap", why: "Picture any footballer representing a different nation, with a talking intro clip.", href: "/footballer-nationality-swap-ai" },
+  { if_: "You're building sports content", then: "Kit Swap", why: "Picture any footballer representing a different nation, with a talking intro clip.", href: "/kit-swap-ai" },
   { if_: "You want general images for any use case", then: "AI Image Generator", why: "Cinematic, 3D, anime, realistic, and product styles from a single prompt — not tied to one specific format.", href: "/image-generator" },
   { if_: "You want to place yourself inside any fictional world", then: "30 Days", why: "Name any universe and a premise, and Zyvo builds a narrated 7-scene story that keeps you as the protagonist.", href: "/30-days-video-maker" },
 ];

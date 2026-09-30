@@ -204,10 +204,8 @@ export function WhatsNewModal({ open, onClose }) {
       <div className="fixed inset-0 flex items-end justify-center p-3 sm:items-center sm:p-4">
         <DialogPanel
           data-testid="whats-new"
-          className={`relative w-full max-w-[560px] overflow-hidden rounded-[28px] border border-lime-300/[0.13] bg-[#0C0F0D] px-5 pb-5 pt-6 text-center shadow-2xl shadow-black/30 sm:px-8 sm:pb-7 sm:pt-8 ${reduced ? "wn-still" : ""}`}
+          className={`relative w-full max-w-[560px] overflow-hidden rounded-[28px] border border-lime-300/[0.13] bg-[#111315] px-5 pb-5 pt-6 text-center shadow-2xl shadow-black/30 sm:px-8 sm:pb-7 sm:pt-8 ${reduced ? "wn-still" : ""}`}
         >
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[radial-gradient(ellipse_at_50%_0%,rgba(190,242,100,.14),transparent_70%)]" />
-          <div className="pointer-events-none absolute -bottom-24 -right-20 h-64 w-64 rounded-full bg-[#7A3BFF]/20 blur-3xl" />
           <button type="button" aria-label="Close" onClick={close} className="absolute right-3 top-3 z-30 grid h-8 w-8 place-items-center rounded-full bg-white/[0.06] text-white/55 transition hover:bg-white/10 hover:text-white">
             <X className="h-4 w-4" />
           </button>
@@ -217,7 +215,6 @@ export function WhatsNewModal({ open, onClose }) {
           </DialogTitle>
 
           <div className="relative mx-auto mt-3 h-[150px] w-full sm:mt-5 sm:h-[208px]">
-            <div className="absolute left-1/2 top-1/2 h-[80%] w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-lime-300/25 blur-3xl" />
             {FAN.map((src, k) => (
               <div key={src} className="wn-slot absolute left-1/2 top-1/2 aspect-video w-[138px] sm:w-[208px]"
                 style={{ zIndex: k === 1 ? 3 : k + 1, transform: `translate(-50%,-50%) ${FAN_POSE[k]}` }}>

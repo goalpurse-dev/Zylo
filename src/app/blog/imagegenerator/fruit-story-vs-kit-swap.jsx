@@ -10,10 +10,10 @@ const related = [
     slug: "/blog/best-ai-fruit-story-ideas",
   },
   {
-    title: "What Is Footballer Nationality Swap? (And How It Works)",
+    title: "What Is Kit Swap? (And How It Works)",
     description: "Why the format works, what actually gets generated, and how to create one in Zyvo.",
     date: "13.08.2026",
-    slug: "/blog/footballer-nationality-swap-explained",
+    slug: "/blog/kit-swap-explained",
   },
   {
     title: "Every Zyvo AI Video Format Compared: Which One Should You Try Next?",
@@ -39,7 +39,7 @@ export default function FruitStoryVsFootballerNationalitySwap() {
         <nav className="mb-8 text-[13px] text-[#888]">
           <Link to="/blog" className="hover:text-[#7A3BFF]">Blog</Link>
           <span className="mx-2">/</span>
-          <span>AI Fruit Story vs Footballer Nationality Swap</span>
+          <span>AI Fruit Story vs Kit Swap</span>
         </nav>
 
         <header className="mb-16 max-w-4xl">
@@ -47,7 +47,7 @@ export default function FruitStoryVsFootballerNationalitySwap() {
             Comparison
           </span>
           <h1 className="text-[42px] font-bold text-[#110829] leading-tight mb-6">
-            AI Fruit Story vs Footballer Nationality Swap: Scripted Drama or One-Line Cameo?
+            AI Fruit Story vs Kit Swap: Scripted Drama or One-Line Cameo?
           </h1>
           <p className="text-[19px] text-[#4A4A55] leading-relaxed">
             Both formats build content around a talking character — one leans into a full story, the other into a fast, recognizable moment.
@@ -95,7 +95,7 @@ export default function FruitStoryVsFootballerNationalitySwap() {
                   <tr className="bg-[#F3EFFB]">
                     <th className="px-4 py-3 font-bold text-[#110829]">What matters</th>
                     <th className="px-4 py-3 font-bold text-[#7A3BFF]">AI Fruit Story</th>
-                    <th className="px-4 py-3 font-bold text-[#7A3BFF]">Nationality Swap</th>
+                    <th className="px-4 py-3 font-bold text-[#7A3BFF]">Kit Swap</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -114,7 +114,7 @@ export default function FruitStoryVsFootballerNationalitySwap() {
           <section>
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Why creators often run both</h2>
             <p className="text-[17px] leading-relaxed">
-              Fruit Story rewards patience and a following that comes back for the next episode. Nationality Swap rewards volume and quick, easy-to-understand novelty. Together they cover very different posting rhythms in the same content mix — see{" "}
+              Fruit Story rewards patience and a following that comes back for the next episode. Kit Swap rewards volume and quick, easy-to-understand novelty. Together they cover very different posting rhythms in the same content mix — see{" "}
               <Link to="/blog/every-zyvo-video-format-compared" className="text-[#7A3BFF] hover:underline font-semibold">how all six video formats compare</Link>{" "}
               for the full picture.
             </p>
@@ -130,10 +130,10 @@ export default function FruitStoryVsFootballerNationalitySwap() {
                 Open AI Fruit Story →
               </Link>
               <Link
-                to="/footballer-nationality-swap-ai"
+                to="/kit-swap-ai"
                 className="inline-block border border-[#7A3BFF] text-[#7A3BFF] font-bold text-[15px] px-8 py-4 rounded-[14px] hover:bg-[#F3EFFB] transition text-center"
               >
-                Open Nationality Swap →
+                Open Kit Swap →
               </Link>
             </div>
           </section>

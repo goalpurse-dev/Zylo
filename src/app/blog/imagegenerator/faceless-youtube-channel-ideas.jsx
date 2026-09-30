@@ -29,7 +29,7 @@ const IDEAS = [
   { title: "AI Fruit Story series", desc: "Stylized cartoon characters carry the drama with dialogue and animation — the channel's voice comes from the writing, not from being on camera." },
   { title: "Behind the Scenes disaster videos", desc: "Miniature-model spectacle styled like leaked movie-set footage — the format itself is the hook, independent of who's making it." },
   { title: "Cartoon Drive-By destinations", desc: "A moving passenger-window view of a fictional place — purely visual, with no on-camera presence needed at all." },
-  { title: "Footballer Nationality Swap", desc: "AI-generated footballer clips carry the content — you never appear on camera yourself." },
+  { title: "Kit Swap", desc: "AI-generated footballer clips carry the content — you never appear on camera yourself." },
 ];
 
 export default function FacelessYoutubeChannelIdeas() {

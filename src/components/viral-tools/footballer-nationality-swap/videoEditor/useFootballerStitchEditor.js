@@ -205,7 +205,7 @@ export default function useFootballerStitchEditor(sceneClips, { generationId, ex
         const resultUrl = await uploadFinalVideo(blob);
         const job = await saveFullVideo({
           resultUrl,
-          prompt: "Nationality Swap — full video",
+          prompt: "Kit Swap — full video",
           existingId: savedJobIdRef.current,
         });
         savedJobIdRef.current = job.id;

@@ -10,10 +10,10 @@ const related = [
     slug: "/blog/hidden-ai-image-styles",
   },
   {
-    title: "2AM in Studio Ghibli: The Viral Painterly AI World Trend",
+    title: "2AM Hand-Painted Anime: The Viral Painterly AI World Trend",
     description: "Turn a painterly, lantern-lit countryside town into a cinematic 2AM AI image set.",
     date: "Aug 11, 2026",
-    slug: "/blog/2am-studio-ghibli-ai-images",
+    slug: "/blog/2am-hand-painted-anime-images",
   },
   {
     title: "Noir vs Cyberpunk: The Two Moodiest AI Image Styles Compared",
@@ -47,7 +47,7 @@ export default function DisneyVsGhibliAiImages() {
             Comparison
           </span>
           <h1 className="text-[42px] font-bold text-[#110829] leading-tight mb-6">
-            Disney vs Ghibli: Which Animated AI Style Should You Use?
+            Classic 3D vs Hand-Painted Anime: Which Animated AI Style Should You Use?
           </h1>
           <p className="text-[19px] text-[#4A4A55] leading-relaxed">
             Two of Zyvo's most popular animated-illustration styles, built for opposite moods — bold sparkle versus soft watercolor calm.
@@ -115,7 +115,7 @@ export default function DisneyVsGhibliAiImages() {
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Want the full cinematic-world version?</h2>
             <p className="text-[17px] leading-relaxed">
               For a full six-image painterly world set instead of a single still, see{" "}
-              <Link to="/blog/2am-studio-ghibli-ai-images" className="text-[#7A3BFF] hover:underline font-semibold">2AM in Studio Ghibli</Link>.
+              <Link to="/blog/2am-hand-painted-anime-images" className="text-[#7A3BFF] hover:underline font-semibold">2AM in Studio Ghibli</Link>.
             </p>
           </section>
 

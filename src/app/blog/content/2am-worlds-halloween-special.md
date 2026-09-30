@@ -58,7 +58,7 @@ Yes — Halloween details layer naturally onto most of the existing 2AM Worlds, 
 
 ## Related links
 
-- 2AM in Hogwarts: The Viral Wizarding World AI Trend → /blog/2am-in-hogwarts-ai-images
+- 2AM Wizard School: The Viral Magic Academy AI Trend → /blog/2am-wizard-school-ai-images
 - Liminal Space AI Generator: Create Eerie 2AM Liminal Worlds → /blog/liminal-space-ai-generator
 - 50 2AM World AI Prompt Ideas → /blog/best-2am-world-ai-prompts
 - What Is the 2AM Worlds AI Trend? → /blog/what-is-the-2am-worlds-ai-trend

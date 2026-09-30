@@ -291,7 +291,7 @@ export default function FootballerNationalitySwap() {
         }}
         isGuest={paywallGuest}
         dismissable={!needsUpgrade}
-        toolName="Nationality Swap"
+        toolName="Kit Swap"
         previewSrc="/template/nationality-swap/nationality-swap-full.mp4"
       />
     </>

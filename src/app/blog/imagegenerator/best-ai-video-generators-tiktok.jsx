@@ -111,7 +111,7 @@ export default function BestAiVideoGeneratorsTiktok() {
           <section>
             <h2 className="text-[28px] font-bold text-[#110829] mb-4">Where Zyvo fits</h2>
             <p className="text-[17px] leading-relaxed">
-              Zyvo is built around format-specific templates — AI Fruit Story, 2AM Worlds, Behind the Scenes, Clay Rescue, Micro Camera Animal, Face ASMR, Cartoon Drive-By, and Footballer Nationality Swap — plus a general-purpose AI image generator, all inside one workspace with built-in scheduling and posting. See{" "}
+              Zyvo is built around format-specific templates — AI Fruit Story, 2AM Worlds, Behind the Scenes, Clay Rescue, Micro Camera Animal, Face ASMR, Cartoon Drive-By, and Kit Swap — plus a general-purpose AI image generator, all inside one workspace with built-in scheduling and posting. See{" "}
               <Link to="/blog/zyvo-template-comparison" className="text-[#7A3BFF] hover:underline font-semibold">the full template comparison</Link>{" "}
               for exactly what each one outputs.
             </p>

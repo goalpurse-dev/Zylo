@@ -5,22 +5,22 @@ import RelatedArticles from "../RelatedArticles";
 
 const related = [
   {
-    title: "What Is Footballer Nationality Swap? (And How It Works)",
+    title: "What Is Kit Swap? (And How It Works)",
     description: "Why the format works, what actually gets generated, and how to create one in Zyvo.",
     date: "13.08.2026",
-    slug: "/blog/footballer-nationality-swap-explained",
+    slug: "/blog/kit-swap-explained",
   },
   {
-    title: "15 Footballer Nationality Swap Video Ideas You Can Try",
+    title: "15 Kit Swap Video Ideas You Can Try",
     description: "Fifteen structural concepts, from rival-nation swaps to full world-tour sequences.",
     date: "21.08.2026",
-    slug: "/blog/footballer-nationality-swap-ideas",
+    slug: "/blog/kit-swap-ideas",
   },
   {
-    title: "10 Mistakes Killing Your Footballer Nationality Swap Video Views",
+    title: "10 Mistakes Killing Your Kit Swap Video Views",
     description: "The ten most common structural mistakes, with a fix for each.",
     date: "21.08.2026",
-    slug: "/blog/footballer-nationality-swap-mistakes",
+    slug: "/blog/kit-swap-mistakes",
   },
 ];
 
@@ -39,7 +39,7 @@ export default function FootballerNationalitySwapSeries() {
         <nav className="mb-8 text-[13px] text-white/40">
           <Link to="/blog" className="hover:text-amber-200">Blog</Link>
           <span className="mx-2">/</span>
-          <span className="text-white/60">Nationality Swap</span>
+          <span className="text-white/60">Kit Swap</span>
         </nav>
 
         <header className="mb-14">
@@ -47,7 +47,7 @@ export default function FootballerNationalitySwapSeries() {
             Series
           </span>
           <h1 className="text-[38px] sm:text-[46px] font-black leading-[1.05] tracking-[-0.02em] mb-6">
-            How to Turn One Footballer Nationality Swap Video Into a Series
+            How to Turn One Kit Swap Video Into a Series
           </h1>
           <p className="text-[18px] text-white/58 leading-relaxed">
             A single swap is a fun clip. A running world-tour format is something viewers follow. Here's how to structure it.
@@ -83,7 +83,7 @@ export default function FootballerNationalitySwapSeries() {
         <div className="max-w-3xl space-y-10 text-white/68">
 
           <section>
-            <h2 className="text-[26px] font-black text-white mb-5 tracking-[-0.01em]">Four pillars of a Nationality Swap series</h2>
+            <h2 className="text-[26px] font-black text-white mb-5 tracking-[-0.01em]">Four pillars of a Kit Swap series</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {PILLARS.map((p) => (
                 <div key={p.title} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
@@ -98,7 +98,7 @@ export default function FootballerNationalitySwapSeries() {
             <h2 className="text-[24px] font-black text-white mb-4 tracking-[-0.01em]">A simple way to start</h2>
             <p className="text-[16px] leading-relaxed">
               Pick three nations from{" "}
-              <Link to="/blog/footballer-nationality-swap-ideas" className="text-amber-200 hover:underline font-semibold">15 Nationality Swap video ideas</Link>{" "}
+              <Link to="/blog/kit-swap-ideas" className="text-amber-200 hover:underline font-semibold">15 Kit Swap video ideas</Link>{" "}
               and generate them for the same player, stitched into one sequence — that's a three-stop tour with zero extra planning. Post the next stop as a follow-up and the series builds itself from there.
             </p>
           </section>
@@ -106,10 +106,10 @@ export default function FootballerNationalitySwapSeries() {
           <section className="pt-4">
             <h2 className="text-[26px] font-black text-white mb-4 tracking-[-0.01em]">Start Your Series</h2>
             <Link
-              to="/footballer-nationality-swap-ai"
+              to="/kit-swap-ai"
               className="inline-flex items-center gap-2 rounded-xl bg-amber-300 px-7 py-3.5 text-[14px] font-black text-[#150F02] transition hover:bg-amber-200"
             >
-              Create a Nationality Swap
+              Create a Kit Swap
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </section>

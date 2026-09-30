@@ -22,7 +22,7 @@ const TRENDS = [
   { n: "01", title: "Behind the Scenes", desc: "A giant practical disaster hits a handcrafted miniature city, with a full-size effects crew for scale — looks like leaked movie-set footage.", href: "/behind-the-scenes-video-maker" },
   { n: "02", title: "2AM Worlds", desc: "Quiet, cinematic worlds imagined after midnight — nostalgic, liminal, and endlessly rewatchable.", href: "/2am-worlds-ai-generator" },
   { n: "03", title: "Cartoon Drive-By", desc: "A fictional cartoon or game destination passing by the window of a moving car, train, bus, or plane.", href: "/cartoon-drive-by-video-maker" },
-  { n: "04", title: "Footballer Nationality Swap", desc: "Any footballer, reimagined representing a different nation — new jersey, new name, a talking media-day intro.", href: "/footballer-nationality-swap-ai" },
+  { n: "04", title: "Kit Swap", desc: "Any footballer, reimagined representing a different nation — new jersey, new name, a talking media-day intro.", href: "/kit-swap-ai" },
   { n: "05", title: "AI Fruit Story", desc: "Multi-scene fruit drama videos with talking characters and a real story arc — reveal, betrayal, comeback.", href: "/ai-fruit-story-maker" },
   { n: "06", title: "Face ASMR", desc: "Close-up, sound-led face transformation videos built for the scroll-stopping ASMR audience.", href: "/face-asmr-maker" },
   { n: "07", title: "Clay Rescue", desc: "A tiny clay disaster, a giant hand reaching in to fix it — satisfying, high-retention rescue format.", href: "/clay-rescue-maker" },

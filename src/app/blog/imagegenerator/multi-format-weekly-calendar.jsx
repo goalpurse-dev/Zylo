@@ -29,7 +29,7 @@ const WEEK = [
   { day: "Wednesday", format: "Behind the Scenes", why: "Big spectacle mid-week tends to get a strong bump from the audience that's been active all week." },
   { day: "Thursday", format: "Clay Rescue or Micro Camera Animal", why: "A calmer, wholesome or curiosity-driven post — good variety heading into the weekend." },
   { day: "Friday", format: "Cartoon Drive-By", why: "Atmospheric, easy-to-watch content that performs well as weekend scrolling picks up." },
-  { day: "Weekend", format: "Footballer Nationality Swap or a fruit story cliffhanger", why: "Fast novelty content or a hook into next week's fruit story episode." },
+  { day: "Weekend", format: "Kit Swap or a fruit story cliffhanger", why: "Fast novelty content or a hook into next week's fruit story episode." },
 ];
 
 export default function MultiFormatWeeklyCalendar() {

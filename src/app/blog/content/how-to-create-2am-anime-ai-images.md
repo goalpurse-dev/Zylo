@@ -84,7 +84,7 @@ No — Zyvo generates original, fan-made AI scenes inspired by the style or refe
 ## Related links
 
 - What Is the 2AM Worlds AI Trend? → /blog/what-is-the-2am-worlds-ai-trend
-- How to Create 2AM Naruto AI Images → /blog/how-to-create-2am-naruto-ai-images
+- How to Create 2AM Anime Village Images → /blog/how-to-create-2am-anime-village-images
 - 50 2AM World AI Prompt Ideas → /blog/best-2am-world-ai-prompts
 - How to Create Cinematic Worlds With an AI World Generator → /blog/ai-world-generator-guide
 

@@ -112,7 +112,7 @@ export const V2_OUTPUT_COSTS = {
   },
 
   nationalitySwap: {
-    name: "Nationality Swap",
+    name: "Kit Swap",
     hasAudio: true,
     priceItems: SWAP_PRICE_ITEMS,
     options: [

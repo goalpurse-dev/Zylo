@@ -9,7 +9,7 @@ const MODEL_COPY = {
   },
   "footballer-v4": {
     title: "V4 is a Generative feature",
-    body: "V4 renders at 720p on Seedance 1.5 Pro — the sharpest, most detailed output Nationality Swap can produce. It's available on the Generative plan.",
+    body: "V4 renders at 720p on Seedance 1.5 Pro — the sharpest, most detailed output Kit Swap can produce. It's available on the Generative plan.",
   },
 };
 

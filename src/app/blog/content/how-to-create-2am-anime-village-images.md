@@ -68,7 +68,7 @@ Each generation creates six consistent images in one 2AM Naruto-inspired set.
 ## Related links
 
 - How to Create 2AM Anime AI Images → /blog/how-to-create-2am-anime-ai-images
-- How to Create 2AM Ninjago AI Images → /blog/how-to-create-2am-ninjago-ai-images
+- How to Create 2AM Ninja City Images → /blog/how-to-create-2am-ninja-city-images
 - 50 2AM World AI Prompt Ideas → /blog/best-2am-world-ai-prompts
 - What Is the 2AM Worlds AI Trend? → /blog/what-is-the-2am-worlds-ai-trend
 

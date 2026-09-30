@@ -8,7 +8,7 @@ import { saveMediaToDevice } from "../../../lib/downloadMedia";
 // is still there, just not wired into FinalVideoPanel until this comes back.
 
 async function downloadFile(url, filename) {
-  return saveMediaToDevice({ url, filename, title: "Nationality Swap scene" });
+  return saveMediaToDevice({ url, filename, title: "Kit Swap scene" });
 }
 
 /* ── Lightbox viewer ── */
@@ -64,7 +64,7 @@ function Viewer({ scene, index, onClose }) {
         </button>
         {typeof navigator !== "undefined" && "share" in navigator && (
           <button
-            onClick={async () => { try { await navigator.share({ title: `Nationality Swap — Scene ${index + 1}`, url }); } catch {} }}
+            onClick={async () => { try { await navigator.share({ title: `Kit Swap — Scene ${index + 1}`, url }); } catch {} }}
             className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition active:scale-95"
           >
             <Share2 className="w-4 h-4" /> Share
@@ -539,7 +539,7 @@ export default function FootballerNationalitySwapResults({
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-5 h-5 text-[#FBBF24]" />
-            <span className="text-[#FBBF24] text-[12px] font-bold tracking-widest uppercase">Nationality Swap</span>
+            <span className="text-[#FBBF24] text-[12px] font-bold tracking-widest uppercase">Kit Swap</span>
           </div>
           <h2 className="text-white font-black text-[24px] lg:text-[30px] leading-tight tracking-tight">
             Any Footballer,<br />

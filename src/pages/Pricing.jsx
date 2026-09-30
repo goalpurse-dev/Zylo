@@ -222,7 +222,7 @@ const COMPARISON_DATA = [
   { label: "AI Fruit Story", values: [true, true, true] },
   { label: "Micro Camera Animal", values: [true, true, true] },
   { label: "AI Cooking Matic", values: [true, true, true] },
-  { label: "Nationality Swap", values: [true, true, true] },
+  { label: "Kit Swap", values: [true, true, true] },
   { label: "Video & Image Generator", values: [true, true, true] },
   { section: "Publishing", tag: "Soon" },
   { label: "Connected accounts per social platform", values: ["1", "3", "5"], tag: "Soon" },

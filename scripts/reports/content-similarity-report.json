@@ -27,8 +27,8 @@
   ],
   "lowerConfidenceReviewCandidates": [
     {
-      "a": "/blog/how-to-create-2am-pokemon-ai-images",
-      "b": "/blog/how-to-create-2am-ninjago-ai-images",
+      "a": "/blog/how-to-create-2am-creature-town-images",
+      "b": "/blog/how-to-create-2am-ninja-city-images",
       "shingleScore": 0.29683698296836986,
       "unigramScore": 0.6298342541436464
     },
@@ -39,7 +39,7 @@
       "unigramScore": 0.5555555555555556
     },
     {
-      "a": "/blog/2am-in-hogwarts-ai-images",
+      "a": "/blog/2am-wizard-school-ai-images",
       "b": "/blog/2am-medieval-kingdom-ai-images",
       "shingleScore": 0.1559536354056902,
       "unigramScore": 0.5424657534246575
@@ -51,14 +51,14 @@
       "unigramScore": 0.5331491712707183
     },
     {
-      "a": "/blog/2am-in-hogwarts-ai-images",
+      "a": "/blog/2am-wizard-school-ai-images",
       "b": "/blog/2am-in-bikini-bottom-ai-images",
       "shingleScore": 0.21091290661070305,
       "unigramScore": 0.5268817204301075
     },
     {
-      "a": "/blog/footballer-nationality-swap-tips",
-      "b": "/blog/footballer-nationality-swap-mistakes",
+      "a": "/blog/kit-swap-tips",
+      "b": "/blog/kit-swap-mistakes",
       "shingleScore": 0.11713286713286714,
       "unigramScore": 0.5228070175438596
     },
@@ -75,7 +75,7 @@
       "unigramScore": 0.5157894736842106
     },
     {
-      "a": "/blog/2am-fortnite-ai-images",
+      "a": "/blog/2am-battle-island-ai-images",
       "b": "/blog/2am-in-bikini-bottom-ai-images",
       "shingleScore": 0.17586912065439672,
       "unigramScore": 0.5065274151436031
@@ -135,8 +135,8 @@
       "unigramScore": 0.47368421052631576
     },
     {
-      "a": "/blog/2am-fortnite-ai-images",
-      "b": "/blog/2am-in-hogwarts-ai-images",
+      "a": "/blog/2am-battle-island-ai-images",
+      "b": "/blog/2am-wizard-school-ai-images",
       "shingleScore": 0.15789473684210525,
       "unigramScore": 0.4725
     },

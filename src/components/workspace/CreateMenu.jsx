@@ -66,7 +66,7 @@ export const CREATE_TOOLS = [
     id: "footballer-nationality-swap",
     label: "Kit Swap",
     sublabel: "",
-    path: "/workspace/footballer-nationality-swap",
+    path: "/workspace/kit-swap",
     preview: "/template/kit-swap/preview.png",
     previewPosition: "object-center",
     color: "#bef264",

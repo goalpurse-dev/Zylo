@@ -35,7 +35,7 @@ export const PUBLIC_SEO_METADATA = {
   },
   "/blog/category/ai-video": {
     title: "AI Video Guides & Tutorials | Zyvo Blog",
-    description: "Guides on Zyvo's AI video tools — Behind the Scenes, Clay Rescue, Face ASMR, Cartoon Drive-By, Footballer Nationality Swap, and more.",
+    description: "Guides on Zyvo's AI video tools — Behind the Scenes, Clay Rescue, Face ASMR, Cartoon Drive-By, Kit Swap, and more.",
     type: "website",
   },
   "/blog/category/ai-images": {
@@ -449,10 +449,10 @@ export const PUBLIC_SEO_METADATA = {
     ),
     image: `${SITE_URL}/blog-assets/cartoon-drive-by-mistakes-hero.png`,
   },
-  "/blog/footballer-nationality-swap-ideas": {
+  "/blog/kit-swap-ideas": {
     ...blog(
-      "15 Footballer Nationality Swap Video Ideas You Can Try",
-      "Fifteen structural concepts for Footballer Nationality Swap videos, from rival-nation swaps to full world-tour sequences.",
+      "15 Kit Swap Video Ideas You Can Try",
+      "Fifteen structural concepts for Kit Swap videos, from rival-nation swaps to full world-tour sequences.",
     ),
     image: `${SITE_URL}/blog-assets/footballer-swap-ideas-hero.png`,
   },
@@ -484,9 +484,9 @@ export const PUBLIC_SEO_METADATA = {
     ),
     image: `${SITE_URL}/blog-assets/cartoon-vs-2am-worlds-hero.png`,
   },
-  "/blog/footballer-nationality-swap-time": {
+  "/blog/kit-swap-time": {
     ...blog(
-      "How Long Does a Footballer Nationality Swap Video Take to Make?",
+      "How Long Does a Kit Swap Video Take to Make?",
       "From naming a player to a finished, stitched sequence — what actually takes time, step by step.",
     ),
     image: `${SITE_URL}/blog-assets/footballer-swap-time-hero.png`,
@@ -561,16 +561,16 @@ export const PUBLIC_SEO_METADATA = {
     ),
     image: `${SITE_URL}/blog-assets/cartoon-drive-by-video-ideas-hero.png`,
   },
-  "/blog/footballer-nationality-swap-explained": {
+  "/blog/kit-swap-explained": {
     ...blog(
-      "What Is Footballer Nationality Swap? (And How It Works)",
-      "Why the format works, what actually gets generated, and how to create a Nationality Swap clip in Zyvo.",
+      "What Is Kit Swap? (And How It Works)",
+      "Why the format works, what actually gets generated, and how to create a Kit Swap clip in Zyvo.",
     ),
     image: `${SITE_URL}/blog-assets/footballer-nationality-swap-explained-hero.png`,
   },
-  "/blog/footballer-nationality-swap-tips": {
+  "/blog/kit-swap-tips": {
     ...blog(
-      "5 Tips for the Most Believable Footballer Nationality Swap Video",
+      "5 Tips for the Most Believable Kit Swap Video",
       "Jersey contrast, expression, background style, spoken-line length, and sequencing — five choices that make the clip land.",
     ),
     image: `${SITE_URL}/blog-assets/footballer-nationality-swap-tips-hero.png`,
@@ -610,8 +610,8 @@ export const PUBLIC_SEO_METADATA = {
     type: "website",
     image: `${SITE_URL}/og-image.png`,
   },
-  "/footballer-nationality-swap-ai": {
-    title: "Footballer Nationality Swap AI – Create Viral Media-Day Videos | Zyvo",
+  "/kit-swap-ai": {
+    title: "Kit Swap AI: Football Kits From Any Country | Zyvo",
     description: "Picture any footballer representing a different nation. Generate a photorealistic jersey swap and a talking media-day introduction clip with Zyvo.",
     type: "website",
     image: `${SITE_URL}/template/kit-swap/preview.png`,
@@ -928,16 +928,16 @@ export const PUBLIC_SEO_METADATA = {
     ),
     image: `${SITE_URL}/blog-assets/vertical-video-formats-hero.png`,
   },
-  "/blog/footballer-nationality-swap-mistakes": {
+  "/blog/kit-swap-mistakes": {
     ...blog(
-      "10 Mistakes Killing Your Footballer Nationality Swap Video Views",
+      "10 Mistakes Killing Your Kit Swap Video Views",
       "The structural choices that quietly hold results back, with a specific fix for each one.",
     ),
     image: `${SITE_URL}/blog-assets/footballer-swap-time-stadium.png`,
   },
-  "/blog/footballer-nationality-swap-series": {
+  "/blog/kit-swap-series": {
     ...blog(
-      "How to Turn One Footballer Nationality Swap Video Into a Series",
+      "How to Turn One Kit Swap Video Into a Series",
       "A simple structure for turning single clips into an ongoing world-tour format.",
     ),
     image: `${SITE_URL}/blog-assets/footballer-swap-ideas-jerseys.png`,
@@ -1047,9 +1047,9 @@ export const PUBLIC_SEO_METADATA = {
     ),
     image: `${SITE_URL}/blog-assets/clay-rescue-vs-micro-camera-hero.png`,
   },
-  "/blog/fruit-story-vs-footballer-nationality-swap": {
+  "/blog/fruit-story-vs-kit-swap": {
     ...blog(
-      "AI Fruit Story vs Footballer Nationality Swap: Scripted Drama or One-Line Cameo?",
+      "AI Fruit Story vs Kit Swap: Scripted Drama or One-Line Cameo?",
       "Both formats build content around a talking character, at opposite paces.",
     ),
     image: `${SITE_URL}/blog-assets/fruit-story-vs-footballer-hero.png`,
@@ -1082,9 +1082,9 @@ export const PUBLIC_SEO_METADATA = {
     ),
     image: `${SITE_URL}/blog-assets/hidden-ai-styles-hero.png`,
   },
-  "/blog/minecraft-style-ai-images": {
+  "/blog/voxel-style-ai-images": {
     ...blog(
-      "Minecraft-Style AI Photos: Turn Any Prompt Into Blocky Art",
+      "Voxel-Style AI Photos: Turn Any Prompt Into Blocky Art",
       "How the blocky voxel image style works and where it performs best.",
     ),
     image: `${SITE_URL}/blog-assets/minecraft-style-ai-hero.png`,
@@ -1096,9 +1096,9 @@ export const PUBLIC_SEO_METADATA = {
     ),
     image: `${SITE_URL}/blog-assets/noir-vs-cyberpunk-hero.png`,
   },
-  "/blog/disney-vs-ghibli-ai-images": {
+  "/blog/classic-3d-vs-hand-painted-anime-images": {
     ...blog(
-      "Disney vs Ghibli: Which Animated AI Style Should You Use?",
+      "Classic 3D vs Hand-Painted Anime: Which Animated AI Style Should You Use?",
       "Bold storybook sparkle versus soft watercolor calm, compared.",
     ),
     image: `${SITE_URL}/blog-assets/disney-vs-ghibli-hero.png`,

@@ -62,8 +62,8 @@ Yes — describing a nearby reef, kelp forest, or ocean-floor path alongside the
 
 ## Related links
 
-- 2AM in Hogwarts: The Viral Wizarding World AI Trend → /blog/2am-in-hogwarts-ai-images
-- 2AM in Fortnite: The Viral Battle Royale AI World → /blog/2am-fortnite-ai-images
+- 2AM Wizard School: The Viral Magic Academy AI Trend → /blog/2am-wizard-school-ai-images
+- 2AM Battle Island: The Viral Battle Royale AI World → /blog/2am-battle-island-ai-images
 - 50 2AM World AI Prompt Ideas → /blog/best-2am-world-ai-prompts
 - What Is the 2AM Worlds AI Trend? → /blog/what-is-the-2am-worlds-ai-trend
 

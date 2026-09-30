@@ -19,6 +19,8 @@ const STORAGE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/s
 export const HUNT_THUMBS = [`${STORAGE}/launch/spear-or-patience.jpg`, `${STORAGE}/launch/how-did-this-kill.jpg`, `${STORAGE}/launch/what-does-it-prove.jpg`];
 // Real f90160bc clip, no burned-in captions: the boar hunt (path card).
 export const HUNT_CLIP = { src: `${STORAGE}/preview/hunt-boar-v2.mp4`, poster: `${STORAGE}/preview/hunt-boar-v2.jpg` };
+// Home path card: the group hunt (Early Humans, 3:54–4:00).
+const GROUP_HUNT_CLIP = { src: `${STORAGE}/candidates/long-form-card/group.mp4`, poster: `${STORAGE}/candidates/long-form-card/group.webp` };
 // Three real stills from the same video for the calm "Made with Zyvo" card.
 const HUNT_STILLS = [`${STORAGE}/launch/still-hunt.jpg`, `${STORAGE}/launch/still-fire.jpg`, `${STORAGE}/launch/still-chase.jpg`];
 const SECTION_X = "px-4 md:px-[50px]";
@@ -175,7 +177,7 @@ export function PathCards() {
         primary isNew={isLongFormNew()}
         onClick={() => { trackLaunch("try_long_form", { placement: "home_hero" }); navigate("/long-form"); }}
         icon={Clapperboard} name="Long Form" line="8–15 min YouTube explainers from one idea" cta="Start a video"
-        media={<LazyLoopVideo src={HUNT_CLIP.src} poster={HUNT_CLIP.poster} className="h-full" />}
+        media={<LazyLoopVideo src={GROUP_HUNT_CLIP.src} poster={GROUP_HUNT_CLIP.poster} className="h-full" />}
       />
     </div>
   );
@@ -414,7 +416,7 @@ const TEMPLATES = [
   { name: "30 Days", desc: "Thirty days inside any world", image: "/template/thirty-days/preview.png", path: "/workspace/thirty-days", addedAt: "2026-09-27" },
   { name: "2AM Worlds", desc: "TikTok slideshows of worlds at 2AM", image: "/template/2am-world/preview.png", path: "/workspace/two-am", addedAt: "2026-07-26" },
   { name: "Face ASMR", desc: "Viral face reveal ASMR videos", image: "/face/face-preview.png", path: "/workspace/face-asmr", addedAt: "2026-05-24" },
-  { name: "Kit Swap", desc: "Swap a player's kit for any country", image: "/template/kit-swap/preview.png", path: "/workspace/footballer-nationality-swap", addedAt: "2026-07-12" },
+  { name: "Kit Swap", desc: "Swap a player's kit for any country", image: "/template/kit-swap/preview.png", path: "/workspace/kit-swap", addedAt: "2026-07-12" },
 ];
 export function suiteTemplates(now = Date.now()) {
   return TEMPLATES.filter((t) => !HIDDEN_TEMPLATES.includes(t.name)).map((t) => ({ ...t, badge: t.addedAt && now - Date.parse(t.addedAt) < 30 * 86_400_000 ? "NEW" : null }));

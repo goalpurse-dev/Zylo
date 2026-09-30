@@ -42,7 +42,7 @@ const STAGES = [
       { label: "Micro Camera Animal", href: "/micro-camera-animal-maker" },
       { label: "Face ASMR", href: "/face-asmr-maker" },
       { label: "Cartoon Drive-By", href: "/cartoon-drive-by-video-maker" },
-      { label: "Footballer Nationality Swap", href: "/footballer-nationality-swap-ai" },
+      { label: "Kit Swap", href: "/kit-swap-ai" },
       { label: "AI Image Generator", href: "/image-generator" },
     ],
   },

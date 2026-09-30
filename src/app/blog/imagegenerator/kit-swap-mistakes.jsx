@@ -5,22 +5,22 @@ import RelatedArticles from "../RelatedArticles";
 
 const related = [
   {
-    title: "What Is Footballer Nationality Swap? (And How It Works)",
+    title: "What Is Kit Swap? (And How It Works)",
     description: "Why the format works, what actually gets generated, and how to create one in Zyvo.",
     date: "13.08.2026",
-    slug: "/blog/footballer-nationality-swap-explained",
+    slug: "/blog/kit-swap-explained",
   },
   {
-    title: "5 Tips for the Most Believable Footballer Nationality Swap Video",
+    title: "5 Tips for the Most Believable Kit Swap Video",
     description: "Jersey contrast, expression, background style, and spoken-line length.",
     date: "13.08.2026",
-    slug: "/blog/footballer-nationality-swap-tips",
+    slug: "/blog/kit-swap-tips",
   },
   {
-    title: "How to Turn One Footballer Nationality Swap Video Into a Series",
+    title: "How to Turn One Kit Swap Video Into a Series",
     description: "A simple structure for turning single clips into an ongoing world-tour format.",
     date: "21.08.2026",
-    slug: "/blog/footballer-nationality-swap-series",
+    slug: "/blog/kit-swap-series",
   },
 ];
 
@@ -41,7 +41,7 @@ export default function FootballerNationalitySwapMistakes() {
         <nav className="mb-8 text-[13px] text-white/40">
           <Link to="/blog" className="hover:text-amber-200">Blog</Link>
           <span className="mx-2">/</span>
-          <span className="text-white/60">Nationality Swap</span>
+          <span className="text-white/60">Kit Swap</span>
         </nav>
 
         <header className="mb-14">
@@ -49,7 +49,7 @@ export default function FootballerNationalitySwapMistakes() {
             Mistakes
           </span>
           <h1 className="text-[38px] sm:text-[46px] font-black leading-[1.05] tracking-[-0.02em] mb-6">
-            10 Mistakes Killing Your Footballer Nationality Swap Video Views
+            10 Mistakes Killing Your Kit Swap Video Views
           </h1>
           <p className="text-[18px] text-white/58 leading-relaxed">
             The default settings already produce a solid clip. These are the structural choices that quietly hold results back — and the fix for each one.
@@ -98,14 +98,14 @@ export default function FootballerNationalitySwapMistakes() {
             <h2 className="text-[26px] font-black text-white mb-4 tracking-[-0.01em]">Try It With These Fixed</h2>
             <p className="text-[16px] leading-relaxed mb-6">
               None of these require a different tool — just a more deliberate choice on the settings you already have. See{" "}
-              <Link to="/blog/footballer-nationality-swap-tips" className="text-amber-200 hover:underline font-semibold">five tips for a more believable result</Link>{" "}
+              <Link to="/blog/kit-swap-tips" className="text-amber-200 hover:underline font-semibold">five tips for a more believable result</Link>{" "}
               for more on jersey contrast and expression.
             </p>
             <Link
-              to="/footballer-nationality-swap-ai"
+              to="/kit-swap-ai"
               className="inline-flex items-center gap-2 rounded-xl bg-amber-300 px-7 py-3.5 text-[14px] font-black text-[#150F02] transition hover:bg-amber-200"
             >
-              Create a Nationality Swap
+              Create a Kit Swap
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </section>

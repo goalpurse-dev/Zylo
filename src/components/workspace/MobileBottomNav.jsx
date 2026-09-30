@@ -172,7 +172,7 @@ export default function MobileBottomNav({ hidden }) {
     location.pathname.startsWith("/workspace/micro-camera-animal") ||
     location.pathname.startsWith("/workspace/clay-rescue") ||
     location.pathname.startsWith("/workspace/ai-cooking-matic") ||
-    location.pathname.startsWith("/workspace/footballer-nationality-swap") ||
+    location.pathname.startsWith("/workspace/kit-swap") ||
     location.pathname.startsWith("/workspace/behind-the-scenes");
   const anyMenuOpen = createOpen || workspaceOpen;
   const workspaceRouteActive =

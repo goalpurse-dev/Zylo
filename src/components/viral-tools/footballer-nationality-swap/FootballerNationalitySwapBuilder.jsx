@@ -386,7 +386,7 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
               <img src="/face/face-01.png" alt="" className="w-full h-full object-cover rounded-[10px]" />
             </div>
             <div>
-              <h1 className="text-white font-black text-[17px] leading-tight tracking-tight">Nationality Swap</h1>
+              <h1 className="text-white font-black text-[17px] leading-tight tracking-tight">Kit Swap</h1>
               <p className="text-white/45 text-[12px] mt-0.5">Reimagine any footballer for a new nation</p>
             </div>
           </div>
@@ -523,7 +523,7 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
           ) : quotes.status === "loading" ? (
             "Loading price…"
           ) : isDone ? "✓  All Done — Generate New" : (
-            <>Generate Nationality Swap <ChevronRight className="w-4 h-4" /></>
+            <>Generate Kit Swap <ChevronRight className="w-4 h-4" /></>
           )}
           {!isDone && quotes.status !== "error" && (
             <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[14px] font-bold ${

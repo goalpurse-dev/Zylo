@@ -47,8 +47,8 @@ export default function Footer() {
               <Link to="/cartoon-drive-by-video-maker" className="text-[12px] hover:underline">
                 Cartoon Drive-By
               </Link>
-              <Link to="/footballer-nationality-swap-ai" className="text-[12px] hover:underline">
-                Nationality Swap
+              <Link to="/kit-swap-ai" className="text-[12px] hover:underline">
+                Kit Swap
               </Link>
               <Link to="/ai-fruit-story-maker" className="text-[12px] hover:underline">
                 AI Fruit Story
@@ -149,8 +149,8 @@ export default function Footer() {
               <Link to="/cartoon-drive-by-video-maker" className="hover:underline">
                 Cartoon Drive-By
               </Link>
-              <Link to="/footballer-nationality-swap-ai" className="hover:underline">
-                Nationality Swap
+              <Link to="/kit-swap-ai" className="hover:underline">
+                Kit Swap
               </Link>
               <Link to="/ai-fruit-story-maker" className="hover:underline">
                 AI Fruit Story

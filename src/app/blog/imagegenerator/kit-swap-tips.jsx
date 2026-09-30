@@ -5,22 +5,22 @@ import RelatedArticles from "../RelatedArticles";
 
 const related = [
   {
-    title: "What Is Footballer Nationality Swap? (And How It Works)",
+    title: "What Is Kit Swap? (And How It Works)",
     description: "Why the format works, what actually gets generated, and how to create one in Zyvo.",
     date: "13.08.2026",
-    slug: "/blog/footballer-nationality-swap-explained",
+    slug: "/blog/kit-swap-explained",
   },
   {
-    title: "15 Footballer Nationality Swap Video Ideas You Can Try",
+    title: "15 Kit Swap Video Ideas You Can Try",
     description: "Fifteen structural concepts, from rival-nation swaps to full world-tour sequences.",
     date: "21.08.2026",
-    slug: "/blog/footballer-nationality-swap-ideas",
+    slug: "/blog/kit-swap-ideas",
   },
   {
-    title: "How Long Does a Footballer Nationality Swap Video Take to Make?",
+    title: "How Long Does a Kit Swap Video Take to Make?",
     description: "From naming a player to a finished, stitched sequence — what actually takes time.",
     date: "21.08.2026",
-    slug: "/blog/footballer-nationality-swap-time",
+    slug: "/blog/kit-swap-time",
   },
 ];
 
@@ -60,7 +60,7 @@ export default function FootballerNationalitySwapTips() {
         <nav className="mb-8 text-[13px] text-white/40">
           <Link to="/blog" className="hover:text-amber-200">Blog</Link>
           <span className="mx-2">/</span>
-          <span className="text-white/60">Nationality Swap</span>
+          <span className="text-white/60">Kit Swap</span>
         </nav>
 
         <header className="mb-14">
@@ -68,7 +68,7 @@ export default function FootballerNationalitySwapTips() {
             Tips
           </span>
           <h1 className="text-[38px] sm:text-[46px] font-black leading-[1.05] tracking-[-0.02em] mb-6">
-            5 Tips for the Most Believable Footballer Nationality Swap Video
+            5 Tips for the Most Believable Kit Swap Video
           </h1>
           <p className="text-[18px] text-white/58 leading-relaxed">
             The default settings already produce a solid result. These five choices are what separate a clip that gets a quick glance from one that gets a rewatch.
@@ -105,10 +105,10 @@ export default function FootballerNationalitySwapTips() {
               None of these require a different plan or tool — just a more deliberate choice on the same settings you already have. Generate your next scene with one tip in mind and see how much it changes the result.
             </p>
             <Link
-              to="/workspace/footballer-nationality-swap"
+              to="/workspace/kit-swap"
               className="inline-flex items-center gap-2 rounded-xl bg-amber-300 px-7 py-3.5 text-[14px] font-black text-[#150F02] transition hover:bg-amber-200"
             >
-              Create a Nationality Swap
+              Create a Kit Swap
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </section>

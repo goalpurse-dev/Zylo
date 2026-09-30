@@ -5,28 +5,28 @@ import RelatedArticles from "../RelatedArticles";
 
 const related = [
   {
-    title: "5 Tips for the Most Believable Footballer Nationality Swap Video",
+    title: "5 Tips for the Most Believable Kit Swap Video",
     description: "Background style, expression, jersey contrast, and spoken-line length — five details that make the clip land.",
     date: "13.08.2026",
-    slug: "/blog/footballer-nationality-swap-tips",
+    slug: "/blog/kit-swap-tips",
   },
   {
-    title: "15 Footballer Nationality Swap Video Ideas You Can Try",
+    title: "15 Kit Swap Video Ideas You Can Try",
     description: "Fifteen structural concepts, from rival-nation swaps to full world-tour sequences.",
     date: "21.08.2026",
-    slug: "/blog/footballer-nationality-swap-ideas",
+    slug: "/blog/kit-swap-ideas",
   },
   {
-    title: "10 Mistakes Killing Your Footballer Nationality Swap Video Views",
+    title: "10 Mistakes Killing Your Kit Swap Video Views",
     description: "The structural choices that quietly hold results back, with a fix for each.",
     date: "21.08.2026",
-    slug: "/blog/footballer-nationality-swap-mistakes",
+    slug: "/blog/kit-swap-mistakes",
   },
   {
-    title: "AI Fruit Story vs Footballer Nationality Swap: Scripted Drama or One-Line Cameo?",
+    title: "AI Fruit Story vs Kit Swap: Scripted Drama or One-Line Cameo?",
     description: "Both formats build content around a talking character, at opposite paces.",
     date: "21.08.2026",
-    slug: "/blog/fruit-story-vs-footballer-nationality-swap",
+    slug: "/blog/fruit-story-vs-kit-swap",
   },
 ];
 
@@ -56,7 +56,7 @@ export default function FootballerNationalitySwapExplained() {
         <nav className="mb-8 text-[13px] text-white/40">
           <Link to="/blog" className="hover:text-amber-200">Blog</Link>
           <span className="mx-2">/</span>
-          <span className="text-white/60">Nationality Swap</span>
+          <span className="text-white/60">Kit Swap</span>
         </nav>
 
         <header className="mb-14">
@@ -65,7 +65,7 @@ export default function FootballerNationalitySwapExplained() {
             New Format
           </span>
           <h1 className="text-[38px] sm:text-[46px] font-black leading-[1.05] tracking-[-0.02em] mb-6">
-            What Is Footballer Nationality Swap? (And How It Works)
+            What Is Kit Swap? (And How It Works)
           </h1>
           <p className="text-[18px] text-white/58 leading-relaxed">
             A new football content format is spreading fast: a photorealistic "media day" clip that pictures a footballer representing a different nation entirely — new jersey, new name, a few words in a new language. Here's what makes it work and how to generate one.
@@ -90,7 +90,7 @@ export default function FootballerNationalitySwapExplained() {
           <section>
             <h2 className="text-[26px] font-black text-white mb-4 tracking-[-0.01em]">Why This Format Works</h2>
             <p className="text-[16px] leading-relaxed mb-4">
-              Football content lives on a very specific kind of surprise: a familiar face in an unfamiliar context. Nationality Swap delivers that in a single frame — a player everyone recognizes, dressed for a country they've never played for, introducing themselves like it's the most normal thing in the world.
+              Football content lives on a very specific kind of surprise: a familiar face in an unfamiliar context. Kit Swap delivers that in a single frame — a player everyone recognizes, dressed for a country they've never played for, introducing themselves like it's the most normal thing in the world.
             </p>
             <p className="text-[16px] leading-relaxed">
               It also borrows the exact visual language of a real media day: studio-quality lighting, a name card held at chest height, a blurred stadium tunnel behind them. That format familiarity is what sells the joke — it looks like it could almost be real, which is exactly the point of a good parody clip.
@@ -128,7 +128,7 @@ export default function FootballerNationalitySwapExplained() {
           <section>
             <h2 className="text-[26px] font-black text-white mb-4 tracking-[-0.01em]">It's Entertainment, Not Endorsement</h2>
             <p className="text-[16px] leading-relaxed">
-              Nationality Swap generates original, fan-made AI content for entertainment purposes only. It is not affiliated with, endorsed by, or produced in partnership with any footballer, club, or national football federation — the format is a parody of the media-day photo op, not a claim about anyone's actual nationality or team.
+              Kit Swap generates original, fan-made AI content for entertainment purposes only. It is not affiliated with, endorsed by, or produced in partnership with any footballer, club, or national football federation — the format is a parody of the media-day photo op, not a claim about anyone's actual nationality or team.
             </p>
           </section>
 
@@ -138,10 +138,10 @@ export default function FootballerNationalitySwapExplained() {
               Name a player, pick a nation, and let Zyvo build and animate the introduction.
             </p>
             <Link
-              to="/workspace/footballer-nationality-swap"
+              to="/workspace/kit-swap"
               className="inline-flex items-center gap-2 rounded-xl bg-amber-300 px-7 py-3.5 text-[14px] font-black text-[#150F02] transition hover:bg-amber-200"
             >
-              Create a Nationality Swap
+              Create a Kit Swap
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </section>

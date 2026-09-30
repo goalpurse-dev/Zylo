@@ -12,10 +12,10 @@ const related = [
     slug: "/blog/ai-fruit-story-character-names",
   },
   {
-    title: "AI Fruit Story vs Footballer Nationality Swap: Scripted Drama or One-Line Cameo?",
+    title: "AI Fruit Story vs Kit Swap: Scripted Drama or One-Line Cameo?",
     description: "Both formats build content around a talking character, at opposite paces.",
     date: "21.08.2026",
-    slug: "/blog/fruit-story-vs-footballer-nationality-swap",
+    slug: "/blog/fruit-story-vs-kit-swap",
   },
   {
     title: "How to Go Viral on TikTok with AI Fruit Drama Videos (2026)",

@@ -97,10 +97,10 @@ export function structuredDataFor(pathname, metadata, canonical) {
     });
   }
 
-  if (pathname === "/footballer-nationality-swap-ai") {
+  if (pathname === "/kit-swap-ai") {
     page = {
       "@type": "SoftwareApplication",
-      name: "Zyvo Footballer Nationality Swap",
+      name: "Zyvo Kit Swap",
       description: metadata.description,
       url: canonical,
       applicationCategory: "MultimediaApplication",
@@ -110,8 +110,8 @@ export function structuredDataFor(pathname, metadata, canonical) {
     graph.push({
       "@type": "FAQPage",
       mainEntity: [
-        ["What is Nationality Swap?", "It's an entertainment format that reimagines a footballer as if they represented a different nation — a new jersey, a localized name card, and a short talking introduction clip in that nation's language."],
-        ["Is this affiliated with real players, clubs, or federations?", "No. Nationality Swap generates original, fan-made AI content for entertainment purposes. It is not affiliated with, endorsed by, or produced in partnership with any footballer, club, or national football federation."],
+        ["What is Kit Swap?", "It's an entertainment format that reimagines a footballer as if they represented a different nation — a new jersey, a localized name card, and a short talking introduction clip in that nation's language."],
+        ["Is this affiliated with real players, clubs, or federations?", "No. Kit Swap generates original, fan-made AI content for entertainment purposes. It is not affiliated with, endorsed by, or produced in partnership with any footballer, club, or national football federation."],
         ["How long is the generated video?", "Each scene is a 6-second vertical talking clip. You can generate 3 to 5 scenes and stitch them into one continuous video."],
         ["Can I choose the video quality?", "Yes. Three tiers are available — 480p, 720p, and 1080p — all with generated audio."],
       ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
@@ -310,11 +310,11 @@ export function structuredDataFor(pathname, metadata, canonical) {
     });
   }
 
-  if (pathname === "/blog/footballer-nationality-swap-time") {
+  if (pathname === "/blog/kit-swap-time") {
     graph.push({
       "@type": "FAQPage",
       mainEntity: [
-        ["How long does one Footballer Nationality Swap clip take?", "A single 6-second scene generates quickly. A full sequence of 3 to 5 stitched scenes takes longer since each scene generates individually before being combined."],
+        ["How long does one Kit Swap clip take?", "A single 6-second scene generates quickly. A full sequence of 3 to 5 stitched scenes takes longer since each scene generates individually before being combined."],
         ["Does a higher quality tier take longer?", "Higher resolution settings generally take somewhat longer to generate than lower ones, though the difference is usually modest."],
         ["Can I speed things up by skipping the spoken line?", "The talking, lip-synced element is core to the format, so it's included by default — but a short spoken line syncs more convincingly without adding meaningful generation time."],
       ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),

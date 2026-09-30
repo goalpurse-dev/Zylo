@@ -62,7 +62,7 @@ Yes — a medieval kingdom and a wizarding school share a similar visual languag
 
 ## Related links
 
-- 2AM in Hogwarts: The Viral Wizarding World AI Trend → /blog/2am-in-hogwarts-ai-images
+- 2AM Wizard School: The Viral Magic Academy AI Trend → /blog/2am-wizard-school-ai-images
 - 2AM in a Wild West Town: The Dusty Frontier AI World → /blog/2am-wild-west-ai-images
 - 2AM Worlds Tier List: Ranking Every World We've Tried → /blog/2am-worlds-tier-list
 - What Is the 2AM Worlds AI Trend? → /blog/what-is-the-2am-worlds-ai-trend

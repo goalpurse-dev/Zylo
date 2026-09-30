@@ -63,7 +63,7 @@ You can describe a character in general terms (role, silhouette, a signature pro
 ## Related links
 
 - How to Create 2AM Anime AI Images → /blog/how-to-create-2am-anime-ai-images
-- How to Create 2AM Naruto AI Images → /blog/how-to-create-2am-naruto-ai-images
+- How to Create 2AM Anime Village Images → /blog/how-to-create-2am-anime-village-images
 - 50 2AM World AI Prompt Ideas → /blog/best-2am-world-ai-prompts
 - What Is the 2AM Worlds AI Trend? → /blog/what-is-the-2am-worlds-ai-trend
 

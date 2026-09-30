@@ -31,12 +31,12 @@ const FEATURES = [
 
 const FAQS = [
   {
-    q: "What is Nationality Swap?",
+    q: "What is Kit Swap?",
     a: "It's an entertainment format that reimagines a footballer as if they represented a different nation — a new jersey, a localized name card, and a short talking introduction clip in that nation's language.",
   },
   {
     q: "Is this affiliated with real players, clubs, or federations?",
-    a: "No. Nationality Swap generates original, fan-made AI content for entertainment purposes. It is not affiliated with, endorsed by, or produced in partnership with any footballer, club, or national football federation.",
+    a: "No. Kit Swap generates original, fan-made AI content for entertainment purposes. It is not affiliated with, endorsed by, or produced in partnership with any footballer, club, or national football federation.",
   },
   {
     q: "How long is the generated video?",
@@ -61,9 +61,9 @@ export default function FootballerNationalitySwapLanding() {
                 New in Zyvo
               </p>
               <h1 className="max-w-3xl text-4xl font-black leading-[1.02] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
-                Footballer
+                Kit Swap AI
                 <span className="block bg-gradient-to-r from-amber-200 via-white to-violet-300 bg-clip-text text-transparent">
-                  Nationality Swap
+                  Football kits from any country
                 </span>
               </h1>
               <p className="mt-6 max-w-2xl text-base leading-8 text-white/58 sm:text-lg">
@@ -71,10 +71,10 @@ export default function FootballerNationalitySwapLanding() {
               </p>
               <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                 <Link
-                  to="/workspace/footballer-nationality-swap"
+                  to="/workspace/kit-swap"
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-amber-300 px-6 py-3 text-sm font-black text-[#150F02] transition hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080A0E]"
                 >
-                  Create a Nationality Swap
+                  Create a Kit Swap
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
                 <span className="text-sm text-white/38">6 seconds per scene · vertical video</span>
@@ -137,7 +137,7 @@ export default function FootballerNationalitySwapLanding() {
         </section>
 
         <section className="mx-auto max-w-3xl px-4 py-16 sm:px-6 md:py-24">
-          <h2 className="text-center text-3xl font-black tracking-[-0.035em]">Nationality Swap FAQs</h2>
+          <h2 className="text-center text-3xl font-black tracking-[-0.035em]">Kit Swap FAQs</h2>
           <div className="mt-9 space-y-3">
             {FAQS.map((item) => (
               <details key={item.q} className="group rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
@@ -151,11 +151,11 @@ export default function FootballerNationalitySwapLanding() {
         <section className="mx-auto max-w-[1100px] px-4 pb-4 sm:px-6">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-200 mb-4">Guides</p>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Link to="/blog/footballer-nationality-swap-explained" className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 transition hover:border-amber-300/30">
-              <h3 className="text-base font-bold text-white">What Is Footballer Nationality Swap?</h3>
+            <Link to="/blog/kit-swap-explained" className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 transition hover:border-amber-300/30">
+              <h3 className="text-base font-bold text-white">What Is Kit Swap?</h3>
               <p className="mt-2 text-sm leading-6 text-white/50">Why the format works and how to generate one.</p>
             </Link>
-            <Link to="/blog/footballer-nationality-swap-tips" className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 transition hover:border-amber-300/30">
+            <Link to="/blog/kit-swap-tips" className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 transition hover:border-amber-300/30">
               <h3 className="text-base font-bold text-white">5 Tips for the Most Believable Clip</h3>
               <p className="mt-2 text-sm leading-6 text-white/50">Five deliberate choices that make the result land.</p>
             </Link>
@@ -166,8 +166,8 @@ export default function FootballerNationalitySwapLanding() {
           <div className="mx-auto max-w-[1000px] rounded-[28px] border border-amber-200/15 bg-[linear-gradient(135deg,rgba(245,158,11,0.12),rgba(122,59,255,0.15))] px-6 py-12 text-center sm:px-10">
             <h2 className="text-3xl font-black tracking-[-0.035em]">Give any player a new nation</h2>
             <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-white/52">Name the player and the nation, choose a style, then let Zyvo build and animate the clip.</p>
-            <Link to="/workspace/footballer-nationality-swap" className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-black text-black transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200">
-              Open Nationality Swap
+            <Link to="/workspace/kit-swap" className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-black text-black transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200">
+              Open Kit Swap
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>

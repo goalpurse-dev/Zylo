@@ -62,7 +62,7 @@ const TOOLS = [
   { name: "Micro Camera Animal", desc: "A tiny camera follows a real animal into its own underground world.", href: "/micro-camera-animal-maker" },
   { name: "Face ASMR", desc: "Turn any uploaded face into a satisfying, glossy ASMR texture video.", href: "/face-asmr-maker" },
   { name: "Cartoon Drive-By", desc: "A fictional cartoon or game-inspired destination, passed from inside a moving vehicle.", href: "/cartoon-drive-by-video-maker" },
-  { name: "Footballer Nationality Swap", desc: "Picture any footballer representing a different nation, with a talking intro clip.", href: "/footballer-nationality-swap-ai" },
+  { name: "Kit Swap", desc: "Picture any footballer representing a different nation, with a talking intro clip.", href: "/kit-swap-ai" },
 ];
 
 const FAQS = [

@@ -16,13 +16,13 @@ import aiWorldsAt2amIdeas from "./content/ai-worlds-at-2am-ideas.md?raw";
 import howToGoViralTikTokAiWorlds from "./content/how-to-go-viral-tiktok-ai-worlds.md?raw";
 import liminalSpaceAiGenerator from "./content/liminal-space-ai-generator.md?raw";
 import howToCreate2amAnime from "./content/how-to-create-2am-anime-ai-images.md?raw";
-import howToCreate2amNaruto from "./content/how-to-create-2am-naruto-ai-images.md?raw";
-import twoAmMinecraft from "./content/2am-minecraft-ai-images.md?raw";
-import twoAmGta from "./content/2am-gta-ai-images.md?raw";
+import howToCreate2amNaruto from "./content/how-to-create-2am-anime-village-images.md?raw";
+import twoAmMinecraft from "./content/2am-voxel-world-ai-images.md?raw";
+import twoAmGta from "./content/2am-neon-city-ai-images.md?raw";
 import twoAmOnePiece from "./content/2am-one-piece-ai-images.md?raw";
-import twoAmStudioGhibli from "./content/2am-studio-ghibli-ai-images.md?raw";
-import twoAmFortnite from "./content/2am-fortnite-ai-images.md?raw";
-import twoAmHogwarts from "./content/2am-in-hogwarts-ai-images.md?raw";
+import twoAmStudioGhibli from "./content/2am-hand-painted-anime-images.md?raw";
+import twoAmFortnite from "./content/2am-battle-island-ai-images.md?raw";
+import twoAmHogwarts from "./content/2am-wizard-school-ai-images.md?raw";
 import twoAmBikiniBottom from "./content/2am-in-bikini-bottom-ai-images.md?raw";
 import twoAmCyberpunkCity from "./content/2am-cyberpunk-city-ai-images.md?raw";
 import twoAmWorldsTierList from "./content/2am-worlds-tier-list.md?raw";
@@ -184,9 +184,9 @@ const GUIDES = {
     ctaHref: "/2am-worlds-ai-generator",
     cta: "Create your 2AM anime world",
   },
-  "how-to-create-2am-naruto-ai-images": {
-    title: "How to Create 2AM Naruto AI Images",
-    seoTitle: "How to Create 2AM Naruto AI Images | Zyvo",
+  "how-to-create-2am-anime-village-images": {
+    title: "How to Create 2AM Anime Village Images",
+    seoTitle: "How to Create 2AM Anime Village Images | Zyvo",
     description: "How to prompt 2AM Naruto-inspired AI scenes by location and character, with ready-to-use prompts for the Hidden Leaf Village at night.",
     keywords: "2am in naruto, naruto ai generator, naruto ai images, naruto world ai",
     category: "2AM Worlds",
@@ -201,11 +201,11 @@ const GUIDES = {
     heroAlt: "A quiet ninja village at 2AM with a Hokage-style monument under a full moon, fan-made AI image",
     markdown: howToCreate2amNaruto,
     ctaHref: "/2am-worlds-ai-generator",
-    cta: "Create your 2AM Naruto-inspired world",
+    cta: "Create your 2AM anime village world",
   },
-  "2am-minecraft-ai-images": {
-    title: "2AM in Minecraft: The Viral AI World Every Player Will Recognize",
-    seoTitle: "2AM Minecraft AI Images: Create the Viral Late-Night World",
+  "2am-voxel-world-ai-images": {
+    title: "2AM Voxel World: The Viral Blocky AI World Trend",
+    seoTitle: "2AM Voxel World AI Images: Create the Viral Late-Night World",
     description: "Turn the 'still playing at 2AM' Minecraft feeling into a blocky, moonlit AI image set — with a prompt formula and three ready-to-use prompts.",
     keywords: "2am minecraft, minecraft ai generator, 2am minecraft ai images, blocky world ai generator, voxel ai images",
     category: "2AM Worlds",
@@ -226,9 +226,9 @@ const GUIDES = {
     ctaHref: "/2am-worlds-ai-generator",
     cta: "Create your own 2AM blocky world",
   },
-  "2am-gta-ai-images": {
-    title: "2AM in GTA: The Viral Open-World Vice City AI World",
-    seoTitle: "2AM GTA AI Images: Create a Viral Neon Vice City World",
+  "2am-neon-city-ai-images": {
+    title: "2AM Neon City: The Viral Open-World AI World",
+    seoTitle: "2AM Neon City AI Images: Create a Viral Open-World Night",
     description: "Turn a neon, palm-tree-lined open-world city into a cinematic 2AM AI image set — with a prompt formula and three ready-to-use prompts.",
     keywords: "2am gta, gta ai generator, gta vice city ai images, gta ai images, open world ai generator",
     category: "2AM Worlds",
@@ -264,9 +264,9 @@ const GUIDES = {
     ctaHref: "/2am-worlds-ai-generator",
     cta: "Create your own 2AM pirate-crew world",
   },
-  "2am-studio-ghibli-ai-images": {
-    title: "2AM in Studio Ghibli: The Viral Painterly AI World Trend",
-    seoTitle: "2AM Ghibli AI Images: Create a Viral Painterly World",
+  "2am-hand-painted-anime-images": {
+    title: "2AM Hand-Painted Anime: The Viral Painterly AI World Trend",
+    seoTitle: "2AM Hand-Painted Anime Images: Create a Viral Painterly World",
     description: "Turn a painterly, lantern-lit countryside town into a cinematic 2AM AI image set — with a prompt formula and three ready-to-use prompts.",
     keywords: "2am ghibli, ghibli ai generator, studio ghibli ai art, ghibli style ai images, painterly ai generator",
     category: "2AM Worlds",
@@ -283,9 +283,9 @@ const GUIDES = {
     ctaHref: "/2am-worlds-ai-generator",
     cta: "Create your own 2AM painterly world",
   },
-  "2am-fortnite-ai-images": {
-    title: "2AM in Fortnite: The Viral Battle Royale AI World",
-    seoTitle: "2AM Fortnite AI Images: Create a Viral Battle Royale World",
+  "2am-battle-island-ai-images": {
+    title: "2AM Battle Island: The Viral Battle Royale AI World",
+    seoTitle: "2AM Battle Island AI Images: Create a Viral Battle Royale World",
     description: "Turn a colorful abandoned battle-royale island into a cinematic 2AM AI image set — with a prompt formula and three ready-to-use prompts.",
     keywords: "2am fortnite, fortnite ai generator, fortnite ai images, battle royale ai generator",
     category: "2AM Worlds",
@@ -302,9 +302,9 @@ const GUIDES = {
     ctaHref: "/2am-worlds-ai-generator",
     cta: "Create your own 2AM battle-royale world",
   },
-  "2am-in-hogwarts-ai-images": {
-    title: "2AM in Hogwarts: The Viral Wizarding World AI Trend",
-    seoTitle: "2AM Hogwarts AI Images: Create a Viral Wizarding School World",
+  "2am-wizard-school-ai-images": {
+    title: "2AM Wizard School: The Viral Magic Academy AI Trend",
+    seoTitle: "2AM Wizard School AI Images: Create a Viral Magic Academy World",
     description: "Turn a torchlit magical school courtyard into a cinematic 2AM AI image set — with a prompt formula and three ready-to-use prompts.",
     keywords: "2am hogwarts, hogwarts ai generator, hogwarts ai images, wizarding school ai generator, magical school ai images",
     category: "2AM Worlds",
@@ -424,9 +424,9 @@ const GUIDES = {
     links: [
       ["/2am-worlds-ai-generator", "Try the 2AM Worlds Generator", "Enter your own world and generate a cinematic 2AM image set."],
       ["/blog/how-to-create-2am-anime-ai-images", "How to Create 2AM Anime AI Images", "Five anime sub-styles and a repeatable prompt formula."],
-      ["/blog/how-to-create-2am-naruto-ai-images", "How to Create 2AM Naruto AI Images", "Prompt the Hidden Leaf Village at 2AM by location or character."],
-      ["/blog/2am-minecraft-ai-images", "2AM in Minecraft", "The viral blocky-world AI image trend every player will recognize."],
-      ["/blog/2am-in-hogwarts-ai-images", "2AM in Hogwarts", "A torchlit magical school courtyard, reimagined at 2AM."],
+      ["/blog/how-to-create-2am-anime-village-images", "How to Create 2AM Anime Village Images", "Prompt the Hidden Leaf Village at 2AM by location or character."],
+      ["/blog/2am-voxel-world-ai-images", "2AM in Minecraft", "The viral blocky-world AI image trend every player will recognize."],
+      ["/blog/2am-wizard-school-ai-images", "2AM in Hogwarts", "A torchlit magical school courtyard, reimagined at 2AM."],
       ["/blog/2am-in-bikini-bottom-ai-images", "2AM in Bikini Bottom", "A colorful underwater cartoon town, reimagined at 2AM."],
       ["/blog/2am-worlds-tier-list", "2AM Worlds Tier List", "Every world in the catalog, ranked by contrast and recognizability."],
       ["/blog/2am-wild-west-ai-images", "2AM in a Wild West Town", "A dusty frontier saloon town, reimagined at 2AM."],
@@ -480,7 +480,7 @@ const GUIDES = {
     links: [
       ["/2am-worlds-ai-generator", "Open the 2AM Worlds Generator", "Enter any of these prompts or write your own."],
       ["/blog/how-to-create-2am-anime-ai-images", "How to Create 2AM Anime AI Images", "Five anime sub-styles and a repeatable prompt formula."],
-      ["/blog/how-to-create-2am-naruto-ai-images", "How to Create 2AM Naruto AI Images", "Prompt the Hidden Leaf Village at 2AM by location or character."],
+      ["/blog/how-to-create-2am-anime-village-images", "How to Create 2AM Anime Village Images", "Prompt the Hidden Leaf Village at 2AM by location or character."],
       ["/blog/2am-atlantis-ai-images", "2AM in an Underwater Atlantis City", "A glowing sunken city, reimagined at 2AM."],
       ["/blog/2am-space-station-ai-images", "2AM on a Space Station", "A quiet orbital station, reimagined at 2AM."],
       ["/blog/2am-medieval-kingdom-ai-images", "2AM in a Medieval Castle Kingdom", "A torch-lit castle kingdom, reimagined at 2AM."],
@@ -489,9 +489,9 @@ const GUIDES = {
     cta: "Try one of these prompts",
   },
 
-  "how-to-create-2am-pokemon-ai-images": {
-    title: "How to Create 2AM Pokémon AI Images",
-    seoTitle: "How to Create 2AM Pokémon AI Images | Zyvo",
+  "how-to-create-2am-creature-town-images": {
+    title: "How to Create 2AM Creature Town Images",
+    seoTitle: "How to Create 2AM Creature Town Images | Zyvo",
     description: "A practical walkthrough for generating nostalgic, late-night Pokémon-inspired AI images with Zyvo.",
     keywords: "2am pokemon ai images, how to create pokemon ai images, pokemon ai generator",
     category: "2AM Worlds",
@@ -522,18 +522,18 @@ const GUIDES = {
       ["What's a good first prompt to try?", "\"2AM in Pokémon Alola\" is one of the most popular starting points and reliably produces a tropical, route-style night scene."],
     ],
     links: [
-      ["/2am-in-pokemon-ai-generator", "Try the 2AM Pokémon Generator", "Generate your own late-night Pokémon-inspired image set."],
+      ["/2am-creature-town-ai-generator", "Try the 2AM Creature Town Generator", "Generate your own late-night Pokémon-inspired image set."],
       ["/2am-worlds-ai-generator", "Explore 2AM Worlds", "See the full 2AM Worlds generator and other world ideas."],
       ["/blog/how-to-create-2am-anime-ai-images", "How to Create 2AM Anime AI Images", "Five anime sub-styles and a repeatable prompt formula."],
-      ["/blog/how-to-create-2am-naruto-ai-images", "How to Create 2AM Naruto AI Images", "Prompt the Hidden Leaf Village at 2AM by location or character."],
+      ["/blog/how-to-create-2am-anime-village-images", "How to Create 2AM Anime Village Images", "Prompt the Hidden Leaf Village at 2AM by location or character."],
     ],
-    ctaHref: "/2am-in-pokemon-ai-generator",
-    cta: "Create a 2AM Pokémon world",
+    ctaHref: "/2am-creature-town-ai-generator",
+    cta: "Create a 2AM Creature Town world",
   },
 
-  "how-to-create-2am-ninjago-ai-images": {
-    title: "How to Create 2AM Ninjago AI Images",
-    seoTitle: "How to Create 2AM Ninjago AI Images | Zyvo",
+  "how-to-create-2am-ninja-city-images": {
+    title: "How to Create 2AM Ninja City Images",
+    seoTitle: "How to Create 2AM Ninja City Images | Zyvo",
     description: "How to turn Ninjago characters and locations into a cinematic 2AM AI image set with Zyvo.",
     keywords: "2am ninjago ai images, ninjago ai generator, ninjago ai images",
     category: "2AM Worlds",
@@ -564,13 +564,13 @@ const GUIDES = {
       ["What's a good first prompt to try?", "\"2AM in Ninjago City\" is a popular starting point and reliably produces a neon, urban night scene set."],
     ],
     links: [
-      ["/2am-in-ninjago-ai-generator", "Try the 2AM Ninjago Generator", "Generate your own late-night Ninjago-inspired image set."],
+      ["/2am-ninja-city-ai-generator", "Try the 2AM Ninja City Generator", "Generate your own late-night Ninjago-inspired image set."],
       ["/2am-worlds-ai-generator", "Explore 2AM Worlds", "See the full 2AM Worlds generator and other world ideas."],
       ["/blog/how-to-create-2am-anime-ai-images", "How to Create 2AM Anime AI Images", "Five anime sub-styles and a repeatable prompt formula."],
-      ["/blog/how-to-create-2am-naruto-ai-images", "How to Create 2AM Naruto AI Images", "Prompt the Hidden Leaf Village at 2AM by location or character."],
+      ["/blog/how-to-create-2am-anime-village-images", "How to Create 2AM Anime Village Images", "Prompt the Hidden Leaf Village at 2AM by location or character."],
     ],
-    ctaHref: "/2am-in-ninjago-ai-generator",
-    cta: "Create a 2AM Ninjago world",
+    ctaHref: "/2am-ninja-city-ai-generator",
+    cta: "Create a 2AM Ninja City world",
   },
 
   "2am-wild-west-ai-images": {

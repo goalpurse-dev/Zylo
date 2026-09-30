@@ -62,7 +62,7 @@ Yes — adding a mood word ("noir," "eerie," "melancholy") shifts the tone while
 
 ## Related links
 
-- 2AM in a Studio Ghibli: The Viral Painterly AI World Trend → /blog/2am-studio-ghibli-ai-images
+- 2AM in a Studio Ghibli: The Viral Painterly AI World Trend → /blog/2am-hand-painted-anime-images
 - Liminal Space AI Generator: Create Eerie 2AM Liminal Worlds → /blog/liminal-space-ai-generator
 - 2AM Worlds Tier List: Ranking Every World We've Tried → /blog/2am-worlds-tier-list
 - What Is the 2AM Worlds AI Trend? → /blog/what-is-the-2am-worlds-ai-trend
