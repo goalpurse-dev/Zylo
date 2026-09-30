@@ -14,11 +14,54 @@ export const TOPUP_PRICE_IDS = {
   max: "price_1TGKjxHtn4q5rIncQzzCGyrR",
 };
 
-// Credits each current price grants per month (monthly plans on renewal,
-// yearly plans monthly via topup_annual_credits) and per top-up pack. Mirrors
-// stripe-webhook's PRICE_MAP / TOPUP_PRICE_MAP; a test keeps them equal.
-export const PLAN_CREDITS = { starter: 900, pro: 1900, generative: 3900 };
+// Credits a month for NEW subscriptions on the current prices: exactly what
+// the pricing page promises (monthly plans on renewal, yearly plans monthly via
+// topup_annual_credits). stripe-webhook grants from PLAN_PRICE_MAP below.
+export const PLAN_CREDITS = { starter: 750, pro: 1600, generative: 3200 };
 export const TOPUP_CREDITS = { mini: 300, standard: 500, max: 900 };
+
+// Subscriptions on the current prices that started before NEW_GRANT_CUTOFF keep
+// the grant they signed up with (900 / 1,900 / 3,900) for as long as that
+// subscription lives; later ones get PLAN_CREDITS.
+export const NEW_GRANT_CUTOFF = "2026-09-30T22:30:00Z";
+export const EARLY_PLAN_CREDITS = { starter: 900, pro: 1900, generative: 3900 };
+
+/**
+ * Every recurring price the webhook grants credits for: current prices (with
+ * the early grant for subscriptions before the cutoff) and legacy prices whose
+ * subscribers keep 600 / 1,200 / 2,500.
+ */
+export const PLAN_PRICE_MAP = {
+  ...Object.fromEntries(Object.entries(PLAN_PRICE_IDS).flatMap(([plan, ids]) => [
+    [ids.monthly, { plan, credits: PLAN_CREDITS[plan], earlyCredits: EARLY_PLAN_CREDITS[plan] }],
+    [ids.yearly, { plan, credits: PLAN_CREDITS[plan], earlyCredits: EARLY_PLAN_CREDITS[plan], interval: "yearly" }],
+  ])),
+  // Monthly v2 (legacy, EUR)
+  price_1TGKT6Htn4q5rIncI47V5Ein: { plan: "starter", credits: 600 },
+  price_1TGKSqHtn4q5rIncIf8RPa6e: { plan: "pro", credits: 1200 },
+  price_1TGKSSHtn4q5rIncSTurqkCN: { plan: "generative", credits: 2500 },
+  // Monthly v1 (legacy, pre-EUR)
+  price_1T8gM3Htn4q5rInchn8CMEcO: { plan: "starter", credits: 600 },
+  price_1T8gMVHtn4q5rIncWwcUi9mG: { plan: "pro", credits: 1200 },
+  price_1T8gMsHtn4q5rIncW0vy8d57: { plan: "generative", credits: 2500 },
+  // Annual v2 (legacy)
+  price_1TYWNYHtn4q5rIncWMa3mmvI: { plan: "starter", credits: 600, interval: "yearly" },
+  price_1TYWOWHtn4q5rIncTmN3GXdy: { plan: "pro", credits: 1200, interval: "yearly" },
+  price_1TYWP8Htn4q5rIncbugChVhS: { plan: "generative", credits: 2500, interval: "yearly" },
+};
+
+/**
+ * Credits for one invoice line: the early grant when the subscription started
+ * before the cutoff, else the map's credits. subscriptionStartUnix = Stripe
+ * subscription.start_date (seconds); unknown start → the new grant.
+ */
+export function planCreditsFor(entry, subscriptionStartUnix) {
+  if (!entry) return 0;
+  if (entry.earlyCredits && Number.isFinite(subscriptionStartUnix) && subscriptionStartUnix * 1000 < Date.parse(NEW_GRANT_CUTOFF)) {
+    return entry.earlyCredits;
+  }
+  return entry.credits;
+}
 
 // Stripe's "inferred_by_currency" default: USD and CAD prices are tax
 // exclusive, every other currency is tax inclusive.

@@ -1,37 +1,13 @@
 // deno-lint-ignore-file no-explicit-any
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { PLAN_PRICE_MAP, planCreditsFor } from "../_shared/stripePlanPrices.js";
 
 /* =================== CONFIG =================== */
-/** Recurring plan map — includes both EUR (current) and legacy USD price IDs.
- *  Add any old USD price IDs here so pre-migration subscribers still get credits on renewal. */
-const PRICE_MAP: Record<string, { plan: "starter" | "pro" | "generative"; credits: number; interval?: "yearly" }> = {
-  // ── Monthly v3 prices (current — June 2026) ──
-  // Credits = price / $0.02 per credit (50% margin)
-  "price_1TmVZZHtn4q5rIncOuf5aKP4": { plan: "starter",    credits: 900  },  // $18 / $0.02
-  "price_1TmVfXHtn4q5rInc9IaN1l3U": { plan: "pro",        credits: 1900 },  // $38 / $0.02
-  "price_1TmVg2Htn4q5rIncWL0b3HJr": { plan: "generative", credits: 3900 },  // $78 / $0.02
-
-  // ── Annual v3 prices (current — June 2026) ──
-  "price_1TmVhxHtn4q5rIncS8sxm6UR": { plan: "starter",    credits: 900,  interval: "yearly" },
-  "price_1TmVjnHtn4q5rInccPDBIVaX": { plan: "pro",        credits: 1900, interval: "yearly" },
-  "price_1TmVlUHtn4q5rIncbtWbGyof": { plan: "generative", credits: 3900, interval: "yearly" },
-
-  // ── Monthly v2 prices (legacy — keep so existing subscribers still get credits) ──
-  "price_1TGKT6Htn4q5rIncI47V5Ein": { plan: "starter",    credits: 600  },
-  "price_1TGKSqHtn4q5rIncIf8RPa6e": { plan: "pro",        credits: 1200 },
-  "price_1TGKSSHtn4q5rIncSTurqkCN": { plan: "generative", credits: 2500 },
-
-  // ── Monthly v1 prices (legacy — pre-EUR migration) ──
-  "price_1T8gM3Htn4q5rInchn8CMEcO": { plan: "starter",    credits: 600  },
-  "price_1T8gMVHtn4q5rIncWwcUi9mG": { plan: "pro",        credits: 1200 },
-  "price_1T8gMsHtn4q5rIncW0vy8d57": { plan: "generative", credits: 2500 },
-
-  // ── Annual v2 prices (legacy) ──
-  "price_1TYWNYHtn4q5rIncWMa3mmvI": { plan: "starter",    credits: 600,  interval: "yearly" },
-  "price_1TYWOWHtn4q5rIncTmN3GXdy": { plan: "pro",        credits: 1200, interval: "yearly" },
-  "price_1TYWP8Htn4q5rIncbugChVhS": { plan: "generative", credits: 2500, interval: "yearly" },
-};
+/** Recurring plan prices → plan + monthly credits (current and legacy), with the
+ *  early grant for current-price subscriptions started before NEW_GRANT_CUTOFF.
+ *  One source for the webhook, the pricing page and tests: _shared/stripePlanPrices.js */
+const PRICE_MAP: Record<string, { plan: "starter" | "pro" | "generative"; credits: number; earlyCredits?: number; interval?: "yearly" }> = PLAN_PRICE_MAP as any;
 
 /** One-time top-up map (fallback if Price.metadata.credits is not set) */
 const TOPUP_PRICE_MAP: Record<string, number> = {
@@ -101,6 +77,31 @@ async function userIdByCustomerId(customerId: string): Promise<string | null> {
   const { data } = await sb.from("profiles").select("id").eq("stripe_customer_id", customerId).single();
   return data?.id ?? null;
 }
+/**
+ * The invoice's subscription start (unix seconds), which decides the early vs
+ * new grant on current prices. Only looked up when a line has an early grant.
+ * If Stripe can't be asked: a first invoice is a new subscription (now); any
+ * other invoice is treated as an existing one (0 → early grant), so a lookup
+ * failure never cuts an existing subscriber's credits.
+ */
+async function subscriptionStartUnix(inv: any, lines: any[]): Promise<number | undefined> {
+  const needs = lines.some((ln) => PRICE_MAP[ln?.price?.id]?.earlyCredits);
+  if (!needs) return undefined;
+  const fallback = inv?.billing_reason === "subscription_create" ? Math.floor(Date.now() / 1000) : 0;
+  const subId = inv?.subscription ?? inv?.parent?.subscription_details?.subscription
+    ?? lines.find((ln) => ln?.subscription)?.subscription ?? lines[0]?.parent?.subscription_item_details?.subscription;
+  const id = typeof subId === "string" ? subId : subId?.id;
+  if (!id) return fallback;
+  try {
+    const res = await fetch(`https://api.stripe.com/v1/subscriptions/${id}`, { headers: { Authorization: `Bearer ${STRIPE_SECRET}` } });
+    const sub = await res.json();
+    return Number.isFinite(sub?.start_date) ? sub.start_date : fallback;
+  } catch (e) {
+    console.error("[stripe-webhook] subscription lookup failed:", e);
+    return fallback;
+  }
+}
+
 async function currentCredits(userId: string) {
   const { data } = await sb.from("profiles").select("credit_balance").eq("id", userId).single();
   return data?.credit_balance ?? 0;
@@ -373,6 +374,7 @@ export default {
         let planCredits = 0;
         let detectedInterval: "yearly" | undefined;
         const lines: any[] = inv?.lines?.data ?? [];
+        const subStart = await subscriptionStartUnix(inv, lines);
         for (const ln of lines) {
           const priceId: string | undefined = ln?.price?.id;
           const isRecurring = ln?.plan || ln?.price?.recurring;
@@ -380,7 +382,7 @@ export default {
           if (!priceId || !isRecurring || isProration) continue;
           const map = PRICE_MAP[priceId];
           if (map) {
-            planCredits += map.credits;
+            planCredits += planCreditsFor(map, subStart);
             await setPlan(userId, map.plan);
             if (map.interval === "yearly") detectedInterval = "yearly";
           }
