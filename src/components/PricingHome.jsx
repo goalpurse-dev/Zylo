@@ -1,6 +1,8 @@
 // src/components/Pricing.jsx
 import React from "react";
 import { Link } from "react-router-dom";
+import useLivePlanPrices from "./pricing/useLivePlanPrices";
+import { PLAN_CREDITS } from "../../supabase/functions/_shared/stripePlanPrices.js";
 
 /** Brand palette */
 const BLUE = "#1677FF";
@@ -26,56 +28,52 @@ function CornerRibbon({ label = "Best Value" }) {
 
 /* ---------------------------------- Data --------------------------------- */
 /* ---------------------------------- Data --------------------------------- */
+// Prices are live from Stripe (useLivePlanPrices, per month on monthly
+// billing); credits are what new subscriptions get (PLAN_CREDITS).
 const tiers = [
   {
     id: "starter",
     name: "Starter",
-    price: "$20",
     period: "/month",
-    blurb: "Best for getting started",
+    blurb: "Every tool and template at V2 quality",
     cta: { label: "Get Starter", to: "/signup?plan=starter" },
     popular: false,
     features: [
-      "750 credits / mo",
-      "~375 AI images / mo",
-      "~25 AI videos with sound / mo",
-      "All AI models & templates",
+      `${PLAN_CREDITS.starter.toLocaleString("en-US")} credits / mo`,
+      "All Zyvo tools & templates",
+      "V2 quality",
+      "Long Form YouTube videos",
       "Watermark-free exports",
-      "Standard queue",
       "Email support",
     ],
   },
   {
     id: "pro",
     name: "Pro",
-    price: "$42",
     period: "/month",
-    blurb: "Grow with advanced tools",
+    blurb: "Sharper V3 quality and more credits",
     cta: { label: "Get Pro", to: "/signup?plan=pro" },
     popular: true,
     features: [
-      "1,600 credits / mo",
-      "~800 AI images / mo",
-      "~53 AI videos with sound / mo",
-      "All AI models & templates",
-      "Priority queue",
-      "Email support",
+      `${PLAN_CREDITS.pro.toLocaleString("en-US")} credits / mo`,
+      "All Zyvo tools & templates",
+      "V2 + V3 quality",
+      "Faster queue on busy days",
+      "Priority support",
     ],
   },
   {
     id: "generative",
     name: "Generative",
-    price: "$85",
     period: "/month",
-    blurb: "For power users & teams",
+    blurb: "Every quality tier and the most credits",
     cta: { label: "Get Generative", to: "/signup?plan=generative" },
     popular: false,
     features: [
-      "3,200 credits / mo",
-      "~1,600 AI images / mo",
-      "~106 AI videos with sound / mo",
-      "All AI models & templates",
-      "Fast-lane queue",
+      `${PLAN_CREDITS.generative.toLocaleString("en-US")} credits / mo`,
+      "All Zyvo tools & templates",
+      "V2 + V3 + V4 quality",
+      "First in the queue on busy days",
       "Priority support",
     ],
   },
@@ -98,16 +96,16 @@ const Tick = ({ className = "" }) => (
 );
 
 /* --------------------------------- Cards --------------------------------- */
-function PlanCard({ tier }) {
+function PlanCard({ tier, price }) {
   const core = (
     <div className="rounded-2xl bg-zinc-900/60 border border-zinc-800 p-6 flex flex-col h-full relative overflow-hidden text-white shadow-xl">
-      {tier.popular && <CornerRibbon label="Best value" />}
+      {tier.popular && <CornerRibbon label="Unlocks V3" />}
 
       {/* Plan name */}
       <div className="mb-2 font-extrabold text-xl text-white">{tier.name}</div>
 
       <div className="mt-1 flex items-baseline gap-1">
-        <div className="text-4xl font-extrabold text-white">{tier.price}</div>
+        <div className="text-4xl font-extrabold text-white">{price}</div>
         <div className="text-sm text-zinc-400">{tier.period}</div>
       </div>
 
@@ -173,6 +171,7 @@ function SecondaryCard({ title, price, subtitle, ctaLabel, to, children }) {
 
 /* --------------------------------- Page ---------------------------------- */
 export default function Pricing() {
+  const live = useLivePlanPrices("monthly");
   return (
     <section className="bg-[#0c1218] text-white">
       <div className="max-w-6xl mx-auto px-6 sm:px-8 py-14">
@@ -195,32 +194,21 @@ export default function Pricing() {
         {/* Main tier grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {tiers.map((t) => (
-            <PlanCard key={t.id} tier={t} />
+            <PlanCard key={t.id} tier={t} price={live.main(t.id)} />
           ))}
         </div>
 
-        {/* Secondary row: Free & Enterprise */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        {/* Free */}
+        <div className="mt-8">
           <SecondaryCard
             title="Free"
-            price="$0"
-            subtitle="Try ZyloAI with weekly credits"
+            price="€0"
+            subtitle="Sign up free, no card needed"
             ctaLabel="Try for free"
             to="/signup"
           >
-            10 minutes and 1 AI avatar per week, 4 exports per week with a
-            small watermark. Access to core tools so you can learn the workflow.
-          </SecondaryCard>
-
-          <SecondaryCard
-            title="Enterprise"
-            price="Custom"
-            subtitle="For organizations that need scale"
-            ctaLabel="Contact sales"
-            to="/contact"
-          >
-            SSO & roles, unlimited workspaces, custom model options, SLAs and
-            priority support. Flexible invoicing and procurement support.
+            5 free AI images every 30 days and a look around every tool.
+            Making videos needs a plan.
           </SecondaryCard>
         </div>
 
@@ -231,7 +219,7 @@ export default function Pricing() {
   </div>
 
   <Link
-    to="/pricing"            // change to your route (e.g., /docs/pricing)
+    to="/workspace/pricing"
     className="inline-flex items-center justify-center mt-4 h-11 px-6 rounded-xl font-semibold transition border"
     style={{ borderColor: "#1677FF", color: "#1677FF" }}
   >

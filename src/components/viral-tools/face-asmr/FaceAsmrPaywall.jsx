@@ -4,34 +4,30 @@ import { createPortal } from "react-dom";
 import { Check, X, Lock } from "lucide-react";
 import { startCheckout } from "../../../lib/payments";
 import { supabase } from "../../../lib/supabaseClient";
+import useLivePlanPrices from "../../pricing/useLivePlanPrices";
+import { PLAN_CREDITS } from "../../../../supabase/functions/_shared/stripePlanPrices.js";
 
 const TIERS = [
   {
     id: "starter",
     name: "Starter",
-    monthly: 20, yearlyPerMonth: 16,
-    yearlyNote: "Billed $192/yr",
     accent: "#8B5CF6", btnFrom: "#5B21B6", btnTo: "#7C3AED",
-    features: ["750 credits / month", "~25 AI videos with sound", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "Watermark-free exports", "Standard speed"],
+    features: [`${PLAN_CREDITS.starter.toLocaleString("en-US")} credits / month`, null, "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "Watermark-free exports", "Standard speed"],
     priceIds: { monthly: "price_1TmVZZHtn4q5rIncOuf5aKP4", yearly: "price_1TmVhxHtn4q5rIncS8sxm6UR" },
   },
   {
     id: "pro",
     name: "Pro",
-    monthly: 42, yearlyPerMonth: 35,
-    yearlyNote: "Billed $420/yr",
     accent: "#A855F7", btnFrom: "#7C3AED", btnTo: "#A855F7",
     popular: true,
-    features: ["1,600 credits / month", "~53 AI videos with sound", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "Watermark-free exports", "Priority queue"],
+    features: [`${PLAN_CREDITS.pro.toLocaleString("en-US")} credits / month`, null, "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "Watermark-free exports", "Faster queue on busy days"],
     priceIds: { monthly: "price_1TmVfXHtn4q5rInc9IaN1l3U", yearly: "price_1TmVjnHtn4q5rInccPDBIVaX" },
   },
   {
     id: "generative",
     name: "Generative",
-    monthly: 85, yearlyPerMonth: 70,
-    yearlyNote: "Billed $840/yr",
     accent: "#C084FC", btnFrom: "#9333EA", btnTo: "#C084FC",
-    features: ["3,200 credits / month", "~106 AI videos with sound", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "Unlimited history", "Fast-lane generation"],
+    features: [`${PLAN_CREDITS.generative.toLocaleString("en-US")} credits / month`, null, "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Clay Rescue", "First in the queue on busy days"],
     priceIds: { monthly: "price_1TmVg2Htn4q5rIncWL0b3HJr", yearly: "price_1TmVlUHtn4q5rIncbtWbGyof" },
   },
 ];
@@ -57,6 +53,7 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
   const navigate = useNavigate();
   const videoRef = useRef(null);
   const [billing, setBilling] = useState("yearly");
+  const live = useLivePlanPrices(billing);
 
   useEffect(() => {
     if (!open) return;
@@ -181,7 +178,7 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
                             background: billing === "yearly" ? "rgba(255,255,255,0.18)" : "rgba(167,243,208,0.15)",
                             color: billing === "yearly" ? "#fff" : "#6EE7B7",
                           }}
-                        >–17%</span>
+                        >{live.saveUpTo != null ? `save up to ${live.saveUpTo}%` : "save"}</span>
                       )}
                     </button>
                   ))}
@@ -191,8 +188,8 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
               {/* Tier cards */}
               <div className="grid grid-cols-1 gap-2.5 p-4 sm:grid-cols-3 sm:p-5">
                 {TIERS.map((tier) => {
-                  const price = billing === "yearly" ? tier.yearlyPerMonth : tier.monthly;
-                  const note  = billing === "yearly" ? tier.yearlyNote : "Billed monthly";
+                  const price = live.main(tier.id);
+                  const note  = live.note(tier.id);
                   return (
                     <div
                       key={tier.id}
@@ -209,7 +206,7 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
                         <div
                           className="absolute right-2.5 top-2.5 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide"
                           style={{ background: `${tier.accent}20`, color: tier.accent, border: `1px solid ${tier.accent}40` }}
-                        >Popular</div>
+                        >Recommended</div>
                       )}
 
                       <div className="flex flex-col gap-3 p-4">
@@ -217,7 +214,7 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
 
                         <div className="flex items-center justify-between gap-2 sm:block">
                           <div className="flex items-end gap-1">
-                            <span className="text-[28px] font-extrabold leading-none text-white sm:text-[32px]">${price}</span>
+                            <span className="text-[28px] font-extrabold leading-none text-white sm:text-[32px]">{price}</span>
                             <span className="mb-1 text-[11px] text-white/30">/mo</span>
                           </div>
                           <button
@@ -236,7 +233,7 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
                         >Get {tier.name}</button>
 
                         <ul className="space-y-1.5">
-                          {(planLines ? [tier.features[0], ...(planLines[tier.id] ? [planLines[tier.id]] : []), ...tier.features.slice(2)] : tier.features).map((f, i) => (
+                          {(planLines ? [tier.features[0], ...(planLines[tier.id] ? [planLines[tier.id]] : []), ...tier.features.slice(2)] : tier.features).filter(Boolean).map((f, i) => (
                             <li key={i} className="flex items-start gap-1.5 text-[11px] text-white/45">
                               <Check size={11} className="mt-0.5 flex-shrink-0" style={{ color: `${tier.accent}CC` }} />
                               {f}

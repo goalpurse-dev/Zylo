@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabaseClient";
 import Toast from "../../components/ui/Toast";
 import { useNavigate } from "react-router-dom";
 import { CreditCard, RotateCcw } from "lucide-react";
+import { formatMoney } from "../../lib/pricingMath";
 import CancelFeedbackModal from "../../components/billing/CancelFeedbackModal";
 
 const card = "rounded-2xl border border-[#1F2230] bg-[#141622] p-5 text-white";
@@ -35,7 +36,7 @@ export default function Billing() {
     const p = summary.plan;
     const amt = (p.amount || 0) / 100;
     const intl = p.interval === "year" ? "/yr" : "/mo";
-    return `${p.nickname || "Plan"} — $${amt}${intl}`;
+    return `${p.nickname || "Plan"} — ${formatMoney(amt, p.currency || "eur")}${intl}`;
   }, [summary]);
 
   const planStatusBadge = useMemo(() => {

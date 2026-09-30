@@ -106,6 +106,7 @@ export default {
           plan = {
             nickname: price.nickname || item?.plan?.nickname || "Plan",
             amount: price.unit_amount || 0,
+            currency: price.currency || "eur",
             interval: price.recurring?.interval || item?.plan?.interval || "month",
             price_id: price.id,
             // >>> fields your UI needs <<<

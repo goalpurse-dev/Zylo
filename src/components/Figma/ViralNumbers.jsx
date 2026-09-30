@@ -136,7 +136,7 @@ export default function ViralNumbers() {
               transition={{ delay: 0.2, duration: 0.5 }}
               className="text-white/50 text-base md:text-lg max-w-xl mx-auto"
             >
-              Join 4,200+ creators already using Zyvo to grow their audience every day.
+              18,700+ creators have signed up to Zyvo.
             </motion.p>
           </div>
 

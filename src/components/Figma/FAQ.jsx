@@ -57,7 +57,7 @@ export default function Faq() {
 
         <FaqItem
     question="What's the difference between the free plan and paid plans?"
-    answer="The free plan gives you 10 generations per month with access to standard models. Paid plans unlock more credits, faster and higher-quality AI models, priority generation, and access to the full model library including premium video models like Runway Gen-4."
+    answer="The free plan gives you 5 AI images every 30 days and a look around every tool. Paid plans add monthly credits for every Zyvo tool and template, including videos and Long Form, plus higher quality tiers on Pro and Generative."
 />
 
 

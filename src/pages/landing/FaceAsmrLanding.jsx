@@ -86,7 +86,6 @@ export default function FaceAsmrLanding() {
       "applicationCategory": "MultimediaApplication",
       "operatingSystem": "Web",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
-      "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.9", "reviewCount": "1843" },
     };
     let schemaEl = document.querySelector("#ld-json-face-asmr");
     if (!schemaEl) { schemaEl = document.createElement("script"); schemaEl.id = "ld-json-face-asmr"; schemaEl.type = "application/ld+json"; document.head.appendChild(schemaEl); }

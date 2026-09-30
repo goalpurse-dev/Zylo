@@ -3,62 +3,52 @@ import { createPortal } from "react-dom"
 import { supabase } from "../lib/supabaseClient"
 import { Check } from "lucide-react"
 import { startCheckout } from "../lib/payments"
+import useLivePlanPrices from "./pricing/useLivePlanPrices"
+import { PLAN_CREDITS } from "../../supabase/functions/_shared/stripePlanPrices.js"
 
-/* ─── Pricing data (mirrors Pricing.jsx) ─────────────────────────── */
+/* ─── Pricing data ───────────────────────────────────────────────── */
+// Prices (monthly, what this modal sells) and the per-day figure are live from
+// Stripe (useLivePlanPrices); credits are what new subscriptions get.
 const PLAN_TIERS = [
   {
     id: "starter",
     name: "Starter",
-    price: "$20",
-    priceNote: "/mo",
-    blurb: "Launch faster with enough credits for consistent weekly content",
+    blurb: "Every tool and template at V2 quality",
     popular: false,
     cta: "Start Starter",
-    perDay: "From only $0.67/day",
     features: [
-      "750 credits / month",
-      "~375 AI images / mo",
-      "~25 AI videos with sound / mo",
-      "All styles & models",
+      `${PLAN_CREDITS.starter.toLocaleString("en-US")} credits / month`,
+      "All Zyvo tools & templates",
+      "V2 quality",
       "Watermark-free exports",
-      "Private creation library",
+      "Your creations saved in your library",
     ],
   },
   {
     id: "pro",
     name: "Pro",
-    price: "$42",
-    originalPrice: "$54",
-    priceNote: "/mo",
-    blurb: "Most creators choose this to go viral faster",
+    blurb: "Sharper V3 quality and more credits",
     popular: true,
     cta: "Go Pro",
-    badge: "17% OFF",
-    perDay: "From only $1.40/day",
     features: [
-      "1,600 credits / month",
-      "~800 AI images / mo",
-      "~53 AI videos with sound / mo",
-      "Priority generation queue",
-      "Advanced prompt controls",
+      `${PLAN_CREDITS.pro.toLocaleString("en-US")} credits / month`,
+      "All Zyvo tools & templates",
+      "V2 + V3 quality",
+      "Faster queue on busy days",
       "Watermark-free exports",
     ],
   },
   {
     id: "generative",
     name: "Generative",
-    price: "$85",
-    priceNote: "/mo",
-    blurb: "Built for high-output workflows and serious production",
+    blurb: "Every quality tier and the most credits",
     popular: false,
     cta: "Go All-In",
-    perDay: "From only $2.83/day",
     features: [
-      "3,200 credits / month",
-      "~1,600 AI images / mo",
-      "~106 AI videos with sound / mo",
-      "Fast-lane generation",
-      "Unlimited creation history",
+      `${PLAN_CREDITS.generative.toLocaleString("en-US")} credits / month`,
+      "All Zyvo tools & templates",
+      "V2 + V3 + V4 quality",
+      "First in the queue on busy days",
       "Priority support",
     ],
   },
@@ -117,6 +107,7 @@ function OptionCard({ icon, emoji, label, sublabel, onClick }) {
 
 /* ─── Main component ─────────────────────────────────────────────── */
 export default function OnboardingModal({ user, onComplete }) {
+  const live = useLivePlanPrices("monthly")
   const [step, setStep] = useState(1)
   const [data, setData] = useState({ content_type: "", goal: "", experience: "", email_updates: false })
   const [loading, setLoading] = useState(false)
@@ -314,7 +305,7 @@ export default function OnboardingModal({ user, onComplete }) {
                         {/* Popular badge */}
                         {plan.popular && (
                           <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] px-3 py-1 rounded-full bg-gradient-to-r from-[#7A3BFF] to-[#9D6BFF] text-white font-bold tracking-wide shadow-lg whitespace-nowrap">
-                            MOST POPULAR
+                            RECOMMENDED: UNLOCKS V3
                           </div>
                         )}
 
@@ -333,12 +324,12 @@ export default function OnboardingModal({ user, onComplete }) {
                           {plan.originalPrice && (
                             <div className="text-sm text-white/30 line-through mb-0.5">{plan.originalPrice}</div>
                           )}
-                          <div className="text-3xl font-extrabold text-white leading-none">{plan.price}</div>
-                          <div className="text-xs text-white/40 mb-0.5">{plan.priceNote}</div>
+                          <div className="text-3xl font-extrabold text-white leading-none">{live.main(plan.id)}</div>
+                          <div className="text-xs text-white/40 mb-0.5">/month</div>
                         </div>
 
                         {/* Per-day callout */}
-                        <div className="text-[11px] text-[#9D6BFF] font-medium mb-3">{plan.perDay}</div>
+                        <div className="text-[11px] text-[#9D6BFF] font-medium mb-3">{live.perDay(plan.id) ? `About ${live.perDay(plan.id)} a day` : " "}</div>
 
                         {/* Blurb */}
                         <div className="text-xs text-white/50 leading-relaxed mb-4">{plan.blurb}</div>

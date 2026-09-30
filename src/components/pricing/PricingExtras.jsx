@@ -147,7 +147,7 @@ export function FreePlan() {
     <section className="flex flex-col gap-4 rounded-[24px] border border-white/[0.07] bg-[#0F1112] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6" aria-labelledby="free-title">
       <div>
         <h2 id="free-title" style={DISPLAY_FONT} className="text-[28px] font-extrabold uppercase leading-none text-white">Free</h2>
-        <p className="mt-1.5 max-w-[56ch] text-[13px] text-white/50">Sign up free to look around every tool and its examples. Making videos needs a plan. No card needed to sign up.</p>
+        <p className="mt-1.5 max-w-[56ch] text-[13px] text-white/50">Sign up free: 5 AI images every 30 days and a look around every tool. Making videos needs a plan. No card needed.</p>
       </div>
       {!account.signedIn && (
         <Link to="/signup" className={cx("inline-flex h-11 shrink-0 items-center justify-center rounded-xl border border-white/15 px-5 text-[14px] font-bold text-white/75 hover:text-white", FOCUS)}>Sign up free</Link>
@@ -162,7 +162,7 @@ const FAQS = [
   { q: "How do upgrades and downgrades work?", a: "Both are handled securely in Stripe. Upgrades are instant (prorated). Downgrades take effect at your next renewal." },
   { q: "Do you offer refunds?", a: "Unused credits are refundable within 7 days. Once credits are spent, refunds can't be issued because of AI generation costs." },
   { q: "What do V2, V3 and V4 mean?", a: "They're quality tiers for Zyvo's templates and Long Form. V2 is on every plan, V3 needs Pro, V4 needs Generative. Higher tiers look sharper and use more credits." },
-  { q: "Is there a free plan?", a: "You can sign up free and look around every tool and its examples. Making videos needs a plan." },
+  { q: "Is there a free plan?", a: "Yes. Sign up free for 5 AI images every 30 days and a look around every tool. Making videos needs a plan." },
 ];
 
 export function Faq() {

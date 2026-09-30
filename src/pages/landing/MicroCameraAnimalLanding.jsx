@@ -76,7 +76,6 @@ export default function MicroCameraAnimalLanding() {
       "applicationCategory": "MultimediaApplication",
       "operatingSystem": "Web",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
-      "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.9", "reviewCount": "1247" },
     };
     let schemaEl = document.querySelector("#ld-json-micro-camera");
     if (!schemaEl) { schemaEl = document.createElement("script"); schemaEl.id = "ld-json-micro-camera"; schemaEl.type = "application/ld+json"; document.head.appendChild(schemaEl); }

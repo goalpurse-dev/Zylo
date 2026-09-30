@@ -1,6 +1,7 @@
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
+import useLivePlanPrices from "../pricing/useLivePlanPrices";
 
 const FEATURES = [
   { icon: "🎬", text: "Image & video prompts per scene" },
@@ -19,6 +20,7 @@ const STYLE_PREVIEWS = [
 
 export default function ScriptUpsellModal({ open, mode, onClose }) {
   const navigate = useNavigate();
+  const live = useLivePlanPrices("monthly");
   if (!open) return null;
 
   const isGuest = mode === "guest";
@@ -83,7 +85,7 @@ export default function ScriptUpsellModal({ open, mode, onClose }) {
             <p className="text-white/45 text-sm leading-relaxed mb-5">
               {isGuest
                 ? "Create a free account and start generating AI-powered viral scripts with image & video prompts for every scene."
-                : "The Script Builder is included on every paid plan — starting from Starter at $20/mo. Pick any plan and get instant access."}
+                : `The Script Builder is included on every paid plan${live.status === "ready" ? `, starting from Starter at ${live.main("starter")} a month` : ""}. Pick any plan and get instant access.`}
             </p>
 
             {/* Features */}

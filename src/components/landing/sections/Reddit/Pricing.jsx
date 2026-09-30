@@ -2,73 +2,71 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
+import useLivePlanPrices from "../../../pricing/useLivePlanPrices";
+import { PLAN_CREDITS } from "../../../../../supabase/functions/_shared/stripePlanPrices.js";
 
 /* ─── Plan data ───────────────────────────────────────────────────────────── */
+// Prices are live from Stripe (useLivePlanPrices); credits are what new
+// subscriptions get (PLAN_CREDITS). Every line is true on today's product.
 const TIERS = [
   {
     id: "starter",
     name: "Starter",
-    price: "$22",
-    blurb: "For creators just getting started",
+    blurb: "Every tool and template at V2 quality",
     accent: "#9B72F5",
     btnFrom: "#5B21B6",
     btnTo: "#7C3AED",
     cta: { label: "Start creating", to: "/signup?plan=starter" },
     popular: false,
     features: [
-      { text: "Viral Video Builder", star: true },
-      { text: "300 credits / month" },
-      { text: "20 clips / month" },
-      { text: "Pro captions & styles" },
+      { text: `${PLAN_CREDITS.starter.toLocaleString("en-US")} credits / month`, star: true },
+      { text: "Every Zyvo tool and template" },
+      { text: "V2 quality" },
+      { text: "Long Form YouTube videos" },
       { text: "Watermark-free exports" },
-      { text: "Standard queue" },
       { text: "Email support" },
     ],
   },
   {
     id: "pro",
     name: "Pro",
-    price: "$45",
-    blurb: "What most viral creators use",
+    blurb: "Sharper V3 quality and more credits",
     accent: "#A855F7",
     btnFrom: "#6D28D9",
     btnTo: "#A855F7",
     cta: { label: "Get Pro", to: "/signup?plan=pro" },
     popular: true,
     features: [
-      { text: "Viral Video Builder", star: true },
-      { text: "1,200 credits / month" },
-      { text: "60 clips / month" },
-      { text: "AI voiceovers" },
-      { text: "Brand Kit" },
-      { text: "Priority queue" },
-      { text: "Email support" },
+      { text: `${PLAN_CREDITS.pro.toLocaleString("en-US")} credits / month`, star: true },
+      { text: "Every Zyvo tool and template" },
+      { text: "V2 + V3 quality" },
+      { text: "Long Form YouTube videos" },
+      { text: "Faster queue on busy days" },
+      { text: "Priority support" },
     ],
   },
   {
     id: "generative",
     name: "Generative",
-    price: "$90",
-    blurb: "Built for high-output production",
+    blurb: "Every quality tier and the most credits",
     accent: "#C084FC",
     btnFrom: "#7C3AED",
     btnTo: "#C084FC",
     cta: { label: "Get Generative", to: "/signup?plan=generative" },
     popular: false,
     features: [
-      { text: "Viral Video Builder", star: true },
-      { text: "3,000 credits / month" },
-      { text: "150 clips / month" },
-      { text: "AI scenes & scripts" },
-      { text: "Team collaboration" },
-      { text: "Fast-lane queue" },
-      { text: "Chat support" },
+      { text: `${PLAN_CREDITS.generative.toLocaleString("en-US")} credits / month`, star: true },
+      { text: "Every Zyvo tool and template" },
+      { text: "V2 + V3 + V4 quality" },
+      { text: "Long Form YouTube videos" },
+      { text: "First in the queue on busy days" },
+      { text: "Priority support" },
     ],
   },
 ];
 
 /* ─── Card ────────────────────────────────────────────────────────────────── */
-function PlanCard({ tier, index }) {
+function PlanCard({ tier, index, price }) {
   const isPopular = !!tier.popular;
 
   return (
@@ -99,7 +97,7 @@ function PlanCard({ tier, index }) {
             border: `1px solid ${tier.accent}40`,
           }}
         >
-          MOST POPULAR
+          RECOMMENDED: UNLOCKS V3
         </div>
       )}
 
@@ -116,21 +114,11 @@ function PlanCard({ tier, index }) {
         {/* Price */}
         <div className="flex items-end gap-1.5 mb-1">
           <span className="text-[52px] font-extrabold leading-none tracking-tighter text-white">
-            {tier.price}
+            {price}
           </span>
           <span className="text-white/30 text-sm mb-2">/mo</span>
         </div>
         <div className="text-xs text-white/20 mb-5">billed monthly · cancel anytime</div>
-
-        {/* Urgency — pro only */}
-        {isPopular && (
-          <div className="flex items-center gap-2 mb-4">
-            <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 animate-pulse" />
-            <span className="text-[11px] font-medium text-red-400/85">
-              Pro plan: 23 spots left at this price
-            </span>
-          </div>
-        )}
 
         {/* CTA */}
         <Link
@@ -143,22 +131,6 @@ function PlanCard({ tier, index }) {
         >
           {tier.cta.label} →
         </Link>
-
-        {/* Progress bar — pro only */}
-        {isPopular && (
-          <div className="mb-5">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] text-white/30">78% of creators choose Pro</span>
-              <span className="text-[10px] font-bold" style={{ color: tier.accent }}>78%</span>
-            </div>
-            <div className="h-1 rounded-full overflow-hidden bg-white/[0.06]">
-              <div
-                className="h-full rounded-full"
-                style={{ width: "78%", background: `linear-gradient(90deg, ${tier.btnFrom}, ${tier.accent})` }}
-              />
-            </div>
-          </div>
-        )}
 
         {/* Divider */}
         <div className="mb-5 h-px bg-white/[0.05]" />
@@ -174,14 +146,6 @@ function PlanCard({ tier, index }) {
               <span className={f.star ? "text-white font-semibold" : "text-white/50"}>
                 {f.text}
               </span>
-              {f.star && (
-                <span
-                  className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
-                  style={{ background: `${tier.accent}18`, color: tier.accent }}
-                >
-                  INCLUDED
-                </span>
-              )}
             </li>
           ))}
         </ul>
@@ -196,6 +160,7 @@ function PlanCard({ tier, index }) {
 
 /* ─── Page ────────────────────────────────────────────────────────────────── */
 export default function Pricing() {
+  const live = useLivePlanPrices("monthly");
   return (
     <section
       className="relative overflow-hidden text-white"
@@ -225,15 +190,14 @@ export default function Pricing() {
               color: "rgba(255,255,255,0.4)",
             }}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-white font-semibold">12,000+</span>&nbsp;creators already building
+            <span className="text-white font-semibold">18,700+</span>&nbsp;creators signed up
           </span>
         </div>
 
         {/* Heading */}
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.05] mb-4 text-white">
-            One plan. Daily virals.{" "}
+            Make more videos{" "}
             <span
               style={{
                 background: "linear-gradient(90deg,#A855F7,#C084FC)",
@@ -241,18 +205,18 @@ export default function Pricing() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              You pick the speed.
+              every month.
             </span>
           </h2>
           <p className="text-white/40 text-base max-w-md mx-auto">
-            Every plan includes the Viral Video Builder. Start free, upgrade when you're ready.
+            Every plan includes every Zyvo tool. Start free, upgrade when you're ready.
           </p>
         </div>
 
         {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5 mb-6">
           {TIERS.map((t, i) => (
-            <PlanCard key={t.id} tier={t} index={i} />
+            <PlanCard key={t.id} tier={t} index={i} price={live.main(t.id)} />
           ))}
         </div>
 
@@ -270,48 +234,22 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* Free + Enterprise */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-          {[
-            {
-              label: "Free",
-              price: "$0",
-              sub: "Try ZyloAI with weekly credits",
-              desc: "10 minutes and 1 AI avatar per week, 4 exports per week with a small watermark. Access to core tools.",
-              cta: "Start for free",
-              to: "/signup",
-            },
-            {
-              label: "Enterprise",
-              price: "Custom",
-              sub: "For teams and organizations",
-              desc: "SSO & roles, unlimited workspaces, custom model options, SLAs and priority support.",
-              cta: "Contact sales",
-              to: "/contact",
-            },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="rounded-[20px] p-6 flex flex-col gap-4"
-              style={{ background: "#0D0F1C" }}
-            >
-              <div>
-                <div className="text-xs uppercase tracking-wider mb-1.5" style={{ color: "rgba(255,255,255,0.2)" }}>
-                  {item.label}
-                </div>
-                <div className="text-3xl font-extrabold text-white">{item.price}</div>
-                <div className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{item.sub}</div>
-              </div>
-              <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>{item.desc}</p>
-              <Link
-                to={item.to}
-                className="inline-flex justify-center items-center py-3 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-[0.98]"
-                style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)" }}
-              >
-                {item.cta}
-              </Link>
-            </div>
-          ))}
+        {/* Free */}
+        <div className="mt-8 flex flex-col gap-4 rounded-[20px] p-6 sm:flex-row sm:items-center sm:justify-between" style={{ background: "#0D0F1C" }}>
+          <div>
+            <div className="text-xs uppercase tracking-wider mb-1.5" style={{ color: "rgba(255,255,255,0.2)" }}>Free</div>
+            <div className="text-3xl font-extrabold text-white">€0</div>
+            <p className="mt-1 text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>
+              5 free AI images every 30 days and a look around every tool. Making videos needs a plan. No card needed.
+            </p>
+          </div>
+          <Link
+            to="/signup"
+            className="inline-flex shrink-0 justify-center items-center px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-[0.98]"
+            style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)" }}
+          >
+            Start for free
+          </Link>
         </div>
 
         {/* Trust footer */}
