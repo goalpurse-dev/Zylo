@@ -111,7 +111,7 @@ import { createMockAdapter } from "./mock/mockAdapter.js";
  * @property {string[]} [castIds]      1–3 for single videos. Idea: taken from the idea. Script:
  *                                     optional, the distinct speakers when omitted
  * @property {QualityTier} quality
- * @property {number} lengthSec        15–120 in 15s steps (script: derived from the lines)
+ * @property {number} lengthSec        15–120 in 5 s steps (script: derived from the lines)
  * @property {Aspect} aspect
  * @property {string} [seriesId]
  * @property {number} [episodeNumber]

@@ -4,6 +4,7 @@
 // switches to a shorter wording (tiers), and tests prove every tier fits.
 import { FRUIT_MODELS } from "./models.js";
 import { SERVER_LIMITS } from "./limits.js";
+import { withSubject } from "./wording.js";
 
 export const PICTURE_PROMPT_MAX = SERVER_LIMITS.maxScenePromptChars;   // 2,500 (Nano Banana accepts 45,000)
 
@@ -41,7 +42,7 @@ function build(tier, { story, scene, cast, location }) {
     : "";
   const parts = [
     `${aspect}. ${SHOT_TEXT[scene.shot] ?? SHOT_TEXT["medium two-shot"]}. ${FACE}`,
-    `${who(speaker)} ${scene.action}, looking ${scene.emotion}, mouth open mid-sentence${others.length ? `, talking to ${listeners}` : ""}.`,
+    `${withSubject(who(speaker), speaker, scene.action)}, looking ${scene.emotion}, mouth open mid-sentence${others.length ? `, talking to ${listeners}` : ""}.`,
     others.length ? `${listeners} ${others.length > 1 ? "listen and react" : "listens and reacts"} silently, mouth${others.length > 1 ? "s" : ""} closed.` : "",
     scene.placement ? `Positions: ${scene.placement.replace(/\.$/, "")}.` : "",
     `Setting: ${location.description}.`,

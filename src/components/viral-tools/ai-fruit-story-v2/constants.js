@@ -38,8 +38,8 @@ export const OPENERS = ["Caught at a fancy dinner", "Walked in on at the office"
 export const TONES = ["Loud and dramatic", "Petty and sarcastic", "Funny and chaotic", "Cold and quiet"];
 
 export const UPGRADE_COPY = {
-  v3: { title: "V3 is a Pro feature", body: "V3 animates every scene in sharper 720p video. It's available starting on the Pro plan." },
-  v4: { title: "V4 is a Generative feature", body: "V4 animates every scene in full 1080p with the most natural motion and voices. It's available on the Generative plan." },
+  v3: { title: "V3 is a Pro feature", body: "V3 animates every scene with sharper, steadier motion. It's available starting on the Pro plan." },
+  v4: { title: "V4 is a Generative feature", body: "V4 animates every scene with the most natural motion and voices. It's available on the Generative plan." },
 };
 
 /** "45 sec", "1 min", "1 min 30 sec" */

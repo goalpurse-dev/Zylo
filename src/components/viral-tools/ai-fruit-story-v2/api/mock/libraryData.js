@@ -14,7 +14,7 @@ export const LIBRARY = [
   "tag": "Wife",
   "role": "Calm, patient schemer",
   "gender": "female",
-  "voiceStyle": "calm, low, deliberate",
+  "voiceStyle": "low, smooth, unhurried",
   "storyTypes": [
    "marriage",
    "family"
@@ -31,7 +31,7 @@ export const LIBRARY = [
   "tag": "Husband",
   "role": "Charming, smooth liar",
   "gender": "male",
-  "voiceStyle": "smooth, confident",
+  "voiceStyle": "warm baritone, smooth, even pace",
   "storyTypes": [
    "marriage",
    "money"
@@ -48,7 +48,7 @@ export const LIBRARY = [
   "tag": "Rival",
   "role": "Glamorous other woman",
   "gender": "female",
-  "voiceStyle": "sweet, teasing",
+  "voiceStyle": "light, airy, lilting",
   "storyTypes": [
    "marriage",
    "dating"
@@ -65,7 +65,7 @@ export const LIBRARY = [
   "tag": "Boss",
   "role": "Loud CEO, bad liar",
   "gender": "male",
-  "voiceStyle": "loud, blustering",
+  "voiceStyle": "loud, booming baritone",
   "storyTypes": [
    "office",
    "marriage"
@@ -82,7 +82,7 @@ export const LIBRARY = [
   "tag": "Intern",
   "role": "Sweet intern with secrets",
   "gender": "female",
-  "voiceStyle": "bright, nervous",
+  "voiceStyle": "bright, quick, slightly high",
   "storyTypes": [
    "office",
    "dating"
@@ -99,7 +99,7 @@ export const LIBRARY = [
   "tag": "Wife",
   "role": "Icy co-founder",
   "gender": "female",
-  "voiceStyle": "cold, precise",
+  "voiceStyle": "thin, crisp, precise diction",
   "storyTypes": [
    "office",
    "marriage",
@@ -117,7 +117,7 @@ export const LIBRARY = [
   "tag": "Receptionist",
   "role": "Office gossip, 19 years",
   "gender": "female",
-  "voiceStyle": "fast, gleeful",
+  "voiceStyle": "quick, chirpy, mid-pitched",
   "storyTypes": [
    "office"
   ],
@@ -133,7 +133,7 @@ export const LIBRARY = [
   "tag": "HR",
   "role": "Sour HR director",
   "gender": "female",
-  "voiceStyle": "clipped, formal",
+  "voiceStyle": "clipped, crisp, mid-pitched",
   "storyTypes": [
    "office"
   ],
@@ -149,7 +149,7 @@ export const LIBRARY = [
   "tag": "Boyfriend",
   "role": "Nervous over-explainer",
   "gender": "male",
-  "voiceStyle": "fast, shaky",
+  "voiceStyle": "quick, thin, a little breathy",
   "storyTypes": [
    "dating",
    "family"
@@ -166,7 +166,7 @@ export const LIBRARY = [
   "tag": "Kingpin",
   "role": "Cellblock kingpin",
   "gender": "male",
-  "voiceStyle": "deep, slow, menacing",
+  "voiceStyle": "very deep, slow, gravelly bass",
   "storyTypes": [
    "crime"
   ],
@@ -182,7 +182,7 @@ export const LIBRARY = [
   "tag": "Enforcer",
   "role": "Silent enforcer",
   "gender": "male",
-  "voiceStyle": "rare, gravelly",
+  "voiceStyle": "low, gravelly, sparse",
   "storyTypes": [
    "crime"
   ],
@@ -198,7 +198,7 @@ export const LIBRARY = [
   "tag": "Mom",
   "role": "Protective mom",
   "gender": "female",
-  "voiceStyle": "warm, firm",
+  "voiceStyle": "warm, full, mid-pitched",
   "storyTypes": [
    "family"
   ],
@@ -214,7 +214,7 @@ export const LIBRARY = [
   "tag": "Friend",
   "role": "Loyal best friend",
   "gender": "female",
-  "voiceStyle": "upbeat, loyal",
+  "voiceStyle": "bright, upbeat, quick",
   "storyTypes": [
    "dating"
   ],
@@ -230,7 +230,7 @@ export const LIBRARY = [
   "tag": "Husband",
   "role": "Rich, clueless husband",
   "gender": "male",
-  "voiceStyle": "cheerful, oblivious",
+  "voiceStyle": "hearty, warm, older baritone",
   "storyTypes": [
    "marriage",
    "money"
@@ -247,7 +247,7 @@ export const LIBRARY = [
   "tag": "Influencer",
   "role": "Lives for the drama",
   "gender": "female",
-  "voiceStyle": "bubbly, dramatic",
+  "voiceStyle": "bright, bubbly, high",
   "storyTypes": [
    "social",
    "dating"
@@ -264,7 +264,7 @@ export const LIBRARY = [
   "tag": "Mother-in-law",
   "role": "Never leaves, never forgets",
   "gender": "female",
-  "voiceStyle": "sweet, passive-aggressive",
+  "voiceStyle": "soft, sugary, older",
   "storyTypes": [
    "family",
    "marriage"
@@ -281,7 +281,7 @@ export const LIBRARY = [
   "tag": "Son",
   "role": "Spoiled only child",
   "gender": "male",
-  "voiceStyle": "whiny, entitled",
+  "voiceStyle": "nasal, reedy, young",
   "storyTypes": [
    "family",
    "money"
@@ -298,7 +298,7 @@ export const LIBRARY = [
   "tag": "Trainer",
   "role": "Personal trainer the wife keeps booking",
   "gender": "male",
-  "voiceStyle": "loud, pumped",
+  "voiceStyle": "loud, punchy, fast",
   "storyTypes": [
    "marriage",
    "sports"
@@ -315,7 +315,7 @@ export const LIBRARY = [
   "tag": "Nurse",
   "role": "Kind nurse who hears everything",
   "gender": "female",
-  "voiceStyle": "gentle, quick",
+  "voiceStyle": "soft, gentle, quick",
   "storyTypes": [
    "hospital"
   ],
@@ -331,7 +331,7 @@ export const LIBRARY = [
   "tag": "Grandpa",
   "role": "Grumpy grandpa rewriting his will",
   "gender": "male",
-  "voiceStyle": "gravelly, stubborn",
+  "voiceStyle": "gravelly, low, older, slow",
   "storyTypes": [
    "family",
    "money"
@@ -348,7 +348,7 @@ export const LIBRARY = [
   "tag": "Wife",
   "role": "Teacher wife who found the receipts",
   "gender": "female",
-  "voiceStyle": "crisp, precise",
+  "voiceStyle": "crisp, clear, measured",
   "storyTypes": [
    "marriage",
    "school"
@@ -365,7 +365,7 @@ export const LIBRARY = [
   "tag": "Realtor",
   "role": "Pushy realtor who lies about everything",
   "gender": "female",
-  "voiceStyle": "salesy, bright",
+  "voiceStyle": "bright, glossy, quick",
   "storyTypes": [
    "office",
    "money"
@@ -382,7 +382,7 @@ export const LIBRARY = [
   "tag": "Grandma",
   "role": "Sweet grandma, sharp tongue",
   "gender": "female",
-  "voiceStyle": "sweet, sly",
+  "voiceStyle": "soft, sweet-toned, older",
   "storyTypes": [
    "family"
   ],
@@ -398,7 +398,7 @@ export const LIBRARY = [
   "tag": "Accountant",
   "role": "Nervous accountant cooking the books",
   "gender": "male",
-  "voiceStyle": "mumbling, anxious",
+  "voiceStyle": "soft, mumbly, quick",
   "storyTypes": [
    "office",
    "money"
@@ -415,7 +415,7 @@ export const LIBRARY = [
   "tag": "Rival VP",
   "role": "Rival VP gunning for the CEO job",
   "gender": "male",
-  "voiceStyle": "nasal, smug",
+  "voiceStyle": "nasal, thin, drawling",
   "storyTypes": [
    "office"
   ],
@@ -431,7 +431,7 @@ export const LIBRARY = [
   "tag": "Student",
   "role": "Overachiever with a secret TikTok",
   "gender": "female",
-  "voiceStyle": "quick, bright",
+  "voiceStyle": "quick, bright, light",
   "storyTypes": [
    "school",
    "social"
@@ -448,7 +448,7 @@ export const LIBRARY = [
   "tag": "Father-in-law",
   "role": "Old-school dad who hates the groom",
   "gender": "male",
-  "voiceStyle": "booming, proud",
+  "voiceStyle": "booming, rich, older",
   "storyTypes": [
    "family",
    "wedding"
@@ -465,7 +465,7 @@ export const LIBRARY = [
   "tag": "Sister",
   "role": "Little sister who spills everything",
   "gender": "female",
-  "voiceStyle": "bubbly, fast",
+  "voiceStyle": "bubbly, fast, high",
   "storyTypes": [
    "family",
    "dating"
@@ -482,7 +482,7 @@ export const LIBRARY = [
   "tag": "Brother",
   "role": "Freeloading brother on the couch",
   "gender": "male",
-  "voiceStyle": "lazy, charming",
+  "voiceStyle": "relaxed drawl, warm, low",
   "storyTypes": [
    "family",
    "money"
@@ -499,7 +499,7 @@ export const LIBRARY = [
   "tag": "Chef",
   "role": "Hot-tempered celebrity chef",
   "gender": "male",
-  "voiceStyle": "fiery, loud",
+  "voiceStyle": "loud, hard-edged, fast",
   "storyTypes": [
    "service",
    "social"
@@ -516,7 +516,7 @@ export const LIBRARY = [
   "tag": "Wedding planner",
   "role": "Wedding planner who's seen it all",
   "gender": "female",
-  "voiceStyle": "brisk, dramatic",
+  "voiceStyle": "brisk, full, projecting",
   "storyTypes": [
    "wedding"
   ],
@@ -532,7 +532,7 @@ export const LIBRARY = [
   "tag": "Influencer",
   "role": "Brand-deal queen, fake perfect life",
   "gender": "female",
-  "voiceStyle": "breathy, upbeat",
+  "voiceStyle": "breathy, light, bright",
   "storyTypes": [
    "social"
   ],
@@ -548,7 +548,7 @@ export const LIBRARY = [
   "tag": "Dad",
   "role": "Dad-joke dad hiding a second phone",
   "gender": "male",
-  "voiceStyle": "warm, corny",
+  "voiceStyle": "warm, round, mid-pitched",
   "storyTypes": [
    "family",
    "marriage"
@@ -565,7 +565,7 @@ export const LIBRARY = [
   "tag": "Rich widow",
   "role": "Southern widow, five husbands",
   "gender": "female",
-  "voiceStyle": "slow, sugary",
+  "voiceStyle": "slow, soft, sugary drawl",
   "storyTypes": [
    "money",
    "marriage"
@@ -582,7 +582,7 @@ export const LIBRARY = [
   "tag": "Waiter",
   "role": "Actor-slash-waiter, always auditioning",
   "gender": "male",
-  "voiceStyle": "theatrical",
+  "voiceStyle": "projecting, rich, rolling",
   "storyTypes": [
    "service",
    "dating"
@@ -599,7 +599,7 @@ export const LIBRARY = [
   "tag": "Divorce lawyer",
   "role": "Shark divorce lawyer",
   "gender": "female",
-  "voiceStyle": "cool, cutting",
+  "voiceStyle": "low, crisp, cool-toned",
   "storyTypes": [
    "law",
    "marriage"
@@ -616,7 +616,7 @@ export const LIBRARY = [
   "tag": "Security guard",
   "role": "Night guard who watches all the cameras",
   "gender": "male",
-  "voiceStyle": "slow, dry",
+  "voiceStyle": "slow, dry, low",
   "storyTypes": [
    "office",
    "crime"
@@ -633,7 +633,7 @@ export const LIBRARY = [
   "tag": "Mailroom guy",
   "role": "Mailroom guy who reads the memos",
   "gender": "male",
-  "voiceStyle": "casual, nosy",
+  "voiceStyle": "casual, mid-pitched, quick",
   "storyTypes": [
    "office"
   ],
@@ -649,7 +649,7 @@ export const LIBRARY = [
   "tag": "Bride",
   "role": "Bridezilla counting every gift",
   "gender": "female",
-  "voiceStyle": "shrill, demanding",
+  "voiceStyle": "shrill, high, fast",
   "storyTypes": [
    "wedding"
   ],
@@ -665,7 +665,7 @@ export const LIBRARY = [
   "tag": "Hairdresser",
   "role": "Salon owner, knows every secret",
   "gender": "female",
-  "voiceStyle": "chatty, loud",
+  "voiceStyle": "loud, quick, chatty rhythm",
   "storyTypes": [
    "service",
    "neighbors"
@@ -682,7 +682,7 @@ export const LIBRARY = [
   "tag": "Streamer",
   "role": "Loud gaming streamer",
   "gender": "male",
-  "voiceStyle": "hyper, loud",
+  "voiceStyle": "loud, high-energy, fast",
   "storyTypes": [
    "social"
   ],
@@ -698,7 +698,7 @@ export const LIBRARY = [
   "tag": "Judge",
   "role": "Stern judge with a soft heart",
   "gender": "male",
-  "voiceStyle": "measured, deep",
+  "voiceStyle": "deep, measured, even",
   "storyTypes": [
    "law"
   ],
@@ -714,7 +714,7 @@ export const LIBRARY = [
   "tag": "Maid of honor",
   "role": "Maid of honor in love with the groom",
   "gender": "female",
-  "voiceStyle": "sweet, guilty",
+  "voiceStyle": "soft, light, mid-pitched",
   "storyTypes": [
    "wedding",
    "dating"
@@ -731,7 +731,7 @@ export const LIBRARY = [
   "tag": "Con artist",
   "role": "Smooth con man with ten names",
   "gender": "male",
-  "voiceStyle": "silky, fast",
+  "voiceStyle": "silky, fast, smooth",
   "storyTypes": [
    "crime",
    "money"
@@ -748,7 +748,7 @@ export const LIBRARY = [
   "tag": "Mayor",
   "role": "Small-town mayor with big secrets",
   "gender": "male",
-  "voiceStyle": "booming, slick",
+  "voiceStyle": "booming, smooth, resonant",
   "storyTypes": [
    "social",
    "neighbors"
@@ -765,7 +765,7 @@ export const LIBRARY = [
   "tag": "Stepmom",
   "role": "Stepmom who wants the house",
   "gender": "female",
-  "voiceStyle": "sweet, icy",
+  "voiceStyle": "soft, smooth, cool-toned",
   "storyTypes": [
    "family",
    "money"
@@ -782,7 +782,7 @@ export const LIBRARY = [
   "tag": "Bartender",
   "role": "Bartender who hears every confession",
   "gender": "male",
-  "voiceStyle": "smooth, low",
+  "voiceStyle": "low, smooth, relaxed",
   "storyTypes": [
    "service",
    "dating"
@@ -799,7 +799,7 @@ export const LIBRARY = [
   "tag": "Landlord",
   "role": "Landlord who raises rent every scene",
   "gender": "male",
-  "voiceStyle": "gruff, greedy",
+  "voiceStyle": "gruff, rough, low",
   "storyTypes": [
    "neighbors",
    "money"
@@ -816,7 +816,7 @@ export const LIBRARY = [
   "tag": "Barista",
   "role": "Sarcastic barista, remembers every order",
   "gender": "female",
-  "voiceStyle": "dry, sharp",
+  "voiceStyle": "dry, flat, low",
   "storyTypes": [
    "service",
    "dating"
@@ -833,7 +833,7 @@ export const LIBRARY = [
   "tag": "Cop",
   "role": "Sour cop who never smiles",
   "gender": "male",
-  "voiceStyle": "flat, tough",
+  "voiceStyle": "flat, low, rough",
   "storyTypes": [
    "law",
    "crime"
@@ -850,7 +850,7 @@ export const LIBRARY = [
   "tag": "Intern",
   "role": "Intern who wants the boss's job",
   "gender": "female",
-  "voiceStyle": "sweet, ambitious",
+  "voiceStyle": "light, sweet-toned, clear",
   "storyTypes": [
    "office",
    "dating"
@@ -867,7 +867,7 @@ export const LIBRARY = [
   "tag": "Founder",
   "role": "Retired founder who shows up unannounced",
   "gender": "male",
-  "voiceStyle": "tired, formal",
+  "voiceStyle": "slow, formal diction, older, soft",
   "storyTypes": [
    "office",
    "money"
@@ -884,7 +884,7 @@ export const LIBRARY = [
   "tag": "Private eye",
   "role": "PI hired to follow the husband",
   "gender": "male",
-  "voiceStyle": "low, noir",
+  "voiceStyle": "low, smoky, unhurried",
   "storyTypes": [
    "law",
    "marriage"
@@ -901,7 +901,7 @@ export const LIBRARY = [
   "tag": "Marketing lead",
   "role": "Marketing lead who steals ideas",
   "gender": "female",
-  "voiceStyle": "peppy, fake",
+  "voiceStyle": "peppy, high, bright",
   "storyTypes": [
    "office",
    "social"
@@ -918,7 +918,7 @@ export const LIBRARY = [
   "tag": "Secretary",
   "role": "Executive secretary for 30 years",
   "gender": "female",
-  "voiceStyle": "whispery, sharp",
+  "voiceStyle": "whispery, thin, older",
   "storyTypes": [
    "office"
   ],
@@ -934,7 +934,7 @@ export const LIBRARY = [
   "tag": "Young lover",
   "role": "Wife's much younger secret lover",
   "gender": "male",
-  "voiceStyle": "loud, lazy",
+  "voiceStyle": "loud, drawling, young",
   "storyTypes": [
    "marriage",
    "dating"
@@ -951,7 +951,7 @@ export const LIBRARY = [
   "tag": "Sales rep",
   "role": "Top sales rep who fakes his numbers",
   "gender": "male",
-  "voiceStyle": "loud, pushy",
+  "voiceStyle": "loud, heavy, fast",
   "storyTypes": [
    "office"
   ],
@@ -967,7 +967,7 @@ export const LIBRARY = [
   "tag": "Flight attendant",
   "role": "Flight attendant with a man in every city",
   "gender": "female",
-  "voiceStyle": "sweet, sly",
+  "voiceStyle": "soft, light, sweet-toned",
   "storyTypes": [
    "service",
    "dating"
@@ -984,7 +984,7 @@ export const LIBRARY = [
   "tag": "Aunt",
   "role": "Aunt who brings drama to every holiday",
   "gender": "female",
-  "voiceStyle": "loud, nosy",
+  "voiceStyle": "loud, older, carrying",
   "storyTypes": [
    "family"
   ],
@@ -1000,7 +1000,7 @@ export const LIBRARY = [
   "tag": "Taxi driver",
   "role": "Taxi driver who knows every affair",
   "gender": "male",
-  "voiceStyle": "chatty, gravelly",
+  "voiceStyle": "gravelly, warm, chatty rhythm",
   "storyTypes": [
    "service",
    "marriage"
@@ -1017,7 +1017,7 @@ export const LIBRARY = [
   "tag": "Pop star",
   "role": "Pop star with a secret boyfriend",
   "gender": "female",
-  "voiceStyle": "sing-song, bratty",
+  "voiceStyle": "high, sing-song lilt, young",
   "storyTypes": [
    "social",
    "dating"
@@ -1034,7 +1034,7 @@ export const LIBRARY = [
   "tag": "Groom",
   "role": "Groom with cold feet",
   "gender": "male",
-  "voiceStyle": "nervous, sweet",
+  "voiceStyle": "soft, light, slightly shaky",
   "storyTypes": [
    "wedding"
   ],
@@ -1050,7 +1050,7 @@ export const LIBRARY = [
   "tag": "Inmate",
   "role": "New inmate who talks too much",
   "gender": "male",
-  "voiceStyle": "fast, nervous",
+  "voiceStyle": "quick, light, a little breathy",
   "storyTypes": [
    "crime"
   ],
@@ -1066,7 +1066,7 @@ export const LIBRARY = [
   "tag": "Warden",
   "role": "Warden with a soft spot",
   "gender": "female",
-  "voiceStyle": "stern, tired",
+  "voiceStyle": "firm, low, slightly raspy",
   "storyTypes": [
    "crime",
    "law"
@@ -1083,7 +1083,7 @@ export const LIBRARY = [
   "tag": "Resort owner",
   "role": "Resort owner hiding debt",
   "gender": "male",
-  "voiceStyle": "smooth, jovial",
+  "voiceStyle": "smooth, warm, older baritone",
   "storyTypes": [
    "money"
   ],
@@ -1099,7 +1099,7 @@ export const LIBRARY = [
   "tag": "Reality star",
   "role": "Reality-show villain",
   "gender": "female",
-  "voiceStyle": "sassy, loud",
+  "voiceStyle": "loud, bright, quick",
   "storyTypes": [
    "social",
    "dating"
@@ -1116,7 +1116,7 @@ export const LIBRARY = [
   "tag": "Prison guard",
   "role": "Prison guard taking bribes",
   "gender": "male",
-  "voiceStyle": "bored, gruff",
+  "voiceStyle": "gruff, flat, low",
   "storyTypes": [
    "crime"
   ],
@@ -1132,7 +1132,7 @@ export const LIBRARY = [
   "tag": "Surgeon",
   "role": "Cold-blooded star surgeon",
   "gender": "female",
-  "voiceStyle": "clipped, calm",
+  "voiceStyle": "clipped, even, mid-pitched",
   "storyTypes": [
    "hospital"
   ],
@@ -1148,7 +1148,7 @@ export const LIBRARY = [
   "tag": "Lifeguard",
   "role": "Lifeguard dating a married woman",
   "gender": "male",
-  "voiceStyle": "laid-back",
+  "voiceStyle": "relaxed, mellow, low",
   "storyTypes": [
    "marriage",
    "sports"
@@ -1165,7 +1165,7 @@ export const LIBRARY = [
   "tag": "Fortune teller",
   "role": "Fortune teller who's always right",
   "gender": "female",
-  "voiceStyle": "mystic, slow",
+  "voiceStyle": "slow, airy, older, soft",
   "storyTypes": [
    "social",
    "family"
@@ -1182,7 +1182,7 @@ export const LIBRARY = [
   "tag": "Dad",
   "role": "Dad having a midlife crisis",
   "gender": "male",
-  "voiceStyle": "cheerful, clueless",
+  "voiceStyle": "hearty, bright, mid-pitched",
   "storyTypes": [
    "family",
    "marriage"
@@ -1199,7 +1199,7 @@ export const LIBRARY = [
   "tag": "Daughter",
   "role": "Daughter who brought home a 50-year-old",
   "gender": "female",
-  "voiceStyle": "defiant, bright",
+  "voiceStyle": "bright, clear, young",
   "storyTypes": [
    "family",
    "dating"
@@ -1216,7 +1216,7 @@ export const LIBRARY = [
   "tag": "Butler",
   "role": "Butler who knows where bodies are buried",
   "gender": "male",
-  "voiceStyle": "dry, formal",
+  "voiceStyle": "dry, formal diction, older, slow",
   "storyTypes": [
    "money",
    "family"
@@ -1233,7 +1233,7 @@ export const LIBRARY = [
   "tag": "Cashier",
   "role": "Cashier who judges your groceries",
   "gender": "female",
-  "voiceStyle": "bored, sassy",
+  "voiceStyle": "flat, drawling, low",
   "storyTypes": [
    "service"
   ],
@@ -1249,7 +1249,7 @@ export const LIBRARY = [
   "tag": "Best man",
   "role": "Best man with a terrible speech",
   "gender": "male",
-  "voiceStyle": "loud, sloppy",
+  "voiceStyle": "loud, loose, quick",
   "storyTypes": [
    "wedding",
    "dating"
@@ -1266,7 +1266,7 @@ export const LIBRARY = [
   "tag": "Talk show host",
   "role": "Daytime talk show host",
   "gender": "female",
-  "voiceStyle": "bright, dramatic",
+  "voiceStyle": "bright, projecting, mid-pitched",
   "storyTypes": [
    "social"
   ],
@@ -1282,7 +1282,7 @@ export const LIBRARY = [
   "tag": "IT guy",
   "role": "IT guy who reads everyone's email",
   "gender": "male",
-  "voiceStyle": "monotone, smug",
+  "voiceStyle": "monotone, flat, mid-pitched",
   "storyTypes": [
    "office"
   ],
@@ -1298,7 +1298,7 @@ export const LIBRARY = [
   "tag": "Counselor",
   "role": "Marriage counselor who takes sides",
   "gender": "female",
-  "voiceStyle": "soothing, nosy",
+  "voiceStyle": "soft, soothing, older",
   "storyTypes": [
    "marriage"
   ],
@@ -1314,7 +1314,7 @@ export const LIBRARY = [
   "tag": "Rookie cop",
   "role": "Rookie cop, first week",
   "gender": "male",
-  "voiceStyle": "eager, squeaky",
+  "voiceStyle": "squeaky, high, quick",
   "storyTypes": [
    "law"
   ],
@@ -1330,7 +1330,7 @@ export const LIBRARY = [
   "tag": "Trophy wife",
   "role": "Rich housewife with a pool boy",
   "gender": "female",
-  "voiceStyle": "lazy, sweet",
+  "voiceStyle": "slow, soft, drawling",
   "storyTypes": [
    "marriage",
    "money"
@@ -1347,7 +1347,7 @@ export const LIBRARY = [
   "tag": "Pool guy",
   "role": "Pool guy with too many clients",
   "gender": "male",
-  "voiceStyle": "relaxed, flirty",
+  "voiceStyle": "relaxed, smooth, low",
   "storyTypes": [
    "dating",
    "money"
@@ -1364,7 +1364,7 @@ export const LIBRARY = [
   "tag": "Wife",
   "role": "PTA mom who suspects her husband",
   "gender": "female",
-  "voiceStyle": "shrill, bossy",
+  "voiceStyle": "shrill, loud, fast",
   "storyTypes": [
    "marriage",
    "school"
@@ -1381,7 +1381,7 @@ export const LIBRARY = [
   "tag": "Athlete",
   "role": "Athlete caught with the coach's wife",
   "gender": "male",
-  "voiceStyle": "cocky",
+  "voiceStyle": "clear, mid-pitched, quick",
   "storyTypes": [
    "marriage",
    "sports"
@@ -1398,7 +1398,7 @@ export const LIBRARY = [
   "tag": "Girlfriend",
   "role": "Jealous girlfriend who checks his phone",
   "gender": "female",
-  "voiceStyle": "sweet, sharp",
+  "voiceStyle": "light, sweet-toned, crisp",
   "storyTypes": [
    "dating"
   ],
@@ -1414,7 +1414,7 @@ export const LIBRARY = [
   "tag": "Husband",
   "role": "Cheating husband on a 'work trip'",
   "gender": "male",
-  "voiceStyle": "smooth, nervous",
+  "voiceStyle": "smooth, mid-pitched, a little quick",
   "storyTypes": [
    "marriage"
   ],
@@ -1430,7 +1430,7 @@ export const LIBRARY = [
   "tag": "Mistress",
   "role": "Other woman who wants a ring",
   "gender": "female",
-  "voiceStyle": "sultry, bold",
+  "voiceStyle": "low, husky, rich",
   "storyTypes": [
    "marriage",
    "dating"
@@ -1447,7 +1447,7 @@ export const LIBRARY = [
   "tag": "Husband",
   "role": "Retired husband who suspects everyone",
   "gender": "male",
-  "voiceStyle": "grumbly",
+  "voiceStyle": "grumbly, low, older",
   "storyTypes": [
    "marriage",
    "neighbors"
@@ -1464,7 +1464,7 @@ export const LIBRARY = [
   "tag": "Blind date",
   "role": "Dating-app date with fake photos",
   "gender": "male",
-  "voiceStyle": "awkward, eager",
+  "voiceStyle": "high, halting rhythm, quick",
   "storyTypes": [
    "dating"
   ],
@@ -1480,7 +1480,7 @@ export const LIBRARY = [
   "tag": "Hotel manager",
   "role": "Hotel manager covering scandals",
   "gender": "female",
-  "voiceStyle": "polished",
+  "voiceStyle": "smooth, clear, mid-pitched",
   "storyTypes": [
    "service",
    "money"
@@ -1497,7 +1497,7 @@ export const LIBRARY = [
   "tag": "Manager",
   "role": "Middle manager who takes credit",
   "gender": "male",
-  "voiceStyle": "whiny, smug",
+  "voiceStyle": "nasal, reedy, thin",
   "storyTypes": [
    "office"
   ],
@@ -1513,7 +1513,7 @@ export const LIBRARY = [
   "tag": "Neighbor",
   "role": "Perfect neighbor with a dark secret",
   "gender": "female",
-  "voiceStyle": "sweet, whispery",
+  "voiceStyle": "soft, whispery, light",
   "storyTypes": [
    "neighbors",
    "marriage"
@@ -1530,7 +1530,7 @@ export const LIBRARY = [
   "tag": "Billionaire",
   "role": "Billionaire who fakes being broke",
   "gender": "male",
-  "voiceStyle": "dry, amused",
+  "voiceStyle": "dry, low, older",
   "storyTypes": [
    "money"
   ],
@@ -1546,7 +1546,7 @@ export const LIBRARY = [
   "tag": "Assistant",
   "role": "Assistant who secretly runs the company",
   "gender": "female",
-  "voiceStyle": "calm, efficient",
+  "voiceStyle": "clear, even pace, mid-pitched",
   "storyTypes": [
    "office"
   ],
@@ -1562,7 +1562,7 @@ export const LIBRARY = [
   "tag": "Heist planner",
   "role": "Heist planner, always has a plan B",
   "gender": "male",
-  "voiceStyle": "slow, calculating",
+  "voiceStyle": "slow, deep, measured",
   "storyTypes": [
    "crime"
   ],
@@ -1578,7 +1578,7 @@ export const LIBRARY = [
   "tag": "Grandma",
   "role": "Grandma with a secret boyfriend",
   "gender": "female",
-  "voiceStyle": "sweet, giggly",
+  "voiceStyle": "high, trilling, older",
   "storyTypes": [
    "family",
    "dating"
@@ -1595,7 +1595,7 @@ export const LIBRARY = [
   "tag": "CFO",
   "role": "CFO hiding the real numbers",
   "gender": "male",
-  "voiceStyle": "pompous",
+  "voiceStyle": "rich, plummy, formal diction",
   "storyTypes": [
    "office",
    "money"
@@ -1612,7 +1612,7 @@ export const LIBRARY = [
   "tag": "Doctor",
   "role": "ER doctor, no patience",
   "gender": "female",
-  "voiceStyle": "fast, blunt",
+  "voiceStyle": "fast, crisp, clear",
   "storyTypes": [
    "hospital"
   ],
@@ -1628,7 +1628,7 @@ export const LIBRARY = [
   "tag": "Mechanic",
   "role": "Mechanic who overcharges everyone",
   "gender": "male",
-  "voiceStyle": "easygoing, shady",
+  "voiceStyle": "mellow, mid-pitched, relaxed pace",
   "storyTypes": [
    "service"
   ],
@@ -1644,7 +1644,7 @@ export const LIBRARY = [
   "tag": "Single mom",
   "role": "Divorced mom back on the dating apps",
   "gender": "female",
-  "voiceStyle": "hopeful, frazzled",
+  "voiceStyle": "quick, breathy, mid-pitched",
   "storyTypes": [
    "dating",
    "family"
@@ -1661,7 +1661,7 @@ export const LIBRARY = [
   "tag": "Car salesman",
   "role": "Car salesman who lies with a smile",
   "gender": "male",
-  "voiceStyle": "fast, slick",
+  "voiceStyle": "fast, smooth, silky",
   "storyTypes": [
    "service",
    "money"
@@ -1678,7 +1678,7 @@ export const LIBRARY = [
   "tag": "Babysitter",
   "role": "Babysitter who knows too much",
   "gender": "female",
-  "voiceStyle": "chirpy, sly",
+  "voiceStyle": "chirpy, high, quick",
   "storyTypes": [
    "family"
   ],
@@ -1694,7 +1694,7 @@ export const LIBRARY = [
   "tag": "Paramedic",
   "role": "Paramedic, calm in any crisis",
   "gender": "male",
-  "voiceStyle": "steady",
+  "voiceStyle": "steady, even, mid-pitched",
   "storyTypes": [
    "hospital"
   ],
@@ -1710,7 +1710,7 @@ export const LIBRARY = [
   "tag": "Gossip columnist",
   "role": "Gossip columnist with a big mouth",
   "gender": "female",
-  "voiceStyle": "purring",
+  "voiceStyle": "low, purring, older",
   "storyTypes": [
    "social"
   ],
@@ -1726,7 +1726,7 @@ export const LIBRARY = [
   "tag": "Bouncer",
   "role": "Bouncer who never lets anyone in",
   "gender": "male",
-  "voiceStyle": "deep, blunt",
+  "voiceStyle": "deep, flat, heavy",
   "storyTypes": [
    "crime",
    "service"
@@ -1743,7 +1743,7 @@ export const LIBRARY = [
   "tag": "Sous-chef",
   "role": "Sous-chef plotting to take over",
   "gender": "male",
-  "voiceStyle": "quiet, scheming",
+  "voiceStyle": "quiet, low, soft",
   "storyTypes": [
    "service"
   ],
@@ -1759,7 +1759,7 @@ export const LIBRARY = [
   "tag": "Inmate",
   "role": "Cellblock queen",
   "gender": "female",
-  "voiceStyle": "raspy, tough",
+  "voiceStyle": "raspy, rough, low",
   "storyTypes": [
    "crime"
   ],
@@ -1775,7 +1775,7 @@ export const LIBRARY = [
   "tag": "Chairman",
   "role": "Company chairman who hates change",
   "gender": "male",
-  "voiceStyle": "slow, booming",
+  "voiceStyle": "slow, booming, older",
   "storyTypes": [
    "office",
    "money"
@@ -1792,7 +1792,7 @@ export const LIBRARY = [
   "tag": "Tattoo artist",
   "role": "Tattoo artist who covers exes' names",
   "gender": "female",
-  "voiceStyle": "cool, low",
+  "voiceStyle": "low, smooth, cool-toned",
   "storyTypes": [
    "service",
    "dating"
@@ -1809,7 +1809,7 @@ export const LIBRARY = [
   "tag": "Tenant",
   "role": "Millennial who can't afford a house",
   "gender": "female",
-  "voiceStyle": "whiny, funny",
+  "voiceStyle": "nasal, bright, quick",
   "storyTypes": [
    "neighbors",
    "money"
@@ -1826,7 +1826,7 @@ export const LIBRARY = [
   "tag": "Mob accountant",
   "role": "Mob accountant, knows every number",
   "gender": "male",
-  "voiceStyle": "quiet, sweaty",
+  "voiceStyle": "quiet, breathy, soft",
   "storyTypes": [
    "crime",
    "money"
@@ -1843,7 +1843,7 @@ export const LIBRARY = [
   "tag": "Lawyer",
   "role": "Flashy lawyer, never lost a case",
   "gender": "male",
-  "voiceStyle": "smooth, loud",
+  "voiceStyle": "smooth, loud, resonant",
   "storyTypes": [
    "law",
    "office"
@@ -1860,7 +1860,7 @@ export const LIBRARY = [
   "tag": "Wellness guru",
   "role": "Wellness guru selling nonsense",
   "gender": "female",
-  "voiceStyle": "airy, calm",
+  "voiceStyle": "airy, soft, light",
   "storyTypes": [
    "social"
   ],
@@ -1876,7 +1876,7 @@ export const LIBRARY = [
   "tag": "Ex-husband",
   "role": "Ex-husband who wants her back",
   "gender": "male",
-  "voiceStyle": "sad, charming",
+  "voiceStyle": "soft, warm, low",
   "storyTypes": [
    "marriage",
    "dating"
@@ -1893,7 +1893,7 @@ export const LIBRARY = [
   "tag": "Mother of the bride",
   "role": "Mother of the bride, hates everyone",
   "gender": "female",
-  "voiceStyle": "shrill, proud",
+  "voiceStyle": "shrill, high, older",
   "storyTypes": [
    "wedding",
    "family"
@@ -1910,7 +1910,7 @@ export const LIBRARY = [
   "tag": "Heiress",
   "role": "Old-money heiress",
   "gender": "female",
-  "voiceStyle": "icy, grand",
+  "voiceStyle": "rich, crisp, older, formal diction",
   "storyTypes": [
    "money",
    "family"
@@ -1927,7 +1927,7 @@ export const LIBRARY = [
   "tag": "Detective",
   "role": "Detective on the affair case",
   "gender": "male",
-  "voiceStyle": "slow, sharp",
+  "voiceStyle": "slow, sharp, low",
   "storyTypes": [
    "law",
    "crime"
@@ -1944,7 +1944,7 @@ export const LIBRARY = [
   "tag": "Nail tech",
   "role": "Nail tech who spreads rumors",
   "gender": "female",
-  "voiceStyle": "chatty",
+  "voiceStyle": "quick, bright, chatty rhythm",
   "storyTypes": [
    "service"
   ],
@@ -1960,7 +1960,7 @@ export const LIBRARY = [
   "tag": "Restaurant owner",
   "role": "Restaurant owner in debt to the mob",
   "gender": "male",
-  "voiceStyle": "warm, worried",
+  "voiceStyle": "warm, soft, mid-pitched",
   "storyTypes": [
    "service",
    "crime"
@@ -1977,7 +1977,7 @@ export const LIBRARY = [
   "tag": "Barber",
   "role": "Barber who gives life advice",
   "gender": "male",
-  "voiceStyle": "smooth, wise",
+  "voiceStyle": "smooth, warm, even pace",
   "storyTypes": [
    "service",
    "dating"
@@ -1994,7 +1994,7 @@ export const LIBRARY = [
   "tag": "Widow",
   "role": "Widow with eyes on the neighbor",
   "gender": "female",
-  "voiceStyle": "flirty, slow",
+  "voiceStyle": "slow, husky, older",
   "storyTypes": [
    "neighbors",
    "dating"
@@ -2011,7 +2011,7 @@ export const LIBRARY = [
   "tag": "Designer",
   "role": "Fashion designer, no filter",
   "gender": "female",
-  "voiceStyle": "posh, cutting",
+  "voiceStyle": "crisp, posh British accent",
   "storyTypes": [
    "social"
   ],
@@ -2027,7 +2027,7 @@ export const LIBRARY = [
   "tag": "Grandpa",
   "role": "Grandpa who says the quiet part loud",
   "gender": "male",
-  "voiceStyle": "loud, cheeky",
+  "voiceStyle": "loud, crackly, older",
   "storyTypes": [
    "family"
   ],
@@ -2043,7 +2043,7 @@ export const LIBRARY = [
   "tag": "Food truck owner",
   "role": "Food truck owner, loud and proud",
   "gender": "male",
-  "voiceStyle": "loud, cheerful",
+  "voiceStyle": "loud, bright, quick",
   "storyTypes": [
    "service"
   ],
@@ -2059,7 +2059,7 @@ export const LIBRARY = [
   "tag": "Housekeeper",
   "role": "Housekeeper who sees everything",
   "gender": "female",
-  "voiceStyle": "quiet, knowing",
+  "voiceStyle": "quiet, low, soft",
   "storyTypes": [
    "money",
    "family"
@@ -2076,7 +2076,7 @@ export const LIBRARY = [
   "tag": "Cheer coach",
   "role": "Cheer coach, extremely intense",
   "gender": "female",
-  "voiceStyle": "shouty, peppy",
+  "voiceStyle": "loud, high, fast",
   "storyTypes": [
    "sports",
    "school"
@@ -2093,7 +2093,7 @@ export const LIBRARY = [
   "tag": "Club owner",
   "role": "Nightclub owner with shady friends",
   "gender": "male",
-  "voiceStyle": "smooth, low",
+  "voiceStyle": "smooth, low, relaxed",
   "storyTypes": [
    "crime",
    "money"
@@ -2110,7 +2110,7 @@ export const LIBRARY = [
   "tag": "Rock star",
   "role": "Rock star on a comeback",
   "gender": "female",
-  "voiceStyle": "raspy, wild",
+  "voiceStyle": "raspy, loud, fast",
   "storyTypes": [
    "social"
   ],
@@ -2126,7 +2126,7 @@ export const LIBRARY = [
   "tag": "Rich aunt",
   "role": "Rich aunt who controls the family money",
   "gender": "female",
-  "voiceStyle": "sly, sharp",
+  "voiceStyle": "sharp, thin, older",
   "storyTypes": [
    "money",
    "family"
@@ -2143,7 +2143,7 @@ export const LIBRARY = [
   "tag": "Rapper",
   "role": "Rapper who's never left the suburbs",
   "gender": "male",
-  "voiceStyle": "cocky, loud",
+  "voiceStyle": "loud, clear, quick",
   "storyTypes": [
    "social"
   ],
@@ -2159,7 +2159,7 @@ export const LIBRARY = [
   "tag": "Office manager",
   "role": "Office manager who controls the snacks",
   "gender": "female",
-  "voiceStyle": "tight, bossy",
+  "voiceStyle": "tight, clipped, mid-pitched",
   "storyTypes": [
    "office"
   ],
@@ -2175,7 +2175,7 @@ export const LIBRARY = [
   "tag": "Politician",
   "role": "Politician with a hidden family",
   "gender": "male",
-  "voiceStyle": "booming, fake",
+  "voiceStyle": "booming, smooth, resonant",
   "storyTypes": [
    "social",
    "marriage"
@@ -2192,7 +2192,7 @@ export const LIBRARY = [
   "tag": "Grandma",
   "role": "Grandma who hates every girlfriend",
   "gender": "female",
-  "voiceStyle": "sharp, dry",
+  "voiceStyle": "sharp, dry, older",
   "storyTypes": [
    "family",
    "dating"
@@ -2209,7 +2209,7 @@ export const LIBRARY = [
   "tag": "Gym teacher",
   "role": "Gym teacher who peaked in high school",
   "gender": "male",
-  "voiceStyle": "shouty",
+  "voiceStyle": "loud, rough, barking",
   "storyTypes": [
    "school",
    "sports"
@@ -2226,7 +2226,7 @@ export const LIBRARY = [
   "tag": "Makeup artist",
   "role": "Makeup artist to the stars",
   "gender": "female",
-  "voiceStyle": "chatty, dramatic",
+  "voiceStyle": "chatty rhythm, bright, quick",
   "storyTypes": [
    "social",
    "service"
@@ -2243,7 +2243,7 @@ export const LIBRARY = [
   "tag": "Dad",
   "role": "Retired army dad, very strict",
   "gender": "male",
-  "voiceStyle": "barking",
+  "voiceStyle": "barking, gruff, older",
   "storyTypes": [
    "family",
    "wedding"
@@ -2260,7 +2260,7 @@ export const LIBRARY = [
   "tag": "Pilot",
   "role": "Airline pilot, cool under pressure",
   "gender": "female",
-  "voiceStyle": "cool, calm",
+  "voiceStyle": "cool-toned, clear, even",
   "storyTypes": [
    "service",
    "dating"
@@ -2277,7 +2277,7 @@ export const LIBRARY = [
   "tag": "Intern",
   "role": "Overconfident intern",
   "gender": "male",
-  "voiceStyle": "eager, loud",
+  "voiceStyle": "loud, quick, young",
   "storyTypes": [
    "office"
   ],
@@ -2293,7 +2293,7 @@ export const LIBRARY = [
   "tag": "Dentist",
   "role": "Dentist with a scary smile",
   "gender": "female",
-  "voiceStyle": "bubbly, scary",
+  "voiceStyle": "bubbly, high, light",
   "storyTypes": [
    "hospital"
   ],
@@ -2309,7 +2309,7 @@ export const LIBRARY = [
   "tag": "Casino owner",
   "role": "Casino owner, calm and dangerous",
   "gender": "male",
-  "voiceStyle": "calm, dangerous",
+  "voiceStyle": "low, quiet, even",
   "storyTypes": [
    "money",
    "crime"
@@ -2326,7 +2326,7 @@ export const LIBRARY = [
   "tag": "Spa owner",
   "role": "Spa owner who runs a gossip ring",
   "gender": "female",
-  "voiceStyle": "silky",
+  "voiceStyle": "silky, smooth, low",
   "storyTypes": [
    "service",
    "neighbors"
@@ -2343,7 +2343,7 @@ export const LIBRARY = [
   "tag": "Husband",
   "role": "Firefighter husband with a second phone",
   "gender": "male",
-  "voiceStyle": "deep, calm",
+  "voiceStyle": "deep, even, unhurried",
   "storyTypes": [
    "marriage",
    "dating"
@@ -2360,7 +2360,7 @@ export const LIBRARY = [
   "tag": "Ex-wife",
   "role": "Ex-wife who won everything",
   "gender": "female",
-  "voiceStyle": "icy, amused",
+  "voiceStyle": "low, crisp, cool-toned",
   "storyTypes": [
    "marriage",
    "money"
@@ -2377,7 +2377,7 @@ export const LIBRARY = [
   "tag": "Mob boss",
   "role": "Old-school mob boss",
   "gender": "male",
-  "voiceStyle": "whispery, cold",
+  "voiceStyle": "whispery, low, flat",
   "storyTypes": [
    "crime"
   ],
@@ -2393,7 +2393,7 @@ export const LIBRARY = [
   "tag": "Cleaner",
   "role": "Night cleaner who reads every desk",
   "gender": "female",
-  "voiceStyle": "gruff, sly",
+  "voiceStyle": "gruff, low, older",
   "storyTypes": [
    "office"
   ],
@@ -2409,7 +2409,7 @@ export const LIBRARY = [
   "tag": "Librarian",
   "role": "Librarian who shushes everyone",
   "gender": "female",
-  "voiceStyle": "whispery, strict",
+  "voiceStyle": "whispery, crisp, older",
   "storyTypes": [
    "school"
   ],
@@ -2425,7 +2425,7 @@ export const LIBRARY = [
   "tag": "Nurse",
   "role": "Male nurse everyone flirts with",
   "gender": "male",
-  "voiceStyle": "gentle",
+  "voiceStyle": "gentle, soft, mid-pitched",
   "storyTypes": [
    "hospital",
    "dating"
@@ -2442,7 +2442,7 @@ export const LIBRARY = [
   "tag": "Weatherman",
   "role": "TV weatherman, always wrong",
   "gender": "male",
-  "voiceStyle": "cheesy",
+  "voiceStyle": "bright, bouncy rhythm, mid-pitched",
   "storyTypes": [
    "social"
   ],
@@ -2458,7 +2458,7 @@ export const LIBRARY = [
   "tag": "Loan shark",
   "role": "Loan shark nobody can stand",
   "gender": "male",
-  "voiceStyle": "menacing, slow",
+  "voiceStyle": "slow, deep, gravelly",
   "storyTypes": [
    "crime",
    "money"
@@ -2475,7 +2475,7 @@ export const LIBRARY = [
   "tag": "Mother-in-law",
   "role": "Mother-in-law who moved in",
   "gender": "female",
-  "voiceStyle": "shrill",
+  "voiceStyle": "shrill, high, older",
   "storyTypes": [
    "family",
    "marriage"
@@ -2492,7 +2492,7 @@ export const LIBRARY = [
   "tag": "Husband",
   "role": "Lazy husband who hides the bills",
   "gender": "male",
-  "voiceStyle": "lazy, loud",
+  "voiceStyle": "loud, drawling, lazy pace",
   "storyTypes": [
    "marriage",
    "money"
@@ -2509,7 +2509,7 @@ export const LIBRARY = [
   "tag": "Crew leader",
   "role": "Mandem leader, always has a plan",
   "gender": "male",
-  "voiceStyle": "calm London accent, laid-back UK slang, never raises his voice",
+  "voiceStyle": "low, unhurried London accent",
   "storyTypes": [
    "dating",
    "neighbors"
@@ -2526,7 +2526,7 @@ export const LIBRARY = [
   "tag": "Youngest",
   "role": "Youngest in the crew, trying too hard",
   "gender": "male",
-  "voiceStyle": "fast, eager London accent, overuses the newest slang",
+  "voiceStyle": "fast, high, young London accent",
   "storyTypes": [
    "neighbors",
    "family"
@@ -2543,7 +2543,7 @@ export const LIBRARY = [
   "tag": "Mandem",
   "role": "Crew joker, turns everything into a bit",
   "gender": "male",
-  "voiceStyle": "loud, playful London accent, lots of UK slang and laughing",
+  "voiceStyle": "loud, bouncy London accent",
   "storyTypes": [
    "dating",
    "neighbors"
@@ -2560,7 +2560,7 @@ export const LIBRARY = [
   "tag": "Rival",
   "role": "Rival from the other estate",
   "gender": "male",
-  "voiceStyle": "low, cool London accent, short sharp slang",
+  "voiceStyle": "low, clipped London accent",
   "storyTypes": [
    "neighbors",
    "dating"
@@ -2577,7 +2577,7 @@ export const LIBRARY = [
   "tag": "Rapper",
   "role": "Aspiring rapper, one freestyle from fame",
   "gender": "male",
-  "voiceStyle": "rhythmic London accent, confident UK slang, talks in bars",
+  "voiceStyle": "rhythmic, smooth London accent",
   "storyTypes": [
    "social",
    "dating"
@@ -2594,7 +2594,7 @@ export const LIBRARY = [
   "tag": "Producer",
   "role": "Bedroom music producer, hears beats everywhere",
   "gender": "male",
-  "voiceStyle": "soft, chilled London accent, relaxed slang",
+  "voiceStyle": "soft, mellow, slow London accent",
   "storyTypes": [
    "social"
   ],
@@ -2610,7 +2610,7 @@ export const LIBRARY = [
   "tag": "Delivery rider",
   "role": "Delivery rider who sees every drama",
   "gender": "male",
-  "voiceStyle": "cheerful, quick London accent, friendly slang",
+  "voiceStyle": "bright, quick London accent",
   "storyTypes": [
    "service",
    "neighbors"
@@ -2627,7 +2627,7 @@ export const LIBRARY = [
   "tag": "Reseller",
   "role": "Trainer reseller, always has a deal",
   "gender": "male",
-  "voiceStyle": "smooth, persuasive London accent, salesy slang",
+  "voiceStyle": "smooth, silky London accent",
   "storyTypes": [
    "money",
    "service"
@@ -2644,7 +2644,7 @@ export const LIBRARY = [
   "tag": "Mandem",
   "role": "The quiet one who notices everything",
   "gender": "male",
-  "voiceStyle": "quiet, deep London accent, few words",
+  "voiceStyle": "quiet, deep, sparse London accent",
   "storyTypes": [
    "neighbors",
    "dating"
@@ -2661,7 +2661,7 @@ export const LIBRARY = [
   "tag": "Chicken shop",
   "role": "Chicken shop worker who knows everyone's order",
   "gender": "male",
-  "voiceStyle": "friendly, chatty London accent, easy slang",
+  "voiceStyle": "warm, chatty-rhythm London accent",
   "storyTypes": [
    "service",
    "dating"
@@ -2678,7 +2678,7 @@ export const LIBRARY = [
   "tag": "Shop owner",
   "role": "Uncle who runs the chicken shop, knows every secret",
   "gender": "male",
-  "voiceStyle": "warm, booming older London accent, gentle slang",
+  "voiceStyle": "warm, booming, older London accent",
   "storyTypes": [
    "service",
    "family"
@@ -2695,7 +2695,7 @@ export const LIBRARY = [
   "tag": "Barber",
   "role": "Barber who gives the best advice on the ends",
   "gender": "male",
-  "voiceStyle": "calm, wise London accent, measured slang",
+  "voiceStyle": "low, measured, even London accent",
   "storyTypes": [
    "service",
    "family"
@@ -2712,7 +2712,7 @@ export const LIBRARY = [
   "tag": "Mandem",
   "role": "Gym-obsessed crew member, protein at all times",
   "gender": "male",
-  "voiceStyle": "loud, hype London accent, gym slang",
+  "voiceStyle": "loud, punchy London accent",
   "storyTypes": [
    "sports",
    "dating"
@@ -2729,7 +2729,7 @@ export const LIBRARY = [
   "tag": "Mandem",
   "role": "Always late, always has an excuse",
   "gender": "male",
-  "voiceStyle": "easygoing London accent, apologetic slang",
+  "voiceStyle": "soft, mellow London accent",
   "storyTypes": [
    "dating",
    "neighbors"
@@ -2746,7 +2746,7 @@ export const LIBRARY = [
   "tag": "Girlfriend",
   "role": "Roadgyal who runs the relationship",
   "gender": "female",
-  "voiceStyle": "confident, quick London accent, sharp UK slang",
+  "voiceStyle": "quick, crisp London accent",
   "storyTypes": [
    "dating"
   ],
@@ -2762,7 +2762,7 @@ export const LIBRARY = [
   "tag": "Ex",
   "role": "The ex who still shows up everywhere",
   "gender": "female",
-  "voiceStyle": "cool, dry London accent, cutting slang",
+  "voiceStyle": "dry, low, cool-toned London accent",
   "storyTypes": [
    "dating"
   ],
@@ -2778,7 +2778,7 @@ export const LIBRARY = [
   "tag": "Estate gossip",
   "role": "Estate gossip who hears it first",
   "gender": "female",
-  "voiceStyle": "fast, gleeful London accent, gossipy slang",
+  "voiceStyle": "fast, bright, chatty-rhythm London accent",
   "storyTypes": [
    "neighbors"
   ],
@@ -2794,7 +2794,7 @@ export const LIBRARY = [
   "tag": "Mum",
   "role": "Young mum who takes no nonsense",
   "gender": "female",
-  "voiceStyle": "firm, warm London accent, no-nonsense slang",
+  "voiceStyle": "firm, warm London accent",
   "storyTypes": [
    "family",
    "dating"
@@ -2811,7 +2811,7 @@ export const LIBRARY = [
   "tag": "Shop owner",
   "role": "Auntie who runs the corner shop, sees everything",
   "gender": "female",
-  "voiceStyle": "warm, sharp older London accent, motherly slang",
+  "voiceStyle": "warm, crisp, older London accent",
   "storyTypes": [
    "service",
    "neighbors"
@@ -2828,7 +2828,7 @@ export const LIBRARY = [
   "tag": "Roadgyal",
   "role": "Roadgyal in the crew, always filming",
   "gender": "female",
-  "voiceStyle": "bubbly, loud London accent, fast UK slang",
+  "voiceStyle": "loud, bubbly, fast London accent",
   "storyTypes": [
    "social",
    "dating"

@@ -8,7 +8,7 @@ export const LIMITS = Object.freeze({
   maxPromptChars: 1000,
   minLengthSec: 15,
   maxLengthSec: 120,
-  lengthStepSec: 15,
+  lengthStepSec: 5,
   minEpisodes: 3,
   maxEpisodes: 10,
   ideasPerCall: 5,

@@ -95,3 +95,11 @@ test("planStep with the real builder: one item per scene, saved == sent, edits k
   assert.equal(edit.items[0].prompt, null);
   assert.match(edit.items[0].request.positivePrompt, /Add rain\./);
 });
+
+test("the picture prompt names the speaker once, even when the action starts with the name", () => {
+  for (const action of ["Mia slides a phone across the table", "Mia Mango slides a phone across the table", "She slides a phone across the table"]) {
+    const p = buildScenePrompt({ story, scene: { ...scene, action }, library: LIB });
+    assert.ok(p.includes("Mia Mango (the mango woman) slides a phone across the table, looking icy calm"), p.slice(0, 200));
+    assert.doesNotMatch(p, /\(the mango woman\) (?:Mia|she)\b/i);
+  }
+});

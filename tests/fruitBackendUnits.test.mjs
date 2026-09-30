@@ -75,7 +75,7 @@ test("prompt and idea validation", () => {
   assert.throws(() => validateCreateStory({ ...base, source: "prompt", prompt: "short", castIds: ["mia"] }, LIB), /sentence or two/);
   assert.throws(() => validateCreateStory({ ...base, source: "prompt", prompt: "x".repeat(1001), castIds: ["mia"] }, LIB), /under 1000/);
   assert.throws(() => validateCreateStory({ ...base, source: "prompt", prompt: "A long enough idea.", castIds: ["mia", "marco", "pia", "rick"] }, LIB), /1 to 3/);
-  assert.throws(() => validateCreateStory({ ...base, lengthSec: 20, source: "prompt", prompt: "A long enough idea.", castIds: ["mia"] }, LIB), /length/);
+  assert.throws(() => validateCreateStory({ ...base, lengthSec: 22, source: "prompt", prompt: "A long enough idea.", castIds: ["mia"] }, LIB), /length/);
   const idea = validateCreateStory({ ...base, source: "idea", ideaId: "x" }, LIB, () => ({ castIds: ["mia", "marco", "pia"] }));
   assert.deepEqual(idea.castIds, ["mia", "marco", "pia"]);
   assert.throws(() => validateCreateStory({ ...base, source: "idea", ideaId: "gone" }, LIB, () => null), /isn't available/);

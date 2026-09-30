@@ -5,6 +5,7 @@
 import { FRUIT_MODELS, videoModel } from "./models.js";
 import { SERVER_LIMITS } from "./limits.js";
 import { clipDurationSec } from "./duration.js";
+import { pronounOf, toneOf, withSubject } from "./wording.js";
 
 export const CLIP_PROMPT_MAX = SERVER_LIMITS.maxClipPromptChars;   // 1,500 (Veo accepts 3,000)
 
@@ -26,9 +27,9 @@ function build(tier, { scene, speaker, others }) {
   const listeners = others.map((c) => `${c.name} (the ${c.fruit} ${sex(c)})`).join(" and ");
   const where = scene.placement && tier === 0 ? ` Positions: ${scene.placement.replace(/\.$/, "")}.` : "";
   const parts = [
-    `${speaker.name}, the ${speaker.fruit} ${sex(speaker)} facing the camera, says in a ${voiceOf(speaker)} voice, ${scene.emotion}: "${scene.line}"`,
+    `${speaker.name}, the ${speaker.fruit} ${sex(speaker)} facing the camera, says in ${pronounOf(speaker)} ${voiceOf(speaker)} voice, delivered in ${toneOf(scene.emotion)}: "${scene.line}"`,
     `Only ${speaker.name} speaks, lips moving in sync with every word.${others.length ? ` ${listeners} ${others.length > 1 ? "stay" : "stays"} silent with ${others.length > 1 ? "mouths" : "mouth"} closed, reacting only with small expressions.` : ""}${where}`,
-    `${speaker.name} ${scene.action}.`,
+    `${withSubject(speaker.name, speaker, scene.action)}.`,
     `Camera: ${CAMERA_MOVE[scene.shot] ?? CAMERA_MOVE["medium two-shot"]}.`,
     NO_CUT,
     tier <= 1 ? "Keep every character, outfit and the setting exactly as in the first frame. Smooth, natural motion; no warping or melting." : "Keep everything exactly as in the first frame.",

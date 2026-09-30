@@ -17,29 +17,34 @@ function waitFor(api, storyId, statuses) {
   });
 }
 
-// Live server quotes today (quote_tool_prices, 2026-09-27).
-const PRICES = { image: 2, "clip:v2": 12, "clip:v3": 17, "clip:v4": 29 };
+// Live server quotes (tool_prices after 20260930162500_fruit_story_prices):
+// picture 4, V2 5 cr/s × 5 s, V3 9 cr/s × 5 s, V4 16 cr/s × 4 s.
+const PRICES = { image: 4, "clip:v2": 25, "clip:v3": 45, "clip:v4": 64 };
 
-test("price items match the server's allowed clip shapes", () => {
+test("price items use the Fruit v2 keys and the server's allowed shapes", () => {
   const items = Object.fromEntries(priceItems("9:16").map((i) => [i.id, i]));
-  assert.deepEqual(items.image.input, { width: 720, height: 1280 });
-  assert.deepEqual(items["clip:v2"].input, { durationSec: 5, withSound: true, width: 496, height: 864 });
-  assert.deepEqual(items["clip:v4"].input, { durationSec: 6, withSound: true, width: 1080, height: 1920 });
+  assert.equal(items.image.tool_key, "image:fruit-story");
+  assert.deepEqual(items.image.input, { width: 768, height: 1376 });
+  assert.equal(items["clip:v2"].tool_key, "video:fruit-story-v2");
+  assert.deepEqual(items["clip:v2"].input, { durationSec: 5, withSound: true, width: 720, height: 1280 });
+  assert.deepEqual(items["clip:v4"].input, { durationSec: 4, withSound: true, width: 720, height: 1280 });
   assert.equal(priceItems("16:9").find((i) => i.id === "clip:v3").input.width, 1280);
 });
 
-test("clip estimates round each clip up like compute_tool_price", () => {
-  assert.equal(perSecondRate("v2", PRICES), 2.4);
-  assert.equal(clipPrice("v2", 5, PRICES), 12);
-  assert.equal(clipPrice("v2", 4, PRICES), 10); // ceil(9.6)
-  assert.equal(clipPrice("v4", 6, PRICES), 29);
-  assert.equal(clipPrice("v4", 4, PRICES), 20); // ceil(19.33)
+test("clip prices are the rows' exact per-second rates", () => {
+  assert.equal(perSecondRate("v2", PRICES), 5);
+  assert.equal(perSecondRate("v3", PRICES), 9);
+  assert.equal(perSecondRate("v4", PRICES), 16);
+  assert.equal(clipPrice("v2", 7, PRICES), 35);
+  assert.equal(clipPrice("v3", 4, PRICES), 36);
+  assert.equal(clipPrice("v4", 8, PRICES), 128);
   assert.equal(clipPrice("v3", 5, {}), null);
 });
 
 test("story estimate: exact pictures + about-video", () => {
   const est = estimateStory({ lengthSec: 30, tierId: "v2", prices: PRICES });
-  assert.deepEqual(est, { sceneCount: 6, pictures: 12, video: 72, total: 84 });
+  assert.deepEqual(est, { sceneCount: 6, pictures: 24, video: 150, total: 174 });
+  assert.deepEqual(estimateStory({ lengthSec: 20, tierId: "v4", prices: PRICES }), { sceneCount: 4, pictures: 16, video: 320, total: 336 });
   assert.equal(estimateStory({ lengthSec: 30, tierId: "v2", prices: {} }).total, null);
   assert.equal(sceneCountForLength(15), 3);
   assert.equal(sceneCountForLength(120), 24);

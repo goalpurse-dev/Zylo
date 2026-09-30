@@ -16,7 +16,7 @@ const NEW_SINGLE = {
   scriptText: "",
   scriptAssignments: {}, // written name (lowercase) → library character id, chosen by the user
   tierId: "v2",
-  lengthSec: 30,
+  lengthSec: 20,
   aspect: "9:16",
   storyId: null,
 };
@@ -31,7 +31,7 @@ const NEW_SERIES = {
   writing: false,
   planError: null,
   episodeNumber: null,
-  episode: { tierId: "v2", lengthSec: 45 },
+  episode: { tierId: "v2", lengthSec: 20 },
   storyId: null,
 };
 
@@ -272,7 +272,7 @@ export default function useFruitV2Flow(account, characters = []) {
   const startEpisode = (number) => {
     const ep = seriesData?.episodes.find((e) => e.number === number);
     const tierId = account.allowedTiers.includes("v3") ? "v3" : "v2";
-    setSeries((s) => ({ ...s, view: "episode", episodeNumber: number, storyId: ep?.storyId ?? null, episode: { tierId, lengthSec: 45 } }));
+    setSeries((s) => ({ ...s, view: "episode", episodeNumber: number, storyId: ep?.storyId ?? null, episode: { tierId, lengthSec: 20 } }));
     setActionError(null);
     setTab(ep?.storyId ? "result" : "build");
   };

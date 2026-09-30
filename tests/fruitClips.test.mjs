@@ -14,17 +14,17 @@ const scene = { id: "s1", speakerId: "gloria", presentIds: ["gloria", "rick", "b
 test("the clip prompt carries the exact line, who says it, their library voice, and silence for everyone else", () => {
   const p = buildClipPrompt({ scene, library: LIB });
   assert.ok(p.includes(`"${scene.line}"`), "exact line in quotes");
-  assert.match(p, /^Gloria Grape, the grape woman facing the camera, says in a fast, gleeful voice, gleeful:/);
+  assert.match(p, /^Gloria Grape, the grape woman facing the camera, says in her quick, chirpy, mid-pitched voice, delivered in a gleeful tone: "/);
   assert.match(p, /Only Gloria Grape speaks, lips moving in sync with every word\. Rick Crisp \(the apple man\) and Bella Berry \(the strawberry woman\) stay silent with mouths closed/);
   assert.match(p, /Camera: a slow push-in toward the speaker\./);
   assert.match(p, /No music\. No subtitles, captions or on-screen text\./);
-  assert.ok(p.includes(`in a ${LIB.get("gloria").voice_style} voice`), "voiceStyle verbatim from the library");
+  assert.ok(p.includes(`in her ${LIB.get("gloria").voice_style} voice`), "voiceStyle verbatim from the library");
 });
 
 test("the same character always gets the same voice wording", () => {
   const a = buildClipPrompt({ scene, library: LIB });
   const b = buildClipPrompt({ scene: { ...scene, line: "Nineteen years, Rick. Nineteen.", emotion: "smug" }, library: LIB });
-  const voice = (s) => s.match(/says in a (.+?) voice/)[1];
+  const voice = (s) => s.match(/says in her (.+?) voice/)[1];
   assert.equal(voice(a), voice(b));
 });
 
@@ -37,6 +37,34 @@ test("worst case always fits the hard limit", () => {
     max = Math.max(max, p.length);
   }
   assert.ok(max <= CLIP_PROMPT_MAX, `worst case ${max}`);
+});
+
+test("the voice says how they sound; the scene's emotion alone sets the delivery", async () => {
+  const { EMOTION_WORDS } = await import("../scripts/fruit-characters/voices.mjs");
+  for (const c of ROWS) {
+    for (const w of EMOTION_WORDS) assert.doesNotMatch(c.voice_style, new RegExp(`\b${w}\b`, "i"), `${c.id}: "${c.voice_style}" says an emotion (${w})`);
+  }
+  const bella = { ...scene, speakerId: "bella", presentIds: ["bella", "gloria"], emotion: "icy calm", line: "Nineteen years and you still don't knock, Gloria." };
+  const p = buildClipPrompt({ scene: bella, library: LIB });
+  assert.ok(p.includes(`says in her ${LIB.get("bella").voice_style} voice, delivered in an icy calm tone: "`), p.slice(0, 160));
+  assert.equal((p.match(/icy calm/g) ?? []).length, 1, "the emotion is said once, as the delivery");
+  const rick = buildClipPrompt({ scene: { ...scene, speakerId: "rick", presentIds: ["rick"], emotion: "panicked" }, library: LIB });
+  assert.match(rick, /says in his .+ voice, delivered in a panicked tone:/);
+});
+
+test("the action never repeats the speaker's name", () => {
+  const cases = [
+    ["Gloria freezes mid-step, phone raised", "Gloria Grape freezes mid-step, phone raised."],
+    ["Gloria Grape presses her phone to the glass", "Gloria Grape presses her phone to the glass."],
+    ["gloria's eyes go wide", "Gloria Grape's eyes go wide."],
+    ["She raises her phone to film them", "Gloria Grape raises her phone to film them."],
+    ["raises her phone to film them", "Gloria Grape raises her phone to film them."],
+  ];
+  for (const [action, want] of cases) {
+    const p = buildClipPrompt({ scene: { ...scene, action }, library: LIB });
+    assert.ok(p.includes(` ${want} `), `${action} → ${p}`);
+    assert.doesNotMatch(p, /Gloria Grape,? (?:Gloria|she)/i);
+  }
 });
 
 test("every clip prompt says one continuous shot, no cuts, speaker facing the camera", () => {

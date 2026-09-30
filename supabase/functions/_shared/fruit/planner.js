@@ -73,8 +73,8 @@ STRUCTURE
 STAGING (for each scene)
 - presentIds: who is in the frame, speaker included, 1 to 3 characters, cast only. Usually the speaker plus the person they're talking to.
 - locationId: one of the story's locations. Use 1 to 3 locations per story and reuse them; don't jump around.
-- action: one small physical action for the speaker that fits a 4 to 8 second clip (up to 12 words).
-- emotion: one or two words (e.g. "icy calm", "smug", "panicked").
+- action: one small physical action for the speaker that fits a 4 to 8 second clip (up to 12 words). Start with the verb and don't name the speaker (e.g. "raises her phone to film them").
+- emotion: one or two words (e.g. "icy calm", "smug", "panicked"). This alone decides how the line is delivered; the voice notes only say how the character sounds.
 - shot: one of ${SPEAKING_SHOTS.join(", ")}. Every scene has a spoken line, so the speaker's face must be large and facing the camera for lip sync. Never a wide shot.
 - placement: WHERE each character in the frame is relative to the setting, whenever it matters to the line or the reveal (inside or outside, behind the glass, at the door, across the table), e.g. "Gloria stands outside the glass wall looking in; Rick and Bella are inside the office". Required whenever the line mentions glass, windows, walls, a door, a lock, inside or outside. Leave it empty only when position doesn't matter.
 - beat: a 2 to 4 word label for the scene (e.g. "Caught red-handed").
@@ -98,7 +98,7 @@ Return only the JSON object for the requested schema.`;
 
 function characterBlock(c) {
   const age = Number.isFinite(c.age) ? `${c.age}-year-old ` : "";
-  return `- ${c.id}: ${c.name}, a ${age}${c.fruit} ${c.gender === "female" ? "woman" : "man"}. ${c.tag}: ${c.role}. Voice: ${c.voiceStyle ?? c.voice_style}.`;
+  return `- ${c.id}: ${c.name}, a ${age}${c.fruit} ${c.gender === "female" ? "woman" : "man"}${c.collection === "uk-roadman" ? " (UK roadman, London)" : ""}. ${c.tag}: ${c.role}. Voice (how they sound): ${c.voiceStyle ?? c.voice_style}.`;
 }
 
 /**
