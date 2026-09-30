@@ -34,6 +34,16 @@ test("cover: the most dramatic scene by emotion, the later one on a tie, only sc
   assert.equal(coverScene([{ idx: 0, emotion: "calm", image_url: "a" }, { idx: 1, emotion: "tired", image_url: "b" }]).idx, 1, "no drama: the last scene");
 });
 
+test("cover: a picture the check flagged is skipped (Caught at Dinner scene 1 drew Piper with a human head)", () => {
+  const scenes = [
+    { idx: 0, emotion: "shocked", image_url: "a", image_check: "failed" },
+    { idx: 1, emotion: "smug", image_url: "b", image_check: "passed" },
+    { idx: 2, emotion: "calm", image_url: "c", image_check: "none" },
+  ];
+  assert.equal(coverScene(scenes).idx, 1);
+  assert.equal(coverScene(scenes.map((s) => ({ ...s, image_check: "failed" }))).idx, 0, "all flagged: still a cover");
+});
+
 test("series overlays: Part N + next episode card; last episode and singles", () => {
   assert.deepEqual(overlayTexts({ partLabel: true, endCard: true, episodeNumber: 2, nextTitle: "The Welcome Party" }), { part: "Part 2", end: "Part 3: The Welcome Party\nFollow for more" });
   assert.deepEqual(overlayTexts({ partLabel: true, endCard: true, episodeNumber: 3, nextTitle: null }), { part: "Part 3", end: "Follow for more" });

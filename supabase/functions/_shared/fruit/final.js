@@ -45,9 +45,14 @@ export function finalMachineConfig({ image, job }) {
 /** Emotions that make a scene the cover (strongest first); the latest such scene wins. */
 const DRAMA = ["furious", "enraged", "livid", "outraged", "horrified", "shocked", "stunned", "betrayed", "devastated", "panicked", "terrified", "heartbroken", "gasping", "screaming", "angry", "desperate", "smug", "gleeful", "triumphant"];
 
-/** The most dramatic scene (by emotion; ties and no match: the later scene, the cliffhanger). */
+/**
+ * The most dramatic scene (by emotion; ties and no match: the later scene, the cliffhanger).
+ * A picture the check flagged (a human head...) is never the cover unless all of them are.
+ */
 export function coverScene(scenes) {
-  const ordered = [...scenes].filter((s) => s.image_url).sort((a, b) => a.idx - b.idx);
+  const drawn = [...scenes].filter((s) => s.image_url).sort((a, b) => a.idx - b.idx);
+  const clean = drawn.filter((s) => s.image_check !== "failed");
+  const ordered = clean.length ? clean : drawn;
   let best = null, bestScore = -1;
   for (const s of ordered) {
     const e = String(s.emotion ?? "").toLowerCase();
