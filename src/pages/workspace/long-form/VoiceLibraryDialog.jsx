@@ -137,12 +137,13 @@ export default function VoiceLibraryDialog({ open, onClose, onSelect, currentVoi
                           <span className="text-[11.5px] text-white/45">{cap(voice.gender)} · {cap(voice.accent)}</span>
                         </div>
                         <p className="mt-0.5 text-[12px] text-white/60">{voice.tags.join(" · ")}</p>
+                        {recommended && (
+                          <span title="Recommended for this niche" aria-label="Recommended for this niche"
+                            className="mt-1.5 flex w-fit items-center gap-1 whitespace-nowrap rounded-full bg-lime-300/15 px-2 py-0.5 text-[10.5px] font-semibold text-lime-200" data-testid="voice-recommended">
+                            <Sparkles className="h-3 w-3 shrink-0" /> Recommended
+                          </span>
+                        )}
                         <div className="mt-1.5 flex flex-wrap gap-1">
-                          {recommended && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-lime-300/15 px-2 py-0.5 text-[10.5px] font-semibold text-lime-200">
-                              <Sparkles className="h-3 w-3" /> Recommended for this niche
-                            </span>
-                          )}
                           {voice.tones.map((t) => (
                             <span key={t} className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10.5px] text-white/55">{cap(t)}</span>
                           ))}
