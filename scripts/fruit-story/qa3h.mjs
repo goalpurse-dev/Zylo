@@ -29,6 +29,7 @@ async function page(viewport, name) {
   p.on("console", (m) => { if (m.type() === "error") errors.push(m.text().slice(0, 200)); });
   p.on("response", (r) => { if (r.url().includes("fruit-story-api") && r.status() >= 400) errors.push(`fruit-story-api HTTP ${r.status()}`); });
   const shot = async (label) => {
+    for (const l of ["Maybe later", "Decline"]) { const b = p.getByRole("button", { name: l }); if (await b.count().catch(() => 0)) await b.first().click({ timeout: 2000 }).catch(() => {}); }
     const file = path.join(outDir, `${name}-${label}.png`);
     await p.screenshot({ path: file, fullPage: false });
     return file;
@@ -45,14 +46,15 @@ async function page(viewport, name) {
     }
   };
   const goHome = async () => { await p.goto(`${base}/workspace/ai-fruit-story`, { waitUntil: "networkidle" }); await p.waitForTimeout(1500); await dismiss(); };
-  return { ctx, p, errors, shot, goHome };
+  return { ctx, p, errors, shot, goHome, dismiss };
 }
 
 for (const [name, viewport] of [["desktop", { width: 1440, height: 900 }], ["phone", { width: 390, height: 844 }]]) {
-  const { ctx, p, errors, shot, goHome } = await page(viewport, name);
+  const { ctx, p, errors, shot, goHome, dismiss } = await page(viewport, name);
   const phone = viewport.width < 500;
-  const resultTab = async () => { if (phone) await p.getByRole("tab").nth(1).click(); };
-  const buildTab = async () => { if (phone) await p.getByRole("tab").nth(0).click(); };
+  // dispatchEvent: a late site popup can cover the tab bar; the tab still gets the click.
+  const resultTab = async () => { if (phone) await p.getByRole("tab").nth(1).dispatchEvent("click"); };
+  const buildTab = async () => { if (phone) await p.getByRole("tab").nth(0).dispatchEvent("click"); };
 
   await goHome();
   await p.getByText("Recent creations").first().waitFor({ timeout: 30_000 }).catch(() => {});
@@ -109,6 +111,30 @@ for (const [name, viewport] of [["desktop", { width: 1440, height: 900 }], ["pho
     await p.locator("text=Estimated total").first().scrollIntoViewIfNeeded().catch(() => {});
     await shot("4-settings");
   } else note(`${name}: no idea cards found`);
+
+  // Series: list → plan/roadmap → episode 1 (pictures ready: scene actions with prices).
+  await goHome();
+  if (phone) await buildTab();
+  await p.getByText("Episodes with cliffhangers").first().click().catch(() => {});
+  await p.waitForTimeout(2500);
+  const seriesBtn = p.getByRole("button", { name: /The Second Phone Next Door/ }).first();
+  if (await seriesBtn.count()) {
+    await seriesBtn.click();
+    await p.waitForTimeout(3000);
+    await shot("5-series-plan");
+    if (phone) { await resultTab(); await p.waitForTimeout(1200); await shot("5b-roadmap"); }
+    const make = p.getByRole("button", { name: /Make episode 1/ }).first();
+    if (await make.count()) {
+      await make.click();
+      await p.waitForTimeout(4000);
+      if (phone) await resultTab();
+      await p.waitForTimeout(1500);
+      const chips = await p.getByRole("button", { name: /(Edit|Regenerate) scene \d+, 4 credits/ }).count();
+      note(`${name}: episode 1 storyboard: scene buttons priced at 4 credits: ${chips}`);
+      await shot("6-episode-board");
+      if (phone) { await buildTab(); await p.waitForTimeout(800); await shot("6b-episode-build"); }
+    } else note(`${name}: no "Make episode 1" button`);
+  } else note(`${name}: series not found in the list`);
 
   const horiz = await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   note(`${name}: horizontal page scroll: ${horiz ? "YES (bad)" : "no"}`);
