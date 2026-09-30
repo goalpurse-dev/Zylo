@@ -8,7 +8,7 @@ import { ProjectCard } from "./shared";
 import { useAuth } from "../../../context/AuthContext";
 import { TutorialCard } from "../../../components/launch/LaunchUI.jsx";
 import { fetchShowcase, showcaseThumb, trackLaunch } from "../../../components/launch/launch";
-import { HUNT_CLIP, HowItWorks, LazyLoopVideo } from "../../../components/home-v2/HomeV2Sections.jsx";
+import { HowItWorks, LazyLoopVideo, LONG_FORM_LOOP } from "../../../components/home-v2/HomeV2Sections.jsx";
 
 // Status pill by the project's furthest step: drawn -> Ready to edit,
 // rendered -> Published; "Drawing" only while a job is actually running.
@@ -129,7 +129,7 @@ export default function LongForm() {
         <div className="relative overflow-hidden rounded-[22px] border border-white/[0.08] bg-white/[0.03] lg:col-start-1 lg:row-start-1" data-testid="create-card">
           <div className="pointer-events-none absolute inset-x-8 top-0 z-10 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
           <div className="relative aspect-[16/8] w-full max-w-full lg:aspect-[21/9]">
-            <LazyLoopVideo src={HUNT_CLIP.src} poster={HUNT_CLIP.poster} className="absolute inset-0" />
+            <LazyLoopVideo {...LONG_FORM_LOOP} className="absolute inset-0" />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0f1112] to-transparent" />
           </div>
           <div className="relative -mt-7 px-5 pb-5 lg:px-6 lg:pb-6">

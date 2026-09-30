@@ -17,13 +17,11 @@ import shipClip from "../../assets/home/latest/video9.16-fast.mp4";
 
 const STORAGE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/showcase`;
 export const HUNT_THUMBS = [`${STORAGE}/launch/spear-or-patience.jpg`, `${STORAGE}/launch/how-did-this-kill.jpg`, `${STORAGE}/launch/what-does-it-prove.jpg`];
-// Real f90160bc clip, no burned-in captions: the boar hunt (path card).
-export const HUNT_CLIP = { src: `${STORAGE}/preview/hunt-boar-v2.mp4`, poster: `${STORAGE}/preview/hunt-boar-v2.jpg` };
 // Baked scene loops (scripts/bakeSceneLoop.mjs): 7 caption-free f90160bc
 // scenes, 3.5 s each with a slow zoom and crossfades, seamless, silent.
 // Same scenes, different order per card so the two never match.
 const sceneLoop = (name) => ({ src: `${STORAGE}/loops/${name}.mp4`, webm: `${STORAGE}/loops/${name}.webm`, poster: `${STORAGE}/loops/${name}.webp` });
-const LONG_FORM_LOOP = sceneLoop("lf-card"); // 063 101 036 091 058 086 041
+export const LONG_FORM_LOOP = sceneLoop("lf-card"); // 063 101 036 091 058 086 041 (Home path card + lobby create card)
 const MADE_WITH_ZYVO_LOOP = sceneLoop("made-with-zyvo"); // 036 086 091 063 041 101 058
 const SECTION_X = "px-4 md:px-[50px]";
 
