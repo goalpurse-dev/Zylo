@@ -19,10 +19,12 @@ const STORAGE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/s
 export const HUNT_THUMBS = [`${STORAGE}/launch/spear-or-patience.jpg`, `${STORAGE}/launch/how-did-this-kill.jpg`, `${STORAGE}/launch/what-does-it-prove.jpg`];
 // Real f90160bc clip, no burned-in captions: the boar hunt (path card).
 export const HUNT_CLIP = { src: `${STORAGE}/preview/hunt-boar-v2.mp4`, poster: `${STORAGE}/preview/hunt-boar-v2.jpg` };
-// Home path card: the group hunt (Early Humans, 3:54–4:00).
-const GROUP_HUNT_CLIP = { src: `${STORAGE}/candidates/long-form-card/group.mp4`, poster: `${STORAGE}/candidates/long-form-card/group.webp` };
-// Three real stills from the same video for the calm "Made with Zyvo" card.
-const HUNT_STILLS = [`${STORAGE}/launch/still-hunt.jpg`, `${STORAGE}/launch/still-fire.jpg`, `${STORAGE}/launch/still-chase.jpg`];
+// Baked scene loops (scripts/bakeSceneLoop.mjs): 7 caption-free f90160bc
+// scenes, 3.5 s each with a slow zoom and crossfades, seamless, silent.
+// Same scenes, different order per card so the two never match.
+const sceneLoop = (name) => ({ src: `${STORAGE}/loops/${name}.mp4`, webm: `${STORAGE}/loops/${name}.webm`, poster: `${STORAGE}/loops/${name}.webp` });
+const LONG_FORM_LOOP = sceneLoop("lf-card"); // 063 101 036 091 058 086 041
+const MADE_WITH_ZYVO_LOOP = sceneLoop("made-with-zyvo"); // 036 086 091 063 041 101 058
 const SECTION_X = "px-4 md:px-[50px]";
 
 // Today's Home section header, one component: title + one-line subtitle + "See all →".
@@ -50,14 +52,15 @@ const NewPill = ({ className = "" }) => (
 );
 
 // Poster first; the clip loads and plays only while on screen (never with reduced motion).
-export function LazyLoopVideo({ src, poster, className = "" }) {
+// `webm` (VP9) is offered first when given; the MP4 (H.264) is the fallback.
+export function LazyLoopVideo({ src, webm, poster, className = "" }) {
   const ref = useRef(null);
   const reduced = useReducedMotion();
   const [inView, setInView] = useState(false);
   const [ready, setReady] = useState(false);
   useEffect(() => {
     if (reduced || !ref.current) return undefined;
-    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { rootMargin: "150px 0px" });
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting));
     io.observe(ref.current);
     return () => io.disconnect();
   }, [reduced]);
@@ -70,59 +73,12 @@ export function LazyLoopVideo({ src, poster, className = "" }) {
     <div ref={ref} className={`overflow-hidden bg-[#0d0f10] ${className.split(" ").includes("absolute") ? "" : "relative"} ${className}`}>
       <img src={poster} alt="" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
       {!reduced && (inView || ready) && (
-        <video src={src} poster={poster} muted loop playsInline autoPlay preload="none" onCanPlay={() => setReady(true)}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${ready ? "opacity-100" : "opacity-0"}`} />
+        <video poster={poster} muted loop playsInline autoPlay preload="none" onCanPlay={() => setReady(true)}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${ready ? "opacity-100" : "opacity-0"}`}>
+          {webm && <source src={webm} type='video/webm; codecs="vp9"' />}
+          <source src={src} type="video/mp4" />
+        </video>
       )}
-    </div>
-  );
-}
-
-export function CrossfadeStills({ images, interval = 7000, className = "" }) {
-  const ref = useRef(null);
-  const reduced = useReducedMotion();
-  const [layers, setLayers] = useState([images[0], null]); // src per layer
-  const [front, setFront] = useState(0); // the top layer
-  const [entering, setEntering] = useState(false); // top layer at 0 before its fade
-  const [visible, setVisible] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const index = useRef(0);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return undefined;
-    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.3 });
-    io.observe(el);
-    const host = el.parentElement;
-    const on = () => setHovered(true), off = () => setHovered(false);
-    host?.addEventListener("mouseenter", on);
-    host?.addEventListener("mouseleave", off);
-    return () => { io.disconnect(); host?.removeEventListener("mouseenter", on); host?.removeEventListener("mouseleave", off); };
-  }, []);
-  useEffect(() => {
-    if (reduced || !visible || hovered || images.length < 2) return undefined;
-    let cancelled = false;
-    const t = setInterval(async () => {
-      const next = (index.current + 1) % images.length;
-      const img = new Image();
-      img.src = images[next];
-      try { await img.decode(); } catch { return; } // not ready: try again next tick
-      if (cancelled) return;
-      index.current = next;
-      const back = 1 - front;
-      // The decoded still goes on top at opacity 0, then fades in over the
-      // old one (which stays fully visible underneath: no dip, no flash).
-      setLayers((l) => { const c = [...l]; c[back] = images[next]; return c; });
-      setEntering(true);
-      setFront(back);
-      requestAnimationFrame(() => requestAnimationFrame(() => { if (!cancelled) setEntering(false); }));
-    }, interval);
-    return () => { cancelled = true; clearInterval(t); };
-  }, [reduced, visible, hovered, images, interval, front]);
-  return (
-    <div ref={ref} className={`overflow-hidden bg-[#0d0f10] ${className}`} data-testid="crossfade-stills">
-      {layers.map((src, i) => src && (
-        <img key={i} src={src} alt="" decoding="async" loading={i === 0 ? "lazy" : undefined}
-          className={`absolute inset-0 h-full w-full object-cover ${i === front ? `z-10 ${entering ? "opacity-0" : "opacity-100 transition-opacity duration-[600ms] ease-in-out"}` : "z-0 opacity-100"}`} />
-      ))}
     </div>
   );
 }
@@ -176,7 +132,7 @@ export function PathCards() {
         primary isNew={isLongFormNew()}
         onClick={() => { trackLaunch("try_long_form", { placement: "home_hero" }); navigate("/long-form"); }}
         icon={Clapperboard} name="Long Form" line="8–15 min YouTube explainers from one idea" cta="Start a video"
-        media={<LazyLoopVideo src={GROUP_HUNT_CLIP.src} poster={GROUP_HUNT_CLIP.poster} className="h-full" />}
+        media={<LazyLoopVideo {...LONG_FORM_LOOP} className="h-full" />}
       />
     </div>
   );
@@ -260,7 +216,7 @@ export function WhatsNewRow() {
   const cards = [
     <BannerCard key="lf" testId="wn-long-form" art={<FanArt />} title="Long Form is here" sub="A full YouTube video from one idea" cta="Try it"
       onClick={() => { trackLaunch("try_long_form", { placement: "whats_new_row" }); navigate("/long-form"); }} />,
-    hunt && <BannerCard key="yt" testId="wn-showcase" art={<CrossfadeStills images={HUNT_STILLS} className="absolute inset-0" />}
+    hunt && <BannerCard key="yt" testId="wn-showcase" art={<LazyLoopVideo {...MADE_WITH_ZYVO_LOOP} className="absolute inset-0" />}
       title={`Made with Zyvo: ${hunt.title}`} cta="Watch on YouTube" href={hunt.youtube_url}
       onClick={() => trackLaunch("showcase_click", { placement: "whats_new_row", target: hunt.youtube_url, videoId: hunt.id })} />,
     tutorial && <BannerCard key="tut" testId="wn-tutorial" art={<img src={showcaseThumb(tutorial)} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
