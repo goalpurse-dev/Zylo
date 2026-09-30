@@ -47,7 +47,7 @@ export function MadeWithZyvo() {
   if (!shown.length) return null;
   return (
     <section aria-labelledby="examples-title">
-      <Heading eyebrow="Made with Zyvo"><span id="examples-title">Real videos, real prices</span></Heading>
+      <Heading eyebrow="Made with Zyvo"><span id="examples-title">Real videos from Zyvo tools</span></Heading>
       <div className="flex flex-wrap gap-4">
         {shown.map((e) => (
           <figure key={e.id} className={cx("m-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0F1112]", e.aspect === "9:16" ? "w-full max-w-[300px]" : "w-full max-w-[640px] flex-1")}>
