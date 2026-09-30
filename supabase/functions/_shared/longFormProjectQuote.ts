@@ -18,12 +18,15 @@ export type RenderTier = "v2" | "v3" | "v4";
 
 const CREDITS_PER_GENERATE: Record<RenderTier, number> = { v2: 1, v3: 4, v4: 5 };
 // Phase 7: the video is a FIXED price per minute (~2x our real cost incl. overhead,
-// at the cheapest $/credit we sell) — see docs/phase7/pricing-proposal.md.
-export const CREDITS_PER_MINUTE: Record<RenderTier, number> = { v2: 25, v3: 75, v4: 90 };
+// at the cheapest $/credit we sell) — see docs/phase7/pricing-proposal.md. The
+// price itself lives in public.tool_prices (longform:v2/v3/v4, flat_credits =
+// credits per minute) and is passed in as creditsPerMinute (longFormTierAccess.ts).
 
 export type ProjectQuoteInput = {
   targetDurationMinutes: number;
   renderTier: RenderTier;
+  // Credits per minute of finished video for renderTier, from tool_prices.
+  creditsPerMinute: number;
   // The recipe's own pacing density — e.g. Stickman targets 3-5 seconds per
   // beat (this session's Stickman Beat Director audit), a midpoint of ~4s
   // yields 15 beats/minute. A future recipe with a different rhythm supplies
@@ -58,8 +61,9 @@ export type ProjectQuote = {
 // about what's included at no extra cost, never silently omitting a real
 // pipeline stage from the picture.
 export function estimateLongFormProjectQuote(input: ProjectQuoteInput): ProjectQuote {
-  const { targetDurationMinutes, renderTier, beatsPerMinute } = input;
+  const { targetDurationMinutes, renderTier, beatsPerMinute, creditsPerMinute } = input;
   if (targetDurationMinutes <= 0) throw new Error("INVALID_TARGET_DURATION");
+  if (!(creditsPerMinute > 0)) throw new Error("NO_SERVER_PRICE");
   if (beatsPerMinute <= 0) throw new Error("INVALID_PACING_DENSITY");
   const reuseShare = input.reuseShare ?? 0.12;
   const retryUpliftShare = input.retryUpliftShare ?? 0.15;
@@ -71,10 +75,10 @@ export function estimateLongFormProjectQuote(input: ProjectQuoteInput): ProjectQ
   const totalRenderCount = estimatedFreshRenders + estimatedRetryRenders;
 
   void CREDITS_PER_GENERATE; // per-scene prices now apply to scene REGENERATE only (stickman/scenes.ts)
-  const videoCredits = Math.ceil(CREDITS_PER_MINUTE[renderTier] * targetDurationMinutes);
+  const videoCredits = Math.ceil(creditsPerMinute * targetDurationMinutes);
 
   const breakdown: ProjectQuoteBreakdownLine[] = [
-    { label: `${targetDurationMinutes}-min video (${renderTier.toUpperCase()})`, credits: videoCredits, note: `${CREDITS_PER_MINUTE[renderTier]} credits per minute — a fixed price: research, script, ~${estimatedBeatCount} scenes with QA and retries, voiceover, 1080p render, 3 thumbnails and the YouTube text are all included.` },
+    { label: `${targetDurationMinutes}-min video (${renderTier.toUpperCase()})`, credits: videoCredits, note: `${creditsPerMinute} credits per minute — a fixed price: research, script, ~${estimatedBeatCount} scenes with QA and retries, voiceover, 1080p render, 3 thumbnails and the YouTube text are all included.` },
   ];
 
   const totalCredits = breakdown.reduce((sum, line) => sum + line.credits, 0);

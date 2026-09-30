@@ -20,6 +20,9 @@ import { submitIdeaThumbnailJobs, IDEA_THUMBNAIL_ERROR } from "./ideaThumbnailJo
 import { LongFormCreationHeader } from "./shared";
 import GuestGenerateModal from "../../../components/ImageGenerator/GuestGenerateModal";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
+import usePlanCode from "../../../hooks/usePlanCode";
+import { useLongFormTiers, longFormTierAllowed, bestLongFormTier } from "../../../lib/longFormTiers";
+import { PLAN_LABELS } from "../../../lib/planGating";
 import { watchJob } from "../../../lib/jobs";
 import { REGENERATE_IDEAS_COST, REFRESH_THUMBNAILS_COST } from "../../../lib/longFormIdeaThumbnails";
 import { STICKMAN_RECIPE } from "./recipe";
@@ -36,13 +39,14 @@ import { cleanText } from "./textClean";
 // which still increases with tier the same way. No per-tier generation-time
 // estimate exists anywhere in this codebase, so — per explicit instruction
 // not to invent numbers — the Cost dots stay dots rather than becoming a
-// fabricated "~N min" estimate. Phase 7: `perMin` is the fixed price per
-// minute (mirrors CREDITS_PER_MINUTE in _shared/longFormProjectQuote.ts; a
-// test keeps them equal). The summary quote is still the charged number.
+// fabricated "~N min" estimate. The price per minute and the lowest plan for
+// each tier come from tool_prices (longform:v2/v3/v4, see lib/longFormTiers),
+// the same rows the server charges and gates with. The summary quote is still
+// the charged number.
 const RENDER_TIER_OPTIONS = [
-  { value: "v2", label: "V2 Fast", description: "Quickest and cheapest. Good for drafts.", quality: 1, cost: 1, perMin: 25 },
-  { value: "v3", label: "V3 High Quality", description: "Best balance of detail and cost.", quality: 2, cost: 2, perMin: 75, recommended: true },
-  { value: "v4", label: "V4 Ultra", description: "Maximum detail. Slowest.", quality: 3, cost: 3, perMin: 90 },
+  { value: "v2", label: "V2 Fast", description: "Quickest and cheapest. Good for drafts.", quality: 1, cost: 1 },
+  { value: "v3", label: "V3 High Quality", description: "Best balance of detail and cost.", quality: 2, cost: 2, recommended: true },
+  { value: "v4", label: "V4 Ultra", description: "Maximum detail. Slowest.", quality: 3, cost: 3 },
 ];
 const EXPLANATION_DEPTH_OPTIONS = [
   { value: "simple", label: "Brief" },
@@ -1116,6 +1120,23 @@ export default function ProductionSetup() {
   const credits = useProfileCredits();
   const reducedMotion = usePrefersReducedMotion();
 
+  // Tier access: signed-in users can only pick tiers their plan includes (the
+  // server refuses the rest); the default is the best tier the plan allows.
+  // Guests see every tier unlocked and sign up on Generate.
+  const account = usePlanCode();
+  const longFormTiers = useLongFormTiers();
+  const tierLocked = (tier) => account.signedIn && longFormTiers.status === "ready" && !longFormTierAllowed(longFormTiers.tiers, tier, account.plan);
+  const tierTouchedRef = useRef(false);
+  useEffect(() => {
+    if (!account.signedIn || longFormTiers.status !== "ready") return;
+    const best = bestLongFormTier(longFormTiers.tiers, account.plan);
+    if (!best) return;
+    if (!tierTouchedRef.current || !longFormTierAllowed(longFormTiers.tiers, renderTier, account.plan)) {
+      tierTouchedRef.current = true;
+      if (renderTier !== best) setRenderTier(best);
+    }
+  }, [account.signedIn, account.plan, longFormTiers.status, longFormTiers.tiers, renderTier]);
+
   useEffect(() => {
     document.title = "Create New Video | Zyvo";
   }, []);
@@ -1938,28 +1959,42 @@ export default function ProductionSetup() {
             <div className="mb-7">
               <SectionLabel n={5}>Quality</SectionLabel>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                {RENDER_TIER_OPTIONS.map((opt) => (
+                {RENDER_TIER_OPTIONS.map((opt) => {
+                  const locked = tierLocked(opt.value);
+                  const minPlan = longFormTiers.tiers?.[opt.value]?.minPlan;
+                  const perMinute = longFormTiers.tiers?.[opt.value]?.perMinute;
+                  return (
                   <button
                     key={opt.value}
                     type="button"
-                    onClick={() => setRenderTier(opt.value)}
-                    aria-pressed={renderTier === opt.value}
+                    onClick={() => { if (locked) { navigate("/pricing"); return; } tierTouchedRef.current = true; setRenderTier(opt.value); }}
+                    aria-pressed={!locked && renderTier === opt.value}
+                    aria-label={locked ? `${opt.label}: needs the ${PLAN_LABELS[minPlan] ?? minPlan} plan. See plans` : undefined}
+                    data-locked={locked ? "true" : undefined}
                     className={`relative flex flex-col items-start gap-1.5 rounded-2xl border p-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-lime-300 ${
-                      renderTier === opt.value ? "border-lime-300/50 bg-lime-300/[0.07]" : "border-white/[0.08] bg-white/[0.02] hover:border-white/20"
+                      locked ? "border-white/[0.06] bg-white/[0.015] hover:border-white/15"
+                        : renderTier === opt.value ? "border-lime-300/50 bg-lime-300/[0.07]" : "border-white/[0.08] bg-white/[0.02] hover:border-white/20"
                     }`}
                   >
-                    {opt.recommended && (
+                    {locked ? (
+                      <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white/50">
+                        <Lock className="h-2.5 w-2.5" aria-hidden="true" />{PLAN_LABELS[minPlan] ?? minPlan}
+                      </span>
+                    ) : opt.recommended && (
                       <span className="absolute right-3 top-3 rounded-full border border-lime-300/30 bg-lime-300/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-lime-300">Recommended</span>
                     )}
-                    <span className="text-[14px] font-bold text-white">{opt.label}</span>
-                    <span className="text-[12px] leading-snug text-white/45">{opt.description}</span>
-                    <span data-testid={`tier-price-${opt.value}`} className="text-[12px] font-semibold text-white/75">{opt.perMin} credits / min</span>
+                    <span className={`text-[14px] font-bold ${locked ? "text-white/40" : "text-white"}`}>{opt.label}</span>
+                    <span className={`text-[12px] leading-snug ${locked ? "text-white/30" : "text-white/45"}`}>{locked ? `Needs the ${PLAN_LABELS[minPlan] ?? minPlan} plan. Tap to see plans.` : opt.description}</span>
+                    <span data-testid={`tier-price-${opt.value}`} className={`text-[12px] font-semibold ${locked ? "text-white/35" : "text-white/75"}`}>
+                      {longFormTiers.status === "error" ? "Price unavailable" : perMinute ? `${perMinute} credits / min` : <span className="inline-block h-3 w-20 animate-pulse rounded bg-white/10 align-middle motion-reduce:animate-none" aria-label="Loading price" />}
+                    </span>
                     <span className="mt-1 flex items-center gap-3 text-[10.5px] text-white/30">
                       <span className="flex items-center gap-1">Quality {[1, 2, 3].map((i) => <span key={i} className={`h-1.5 w-1.5 rounded-full ${i <= opt.quality ? "bg-lime-300/70" : "bg-white/10"}`} />)}</span>
                       <span className="flex items-center gap-1">Cost {[1, 2, 3].map((i) => <span key={i} className={`h-1.5 w-1.5 rounded-full ${i <= opt.cost ? "bg-amber-300/70" : "bg-white/10"}`} />)}</span>
                     </span>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

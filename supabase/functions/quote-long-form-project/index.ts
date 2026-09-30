@@ -13,7 +13,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { ok, err, cors } from "../shared/cors.ts";
 import { requireUser } from "../shared/auth.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { estimateLongFormProjectQuote, type RenderTier } from "../_shared/longFormProjectQuote.ts";
+import { loadLongFormTier } from "../_shared/longFormTierAccess.ts";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 // Kept in sync with create-long-form-production-setup's own copy — see that
 // file's header comment. Both will move together the moment a second recipe
@@ -40,8 +45,16 @@ Deno.serve(async (req) => {
   if (!["v2", "v3", "v4"].includes(renderTier)) return err(req, "Invalid renderTier", 400);
   if (!(targetDurationMinutes > 0)) return err(req, "Invalid targetDurationMinutes", 400);
 
+  // The tier's price and plan gate come from tool_prices (longform:<tier>):
+  // a tier above the user's plan is refused here, never quoted.
+  const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+  const access = await loadLongFormTier(admin, user.id, renderTier);
+  if (!access.ok) {
+    return err(req, access.message, access.code === "PLAN_UPGRADE_REQUIRED" ? 403 : 503, { code: access.code, requiredPlan: access.minPlan ?? null });
+  }
+
   try {
-    const quote = estimateLongFormProjectQuote({ targetDurationMinutes, renderTier, beatsPerMinute });
+    const quote = estimateLongFormProjectQuote({ targetDurationMinutes, renderTier, beatsPerMinute, creditsPerMinute: access.creditsPerMinute });
     return ok(req, quote);
   } catch (e) {
     return err(req, "Could not compute quote", 400, { reason: e instanceof Error ? e.message : String(e) });

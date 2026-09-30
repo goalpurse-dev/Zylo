@@ -17,7 +17,10 @@ test("never calls any image/video provider endpoint — Setup only computes a qu
 test("computes the quote via the shared, tested estimator — never an inline/duplicated calculation", async () => {
   const text = await source(FN);
   assert.match(text, /import \{ estimateLongFormProjectQuote/);
-  assert.match(text, /estimateLongFormProjectQuote\(\{ targetDurationMinutes, renderTier, beatsPerMinute \}\)/);
+  assert.match(text, /estimateLongFormProjectQuote\(\{ targetDurationMinutes, renderTier, beatsPerMinute, creditsPerMinute \}\)/);
+  // The price and plan gate come from tool_prices, checked before the profile is frozen.
+  const gate = text.indexOf("loadLongFormTier(admin, user.id, renderTier)");
+  assert.ok(gate > -1 && gate < text.indexOf('.rpc("create_long_form_generation_profile"'));
 });
 
 test("reserves EXACTLY the computed quote total, never a client-supplied credit amount", async () => {

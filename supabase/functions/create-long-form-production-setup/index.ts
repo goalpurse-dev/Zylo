@@ -33,6 +33,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { requireUser } from "../shared/auth.ts";
 import { estimateLongFormProjectQuote, type RenderTier } from "../_shared/longFormProjectQuote.ts";
+import { loadLongFormTier } from "../_shared/longFormTierAccess.ts";
 import { RECIPE_BEATS_PER_MINUTE } from "../../../src/lib/longFormPipelineConstants.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -71,7 +72,14 @@ Deno.serve(async (req) => {
   if (projectError) return err(req, "Failed to load project", 500);
   if (!project || project.user_id !== user.id) return err(req, "Project not found", 404);
 
-  const quote = estimateLongFormProjectQuote({ targetDurationMinutes, renderTier, beatsPerMinute });
+  // Tier price + plan gate from tool_prices (longform:<tier>), checked before
+  // the profile is frozen or a single credit is reserved.
+  const access = await loadLongFormTier(admin, user.id, renderTier);
+  if (!access.ok) {
+    return err(req, access.message, access.code === "PLAN_UPGRADE_REQUIRED" ? 403 : 503, { code: access.code, requiredPlan: access.minPlan ?? null });
+  }
+  const creditsPerMinute = access.creditsPerMinute;
+  const quote = estimateLongFormProjectQuote({ targetDurationMinutes, renderTier, beatsPerMinute, creditsPerMinute });
 
   const { data: profile, error: profileError } = await admin.rpc("create_long_form_generation_profile", {
     p_project_id: projectId, p_user_id: user.id,

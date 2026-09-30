@@ -14,6 +14,8 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { requireUser } from "../shared/auth.ts";
+import type { RenderTier } from "../_shared/longFormProjectQuote.ts";
+import { loadLongFormTier } from "../_shared/longFormTierAccess.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -34,6 +36,12 @@ Deno.serve(async (req) => {
 
   const { data: project } = await admin.from("long_form_projects").select("id,user_id").eq("id", projectId).maybeSingle();
   if (!project || project.user_id !== user.id) return err(req, "Project not found", 404);
+
+  // A tier above the user's plan is never saved (tool_prices longform:<tier>.min_plan).
+  const access = await loadLongFormTier(admin, user.id, tier as RenderTier);
+  if (!access.ok) {
+    return err(req, access.message, access.code === "PLAN_UPGRADE_REQUIRED" ? 403 : 503, { code: access.code, requiredPlan: access.minPlan ?? null });
+  }
 
   const { error } = await admin.from("long_form_projects").update({ scene_generation_tier: tier, updated_at: new Date().toISOString() }).eq("id", projectId);
   if (error) return err(req, "Could not save your quality selection", 500);
