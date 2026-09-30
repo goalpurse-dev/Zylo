@@ -125,6 +125,7 @@ export function buildPlannerPrompt(p) {
     parts.push(`THIS EPISODE (Ep ${s.episode.number} "${s.episode.title}"): ${s.episode.summary}`);
     if (s.previous?.length) parts.push(`Scene 1 must pick up directly from the last cliffhanger: ${s.previous.at(-1).cliffhanger}`);
     parts.push(`The last scene must deliver this episode's cliffhanger: ${s.episode.cliffhanger}`);
+    parts.push("This is one episode of a series: use the characters this episode needs (not every series character has to appear), keep every role exactly as in the bible, and never recap earlier episodes.");
   }
   if (p.source === "script") {
     parts.push(`THE USER WROTE THESE LINES. They are final: do not write, change or reorder lines. Only stage each one.\n${p.script.map((r, i) => `${i + 1}. ${r.speakerId}: ${r.line}`).join("\n")}`);
@@ -232,7 +233,8 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     }
     return { speakerId, line, presentIds: present, locationId: s?.locationId, action, emotion, shot: s?.shot, placement, title: beat };
   });
-  for (const id of castIds) if (source !== "script" && !seen.has(id)) errors.push(`cast member ${id} must appear in at least one scene`);
+  // An episode uses the series characters it needs; a single story uses its whole cast.
+  for (const id of castIds) if (source !== "script" && source !== "episode" && !seen.has(id)) errors.push(`cast member ${id} must appear in at least one scene`);
 
   let durations = [];
   try { durations = normalized.map((s) => clipDurationSec(s.line, allowed)); } catch { /* reported via word limits */ }

@@ -19,7 +19,7 @@ import { FINAL_MACHINE, buildFinalJob, finalMachineConfig, finalPath, storyUpdat
 import { webhookToken } from "../_shared/fruit/runware.js";
 import { validateCreateStory, validateEditInstruction, validateId, validateScenePrompt, validateSeriesPlan } from "../_shared/fruit/validation.js";
 import { planStep } from "../_shared/fruit/steps.js";
-import { planStory } from "../_shared/fruit/plannerService.js";
+import { planSeries, planStory } from "../_shared/fruit/plannerService.js";
 import { buildPictureRequest } from "../_shared/fruit/pictures.js";
 import { buildClipRequest } from "../_shared/fruit/clips.js";
 import { cleanEditInstruction } from "../_shared/fruit/smallTasks.js";
@@ -159,16 +159,35 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const input = validateCreateStory(raw, lib, (id: string) => (idea && idea.id === id ? { castIds: idea.cast_ids } : null));
     const [need, planName] = QUALITY_PLAN[input.quality];
     if ((PLAN_RANK[ctx.plan] ?? 0) < need) throw fruitError("PLAN_UPGRADE_REQUIRED", `${input.quality.toUpperCase()} needs the ${planName} plan.`);
-    if (input.source === "episode") throw fruitError("STAGE_NOT_READY", "Series episodes aren't switched on yet.");   // stage 3g
     await rateLimit(ctx.userId, "story");
+
+    // An episode: the series cast, its bible, the earlier episodes, and this one's plan.
+    let series: any;
+    if (input.source === "episode") {
+      const s = must(await admin.from("fruit_series").select("*").eq("id", input.seriesId).eq("user_id", ctx.userId).is("deleted_at", null).maybeSingle());
+      if (!s) throw new FruitError("NOT_FOUND", "This series doesn't exist anymore.", 404);
+      const episodes = must(await admin.from("fruit_series_episodes").select("*").eq("series_id", s.id).order("number"));
+      const storyIds = episodes.map((e: any) => e.story_id).filter(Boolean);
+      const stories = storyIds.length ? must(await admin.from("fruit_stories").select("id, status").in("id", storyIds)) : [];
+      const target = episodeStatuses(episodes, new Map(stories.map((x: any) => [x.id, x.status]))).find((e: any) => e.number === input.episodeNumber);
+      if (!target) throw fruitError("VALIDATION", "That episode doesn't exist.");
+      if (target.status === "locked") throw new FruitError("WRONG_STATUS", "Finish the previous episode first.", 409);
+      if (target.storyId) throw new FruitError("WRONG_STATUS", "This episode is already started.", 409);
+      input.castIds = s.cast_ids;
+      series = {
+        id: s.id, title: s.title, logline: s.logline, bible: s.bible?.text ?? "",
+        previous: episodes.filter((e: any) => e.number < input.episodeNumber).map((e: any) => ({ number: e.number, title: e.title, summary: e.summary, cliffhanger: e.cliffhanger })),
+        episode: { number: target.number, title: target.title, summary: target.summary, cliffhanger: target.cliffhanger },
+      };
+    }
 
     const cast = input.castIds.map((id: string) => lib.get(id));
     const { plan, attempts, callIds, costUsd, model } = await planStory({
-      admin, env: LLM_ENV, userId: ctx.userId,
+      admin, env: LLM_ENV, userId: ctx.userId, seriesId: series?.id ?? null,
       plannerInput: {
         source: input.source, cast, lengthSec: input.lengthSec, quality: input.quality,
         idea: idea ? { title: idea.title, summary: idea.summary } : undefined,
-        prompt: input.prompt, script: input.script,
+        prompt: input.prompt, script: input.script, series,
       },
     });
     const storyId = must(await admin.rpc("fruit_create_story", {
@@ -179,6 +198,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
         title: plan.title, cast_ids: input.castIds, quality: input.quality, aspect: input.aspect,
         length_sec: Math.min(180, Math.max(5, plan.lengthSec)), locations: plan.locations,
         planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd },
+        series_id: series?.id ?? null, episode_number: series ? input.episodeNumber : null,
       },
       p_scenes: plan.scenes.map((sc: any) => ({
         title: sc.title, speaker_id: sc.speakerId, line: sc.line, present_ids: sc.presentIds, location_id: sc.locationId,
@@ -275,25 +295,38 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     return toStory(fresh.row, fresh.scenes);
   },
 
+  /** Free: the series outline (title, logline, bible with fixed roles, episodes with cliffhangers). */
   async createSeriesPlan(ctx) {
     requirePaid(ctx);
+    const lib = await libraryMap();
+    const input = validateSeriesPlan(ctx.body?.input, lib);
     await rateLimit(ctx.userId, "series");
-    validateSeriesPlan(ctx.body?.input, await libraryMap());
-    throw fruitError("STAGE_NOT_READY", "Series plans aren't switched on yet.");     // stage 3g
+    if (PAID_CALLS_OFF) throw fruitError("PAID_CALLS_DISABLED");
+    const row = must(await admin.from("fruit_series").insert({
+      user_id: ctx.userId, concept: input.concept, cast_ids: input.castIds, tone: input.tone, opener: input.opener, episode_count: input.episodeCount,
+    }).select("id").single());
+    try {
+      const { outline, attempts, callIds, costUsd, model } = await planSeries({
+        admin, env: LLM_ENV, userId: ctx.userId, seriesId: row.id,
+        input: { concept: input.concept, cast: input.castIds.map((id: string) => lib.get(id)), opener: input.opener, tone: input.tone, episodeCount: input.episodeCount },
+      });
+      must(await admin.from("fruit_series").update({
+        title: outline.title, logline: outline.logline,
+        bible: { text: outline.bible, planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd } },
+      }).eq("id", row.id));
+      must(await admin.from("fruit_series_episodes").insert(outline.episodes.map((e: any) => ({
+        series_id: row.id, user_id: ctx.userId, number: e.number, title: e.title, summary: e.summary, cliffhanger: e.cliffhanger,
+      }))));
+    } catch (e) {
+      await admin.from("fruit_series").delete().eq("id", row.id);
+      throw e;
+    }
+    return seriesView(ctx.userId, row.id);
   },
 
   async getSeries(ctx) {
     await rateLimit(ctx.userId, "read");
-    const seriesId = validateId(ctx.body?.seriesId, "series");
-    const s = must(await admin.from("fruit_series").select("*").eq("id", seriesId).eq("user_id", ctx.userId).is("deleted_at", null).maybeSingle());
-    if (!s) throw new FruitError("NOT_FOUND", "This series doesn't exist anymore.", 404);
-    const episodes = must(await admin.from("fruit_series_episodes").select("*").eq("series_id", seriesId).order("number"));
-    const storyIds = episodes.map((e: any) => e.story_id).filter(Boolean);
-    const stories = storyIds.length ? must(await admin.from("fruit_stories").select("id, status").in("id", storyIds)) : [];
-    return {
-      id: s.id, title: s.title, logline: s.logline, castIds: s.cast_ids, createdAt: s.created_at,
-      episodes: episodeStatuses(episodes, new Map(stories.map((x: any) => [x.id, x.status]))),
-    };
+    return seriesView(ctx.userId, validateId(ctx.body?.seriesId, "series"));
   },
 
   async listSeries(ctx) {
@@ -311,6 +344,18 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     return rows.map((r: any) => toRecentSingle(r, scenes.filter((s: any) => s.story_id === r.id)));
   },
 };
+
+async function seriesView(userId: string, seriesId: string) {
+  const s = must(await admin.from("fruit_series").select("*").eq("id", seriesId).eq("user_id", userId).is("deleted_at", null).maybeSingle());
+  if (!s) throw new FruitError("NOT_FOUND", "This series doesn't exist anymore.", 404);
+  const episodes = must(await admin.from("fruit_series_episodes").select("*").eq("series_id", seriesId).order("number"));
+  const storyIds = episodes.map((e: any) => e.story_id).filter(Boolean);
+  const stories = storyIds.length ? must(await admin.from("fruit_stories").select("id, status").in("id", storyIds)) : [];
+  return {
+    id: s.id, title: s.title, logline: s.logline, castIds: s.cast_ids, createdAt: s.created_at,
+    episodes: episodeStatuses(episodes, new Map(stories.map((x: any) => [x.id, x.status]))),
+  };
+}
 
 async function listSeriesCards(userId: string) {
   const list = must(await admin.from("fruit_series").select("*").eq("user_id", userId).is("deleted_at", null).order("created_at", { ascending: false }).limit(30));

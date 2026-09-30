@@ -4,6 +4,7 @@
 // Used by fruit-story-api (createStory) and fruit-worker (blind test).
 import { callLlm, LlmError } from "./llm.js";
 import { runPlanner } from "./planner.js";
+import { runSeriesPlanner } from "./series.js";
 import { FRUIT_MODELS } from "./models.js";
 import { FruitError } from "./errors.js";
 
@@ -14,16 +15,8 @@ async function logCall(admin, row) {
   return data.id;
 }
 
-/**
- * @param {object} o
- * @param {object} o.admin     service-role supabase client
- * @param {object} o.env       {ANTHROPIC_API_KEY, OPENAI_API_KEY, FRUIT_PAID_CALLS}
- * @param {string|null} o.userId
- * @param {object} o.plannerInput  buildPlannerPrompt input minus llm (source, cast rows, lengthSec, quality, idea/prompt/script/series)
- * @param {{provider:string, model:string}} [o.model]  defaults to FRUIT_MODELS.planner
- * @param {string} [o.purposePrefix]  e.g. "blind_test:"
- */
-export async function planStory({ admin, env, userId, plannerInput, model = FRUIT_MODELS.planner, purposePrefix = "", seriesId = null }) {
+/** An llm() for the planners that logs every call and adds up its cost. */
+function loggedLlm({ admin, env, userId, model, purposePrefix, seriesId }) {
   if (String(env.FRUIT_PAID_CALLS ?? "").toLowerCase() === "off") throw new FruitError("PAID_CALLS_DISABLED", undefined, 503);
   const apiKey = model.provider === "anthropic" ? env.ANTHROPIC_API_KEY : env.OPENAI_API_KEY;
   if (!apiKey) throw new FruitError("PLANNER_FAILED", undefined, 502);
@@ -55,11 +48,41 @@ export async function planStory({ admin, env, userId, plannerInput, model = FRUI
     }
   };
 
+  return { llm, done: () => ({ callIds: callIds.filter(Boolean), costUsd: Number(costUsd.toFixed(6)) }) };
+}
+
+/**
+ * @param {object} o
+ * @param {object} o.admin     service-role supabase client
+ * @param {object} o.env       {ANTHROPIC_API_KEY, OPENAI_API_KEY, FRUIT_PAID_CALLS}
+ * @param {string|null} o.userId
+ * @param {object} o.plannerInput  buildPlannerPrompt input minus llm (source, cast rows, lengthSec, quality, idea/prompt/script/series)
+ * @param {{provider:string, model:string}} [o.model]  defaults to FRUIT_MODELS.planner
+ * @param {string} [o.purposePrefix]  e.g. "blind_test:"
+ */
+export async function planStory({ admin, env, userId, plannerInput, model = FRUIT_MODELS.planner, purposePrefix = "", seriesId = null }) {
+  const { llm, done } = loggedLlm({ admin, env, userId, model, purposePrefix, seriesId });
   try {
     const { plan, attempts } = await runPlanner({ ...plannerInput, llm });
-    return { plan, attempts, callIds: callIds.filter(Boolean), costUsd: Number(costUsd.toFixed(6)), model };
+    return { plan, attempts, ...done(), model };
   } catch (e) {
-    if (e instanceof FruitError) { e.callIds = callIds.filter(Boolean); e.costUsd = costUsd; throw e; }
+    if (e instanceof FruitError) { Object.assign(e, done()); throw e; }
     throw new FruitError("PLANNER_FAILED", undefined, 502);
+  }
+}
+
+/**
+ * Plans a series outline (title, logline, bible, episodes) with the same model
+ * and logging as stories. Free for the user.
+ * @param {object} o  {admin, env, userId, seriesId, input: {concept, cast rows, opener, tone, episodeCount}}
+ */
+export async function planSeries({ admin, env, userId, seriesId, input, model = FRUIT_MODELS.planner }) {
+  const { llm, done } = loggedLlm({ admin, env, userId, model, purposePrefix: "", seriesId });
+  try {
+    const { outline, attempts } = await runSeriesPlanner({ ...input, llm });
+    return { outline, attempts, ...done(), model };
+  } catch (e) {
+    if (e instanceof FruitError) { Object.assign(e, done()); throw e; }
+    throw new FruitError("PLANNER_FAILED", "We couldn't plan this series. Nothing was charged. Try again.", 502);
   }
 }
