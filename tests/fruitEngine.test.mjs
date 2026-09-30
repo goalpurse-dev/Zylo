@@ -57,14 +57,14 @@ test("happy path: submit exactly the stored request, webhook completes, story re
   assert.ok(db.calls.every((c) => !/[?&]t=[0-9a-f]{64}/.test(JSON.stringify(c.request))), "webhook token never logged");
 });
 
-test("per-story concurrency: at most 4 pictures in flight, the rest start as others finish", async () => {
+test("per-story concurrency: at most 6 in flight (a 30 s story in one wave), the rest start as others finish", async () => {
   const { db, engine, sent } = setup();
-  const storyId = db.addStory({ sceneCount: 6 });
+  const storyId = db.addStory({ sceneCount: 8 });
   pictures(db, storyId);
   await engine.kick({ storyId });
-  assert.equal(sent.length, 4);
+  assert.equal(sent.length, 6);
   await engine.onResult(sent[0].taskUUID, IMG(sent[0].taskUUID));
-  assert.equal(sent.length, 5);                                             // completion kicks the next one
+  assert.equal(sent.length, 7);                                             // completion kicks the next one
 });
 
 test("duplicate and late webhooks change nothing", async () => {
@@ -251,4 +251,62 @@ test("a clip that finally fails on its model is re-sent once on the fallback mod
   const T = sent[1].taskUUID;
   assert.equal(await eng.onResult(T, CLIP(T)), "completed");
   assert.equal(db.balance, 970, "charged once at the tier price, no refund");
+});
+
+const clipStep = (db, storyId) => {
+  const [scene] = [...db.scenes.values()].filter((x) => x.story_id === storyId);
+  db.chargeStep(storyId, { from: ["pictures_ready"], to: "animating", items: [{ scene_id: scene.id, kind: "clip", credits: 25, request: { taskType: "videoInference", model: "wan", positivePrompt: "p" } }] });
+};
+
+test("a result fetched by the reconciler is marked as a poll (so missed webhooks show up)", async () => {
+  const { db, engine, sent } = setup({ poll: (T) => ({ httpStatus: 200, body: CLIP(T) }) });
+  const storyId = db.addStory({ sceneCount: 1, status: "pictures_ready" });
+  clipStep(db, storyId);
+  await engine.kick({ storyId });
+  db.advance(100);
+  await engine.reconcile();
+  const job = [...db.jobs.values()][0];
+  assert.equal(job.status, "succeeded");
+  assert.equal(job.result._via, "poll");
+  assert.equal(sent.length, 1);
+});
+
+test("stall check: a clip Runware lost is sent again once after 4 min, then refunded with a clear message", async () => {
+  const { db, engine, sent } = setup({ poll: () => ({ httpStatus: 200, body: { data: [] } }) });   // Runware: no such task
+  const storyId = db.addStory({ sceneCount: 1, status: "pictures_ready" });
+  clipStep(db, storyId);
+  await engine.kick({ storyId });
+  db.advance(120);
+  await engine.reconcile();
+  assert.equal(sent.length, 1, "at 2 min: not stalled yet, keep waiting");
+  db.advance(130);                      // 250 s
+  await engine.reconcile();
+  let job = [...db.jobs.values()][0];
+  assert.equal(job.status, "queued", "lost after 4 min: queued again");
+  db.advance(60);
+  await engine.reconcile();
+  assert.equal(sent.length, 2, "sent once more");
+  assert.notEqual(sent[1].taskUUID, sent[0].taskUUID);
+  db.advance(250);
+  await engine.reconcile();
+  job = [...db.jobs.values()][0];
+  assert.equal(job.status, "failed");
+  assert.equal(job.error_code, "PROVIDER_TIMEOUT");
+  assert.match(job.error, /refunded your credits. Tap Retry/);
+  assert.equal(sent.length, 2, "never a third send");
+  assert.equal(db.balance, 1000, "refunded");
+});
+
+test("stall check: a clip Runware is still rendering is NOT sent twice; refunded at 12 min", async () => {
+  const { db, engine, sent } = setup({ poll: (T) => ({ httpStatus: 200, body: { data: [{ taskType: "videoInference", taskUUID: T, status: "processing" }] } }) });
+  const storyId = db.addStory({ sceneCount: 1, status: "pictures_ready" });
+  clipStep(db, storyId);
+  await engine.kick({ storyId });
+  for (let t = 0; t < 11; t++) { db.advance(60); await engine.reconcile(); }
+  assert.equal(sent.length, 1, "still rendering at 11 min: no second send");
+  assert.equal([...db.jobs.values()][0].status, "submitted");
+  db.advance(70);
+  await engine.reconcile();
+  assert.equal([...db.jobs.values()][0].error_code, "PROVIDER_TIMEOUT");
+  assert.equal(db.balance, 1000);
 });

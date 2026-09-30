@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion as Motion, useReducedMotion } from "framer-motion";
 import { AlertTriangle, ChevronDown, Film, Pencil, RefreshCw } from "lucide-react";
 import { CreditIcon, FOCUS, ProgressBar, cx } from "../../../ui/zyvo";
@@ -36,6 +36,8 @@ export default function StoryBoard({ story, byId, prices, onEdit, onRegenerate, 
         <span className="shrink-0 text-[12px] font-black tabular-nums text-lime-300">{pct}%</span>
       </div>
 
+      <SlowNotice busy={["pictures", "animating"].includes(story.status)} done={done} total={n} what={inClips ? "clip" : "picture"} />
+
       {(failedPictures > 0 || failedClips > 0) && (
         <p role="status" className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-[12px] font-semibold leading-relaxed text-red-300">
           {failedPictures > 0
@@ -62,6 +64,38 @@ export default function StoryBoard({ story, byId, prices, onEdit, onRegenerate, 
         ))}
       </div>
     </div>
+  );
+}
+
+/**
+ * Never look frozen: a running timer while work is in flight, and after 2 min
+ * a calm "taking longer" note (the video service can be slow; each result
+ * appears as soon as it's ready).
+ */
+function SlowNotice({ busy, done, total, what }) {
+  const since = useRef(null);
+  const [now, setNow] = useState(() => Date.now());
+  if (busy && since.current == null) since.current = Date.now();
+  if (!busy) since.current = null;
+  useEffect(() => {
+    if (!busy) return undefined;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [busy]);
+  if (!busy || since.current == null) return null;
+  const sec = Math.max(0, Math.floor((now - since.current) / 1000));
+  const clock = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+  const slow = sec >= 120;
+  return (
+    <p role="status" aria-live="polite" className={cx("flex items-center gap-2 rounded-xl border px-4 py-2.5 text-[12px] font-semibold leading-relaxed", slow ? "border-amber-300/25 bg-amber-300/[0.07] text-amber-100" : "border-white/[0.07] bg-white/[0.03] text-white/55")}>
+      <span aria-hidden="true" className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-lime-300/20 border-t-lime-300/70 motion-reduce:animate-none" />
+      <span className="min-w-0">
+        {slow
+          ? <>Taking a bit longer than usual, hang tight. {done} of {total} {what}s done; each one appears here as soon as it&apos;s ready.</>
+          : <>{done} of {total} {what}s done. Each one appears here as soon as it&apos;s ready.</>}
+      </span>
+      <span className="ml-auto shrink-0 tabular-nums text-white/40">{clock}</span>
+    </p>
   );
 }
 
@@ -103,6 +137,19 @@ function SceneCard({ scene, story, byId, prices, inClips, onEdit, onRegenerate, 
   const sawGenerating = useRef(false);
   if (scene.imageStatus === "generating") sawGenerating.current = true;
   const develop = scene.imageStatus === "ready" && sawGenerating.current;
+  // A clip that finishes while we watch gets a short "Just finished" badge.
+  const lastClip = useRef(scene.clipStatus);
+  const [justDone, setJustDone] = useState(false);
+  useEffect(() => {
+    if (lastClip.current !== "ready" && lastClip.current !== "none" && scene.clipStatus === "ready") {
+      setJustDone(true);
+      const id = setTimeout(() => setJustDone(false), 5000);
+      lastClip.current = scene.clipStatus;
+      return () => clearTimeout(id);
+    }
+    lastClip.current = scene.clipStatus;
+    return undefined;
+  }, [scene.clipStatus]);
 
   const number = scene.index + 1;
   const speaker = byId(scene.speakerId);
@@ -172,6 +219,10 @@ function SceneCard({ scene, story, byId, prices, inClips, onEdit, onRegenerate, 
             </span>
             <span className="text-[9px] font-bold text-white/70">{scene.clipStatus === "queued" ? "Waiting" : "Animating"}</span>
           </div>
+        )}
+
+        {justDone && (
+          <span role="status" className="absolute left-2 top-2 z-10 rounded-full bg-lime-300 px-2.5 py-1 text-[10px] font-black text-[#11150D] shadow-lg">Just finished</span>
         )}
 
         {scene.clipStatus === "failed" && (

@@ -21,7 +21,7 @@ export const SERVER_LIMITS = Object.freeze({
   maxEditChars: 500,           // "change X" instruction
   maxScenePromptChars: 2500,   // the editable picture prompt (also the builder's hard limit)
   maxClipPromptChars: 1500,    // clip prompt builder's hard limit (Veo accepts 3,000)
-  picturesInFlightPerStory: 4,
-  clipsInFlightPerStory: 3,
+  picturesInFlightPerStory: 6,   // a 30 s story's pictures in one wave
+  clipsInFlightPerStory: 6,      // was 3: 6-clip stories waited 55–100 s for a second wave
   jobsInFlightGlobal: 24,
 });

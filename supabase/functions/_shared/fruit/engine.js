@@ -19,7 +19,11 @@ export const TIMING = Object.freeze({
   leaseSec: 90,                         // a claimed job not acknowledged by then is polled
   retryDelaysSec: [20, 60, 180],        // after a retryable provider error, by attempt
   pollAfterSec: { image: 45, clip: 90 },
-  giveUpAfterSec: { image: 8 * 60, clip: 20 * 60 },
+  // No result this long after submit: ask Runware directly. Lost (Runware has no
+  // task) → sent again once; still rendering → keep waiting (a resend would pay
+  // twice and start from zero) until giveUpAfterSec, then refund.
+  stallCheckSec: { image: 120, clip: 240 },
+  giveUpAfterSec: { image: 8 * 60, clip: 12 * 60 },
   storeGiveUpSec: 15 * 60,              // provider result we can't store (URL expires)
 });
 
@@ -120,7 +124,7 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
   }
 
   /** A provider result arrived (webhook or poll) for taskUUID. */
-  async function onResult(taskUUID, body, httpStatus = 200) {
+  async function onResult(taskUUID, body, httpStatus = 200, via = "webhook") {
     const job = await store.jobByTask(taskUUID);
     if (!job || !["submitting", "submitted"].includes(job.status)) return "ignored";   // late, duplicate or unknown
     const parsed = parseRunware(body, taskUUID, httpStatus);
@@ -132,7 +136,8 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
       await store.finishCall(job.id, job.attempt, { ok: false, http_status: httpStatus, response: body, error: parsed.message, cost_usd: parsed.cost });
       return fail(job, parsed, { cost: parsed.cost, code: parsed.code, message: parsed.message });
     }
-    const moved = await store.markProviderDone(job.id, taskUUID, { result: body, outputUrl: parsed.url, cost: parsed.cost, now: now() });
+    // _via: did the webhook bring it, or did the reconciler have to fetch it?
+    const moved = await store.markProviderDone(job.id, taskUUID, { result: { ...body, _via: via }, outputUrl: parsed.url, cost: parsed.cost, now: now() });
     if (!moved) return "ignored";
     await store.finishCall(job.id, job.attempt, { ok: true, http_status: httpStatus, response: body, cost_usd: parsed.cost });
     return finalize({ ...job, status: "provider_done", output_url: parsed.url, provider_done_at: now().toISOString() });
@@ -185,8 +190,9 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
       report.polled += 1;
       const parsed = parseRunware(res.body, job.task_uuid, res.httpStatus);
       const gaveUp = ageSec(t, job.submitted_at ?? job.lease_until) > TIMING.giveUpAfterSec[job.kind];
+      const stalled = job.status === "submitted" && ageSec(t, job.submitted_at) > TIMING.stallCheckSec[job.kind];
       if (parsed.state === "success" || parsed.state === "error") {
-        const r = await onResult(job.task_uuid, res.body, res.httpStatus);
+        const r = await onResult(job.task_uuid, res.body, res.httpStatus, "poll");
         if (r === "completed") report.finalized += 1;
         if (r === "requeued") report.requeued += 1;
         if (r === "refunded") report.refunded += 1;
@@ -194,6 +200,15 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
         // The submit never reached Runware: send it again (counts as an attempt).
         const r = await fail(job, { retryable: true, contentPolicy: false }, { code: "lost_submit", message: "no task at provider" });
         report[r === "requeued" ? "requeued" : "refunded"] += 1;
+      } else if (stalled && parsed.state === "unknown") {
+        // Runware has no such task after 4 min (lost): send it again ONCE, then refund.
+        if (job.attempt < 2) {
+          const r = await fail(job, { retryable: true, contentPolicy: false }, { code: "lost_task", message: `no result after ${TIMING.stallCheckSec[job.kind]} s; sent again` });
+          report[r === "requeued" ? "requeued" : "refunded"] += 1;
+        } else {
+          await store.refundJob(job.id, "PROVIDER_TIMEOUT", MESSAGES.PROVIDER_TIMEOUT, 0);
+          report.refunded += 1;
+        }
       } else if (gaveUp) {
         await store.refundJob(job.id, "PROVIDER_TIMEOUT", MESSAGES.PROVIDER_TIMEOUT, 0);
         report.refunded += 1;

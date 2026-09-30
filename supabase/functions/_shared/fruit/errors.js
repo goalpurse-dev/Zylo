@@ -26,7 +26,7 @@ export const MESSAGES = Object.freeze({
   CLIP_FAILED: "The clip couldn't be animated. Your credits were refunded. Tap Retry.",
   CLIP_BLOCKED: "The video model refused this line. Your credits were refunded. Edit the line or the picture and try again.",
   PROVIDER_BUSY: "The video service is busy. Your credits were refunded. Try again in a few minutes.",
-  PROVIDER_TIMEOUT: "This took too long and was stopped. Your credits were refunded. Tap Retry.",
+  PROVIDER_TIMEOUT: "The video service didn't finish this in time, so we stopped it and refunded your credits. Tap Retry: it usually works on the next try.",
   FINAL_FAILED: "We couldn't join your clips. This is free, so just try again.",
   PROVIDER_UNAVAILABLE: "AI Fruit Story is taking a short break on our side. You weren't charged. Try again in a few minutes.",
   SERVER_FAILED: "Something went wrong on our side. Nothing was charged. Try again.",
