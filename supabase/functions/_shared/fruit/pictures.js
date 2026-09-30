@@ -11,13 +11,24 @@ export const PICTURE_PROMPT_MAX = SERVER_LIMITS.maxScenePromptChars;   // 2,500 
 const SHOT_TEXT = {
   "close-up": "Close-up on the speaker's face and shoulders",
   "medium close-up": "Medium close-up, chest up",
-  "medium two-shot": "Medium two-shot, waist up, both faces clearly visible",
+  "medium two-shot": "Medium shot, the speaker waist up in the foreground",
   "over-the-shoulder": "Over-the-shoulder shot from behind the listener, speaker facing camera",
   wide: "Wide shot showing the characters head to toe and the room",
 };
-// Lip sync needs a big, clear mouth: waist up or closer, the speaker's head
-// about a quarter of the frame height (or more), face toward the camera.
-const FACE = "Framing: waist up or closer; the speaker's head fills at least a quarter of the frame height, face sharp and turned toward the camera. Show only as much of the room as fits around them.";
+// Lip sync needs a big, clear mouth: chest up or closer, the speaker's head
+// a quarter to a third of the frame height, face toward the camera. 3d/3g
+// showed the model shrinks the speaker when everyone must fit side by side,
+// and turns them to profile when they "talk to" someone, so the speaker is
+// staged in front, facing the lens, and listeners go behind, smaller.
+const FACE = "Framing: chest up or closer on the speaker; their head is a quarter to a third of the frame height, eyes and mouth sharp and clearly visible. Keep the room as a soft background.";
+
+/** Speaker in front and facing the camera; listeners behind, smaller (not for over-the-shoulder). */
+function stage(speaker, others, shot) {
+  if (shot === "over-the-shoulder") return "";
+  if (!others.length) return `${speaker.name} is alone in the frame, body and face turned toward the camera.`;
+  const names = others.map((c) => c.name).join(" and ");
+  return `Staging: ${speaker.name} stands closest to the camera, body and face turned toward the camera (at most a slight three-quarter turn), large in the frame. ${names} ${others.length > 1 ? "are" : "is"} further back beside or behind ${speaker.name}, smaller and slightly softer, looking at ${speaker.name}.`;
+}
 const STYLE = "Style: premium 3D animated feature-film look, the same character design as the reference images, soft cinematic lighting, sharp focus, rich color.";
 const NEGATIVE = "No text, no captions, no subtitles, no speech bubbles, no logos, no watermark, no extra characters, no human skin, no human heads.";
 
@@ -42,10 +53,11 @@ function build(tier, { story, scene, cast, location }) {
     : "";
   const parts = [
     `${aspect}. ${SHOT_TEXT[scene.shot] ?? SHOT_TEXT["medium two-shot"]}. ${FACE}`,
-    `${withSubject(who(speaker), speaker, scene.action)}, looking ${scene.emotion}, mouth open mid-sentence${others.length ? `, talking to ${listeners}` : ""}.`,
+    `${withSubject(who(speaker), speaker, scene.action)}, looking ${scene.emotion}, mouth open mid-sentence, speaking toward the camera.`,
+    stage(speaker, others, scene.shot),
     others.length ? `${listeners} ${others.length > 1 ? "listen and react" : "listens and reacts"} silently, mouth${others.length > 1 ? "s" : ""} closed.` : "",
     scene.placement ? `Positions: ${scene.placement.replace(/\.$/, "")}.` : "",
-    `Setting: ${location.description}.`,
+    `Setting: ${String(location.description).replace(/\.+$/, "")}.`,
     time,
     cast.map((c, i) => tier === 0
       ? `Image ${i + 1} is ${c.name}, the ${c.fruit} ${c.gender === "female" ? "woman" : "man"}: keep the fruit head, face and outfit (${c.outfit}) exactly as in the reference.`

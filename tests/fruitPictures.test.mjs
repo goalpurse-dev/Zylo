@@ -20,7 +20,11 @@ test("scene content comes first, then who each reference image is, then setting,
   for (const s of order) { const i = p.indexOf(s); assert.ok(i > at, `"${s}" in order`); at = i; }
   assert.match(p, /mouth open mid-sentence/);
   assert.match(p, /Only these 2 characters/);
-  assert.match(p, /Framing: waist up or closer; the speaker's head fills at least a quarter of the frame height, face sharp and turned toward the camera\./);
+  assert.match(p, /Framing: chest up or closer on the speaker; their head is a quarter to a third of the frame height, eyes and mouth sharp and clearly visible\./);
+  assert.match(p, /Staging: Mia Mango stands closest to the camera, body and face turned toward the camera \(at most a slight three-quarter turn\), large in the frame\. Marco Mango is further back beside or behind Mia Mango, smaller/);
+  assert.match(p, /speaking toward the camera\./);
+  assert.doesNotMatch(p, /talking to Marco/, "no 'talking to' (it turned speakers to profile)");
+  assert.doesNotMatch(p, /\.\. /, "no doubled periods");
   assert.match(p, /Time of day: evening; lighting: warm candlelight and a soft lamp glow\. Keep exactly this time of day and lighting\./);
   const placed = buildScenePrompt({ story, scene: { ...scene, placement: "Mia stands outside the glass wall looking in; Marco is inside." }, library: LIB });
   assert.match(placed, /Positions: Mia stands outside the glass wall looking in; Marco is inside\. Setting:/);
@@ -102,4 +106,14 @@ test("the picture prompt names the speaker once, even when the action starts wit
     assert.ok(p.includes("Mia Mango (the mango woman) slides a phone across the table, looking icy calm"), p.slice(0, 200));
     assert.doesNotMatch(p, /\(the mango woman\) (?:Mia|she)\b/i);
   }
+});
+
+test("staging: a lone speaker faces the camera; over-the-shoulder keeps its own staging; 3 characters stay speaker-first", () => {
+  const alone = buildScenePrompt({ story, scene: { ...scene, presentIds: ["mia"] }, library: LIB });
+  assert.match(alone, /Mia Mango is alone in the frame, body and face turned toward the camera\./);
+  const ots = buildScenePrompt({ story, scene: { ...scene, shot: "over-the-shoulder" }, library: LIB });
+  assert.doesNotMatch(ots, /Staging:/);
+  const three = buildScenePrompt({ story, scene: { ...scene, presentIds: ["mia", "marco", "pia"], shot: "medium two-shot" }, library: LIB });
+  assert.match(three, /Medium shot, the speaker waist up in the foreground/);
+  assert.match(three, /Marco Mango and Pia Peach are further back beside or behind Mia Mango, smaller and slightly softer/);
 });

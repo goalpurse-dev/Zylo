@@ -27,3 +27,10 @@ test("reservations can't pass the stage cap; 3b has no paid budget", () => {
     if (saved === undefined) delete process.env.FRUIT_ALLOW_PAID; else process.env.FRUIT_ALLOW_PAID = saved;
   }
 });
+
+test("the full 30 s story has its own $2 cap and doesn't count toward the $4 Phase 3 total", async () => {
+  const { OUTSIDE_TOTAL } = await import("../scripts/fruit-story/paidGuard.mjs");
+  assert.equal(STAGE_CAPS_USD.full30, 2);
+  assert.ok(OUTSIDE_TOTAL.has("full30"));
+  assert.equal(STAGE_CAPS_USD["3i"], 0.1);
+});

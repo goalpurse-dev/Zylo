@@ -19,7 +19,10 @@ const LEDGER = path.join(ROOT, "data/fruit-phase3/spend.json");
 export const PHASE3_TOTAL_USD = 4.0;
 // 3e: $1.80 + up to $0.40 from the buffer (approved 2026-09-30).
 // 3e2: Wan2.6 Flash confirmation run (approved 2026-09-30). The $4.00 Phase 3 total is enforced on real spend.
-export const STAGE_CAPS_USD = Object.freeze({ "3b": 0, "3c": 0.4, "3d": 0.4, "3e": 2.2, "3e2": 1.0, "3f": 0.1, "3g": 0.3 });
+// 3i: framing fix check. full30: one full 30 s V2 story, approved OUTSIDE the $4.00 total (2026-09-30).
+export const STAGE_CAPS_USD = Object.freeze({ "3b": 0, "3c": 0.4, "3d": 0.4, "3e": 2.2, "3e2": 1.0, "3f": 0.1, "3g": 0.3, "3i": 0.1, full30: 2.0 });
+/** Stages with their own approval that don't count toward the Phase 3 total. */
+export const OUTSIDE_TOTAL = Object.freeze(new Set(["full30"]));
 
 export class PaidCallBlocked extends Error {}
 
@@ -38,7 +41,8 @@ function load() {
 export function openBudget(stage) {
   if (!(stage in STAGE_CAPS_USD)) throw new Error(`unknown stage ${stage}`);
   const ledger = load();
-  const spent = (s) => ledger.entries.filter((e) => !s || e.stage === s).reduce((sum, e) => sum + e.usd, 0);
+  const spent = (s) => ledger.entries.filter((e) => (s ? e.stage === s : !OUTSIDE_TOTAL.has(e.stage))).reduce((sum, e) => sum + e.usd, 0);
+  const inTotal = !OUTSIDE_TOTAL.has(stage);
   let reserved = 0;
   const save = () => {
     fs.mkdirSync(path.dirname(LEDGER), { recursive: true });
@@ -54,7 +58,7 @@ export function openBudget(stage) {
       const stageAfter = spent(stage) + reserved + expectedUsd;
       const totalAfter = spent(null) + reserved + expectedUsd;
       if (stageAfter > STAGE_CAPS_USD[stage] + 1e-9) throw new PaidCallBlocked(`Stage ${stage} cap $${STAGE_CAPS_USD[stage]} would be passed ($${stageAfter.toFixed(4)}): ${label}`);
-      if (totalAfter > PHASE3_TOTAL_USD + 1e-9) throw new PaidCallBlocked(`Phase 3 total $${PHASE3_TOTAL_USD} would be passed ($${totalAfter.toFixed(4)}): ${label}`);
+      if (inTotal && totalAfter > PHASE3_TOTAL_USD + 1e-9) throw new PaidCallBlocked(`Phase 3 total $${PHASE3_TOTAL_USD} would be passed ($${totalAfter.toFixed(4)}): ${label}`);
       reserved += expectedUsd;
       return () => { reserved -= expectedUsd; };
     },
@@ -65,7 +69,7 @@ export function openBudget(stage) {
       save();
     },
     summary() {
-      return `stage ${stage}: $${spent(stage).toFixed(4)} of $${STAGE_CAPS_USD[stage]} · Phase 3 total: $${spent(null).toFixed(4)} of $${PHASE3_TOTAL_USD}`;
+      return `stage ${stage}: $${spent(stage).toFixed(4)} of $${STAGE_CAPS_USD[stage]}${inTotal ? "" : " (outside the Phase 3 total)"} · Phase 3 total: $${spent(null).toFixed(4)} of $${PHASE3_TOTAL_USD}`;
     },
   };
 }
