@@ -410,6 +410,17 @@ export function createMockAdapter({ timeScale = 1, fail = "", paint = paintScene
       return regeneratePicture(story, scene);
     },
 
+    async uploadPackage(storyId) {
+      await sleep(DEFAULT_TIMINGS.read);
+      const story = requireStory(storyId);
+      return {
+        title: `${story.title}: you won't believe the ending`,
+        caption: story.seriesId ? "The drama isn't over. Part 2 drops next." : "Watch till the end.",
+        pinnedComment: "Whose side are you on?",
+        hashtags: ["#fruitdrama", "#aistory", "#storytime", "#drama", "#pov"],
+      };
+    },
+
     async regenerateSceneFree(sceneId) {
       const { story, scene } = findScene(sceneId);
       if (!scene.imageCheck?.freeRegenerate) throw new MockError("WRONG_STATUS", "This picture has no free regenerate.");

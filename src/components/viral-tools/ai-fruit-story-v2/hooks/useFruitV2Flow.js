@@ -185,17 +185,34 @@ export default function useFruitV2Flow(account, characters = []) {
     if (next) { account.spend(price ?? 0); live.replace(next); }
   };
 
+  // The final video's options: captions, "Part N" at the start, the end card.
+  const finalOptions = (patch = {}) => ({
+    captions: story.final?.captions ?? true,
+    partLabel: story.final?.partLabel ?? Boolean(story.seriesId),
+    endCard: story.final?.endCard ?? Boolean(story.seriesId),
+    ...patch,
+  });
+
   const makeFinal = async () => {
     if (!story) return;
-    const next = await run("final", () => api.buildFinal(story.id, { captions: story.final?.captions ?? true }), "We couldn't start the final video. Try again.");
+    const next = await run("final", () => api.buildFinal(story.id, finalOptions()), "We couldn't start the final video. Try again.");
     if (next) live.replace(next);
   };
 
-  const setCaptions = async (captions) => {
+  // Any option change re-renders the final (free).
+  const setFinalOption = async (patch) => {
     if (!story) return;
     setCaptionsBusy(true);
-    const next = await run("captions", () => api.buildFinal(story.id, { captions }), "We couldn't update the captions. Try again.");
+    const next = await run("captions", () => api.buildFinal(story.id, finalOptions(patch)), "We couldn't update the video. Try again.");
     if (next) live.replace(next); else setCaptionsBusy(false);
+  };
+  const setCaptions = (captions) => setFinalOption({ captions });
+
+  const downloadCover = async () => {
+    if (!story?.final?.coverUrl) return;
+    const { saveMediaToDevice } = await import("../../../../lib/downloadMedia");
+    const name = story.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "fruit-story";
+    await saveMediaToDevice({ url: story.final.coverUrl, filename: `${name}-cover.jpg`, title: story.title }).catch(() => setActionError("We couldn't download the cover. Try again."));
   };
 
   const sceneById = (id) => story?.scenes.find((s) => s.id === id) ?? null;
@@ -361,7 +378,7 @@ export default function useFruitV2Flow(account, characters = []) {
     story, storyStatus: live.status, reloadStory: live.reload, quotes, recent,
     acting, actionError, clearError, captionsBusy,
     pipeline: { onMakePictures: makePictures, onAnimate: animate, onMakeFinal: makeFinal, onDownload: download, onNewStory: newStory, onBackToSeries: backToSeries, onAddCredits: () => setNoCredits({ needed: animateAllPrice(story, quotes.prices) ?? 0 }) },
-    setCaptions,
+    setCaptions, setFinalOption, downloadCover,
     library, openLibrary: setLibrary, closeLibrary: () => setLibrary(null), libraryIds, libraryMax, toggleLibrary,
     regenerateFree, sceneDialog, dialogScene, dialogPrice, openSceneDialog: (kind, scene) => setSceneDialog({ kind, sceneId: scene.id }), closeSceneDialog: () => setSceneDialog(null), submitSceneDialog,
     upgradeTier, setUpgradeTier, noCredits, setNoCredits,

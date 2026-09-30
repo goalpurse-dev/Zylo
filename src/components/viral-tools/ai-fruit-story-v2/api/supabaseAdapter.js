@@ -66,7 +66,8 @@ export function createSupabaseAdapter() {
     regenerateSceneFree: (sceneId) => call("regenerateSceneFree", { sceneId }),
     animateAll: (storyId) => call("animateAll", { storyId }),
     regenerateClip: (sceneId) => call("regenerateClip", { sceneId }),
-    buildFinal: (storyId, { captions } = {}) => call("buildFinal", { storyId, captions: captions !== false }),
+    buildFinal: (storyId, { captions, partLabel, endCard } = {}) => call("buildFinal", { storyId, captions: captions !== false, partLabel, endCard }),
+    uploadPackage: (storyId) => call("uploadPackage", { storyId }),
     getStory: (storyId) => (isLegacyId(storyId) ? getLegacy(storyId) : call("getStory", { storyId })),
 
     subscribeStory(storyId, onChange) {

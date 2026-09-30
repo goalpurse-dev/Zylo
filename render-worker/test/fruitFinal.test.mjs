@@ -111,3 +111,28 @@ test("no blank while talking: every chunk stays until the next, the last until t
   for (let i = 1; i < events.length; i++) assert.equal(span(events[i])[0], span(events[i - 1])[1], `gap before event ${i}`);
   assert.equal(span(events.at(-1))[1], "0:00:04.82", "the last chunk holds to the end of the clip");
 });
+
+test("series overlays: 'Part N' at the top for the first seconds, the end card centered in a box at the end", async () => {
+  const ass = buildAss({ words: [], width: 720, height: 1280, durationSec: 4, overlays: [
+    { kind: "part", text: "Part 2", start: 0, end: 1.5 },
+    { kind: "end", text: "Part 3: The Welcome Party\nFollow for more", start: 2, end: 4 },
+  ] });
+  const events = ass.split("\n").filter((l) => l.startsWith("Dialogue:"));
+  assert.equal(events.length, 2);
+  assert.ok(events[0].startsWith("Dialogue: 1,0:00:00.00,0:00:01.50,Part,"), events[0]);
+  assert.ok(events[0].endsWith(String.raw`{\an8\pos(360,115)}Part 2`));
+  assert.ok(events[1].startsWith("Dialogue: 1,0:00:02.00,0:00:04.00,End,"));
+  assert.ok(events[1].endsWith(String.raw`Part 3: The Welcome Party\NFollow for more`), events[1]);
+  assert.match(ass, /Style: End,Lilita One,54,&H00FFFFFF&,&H00FFFFFF&,&H00000000&,&HB0000000&,0,0,0,0,100,100,1,0,3,/, "BorderStyle 3: a box behind the end card");
+});
+
+test("cover: fixed layout, 'EPISODE N' label over the title in capitals, same for every episode", async () => {
+  const { coverAss } = await import("../src/fruitCaptions.mjs");
+  const a = coverAss({ width: 1080, height: 1920, label: "Episode 2", title: "Knock Next Door" });
+  const events = a.split("\n").filter((l) => l.startsWith("Dialogue:"));
+  assert.ok(events[0].includes(",Label,") && events[0].endsWith(String.raw`{\an8\pos(540,115)}EPISODE 2`), events[0]);
+  assert.ok(events[1].includes(",Title,") && events[1].endsWith("KNOCK NEXT DOOR"));
+  const b = coverAss({ width: 1080, height: 1920, label: "Episode 3", title: "The Welcome Party" });
+  assert.equal(a.split("[Events]")[0], b.split("[Events]")[0], "same styles for every episode");
+  assert.equal(coverAss({ width: 1080, height: 1920, label: "", title: "Ken Reads Everything" }).split("\n").filter((l) => l.startsWith("Dialogue:")).length, 1, "singles: title only");
+});

@@ -133,11 +133,24 @@ const WHITE = "&H00FFFFFF&";
  * One line on screen at a time; each chunk shows from its first word's start
  * until the next chunk starts (or briefly after its last word at a pause).
  */
-export function buildAss({ words, width, height, durationSec, highlight = true, font = "Lilita One" }) {
+/**
+ * Series overlays (drawn by us, never by the AI):
+ *   { kind: "part", text: "Part 2", start, end }   top of the frame, first ~1.5 s
+ *   { kind: "end", text: "Part 3: The Welcome Party\nFollow for more", start, end }   centered card, last ~2 s
+ */
+function overlayEvents(overlays, width, height) {
+  return (overlays ?? []).filter((o) => o.end > o.start && o.text).map((o) => {
+    const text = assText(o.text).replace(/\r?\n/g, "\\N");
+    if (o.kind === "part") return [o.start, o.end, `{\\an8\\pos(${Math.round(width / 2)},${Math.round(height * 0.09)})}${text}`, "Part"];
+    return [o.start, o.end, `{\\an5\\pos(${Math.round(width / 2)},${Math.round(height * 0.5)})\\fad(200,0)}${text}`, "End"];
+  });
+}
+
+export function buildAss({ words = [], width, height, durationSec, highlight = true, font = "Lilita One", overlays = [] }) {
   const base = Math.round(width * 0.11);
   const x = Math.round(width / 2), y = Math.round(height * 0.78);
   const events = [];
-  const chunks = chunkWords(words);
+  const chunks = words.length ? chunkWords(words) : [];
   chunks.forEach((chunk, ci) => {
     const text = chunk.map((w) => w.text).join(" ");
     const size = Math.min(base, Math.floor((width * 0.88) / (Math.max(1, text.length) * 0.5)));
@@ -162,9 +175,36 @@ export function buildAss({ words, width, height, durationSec, highlight = true, 
     "[Script Info]", "ScriptType: v4.00+", `PlayResX: ${width}`, `PlayResY: ${height}`, "WrapStyle: 2", "ScaledBorderAndShadow: yes", "",
     "[V4+ Styles]",
     "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-    `Style: Cap,${font},${base},${WHITE},${WHITE},&H00000000&,&H99000000&,0,0,0,0,100,100,1,0,1,${outline},2,5,20,20,0,1`, "",
+    `Style: Cap,${font},${base},${WHITE},${WHITE},&H00000000&,&H99000000&,0,0,0,0,100,100,1,0,1,${outline},2,5,20,20,0,1`,
+    `Style: Part,${font},${Math.round(width * 0.09)},${LIME},${LIME},&H00000000&,&H99000000&,0,0,0,0,100,100,2,0,1,${outline},2,8,20,20,0,1`,
+    `Style: End,${font},${Math.round(width * 0.075)},${WHITE},${WHITE},&H00000000&,&HB0000000&,0,0,0,0,100,100,1,0,3,${Math.round(width * 0.04)},0,5,40,40,0,1`, "",
     "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
     ...events.filter(([s, e]) => e > s).map(([s, e, t]) => `Dialogue: 0,${assTime(s)},${assTime(e)},Cap,,0,0,0,,${t}`),
+    ...overlayEvents(overlays, width, height).map(([s, e, t, style]) => `Dialogue: 1,${assTime(s)},${assTime(e)},${style},,0,0,0,,${t}`),
     "",
+  ].join("\n");
+}
+
+/**
+ * ASS for the cover image: a small lime label ("EPISODE 2") over the title in
+ * white capitals, top-centered, wrapped to at most 2 lines. Same layout for
+ * every episode of a series.
+ */
+export function coverAss({ width, height, label, title, font = "Lilita One" }) {
+  const titleSize = Math.round(width * 0.105);
+  const labelSize = Math.round(width * 0.05);
+  const outline = Math.max(4, Math.round(titleSize / 10));
+  const top = Math.round(height * 0.06);
+  const lines = [];
+  if (label) lines.push(`Dialogue: 0,0:00:00.00,0:00:05.00,Label,,0,0,0,,{\\an8\\pos(${Math.round(width / 2)},${top})}${assText(label).toUpperCase()}`);
+  lines.push(`Dialogue: 0,0:00:00.00,0:00:05.00,Title,,0,0,0,,{\\an8\\pos(${Math.round(width / 2)},${top + (label ? Math.round(labelSize * 1.35) : 0)})}${assText(title).toUpperCase()}`);
+  return [
+    "[Script Info]", "ScriptType: v4.00+", `PlayResX: ${width}`, `PlayResY: ${height}`, "WrapStyle: 0", "ScaledBorderAndShadow: yes", "",
+    "[V4+ Styles]",
+    "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
+    `Style: Label,${font},${labelSize},${LIME},${LIME},&H00000000&,&H00000000&,0,0,0,0,100,100,4,0,1,${Math.max(3, Math.round(labelSize / 12))},0,8,60,60,0,1`,
+    `Style: Title,${font},${titleSize},${WHITE},${WHITE},&H00000000&,&H99000000&,0,0,0,0,100,100,1,0,1,${outline},3,8,70,70,0,1`, "",
+    "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
+    ...lines, "",
   ].join("\n");
 }

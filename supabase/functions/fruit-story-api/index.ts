@@ -15,13 +15,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { cors } from "../shared/cors.ts";
 import { FruitError, MESSAGES, errorBody, fromDbError, fruitError } from "../_shared/fruit/errors.js";
 import { episodeStatuses, spentFromLedger, stepBlocker, toRecentSingle, toStory } from "../_shared/fruit/storyState.js";
-import { FINAL_MACHINE, buildFinalJob, finalMachineConfig, finalPath, storyUpdateForReport } from "../_shared/fruit/final.js";
+import { FINAL_MACHINE, buildFinalJob, coverScene, finalMachineConfig, finalPath, overlayTexts, storyUpdateForReport } from "../_shared/fruit/final.js";
 import { webhookToken } from "../_shared/fruit/runware.js";
 import { providerOnHold } from "../_shared/fruit/alerts.js";
 import { ensurePlates, lastEndOf, plateOf } from "../_shared/fruit/plates.js";
 import { setupsFor } from "../_shared/fruit/series.js";
 import { createSupabaseMedia } from "../_shared/fruit/supabaseStore.js";
 import { captionWordsForClips } from "../_shared/fruit/captionWords.js";
+import { writeUploadPackage } from "../_shared/fruit/uploadPackage.js";
 import { FRUIT_MODELS } from "../_shared/fruit/models.js";
 import { validateCreateStory, validateEditInstruction, validateId, validateScenePrompt, validateSeriesPlan } from "../_shared/fruit/validation.js";
 import { planStep } from "../_shared/fruit/steps.js";
@@ -309,6 +310,37 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     return runStep(ctx, "reclip", row.id, { sceneId });
   },
 
+  /** Free: title, caption, pinned comment and hashtags for posting (small model, logged, saved once). */
+  async uploadPackage(ctx) {
+    requirePaid(ctx);
+    const storyId = validateId(ctx.body?.storyId);
+    await rateLimit(ctx.userId, "read");
+    const { row, scenes } = await loadStory(ctx.userId, storyId);
+    if (row.upload_package && !ctx.body?.refresh) return row.upload_package;
+    if (row.status !== "final_ready") throw new FruitError("WRONG_STATUS", "Make the final video first.", 409);
+    if (PAID_CALLS_OFF) throw fruitError("PAID_CALLS_DISABLED");
+    const lib = await libraryMap();
+    const nameOf = (id: string) => lib.get(id)?.name ?? id;
+    let episode: any = null;
+    if (row.series_id) {
+      const s = must(await admin.from("fruit_series").select("title").eq("id", row.series_id).maybeSingle());
+      const next = must(await admin.from("fruit_series_episodes").select("number, title").eq("series_id", row.series_id).eq("number", (row.episode_number ?? 0) + 1).maybeSingle());
+      episode = { number: row.episode_number, seriesTitle: s?.title ?? "", nextNumber: next?.number ?? null, nextTitle: next?.title ?? null };
+    }
+    const pkg = await writeUploadPackage({
+      admin, apiKey: LLM_ENV.OPENAI_API_KEY,
+      input: {
+        title: row.title, episode,
+        lines: [...scenes].sort((a: any, b: any) => a.idx - b.idx).map((s: any) => ({ speaker: nameOf(s.speaker_id), line: s.line })),
+        roles: Object.fromEntries(Object.entries(row.cast_roles ?? {}).map(([id, role]) => [nameOf(id), role])),
+      },
+      ids: { user_id: ctx.userId, story_id: storyId },
+    }).catch((e: any) => { console.error("[fruit-story-api] upload package:", e?.message ?? e); throw new FruitError("PACKAGE_FAILED", "We couldn't write the post text. Try again.", 502); });
+    const { costUsd, ...saved } = pkg;
+    await admin.from("fruit_stories").update({ upload_package: saved }).eq("id", storyId);
+    return saved;
+  },
+
   /** Free: joins the clips on a per-job Fly machine (render-worker/src/fruitFinal.mjs). */
   async buildFinal(ctx) {
     requirePaid(ctx);
@@ -321,15 +353,37 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     if (blocker) throw new FruitError("WRONG_STATUS", blocker, 409);
     if (!FLY_API_TOKEN) throw fruitError("FINAL_FAILED");
 
+    // Series options: "Part N" at the start and an end card. On for episodes and off
+    // for singles the first time; after that, whatever the user last chose.
+    const first = row.final_status === "none";
+    const pick = (value: unknown, current: boolean) => (typeof value === "boolean" ? value : first ? Boolean(row.series_id) : current);
+    const partLabel = pick(ctx.body?.partLabel, row.final_part_label);
+    const endCard = pick(ctx.body?.endCard, row.final_end_card);
+    let nextTitle: string | null = null;
+    if (row.series_id && endCard) {
+      const next = must(await admin.from("fruit_series_episodes").select("title").eq("series_id", row.series_id).eq("number", (row.episode_number ?? 0) + 1).maybeSingle());
+      nextTitle = next?.title ?? null;
+    }
+
     const callId = crypto.randomUUID();
     const path = finalPath(ctx.userId, storyId, callId);
-    const { data: signed, error: signErr } = await admin.storage.from("generated").createSignedUploadUrl(path, { upsert: true });
+    const coverPath = path.replace(/final-([^/]+)\.mp4$/, "cover-$1.jpg");
+    const [{ data: signed, error: signErr }, { data: coverSigned }] = await Promise.all([
+      admin.storage.from("generated").createSignedUploadUrl(path, { upsert: true }),
+      admin.storage.from("generated").createSignedUploadUrl(coverPath, { upsert: true }),
+    ]);
     if (signErr || !signed?.signedUrl) { console.error("[fruit-story-api] signed upload:", signErr?.message); throw fruitError("FINAL_FAILED"); }
+    // The cover: the most dramatic scene picture with the title (ffmpeg, never AI text).
+    const coverFrom = coverScene(scenes);
     const job = buildFinalJob({
       story: row, scenes, callId, captions,
       uploadUrl: signed.signedUrl,
       callbackUrl: `${SUPABASE_URL}/functions/v1/fruit-worker`,
       token: await webhookToken(WORKER_SECRET, `final:${callId}`),
+      overlays: overlayTexts({ partLabel, endCard, episodeNumber: row.episode_number ?? null, nextTitle }),
+      cover: coverFrom && coverSigned?.signedUrl
+        ? { imageUrl: coverFrom.image_url, label: row.episode_number ? `Episode ${row.episode_number}` : "", title: row.title, uploadUrl: coverSigned.signedUrl, sceneIndex: coverFrom.idx }
+        : null,
     });
     // Captions are timed to the speech: word timestamps per clip (cached per clip URL).
     if (captions) {
@@ -341,12 +395,12 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
       job.clips.forEach((c: any, i: number) => { c.words = words[i]; });
     }
     const moved = must(await admin.from("fruit_stories")
-      .update({ status: "building", final_status: "building", final_captions: captions, final_requested_at: new Date().toISOString(), final_error: null, final_call_id: callId })
+      .update({ status: "building", final_status: "building", final_captions: captions, final_part_label: partLabel, final_end_card: endCard, final_requested_at: new Date().toISOString(), final_error: null, final_call_id: callId })
       .eq("id", storyId).in("status", ["clips_ready", "final_ready"]).select("id"));
     if (!moved.length) throw fruitError("WRONG_STATUS");
     must(await admin.from("fruit_ai_calls").insert({
       id: callId, user_id: ctx.userId, story_id: storyId, provider: "fly", model: `${FINAL_MACHINE.cpu_kind}-${FINAL_MACHINE.cpus}x`, purpose: "final",
-      request: { ...job, clips: job.clips.map((c: any) => ({ url: c.url, line: c.line, words: c.words ? c.words.length : null })), uploadUrl: "(signed, one-time)", token: "(hmac)", path },
+      request: { ...job, clips: job.clips.map((c: any) => ({ url: c.url, line: c.line, words: c.words ? c.words.length : null })), uploadUrl: "(signed, one-time)", token: "(hmac)", path, coverPath, cover: job.cover ? { ...job.cover, uploadUrl: "(signed, one-time)" } : null },
     }));
 
     const t0 = Date.now();

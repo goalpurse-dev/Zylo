@@ -18,7 +18,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { FRAME, parseSilences, segmentArgs, trimWindow } from "./fruitFinalPlan.mjs";
-import { buildAss, timedWords } from "./fruitCaptions.mjs";
+import { buildAss, coverAss, timedWords } from "./fruitCaptions.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FFMPEG = process.env.FFMPEG ?? "ffmpeg";
@@ -73,16 +73,23 @@ export async function buildFinal(job, dir) {
     }
     // Captions: the exact line, timed by the clip's word timestamps (or spread
     // over the detected speech), shifted into the trimmed segment's time.
+    // Series overlays: "Part N" on the first ~1.5 s, the end card on the last ~2 s.
+    const [w, h] = FRAME[job.aspect] ?? FRAME["9:16"];
+    const segSec = win.end - win.start;
+    const overlays = [];
+    if (i === 0 && job.overlays?.part) overlays.push({ kind: "part", text: job.overlays.part, start: 0, end: Math.min(1.5, segSec) });
+    if (i === job.clips.length - 1 && job.overlays?.end) overlays.push({ kind: "end", text: job.overlays.end, start: Math.max(0, segSec - 2), end: segSec });
     let assFile = null;
     let captionSource = null;
+    let words = [];
     if (job.captions && clip.line) {
-      const [w, h] = FRAME[job.aspect] ?? FRAME["9:16"];
-      const { words, source } = timedWords(clip.line, clip.words ?? null, win.speech ?? null, durationSec);
-      const segSec = win.end - win.start;
-      const shifted = words.map((x) => ({ ...x, start: Math.max(0, x.start - win.start), end: Math.min(segSec, Math.max(0, x.end - win.start)) }));
+      const timed = timedWords(clip.line, clip.words ?? null, win.speech ?? null, durationSec);
+      words = timed.words.map((x) => ({ ...x, start: Math.max(0, x.start - win.start), end: Math.min(segSec, Math.max(0, x.end - win.start)) }));
+      captionSource = timed.source;
+    }
+    if (words.length || overlays.length) {
       assFile = path.join(dir, `cap-${i}.ass`);
-      await writeFile(assFile, buildAss({ words: shifted, width: w, height: h, durationSec: segSec, highlight: job.highlight !== false }), "utf8");
-      captionSource = source;
+      await writeFile(assFile, buildAss({ words, width: w, height: h, durationSec: segSec, highlight: job.highlight !== false, overlays }), "utf8");
     }
     const output = path.join(dir, `seg-${i}.mp4`);
     await run(FFMPEG, segmentArgs({ input, output, start: win.start, end: win.end, aspect: job.aspect, assFile, fontsDir: path.dirname(FONT), hasAudio, threads }));
@@ -104,12 +111,12 @@ export async function buildFinal(job, dir) {
 }
 
 /** PUT to the signed upload URL; up to 3 tries (Storage answered 520 once on a 10 MB final). */
-async function upload(url, body) {
+async function upload(url, body, contentType = "video/mp4") {
   let last = "";
   for (let attempt = 1; attempt <= 3; attempt++) {
     const t = Date.now();
     try {
-      const res = await fetch(url, { method: "PUT", headers: { "Content-Type": "video/mp4", "x-upsert": "true" }, body, signal: AbortSignal.timeout(90_000) });
+      const res = await fetch(url, { method: "PUT", headers: { "Content-Type": contentType, "x-upsert": "true" }, body, signal: AbortSignal.timeout(90_000) });
       if (res.ok) return;
       last = `HTTP ${res.status}: ${(await res.text()).replace(/\s+/g, " ").slice(0, 160)}`;
     } catch (e) { last = String(e?.message ?? e); }
@@ -117,6 +124,32 @@ async function upload(url, body) {
     if (attempt < 3) await new Promise((r) => setTimeout(r, attempt * 3000));
   }
   throw new Error(`upload ${last}`);
+}
+
+/**
+ * The cover: the story's most dramatic scene picture with the title in a fixed
+ * layout (identical across a series): a dark band at the top, "EPISODE N" in
+ * lime, the title in white capitals under it. Drawn by ffmpeg, never by the AI.
+ * 1080 × 1920 for 9:16 (1920 × 1080 for 16:9), JPG.
+ */
+export async function renderCover(cover, aspect, dir) {
+  const [w, h] = aspect === "16:9" ? [1920, 1080] : [1080, 1920];
+  const src = path.join(dir, "cover-src.jpg");
+  await download(cover.imageUrl, src);
+  const ass = path.join(dir, "cover.ass");
+  await writeFile(ass, coverAss({ width: w, height: h, label: cover.label, title: cover.title }), "utf8");
+  const out = path.join(dir, "cover.jpg");
+  const esc = (p) => p.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/'/g, "\\'");
+  await run(FFMPEG, [
+    "-hide_banner", "-loglevel", "error", "-y", "-i", src,
+    "-vf", [
+      `scale=${w}:${h}:force_original_aspect_ratio=increase`, `crop=${w}:${h}`,
+      `drawbox=x=0:y=0:w=iw:h=ih*0.30:color=black@0.55:t=fill`,
+      `ass='${esc(ass)}':fontsdir='${esc(path.dirname(FONT))}'`,
+    ].join(","),
+    "-frames:v", "1", "-q:v", "2", out,
+  ]);
+  return out;
 }
 
 async function report(job, body) {
@@ -144,14 +177,20 @@ async function main() {
     const out = await buildFinal(job, dir);
     if (local > -1) {
       await writeFile(process.argv[local + 1], await readFile(out.file));
+      if (job.cover?.imageUrl) await writeFile(process.argv[local + 1].replace(/\.mp4$/, "") + "-cover.jpg", await readFile(await renderCover(job.cover, job.aspect, dir)));
       console.log(JSON.stringify({ ...out, file: process.argv[local + 1], ms: Date.now() - t0 }));
       return;
     }
     console.log(`[fruit-final] built ${out.durationSec}s, ${(out.sizeBytes / 1e6).toFixed(1)} MB in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
     await upload(job.uploadUrl, await readFile(out.file));
+    // The cover image (optional): its own signed upload URL.
+    let coverOk = false;
+    if (job.cover?.imageUrl && job.cover?.uploadUrl) {
+      try { await upload(job.cover.uploadUrl, await readFile(await renderCover(job.cover, job.aspect, dir)), "image/jpeg"); coverOk = true; } catch (e) { console.error("[fruit-final] cover failed:", e?.message ?? e); }
+    }
     console.log(`[fruit-final] uploaded at ${((Date.now() - t0) / 1000).toFixed(1)}s`);
     const seconds = (Date.now() - t0) / 1000;
-    await report(job, { ok: true, durationSec: out.durationSec, trimmedSec: out.trimmedSec, trimmedPerClip: out.trimmedPerClip, captionSources: out.captionSources, sizeBytes: out.sizeBytes, seconds, costUsd: seconds * USD_PER_SECOND });
+    await report(job, { ok: true, durationSec: out.durationSec, trimmedSec: out.trimmedSec, trimmedPerClip: out.trimmedPerClip, captionSources: out.captionSources, cover: coverOk, sizeBytes: out.sizeBytes, seconds, costUsd: seconds * USD_PER_SECOND });
   } catch (e) {
     console.error("[fruit-final] failed:", e?.message ?? e);
     if (local > -1) throw e;

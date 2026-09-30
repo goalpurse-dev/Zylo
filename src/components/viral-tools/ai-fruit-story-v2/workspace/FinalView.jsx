@@ -2,9 +2,10 @@ import { useRef, useState } from "react";
 import { Download } from "lucide-react";
 import { FOCUS, PrimaryButton, Toggle, cx } from "../../../ui/zyvo";
 import WorkspaceHeader from "./WorkspaceHeader";
+import { CoverImage, SeriesOptions, UploadPackage } from "./FinalExtras";
 
 /** Finished video: player, clip timeline with trimmed silence, captions, download, next episode. */
-export default function FinalView({ story, byId, isEpisode, series, onCaptions, onDownload, onNextEpisode, captionsBusy }) {
+export default function FinalView({ story, byId, isEpisode, series, onCaptions, onDownload, onNextEpisode, captionsBusy, onFinalOption, onDownloadCover }) {
   const videoRef = useRef(null);
   const [active, setActive] = useState(-1);
   const trims = story.final.trimmedPerClipSec?.length === story.scenes.length ? story.final.trimmedPerClipSec : story.scenes.map(() => 0);
@@ -89,6 +90,8 @@ export default function FinalView({ story, byId, isEpisode, series, onCaptions, 
             {captionsBusy ? "Updating your video…" : "Shows each line on screen. Most people watch muted."}
           </Box>
 
+          {onFinalOption && <SeriesOptions story={story} busy={captionsBusy} onChange={onFinalOption} />}
+
           <Box title="Download">
             MP4, {story.aspect === "16:9" ? "1280 × 720" : "720 × 1280"}, ready for TikTok, Reels and Shorts.
             <PrimaryButton className="mt-3" onClick={onDownload}>
@@ -96,6 +99,9 @@ export default function FinalView({ story, byId, isEpisode, series, onCaptions, 
               Download video
             </PrimaryButton>
           </Box>
+
+          <CoverImage story={story} onDownload={onDownloadCover} />
+          {!story.readOnly && <UploadPackage storyId={story.id} />}
 
           {isEpisode && series && (
             nextEpisode ? (

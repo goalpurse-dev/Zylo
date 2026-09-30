@@ -118,6 +118,10 @@ export function toStory(row, sceneRows, spentCredits = null) {
       captions: row.final_captions ?? true,
       trimmedPerClipSec: (row.final_trimmed_per_clip ?? []).map(Number),
       error: row.final_error ?? null,
+      // Series options (on for episodes until the user changes them) and the cover image.
+      partLabel: row.final_status === "none" || row.final_status == null ? Boolean(row.series_id) : Boolean(row.final_part_label),
+      endCard: row.final_status === "none" || row.final_status == null ? Boolean(row.series_id) : Boolean(row.final_end_card),
+      coverUrl: row.cover_url ?? null,
     },
     createdAt: row.created_at,
   };

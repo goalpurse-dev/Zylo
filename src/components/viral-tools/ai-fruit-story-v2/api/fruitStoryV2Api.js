@@ -234,6 +234,8 @@ export const animateAll = (storyId) => current().animateAll(storyId);
 export const regenerateClip = (sceneId) => current().regenerateClip(sceneId);
 /** @param {string} storyId @param {{captions: boolean}} opts @returns {Promise<Story>} */
 export const buildFinal = (storyId, opts) => current().buildFinal(storyId, opts);
+/** Free post text for a finished video: {title, caption, pinnedComment, hashtags[]}. @param {string} storyId */
+export const uploadPackage = (storyId) => current().uploadPackage(storyId);
 /** @param {string} storyId @returns {Promise<Story>} */
 export const getStory = (storyId) => current().getStory(storyId);
 /** Synchronous. @param {string} storyId @param {(story: Story) => void} onChange @returns {() => void} unsubscribe */

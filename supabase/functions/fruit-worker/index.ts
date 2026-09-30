@@ -219,8 +219,9 @@ async function finalDone(callId: string, report: any) {
     }).eq("id", callId);
   }
   const publicUrl = report?.ok ? admin.storage.from("generated").getPublicUrl(call.request.path).data.publicUrl : null;
+  const coverUrl = report?.ok && report?.cover && call.request?.coverPath ? admin.storage.from("generated").getPublicUrl(call.request.coverPath).data.publicUrl : null;
   const { data: moved } = await admin.from("fruit_stories")
-    .update(storyUpdateForReport(report, publicUrl, MESSAGES.FINAL_FAILED))
+    .update(storyUpdateForReport(report, publicUrl, MESSAGES.FINAL_FAILED, coverUrl))
     .eq("id", call.story_id).eq("final_call_id", callId).eq("status", "building").select("id");
   return { applied: Boolean(moved?.length) };
 }
