@@ -84,7 +84,8 @@ export default function useFruitV2Flow(account, characters = []) {
   const quotes = useFruitV2Prices(story?.aspect ?? (mode === "single" ? single.aspect : "9:16"));
 
   const ideas = useAsyncList(() => api.getIdeas({ seed: ideaSeed }), [ideaSeed]);
-  const recent = useAsyncList(() => api.listRecent({ type: recentTab }), [recentTab, refreshKey], !activeStoryId);
+  // Only real, signed-in history: guests see the example video instead.
+  const recent = useAsyncList(() => api.listRecent({ type: recentTab }), [recentTab, refreshKey], !activeStoryId && (Boolean(account.user) || account.isPreview));
   const seriesList = useAsyncList(() => api.listSeries(), [refreshKey], mode === "series");
   const activeSeries = useAsyncList(
     () => (series.seriesId ? api.getSeries(series.seriesId).then((s) => [s]) : Promise.resolve([])),

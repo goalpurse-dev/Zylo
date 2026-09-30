@@ -48,7 +48,12 @@ async function handleSubscribe(tier, billing) {
   });
 }
 
-export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = true, toolName = "Face ASMR", previewSrc = "/face/preview.mp4" }) {
+/**
+ * planLines (optional): { starter, pro, generative } tool-specific lines that
+ * replace the generic "~N AI videos" line (a null value drops it). AI Fruit
+ * Story passes counts computed from its live prices.
+ */
+export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = true, toolName = "Face ASMR", previewSrc = "/face/preview.mp4", planLines = null }) {
   const navigate = useNavigate();
   const videoRef = useRef(null);
   const [billing, setBilling] = useState("yearly");
@@ -231,7 +236,7 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
                         >Get {tier.name}</button>
 
                         <ul className="space-y-1.5">
-                          {tier.features.map((f, i) => (
+                          {(planLines ? [tier.features[0], ...(planLines[tier.id] ? [planLines[tier.id]] : []), ...tier.features.slice(2)] : tier.features).map((f, i) => (
                             <li key={i} className="flex items-start gap-1.5 text-[11px] text-white/45">
                               <Check size={11} className="mt-0.5 flex-shrink-0" style={{ color: `${tier.accent}CC` }} />
                               {f}

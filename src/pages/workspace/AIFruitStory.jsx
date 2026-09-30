@@ -27,7 +27,7 @@ function setCachedPlan(userId, code) {
  * signed-in user's server-side fruit_v2 flag is on (src/lib/featureFlags.js);
  * everyone else gets the current tool (AIFruitStoryV1 below).
  *
- * Dev builds only: ?fruitV2Preview=1[&plan=pro][&credits=40][&fail=scene3]
+ * Dev builds only: ?fruitV2Preview=1[&plan=pro][&credits=40][&fail=scene3][&viewer=guest|noPlan][&recent=empty]
  * opens v2 with mock data and no sign-in, for screenshots and QA.
  */
 export default function AIFruitStory() {
@@ -57,6 +57,8 @@ function readDevPreview(search) {
     plan: params.get("plan") || "starter",
     credits: Number.isFinite(credits) && params.get("credits") !== null ? credits : 750,
     fail: params.get("fail") || "",
+    viewer: ["guest", "noPlan"].includes(params.get("viewer")) ? params.get("viewer") : "paid",
+    emptyRecent: params.get("recent") === "empty",
   };
 }
 

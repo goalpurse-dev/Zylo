@@ -159,3 +159,17 @@ test("recent: seeded singles and series", async () => {
   const series = await api.listRecent({ type: "series" });
   assert.ok(series.some((s) => s.title === "Rotten to the Core" && s.madeCount === 2 && s.episodeCount === 10));
 });
+
+test("plan copy: about how many 20 s stories a month of credits makes, from live prices only", async () => {
+  const { videosPerMonth } = await import("../src/components/viral-tools/ai-fruit-story-v2/pricing/fruitV2Estimates.js");
+  // 20 s on V2: 4 pictures × 4 + 20 s × 5 = 116 credits.
+  assert.equal(videosPerMonth(750, 20, "v2", PRICES), 6);
+  assert.equal(videosPerMonth(1600, 20, "v3", PRICES), 8);
+  assert.equal(videosPerMonth(3200, 20, "v4", PRICES), 9);
+  assert.equal(videosPerMonth(750, 20, "v2", {}), null, "no prices: no number");
+});
+
+test("the mock can start empty (dev preview of a new account)", async () => {
+  const api = createMockAdapter({ timeScale: 0.001, paint: null, empty: true });
+  assert.deepEqual(await api.listRecent({ type: "single" }), []);
+});

@@ -24,7 +24,7 @@ function cachePlan(userId, code) {
 /**
  * Plan, paywall and credit balance for v2.
  *
- * Real mode: plan from profiles (paywall for guests and free plans, like the
+ * Real mode: plan from profiles (the paywall opens when a guest or free plan tries to make something, like the
  * current tool), balance from useProfileCredits. The mock backend charges
  * nothing, so spend() only moves the balance in preview mode.
  *
@@ -47,7 +47,7 @@ export default function useAccount(preview) {
     if (preview || authLoading) return undefined;
     if (!user) {
       setPlanCode("guest");
-      setPaywall({ open: true, guest: true });
+      setPaywall({ open: false, guest: true });   // guests see the example first; the paywall opens on an action
       return undefined;
     }
     let active = true;
@@ -58,7 +58,7 @@ export default function useAccount(preview) {
       cachePlan(user.id, code);
       setPlanCode(code);
       // Same rule as the current tool: only guests and the free plan are gated.
-      setPaywall({ open: code === "free", guest: false });
+      setPaywall({ open: false, guest: false });   // free plan: the example + "Get a plan"; opens on an action
     });
     return () => { active = false; };
   }, [preview, authLoading, user]);
@@ -72,6 +72,9 @@ export default function useAccount(preview) {
 
   return {
     user,
+    isPreview: Boolean(preview),
+    /** Who is looking: "guest" | "noPlan" | "paid" (dev preview counts as paid). */
+    viewer: preview ? (preview.viewer ?? "paid") : !user ? "guest" : planCode === "free" ? "noPlan" : "paid",
     planCode,
     allowedTiers,
     needsUpgrade,

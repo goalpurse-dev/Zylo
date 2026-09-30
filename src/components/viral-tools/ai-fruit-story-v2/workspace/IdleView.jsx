@@ -1,15 +1,20 @@
-import { Film, Sparkles } from "lucide-react";
+import { Film, PlayCircle, Sparkles } from "lucide-react";
 import { ErrorBanner, PrimaryButton, ProgressBar, SegmentedControl } from "../../../ui/zyvo";
-import { formatLength, timeAgo } from "../constants";
-import { Avatar } from "../shared/Avatar";
+import { EXAMPLE_VIDEO, TUTORIAL_URL, formatLength, timeAgo } from "../constants";
 
 const RECENT_TABS = [
   { value: "single", label: "Single videos" },
   { value: "series", label: "Series" },
 ];
 
-/** Right panel when nothing is being made: hero + Recent creations. */
-export default function IdleView({ recentTab, onRecentTab, recent, byId, onOpenSingle, onOpenSeries, showHero = true }) {
+/**
+ * Right panel when nothing is being made: hero + Recent creations.
+ *   viewer "guest"  → the example video + "Sign up to make your own"
+ *   viewer "noPlan" → the example video + "Get a plan to make videos like this"
+ *   viewer "paid"   → their history; with none yet, "Make your first story" + the example
+ */
+export default function IdleView({ recentTab, onRecentTab, recent, byId, onOpenSingle, onOpenSeries, showHero = true, viewer = "paid", onSignUp, onGetPlan, onStart }) {
+  const paid = viewer === "paid";
   return (
     <div className="flex flex-col gap-6">
       {showHero && (
@@ -28,7 +33,15 @@ export default function IdleView({ recentTab, onRecentTab, recent, byId, onOpenS
         </div>
       )}
 
-      <section aria-labelledby="fv2-recent-title">
+      {!paid && (
+        <ExampleVideo
+          heading={viewer === "guest" ? "See what you can make" : "Made with AI Fruit Story"}
+          action={viewer === "guest" ? "Sign up to make your own" : "Get a plan to make videos like this"}
+          onAction={viewer === "guest" ? onSignUp : onGetPlan}
+        />
+      )}
+
+      {paid && <section aria-labelledby="fv2-recent-title">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h3 id="fv2-recent-title" className="text-[14px] font-black text-white">Recent creations</h3>
@@ -44,14 +57,16 @@ export default function IdleView({ recentTab, onRecentTab, recent, byId, onOpenS
             {[0, 1, 2].map((i) => <div key={i} className="h-[260px] animate-pulse rounded-2xl border border-white/[0.07] bg-white/[0.035] motion-reduce:animate-none" />)}
           </div>
         ) : recent.items.length === 0 ? (
-          <div className="grid min-h-[180px] place-items-center rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 text-center">
-            <div>
-              <p className="text-[12px] font-bold text-white/70">Nothing here yet</p>
-              <p className="mt-1 text-[11px] font-semibold leading-relaxed text-white/30">
-                {recentTab === "series" ? "Your series will show up here." : "Your finished videos will show up here."}
-              </p>
+          recentTab === "series" ? (
+            <div className="grid min-h-[180px] place-items-center rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 text-center">
+              <div>
+                <p className="text-[12px] font-bold text-white/70">No series yet</p>
+                <p className="mt-1 text-[11px] font-semibold leading-relaxed text-white/30">Your series will show up here.</p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <ExampleVideo heading="Make your first story" sub="Here's one we made. Yours shows up here when it's done." action="Make your first story" onAction={onStart} />
+          )
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {recent.items.map((item) => (
@@ -59,8 +74,39 @@ export default function IdleView({ recentTab, onRecentTab, recent, byId, onOpenS
             ))}
           </div>
         )}
-      </section>
+      </section>}
+
+      {TUTORIAL_URL && (
+        <a href={TUTORIAL_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 self-start text-[12px] font-bold text-lime-300 hover:text-lime-200">
+          <PlayCircle className="h-4 w-4" aria-hidden="true" />
+          Watch the tutorial
+        </a>
+      )}
     </div>
+  );
+}
+
+/** The example video card with one call to action. */
+function ExampleVideo({ heading, sub, action, onAction }) {
+  return (
+    <section aria-label={heading} className="flex flex-col gap-4 rounded-2xl border border-white/[0.08] bg-[#111315]/95 p-3 sm:flex-row sm:items-center sm:p-4">
+      <video
+        src={EXAMPLE_VIDEO.url}
+        poster={EXAMPLE_VIDEO.poster}
+        controls
+        playsInline
+        preload="none"
+        className="order-2 aspect-[9/16] w-full max-w-[220px] self-center rounded-xl bg-black object-cover sm:order-1 sm:max-w-[240px] sm:self-auto"
+        aria-label={`Example video: ${EXAMPLE_VIDEO.title}`}
+      />
+      <div className="order-1 flex min-w-0 flex-col gap-2 sm:order-2">
+        <h3 className="text-[16px] font-black text-white">{heading}</h3>
+        <p className="text-[12px] font-semibold leading-relaxed text-white/45">
+          {sub ?? <>&ldquo;{EXAMPLE_VIDEO.title}&rdquo;: {EXAMPLE_VIDEO.blurb}</>}
+        </p>
+        {onAction && <div className="pt-1"><PrimaryButton onClick={onAction}>{action}</PrimaryButton></div>}
+      </div>
+    </section>
   );
 }
 

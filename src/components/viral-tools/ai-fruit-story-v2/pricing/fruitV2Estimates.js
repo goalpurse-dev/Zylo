@@ -92,6 +92,15 @@ export function estimateStory({ lengthSec, tierId, prices, sceneCount }) {
   };
 }
 
+/**
+ * About how many stories of lengthSec a month of credits makes on a tier
+ * (pictures + video at the live prices). null until prices load.
+ */
+export function videosPerMonth(planCredits, lengthSec, tierId, prices) {
+  const { total } = estimateStory({ lengthSec, tierId, prices });
+  return total ? Math.floor(planCredits / total) : null;
+}
+
 /** Expected clip length for one line (4–6 s by word count). ESTIMATE; the backend decides. */
 export function estimateLineSec(line) {
   const words = String(line).trim().split(/\s+/).filter(Boolean).length;

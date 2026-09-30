@@ -207,7 +207,7 @@ const PARTICLE_CONFIG = [
 const COMPARISON_DATA = [
   { section: "Credits & Usage" },
   { label: "Credits / month", values: ["750", "1,600", "3,200"], highlight: true },
-  { label: "AI Fruit Story V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="fruitStory" idx={1} />) },
+  { label: "AI Fruit Story V2 · 20s videos / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="fruitStory" idx={0} />) },
   { label: "Clay Rescue V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="clayRescue" idx={0} />) },
   { label: "Face ASMR V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="faceAsmr" idx={1} />) },
   { label: "Micro Camera Animal V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="microCamera" idx={1} />) },
@@ -348,17 +348,17 @@ function BillingToggle({ billing, setBilling }) {
   );
 }
 
-/* ─── Headline claim — exact AI Fruit Story V2 30s count, per plan ────────── */
+/* ─── Headline claim — AI Fruit Story V2 20s count at live prices, per plan ─ */
 function HeadlineClaim({ planId, accent }) {
   const { status, costs, retry } = useContext(OutputCostsContext);
   const count = headlineOutputsForPlan(costs, planId);
   return (
     <div className="mb-4 rounded-xl px-3.5 py-3" style={{ background: `${accent}12`, border: `1px solid ${accent}30` }}>
       <p className="text-[13px] font-bold leading-snug text-white">
-        Up to <span style={{ color: accent }}>{status === "error" ? "—" : <QuotedCredits status={status} value={count} />}</span> complete {HEADLINE_OPTION_LABEL} AI Fruit Story videos / month
+        About <span style={{ color: accent }}>{status === "error" ? "—" : <QuotedCredits status={status} value={count} />}</span> complete {HEADLINE_OPTION_LABEL} AI Fruit Story videos / month
       </p>
       <p className="mt-1 text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.32)" }}>
-        Based on AI Fruit Story V2 at <OutputCount planId={planId} tool={HEADLINE_TOOL_KEY} idx={HEADLINE_OPTION_INDEX} credits /> credits per 30-second video. Other tools and lengths use different amounts of credits.
+        Based on AI Fruit Story V2 at <OutputCount planId={planId} tool={HEADLINE_TOOL_KEY} idx={HEADLINE_OPTION_INDEX} credits /> credits per {HEADLINE_OPTION_LABEL.replace(" seconds", "-second")} video (the exact price depends on how long each line is). Other tools and lengths use different amounts of credits.
       </p>
       {status === "error" && <PriceRetry onRetry={retry} className="mt-1 text-[11px]" />}
     </div>
@@ -367,7 +367,7 @@ function HeadlineClaim({ planId, accent }) {
 
 /* ─── Example monthly output — 3-4 tools, exact counts, links to full table ── */
 const EXAMPLE_OUTPUT_ROWS = [
-  { key: "fruitStory",  idx: 1, label: "complete 30s AI Fruit Story V2 videos" },
+  { key: "fruitStory",  idx: 0, label: "complete 20s AI Fruit Story V2 videos" },
   { key: "clayRescue",  idx: 0, label: "complete 30s Clay Rescue V2 videos" },
   { key: "faceAsmr",    idx: 1, label: "complete 30s Face ASMR V2 videos" },
   { key: "microCamera", idx: 1, label: "complete 30s Micro Camera Animal V2 videos" },

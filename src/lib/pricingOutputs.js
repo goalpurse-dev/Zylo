@@ -17,7 +17,7 @@
 // billing — those remain wherever they already live (src/pages/Pricing.jsx's
 // PRICE_IDS, the profiles.credit_balance column, etc).
 
-import { buildFruitPriceItems, calcFruitStoryCredits, getFruitSceneCountForLength } from "../components/viral-tools/ai-fruit-story/api/fruitStoryApi";
+import { priceItems as fruitPriceItems, estimateStory as estimateFruitStory } from "../components/viral-tools/ai-fruit-story-v2/pricing/fruitV2Estimates";
 import { PRICE_ITEMS as CLAY_PRICE_ITEMS, calcCredits as calcClayCredits, LENGTH_OPTIONS as CLAY_LENGTHS } from "../components/viral-tools/clay-rescue/api/clayRescueApi";
 import { PRICE_ITEMS as FACE_PRICE_ITEMS, calcCredits as calcFaceCredits } from "../components/viral-tools/face-asmr/api/faceAsmrApi";
 import { PRICE_ITEMS as MICRO_PRICE_ITEMS, calcCredits as calcMicroCredits, LENGTH_OPTIONS as MICRO_LENGTHS } from "../components/viral-tools/micro-camera-animal/api/microCameraAnimalApi";
@@ -71,13 +71,15 @@ const secondsLabel = (value) => `${parseInt(value, 10)} seconds`;
 // items it needs (quoted with a tool prefix) and each option computes its
 // credits from those prices — `service` is Cooking Matic's per-plan fee.
 export const V2_OUTPUT_COSTS = {
+  // AI Fruit Story v2 at its live prices (image:fruit-story + video:fruit-story-v2):
+  // scene pictures + about lengthSec of V2 video, the same estimate its cost card shows.
   fruitStory: {
     name: "AI Fruit Story",
     hasAudio: true,
-    priceItems: buildFruitPriceItems("9:16", "zyvo-v2"),
-    options: ["15s", "30s", "45s", "60s"].map((length) => ({
-      label: secondsLabel(length),
-      credits: (p) => calcFruitStoryCredits(getFruitSceneCountForLength(length), "fruit-v2", p),
+    priceItems: fruitPriceItems("9:16"),
+    options: [20, 30, 60].map((lengthSec) => ({
+      label: `${lengthSec} seconds`,
+      credits: (p) => estimateFruitStory({ lengthSec, tierId: "v2", prices: p }).total,
     })),
   },
 
@@ -213,9 +215,9 @@ export function outputsForPlan(costs, planId, toolKey, optionIndex = 0) {
 }
 
 // The headline comparison used on the main pricing cards: AI Fruit Story V2
-// at 30 seconds (includes images + video clips + audio).
+// at 20 seconds, its default length (includes pictures + video clips + audio).
 export const HEADLINE_TOOL_KEY = "fruitStory";
-export const HEADLINE_OPTION_LABEL = "30 seconds";
+export const HEADLINE_OPTION_LABEL = "20 seconds";
 export const HEADLINE_OPTION_INDEX = V2_OUTPUT_COSTS[HEADLINE_TOOL_KEY].options.findIndex(
   (o) => o.label === HEADLINE_OPTION_LABEL,
 );

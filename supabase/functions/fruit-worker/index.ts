@@ -22,6 +22,7 @@ import { FruitError, MESSAGES } from "../_shared/fruit/errors.js";
 import { FINAL_TIMEOUT_MIN, FINAL_USD_PER_SECOND, storyUpdateForReport } from "../_shared/fruit/final.js";
 import { raiseProviderAlert } from "../_shared/fruit/alerts.js";
 import { buildClipRequest, fallbackClipTask } from "../_shared/fruit/clips.js";
+import { buildPictureRequest } from "../_shared/fruit/pictures.js";
 import { rewriteClipPrompt } from "../_shared/fruit/smallTasks.js";
 import { buildEnvelope, parseRunware } from "../_shared/fruit/runware.js";
 import { videoModel } from "../_shared/fruit/models.js";
@@ -120,11 +121,41 @@ async function rawTest(body: any) {
   }
   return { ok: true, taskUUID, callId: call.id };
 }
+/**
+ * Admin framing check: one scene picture with TODAY's builder (mode "new"),
+ * sent straight to Runware (no user charge, story untouched), logged with its
+ * real cost. Poll with raw_poll {kind: "image"}.
+ */
+async function pictureTest(body: any) {
+  if (paidOff()) throw new FruitError("PAID_CALLS_DISABLED", "paid calls are off");
+  const { data: sc } = await admin.from("fruit_story_scenes").select("*").eq("id", body?.sceneId).single();
+  if (!sc) throw new FruitError("NOT_FOUND", "scene");
+  const { data: story } = await admin.from("fruit_stories").select("*").eq("id", sc.story_id).single();
+  const { data: rows } = await admin.from("fruit_characters").select("*");
+  const built = buildPictureRequest({
+    story: { aspect: story.aspect, locations: story.locations }, library: new Map((rows ?? []).map((c: any) => [c.id, c])), mode: "new",
+    scene: { speakerId: sc.speaker_id, presentIds: sc.present_ids, action: sc.action, emotion: sc.emotion, shot: sc.shot, placement: sc.placement, locationId: sc.location_id },
+  });
+  const taskUUID = crypto.randomUUID();
+  const envelope = buildEnvelope(built.request, { taskUUID, webhookURL: null });
+  const { data: call } = await admin.from("fruit_ai_calls").insert({
+    user_id: story.user_id, story_id: story.id, scene_id: sc.id, provider: "runware", model: built.request.model, purpose: "framing_check", request: envelope,
+  }).select("id").single();
+  const res = await runwarePost([envelope]);
+  const parsed = parseRunware(res.body, taskUUID, res.httpStatus);
+  if (parsed.state === "error") {
+    await admin.from("fruit_ai_calls").update({ ok: false, http_status: res.httpStatus, response: res.body, error: `${parsed.code}: ${parsed.message}`, cost_usd: parsed.cost ?? 0, completed_at: new Date().toISOString() }).eq("id", call.id);
+    return { ok: false, taskUUID, callId: call.id, error: `${parsed.code}: ${parsed.message}` };
+  }
+  return { ok: true, taskUUID, callId: call.id, prompt: built.request.positivePrompt, shot: sc.shot };
+}
+
 async function rawPoll(body: any) {
   const res = await runwarePost([getResponseTask(body.taskUUID)]);
   const parsed = parseRunware(res.body, body.taskUUID, res.httpStatus);
   if (parsed.state === "success") {
-    const url = await createSupabaseMedia(admin).store({ url: parsed.url, path: `fruit/tests/${body.taskUUID}.mp4`, contentType: "video/mp4" });
+    const image = body?.kind === "image";
+    const url = await createSupabaseMedia(admin).store({ url: parsed.url, path: `fruit/tests/${body.taskUUID}.${image ? "jpg" : "mp4"}`, contentType: image ? "image/jpeg" : "video/mp4" });
     await admin.from("fruit_ai_calls").update({ ok: true, http_status: res.httpStatus, response: res.body, cost_usd: parsed.cost, completed_at: new Date().toISOString() }).eq("id", body.callId);
     return { state: "success", url, cost: parsed.cost };
   }
@@ -232,10 +263,10 @@ Deno.serve(async (req) => {
     }
   }
 
-  if (["clip_test", "raw_test", "raw_poll"].includes(action)) {
+  if (["clip_test", "raw_test", "raw_poll", "picture_test"].includes(action)) {
     if (!sameToken((req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, ""), SERVICE_KEY)) return json({ ok: false }, 401);
     try {
-      const fn = action === "clip_test" ? clipTest : action === "raw_test" ? rawTest : rawPoll;
+      const fn = action === "clip_test" ? clipTest : action === "raw_test" ? rawTest : action === "picture_test" ? pictureTest : rawPoll;
       return json({ ok: true, ...(await fn(body)) });
     } catch (e) {
       const fe = e as any;

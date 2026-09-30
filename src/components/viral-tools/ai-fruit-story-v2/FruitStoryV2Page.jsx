@@ -7,7 +7,8 @@ import { ErrorBanner, FOCUS, PrimaryButton, SegmentedControl, StepBar, UpgradeDi
 import { isMockBackend, setFruitStoryV2Adapter } from "./api/fruitStoryV2Api";
 import { createMockAdapter } from "./api/mock/mockAdapter";
 import { createSupabaseAdapter } from "./api/supabaseAdapter";
-import { MODES, SINGLE_STEPS, UPGRADE_COPY, stepForStatus } from "./constants";
+import { EXAMPLE_VIDEO, MODES, SINGLE_STEPS, UPGRADE_COPY, stepForStatus } from "./constants";
+import { PRICING_PLANS } from "../../../lib/pricingOutputs";
 import BuilderPanel, { FootNote, StepHeading } from "./builder/BuilderPanel";
 import { PipelineActions, PipelineSummary } from "./builder/Pipeline";
 import { EpisodeCard, SeriesList, SeriesPlanPanel, SeriesWizard } from "./builder/SeriesPanels";
@@ -18,7 +19,7 @@ import SceneActionDialog from "./dialogs/SceneDialogs";
 import useAccount from "./hooks/useAccount";
 import useCharacters from "./hooks/useCharacters";
 import useFruitV2Flow from "./hooks/useFruitV2Flow";
-import { TIERS } from "./pricing/fruitV2Estimates";
+import { TIERS, videosPerMonth } from "./pricing/fruitV2Estimates";
 import { quoteFor } from "./pricing/useFruitV2Prices";
 import FinalView from "./workspace/FinalView";
 import IdleView from "./workspace/IdleView";
@@ -39,7 +40,7 @@ export default function FruitStoryV2Page({ preview = null }) {
   // (?fruitV2Preview=1) runs on the mock; ?fail=… makes those steps fail once.
   // Runs during the first render, before any effect talks to the API.
   useState(() => {
-    setFruitStoryV2Adapter(preview ? createMockAdapter({ fail: preview.fail || "" }) : createSupabaseAdapter());
+    setFruitStoryV2Adapter(preview ? createMockAdapter({ fail: preview.fail || "", empty: Boolean(preview.emptyRecent) }) : createSupabaseAdapter());
   });
   const navigate = useNavigate();
   const account = useAccount(preview);
@@ -284,6 +285,10 @@ export default function FruitStoryV2Page({ preview = null }) {
         byId={byId}
         onOpenSingle={flow.openSingle}
         onOpenSeries={flow.openSeries}
+        viewer={account.viewer}
+        onSignUp={() => navigate("/signup")}
+        onGetPlan={account.paywall.show}
+        onStart={() => { if (mode !== "single") flow.changeMode("single"); flow.setTab("build"); }}
       />
     );
   }
@@ -383,14 +388,15 @@ export default function FruitStoryV2Page({ preview = null }) {
         creditBalance={account.balance}
         variant="lime"
       />
-      {!preview && (
+      {(!preview || preview.viewer !== "paid") && (
         <FaceAsmrPaywall
           open={account.paywall.open}
-          onClose={() => (account.needsUpgrade ? navigate("/workspace/home") : account.paywall.close())}
+          onClose={account.paywall.close}
           isGuest={account.paywall.guest}
-          dismissable={!account.needsUpgrade}
+          dismissable
           toolName="AI Fruit Story"
-          previewSrc="/viral-builder/ai-fruit/result.mp4"
+          previewSrc={EXAMPLE_VIDEO.url}
+          planLines={paywallLines(flow.quotes.prices)}
         />
       )}
     </>
@@ -416,4 +422,20 @@ function LoadingOrError({ status, onRetry, what }) {
       <div className="h-40 animate-pulse rounded-xl bg-white/[0.04] motion-reduce:animate-none" />
     </div>
   );
+}
+
+/**
+ * Paywall lines per plan from the live prices: about how many 20-second
+ * stories a month of credits makes, on each tier the plan includes.
+ * null (line dropped) until prices load; nothing is guessed.
+ */
+function paywallLines(prices) {
+  const n = (plan, tier) => videosPerMonth(PRICING_PLANS[plan].credits, 20, tier, prices);
+  const line = (plan, tiers) => {
+    const counts = tiers.map((t) => [t, n(plan, t)]);
+    if (counts.some(([, c]) => c == null)) return null;
+    const [[, first], ...rest] = counts;
+    return `About ${first} AI Fruit Story videos of 20 s / month on V2${rest.map(([t, c]) => `, or ${c} on ${t.toUpperCase()}`).join("")}`;
+  };
+  return { starter: line("starter", ["v2"]), pro: line("pro", ["v2", "v3"]), generative: line("generative", ["v2", "v3", "v4"]) };
 }

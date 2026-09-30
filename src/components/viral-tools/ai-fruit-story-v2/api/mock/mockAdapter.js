@@ -55,7 +55,7 @@ class MockError extends Error {
   }
 }
 
-export function createMockAdapter({ timeScale = 1, fail = "", paint = paintScene } = {}) {
+export function createMockAdapter({ timeScale = 1, fail = "", paint = paintScene, empty = false } = {}) {
   const stories = new Map();
   const series = new Map();
   const listeners = new Map();
@@ -205,6 +205,7 @@ export function createMockAdapter({ timeScale = 1, fail = "", paint = paintScene
 
   // ── Seed data: a few finished videos and two series, so Recent isn't empty ──
   function seed() {
+    if (empty) return Promise.resolve();   // dev preview &recent=empty: a new account's view
     if (seeding) return seeding;
     seeding = (async () => {
       const singles = [

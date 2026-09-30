@@ -73,3 +73,17 @@ export function errorText(error, fallback) {
   if (!message || /_FAILED$/.test(error?.code ?? "") || /^[A-Z_]+$/.test(message)) return fallback;
   return message;
 }
+
+/**
+ * The example video on the Recent panel (guests, no plan, no stories yet): a
+ * real V2 story made end to end ("Ken Reads Everything", 26 s, captions on).
+ */
+export const EXAMPLE_VIDEO = {
+  title: "Ken Reads Everything",
+  blurb: "The IT guy reads everyone's email. 6 scenes, made on V2 in under 4 minutes.",
+  url: "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/fruit/examples/ken-reads-everything.mp4",
+  poster: "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/fruit/examples/ken-reads-everything.jpg",
+};
+
+/** YouTube tutorial link for the Recent panel. Set it and a "Watch the tutorial" link appears. */
+export const TUTORIAL_URL = null;
