@@ -121,3 +121,22 @@ test("staging: a lone speaker faces the camera; 3 characters stay speaker-first;
   }
   assert.match(three, /plain unbranded props/);
 });
+
+test("every character's fruit head is named, background characters too", async () => {
+  const { fruitHeads } = await import("../supabase/functions/_shared/fruit/pictures.js");
+  const p = buildScenePrompt({ story, scene: { ...scene, presentIds: ["mia", "marco", "pia"] }, library: LIB });
+  assert.ok(p.includes("Every character has a fruit head, in the background too: Mia Mango has a mango head, Marco Mango has a mango head and Pia Peach has a peach head. No human heads, faces or hair on anyone."), p);
+  assert.equal(fruitHeads([LIB.get("kai")]), "Every character has a fruit head, in the background too: Kai Coconut has a coconut head. No human heads, faces or hair on anyone.");
+  assert.match(fruitHeads([{ name: "Olive Oliveira", fruit: "olive" }]), /has an olive head/);
+});
+
+test("a series location plate goes in after the characters, and the prompt says what it is", () => {
+  const withPlate = { ...story, locations: [{ ...story.locations[0], plateUrl: "https://x/plate-s1.jpg" }] };
+  const built = buildPictureRequest({ story: withPlate, scene, library: LIB, mode: "new" });
+  assert.deepEqual(built.request.inputs.referenceImages.slice(-1), ["https://x/plate-s1.jpg"]);
+  assert.equal(built.request.inputs.referenceImages.length, 3, "2 characters + the plate");
+  assert.ok(built.prompt.includes("Image 3 is the empty set of this place: keep its layout, furniture and colors; the characters stand in it."));
+  const none = buildPictureRequest({ story, scene, library: LIB, mode: "new" });
+  assert.equal(none.request.inputs.referenceImages.length, 2);
+  assert.ok(!none.prompt.includes("empty set of this place"));
+});

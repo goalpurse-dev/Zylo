@@ -14,7 +14,7 @@ import { FRUIT_MODELS, videoModel } from "./models.js";
 const blocked = (message) => new FruitError("VALIDATION", message, 409);
 
 /**
- * @param {"pictures"|"edit"|"regenerate"|"retry_picture"|"animate"|"reclip"} step
+ * @param {"pictures"|"edit"|"regenerate"|"retry_picture"|"free_regenerate"|"animate"|"reclip"} step
  * @param {{story: object, scenes: object[], sceneId?: string, instruction?: string, prompt?: string, library: Map, builders: object}} ctx
  *   story/scenes are contract-shaped (toStory)
  */
@@ -41,6 +41,7 @@ export function planStep(step, { story, scenes, sceneId, instruction, prompt, li
   else if (step === "edit") items = [pictureItem(scene, "edit")];
   else if (step === "regenerate") items = [pictureItem(scene, "regenerate")];
   else if (step === "retry_picture") items = [pictureItem(scene, "retry")];
+  else if (step === "free_regenerate") items = [pictureItem(scene, "new")];   // today's prompt, 0 credits (SQL enforces once, flagged only)
   else if (step === "animate") items = scenes.map(clipItem);
   else if (step === "reclip") items = [clipItem(scene)];
   else throw blocked("Unknown step.");

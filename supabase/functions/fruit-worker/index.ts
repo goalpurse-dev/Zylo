@@ -21,6 +21,7 @@ import { validateCreateStory } from "../_shared/fruit/validation.js";
 import { FruitError, MESSAGES } from "../_shared/fruit/errors.js";
 import { FINAL_TIMEOUT_MIN, FINAL_USD_PER_SECOND, storyUpdateForReport } from "../_shared/fruit/final.js";
 import { raiseProviderAlert } from "../_shared/fruit/alerts.js";
+import { checkPicture } from "../_shared/fruit/pictureCheck.js";
 import { buildClipRequest, fallbackClipTask } from "../_shared/fruit/clips.js";
 import { buildPictureRequest } from "../_shared/fruit/pictures.js";
 import { rewriteClipPrompt } from "../_shared/fruit/smallTasks.js";
@@ -57,6 +58,18 @@ const engine = createEngine({
   env: { FRUIT_PAID_CALLS: PAID_CALLS, webhookBase: `${SUPABASE_URL}/functions/v1/fruit-worker`, webhookSecret: WORKER_SECRET },
   // A clip that finally fails on Wan2.6 Flash is re-sent once on Seedance 2.0 Mini.
   fallbackClip: fallbackClipTask,
+  // Every scene picture: all fruit heads, right character count (gpt-5-mini vision, logged; ours to pay).
+  checkPicture: async (job: any, storedUrl: string) => {
+    if (paidOff()) return null;
+    const { data: sc } = await admin.from("fruit_story_scenes").select("present_ids").eq("id", job.scene_id).single();
+    const { data: chars } = await admin.from("fruit_characters").select("id, name, fruit").in("id", sc?.present_ids ?? []);
+    const expected = (sc?.present_ids ?? []).map((id: string) => (chars ?? []).find((c: any) => c.id === id)).filter(Boolean).map((c: any) => ({ name: c.name, fruit: c.fruit }));
+    if (!expected.length) return null;
+    return checkPicture({
+      admin, apiKey: Deno.env.get("OPENAI_API_KEY") ?? "", imageUrl: storedUrl, expected,
+      ids: { user_id: job.user_id, story_id: job.story_id, scene_id: job.scene_id, job_id: job.id },
+    });
+  },
   // Runware refused because our balance is out: the job is already refunded; alert the admin.
   onProviderBalance: ({ job, code, message }: any) => raiseProviderAlert(admin, ALERT_ENV, {
     provider: "runware", code, message, context: { jobId: job.id, storyId: job.story_id, kind: job.kind, model: job.request?.model },

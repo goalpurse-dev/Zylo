@@ -31,12 +31,16 @@ const failCode = (kind, cls) => cls.providerBalance ? "PROVIDER_UNAVAILABLE" : c
   ? (kind === "clip" ? "CLIP_BLOCKED" : "IMAGE_FAILED")
   : cls.retryable ? "PROVIDER_BUSY" : (kind === "clip" ? "CLIP_FAILED" : "IMAGE_FAILED");
 
+/** Job note that marks a picture already redrawn after a failed check. */
+export const REDRAW_NOTE = "picture check, redrawn at our cost:";
+
 const ageSec = (now, iso) => (iso ? (now.getTime() - new Date(iso).getTime()) / 1000 : Infinity);
 
 //   rewriteClip (optional) async (job) -> new request | null   one content-policy rewrite for clips
 //   fallbackClip (optional) (request) -> fallback request | null   e.g. clips.js#fallbackClipTask
 //   onProviderBalance (optional) async ({job, code, message}) -> void   admin alert (alerts.js)
-export function createEngine({ store, runware, media, env, rewriteClip = null, fallbackClip = null, onProviderBalance = null, now = () => new Date(), uuid = () => crypto.randomUUID(), log = console }) {
+//   checkPicture (optional) async (job, storedUrl) -> {ok, problems[]} | null   picture check (pictureCheck.js)
+export function createEngine({ store, runware, media, env, rewriteClip = null, fallbackClip = null, onProviderBalance = null, checkPicture = null, now = () => new Date(), uuid = () => crypto.randomUUID(), log = console }) {
   const paidOff = String(env.FRUIT_PAID_CALLS ?? "").toLowerCase() === "off";
 
   async function webhookFor(taskUUID) {
@@ -159,7 +163,23 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
       }
       return "store_retry";                          // reconcile tries again
     }
+    // Picture check: every fruit head there, the right number of characters. A
+    // failed check is redrawn ONCE on the same job (our cost, not the user's);
+    // failing again, the picture is kept with a warning and a free regenerate.
+    // A check that can't run never blocks the picture.
+    let verdict = null;
+    if (job.kind === "image" && checkPicture) {
+      try { verdict = await checkPicture(job, storedUrl); } catch (err) { log.error?.(`[fruit] picture check failed to run for ${job.id}: ${String(err?.message ?? err)}`); }
+      const redrawnBefore = String(job.error ?? "").startsWith(REDRAW_NOTE);
+      if (verdict && !verdict.ok && !redrawnBefore) {
+        if (await store.redrawPicture(job.id, `${REDRAW_NOTE} ${(verdict.problems ?? []).join("; ")}`.slice(0, 500))) {
+          await kick({ storyId: job.story_id });
+          return "redrawn";
+        }
+      }
+    }
     const ok = await store.completeJob(job.id, storedUrl, 0, null);   // cost was added at provider_done
+    if (ok && verdict) await store.setImageCheck(job.scene_id, verdict.ok ? "passed" : "failed", verdict.ok ? null : (verdict.problems ?? []).join("; ").slice(0, 500));
     if (ok) await kick({ storyId: job.story_id });   // start the next queued job of this story
     return ok ? "completed" : "ignored";
   }

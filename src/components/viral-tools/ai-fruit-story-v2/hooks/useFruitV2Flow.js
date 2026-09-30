@@ -204,6 +204,12 @@ export default function useFruitV2Flow(account, characters = []) {
     ? sceneDialog.kind === "clip" ? clipPrice(story.quality, dialogScene.durationSec, quotes.prices) : picturePrice(quotes.prices)
     : null;
 
+  // A picture our automatic check flagged: redraw it free, once.
+  const regenerateFree = async (scene) => {
+    const next = await run(`free-${scene.id}`, () => api.regenerateSceneFree(scene.id), "We couldn't redraw this picture. Nothing was charged. Try again.");
+    if (next) live.replace(next);
+  };
+
   const submitSceneDialog = async (text) => {
     if (!dialogScene || !guard()) return;
     if (dialogPrice != null && dialogPrice > account.balance) {
@@ -357,7 +363,7 @@ export default function useFruitV2Flow(account, characters = []) {
     pipeline: { onMakePictures: makePictures, onAnimate: animate, onMakeFinal: makeFinal, onDownload: download, onNewStory: newStory, onBackToSeries: backToSeries, onAddCredits: () => setNoCredits({ needed: animateAllPrice(story, quotes.prices) ?? 0 }) },
     setCaptions,
     library, openLibrary: setLibrary, closeLibrary: () => setLibrary(null), libraryIds, libraryMax, toggleLibrary,
-    sceneDialog, dialogScene, dialogPrice, openSceneDialog: (kind, scene) => setSceneDialog({ kind, sceneId: scene.id }), closeSceneDialog: () => setSceneDialog(null), submitSceneDialog,
+    regenerateFree, sceneDialog, dialogScene, dialogPrice, openSceneDialog: (kind, scene) => setSceneDialog({ kind, sceneId: scene.id }), closeSceneDialog: () => setSceneDialog(null), submitSceneDialog,
     upgradeTier, setUpgradeTier, noCredits, setNoCredits,
     sceneCountForLength,
   };

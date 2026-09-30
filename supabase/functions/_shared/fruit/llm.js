@@ -70,7 +70,8 @@ async function callOpenAI({ model, apiKey, system, user, schema, name, maxOutput
     model,
     store: false,
     instructions: system,                     // identical prefix every call: OpenAI caches it automatically
-    input: user,
+    // user: a string, or Responses content parts (input_text + input_image for the picture check)
+    input: Array.isArray(user) ? [{ role: "user", content: user }] : user,
     max_output_tokens: maxOutputTokens,
     ...(/^gpt-5/.test(model) ? { reasoning: { effort: reasoningEffort } } : {}),
     text: { format: { type: "json_schema", name, strict: true, schema } },

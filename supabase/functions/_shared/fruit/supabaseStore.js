@@ -101,6 +101,20 @@ export function createSupabaseStore(admin) {
       return must(await admin.rpc("fruit_complete_job", { p_job_id: id, p_stored_url: storedUrl, p_cost_usd: cost || 0, p_result: result }), "complete job");
     },
 
+    // A picture that failed the automatic check is drawn again ONCE on the same
+    // job (same charge; the extra provider cost is ours). note marks it redrawn.
+    async redrawPicture(id, note) {
+      const rows = must(await admin.from("fruit_jobs")
+        .update({ status: "queued", next_attempt_at: new Date().toISOString(), output_url: null, lease_until: null, submitted_at: null, provider_done_at: null, error: note })
+        .eq("id", id).eq("status", "provider_done").select("*"), "redraw picture");
+      if (rows.length) await setSceneStatus(rows[0], "queued");
+      return rows.length > 0;
+    },
+
+    async setImageCheck(sceneId, status, notes) {
+      must(await admin.from("fruit_story_scenes").update({ image_check: status, image_check_notes: notes }).eq("id", sceneId).select("id"), "image check");
+    },
+
     async jobByTask(taskUUID) {
       return must(await admin.from("fruit_jobs").select("*").eq("task_uuid", taskUUID).maybeSingle(), "job by task");
     },

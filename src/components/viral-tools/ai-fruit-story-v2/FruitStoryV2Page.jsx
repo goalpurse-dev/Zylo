@@ -266,6 +266,8 @@ export default function FruitStoryV2Page({ preview = null }) {
           onEdit={(scene) => flow.openSceneDialog("edit", scene)}
           onRegenerate={(scene) => flow.openSceneDialog("regenerate", scene)}
           onRegenerateClip={(scene) => flow.openSceneDialog("clip", scene)}
+          onRegenerateFree={flow.regenerateFree}
+          acting={flow.acting}
         />
       );
       resultFooter = pipelineFooter;
@@ -278,7 +280,7 @@ export default function FruitStoryV2Page({ preview = null }) {
     result = <SeriesPreview draft={series.draft} byId={byId} />;
   } else if (mode === "series" && (series.view === "plan" || series.view === "episode")) {
     resultTabLabel = "Episodes";
-    result = flow.seriesData ? <Roadmap series={flow.seriesData} /> : <LoadingOrError status={flow.seriesStatus} onRetry={flow.retrySeries} what="this series" />;
+    result = flow.seriesData ? <Roadmap series={flow.seriesData} byId={byId} /> : <LoadingOrError status={flow.seriesStatus} onRetry={flow.retrySeries} what="this series" />;
     if (series.view === "plan" && nextEpisode) {
       resultFooter = <PrimaryButton chevron onClick={() => flow.startEpisode(nextEpisode.number)}>Make episode {nextEpisode.number}</PrimaryButton>;
     }

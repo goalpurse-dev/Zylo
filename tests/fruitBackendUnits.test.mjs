@@ -108,10 +108,11 @@ test("rows map to the exact contract Story shape", () => {
   const scenes = [{ id: "b", idx: 1, title: "", speaker_id: "mia", line: "Two.", present_ids: ["mia"], duration_sec: 4, image_status: "queued", image_url: null, image_prompt: "", clip_status: "none", clip_url: null, error: null },
     { id: "a", idx: 0, title: "", speaker_id: "mia", line: "One.", present_ids: ["mia"], duration_sec: 4, image_status: "queued", image_url: null, image_prompt: "", clip_status: "none", clip_url: null, error: null }];
   const s = toStory(row, scenes);
-  assert.deepEqual(Object.keys(s).sort(), ["aspect", "castIds", "createdAt", "final", "id", "lengthSec", "quality", "scenes", "spentCredits", "status", "title"]);
+  assert.deepEqual(Object.keys(s).sort(), ["aspect", "castIds", "castRoles", "createdAt", "final", "id", "lengthSec", "quality", "scenes", "spentCredits", "status", "title"]);
   assert.equal(toStory(row, scenes, spentFromLedger([{ operation: "charge", credits: 24 }, { operation: "charge", credits: 30 }, { operation: "refund", credits: 30 }, { operation: "charge", credits: 165 }])).spentCredits, 189, "charges minus refunds");
   assert.deepEqual(s.scenes.map((x) => x.line), ["One.", "Two."]);
-  assert.deepEqual(Object.keys(s.scenes[0]).sort(), ["clipStatus", "clipUrl", "durationSec", "error", "id", "imagePrompt", "imageStatus", "imageUrl", "index", "line", "presentIds", "speakerId", "title"]);
+  assert.deepEqual(Object.keys(s.scenes[0]).sort(), ["clipStatus", "clipUrl", "durationSec", "error", "id", "imageCheck", "imagePrompt", "imageStatus", "imageUrl", "index", "line", "presentIds", "speakerId", "title"]);
+  assert.deepEqual(s.scenes[0].imageCheck, { status: "none", notes: null, freeRegenerate: false });
   assert.equal(s.final.trimmedSec, 0);
 });
 

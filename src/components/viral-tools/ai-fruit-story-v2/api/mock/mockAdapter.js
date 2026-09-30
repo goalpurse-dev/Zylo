@@ -410,6 +410,13 @@ export function createMockAdapter({ timeScale = 1, fail = "", paint = paintScene
       return regeneratePicture(story, scene);
     },
 
+    async regenerateSceneFree(sceneId) {
+      const { story, scene } = findScene(sceneId);
+      if (!scene.imageCheck?.freeRegenerate) throw new MockError("WRONG_STATUS", "This picture has no free regenerate.");
+      scene.imageCheck = { status: "none", notes: null, freeRegenerate: false };
+      return regeneratePicture(story, scene);
+    },
+
     async animateAll(storyId) {
       await sleep(DEFAULT_TIMINGS.read);
       const story = requireStory(storyId);

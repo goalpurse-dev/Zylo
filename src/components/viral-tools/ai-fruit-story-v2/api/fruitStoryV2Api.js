@@ -56,6 +56,8 @@ import { createSupabaseAdapter } from "./supabaseAdapter.js";
  * @property {ClipStatus} clipStatus
  * @property {string|null} clipUrl
  * @property {string|null} error   Plain-language reason when a step failed
+ * @property {{status: "none"|"passed"|"failed", notes: string|null, freeRegenerate: boolean}} [imageCheck]
+ *                                 Automatic picture check (fruit heads, character count)
  */
 
 /**
@@ -91,6 +93,7 @@ import { createSupabaseAdapter } from "./supabaseAdapter.js";
  * @property {StoryStatus} status
  * @property {Scene[]} scenes
  * @property {FinalVideo} final
+ * @property {Object<string,string>} [castRoles] Character id → role in THIS story ("the jealous sister")
  * @property {number|null} [spentCredits] Credits this story has cost so far (charges minus refunds; real backend only)
  * @property {string} [seriesId]
  * @property {number} [episodeNumber]
@@ -223,6 +226,8 @@ export const generateScenePictures = (storyId) => current().generateScenePicture
 export const editScene = (sceneId, instruction) => current().editScene(sceneId, instruction);
 /** @param {string} sceneId @param {string} prompt @returns {Promise<Story>} */
 export const regenerateScene = (sceneId, prompt) => current().regenerateScene(sceneId, prompt);
+/** Free, once, for a picture the automatic check flagged. @param {string} sceneId @returns {Promise<Story>} */
+export const regenerateSceneFree = (sceneId) => current().regenerateSceneFree(sceneId);
 /** @param {string} storyId @returns {Promise<Story>} */
 export const animateAll = (storyId) => current().animateAll(storyId);
 /** @param {string} sceneId @returns {Promise<Story>} */

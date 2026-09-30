@@ -5,7 +5,7 @@ import { Avatar } from "../shared/Avatar";
 import WorkspaceHeader from "./WorkspaceHeader";
 
 /** Episode plan: title, what happens, cliffhanger, Made / Up next / Locked. */
-export function Roadmap({ series }) {
+export function Roadmap({ series, byId = () => null }) {
   return (
     <div className="flex flex-col gap-4">
       <WorkspaceHeader title="Episode plan" subtitle="Each episode ends on a cliffhanger that the next one picks up." />
@@ -41,7 +41,55 @@ export function Roadmap({ series }) {
           </li>
         ))}
       </ol>
+      <SeriesBible bible={series.bible} byId={byId} />
     </div>
+  );
+}
+
+/**
+ * The series bible, read-only: the places every episode comes back to (with
+ * their background plate once one is made), and each character's role,
+ * signature prop and catchphrase. Keeps the series consistent.
+ */
+function SeriesBible({ bible, byId }) {
+  if (!bible || (!bible.locations?.length && !bible.characters?.length)) return null;
+  return (
+    <section aria-labelledby="fv2-bible" className="flex flex-col gap-3 rounded-2xl border border-white/[0.07] bg-[#111315] p-3.5">
+      <div>
+        <h3 id="fv2-bible" className="text-[14px] font-black text-white">Series bible</h3>
+        <p className="mt-0.5 text-[11px] leading-relaxed text-white/40">Every episode reuses these places and details, so the series stays consistent.</p>
+      </div>
+      {bible.characters?.length > 0 && (
+        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2" aria-label="Characters">
+          {bible.characters.map((c) => {
+            const ch = byId(c.id);
+            return (
+              <li key={c.id} className="flex gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.03] p-2.5">
+                <Avatar character={ch} size="h-9 w-9" ring={false} />
+                <span className="min-w-0 text-[11px] leading-relaxed text-white/55">
+                  <span className="block font-black text-white">{ch?.name ?? c.id}</span>
+                  <span className="block">{c.role}</span>
+                  <span className="block"><span className="font-bold text-white/70">Prop:</span> {c.prop}</span>
+                  <span className="block"><span className="font-bold text-white/70">Says:</span> &ldquo;{c.catchphrase}&rdquo;</span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {bible.locations?.length > 0 && (
+        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3" aria-label="Places">
+          {bible.locations.map((l) => (
+            <li key={l.id} className="overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03]">
+              {l.plateUrl
+                ? <img src={l.plateUrl} alt={`Empty set: ${l.description}`} className="aspect-[9/12] w-full object-cover" loading="lazy" />
+                : <div className="grid aspect-[9/12] place-items-center text-[10px] font-semibold text-white/25">Pictured when first used</div>}
+              <p className="p-2 text-[10px] font-semibold leading-relaxed text-white/55">{l.description}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

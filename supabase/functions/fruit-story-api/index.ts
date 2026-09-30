@@ -18,6 +18,9 @@ import { episodeStatuses, spentFromLedger, stepBlocker, toRecentSingle, toStory 
 import { FINAL_MACHINE, buildFinalJob, finalMachineConfig, finalPath, storyUpdateForReport } from "../_shared/fruit/final.js";
 import { webhookToken } from "../_shared/fruit/runware.js";
 import { providerOnHold } from "../_shared/fruit/alerts.js";
+import { ensurePlates, lastEndOf, plateOf } from "../_shared/fruit/plates.js";
+import { setupsFor } from "../_shared/fruit/series.js";
+import { createSupabaseMedia } from "../_shared/fruit/supabaseStore.js";
 import { captionWordsForClips } from "../_shared/fruit/captionWords.js";
 import { FRUIT_MODELS } from "../_shared/fruit/models.js";
 import { validateCreateStory, validateEditInstruction, validateId, validateScenePrompt, validateSeriesPlan } from "../_shared/fruit/validation.js";
@@ -46,6 +49,16 @@ const PLAN_RANK: Record<string, number> = { starter: 1, affiliate: 1, pro: 2, ge
 const QUALITY_PLAN: Record<string, [number, string]> = { v2: [1, "Starter"], v3: [2, "Pro"], v4: [3, "Generative"] };
 
 const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+const RUNWARE_API_KEY = Deno.env.get("RUNWARE_API_KEY") ?? "";
+const RUNWARE_URL = `${(Deno.env.get("RUNWARE_BASE_URL") || "https://api.runware.ai").replace(/\/+$/, "")}/v1`;
+/** Synchronous Runware call (location plates only; scene pictures and clips go through fruit-worker). */
+async function runwarePost(tasks: unknown[]) {
+  const res = await fetch(RUNWARE_URL, {
+    method: "POST", headers: { Authorization: `Bearer ${RUNWARE_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify(tasks), signal: AbortSignal.timeout(60_000),
+  });
+  return { httpStatus: res.status, body: await res.json().catch(() => null) };
+}
 
 // Pictures (stage 3d) and clips (stage 3e) are on.
 const BUILDERS = { picture: buildPictureRequest, clip: buildClipRequest };
@@ -183,10 +196,22 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
       if (target.status === "locked") throw new FruitError("WRONG_STATUS", "Finish the previous episode first.", 409);
       if (target.storyId) throw new FruitError("WRONG_STATUS", "This episode is already started.", 409);
       input.castIds = s.cast_ids;
+      // Continuity: where the previous episode ended (its planner's end state, or its last scene).
+      const prevEp = episodes.find((e: any) => e.number === input.episodeNumber - 1);
+      let lastEnd = null;
+      if (prevEp?.story_id) {
+        const prev = must(await admin.from("fruit_stories").select("end_state, locations").eq("id", prevEp.story_id).maybeSingle());
+        const prevScenes = must(await admin.from("fruit_story_scenes").select("idx, speaker_id, present_ids, location_id, placement, emotion").eq("story_id", prevEp.story_id));
+        lastEnd = lastEndOf(prev, prevScenes);
+      }
       series = {
-        id: s.id, title: s.title, logline: s.logline, bible: s.bible?.text ?? "",
+        id: s.id, title: s.title, logline: s.logline, bible: s.bible?.text ?? "", bibleRow: s.bible ?? {},
         previous: episodes.filter((e: any) => e.number < input.episodeNumber).map((e: any) => ({ number: e.number, title: e.title, summary: e.summary, cliffhanger: e.cliffhanger })),
         episode: { number: target.number, title: target.title, summary: target.summary, cliffhanger: target.cliffhanger },
+        locations: (s.bible?.locations ?? []).map((l: any) => ({ id: l.id, description: l.description })),
+        characters: s.bible?.characters ?? [],
+        setups: setupsFor(s.bible?.setups ?? [], input.episodeNumber),
+        lastEnd,
       };
     }
 
@@ -199,13 +224,34 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
         prompt: input.prompt, script: input.script, series,
       },
     });
+    // Series locations: make any missing plate (empty background, our cost) and
+    // give each story location its plate so every scene there matches the series.
+    let locations = plan.locations;
+    if (series && series.locations.length) {
+      const usedIds = [...new Set(plan.locations.map((l: any) => l.seriesLocationId).filter(Boolean))];
+      const bibleLocations = await ensurePlates({
+        locations: series.bibleRow.locations ?? [], usedIds, aspect: input.aspect, userId: ctx.userId, seriesId: series.id,
+        deps: {
+          post: runwarePost,
+          store: (o: any) => createSupabaseMedia(admin).store(o),
+          log: async (row: any) => { await admin.from("fruit_ai_calls").insert(row); },
+        },
+      });
+      if (JSON.stringify(bibleLocations) !== JSON.stringify(series.bibleRow.locations ?? [])) {
+        await admin.from("fruit_series").update({ bible: { ...series.bibleRow, locations: bibleLocations } }).eq("id", series.id);
+      }
+      locations = plan.locations.map((l: any) => {
+        const plate = plateOf(bibleLocations.find((b: any) => b.id === l.seriesLocationId), input.aspect);
+        return plate ? { ...l, plateUrl: plate } : l;
+      });
+    }
     const storyId = must(await admin.rpc("fruit_create_story", {
       p_user_id: ctx.userId,
       p_story: {
         source: input.source,
         input: { source: input.source, ideaId: input.ideaId ?? null, prompt: input.prompt ?? null, script: input.script ?? null },
         title: plan.title, cast_ids: input.castIds, quality: input.quality, aspect: input.aspect,
-        length_sec: Math.min(180, Math.max(5, plan.lengthSec)), locations: plan.locations,
+        length_sec: Math.min(180, Math.max(5, plan.lengthSec)), locations,
         planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd },
         series_id: series?.id ?? null, episode_number: series ? input.episodeNumber : null,
       },
@@ -215,6 +261,8 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
       })),
       p_call_ids: callIds,
     }));
+    // Each character's role in THIS story, and (for series continuity) where it ends.
+    must(await admin.from("fruit_stories").update({ cast_roles: plan.roles ?? {}, end_state: plan.endState ?? null }).eq("id", storyId).select("id"));
     const { row, scenes, spent } = await loadStory(ctx.userId, storyId);
     return toStory(row, scenes, spent);
   },
@@ -244,6 +292,13 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const scene = scenes.find((s: any) => s.id === sceneId);
     const step = scene?.image_status === "failed" && scene.image_prompt === prompt ? "retry_picture" : "regenerate";
     return runStep(ctx, step, row.id, { sceneId, prompt });
+  },
+
+  /** Free, once: redraw a picture our automatic check flagged (today's prompt; SQL enforces the rules). */
+  async regenerateSceneFree(ctx) {
+    const sceneId = validateId(ctx.body?.sceneId, "scene");
+    const { row } = await loadSceneStory(ctx.userId, sceneId);
+    return runStep(ctx, "free_regenerate", row.id, { sceneId });
   },
 
   animateAll: (ctx) => runStep(ctx, "animate", validateId(ctx.body?.storyId)),
@@ -331,7 +386,10 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
       });
       must(await admin.from("fruit_series").update({
         title: outline.title, logline: outline.logline,
-        bible: { text: outline.bible, planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd } },
+        bible: {
+          text: outline.bible, locations: outline.locations, characters: outline.characters, setups: outline.setups,
+          planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd },
+        },
       }).eq("id", row.id));
       must(await admin.from("fruit_series_episodes").insert(outline.episodes.map((e: any) => ({
         series_id: row.id, user_id: ctx.userId, number: e.number, title: e.title, summary: e.summary, cliffhanger: e.cliffhanger,
@@ -370,9 +428,17 @@ async function seriesView(userId: string, seriesId: string) {
   const episodes = must(await admin.from("fruit_series_episodes").select("*").eq("series_id", seriesId).order("number"));
   const storyIds = episodes.map((e: any) => e.story_id).filter(Boolean);
   const stories = storyIds.length ? must(await admin.from("fruit_stories").select("id, status").in("id", storyIds)) : [];
+  const b = s.bible ?? {};
   return {
     id: s.id, title: s.title, logline: s.logline, castIds: s.cast_ids, createdAt: s.created_at,
     episodes: episodeStatuses(episodes, new Map(stories.map((x: any) => [x.id, x.status]))),
+    // The series bible, read-only in the UI.
+    bible: {
+      text: b.text ?? "",
+      locations: (b.locations ?? []).map((l: any) => ({ id: l.id, description: l.description, plateUrl: l.plates?.["9:16"] ?? l.plates?.["16:9"] ?? null })),
+      characters: b.characters ?? [],
+      setups: b.setups ?? [],
+    },
   };
 }
 

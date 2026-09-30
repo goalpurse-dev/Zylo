@@ -86,6 +86,17 @@ export function createMemoryDb({ balance = 1000 } = {}) {
       Object.assign(j, { status: "provider_done", provider_done_at: now.toISOString(), result, output_url: outputUrl, cost_usd: j.cost_usd + (cost || 0), lease_until: null });
       return true;
     },
+    async redrawPicture(jobId, note) {
+      const j = db.jobs.get(jobId);
+      if (!j || j.status !== "provider_done") return false;
+      Object.assign(j, { status: "queued", next_attempt_at: db.clock().toISOString(), output_url: null, lease_until: null, submitted_at: null, provider_done_at: null, error: note });
+      setScene(j, { image_status: "queued" });
+      return true;
+    },
+    async setImageCheck(sceneId, status, notes) {
+      const s = db.scenes.get(sceneId);
+      if (s) Object.assign(s, { image_check: status, image_check_notes: notes });
+    },
     async requeueJob(jobId, taskUUID, delaySec, error, cost) {
       const j = db.jobs.get(jobId);
       if (!j || j.task_uuid !== taskUUID || !["submitting", "submitted"].includes(j.status)) return false;

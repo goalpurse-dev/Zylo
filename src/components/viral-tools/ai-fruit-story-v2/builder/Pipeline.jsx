@@ -29,6 +29,15 @@ export function PipelineSummary({ story, byId, header = null }) {
       <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-3">
         <h2 className="text-[15px] font-black leading-snug tracking-[-0.02em] text-white">{story.title}</h2>
         <div className="mt-2.5"><AvatarStack ids={story.castIds} byId={byId} /></div>
+        {Object.keys(story.castRoles ?? {}).length > 0 && (
+          <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Roles in this story">
+            {story.castIds.filter((id) => story.castRoles[id]).map((id) => (
+              <li key={id} className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold text-white/60">
+                <span className="font-black text-white/85">{byId(id)?.name.split(" ")[0] ?? id}</span> · {story.castRoles[id]}
+              </li>
+            ))}
+          </ul>
+        )}
         <div className="mt-2.5 flex flex-wrap gap-1.5">
           <Pill lime>{TIERS[story.quality]?.label ?? story.quality}</Pill>
           <Pill>{formatLength(story.lengthSec)}</Pill>

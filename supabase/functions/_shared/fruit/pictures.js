@@ -26,6 +26,17 @@ const shotText = (shot) => SHOT_TEXT[shotOf(shot)];
 const FACE = "Framing: chest up or closer on the speaker, never a full-body shot; their head is a quarter to a third of the frame height, eyes and mouth sharp and clearly visible. Keep the room as a soft background.";
 const FACE_SHORT = "Chest up on the speaker, never full body; face large, sharp, toward the camera.";
 
+/**
+ * Every character's fruit head, named, background ones included ("Caught at
+ * Dinner": Piper Pine, a pineapple woman in the background, came out human).
+ */
+export function fruitHeads(cast, short = false) {
+  if (short) return `Fruit heads only: ${cast.map((c) => `${c.name.split(" ")[0]} ${c.fruit}`).join(", ")}; no humans.`;
+  const heads = cast.map((c) => `${c.name} has ${/^[aeiou]/i.test(c.fruit) ? "an" : "a"} ${c.fruit} head`);
+  const list = heads.length > 1 ? `${heads.slice(0, -1).join(", ")} and ${heads.at(-1)}` : heads[0];
+  return `Every character has a fruit head, in the background too: ${list}. No human heads, faces or hair on anyone.`;
+}
+
 /** Speaker in front and facing the camera; listeners behind, smaller. */
 function stage(speaker, others, short = false) {
   if (!others.length) return `${speaker.name} is alone in the frame, body and face turned toward the camera.`;
@@ -59,18 +70,27 @@ function build(tier, { story, scene, cast, location }) {
     `${aspect}. ${shotText(scene.shot)}. ${tier === 2 ? FACE_SHORT : FACE}`,
     `${withSubject(who(speaker), speaker, scene.action)}, looking ${scene.emotion}, mouth open mid-sentence, speaking toward the camera.`,
     stage(speaker, others, tier === 2),
-    others.length ? `${listeners} ${others.length > 1 ? "listen and react" : "listens and reacts"} silently, mouth${others.length > 1 ? "s" : ""} closed.` : "",
+    fruitHeads(cast, tier === 2),
+    others.length ? `${tier === 2 ? others.map((c) => c.name.split(" ")[0]).join(" and ") : listeners} ${others.length > 1 ? "listen and react" : "listens and reacts"} silently, mouth${others.length > 1 ? "s" : ""} closed.` : "",
     scene.placement ? `Positions: ${scene.placement.replace(/\.$/, "")}.` : "",
     `Setting: ${String(location.description).replace(/\.+$/, "")}.`,
     time,
     cast.map((c, i) => tier === 0
       ? `Image ${i + 1} is ${c.name}, the ${c.fruit} ${c.gender === "female" ? "woman" : "man"}: keep the fruit head, face and outfit (${c.outfit}) exactly as in the reference.`
       : `Image ${i + 1} is ${c.name}: keep the fruit head, face and outfit exactly as in the reference.`).join(" "),
+    location.plateUrl ? `Image ${cast.length + 1} is the empty set of this place: keep its layout, furniture and colors; the characters stand in it.` : "",
     `Only these ${cast.length} character${cast.length > 1 ? "s" : ""} in the frame.`,
     tier <= 1 ? STYLE : "Same look as the references.",
     NEGATIVE,
   ];
   return parts.filter(Boolean).join(" ");
+}
+
+/** Lengths of the three wordings (for tests and diagnostics). */
+export function scenePromptLengths({ story, scene, library }) {
+  const cast = frameCharacters(scene, library);
+  const location = (story.locations ?? []).find((l) => l.id === scene.locationId) ?? { description: "a simple indoor room" };
+  return [0, 1, 2].map((tier) => build(tier, { story, scene, cast, location }).length);
 }
 
 /** The scene description prompt (tiers: full, no outfits, minimal). Never cut. */
@@ -99,7 +119,10 @@ export function buildEditPrompt(instruction) {
 export function buildPictureRequest({ story, scene, library, mode, instruction, prompt: userPrompt }) {
   const m = FRUIT_MODELS.image;
   const [width, height] = m.sizes[story.aspect];
-  const refs = frameCharacters(scene, library).map((c) => c.ref_image_url ?? c.refImageUrl);
+  // Characters first, then the series location plate (same place in every episode).
+  const location = (story.locations ?? []).find((l) => l.id === scene.locationId);
+  const refs = [...frameCharacters(scene, library).map((c) => c.ref_image_url ?? c.refImageUrl), ...(location?.plateUrl ? [location.plateUrl] : [])]
+    .slice(0, FRUIT_MODELS.image.maxReferenceImages);
   let sent;
   let saved;
   let referenceImages = refs;

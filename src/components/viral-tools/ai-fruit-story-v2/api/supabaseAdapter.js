@@ -63,6 +63,7 @@ export function createSupabaseAdapter() {
     generateScenePictures: (storyId) => call("generateScenePictures", { storyId }),
     editScene: (sceneId, instruction) => call("editScene", { sceneId, instruction }),
     regenerateScene: (sceneId, prompt) => call("regenerateScene", { sceneId, prompt }),
+    regenerateSceneFree: (sceneId) => call("regenerateSceneFree", { sceneId }),
     animateAll: (storyId) => call("animateAll", { storyId }),
     regenerateClip: (sceneId) => call("regenerateClip", { sceneId }),
     buildFinal: (storyId, { captions } = {}) => call("buildFinal", { storyId, captions: captions !== false }),

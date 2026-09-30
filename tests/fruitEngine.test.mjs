@@ -310,3 +310,51 @@ test("stall check: a clip Runware is still rendering is NOT sent twice; refunded
   assert.equal([...db.jobs.values()][0].error_code, "PROVIDER_TIMEOUT");
   assert.equal(db.balance, 1000);
 });
+
+test("picture check: a failed picture is redrawn once at our cost; failing again it's kept with a warning", async () => {
+  const { createEngine: make } = await import("../supabase/functions/_shared/fruit/engine.js");
+  const db = createMemoryDb();
+  const sent = [];
+  const verdicts = [{ ok: false, problems: ["Piper Pine is drawn with a human head"] }, { ok: false, problems: ["Piper Pine is drawn with a human head"] }];
+  const eng = make({
+    store: db.store, media: { store: async ({ path }) => `https://cdn.test/${path}` }, env: {}, now: () => db.clock(), log: { error() {} },
+    uuid: (() => { let i = 0; return () => `00000000-0000-4000-8000-${String(++i).padStart(12, "0")}`; })(),
+    runware: { submit: async (env) => { sent.push(env); return { httpStatus: 200, body: ACK(env.taskUUID) }; }, poll: async () => ({ httpStatus: 200, body: { data: [] } }) },
+    checkPicture: async () => verdicts.shift(),
+  });
+  const storyId = db.addStory({ sceneCount: 1 });
+  pictures(db, storyId, 4);
+  await eng.kick({ storyId });
+  assert.equal(await eng.onResult(sent[0].taskUUID, IMG(sent[0].taskUUID)), "redrawn");
+  const [scene] = [...db.scenes.values()];
+  assert.equal(scene.image_status, "generating", "redrawn right away, same job");
+  assert.equal(sent.length, 2, "sent again");
+  assert.deepEqual(sent[1].positivePrompt, sent[0].positivePrompt);
+  assert.equal(db.balance, 1000 - 4, "the user paid once");
+  assert.equal(await eng.onResult(sent[1].taskUUID, IMG(sent[1].taskUUID)), "completed");
+  assert.equal(scene.image_status, "ready");
+  assert.equal(scene.image_check, "failed");
+  assert.match(scene.image_check_notes, /human head/);
+  assert.equal(sent.length, 2, "never a third draw");
+  const job = [...db.jobs.values()][0];
+  assert.ok(job.cost_usd > 0.06, "both draws are on our cost ledger");
+});
+
+test("picture check: a passing picture completes normally; a check that can't run never blocks", async () => {
+  const { createEngine: make } = await import("../supabase/functions/_shared/fruit/engine.js");
+  for (const check of [async () => ({ ok: true, problems: [] }), async () => { throw new Error("vision down"); }]) {
+    const db = createMemoryDb();
+    const sent = [];
+    const eng = make({
+      store: db.store, media: { store: async ({ path }) => path }, env: {}, now: () => db.clock(), log: { error() {} },
+      uuid: (() => { let i = 0; return () => `00000000-0000-4000-8000-${String(++i).padStart(12, "0")}`; })(),
+      runware: { submit: async (env) => { sent.push(env); return { httpStatus: 200, body: ACK(env.taskUUID) }; }, poll: async () => ({ httpStatus: 200, body: { data: [] } }) },
+      checkPicture: check,
+    });
+    const storyId = db.addStory({ sceneCount: 1 });
+    pictures(db, storyId, 4);
+    await eng.kick({ storyId });
+    assert.equal(await eng.onResult(sent[0].taskUUID, IMG(sent[0].taskUUID)), "completed");
+    assert.equal(sent.length, 1);
+  }
+});

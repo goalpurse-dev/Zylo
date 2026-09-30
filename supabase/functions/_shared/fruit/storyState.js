@@ -18,6 +18,7 @@ export const STEPS = Object.freeze({
   edit:          { from: ["pictures", "pictures_ready"], to: "pictures" },
   regenerate:    { from: ["pictures", "pictures_ready"], to: "pictures" },
   retry_picture: { from: ["pictures", "pictures_ready"], to: "pictures" },
+  free_regenerate: { from: ["pictures", "pictures_ready"], to: "pictures" },
   animate:       { from: ["pictures_ready"], to: "animating" },
   reclip:        { from: ["animating", "clips_ready", "final_ready"], to: "animating" },
   final:         { from: ["clips_ready", "final_ready"], to: "building" },
@@ -34,7 +35,8 @@ const TOO_LATE = "Scenes can't be changed after animating.";
 export function stepBlocker(step, story, scenes, scene) {
   const rule = STEPS[step];
   if (!rule) return "Unknown step.";
-  if (["edit", "regenerate", "retry_picture"].includes(step)) {
+  if (step === "free_regenerate" && scene && (scene.imageCheck?.status !== "failed" || !scene.imageCheck?.freeRegenerate)) return "This picture has no free regenerate.";
+  if (["edit", "regenerate", "retry_picture", "free_regenerate"].includes(step)) {
     if (!rule.from.includes(story.status)) return TOO_LATE;
     if (scene && ["queued", "generating"].includes(scene.imageStatus)) return "This picture is still being made.";
     return null;
@@ -80,6 +82,13 @@ export function toScene(row) {
     clipStatus: row.clip_status,
     clipUrl: row.clip_url ?? null,
     error: row.error ?? null,
+    // Automatic picture check: "none" | "passed" | "failed" (+ what was wrong, and
+    // whether the one free regenerate for a flagged picture is still available).
+    imageCheck: {
+      status: row.image_check ?? "none",
+      notes: row.image_check_notes ?? null,
+      freeRegenerate: row.image_check === "failed" && !row.free_regen_used,
+    },
   };
 }
 
@@ -95,6 +104,7 @@ export function toStory(row, sceneRows, spentCredits = null) {
     id: row.id,
     title: row.title,
     castIds: row.cast_ids,
+    castRoles: row.cast_roles ?? {},
     spentCredits,
     quality: row.quality,
     lengthSec: row.length_sec,

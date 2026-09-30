@@ -15,6 +15,17 @@ const good = {
   title: "Glass Walls",
   logline: "A receptionist with nineteen years of office secrets starts selling them, and the boss is her first customer.",
   bible: "Gloria Grape is the receptionist who has seen everything for nineteen years. Rick Crisp is the married boss hiding an affair. Bella Berry is the new assistant caught in the middle. Linda Lemon runs HR and wants Gloria gone. Gloria's secret notebook drives every episode.",
+  locations: [
+    { id: "s1", description: "The glass-walled corner office with a big desk and the city skyline behind it" },
+    { id: "s2", description: "The front reception desk with a ringing phone, a candy bowl and a visitor log" },
+  ],
+  characters: [
+    { id: "gloria", role: "the receptionist who knows everything", prop: "a pink notebook", catchphrase: "Nineteen years, honey." },
+    { id: "rick", role: "the boss hiding an affair", prop: "a second phone", catchphrase: "Let's circle back." },
+    { id: "bella", role: "the new assistant caught between", prop: "a coffee tray", catchphrase: "I just started here!" },
+    { id: "linda", role: "HR, out to get Gloria", prop: "a red clipboard", catchphrase: "Noted." },
+  ],
+  setups: [{ clue: "Rick's second phone buzzes in his desk drawer during the meeting", plantedIn: 1, paidOffIn: 3 }],
   episodes: [ep(1, "Gloria"), ep(2, "Rick and Bella"), ep(3, "Linda")],
 };
 
@@ -25,7 +36,8 @@ test("series prompt: cast, the user's idea fenced as data, opener, tone and epis
   assert.match(user, /<<<\nAn office where/);
   assert.match(user, /EPISODE 1 OPENS ON: Caught at the office/);
   assert.match(user, /Write exactly 3 episodes\./);
-  assert.deepEqual(seriesSchema().required, ["title", "logline", "bible", "episodes"]);
+  assert.deepEqual(seriesSchema().required, ["title", "logline", "bible", "locations", "characters", "setups", "episodes"]);
+  assert.ok(user.includes("Wears (fixed): a leopard-print cardigan"));
 });
 
 test("outline validation: counts, lengths, every cast member has a role and appears", () => {
@@ -75,4 +87,50 @@ test("episodes unlock in order: made, then exactly one next", () => {
   const st = episodeStatuses(eps, new Map([["s1", "final_ready"], ["s2", "pictures_ready"]]));
   assert.deepEqual(st.map((e) => e.status), ["made", "next", "locked"]);
   assert.equal(st[1].storyId, "s2");
+});
+
+test("series bible: locations s1.., a role + prop + catchphrase per character, setups planted before they pay off", async () => {
+  const { setupsFor } = await import("../supabase/functions/_shared/fruit/series.js");
+  const { outline } = validateSeriesOutline(good, input);
+  assert.deepEqual(outline.locations.map((l) => l.id), ["s1", "s2"]);
+  assert.equal(outline.characters.find((c) => c.id === "rick").prop, "a second phone");
+  assert.deepEqual(setupsFor(outline.setups, 1), { plant: ["Rick's second phone buzzes in his desk drawer during the meeting"], payOff: [] });
+  assert.deepEqual(setupsFor(outline.setups, 3).payOff.length, 1);
+  const bad = validateSeriesOutline({ ...good, locations: [{ id: "x", description: "a room" }], characters: good.characters.slice(0, 3), setups: [{ clue: "the phone buzzes in the drawer again", plantedIn: 3, paidOffIn: 2 }] }, input).errors.join(" | ");
+  assert.match(bad, /use 2 to 5 series locations/);
+  assert.match(bad, /location ids must be s1, s2, s3/);
+  assert.match(bad, /characters: give linda a role, prop and catchphrase/);
+  assert.match(bad, /plantedIn must be an earlier episode than paidOffIn/);
+});
+
+test("episode prompt carries the series bible: locations to reuse, props + catchphrases, clues due, where the last episode ended", () => {
+  const series = {
+    title: good.title, logline: good.logline, bible: good.bible, previous: [{ number: 1, ...good.episodes[0] }], episode: { number: 2, ...good.episodes[1] },
+    locations: good.locations, characters: good.characters, setups: { plant: [], payOff: ["the second phone buzzes in the drawer"] },
+    lastEnd: { characters: [{ id: "gloria", where: "at the office door", feeling: "smug" }, { id: "rick", where: "behind his desk", feeling: "panicked" }], props: ["the second phone"] },
+  };
+  const { user } = buildPlannerPrompt({ source: "episode", cast, lengthSec: 15, quality: "v2", series });
+  assert.ok(user.includes("SERIES LOCATIONS"));
+  assert.ok(user.includes("- s1: The glass-walled corner office"));
+  assert.ok(user.includes('- rick: the boss hiding an affair; prop: a second phone; catchphrase: "Let\'s circle back."'));
+  assert.ok(user.includes("PAY OFF THIS CLUE in this episode (it was planted earlier): the second phone buzzes in the drawer"));
+  assert.ok(user.includes("WHERE THE LAST EPISODE ENDED (scene 1 continues from exactly here): gloria: at the office door, smug; rick: behind his desk, panicked. Props in play: the second phone."));
+});
+
+test("an episode's locations must point at series locations (or be new); endState is returned for the next episode", () => {
+  const loc = { id: "loc1", description: "A glass-walled corner office with a desk, city skyline behind the windows", timeOfDay: "late afternoon", lighting: "warm golden sunlight through the glass" };
+  const scenes = [
+    { speakerId: "gloria", line: "Nineteen years at that desk, and nobody knocks first.", presentIds: ["gloria", "rick"], locationId: "loc1", action: "leans on the doorframe", emotion: "smug", shot: "chest-up", placement: "", beat: "Caught" },
+    { speakerId: "rick", line: "Gloria, whatever you think you saw, you didn't.", presentIds: ["rick", "gloria"], locationId: "loc1", action: "straightens his tie", emotion: "panicked", shot: "close-up", placement: "", beat: "Denial" },
+    { speakerId: "gloria", line: "Then you won't mind me telling Linda, Rick.", presentIds: ["gloria", "rick"], locationId: "loc1", action: "taps her phone", emotion: "gleeful", shot: "chest-up", placement: "", beat: "Threat" },
+  ];
+  const roles = [{ id: "gloria", role: "the receptionist" }, { id: "rick", role: "the boss" }];
+  const endState = { characters: [{ id: "gloria", where: "in the office doorway", feeling: "gleeful" }], props: ["her phone"] };
+  const ctx = { cast, sceneCount: 3, quality: "v2", lengthSec: 15, source: "episode", seriesLocationIds: ["s1", "s2"] };
+  const ok = validatePlan({ title: "The Door", locations: [{ ...loc, seriesLocationId: "s1" }], roles, scenes, endState }, ctx);
+  assert.deepEqual(ok.errors, []);
+  assert.equal(ok.plan.locations[0].seriesLocationId, "s1");
+  assert.deepEqual(ok.plan.endState, endState);
+  const bad = validatePlan({ title: "The Door", locations: [{ ...loc, seriesLocationId: "s9" }], roles, scenes, endState }, ctx);
+  assert.match(bad.errors.join(" | "), /seriesLocationId must be one of s1, s2 or ""/);
 });

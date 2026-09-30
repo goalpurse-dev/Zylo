@@ -93,6 +93,14 @@ Each location has:
 - timeOfDay: when it is (e.g. "late afternoon", "night"). Every scene at that location happens at this time of day.
 - lighting: the light (e.g. "warm sunlight through the tall windows"), the same in every scene there.
 Ids are "loc1", "loc2", "loc3".
+Outfits never change (each character wears the same clothes in every video). Pick locations that suit what the cast wears: Kai the lifeguard in swim shorts belongs at a beach, pool or boardwalk, not a fancy restaurant. If the idea's setting clashes with someone's outfit, move the scene somewhere that fits, or make the clash part of the joke.
+
+ROLES
+roles: for each cast member, their role in THIS story in 2 to 5 words (e.g. "the jealous sister", "the boss hiding an affair"), not their library tag.
+
+END STATE
+endState: where the story ends. characters: for each character in the last scene, where they are (e.g. "at the restaurant door") and how they feel (1 to 3 words). props: objects in play at the end (e.g. "the second phone"). The next episode starts from here.
+seriesLocationId (on each location): "" unless you are told the series locations; then the id of the one it is.
 
 TITLE
 2 to 6 words, catchy, no clickbait punctuation.
@@ -106,7 +114,7 @@ Return only the JSON object for the requested schema.`;
 
 function characterBlock(c) {
   const age = Number.isFinite(c.age) ? `${c.age}-year-old ` : "";
-  return `- ${c.id}: ${c.name}, a ${age}${c.fruit} ${c.gender === "female" ? "woman" : "man"}${c.collection === "uk-roadman" ? " (UK roadman, London)" : ""}. ${c.tag}: ${c.role}. Voice (how they sound): ${c.voiceStyle ?? c.voice_style}.`;
+  return `- ${c.id}: ${c.name}, a ${age}${c.fruit} ${c.gender === "female" ? "woman" : "man"}${c.collection === "uk-roadman" ? " (UK roadman, London)" : ""}. ${c.tag}: ${c.role}. Wears (fixed): ${c.outfit ?? "their usual outfit"}. Voice (how they sound): ${c.voiceStyle ?? c.voice_style}.`;
 }
 
 /**
@@ -134,6 +142,18 @@ export function buildPlannerPrompt(p) {
     if (s.previous?.length) parts.push(`Scene 1 must pick up directly from the last cliffhanger: ${s.previous.at(-1).cliffhanger}`);
     parts.push(`The last scene must deliver this episode's cliffhanger: ${s.episode.cliffhanger}`);
     parts.push("This is one episode of a series: use the characters this episode needs (not every series character has to appear), keep every role exactly as in the bible, and never recap earlier episodes.");
+    if (s.locations?.length) {
+      parts.push(`SERIES LOCATIONS (places this series keeps coming back to). Set each of your locations' seriesLocationId to the one it is, keep its fixed look, and describe any change of state in your description (e.g. "same office, now messy, at sunset"). Use "" only for a place the series hasn't been to:\n${s.locations.map((l) => `- ${l.id}: ${l.description}`).join("\n")}`);
+    }
+    if (s.characters?.length) {
+      parts.push(`CHARACTERS IN THIS SERIES (roles fixed; bring back props and catchphrases naturally, not in every line or every episode):\n${s.characters.map((c) => `- ${c.id}: ${c.role}; prop: ${c.prop}; catchphrase: "${c.catchphrase}"`).join("\n")}`);
+    }
+    if (s.setups?.plant?.length) parts.push(`PLANT THIS CLUE in this episode (visibly, without explaining it): ${s.setups.plant.join("; ")}`);
+    if (s.setups?.payOff?.length) parts.push(`PAY OFF THIS CLUE in this episode (it was planted earlier): ${s.setups.payOff.join("; ")}`);
+    if (s.lastEnd) {
+      const who = (s.lastEnd.characters ?? []).map((c) => `${c.id}: ${c.where}, ${c.feeling}`).join("; ");
+      parts.push(`WHERE THE LAST EPISODE ENDED (scene 1 continues from exactly here): ${who}${s.lastEnd.props?.length ? `. Props in play: ${s.lastEnd.props.join(", ")}` : ""}.`);
+    }
   }
   if (p.source === "script") {
     parts.push(`THE USER WROTE THESE LINES. They are final: do not write, change or reorder lines. Only stage each one.\n${p.script.map((r, i) => `${i + 1}. ${r.speakerId}: ${r.line}`).join("\n")}`);
@@ -157,13 +177,27 @@ export function plannerSchema(castIds, { script = false } = {}) {
     placement: { type: "string" },
     beat: { type: "string" },
   };
-  const locProps = { id: { type: "string" }, description: { type: "string" }, timeOfDay: { type: "string" }, lighting: { type: "string" } };
+  const locProps = { id: { type: "string" }, description: { type: "string" }, timeOfDay: { type: "string" }, lighting: { type: "string" }, seriesLocationId: { type: "string" } };
+  const endChar = { id: { type: "string", enum: castIds }, where: { type: "string" }, feeling: { type: "string" } };
   return {
     type: "object",
     additionalProperties: false,
-    required: ["title", "locations", "scenes"],
+    required: ["title", "locations", "roles", "scenes", "endState"],
     properties: {
       title: { type: "string" },
+      endState: {
+        type: "object",
+        additionalProperties: false,
+        required: ["characters", "props"],
+        properties: {
+          characters: { type: "array", items: { type: "object", additionalProperties: false, required: Object.keys(endChar), properties: endChar } },
+          props: { type: "array", items: { type: "string" } },
+        },
+      },
+      roles: {
+        type: "array",
+        items: { type: "object", additionalProperties: false, required: ["id", "role"], properties: { id: { type: "string", enum: castIds }, role: { type: "string" } } },
+      },
       locations: {
         type: "array",
         items: { type: "object", additionalProperties: false, required: Object.keys(locProps), properties: locProps },
@@ -182,7 +216,7 @@ const words = (s) => wordCount(s);
  * Validates planner output. Returns {plan, errors}; plan is normalized and, in
  * script mode, carries the user's lines unchanged.
  */
-export function validatePlan(out, { source, cast, script, sceneCount, quality, lengthSec }) {
+export function validatePlan(out, { source, cast, script, sceneCount, quality, lengthSec, seriesLocationIds = [] }) {
   const errors = [];
   const castIds = cast.map((c) => c.id);
   const allowed = videoModel(quality).durations;
@@ -197,6 +231,8 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     const d = String(l?.description ?? "").trim();
     if (!/^loc[1-3]$/.test(l?.id ?? "") || locIds.has(l.id)) errors.push(`location ids must be loc1, loc2, loc3 (got "${l?.id}")`);
     locIds.add(l?.id);
+    const sid = String(l?.seriesLocationId ?? "").trim();
+    if (sid && !seriesLocationIds.includes(sid)) errors.push(`location ${l?.id}: seriesLocationId must be one of ${seriesLocationIds.join(", ") || "(none: use \"\")"} or ""`);
     if (words(d) < 5 || words(d) > 30) errors.push(`location ${l?.id} description must be 8 to 25 words (got ${words(d)})`);
     const tod = String(l?.timeOfDay ?? "").trim();
     const light = String(l?.lighting ?? "").trim();
@@ -254,9 +290,24 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
   } else if (source !== "script" && durations.length && total < 0.75 * lengthSec) {
     errors.push(`the clips add up to only ${total} seconds; aim for close to ${lengthSec} (make lines a little longer, never past ${lengthSec} in total)`);
   }
+  // Each character's role in THIS story (shown on the cast chips).
+  const roles = {};
+  for (const r of Array.isArray(out?.roles) ? out.roles : []) {
+    const role = String(r?.role ?? "").trim().replace(/\.$/, "");
+    if (castIds.includes(r?.id) && role && words(role) <= 6) roles[r.id] = role;
+  }
+  const inScenes = [...seen].filter((id) => castIds.includes(id));
+  const noRole = inScenes.filter((id) => !roles[id]);
+  if (noRole.length) errors.push(`roles: give ${noRole.join(", ")} a role in this story (2 to 5 words)`);
   const plan = {
+    roles,
     title,
-    locations: locations.map((l) => ({ id: l.id, description: String(l.description ?? "").trim(), timeOfDay: String(l.timeOfDay ?? "").trim(), lighting: String(l.lighting ?? "").trim() })),
+    locations: locations.map((l) => ({ id: l.id, description: String(l.description ?? "").trim(), timeOfDay: String(l.timeOfDay ?? "").trim(), lighting: String(l.lighting ?? "").trim(), seriesLocationId: String(l.seriesLocationId ?? "").trim() })),
+    // Where the story ends: who is where, how they feel, props in play (the next episode starts here).
+    endState: {
+      characters: (out?.endState?.characters ?? []).filter((c) => castIds.includes(c?.id)).map((c) => ({ id: c.id, where: String(c.where ?? "").trim(), feeling: String(c.feeling ?? "").trim() })),
+      props: (out?.endState?.props ?? []).map((x) => String(x).trim()).filter(Boolean).slice(0, 6),
+    },
     scenes: normalized.map((s, i) => ({ ...s, durationSec: durations[i] ?? null })),
     lengthSec: total,
   };
@@ -272,7 +323,7 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
 export async function runPlanner(p) {
   const { system, user, sceneCount } = buildPlannerPrompt(p);
   const schema = plannerSchema(p.cast.map((c) => c.id), { script: p.source === "script" });
-  const ctx = { source: p.source, cast: p.cast, script: p.script, sceneCount, quality: p.quality, lengthSec: p.lengthSec };
+  const ctx = { source: p.source, cast: p.cast, script: p.script, sceneCount, quality: p.quality, lengthSec: p.lengthSec, seriesLocationIds: (p.series?.locations ?? []).map((l) => l.id) };
   const calls = [];
   const first = await p.llm({ system, user, schema, name: "story_plan", purpose: "planner" });
   calls.push(first);

@@ -17,7 +17,7 @@ const COPY = {
 };
 
 /** Scenes / clips grid for a story that isn't final yet. */
-export default function StoryBoard({ story, byId, prices, onEdit, onRegenerate, onRegenerateClip }) {
+export default function StoryBoard({ story, byId, prices, onEdit, onRegenerate, onRegenerateClip, onRegenerateFree, acting = null }) {
   const inClips = ["animating", "clips_ready", "building"].includes(story.status);
   const n = story.scenes.length;
   const done = story.scenes.filter((s) => (inClips ? s.clipStatus : s.imageStatus) === "ready").length;
@@ -46,7 +46,7 @@ export default function StoryBoard({ story, byId, prices, onEdit, onRegenerate, 
         </p>
       )}
 
-      {story.castIds.length > 0 && <CharacterRefs castIds={story.castIds} byId={byId} />}
+      {story.castIds.length > 0 && <CharacterRefs castIds={story.castIds} byId={byId} roles={story.castRoles} />}
 
       <div className={cx("grid gap-3", story.aspect === "16:9" ? "grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3" : "grid-cols-2 md:grid-cols-3 2xl:grid-cols-4")}>
         {story.scenes.map((scene) => (
@@ -60,6 +60,8 @@ export default function StoryBoard({ story, byId, prices, onEdit, onRegenerate, 
             onEdit={() => onEdit(scene)}
             onRegenerate={() => onRegenerate(scene)}
             onRegenerateClip={() => onRegenerateClip(scene)}
+            onRegenerateFree={onRegenerateFree ? () => onRegenerateFree(scene) : null}
+            freeBusy={acting === `free-${scene.id}`}
           />
         ))}
       </div>
@@ -99,7 +101,7 @@ function SlowNotice({ busy, done, total, what }) {
   );
 }
 
-function CharacterRefs({ castIds, byId }) {
+function CharacterRefs({ castIds, byId, roles = {} }) {
   return (
     <details className="group rounded-2xl border border-white/[0.07] bg-[#111315] px-4">
       <summary className={cx("flex cursor-pointer list-none items-center gap-3 py-3 text-[12px] font-bold text-white/80 [&::-webkit-details-marker]:hidden", FOCUS)}>
@@ -120,7 +122,7 @@ function CharacterRefs({ castIds, byId }) {
               <img src={c.refImageUrl} alt={`${c.name} reference`} className="h-[58px] w-[44px] rounded-lg object-cover object-top" />
               <span>
                 <span className="block text-[12px] font-black text-white">{c.name}</span>
-                <span className="block max-w-[220px] text-[10px] font-semibold leading-relaxed text-white/40">{c.tag}. Locked reference, same look in every scene.</span>
+                <span className="block max-w-[220px] text-[10px] font-semibold leading-relaxed text-white/40">{roles?.[id] ? `${roles[id][0].toUpperCase()}${roles[id].slice(1)} in this story.` : `${c.tag}.`} Same look in every scene.</span>
               </span>
             </li>
           );
@@ -130,7 +132,7 @@ function CharacterRefs({ castIds, byId }) {
   );
 }
 
-function SceneCard({ scene, story, byId, prices, inClips, onEdit, onRegenerate, onRegenerateClip }) {
+function SceneCard({ scene, story, byId, prices, inClips, onEdit, onRegenerate, onRegenerateClip, onRegenerateFree, freeBusy }) {
   const reduce = useReducedMotion();
   // Remember whether this picture was being painted while we watched, so the
   // "developing" reveal only plays for pictures that just arrived.
@@ -232,6 +234,17 @@ function SceneCard({ scene, story, byId, prices, inClips, onEdit, onRegenerate, 
         )}
 
       </div>
+
+      {scene.imageCheck?.status === "failed" && scene.imageStatus === "ready" && (
+        <div role="alert" className="mx-2 mt-2 rounded-xl border border-amber-300/25 bg-amber-300/[0.07] px-2.5 py-2 text-[10px] font-semibold leading-relaxed text-amber-100">
+          <span className="font-black">Our check found a problem:</span> {scene.imageCheck.notes || "something looks off"}.
+          {scene.imageCheck.freeRegenerate && !inClips && onRegenerateFree && (
+            <button type="button" onClick={onRegenerateFree} disabled={freeBusy} className={cx("mt-1.5 block w-full rounded-lg bg-amber-300 px-2 py-1.5 text-[11px] font-black text-[#1b1406] transition enabled:hover:bg-amber-200 disabled:opacity-50", FOCUS)}>
+              {freeBusy ? "Starting…" : "Regenerate free (once)"}
+            </button>
+          )}
+        </div>
+      )}
 
       {story.readOnly ? (
         scene.line && <p className="px-3 pb-3 pt-2.5 text-[11px] leading-relaxed text-white/55">{scene.line}</p>
