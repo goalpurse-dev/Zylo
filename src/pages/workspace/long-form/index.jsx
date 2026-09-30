@@ -127,7 +127,7 @@ export default function LongForm() {
           full width below. Mobile: create -> Your videos -> Made with Zyvo. */}
       <div className="grid gap-4 lg:grid-cols-[3fr_2fr] lg:gap-5">
         <div className="relative overflow-hidden rounded-[22px] border border-white/[0.08] bg-white/[0.03] lg:col-start-1 lg:row-start-1" data-testid="create-card">
-          <div className="pointer-events-none absolute inset-x-8 top-0 z-10 h-px bg-gradient-to-r from-transparent via-lime-300/40 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-8 top-0 z-10 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
           <div className="relative aspect-[16/8] w-full max-w-full lg:aspect-[21/9]">
             <LazyLoopVideo src={HUNT_CLIP.src} poster={HUNT_CLIP.poster} className="absolute inset-0" />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0f1112] to-transparent" />

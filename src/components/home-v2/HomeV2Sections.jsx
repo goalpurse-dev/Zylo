@@ -135,8 +135,7 @@ function PathCard({ onClick, media, icon: Icon, name, line, cta, primary, isNew,
         primary ? "border-lime-300/30 hover:border-lime-300/55" : "border-white/10 hover:border-white/25"}`}>
       <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-[1.03]">{media}</div>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-black/90 via-black/45 to-transparent" />
-      {primary && <div className="pointer-events-none absolute -bottom-16 left-1/2 h-40 w-3/4 -translate-x-1/2 rounded-full bg-lime-300/15 blur-3xl" />}
-      {isNew && <NewPill className="absolute left-4 top-4 shadow-[0_0_18px_rgba(190,242,100,.35)]" />}
+      {isNew && <NewPill className="absolute left-4 top-4" />}
       <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 sm:p-5 md:p-6">
         <div className="flex min-w-0 items-center gap-3">
           <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-[14px] border backdrop-blur-md ${primary ? "border-lime-300/35 bg-lime-300/15 text-lime-300" : "border-white/15 bg-white/10 text-white"}`}>
@@ -187,7 +186,6 @@ export function PathCards() {
 function FanArt() {
   return (
     <div className="absolute inset-0 bg-[#0C0F0D]">
-      <div className="absolute left-[42%] top-[38%] h-40 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-lime-300/20 blur-3xl" />
       {HUNT_THUMBS.map((src, i) => (
         <img key={src} src={src} alt="" loading="lazy"
           className={`absolute top-[14%] w-[40%] rounded-[10px] border border-white/20 shadow-[0_14px_34px_rgba(0,0,0,.55)] ${
@@ -211,8 +209,6 @@ function Coin({ cx, cy, rx = 24, ry = 9, h = 7 }) {
 function CreditsArt() {
   return (
     <div className="absolute inset-0 overflow-hidden bg-[#0C0D10]">
-      <div className="absolute -right-10 -top-16 h-56 w-56 rounded-full bg-[#7A3BFF]/30 blur-3xl" />
-      <div className="absolute right-10 top-8 h-32 w-48 rounded-full bg-lime-300/15 blur-3xl" />
       <svg viewBox="0 0 320 170" className="absolute -right-2 top-0 h-[88%] w-auto" aria-hidden="true">
         <defs>
           <linearGradient id="coinTop" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ECFCCB" /><stop offset=".45" stopColor="#BEF264" /><stop offset="1" stopColor="#84CC16" /></linearGradient>
@@ -325,7 +321,7 @@ export function JumpBackInV2() {
             <div className="relative aspect-video overflow-hidden bg-[#0d0f10]">
               {it.image
                 ? <img src={it.image} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
-                : <div className="grid h-full place-items-center bg-[radial-gradient(circle_at_50%_40%,rgba(190,242,100,.12),transparent_60%)] text-lime-300/60"><Clapperboard className="h-8 w-8" strokeWidth={1.5} /></div>}
+                : <div className="grid h-full place-items-center text-white/30"><Clapperboard className="h-8 w-8" strokeWidth={1.5} /></div>}
               <span className={`absolute left-2.5 top-2.5 rounded-md border px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide backdrop-blur-sm ${
                 it.kind === "long" ? "border-lime-300/35 bg-black/60 text-lime-300" : "border-white/15 bg-black/60 text-white/80"}`}>{it.kind === "long" ? "Long" : "Short"}</span>
             </div>
@@ -430,8 +426,7 @@ export function FeaturedTemplate() {
   const go = () => { trackLaunch("featured_template", { placement: "home_featured", target: t.path }); navigate(t.path); };
   return (
     <section className={`relative mt-10 w-full overflow-hidden py-8 md:py-10 ${SECTION_X}`} data-testid="featured-template">
-      <div className="pointer-events-none absolute inset-x-[8%] top-0 h-px bg-gradient-to-r from-transparent via-lime-300/50 to-transparent" />
-      <div className="pointer-events-none absolute left-[8%] top-0 h-64 w-64 rounded-full bg-lime-300/[0.07] blur-[90px]" />
+      <div className="pointer-events-none absolute inset-x-[8%] top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
       <div className="relative mx-auto max-w-[1380px]">
         <div className="mb-5 flex flex-wrap items-end justify-between gap-3 md:mb-6">
           <div>

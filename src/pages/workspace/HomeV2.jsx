@@ -19,10 +19,10 @@ export default function HomeV2() {
 
   return (
     <div className="flex-1 pb-24 lg:pb-12">
-      {/* HERO: dark ground, a soft purple glow left and lime glow right behind the headline */}
+      {/* HERO: near-black ground, one soft neutral spotlight from the top
+          center (no tint, no motion) that fades out above the path cards. */}
       <div className="relative isolate flex flex-col overflow-hidden bg-[#090A0A] pb-2">
-        <div className="pointer-events-none absolute -left-40 -top-24 -z-10 h-[520px] w-[720px] rounded-full bg-[radial-gradient(closest-side,rgba(122,59,255,0.22),transparent)]" />
-        <div className="pointer-events-none absolute -right-40 -top-10 -z-10 h-[480px] w-[680px] rounded-full bg-[radial-gradient(closest-side,rgba(190,242,100,0.10),transparent)]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[80px] bg-[radial-gradient(ellipse_75%_100%_at_50%_0%,rgba(255,255,255,0.09),rgba(255,255,255,0.035)_50%,transparent_100%)] md:h-[140px] md:bg-[radial-gradient(ellipse_40%_100%_at_50%_0%,rgba(255,255,255,0.09),rgba(255,255,255,0.035)_50%,transparent_100%)]" data-testid="hero-spotlight" />
         <Glow compact />
         <PathCards />
       </div>

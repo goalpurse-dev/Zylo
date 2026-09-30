@@ -138,7 +138,7 @@ export default function ToolShell({ onClose }) {
       <DesktopWorkspacePanel open={workspaceOpen} onClose={() => setWorkspaceOpen(false)} pinnedIds={pinnedIds} onTogglePin={togglePin} pinLimitReached={pinLimitReached} />
       <div className="h-full p-3 pr-2">
         <div className="zyvo-compact-shell relative flex h-full flex-col overflow-hidden rounded-[24px] px-3 py-4">
-          <div className="pointer-events-none absolute inset-x-7 top-0 h-px bg-gradient-to-r from-transparent via-lime-300/35 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-7 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
           <div className="relative mb-6 flex items-center gap-2.5 px-1.5">
             <img src={Logo} alt="Zyvo" className="h-8 w-8 object-contain" />
