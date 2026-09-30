@@ -9,7 +9,7 @@ import {
 } from "../supabase/functions/_shared/stripePlanPrices.js";
 import {
   formatMoney, planPriceView, maxSavingPercent, tiersFromRows, longFormOutputs, bestLongFormTier, allowedLongFormTiers,
-  recommendPlan, LONG_FORM_LENGTHS,
+  recommendPlan, LONG_FORM_LENGTHS, defaultLongFormTier,
 } from "../src/lib/pricingMath.js";
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
@@ -102,6 +102,7 @@ test("Long Form counts per plan: rounded down, — where the plan lacks the tier
   assert.deepEqual(allowedLongFormTiers(tiers, "affiliate"), ["v2"]);
   assert.equal(bestLongFormTier(tiers, "pro"), "v3");
   assert.equal(bestLongFormTier(tiers, "free"), null);
+  assert.deepEqual(["starter", "pro", "generative", "affiliate", "free"].map((p) => defaultLongFormTier(tiers, p)), ["v2", "v3", "v3", "v2", null], "Setup default: V4 is never pre-picked");
 });
 
 test("plan finder: the cheapest plan that covers the credits and every chosen tier", () => {
@@ -123,7 +124,7 @@ test("the page says only what data backs: no fake counters, urgency, ratings, te
   assert.match(page, /Every number on this page comes from today&apos;s live prices/);
   assert.match(page, /Recommended: unlocks V3/);
   assert.match(page, /Made with Zyvo/);
-  assert.match(page, /Prices include VAT/);
+  assert.doesNotMatch(page, /VAT/, "not VAT-registered: no VAT claims");
   assert.doesNotMatch(page, /\d+s AI Fruit|complete 20 seconds/, "hyphenated: 20-second");
 });
 

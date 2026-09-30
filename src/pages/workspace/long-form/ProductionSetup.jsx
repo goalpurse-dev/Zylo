@@ -21,7 +21,7 @@ import { LongFormCreationHeader } from "./shared";
 import GuestGenerateModal from "../../../components/ImageGenerator/GuestGenerateModal";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import usePlanCode from "../../../hooks/usePlanCode";
-import { useLongFormTiers, longFormTierAllowed, bestLongFormTier } from "../../../lib/longFormTiers";
+import { useLongFormTiers, longFormTierAllowed, defaultLongFormTier } from "../../../lib/longFormTiers";
 import { PLAN_LABELS } from "../../../lib/planGating";
 import { watchJob } from "../../../lib/jobs";
 import { REGENERATE_IDEAS_COST, REFRESH_THUMBNAILS_COST } from "../../../lib/longFormIdeaThumbnails";
@@ -1121,7 +1121,8 @@ export default function ProductionSetup() {
   const reducedMotion = usePrefersReducedMotion();
 
   // Tier access: signed-in users can only pick tiers their plan includes (the
-  // server refuses the rest); the default is the best tier the plan allows.
+  // server refuses the rest). The default is V3 where the plan has it (Pro,
+  // Generative) and V2 on Starter; V4 is only ever the user's own pick.
   // Guests see every tier unlocked and sign up on Generate.
   const account = usePlanCode();
   const longFormTiers = useLongFormTiers();
@@ -1129,7 +1130,7 @@ export default function ProductionSetup() {
   const tierTouchedRef = useRef(false);
   useEffect(() => {
     if (!account.signedIn || longFormTiers.status !== "ready") return;
-    const best = bestLongFormTier(longFormTiers.tiers, account.plan);
+    const best = defaultLongFormTier(longFormTiers.tiers, account.plan);
     if (!best) return;
     if (!tierTouchedRef.current || !longFormTierAllowed(longFormTiers.tiers, renderTier, account.plan)) {
       tierTouchedRef.current = true;

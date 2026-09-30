@@ -45,7 +45,6 @@ function BillingToggle({ billing, setBilling }) {
           </button>
         ))}
       </div>
-      {prices.status === "ready" && prices.prices.vatIncluded && <p className="text-[11.5px] text-white/40">Prices include VAT.</p>}
     </div>
   );
 }

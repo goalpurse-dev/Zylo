@@ -243,8 +243,8 @@ export default function TopRow({ onMenuClick, title }) {
                 )}
               </div>
 
-              {/* Add Credits — shown when user has credits to top up */}
-              {credits > 1 && (
+              {/* Add Credits (credit packs) — paid plans only; free accounts see Upgrade */}
+              {credits > 1 && planCode !== "free" && (
                 <button
                   onClick={() => navigate("/workspace/pricing")}
                   className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#14161C] border border-white/10 hover:border-[#7A3BFF]/50 hover:bg-[#181A22] text-white/70 hover:text-white text-sm font-medium transition"

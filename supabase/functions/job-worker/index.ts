@@ -89,6 +89,9 @@ const PLAN_GATED_TOOLS: Record<string, string> = {
 
 function planTierIndex(planCode: string | null | undefined): number {
   const code = String(planCode ?? "").toLowerCase().trim();
+  // Affiliates get the entry (V2) tier of every template: Starter level for
+  // min_plan checks, still below Pro/Generative (same as lib/planGating.js).
+  if (code === "affiliate") return 1;
   const idx = PLAN_TIER_ORDER.indexOf(code);
   return idx === -1 ? 0 : idx; // unknown/guest codes are treated as the lowest tier
 }
@@ -121,12 +124,9 @@ async function isToolAllowedForUser(
 
   const userPlan = String((profile as any)?.plan_code ?? "free").toLowerCase().trim();
 
-  // Affiliates get every template (every tool_key not in PLAN_GATED_TOOLS —
-  // i.e. every v2 tier — is unconditionally allowed above, before this
-  // function is even reached), but not the paid v3/v4 tiers: "affiliate"
-  // isn't in PLAN_TIER_ORDER, so planTierIndex falls back to 0 (same as
-  // "free"), which is below every requiredPlan in PLAN_GATED_TOOLS
-  // (pro/generative) — no special case needed here.
+  // Template V2 keys require "starter" (tool_prices.min_plan, 2026-10-01), so
+  // free accounts are refused. Affiliates rank as Starter (planTierIndex): they
+  // keep every template's V2 tier but not the paid V3/V4 tiers.
   const allowed = planTierIndex(userPlan) >= planTierIndex(requiredPlan);
   return { allowed, userPlan, requiredPlan };
 }

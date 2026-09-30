@@ -9,7 +9,7 @@ import { supabase } from "./supabaseClient";
 import { LONG_FORM_TIERS, tiersFromRows } from "./pricingMath";
 
 export {
-  LONG_FORM_TIERS, tiersFromRows, longFormPlanRank, longFormTierAllowed, allowedLongFormTiers, bestLongFormTier, longFormVideoCredits,
+  LONG_FORM_TIERS, tiersFromRows, longFormPlanRank, longFormTierAllowed, allowedLongFormTiers, bestLongFormTier, defaultLongFormTier, longFormVideoCredits,
 } from "./pricingMath";
 
 const TTL_MS = 10 * 60 * 1000;

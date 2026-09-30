@@ -20,59 +20,80 @@ function Heading({ eyebrow, children, sub }) {
 }
 
 /**
- * Real example videos, each made with Zyvo. An entry without a public `src`
- * is not shown (the Long Form sample needs a public copy first).
+ * Real example videos, each made with Zyvo (the two Long Form ones are the
+ * first 60 s of real finished videos, copied to public-assets/pricing).
  */
-export const EXAMPLES = [
-  {
-    id: "fruit",
-    tool: "AI Fruit Story",
-    title: "Ken Reads Everything",
-    meta: "AI Fruit Story · V2 · 9:16",
-    src: "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/fruit/a8ad2f35-6ad4-4071-bdae-4555afd13f51/b102da41-abee-4e66-b4ff-c01e20bfc716/final-f1d897c2-4304-488a-80cc-f8165af5651b.mp4",
-    aspect: "9:16",
+const PUB = "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/";
+export const EXAMPLES = {
+  fruit: {
+    title: "Ken Reads Everything", tool: "AI Fruit Story", tier: "V2", note: "9:16, 26 s",
+    src: `${PUB}generated/fruit/a8ad2f35-6ad4-4071-bdae-4555afd13f51/b102da41-abee-4e66-b4ff-c01e20bfc716/final-f1d897c2-4304-488a-80cc-f8165af5651b.mp4`,
   },
-  {
-    id: "longForm",
-    tool: "Long Form",
-    title: "How did ancient humans hunt",
-    meta: "Long Form · V3 · 16:9 · first 60 s of a 9.6-min video",
-    src: null,
-    aspect: "16:9",
-  },
-];
+  longForm: [
+    {
+      title: "How did ancient humans hunt", tool: "Long Form", tier: "V3", note: "first 60 s of 9.6 min",
+      src: `${PUB}public-assets/pricing/longform-ancient-humans-hunt-60s.mp4`, poster: `${PUB}public-assets/pricing/longform-ancient-humans-hunt-poster.jpg`,
+    },
+    {
+      title: "What did humans do when it rained", tool: "Long Form", tier: "V3", note: "first 60 s of 7.9 min",
+      src: `${PUB}public-assets/pricing/longform-humans-rain-60s.mp4`, poster: `${PUB}public-assets/pricing/longform-humans-rain-poster.jpg`,
+    },
+  ],
+};
+
+/** Caption row: fixed height (--c) so the desktop stack math stays exact. */
+function ExampleCaption({ e }) {
+  return (
+    <figcaption className="flex h-14 items-center justify-between gap-3 px-3">
+      <span className="min-w-0">
+        <span className="block truncate text-[13px] font-bold text-white">{e.title}</span>
+        <span className="block truncate text-[11px] text-white/40">{e.tool} · {e.tier} · {e.note}</span>
+      </span>
+      <span className="shrink-0 rounded-full border border-lime-300/20 bg-lime-300/[0.08] px-2 py-1 text-[9px] font-black uppercase tracking-wide text-lime-300">Made with Zyvo</span>
+    </figcaption>
+  );
+}
+
+// Desktop: right column width --r; each Long Form card = r·9/16 video + --c
+// caption; the stack = 2 cards + --g gap. The Fruit video is exactly that tall
+// minus its own caption, and 9:16 wide, so both sides end on the same line.
+// (+2px: the second card's 1px top and bottom border.)
+const FRUIT_H = "md:h-[calc(2*(var(--r)*9/16_+_var(--c))_+_var(--g)_-_var(--c)_+_2px)]";
+const FRUIT_W = "md:w-[calc((2*(var(--r)*9/16_+_var(--c))_+_var(--g)_-_var(--c)_+_2px)*9/16)]";
 
 export function MadeWithZyvo() {
-  const shown = EXAMPLES.filter((e) => e.src);
-  if (!shown.length) return null;
+  const { fruit, longForm } = EXAMPLES;
   return (
     <section aria-labelledby="examples-title">
       <Heading eyebrow="Made with Zyvo"><span id="examples-title">Real videos from Zyvo tools</span></Heading>
-      <div className="flex flex-wrap gap-4">
-        {shown.map((e) => (
-          <figure key={e.id} className={cx("m-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0F1112]", e.aspect === "9:16" ? "w-full max-w-[300px]" : "w-full max-w-[640px] flex-1")}>
-            <video src={e.src} controls playsInline preload="metadata" className={cx("block w-full bg-black", e.aspect === "9:16" ? "aspect-[9/16]" : "aspect-video")} />
-            <figcaption className="flex items-center justify-between gap-3 p-3">
-              <span>
-                <span className="block text-[13px] font-bold text-white">{e.title}</span>
-                <span className="block text-[11px] text-white/40">{e.meta}</span>
-              </span>
-              <span className="shrink-0 rounded-full border border-lime-300/20 bg-lime-300/[0.08] px-2 py-1 text-[9px] font-black uppercase tracking-wide text-lime-300">Made with Zyvo</span>
-            </figcaption>
-          </figure>
-        ))}
+      <div className="flex flex-col gap-4 [--c:56px] [--g:16px] md:flex-row md:justify-center md:gap-[var(--g)] md:[--r:400px] lg:[--r:520px]">
+        <figure className="m-0 mx-auto w-full max-w-[340px] overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0F1112] md:mx-0 md:w-auto md:max-w-none md:shrink-0">
+          <video src={fruit.src} controls playsInline preload="metadata" className={cx("block aspect-[9/16] w-full bg-black object-cover md:aspect-auto", FRUIT_H, FRUIT_W)} />
+          <ExampleCaption e={fruit} />
+        </figure>
+        <div className="flex flex-col gap-4 md:w-[var(--r)] md:shrink-0 md:gap-[var(--g)]">
+          {longForm.map((e) => (
+            <figure key={e.src} className="m-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0F1112]">
+              <video src={e.src} poster={e.poster} controls playsInline preload="none" className="block aspect-video w-full bg-black" />
+              <ExampleCaption e={e} />
+            </figure>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
+// Each line checked against the product (2026-10-01): every paid plan opens every
+// tool; exports carry no watermark; creations are saved per account; support is
+// by email/contact form; plans cancel in the Stripe portal. Not listed: "Brand
+// creation" and "Viral Video/Script Builder" (not separate tools) and script
+// writing (built into some tools, not every one).
 const INCLUDED = [
   "Every Zyvo tool and template",
   "Long Form YouTube videos",
-  "Viral Video Builder and Script Builder",
-  "Brand creation",
   "Watermark-free exports",
-  "Private creation library",
+  "Your creations saved in your library",
   "Email support",
   "Cancel anytime",
 ];
@@ -81,7 +102,7 @@ export function EveryPlanIncludes() {
   return (
     <section aria-labelledby="included-title" className="rounded-[24px] border border-white/[0.07] bg-[#0F1112] p-5 sm:p-6">
       <h2 id="included-title" className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">Every plan includes</h2>
-      <ul className="mt-4 grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="mt-4 grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
         {INCLUDED.map((f) => (
           <li key={f} className="flex items-center gap-2 text-[13px] text-white/70"><Check className="h-4 w-4 shrink-0 text-lime-300" aria-hidden="true" />{f}</li>
         ))}
@@ -137,7 +158,6 @@ export function FreePlan() {
 
 const FAQS = [
   { q: "Can I cancel anytime?", a: "Yes. Manage your plan in the Stripe portal. It stays active until the end of your paid period, with no surprise charges." },
-  { q: "Do prices include VAT?", a: "Yes. The prices shown are what you pay; Stripe includes VAT in them." },
   { q: "Do unused credits roll over?", a: "Monthly credits add to your balance; they don't reset to zero. One-time packs never expire." },
   { q: "How do upgrades and downgrades work?", a: "Both are handled securely in Stripe. Upgrades are instant (prorated). Downgrades take effect at your next renewal." },
   { q: "Do you offer refunds?", a: "Unused credits are refundable within 7 days. Once credits are spent, refunds can't be issued because of AI generation costs." },

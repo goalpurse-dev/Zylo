@@ -176,7 +176,7 @@ export default function PlanFinder() {
               {!result.fits && (
                 <p className="mt-3 rounded-lg border border-orange-300/20 bg-orange-300/[0.06] p-2.5 text-[12px] text-orange-200/90">
                   Even {PRICING_PLANS[result.plan].name} runs short by {result.shortBy.toLocaleString("en-US")} credits a month.
-                  {cheapestPack && ` Add credit packs (from ${formatMoney(cheapestPack.price, prices.prices.currency)} for ${cheapestPack.credits} credits) or make fewer.`}
+                  {account.isPaid && cheapestPack ? ` Add credit packs (from ${formatMoney(cheapestPack.price, prices.prices.currency)} for ${cheapestPack.credits} credits) or make fewer.` : " Make fewer, or pick a lower quality."}
                 </p>
               )}
               <p className="mt-4 text-[13px] text-white/55">

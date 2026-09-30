@@ -106,6 +106,17 @@ export function bestLongFormTier(tiers, planCode) {
   return allowed.length ? allowed[allowed.length - 1] : null;
 }
 
+/**
+ * The tier Setup starts on: V3 when the plan has it (Pro and Generative — V4's
+ * 90 credits a minute is always the user's own pick), else the best allowed
+ * (Starter → V2); null when none is.
+ */
+export function defaultLongFormTier(tiers, planCode) {
+  const allowed = allowedLongFormTiers(tiers, planCode);
+  if (allowed.includes("v3")) return "v3";
+  return allowed.length ? allowed[allowed.length - 1] : null;
+}
+
 /** Credits for one video: ceil(perMinute × minutes), the server's formula. */
 export function longFormVideoCredits(tiers, tier, minutes) {
   const perMinute = tiers?.[tier]?.perMinute;
