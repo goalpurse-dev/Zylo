@@ -6,6 +6,7 @@ import { FRUIT_MODELS } from "./models.js";
 import { SERVER_LIMITS } from "./limits.js";
 import { withSubject } from "./wording.js";
 import { shotOf } from "./shots.js";
+import { FRUIT_LOOKS } from "./fruitLooks.js";
 
 export const PICTURE_PROMPT_MAX = SERVER_LIMITS.maxScenePromptChars;   // 2,500 (Nano Banana accepts 45,000)
 
@@ -32,7 +33,10 @@ const FACE_SHORT = "Chest up on the speaker, never full body; face large, sharp,
  */
 export function fruitHeads(cast, short = false) {
   if (short) return `Fruit heads only: ${cast.map((c) => `${c.name.split(" ")[0]} ${c.fruit}`).join(", ")}; no humans.`;
-  const heads = cast.map((c) => `${c.name} has ${/^[aeiou]/i.test(c.fruit) ? "an" : "a"} ${c.fruit} head`);
+  const heads = cast.map((c) => {
+    const label = FRUIT_LOOKS[c.fruit]?.label ?? c.fruit;
+    return `${c.name} has ${/^[aeiou]/i.test(label) ? "an" : "a"} ${label} head`;
+  });
   const list = heads.length > 1 ? `${heads.slice(0, -1).join(", ")} and ${heads.at(-1)}` : heads[0];
   return `Every character has a fruit head, in the background too: ${list}. No human heads, faces or hair on anyone.`;
 }

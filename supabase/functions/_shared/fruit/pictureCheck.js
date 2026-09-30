@@ -5,6 +5,7 @@
 // its cost. The engine redraws a failed picture once at our cost (engine.js).
 import { callLlm } from "./llm.js";
 import { FRUIT_MODELS } from "./models.js";
+import { FRUIT_LOOKS, headLook } from "./fruitLooks.js";
 
 export const CHECK_PURPOSE = "picture_check";
 
@@ -29,7 +30,9 @@ export function checkSchema() {
 export function checkPrompt(expected) {
   return [
     `This picture should show exactly ${expected.length} character${expected.length > 1 ? "s" : ""}, each with a fruit head:`,
-    ...expected.map((c) => `- ${c.name}: a ${c.fruit} head`),
+    // The exact look from the library: Kai is a GREEN young coconut (a check told only
+    // "coconut" failed him for not being brown); leaf crowns are not hair.
+    ...expected.map((c) => `- ${c.name}: ${headLook(c.fruit)}`),
     "For each one: is it visible, and does it have its fruit head (not a human head)? Count every figure in the picture (fruit or human, background included) and how many have a human head. notes: one short sentence on anything wrong, or an empty string.",
   ].join("\n");
 }
@@ -41,7 +44,7 @@ export function verdictOf(data, expected) {
   for (const c of expected) {
     const seen = byName.get(c.name.toLowerCase()) ?? byName.get(c.name.split(" ")[0].toLowerCase());
     if (!seen || !seen.visible) problems.push(`${c.name} is missing`);
-    else if (!seen.hasFruitHead) problems.push(`${c.name} is drawn without their ${c.fruit} head`);
+    else if (!seen.hasFruitHead) problems.push(`${c.name} is drawn without their ${FRUIT_LOOKS[c.fruit]?.label ?? c.fruit} head`);
   }
   const humans = Number(data?.humanHeads) || 0;
   if (humans > 0) problems.push(`${humans} human head${humans > 1 ? "s" : ""} in the picture`);

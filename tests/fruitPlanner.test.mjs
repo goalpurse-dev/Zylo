@@ -169,11 +169,13 @@ test("the idea library: 1,000+ valid ideas across every story type, including uk
   for (const i of ideas) for (const id of i.castIds) assert.ok(byId.has(id), `${i.id}: ${id}`);
 });
 
-test("roles in THIS story are required and returned; outfits are in the cast block with the location rule", () => {
+test("roles in THIS story are returned but never fail a story; outfits are in the cast block with the location rule", () => {
   const { plan } = validatePlan(GOOD, { ...base, sceneCount: 3 });
   assert.deepEqual(plan.roles, { mia: "the wife who knows", marco: "the cheating husband", pia: "the other woman" });
-  const errs = validatePlan({ ...GOOD, roles: ROLES.slice(0, 2) }, { ...base, sceneCount: 3 }).errors.join("\n");
-  assert.match(errs, /roles: give pia a role in this story/);
+  const partial = validatePlan({ ...GOOD, roles: [...ROLES.slice(0, 2), { id: "pia", role: "the glamorous other woman who booked the very same table tonight" }] }, { ...base, sceneCount: 3 });
+  assert.deepEqual(partial.errors, [], "roles never fail a story");
+  assert.equal(partial.plan.roles.pia, undefined, "an over-long role is dropped (the UI shows the library tag)");
+  assert.equal(validatePlan({ ...GOOD, roles: [{ id: "mia", role: "secret girlfriend who booked the same date" }] }, { ...base, sceneCount: 3 }).plan.roles.mia, "secret girlfriend who booked the same date");
   const { system, user } = buildPlannerPrompt(base);
   assert.match(system, /Kai the lifeguard in swim shorts belongs at a beach, pool or boardwalk, not a fancy restaurant/);
   assert.ok(user.includes("Wears (fixed): "));

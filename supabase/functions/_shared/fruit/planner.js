@@ -290,15 +290,14 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
   } else if (source !== "script" && durations.length && total < 0.75 * lengthSec) {
     errors.push(`the clips add up to only ${total} seconds; aim for close to ${lengthSec} (make lines a little longer, never past ${lengthSec} in total)`);
   }
-  // Each character's role in THIS story (shown on the cast chips).
+  // Each character's role in THIS story (shown on the cast chips). Cosmetic:
+  // never fails a story (a missing one falls back to the library tag in the UI).
+  // "Two Timing Tide" failed twice when 7-word roles were refused.
   const roles = {};
   for (const r of Array.isArray(out?.roles) ? out.roles : []) {
     const role = String(r?.role ?? "").trim().replace(/\.$/, "");
-    if (castIds.includes(r?.id) && role && words(role) <= 6) roles[r.id] = role;
+    if (castIds.includes(r?.id) && role && words(role) <= 10) roles[r.id] = role;
   }
-  const inScenes = [...seen].filter((id) => castIds.includes(id));
-  const noRole = inScenes.filter((id) => !roles[id]);
-  if (noRole.length) errors.push(`roles: give ${noRole.join(", ")} a role in this story (2 to 5 words)`);
   const plan = {
     roles,
     title,

@@ -46,3 +46,14 @@ test("every check is logged with its cost; a failed call is logged and thrown (t
   await assert.rejects(checkPicture({ admin, apiKey: "k", imageUrl: "u", expected, ids: {}, fetchLlm: async () => { throw Object.assign(new Error("openai 500"), { details: { costUsd: 0 } }); } }));
   assert.equal(rows[1].ok, false);
 });
+
+test("fruit looks come from the character library (Kai is a GREEN young coconut; leaf crowns are not hair)", async () => {
+  const { FRUIT_LOOKS, headLook } = await import("../supabase/functions/_shared/fruit/fruitLooks.js");
+  const { FRUITS } = await import("../scripts/fruit-characters/prompt.mjs");
+  const { looksFrom } = await import("../scripts/fruit-characters/exportLooks.mjs");
+  assert.deepEqual(FRUIT_LOOKS, looksFrom(FRUITS), "fruitLooks.js is in sync with prompt.mjs (run exportLooks.mjs)");
+  assert.equal(headLook("coconut"), "a green young coconut head");
+  assert.match(checkPrompt([{ name: "Kai Coconut", fruit: "coconut" }, { name: "Piper Pine", fruit: "pineapple" }]), /- Kai Coconut: a green young coconut head\n- Piper Pine: a pineapple head with a crown of green leaves \(part of the fruit, not hair\)/);
+  const chars = [{ name: "Kai Coconut", visible: true, hasFruitHead: false }];
+  assert.deepEqual(verdictOf({ characters: chars, figuresInPicture: 1, humanHeads: 0 }, [{ name: "Kai Coconut", fruit: "coconut" }]).problems, ["Kai Coconut is drawn without their green young coconut head"]);
+});

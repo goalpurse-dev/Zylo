@@ -123,7 +123,7 @@ test("series overlays: 'Part N' at the top for the first seconds, the end card c
   assert.ok(events[0].endsWith(String.raw`{\an8\pos(360,115)}Part 2`));
   assert.ok(events[1].startsWith("Dialogue: 1,0:00:02.00,0:00:04.00,End,"));
   assert.ok(events[1].endsWith(String.raw`Part 3: The Welcome Party\NFollow for more`), events[1]);
-  assert.match(ass, /Style: End,Lilita One,54,&H00FFFFFF&,&H00FFFFFF&,&H00000000&,&HB0000000&,0,0,0,0,100,100,1,0,3,/, "BorderStyle 3: a box behind the end card");
+  assert.match(ass, /Style: End,Lilita One,61,&H00FFFFFF&,&H00FFFFFF&,&H00000000&,&HB0000000&,0,0,0,0,100,100,1,0,3,/, "BorderStyle 3: a box behind the end card");
 });
 
 test("cover: fixed layout, 'EPISODE N' label over the title in capitals, same for every episode", async () => {

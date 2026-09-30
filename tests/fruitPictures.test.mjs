@@ -126,7 +126,7 @@ test("every character's fruit head is named, background characters too", async (
   const { fruitHeads } = await import("../supabase/functions/_shared/fruit/pictures.js");
   const p = buildScenePrompt({ story, scene: { ...scene, presentIds: ["mia", "marco", "pia"] }, library: LIB });
   assert.ok(p.includes("Every character has a fruit head, in the background too: Mia Mango has a mango head, Marco Mango has a mango head and Pia Peach has a peach head. No human heads, faces or hair on anyone."), p);
-  assert.equal(fruitHeads([LIB.get("kai")]), "Every character has a fruit head, in the background too: Kai Coconut has a coconut head. No human heads, faces or hair on anyone.");
+  assert.equal(fruitHeads([LIB.get("kai")]), "Every character has a fruit head, in the background too: Kai Coconut has a green young coconut head. No human heads, faces or hair on anyone.");
   assert.match(fruitHeads([{ name: "Olive Oliveira", fruit: "olive" }]), /has an olive head/);
 });
 

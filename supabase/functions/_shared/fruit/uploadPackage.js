@@ -8,7 +8,7 @@ import { FRUIT_MODELS } from "./models.js";
 export const PACKAGE_PURPOSE = "upload_package";
 
 export const PACKAGE_SYSTEM = `You write the text that goes with a short vertical drama video (TikTok, Reels, Shorts) starring anthropomorphic fruit characters.
-- title: a scroll-stopping title, 3 to 9 words, no hashtags, no emojis.
+- title: a NEW scroll-stopping title, 3 to 9 words, never the video title as given (write a hook: a question, a reveal, a dare), no hashtags, no emojis.
 - caption: 1 or 2 short sentences that tease the drama without spoiling the twist. For a series episode, end by pointing to the next episode (use its title when given).
 - pinnedComment: ONE question for the creator to pin that makes viewers pick a side (e.g. "Was Mia right to read the texts?"). No hashtags.
 - hashtags: 5 to 8 hashtags, lowercase, each starting with #, no spaces: a mix of broad (#fruitdrama, #aistory) and specific to this story.

@@ -20,7 +20,7 @@ export const PHASE3_TOTAL_USD = 4.0;
 // 3e: $1.80 + up to $0.40 from the buffer (approved 2026-09-30).
 // 3e2: Wan2.6 Flash confirmation run (approved 2026-09-30). The $4.00 Phase 3 total is enforced on real spend.
 // 3i: framing fix check. 3j: framing re-check on the 30 s story scenes 1, 5, 6 (about $0.10). full30: one full 30 s V2 story, approved OUTSIDE the $4.00 total (2026-09-30).
-export const STAGE_CAPS_USD = Object.freeze({ "3b": 0, "3c": 0.4, "3d": 0.4, "3e": 2.2, "3e2": 1.0, "3f": 0.1, "3g": 0.3, "3i": 0.1, "3j": 0.12, full30: 2.0 });
+export const STAGE_CAPS_USD = Object.freeze({ "3b": 0, "3c": 0.4, "3d": 0.4, "3e": 2.2, "3e2": 1.0, "3f": 0.1, "3g": 0.3, "3i": 0.1, "3j": 0.12, "3k": 0.35, full30: 2.0 });
 /** Stages with their own approval that don't count toward the Phase 3 total. */
 export const OUTSIDE_TOTAL = Object.freeze(new Set(["full30"]));
 
