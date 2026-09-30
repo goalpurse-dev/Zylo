@@ -79,6 +79,8 @@ function PricingBody({ billing, setBilling }) {
             Make more videos <span className="text-lime-300">every month.</span>
           </h1>
           <p className="mx-auto mt-3 max-w-[52ch] text-[14px] text-white/50">Every number on this page comes from today&apos;s live prices.</p>
+          {/* Sign-ups (profiles) were 18,736 on 2026-09-30; a floor, so it stays true as it grows. */}
+          <p className="mt-2 text-[12px] font-semibold text-white/35">18,700+ creators signed up</p>
         </div>
         <BillingToggle billing={billing} setBilling={setBilling} />
       </header>
