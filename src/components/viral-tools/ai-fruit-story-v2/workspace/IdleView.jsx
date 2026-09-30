@@ -84,7 +84,7 @@ function RecentCard({ item, byId, onOpen }) {
         <p className="text-[10px] font-semibold text-white/40">
           {isSeries
             ? `Episode ${Math.min(item.madeCount, item.episodeCount)} of ${item.episodeCount} · ${timeAgo(item.createdAt)}`
-            : `${formatLength(item.lengthSec)} · ${item.status === "final_ready" ? "" : "In progress · "}${timeAgo(item.createdAt)}`}
+            : `${formatLength(item.lengthSec)} · ${item.legacy ? "Earlier version · " : item.status === "final_ready" ? "" : "In progress · "}${timeAgo(item.createdAt)}`}
         </p>
         {isSeries && <ProgressBar value={(item.madeCount / item.episodeCount) * 100} label={`${item.madeCount} of ${item.episodeCount} episodes made`} className="mt-1.5" />}
         <div className="mt-auto pt-2.5">

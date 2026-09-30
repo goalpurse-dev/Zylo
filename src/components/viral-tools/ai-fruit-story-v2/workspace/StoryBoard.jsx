@@ -13,6 +13,7 @@ const COPY = {
   clips_ready: ["Your clips are ready", "Play any clip to check it, then make the final video."],
   building: ["Making your video", "Joining the clips in order and trimming the silence."],
   draft: ["Your script is ready", "Make the scene pictures to see every scene before anything is animated."],
+  legacy: ["An earlier story", "Made with the previous AI Fruit Story. Play any clip here; start a new story to use the new editor."],
 };
 
 /** Scenes / clips grid for a story that isn't final yet. */
@@ -21,7 +22,7 @@ export default function StoryBoard({ story, byId, prices, onEdit, onRegenerate, 
   const n = story.scenes.length;
   const done = story.scenes.filter((s) => (inClips ? s.clipStatus : s.imageStatus) === "ready").length;
   const pct = Math.round((done / n) * 100);
-  const [title, subtitle] = COPY[story.status] ?? COPY.pictures;
+  const [title, subtitle] = story.readOnly ? COPY.legacy : COPY[story.status] ?? COPY.pictures;
   const failedPictures = story.scenes.filter((s) => s.imageStatus === "failed").length;
   const failedClips = story.scenes.filter((s) => s.clipStatus === "failed").length;
 
@@ -43,7 +44,7 @@ export default function StoryBoard({ story, byId, prices, onEdit, onRegenerate, 
         </p>
       )}
 
-      <CharacterRefs castIds={story.castIds} byId={byId} />
+      {story.castIds.length > 0 && <CharacterRefs castIds={story.castIds} byId={byId} />}
 
       <div className={cx("grid gap-3", story.aspect === "16:9" ? "grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3" : "grid-cols-2 md:grid-cols-3 2xl:grid-cols-4")}>
         {story.scenes.map((scene) => (
@@ -179,19 +180,23 @@ function SceneCard({ scene, story, byId, prices, inClips, onEdit, onRegenerate, 
           </div>
         )}
 
-        {scene.imageStatus === "ready" && scene.clipStatus !== "ready" && (
+        {!story.readOnly && scene.imageStatus === "ready" && scene.clipStatus !== "ready" && (
           <p className="pointer-events-none absolute inset-x-3 bottom-3 text-center text-[12px] font-black leading-snug text-white [text-shadow:0_2px_0_#000,0_0_8px_#000]">
             <span className="text-lime-300">{speakerName}:</span> {scene.line}
           </p>
         )}
       </div>
 
-      <p className="px-3 pt-2.5 text-[11px] leading-relaxed text-white/55">
-        <span className="font-black text-lime-300">{speakerName}:</span> &ldquo;{scene.line}&rdquo;
-        <span className="ml-1 text-white/25">{scene.durationSec}s</span>
-      </p>
+      {story.readOnly ? (
+        scene.line && <p className="px-3 pb-3 pt-2.5 text-[11px] leading-relaxed text-white/55">{scene.line}</p>
+      ) : (
+        <p className="px-3 pt-2.5 text-[11px] leading-relaxed text-white/55">
+          <span className="font-black text-lime-300">{speakerName}:</span> &ldquo;{scene.line}&rdquo;
+          <span className="ml-1 text-white/25">{scene.durationSec}s</span>
+        </p>
+      )}
 
-      <div className="mt-auto flex gap-1.5 px-2 pb-2 pt-2.5">
+      {!story.readOnly && <div className="mt-auto flex gap-1.5 px-2 pb-2 pt-2.5">
         {inClips ? (
           <ActionButton onClick={onRegenerateClip} disabled={!canRegenClip} price={clip} label={`Regenerate clip ${number}`}>
             <Film className="h-3.5 w-3.5" aria-hidden="true" />
@@ -209,7 +214,7 @@ function SceneCard({ scene, story, byId, prices, inClips, onEdit, onRegenerate, 
             </ActionButton>
           </>
         )}
-      </div>
+      </div>}
     </article>
   );
 }

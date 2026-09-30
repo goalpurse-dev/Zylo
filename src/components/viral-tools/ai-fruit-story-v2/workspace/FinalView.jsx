@@ -87,7 +87,7 @@ export default function FinalView({ story, byId, isEpisode, series, onCaptions, 
           </Box>
 
           <Box title="Download">
-            MP4, {story.aspect === "16:9" ? "1920 × 1080" : "1080 × 1920"}, ready for TikTok, Reels and Shorts.
+            MP4, {story.aspect === "16:9" ? "1280 × 720" : "720 × 1280"}, ready for TikTok, Reels and Shorts.
             <PrimaryButton className="mt-3" onClick={onDownload}>
               <Download className="h-4 w-4" aria-hidden="true" />
               Download video

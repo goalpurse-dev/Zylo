@@ -6,6 +6,7 @@ import NoCreditsModal from "../shared/NoCreditsModal";
 import { ErrorBanner, FOCUS, PrimaryButton, SegmentedControl, StepBar, UpgradeDialog, cx } from "../../ui/zyvo";
 import { isMockBackend, setFruitStoryV2Adapter } from "./api/fruitStoryV2Api";
 import { createMockAdapter } from "./api/mock/mockAdapter";
+import { createSupabaseAdapter } from "./api/supabaseAdapter";
 import { MODES, SINGLE_STEPS, UPGRADE_COPY, stepForStatus } from "./constants";
 import BuilderPanel, { FootNote, StepHeading } from "./builder/BuilderPanel";
 import { PipelineActions, PipelineSummary } from "./builder/Pipeline";
@@ -34,10 +35,12 @@ import StoryBoard from "./workspace/StoryBoard";
  * (420/460px) and the result view sit side by side and scroll on their own.
  */
 export default function FruitStoryV2Page({ preview = null }) {
-  // Dev preview with ?fail=…: install a mock that fails those steps once.
+  // Real users get the real backend. Dev preview (?fruitV2Preview=1) stays on
+  // the mock, and ?fail=… installs a mock that fails those steps once.
   // Runs during the first render, before any effect talks to the API.
   useState(() => {
-    if (preview?.fail) setFruitStoryV2Adapter(createMockAdapter({ fail: preview.fail }));
+    if (!preview) setFruitStoryV2Adapter(createSupabaseAdapter());
+    else if (preview.fail) setFruitStoryV2Adapter(createMockAdapter({ fail: preview.fail }));
   });
   const navigate = useNavigate();
   const account = useAccount(preview);

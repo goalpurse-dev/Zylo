@@ -36,7 +36,7 @@ export function PipelineSummary({ story, byId, header = null }) {
           <Pill>{story.aspect}</Pill>
         </div>
       </div>
-      <ol className="flex flex-col gap-1.5" aria-label="Progress">
+      {!story.readOnly && <ol className="flex flex-col gap-1.5" aria-label="Progress">
         {items.map((item, i) => (
           <li
             key={item.key}
@@ -61,7 +61,7 @@ export function PipelineSummary({ story, byId, header = null }) {
             </span>
           </li>
         ))}
-      </ol>
+      </ol>}
     </>
   );
 }
@@ -85,6 +85,14 @@ export function PipelineActions({ story, quotes, balance, acting, isEpisode, han
   const n = story.scenes.length;
   const done = (key) => story.scenes.filter((s) => s[key] === "ready").length;
 
+  if (story.readOnly) {
+    return (
+      <>
+        <PrimaryButton onClick={handlers.onNewStory}>Start a new story</PrimaryButton>
+        <FootNote>Made with the previous AI Fruit Story. Watch or save its clips here; it can&apos;t be edited.</FootNote>
+      </>
+    );
+  }
   if (story.status === "draft") {
     const price = picturePrice(quotes.prices);
     return (
