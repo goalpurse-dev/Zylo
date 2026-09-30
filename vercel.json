@@ -1,6 +1,11 @@
 {
   "redirects": [
     {
+      "source": "/",
+      "destination": "/workspace/home",
+      "permanent": false
+    },
+    {
       "source": "/blog/ai-visual-styles-most-engagementd",
       "destination": "/blog/ai-visual-styles-most-engagement",
       "permanent": true

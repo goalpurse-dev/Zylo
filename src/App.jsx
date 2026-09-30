@@ -559,11 +559,12 @@ return (
   </div>
 }>
         <Routes>
-          {/* Public marketing home — real content, server-rendered, indexable.
-              Logged-in vs logged-out only changes CTA text/target inside Hero,
-              resolved client-side after hydration; it must never gate/redirect
-              the route itself (that's what made "/" un-indexable before). */}
-          <Route path="/" element={<NewHome />} />
+          {/* "/" is the workspace home (2026-10-01): Vercel redirects the
+              domain root to /workspace/home (vercel.json, 307), and in-app
+              links to "/" go there too. The build still server-renders NewHome
+              for "/" (typeof window === "undefined"), because that snapshot is
+              the SEO/shell file the build validates. */}
+          <Route path="/" element={typeof window === "undefined" ? <NewHome /> : <Navigate to="/workspace/home" replace />} />
 
         
 
