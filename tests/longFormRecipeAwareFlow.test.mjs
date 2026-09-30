@@ -140,9 +140,10 @@ test("nicheHint threads through to the real idea-generation prompt as free-text 
   assert.match(fnText, /nicheHint\?: string/);
 });
 
-test("quote-long-form-project is pure computation — it never touches the database (no createClient, no .from(), no service-role key)", async () => {
+test("quote-long-form-project only READS (tier price + plan via loadLongFormTier) and never writes", async () => {
   const text = await source("supabase/functions/quote-long-form-project/index.ts");
-  assert.doesNotMatch(text, /createClient|\.from\(/);
+  assert.match(text, /loadLongFormTier\(admin, user\.id, renderTier\)/);
+  assert.doesNotMatch(text, /\.insert\(|\.update\(|\.upsert\(|\.delete\(|\.rpc\(/);
   assert.match(text, /estimateLongFormProjectQuote/);
 });
 

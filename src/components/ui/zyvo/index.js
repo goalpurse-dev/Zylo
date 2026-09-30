@@ -12,4 +12,5 @@ export { default as ErrorBanner } from "./ErrorBanner";
 export { default as Dialog } from "./Dialog";
 export { default as UpgradeDialog } from "./UpgradeDialog";
 export { default as CreditIcon } from "./CreditIcon";
+export { default as KeyButton } from "./KeyButton";
 export { FOCUS, PRESS, cx } from "./styles";

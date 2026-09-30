@@ -157,14 +157,14 @@ test("Quality renders as three primary option cards (not chips inside Advanced S
   assert.match(text, /"Quickest and cheapest\. Good for drafts\."/);
   assert.match(text, /"Best balance of detail and cost\."/);
   assert.match(text, /"Maximum detail\. Slowest\."/);
-  const v3 = /\{ value: "v3", label: "V3 High Quality", description: "Best balance of detail and cost\.", quality: \d, cost: \d, perMin: 75, recommended: true \}/; // Phase 7: + fixed price per minute
+  const v3 = /\{ value: "v3", label: "V3 High Quality", description: "Best balance of detail and cost\.", quality: \d, cost: \d, recommended: true \}/; // price per minute comes from tool_prices (lib/longFormTiers)
   assert.match(text, v3);
 });
 
 test("the Quality indicator is labeled 'Quality' (not 'Speed'), with V2=1/3, V3=2/3, V4=3/3, and a separate Cost indicator is kept", async () => {
   const text = await source(PAGE);
-  assert.match(text, /\{ value: "v2", label: "V2 Fast", description: "Quickest and cheapest\. Good for drafts\.", quality: 1, cost: 1, perMin: 25 \}/);
-  assert.match(text, /\{ value: "v4", label: "V4 Ultra", description: "Maximum detail\. Slowest\.", quality: 3, cost: 3, perMin: 90 \}/);
+  assert.match(text, /\{ value: "v2", label: "V2 Fast", description: "Quickest and cheapest\. Good for drafts\.", quality: 1, cost: 1 \}/);
+  assert.match(text, /\{ value: "v4", label: "V4 Ultra", description: "Maximum detail\. Slowest\.", quality: 3, cost: 3 \}/);
   assert.match(text, />Quality \{\[1, 2, 3\]\.map/);
   assert.match(text, />Cost \{\[1, 2, 3\]\.map/);
   assert.doesNotMatch(text, />Speed \{/);

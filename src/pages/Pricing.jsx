@@ -1,1134 +1,125 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { startCheckout, openBillingPortal } from "../lib/payments";
-import { supabase } from "../lib/supabaseClient";
-import { Check, ChevronDown, Shield } from "lucide-react";
-import {
-  PRICING_PLANS,
-  PLAN_ORDER,
-  V2_OUTPUT_COSTS,
-  TOOL_ORDER,
-  outputsForPlan,
-  creditsForPlan,
-  headlineOutputsForPlan,
-  HEADLINE_TOOL_KEY,
-  HEADLINE_OPTION_INDEX,
-  HEADLINE_OPTION_LABEL,
-} from "../lib/pricingOutputs";
-import usePricingOutputCosts from "../hooks/usePricingOutputCosts";
-import QuotedCredits, { PriceRetry } from "../components/pricing/QuotedCredits";
+import { Shield } from "lucide-react";
+import { openBillingPortal } from "../lib/payments";
+import { maxSavingPercent } from "../lib/planPrices";
+import { PRICING_PLANS } from "../lib/pricingOutputs";
+import { FOCUS, cx } from "../components/ui/zyvo/styles";
+import { PricingDataProvider, usePricingData } from "../components/pricing/PricingData";
+import PlanCards, { DISPLAY_FONT } from "../components/pricing/PlanCards";
+import PlanFinder from "../components/pricing/PlanFinder";
+import { CompareTable, WhatCanYouCreate } from "../components/pricing/OutputTables";
+import { EveryPlanIncludes, Faq, FreePlan, MadeWithZyvo, Topups } from "../components/pricing/PricingExtras";
 
-/* ─── Output estimates — computed from server price quotes ───────────────── */
-const OutputCostsContext = createContext({ status: "loading", costs: null, retry: () => {} });
+// Pricing page (lime design, docs/zyvo-lime-tokens.md). Every number comes
+// from live data: plan and pack prices from Stripe (plan-prices), credits per
+// output from tool_prices quotes, Long Form from tool_prices longform:*, plan
+// credits from what the Stripe webhook grants. No counters, urgency or
+// testimonials that aren't backed by real data.
 
-/** A complete-output count (or credit cost) for one plan: skeleton while quotes load, "—" if they failed. */
-function OutputCount({ planId, tool, idx = 0, credits = false }) {
-  const { status, costs } = useContext(OutputCostsContext);
-  if (status === "error") return <span>—</span>;
-  const value = credits ? creditsForPlan(costs, planId, tool, idx) : outputsForPlan(costs, planId, tool, idx);
-  return <QuotedCredits status={status} value={value}>{(v) => v.toLocaleString()}</QuotedCredits>;
-}
-
-/** One option's credit cost; shows a range when it differs by plan (Cooking Matic's service fee). */
-function OptionCredits({ tool, idx }) {
-  const { status, costs } = useContext(OutputCostsContext);
-  if (status === "error") return <span>—</span>;
-  const values = PLAN_ORDER.map((id) => creditsForPlan(costs, id, tool, idx));
-  const ready = values.every((v) => v != null);
-  const lo = ready ? Math.min(...values) : null;
-  const hi = ready ? Math.max(...values) : null;
-  return <QuotedCredits status={status} value={lo}>{() => (lo === hi ? lo : `${lo}–${hi}`)}</QuotedCredits>;
-}
-
-/* ─── Stripe IDs ─────────────────────────────────────────────────────────── */
-const PRICE_IDS = {
-  starter:    { monthly: "price_1TmVZZHtn4q5rIncOuf5aKP4", yearly: "price_1TmVhxHtn4q5rIncS8sxm6UR" },
-  pro:        { monthly: "price_1TmVfXHtn4q5rInc9IaN1l3U", yearly: "price_1TmVjnHtn4q5rInccPDBIVaX" },
-  generative: { monthly: "price_1TmVg2Htn4q5rIncWL0b3HJr", yearly: "price_1TmVlUHtn4q5rIncbtWbGyof" },
-};
-const TOPUP_PRICE_IDS = {
-  mini:     "price_1TGKjDHtn4q5rInczlym0Dcz",
-  standard: "price_1SpZczHtn4q5rInctZoF9rJV",
-  max:      "price_1TGKjxHtn4q5rIncQzzCGyrR",
-};
-
-/* ─── Plan data ───────────────────────────────────────────────────────────── */
-const TIERS = [
-  {
-    id: "starter",
-    name: "Starter",
-    monthly: 20,
-    yearlyPerMonth: 16,
-    blurb: "For creators just getting started",
-    accent: "#8B5CF6",
-    glow:   "rgba(139,92,246,0.14)",
-    btnFrom: "#5B21B6",
-    btnTo:   "#7C3AED",
-    features: [
-      { section: "Credits" },
-      { text: "750 credits / month", star: true },
-
-      { section: "Tools & Models" },
-      { text: "Clay Rescue" },
-      { text: "Face ASMR" },
-      { text: "AI Fruit Story" },
-      { text: "Micro Camera Animal" },
-      { text: "Video & Image Generator" },
-      { text: `${PRICING_PLANS.starter.modelAccess.join(" + ")} models only`, star: true },
-
-      { section: "Publishing" },
-      { text: "1 social post published / day", tag: "Soon" },
-      { text: "1 scheduled post / day / platform", tag: "Soon" },
-
-      { section: "General" },
-      { text: "Watermark-free exports" },
-      { text: "Private creation library" },
-      { text: "Email support" },
-    ],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    monthly: 42,
-    strikethrough: 54, // shown crossed-out next to the monthly price only
-    yearlyPerMonth: 35,
-    blurb: "What 80% of viral creators use",
-    popular: true,
-    accent: "#A855F7",
-    glow:   "rgba(168,85,247,0.20)",
-    btnFrom: "#7C3AED",
-    btnTo:   "#A855F7",
-    features: [
-      { section: "Credits" },
-      { text: "1,600 credits / month", star: true },
-
-      { section: "Tools & Models" },
-      { text: "Clay Rescue" },
-      { text: "Face ASMR" },
-      { text: "AI Fruit Story" },
-      { text: "Micro Camera Animal" },
-      { text: "Video & Image Generator" },
-      { text: `${PRICING_PLANS.pro.modelAccess.join(" + ")} models`, star: true },
-
-      { section: "Publishing" },
-      { text: "3 social posts published / day", tag: "Soon" },
-      { text: "3 scheduled posts / day / platform", tag: "Soon" },
-
-      { section: "General" },
-      { text: "Priority generation queue" },
-      { text: "Watermark-free exports" },
-      { text: "Private creation library" },
-      { text: "Priority support" },
-    ],
-  },
-  {
-    id: "generative",
-    name: "Generative",
-    monthly: 85,
-    yearlyPerMonth: 70,
-    blurb: "Built for high-output production",
-    accent: "#C084FC",
-    glow:   "rgba(192,132,252,0.14)",
-    btnFrom: "#9333EA",
-    btnTo:   "#C084FC",
-    features: [
-      { section: "Credits" },
-      { text: "3,200 credits / month", star: true },
-
-      { section: "Tools & Models" },
-      { text: "Clay Rescue" },
-      { text: "Face ASMR" },
-      { text: "AI Fruit Story" },
-      { text: "Micro Camera Animal" },
-      { text: "Video & Image Generator" },
-      { text: `${PRICING_PLANS.generative.modelAccess.join(" + ")} models — every tier unlocked`, star: true },
-
-      { section: "Publishing" },
-      { text: "8 social posts published / day", tag: "Soon" },
-      { text: "8 scheduled posts / day / platform", tag: "Soon" },
-
-      { section: "General" },
-      { text: "Fast-lane generation" },
-      { text: "Watermark-free exports" },
-      { text: "Unlimited creation history" },
-      { text: "Priority support + dedicated help" },
-    ],
-  },
-];
-
-const TOPUPS = [
-  { id: "mini",     price: 6.99,  credits: 300 },
-  { id: "standard", price: 11.99, credits: 500, best: true },
-  { id: "max",      price: 19.99, credits: 900 },
-];
-
-const FAQS = [
-  { q: "Can I cancel anytime?",
-    a: "Yes. Manage your plan in the Stripe portal. It stays active until the end of your paid period — no surprise charges." },
-  { q: "Do unused credits roll over?",
-    a: "Monthly credits add to your balance — they don't reset to zero. One-time packs never expire." },
-  { q: "How do upgrades and downgrades work?",
-    a: "Both are handled securely in Stripe. Upgrades are instant (prorated). Downgrades take effect at your next renewal." },
-  { q: "Do you offer refunds?",
-    a: "Unused credits are refundable within 7 days. Once credits are spent, refunds can't be issued due to AI generation costs." },
-  { q: "What can I create with Zyvo?",
-    a: "Scroll-stopping AI images in 20+ styles, viral short-form videos, image-to-video, and AI-powered viral scripts with image & video prompts per scene — all export-ready, no watermark." },
-  { q: "Is there a free plan?",
-    a: "Yes — sign up free and get 5 image generations to try Zyvo. No card required. Upgrade anytime you want more." },
-];
-
-const TESTIMONIALS = [
-  { text: "Went from 0 to 40K followers in 6 weeks using Zyvo videos.", name: "Sarah M.", role: "Content creator" },
-  { text: "My ROAS doubled when I switched to AI-generated product images.", name: "Marcus T.", role: "E-commerce brand" },
-  { text: "I cancel every tool that doesn't pay for itself. Zyvo pays 10x.", name: "Priya S.", role: "Digital marketer" },
-];
-
-const AVATAR_GRADIENTS = [
-  ["#7C3AED","#A855F7"],
-  ["#6D28D9","#8B5CF6"],
-  ["#9333EA","#C084FC"],
-  ["#7C3AED","#DDD6FE"],
-  ["#5B21B6","#A855F7"],
-  ["#8B5CF6","#C084FC"],
-];
-
-const PARTICLE_CONFIG = [
-  { x: 8,  y: 18, size: 3, dur: 7,   del: 0,   color: "#A855F7" },
-  { x: 85, y: 55, size: 2, dur: 10,  del: 2.5, color: "#C084FC" },
-  { x: 42, y: 75, size: 2, dur: 8.5, del: 4,   color: "#A855F7" },
-  { x: 68, y: 10, size: 3, dur: 9,   del: 1,   color: "#8B5CF6" },
-  { x: 22, y: 65, size: 2, dur: 11,  del: 5.5, color: "#C084FC" },
-  { x: 92, y: 35, size: 2, dur: 7.5, del: 3,   color: "#A855F7" },
-  { x: 55, y: 90, size: 2, dur: 12,  del: 7,   color: "#DDD6FE" },
-  { x: 14, y: 42, size: 2, dur: 9.5, del: 1.5, color: "#8B5CF6" },
-];
-
-/* ─── Comparison table data ───────────────────────────────────────────────── */
-const COMPARISON_DATA = [
-  { section: "Credits & Usage" },
-  { label: "Credits / month", values: ["750", "1,600", "3,200"], highlight: true },
-  { label: "AI Fruit Story V2 · 20s videos / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="fruitStory" idx={0} />) },
-  { label: "Clay Rescue V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="clayRescue" idx={0} />) },
-  { label: "Face ASMR V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="faceAsmr" idx={1} />) },
-  { label: "Micro Camera Animal V2 · 30s videos / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="microCamera" idx={1} />) },
-  { label: "Zyvo V2 images / mo", values: PLAN_ORDER.map((id) => <OutputCount planId={id} tool="imageGenerator" idx={0} />) },
-  { section: "Video/Image Model Access" },
-  { label: "V2 — standard quality", values: [true, true, true] },
-  { label: "V3 — sharper, higher resolution", values: [false, true, true] },
-  { label: "V4 — top-tier, max resolution", values: [false, false, true] },
-  { section: "Tools" },
-  { label: "Clay Rescue", values: [true, true, true] },
-  { label: "Face ASMR", values: [true, true, true] },
-  { label: "AI Fruit Story", values: [true, true, true] },
-  { label: "Micro Camera Animal", values: [true, true, true] },
-  { label: "AI Cooking Matic", values: [true, true, true] },
-  { label: "Kit Swap", values: [true, true, true] },
-  { label: "Video & Image Generator", values: [true, true, true] },
-  { section: "Publishing", tag: "Soon" },
-  { label: "Connected accounts per social platform", values: ["1", "3", "5"], tag: "Soon" },
-  { label: "Social posts / day", values: ["1", "3", "8"], tag: "Soon" },
-  { label: "Scheduled posts / day", values: ["1", "3", "8"], tag: "Soon" },
-  { section: "General" },
-  { label: "Watermark-free exports", values: [true, true, true] },
-  { label: "Priority queue", values: [false, true, true] },
-  { label: "Fast-lane generation", values: [false, false, true] },
-  { label: "Priority support", values: [false, true, true] },
-];
-
-/* ─── Helpers ─────────────────────────────────────────────────────────────── */
-function fmt(usd) {
-  const displayVal = usd >= 10 ? Math.round(usd) : usd;
-  return `$${Number.isInteger(displayVal) ? displayVal.toFixed(0) : displayVal.toFixed(2)}`;
-}
-function tierRank(id) { return TIERS.findIndex(t => t.id === id); }
-
-function useCurrentPlan() {
-  const [state, setState] = useState({ plan: "free", hasSub: false, loading: true });
+const FONT_HREF = "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&display=swap";
+function useDisplayFont() {
   useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return setState({ plan: "free", hasSub: false, loading: false });
-      const { data } = await supabase
-        .from("profiles").select("plan_code, stripe_subscription_id").eq("id", user.id).single();
-      const planCode = data?.plan_code || "free";
-      const activeSub = !!data?.stripe_subscription_id;
-      const isPaid = activeSub || (planCode !== "free" && planCode !== null);
-      setState({ plan: planCode, hasSub: activeSub, isPaid, loading: false });
-    })();
+    if (document.querySelector(`link[href="${FONT_HREF}"]`)) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = FONT_HREF;
+    document.head.appendChild(link);
   }, []);
-  return state;
 }
 
-function useLiveCounter(start) {
-  const [count, setCount] = useState(start);
-  useEffect(() => {
-    const id = setInterval(() => setCount(c => c + Math.floor(Math.random() * 4) + 1), 1800);
-    return () => clearInterval(id);
-  }, []);
-  return count.toLocaleString();
-}
-
-/* ─── Particles ───────────────────────────────────────────────────────────── */
-function Particles() {
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {PARTICLE_CONFIG.map((p, i) => (
-        <div key={i} className="absolute rounded-full"
-          style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size,
-            background: p.color, animation: `particleFloat ${p.dur}s ease-in-out ${p.del}s infinite`, opacity: 0.18 }} />
-      ))}
-    </div>
-  );
-}
-
-/* ─── Confirm modal ───────────────────────────────────────────────────────── */
-function ConfirmModal({ open, onCancel, onConfirm, targetLabel }) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-black/75 backdrop-blur-md" onClick={onCancel} />
-      <div className="relative z-10 w-full max-w-sm rounded-[24px] bg-[#0D0F1C] p-6 shadow-2xl"
-        style={{ boxShadow: "0 30px 80px rgba(0,0,0,0.6)" }}>
-        <p className="text-white font-bold text-lg mb-2">Confirm downgrade</p>
-        <p className="text-white/50 text-sm leading-relaxed">
-          Switch to <span className="text-white font-semibold">{targetLabel}</span>? You keep your plan until end of billing period.
-        </p>
-        <div className="flex gap-3 mt-5">
-          <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white/60 bg-white/5 hover:bg-white/10 transition">Cancel</button>
-          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-white text-black hover:bg-gray-100 transition">Confirm</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── FAQ ─────────────────────────────────────────────────────────────────── */
-function FaqItem({ q, a }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: "#0D0F1C" }}>
-      <button onClick={() => setOpen(p => !p)}
-        className="w-full flex items-center justify-between px-5 py-4 text-left gap-4 hover:bg-white/[0.03] transition">
-        <span className="text-sm font-semibold text-white/80">{q}</span>
-        <ChevronDown className={`w-4 h-4 text-white/30 shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
-      </button>
-      <div className={`overflow-hidden transition-all duration-300 ${open ? "max-h-40" : "max-h-0"}`}>
-        <p className="px-5 pb-5 text-sm text-white/40 leading-relaxed">{a}</p>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Desktop billing toggle ──────────────────────────────────────────────── */
 function BillingToggle({ billing, setBilling }) {
+  const { prices } = usePricingData();
+  const upTo = prices.status === "ready" ? maxSavingPercent(prices.prices) : null;
   return (
-    <div className="flex flex-col items-center gap-2 mb-10">
-      <div className="inline-flex items-center rounded-full p-1 gap-1"
-        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
-        {["yearly", "monthly"].map(opt => (
-          <button key={opt} onClick={() => setBilling(opt)}
-            className="relative flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200"
-            style={billing === opt ? { background: "linear-gradient(135deg, #7C3AED, #A855F7)", color: "#fff" }
-              : { color: "rgba(255,255,255,0.35)" }}>
-            {opt === "yearly" ? "Annual" : "Monthly"}
-            {opt === "yearly" && (
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                style={{ background: billing === "yearly" ? "rgba(255,255,255,0.18)" : "rgba(167,243,208,0.15)",
-                  color: billing === "yearly" ? "#fff" : "#6EE7B7" }}>–17%</span>
+    <div className="flex flex-col items-center gap-2">
+      <div className="inline-flex rounded-xl border border-white/[0.08] bg-[#0E1012] p-1" role="radiogroup" aria-label="Billing">
+        {[["monthly", "Monthly"], ["yearly", "Yearly"]].map(([id, label]) => (
+          <button key={id} type="button" role="radio" aria-checked={billing === id} onClick={() => setBilling(id)}
+            className={cx("flex items-center gap-2 rounded-lg px-5 py-2 text-[13px] font-bold transition", FOCUS,
+              billing === id ? "bg-white text-black" : "text-white/50 hover:bg-white/[0.06] hover:text-white/80")}>
+            {label}
+            {id === "yearly" && upTo != null && (
+              <span className={cx("rounded-full px-1.5 py-0.5 text-[10px] font-black", billing === id ? "bg-lime-300 text-[#11150D]" : "bg-lime-300/15 text-lime-300")}>save up to {upTo}%</span>
             )}
           </button>
         ))}
       </div>
-      {billing === "yearly" && (
-        <p className="text-xs font-medium" style={{ color: "#6EE7B7" }}>
-          🎉 You're saving up to <strong>${Math.round(54 * 1.08 * 12 * 0.17)}</strong>/yr on the best plan
-        </p>
-      )}
+      {prices.status === "ready" && prices.prices.vatIncluded && <p className="text-[11.5px] text-white/40">Prices include VAT.</p>}
     </div>
   );
 }
 
-/* ─── Headline claim — AI Fruit Story V2 20s count at live prices, per plan ─ */
-function HeadlineClaim({ planId, accent }) {
-  const { status, costs, retry } = useContext(OutputCostsContext);
-  const count = headlineOutputsForPlan(costs, planId);
+function ConfirmDowngrade({ planId, onCancel }) {
+  if (!planId) return null;
   return (
-    <div className="mb-4 rounded-xl px-3.5 py-3" style={{ background: `${accent}12`, border: `1px solid ${accent}30` }}>
-      <p className="text-[13px] font-bold leading-snug text-white">
-        About <span style={{ color: accent }}>{status === "error" ? "—" : <QuotedCredits status={status} value={count} />}</span> complete {HEADLINE_OPTION_LABEL} AI Fruit Story videos / month
-      </p>
-      <p className="mt-1 text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.32)" }}>
-        Based on AI Fruit Story V2 at <OutputCount planId={planId} tool={HEADLINE_TOOL_KEY} idx={HEADLINE_OPTION_INDEX} credits /> credits per {HEADLINE_OPTION_LABEL.replace(" seconds", "-second")} video (the exact price depends on how long each line is). Other tools and lengths use different amounts of credits.
-      </p>
-      {status === "error" && <PriceRetry onRetry={retry} className="mt-1 text-[11px]" />}
-    </div>
-  );
-}
-
-/* ─── Example monthly output — 3-4 tools, exact counts, links to full table ── */
-const EXAMPLE_OUTPUT_ROWS = [
-  { key: "fruitStory",  idx: 0, label: "complete 20s AI Fruit Story V2 videos" },
-  { key: "clayRescue",  idx: 0, label: "complete 30s Clay Rescue V2 videos" },
-  { key: "faceAsmr",    idx: 1, label: "complete 30s Face ASMR V2 videos" },
-  { key: "microCamera", idx: 1, label: "complete 30s Micro Camera Animal V2 videos" },
-];
-
-function ExampleOutputs({ planId, accent }) {
-  return (
-    <div className="mb-5">
-      <span className="text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: "rgba(255,255,255,0.25)" }}>
-        Example monthly output
-      </span>
-      <ul className="mt-2 space-y-1.5">
-        {EXAMPLE_OUTPUT_ROWS.map((row) => (
-          <li key={row.key} className="flex items-center gap-2 text-[13px]">
-            <Check className="w-3.5 h-3.5 shrink-0" style={{ color: `${accent}90` }} />
-            <span style={{ color: "rgba(255,255,255,0.55)" }}>
-              <OutputCount planId={planId} tool={row.key} idx={row.idx} /> {row.label}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <button
-        type="button"
-        onClick={() => document.getElementById("output-estimates")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-        className="mt-2.5 text-[11px] font-semibold underline decoration-dotted underline-offset-2"
-        style={{ color: accent }}
-      >
-        See all output estimates
-      </button>
-    </div>
-  );
-}
-
-/* ─── Desktop plan card ───────────────────────────────────────────────────── */
-function PlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade, animClass }) {
-  const isYearly = billing === "yearly";
-  const eurPrice = isYearly ? tier.yearlyPerMonth : tier.monthly;
-  const priceStr = fmt(eurPrice);
-  const curRank = tierRank(currentPlan);
-  const thisRank = tierRank(tier.id);
-  const isPopular = !!tier.popular;
-  let cta = "Subscribe";
-  let disabled = false;
-  if (tier.id === currentPlan) { cta = "Current plan"; disabled = true; }
-
-  async function handleClick() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return (window.location.href = "/signup");
-    const priceId = PRICE_IDS[tier.id]?.[billing];
-    if (!priceId) return;
-    if (hasSub) return openBillingPortal({ flow: "change_plan", returnPath: "/pricing" });
-    if (thisRank < curRank) return onAskDowngrade(tier);
-    // Abandoned-checkout tracking now happens server-side in
-    // create-checkout-session, keyed off the real Stripe Checkout Session.
-    await startCheckout({ type: "subscription", priceId, userId: user.id, email: user.email,
-      metadata: { email: user.email, plan: tier.id } });
-  }
-
-  return (
-    <div className={`relative flex flex-col flex-1 rounded-[24px] overflow-hidden pricing-card-hover ${isPopular ? "pro-border-pulse" : ""} ${animClass}`}
-      style={{
-        background: isPopular ? "linear-gradient(160deg, #130B28 0%, #1C0A3A 40%, #0E0E20 100%)"
-          : "linear-gradient(160deg, #0B0D1A 0%, #0E1020 100%)",
-        boxShadow: isPopular ? "0 0 0 1px rgba(168,85,247,0.22), 0 20px 50px rgba(109,40,217,0.12)"
-          : "0 4px 24px rgba(0,0,0,0.4)",
-      }}>
-      <div className="h-[3px] w-full" style={{ background: `linear-gradient(90deg, ${tier.accent}CC, ${tier.accent}30)` }} />
-      {isPopular && (
-        <div className="absolute top-4 right-4 text-[10px] font-bold tracking-[0.1em] px-3 py-1 rounded-full"
-          style={{ background: `${tier.accent}1A`, color: tier.accent, border: `1px solid ${tier.accent}35` }}>
-          MOST POPULAR
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center px-4" role="dialog" aria-modal="true" aria-labelledby="downgrade-title">
+      <div className="absolute inset-0 bg-black/75 backdrop-blur-md" onClick={onCancel} />
+      <div className="relative z-10 w-full max-w-sm rounded-3xl border border-lime-300/[0.13] bg-[#0C0F0D] p-6 shadow-2xl">
+        <p id="downgrade-title" className="text-lg font-bold text-white">Confirm downgrade</p>
+        <p className="mt-2 text-sm leading-relaxed text-white/50">Switch to <span className="font-semibold text-white">{PRICING_PLANS[planId]?.name}</span>? You keep your current plan until the end of the billing period.</p>
+        <div className="mt-5 flex gap-3">
+          <button type="button" onClick={onCancel} className={cx("flex-1 rounded-xl bg-white/5 py-2.5 text-sm font-semibold text-white/60 hover:bg-white/10", FOCUS)}>Cancel</button>
+          <button type="button" onClick={() => { onCancel(); openBillingPortal({ flow: "change_plan", returnPath: "/pricing" }); }} className={cx("flex-1 rounded-xl bg-white py-2.5 text-sm font-semibold text-black hover:bg-gray-100", FOCUS)}>Confirm</button>
         </div>
-      )}
-      <div className="flex flex-col flex-1 p-6 md:p-7">
-        <div className="mb-5">
-          <div className="text-base font-bold mb-0.5" style={{ color: tier.accent }}>{tier.name}</div>
-          <div className="text-white/35 text-xs">{tier.blurb}</div>
-        </div>
-        <div className="mb-1 flex items-end gap-2">
-          {!isYearly && tier.strikethrough && <span className="text-sm text-white/20 line-through mb-1.5">{fmt(tier.strikethrough)}</span>}
-          <span className="text-[52px] font-extrabold leading-none tracking-tighter text-white">{priceStr}</span>
-          <span className="text-white/30 text-sm mb-2">/mo</span>
-        </div>
-        {isYearly && (
-          <div className="text-xs font-semibold text-green-400 mb-1 savings-badge-pop">
-            Save {Math.round((1 - tier.yearlyPerMonth / tier.monthly) * 100)}% · {fmt(tier.yearlyPerMonth * 12)}/yr
-          </div>
-        )}
-        <div className="text-xs text-white/20 mb-4">
-          {tier.id === "starter" && "≈ $0.67 per day"}
-          {tier.id === "pro" && "≈ $1.40 per day"}
-          {tier.id === "generative" && "≈ $2.83 per day"}
-        </div>
-        <HeadlineClaim planId={tier.id} accent={tier.accent} />
-        {isPopular && (
-          <div className="flex items-center gap-2 mb-4">
-            <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 blink-dot" />
-            <span className="text-[11px] font-medium" style={{ color: "rgba(248,113,113,0.85)" }}>Pro plan: 23 spots left at this price</span>
-          </div>
-        )}
-        <button disabled={disabled} onClick={handleClick}
-          className="w-full py-3.5 rounded-2xl font-bold text-sm mb-4 transition-all duration-200 active:scale-[0.97] btn-pulse"
-          style={disabled ? { background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.25)", cursor: "default" }
-            : { background: `linear-gradient(135deg, ${tier.btnFrom}, ${tier.btnTo})`, color: "#fff", boxShadow: `0 6px 20px ${tier.glow}` }}>
-          {cta}
-        </button>
-        {isPopular && (
-          <div className="mb-5">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] text-white/30">78% of creators choose Pro</span>
-              <span className="text-[10px] font-bold" style={{ color: tier.accent }}>78%</span>
-            </div>
-            <div className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
-              <div className="h-full rounded-full" style={{ width: "78%", background: `linear-gradient(90deg, ${tier.btnFrom}, ${tier.accent})` }} />
-            </div>
-          </div>
-        )}
-        <div className="mb-5 h-px bg-white/[0.05]" />
-        <ExampleOutputs planId={tier.id} accent={tier.accent} />
-        <ul className="space-y-2.5 flex-1">
-          {tier.features.map((f, i) => f.section ? (
-            <li key={i} className={`${i > 0 ? "pt-2 mt-1 border-t border-white/[0.05]" : ""}`}>
-              <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/25">{f.section}</span>
-            </li>
-          ) : (
-            <li key={i} className="flex items-center gap-2.5 text-sm check-item" style={{ animationDelay: `${0.3 + i * 0.06}s` }}>
-              <Check className="w-4 h-4 mt-[1px] shrink-0" style={{ color: f.star ? tier.accent : tier.accent + "70" }} />
-              <span className={f.star ? "text-white font-semibold" : "text-white/50"}>{f.text}</span>
-              {f.tag && (
-                <span className="ml-auto text-[9px] font-bold tracking-wide px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap"
-                  style={{ background: `${tier.accent}18`, color: tier.accent, border: `1px solid ${tier.accent}25` }}>{f.tag}</span>
-              )}
-            </li>
-          ))}
-        </ul>
-        {!disabled && <p className="text-center text-[11px] text-white/15 mt-6">Instant access · Cancel anytime</p>}
       </div>
     </div>
   );
 }
 
-/* ─── Mobile plan card — compact with expand ──────────────────────────────── */
-function MobilePlanCard({ tier, billing, currentPlan, hasSub, onAskDowngrade }) {
-  const [expanded, setExpanded] = useState(false);
-  const isYearly = billing === "yearly";
-  const eurPrice = isYearly ? tier.yearlyPerMonth : tier.monthly;
-  const priceStr = fmt(eurPrice);
-  const yearlyTotal = Math.round(tier.yearlyPerMonth * 12);
-  const thisRank = tierRank(tier.id);
-  const curRank = tierRank(currentPlan);
-  const isPopular = !!tier.popular;
-  let cta = "Subscribe";
-  let disabled = false;
-  if (tier.id === currentPlan) { cta = "Current plan"; disabled = true; }
-
-  const allFeatures = tier.features.filter(f => f.text && !f.section);
-  const topFeatures = allFeatures.slice(0, 3);
-  const restFeatures = allFeatures.slice(3);
-
-  async function handleClick() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return (window.location.href = "/signup");
-    const priceId = PRICE_IDS[tier.id]?.[billing];
-    if (!priceId) return;
-    if (hasSub) return openBillingPortal({ flow: "change_plan", returnPath: "/pricing" });
-    if (thisRank < curRank) return onAskDowngrade(tier);
-    // Abandoned-checkout tracking now happens server-side in
-    // create-checkout-session, keyed off the real Stripe Checkout Session.
-    await startCheckout({ type: "subscription", priceId, userId: user.id, email: user.email,
-      metadata: { email: user.email, plan: tier.id } });
-  }
-
+function PricingBody({ billing, setBilling }) {
+  const { account } = usePricingData();
+  const [askPlan, setAskPlan] = useState(null);
   return (
-    <div className="rounded-2xl overflow-hidden"
-      style={{
-        background: isPopular
-          ? "linear-gradient(170deg, #1A0B38 0%, #200D42 60%, #100C22 100%)"
-          : "#0D0F1C",
-        border: isPopular ? "1px solid rgba(168,85,247,0.35)" : "1px solid rgba(255,255,255,0.07)",
-      }}>
-      <div className="h-[3px] w-full" style={{
-        background: isPopular
-          ? "linear-gradient(90deg, #7C3AED, #C026D3, #E879F9, #A855F7)"
-          : `linear-gradient(90deg, ${tier.accent}CC, ${tier.accent}30)`,
-      }} />
-      <div className="p-5">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <div className="text-base font-bold" style={{ color: tier.accent }}>{tier.name}</div>
-            <div className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>{tier.blurb}</div>
-          </div>
-          {isPopular && (
-            <span className="text-[9px] font-bold px-2.5 py-0.5 rounded-full"
-              style={{ background: "rgba(192,38,211,0.18)", color: "#E879F9", border: "1px solid rgba(232,121,249,0.35)" }}>
-              ♥ POPULAR
-            </span>
-          )}
+    <div className="mx-auto flex max-w-[1180px] flex-col gap-14 px-4 pb-28 pt-10 sm:px-6 md:gap-20 md:pb-20 md:pt-16">
+      <header className="flex flex-col items-center gap-6 text-center">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-lime-300">Pricing</p>
+          <h1 style={DISPLAY_FONT} className="mt-2 text-balance text-[44px] font-extrabold uppercase leading-[0.95] text-white sm:text-[64px]">
+            Make more videos <span className="text-lime-300">every month.</span>
+          </h1>
+          <p className="mx-auto mt-3 max-w-[52ch] text-[14px] text-white/50">Every number on this page comes from today&apos;s live prices.</p>
         </div>
+        <BillingToggle billing={billing} setBilling={setBilling} />
+      </header>
 
-        {/* Price */}
-        <div className="flex items-baseline gap-1.5 mb-0.5">
-          {!isYearly && tier.strikethrough && (
-            <span className="text-base text-white/20 line-through">{fmt(tier.strikethrough)}</span>
-          )}
-          <span className="text-[38px] font-extrabold leading-none text-white">{priceStr}</span>
-          <span className="text-sm text-white/40">/mo</span>
+      <div className="flex flex-col gap-5">
+        <PlanCards onAskDowngrade={setAskPlan} />
+        <div className="flex flex-col items-center gap-2 text-center">
+          <p className="inline-flex items-center gap-2 text-[12.5px] text-white/50">
+            <Shield className="h-4 w-4 text-lime-300" aria-hidden="true" />
+            Not happy in 7 days? <span className="font-semibold text-white/80">Unused credits refunded.</span>
+          </p>
+          <p className="text-[11px] text-white/30">Quality tiers apply to Zyvo&apos;s templates and Long Form. Stripe-secured checkout · cancel anytime.</p>
         </div>
-        {isYearly ? (
-          <div className="text-[11px] mb-4" style={{ color: "rgba(255,255,255,0.28)" }}>
-            Billed yearly at {fmt(yearlyTotal)} ·{" "}
-            <span style={{ color: "#4ADE80" }}>Save {Math.round((1 - tier.yearlyPerMonth / tier.monthly) * 100)}%</span>
-          </div>
-        ) : <div className="mb-4" />}
-
-        <HeadlineClaim planId={tier.id} accent={tier.accent} />
-        <ExampleOutputs planId={tier.id} accent={tier.accent} />
-
-        {/* Top 3 features */}
-        <ul className="space-y-2.5 mb-4">
-          {topFeatures.map((f, i) => (
-            <li key={i} className="flex items-center gap-2.5">
-              <Check className="w-3.5 h-3.5 shrink-0" style={{ color: "#4ADE80" }} />
-              <span className="text-[13px]" style={{ color: f.star ? "#fff" : "rgba(255,255,255,0.72)", fontWeight: f.star ? 600 : 400 }}>
-                {f.text}
-              </span>
-              {f.tag && (
-                <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
-                  style={{ background: `${tier.accent}18`, color: tier.accent, border: `1px solid ${tier.accent}25` }}>{f.tag}</span>
-              )}
-            </li>
-          ))}
-        </ul>
-
-        {/* CTA */}
-        <button disabled={disabled} onClick={handleClick}
-          className="w-full py-3 rounded-xl font-bold text-sm text-white mb-3 transition-all duration-200 active:scale-[0.97]"
-          style={disabled
-            ? { background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.3)" }
-            : isPopular
-              ? { background: "linear-gradient(135deg, #6D28D9 0%, #A855F7 50%, #C026D3 100%)", boxShadow: "0 6px 20px rgba(168,85,247,0.30)" }
-              : { background: "linear-gradient(135deg, #5B21B6, #7C3AED)" }
-          }>
-          {cta}
-        </button>
-
-        {/* Expand / collapse */}
-        {restFeatures.length > 0 && (
-          <>
-            <button onClick={() => setExpanded(p => !p)}
-              className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors"
-              style={{ color: "rgba(255,255,255,0.35)", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              {expanded ? "Show less" : `View all ${allFeatures.length} features`}
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${expanded ? "rotate-180" : ""}`} />
-            </button>
-            <div className={`overflow-hidden transition-all duration-300 ${expanded ? "max-h-[600px] mt-3" : "max-h-0"}`}>
-              <ul className="space-y-2.5">
-                {restFeatures.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2.5">
-                    <Check className="w-3.5 h-3.5 shrink-0" style={{ color: `${tier.accent}90` }} />
-                    <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.55)" }}>{f.text}</span>
-                    {f.tag && (
-                      <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
-                        style={{ background: `${tier.accent}18`, color: tier.accent, border: `1px solid ${tier.accent}25` }}>{f.tag}</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </>
-        )}
       </div>
+
+      {!account.loading && account.isPaid && <Topups />}
+      <PlanFinder />
+      <WhatCanYouCreate />
+      <CompareTable onAskDowngrade={setAskPlan} />
+      <MadeWithZyvo />
+      <EveryPlanIncludes />
+      <FreePlan />
+      <Faq />
+
+      <footer className="flex justify-center border-t border-white/[0.05] pt-6">
+        <Link to="/workspace/home" className={cx("rounded-xl bg-white/[0.04] px-5 py-2.5 text-sm font-medium text-white/45 hover:text-white/70", FOCUS)}>← Back to workspace</Link>
+      </footer>
+      <ConfirmDowngrade planId={askPlan} onCancel={() => setAskPlan(null)} />
     </div>
   );
 }
 
-/* ─── Credit top-up cards ─────────────────────────────────────────────────── */
-function TopupSection() {
-  return (
-    <div className="mb-10">
-      <div className="flex flex-col items-center mb-5">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-semibold mb-3"
-          style={{ background: "rgba(168,85,247,0.12)", color: "#C084FC", border: "1px solid rgba(168,85,247,0.25)" }}>
-          ✦ Available on your plan
-        </div>
-        <h3 className="text-xl font-bold text-white mb-1">Need more credits?</h3>
-        <p className="text-center text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
-          One-time packs · never expire · stack on top of your plan
-        </p>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {TOPUPS.map(p => (
-          <div key={p.id} className="relative rounded-[20px] p-5 flex flex-col gap-4 pricing-card-hover"
-            style={{ background: p.best ? "linear-gradient(160deg,#130B28,#1C0A3A)" : "#0D0F1C",
-              boxShadow: p.best ? "0 0 0 1px rgba(168,85,247,0.25), 0 16px 40px rgba(168,85,247,0.08)" : "none" }}>
-            {p.best && (
-              <div className="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-0.5 rounded-full"
-                style={{ background: "rgba(168,85,247,0.15)", color: "#C084FC", border: "1px solid rgba(168,85,247,0.3)" }}>
-                BEST VALUE
-              </div>
-            )}
-            <div>
-              <div className="text-xs uppercase tracking-wider mb-1.5" style={{ color: "rgba(255,255,255,0.25)" }}>{p.id} pack</div>
-              <div className="text-3xl font-extrabold text-white">${p.price.toFixed(2)}</div>
-              <div className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>{p.credits} credits</div>
-            </div>
-            <button onClick={async () => {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (!user) return (window.location.href = "/signup");
-              await startCheckout({ type: "topup", pack: p.id, userId: user.id, email: user.email });
-            }}
-              className="w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-[0.97]"
-              style={p.best ? { background: "linear-gradient(135deg,#7C3AED,#A855F7)", color: "#fff",
-                boxShadow: "0 6px 20px rgba(124,58,237,0.25)" }
-                : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)" }}>
-              Buy Pack
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Plan comparison table ───────────────────────────────────────────────── */
-function ComparisonTable() {
-  return (
-    <div className="mb-10">
-      <h3 className="text-2xl font-bold text-white text-center mb-1">Compare plans</h3>
-      <p className="text-center text-sm mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
-        See exactly what's included at every level.
-      </p>
-      <div className="rounded-[20px] overflow-hidden overflow-x-auto" style={{ background: "#0D0F1C" }}>
-        <table className="w-full min-w-[480px]">
-          <thead>
-            <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-              <th className="p-4 text-left w-[40%]" />
-              {TIERS.map(t => (
-                <th key={t.id} className="p-4 text-center"
-                  style={t.popular ? { background: "rgba(168,85,247,0.08)" } : {}}>
-                  <div className="text-xs font-bold" style={{ color: t.popular ? t.accent : "rgba(255,255,255,0.5)" }}>{t.name}</div>
-                  {t.popular && (
-                    <div className="text-[9px] font-semibold mt-0.5" style={{ color: "rgba(168,85,247,0.55)" }}>POPULAR</div>
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {COMPARISON_DATA.map((row, i) => row.section ? (
-              <tr key={i} style={{ background: "rgba(255,255,255,0.015)", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                <td colSpan={4} className="px-4 py-2.5">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: "rgba(255,255,255,0.25)" }}>
-                      {row.section}
-                    </span>
-                    {row.tag && (
-                      <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
-                        style={{ background: "rgba(168,85,247,0.15)", color: "#C084FC" }}>{row.tag}</span>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              <tr key={i} style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>{row.label}</span>
-                    {row.tag && (
-                      <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
-                        style={{ background: "rgba(168,85,247,0.15)", color: "#C084FC" }}>{row.tag}</span>
-                    )}
-                  </div>
-                </td>
-                {row.values.map((val, j) => {
-                  const tier = TIERS[j];
-                  const isPopular = !!tier.popular;
-                  return (
-                    <td key={j} className="px-2 py-3 text-center"
-                      style={isPopular ? { background: "rgba(168,85,247,0.05)" } : {}}>
-                      {val === true ? (
-                        <div className="w-5 h-5 rounded-full flex items-center justify-center mx-auto"
-                          style={{ background: "rgba(74,222,128,0.28)", boxShadow: "0 0 6px rgba(74,222,128,0.35)" }}>
-                          <Check className="w-3 h-3" style={{ color: "#86EFAC" }} />
-                        </div>
-                      ) : val === false ? (
-                        <div className="w-4 h-4 rounded-full border-2 mx-auto"
-                          style={{ borderColor: "rgba(255,255,255,0.1)" }} />
-                      ) : (
-                        <span className="text-xs font-semibold"
-                          style={{ color: row.highlight ? (isPopular ? tier.accent : "rgba(255,255,255,0.7)") : "rgba(255,255,255,0.55)" }}>
-                          {val}
-                        </span>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-/* ─── What can you create? — full per-tool output table, tab-selectable ───── */
-function WhatCanYouCreateSection() {
-  const [activeTool, setActiveTool] = useState(TOOL_ORDER[0]);
-  const tool = V2_OUTPUT_COSTS[activeTool];
-  const { status: costsStatus, retry: retryCosts } = useContext(OutputCostsContext);
-
-  return (
-    <div id="output-estimates" className="mb-14 scroll-mt-24">
-      <h3 className="text-2xl font-bold text-white text-center mb-1">What can you create with your credits?</h3>
-      <p className="text-center text-sm mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
-        Exact estimates based on Zyvo V2. Counts are rounded down to complete generations.
-      </p>
-      {costsStatus === "error" && (
-        <p className="text-center text-sm -mt-4 mb-6" style={{ color: "rgba(255,255,255,0.55)" }}>
-          <PriceRetry onRetry={retryCosts} />
-        </p>
-      )}
-
-      <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
-        {TOOL_ORDER.map((key) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setActiveTool(key)}
-            className="px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200"
-            style={activeTool === key
-              ? { background: "linear-gradient(135deg, #7C3AED, #A855F7)", color: "#fff" }
-              : { background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.45)", border: "1px solid rgba(255,255,255,0.07)" }}
-          >
-            {V2_OUTPUT_COSTS[key].name}
-          </button>
-        ))}
-      </div>
-
-      <div className="rounded-[20px] overflow-hidden overflow-x-auto" style={{ background: "#0D0F1C" }}>
-        <table className="w-full min-w-[480px]">
-          <thead>
-            <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-              <th className="p-4 text-left w-[38%]">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold" style={{ color: "rgba(255,255,255,0.7)" }}>{tool.name}</span>
-                  {tool.hasAudio !== undefined && (
-                    <span
-                      className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                      style={tool.hasAudio
-                        ? { background: "rgba(74,222,128,0.15)", color: "#4ADE80" }
-                        : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)" }}
-                    >
-                      {tool.hasAudio ? "Includes audio" : "No audio (V2)"}
-                    </span>
-                  )}
-                </div>
-              </th>
-              {PLAN_ORDER.map((id) => (
-                <th key={id} className="p-4 text-center">
-                  <div className="text-xs font-bold" style={{ color: id === "pro" ? "#A855F7" : "rgba(255,255,255,0.5)" }}>
-                    {PRICING_PLANS[id].name}
-                  </div>
-                  <div className="text-[9px] mt-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>
-                    {PRICING_PLANS[id].credits.toLocaleString()} cr/mo
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {tool.options.map((opt, i) => (
-              <tr key={opt.label} style={{ borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.04)" }}>
-                <td className="px-4 py-3">
-                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{opt.label}</span>
-                  <span className="ml-2 text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>(<OptionCredits tool={activeTool} idx={i} /> cr)</span>
-                </td>
-                {PLAN_ORDER.map((id) => (
-                  <td key={id} className="px-2 py-3 text-center">
-                    <span className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.8)" }}>
-                      <OutputCount planId={id} tool={activeTool} idx={i} />
-                    </span>
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Page ────────────────────────────────────────────────────────────────── */
 export default function Pricing() {
   const [billing, setBilling] = useState("yearly");
-  const [askTier, setAskTier] = useState(null);
-  const { plan, hasSub, isPaid, loading: planLoading } = useCurrentPlan();
-  const liveCount = useLiveCounter(2000847);
-  const outputCosts = usePricingOutputCosts();
-
+  useDisplayFont();
   useEffect(() => { document.title = "Pricing — Zyvo AI"; }, []);
-
-  const planLabel = useMemo(() => {
-    const t = TIERS.find(t => t.id === plan);
-    return t?.name ?? (plan === "free" ? "Free" : "—");
-  }, [plan]);
-
   return (
-    <OutputCostsContext.Provider value={outputCosts}>
-    <section className="relative min-h-screen text-white" style={{ background: "#07080F" }}>
-
-      <Particles />
-
-      {/* Ambient blobs */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[700px] h-[500px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(124,58,237,0.11) 0%, transparent 70%)" }} />
-        <div className="absolute top-[40%] right-[-100px] w-[400px] h-[400px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(192,132,252,0.06) 0%, transparent 70%)" }} />
-        <div className="absolute top-[30%] left-[-80px] w-[350px] h-[350px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%)" }} />
-      </div>
-
-      {/* ── MOBILE LAYOUT ─────────────────────────────────────────────── */}
-      <div className="md:hidden">
-        {/* Mobile header + billing toggle — centered */}
-        <div className="px-5 pt-10 pb-6 flex flex-col items-center text-center" style={{ background: "#07080F" }}>
-          {/* Mobile/desktop are separate DOM trees toggled by breakpoint (both
-              always render), so only one of the two can be a real <h1> —
-              this one intentionally isn't, to keep exactly one H1 per page
-              for crawlers regardless of viewport. */}
-          <div className="text-[26px] font-extrabold tracking-tight text-white mb-1.5">
-            Go viral.{" "}
-            <span style={{ background: "linear-gradient(90deg,#A855F7,#C084FC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              Or it's free.
-            </span>
-          </div>
-          <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Every plan includes the Viral Video Builder.
-          </p>
-          <div className="inline-flex items-center rounded-full p-[3px] gap-0.5"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)" }}>
-            {["yearly", "monthly"].map(opt => (
-              <button key={opt} onClick={() => setBilling(opt)}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200"
-                style={billing === opt
-                  ? { background: "linear-gradient(135deg, #7C3AED, #A855F7)", color: "#fff" }
-                  : { color: "rgba(255,255,255,0.4)" }}>
-                {opt === "yearly" ? "Annual" : "Monthly"}
-                {opt === "yearly" && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                    style={{ background: billing === "yearly" ? "rgba(255,255,255,0.18)" : "rgba(167,243,208,0.15)",
-                      color: billing === "yearly" ? "#fff" : "#6EE7B7" }}>–17%</span>
-                )}
-              </button>
-            ))}
-          </div>
-          {billing === "yearly" && (
-            <p className="text-xs mt-2 font-medium" style={{ color: "#6EE7B7" }}>
-              Save up to 17% with annual billing
-            </p>
-          )}
-        </div>
-
-        {/* Compact plan cards */}
-        <div className="px-4 pb-4 space-y-3">
-          {TIERS.map(t => (
-            <MobilePlanCard key={t.id} tier={t} billing={billing}
-              currentPlan={plan} hasSub={hasSub} onAskDowngrade={setAskTier} />
-          ))}
-        </div>
-
-        {/* Top-ups directly under plan cards — mobile only, visible to paid users */}
-        {!planLoading && isPaid && (
-          <div className="px-4 pt-2 pb-4">
-            <TopupSection />
-          </div>
-        )}
-      </div>
-
-      {/* ── DESKTOP LAYOUT ────────────────────────────────────────────── */}
-      <div className="hidden md:block relative max-w-[1100px] mx-auto px-6 py-16">
-
-        {/* Hero */}
-        <div className="text-center mb-12 pricing-hero">
-          <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium mb-6"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-white font-semibold">{liveCount}</span>&nbsp;creations and counting
-          </div>
-          <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] mb-4">
-            Go viral.{" "}
-            <span style={{ background: "linear-gradient(90deg,#A855F7,#C084FC,#DDD6FE)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              Or it's free.
-            </span>
-          </h1>
-          <p className="text-white/40 text-base max-w-lg mx-auto mb-8">
-            Every plan includes the Viral Video Builder — generate images, videos, and scripts that stop the scroll.
-          </p>
-          <div className="flex justify-center pricing-hero-sub">
-            <div className="inline-flex items-center gap-6 rounded-2xl px-6 py-3"
-              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              {[{ stat: "800+", label: "Active creators" }, { stat: "4.9★", label: "Average rating" }]
-                .map(({ stat, label }, i) => (
-                  <React.Fragment key={label}>
-                    {i > 0 && <span className="w-px h-8 shrink-0" style={{ background: "rgba(255,255,255,0.08)" }} />}
-                    <div className="flex flex-col items-center">
-                      <span className="text-white font-bold text-xl">{stat}</span>
-                      <span className="text-white/30 text-[11px] mt-0.5">{label}</span>
-                    </div>
-                  </React.Fragment>
-                ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Billing toggle */}
-        <BillingToggle billing={billing} setBilling={setBilling} />
-
-        {/* Plan cards */}
-        <div className="grid grid-cols-3 gap-4 lg:gap-5" id="pricing-section">
-          {TIERS.map((t, i) => (
-            <PlanCard key={t.id} tier={t} billing={billing} currentPlan={plan} hasSub={hasSub}
-              onAskDowngrade={setAskTier} animClass={`pricing-card-${i + 1}`} />
-          ))}
-        </div>
-
-        {/* Top-ups directly under plan cards — desktop, paid only */}
-        {!planLoading && isPaid && (
-          <div className="mt-8">
-            <TopupSection />
-          </div>
-        )}
-
-      </div>
-
-      {/* ── SHARED CONTENT ────────────────────────────────────────────── */}
-      <div className="relative max-w-[1100px] mx-auto px-4 sm:px-6 pb-28 md:pb-16">
-
-        {/* Guarantee strip */}
-        <div className="flex items-center justify-center mt-6 mb-3">
-          <div className="flex items-center gap-3 px-5 py-3 rounded-2xl"
-            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
-            <Shield className="w-4 h-4 shrink-0" style={{ color: "#A855F7" }} />
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
-              Not happy in 7 days?{" "}
-              <span className="text-white font-bold">Unused credits refunded.</span>{" "}
-              No questions asked.
-            </p>
-          </div>
-        </div>
-
-        {!planLoading && isPaid && (
-          <p className="text-center text-xs mt-3 mb-2" style={{ color: "rgba(255,255,255,0.2)" }}>
-            Current plan: <span style={{ color: "rgba(255,255,255,0.4)", fontWeight: 600 }}>{planLabel}</span>
-          </p>
-        )}
-
-        {/* What can you create with your credits? — exact per-tool output table */}
-        <div className="mt-8">
-          <WhatCanYouCreateSection />
-        </div>
-
-        {/* Compare plans — above reviews */}
-        <div className="mt-8">
-          <ComparisonTable />
-        </div>
-
-        {/* Testimonials / reviews */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-10">
-          {TESTIMONIALS.map((t, i) => (
-            <div key={i} className="rounded-[20px] p-5 flex flex-col gap-4" style={{ background: "#0D0F1C" }}>
-              <p className="text-sm leading-relaxed flex-1" style={{ color: "rgba(255,255,255,0.55)" }}>"{t.text}"</p>
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
-                  style={{ background: `linear-gradient(135deg, ${AVATAR_GRADIENTS[i][0]}, ${AVATAR_GRADIENTS[i][1]})` }}>
-                  {t.name[0]}
-                </div>
-                <div>
-                  <div className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.7)" }}>{t.name}</div>
-                  <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>{t.role}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Every plan includes */}
-        <div className="rounded-[20px] p-5 md:p-6 mb-10" style={{ background: "#0D0F1C" }}>
-          <p className="text-center text-[11px] font-bold tracking-[0.15em] uppercase mb-4"
-            style={{ color: "rgba(255,255,255,0.2)" }}>Every plan includes</p>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-y-3 gap-x-4">
-            {["Viral Video Builder", "Viral Script Builder", "Brand creation", "Watermark-free exports", "Email support"].map(f => (
-              <div key={f} className="flex items-center gap-2 text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-                <Check className="w-3.5 h-3.5 shrink-0" style={{ color: "#A855F7" }} />{f}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Free + Enterprise */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
-          {[
-            { label: "Free", price: "$0", sub: "5 image generations to start",
-              desc: "Try Zyvo with monthly free credits. No card required.", cta: "Try for free", to: "/signup" },
-            { label: "Enterprise", price: "Custom", sub: "For teams and organizations",
-              desc: "SSO & roles, unlimited workspaces, custom models, SLAs and priority support.", cta: "Contact sales", to: "/support/contact" },
-          ].map(item => (
-            <div key={item.label} className="rounded-[20px] p-6 flex flex-col gap-4" style={{ background: "#0D0F1C" }}>
-              <div>
-                <div className="text-xs uppercase tracking-wider mb-1.5" style={{ color: "rgba(255,255,255,0.2)" }}>{item.label}</div>
-                <div className="text-3xl font-extrabold text-white">{item.price}</div>
-                <div className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{item.sub}</div>
-              </div>
-              <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>{item.desc}</p>
-              <Link to={item.to}
-                className="inline-flex justify-center items-center py-3 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-[0.98]"
-                style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)" }}>
-                {item.cta}
-              </Link>
-            </div>
-          ))}
-        </div>
-
-        {/* FAQ */}
-        <div className="mb-14">
-          <h3 className="text-2xl font-bold text-white text-center mb-1">Frequently asked</h3>
-          <p className="text-center text-sm mb-6" style={{ color: "rgba(255,255,255,0.25)" }}>
-            Everything you need to know before upgrading.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {FAQS.map(f => <FaqItem key={f.q} q={f.q} a={f.a} />)}
-          </div>
-        </div>
-
-        {/* Trust footer */}
-        <div className="text-center pt-6 flex flex-col items-center gap-4"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-          <div className="flex items-center gap-6 text-xs" style={{ color: "rgba(255,255,255,0.2)" }}>
-            <span>🔒 Stripe-secured</span>
-            <span>⚡ Instant access</span>
-            <span>✕ Cancel anytime</span>
-          </div>
-          <Link to="/workspace/home"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
-            style={{ background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.35)" }}>
-            ← Back to workspace
-          </Link>
-        </div>
-
-      </div>
-
-      <ConfirmModal
-        open={!!askTier}
-        targetLabel={askTier?.name}
-        onCancel={() => setAskTier(null)}
-        onConfirm={() => { setAskTier(null); openBillingPortal({ flow: "change_plan", returnPath: "/pricing" }); }}
-      />
-    </section>
-    </OutputCostsContext.Provider>
+    <PricingDataProvider billing={billing}>
+      <section className="relative min-h-screen bg-[#0B0D0F] text-white">
+        <PricingBody billing={billing} setBilling={setBilling} />
+      </section>
+    </PricingDataProvider>
   );
 }
