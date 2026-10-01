@@ -9,7 +9,7 @@
 //   node emails/sendLongFormLaunch.js --send --confirm long-form-launch
 //       The real send: ONLY profiles with email_updates = true, de-duplicated,
 //       in Resend batches of 100 (idempotency key per batch, ~2 batches/s).
-//       Refuses while the footer address is a placeholder or the hero image isn't
+//       Refuses while the footer is the original template placeholder (warns if [brackets] remain) or the hero image isn't
 //       live. Resumable: every sent profile is logged to emails/.sent/ and skipped
 //       on a re-run; each batch is re-checked against email_updates right before
 //       it goes out (someone who unsubscribed meanwhile is dropped).
@@ -18,7 +18,7 @@ import crypto from "node:crypto";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
-import { LongFormLaunchEmail, FOOTER_ADDRESS } from "./LongFormLaunchEmail.js";
+import { LongFormLaunchEmail, FOOTER_ADDRESS, FOOTER_PLACEHOLDER } from "./LongFormLaunchEmail.js";
 import { unsubscribeLinks } from "./unsubscribeLink.js";
 
 dotenv.config({ path: ".env.local" });
@@ -74,7 +74,7 @@ if (mode === "dry") {
   // A made-up recipient (never a real user's name or unsubscribe link in a local file).
   const sample = { id: "00000000-0000-0000-0000-000000000000", email: "preview@example.com", full_name: "Alex Example" };
   fs.writeFileSync("emails/.preview/long-form-launch.html", messageFor(sample).html);
-  console.log(JSON.stringify({ mode, recipients: list.length, alreadySent: sent.size, toSend: list.filter((p) => !sent.has(p.id)).length, batches: Math.ceil(list.filter((p) => !sent.has(p.id)).length / BATCH), footerAddressSet: !FOOTER_ADDRESS.includes("["), preview: "emails/.preview/long-form-launch.html" }, null, 1));
+  console.log(JSON.stringify({ mode, recipients: list.length, alreadySent: sent.size, toSend: list.filter((p) => !sent.has(p.id)).length, batches: Math.ceil(list.filter((p) => !sent.has(p.id)).length / BATCH), footerAddressSet: FOOTER_ADDRESS !== FOOTER_PLACEHOLDER, footer: FOOTER_ADDRESS, footerHasBrackets: /\[[^\]]*\]/.test(FOOTER_ADDRESS), preview: "emails/.preview/long-form-launch.html" }, null, 1));
   process.exit(0);
 }
 
@@ -91,7 +91,8 @@ if (mode === "test") {
 
 // --send
 if (val("--confirm") !== "long-form-launch") { console.error("Refusing: add --confirm long-form-launch"); process.exit(1); }
-if (FOOTER_ADDRESS.includes("[")) { console.error("Refusing: set FOOTER_ADDRESS in emails/LongFormLaunchEmail.js (business name + postal address)."); process.exit(1); }
+if (FOOTER_ADDRESS === FOOTER_PLACEHOLDER) { console.error("Refusing: set FOOTER_ADDRESS in emails/LongFormLaunchEmail.js (business name + postal address)."); process.exit(1); }
+if (/\[[^\]]*\]/.test(FOOTER_ADDRESS)) console.warn(`Note: the footer still has [brackets] and will be sent exactly as: "${FOOTER_ADDRESS}"`);
 const hero = await fetch(HERO, { method: "HEAD" }).catch(() => null);
 if (!hero?.ok || !/image\//.test(hero.headers.get("content-type") ?? "")) { console.error(`Refusing: the hero image isn't live at ${HERO} (deploy the frontend first).`); process.exit(1); }
 

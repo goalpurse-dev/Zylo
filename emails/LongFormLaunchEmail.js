@@ -17,9 +17,11 @@ const link = (url, content) => `${url}${url.includes("?") ? "&" : "?"}${UTM}&utm
 const HERO_IMG = `${APP}/email/long-form-hero.png`;
 
 // Required by anti-spam law (CAN-SPAM, and good practice under GDPR/ePrivacy):
-// the sender's business name and a valid postal address. The send script refuses
-// to send to users while this still holds the placeholder.
-export const FOOTER_ADDRESS = "Zyvo · [Company name, street address, city, country]";
+// the sender's business name and a valid postal address. Fill in the company name and the
+// page with the company details (the send script warns while [brackets] remain).
+export const FOOTER_ADDRESS = "Zyvo · [COMPANY NAME] ·  · tryzyvo.com/[page with company details]";
+// The original template placeholder: the send script refuses to send while the footer is this.
+export const FOOTER_PLACEHOLDER = "Zyvo · [Company name, street address, city, country]";
 
 const VIDEOS = [
   {
