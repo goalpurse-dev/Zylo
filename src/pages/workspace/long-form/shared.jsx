@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { IDEA_CATEGORY_OPTIONS, PREVIEW_STATUS } from "./discoverIdeas";
 import { LONG_FORM_STAGES, LONG_FORM_STICKMAN_STAGES, STICKMAN_STEP_FOR_PAGE } from "./state";
 import { deriveProjectStageInfo, deriveStickmanStep, formatElapsedMinutes, formatProjectDuration, humanizeProjectStatus, resolveStoryStepRoute, resolveLookStepRoute, reachableStickmanSteps } from "./projectStage";
-import { deleteLongFormProject, selectStoryTitle } from "./project";
+import { deleteConfirmText, deleteLongFormProject, fetchProjectBilling, selectStoryTitle, usedSoFarText } from "./project";
 import { cleanText } from "./textClean";
 import { StickmanProjectContext } from "./stickmanContext";
 
@@ -335,7 +335,9 @@ export function ProjectCard({ project, onChanged }) {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm(`Delete "${title}"? This can't be undone from here.`)) return;
+    // Charge for work done: say exactly what comes back (fresh numbers, the same SQL the refund uses).
+    const billing = (await fetchProjectBilling()).get(project.id) ?? null;
+    if (!window.confirm(deleteConfirmText(title, billing))) return;
     setBusy(true);
     const ok = await deleteLongFormProject(project.id);
     setBusy(false);
@@ -366,6 +368,7 @@ export function ProjectCard({ project, onChanged }) {
           {elapsed && <span className="text-[11px] font-medium text-white/35">{elapsed}</span>}
         </div>
         {metaLine && <p className="text-[10.5px] text-white/25">{metaLine}</p>}
+        {usedSoFarText(project._billing) && <p data-testid="used-so-far" className="text-[10.5px] text-white/40">{usedSoFarText(project._billing)}</p>}
       </div>
 
       {/* Full-card click target — positioned so the "⋯" menu (z-10, its own

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { fetchUserLongFormProjects } from "./project";
+import { fetchProjectBilling, fetchUserLongFormProjects } from "./project";
 import { coverFor, fetchProjectCovers, projectTitle } from "./projectCovers";
 import { deriveProjectStageInfo } from "./projectStage";
 import { NeutralCover, ProjectCard } from "./shared";
@@ -104,8 +104,8 @@ export default function LongForm() {
   // Covers: chosen thumbnail -> first finished scene -> niche art.
   const reloadProjects = () => {
     if (!user?.id) return;
-    Promise.all([fetchUserLongFormProjects(user.id), fetchProjectCovers()]).then(([list, covers]) =>
-      setProjects((list ?? []).map((p) => ({ ...p, _thumbnailUrl: coverFor(covers, p) }))));
+    Promise.all([fetchUserLongFormProjects(user.id), fetchProjectCovers(), fetchProjectBilling()]).then(([list, covers, billing]) =>
+      setProjects((list ?? []).map((p) => ({ ...p, _thumbnailUrl: coverFor(covers, p), _billing: billing.get(p.id) ?? null }))));
   };
 
   useEffect(() => {

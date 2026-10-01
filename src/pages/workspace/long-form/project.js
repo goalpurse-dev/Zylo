@@ -64,6 +64,27 @@ export async function deleteLongFormProject(projectId) {
   return !error;
 }
 
+// The signed-in user's active Long Form holds (long_form_project_billing):
+// project id -> { reserved, kept, refundIfDeleted, failedByUs }. "kept" is what
+// already covers work done (charge for work done); a delete gives back the rest —
+// or everything when the video failed because of us.
+export async function fetchProjectBilling() {
+  const { data, error } = await supabase.rpc("long_form_project_billing");
+  if (error) return new Map();
+  return new Map((data ?? []).map((r) => [r.project_id, { reserved: r.reserved, kept: r.kept, refundIfDeleted: r.refund_if_deleted, failedByUs: r.failed_by_us }]));
+}
+
+// The delete confirmation (pure).
+export function deleteConfirmText(title, billing) {
+  const tail = "This can't be undone from here.";
+  if (!billing) return `Delete "${title}"? ${tail}`;
+  if (billing.failedByUs || billing.kept <= 0) return `Delete "${title}"? You'll get back all ${billing.refundIfDeleted} credits. ${tail}`;
+  return `Delete "${title}"? You'll get back ${billing.refundIfDeleted} unused credits. ${billing.kept} credits cover work already done. ${tail}`;
+}
+
+// "Used so far: X of Y credits" (null when there's no active hold).
+export const usedSoFarText = (billing) => (billing ? `Used so far: ${billing.failedByUs ? 0 : billing.kept} of ${billing.reserved} credits` : null);
+
 // Direct RLS-protected read — same pattern as fetchDiscoverySession.
 export async function fetchLongFormProject(projectId) {
   if (!projectId) return null;

@@ -8,7 +8,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { logEvent } from "../_shared/systemLog.ts";
-import { settleIdleReservations } from "../_shared/longFormReservations.ts";
+import { commitWorkDone, settleIdleReservations } from "../_shared/longFormReservations.ts";
 import { decideAutopilot, decideNarration, FAILED_COPY, type AutopilotRecord } from "../_shared/stickman/autopilot.ts";
 import { loadAutopilotInput } from "../_shared/stickman/autopilotState.ts";
 import { decideScenes, type ScenesRecord } from "../_shared/stickman/scenes.ts";
@@ -247,6 +247,9 @@ Deno.serve(async (req) => {
   const results = [];
   for (const id of ids) {
     try { results.push(await advanceOne(id)); } catch (e) { results.push({ projectId: id, error: String(e).slice(0, 200) }); }
+    // Charge for work done: after each tick (script, voice, every batch of scenes) commit
+    // min(quote, 2 x real cost so far) of a progressive hold.
+    try { await commitWorkDone(admin, id); } catch (e) { console.error("[autopilot] commit work done", String(e)); }
   }
   return ok(req, { ok: true, results, narrationWatchdog, idleSettle, failedCopy: FAILED_COPY });
 });

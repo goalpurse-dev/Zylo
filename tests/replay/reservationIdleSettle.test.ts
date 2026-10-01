@@ -32,7 +32,14 @@ function fakeAdmin(db: { reservations: any[]; projects: Record<string, any>; led
     };
     return api;
   };
-  return { admin: { from: q, rpc: async (_: string, a: any) => { const r = db.reservations.find((x) => x.id === a.p_reservation_id)!; r.status = "settled"; settled.push(r.project_id); return { data: r, error: null }; } } as any, settled };
+  // The idle rule now closes the hold (close_long_form_reservation, by project id).
+  const rpc = async (_: string, a: any) => {
+    const r = db.reservations.find((x) => (a.p_reservation_id ? x.id === a.p_reservation_id : x.project_id === a.p_project_id && x.status === "reserved"));
+    if (!r) return { data: null, error: null };
+    r.status = "settled"; settled.push(r.project_id);
+    return { data: { ...r, close_reason: a.p_reason }, error: null };
+  };
+  return { admin: { from: q, rpc } as any, settled };
 }
 
 Deno.test("cron: settles only the idle, non-running projects", async () => {

@@ -13,7 +13,38 @@
 // (release_long_form_reservation/settle_long_form_reservation) are
 // themselves idempotent — calling either on an already-settled/released
 // reservation just returns it unchanged, never refunding twice.
+//
+// CHARGE FOR WORK DONE (2026-10-22, migration 20261022100000): every hold made
+// from then on is PROGRESSIVE —
+//   * commitWorkDone (each autopilot tick: script, voice, every batch of scenes)
+//     commits min(quote, 2 x real cost so far from the ledger);
+//   * the finished video settles the full quote (applyRenderBilling, unchanged);
+//   * delete / idle 7 days refund only the uncommitted part (closeReservation);
+//   * failed because of us refunds EVERYTHING, committed credits included.
+// Holds made before keep the FIXED behaviour (nothing committed until the video,
+// so delete / idle / failure refund it all). The rules live in SQL
+// (close_long_form_reservation, long_form_reservation_view) so the delete preview
+// and the refund can never disagree; billingOnClose mirrors them for the tests.
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// 2 x real cost, in credits at the cheapest credit we sell ($16 / 750 = $0.02133).
+export const CHEAPEST_CREDIT_USD = 0.02133;
+export const WORK_COST_MULTIPLIER = 2;
+export function workCreditsFromUsd(usd: number): number {
+  return Math.max(0, Math.ceil(Number((WORK_COST_MULTIPLIER * usd / CHEAPEST_CREDIT_USD).toFixed(6))));
+}
+export type CloseReason = "deleted" | "idle" | "failed_by_us";
+// What closing an active hold keeps and gives back (mirrors close_long_form_reservation).
+export function billingOnClose(h: { mode: "fixed" | "progressive"; reserved: number; committed: number; workCredits: number; failedByUs: boolean }, reason: CloseReason): { keep: number; refund: number } {
+  const keep = reason === "failed_by_us" || h.failedByUs ? 0
+    : h.mode === "progressive" ? Math.min(h.reserved, Math.max(h.committed, h.workCredits))
+    : h.committed;
+  return { keep, refund: h.reserved - keep };
+}
+// What a progressive hold has committed after a step (never above the quote, never down).
+export function committedAfterWork(h: { mode: "fixed" | "progressive"; reserved: number; committed: number; workCredits: number }): number {
+  return h.mode === "progressive" ? Math.min(h.reserved, Math.max(h.committed, h.workCredits)) : h.committed;
+}
 
 type ReservationOutcome =
   | { found: false }
@@ -55,16 +86,35 @@ export async function releaseReservationIfActive(
       return { found: true, ok: true, reservation: { deferred: true } };
     }
   }
-  const { data, error } = await admin.rpc("release_long_form_reservation", {
-    p_reservation_id: active.id,
-    p_user_id: active.user_id,
-  });
+  // A delete keeps the work already done (progressive holds); every other release
+  // is a stage that failed on our side -> everything comes back.
+  return closeReservation(admin, projectId, reason === "project_deleted" ? "deleted" : "failed_by_us", reason, logEvent);
+}
+
+// Closes the active hold without a finished video (see the rules at the top). Idempotent.
+export async function closeReservation(
+  admin: SupabaseClient,
+  projectId: string,
+  closeReason: CloseReason,
+  reason: string,
+  logEvent?: (source: string, level: string, event: string, data: Record<string, unknown>) => Promise<void>
+): Promise<ReservationOutcome> {
+  const { data, error } = await admin.rpc("close_long_form_reservation", { p_project_id: projectId, p_reason: closeReason });
   if (error) {
-    await logEvent?.("longFormReservations", "error", "release_failed", { projectId, reservationId: active.id, reason, message: error.message });
+    await logEvent?.("longFormReservations", "error", "release_failed", { projectId, reason, closeReason, message: error.message });
     return { found: true, ok: false, error: error.message };
   }
-  await logEvent?.("longFormReservations", "info", "reservation_released", { projectId, reservationId: active.id, reason, refunded: active.reserved_credits - active.committed_credits });
+  if (!data || !(data as any).id) return { found: false };
+  await logEvent?.("longFormReservations", "info", "reservation_closed", { projectId, reservationId: (data as any).id, reason, closeReason: (data as any).close_reason, mode: (data as any).billing_mode, kept: (data as any).committed_credits, refunded: (data as any).released_credits });
   return { found: true, ok: true, reservation: data };
+}
+
+// After paid work finishes (each autopilot tick): commit min(quote, 2 x real cost) of a
+// progressive hold. Returns the committed total (null: no progressive hold).
+export async function commitWorkDone(admin: SupabaseClient, projectId: string): Promise<number | null> {
+  const { data, error } = await admin.rpc("commit_long_form_work_done", { p_project_id: projectId });
+  if (error) throw error;
+  return (data as number | null) ?? null;
 }
 
 // Call at the point a project's paid work FINISHES — refunds reserved -
@@ -110,7 +160,8 @@ export function isReservationIdle(lastActivity: string | null, now: string, days
   return Date.parse(now) - Date.parse(lastActivity) >= days * 86_400_000;
 }
 
-// Cron: settle every active reservation whose project has been idle for 7 days.
+// Cron: close every active reservation whose project has been idle for 7 days (the
+// uncommitted part comes back; all of it if the project failed because of us).
 // Activity = the newest of: reservation created, project updated, autopilot
 // heartbeat, any cost-ledger row. A running autopilot is never idle.
 export async function settleIdleReservations(
@@ -127,7 +178,7 @@ export async function settleIdleReservations(
     const { data: ledger } = await admin.from("long_form_cost_ledger").select("created_at").eq("project_id", (r as any).project_id).order("created_at", { ascending: false }).limit(1).maybeSingle();
     const last = lastActivityAt([(r as any).created_at, (p as any)?.updated_at, (p as any)?.autopilot?.heartbeatAt, (ledger as any)?.created_at]);
     if (!isReservationIdle(last, now)) continue;
-    const out = await settleReservationIfActive(admin, (r as any).project_id, "idle_7_days", logEvent);
+    const out = await closeReservation(admin, (r as any).project_id, "idle", "idle_7_days", logEvent);
     if (out.found && out.ok) settled.push((r as any).project_id);
   }
   return { checked: rows?.length ?? 0, settled };
