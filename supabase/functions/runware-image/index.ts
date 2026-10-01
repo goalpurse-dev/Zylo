@@ -487,13 +487,24 @@ const KLING_O3_AIR = "klingai:kling-image@o3";
 type ImageModelCapabilities = {
   supportsNegativePrompt: boolean;
   referenceInputMode: "direct" | "upload";
+  // When set, the folded "AVOID: …" clause (models without negativePrompt) is
+  // always kept whole: the scene prompt is trimmed first so prompt + clause fit
+  // this model's positivePrompt limit.
+  maxPromptChars?: number;
 };
 const DEFAULT_IMAGE_MODEL_CAPABILITIES: ImageModelCapabilities = {
   supportsNegativePrompt: true,
   referenceInputMode: "upload",
 };
+// GPT Image 2 (2026-10-01): Runware rejects any negativePrompt for this
+// architecture ("unsupportedArchitectureNegativePrompt … gpt_image_2"), which
+// failed every image:fruit-v2 job since 22 Sep. Its exclusions ("text,
+// watermark, logo, …") move into the positive prompt as an AVOID clause; its
+// prompt limit is 2,500 characters. References keep the upload path.
+const GPT_IMAGE_2_AIR = "openai:gpt-image@2";
 const IMAGE_MODEL_CAPABILITIES: Record<string, ImageModelCapabilities> = {
   [KLING_O3_AIR]: { supportsNegativePrompt: false, referenceInputMode: "direct" },
+  [GPT_IMAGE_2_AIR]: { supportsNegativePrompt: false, referenceInputMode: "upload", maxPromptChars: 2500 },
 };
 function imageModelCapabilities(airTag: string): ImageModelCapabilities {
   return IMAGE_MODEL_CAPABILITIES[airTag] ?? DEFAULT_IMAGE_MODEL_CAPABILITIES;
@@ -761,8 +772,11 @@ async function processRunwareImageJob(body: any): Promise<void> {
   // exclusions (anti-text/style/reference-copying rules matter for scene
   // quality) — fold them into the positive prompt as an explicit AVOID
   // clause instead of dropping them.
+  const avoidClause = `\nAVOID: ${safeNegative}`;
   const effectivePositivePrompt = safeNegative && !capabilities.supportsNegativePrompt
-    ? safeImagePositivePrompt(`${safePrompt}\nAVOID: ${safeNegative}`)
+    ? (capabilities.maxPromptChars
+      ? `${safePrompt.slice(0, Math.max(2, capabilities.maxPromptChars - avoidClause.length))}${avoidClause}`
+      : safeImagePositivePrompt(`${safePrompt}${avoidClause}`))
     : safePrompt;
   const task: any = {
     taskType:       "imageInference",
