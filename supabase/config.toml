@@ -166,3 +166,6 @@ verify_jwt = false
 # Phase 6a: called by the cron sweep and stage nudges with x-autopilot-secret (no user JWT).
 [functions.advance-long-form-autopilot]
 verify_jwt = false
+
+[functions.email-unsubscribe]
+verify_jwt = false

@@ -12,3 +12,7 @@ dist-ssr
 # IP art replacement: originals backup + new art under review (large, not committed)
 art-backup/
 art-review/
+
+# Long Form launch email: local send log + preview
+emails/.sent/
+emails/.preview/

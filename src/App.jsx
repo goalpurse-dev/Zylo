@@ -332,6 +332,7 @@ import { Analytics } from "@vercel/analytics/react";
 
 import NewHome from "./pages/home/home.jsx";
 import AuthCallbackPage from "./pages/AuthCallback.jsx";
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe.jsx"));
 const FaceAsmrPage           = lazy(() => import("./pages/workspace/FaceAsmr.jsx"));
 const MicroCameraAnimalPage  = lazy(() => import("./pages/workspace/MicroCameraAnimal.jsx"));
 const ClayRescuePage         = lazy(() => import("./pages/workspace/ClayRescue.jsx"));
@@ -573,6 +574,8 @@ return (
 
           {/* Auth callback — handles OAuth code exchange */}
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          {/* Email footer: signed one-click unsubscribe (noindex) */}
+          <Route path="/unsubscribe" element={<Unsubscribe />} />
 
           {/* Blogs */}
 
