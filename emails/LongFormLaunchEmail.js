@@ -8,6 +8,7 @@ const APP = "https://tryzyvo.com";
 // The Long Form lobby (src/pages/workspace/long-form/index.jsx). Public: a
 // signed-out reader sees it too and is asked to sign in only to create.
 const LONG_FORM_URL = `${APP}/long-form`;
+const PRICING_URL = `${APP}/workspace/pricing`;
 const UTM = "utm_source=email&utm_medium=launch&utm_campaign=long_form_launch";
 const link = (url, content) => `${url}${url.includes("?") ? "&" : "?"}${UTM}&utm_content=${content}`;
 
@@ -146,10 +147,10 @@ export function LongFormLaunchEmail({ name, unsubscribeUrl, oneClickUrl = unsubs
 
   <!-- Plans + final CTA -->
   <tr><td style="background:${CARD};border:1px solid ${LINE};border-radius:18px;padding:28px;text-align:center;">
-    <h2 style="margin:0 0 8px 0;font:800 20px ${FONT};color:${TEXT};">Included in your plan</h2>
+    <h2 style="margin:0 0 8px 0;font:800 20px ${FONT};color:${TEXT};">Available from Starter</h2>
     <p style="margin:0 0 20px 0;font:400 14px/1.6 ${FONT};color:${MUTED};">
       A 10-minute video starts at 250 credits.<br>
-      That's 3 videos a month on Starter, 6 on Pro and 12 on Generative.
+      Starter gets 3 a month, Pro 6, Generative 12.
     </p>
     <table role="presentation" align="center" cellpadding="0" cellspacing="0"><tr><td style="border-radius:12px;background:${LIME};">
       <a href="${link(LONG_FORM_URL, "cta_bottom")}" target="_blank"
@@ -157,6 +158,9 @@ export function LongFormLaunchEmail({ name, unsubscribeUrl, oneClickUrl = unsubs
         Start a Long Form video
       </a>
     </td></tr></table>
+    <div style="margin-top:14px;font:600 13px ${FONT};">
+      <a href="${link(PRICING_URL, "see_plans")}" target="_blank" style="color:${MUTED};text-decoration:underline;">See plans</a>
+    </div>
   </td></tr>
 
   <!-- Footer -->
@@ -185,7 +189,8 @@ Made with Zyvo, live on YouTube:
 - ${VIDEOS[0].title}: ${VIDEOS[0].url}
 - ${VIDEOS[1].title}: ${VIDEOS[1].url}
 
-A 10-minute video starts at 250 credits: 3 a month on Starter, 6 on Pro, 12 on Generative.
+Available from Starter. A 10-minute video starts at 250 credits. Starter gets 3 a month, Pro 6, Generative 12.
+See plans: ${link(PRICING_URL, "see_plans_text")}
 
 Make your first video: ${link(LONG_FORM_URL, "text")}
 
