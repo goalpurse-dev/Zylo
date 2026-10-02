@@ -93,8 +93,11 @@ Deno.serve(async (req) => {
   });
   const sections: { title: string; count: number }[] = [];
   for (const s of scenes) { const last = sections[sections.length - 1]; if (last?.title === s.section) last.count++; else sections.push({ title: s.section, count: 1 }); }
+  // Runware balance guard: scenes waiting while drawing is paused (never failed).
+  const { data: guard } = await admin.from("provider_balance_guard").select("paused").eq("provider", "runware").maybeSingle();
+  const drawingPaused = !!guard?.paused && scenes.some((s: any) => s.status === "queued");
   return ok(req, {
-    run, tier, creditsPerScene: sceneCredits(tier), sections, scenes,
+    run, tier, creditsPerScene: sceneCredits(tier), sections, scenes, drawingPaused,
     counts: { scenes: scenes.length, drawn: scenes.filter((s: any) => s.imageUrl).length, flagged: scenes.filter((s: any) => s.flagged).length },
     audio: narrationRow ? { url: narrationRow.audio_url, durationSeconds: Number(narrationRow.audio_duration_seconds) } : null,
     title: project.selected_title ?? null,

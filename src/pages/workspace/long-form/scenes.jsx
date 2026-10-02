@@ -316,6 +316,9 @@ export function ScenesPage({ projectId, embedded = false, onDone = null }) {
             <span data-testid="scenes-counter" className="font-semibold text-white/85">{total ? `${drawn} of ${total} scenes drawn` : "Planning every scene against your voiceover…"}</span>
             {!run?.failed && <span className="text-white/45"><span data-testid="scenes-elapsed">{formatClock(elapsed)} elapsed</span>{run?.etaSeconds?.[1] ? ` · ${formatEta(run.etaSeconds)}` : ""}</span>}
           </div>
+          {data?.drawingPaused && (
+            <p data-testid="drawing-paused" className="mt-2 flex items-center gap-2 rounded-xl border border-amber-300/25 bg-amber-300/[0.06] px-3 py-2 text-[13px] text-amber-100"><RotateCw className="h-4 w-4 shrink-0" />Drawing is paused for a moment, your video continues automatically.</p>
+          )}
           {run?.failed && (
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-400/20 bg-red-400/[0.06] px-4 py-3">
               <p className="flex items-center gap-2 text-[13px] text-red-200"><TriangleAlert className="h-4 w-4" />{run.failed.message}</p>

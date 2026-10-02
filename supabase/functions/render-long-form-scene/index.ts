@@ -24,7 +24,8 @@ import { placeTextLayer } from "../_shared/stickman/textPlacement.ts";
 import { DEFAULT_POSTPROCESS } from "../_shared/stickman/sceneImagePost.ts";
 import { SCENE_LEASE_S } from "../_shared/stickman/scenes.ts";
 import { refundAddon } from "../_shared/stickman/addons.ts";
-import { DRAW_ATTEMPTS, safeFallbackContract } from "../_shared/stickman/sceneFallback.ts";
+import { DRAW_ATTEMPTS, needsTextFreeComposition, safeFallbackContract } from "../_shared/stickman/sceneFallback.ts";
+import { checkRunwareGuard, markOutOfBalance, OUT_OF_BALANCE } from "../_shared/runwareBalance.ts";
 import { logEvent } from "../_shared/systemLog.ts";
 import { recordCost } from "../_shared/costLedger.ts";
 import { nudgeAutopilot } from "../_shared/stickman/autopilotNudge.ts";
@@ -165,9 +166,11 @@ async function drawScene(scene: any) {
   // last draw from a simplified safe contract (no in-scene text; words go to the overlay).
   let r: Awaited<ReturnType<typeof renderBeat>> | null = null;
   let usedFallback = false;
+  // V2: a scene built around a screen/card/label is drawn text-free from the start (words -> overlay).
+  const textFree = needsTextFreeComposition(tier, beat.contract, set);
   const failures: string[] = [];
   for (const a of DRAW_ATTEMPTS) {
-    const contract = a.fallback ? safeFallbackContract(beat.contract, set) : beat.contract;
+    const contract = a.fallback || textFree ? safeFallbackContract(beat.contract, set) : beat.contract;
     try {
       r = await renderBeat(tier, { startMs: beat.startMs, contract }, deps);
       if (!r.failed) { usedFallback = a.fallback; break; }
@@ -182,6 +185,13 @@ async function drawScene(scene: any) {
   for (const c of costs) await recordCost(admin, { projectId, stage: c.stage, provider: c.stage === "qa" ? "openai" : "runware", model: c.model, units: { calls: 1, images: c.stage === "qa" ? 0 : 1, beat: beat.sequence }, usd: c.usd, estimated: !c.real, sourceTable: "long_form_scene_images", sourceId: scene.id });
   // Every attempt's spend (failed tries included).
   const costUsd = Number(costs.reduce((a, c) => a + c.usd, 0).toFixed(5));
+  const outOfBalance = failures.find((f) => OUT_OF_BALANCE.test(f));
+  if ((!r || r.failed) && outOfBalance) {
+    // Our Runware account can't pay: the scene WAITS (back to queued, attempt not counted) and drawing pauses.
+    await admin.from("long_form_scene_images").update({ status: "queued", lease_until: null, attempts: Math.max(0, Number(scene.attempts ?? 1) - 1), qa: { waiting: "provider_balance" } }).eq("id", scene.id);
+    await markOutOfBalance(admin, outOfBalance);
+    return { failed: false, waiting: true };
+  }
   if (!r || r.failed) {
     await admin.from("long_form_scene_images").update({ status: "failed", error: "image_failed", cost_usd: costUsd, qa: { steps: r?.log.map((l) => l.step) ?? [], failures, wallMs: Date.now() - t0 }, lease_until: null }).eq("id", scene.id);
     await refundSceneAddon(scene);
@@ -215,7 +225,7 @@ async function drawScene(scene: any) {
   await admin.from("long_form_scene_images").update({
     status: "ready", image_url: imageUrl, master_url: masterUrl, original_url: r.imageURL, overlay: layer, overlay_text: finalText,
     warnings: [...(soft ? ["image_check_soft"] : []), ...(textMismatch ? ["text_mismatch"] : [])], cost_usd: costUsd, credits_charged: Number(scene.addon_credits ?? 0),
-    qa: { steps: r.log.map((l) => l.step), retries: r.retries, wallMs: Date.now() - t0, timings, billed, dhash, ...(usedFallback ? { safeFallback: true, failures } : {}) }, ready_at: new Date().toISOString(), lease_until: null, error: null,
+    qa: { steps: r.log.map((l) => l.step), retries: r.retries, wallMs: Date.now() - t0, timings, billed, dhash, ...(textFree ? { textFree: true } : {}), ...(usedFallback ? { safeFallback: true, failures } : {}) }, ready_at: new Date().toISOString(), lease_until: null, error: null,
   }).eq("id", scene.id);
   return { failed: false, billed };
 }
@@ -226,6 +236,9 @@ Deno.serve(async (req) => {
   const body = await req.json().catch(() => ({}));
   const projectId = String(body?.projectId ?? "");
   if (!projectId) return err(req, "Missing projectId", 400);
+  // Runware balance guard: below the threshold nothing is claimed — queued scenes wait, then resume.
+  const guard = await checkRunwareGuard(admin);
+  if (guard.paused) return ok(req, { ok: true, claimed: false, paused: true });
   const { data: claimed, error } = await admin.rpc("claim_long_form_scene_image", { p_project_id: projectId, p_scene_id: body?.sceneId ?? null, p_lease_seconds: SCENE_LEASE_S });
   if (error) return err(req, "claim failed", 500, { reason: error.message });
   const scene = (claimed ?? [])[0];

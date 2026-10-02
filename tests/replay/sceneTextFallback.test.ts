@@ -54,11 +54,48 @@ Deno.test("safe fallback: same idea, nothing with writing, a plain composition, 
 
 Deno.test("wiring: the worker falls back once; the render refuses holes; failed scenes say Try again (free)", () => {
   const w = read("supabase/functions/render-long-form-scene/index.ts");
-  assertMatch(w, /const contract = a\.fallback \? safeFallbackContract\(beat\.contract, set\) : beat\.contract;/);
+  assertMatch(w, /const contract = a\.fallback \|\| textFree \? safeFallbackContract\(beat\.contract, set\) : beat\.contract;/);
   assertMatch(read("supabase/functions/long-form-render/index.ts"), /A finished video never has an empty or failed scene in it\./);
   const ui = read("src/pages/workspace/long-form/scenes.jsx");
   assertMatch(ui, /Try again \(free\)/);
   assertMatch(ui, /const flaggedCost = \(data\.counts\.flagged - failedFlagged\) \* data\.creditsPerScene;/);
   // The server already redraws a failed scene for 0 credits.
   assertMatch(read("supabase/functions/update-long-form-scene/index.ts"), /olds\.get\(n\)\?\.status === "failed" \? 0 : credits/);
+});
+
+// ---- V2 text-free from the start + the Runware balance guard ----
+import { needsTextFreeComposition, wordsOnObjects } from "../../supabase/functions/_shared/stickman/sceneFallback.ts";
+import { guardDecision, isFresh, OUT_OF_BALANCE } from "../../supabase/functions/_shared/runwareBalance.ts";
+
+Deno.test("V2: a scene built around a screen/card is text-free from the start; its words become the overlay", () => {
+  assert(needsTextFreeComposition("V2", screenBeat, set));
+  assert(!needsTextFreeComposition("V3", screenBeat, set)); // V3/V4 OCR-check their words
+  assert(!needsTextFreeComposition("V2", { ...screenBeat, propIds: [] , settingId: SETTING }, base as any) || /screen|sign|card|label/i.test(JSON.stringify((base as any).settings[SETTING])));
+  assertEquals(wordsOnObjects(screenBeat, set), "NON-REFUND");
+  const c = safeFallbackContract(screenBeat, set);
+  assertEquals(c.textIntent.text, "NON-REFUND");
+  assertEquals(c.textIntent.kind, "HEADLINE");
+});
+
+Deno.test("balance guard: below the threshold pauses (alert once), above resumes, a failed read keeps the state", () => {
+  const row = { threshold_usd: 20, balance_usd: 50, checked_at: null, paused: false, paused_since: null, alerted_at: null };
+  const now = "2026-10-02T12:00:00.000Z";
+  assertEquals(guardDecision(row, 12.5, now), { paused: true, pausedSince: now, alert: true, resumed: false });
+  assertEquals(guardDecision({ ...row, paused: true, paused_since: "x" }, 8, now), { paused: true, pausedSince: "x", alert: false, resumed: false });
+  assertEquals(guardDecision({ ...row, paused: true, paused_since: "x" }, 120, now), { paused: false, pausedSince: null, alert: false, resumed: true });
+  assertEquals(guardDecision({ ...row, paused: true, paused_since: "x" }, null, now).paused, true);
+  assert(isFresh("2026-10-02T11:59:30.000Z", now) && !isFresh("2026-10-02T11:58:00.000Z", now));
+  assert(OUT_OF_BALANCE.test("Insufficient available balance. Some of your credits are currently reserved"));
+  const w = read("supabase/functions/render-long-form-scene/index.ts");
+  assertMatch(w, /if \(guard\.paused\) return ok\(req, \{ ok: true, claimed: false, paused: true \}\);/);
+  assertMatch(w, /status: "queued", lease_until: null/); // out of balance -> the scene waits
+  assertMatch(read("src/pages/workspace/long-form/scenes.jsx"), /Drawing is paused for a moment, your video continues automatically\./);
+});
+
+Deno.test("fallback idea text always passes the prompt check (2f1b7e40 beat 32: 'again'); V2 SHORT_TEXT scenes go text-free too", async () => {
+  const { cleanIdea } = await import("../../supabase/functions/_shared/stickman/sceneFallback.ts");
+  assertEquals(cleanIdea(`The hunter tries again, same as before, with the "spear"`), "The hunter tries, with the spear");
+  const c = safeFallbackContract({ ...screenBeat, propIds: [], userSummary: "He throws again and misses" }, set);
+  assertEquals(compileBeatPrompt(beat(c), set, { noTextAnywhere: true }).lintErrors, []);
+  assert(needsTextFreeComposition("V2", { ...screenBeat, textIntent: { mode: "SHORT_TEXT", text: "NON-REFUND" } }, set));
 });

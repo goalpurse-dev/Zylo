@@ -3,13 +3,17 @@
 // scene (old one kept in history, addon_credits 0) + the scene step marked
 // running so the autopilot cron draws them. Waits up to 12 min and reports.
 // Paid (provider cost only): ~$0.003 per V2 scene, ~$0.045 per V3 scene.
-//   node --env-file=.env.local scripts/redrawFailedScenes.mjs <projectId>
+//   node --env-file=.env.local scripts/redrawFailedScenes.mjs <projectId> [beat,beat,...]
+// With a beat list: redraws exactly those current scenes (free), whatever their status.
 import { createClient } from "@supabase/supabase-js";
 
-const [P] = process.argv.slice(2);
+const [P, beatList] = process.argv.slice(2);
+const only = beatList ? beatList.split(",").map(Number) : null;
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 const since = new Date().toISOString();
-const { data: failed } = await admin.from("long_form_scene_images").select("*").eq("project_id", P).eq("is_current", true).eq("status", "failed").order("beat_sequence");
+let q = admin.from("long_form_scene_images").select("*").eq("project_id", P).eq("is_current", true).order("beat_sequence");
+q = only ? q.in("beat_sequence", only) : q.eq("status", "failed");
+const { data: failed } = await q;
 if (!failed?.length) { console.log("No failed scenes."); process.exit(0); }
 const { data: project } = await admin.from("long_form_projects").select("autopilot, deleted_at").eq("id", P).single();
 if (project.deleted_at) { console.log("Project is deleted — not redrawing."); process.exit(1); }
