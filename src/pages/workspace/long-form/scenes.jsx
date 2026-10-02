@@ -94,9 +94,12 @@ function SceneCard({ scene, credits, active, pending, undoable, busy, drawing, o
             <span className="inline-flex items-center gap-1.5 text-[12px] text-white/45"><RotateCw className="h-3.5 w-3.5 animate-spin" />Drawing…</span>
           ) : (
             <>
-              <button type="button" disabled={busy || (!finished && scene.status !== "failed")} onClick={() => onAction("regenerate")} data-testid="regenerate"
+              {/* A scene WE failed to draw is redrawn free (the server charges 0 for it). */}
+              <button type="button" disabled={busy || (!finished && scene.status !== "failed")} onClick={() => onAction("regenerate")} data-testid={scene.status === "failed" ? "try-again-free" : "regenerate"}
                 className="zyvo-btn-shimmer inline-flex items-center gap-1.5 rounded-lg bg-lime-300 px-3 py-1.5 text-[12px] font-bold text-[#11150D] transition hover:bg-lime-200 disabled:opacity-50">
-                <RotateCw className="h-3.5 w-3.5" />Regenerate <span className="inline-flex items-center gap-0.5 rounded bg-black/10 px-1"><Coins className="h-3 w-3" />{credits}</span>
+                {scene.status === "failed"
+                  ? <><RotateCw className="h-3.5 w-3.5" />Try again (free)</>
+                  : <><RotateCw className="h-3.5 w-3.5" />Regenerate <span className="inline-flex items-center gap-0.5 rounded bg-black/10 px-1"><Coins className="h-3 w-3" />{credits}</span></>}
               </button>
               {!drawing && (
                 <>
@@ -331,7 +334,9 @@ export function ScenesPage({ projectId, embedded = false, onDone = null }) {
   if (embedded) return null; // the generating screen moves on to the Scenes home
 
   // ---------------- Review ----------------
-  const flaggedCost = data.counts.flagged * data.creditsPerScene;
+  // Failed scenes are redrawn free; only the flagged scenes that did draw are charged.
+  const failedFlagged = data.scenes.filter((x) => x.flagged && x.status === "failed").length;
+  const flaggedCost = (data.counts.flagged - failedFlagged) * data.creditsPerScene;
   return shell(
     <>
       <div className="sticky top-[var(--lf-header-h,64px)] z-20 -mx-1 mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-white/[0.08] bg-[#0f1112]/95 px-4 py-3 backdrop-blur">
@@ -344,7 +349,9 @@ export function ScenesPage({ projectId, embedded = false, onDone = null }) {
         </div>
         {data.counts.flagged > 0 && (
           <button type="button" disabled={busy} onClick={() => act(null, "regenerate_flagged")} className="zyvo-btn-shimmer inline-flex items-center gap-1.5 rounded-lg bg-lime-300 px-3 py-2 text-[12.5px] font-bold text-[#11150D] disabled:opacity-50">
-            <Sparkles className="h-4 w-4" />Regenerate flagged <span className="inline-flex items-center gap-0.5 rounded bg-black/10 px-1"><Coins className="h-3 w-3" />{flaggedCost}</span>
+            {flaggedCost === 0
+              ? <><RotateCw className="h-4 w-4" />Try again (free) · {failedFlagged}</>
+              : <><Sparkles className="h-4 w-4" />Regenerate flagged <span className="inline-flex items-center gap-0.5 rounded bg-black/10 px-1"><Coins className="h-3 w-3" />{flaggedCost}</span>{failedFlagged > 0 && <span className="text-[11px] font-semibold opacity-70">· {failedFlagged} free</span>}</>}
           </button>
         )}
       </div>

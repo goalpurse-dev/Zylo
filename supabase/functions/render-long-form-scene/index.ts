@@ -24,6 +24,7 @@ import { placeTextLayer } from "../_shared/stickman/textPlacement.ts";
 import { DEFAULT_POSTPROCESS } from "../_shared/stickman/sceneImagePost.ts";
 import { SCENE_LEASE_S } from "../_shared/stickman/scenes.ts";
 import { refundAddon } from "../_shared/stickman/addons.ts";
+import { DRAW_ATTEMPTS, safeFallbackContract } from "../_shared/stickman/sceneFallback.ts";
 import { logEvent } from "../_shared/systemLog.ts";
 import { recordCost } from "../_shared/costLedger.ts";
 import { nudgeAutopilot } from "../_shared/stickman/autopilotNudge.ts";
@@ -120,7 +121,7 @@ async function drawScene(scene: any) {
   const timings: Record<string, number> = {};
   const timed = async <T>(k: string, f: () => Promise<T>): Promise<T> => { const s = Date.now(); try { return await f(); } finally { timings[k] = (timings[k] ?? 0) + Date.now() - s; } };
 
-  const r = await renderBeat(tier, { startMs: beat.startMs, contract: beat.contract }, {
+  const deps: Parameters<typeof renderBeat>[2] = {
     compile: (c) => { const p = compileBeatPrompt({ ...beat, contract: c }, set, { plantFrame, ...compileOptionsFor(tier, c) }); if (p.lintErrors.length) throw new Error(`prompt check: ${p.lintErrors.join("; ")}`); return p; },
     render: async (task) => { const res = await timed("renderMs", () => runware(task)); costs.push({ stage: "images", model: task.model, usd: Number(res.result.cost ?? 0), real: res.result.cost != null }); return { imageURL: res.result.imageURL, cost: Number(res.result.cost ?? 0) }; },
     codeCheck: async (url) => {
@@ -159,12 +160,30 @@ async function drawScene(scene: any) {
       textBlocked = p.blocked;
       return bytes;
     },
-  });
+  };
+  // Never leave a hole: the normal prompt twice (a prompt check or a provider error), then ONE
+  // last draw from a simplified safe contract (no in-scene text; words go to the overlay).
+  let r: Awaited<ReturnType<typeof renderBeat>> | null = null;
+  let usedFallback = false;
+  const failures: string[] = [];
+  for (const a of DRAW_ATTEMPTS) {
+    const contract = a.fallback ? safeFallbackContract(beat.contract, set) : beat.contract;
+    try {
+      r = await renderBeat(tier, { startMs: beat.startMs, contract }, deps);
+      if (!r.failed) { usedFallback = a.fallback; break; }
+      failures.push(a.fallback ? "fallback: image_failed" : "image_failed");
+    } catch (e) {
+      r = null;
+      failures.push(`${a.fallback ? "fallback: " : ""}${String(e).slice(0, 200)}`);
+    }
+  }
+  if (usedFallback) await logEvent("render-long-form-scene", "warn", "scene_safe_fallback", { projectId, sceneId: scene.id, beat: beat.sequence, failures });
 
   for (const c of costs) await recordCost(admin, { projectId, stage: c.stage, provider: c.stage === "qa" ? "openai" : "runware", model: c.model, units: { calls: 1, images: c.stage === "qa" ? 0 : 1, beat: beat.sequence }, usd: c.usd, estimated: !c.real, sourceTable: "long_form_scene_images", sourceId: scene.id });
-  const costUsd = Number(r.cost.toFixed(5));
-  if (r.failed) {
-    await admin.from("long_form_scene_images").update({ status: "failed", error: "image_failed", cost_usd: costUsd, qa: { steps: r.log.map((l) => l.step), wallMs: Date.now() - t0 }, lease_until: null }).eq("id", scene.id);
+  // Every attempt's spend (failed tries included).
+  const costUsd = Number(costs.reduce((a, c) => a + c.usd, 0).toFixed(5));
+  if (!r || r.failed) {
+    await admin.from("long_form_scene_images").update({ status: "failed", error: "image_failed", cost_usd: costUsd, qa: { steps: r?.log.map((l) => l.step) ?? [], failures, wallMs: Date.now() - t0 }, lease_until: null }).eq("id", scene.id);
     await refundSceneAddon(scene);
     return { failed: true };
   }
@@ -196,7 +215,7 @@ async function drawScene(scene: any) {
   await admin.from("long_form_scene_images").update({
     status: "ready", image_url: imageUrl, master_url: masterUrl, original_url: r.imageURL, overlay: layer, overlay_text: finalText,
     warnings: [...(soft ? ["image_check_soft"] : []), ...(textMismatch ? ["text_mismatch"] : [])], cost_usd: costUsd, credits_charged: Number(scene.addon_credits ?? 0),
-    qa: { steps: r.log.map((l) => l.step), retries: r.retries, wallMs: Date.now() - t0, timings, billed, dhash }, ready_at: new Date().toISOString(), lease_until: null, error: null,
+    qa: { steps: r.log.map((l) => l.step), retries: r.retries, wallMs: Date.now() - t0, timings, billed, dhash, ...(usedFallback ? { safeFallback: true, failures } : {}) }, ready_at: new Date().toISOString(), lease_until: null, error: null,
   }).eq("id", scene.id);
   return { failed: false, billed };
 }

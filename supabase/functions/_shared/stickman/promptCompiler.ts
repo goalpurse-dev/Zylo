@@ -274,8 +274,20 @@ export function scrubForNoText(concept: string): string {
 // bones" and "small labeled mounts" still drew caption cards with the prompt's
 // own words (f90160bc 54/87/88) — label strips/cards are dropped outright and
 // "labeled" objects are just the objects.
-export function scrubSettingForNoText(block: string): string {
+// The words written ON an object, for a no-text picture (596af432: "a red label reading
+// NON-REFUND", "a card with the handwritten label 'NON-REFUND / Must decide by [date]'", "an
+// envelope 'bonus'"): "reading/saying/marked X", quoted strings and ALL-CAPS words go; the
+// object stays (and V2_BLANK makes its label blank).
+export function stripWrittenText(block: string): string {
   return tidy(String(block ?? "")
+    .replace(/\s*\b(?:reading|saying|that says|which says|with the words?|marked|stamped|labell?ed|titled|captioned)\s+(?:['"‘’“”][^'"‘’“”]{1,80}['"‘’“”]|[A-Z0-9][A-Z0-9'’!?.\/&$%-]*(?:\s+[A-Z0-9][A-Z0-9'’!?.\/&$%-]*){0,7})/g, "")
+    .replace(/(^|[\s(])['‘“"][^'’”"]{1,80}['’”"](?=[\s.,;:)]|$)/g, "$1")
+    .replace(/\b[A-Z]{2,}(?:[-\/][A-Z]{2,})+\b/g, "")
+    .replace(/\b[A-Z]{2,}(?:\s+[A-Z]{2,})+\b/g, "")
+    .replace(/\[[^\]]{1,30}\]/g, ""));
+}
+export function scrubSettingForNoText(block: string): string {
+  return tidy(stripWrittenText(String(block ?? ""))
     .replace(/,?\s*[\w-]+ for (?:text|labels?|lettering)\b/gi, "")
     .replace(/,?\s*(?:with\s+)?(?:an?\s+)?(?:small\s+|tiny\s+)?(?:display\s+)?(?:blank\s+)?(?:labels?|captions?|name|price)\s+(?:strips?|cards?|plaques?|tags?|plates?)\b/gi, "")
     .replace(/\b(?:labell?ed|captioned|tagged)\s+/gi, "")
@@ -316,7 +328,7 @@ export function needsHandRule(c: any, concept: string): boolean {
 export function frameRuleFor(c: any, composite: boolean): string {
   return c.treatment === "SPLIT" || c.treatment === "COMPARISON" ? (composite ? SINGLE_FRAME_RULE : TWO_HALVES_RULE) : SINGLE_FRAME_RULE;
 }
-export const unlabelProp = (block: string) => scrubSettingForNoText(blankTextObjects(block));
+export const unlabelProp = (block: string) => scrubSettingForNoText(blankTextObjects(stripWrittenText(block)));
 
 /* ============================ Lints ============================ */
 
@@ -533,6 +545,10 @@ export function compileBeatPrompt(beat: { sequence: number; startMs: number; end
   const frame = c.treatment === "CALLBACK" && opts.plantFrame ? opts.plantFrame : frameLine(frameC, concept);
 
   const blocksUsed: string[] = [];
+  // A prop's text exactly as it goes into the prompt — unlabelled when no text is wanted — and
+  // that same text is what the lint requires. (596af432: the prompt had the unlabelled prop but the
+  // lint required the labelled one, so 8 scenes with a screen/card failed every draw and redraw.)
+  const usePropBlock = (p: string) => { const b = opts.noTextAnywhere ? unlabelProp(set.props[p].block) : set.props[p].block; blocksUsed.push(b); return b; };
   const castBlocks: string[] = [];
   const carried = new Set<string>();
   const positions = layoutFor(c.subjects ?? []);
@@ -544,14 +560,14 @@ export function compileBeatPrompt(beat: { sequence: number; startMs: number; end
     const block = castBlock(who, (s.presence ?? "full") as Presence);
     blocksUsed.push(block);
     castBlocks.push(block);
-    const worn = (s.wearing ?? []).filter((p: string) => set.props[p]).map((p: string) => { carried.add(p); blocksUsed.push(set.props[p].block); return ` Wearing: ${set.props[p].block}`; }).join("");
-    const held = (s.holding ?? []).filter((p: string) => set.props[p]).map((p: string) => { carried.add(p); blocksUsed.push(set.props[p].block); return ` Holding: ${set.props[p].block}`; }).join("");
+    const worn = (s.wearing ?? []).filter((p: string) => set.props[p]).map((p: string) => { carried.add(p); return ` Wearing: ${usePropBlock(p)}`; }).join("");
+    const held = (s.holding ?? []).filter((p: string) => set.props[p]).map((p: string) => { carried.add(p); return ` Holding: ${usePropBlock(p)}`; }).join("");
     const action = String(s.action ?? "").trim();
     const face = s.presence === "hands" || s.presence === "back" ? "" : ` Face: ${faceFor(s.expression, action)}.`;
     return `${positions[k]}${block}${worn}${held}${action ? ` Pose: ${action}.` : ""}${face}`;
   });
   // Phase 6e-fix: with no text wanted, props are unlabelled ("labelled trays" drew "Butchered bones").
-  const props = (c.propIds ?? []).filter((p: string) => set.props[p] && !carried.has(p)).map((p: string) => { blocksUsed.push(set.props[p].block); return opts.noTextAnywhere ? unlabelProp(set.props[p].block) : set.props[p].block; });
+  const props = (c.propIds ?? []).filter((p: string) => set.props[p] && !carried.has(p)).map((p: string) => usePropBlock(p));
   const baseText = opts.noTextAnywhere && c.textIntent?.mode === "SHORT_TEXT" ? textInstruction({ ...c, textIntent: { ...c.textIntent, mode: "PROGRAMMATIC", zone: "top" } }) : textInstruction(c);
   const text = opts.noTextAnywhere
     ? `${baseText.replace(NO_TEXT_INSTRUCTION, V2_NO_TEXT_INSTRUCTION)}${c.treatment === "TIMELINE_BAR" ? ` ${UNLABELED_TIMELINE}` : ""}`

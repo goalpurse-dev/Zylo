@@ -264,7 +264,13 @@ Deno.serve(async (req) => {
   edl.width = size.width; edl.height = size.height; edl.resolution = resolution;
   // Full-res masters for the crop (never upsampled); the worker reads their size.
   const ids = [...new Set(edl.clips.map((c: any) => c.sceneId).filter(Boolean))];
-  const { data: scenes } = ids.length ? await admin.from("long_form_scene_images").select("id, image_url, master_url").in("id", ids) : { data: [] };
+  const { data: scenes } = ids.length ? await admin.from("long_form_scene_images").select("id, image_url, master_url, status, beat_sequence").in("id", ids) : { data: [] };
+  // A finished video never has an empty or failed scene in it.
+  const holes = (scenes ?? []).filter((s: any) => !s.image_url || s.status === "failed");
+  if (holes.length || (scenes ?? []).length < ids.length) {
+    const n = holes.length || ids.length - (scenes ?? []).length;
+    return err(req, `${n} scene${n === 1 ? "" : "s"} still need${n === 1 ? "s" : ""} a picture. Use \"Try again (free)\" on the Scenes page first.`, 409, { scenes: holes.map((s: any) => s.beat_sequence) });
+  }
   const masterOf = new Map((scenes ?? []).map((s: any) => [s.id, s.master_url ?? null]));
   // (the worker falls back to the 1920x1080 picture if a master can't be fetched)
   for (const c of edl.clips) { const m = c.sceneId ? masterOf.get(c.sceneId) : null; if (m) c.masterImage = m; }
