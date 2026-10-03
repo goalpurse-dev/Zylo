@@ -66,11 +66,27 @@ test("JSON-LD on /: Organization + WebSite named Zyvo, with logo and the YouTube
   assert.equal(org.logo.url, `${SITE_URL}/logo.png`);
   assert.ok(existsSync(join(root, "public/logo.png")));
   assert.deepEqual(org.sameAs, BRAND.sameAs);
-  assert.match(org.sameAs[0], /^https:\/\/www\.youtube\.com\/@/);
+  // Official Zyvo profiles only (not the Stickman Files content channel).
+  assert.deepEqual(org.sameAs, ["https://www.youtube.com/@zyloaii", "https://www.instagram.com/zyvo.ai"]);
   assert.equal(site.name, "Zyvo");
   assert.deepEqual(site.alternateName, ["Zyvo AI", "tryzyvo"]);
   assert.equal(site.url, `${SITE_URL}/`);
   assert.equal(site.publisher["@id"], org["@id"]);
+});
+
+test("Home's cards are real links crawlers can follow (path, What's new, niches, templates), same behaviour", () => {
+  const home = read("src/components/home-v2/HomeV2Sections.jsx");
+  assert.match(home, /const Tag = to \? Link : "button";/);
+  assert.match(home, /testId="path-long"[\s\S]{0,120}to="\/long-form" onClick=\{\(\) => trackLaunch\("try_long_form", \{ placement: "home_hero" \}\)\}/);
+  assert.match(home, /if \(to\) return <Link to=\{to\} draggable=\{false\} onClick=\{onClick\}/);
+  assert.match(home, /testId="wn-long-form"[\s\S]{0,200}to="\/long-form"/);
+  assert.match(home, /<Link key=\{n\.id\} to=\{`\/long-form\/create\?niche=\$\{n\.id\}`\}/);
+  assert.match(home, /<Link to=\{t\.path\} onClick=\{track\}/);
+  const suite = read("src/components/workspace/ZyvoSuiteCarousel.jsx");
+  assert.ok(!/useNavigate|<button\s+onClick=\{onClick\}/.test(suite), "template cards are links, not buttons");
+  assert.equal((suite.match(/<Link\s+to=\{item\.path\}/g) || []).length, 2, "mobile card and carousel card");
+  // A side card still turns the carousel instead of navigating.
+  assert.match(suite, /if \(Math\.abs\(item\.offset\) < 0\.32\) return;[^\n]*\n\s+event\.preventDefault\(\);/);
 });
 
 test("the Home snapshot is also the fallback HTML for app routes: its content and head never show there", () => {

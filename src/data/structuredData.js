@@ -6,7 +6,9 @@ export const BRAND = {
   name: "Zyvo",
   alternateName: ["Zyvo AI", "tryzyvo"],
   logo: "/logo.png", // public/logo.png, 512 x 512
-  sameAs: ["https://www.youtube.com/@zyloaii"], // the Zyvo YouTube channel (tutorials)
+  // Official Zyvo profiles only: the YouTube channel (tutorials) and the
+  // Instagram account the Creator Rewards dialog links to.
+  sameAs: ["https://www.youtube.com/@zyloaii", "https://www.instagram.com/zyvo.ai"],
 };
 
 // Plain JS (no React/JSX) so it can be imported both by the client

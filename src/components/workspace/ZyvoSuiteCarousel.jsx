@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion as Motion } from "framer-motion";
 import {
   ChevronLeft,
@@ -93,14 +93,14 @@ function CurvedTitleLine() {
   );
 }
 
-function MobileSuiteCard({ item, variant = "rail", onClick }) {
+function MobileSuiteCard({ item, variant = "rail" }) {
   const isGrid = variant === "grid";
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`group/card relative overflow-hidden border border-white/10 bg-[#101312] text-left shadow-[0_16px_38px_rgba(0,0,0,0.36)] ${
+    <Link
+      to={item.path}
+      draggable={false}
+      className={`group/card relative block overflow-hidden border border-white/10 bg-[#101312] text-left shadow-[0_16px_38px_rgba(0,0,0,0.36)] ${
         isGrid
           ? "aspect-[1.32/1] w-full rounded-[14px]"
           : "h-[156px] w-[160px] shrink-0 rounded-[14px] sm:h-[156px] sm:w-[160px]"
@@ -119,7 +119,7 @@ function MobileSuiteCard({ item, variant = "rail", onClick }) {
       <div className="absolute bottom-3 left-3 right-3 z-10 flex items-center gap-2 text-white">
         <span className="truncate text-[15px] font-extrabold leading-none">{item.name}</span>
       </div>
-    </button>
+    </Link>
   );
 }
 
@@ -133,8 +133,15 @@ function SuiteCard({ item, offset, active, onClick }) {
   const widthCompensation = 1 + Math.min(abs * 0.025, 0.08);
   const { height: faceHeight, top: faceTop } = faceMetrics(offset);
 
+  // A real link to the tool. Only the centred card navigates on a plain
+  // click; a side card first turns the carousel to itself (onClick cancels
+  // the navigation), exactly as before.
   return (
-    <button
+    <Link
+      to={item.path}
+      draggable={false}
+      data-suite-card
+      aria-label={item.name}
       onClick={onClick}
       style={{
         width: CARD_WIDTH,
@@ -180,13 +187,12 @@ function SuiteCard({ item, offset, active, onClick }) {
           </span>
         )}
       </div>
-    </button>
+    </Link>
   );
 }
 
 // `items` defaults to today's list; Home v2 passes the merged templates list.
 export default function ZyvoSuiteCarousel({ items: suiteItems = SUITE_ITEMS, subtitle = null, title = "zyvo suite" } = {}) {
-  const navigate = useNavigate();
   const total = suiteItems.length;
   // Start centered on the first item (Behind the Scenes) so it's the one
   // visible immediately, instead of the middle item, before rotation drifts.
@@ -275,7 +281,7 @@ export default function ZyvoSuiteCarousel({ items: suiteItems = SUITE_ITEMS, sub
 
             <div className="grid grid-cols-2 gap-4">
               {suiteItems.map((item) => (
-                <MobileSuiteCard key={item.name} item={item} variant="grid" onClick={() => navigate(item.path)} />
+                <MobileSuiteCard key={item.name} item={item} variant="grid" />
               ))}
             </div>
           </div>
@@ -300,7 +306,7 @@ export default function ZyvoSuiteCarousel({ items: suiteItems = SUITE_ITEMS, sub
 
             <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {suiteItems.map((item) => (
-                <MobileSuiteCard key={item.name} item={item} onClick={() => navigate(item.path)} />
+                <MobileSuiteCard key={item.name} item={item} />
               ))}
             </div>
 
@@ -357,12 +363,11 @@ export default function ZyvoSuiteCarousel({ items: suiteItems = SUITE_ITEMS, sub
                 item={item}
                 offset={item.offset}
                 active={Math.abs(item.offset) < 0.35}
-                onClick={() => {
-                  if (Math.abs(item.offset) < 0.32) navigate(item.path);
-                  else {
-                    phaseRef.current = item.index;
-                    setPhase(item.index);
-                  }
+                onClick={(event) => {
+                  if (Math.abs(item.offset) < 0.32) return; // centred: follow the link
+                  event.preventDefault();
+                  phaseRef.current = item.index;
+                  setPhase(item.index);
                 }}
               />
             ))}

@@ -83,10 +83,13 @@ export function LazyLoopVideo({ src, webm, poster, className = "" }) {
 }
 
 /* ─── 2. Hero path cards ─────────────────────────────────────── */
-function PathCard({ onClick, media, icon: Icon, name, line, cta, primary, isNew, testId }) {
+// A card with a destination (`to`) is a real <a href>, so crawlers and
+// "open in new tab" can follow it; one that opens a menu stays a button.
+function PathCard({ onClick, to, media, icon: Icon, name, line, cta, primary, isNew, testId }) {
+  const Tag = to ? Link : "button";
   return (
-    <button type="button" onClick={onClick} data-testid={testId}
-      className={`group relative h-[230px] w-full overflow-hidden rounded-[24px] border bg-[#101312] text-left shadow-[0_24px_80px_rgba(0,0,0,.45)] transition duration-300 hover:-translate-y-0.5 sm:h-[250px] lg:h-[270px] 2xl:h-[300px] ${
+    <Tag {...(to ? { to, draggable: false } : { type: "button" })} onClick={onClick} data-testid={testId}
+      className={`group relative block h-[230px] w-full overflow-hidden rounded-[24px] border bg-[#101312] text-left shadow-[0_24px_80px_rgba(0,0,0,.45)] transition duration-300 hover:-translate-y-0.5 sm:h-[250px] lg:h-[270px] 2xl:h-[300px] ${
         primary ? "border-lime-300/30 hover:border-lime-300/55" : "border-white/10 hover:border-white/25"}`}>
       <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-[1.03]">{media}</div>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-black/90 via-black/45 to-transparent" />
@@ -106,12 +109,11 @@ function PathCard({ onClick, media, icon: Icon, name, line, cta, primary, isNew,
           {cta} <ArrowRight className="h-4 w-4" />
         </span>
       </div>
-    </button>
+    </Tag>
   );
 }
 
 export function PathCards() {
-  const navigate = useNavigate();
   return (
     <div className={`relative z-10 mx-auto mt-5 grid w-full max-w-[1240px] gap-4 md:mt-6 md:grid-cols-2 md:gap-5 ${SECTION_X}`}>
       <PathCard
@@ -129,7 +131,7 @@ export function PathCards() {
       <PathCard
         testId="path-long"
         primary isNew={isLongFormNew()}
-        onClick={() => { trackLaunch("try_long_form", { placement: "home_hero" }); navigate("/long-form"); }}
+        to="/long-form" onClick={() => trackLaunch("try_long_form", { placement: "home_hero" })}
         icon={Clapperboard} name="Long Form" line="8–15 min YouTube explainers from one idea" cta="Start a video"
         media={<LazyLoopVideo {...LONG_FORM_LOOP} className="h-full" />}
       />
@@ -180,7 +182,7 @@ function CreditsArt() {
   );
 }
 
-function BannerCard({ art, title, sub, cta, onClick, href, testId }) {
+function BannerCard({ art, title, sub, cta, onClick, href, to, testId }) {
   const inner = (
     <>
       {art}
@@ -195,13 +197,12 @@ function BannerCard({ art, title, sub, cta, onClick, href, testId }) {
     </>
   );
   const cls = "group relative block h-[180px] w-[84%] shrink-0 snap-start overflow-hidden rounded-[20px] border border-white/10 bg-[#101312] text-left transition hover:border-white/25 md:h-[196px] md:w-auto";
-  return href
-    ? <a href={href} target="_blank" rel="noopener noreferrer" onClick={onClick} className={cls} data-testid={testId}>{inner}</a>
-    : <button type="button" onClick={onClick} className={cls} data-testid={testId}>{inner}</button>;
+  if (href) return <a href={href} target="_blank" rel="noopener noreferrer" onClick={onClick} className={cls} data-testid={testId}>{inner}</a>;
+  if (to) return <Link to={to} draggable={false} onClick={onClick} className={cls} data-testid={testId}>{inner}</Link>;
+  return <button type="button" onClick={onClick} className={cls} data-testid={testId}>{inner}</button>;
 }
 
 export function WhatsNewRow() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [hunt, setHunt] = useState(null);
   const [tutorial, setTutorial] = useState(null);
@@ -214,7 +215,7 @@ export function WhatsNewRow() {
   }, []);
   const cards = [
     <BannerCard key="lf" testId="wn-long-form" art={<FanArt />} title="Long Form is here" sub="A full YouTube video from one idea" cta="Try it"
-      onClick={() => { trackLaunch("try_long_form", { placement: "whats_new_row" }); navigate("/long-form"); }} />,
+      to="/long-form" onClick={() => trackLaunch("try_long_form", { placement: "whats_new_row" })} />,
     hunt && <BannerCard key="yt" testId="wn-showcase" art={<LazyLoopVideo {...MADE_WITH_ZYVO_LOOP} className="absolute inset-0" />}
       title={`Made with Zyvo: ${hunt.title}`} cta="Watch on YouTube" href={hunt.youtube_url}
       onClick={() => trackLaunch("showcase_click", { placement: "whats_new_row", target: hunt.youtube_url, videoId: hunt.id })} />,
@@ -338,13 +339,13 @@ export function LongFormSection() {
       </div>
       <div className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] md:-mx-[50px] md:scroll-px-[50px] md:gap-4 md:px-[50px] [&::-webkit-scrollbar]:hidden" data-testid="niche-row">
         {ALL_NICHES.map((n) => (
-          <button key={n.id} type="button" onClick={() => { trackLaunch("niche_pick", { placement: "home", target: n.id }); navigate(`/long-form/create?niche=${n.id}`); }}
-            className="group w-[190px] shrink-0 snap-start text-left md:w-[232px]">
+          <Link key={n.id} to={`/long-form/create?niche=${n.id}`} draggable={false} onClick={() => trackLaunch("niche_pick", { placement: "home", target: n.id })}
+            className="group block w-[190px] shrink-0 snap-start text-left md:w-[232px]">
             <div className="aspect-video overflow-hidden rounded-[14px] border border-white/10 bg-[#0d0f10] transition group-hover:border-lime-300/45">
               <img {...optImg(`/images/niches/${n.id}.webp`, "232px", 480)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
             </div>
             <p className="mt-2 truncate text-[13px] font-semibold text-white/85 group-hover:text-white">{n.label}</p>
-          </button>
+          </Link>
         ))}
       </div>
 
@@ -377,10 +378,9 @@ export function suiteTemplates(now = Date.now()) {
 
 /* ─── Featured Short Form template (under the short form suite) ─── */
 export function FeaturedTemplate() {
-  const navigate = useNavigate();
   const t = FEATURED_TEMPLATE;
   if (!t?.examples?.length) return null;
-  const go = () => { trackLaunch("featured_template", { placement: "home_featured", target: t.path }); navigate(t.path); };
+  const track = () => trackLaunch("featured_template", { placement: "home_featured", target: t.path });
   return (
     <section className={`relative mt-10 w-full overflow-hidden py-8 md:py-10 ${SECTION_X}`} data-testid="featured-template">
       <div className="pointer-events-none absolute inset-x-[8%] top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
@@ -399,19 +399,19 @@ export function FeaturedTemplate() {
             </div>
             <h2 className="text-[28px] font-black tracking-[-0.045em] text-white sm:text-[34px] md:text-[42px]">{t.name}</h2>
           </div>
-          <button type="button" onClick={go} className="flex shrink-0 items-center gap-1.5 rounded-full bg-lime-300 px-4 py-2.5 text-[13px] font-black text-[#11150D] transition hover:bg-lime-200 active:scale-95">
+          <Link to={t.path} onClick={track} className="flex shrink-0 items-center gap-1.5 rounded-full bg-lime-300 px-4 py-2.5 text-[13px] font-black text-[#11150D] transition hover:bg-lime-200 active:scale-95">
             Try Template <ArrowRight className="h-4 w-4" />
-          </button>
+          </Link>
         </div>
         <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:gap-3 sm:px-0 [&::-webkit-scrollbar]:hidden">
           {t.examples.map((ex) => (
-            <button key={ex.video ?? ex.image} type="button" onClick={go}
-              className="group relative aspect-[9/16] w-[clamp(150px,52vw,220px)] shrink-0 snap-start overflow-hidden rounded-[14px] border border-white/[0.11] bg-[#0d0f10] text-left shadow-[0_22px_65px_rgba(0,0,0,.38)] transition duration-500 hover:-translate-y-1 hover:border-white/20 sm:w-[240px] lg:w-[280px]">
+            <Link key={ex.video ?? ex.image} to={t.path} draggable={false} onClick={track} aria-label={`Try the ${t.name} template`}
+              className="group relative block aspect-[9/16] w-[clamp(150px,52vw,220px)] shrink-0 snap-start overflow-hidden rounded-[14px] border border-white/[0.11] bg-[#0d0f10] text-left shadow-[0_22px_65px_rgba(0,0,0,.38)] transition duration-500 hover:-translate-y-1 hover:border-white/20 sm:w-[240px] lg:w-[280px]">
               {ex.video
                 ? <LazyLoopVideo src={ex.video} poster={ex.poster} className="absolute inset-0" />
                 : <img src={ex.image} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />}
               <div className="pointer-events-none absolute inset-0 rounded-[14px] ring-1 ring-inset ring-white/[0.06]" />
-            </button>
+            </Link>
           ))}
         </div>
       </div>
