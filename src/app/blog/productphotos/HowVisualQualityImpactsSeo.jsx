@@ -62,11 +62,11 @@ export default function HowVisualQualityImpactsSEO() {
       <article className="max-w-4xl mx-auto px-6 py-20 text-gray-800">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-500 mb-6">
-          <Link to="/home" className="hover:underline">
+          <Link to="/" className="hover:underline">
             Home
           </Link>{" "}
           &nbsp;›&nbsp;
-          <Link to="/home" className="hover:underline">
+          <Link to="/" className="hover:underline">
             Blog
           </Link>{" "}
           &nbsp;›&nbsp;
@@ -209,13 +209,13 @@ export default function HowVisualQualityImpactsSEO() {
 
           <div className="flex flex-wrap gap-3">
             <Link
-              to="/home"
+              to="/"
               className="inline-flex items-center justify-center px-6 py-3 rounded-lg text-white font-semibold bg-[linear-gradient(90deg,#7A3BFF_0%,#492399_100%)] hover:opacity-90 transition"
             >
               Try Zyvo Product Photos
             </Link>
             <Link
-              to="/home"
+              to="/"
               className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-white border border-gray-200 text-gray-800 hover:opacity-90 transition"
             >
               Explore Visual Templates

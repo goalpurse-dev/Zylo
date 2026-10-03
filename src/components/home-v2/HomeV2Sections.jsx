@@ -7,7 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 import { fetchShowcase, isLongFormNew, showcaseThumb, trackLaunch } from "../launch/launch";
 import { NICHE_GROUPS } from "../../pages/workspace/long-form/niches";
 import CreatorRewardsModal from "../CreatorRewardsModal.jsx";
-import { ShowcaseRow, TutorialCard } from "../launch/LaunchUI.jsx";
+import { ShowcaseRow } from "../launch/LaunchUI.jsx";
 import { fetchUserLongFormProjects } from "../../pages/workspace/long-form/project";
 import { coverFor, fetchProjectCovers, projectTitle } from "../../pages/workspace/long-form/projectCovers";
 import { NeutralCover } from "../../pages/workspace/long-form/shared";
@@ -25,6 +25,8 @@ const sceneLoop = (name) => ({ src: `${STORAGE}/loops/${name}.mp4`, webm: `${STO
 export const LONG_FORM_LOOP = sceneLoop("lf-card"); // 063 101 036 091 058 086 041 (Home path card + lobby create card)
 const MADE_WITH_ZYVO_LOOP = sceneLoop("made-with-zyvo"); // 036 086 091 063 041 101 058
 const SECTION_X = "px-4 md:px-[50px]";
+// Home's content column: centred, and no wider than this on big screens.
+export const HOME_MAX_W = "max-w-[1440px]";
 
 // Today's Home section header, one component: title + one-line subtitle + "See all →".
 export function SectionHeader({ title, subtitle, action = "See all", onAction, badge }) {
@@ -115,7 +117,7 @@ function PathCard({ onClick, to, media, icon: Icon, name, line, cta, primary, is
 
 export function PathCards() {
   return (
-    <div className={`relative z-10 mx-auto mt-5 grid w-full max-w-[1240px] gap-4 md:mt-6 md:grid-cols-2 md:gap-5 ${SECTION_X}`}>
+    <div className={`relative z-10 mx-auto mt-5 grid w-full ${HOME_MAX_W} gap-4 md:mt-6 md:grid-cols-2 md:gap-5 ${SECTION_X}`}>
       <PathCard
         testId="path-short"
         onClick={() => { trackLaunch("path_short_form", { placement: "home_hero" }); window.dispatchEvent(new CustomEvent("zyvo:open-create-menu")); }}
@@ -182,7 +184,7 @@ function CreditsArt() {
   );
 }
 
-function BannerCard({ art, title, sub, cta, onClick, href, to, testId }) {
+function BannerCard({ art, title, sub, cta, onClick, href, to, testId, display = "block" }) {
   const inner = (
     <>
       {art}
@@ -196,7 +198,7 @@ function BannerCard({ art, title, sub, cta, onClick, href, to, testId }) {
       </div>
     </>
   );
-  const cls = "group relative block h-[180px] w-[84%] shrink-0 snap-start overflow-hidden rounded-[20px] border border-white/10 bg-[#101312] text-left transition hover:border-white/25 md:h-[196px] md:w-auto";
+  const cls = `group relative ${display} h-[180px] w-[84%] shrink-0 snap-start overflow-hidden rounded-[20px] border border-white/10 bg-[#101312] text-left transition hover:border-white/25 md:h-[196px] md:w-auto`;
   if (href) return <a href={href} target="_blank" rel="noopener noreferrer" onClick={onClick} className={cls} data-testid={testId}>{inner}</a>;
   if (to) return <Link to={to} draggable={false} onClick={onClick} className={cls} data-testid={testId}>{inner}</Link>;
   return <button type="button" onClick={onClick} className={cls} data-testid={testId}>{inner}</button>;
@@ -222,13 +224,15 @@ export function WhatsNewRow() {
     tutorial && <BannerCard key="tut" testId="wn-tutorial" art={<img src={showcaseThumb(tutorial)} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
       title="Watch the tutorial" sub={tutorial.title} cta="Watch" href={tutorial.youtube_url}
       onClick={() => trackLaunch("tutorial_click", { placement: "whats_new_row", target: tutorial.youtube_url })} />,
-    <BannerCard key="earn" testId="wn-earn" art={<CreditsArt />} title="Earn free credits" sub="Post about Zyvo and earn credits for every view" cta="Learn more"
+    <BannerCard key="earn" testId="wn-earn" display="hidden min-[1920px]:block" art={<CreditsArt />} title="Earn free credits" sub="Post about Zyvo and earn credits for every view" cta="Learn more"
       onClick={() => { trackLaunch("earn_credits_click", { placement: "whats_new_row" }); setRewardsOpen(true); }} />,
   ].filter(Boolean);
+  // Columns = the cards on screen: every card but "Earn" below 1920 px, all of them from there up.
+  const columns = { 1: "md:grid-cols-1 min-[1920px]:grid-cols-2", 2: "md:grid-cols-2 min-[1920px]:grid-cols-3", 3: "md:grid-cols-3 min-[1920px]:grid-cols-4" }[cards.length - 1];
   return (
     <section className={`mt-8 w-full ${SECTION_X}`} data-testid="whats-new-row">
       <SectionHeader title="What's new" subtitle="Fresh on Zyvo this week." />
-      <div className={`-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:grid md:gap-4 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden ${cards.length >= 4 ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
+      <div className={`-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:grid md:gap-4 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden ${columns}`}>
         {cards}
       </div>
       {rewardsOpen && <CreatorRewardsModal onClose={() => { if (user) localStorage.setItem(`zyvo_creator_rewards_seen:${user.id}`, "1"); setRewardsOpen(false); }} />}
@@ -349,7 +353,6 @@ export function LongFormSection() {
         ))}
       </div>
 
-      <TutorialCard className="mt-8" />
       <ShowcaseRow id="made-with-zyvo" placement="home" title="Made with Zyvo" subtitle="Long Form videos on YouTube, each one started from a single idea." className="mt-9 md:hidden" />
     </section>
   );

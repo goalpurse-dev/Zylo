@@ -31,7 +31,7 @@ const COMMUNITY_NICHES = [
       "Dramatic skeleton characters living out chaotic life situations — betrayals, breakups, and shocking plot twists. Perfect for viral drama content.",
     prompt:
       "A skeleton character in a modern setting, dramatic soap opera scene, cinematic lighting, emotional music overlay, 9:16 vertical format.",
-    route: "/home",
+    route: "/",
     videos: [
       { id: "sk-1", src: "/library/skeleton.mp4", thumbnail: "/community-posters/sk-1.jpg", title: "Skeleton Drama" },
       { id: "sk-2", src: "/library/skeleton2.mp4", thumbnail: "/community-posters/sk-2.jpg", title: "Skeleton Betrayal" },
@@ -45,7 +45,7 @@ const COMMUNITY_NICHES = [
       "Animated fruit characters in cinematic soap opera storylines. Perfect for viral drama content that gets millions of views.",
     prompt:
       "Animated fruit characters — mango boss and strawberry mom — in a dramatic argument scene, cinematic lighting, emotional close-ups, 9:16 vertical format.",
-    route: "/home",
+    route: "/",
     videos: [
       { id: "fs-1", src: "/library/aifruit.mp4", thumbnail: "/community-posters/fs-1.jpg", title: "Fruit Catches Cheating" },
       { id: "fs-2", src: "/library/aifruit2.mp4", thumbnail: "/community-posters/fs-2.jpg", title: "Fruit Secret Twin" },
@@ -59,7 +59,7 @@ const COMMUNITY_NICHES = [
       "LEGO-style characters acting out funny and dramatic scenes in stunning cinematic quality. Hugely viral on all platforms.",
     prompt:
       "LEGO mini-figures in a dramatic real-world setting, cinematic camera angles, vibrant colors, 9:16 vertical format.",
-    route: "/home",
+    route: "/",
     videos: [
       { id: "lg-1", src: "/library/lego.mp4", thumbnail: "/community-posters/lg-1.jpg", title: "Lego Argument" },
       { id: "lg-2", src: "/library/lego2.mp4", thumbnail: "/community-posters/lg-2.jpg", title: "Lego Drama" },
@@ -103,7 +103,7 @@ const COMMUNITY_NICHES = [
       "A lovable skeleton dog navigating hilarious and emotional everyday situations that viewers can't stop rewatching.",
     prompt:
       "An expressive skeleton dog character in everyday home situations, cute and emotional, cinematic quality, 9:16 vertical format.",
-    route: "/home",
+    route: "/",
     videos: [
       { id: "sd-1", src: "/library/xraydog.mp4", thumbnail: "/community-posters/sd-1.jpg", title: "Skeleton Dog Story" },
       { id: "sd-2", src: null, thumbnail: null, title: "Skeleton Dog Drama" },
@@ -117,7 +117,7 @@ const COMMUNITY_NICHES = [
       "Family Guy-style cartoon characters in relatable and chaotic life moments that go viral every time.",
     prompt:
       "Cartoon characters in a dramatic home setting, Family Guy animation style, expressive reactions, 9:16 vertical format.",
-    route: "/home",
+    route: "/",
     videos: [
       { id: "ct-1", src: null, thumbnail: "/library/cartoon.webp", title: "Cartoon Argument" },
       { id: "ct-2", src: null, thumbnail: null, title: "Cartoon Drama" },
@@ -131,7 +131,7 @@ const COMMUNITY_NICHES = [
       "Stunning anime-style characters in emotional and action-packed viral scenes that hook viewers instantly.",
     prompt:
       "Anime-style character in an emotional dramatic scene, Studio Ghibli inspired lighting, cinematic composition, 9:16 vertical format.",
-    route: "/home",
+    route: "/",
     videos: [
       { id: "an-1", src: null, thumbnail: "/library/anime.webp", title: "Anime Drama" },
       { id: "an-2", src: null, thumbnail: null, title: "Anime Story" },

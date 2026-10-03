@@ -5,7 +5,7 @@ export const SITE_URL = "https://www.tryzyvo.com";
 // prefix. Public SEO landing pages live outside this registry.
 // Home, at the site root. The title starts with the brand name.
 export const HOME_SEO = {
-  title: "Zyvo – AI Video Generator for YouTube, TikTok & Reels",
+  title: "Zyvo AI – AI Video Generator for YouTube, TikTok & Reels",
   description: "Zyvo turns one idea into finished videos: full 8–15 minute YouTube explainers with Long Form and viral 9:16 clips for TikTok, Reels and Shorts. Start for free.",
 };
 

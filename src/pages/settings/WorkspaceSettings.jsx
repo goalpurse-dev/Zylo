@@ -44,7 +44,7 @@ export default function Settings() {
       setLoggingOut(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      nav("/home", { replace: true });
+      nav("/", { replace: true });
     } catch (e) {
       console.error("Logout failed:", e);
     } finally {

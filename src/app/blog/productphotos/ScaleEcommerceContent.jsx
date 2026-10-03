@@ -107,7 +107,7 @@ export default function ScaleEcommerceContent() {
 
         <p className="mb-8">
           This is why many brands are switching to{" "}
-          <Link to="/home" className="text-purple-600 underline">
+          <Link to="/" className="text-purple-600 underline">
             AI-powered product visuals
           </Link>{" "}
           and modular content creation instead of relying on traditional photography.
@@ -146,7 +146,7 @@ export default function ScaleEcommerceContent() {
 
         <p className="mb-10">
           Tools like{" "}
-          <Link to="/home" className="text-purple-600 underline">
+          <Link to="/" className="text-purple-600 underline">
             AI background generators
           </Link>{" "}
           and{" "}
@@ -184,17 +184,17 @@ export default function ScaleEcommerceContent() {
 
         <ul className="space-y-3 mb-12">
           <li>
-            <Link to="/home" className="text-purple-600 underline">
+            <Link to="/" className="text-purple-600 underline">
               AI Product Photos for Ecommerce
             </Link>
           </li>
           <li>
-            <Link to="/home" className="text-purple-600 underline">
+            <Link to="/" className="text-purple-600 underline">
               How to Create Product Images Without a Studio
             </Link>
           </li>
           <li>
-            <Link to="/home" className="text-purple-600 underline">
+            <Link to="/" className="text-purple-600 underline">
               Best AI Tools for Ecommerce Marketing
             </Link>
           </li>
@@ -215,7 +215,7 @@ export default function ScaleEcommerceContent() {
             visuals instantly using AI-powered tools designed for growth.
           </p>
           <Link
-            to="/home"
+            to="/"
             className="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition"
           >
             Explore AI Product Visuals

@@ -123,13 +123,13 @@ export default function HowVisualBrandingImpactsOnlineSales() {
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                to="/home"
+                to="/"
                 className="px-4 py-2 rounded-full border border-black/15 text-sm hover:bg-black/5"
               >
                 Create consistent visuals
               </Link>
               <Link
-                to="/home"
+                to="/"
                 className="px-4 py-2 rounded-full border border-black/15 text-sm hover:bg-black/5"
               >
                 Build brand trust
@@ -187,7 +187,7 @@ export default function HowVisualBrandingImpactsOnlineSales() {
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link to="/home" className="text-[#7A3BFF] font-medium">
+              <Link to="/" className="text-[#7A3BFF] font-medium">
                 Make your brand recognizable →
               </Link>
               <Link to="/workspace/library" className="text-[#7A3BFF] font-medium">
@@ -211,13 +211,13 @@ export default function HowVisualBrandingImpactsOnlineSales() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                to="/home"
+                to="/"
                 className="px-8 py-3 rounded-full bg-[#7A3BFF] text-white font-semibold hover:opacity-90"
               >
                 Try Zyvo
               </Link>
               <Link
-                to="/home"
+                to="/"
                 className="px-8 py-3 rounded-full border border-black/15 font-semibold hover:bg-black/5"
               >
                 View examples

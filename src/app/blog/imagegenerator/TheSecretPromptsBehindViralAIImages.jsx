@@ -77,7 +77,7 @@ export default function TheSecretPromptsBehindViralAIImages() {
             <p className="text-[#4A4A55]">
               Creators who master mood-driven prompts consistently win when
               generating images through{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI creative tools
               </Link>.
             </p>
@@ -152,7 +152,7 @@ export default function TheSecretPromptsBehindViralAIImages() {
             <p className="text-[#4A4A55]">
               This allows fast testing, style consistency, and daily posting
               — all without burnout — especially when powered by{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI-powered tools
               </Link>.
             </p>
@@ -177,7 +177,7 @@ export default function TheSecretPromptsBehindViralAIImages() {
           <p className="text-[#4A4A55]">
             Once you understand the structure, creating viral visuals through
             a single{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               AI creation hub
             </Link> becomes repeatable — not random.
           </p>

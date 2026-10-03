@@ -142,7 +142,7 @@ export default function ProductPhotographyMistakesEcommerce() {
               visuals in minutes.
             </p>
             <a
-              href="/home"
+              href="/"
               className="inline-block bg-[#7A3BFF] hover:opacity-90 transition px-8 py-3 rounded-full font-semibold text-white"
             >
               Try Zyvo

@@ -6,6 +6,11 @@
       "statusCode": 301
     },
     {
+      "source": "/home",
+      "destination": "/",
+      "statusCode": 301
+    },
+    {
       "source": "/blog/ai-visual-styles-most-engagementd",
       "destination": "/blog/ai-visual-styles-most-engagement",
       "permanent": true

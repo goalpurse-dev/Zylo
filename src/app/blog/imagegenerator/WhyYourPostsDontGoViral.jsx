@@ -60,7 +60,7 @@ export default function WhyYourPostsDontGoViral() {
             AI images are fixing this exact problem by giving creators
             scroll-stopping visuals without cameras, editing, or design
             skills — especially when generated through a modern{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               AI image generator
             </Link>.
           </p>

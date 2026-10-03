@@ -57,7 +57,7 @@ export default function AIImageTrendsYouNeedToJumpOn() {
           </p>
           <p className="text-[#4A4A55]">
             Using a modern{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               AI image generator
             </Link>, creators can now test, adapt, and scale new styles
             faster than entire teams used to.
@@ -203,7 +203,7 @@ export default function AIImageTrendsYouNeedToJumpOn() {
             </p>
             <p className="text-[#4A4A55]">
               AI makes abstract emotion repeatable using{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI creative hubs
               </Link>.
             </p>

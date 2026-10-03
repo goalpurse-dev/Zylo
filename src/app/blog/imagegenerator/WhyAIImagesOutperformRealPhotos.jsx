@@ -81,7 +81,7 @@ export default function WhyAIImagesOutperformRealPhotos() {
               AI-generated visuals exaggerate lighting, contrast, and focus
               just enough to feel cinematic — without feeling fake. This
               balance makes them instantly eye-catching when created through{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI creative tools
               </Link>.
             </p>
@@ -157,7 +157,7 @@ export default function WhyAIImagesOutperformRealPhotos() {
             <p className="text-[#4A4A55]">
               Creators who post daily or multiple times per day almost always
               outperform those who post occasionally — especially when using{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI-powered tools
               </Link>.
             </p>

@@ -63,8 +63,8 @@ export default function AIToolsEveryShopifyStoreOwnerShouldKnow() {
 
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-500 mb-6">
-          <Link to="/home" className="hover:underline">Home</Link> &nbsp;›&nbsp;
-          <Link to="/home" className="hover:underline">Blog</Link> &nbsp;›&nbsp;
+          <Link to="/" className="hover:underline">Home</Link> &nbsp;›&nbsp;
+          <Link to="/" className="hover:underline">Blog</Link> &nbsp;›&nbsp;
           <span className="text-gray-700">
             AI Tools Every Shopify Store Owner Should Know
           </span>
@@ -137,7 +137,7 @@ export default function AIToolsEveryShopifyStoreOwnerShouldKnow() {
           test creatives, or replace generic supplier photos with branded visuals.
         </p>
         <Link
-          to="/home"
+          to="/"
           className="text-purple-600 underline mb-12 inline-block"
         >
           Try Zyvo Product Photos →
@@ -223,7 +223,7 @@ export default function AIToolsEveryShopifyStoreOwnerShouldKnow() {
           </p>
 
           <Link
-            to="/home"
+            to="/"
             className="inline-flex items-center justify-center px-6 py-3 rounded-lg text-white font-semibold bg-[linear-gradient(90deg,#7A3BFF_0%,#492399_100%)] hover:opacity-90 transition"
           >
             Try Zyvo for Shopify

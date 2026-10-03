@@ -85,7 +85,7 @@ export default function TurnAnyIdeaIntoViralImage() {
             <p className="text-[#4A4A55]">
               Creators who start with emotion consistently outperform those
               who start with objects when generating images through{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI creative tools
               </Link>.
             </p>
@@ -110,7 +110,7 @@ export default function TurnAnyIdeaIntoViralImage() {
             </p>
             <p className="text-[#4A4A55]">
               This is where creators rely heavily on a single{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI image platform
               </Link> to explore dozens of scene variations quickly.
             </p>
@@ -146,7 +146,7 @@ export default function TurnAnyIdeaIntoViralImage() {
             <p className="text-[#4A4A55]">
               Most viral creators lock in lighting styles and reuse them
               across dozens of images using{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI-powered tools
               </Link>.
             </p>
@@ -171,7 +171,7 @@ export default function TurnAnyIdeaIntoViralImage() {
             </p>
             <p className="text-[#4A4A55]">
               This rapid testing is only possible when working inside one{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI creation hub
               </Link> built for speed.
             </p>

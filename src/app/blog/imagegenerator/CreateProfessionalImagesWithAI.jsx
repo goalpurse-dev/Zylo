@@ -89,7 +89,7 @@ export default function CreateProfessionalImagesWithAI() {
           <p className="text-[#4A4A55]">
             Before generating, decide where the image will be used — then create
             with that format in mind using{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               AI creative tools
             </Link>.
           </p>
@@ -149,7 +149,7 @@ export default function CreateProfessionalImagesWithAI() {
           <p className="text-[#4A4A55]">
             If you want consistently clean lighting without prompt guesswork,
             creator-focused tools like{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               ZyvoAI
             </Link>{" "}
             help produce polished results faster.
@@ -170,7 +170,7 @@ export default function CreateProfessionalImagesWithAI() {
             Small changes — angle, distance, lighting strength — can dramatically
             improve the final image. This workflow becomes easy when you generate
             inside one{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               AI workspace
             </Link>.
           </p>

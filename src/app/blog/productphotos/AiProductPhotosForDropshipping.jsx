@@ -63,11 +63,11 @@ export default function AIProductPhotosForDropshippingStores() {
       <article className="max-w-4xl mx-auto px-6 py-20 text-gray-800">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-500 mb-6">
-          <Link to="/home" className="hover:underline">
+          <Link to="/" className="hover:underline">
             Home
           </Link>{" "}
           &nbsp;›&nbsp;
-          <Link to="/home" className="hover:underline">
+          <Link to="/" className="hover:underline">
             Blog
           </Link>{" "}
           &nbsp;›&nbsp;
@@ -138,7 +138,7 @@ export default function AIProductPhotosForDropshippingStores() {
           Using unique visuals is one of the fastest ways to make a
           dropshipping store feel legitimate. That’s why many successful
           stores now generate their own{" "}
-          <Link to="/home" className="text-purple-600 underline">
+          <Link to="/" className="text-purple-600 underline">
             product photos with AI
           </Link>{" "}
           instead of copying supplier assets.
@@ -215,13 +215,13 @@ export default function AIProductPhotosForDropshippingStores() {
 
           <div className="flex flex-wrap gap-3">
             <Link
-              to="/home"
+              to="/"
               className="inline-flex items-center justify-center px-6 py-3 rounded-lg text-white font-semibold bg-[linear-gradient(90deg,#7A3BFF_0%,#492399_100%)] hover:opacity-90 transition"
             >
               Try Zyvo Product Photos
             </Link>
             <Link
-              to="/home"
+              to="/"
               className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-white border border-gray-200 text-gray-800 hover:opacity-90 transition"
             >
               Explore AI Backgrounds

@@ -46,7 +46,7 @@ export default function AIImageStylesEveryoneObsessedWith() {
             AI image generation has reached a point where style matters more
             than realism alone. The most successful creators pick a visual
             identity and repeat it consistently using an{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               AI image generator
             </Link>.
           </p>
@@ -88,7 +88,7 @@ export default function AIImageStylesEveryoneObsessedWith() {
           <p className="text-[#4A4A55]">
             This style dominates Pinterest and brand-focused feeds.
             Many creators batch-generate these visuals using{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               modern AI creative tools
             </Link>.
           </p>
@@ -139,7 +139,7 @@ export default function AIImageStylesEveryoneObsessedWith() {
           <p className="text-[#4A4A55]">
             This style performs extremely well for lifestyle pages and
             aspirational content, especially when generated through{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               AI image platforms
             </Link>.
           </p>
@@ -159,7 +159,7 @@ export default function AIImageStylesEveryoneObsessedWith() {
           <p className="text-[#4A4A55]">
             Creators who grow fastest don’t chase every trend —
             they pick one style and master it using a single{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               AI workspace
             </Link>.
           </p>
@@ -175,7 +175,7 @@ export default function AIImageStylesEveryoneObsessedWith() {
             visuals people can’t stop scrolling past.
           </p>
           <Link
-            to="/home"
+            to="/"
             className="inline-block rounded-xl bg-[#7A3BFF] px-10 py-4 text-white font-semibold hover:opacity-90 transition"
           >
             Open the AI Image Generator

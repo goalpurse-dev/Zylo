@@ -93,7 +93,7 @@ export default function HowAIImageGeneratorsWork() {
           </p>
           <p className="text-gray-600">
             That’s how platforms like{" "}
-            <Link to="/home" className="text-purple-600 underline">
+            <Link to="/" className="text-purple-600 underline">
               modern AI art tools
             </Link>{" "}
             create images in seconds.

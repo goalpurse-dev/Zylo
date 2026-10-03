@@ -57,7 +57,7 @@ export default function AIImageGeneratorBeginnersGuide2026() {
           </p>
           <p className="text-[#4A4A55]">
             Modern platforms like{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               ZyvoAI
             </Link>{" "}
             make this process simple and optimized for social media creators.
@@ -177,7 +177,7 @@ export default function AIImageGeneratorBeginnersGuide2026() {
           <p className="text-[#4A4A55]">
             When used strategically inside a creator-focused platform
             like{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               ZyvoAI
             </Link>,
             they become a repeatable growth system.

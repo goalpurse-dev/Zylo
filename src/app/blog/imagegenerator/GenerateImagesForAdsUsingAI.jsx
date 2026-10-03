@@ -83,7 +83,7 @@ export default function GenerateImagesForAdsUsingAI() {
             </p>
             <p className="text-[#4A4A55]">
               Creator-focused platforms like{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 ZyvoAI
               </Link>{" "}
               are optimized for performance-driven visuals rather than
@@ -152,7 +152,7 @@ export default function GenerateImagesForAdsUsingAI() {
             </p>
             <p className="text-[#4A4A55]">
               Fast iteration inside a centralized{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI workspace
               </Link>{" "}
               gives you a testing advantage.
@@ -177,7 +177,7 @@ export default function GenerateImagesForAdsUsingAI() {
             </p>
             <p className="text-[#4A4A55]">
               When using a tool optimized for creators like{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 ZyvoAI
               </Link>, you can adapt visuals to each platform instantly.
             </p>

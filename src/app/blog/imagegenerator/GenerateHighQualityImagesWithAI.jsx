@@ -58,7 +58,7 @@ export default function GenerateHighQualityImagesWithAI() {
           <p className="text-[#4A4A55]">
             That’s where platforms built specifically for content creation —
             like{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               ZyvoAI
             </Link>{" "}
             — stand out.
@@ -87,7 +87,7 @@ export default function GenerateHighQualityImagesWithAI() {
             </p>
             <p className="text-[#4A4A55]">
               Modern AI image generators like{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 ZyvoAI
               </Link>{" "}
               optimize for these performance-based visuals automatically.
@@ -113,7 +113,7 @@ export default function GenerateHighQualityImagesWithAI() {
             <p className="text-[#4A4A55]">
               If your goal is fast, high-quality content optimized for
               engagement, a creator-first platform like{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 ZyvoAI
               </Link>{" "}
               removes unnecessary complexity.
@@ -145,7 +145,7 @@ export default function GenerateHighQualityImagesWithAI() {
             </p>
             <p className="text-[#4A4A55]">
               Platforms like{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 ZyvoAI
               </Link>{" "}
               make it easy to replicate the same high-performing look
@@ -170,7 +170,7 @@ export default function GenerateHighQualityImagesWithAI() {
             </p>
             <p className="text-[#4A4A55]">
               When using a fast, performance-optimized tool like{" "}
-              <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 ZyvoAI
               </Link>, this process takes seconds instead of hours.
             </p>

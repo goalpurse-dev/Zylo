@@ -105,7 +105,7 @@ export default function BestAIImageGeneratorForSocialMedia() {
             <p className="text-[#4A4A55] mb-4">
               Instead of creating one image per hour, creators can generate
               dozens of variations in minutes using{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI creative tools
               </Link>.
             </p>

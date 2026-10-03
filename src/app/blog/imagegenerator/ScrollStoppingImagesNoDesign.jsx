@@ -80,7 +80,7 @@ export default function ScrollStoppingImagesNoDesign() {
               Prompts that include words like cinematic, soft lighting,
               dramatic shadows, or calm atmosphere consistently perform better
               when generated through{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI creative tools
               </Link>.
             </p>

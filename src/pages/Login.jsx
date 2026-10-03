@@ -50,7 +50,7 @@ export default function Login() {
       {/* top-left back arrow */}
       <div className="fixed left-4 top-4 z-10">
         <Link
-          to="/home"
+          to="/"
           className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white hover:bg-black/5 transition"
           aria-label="Back"
         >

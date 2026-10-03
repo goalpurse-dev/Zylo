@@ -50,7 +50,7 @@ export default function ITestViralAIPrompts() {
         <div className="mb-20">
           <p className="text-[#4A4A55] mb-4">
             Each image below was generated using a modern{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               AI image generator
             </Link>{" "}
             and follows patterns commonly seen in viral posts.
@@ -134,7 +134,7 @@ export default function ITestViralAIPrompts() {
             Minimal scenes performed well for aesthetic feeds, while
             urban night scenes dominated short-form video platforms.
             Most creators reuse these styles using{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               AI creative tools
             </Link>.
           </p>

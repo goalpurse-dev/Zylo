@@ -172,7 +172,7 @@ export default function AIVideoNewViralCurrency() {
             </ol>
             <p className="text-[#4A4A55] text-[15px] leading-relaxed">
               The whole process takes under 5 minutes on{" "}
-              <Link to="/workspace/video-generator" className="text-[#7A3BFF] font-semibold hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-semibold hover:underline">
                 Zyvo
               </Link>
               . Most creators run 5–10 generations per session and pick the best two to post.

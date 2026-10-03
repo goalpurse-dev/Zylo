@@ -50,7 +50,7 @@ export default function AIBackgroundRemovalForProductPhotos() {
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                to="/home"
+                to="/"
                 className="px-4 py-2 rounded-full bg-[#7A3BFF] text-white font-medium hover:opacity-90"
               >
                 Try AI background removal
@@ -98,7 +98,7 @@ export default function AIBackgroundRemovalForProductPhotos() {
             </div>
 
             <div className="mt-6 flex gap-3">
-              <Link to="/home" className="text-[#7A3BFF] font-medium">
+              <Link to="/" className="text-[#7A3BFF] font-medium">
                 Clean up product photos →
               </Link>
               <Link to="/signup" className="text-[#7A3BFF] font-medium">
@@ -123,13 +123,13 @@ export default function AIBackgroundRemovalForProductPhotos() {
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                to="/home"
+                to="/"
                 className="px-4 py-2 rounded-full border border-black/15 text-sm hover:bg-black/5"
               >
                 Replace manual editing
               </Link>
               <Link
-                to="/home"
+                to="/"
                 className="px-4 py-2 rounded-full border border-black/15 text-sm hover:bg-black/5"
               >
                 Save time & money
@@ -152,7 +152,7 @@ export default function AIBackgroundRemovalForProductPhotos() {
             </div>
 
             <div className="mt-6 flex gap-3">
-              <Link to="/home" className="text-[#7A3BFF] font-medium">
+              <Link to="/" className="text-[#7A3BFF] font-medium">
                 Build consistency →
               </Link>
               <Link to="/signup" className="text-[#7A3BFF] font-medium">
@@ -187,13 +187,13 @@ export default function AIBackgroundRemovalForProductPhotos() {
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link to="/home" className="text-[#7A3BFF] font-medium">
+              <Link to="/" className="text-[#7A3BFF] font-medium">
                 Use images everywhere →
               </Link>
-              <Link to="/home" className="text-[#7A3BFF] font-medium">
+              <Link to="/" className="text-[#7A3BFF] font-medium">
                 Optimize product listings →
               </Link>
-              <Link to="/home" className="text-[#7A3BFF] font-medium">
+              <Link to="/" className="text-[#7A3BFF] font-medium">
                 Improve ad performance →
               </Link>
             </div>
@@ -211,7 +211,7 @@ export default function AIBackgroundRemovalForProductPhotos() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                to="/home"
+                to="/"
                 className="px-8 py-3 rounded-full bg-[#7A3BFF] text-white font-semibold hover:opacity-90"
               >
                 Try Zyvo

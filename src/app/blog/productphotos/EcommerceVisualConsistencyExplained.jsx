@@ -62,11 +62,11 @@ export default function EcommerceVisualConsistencyExplained() {
       <article className="max-w-4xl mx-auto px-6 py-20 text-gray-800">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-500 mb-6">
-          <Link to="/home" className="hover:underline">
+          <Link to="/" className="hover:underline">
             Home
           </Link>{" "}
           &nbsp;›&nbsp;
-          <Link to="/home" className="hover:underline">
+          <Link to="/" className="hover:underline">
             Blog
           </Link>{" "}
           &nbsp;›&nbsp;
@@ -131,7 +131,7 @@ export default function EcommerceVisualConsistencyExplained() {
         <p className="mb-10">
           When these elements change randomly, your store feels chaotic. When they stay consistent,
           your store feels trustworthy — like a real brand. This is why many stores invest in
-          consistent <Link to="/home" className="text-purple-600 underline">product photo templates</Link>{" "}
+          consistent <Link to="/" className="text-purple-600 underline">product photo templates</Link>{" "}
           and scalable workflows.
         </p>
 
@@ -188,11 +188,11 @@ export default function EcommerceVisualConsistencyExplained() {
 
         <p className="mb-12">
           Tools that help with this include{" "}
-          <Link to="/home" className="text-purple-600 underline">
+          <Link to="/" className="text-purple-600 underline">
             AI background generation
           </Link>
           ,{" "}
-          <Link to="/home" className="text-purple-600 underline">
+          <Link to="/" className="text-purple-600 underline">
             product photo editing
           </Link>
           , and reusable creative templates that keep every product looking like it belongs to the same brand.
@@ -210,7 +210,7 @@ export default function EcommerceVisualConsistencyExplained() {
 
           <div className="flex flex-wrap gap-3">
             <Link
-              to="/home"
+              to="/"
               className="inline-flex items-center justify-center px-6 py-3 rounded-lg text-white font-semibold bg-[linear-gradient(90deg,#7A3BFF_0%,#492399_100%)] hover:opacity-90 transition"
             >
               Try Zyvo Product Photos

@@ -4,7 +4,7 @@ import { getStickmanLandingPage, stickmanStructuredData } from "./stickmanLandin
 // The brand, as stated on the homepage (Organization + WebSite).
 export const BRAND = {
   name: "Zyvo",
-  alternateName: ["Zyvo AI", "tryzyvo"],
+  alternateName: ["Zyvo AI", "ZyvoAI", "tryzyvo"], // the ways people type the brand ("zyvoai" as one word included)
   logo: "/logo.png", // public/logo.png, 512 x 512
   // Official Zyvo profiles only: the YouTube channel (tutorials) and the
   // Instagram account the Creator Rewards dialog links to.

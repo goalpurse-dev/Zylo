@@ -61,7 +61,7 @@ export default function AIImageGeneratorForContentCreators() {
             </p>
             <p className="text-[#4A4A55]">
               Platforms like{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 ZyvoAI
               </Link>{" "}
               are specifically optimized for this high-volume workflow.

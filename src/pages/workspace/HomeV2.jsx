@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Glow from "../../components/workspace/Glow.jsx";
 import ZyvoSuiteCarousel from "../../components/workspace/ZyvoSuiteCarousel.jsx";
 import PublicGallery from "../../components/public-gallery/gallery.jsx";
-import { FeaturedTemplate, JumpBackInV2, LongFormSection, PathCards, SectionHeader, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
+import { FeaturedTemplate, HOME_MAX_W, JumpBackInV2, LongFormSection, PathCards, SectionHeader, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
 import { fetchShowcase } from "../../components/launch/launch";
 import { HIDDEN_COMMUNITY_CATEGORIES } from "../../data/homeContent";
 
@@ -26,6 +26,8 @@ export default function HomeV2() {
         <PathCards />
       </div>
 
+      {/* Centred content column, capped on big screens (the hero's cards use the same width). */}
+      <div className={`mx-auto w-full ${HOME_MAX_W}`}>
       <WhatsNewRow />
 
       <LongFormSection />
@@ -46,6 +48,9 @@ export default function HomeV2() {
           <SectionHeader title="Community creations" subtitle="Watch how people use Zyvo to make content that performs." />
         </div>
         <PublicGallery hideHeader dense longFormItems={longFormCreations} excludeCategories={HIDDEN_COMMUNITY_CATEGORIES} />
+      </div>
+      {/* The brand as people search for it ("zyvoai"), once, in the page's own text. */}
+      <p className="mt-12 px-4 text-center text-[12px] text-white/50 md:px-[50px]" data-testid="home-brand-line">Zyvo (ZyvoAI) · AI video generator for YouTube, TikTok and Reels</p>
       </div>
     </div>
   );

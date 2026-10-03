@@ -38,7 +38,7 @@ async function handleSubmit(e) {
       }
 
       if (res.session) {
-        navigate("/home");
+        navigate("/");
       } else {
         setMsg("Account created. Check your email to confirm before logging in.");
       }
@@ -69,7 +69,7 @@ async function handleSubmit(e) {
     <div className="min-h-screen bg-white text-black">
       <div className="fixed left-4 top-4 z-10">
         <Link
-          to="/home"
+          to="/"
           className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white hover:bg-black/5 transition"
           aria-label="Back"
         >

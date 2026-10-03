@@ -64,8 +64,8 @@ export default function HighConvertingProductImagesShopify() {
 
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-500 mb-6">
-          <Link to="/home" className="hover:underline">Home</Link> &nbsp;›&nbsp;
-          <Link to="/home" className="hover:underline">Blog</Link> &nbsp;›&nbsp;
+          <Link to="/" className="hover:underline">Home</Link> &nbsp;›&nbsp;
+          <Link to="/" className="hover:underline">Blog</Link> &nbsp;›&nbsp;
           <span className="text-gray-700">
             High-Converting Product Images for Shopify
           </span>
@@ -192,7 +192,7 @@ export default function HighConvertingProductImagesShopify() {
             a photoshoot.
           </p>
           <Link
-            to="/home"
+            to="/"
             className="inline-flex items-center justify-center px-6 py-3 rounded-lg text-white font-semibold bg-[linear-gradient(90deg,#7A3BFF_0%,#492399_100%)] hover:opacity-90 transition"
           >
             Try Zyvo Product Photos

@@ -101,7 +101,7 @@ export default function IsAIImageGenerationWorthIt() {
           </p>
           <p className="text-gray-600">
             Platforms like{" "}
-            <Link to="/home" className="text-purple-600 underline">
+            <Link to="/" className="text-purple-600 underline">
               AI creative tools
             </Link>{" "}
             give creators full stylistic control without needing studios or props.

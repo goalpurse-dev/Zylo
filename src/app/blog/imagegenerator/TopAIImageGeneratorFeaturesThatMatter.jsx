@@ -52,7 +52,7 @@ export default function TopAIImageGeneratorFeaturesThatMatter() {
             Let’s break down the AI image generator features that actually
             make a difference — especially if you’re using a creator-focused
             platform like{" "}
-            <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+            <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
               ZyvoAI
             </Link>.
           </p>
@@ -85,7 +85,7 @@ export default function TopAIImageGeneratorFeaturesThatMatter() {
             </p>
             <p className="text-[#4A4A55]">
               Modern tools like{" "}
-              <Link to="/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 ZyvoAI
               </Link>{" "}
               prioritize performance-ready visuals instead of experimental
