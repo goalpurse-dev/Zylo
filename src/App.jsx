@@ -225,6 +225,11 @@ import WelcomeModal from "./components/WelcomeModal";
 import { supabase } from "./lib/supabaseClient";
 import NotFoundRedirect from "./components/NotFoundRedirect";
 import PublicContentLayout from "./components/seo/PublicContentLayout.jsx";
+import { STICKMAN_LANDING_PAGES } from "./data/stickmanLandingPages.js";
+// Not lazy: this page is hydrated (src/main.jsx). A lazy route would leave its
+// Suspense boundary waiting for the chunk, and any state update in that gap
+// makes React drop the server HTML and redraw the page.
+import StickmanVideoLanding from "./pages/landing/StickmanVideoLanding.jsx";
 import WorkspaceRouteSeo from "./components/seo/WorkspaceRouteSeo.jsx";
 import { clearRouteReloadAttempt, lazyRoute } from "./lib/lazyRouteRecovery.js";
 import PublicGallery from "./components/public-gallery/gallery";
@@ -756,6 +761,8 @@ return (
          <Route path="/behind-the-scenes-video-maker" element={<BehindTheScenesLanding />} />
          <Route path="/30-days-video-maker" element={<ThirtyDaysLanding />} />
          <Route path="/30-days-series-video-maker" element={<ThirtyDaysSeriesLanding />} />
+         {/* Long Form landing pages: one route per entry of src/data/stickmanLandingPages.js */}
+         {STICKMAN_LANDING_PAGES.map((page) => <Route key={page.path} path={page.path} element={<StickmanVideoLanding page={page} />} />)}
          <Route path="/blog/what-is-30-days-ai-trend" element={<WhatIs30DaysAiTrend />} />
          <Route path="/blog/30-days-universe-ideas" element={<ThirtyDaysUniverseIdeas />} />
          <Route path="/blog/30-days-video-series" element={<ThirtyDaysVideoSeries />} />

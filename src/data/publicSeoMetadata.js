@@ -1,3 +1,5 @@
+import { STICKMAN_FONT_HREF, STICKMAN_LANDING_PAGES, STICKMAN_VIEWPORT } from "./stickmanLandingPages.js";
+
 export const SITE_URL = "https://www.tryzyvo.com";
 
 // The one place a canonical URL is computed from a pathname — used by the
@@ -598,6 +600,22 @@ export const PUBLIC_SEO_METADATA = {
     "Why Your Posts Don’t Go Viral",
     "Diagnose common short-form content problems involving weak hooks, unclear concepts, inconsistent packaging, and poor retention.",
   ),
+  // Long Form landing pages: one entry per page of stickmanLandingPages.js.
+  // preloadImage / fontHref / imageSize are head extras written by
+  // scripts/generateSeoHtml.js (hero poster preload, display font, og:image size);
+  // inlineContent writes the page content straight into the first HTML and
+  // hydrates it; viewport replaces the app's no-zoom viewport tag.
+  ...Object.fromEntries(STICKMAN_LANDING_PAGES.map((page) => [page.path, {
+    title: page.title,
+    description: page.description,
+    type: "website",
+    image: `${SITE_URL}${page.ogImage}`,
+    imageSize: [1200, 630],
+    preloadImage: page.hero.poster,
+    fontHref: STICKMAN_FONT_HREF,
+    inlineContent: true,
+    viewport: STICKMAN_VIEWPORT,
+  }])),
   "/ai-fruit-story-maker": {
     title: "AI Fruit Story Generator – Create Fruit Drama Videos | Zyvo",
     description: "Create a multi-scene AI fruit story from one idea. Build consistent characters, generate scenes, and animate a vertical fruit drama video with Zyvo.",

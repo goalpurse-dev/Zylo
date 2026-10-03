@@ -1,4 +1,5 @@
 import { SITE_URL } from "./publicSeoMetadata.js";
+import { getStickmanLandingPage, stickmanStructuredData } from "./stickmanLandingPages.js";
 
 // Plain JS (no React/JSX) so it can be imported both by the client
 // (PublicContentLayout.jsx, via its useEffect-driven useSEO() injection) and
@@ -6,6 +7,11 @@ import { SITE_URL } from "./publicSeoMetadata.js";
 // single source of truth for JSON-LD in both places.
 export function structuredDataFor(pathname, metadata, canonical) {
   if (!metadata) return null;
+
+  // Long Form landing pages build their own graph (SoftwareApplication with
+  // the real plan prices, the videos on the page, FAQ, breadcrumb).
+  const stickmanPage = getStickmanLandingPage(pathname);
+  if (stickmanPage) return stickmanStructuredData(stickmanPage, canonical, SITE_URL);
 
   // Homepage gets exactly one brand-identity graph (Organization + WebSite)
   // and nothing else — no BreadcrumbList/WebPage duplicate, no second

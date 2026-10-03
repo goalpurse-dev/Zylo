@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { Menu, X } from "lucide-react";
-import Logo from "../../assets/Logo.png";
+import Logo from "../../assets/Logo-96.webp"; // 96 px copy of Logo.png: shown at 28–32 px
 import { CREATE_TOOLS } from "../workspace/CreateMenu.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import AuthModal from "../AuthModal.jsx";
@@ -23,7 +23,11 @@ export default function PublicContentHeader({ templateId, slug }) {
   const drawerRef = useRef(null);
   const wasMobileOpen = useRef(false);
 
-  const createPath = CREATE_TOOLS.find((tool) => tool.id === templateId)?.path || "/workspace/home";
+  // Long Form landing pages: "Create" opens Long Form, and the buttons use the lime accent of that page.
+  const longForm = templateId === "long-form";
+  const createPath = longForm ? "/long-form" : CREATE_TOOLS.find((tool) => tool.id === templateId)?.path || "/workspace/home";
+  const primaryCls = longForm ? "bg-lime-300 text-[#11150D]" : "bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white";
+  const quietCls = longForm ? "bg-white/[0.08] text-white hover:bg-white/[0.14]" : "bg-[#2A1660] text-[#B794FF] hover:bg-[#331B78]";
 
   const navItems = [
     { label: "Home", to: "/workspace/home" },
@@ -72,7 +76,7 @@ export default function PublicContentHeader({ templateId, slug }) {
             className="flex shrink-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9F5CFF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0D0F]"
             aria-label="Zyvo home"
           >
-            <img src={Logo} alt="" className="h-8 w-8 object-contain" />
+            <img src={Logo} alt="" width="32" height="32" className="h-8 w-8 object-contain" />
             <span className="text-[18px] font-black tracking-[-0.03em] text-white">Zyvo</span>
           </Link>
 
@@ -93,7 +97,7 @@ export default function PublicContentHeader({ templateId, slug }) {
               <button
                 type="button"
                 onClick={() => navigate("/workspace/home")}
-                className="rounded-lg bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] px-5 py-1.5 text-sm font-semibold text-white transition hover:opacity-90"
+                className={`rounded-lg ${primaryCls} px-5 py-1.5 text-sm font-semibold transition hover:opacity-90`}
               >
                 Go to Workspace
               </button>
@@ -102,14 +106,14 @@ export default function PublicContentHeader({ templateId, slug }) {
                 <button
                   type="button"
                   onClick={() => openAuth("login")}
-                  className="rounded-lg bg-[#2A1660] px-5 py-1.5 text-sm font-medium text-[#B794FF] transition hover:bg-[#331B78]"
+                  className={`rounded-lg ${quietCls} px-5 py-1.5 text-sm font-medium transition`}
                 >
                   Log in
                 </button>
                 <button
                   type="button"
                   onClick={() => openAuth("signup")}
-                  className="rounded-lg bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] px-5 py-1.5 text-sm font-semibold text-white transition hover:opacity-90"
+                  className={`rounded-lg ${primaryCls} px-5 py-1.5 text-sm font-semibold transition hover:opacity-90`}
                 >
                   Sign up
                 </button>
@@ -123,7 +127,7 @@ export default function PublicContentHeader({ templateId, slug }) {
               <button
                 type="button"
                 onClick={() => navigate("/workspace/home")}
-                className="hidden min-[420px]:block rounded-lg bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] px-3.5 py-1.5 text-[13px] font-semibold text-white"
+                className={`hidden min-[420px]:block rounded-lg ${primaryCls} px-3.5 py-1.5 text-[13px] font-semibold`}
               >
                 Workspace
               </button>
@@ -132,14 +136,14 @@ export default function PublicContentHeader({ templateId, slug }) {
                 <button
                   type="button"
                   onClick={() => openAuth("login")}
-                  className="hidden min-[420px]:block rounded-lg bg-[#2A1660] px-3.5 py-1.5 text-[13px] font-medium text-[#B794FF]"
+                  className={`hidden min-[420px]:block rounded-lg ${quietCls} px-3.5 py-1.5 text-[13px] font-medium`}
                 >
                   Log in
                 </button>
                 <button
                   type="button"
                   onClick={() => openAuth("signup")}
-                  className="hidden min-[420px]:block rounded-lg bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] px-3.5 py-1.5 text-[13px] font-semibold text-white"
+                  className={`hidden min-[420px]:block rounded-lg ${primaryCls} px-3.5 py-1.5 text-[13px] font-semibold`}
                 >
                   Sign up
                 </button>
@@ -210,7 +214,7 @@ export default function PublicContentHeader({ templateId, slug }) {
                   <Link
                     to="/workspace/home"
                     onClick={() => setMobileOpen(false)}
-                    className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] px-4 py-3 text-[15px] font-semibold text-white"
+                    className={`min-h-[44px] rounded-xl ${primaryCls} px-4 py-3 text-[15px] font-semibold`}
                   >
                     Go to Workspace
                   </Link>
@@ -219,14 +223,14 @@ export default function PublicContentHeader({ templateId, slug }) {
                     <button
                       type="button"
                       onClick={() => openAuth("login")}
-                      className="min-h-[44px] rounded-xl bg-[#2A1660] px-4 py-3 text-[15px] font-semibold text-[#B794FF]"
+                      className={`min-h-[44px] rounded-xl ${quietCls} px-4 py-3 text-[15px] font-semibold`}
                     >
                       Log in
                     </button>
                     <button
                       type="button"
                       onClick={() => openAuth("signup")}
-                      className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] px-4 py-3 text-[15px] font-semibold text-white"
+                      className={`min-h-[44px] rounded-xl ${primaryCls} px-4 py-3 text-[15px] font-semibold`}
                     >
                       Sign up
                     </button>

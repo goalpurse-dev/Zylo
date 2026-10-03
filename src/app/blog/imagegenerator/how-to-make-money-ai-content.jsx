@@ -121,7 +121,9 @@ export default function HowToMakeMoneyAiContent() {
             <p className="text-[17px] leading-relaxed">
               Platform payouts, brand interest, and affiliate returns all compound with volume. A tool built around{" "}
               <Link to="/blog/what-is-zyvo-publish" className="text-[#7A3BFF] hover:underline font-semibold">scheduled, repeatable posting</Link>{" "}
-              — rather than one-off manual uploads — is what makes that volume realistic to sustain.
+              — rather than one-off manual uploads — is what makes that volume realistic to sustain. For long-form YouTube, the{" "}
+              <Link to="/ai-stickman-video-generator" className="text-[#7A3BFF] hover:underline font-semibold">AI stickman video generator</Link>{" "}
+              makes a full 8–15 minute video from one idea.
             </p>
           </section>
 

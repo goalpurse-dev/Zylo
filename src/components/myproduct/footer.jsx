@@ -36,6 +36,9 @@ export default function Footer() {
               <Link to="/workspace/creations" className="text-[12px] hover:underline">
                 Creations
               </Link>
+              <Link to="/ai-stickman-video-generator" className="text-[12px] hover:underline">
+                AI Stickman Video Generator
+              </Link>
             </div>
 
             {/* Pricing + Help */}
@@ -108,6 +111,9 @@ export default function Footer() {
              
               <Link to="/workspace/creations" className="hover:underline">
                 Creations
+              </Link>
+              <Link to="/ai-stickman-video-generator" className="hover:underline">
+                AI Stickman Video Generator
               </Link>
             </div>
 

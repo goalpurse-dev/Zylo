@@ -82,6 +82,10 @@ export function MadeWithZyvo() {
           ))}
         </div>
       </div>
+      <p className="mt-5 text-center text-[13px] text-white/50">
+        Long Form makes a full YouTube video from one idea.{" "}
+        <Link to="/ai-stickman-video-generator" className={cx("rounded font-semibold text-lime-300 underline-offset-4 hover:underline", FOCUS)}>See the AI stickman video generator</Link>
+      </p>
     </section>
   );
 }

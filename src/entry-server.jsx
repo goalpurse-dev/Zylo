@@ -8,7 +8,13 @@ import App from "./App.jsx";
 // onShellReady) is deliberate: it waits for every lazy()-loaded route
 // component and Suspense boundary to fully resolve before we capture any
 // HTML, so the output is the real page content, not a loading fallback.
-export function renderApp(pathname) {
+//
+// `inline`: React keeps a finished Suspense boundary out of the first HTML
+// when it is larger than progressiveChunkSize (12.8 kB): the page arrives as
+// a spinner plus a hidden block that an inline script swaps in ~300 ms later.
+// With `inline` the finished content is written in place, so the first paint
+// is the real page. Opt-in per page (publicSeoMetadata.js `inlineContent`).
+export function renderApp(pathname, { inline = false } = {}) {
   return new Promise((resolve, reject) => {
     let html = "";
     let settled = false;
@@ -27,6 +33,7 @@ export function renderApp(pathname) {
     });
 
     const { pipe, abort } = renderToPipeableStream(<App ssrPath={pathname} />, {
+      ...(inline ? { progressiveChunkSize: Number.MAX_SAFE_INTEGER } : {}),
       onAllReady() {
         pipe(writable);
       },

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useReducedMotion } from "framer-motion";
 import { ArrowRight, ChevronRight, Clapperboard, Sparkles } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
@@ -328,6 +328,7 @@ export function LongFormSection() {
       <SectionHeader title="Make a YouTube video with Long Form" subtitle="8–15 minute explainers. You pick the idea, Zyvo does the rest." badge={isLongFormNew() ? <NewPill /> : null}
         action="Start a video" onAction={() => { trackLaunch("try_long_form", { placement: "home_how_it_works" }); navigate("/long-form"); }} />
       <HowItWorks />
+      <Link to="/ai-stickman-video-generator" className="mt-4 inline-block text-[13px] font-semibold text-white/55 underline-offset-4 transition hover:text-lime-300 hover:underline">How the AI stickman video generator works →</Link>
 
       <div className="mb-3 mt-9 flex items-end justify-between gap-4">
         <div>

@@ -105,7 +105,9 @@ export default function FacelessYoutubeChannelIdeas() {
             <p className="text-[17px] leading-relaxed">
               Each format has a different rhythm — some are built for a recurring series, others work as one-off atmospheric pieces. See{" "}
               <Link to="/blog/zyvo-template-comparison" className="text-[#7A3BFF] hover:underline font-semibold">the full template comparison</Link>{" "}
-              to match a format to the channel you want to build.
+              to match a format to the channel you want to build. For full-length videos, Zyvo's{" "}
+              <Link to="/ai-stickman-video-generator" className="text-[#7A3BFF] hover:underline font-semibold">AI stickman video generator</Link>{" "}
+              turns one idea into an 8–15 minute explainer with a script, voiceover and drawn scenes.
             </p>
           </section>
 

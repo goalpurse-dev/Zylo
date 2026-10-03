@@ -107,7 +107,7 @@ function buildHead({ pathname, seoVisibility, innerHtml }) {
   const ogType = metadata?.type || "website";
   const structuredData = structuredDataFor(pathname, metadata, canonical);
 
-  return { title, description, canonical, robots, ogImage, ogType, structuredData };
+  return { title, description, canonical, robots, ogImage, ogType, structuredData, imageSize: metadata?.imageSize, preloadImage: metadata?.preloadImage, fontHref: metadata?.fontHref, hydrate: Boolean(metadata?.inlineContent), viewport: metadata?.viewport };
 }
 
 function injectHead(template, head) {
@@ -136,13 +136,49 @@ function injectHead(template, head) {
     `<meta name="twitter:description" content="${escapeAttr(head.description)}" />`,
     `<meta name="twitter:image" content="${escapeAttr(head.ogImage)}" />`,
   ];
+  if (head.imageSize) {
+    tags.push(`<meta property="og:image:width" content="${head.imageSize[0]}" />`, `<meta property="og:image:height" content="${head.imageSize[1]}" />`);
+  }
+  // Per-page head extras (publicSeoMetadata.js): the hero poster is fetched
+  // first; the display font loads without blocking the first paint.
+  if (head.preloadImage) {
+    tags.push(`<link rel="preload" as="image" href="${escapeAttr(head.preloadImage)}" fetchpriority="high" />`);
+  }
+  if (head.fontHref) {
+    tags.push(
+      `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />`,
+      `<link rel="stylesheet" href="${escapeAttr(head.fontHref)}" media="print" onload="this.media='all'" />`,
+    );
+  }
   if (head.structuredData) {
     tags.push(`<script type="application/ld+json" id="page-ld">${JSON.stringify(head.structuredData)}</script>`);
   }
 
   html = html.replace("</head>", `${tags.join("\n    ")}\n  </head>`);
-  html = html.replace('<html lang="en">', '<html lang="en" data-prerendered="true">');
+  html = html.replace('<html lang="en">', head.hydrate ? '<html lang="en" data-prerendered="true" data-hydrate="true">' : '<html lang="en" data-prerendered="true">');
+  // A hydrated page is complete without the app script: fetch the script
+  // after the styles and the hero picture, not in competition with them.
+  if (head.hydrate) html = deferAppScript(html);
+  if (head.viewport) {
+    const viewportTag = /<meta name="viewport" content="[^"]*"\s*\/?>/;
+    if (!viewportTag.test(html)) throw new Error("the viewport tag was not found in the template");
+    html = html.replace(viewportTag, () => `<meta name="viewport" content="${escapeAttr(head.viewport)}" />`);
+  }
   return html;
+}
+
+// Replaces Vite's <script type="module" src="/assets/index-….js"> with a tiny
+// loader that adds the same script once the page is on screen: when the
+// browser reports the largest picture painted (or the first paint where that
+// isn't supported, or two animation frames as a last resort), and after 3 s
+// at the latest (a tab opened in the background never paints).
+const APP_SCRIPT_LOADER = (src) => `(function(){var done=0;function go(){if(done)return;done=1;var s=document.createElement("script");s.type="module";s.crossOrigin="anonymous";s.src=${JSON.stringify(src)};document.head.appendChild(s)}var types=window.PerformanceObserver&&PerformanceObserver.supportedEntryTypes||[];var type=types.indexOf("largest-contentful-paint")>=0?"largest-contentful-paint":types.indexOf("paint")>=0?"paint":"";if(type){try{new PerformanceObserver(function(list,observer){observer.disconnect();go()}).observe({type:type,buffered:true})}catch(e){type=""}}if(!type)requestAnimationFrame(function(){requestAnimationFrame(function(){setTimeout(go,0)})});setTimeout(go,3000)})()`;
+
+function deferAppScript(html) {
+  const pattern = /<script type="module" crossorigin src="([^"]+)"><\/script>/;
+  const src = html.match(pattern)?.[1];
+  if (!src) throw new Error("deferAppScript: the app module script was not found in the template");
+  return html.replace(pattern, () => `<script>${APP_SCRIPT_LOADER(src)}</script>`);
 }
 
 function validate({ pathname, seoVisibility, head, innerHtml, finalHtml }) {
@@ -197,7 +233,7 @@ async function main() {
   for (const { pathname, seoVisibility } of jobs) {
     completed += 1;
     try {
-      const innerHtml = await renderApp(pathname);
+      const innerHtml = await renderApp(pathname, { inline: Boolean(getPublicSeoMetadata(pathname)?.inlineContent) });
       const head = buildHead({ pathname, seoVisibility, innerHtml });
       const withHead = injectHead(template, head);
       const finalHtml = withHead.replace('<div id="root"></div>', `<div id="root">${innerHtml}</div>`);

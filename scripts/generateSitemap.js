@@ -9,6 +9,7 @@ import path from "node:path";
 import { getPublishedSeoLandingPages, SITE_URL } from "../src/data/seoLandingPages.js";
 import { getPublishedSeoBlogPosts, seoBlogPosts } from "../src/data/seoBlogPosts.js";
 import { getNoindexWorkspaceRoutes, getPublicWorkspaceRoutes } from "../src/data/routeSeoPolicy.js";
+import { STICKMAN_LANDING_PAGES } from "../src/data/stickmanLandingPages.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, "..");
@@ -101,6 +102,9 @@ function main() {
   const appSource = readFileSync(appPath, "utf8");
   const vercelConfig = JSON.parse(readFileSync(vercelPath, "utf8"));
   const staticRoutes = staticRoutesFromApp(appSource);
+  // Long Form landing pages: App.jsx maps their routes from the config, so the
+  // paths aren't literal in its source.
+  STICKMAN_LANDING_PAGES.forEach((page) => staticRoutes.add(page.path));
   const redirectSources = new Set((vercelConfig.redirects || []).map((redirect) => redirect.source));
   const noindexRoutes = new Set(getNoindexWorkspaceRoutes().map((policy) => policy.path));
   const draftBlogRoutes = new Set(
@@ -139,6 +143,11 @@ function main() {
     ...getPublishedSeoLandingPages().map((page) => ({
       path: `/${page.slug}`,
       priority: page.parentSlug ? "0.9" : "1.0",
+      changefreq: "weekly",
+    })),
+    ...STICKMAN_LANDING_PAGES.map((page) => ({
+      path: page.path,
+      priority: page.slug ? "0.9" : "1.0",
       changefreq: "weekly",
     })),
     ...REQUIRED_PUBLIC_PAGES.map((page) => ({

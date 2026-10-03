@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { fetchProjectBilling, fetchUserLongFormProjects } from "./project";
 import { coverFor, fetchProjectCovers, projectTitle } from "./projectCovers";
@@ -73,6 +73,7 @@ function MadeWithZyvo() {
         </a>
       ))}
       <TutorialCard className="mt-2" />
+      <Link to="/ai-stickman-video-generator" className="mt-3 block px-1 text-[12.5px] font-semibold text-white/50 underline-offset-4 transition hover:text-lime-300 hover:underline">About Long Form: the AI stickman video generator →</Link>
     </>
   );
 }

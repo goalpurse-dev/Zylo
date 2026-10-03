@@ -101,7 +101,7 @@ export default function CookieConsent() {
         </div>
 
         {/* small privacy link */}
-        <p className="text-xs text-white/40 mt-4">
+        <p className="text-xs text-white/60 mt-4">
           Learn more in our{" "}
           <a href="/privacy" className="underline hover:text-white/70">
             privacy policy
