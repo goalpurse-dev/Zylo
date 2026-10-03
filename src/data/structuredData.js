@@ -1,6 +1,14 @@
 import { SITE_URL } from "./publicSeoMetadata.js";
 import { getStickmanLandingPage, stickmanStructuredData } from "./stickmanLandingPages.js";
 
+// The brand, as stated on the homepage (Organization + WebSite).
+export const BRAND = {
+  name: "Zyvo",
+  alternateName: ["Zyvo AI", "tryzyvo"],
+  logo: "/logo.png", // public/logo.png, 512 x 512
+  sameAs: ["https://www.youtube.com/@zyloaii"], // the Zyvo YouTube channel (tutorials)
+};
+
 // Plain JS (no React/JSX) so it can be imported both by the client
 // (PublicContentLayout.jsx, via its useEffect-driven useSEO() injection) and
 // by scripts/generateSeoHtml.js directly in plain Node at build time —
@@ -25,16 +33,18 @@ export function structuredDataFor(pathname, metadata, canonical) {
         {
           "@type": "Organization",
           "@id": `${SITE_URL}/#organization`,
-          name: "Zyvo",
-          alternateName: ["TryZyvo", "Zyvo AI", "ZyvoAI"],
+          name: BRAND.name,
+          alternateName: BRAND.alternateName,
           url: `${SITE_URL}/`,
+          logo: { "@type": "ImageObject", url: `${SITE_URL}${BRAND.logo}`, width: 512, height: 512 },
+          sameAs: BRAND.sameAs,
         },
         {
           "@type": "WebSite",
           "@id": `${SITE_URL}/#website`,
           url: `${SITE_URL}/`,
-          name: "Zyvo",
-          alternateName: "TryZyvo",
+          name: BRAND.name,
+          alternateName: BRAND.alternateName,
           publisher: { "@id": `${SITE_URL}/#organization` },
         },
       ],
@@ -44,7 +54,7 @@ export function structuredDataFor(pathname, metadata, canonical) {
   const breadcrumb = {
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/workspace/home` },
+      { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
       ...(pathname.startsWith("/blog/")
         ? [{ "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` }]
         : []),

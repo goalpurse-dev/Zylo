@@ -755,7 +755,7 @@ export default function TwoAmBlogGuide({ slug }) {
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/workspace/home` },
+          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
           { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
           { "@type": "ListItem", position: 3, name: guide.category, item: `${SITE_URL}/blog` },
           { "@type": "ListItem", position: 4, name: guide.title, item: canonicalUrl },
@@ -789,7 +789,7 @@ export default function TwoAmBlogGuide({ slug }) {
     <div className="min-h-screen bg-[#0B0D0F] text-white">
       <main className="mx-auto max-w-4xl px-5 pb-24 pt-8 sm:px-6 sm:pt-12">
         <nav className="mb-6 text-[13px] text-white/40">
-          <Link to="/workspace/home" className="hover:text-lime-300">Home</Link>
+          <Link to="/" className="hover:text-lime-300">Home</Link>
           <span className="mx-2">/</span>
           <Link to="/blog" className="hover:text-lime-300">Blog</Link>
           <span className="mx-2">/</span>

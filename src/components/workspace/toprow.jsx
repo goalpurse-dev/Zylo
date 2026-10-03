@@ -118,7 +118,7 @@ export default function TopRow({ onMenuClick, title }) {
         <div className="flex items-center gap-3">
           {/* mobile logo / hamburger */}
           <button onClick={onMenuClick} className="lg:hidden">
-            <img src={Logo} className="w-9 h-9 object-contain" />
+            <img src={Logo} alt="Zyvo" className="w-9 h-9 object-contain" />
           </button>
 
           {/* desktop: workspace label when logged in */}

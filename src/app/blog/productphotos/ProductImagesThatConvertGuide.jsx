@@ -34,7 +34,7 @@ export default function ProductImagesThatConvertCompleteGuide() {
 
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-500 mb-6">
-          <Link to="/workspace/home" className="hover:underline">Home</Link> &nbsp;›&nbsp;
+          <Link to="/" className="hover:underline">Home</Link> &nbsp;›&nbsp;
           <Link to="/blog" className="hover:underline">Blog</Link> &nbsp;›&nbsp;
           <span className="text-gray-700">
             Product Images That Convert

@@ -107,7 +107,7 @@ export const seoLandingPages = [
       "2am-hand-painted-anime-images",
       "2am-battle-island-ai-images",
     ],
-    breadcrumb: [{ label: "Home", to: "/workspace/home" }, { label: "2AM Worlds", to: `/${HUB_SLUG}` }],
+    breadcrumb: [{ label: "Home", to: "/" }, { label: "2AM Worlds", to: `/${HUB_SLUG}` }],
   },
 
   {
@@ -188,7 +188,7 @@ export const seoLandingPages = [
     relatedLandingPages: [HUB_SLUG, "2am-ninja-city-ai-generator"],
     relatedBlogPosts: ["how-to-create-2am-creature-town-images", "what-is-the-2am-worlds-ai-trend"],
     breadcrumb: [
-      { label: "Home", to: "/workspace/home" },
+      { label: "Home", to: "/" },
       { label: "2AM Worlds", to: `/${HUB_SLUG}` },
       { label: "Creature Town", to: "/2am-creature-town-ai-generator" },
     ],
@@ -273,7 +273,7 @@ export const seoLandingPages = [
     relatedLandingPages: [HUB_SLUG, "2am-creature-town-ai-generator"],
     relatedBlogPosts: ["how-to-create-2am-ninja-city-images", "what-is-the-2am-worlds-ai-trend"],
     breadcrumb: [
-      { label: "Home", to: "/workspace/home" },
+      { label: "Home", to: "/" },
       { label: "2AM Worlds", to: `/${HUB_SLUG}` },
       { label: "Ninja City", to: "/2am-ninja-city-ai-generator" },
     ],

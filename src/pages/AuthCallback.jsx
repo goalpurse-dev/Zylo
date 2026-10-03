@@ -7,7 +7,7 @@ const WORKSPACE_ROUTE_BY_TEMPLATE = { "two-am": "/workspace/two-am" };
 
 function postAuthDestination() {
   const draft = peekSeoDraft();
-  return (draft && WORKSPACE_ROUTE_BY_TEMPLATE[draft.templateId]) || "/workspace/home";
+  return (draft && WORKSPACE_ROUTE_BY_TEMPLATE[draft.templateId]) || "/";
 }
 
 export default function AuthCallback() {

@@ -24,7 +24,7 @@ export default function SeoGeneratorHero({ config, prompt, onPromptChange, varia
   const interactedRef = useRef(false);
   const timerRef = useRef(null);
 
-  const targetRoute = WORKSPACE_ROUTE_BY_TEMPLATE[config.templateId] || "/workspace/home";
+  const targetRoute = WORKSPACE_ROUTE_BY_TEMPLATE[config.templateId] || "/";
 
   useEffect(() => () => clearTimeout(timerRef.current), []);
 

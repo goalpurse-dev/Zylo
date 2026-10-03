@@ -965,7 +965,7 @@ export default function AICookingMatic() {
 
       <FaceAsmrPaywall
         open={paywallOpen}
-        onClose={() => { if (needsUpgrade) navigate("/workspace/home"); else setPaywallOpen(false); }}
+        onClose={() => { if (needsUpgrade) navigate("/"); else setPaywallOpen(false); }}
         isGuest={paywallGuest}
         dismissable={!needsUpgrade}
         toolName="AI Cooking Matic"

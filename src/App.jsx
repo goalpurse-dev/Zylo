@@ -335,7 +335,6 @@ import { Analytics } from "@vercel/analytics/react";
 
 
 
-import NewHome from "./pages/home/home.jsx";
 import AuthCallbackPage from "./pages/AuthCallback.jsx";
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.jsx"));
 const FaceAsmrPage           = lazy(() => import("./pages/workspace/FaceAsmr.jsx"));
@@ -381,13 +380,18 @@ function RequireAuth({ children }) {
   if (!user) return <Navigate to="/login" replace />;
   return children;
 }
+function OldHomeRedirect() {
+  const { search, hash } = useLocation();
+  return <Navigate to={{ pathname: "/", search, hash }} replace />;
+}
+
 function GuestOnly({ children }) {
   const { loading, user } = useAuth();
 
   if (loading) return null; // or spinner, NOT empty div
 
   if (user) {
-    return <Navigate to="/workspace/home" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -565,12 +569,7 @@ return (
   </div>
 }>
         <Routes>
-          {/* "/" is the workspace home (2026-10-01): Vercel redirects the
-              domain root to /workspace/home (vercel.json, 307), and in-app
-              links to "/" go there too. The build still server-renders NewHome
-              for "/" (typeof window === "undefined"), because that snapshot is
-              the SEO/shell file the build validates. */}
-          <Route path="/" element={typeof window === "undefined" ? <NewHome /> : <Navigate to="/workspace/home" replace />} />
+          {/* "/" is Home: see the WorkspaceLayout routes below. */}
 
         
 
@@ -877,16 +876,12 @@ return (
 
 
 <Route  element={<WorkspaceLayout />}>
-  {/* 🔒 PROTECTED HOME */}
-  <Route
-    path="/workspace/home"
-    index
-    element={
-   
-        USE_LEGACY_HOME ? <Workspace /> : <HomeV2 />
-   
-    }
-  />
+  {/* HOME at the site root: public, prerendered. Logged-out visitors get
+      Login / Start for Free in the top bar, logged-in users their app.
+      /workspace/home is the old address (301 in vercel.json; this client
+      redirect covers in-app navigation to it). */}
+  <Route path="/" element={USE_LEGACY_HOME ? <Workspace /> : <HomeV2 />} />
+  <Route path="/workspace/home" element={<OldHomeRedirect />} />
 
   {/* PUBLIC ROUTES */}
   <Route path="/workspace/library" element={<Navigate to="/workspace/creations" replace />} />
@@ -909,7 +904,7 @@ return (
   <Route path="/workspace/thirty-days" element={<ThirtyDaysPage />} />
   <Route path="/workspace/cartoon-drive-by" element={<CartoonDriveByPage />} />
   <Route path="/workspace/behind-the-scenes" element={<BehindTheScenesPage />} />
-  <Route path="/workspace/publish"          element={<Navigate to="/workspace/home" replace />} />
+  <Route path="/workspace/publish"          element={<Navigate to="/" replace />} />
   <Route path="/workspace/publishv"         element={<PublishPage />} />
   <Route path="/workspace/stats"            element={<StatsPage />} />
   <Route path="/workspace/connections"      element={<ConnectionsPage />} />
@@ -1009,7 +1004,7 @@ return (
           <Route path="/admin/feedback" element={<FeedbackAnalytics />} />
 
         
-          <Route path="/home" element={<Navigate to="/workspace/home" replace />} />
+          <Route path="/home" element={<Navigate to="/" replace />} />
 
 
           <Route

@@ -85,9 +85,6 @@ export default function WorkspaceHome() {
   const shouldLoadHeroVideo = useDeferredHeroVideo();
   const [heroVideoReady, setHeroVideoReady] = useState(false);
 
-  useEffect(() => {
-    document.title = "Create Visuals Faster";
-  }, []);
 
   return (
     <div className="flex-1 pb-24 lg:pb-12">

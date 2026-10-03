@@ -20,7 +20,7 @@ export default function NotFoundRedirect() {
       </p>
 
       <Link
-        to="/workspace/home"
+        to="/"
         className="mt-8 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white transition"
       >
         Go to Zyvo Home

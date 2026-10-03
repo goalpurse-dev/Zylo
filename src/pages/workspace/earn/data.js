@@ -30,7 +30,7 @@ export const ONBOARDING_STEPS = [
     key: "create",
     title: "Create with Zyvo",
     description: "Generate a post using any Zyvo tool.",
-    href: "/workspace/home",
+    href: "/",
   },
   {
     key: "post",

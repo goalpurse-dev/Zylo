@@ -26,7 +26,7 @@ function welcomeEmailHtml(user) {
     <p>Start here:</p>
 
     <p>
-      <a href="https://tryzyvo.com/workspace/home">
+      <a href="https://www.tryzyvo.com/">
         Open Zyvo
       </a>
     </p>

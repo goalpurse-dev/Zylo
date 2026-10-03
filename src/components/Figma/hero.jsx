@@ -93,7 +93,7 @@ export default function Hero() {
           className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row"
         >
           <Link
-            to={signedIn ? "/workspace/home" : "/signup"}
+            to={signedIn ? "/" : "/signup"}
             className="group flex w-full items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-bold text-[#160c24] shadow-[0_12px_38px_rgba(255,255,255,.16)] transition hover:-translate-y-0.5 hover:bg-[#f3edff] sm:w-auto"
           >
             {signedIn ? "Go to Workspace" : "Start creating free"}

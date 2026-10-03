@@ -19,10 +19,10 @@ const ref = new URL(process.env.SUPABASE_URL).hostname.split(".")[0];
 fs.mkdirSync(OUT, { recursive: true });
 
 const ROUTES = [
-  ["home", "/workspace/home", true], ["lobby", "/long-form", true], ["create", "/long-form/create", true], ["project", `/long-form/project/${PROJECT}`, true],
+  ["home", "/", true], ["lobby", "/long-form", true], ["create", "/long-form/create", true], ["project", `/long-form/project/${PROJECT}`, true],
   ["creations", "/workspace/creations", true], ["image-gen", "/workspace/image-generator", true], ["fruit", "/workspace/ai-fruit-story", true], ["pricing", "/workspace/pricing", true],
   ["pricing-out", "/workspace/pricing", false], ["landing", "/ai-stickman-video-generator", false], ["kit-swap", "/kit-swap-ai", false], ["blog", "/blog", false],
-  ["blog-post", "/blog/faceless-youtube-channel-ideas", false], ["home-out", "/workspace/home", false],
+  ["blog-post", "/blog/faceless-youtube-channel-ideas", false], ["home-out", "/", false],
 ];
 const browser = await chromium.launch({ channel: "chrome" });
 const report = {};

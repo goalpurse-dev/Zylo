@@ -247,7 +247,7 @@ export default function TwoAm() {
       <TwoAmPaywall
         open={paywallOpen}
         onClose={() => {
-          if (needsUpgrade) navigate("/workspace/home");
+          if (needsUpgrade) navigate("/");
           else setPaywallOpen(false);
         }}
         isGuest={paywallGuest}

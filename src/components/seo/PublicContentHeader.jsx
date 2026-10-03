@@ -25,12 +25,12 @@ export default function PublicContentHeader({ templateId, slug }) {
 
   // Long Form landing pages: "Create" opens Long Form, and the buttons use the lime accent of that page.
   const longForm = templateId === "long-form";
-  const createPath = longForm ? "/long-form" : CREATE_TOOLS.find((tool) => tool.id === templateId)?.path || "/workspace/home";
+  const createPath = longForm ? "/long-form" : CREATE_TOOLS.find((tool) => tool.id === templateId)?.path || "/";
   const primaryCls = longForm ? "bg-lime-300 text-[#11150D]" : "bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white";
   const quietCls = longForm ? "bg-white/[0.08] text-white hover:bg-white/[0.14]" : "bg-[#2A1660] text-[#B794FF] hover:bg-[#331B78]";
 
   const navItems = [
-    { label: "Home", to: "/workspace/home" },
+    { label: "Home", to: "/" },
     { label: "Create", to: createPath },
   ];
 
@@ -72,7 +72,7 @@ export default function PublicContentHeader({ templateId, slug }) {
       <header className="sticky top-0 z-40 border-b border-white/[0.07] bg-[#0B0D0F]/90 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:px-6">
           <Link
-            to="/workspace/home"
+            to="/"
             className="flex shrink-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9F5CFF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0D0F]"
             aria-label="Zyvo home"
           >
@@ -96,7 +96,7 @@ export default function PublicContentHeader({ templateId, slug }) {
             {user ? (
               <button
                 type="button"
-                onClick={() => navigate("/workspace/home")}
+                onClick={() => navigate("/")}
                 className={`rounded-lg ${primaryCls} px-5 py-1.5 text-sm font-semibold transition hover:opacity-90`}
               >
                 Go to Workspace
@@ -126,7 +126,7 @@ export default function PublicContentHeader({ templateId, slug }) {
             {user ? (
               <button
                 type="button"
-                onClick={() => navigate("/workspace/home")}
+                onClick={() => navigate("/")}
                 className={`hidden min-[420px]:block rounded-lg ${primaryCls} px-3.5 py-1.5 text-[13px] font-semibold`}
               >
                 Workspace
@@ -212,7 +212,7 @@ export default function PublicContentHeader({ templateId, slug }) {
               <div className="flex flex-col gap-2.5">
                 {user ? (
                   <Link
-                    to="/workspace/home"
+                    to="/"
                     onClick={() => setMobileOpen(false)}
                     className={`min-h-[44px] rounded-xl ${primaryCls} px-4 py-3 text-[15px] font-semibold`}
                   >

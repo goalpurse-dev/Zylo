@@ -225,8 +225,8 @@ export default function MobileBottomNav({ hidden }) {
           <NavItem
             name="Home"
             icon={Home}
-            active={!anyMenuOpen && location.pathname === "/workspace/home"}
-            onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/workspace/home"); }}
+            active={!anyMenuOpen && location.pathname === "/"}
+            onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/"); }}
           />
 
           {/* Short Form — same orb everywhere, raised only on Home */}

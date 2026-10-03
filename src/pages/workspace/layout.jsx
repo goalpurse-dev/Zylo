@@ -83,7 +83,7 @@ export default function WorkspaceLayout() {
 
   // Show it when Home is reached in a session that hasn't shown it yet.
   useEffect(() => {
-    if (!whatsNew || location.pathname !== "/workspace/home") return;
+    if (!whatsNew || location.pathname !== "/") return;
     try { if (sessionStorage.getItem(whatsNew.sessionKey)) return; sessionStorage.setItem(whatsNew.sessionKey, "1"); } catch { /* no storage: show once this load */ }
     setWhatsNew(null);
     setShowWhatsNew(true);
@@ -130,7 +130,7 @@ useEffect(() => {
   /* ================= TITLE ================= */
   const titleMap = {
     "/workspace": "Home",
-    "/workspace/home": "Home",
+    "/": "Home",
     "/workspace/creations": "Creations",
     "/workspace/creations/viral-videos": "Viral Videos",
     "/workspace/pricing": "Pricing",

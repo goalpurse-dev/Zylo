@@ -301,7 +301,7 @@ function AIFruitStoryV1() {
       open={paywallOpen}
       onClose={() => {
         if (needsUpgrade) {
-          navigate("/workspace/home");
+          navigate("/");
         } else {
           setPaywallOpen(false);
         }

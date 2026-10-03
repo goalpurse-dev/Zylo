@@ -1,4 +1,5 @@
 import { STICKMAN_FONT_HREF, STICKMAN_LANDING_PAGES, STICKMAN_VIEWPORT } from "./stickmanLandingPages.js";
+import { HOME_SEO } from "./routeSeoPolicy.js";
 
 export const SITE_URL = "https://www.tryzyvo.com";
 
@@ -21,9 +22,9 @@ const blog = (title, description) => ({ title: `${title} | Zyvo`, description, t
 // metadata across React Router navigations.
 export const PUBLIC_SEO_METADATA = {
   "/": {
-    title: "TryZyvo (Zyvo) – AI Video & Content Generator",
-    description: "TryZyvo, also known as Zyvo, is an AI content creation platform for generating viral videos, images and social media content.",
+    ...HOME_SEO,
     type: "website",
+    shellGuard: true, // dist/index.html is also the fallback for app routes: see scripts/generateSeoHtml.js
   },
   "/image-generator": {
     title: "AI Image Generator – Cinematic, 3D, Anime & Product Images | Zyvo",

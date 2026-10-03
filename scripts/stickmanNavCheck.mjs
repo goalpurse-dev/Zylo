@@ -14,7 +14,7 @@ const viewport = () => page.evaluate(() => document.querySelector('meta[name="vi
 const out = {};
 
 // Prerendered pages that must link to it (crawlable <a href>).
-for (const from of ["/workspace/home", "/workspace/pricing", "/blog/faceless-youtube-channel-ideas", "/blog/how-to-make-money-ai-content", "/kit-swap-ai"]) {
+for (const from of ["/", "/workspace/pricing", "/blog/faceless-youtube-channel-ideas", "/blog/how-to-make-money-ai-content", "/kit-swap-ai"]) {
   const html = await (await fetch(`${ORIGIN}${from}`)).text();
   out[`link in prerendered ${from}`] = html.includes(`href="${TARGET}"`);
 }

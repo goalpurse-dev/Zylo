@@ -3,8 +3,14 @@ export const SITE_URL = "https://www.tryzyvo.com";
 // Central indexing policy for application/workspace routes. These entries are
 // based on the route's actual UI and access behavior, not on the /workspace/
 // prefix. Public SEO landing pages live outside this registry.
+// Home, at the site root. The title starts with the brand name.
+export const HOME_SEO = {
+  title: "Zyvo – AI Video Generator for YouTube, TikTok & Reels",
+  description: "Zyvo turns one idea into finished videos: full 8–15 minute YouTube explainers with Long Form and viral 9:16 clips for TikTok, Reels and Shorts. Start for free.",
+};
+
 export const WORKSPACE_ROUTE_SEO_POLICIES = [
-  { path: "/workspace/home", seoVisibility: "noindex", routeType: "private-app", title: "Zyvo Workspace" },
+  { path: "/", seoVisibility: "public", routeType: "public-marketing", ...HOME_SEO },
   { path: "/workspace/creations", seoVisibility: "noindex", routeType: "private-app", title: "Zyvo Creations" },
   { path: "/workspace/creations/viral-videos", seoVisibility: "noindex", routeType: "private-app", title: "Zyvo Viral Video Creations" },
   { path: "/workspace/image-generator", seoVisibility: "noindex", routeType: "credit-application", publicLanding: "/image-generator", title: "Zyvo AI Image Generator" },

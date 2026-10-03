@@ -16,6 +16,14 @@ const app = (
 // scripts/generateSeoHtml.js) is hydrated instead: its server HTML stays on
 // screen and React attaches to it. If the two ever differ, React falls back
 // to a client render of that part, which is what every other page does.
+// The Home snapshot doubles as the fallback HTML for app routes (see
+// SHELL_GUARD in scripts/generateSeoHtml.js): on those, drop Home's markup
+// before the app draws.
+if (document.documentElement.dataset.shell === "true") {
+  container.replaceChildren();
+  document.getElementById("shell-hide")?.remove();
+}
+
 if (document.documentElement.dataset.hydrate === "true" && container.firstElementChild) {
   ReactDOM.hydrateRoot(container, app, { onRecoverableError: (error) => console.warn("[hydrate]", error?.message ?? error) });
 } else {

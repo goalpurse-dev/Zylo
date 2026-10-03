@@ -107,8 +107,16 @@ function buildHead({ pathname, seoVisibility, innerHtml }) {
   const ogType = metadata?.type || "website";
   const structuredData = structuredDataFor(pathname, metadata, canonical);
 
-  return { title, description, canonical, robots, ogImage, ogType, structuredData, imageSize: metadata?.imageSize, preloadImage: metadata?.preloadImage, fontHref: metadata?.fontHref, hydrate: Boolean(metadata?.inlineContent), viewport: metadata?.viewport };
+  return { title, description, canonical, robots, ogImage, ogType, structuredData, imageSize: metadata?.imageSize, preloadImage: metadata?.preloadImage, fontHref: metadata?.fontHref, hydrate: Boolean(metadata?.inlineContent), viewport: metadata?.viewport, shellGuard: Boolean(metadata?.shellGuard) };
 }
+
+// The Home snapshot is dist/index.html, which vercel.json's catch-all rewrite
+// also serves for app routes without a snapshot (/long-form, a project, …).
+// On any path other than "/" this runs before the body is parsed: it hides
+// the Home markup until the app has drawn the real route (src/main.jsx
+// removes the style), and takes Home's title, description, canonical and
+// JSON-LD out of the head so they are never attributed to another URL.
+const SHELL_GUARD = `(function(){if(location.pathname.replace(/\\/+$/,"")==="")return;var d=document;d.documentElement.setAttribute("data-shell","true");d.title="Zyvo";var s=d.createElement("style");s.id="shell-hide";s.textContent="#root{visibility:hidden}";d.head.appendChild(s);["link[rel=canonical]","script#page-ld","meta[name=description]","meta[property='og:url']","meta[property='og:title']","meta[property='og:description']","meta[name='twitter:title']","meta[name='twitter:description']"].forEach(function(q){var e=d.querySelector(q);if(e)e.parentNode.removeChild(e)})})()`;
 
 function injectHead(template, head) {
   let html = template;
@@ -153,6 +161,8 @@ function injectHead(template, head) {
   if (head.structuredData) {
     tags.push(`<script type="application/ld+json" id="page-ld">${JSON.stringify(head.structuredData)}</script>`);
   }
+
+  if (head.shellGuard) tags.push(`<script>${SHELL_GUARD}</script>`);
 
   html = html.replace("</head>", `${tags.join("\n    ")}\n  </head>`);
   html = html.replace('<html lang="en">', head.hydrate ? '<html lang="en" data-prerendered="true" data-hydrate="true">' : '<html lang="en" data-prerendered="true">');

@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import { Image, Box, PaintBucket, LucideImagePlus, HomeIcon, LucideVideo  } from "lucide-react";
 HomeIcon
 const TOOLS = [
-  { label: "Home", to: "/workspace/home", icon: HomeIcon },
+  { label: "Home", to: "/", icon: HomeIcon },
   { label: "Image Generator", to: "/workspace/image-generator", icon: LucideImagePlus } ,
   { label: "Video Generator", to: "/workspace/video-generator", icon: LucideVideo } ,
 

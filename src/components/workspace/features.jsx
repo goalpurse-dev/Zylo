@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { CREATE_TOOLS, WORKSPACE_TOOLS } from "./CreateMenu";
 
 const groups = [
-  { name: "Home", icon: Home, path: "/workspace/home" },
+  { name: "Home", icon: Home, path: "/" },
   { name: "Short Form", icon: Sparkles, items: CREATE_TOOLS },
   { name: "Long Form", icon: Clapperboard, path: "/long-form" },
   { name: "Workspace", icon: LayoutGrid, items: WORKSPACE_TOOLS },

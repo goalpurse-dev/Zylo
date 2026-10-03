@@ -121,7 +121,7 @@ export default function HowToSpotViralAiTrend() {
               Spotting a trend early only matters if you can act on it before it saturates. Zyvo's generators let you go from idea to a finished video in minutes.
             </p>
             <Link
-              to="/workspace/home"
+              to="/"
               className="inline-block bg-gradient-to-r from-[#7A3BFF] to-[#A855F7] text-white font-bold text-[15px] px-8 py-4 rounded-[14px] hover:opacity-90 transition"
             >
               Start Creating on Zyvo →

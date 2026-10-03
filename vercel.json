@@ -1,9 +1,9 @@
 {
   "redirects": [
     {
-      "source": "/",
-      "destination": "/workspace/home",
-      "permanent": false
+      "source": "/workspace/home",
+      "destination": "/",
+      "statusCode": 301
     },
     {
       "source": "/blog/ai-visual-styles-most-engagementd",

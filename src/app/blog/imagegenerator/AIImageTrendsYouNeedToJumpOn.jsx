@@ -87,7 +87,7 @@ export default function AIImageTrendsYouNeedToJumpOn() {
             <p className="text-[#4A4A55]">
               Most creators generate these visuals by locking in lighting
               and composition presets inside{" "}
-              <Link to="/workspace/home" className="text-[#7A3BFF] font-medium hover:underline">
+              <Link to="/" className="text-[#7A3BFF] font-medium hover:underline">
                 AI creative tools
               </Link>.
             </p>

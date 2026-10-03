@@ -149,8 +149,8 @@ export default function ToolShell({ onClose }) {
             <NavItem
               icon={Home}
               label="Home"
-              active={!anyPanelOpen && isActive("/workspace/home")}
-              onClick={() => go("/workspace/home")}
+              active={!anyPanelOpen && location.pathname === "/"}
+              onClick={() => go("/")}
             />
 
             <NavItem

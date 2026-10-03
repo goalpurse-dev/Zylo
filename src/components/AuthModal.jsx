@@ -74,6 +74,8 @@ export default function AuthModal({ mode: initialMode, onClose }) {
   const handleForgotPassword = async () => {
     if (!email) { setError("Enter your email above first."); return; }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      // Still the old Home address on purpose: it is the return URL allowed in
+      // Supabase Auth. The server 301s it to "/" and the token in the URL survives.
       redirectTo: `${window.location.origin}/workspace/home`,
     });
     if (error) setError(error.message);

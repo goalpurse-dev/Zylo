@@ -337,7 +337,7 @@ export default function ClayRescue() {
       <FaceAsmrPaywall
         open={paywallOpen}
         onClose={() => {
-          if (needsUpgrade) navigate("/workspace/home");
+          if (needsUpgrade) navigate("/");
           else setPaywallOpen(false);
         }}
         isGuest={paywallGuest}

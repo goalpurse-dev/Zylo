@@ -1,4 +1,4 @@
-// Home (/workspace/home): the Long Form launch layout, built from the previous
+// Home (the site root, "/"): the Long Form launch layout, built from the previous
 // Home's pieces (gradient headline, zyvo suite coverflow). The previous Home is
 // home.jsx, behind USE_LEGACY_HOME (src/data/homeContent.js) for one release.
 import { useEffect, useState } from "react";
@@ -13,7 +13,6 @@ export default function HomeV2() {
   const [longFormCreations, setLongFormCreations] = useState([]);
 
   useEffect(() => {
-    document.title = "Create Visuals Faster";
     fetchShowcase("home").then(setLongFormCreations);
   }, []);
 

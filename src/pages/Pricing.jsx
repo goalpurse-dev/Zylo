@@ -105,7 +105,7 @@ function PricingBody({ billing, setBilling }) {
       <Faq />
 
       <footer className="flex justify-center border-t border-white/[0.05] pt-6">
-        <Link to="/workspace/home" className={cx("rounded-xl bg-white/[0.04] px-5 py-2.5 text-sm font-medium text-white/45 hover:text-white/70", FOCUS)}>← Back to workspace</Link>
+        <Link to="/" className={cx("rounded-xl bg-white/[0.04] px-5 py-2.5 text-sm font-medium text-white/45 hover:text-white/70", FOCUS)}>← Back to workspace</Link>
       </footer>
       <ConfirmDowngrade planId={askPlan} onCancel={() => setAskPlan(null)} />
     </div>

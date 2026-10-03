@@ -260,7 +260,7 @@ export default function BehindTheScenes() {
       <FaceAsmrPaywall
         open={paywallOpen}
         onClose={() => {
-          if (needsUpgrade) navigate("/workspace/home");
+          if (needsUpgrade) navigate("/");
           else setPaywallOpen(false);
         }}
         isGuest={paywallGuest}

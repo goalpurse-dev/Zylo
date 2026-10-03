@@ -246,7 +246,7 @@ export default function OnboardingModal({ user, onComplete }) {
               <button
                 onClick={async () => {
                   const success = await handleFinish()
-                  if (success) window.location.href = "/workspace/home"
+                  if (success) window.location.href = "/"
                 }}
                 disabled={loading}
                 className="w-full py-3.5 rounded-2xl font-semibold text-white text-sm transition hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
@@ -399,7 +399,7 @@ export default function OnboardingModal({ user, onComplete }) {
                   <button
                     onClick={async () => {
                       const success = await handleFinish()
-                      if (success) window.location.href = "/workspace/home"
+                      if (success) window.location.href = "/"
                     }}
                     disabled={loading}
                     className="w-full px-8 py-3.5 rounded-[15px] font-semibold text-white text-[15px] tracking-[-0.01em] transition-all duration-200 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2.5 group"

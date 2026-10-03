@@ -1,7 +1,7 @@
 // Home and navigation settings you can edit without touching the page code.
 
 // The previous Home (src/pages/workspace/home.jsx) stays available for one
-// release: set to true to show it at /workspace/home again. Delete the old
+// release: set to true to show it at "/" again. Delete the old
 // page (and this flag) after that release.
 export const USE_LEGACY_HOME = false;
 
