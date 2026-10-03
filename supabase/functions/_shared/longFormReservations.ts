@@ -20,7 +20,9 @@
 //     commits min(quote, 2 x real cost so far from the ledger);
 //   * the finished video settles the full quote (applyRenderBilling, unchanged);
 //   * delete / idle 7 days refund only the uncommitted part (closeReservation);
-//   * failed because of us refunds EVERYTHING, committed credits included.
+//   * failed because of us refunds EVERYTHING, committed credits included — only when the whole
+//     video can't be made (the run failed with no finished scene; migration 20261024100000).
+//     Some failed scenes or a failed render keep the work done: those are retried free.
 // Holds made before keep the FIXED behaviour (nothing committed until the video,
 // so delete / idle / failure refund it all). The rules live in SQL
 // (close_long_form_reservation, long_form_reservation_view) so the delete preview

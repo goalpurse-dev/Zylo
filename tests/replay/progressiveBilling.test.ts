@@ -61,3 +61,14 @@ Deno.test("wiring: ticks commit work done; delete keeps it; stage failures refun
   // Holds are server-only now.
   assertMatch(sql, /revoke execute on function public\.release_long_form_reservation\(uuid, uuid\) from authenticated/);
 });
+
+// Refund rule (migration 20261024100000): finished work is never refunded because some scenes
+// failed or a render failed; everything comes back only when the run failed with NO finished scene.
+Deno.test("failed by us = the run failed AND there is no finished scene (a failed render no longer counts)", () => {
+  const sql = read("supabase/migrations/20261024100000_refund_only_when_no_video.sql");
+  assertMatch(sql, /p\.status like '%failed%' or coalesce\(p\.autopilot ->> 'status', ''\) = 'failed'\)\s+and not exists/);
+  assertMatch(sql, /s\.is_current and s\.status = 'ready'/);
+  assert(!/long_form_render_jobs/.test(sql.split("create or replace function")[1]));
+  // Some scenes failed but others are finished -> not "failed by us": the work done is kept.
+  assertEquals(billingOnClose(hold({ committed: 180, workCredits: 181, failedByUs: false }), "deleted"), { keep: 181, refund: 69 });
+});
