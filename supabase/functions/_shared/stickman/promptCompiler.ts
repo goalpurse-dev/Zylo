@@ -201,7 +201,7 @@ const CAMERA_PHRASE: Record<string, string> = {
 };
 
 export function frameLine(contract: any, concept: string): string {
-  const t = TREATMENT_PHRASE[contract.treatment] ?? "A scene";
+  const t = contract.treatment === "COMPARISON" && !wantsTwoHalves(contract) ? "A comparison within one single picture" : TREATMENT_PHRASE[contract.treatment] ?? "A scene";
   const cam = CAMERA_PHRASE[contract.composition?.camera] ?? "medium shot";
   const framing = String(contract.composition?.framing ?? "").trim();
   const c = concept.trim().replace(/[.\s]+$/, "");
@@ -325,8 +325,16 @@ export function needsHandRule(c: any, concept: string): boolean {
   const cam = String(c.composition?.camera ?? "");
   return cam === "POV" || ((cam === "CLOSE_UP" || cam === "EXTREME_CLOSE_UP") && BODY_PART.test(concept)) || /\b(close[- ]?up|macro)\b/i.test(concept) && BODY_PART.test(concept);
 }
+// Two halves only when asked for: a SPLIT, or a COMPARISON whose concept names two sides.
+// 2f1b7e40 beat 121 ("a thriving camp beyond a tiny needle in the foreground") was a
+// COMPARISON of foreground vs background and came out as two panels.
+export const TWO_SIDED = /\b(side[- ]by[- ]side|left (?:half|side)|right (?:half|side)|two halves|split|before and after|before\/after|then and now|versus|vs\.?|on one side|on the other side|compared (?:to|with)|next to each other)\b/i;
+export function wantsTwoHalves(c: any): boolean {
+  if (c?.treatment === "SPLIT") return true;
+  return c?.treatment === "COMPARISON" && TWO_SIDED.test(`${c?.visualConcept ?? ""} ${c?.composition?.framing ?? ""} ${c?.composition?.layout ?? ""}`);
+}
 export function frameRuleFor(c: any, composite: boolean): string {
-  return c.treatment === "SPLIT" || c.treatment === "COMPARISON" ? (composite ? SINGLE_FRAME_RULE : TWO_HALVES_RULE) : SINGLE_FRAME_RULE;
+  return wantsTwoHalves(c) ? (composite ? SINGLE_FRAME_RULE : TWO_HALVES_RULE) : SINGLE_FRAME_RULE;
 }
 export const unlabelProp = (block: string) => scrubSettingForNoText(blankTextObjects(stripWrittenText(block)));
 

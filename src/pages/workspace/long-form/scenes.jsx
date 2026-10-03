@@ -37,7 +37,7 @@ function IconAction({ label, onClick, children }) {
   );
 }
 
-function SceneCard({ scene, credits, active, pending, undoable, busy, drawing, onOpen, onView, onAction }) {
+function SceneCard({ scene, credits, active, pending, undoable, busy, drawing, paused, onOpen, onView, onAction }) {
   const [mode, setMode] = useState(null); // null | "describe" | "text"
   const [draft, setDraft] = useState("");
   const rendering = pending || scene.status === "queued" || scene.status === "rendering";
@@ -91,7 +91,9 @@ function SceneCard({ scene, credits, active, pending, undoable, busy, drawing, o
       ) : (
         <div className="mt-auto flex items-center gap-2 px-0.5">
           {rendering ? (
-            <span className="inline-flex items-center gap-1.5 text-[12px] text-white/45"><RotateCw className="h-3.5 w-3.5 animate-spin" />Drawing…</span>
+            paused && scene.status === "queued"
+              ? <span data-testid="scene-paused" className="inline-flex items-center gap-1.5 text-[12px] text-amber-200/80"><RotateCw className="h-3.5 w-3.5" />Paused, continues automatically</span>
+              : <span className="inline-flex items-center gap-1.5 text-[12px] text-white/45"><RotateCw className="h-3.5 w-3.5 animate-spin" />Drawing…</span>
           ) : (
             <>
               {/* A scene WE failed to draw is redrawn free (the server charges 0 for it). */}
@@ -265,6 +267,8 @@ export function ScenesPage({ projectId, embedded = false, onDone = null }) {
 
   const cardProps = (s, i, drawing) => ({
     scene: s, credits: data.creditsPerScene, active: i === activeIdx, pending: pending[s.number] != null, undoable: undoable[s.number] != null, busy, drawing,
+    // Runware balance guard: a waiting scene says so, never just "Drawing…".
+    paused: !!data?.drawingPaused,
     // The words jump the player there; the picture (or ⤢) opens the scene viewer.
     onOpen: () => {
       if (!s.imageUrl || drawing) return;
@@ -349,6 +353,7 @@ export function ScenesPage({ projectId, embedded = false, onDone = null }) {
             {celebrate ? <span className="font-semibold text-lime-300">{data.counts.drawn} of {data.counts.scenes} scenes drawn ✓</span> : `${data.counts.scenes} scenes`}
             {" · "}{data.counts.flagged ? `${data.counts.flagged} need a look` : "nothing flagged"}
           </p>
+          {data.drawingPaused && <p data-testid="drawing-paused" className="mt-1 flex items-center gap-1.5 text-[12px] text-amber-100"><RotateCw className="h-3.5 w-3.5 shrink-0" />Drawing is paused for a moment, your video continues automatically.</p>}
         </div>
         {data.counts.flagged > 0 && (
           <button type="button" disabled={busy} onClick={() => act(null, "regenerate_flagged")} className="zyvo-btn-shimmer inline-flex items-center gap-1.5 rounded-lg bg-lime-300 px-3 py-2 text-[12.5px] font-bold text-[#11150D] disabled:opacity-50">

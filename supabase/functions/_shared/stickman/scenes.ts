@@ -151,6 +151,7 @@ export function decideScenes(input: ScenesInput): ScenesDecision {
 
 // The Beat Director's own codes (measured on real plans), then broad fallbacks.
 const EXACT_WORDS: Record<string, string> = {
+  split_frame: "Split into two panels instead of one picture",
   ungrounded_name: "Mentions a name the picture may not show",
   concept_without_device: "The idea may be hard to read at a glance",
   abstract_concept: "The idea may be hard to read at a glance",
@@ -185,7 +186,7 @@ export function plainWarning(code: string): string {
 // The Beat Director's advisory notes ("hard to read at a glance", "looks
 // similar to nearby scenes", ...) stay on the beat for the record but never
 // flag a scene (f90160bc: 64 of 148 flagged, none of them a bad image).
-export const USER_FLAG_CODES = new Set(["image_failed", "image_check_soft", "text_mismatch", "ip_hit", "duplicate"]);
+export const USER_FLAG_CODES = new Set(["image_failed", "image_check_soft", "text_mismatch", "ip_hit", "duplicate", "split_frame"]);
 export function plainWarnings(list: any[]): string[] {
   const out = new Set<string>();
   for (const w of list ?? []) {

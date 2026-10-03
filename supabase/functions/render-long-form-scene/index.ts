@@ -17,7 +17,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { renderBeat, STICKMAN_RENDER_TIERS, STICKMAN_QA, compileOptionsFor, normalizeText, type QaVerdict } from "../_shared/stickman/renderTiers.ts";
-import { compileBeatPrompt, canonicalSetFromBible, plantFrameFor } from "../_shared/stickman/promptCompiler.ts";
+import { compileBeatPrompt, canonicalSetFromBible, plantFrameFor, wantsTwoHalves } from "../_shared/stickman/promptCompiler.ts";
 import { codeCheckImage, imageDHash } from "../_shared/stickman/imageChecks.ts";
 import { overlayText, scaleLayer, type OverlayLayer } from "../_shared/stickman/textOverlay.ts";
 import { placeTextLayer } from "../_shared/stickman/textPlacement.ts";
@@ -25,6 +25,7 @@ import { DEFAULT_POSTPROCESS } from "../_shared/stickman/sceneImagePost.ts";
 import { SCENE_LEASE_S } from "../_shared/stickman/scenes.ts";
 import { refundAddon } from "../_shared/stickman/addons.ts";
 import { DRAW_ATTEMPTS, needsTextFreeComposition, safeFallbackContract } from "../_shared/stickman/sceneFallback.ts";
+import { mandatoryStatIntent } from "../_shared/stickman/headlines.ts";
 import { checkRunwareGuard, markOutOfBalance, OUT_OF_BALANCE } from "../_shared/runwareBalance.ts";
 import { logEvent } from "../_shared/systemLog.ts";
 import { recordCost } from "../_shared/costLedger.ts";
@@ -107,9 +108,14 @@ async function drawScene(scene: any) {
   if (!beat) throw new Error("beat not found");
   // "Edit description": the user's words become the picture, through the same compiler.
   if (scene.description_override) beat.contract = { ...beat.contract, visualConcept: scene.description_override, userSummary: scene.description_override };
+  // A number/date/stat said over a timeline/chart/symbol is always on screen (plans made before the rule too).
+  const stat = mandatoryStatIntent(beat.contract, beat.narrationText);
+  if (stat) beat.contract = { ...beat.contract, textIntent: stat };
   const set = canonicalSetFromBible(bible.bible);
   const plantFrame = plantFrameFor(all, set);
   const castNames = (beat.contract.subjects ?? []).map((s: any) => set.cast?.[s.castId]?.displayName).filter(Boolean);
+  // One continuous frame unless the beat really asks for two halves.
+  const singleFrame = !wantsTwoHalves(beat.contract);
 
   let original: { url: string; bytes: Uint8Array } | null = null;
   let masterUrl: string | null = null;
@@ -129,7 +135,7 @@ async function drawScene(scene: any) {
       const bytes = await timed("fetchOriginalMs", () => fetchBytes(url));
       original = { url, bytes };
       const c = await timed("codeCheckMs", () => codeCheckImage(bytes, { width: cfg.width, height: cfg.height }));
-      return { pass: c.pass, soft: c.soft, score: c.pass ? 1 : c.soft ? Number((0.5 * (1 - (c.uniformShare ?? 1))).toFixed(3)) : 0, ocrText: "", notes: c.reasons.join("; "), cost: 0 };
+      return { split: singleFrame && c.splitAt != null, pass: c.pass, soft: c.soft, score: c.pass ? 1 : c.soft ? Number((0.5 * (1 - (c.uniformShare ?? 1))).toFixed(3)) : 0, ocrText: "", notes: c.reasons.join("; "), cost: 0 };
     },
     // QA sees a 768 px copy (the Phase 4b calibration size): the full 1376 px
     // render cost ~2.5x more ($0.0056 vs ~$0.0022 per check on f90160bc).
@@ -140,6 +146,8 @@ async function drawScene(scene: any) {
       // Fall back to the original render URL if the small copy can't be read.
       const q = small ? await aiQa(small, contract, castNames).catch(() => aiQa(url, contract, castNames)) : await aiQa(url, contract, castNames);
       costs.push({ stage: "qa", model: STICKMAN_QA.model, usd: q.cost, real: true });
+      // One continuous frame: the same divider check as V2 ($0, on the original bytes).
+      if (singleFrame) { try { const c = await codeCheckImage(bytes, { width: cfg.width, height: cfg.height }); if (c.splitAt != null) return { ...q, split: true }; } catch { /* optional */ } }
       return q;
     },
     postProcess: async (url) => {
@@ -224,7 +232,7 @@ async function drawScene(scene: any) {
   const billed = Number(scene.addon_credits ?? 0) > 0 ? "ADDON_PREPAID" : "INCLUDED";
   await admin.from("long_form_scene_images").update({
     status: "ready", image_url: imageUrl, master_url: masterUrl, original_url: r.imageURL, overlay: layer, overlay_text: finalText,
-    warnings: [...(soft ? ["image_check_soft"] : []), ...(textMismatch ? ["text_mismatch"] : [])], cost_usd: costUsd, credits_charged: Number(scene.addon_credits ?? 0),
+    warnings: [...(soft ? ["image_check_soft"] : []), ...(textMismatch ? ["text_mismatch"] : []), ...((r as any).split ? ["split_frame"] : [])], cost_usd: costUsd, credits_charged: Number(scene.addon_credits ?? 0),
     qa: { steps: r.log.map((l) => l.step), retries: r.retries, wallMs: Date.now() - t0, timings, billed, dhash, ...(textFree ? { textFree: true } : {}), ...(usedFallback ? { safeFallback: true, failures } : {}) }, ready_at: new Date().toISOString(), lease_until: null, error: null,
   }).eq("id", scene.id);
   return { failed: false, billed };

@@ -42,7 +42,9 @@ Deno.test("compiler: no writing on every tier (unless the words belong in the pi
   assert(!/label strip|labeled/i.test(lab), lab);
   assertStringIncludes(lab, "wall band;");
   assertEquals(frameRuleFor({ treatment: "STORY_SCENE" }, false), SINGLE_FRAME_RULE);
-  assertEquals(frameRuleFor({ treatment: "COMPARISON" }, false), TWO_HALVES_RULE);
+  // 2f1b7e40 beat 121: a COMPARISON is two halves only when its concept names two sides.
+  assertEquals(frameRuleFor({ treatment: "COMPARISON", visualConcept: "a bone needle side by side with a stone awl" }, false), TWO_HALVES_RULE);
+  assertEquals(frameRuleFor({ treatment: "COMPARISON", visualConcept: "a thriving camp beyond a tiny needle in the foreground" }, false), SINGLE_FRAME_RULE);
   assertStringIncludes(SINGLE_FRAME_RULE, "not a comic grid, not panels");
   assert(needsHandRule({ subjects: [{ presence: "hands" }] }, "hands grip a spear"));
   assert(needsHandRule({ composition: { camera: "EXTREME_CLOSE_UP" } }, "Tiny stone point beside a thumbnail"));

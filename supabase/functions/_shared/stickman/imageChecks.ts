@@ -38,7 +38,7 @@ export function duplicateScenes(hashes: { n: number; hash: string | null | undef
   return out;
 }
 
-export type CodeCheck ={ pass: boolean; reasons: string[]; width?: number; height?: number; lumaStdDev?: number; uniformShare?: number; soft?: boolean };
+export type CodeCheck ={ pass: boolean; reasons: string[]; width?: number; height?: number; lumaStdDev?: number; uniformShare?: number; soft?: boolean; splitAt?: number | null };
 
 // Phase 5b: the share of pixels (192x108 grid) within a small RGB distance of
 // the most common color. A frame that is ~all background (5a beat 47: a thin
@@ -56,6 +56,24 @@ export function uniformShare(img: Image): number {
   const [mr, mg, mb] = [((mode >> 8) & 15) * 16 + 8, ((mode >> 4) & 15) * 16 + 8, (mode & 15) * 16 + 8];
   const near = px.filter(([r, g, b]) => Math.abs(r - mr) + Math.abs(g - mg) + Math.abs(b - mb) <= 36).length;
   return Number((near / px.length).toFixed(3));
+}
+
+// A split frame: one thin dark vertical line running (almost) the full height in the
+// middle 30-70% of the width, with lighter pixels right beside it (2f1b7e40 beat 121).
+export function splitDivider(img: Image): number | null {
+  const rows = 120;
+  const lumAt = (x: number, y: number) => { const [r, g, b] = Image.colorToRGBA(img.getPixelAt(Math.max(1, Math.min(img.width, x)), Math.max(1, Math.min(img.height, y)))); return 0.299 * r + 0.587 * g + 0.114 * b; };
+  const step = Math.max(1, Math.floor(img.width / 400));
+  for (let x = Math.floor(img.width * 0.3); x <= Math.floor(img.width * 0.7); x += step) {
+    let line = 0;
+    for (let i = 0; i < rows; i++) {
+      const y = 1 + Math.floor((i * (img.height - 2)) / rows);
+      const c = lumAt(x, y);
+      if (c < 80 && lumAt(x - 6, y) - c > 40 && lumAt(x + 6, y) - c > 40) line++;
+    }
+    if (line / rows >= 0.85) return Number((x / img.width).toFixed(3));
+  }
+  return null;
 }
 
 export async function codeCheckImage(bytes: Uint8Array, expected: { width: number; height: number }, opts: { minBytes?: number; minStdDev?: number; maxUniformShare?: number } = {}): Promise<CodeCheck> {
@@ -82,5 +100,5 @@ export async function codeCheckImage(bytes: Uint8Array, expected: { width: numbe
   const share = uniformShare(img);
   const hard = reasons.length > 0;
   if (share > (opts.maxUniformShare ?? NEAR_BLANK_SHARE)) reasons.push(`near_blank (${Math.round(share * 100)}% one color)`);
-  return { pass: reasons.length === 0, reasons, width: img.width, height: img.height, lumaStdDev: Number(sd.toFixed(1)), uniformShare: share, soft: !hard && reasons.length > 0 };
+  return { pass: reasons.length === 0, reasons, width: img.width, height: img.height, lumaStdDev: Number(sd.toFixed(1)), uniformShare: share, soft: !hard && reasons.length > 0, splitAt: splitDivider(img) };
 }

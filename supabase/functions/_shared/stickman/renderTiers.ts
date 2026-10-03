@@ -194,12 +194,18 @@ export async function renderBeat(tier: Tier, beat: { startMs: number; contract: 
       best = await renderOnce(contract, "clean re-render for overlay");
     }
   }
+  // One continuous frame: a picture split by a divider gets one re-render (every tier).
+  if ((best.qa as any).split) {
+    const again = await renderOnce(contract, "split frame retry");
+    if (!(again.qa as any).split || again.qa.score > best.qa.score) best = again;
+  }
+  const split = !!(best.qa as any).split;
   const retries = log.filter((l) => l.step.includes("retry") || l.step.includes("re-render")).length;
   // A render that still fails the free code checks after its retry is not upscaled.
-  if (cfg.qa === "code" && !best.qa.pass && !best.qa.soft) return { tier, imageURL: best.imageURL, final: new Uint8Array(), base: new Uint8Array(), overlayText, log, cost: log.reduce((s, l) => s + l.cost, 0), failed: true, retries };
+  if (cfg.qa === "code" && !best.qa.pass && !best.qa.soft) return { tier, imageURL: best.imageURL, final: new Uint8Array(), base: new Uint8Array(), overlayText, log, cost: log.reduce((s, l) => s + l.cost, 0), failed: true, retries, split };
   const post = await deps.postProcess(best.imageURL, tier);
   log.push({ step: "upscale 1920x1080", cost: post.cost });
   const final = overlayText ? await deps.overlay(post.bytes, overlayText) : post.bytes;
   if (overlayText) log.push({ step: "programmatic text overlay", cost: 0 });
-  return { tier, imageURL: best.imageURL, final, base: post.bytes, overlayText, log, cost: log.reduce((s, l) => s + l.cost, 0), failed: false, retries };
+  return { tier, imageURL: best.imageURL, final, base: post.bytes, overlayText, log, cost: log.reduce((s, l) => s + l.cost, 0), failed: false, retries, split };
 }

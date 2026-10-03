@@ -212,6 +212,47 @@ export function applyTextPass(beats: any[], accepted: HeadlinePick[]) {
   });
 }
 
+// MANDATORY on-screen number: a line with a number/date/stat said over a timeline, chart or
+// symbolic picture MUST show it (2f1b7e40 beat 19: "roughly three hundred thousand years ago"
+// over a bare timeline had no text). Built from the line's own words, so it is always grounded.
+export const STAT_DEVICE_TREATMENTS = new Set(["TIMELINE_BAR", "STAT_CARD", "SYMBOLIC", "SCALE", "ICON_ROW"]);
+const UNIT_STOP = new Set(["THE", "A", "AN", "OF", "AND", "TO", "IN", "ON", "AT", "FOR", "WITH", "THAT", "WHICH", "WHEN", "WHERE", "IT", "IS", "WAS", "WERE", "BY", "FROM", "AS", "BUT", "OR", "SO", "THEY", "WE", "YOU", "HE", "SHE", "THIS", "THESE", "THOSE", "INTO", "ONTO", "THAN", "THEN"]);
+// A small number ("one chart", "two of them") is only a stat with a real measure after it.
+const MEASURE = /^(TIMES|PERCENT|YEARS?|MONTHS?|WEEKS?|DAYS?|HOURS?|MINUTES?|SECONDS?|METERS?|METRES?|KILOMETERS?|KILOMETRES?|KM|MILES?|FEET|FOOT|INCHES?|TONS?|TONNES?|KILOS?|KILOGRAMS?|POUNDS?|DEGREES?|CENTURIES|CENTURY|DECADES?|MILLENNIA|MILLENNIUM|GENERATIONS?|MILLION|BILLION|TRILLION|DOLLARS?|CALORIES)$/;
+export function statFromLine(narration: string): string | null {
+  const words = spokenNumbersToDigits(norm(narration).replace(/(\d)\s+(?=\d{3}\b)/g, "$1")).split(" ").filter(Boolean);
+  const i = words.findIndex((w) => /^\d[\d.]*%?$/.test(w));
+  if (i < 0) return null;
+  const raw = words[i];
+  const unit: string[] = [];
+  for (let k = i + 1; k < words.length && unit.length < 2; k++) { if (UNIT_STOP.has(words[k]) || /^\d/.test(words[k])) break; unit.push(words[k]); }
+  const n = Number(raw.replace("%", ""));
+  if (!raw.endsWith("%") && n < 10 && !MEASURE.test(unit[0] ?? "")) return null; // "one chart" is not a stat
+  const isYear = /^\d{4}$/.test(raw) && n >= 1000 && n <= 2100 && unit[0] !== "YEARS";
+  const num = raw.endsWith("%") ? raw : isYear ? raw : n >= 1000 ? n.toLocaleString("en-US") : raw;
+  // "forty percent" reads best as 40%; the words form is the grounded fallback.
+  const candidates = unit[0] === "PERCENT" ? [`${num}%`, [num, ...unit].join(" ")] : [[num, ...unit].join(" ")];
+  return candidates.find((t) => groundedIn(t, narration)) ?? null;
+}
+/** The mandatory number overlay for one beat (null when the rule doesn't apply or text is already planned). */
+export function mandatoryStatIntent(contract: any, narration: string): any | null {
+  if (!STAT_DEVICE_TREATMENTS.has(contract?.treatment)) return null;
+  const t = contract?.textIntent;
+  if (t && ["SHORT_TEXT", "PROGRAMMATIC"].includes(t.mode) && String(t.text ?? "").trim()) return null;
+  const text = statFromLine(narration);
+  return text ? { mode: "PROGRAMMATIC", text, kind: "HEADLINE", style: textStyleOf(text), category: "NUMBER", mandatory: true } : null;
+}
+export function ensureStatOverlays(beats: any[]): { beats: any[]; added: number } {
+  let added = 0;
+  const out = beats.map((b) => {
+    const intent = mandatoryStatIntent(b.contract, b.narrationText ?? b.narration_text ?? "");
+    if (!intent) return b;
+    added++;
+    return { ...b, contract: { ...b.contract, textIntent: intent } };
+  });
+  return { beats: out, added };
+}
+
 const CATEGORIES: TextCategory[] = ["NUMBER", "NAME", "QUESTION", "REVEAL", "CONTRAST", "PUNCH"];
 const SCHEMA = { type: "object", additionalProperties: false, required: ["picks"], properties: { picks: { type: "array", items: { type: "object", additionalProperties: false, required: ["s", "t", "k", "o"], properties: { s: { type: "integer" }, t: { type: "string" }, k: { type: "string", enum: CATEGORIES }, o: { type: "string" } } } } } };
 export const HEADLINE_MODEL = "gpt-4o-mini";

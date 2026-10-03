@@ -17,7 +17,7 @@ import { requireUserOrAutopilot } from "../shared/auth.ts";
 import { runBeatDirector, anthropicModelCall, sonnetCostUsd, BEAT_DIRECTOR_MODEL, planCostCapUsd } from "../_shared/stickman/beatDirector.ts";
 import { wordsPerMinuteForProfile } from "../../../src/lib/voicePace.ts";
 import { recordCost } from "../_shared/costLedger.ts";
-import { pickHeadlines, acceptHeadlines, applyTextPass, HEADLINE_MODEL } from "../_shared/stickman/headlines.ts";
+import { pickHeadlines, acceptHeadlines, applyTextPass, ensureStatOverlays, HEADLINE_MODEL } from "../_shared/stickman/headlines.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -84,11 +84,13 @@ async function buildInBackground(admin: any, planId: string, projectId: string, 
       const picked = await pickHeadlines(OPENAI_KEY, result.beats, density);
       const acc = acceptHeadlines(result.beats, picked.picks, density);
       result.beats = applyTextPass(result.beats, acc.accepted);
-      textPass = { density, target: acc.target, total: acc.total, added: acc.accepted.length, rejected: acc.rejected.length, costUsd: picked.costUsd };
+      const stats = ensureStatOverlays(result.beats);
+      result.beats = stats.beats;
+      textPass = { density, target: acc.target, total: acc.total, added: acc.accepted.length, rejected: acc.rejected.length, mandatoryStats: stats.added, costUsd: picked.costUsd };
       if (picked.costUsd) await recordCost(admin, { projectId, stage: "beats", provider: "openai", model: HEADLINE_MODEL, units: { ...picked.usage, purpose: "on_screen_text" } as any, usd: picked.costUsd, estimated: false, sourceTable: "long_form_beat_plan_versions", sourceId: planId });
     } catch (e) {
       console.error("[build-stickman-beat-plan] text pass skipped:", String(e).slice(0, 200));
-      result.beats = applyTextPass(result.beats, []);
+      result.beats = ensureStatOverlays(applyTextPass(result.beats, [])).beats;
     }
     const rows = result.beats.map((b: any) => ({
       beat_plan_version_id: planId, sequence: b.sequence, start_word: b.startWord, end_word: b.endWord,

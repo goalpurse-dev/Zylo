@@ -98,24 +98,28 @@ export function TutorialCard({ className = "" }) {
   if (!video) return null;
   const thumb = showcaseThumb(video);
   return (
-    <a
-      href={video.youtube_url}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={() => trackLaunch("tutorial_click", { placement: "long_form", target: video.youtube_url, videoId: video.id })}
-      className={`group flex items-center gap-4 rounded-[16px] border border-white/[0.08] bg-white/[0.03] p-3 transition hover:border-white/[0.16] hover:bg-white/[0.05] ${className}`}
-      data-testid="tutorial-card"
-    >
-      <div className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-[10px] bg-white/[0.05] sm:w-40">
-        {thumb && <img src={thumb} alt="" loading="lazy" className="h-full w-full object-cover" />}
-        <span className="absolute inset-0 grid place-items-center"><PlayCircle className="h-8 w-8 text-white/90 drop-shadow" strokeWidth={1.5} /></span>
-      </div>
-      <div className="min-w-0">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-lime-300/80">Watch the tutorial</p>
-        <p className="mt-1 line-clamp-2 text-[14px] font-semibold text-white">{video.title}</p>
-        <p className="mt-1 flex items-center gap-1.5 text-[11.5px] text-white/45"><YouTubeMark /> Watch on YouTube</p>
-      </div>
-    </a>
+    // A distinct "New here?" row: small heading, the thumbnail with a play icon, the title,
+    // and "Watch the tutorial" (YouTube, new tab).
+    <div className={`border-t border-white/[0.08] pt-3 ${className}`} data-testid="tutorial-row">
+      <p className="mb-1 px-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">New here?</p>
+      <a
+        href={video.youtube_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => trackLaunch("tutorial_click", { placement: "long_form", target: video.youtube_url, videoId: video.id })}
+        className="group flex items-center gap-3 rounded-[14px] p-2 transition hover:bg-white/[0.04]"
+        data-testid="tutorial-card"
+      >
+        <div className="relative aspect-video w-[132px] shrink-0 overflow-hidden rounded-[10px] border border-white/10 bg-white/[0.05] sm:w-[148px]">
+          {thumb && <img src={thumb} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />}
+          <span className="absolute inset-0 grid place-items-center bg-black/15"><PlayCircle className="h-9 w-9 text-white drop-shadow" strokeWidth={1.5} /></span>
+        </div>
+        <div className="min-w-0">
+          <p className="line-clamp-2 text-[13.5px] font-semibold leading-snug text-white">{video.title}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-[12px] font-semibold text-lime-300 group-hover:text-lime-200"><YouTubeMark /> Watch the tutorial</p>
+        </div>
+      </a>
+    </div>
   );
 }
 
