@@ -193,6 +193,7 @@ function validate({ pathname, seoVisibility, head, innerHtml, finalHtml }) {
   if ((finalHtml.match(/application\/ld\+json/gi) || []).length > 1 && pathname === "/") errors.push("homepage has more than one JSON-LD block");
   const expectedRobots = seoVisibility === "noindex" ? "noindex, follow" : "index, follow";
   if (!head.robots.toLowerCase().includes(expectedRobots)) errors.push(`robots mismatch: ${head.robots}`);
+  if (!/^<!DOCTYPE html>/i.test(finalHtml)) errors.push("the page does not start with <!DOCTYPE html>");
   if ((finalHtml.match(/<title>/gi) || []).length !== 1) errors.push("title tag count != 1 in final HTML");
   if ((finalHtml.match(/rel="canonical"/gi) || []).length !== 1) errors.push("canonical tag count != 1 in final HTML");
   return errors;

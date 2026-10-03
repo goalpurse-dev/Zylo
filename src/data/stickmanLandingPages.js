@@ -17,6 +17,8 @@
 // results that aren't measured. Pictures come from the owner's own Long Form
 // projects (scripts/buildStickmanLandingAssets.mjs).
 
+import { PLAN_CREDITS } from "../../supabase/functions/_shared/stripePlanPrices.js";
+
 export const STICKMAN_BASE_PATH = "/ai-stickman-video-generator";
 export const STICKMAN_ASSETS = "/lp/stickman";
 // The app's viewport tag (index.html) blocks pinch-zoom. These pages allow it.
@@ -62,15 +64,18 @@ export const STICKMAN_VIDEOS = {
 // Monthly prices: the live plan-prices function on 2026-10-03 (EUR, VAT
 // included). Videos per month = plan credits / 250, rounded down; 250 credits
 // is a 10-minute video on the Fast tier (tool_prices longform:v2, 25 a minute).
+// Plan credits come from PLAN_CREDITS (750 / 1,600 / 3,200), the one table the
+// Stripe webhook, the price function and the Pricing page all read.
+const TEN_MINUTE_CREDITS = 250;
 export const STICKMAN_PRICING = {
   currency: "EUR",
   creditsPerMinute: 25,
-  tenMinuteCredits: 250,
+  tenMinuteCredits: TEN_MINUTE_CREDITS,
   plans: [
-    { id: "starter", name: "Starter", price: 18, videos: 3 },
-    { id: "pro", name: "Pro", price: 38, videos: 6 },
-    { id: "generative", name: "Generative", price: 78, videos: 12 },
-  ],
+    { id: "starter", name: "Starter", price: 18 },
+    { id: "pro", name: "Pro", price: 38 },
+    { id: "generative", name: "Generative", price: 78 },
+  ].map((plan) => ({ ...plan, credits: PLAN_CREDITS[plan.id], videos: Math.floor(PLAN_CREDITS[plan.id] / TEN_MINUTE_CREDITS) })),
 };
 
 const MAIN_PAGE = {

@@ -9,6 +9,7 @@ import {
 import { getPublicSeoMetadata, canonicalFor, SITE_URL } from "../src/data/publicSeoMetadata.js";
 import { structuredDataFor } from "../src/data/structuredData.js";
 import { ALL_NICHES } from "../src/pages/workspace/long-form/niches.js";
+import { PLAN_CREDITS, PLAN_PRICE_IDS, TOPUP_PRICE_IDS, summarizeStripePrices } from "../supabase/functions/_shared/stripePlanPrices.js";
 
 // Long Form SEO landing pages (/ai-stickman-video-generator + future niche
 // pages): one config entry per page drives the route, metadata, JSON-LD and
@@ -75,6 +76,25 @@ test("pricing copy matches the numbers: 250 credits for 10 minutes, 3 / 6 / 12 v
   assert.deepEqual(STICKMAN_PRICING.plans.map((p) => [p.name, p.videos]), [["Starter", 3], ["Pro", 6], ["Generative", 12]]);
   const cost = main.faq.find((f) => /cost/i.test(f.q)).a;
   for (const plan of STICKMAN_PRICING.plans) assert.ok(cost.includes(`${plan.videos} on ${plan.name} (€${plan.price})`) || cost.includes(`${plan.videos} ten-minute videos a month on ${plan.name} (€${plan.price})`), plan.name);
+});
+
+test("plan credits: one table (750 / 1,600 / 3,200) feeds the price function and this page", () => {
+  assert.deepEqual(PLAN_CREDITS, { starter: 750, pro: 1600, generative: 3200 });
+  // What the live plan-prices function answers is built from the same table.
+  const price = (interval) => ({ active: true, unit_amount: 1800, currency: "eur", recurring: interval ? { interval } : null });
+  const byId = Object.fromEntries([
+    ...Object.values(PLAN_PRICE_IDS).flatMap((ids) => [[ids.monthly, price("month")], [ids.yearly, price("year")]]),
+    ...Object.values(TOPUP_PRICE_IDS).map((id) => [id, price(null)]),
+  ]);
+  const { plans } = summarizeStripePrices(byId, "inclusive");
+  assert.deepEqual(Object.fromEntries(Object.entries(plans).map(([k, v]) => [k, v.credits])), PLAN_CREDITS);
+  assert.deepEqual(STICKMAN_PRICING.plans.map((p) => p.credits), [750, 1600, 3200]);
+  assert.match(read("src/data/stickmanLandingPages.js"), /videos: Math\.floor\(PLAN_CREDITS\[plan\.id\] \/ TEN_MINUTE_CREDITS\)/);
+});
+
+test("every page is served in standards mode: the template starts with the doctype", () => {
+  assert.match(read("index.html"), /^<!DOCTYPE html>\r?\n<html lang="en">/);
+  assert.match(read("scripts/generateSeoHtml.js"), /does not start with <!DOCTYPE html>/);
 });
 
 test("pictures: every gallery file exists as WebP with alt text; groups on the page have pictures", () => {
