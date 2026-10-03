@@ -4,11 +4,11 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
   STICKMAN_BASE_PATH, STICKMAN_LANDING_PAGES, STICKMAN_PRICING, STICKMAN_VIDEOS,
-  getStickmanLandingPage, stickmanNicheHref, stickmanStructuredData,
+  getStickmanLandingPage, stickmanGroupPage, stickmanNicheHref, stickmanStructuredData,
 } from "../src/data/stickmanLandingPages.js";
 import { getPublicSeoMetadata, canonicalFor, SITE_URL } from "../src/data/publicSeoMetadata.js";
 import { structuredDataFor } from "../src/data/structuredData.js";
-import { ALL_NICHES } from "../src/pages/workspace/long-form/niches.js";
+import { ALL_NICHES, NICHE_GROUPS } from "../src/pages/workspace/long-form/niches.js";
 import { PLAN_CREDITS, PLAN_PRICE_IDS, TOPUP_PRICE_IDS, summarizeStripePrices } from "../supabase/functions/_shared/stripePlanPrices.js";
 
 // Long Form SEO landing pages (/ai-stickman-video-generator + future niche
@@ -98,7 +98,8 @@ test("every page is served in standards mode: the template starts with the docty
 });
 
 test("pictures: every gallery file exists as WebP with alt text; groups on the page have pictures", () => {
-  assert.ok(gallery.length >= 40 && gallery.length <= 60, `curated set is 40–60 (${gallery.length})`);
+  const mainSet = gallery.filter((g) => main.gallery.groups.some((group) => group.id === g.group));
+  assert.ok(mainSet.length >= 40 && mainSet.length <= 60, `the main page's curated set is 40–60 (${mainSet.length})`);
   for (const item of gallery) {
     assert.match(item.file, /\.webp$/);
     assert.ok(item.alt.length > 20, `${item.file}: descriptive alt text`);
@@ -131,6 +132,58 @@ test("fast first paint: content inline, hydrated (not redrawn), app script after
   assert.ok(!/StickmanVideoLanding = lazy\(/.test(app));
 });
 
+// ---- /ai-stickman-video-generator/history ----
+const history = STICKMAN_LANDING_PAGES.find((p) => p.slug === "history");
+const strings = (o) => (typeof o === "string" ? [o] : o && typeof o === "object" ? Object.values(o).flatMap(strings) : []);
+
+test("history page: its own URL, keyword, metadata and three-level breadcrumb", () => {
+  assert.equal(history.path, "/ai-stickman-video-generator/history");
+  assert.equal(history.keywords.primary, "AI history video generator");
+  assert.deepEqual(history.keywords.secondary, ["stickman history videos", "history YouTube channel ideas", "faceless history channel"]);
+  assert.equal(history.h1, "AI History Video Generator");
+  assert.ok(history.title.startsWith("AI History Video Generator") && history.title.length <= 60, history.title);
+  assert.ok(history.description.length >= 120 && history.description.length <= 160, String(history.description.length));
+  const text = strings({ ...history, keywords: null }).join(" ").toLowerCase();
+  for (const k of [history.keywords.primary, ...history.keywords.secondary]) assert.ok(text.includes(k.toLowerCase()), `the copy never uses “${k}”`);
+  const canonical = canonicalFor(history.path);
+  const ld = structuredDataFor(history.path, getPublicSeoMetadata(history.path), canonical);
+  const types = ld["@graph"].map((n) => n["@type"]);
+  assert.deepEqual(types, ["SoftwareApplication", "VideoObject", "VideoObject", "VideoObject", "FAQPage", "BreadcrumbList"]);
+  assert.deepEqual(ld["@graph"].at(-1).itemListElement.map((i) => [i.name, i.item]), [["Home", `${SITE_URL}/`], [main.breadcrumb, `${SITE_URL}${main.path}`], ["History", canonical]]);
+  assert.deepEqual(ld["@graph"].find((n) => n["@type"] === "FAQPage").mainEntity.map((q) => q.name), history.faq.map((f) => f.q));
+  assert.ok(!/aggregateRating|ratingValue/.test(JSON.stringify(ld)));
+});
+
+test("history page: nothing copied from the main page (copy, FAQ, pictures)", () => {
+  const body = (page) => strings({ ...page, related: null }).filter((s) => s.length >= 40);
+  const mainText = new Set(body(main));
+  assert.deepEqual(body(history).filter((s) => mainText.has(s)), [], "a sentence is shared with the main page");
+  const mainQuestions = new Set(main.faq.map((f) => f.q));
+  assert.deepEqual(history.faq.filter((f) => mainQuestions.has(f.q)), []);
+  const filesOf = (page) => gallery.filter((g) => page.gallery.groups.some((group) => group.id === g.group)).map((g) => g.file.replace(/^h-/, ""));
+  const mainFiles = new Set(filesOf(main));
+  assert.equal(filesOf(history).length, 24);
+  assert.deepEqual(filesOf(history).filter((file) => mainFiles.has(file)), [], "a scene is on both pages");
+  assert.notEqual(history.hero.poster, main.hero.poster);
+  assert.notEqual(history.ogImage, main.ogImage);
+});
+
+test("history page: 10–15 video ideas in history niches; links up to the main page and down from it", () => {
+  const historyNiches = NICHE_GROUPS.find((g) => g.id === "history").niches.map((n) => n.id);
+  assert.ok(history.ideas.items.length >= 10 && history.ideas.items.length <= 15);
+  assert.equal(new Set(history.ideas.items.map((i) => i.title)).size, history.ideas.items.length);
+  for (const idea of history.ideas.items) {
+    assert.ok(historyNiches.includes(idea.niche), idea.niche);
+    assert.match(idea.title, /\?$/, "an idea is a question");
+  }
+  assert.deepEqual(history.niches.groupIds, ["history"]);
+  assert.ok(history.related.links.some((l) => l.to === main.path), "links up to the main page");
+  assert.equal(stickmanGroupPage("history"), history);
+  const src = read("src/pages/landing/StickmanVideoLanding.jsx");
+  assert.match(src, /<Link to=\{groupPage\.path\}/, "the main page links to a group's page from its heading");
+  assert.match(src, /<nav aria-label="Breadcrumb"/);
+});
+
 test("niche cards: 25 niches, each opens Long Form with the niche (or its own page once it exists)", () => {
   assert.equal(ALL_NICHES.length, 25);
   for (const niche of ALL_NICHES) {
@@ -150,5 +203,5 @@ test("the page component: one H1, lazy pictures with sizes, lite YouTube embed, 
   }
   assert.equal((src.match(/loading="eager"/g) || []).length, 1, "only the hero poster loads eagerly");
   assert.match(src, /\{on \? \(\s*<iframe src=\{`https:\/\/www\.youtube-nocookie\.com\/embed\//, "the iframe exists only after the click");
-  assert.ok(!/aggregateRating|ratingValue|testimonial|\bstars?\b|\d[\d,]*\+? (users|creators|customers)/i.test(src + JSON.stringify(main)), "no ratings, testimonials or user counts");
+  assert.ok(!/aggregateRating|ratingValue|testimonial|\bstars?\b|\d[\d,]*\+? (users|creators|customers)/i.test(src + JSON.stringify(STICKMAN_LANDING_PAGES)), "no ratings, testimonials or user counts");
 });

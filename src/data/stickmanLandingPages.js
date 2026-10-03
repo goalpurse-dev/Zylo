@@ -217,12 +217,182 @@ const MAIN_PAGE = {
   },
 };
 
-export const STICKMAN_LANDING_PAGES = [MAIN_PAGE];
+// /ai-stickman-video-generator/history: the History & The Past niche group.
+// Its own copy, FAQ, pictures (gallery groups history-*) and video ideas.
+const HISTORY_PAGE = {
+  slug: "history",
+  nicheId: null,
+  nicheGroupId: "history",
+  linkLabel: "AI history video generator",
+  path: `${STICKMAN_BASE_PATH}/history`,
+  breadcrumb: "History",
+  appName: "Zyvo Long Form",
+  title: "AI History Video Generator: Stickman History Videos | Zyvo",
+  description: "Turn one history question into an 8–15 minute stickman video: sourced, fact-checked script, voiceover, 150+ scenes. Made for faceless history channels.",
+  keywords: {
+    primary: "AI history video generator",
+    secondary: ["stickman history videos", "history YouTube channel ideas", "faceless history channel"],
+  },
+  ogImage: `${STICKMAN_ASSETS}/og-history.jpg`,
+
+  eyebrow: "Zyvo Long Form · History",
+  h1: "AI History Video Generator",
+  subhead: "Ask one question about the past and get an 8–15 minute stickman history video, with a sourced script, narration and a new drawing every few seconds.",
+  heroNote: "Seven history niches, from prehistory to myth vs reality.",
+  hero: {
+    poster: `${STICKMAN_ASSETS}/hero-history.webp`,
+    posterAlt: "Two groups of stickman hunters facing a wild boar in a cave, from a stickman history video made with Zyvo",
+    loop: "made-with-zyvo",
+  },
+
+  showcase: {
+    title: "History videos made with Zyvo",
+    lead: "Both are published on YouTube. One asks how early humans hunted; the other tests a famous Viking myth.",
+    videos: ["hunt", "vikings"],
+  },
+
+  how: {
+    title: "How a history video gets made",
+    intro: [
+      "A history video stands or falls on its facts. So before Zyvo’s AI history video generator writes a line, it searches the web for sources on your question and builds the script from what they say. Then it checks the script’s claims and shows you which ones it could verify, with links.",
+      "Only after that does it record the narration and draw the scenes: hunters, soldiers, doctors and kings as simple stickman characters who stay the same from the first scene to the last. You get the finished video and the material you need to check it.",
+    ],
+    steps: [
+      {
+        title: "Start with a question about the past",
+        text: "Pick one of the seven history niches and take a suggested question, or type your own. A narrow question (“How did Rome feed an army on the march?”) makes a better video than a broad subject (“The Roman army”).",
+        image: "/home/v2/step-idea.jpg",
+        alt: "Long Form setup with the Ancient Humans and Prehistory niche chosen for a new history video",
+      },
+      {
+        title: "Research, script, voice, scenes",
+        text: "Zyvo gathers sources, writes the script, fact-checks it and records the voiceover. It then draws roughly 150 scenes for a 10-minute video. You can leave the page while it works.",
+        image: "/home/v2/step-scenes.jpg",
+        alt: "Finished scenes of a Viking history video in Long Form, each with its line of narration",
+      },
+      {
+        title: "Correct it, then publish",
+        text: "Read the fact-check summary, redraw any scene that looks wrong for the period, fix names in the captions, and render. The thumbnails, title, description and chapters come with it.",
+        image: "/home/v2/step-publish.jpg",
+        alt: "Long Form publish screen for a Viking history video with thumbnails and YouTube text ready to copy",
+      },
+    ],
+  },
+
+  gallery: {
+    title: "Scenes from our stickman history videos",
+    lead: "These drawings come from three of our own videos about prehistoric life. They show the range a single history topic produces: the dig, the evidence, the people and the weather they lived in.",
+    initialPerGroup: 8,
+    groups: [
+      { id: "history-hunt", title: "From the dig to the hunt" },
+      { id: "history-fire", title: "An Ice Age winter camp" },
+      { id: "history-rain", title: "Keeping a fire alive in the rain" },
+    ],
+  },
+
+  ideas: {
+    title: "14 history video ideas to start with",
+    lead: "Good history YouTube channel ideas are questions, not subjects. Each of these fits one video. Tap one to open Long Form in that niche and type it in, or change it to suit your channel.",
+    items: [
+      { niche: "ancient_humans_prehistory", title: "How did early humans survive winter before they could make fire?" },
+      { niche: "ancient_humans_prehistory", title: "What did people eat before farming?" },
+      { niche: "dark_brutal_history", title: "What was it like to live through the Black Death?" },
+      { niche: "dark_brutal_history", title: "What happened to sailors who were lost at sea for months?" },
+      { niche: "daily_life_past_eras", title: "What did an ordinary day look like in a medieval village?" },
+      { niche: "daily_life_past_eras", title: "How did people keep clean before running water?" },
+      { niche: "military_logistics_history", title: "How did Rome feed an army on the march?" },
+      { niche: "military_logistics_history", title: "How did medieval armies cross rivers without bridges?" },
+      { niche: "ancient_medicine_science", title: "Did ancient doctors really perform brain surgery?" },
+      { niche: "ancient_medicine_science", title: "How did people treat toothache before dentists?" },
+      { niche: "timeline_history", title: "How did one assassination lead to the First World War?" },
+      { niche: "timeline_history", title: "How did the printing press change Europe in fifty years?" },
+      { niche: "myth_vs_reality", title: "Did Vikings really wear horned helmets?" },
+      { niche: "myth_vs_reality", title: "Did medieval people really think the Earth was flat?" },
+    ],
+  },
+
+  niches: {
+    title: "Seven history niches",
+    lead: "Each niche gives Long Form a different angle on the past and its own set of suggested ideas.",
+    groupIds: ["history"],
+  },
+
+  features: {
+    title: "Built for history",
+    items: [
+      { title: "A fact-check you can read", text: "Every script comes with a summary: how many of its claims were verified and which sources back them. Open the links and judge for yourself." },
+      { title: "Dates and numbers on screen", text: "When the narration gives a year, a distance or a count, it can appear as text on the scene, so viewers don’t have to hold figures in their heads. You can edit or remove any of it." },
+      { title: "One cast for the whole video", text: "The characters, clothes and settings are planned once and reused, so the same hunters or soldiers return in every scene instead of changing face each time." },
+      { title: "Captions you can correct", text: "Names, places and old words are where automatic captions slip. Fix any word in the editor before you render." },
+      { title: "Chapters for long videos", text: "A 12-minute video about a siege or an expedition is easier to follow in parts. Timestamped chapters are written for you to paste into YouTube." },
+      { title: "Redraw what looks wrong", text: "If a scene shows the wrong tool or the wrong century, redraw it. The rest of the video stays as it is." },
+    ],
+  },
+
+  guide: {
+    title: "Running a faceless history channel",
+    lead: "A faceless history channel lives on trust. Viewers can’t see you, so the care in the video is all they have to go on.",
+    items: [
+      { title: "Choose a period or a type of question", text: "“Roman history” and “things people get wrong about the past” are both channels. “History” is not. A viewer should be able to guess your next video from your last three." },
+      { title: "Open with the evidence", text: "The hunting video above is built around a wooden spear pulled from a German lakebed, not around a date. An object, a letter or a number that seems wrong pulls people in faster than background does." },
+      { title: "Say how sure you are", text: "“Historians think”, “the oldest evidence so far” and “we don’t know” are not weaknesses. They are what separates a history channel from a list of fun facts, and they protect you when new research arrives." },
+      { title: "List your sources in the description", text: "The fact-check summary gives you the links. Paste the main ones under the video. It takes a minute and it answers the first sceptical comment before it is written." },
+      { title: "Turn one topic into a series", text: "One good question usually hides five more. A video on how Rome fed its army leads to how it paid it, moved it and housed it. A series keeps viewers on the channel and makes the next idea easy." },
+      { title: "Keep the drawings honest", text: "Stickman scenes are cartoons, not reconstructions, and viewers accept that. What they don’t forgive is a wristwatch in the Middle Ages. Skim the scenes for anything out of its time and redraw it." },
+    ],
+  },
+
+  tutorial: {
+    title: "See it made, start to finish",
+    lead: "The tutorial builds a stickman history video in under three minutes.",
+    video: "tutorial",
+  },
+
+  pricing: {
+    title: "What a history video costs",
+    lead: "A 10-minute history video costs 250 credits on the Fast tier, and the research, fact-check, voice and scenes are all inside that price.",
+    note: "Prices are in euros with VAT included. Longer videos cost more in proportion: 25 credits for each minute.",
+  },
+
+  faqTitle: "History video questions",
+  faq: [
+    { q: "How accurate are the history videos?", a: "Zyvo researches each topic on the web before writing and then fact-checks the script, and you see how many claims were verified and which sources support them. That catches a lot, but it is not a historian’s review. Check the claims your video depends on before you publish." },
+    { q: "Where do the facts come from?", a: "From web sources found during the research step for your specific question. The sources are listed with links next to the script, so you can open them." },
+    { q: "Can I make a video about any period or country?", a: "Yes. Type any topic inside the closest history niche. Well-documented subjects give the research more to work with; for obscure ones, expect fewer verified claims and check more yourself." },
+    { q: "What kinds of history topics work best?", a: "Single questions with a clear answer: how something was done, whether a famous story is true, what daily life was like. Broad subjects such as a whole war or empire are better split into several videos." },
+    { q: "Can I run a faceless history channel with it?", a: "Yes. The voice is an AI narrator and the pictures are drawings, so nothing in the video needs your face or your voice." },
+    { q: "Are the drawings historically accurate?", a: "They are simplified stickman cartoons that follow the script. They aim for the right kind of tools, clothing and setting, but they are illustrations, not reconstructions. If a scene shows something out of its time, you can redraw it." },
+    { q: "Does it use real photos or archive footage?", a: "No. Every scene is drawn for your script. There is no archive footage and there are no photographs of real people." },
+    { q: "How long is a video and how many scenes does it have?", a: "You choose a length from 8 to 15 minutes. Expect about 15 scenes per minute, so roughly 120 for 8 minutes and 225 for 15." },
+    { q: "How much does a history video cost?", a: "25 credits per minute on the Fast tier, so 250 credits for 10 minutes. That is about 3 ten-minute videos a month on Starter (€18), 6 on Pro (€38) and 12 on Generative (€78)." },
+  ],
+
+  related: {
+    title: "Keep reading",
+    links: [
+      { to: STICKMAN_BASE_PATH, label: "AI Stickman Video Generator: all 25 niches" },
+      { to: "/blog/faceless-youtube-channel-ideas", label: "Faceless YouTube Channel Ideas Using AI in 2026" },
+    ],
+  },
+
+  cta: {
+    title: "Make your first history video",
+    text: "Bring a question about the past. Long Form brings the research, the narrator and the drawings.",
+  },
+};
+
+export const STICKMAN_LANDING_PAGES = [MAIN_PAGE, HISTORY_PAGE];
 
 const clean = (pathname) => (pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname);
 
 export function getStickmanLandingPage(pathname) {
   return STICKMAN_LANDING_PAGES.find((page) => page.path === clean(String(pathname ?? ""))) ?? null;
+}
+
+// The landing page of a whole niche group ("history"), if one exists: the main
+// page links to it from that group's heading.
+export function stickmanGroupPage(groupId) {
+  return STICKMAN_LANDING_PAGES.find((entry) => entry.nicheGroupId === groupId) ?? null;
 }
 
 // Where a niche card goes: that niche's own landing page once it exists in

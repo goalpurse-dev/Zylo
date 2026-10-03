@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ArrowUpRight, Check, Play, Plus } from "lucide-react";
 import Footer from "../../components/workspace/footer.jsx";
-import { NICHE_GROUPS } from "../workspace/long-form/niches.js";
+import { NICHE_GROUPS, findNiche } from "../workspace/long-form/niches.js";
 import { optImg } from "../../lib/optImage.js";
 import { trackSeoEvent } from "../../lib/seoAnalytics.js";
 import GALLERY from "../../data/stickmanLandingGallery.json";
 import {
-  APP_VIEWPORT, STICKMAN_ASSETS, STICKMAN_FONT_HREF, STICKMAN_PRICING, STICKMAN_VIDEOS, STICKMAN_VIEWPORT, stickmanNicheHref, stickmanVideoUrl,
+  APP_VIEWPORT, STICKMAN_ASSETS, STICKMAN_FONT_HREF, STICKMAN_LANDING_PAGES, STICKMAN_PRICING, STICKMAN_VIDEOS, STICKMAN_VIEWPORT,
+  stickmanGroupPage, stickmanNicheHref, stickmanVideoUrl,
 } from "../../data/stickmanLandingPages.js";
 
 // Long Form SEO landing page. Everything on it comes from one entry of
@@ -132,7 +133,7 @@ function Gallery({ gallery }) {
         return (
           <div key={group.id}>
             <h3 className="text-[17px] font-bold text-white sm:text-[19px]">{group.title}</h3>
-            <ul className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4">
+            <ul className={`mt-4 grid grid-cols-2 gap-2.5 sm:gap-4 ${gallery.initialPerGroup % 3 === 0 ? "sm:grid-cols-3" : "lg:grid-cols-4"}`}>
               {(all ? items : items.slice(0, gallery.initialPerGroup)).map((item) => (
                 <li key={item.file} className="overflow-hidden rounded-[14px] border border-white/10 bg-[#0d0f10]">
                   <img src={`${STICKMAN_ASSETS}/${item.file}`} alt={item.alt} width="640" height="360" loading="lazy" decoding="async" className="aspect-video h-auto w-full object-cover" />
@@ -156,6 +157,9 @@ export default function StickmanVideoLanding({ page }) {
   useZoomableViewport();
   const slug = page.path.replace(/^\//, "");
   const tutorial = STICKMAN_VIDEOS[page.tutorial.video];
+  const parent = page.slug ? STICKMAN_LANDING_PAGES[0] : null; // a niche page links up to the main page
+  const nicheGroups = NICHE_GROUPS.filter((group) => !page.niches.groupIds || page.niches.groupIds.includes(group.id));
+  const featuresInThrees = page.features.items.length % 3 === 0;
   return (
     <div className="min-h-screen overflow-x-clip bg-[#0B0D0F] text-white">
       <style dangerouslySetInnerHTML={{ __html: FALLBACK_FACE }} />
@@ -165,7 +169,14 @@ export default function StickmanVideoLanding({ page }) {
         <section className="border-b border-white/[0.07]">
           <div className={`${WRAP} grid items-center gap-10 py-12 md:py-20 lg:grid-cols-[1fr_1.05fr] lg:gap-14`}>
             <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-lime-300">Zyvo Long Form</p>
+              {parent && (
+                <nav aria-label="Breadcrumb" className="mb-4 text-[13px] text-white/60">
+                  <Link to={parent.path} className={`rounded font-semibold text-white/75 underline-offset-4 hover:text-lime-300 hover:underline ${FOCUS}`}>{parent.breadcrumb}</Link>
+                  <span className="mx-2 text-white/30" aria-hidden="true">/</span>
+                  <span aria-current="page">{page.breadcrumb}</span>
+                </nav>
+              )}
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-lime-300">{page.eyebrow ?? "Zyvo Long Form"}</p>
               <h1 style={DISPLAY} className="mt-3 text-balance text-[46px] font-extrabold uppercase leading-[0.95] text-white sm:text-[64px] lg:text-[72px]">{page.h1}</h1>
               <p className="mt-5 max-w-[56ch] text-[16px] leading-7 text-white/70 sm:text-[18px] sm:leading-8">{page.subhead}</p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -231,14 +242,44 @@ export default function StickmanVideoLanding({ page }) {
           <Gallery gallery={page.gallery} />
         </section>
 
-        {/* 5. Pick your niche */}
+        {/* 5. Video ideas (niche pages) + pick your niche */}
         <section className="border-y border-white/[0.07] bg-[#0E1113]" aria-labelledby="niches">
           <div className={`${WRAP} py-14 md:py-20`}>
+            {page.ideas && (
+              <div className="mb-16" data-testid="ideas">
+                <SectionTitle id="ideas" lead={page.ideas.lead}>{page.ideas.title}</SectionTitle>
+                <ol className="mt-9 grid gap-3 md:grid-cols-2">
+                  {page.ideas.items.map((idea) => (
+                    <li key={idea.title}>
+                      <Link to={stickmanNicheHref(idea.niche)} onClick={() => trackSeoEvent("seo_idea_clicked", { slug, niche: idea.niche })}
+                        className={`group flex h-full items-center justify-between gap-4 rounded-[16px] border border-white/10 bg-white/[0.03] px-5 py-4 transition hover:border-lime-300/40 ${FOCUS}`}>
+                        <span>
+                          <span className="block text-[11px] font-black uppercase tracking-[0.14em] text-lime-300">{findNiche(idea.niche)?.label}</span>
+                          <span className="mt-1 block text-[16px] font-bold leading-snug text-white">{idea.title}</span>
+                        </span>
+                        <ArrowRight className="h-4 w-4 shrink-0 text-white/40 transition group-hover:text-lime-300" aria-hidden="true" />
+                      </Link>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
             <SectionTitle id="niches" lead={page.niches.lead}>{page.niches.title}</SectionTitle>
             <div className="mt-9 flex flex-col gap-9">
-              {NICHE_GROUPS.map((group) => (
+              {nicheGroups.map((group) => {
+                const groupPage = stickmanGroupPage(group.id);
+                return (
                 <div key={group.id}>
-                  <h3 className="text-[17px] font-bold text-white sm:text-[19px]">{group.label}</h3>
+                  {nicheGroups.length > 1 && (
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                      <h3 className="text-[17px] font-bold text-white sm:text-[19px]">{group.label}</h3>
+                      {groupPage && groupPage.path !== page.path && (
+                        <Link to={groupPage.path} className={`inline-flex items-center gap-1 rounded text-[13px] font-bold text-lime-300 underline-offset-4 hover:underline ${FOCUS}`}>
+                          {groupPage.linkLabel} <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                        </Link>
+                      )}
+                    </div>
+                  )}
                   <ul className="mt-4 grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-5">
                     {group.niches.map((niche) => (
                       <li key={niche.id}>
@@ -253,7 +294,8 @@ export default function StickmanVideoLanding({ page }) {
                     ))}
                   </ul>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
@@ -261,9 +303,9 @@ export default function StickmanVideoLanding({ page }) {
         {/* 6. Features */}
         <section className={`${WRAP} py-14 md:py-20`} aria-labelledby="features">
           <SectionTitle id="features">{page.features.title}</SectionTitle>
-          <ul className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className={`mt-9 grid gap-4 sm:grid-cols-2 ${featuresInThrees ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}>
             {page.features.items.map((item, i) => (
-              <li key={item.title} className={`rounded-[18px] border border-white/10 bg-white/[0.03] p-5 ${i === 0 ? "sm:col-span-2" : ""}`}>
+              <li key={item.title} className={`rounded-[18px] border border-white/10 bg-white/[0.03] p-5 ${i === 0 && !featuresInThrees ? "sm:col-span-2" : ""}`}>
                 <h3 className="flex items-start gap-2.5 text-[16px] font-bold leading-snug text-white">
                   <Check className="mt-0.5 h-[18px] w-[18px] shrink-0 text-lime-300" strokeWidth={3} aria-hidden="true" /> {item.title}
                 </h3>
@@ -317,7 +359,7 @@ export default function StickmanVideoLanding({ page }) {
 
         {/* 9. FAQ */}
         <section className="mx-auto w-full max-w-[820px] px-4 py-14 sm:px-6 md:py-20" aria-labelledby="faq">
-          <SectionTitle id="faq" center>Questions and answers</SectionTitle>
+          <SectionTitle id="faq" center>{page.faqTitle ?? "Questions and answers"}</SectionTitle>
           <div className="mt-9 flex flex-col gap-3">
             {page.faq.map((item) => (
               <details key={item.q} className="group rounded-[16px] border border-white/10 bg-white/[0.03] px-5 py-4">

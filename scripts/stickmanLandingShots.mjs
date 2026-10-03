@@ -45,7 +45,8 @@ for (const [name, viewport, scale] of [["desktop-1920", { width: 1920, height: 1
   r.unloadedImages = await page.evaluate(() => [...document.querySelectorAll("[data-landing-content] img")].filter((i) => !i.complete || i.naturalWidth === 0).length);
   await page.screenshot({ path: `${OUT}/${name}-full.png`, fullPage: true });
   // Interactions.
-  await page.getByRole("button", { name: /Show \d+ more scenes/ }).click();
+  const more = page.getByRole("button", { name: /Show \d+ more scenes/ });
+  if (await more.count()) await more.click();
   r.galleryAll = await page.locator('[data-landing-content] img[src*="/lp/stickman/"]:not([src*="video-"]):not([src*="hero-"])').count();
   await page.getByRole("link", { name: "Watch the tutorial" }).click();
   await page.waitForTimeout(900);
@@ -54,6 +55,9 @@ for (const [name, viewport, scale] of [["desktop-1920", { width: 1920, height: 1
   r.iframeAfterClick = await page.locator("iframe").first().getAttribute("src");
   r.cta = await page.getByRole("link", { name: "Make your first video" }).first().getAttribute("href");
   r.nicheLinks = await page.locator('[data-landing-content] a[href^="/long-form/create?niche="]').count();
+  r.ideas = await page.locator('[data-testid="ideas"] a').count();
+  r.breadcrumb = await page.locator('nav[aria-label="Breadcrumb"] a').first().getAttribute("href").catch(() => null);
+  r.subPageLinks = await page.locator('[data-landing-content] a[href^="/ai-stickman-video-generator"]').evaluateAll((els) => [...new Set(els.map((el) => el.getAttribute("href")))]);
   r.firstNiche = await page.locator('[data-landing-content] a[href^="/long-form/create?niche="]').first().getAttribute("href");
   r.pricingLink = await page.locator('[data-landing-content] a[href="/workspace/pricing"]').count();
   r.errors = errors;
