@@ -167,12 +167,36 @@ export function textItemFromLayer(layer, startMs, endMs) {
   };
 }
 
+// Clip starts every edit accepts (validateEdit): in order, the first at 0,
+// each clip at least MIN_CLIP_MS long. The scene plan sometimes holds a scene
+// shorter than that (1.2 s): its neighbour's cut then moves later (onto a word
+// start when one is close), so the short scene gets its 1.5 s. A scene with no
+// 1.5 s left before the voiceover ends is left out (the picture before it stays).
+// Returns [{ index, startMs }] for the scenes kept.
+export function spacedStarts(starts, durationMs, words = []) {
+  const kept = [];
+  for (let i = 0; i < starts.length; i++) {
+    if (!kept.length) { kept.push({ index: i, startMs: 0 }); continue; }
+    const lo = kept[kept.length - 1].startMs + MIN_CLIP_MS;
+    let at = Math.round(starts[i]);
+    if (at < lo) {
+      const word = words.find((w) => w.startMs >= lo);
+      at = word && word.startMs - lo <= 400 ? Math.round(word.startMs) : lo;
+    }
+    if (durationMs - at < MIN_CLIP_MS) continue;
+    kept.push({ index: i, startMs: at });
+  }
+  return kept;
+}
+
 // The first edit of a project: the Scenes step's result, as a doc.
 export function buildInitialEdit({ scenes, words, audio, narrationId, seed = null, reveals = [], sides = {} }) {
-  const sorted = [...scenes].filter((s) => s.imageUrl).sort((a, b) => a.startMs - b.startMs);
+  const ready = [...scenes].filter((s) => s.imageUrl).sort((a, b) => a.startMs - b.startMs);
+  const kept = spacedStarts(ready.map((s) => s.startMs), Math.round(audio.durationMs), words);
+  const sorted = kept.map((k) => ready[k.index]);
   const clips = sorted.map((s, i) => {
-    const startMs = i === 0 ? 0 : s.startMs;
-    return { id: newId("clip"), sceneId: s.sceneId ?? null, imageVersion: s.imageVersion ?? null, beatSequence: s.number, startMs, startWord: Math.max(0, wordAt(words, s.startMs + 1)), image: s.imageUrl, narration: s.narration ?? "", motion: motionKindFromCamera(s.camera, i) };
+    const startMs = kept[i].startMs;
+    return { id: newId("clip"), sceneId: s.sceneId ?? null, imageVersion: s.imageVersion ?? null, beatSequence: s.number, startMs, startWord: Math.max(0, wordAt(words, (i === 0 ? s.startMs : startMs) + 1)), image: s.imageUrl, narration: s.narration ?? "", motion: motionKindFromCamera(s.camera, i) };
   });
   const ends = withEnds({ clips, audio });
   const texts = sorted.map((s, i) => textItemFromLayer(s.overlay, ends[i].startMs, ends[i].endMs)).filter(Boolean);

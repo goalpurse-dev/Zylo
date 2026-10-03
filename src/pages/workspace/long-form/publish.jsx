@@ -11,7 +11,7 @@ import { CreditsError, LongFormActionFooter, LongFormCreationHeader } from "./sh
 import { cachedStickmanProject } from "./StickmanRouteGuard";
 import { useOverlayFont } from "./sceneVisuals";
 import { fileSlug, limitTags, TITLE_MAX, TAGS_MAX_CHARS } from "../../../lib/publishText";
-import { renderStatus, startRender, downloadRender, listThumbnails, startThumbnails, retryThumbnails, setThumbnailHeadline, selectThumbnail, getYoutubeText, generateYoutubeText, saveYoutubeText } from "./publish/publishApi";
+import { renderStatus, startRender, startPublish, downloadRender, listThumbnails, startThumbnails, retryThumbnails, setThumbnailHeadline, selectThumbnail, getYoutubeText, generateYoutubeText, saveYoutubeText } from "./publish/publishApi";
 
 const STAGE = { queued: "Waiting for a render machine…", drawing: "Drawing the text and captions…", rendering: "Rendering the scenes…", finishing: "Joining the scenes and the voice…", uploading: "Uploading your video…" };
 const mins = (s) => (s < 90 ? `${Math.max(1, Math.round(s / 10) * 10)} s` : `${Math.round(s / 60)} min`);
@@ -84,6 +84,18 @@ function RenderCard({ projectId, autopilot }) {
   const [starting, setStarting] = useState(!!autopilot);
   useEffect(() => { if (starting && state && (hasCurrent || cur1080 || Date.now() - since > AUTOPILOT_WAIT_MS)) setStarting(false); }, [starting, state, hasCurrent, cur1080, since]);
   useEffect(() => { if (!live && !starting) return; const id = setInterval(load, 3000); return () => clearInterval(id); }, [live, starting, load]);
+  // Opened with no render at all (from a project card, not from the editor's
+  // "Continue to Publish"): start the render, the YouTube text and the
+  // thumbnails once, server-side. The server makes the edit from the scenes if
+  // the editor was never opened. A failed or an outdated render is never
+  // restarted from here: those keep their own button.
+  const kicked = useRef(false);
+  useEffect(() => {
+    if (!state || kicked.current || autopilot || state.job || state.lastDone) return;
+    kicked.current = true;
+    setStarting(true);
+    startPublish(projectId).then(load);
+  }, [state, autopilot, projectId, load]);
   const start = async (resolution) => { setBusy(true); setMsg(null); const r = await startRender(projectId, resolution); setBusy(false); if (!r.ok) setMsg(r.message); load(); };
   const download = async (j) => { const r = await downloadRender(projectId, j.id); if (r.ok) window.location.href = r.url; else setMsg(r.message); };
   const current = cur1440 || cur1080;

@@ -13,18 +13,21 @@
 //                   version of the source scene drawn from its narration
 //                   (credits per scene, like Regenerate; dryRun prices it).
 //   scene_status  — poll that picture.
+//   ensure        — make sure the edit exists and shows the current pictures
+//                   (_shared/stickman/editDoc.ts). Publish calls it; our own
+//                   scripts may call it with the service key.
 // POST { projectId, action, ... }
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Image } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
 import { ok, err, cors } from "../shared/cors.ts";
 import { requireUser } from "../shared/auth.ts";
-import { buildInitialEdit, flattenWords, retimeToWords, validateEdit, EDIT_VERSION } from "../../../src/lib/stickmanEdit.js";
+import { validateEdit, EDIT_VERSION } from "../../../src/lib/stickmanEdit.js";
+import { ensureEdit, planIdOf as planIdFor } from "../_shared/stickman/editDoc.ts";
 import { sceneCredits, tierOf, segmentForWord } from "../_shared/stickman/scenes.ts";
 import { chargeAddon, refundAddon } from "../_shared/stickman/addons.ts";
 import { IP_MARKS, IP_LOOKALIKE } from "../_shared/stickman/beatDirector.ts";
 import { logEvent } from "../_shared/systemLog.ts";
-import { fillCenterFlatness } from "../_shared/stickman/flatness.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -50,82 +53,37 @@ function findFact(node: any, id: string, depth = 0): any {
   return null;
 }
 
-async function planIdOf(project: any, projectId: string) {
-  const ap = project.autopilot ?? {};
-  let planId: string | null = ap.scenes?.planId ?? null;
-  if (!planId) planId = (await admin.from("long_form_scene_images").select("beat_plan_version_id").eq("project_id", projectId).eq("is_current", true).order("created_at", { ascending: false }).limit(1).maybeSingle()).data?.beat_plan_version_id ?? null;
-  return planId;
-}
+const planIdOf = (project: any, _projectId: string) => planIdFor(admin, project);
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
-  const { user, authError } = await requireUser(req);
-  if (!user) return err(req, authError || "Unauthorized", 401);
   const body = await req.json().catch(() => ({}));
   const projectId = String(body?.projectId ?? "").trim();
   const action = String(body?.action ?? "");
-  if (!projectId || !["get", "save", "upload", "split_generate", "scene_status"].includes(action)) return err(req, "Bad request", 400);
+  if (!projectId || !["get", "save", "upload", "split_generate", "scene_status", "ensure"].includes(action)) return err(req, "Bad request", 400);
+  // "ensure" may also come from our own scripts (service key or the autopilot secret): no user needed.
+  const trusted = (!!SECRET && req.headers.get("x-autopilot-secret") === SECRET) || req.headers.get("authorization") === `Bearer ${SERVICE_KEY}`;
+  const internal = trusted && action === "ensure";
+  const { user, authError } = internal ? { user: null as any, authError: null } : await requireUser(req);
+  if (!user && !internal) return err(req, authError || "Unauthorized", 401);
   const { data: project } = await admin.from("long_form_projects").select("id, user_id, autopilot, current_script_version_id, selected_title").eq("id", projectId).maybeSingle();
-  if (!project || project.user_id !== user.id) return err(req, "Project not found", 404);
+  if (!project || (!internal && project.user_id !== user.id)) return err(req, "Project not found", 404);
+
+  // ---------------- ensure ----------------
+  if (action === "ensure") {
+    const e = await ensureEdit(admin, project, { createdBy: user?.id ?? project.user_id, source: "long-form-edit" });
+    if (!e.ok) return err(req, e.message, e.status);
+    return ok(req, { ok: true, version: e.version, created: e.created, resynced: e.resynced, retimed: e.retimed, clips: e.doc.clips.length });
+  }
 
   // ---------------- get ----------------
   if (action === "get") {
-    const planId = await planIdOf(project, projectId);
-    if (!planId) return err(req, "This video has no scenes yet.", 409);
+    // The edit, made sure of: built and SAVED on the first open, re-timed to a
+    // new voiceover, every clip on its scene's current picture.
+    const e = await ensureEdit(admin, project, { createdBy: user.id, editor: true, source: "long-form-edit" });
+    if (!e.ok) return err(req, e.message, e.status);
+    const { doc, version, retimed, resynced, words, narr, planId } = e;
     const { data: profile } = await admin.from("long_form_generation_profiles").select("id, voice_id, render_tier").eq("project_id", projectId).eq("status", "active").maybeSingle();
-    const { data: narr } = await admin.from("long_form_narration_audio_versions").select("id, audio_url, audio_duration_seconds, narration, voice_id, credits_charged, created_at").eq("project_id", projectId).in("status", ["ready", "alignment_failed"]).order("created_at", { ascending: false }).limit(1).maybeSingle();
-    if (!narr) return err(req, "This video has no voiceover yet.", 409);
-    const words = flattenWords(narr.narration);
-    const audio = { url: narr.audio_url, durationMs: Math.round(Number(narr.audio_duration_seconds) * 1000) };
-    const { data: latest } = await admin.from("long_form_edits").select("version, doc, created_at").eq("project_id", projectId).order("version", { ascending: false }).limit(1).maybeSingle();
-    let doc = latest?.doc ?? null, retimed = false;
-    if (!doc) {
-      const [{ data: beats }, { data: imgs }] = await Promise.all([
-        admin.from("long_form_beats").select("sequence, start_ms, narration_text, contract").eq("beat_plan_version_id", planId).order("sequence"),
-        admin.from("long_form_scene_images").select("id, beat_sequence, version, status, image_url, overlay").eq("project_id", projectId).eq("beat_plan_version_id", planId).eq("is_current", true),
-      ]);
-      const img = new Map((imgs ?? []).map((i: any) => [i.beat_sequence, i]));
-      const scenes = (beats ?? []).map((b: any) => { const i: any = img.get(b.sequence); return { sceneId: i?.id ?? null, imageVersion: i?.version ?? null, number: b.sequence, startMs: b.start_ms, narration: b.narration_text, imageUrl: i?.status === "ready" ? i.image_url : null, overlay: i?.overlay ?? null, camera: b.contract?.motionIntent?.camera ?? null }; });
-      if (scenes.some((s: any) => !s.imageUrl)) return err(req, "Some scenes are still being drawn. Open Edit when they're done.", 409);
-      // A new edit starts on the camera Mix (seeded by the project id: preview == render).
-      const sidesInit: Record<number, string> = {};
-      const revealsInit: number[] = [];
-      for (const b of beats ?? []) {
-        const side = (b.contract?.subjects ?? []).map((x: any) => x.position).find((v: any) => v === "left" || v === "right");
-        if (side) sidesInit[b.sequence] = side;
-        if (b.contract?.textIntent?.category === "REVEAL") revealsInit.push(b.sequence);
-      }
-      doc = buildInitialEdit({ scenes, words, audio, narrationId: narr.id, seed: projectId, reveals: revealsInit, sides: sidesInit });
-    } else if (doc.audio?.narrationId && doc.audio.narrationId !== narr.id) {
-      // A new voiceover: the cuts follow the words, the pictures stay.
-      doc = retimeToWords(doc, words, audio, narr.id);
-      retimed = true;
-    }
-    // Every clip shows its scene's CURRENT picture: a clip names its scene
-    // (beat) + image version, and is resolved here on every open — a scene
-    // redrawn on the Scenes page (or anywhere) replaces the old picture; the
-    // user's edits (texts, cuts, motion, captions, music) are kept. The
-    // user's own uploads and a split half's own picture are left alone.
-    const { data: current } = await admin.from("long_form_scene_images").select("id, beat_sequence, version, status, image_url").eq("project_id", projectId).eq("beat_plan_version_id", planId).eq("is_current", true);
-    const cur = new Map((current ?? []).map((s: any) => [s.beat_sequence, s]));
-    let resynced = 0, relinked = 0;
-    doc = { ...doc, clips: doc.clips.map((c: any) => {
-      if (c.uploaded || c.needsImage || c.splitFrom) return c;
-      const s: any = cur.get(c.beatSequence);
-      if (!s || s.status !== "ready" || !s.image_url) return c;
-      if (s.image_url === c.image && s.id === c.sceneId && s.version === c.imageVersion) return c;
-      if (s.image_url !== c.image) resynced++; else relinked++;
-      return { ...c, image: s.image_url, sceneId: s.id, imageVersion: s.version };
-    }) };
-    // Each picture's centre flatness (a Zoom punch never dives into blank white).
-    const measured = await fillCenterFlatness(doc.clips);
-    let version = latest?.version ?? 0;
-    // A changed picture (or a new voiceover) is a new edit version, saved here.
-    if (latest && (resynced || relinked || retimed || measured)) {
-      const { error: saveErr } = await admin.from("long_form_edits").insert({ project_id: projectId, version: version + 1, doc, narration_id: doc.audio?.narrationId ?? null, created_by: user.id });
-      if (!saveErr) version++;
-      if (resynced || retimed) await logEvent("long-form-edit", "info", "edit_resynced", { projectId, resynced, relinked, retimed, version });
-    }
     // Script + fact checks (read-only panel).
     const { data: script } = await admin.from("long_form_script_versions").select("script_document, research_version_id").eq("id", project.current_script_version_id).maybeSingle();
     const sd = script?.script_document ?? {};

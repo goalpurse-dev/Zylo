@@ -3,9 +3,12 @@
 // scene (old one kept in history, addon_credits 0) + the scene step marked
 // running so the autopilot cron draws them. Waits up to 12 min and reports.
 // Paid (provider cost only): ~$0.003 per V2 scene, ~$0.045 per V3 scene.
+// Afterwards the project's edit is put on the new pictures (and created if the
+// editor was never opened), so Publish and the next render use them.
 //   node --env-file=.env.local scripts/redrawFailedScenes.mjs <projectId> [beat,beat,...]
 // With a beat list: redraws exactly those current scenes (free), whatever their status.
 import { createClient } from "@supabase/supabase-js";
+import { ensureProjectEdit } from "./lib/ensureProjectEdit.mjs";
 
 const [P, beatList] = process.argv.slice(2);
 const only = beatList ? beatList.split(",").map(Number) : null;
@@ -40,3 +43,4 @@ for (let i = 0; i < 144; i++) {
 const { data: led } = await admin.from("long_form_cost_ledger").select("usd").eq("project_id", P).eq("source_table", "long_form_scene_images").gte("created_at", since);
 for (const r of rows) console.log(JSON.stringify({ beat: r.beat_sequence, status: r.status, safeFallback: !!r.qa?.safeFallback, failures: r.qa?.failures ?? null, cost: r.cost_usd, error: r.status === "failed" ? (r.qa?.failures ?? r.qa?.error ?? r.error) : null }));
 console.log(JSON.stringify({ ready: rows.filter((r) => r.status === "ready").length, of: rows.length, usd: Number((led ?? []).reduce((a, x) => a + Number(x.usd), 0).toFixed(4)) }));
+console.log("edit:", JSON.stringify(await ensureProjectEdit(P)));

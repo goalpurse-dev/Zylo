@@ -2,6 +2,9 @@
 // long-form-publish-start/index.ts — Publish autopilot. "Continue to Publish"
 // calls this once; it starts, in parallel and server-side (it keeps going if
 // the user leaves the page), everything the Publish page shows:
+//   0) the edit itself — created from the current scenes if the editor was never
+//      opened, and put on the scenes' current pictures (done first, once, so the
+//      steps below all see the same edit)
 //   a) the 1080p render — only if this edit version has none yet (never a duplicate)
 //   b) the YouTube title / alternatives / description / tags — only if not written yet
 //   c) the 3 included thumbnails — only if there are none yet
@@ -29,11 +32,12 @@ Deno.serve(async (req) => {
   const headers = { Authorization: req.headers.get("Authorization") ?? "", apikey: req.headers.get("apikey") ?? "", "Content-Type": "application/json" };
   const call = (fn: string, payload: any) => fetch(`${SUPABASE_URL}/functions/v1/${fn}`, { method: "POST", headers, body: JSON.stringify({ projectId, ...payload }) })
     .then(async (r) => ({ fn, status: r.status, body: await r.json().catch(() => null) })).catch((e) => ({ fn, status: 0, body: String(e?.message ?? e) }));
-  const all = Promise.all([
+  const all = call("long-form-edit", { action: "ensure" }).then((edit) => Promise.all([
+    Promise.resolve(edit),
     call("long-form-render", { action: "start", resolution: "1080p", ifMissing: true }),
     call("long-form-youtube-text", { action: "generate", ifMissing: true }),
     call("long-form-thumbnails", { action: "start" }),
-  ]).then((rs) => logEvent("long-form-publish-start", rs.every((r) => r.status === 200) ? "info" : "warn", "publish_autopilot", { projectId, steps: rs.map((r) => ({ fn: r.fn, status: r.status, note: r.body?.exists ? "exists" : r.body?.alreadyRunning ? "running" : r.body?.generating ? "generating" : r.status === 200 ? "started" : String(r.body?.error ?? r.body ?? "").slice(0, 120) })) }));
+  ])).then((rs) => logEvent("long-form-publish-start", rs.every((r) => r.status === 200) ? "info" : "warn", "publish_autopilot", { projectId, steps: rs.map((r) => ({ fn: r.fn, status: r.status, note: r.body?.exists ? "exists" : r.body?.alreadyRunning ? "running" : r.body?.generating ? "generating" : r.status === 200 ? "started" : String(r.body?.error ?? r.body ?? "").slice(0, 120) })) }));
   EdgeRuntime.waitUntil(all);
   return ok(req, { ok: true, started: true });
 });

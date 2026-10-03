@@ -16,6 +16,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
 import { requireUser } from "../shared/auth.ts";
 import { segmentForWord } from "../_shared/stickman/scenes.ts";
+import { ensureEdit } from "../_shared/stickman/editDoc.ts";
 import { recordCost } from "../_shared/costLedger.ts";
 import { claimSourceList, sourceTier } from "../_shared/stickman/claimSources.ts";
 import { buildChapters, cleanTitle, limitTags, realSources, composeDescription, chapterHook, cleanHashtags, disclaimerFor, stripInstructionEchoes, tagsInVideo, titleCase, LECTURE_TITLE, LAME_HOOK } from "../../../src/lib/publishText.js";
@@ -110,8 +111,13 @@ Deno.serve(async (req) => {
   // The edit the video was rendered from (the newest done render), else the newest edit.
   const { data: job } = await admin.from("long_form_render_jobs").select("edit_version").eq("project_id", projectId).is("parent_job_id", null).eq("status", "done").order("created_at", { ascending: false }).limit(1).maybeSingle();
   const q = admin.from("long_form_edits").select("version, doc").eq("project_id", projectId);
-  const { data: edit } = job?.edit_version ? await q.eq("version", job.edit_version).maybeSingle() : await q.order("version", { ascending: false }).limit(1).maybeSingle();
-  if (!edit) return err(req, "Open the editor once first.", 409);
+  let { data: edit } = job?.edit_version ? await q.eq("version", job.edit_version).maybeSingle() : await q.order("version", { ascending: false }).limit(1).maybeSingle();
+  if (!edit) {
+    // No edit yet (the editor was never opened): made here from the current scenes.
+    const ensured = await ensureEdit(admin, project, { createdBy: user?.id ?? project.user_id, source: "long-form-youtube-text" });
+    if (!ensured.ok) return err(req, ensured.message, ensured.status);
+    edit = { version: ensured.version, doc: ensured.doc };
+  }
   const planId = project.autopilot?.scenes?.planId ?? null;
   const { data: beats } = planId ? await admin.from("long_form_beats").select("sequence, start_word").eq("beat_plan_version_id", planId) : { data: [] };
   const chapterOfSeg = new Map<string, string>();

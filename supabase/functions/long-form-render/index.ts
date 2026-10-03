@@ -23,6 +23,7 @@ import { flattenWords, validateEdit } from "../../../src/lib/stickmanEdit.js";
 import { logEvent } from "../_shared/systemLog.ts";
 import { chunkPieces } from "../_shared/stickman/renderChunks.ts";
 import { fillCenterFlatness } from "../_shared/stickman/flatness.ts";
+import { ensureEdit } from "../_shared/stickman/editDoc.ts";
 import { fileSlug } from "../../../src/lib/publishText.js";
 import { chargeAddon, refundAddon, render1440Credits } from "../_shared/stickman/addons.ts";
 import { tierOf } from "../_shared/stickman/scenes.ts";
@@ -209,7 +210,7 @@ Deno.serve(async (req) => {
 
   const projectId = String(body?.projectId ?? "").trim();
   if (!projectId || !["start", "status", "download"].includes(action)) return err(req, "Bad request", 400);
-  const { data: project } = await admin.from("long_form_projects").select("id, user_id, selected_title").eq("id", projectId).maybeSingle();
+  const { data: project } = await admin.from("long_form_projects").select("id, user_id, selected_title, autopilot").eq("id", projectId).maybeSingle();
   if (!project || project.user_id !== user.id) return err(req, "Project not found", 404);
   const { data: job } = await admin.from("long_form_render_jobs").select("*").eq("project_id", projectId).is("parent_job_id", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
 
@@ -244,8 +245,12 @@ Deno.serve(async (req) => {
   // ---------------- start ----------------
   if (job && ["queued", "rendering", "waiting"].includes(job.status)) return ok(req, { ok: true, alreadyRunning: true, job: await jobView(job, projectId) });
   const resolution = RESOLUTIONS[String(body?.resolution ?? "1080p")] ? String(body?.resolution ?? "1080p") : "1080p";
-  const { data: edit } = await admin.from("long_form_edits").select("version, doc").eq("project_id", projectId).order("version", { ascending: false }).limit(1).maybeSingle();
-  if (!edit) return err(req, "Open the editor once before rendering.", 409);
+  // No editor visit needed: the edit is created from the current scenes when
+  // there is none, and its clips are put on the scenes' current pictures (a
+  // scene redrawn since the last edit) before anything is rendered.
+  const ensured = await ensureEdit(admin, project, { createdBy: user.id, source: "long-form-render" });
+  if (!ensured.ok) return err(req, ensured.message, ensured.status);
+  const edit = { version: ensured.version, doc: ensured.doc };
   // Publish autopilot: render only if this edit version has no render yet (never a duplicate).
   if (body?.ifMissing === true) {
     const { data: has } = await admin.from("long_form_render_jobs").select("*").eq("project_id", projectId).is("parent_job_id", null).eq("edit_version", edit.version).in("status", ["queued", "rendering", "waiting", "done"]).order("created_at", { ascending: false }).limit(1).maybeSingle();
