@@ -15,4 +15,4 @@ export const getTeaser = (teaserId) => invoke({ action: "get", teaserId });
 // Funnel: upgrade_clicked | paid | full_started (the server keeps the timestamps).
 export const teaserEvent = (teaserId, event, extra = {}) => invoke({ action: "event", teaserId, event, ...extra });
 
-export { TEASER_AUTOSTART_KEY, teaserSteps, teaserBusy, fullVideoFacts } from "./teaserView.js";
+export { TEASER_AUTOSTART_KEY, TEASER_AUTOSTART_LEGACY_KEY, armTeaserAutostart, disarmTeaserAutostart, takeTeaserAutostart, shouldAutostartTeaser, teaserSteps, teaserBusy, fullVideoFacts } from "./teaserView.js";

@@ -32,18 +32,33 @@ test("Generate button: no credit amount for free and logged-out accounts; paid p
 test("logged out: Generate opens the sign-up dialog and the setup survives the sign-up", () => {
   assert.match(setup, /setAuthPrompt\(\{ title: "Create a free account to start your video"/);
   assert.match(setup, /<AuthModal\s+mode="signup"[\s\S]{0,200}returnTo="\/long-form\/create"/);
-  assert.match(setup, /localStorage\.setItem\(TEASER_AUTOSTART_KEY, String\(Date\.now\(\)\)\)/);
+  // Pressing Generate remembers nothing (2026-10-04: a flag set here started teasers on plain page loads).
+  const press = setup.slice(setup.indexOf("const handleGenerate = () => {"), setup.indexOf("const teaserAutoChecked = useRef(false);"));
+  assert.ok(!/localStorage|sessionStorage|armTeaserAutostart/.test(press), "Generate itself must not arm the auto-start");
+  assert.match(press, /teaser: true \}\);/);
   // A logged-out visitor no longer asks the server for a session (it answered 401 and the page stayed locked).
   assert.ok(setup.indexOf("if (!authSession?.user) {") < setup.indexOf("const result = await createDiscoverySession();"));
   assert.match(setup, /savePersistedDraft\(\{ guest: true \}\);/);
   assert.match(setup, /const guestDraft = saved\?\.guest \? saved : null;\n\s+if \(guestDraft\) restoreDraftFields\(guestDraft, linkedNiche\);/);
-  // After the sign-up the preview starts by itself: once, never for a paid plan, never when stale.
-  assert.match(setup, /if \(account\.isPaid \|\| Date\.now\(\) - askedAt > 3_600_000 \|\| !setupFilled\) return;\n\s+startTeaserNow\(\);/);
+  // The auto-start is armed only by a sign-up that goes through in that box, and disarmed when the box is closed.
+  assert.match(setup, /onSignUp=\{\(\) => \{ if \(authPrompt\.teaser\) armTeaserAutostart\(\); \}\}/);
+  assert.match(setup, /if \(signedIn\) window\.location\.reload\(\); else disarmTeaserAutostart\(\);/);
+  assert.equal(setup.match(/\barmTeaserAutostart\(\)/g)?.length, 1, "armed in exactly one place");
+  // Read once per page load (and removed by the read), then the one rule decides.
+  assert.match(setup, /teaserAutoChecked\.current = true;[\s\S]{0,160}const armed = takeTeaserAutostart\(\);\n\s+if \(shouldAutostartTeaser\(\{ armed, signedIn: account\.signedIn, isPaid: account\.isPaid, accountCreatedAt, setupFilled \}\)\) startTeaserNow\(\);/);
+  // startTeaserNow has exactly two callers: the Generate click and that one check.
+  assert.equal(setup.match(/startTeaserNow\(\)/g)?.length, 2);
+  const view = read("src/pages/workspace/long-form/teaserView.js");
+  assert.match(view, /window\.sessionStorage/, "this tab only: a new tab never sees the flag");
+  assert.ok(!/localStorage/.test(view.replace(/\/\/.*$/gm, "")));
   // The dialog offers Google and email, and comes back through the auth callback.
   const modal = read("src/components/AuthModal.jsx");
   assert.match(modal, /Continue with Google/);
   assert.match(modal, /type="email"/);
   assert.match(modal, /localStorage\.setItem\(POST_AUTH_RETURN_KEY/);
+  // onSignUp fires for Google and for a new email account that is signed in at once: never for a password sign-in.
+  assert.equal(modal.match(/onSignUp\?\.\(\)/g)?.length, 2);
+  assert.match(modal, /else if \(data\.session\) \{ onSignUp\?\.\(\); onClose\(true\); \}/);
   const callback = read("src/pages/AuthCallback.jsx");
   assert.match(callback, /path\.startsWith\("\/"\) && !path\.startsWith\("\/\/"\)/, "only an in-app path is followed");
 });
@@ -62,9 +77,17 @@ test("teaser page: real steps, an honest result, the upgrade card, back to this 
   assert.match(teaser, /Your full video is ready to be made/);
   assert.match(teaser, /~\{minutes\} minutes, ~\{scenes\} scenes, voiceover, thumbnails\./);
   assert.match(teaser, /Nothing has been researched, voiced or rendered yet\./);
-  assert.match(teaser, /Upgrade to Starter/);
-  assert.match(teaser, /bg-lime-300[^"]*"[\s\S]{0,200}Upgrade to Starter/);
-  assert.match(teaser, /priceId: PLAN_PRICE_IDS\.starter\.monthly/);
+  // Three plans to choose from (2026-10-04), each with its own checkout button; numbers come from live prices.
+  assert.match(teaser, /const TEASER_PLANS = \["starter", "pro", "generative"\];/);
+  assert.match(teaser, /const POPULAR_PLAN = "pro";/);
+  assert.match(teaser, /Most popular/);
+  assert.match(teaser, /TEASER_PLANS\.map\(\(planId\) => <PlanCard /);
+  assert.match(teaser, /sm:grid-cols-3/, "side by side on desktop, stacked on mobile");
+  assert.match(teaser, /longFormOutputs\(tiers\.tiers, planId, "v2", LONG_FORM_HEADLINE_MINUTES\)/);
+  assert.match(teaser, /formatMoney\(plan\.monthly, prices\.prices\.currency\)/);
+  assert.match(teaser, /startCheckout\(\{\s+type: "subscription", planId, billing: "monthly",/);
+  assert.match(teaser, /See all plans/);
+  // Whichever plan is paid for: back to this video's setup, which starts the full video once.
   assert.match(teaser, /\/long-form\/create\?start=1&teaser=\$\{teaser\.id\}/);
   // It never says the video already exists.
   for (const lie of [/your video is ready(?! to be made)/i, /video is finished/i, /has been (made|generated|rendered)/i, /watch your video/i, /download your video/i]) assert.ok(!lie.test(teaser), String(lie));
@@ -78,13 +101,17 @@ test("after payment: the plan is confirmed first, then the normal (charged) gene
   assert.match(auto, /teaserInfo\.fullStarted/, "a preview that already became a video never starts a second one");
   assert.match(auto, /credits < quote\.totalCredits/);
   assert.match(auto, /handleGenerateVideo\(\)/);
+  // Whatever plan was bought, the automatic first video is V2 (2026-10-04): never V3's price without a click.
+  assert.match(setup, /const AUTO_START_TIER = "v2";/);
+  assert.match(auto, /if \(renderTier !== AUTO_START_TIER \|\| !canGenerate/);
+  assert.match(setup, /if \(fromTeaser\?\.autoStart && \(paymentState === "confirming" \|\| paymentState === "starting"\)\) \{\n\s+tierTouchedRef\.current = true;\n\s+if \(renderTier !== AUTO_START_TIER\) setRenderTier\(AUTO_START_TIER\);\n\s+return;/);
   assert.match(setup, /window\.history\.replaceState\(null, "", window\.location\.pathname\);/, "a refresh must not start it again");
 });
 
 test("funnel: started, finished, upgrade clicked, paid, full video started", () => {
   assert.match(setup, /trackLaunch\("teaser_started"/);
   assert.match(teaser, /trackLaunch\("teaser_finished"/);
-  assert.match(teaser, /trackLaunch\("teaser_upgrade_clicked"[\s\S]{0,160}teaserEvent\(teaser\.id, "upgrade_clicked"\)/);
+  assert.match(teaser, /trackLaunch\("teaser_upgrade_clicked", \{ placement: "long_form_teaser", target: planId, teaserId: teaser\.id \}\);\n\s+teaserEvent\(teaser\.id, "upgrade_clicked"\)/);
   assert.match(setup, /teaserEvent\(fromTeaser\.teaserId, "paid"\);\n\s+trackLaunch\("teaser_paid"/);
   assert.match(setup, /teaserEvent\(fromTeaser\.teaserId, "full_started", \{ projectId \}\);\n\s+trackLaunch\("teaser_full_started"/);
   const fn = read("supabase/functions/long-form-teaser/index.ts");
@@ -98,7 +125,9 @@ test("What's new popup: logged-out visitors too, after the cookie banner, never 
   assert.match(layout, /if \(!seen\) setWhatsNew\(\{ guest: true \}\);/);
   assert.match(layout, /const WHATS_NEW_GUEST_KEY = `zyvo:whats-new:seen:\$\{LONG_FORM_ANNOUNCEMENT\}`;/);
   assert.match(layout, /if \(whatsNew\.guest\) localStorage\.setItem\(WHATS_NEW_GUEST_KEY, "1"\);/);
-  assert.match(layout, /if \(!whatsNew \|\| location\.pathname !== "\/" \|\| !cookieAnswered \|\| showWelcome \|\| showRewards\) return undefined;/);
+  assert.match(layout, /if \(!whatsNew \|\| location\.pathname !== "\/" \|\| !cookieAnswered \|\| showWelcome\) return undefined;/);
+  // The "Earn free credits" popup no longer opens by itself (2026-10-04); it is opened from the gift button / Home card.
+  assert.ok(!/CreatorRewardsModal|showRewards/.test(layout));
   assert.match(layout, /if \(document\.querySelector\("\[data-zyvo-modal\]"\)\) return;/);
   // Logged-in rule unchanged: only without a Long Form project, and not after "Don't show this again".
   assert.match(layout, /seen_announcements \?\? \[\]\)\.includes\(LONG_FORM_ANNOUNCEMENT\)/);

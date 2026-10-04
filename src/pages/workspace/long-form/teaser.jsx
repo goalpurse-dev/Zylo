@@ -1,18 +1,18 @@
 // teaser.jsx — the free Long Form teaser (free accounts): a loading screen with
-// the real steps, then the title, the hook and 3 drawn scenes, then an upgrade
-// card. It is a PREVIEW of the video that could be made — nothing is
+// the real steps, then the title, the hook and 3 drawn scenes, then the three
+// plans to choose from. It is a PREVIEW of the video that could be made — nothing is
 // researched, voiced or rendered, and the page never says the video exists.
 // Server: long-form-teaser (one cheap model call + 3 V2 scenes, capped at $0.02).
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, Clapperboard, Loader2, Mic, Image as ImageIcon, Sparkles, Type } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Clapperboard, Loader2, Mic, Image as ImageIcon, Type } from "lucide-react";
 import usePlanCode from "../../../hooks/usePlanCode";
-import { supabase } from "../../../lib/supabaseClient";
+import usePaymentAction from "../../../hooks/usePaymentAction";
 import { usePlanPrices, formatMoney } from "../../../lib/planPrices";
-import { useLongFormTiers } from "../../../lib/longFormTiers";
-import { longFormVideoCredits } from "../../../lib/longFormTiers";
+import { useLongFormTiers, allowedLongFormTiers } from "../../../lib/longFormTiers";
+import { longFormOutputs, LONG_FORM_HEADLINE_MINUTES } from "../../../lib/pricingMath";
+import { PLAN_LABELS } from "../../../lib/planGating";
 import { startCheckout } from "../../../lib/payments";
-import { PLAN_PRICE_IDS, PLAN_CREDITS } from "../../../../supabase/functions/_shared/stripePlanPrices.js";
 import { trackLaunch } from "../../../components/launch/launch";
 import { getTeaser, teaserEvent, teaserSteps, teaserBusy, fullVideoFacts } from "./teaserApi";
 
@@ -53,28 +53,56 @@ function SceneTile({ scene, index, busy }) {
   );
 }
 
+// The three plans, cheapest first. Prices come from Stripe (plan-prices), the
+// videos a month and the quality tiers from the same rows the server charges
+// with (tool_prices), so a card can never promise what the plan doesn't give.
+const TEASER_PLANS = ["starter", "pro", "generative"];
+const POPULAR_PLAN = "pro";
+const tiersLabel = (allowed) => (allowed.length >= 3 ? "All quality tiers" : allowed.map((t) => t.toUpperCase()).join(" + ") + " quality");
+
+function PlanCard({ planId, prices, tiers, pay, onChoose }) {
+  const popular = planId === POPULAR_PLAN;
+  const plan = prices.status === "ready" ? prices.prices?.plans?.[planId] : null;
+  const out = tiers.status === "ready" ? longFormOutputs(tiers.tiers, planId, "v2", LONG_FORM_HEADLINE_MINUTES) : null;
+  const allowed = tiers.status === "ready" ? allowedLongFormTiers(tiers.tiers, planId) : [];
+  return (
+    <div data-testid="teaser-plan" data-plan={planId}
+      className={`relative flex flex-col rounded-2xl border p-4 ${popular ? "border-lime-300/60 bg-lime-300/[0.07]" : "border-white/10 bg-white/[0.03]"}`}>
+      {popular && <span className="absolute -top-2.5 left-4 rounded-full bg-lime-300 px-2.5 py-0.5 text-[10.5px] font-black uppercase tracking-wide text-[#11150D]">Most popular</span>}
+      <div className="flex items-baseline justify-between gap-2">
+        <h3 className="text-[15px] font-black text-white">{PLAN_LABELS[planId]}</h3>
+        <p className="text-[13px] text-white/55" data-testid="teaser-plan-price">
+          <span className="text-[20px] font-black text-white">{plan ? formatMoney(plan.monthly, prices.prices.currency) : "…"}</span> / month
+        </p>
+      </div>
+      <ul className="mt-3 flex-1 space-y-1.5 text-[13px] text-white/75">
+        <li className="flex items-start gap-2"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-lime-300" strokeWidth={3} aria-hidden="true" />{out?.included ? <span><b className="font-black text-white">{out.count}</b> ten-minute videos a month</span> : <span>Ten-minute videos every month</span>}</li>
+        <li className="flex items-start gap-2"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-lime-300" strokeWidth={3} aria-hidden="true" /><span>{allowed.length ? tiersLabel(allowed) : "Long Form quality tiers"}</span></li>
+      </ul>
+      <button type="button" data-testid="teaser-plan-button" data-plan={planId} disabled={pay.busy != null} onClick={() => onChoose(planId)}
+        className={`mt-4 inline-flex min-h-[46px] w-full items-center justify-center gap-2 rounded-xl px-4 text-[14px] font-black transition disabled:opacity-60 ${popular ? "bg-lime-300 text-[#11150D] shadow-[0_0_32px_rgba(190,242,100,0.18)] hover:bg-lime-200" : "border border-lime-300/45 text-lime-200 hover:bg-lime-300/10"}`}>
+        {pay.busy === planId && <Loader2 className="h-4 w-4 animate-spin" />} Get {PLAN_LABELS[planId]}
+      </button>
+    </div>
+  );
+}
+
 function UpgradeCard({ teaser, account }) {
   const { minutes, scenes } = fullVideoFacts(teaser);
   const prices = usePlanPrices();
   const tiers = useLongFormTiers();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(null);
+  const pay = usePaymentAction();
   const navigate = useNavigate();
-  const starter = prices.status === "ready" ? prices.prices?.plans?.starter : null;
-  const perVideo = tiers.status === "ready" ? longFormVideoCredits(tiers.tiers, "v2", minutes) : null;
-  const videos = perVideo ? Math.floor(PLAN_CREDITS.starter / perVideo) : null;
-  const upgrade = async () => {
-    setBusy(true); setError(null);
-    trackLaunch("teaser_upgrade_clicked", { placement: "long_form_teaser", target: "starter", teaserId: teaser.id });
+  // Whichever plan is bought: Stripe sends the customer back to this video's
+  // setup, which starts the full generation once (charged like any other).
+  const choose = (planId) => {
+    trackLaunch("teaser_upgrade_clicked", { placement: "long_form_teaser", target: planId, teaserId: teaser.id });
     teaserEvent(teaser.id, "upgrade_clicked");
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setBusy(false); setError("Please sign in again."); return; }
-    // After payment: back to this video's setup, which starts the full generation (charged normally).
-    const back = `${window.location.origin}/long-form/create?start=1&teaser=${teaser.id}`;
-    try {
-      await startCheckout({ type: "subscription", priceId: PLAN_PRICE_IDS.starter.monthly, userId: user.id, email: user.email, metadata: { email: user.email, plan: "starter", teaserId: teaser.id }, successUrl: back, cancelUrl: `${window.location.origin}/long-form/teaser/${teaser.id}` });
-    } catch { setError("Couldn't open the checkout. Try again."); }
-    setBusy(false);
+    pay.run(planId, () => startCheckout({
+      type: "subscription", planId, billing: "monthly",
+      successUrl: `${window.location.origin}/long-form/create?start=1&teaser=${teaser.id}`,
+      cancelUrl: `${window.location.origin}/long-form/teaser/${teaser.id}`,
+    }));
   };
   return (
     <section className="zyvo-teaser-in rounded-[22px] border border-lime-300/30 bg-lime-300/[0.05] p-5 sm:p-7" data-testid="teaser-upgrade">
@@ -86,27 +114,22 @@ function UpgradeCard({ teaser, account }) {
           return <li key={fact[1]} className="flex items-center gap-2"><FactIcon className="h-4 w-4 shrink-0 text-lime-300" aria-hidden="true" /> {fact[1]}</li>;
         })}
       </ul>
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-        {account.isPaid ? (
-          <button type="button" data-testid="teaser-make-full" onClick={() => navigate(`/long-form/create?teaser=${teaser.id}`)}
-            className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-lime-300 px-6 text-[15px] font-black text-[#11150D] transition hover:bg-lime-200">
-            Make the full video <ArrowRight className="h-4 w-4" />
-          </button>
-        ) : (
-          <button type="button" data-testid="teaser-upgrade-button" disabled={busy} onClick={upgrade}
-            className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-lime-300 px-6 text-[15px] font-black text-[#11150D] shadow-[0_0_40px_rgba(190,242,100,0.18)] transition hover:bg-lime-200 disabled:opacity-60">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Upgrade to Starter
-          </button>
-        )}
-        {!account.isPaid && (
-          <p className="text-[13px] leading-5 text-white/60" data-testid="teaser-price">
-            {starter ? <><span className="text-[17px] font-black text-white">{formatMoney(starter.monthly, prices.prices.currency)}</span> / month{prices.prices.vatIncluded ? ", VAT included" : ""}.</> : "Starter plan."}
-            {videos ? <> {PLAN_CREDITS.starter.toLocaleString("en-US")} credits a month, about {videos} videos of this length.</> : null}
+      {account.isPaid ? (
+        <button type="button" data-testid="teaser-make-full" onClick={() => navigate(`/long-form/create?teaser=${teaser.id}`)}
+          className="mt-5 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-lime-300 px-6 text-[15px] font-black text-[#11150D] transition hover:bg-lime-200">
+          Make the full video <ArrowRight className="h-4 w-4" />
+        </button>
+      ) : (
+        <>
+          <p className="mt-6 text-[12px] font-black uppercase tracking-[0.14em] text-white/45">Pick a plan to make it</p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-3 sm:gap-3" data-testid="teaser-plans">
+            {TEASER_PLANS.map((planId) => <PlanCard key={planId} planId={planId} prices={prices} tiers={tiers} pay={pay} onChoose={choose} />)}
+          </div>
+          <p className="mt-4 text-[12px] leading-5 text-white/45">
+            Monthly{prices.status === "ready" && prices.prices?.vatIncluded ? ", VAT included" : ""}. After payment you come straight back here and the full video starts in V2 quality. <Link to="/pricing" className="underline underline-offset-2 hover:text-white/70" data-testid="teaser-all-plans">See all plans</Link>
           </p>
-        )}
-      </div>
-      {error && <p className="mt-3 text-[12.5px] text-red-300">{error}</p>}
-      {!account.isPaid && <p className="mt-3 text-[12px] text-white/45">After payment you come straight back here and the full video starts. <Link to="/workspace/pricing" className="underline underline-offset-2 hover:text-white/70">See all plans</Link></p>}
+        </>
+      )}
     </section>
   );
 }

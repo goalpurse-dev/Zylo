@@ -66,7 +66,7 @@ async function work(teaser: any) {
       },
       onPlan: async (plan, spent) => {
         scenes = plan.scenes.map((description, i) => ({ n: i + 1, description, status: "queued", imageUrl: null }));
-        await patch(id, { status: "drawing", title: plan.title, hook: plan.hook, scenes, cost_usd: spent });
+        await patch(id, { status: "drawing", title: plan.title, hook: plan.hook || null, scenes, cost_usd: spent });
       },
       onScene: async (index, scene, spent) => {
         scenes = scenes.map((s, i) => (i === index ? { ...s, status: scene.status, imageUrl: scene.imageUrl ?? null } : s));
@@ -74,7 +74,7 @@ async function work(teaser: any) {
       },
       cost: (c) => recordCost(admin, {
         userId, stage: "other", provider: c.step === "plan" ? "openai" : "runware", model: c.model,
-        units: { calls: 1, ...(c.step === "scene" ? { images: 1 } : { inputTokens: c.inputTokens, outputTokens: c.outputTokens }), purpose: "teaser", step: c.step } as any,
+        units: { calls: c.calls ?? 1, ...(c.step === "scene" ? { images: 1 } : { inputTokens: c.inputTokens, outputTokens: c.outputTokens }), purpose: "teaser", step: c.step } as any,
         usd: c.usd, estimated: c.estimated, sourceTable: "long_form_teasers", sourceId: id,
       }),
     });

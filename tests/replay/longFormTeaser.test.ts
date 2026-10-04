@@ -4,15 +4,16 @@
 // the real teaser logic with stub providers ($0).
 import { assert, assertEquals, assertMatch } from "jsr:@std/assert@1";
 import {
-  runTeaser, teaserBudget, teaserGate, teaserPrompt, teaserSceneTask, writeTeaserPlan, normalizePlan, canSpend, tokenUsd,
-  TEASER_CAP_USD, TEASER_MODEL, TEASER_SCENES, TEASER_SCENE_EST_USD, TEASER_DAILY_LIMIT, TEASER_IP_DAILY_LIMIT, TEASER_MAX_OUTPUT_TOKENS,
+  runTeaser, teaserBudget, teaserGate, teaserPrompt, teaserSceneTask, writeTeaserPlan, normalizePlan, canSpend, tokenUsd, hookIssues,
+  HOOK_BANNED_PHRASES, SCRIPT_SLOP_PHRASES, TEASER_HOOK_FIXES, HOOK_FIX_MAX_USD, TEASER_CAP_USD, TEASER_MODEL, TEASER_SCENES, TEASER_SCENE_EST_USD, TEASER_DAILY_LIMIT, TEASER_IP_DAILY_LIMIT, TEASER_MAX_OUTPUT_TOKENS,
 } from "../../supabase/functions/_shared/stickman/teaser.ts";
 import { STICKMAN_RENDER_TIERS } from "../../supabase/functions/_shared/stickman/renderTiers.ts";
-import { teaserSteps, teaserBusy, fullVideoFacts } from "../../src/pages/workspace/long-form/teaserView.js";
+import { BANNED_LECTURE_PHRASES } from "../../supabase/functions/_shared/stickman/scriptChecks.ts";
+import { teaserSteps, teaserBusy, fullVideoFacts, armTeaserAutostart, disarmTeaserAutostart, takeTeaserAutostart, shouldAutostartTeaser, TEASER_AUTOSTART_KEY } from "../../src/pages/workspace/long-form/teaserView.js";
 
 const read = (p: string) => Deno.readTextFileSync(new URL(`../../${p}`, import.meta.url));
 const input = { topic: "How did Rome feed an army on the march?", nicheId: "military_logistics_history", nicheLabel: "Military Logistics" };
-const plan = { title: "What Fueled the Roman Army on the March?", hook: "How did the legions keep marching?", scenes: ["A Roman legionary in a red tunic studies a scroll in a camp.", "A grain merchant in a tunic weighs sacks beside two legionaries.", "Four Roman legionaries in armor march down a dusty road."] };
+const plan = { title: "What Fueled the Roman Army on the March?", hook: "You tighten the strap of a grain sack that has rubbed your shoulder raw since dawn.", scenes: ["A Roman legionary in a red tunic studies a scroll in a camp.", "A grain merchant in a tunic weighs sacks beside two legionaries.", "Four Roman legionaries in armor march down a dusty road."] };
 const io = (over: any = {}) => {
   const costs: any[] = [], drawn: number[] = [];
   return {
@@ -32,6 +33,8 @@ Deno.test("the cost is worked out before anything is called, and it fits the $0.
   // Worst case: the plan call at its output limit + 3 pictures. Under half the cap.
   assert(b.estimate < 0.01, String(b.estimate));
   assertEquals(b.estimate, Number((b.planMax + 3 * TEASER_SCENE_EST_USD).toFixed(6)));
+  // The writing step's worst case includes both hook rewrites it may make.
+  assert(b.planMax >= TEASER_HOOK_FIXES * HOOK_FIX_MAX_USD);
   // The plan call is capped: even a full 400-token answer on a long prompt costs a fraction of a cent.
   assert(tokenUsd(2000, TEASER_MAX_OUTPUT_TOKENS) < 0.001);
   // A cap the estimate cannot fit is refused before the start.
@@ -89,6 +92,105 @@ Deno.test("the plan is ONE call to the cheapest model, and it is told nothing wa
   // A missing title falls back to the idea; junk scenes are dropped.
   assertEquals(normalizePlan({ scenes: ["x", "A stickman farmer in a straw hat waters a field."] }, input).scenes.length, 1);
   assertEquals(normalizePlan({}, input).title, input.topic);
+});
+
+// A fetch stub that answers the plan call, then each hook rewrite in turn.
+const openai = (planHook: string, fixes: (string | null)[]) => {
+  const calls: any[] = [];
+  const post: any = async (_url: string, init: any) => {
+    const body = JSON.parse(init.body);
+    calls.push(body);
+    const name = body.response_format.json_schema.name;
+    if (name === "teaser") return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ ...plan, hook: planHook }) } }], usage: { prompt_tokens: 600, completion_tokens: 130 } }), { status: 200 });
+    const next = fixes.shift();
+    if (next == null) return new Response("{}", { status: 500 });
+    return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ hook: next }) } }], usage: { prompt_tokens: 400, completion_tokens: 30 } }), { status: 200 });
+  };
+  return { calls, post };
+};
+const GOOD_HOOK = "Your stomach growls as the grain sack on your shoulder gets lighter with every mile of dust.";
+
+Deno.test("hook rules: the script's cold-open rules and its banned phrases, checked in code", () => {
+  // Hooks the first version really produced: none of them is a cold open.
+  for (const bad of [
+    "Picture the vast Roman legions marching tirelessly, but how did they eat on the go?",
+    "Ever wondered how Rome managed to keep its massive army well-fed during long campaigns?",
+    "How did the mighty Roman legions keep their strength without faltering on the march?",
+    "Imagine a world where an army had to carry every meal on its back.",
+    "You are about to see something. In this video, you learn how Rome fed its army.",
+    "Welcome back, today your army marches on its stomach.",
+    "Did you know your legion carried its own grain?",
+    "",
+  ]) assert(hookIssues(bad).length > 0, bad);
+  assertEquals(hookIssues(GOOD_HOOK), []);
+  assertEquals(hookIssues(plan.hook), []);
+  // The same lists as the main script check, nothing dropped.
+  for (const p of BANNED_LECTURE_PHRASES) assert(HOOK_BANNED_PHRASES.includes(p), p);
+  const script = read("supabase/functions/advance-long-form-script/index.ts");
+  const slop = script.slice(script.indexOf("const SLOP_PHRASES = ["), script.indexOf("];", script.indexOf("const SLOP_PHRASES = [")));
+  assertEquals([...slop.matchAll(/"([^"]+)"/g)].map((m) => m[1]), SCRIPT_SLOP_PHRASES, "SCRIPT_SLOP_PHRASES must stay identical to the script check's SLOP_PHRASES");
+  for (const phrase of HOOK_BANNED_PHRASES) assert(hookIssues(`You stand in the mud and ${phrase} the rain keeps falling on your pack.`).length > 0, phrase);
+  // The model is told the rules too.
+  const p = teaserPrompt(input);
+  assertMatch(p, /COLD OPEN/);
+  assertMatch(p, /second person/);
+  assertMatch(p, /Never start with Imagine, Picture/);
+  for (const phrase of HOOK_BANNED_PHRASES) assert(p.includes(`"${phrase}"`), phrase);
+});
+
+Deno.test("a lecture hook is rewritten (at most twice) and left out if it still breaks the rules", async () => {
+  // Rewritten once: two calls, both paid for.
+  const once = openai("Imagine a world where an army carried every meal.", [GOOD_HOOK]);
+  const a = await writeTeaserPlan("k", input, once.post);
+  assertEquals([a.plan.hook, a.calls, a.hookFixes, a.hookDropped], [GOOD_HOOK, 2, 1, false]);
+  assertEquals(once.calls.map((c: any) => c.response_format.json_schema.name), ["teaser", "teaser_hook"]);
+  assertEquals(once.calls[1].model, TEASER_MODEL);
+  assertMatch(once.calls[1].messages[0].content, /a sentence starts with "Imagine"/);
+  assertEquals(a.usd, tokenUsd(1000, 160));
+  // Still a lecture after two rewrites: no hook is shown, the teaser goes on.
+  const never = openai("Picture the legions marching.", ["Ever wondered how they ate?", "What if you had no bread?"]);
+  const b = await writeTeaserPlan("k", input, never.post);
+  assertEquals([b.plan.hook, b.calls, b.hookFixes, b.hookDropped], ["", 1 + TEASER_HOOK_FIXES, TEASER_HOOK_FIXES, true]);
+  assertEquals(never.calls.length, 3, "never more than two rewrites");
+  assertEquals(b.plan.scenes.length, 3);
+  // A rewrite call that fails never fails the teaser.
+  const broken = openai("Picture the legions marching.", [null]);
+  const c = await writeTeaserPlan("k", input, broken.post);
+  assertEquals([c.plan.hook, c.hookDropped, c.plan.title], ["", true, plan.title]);
+  // Worst case (plan + both rewrites + 3 pictures) is far inside the cap.
+  assert(teaserBudget(input).estimate <= TEASER_CAP_USD / 2, String(teaserBudget(input).estimate));
+});
+
+Deno.test("auto-start: only straight after a sign-up in the Generate box, once, in that tab", () => {
+  const store = () => { const m = new Map<string, string>(); return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => { m.set(k, v); }, removeItem: (k: string) => { m.delete(k); }, size: () => m.size }; };
+  const now = Date.parse("2026-10-04T18:00:00Z");
+  const fresh = new Date(now - 60_000).toISOString(), old = new Date(now - 9 * 30 * 86_400_000).toISOString();
+  const s = store();
+  // Nothing armed (a plain page load, a reload, the Back button, a new tab): never.
+  assertEquals(takeTeaserAutostart(s, now), false);
+  // Armed by the sign-up, read once, gone at once.
+  armTeaserAutostart(s, now - 5_000);
+  assertEquals(s.getItem(TEASER_AUTOSTART_KEY), String(now - 5_000));
+  assertEquals(takeTeaserAutostart(s, now), true);
+  assertEquals(s.size(), 0, "cleared the moment it is read");
+  assertEquals(takeTeaserAutostart(s, now), false, "a reload finds nothing");
+  // Closing the box without signing up disarms it; an old flag is ignored (and still removed).
+  armTeaserAutostart(s, now); disarmTeaserAutostart(s);
+  assertEquals(takeTeaserAutostart(s, now), false);
+  armTeaserAutostart(s, now - 11 * 60_000);
+  assertEquals(takeTeaserAutostart(s, now), false);
+  assertEquals(s.size(), 0);
+  // Broken storage never starts anything.
+  assertEquals(takeTeaserAutostart({ getItem: () => { throw new Error("blocked"); }, removeItem: () => {} } as any, now), false);
+  // The rule: armed + signed in + free + a brand-new account + the setup filled in.
+  const yes = { armed: true, signedIn: true, isPaid: false, accountCreatedAt: fresh, setupFilled: true, now };
+  assertEquals(shouldAutostartTeaser(yes), true);
+  assertEquals(shouldAutostartTeaser({ ...yes, armed: false }), false);
+  assertEquals(shouldAutostartTeaser({ ...yes, signedIn: false }), false);
+  assertEquals(shouldAutostartTeaser({ ...yes, isPaid: true }), false, "a paid plan never gets the teaser");
+  assertEquals(shouldAutostartTeaser({ ...yes, setupFilled: false }), false);
+  assertEquals(shouldAutostartTeaser({ ...yes, accountCreatedAt: old }), false, "an existing account signing in through the box starts nothing");
+  assertEquals(shouldAutostartTeaser({ ...yes, accountCreatedAt: null }), false);
 });
 
 Deno.test("the pictures are V2: no upscale, one image, the stickman style, no text", () => {
