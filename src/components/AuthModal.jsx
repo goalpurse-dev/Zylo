@@ -23,7 +23,9 @@ export const POST_AUTH_RETURN_KEY = "zyvo:post-auth-return";
 // title / subtitle: a heading for a specific moment ("Create a free account to
 // start your video"). returnTo: an in-app path to come back to after sign-up.
 // onClose(signedIn): true when the dialog closed because the visitor is now signed in.
-export default function AuthModal({ mode: initialMode, onClose, title, subtitle, returnTo }) {
+// onSignUp(): called when a sign-up goes through here (a new email account that is
+// signed in at once, or the moment the browser leaves for Google).
+export default function AuthModal({ mode: initialMode, onClose, title, subtitle, returnTo, onSignUp }) {
   const [mode, setMode] = useState(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,6 +44,7 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
   const rememberReturn = () => { if (returnTo) { try { localStorage.setItem(POST_AUTH_RETURN_KEY, JSON.stringify({ path: returnTo, at: Date.now() })); } catch { /* no storage: lands on Home */ } } };
   const handleGoogle = async () => {
     rememberReturn();
+    onSignUp?.();
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
@@ -72,7 +75,7 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
           : returnTo ? { emailRedirectTo: `${window.location.origin}/auth/callback` } : undefined,
       });
       if (error) setError(error.message);
-      else if (data.session) onClose(true); // confirmations off — signed in immediately
+      else if (data.session) { onSignUp?.(); onClose(true); } // confirmations off — signed in immediately
       else setSuccess("Check your email to confirm your account.");
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });

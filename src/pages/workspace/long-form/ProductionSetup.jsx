@@ -21,7 +21,7 @@ import { LongFormCreationHeader } from "./shared";
 import AuthModal from "../../../components/AuthModal";
 import { supabase } from "../../../lib/supabaseClient";
 import { trackLaunch } from "../../../components/launch/launch";
-import { startTeaser, getTeaser, teaserEvent, TEASER_AUTOSTART_KEY } from "./teaserApi";
+import { startTeaser, getTeaser, teaserEvent, TEASER_AUTOSTART_LEGACY_KEY, armTeaserAutostart, disarmTeaserAutostart, takeTeaserAutostart, shouldAutostartTeaser } from "./teaserApi";
 import { useProfileCredits } from "../../../hooks/useProfileCredits";
 import usePlanCode from "../../../hooks/usePlanCode";
 import { useLongFormTiers, longFormTierAllowed, defaultLongFormTier } from "../../../lib/longFormTiers";
@@ -959,6 +959,8 @@ function LengthSlider({ value, onChange, reducedMotion, wordsPerMinute }) {
 }
 
 const DEFAULT_STYLE_ID = "classic_flat_stickman";
+// The quality of the full video that starts by itself after a checkout from the free preview.
+const AUTO_START_TIER = "v2";
 
 // 2026-10-03 "fixes round 3" pass, Section 1 — client-side draft (Section 1:
 // "Keep the form state client-side... optionally persist the draft locally
@@ -1010,6 +1012,7 @@ export default function ProductionSetup() {
   // account) and survives the sign-up. authPrompt = the sign-up dialog's heading.
   const [isGuest, setIsGuest] = useState(false);
   const [authPrompt, setAuthPrompt] = useState(null);
+  const [accountCreatedAt, setAccountCreatedAt] = useState(null);
   // "?start=1&teaser=<id>": back from the Starter checkout, the full video starts by itself.
   // "?teaser=<id>" alone: a paid account opening a preview's setup (it presses Generate).
   const [fromTeaser] = useState(() => {
@@ -1154,6 +1157,15 @@ export default function ProductionSetup() {
   const tierLocked = (tier) => account.signedIn && longFormTiers.status === "ready" && !longFormTierAllowed(longFormTiers.tiers, tier, account.plan);
   const tierTouchedRef = useRef(false);
   useEffect(() => {
+    // Back from the checkout, the full video starts by itself: always on V2,
+    // whatever plan was bought. V2 is what the preview showed and what the plan
+    // cards count ("6 ten-minute videos a month"); V3 would spend three times
+    // the credits without a click. Later videos follow the plan's default.
+    if (fromTeaser?.autoStart && (paymentState === "confirming" || paymentState === "starting")) {
+      tierTouchedRef.current = true;
+      if (renderTier !== AUTO_START_TIER) setRenderTier(AUTO_START_TIER);
+      return;
+    }
     if (!account.signedIn || longFormTiers.status !== "ready") return;
     const best = defaultLongFormTier(longFormTiers.tiers, account.plan);
     if (!best) return;
@@ -1161,7 +1173,7 @@ export default function ProductionSetup() {
       tierTouchedRef.current = true;
       if (renderTier !== best) setRenderTier(best);
     }
-  }, [account.signedIn, account.plan, longFormTiers.status, longFormTiers.tiers, renderTier]);
+  }, [account.signedIn, account.plan, longFormTiers.status, longFormTiers.tiers, renderTier, fromTeaser, paymentState]);
 
   useEffect(() => {
     document.title = "Create New Video | Zyvo";
@@ -1272,6 +1284,7 @@ export default function ProductionSetup() {
       setBootstrapped(true);
       return;
     }
+    setAccountCreatedAt(authSession.user.created_at ?? null);
     if (saved?.discoverySessionId) {
       const existing = await fetchDiscoverySession(saved.discoverySessionId);
       if (existing) {
@@ -1657,33 +1670,31 @@ export default function ProductionSetup() {
   };
 
   // The one Generate action: paid plans make the video, free accounts get the
-  // preview, logged-out visitors sign up first (the preview then starts by itself).
+  // preview, logged-out visitors sign up first. Nothing is remembered here: the
+  // sign-up box arms the one-time auto-start only when a sign-up goes through.
   const handleGenerate = () => {
     if (account.loading || !canGenerate) return;
     if (account.isPaid) { handleGenerateVideo(); return; }
     if (!account.signedIn) {
-      try { localStorage.setItem(TEASER_AUTOSTART_KEY, String(Date.now())); } catch { /* no storage: they press Generate again after signing up */ }
-      setAuthPrompt({ title: "Create a free account to start your video", subtitle: "Your niche, idea, length and voice are kept." });
+      setAuthPrompt({ title: "Create a free account to start your video", subtitle: "Your niche, idea, length and voice are kept.", teaser: true });
       return;
     }
     startTeaserNow();
   };
 
-  // After the sign-up (Google, the email link, or straight away): the preview
-  // the visitor asked for starts by itself. Paid accounts never get it, and
-  // nothing is ever charged without a click.
-  const teaserAutoStarted = useRef(false);
+  // The ONLY way a teaser starts without a click: this page load comes straight
+  // from a sign-up in the box Generate opened (teaserView.js has the rule). The
+  // flag is read once per page load and is gone before anything is decided, so
+  // a reload, the Back button or a new tab never start anything.
+  const teaserAutoChecked = useRef(false);
   useEffect(() => {
-    if (!bootstrapped || account.loading || !account.signedIn || teaserAutoStarted.current) return;
-    let askedAt = 0;
-    try { askedAt = Number(localStorage.getItem(TEASER_AUTOSTART_KEY)) || 0; } catch { /* no storage */ }
-    if (!askedAt) return;
-    teaserAutoStarted.current = true;
-    try { localStorage.removeItem(TEASER_AUTOSTART_KEY); } catch { /* ignore */ }
-    if (account.isPaid || Date.now() - askedAt > 3_600_000 || !setupFilled) return;
-    startTeaserNow();
+    if (!bootstrapped || account.loading || teaserAutoChecked.current) return;
+    teaserAutoChecked.current = true;
+    try { localStorage.removeItem(TEASER_AUTOSTART_LEGACY_KEY); } catch { /* ignore */ }
+    const armed = takeTeaserAutostart();
+    if (shouldAutostartTeaser({ armed, signedIn: account.signedIn, isPaid: account.isPaid, accountCreatedAt, setupFilled })) startTeaserNow();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bootstrapped, account.loading, account.signedIn, account.isPaid, setupFilled]);
+  }, [bootstrapped, account.loading]);
 
   // ---- Coming from a free preview (?teaser=<id>) ----
   // The preview's setup fills the form when this browser has no saved draft.
@@ -1735,14 +1746,14 @@ export default function ProductionSetup() {
   useEffect(() => {
     if (paymentState !== "confirming" || fullAutoStarted.current || !account.isPaid || !bootstrapped || !teaserInfo) return;
     if (teaserInfo.missing || teaserInfo.fullStarted) { fullAutoStarted.current = true; setPaymentState(null); return; }
-    if (!canGenerate || !tierReady || quoteLoading || !quote || typeof credits !== "number" || credits < quote.totalCredits) return;
+    if (renderTier !== AUTO_START_TIER || !canGenerate || !tierReady || quoteLoading || !quote || typeof credits !== "number" || credits < quote.totalCredits) return;
     fullAutoStarted.current = true;
     setPaymentState("starting");
     teaserEvent(fromTeaser.teaserId, "paid");
     trackLaunch("teaser_paid", { placement: "long_form_create", target: account.plan, teaserId: fromTeaser.teaserId });
     handleGenerateVideo().finally(() => setPaymentState(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentState, account.isPaid, bootstrapped, teaserInfo, canGenerate, tierReady, quoteLoading, quote, credits]);
+  }, [paymentState, account.isPaid, bootstrapped, teaserInfo, canGenerate, tierReady, quoteLoading, quote, credits, renderTier]);
   // Paid, but it never became ready (credits not granted yet, session missing): say so instead of waiting forever.
   useEffect(() => {
     if (paymentState !== "confirming" || !account.isPaid) return undefined;
@@ -1826,7 +1837,8 @@ export default function ProductionSetup() {
           title={authPrompt.title}
           subtitle={authPrompt.subtitle}
           returnTo="/long-form/create"
-          onClose={(signedIn) => { setAuthPrompt(null); if (signedIn) window.location.reload(); }}
+          onSignUp={() => { if (authPrompt.teaser) armTeaserAutostart(); }}
+          onClose={(signedIn) => { setAuthPrompt(null); if (signedIn) window.location.reload(); else disarmTeaserAutostart(); }}
         />
       )}
       {paymentState && (

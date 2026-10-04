@@ -5,7 +5,6 @@ import ToolShell from "../../components/workspace/toolshell.jsx";
 import TopRow from "../../components/workspace/toprow.jsx";
 import MobileBottomNav from "../../components/workspace/MobileBottomNav";
 import WelcomeScreen from "../../components/WelcomeScreen";
-import CreatorRewardsModal from "../../components/CreatorRewardsModal";
 import WorkspaceRouteSeo from "../../components/seo/WorkspaceRouteSeo.jsx";
 import { WhatsNewModal } from "../../components/launch/LaunchUI.jsx";
 import AnnouncementBar from "../../components/launch/AnnouncementBar.jsx";
@@ -27,8 +26,6 @@ export default function WorkspaceLayout() {
   useEffect(() => { const mq = window.matchMedia("(max-width: 767px)"); const on = () => setNarrow(mq.matches); mq.addEventListener("change", on); return () => mq.removeEventListener("change", on); }, []);
   const hidePromo = narrow && /\/long-form\/project\/[^/]+\/(edit|publish)\/?$/.test(location.pathname);
   const [showWelcome, setShowWelcome] = useState(false);
-  const [showRewards, setShowRewards] = useState(false);
-  const [rewardsUserId, setRewardsUserId] = useState(null);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
   // "What's new": eligible this load (null until known), and this session's key.
   const [whatsNew, setWhatsNew] = useState(null);
@@ -44,7 +41,7 @@ export default function WorkspaceLayout() {
   const [showTopRow, setShowTopRow] = useState(true);
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
-  /* ================= WELCOME / CREATOR REWARDS ================= */
+  /* ================= WELCOME / WHAT'S NEW ================= */
   useEffect(() => {
     const run = async () => {
       const { data } = await supabase.auth.getUser();
@@ -58,10 +55,6 @@ export default function WorkspaceLayout() {
         return;
       }
 
-      setRewardsUserId(user.id);
-      const rewardsKey = `zyvo_creator_rewards_seen:${user.id}`;
-      const hasSeenRewards = !!localStorage.getItem(rewardsKey);
-
       const { data: profile } = await supabase
         .from("profiles")
         .select("plan_code, seen_announcements")
@@ -72,18 +65,16 @@ export default function WorkspaceLayout() {
       const welcomeKey = `zyvo_workspace_welcome:${user.id}`;
 
       if (isFree && !localStorage.getItem(welcomeKey)) {
-        // Brand new account — Welcome screen comes first. The creator
-        // rewards popup follows right after it's dismissed (see onClose below),
-        // so it always lands as the *second* popup for new users.
+        // Brand new account — the Welcome screen. (The "Earn free credits"
+        // popup that used to follow it by itself is gone; it still opens from
+        // the gift button and the Home card.)
         // Don't set the key yet — only mark as seen when the user actually
         // dismisses it. This way a page reload before interaction will show it again.
         setShowWelcome(true);
-      } else if (!hasSeenRewards) {
-        setShowRewards(true);
       } else if (profile && !(profile.seen_announcements ?? []).includes(LONG_FORM_ANNOUNCEMENT)) {
         // "What's new" (Long Form launch): on Home, once per fresh session
-        // (new browser session or new login), never on top of the Welcome /
-        // Rewards popups, and never again after "Don't show this again" (on
+        // (new browser session or new login), never on top of the Welcome
+        // screen, and never again after "Don't show this again" (on
         // the profile) or once the user has any Long Form project.
         const { count } = await supabase.from("long_form_projects").select("id", { count: "exact", head: true }).eq("user_id", user.id);
         if (!count) setWhatsNew({ sessionKey: `zyvo:whats-new:${user.id}:${user.last_sign_in_at ?? ""}` });
@@ -94,7 +85,7 @@ export default function WorkspaceLayout() {
   }, []);
 
   // Setting up a video or watching its free preview (a new account lands here
-  // straight after the sign-up): Welcome / Rewards wait for the next page.
+  // straight after the sign-up): the Welcome screen waits for the next page.
   const makingVideo = location.pathname === "/long-form/create" || location.pathname.startsWith("/long-form/teaser/");
 
   // The cookie banner comes first: "What's new" waits until it has been answered.
@@ -108,7 +99,7 @@ export default function WorkspaceLayout() {
   // Show it when Home is reached in a session that hasn't shown it yet, after
   // the cookie banner is closed, and never on top of another popup.
   useEffect(() => {
-    if (!whatsNew || location.pathname !== "/" || !cookieAnswered || showWelcome || showRewards) return undefined;
+    if (!whatsNew || location.pathname !== "/" || !cookieAnswered || showWelcome) return undefined;
     const timer = setTimeout(() => {
       if (document.querySelector("[data-zyvo-modal]")) return; // e.g. the sign-up dialog is open
       try {
@@ -120,7 +111,7 @@ export default function WorkspaceLayout() {
       trackLaunch("whats_new_shown", { placement: "whats_new", guest: !!whatsNew.guest });
     }, 600);
     return () => clearTimeout(timer);
-  }, [whatsNew, location.pathname, cookieAnswered, showWelcome, showRewards]);
+  }, [whatsNew, location.pathname, cookieAnswered, showWelcome]);
 
   /* ================= RESET HEADER ================= */
   useEffect(() => {
@@ -300,19 +291,6 @@ useEffect(() => {
             const uid = data?.user?.id;
             if (uid) localStorage.setItem(`zyvo_workspace_welcome:${uid}`, "1");
             setShowWelcome(false);
-
-            // Chain the creator rewards popup right after — second popup for new users
-            if (uid && !localStorage.getItem(`zyvo_creator_rewards_seen:${uid}`)) {
-              setShowRewards(true);
-            }
-          }} />
-        )}
-
-        {/* CREATOR REWARDS POPUP — shown once per user, ever */}
-        {showRewards && !makingVideo && (
-          <CreatorRewardsModal onClose={() => {
-            if (rewardsUserId) localStorage.setItem(`zyvo_creator_rewards_seen:${rewardsUserId}`, "1");
-            setShowRewards(false);
           }} />
         )}
 

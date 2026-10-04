@@ -5,6 +5,10 @@
 // It is NOT the video: no research, no fact-check, no script, no voiceover.
 //   - ONE call to the cheapest model we use (gpt-4o-mini) writes the title,
 //     the hook and 3 scene descriptions from the idea + the niche guidance.
+//   - The hook follows the full script's cold-open rules and is checked in
+//     code against the same banned phrases; a hook that breaks them gets at
+//     most two tiny rewrite calls (same model), and is left out if it still
+//     fails. All of it is inside the cap.
 //   - 3 scenes on V2 (runware:400@6), no upscale, no AI QA.
 //   - Hard cap TEASER_CAP_USD per teaser: the cost is estimated BEFORE anything
 //     is called and re-checked before every scene with the real spend so far;
@@ -15,12 +19,15 @@ import { renderTask, STICKMAN_RENDER_TIERS } from "./renderTiers.ts";
 import { STYLE_HEADER, OBJECTS_NO_FACES, AVOID_TAIL, V2_NO_TEXT_INSTRUCTION } from "./promptCompiler.ts";
 import { nicheGuidanceFor } from "./nicheGuidance.ts";
 import { IP_MARKS, IP_LOOKALIKE } from "./beatDirector.ts";
+import { BANNED_LECTURE_PHRASES, checkColdOpen } from "./scriptChecks.ts";
 
 export const TEASER_CAP_USD = 0.02;
 export const TEASER_MODEL = "gpt-4o-mini";
 // OpenAI list price for gpt-4o-mini, USD per million tokens.
 export const TEASER_MODEL_PRICE = { inputPerM: 0.15, outputPerM: 0.6 };
 export const TEASER_MAX_OUTPUT_TOKENS = 400;
+export const TEASER_HOOK_FIXES = 2; // rewrite calls for a hook that breaks the rules, at most
+export const TEASER_HOOK_FIX_MAX_OUTPUT_TOKENS = 80;
 export const TEASER_SCENES = 3;
 // runware:400@6, 1376x768, 8 steps: measured $0.00247 per image (renderTiers.ts). No upscale.
 export const TEASER_SCENE_EST_USD = 0.0026;
@@ -35,15 +42,62 @@ const clean = (s: unknown, max: number) => String(s ?? "").replace(/\s+/g, " ").
 export const tokenUsd = (inputTokens: number, outputTokens: number) =>
   Number(((inputTokens * TEASER_MODEL_PRICE.inputPerM + outputTokens * TEASER_MODEL_PRICE.outputPerM) / 1_000_000).toFixed(6));
 
+/* ---------- The hook: the full script's cold-open rules ---------- */
+// The script check's own lists: BANNED_LECTURE_PHRASES (scriptChecks.ts, the
+// Stickman check) and SLOP_PHRASES (advance-long-form-script/index.ts, the base
+// check). That file is a function entrypoint and can't be imported, so its
+// list is repeated here and a test keeps the two identical.
+export const SCRIPT_SLOP_PHRASES = [
+  "have you ever wondered", "in today's video", "before we begin", "make sure to subscribe",
+  "let's delve into", "let's explore", "it is important to note", "one fascinating aspect",
+  "another interesting fact", "this begs the question", "in conclusion",
+];
+export const HOOK_BANNED_PHRASES = [...new Set([...BANNED_LECTURE_PHRASES, ...SCRIPT_SLOP_PHRASES])];
+// Lecture openers: telling the viewer to imagine something, or asking about the
+// topic from outside, instead of putting them in the moment. (In a whole script
+// the check tolerates two "Imagine…"; a one-line hook gets none.)
+const HOOK_BAD_OPENER = /^(imagine|picture|visuali[sz]e|think of|think about|ever wonder(ed)?|what if|in a world|once upon a time|today|join us|let'?s|let us|come along|step into|step back|travel back|discover|explore|learn|find out|meet)\b/i;
+const HOOK_LECTURE_ANYWHERE = /\b(imagine a world|in a world where|have you ever|did you know|ever wondered)\b/i;
+export const HOOK_MAX_CHARS = 150;
+
+// Why a hook can't be shown ([] = it follows the rules). Deterministic, $0.
+export function hookIssues(hook: string): string[] {
+  const text = clean(hook, 400), lower = text.toLowerCase();
+  if (text.length < 25) return ["it is too short to be a scene"];
+  const issues: string[] = [];
+  if (text.length > HOOK_MAX_CHARS) issues.push(`it is longer than ${HOOK_MAX_CHARS} characters`);
+  for (const phrase of HOOK_BANNED_PHRASES) if (lower.includes(phrase)) issues.push(`it uses the banned phrase "${phrase}"`);
+  for (const sentence of text.split(/(?<=[.!?])\s+/).filter(Boolean)) {
+    const opener = sentence.trim().match(HOOK_BAD_OPENER);
+    if (opener) issues.push(`a sentence starts with "${opener[0]}" (it tells the viewer what to do instead of putting them in the moment)`);
+  }
+  const anywhere = text.match(HOOK_LECTURE_ANYWHERE);
+  if (anywhere) issues.push(`it uses the lecture phrase "${anywhere[0]}"`);
+  // The script's own cold-open check: second person, and no greeting / question about the video.
+  for (const issue of checkColdOpen([{ id: "hook", text }])) {
+    issues.push(issue.code === "cold_open_no_second_person" ? 'it never puts the viewer in the scene ("you" / "your")' : "it opens with a greeting or a question about the video");
+  }
+  if (text.trim().endsWith("?")) issues.push("it is a question; a cold open is a moment the viewer is standing in");
+  return [...new Set(issues)];
+}
+
+const HOOK_RULES = [
+  `hook: the COLD OPEN, the first thing the narrator says. ONE sentence of at most ${HOOK_MAX_CHARS - 10} characters, second person ("You…"), present tense, sensory.`,
+  "Drop the viewer INTO one concrete moment of this exact idea (a body, a place, an object in their hands, a sound) and stop there. A statement, never a question. No analysis, no promise about the video.",
+  'Never start with Imagine, Picture, Think of, Ever wondered, What if, Did you know, Today, Let\'s, Discover, Explore or Meet; never write "in a world where".',
+  `None of these phrases anywhere: ${HOOK_BANNED_PHRASES.map((p) => `"${p}"`).join(", ")}.`,
+  'The shape (an example for another video; write about THIS idea and never reuse its words): "You tighten the strap of a pack that already weighs as much as a child, and the road ahead has no end you can see."',
+].join(" ");
+
 export function teaserPrompt(input: TeaserInput): string {
   const g = nicheGuidanceFor(input.nicheId ?? null);
   return [
-    "You write a TEASER for a narrated 2D stickman explainer video for YouTube: a title, a one-line hook and three picture descriptions. Nothing has been researched, so never state a fact, number, date or name as true: the title and the hook ask a question or tease it.",
+    "You write a TEASER for a narrated 2D stickman explainer video for YouTube: a title, a one-line hook and three picture descriptions. Nothing has been researched, so never state a fact, number, date or name as true: the title asks a question or teases it, and the hook is a scene, not a claim.",
     `Video idea: "${clean(input.topic, 300)}"`,
     input.nicheLabel ? `Niche: ${clean(input.nicheLabel, 60)}. Tone: ${clean(g.tone, 220)}` : `Tone: ${clean(g.tone, 220)}`,
     g.titleFormulas?.length ? `Title patterns that work in this niche: ${g.titleFormulas.slice(0, 3).map((t) => clean(t, 90)).join(" | ")}` : "",
     "title: at most 65 characters, a question or a curiosity gap about this exact idea, title case, no emoji, no clickbait promise the video could not keep.",
-    "hook: ONE sentence of at most 140 characters, the first thing the narrator would say; a question or a scene the viewer can picture. No statistics.",
+    HOOK_RULES + " No statistics, dates or names of real people.",
     "scenes: EXACTLY 3 pictures that would open this video, in order. Each is one sentence of at most 35 words describing a simple flat cartoon scene: which stickman characters, what they are doing, where. The artist sees ONLY that sentence, so every sentence names the era and what the people wear (\"a Roman legionary in a red tunic and iron helmet\", never just \"a soldier\"). At most four figures per picture. No text, signs, labels, logos, brands, flags, maps, real people's likenesses or split screens. Each picture must be different from the others.",
     'Return JSON: {"title": "...", "hook": "...", "scenes": ["...", "...", "..."]}',
   ].filter(Boolean).join("\n");
@@ -54,8 +108,24 @@ const PLAN_SCHEMA = {
   properties: { title: { type: "string" }, hook: { type: "string" }, scenes: { type: "array", items: { type: "string" } } },
 };
 
-// The most the plan call can cost (prompt length known, output capped).
-export const planMaxUsd = (prompt: string) => tokenUsd(Math.ceil(prompt.length / 3) + 60, TEASER_MAX_OUTPUT_TOKENS);
+// A hook that broke the rules: a tiny rewrite call (the hook only).
+export function hookFixPrompt(input: TeaserInput, hook: string, issues: string[]): string {
+  return [
+    `Rewrite the opening line of a narrated stickman explainer video about: "${clean(input.topic, 300)}"`,
+    `The line was: "${clean(hook, 200)}"`,
+    `It can't be used because ${issues.slice(0, 5).join("; ")}.`,
+    HOOK_RULES,
+    "Nothing has been researched: no statistics, dates or names of real people.",
+    'Return JSON: {"hook": "..."}',
+  ].join("\n");
+}
+const HOOK_SCHEMA = { type: "object", additionalProperties: false, required: ["hook"], properties: { hook: { type: "string" } } };
+// The most one rewrite call can cost (its prompt is short and bounded).
+export const HOOK_FIX_MAX_USD = tokenUsd(900, TEASER_HOOK_FIX_MAX_OUTPUT_TOKENS);
+
+// The most the writing step can cost: the plan call (prompt length known,
+// output capped) plus every rewrite call it may make.
+export const planMaxUsd = (prompt: string) => Number((tokenUsd(Math.ceil(prompt.length / 3) + 60, TEASER_MAX_OUTPUT_TOKENS) + TEASER_HOOK_FIXES * HOOK_FIX_MAX_USD).toFixed(6));
 // Before anything is called: the most this teaser can cost, and whether that fits the cap.
 export function teaserBudget(input: TeaserInput, cap = TEASER_CAP_USD) {
   const planMax = planMaxUsd(teaserPrompt(input));
@@ -73,19 +143,37 @@ export function normalizePlan(raw: any, input: TeaserInput): TeaserPlan {
   return { title: clean(raw?.title, 80) || clean(input.topic, 80), hook: clean(raw?.hook, 170), scenes };
 }
 
-// ONE mini-model call. `post` is fetch-like (injected for tests).
+// ONE mini-model call writes the plan. The hook is then checked in code; one
+// that breaks the cold-open rules gets at most TEASER_HOOK_FIXES tiny rewrite
+// calls, and is left out (never shown) if it still breaks them. `post` is
+// fetch-like (injected for tests). The cost returned covers every call made.
 export async function writeTeaserPlan(openaiKey: string, input: TeaserInput, post: typeof fetch = fetch) {
-  const prompt = teaserPrompt(input);
-  const res = await post("https://api.openai.com/v1/chat/completions", {
-    method: "POST", headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: TEASER_MODEL, temperature: 0.7, max_tokens: TEASER_MAX_OUTPUT_TOKENS, messages: [{ role: "user", content: prompt }], response_format: { type: "json_schema", json_schema: { name: "teaser", strict: true, schema: PLAN_SCHEMA } } }),
-  });
-  const j: any = await res.json().catch(() => null);
-  if (!res.ok || !j?.choices?.[0]?.message?.content) throw new Error(`teaser plan ${res.status}`);
-  const inputTokens = Number(j.usage?.prompt_tokens ?? 0), outputTokens = Number(j.usage?.completion_tokens ?? 0);
-  const plan = normalizePlan(JSON.parse(j.choices[0].message.content), input);
+  const ask = async (content: string, maxTokens: number, name: string, schema: unknown) => {
+    const res = await post("https://api.openai.com/v1/chat/completions", {
+      method: "POST", headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: TEASER_MODEL, temperature: 0.7, max_tokens: maxTokens, messages: [{ role: "user", content }], response_format: { type: "json_schema", json_schema: { name, strict: true, schema } } }),
+    });
+    const j: any = await res.json().catch(() => null);
+    if (!res.ok || !j?.choices?.[0]?.message?.content) throw new Error(`teaser ${name} ${res.status}`);
+    return { json: JSON.parse(j.choices[0].message.content), inputTokens: Number(j.usage?.prompt_tokens ?? 0), outputTokens: Number(j.usage?.completion_tokens ?? 0) };
+  };
+  const first = await ask(teaserPrompt(input), TEASER_MAX_OUTPUT_TOKENS, "teaser", PLAN_SCHEMA);
+  let inputTokens = first.inputTokens, outputTokens = first.outputTokens;
+  const plan = normalizePlan(first.json, input);
   if (plan.scenes.length < 1) throw new Error("teaser plan had no scenes");
-  return { plan, inputTokens, outputTokens, usd: tokenUsd(inputTokens, outputTokens), model: TEASER_MODEL };
+  let issues = hookIssues(plan.hook), hookFixes = 0;
+  while (issues.length && hookFixes < TEASER_HOOK_FIXES) {
+    hookFixes += 1;
+    try {
+      const fix = await ask(hookFixPrompt(input, plan.hook, issues), TEASER_HOOK_FIX_MAX_OUTPUT_TOKENS, "teaser_hook", HOOK_SCHEMA);
+      inputTokens += fix.inputTokens; outputTokens += fix.outputTokens;
+      plan.hook = clean(fix.json?.hook, 170);
+      issues = hookIssues(plan.hook);
+    } catch (_e) { break; } // a failed rewrite never fails the teaser
+  }
+  const hookDropped = issues.length > 0;
+  if (hookDropped) plan.hook = ""; // better no opening line than a lecture line
+  return { plan, inputTokens, outputTokens, usd: tokenUsd(inputTokens, outputTokens), model: TEASER_MODEL, calls: 1 + hookFixes, hookFixes, hookDropped };
 }
 
 // The V2 picture: the same locked stickman style as every Long Form scene, no text in the image.
@@ -103,11 +191,11 @@ export const TEASER_SCENE_MODEL = STICKMAN_RENDER_TIERS.V2.model;
 // Runs the whole teaser. `io` does the side effects; every real cost goes
 // through io.cost before the next step is considered.
 export type TeaserIo = {
-  writePlan: (input: TeaserInput) => Promise<{ plan: TeaserPlan; usd: number; inputTokens: number; outputTokens: number; model: string }>;
+  writePlan: (input: TeaserInput) => Promise<{ plan: TeaserPlan; usd: number; inputTokens: number; outputTokens: number; model: string; calls?: number }>;
   drawScene: (description: string, index: number) => Promise<{ imageUrl: string; usd: number; costKnown: boolean }>;
   onPlan?: (plan: TeaserPlan, spentUsd: number) => Promise<void> | void;
   onScene?: (index: number, scene: { description: string; status: "drawing" | "ready" | "failed" | "skipped"; imageUrl?: string | null }, spentUsd: number) => Promise<void> | void;
-  cost?: (entry: { step: "plan" | "scene"; index?: number; usd: number; model: string; inputTokens?: number; outputTokens?: number; estimated: boolean }) => Promise<void> | void;
+  cost?: (entry: { step: "plan" | "scene"; index?: number; usd: number; model: string; inputTokens?: number; outputTokens?: number; calls?: number; estimated: boolean }) => Promise<void> | void;
 };
 export async function runTeaser(input: TeaserInput, io: TeaserIo, cap = TEASER_CAP_USD) {
   const budget = teaserBudget(input, cap);
@@ -115,7 +203,7 @@ export async function runTeaser(input: TeaserInput, io: TeaserIo, cap = TEASER_C
   let spent = 0;
   const written = await io.writePlan(input);
   spent = Number((spent + written.usd).toFixed(6));
-  await io.cost?.({ step: "plan", usd: written.usd, model: written.model, inputTokens: written.inputTokens, outputTokens: written.outputTokens, estimated: true });
+  await io.cost?.({ step: "plan", usd: written.usd, model: written.model, inputTokens: written.inputTokens, outputTokens: written.outputTokens, calls: written.calls ?? 1, estimated: true });
   await io.onPlan?.(written.plan, spent);
   const scenes: { description: string; status: "ready" | "failed" | "skipped"; imageUrl: string | null }[] = [];
   let sceneEach = TEASER_SCENE_EST_USD;
