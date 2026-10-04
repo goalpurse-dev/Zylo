@@ -38,8 +38,6 @@ export default function Settings() {
   const [loggingOut, setLoggingOut] = useState(false);
   const nav = useNavigate();
 
-  useEffect(() => setActive("account"), []);
-
   async function handleLogout() {
     try {
       setLoggingOut(true);

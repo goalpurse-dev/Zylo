@@ -1,6 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { PLAN_PRICE_MAP, scheduledPlanChange } from "../_shared/stripePlanPrices.js";
 
 const STRIPE_SECRET = Deno.env.get("STRIPE_SECRET_KEY")!;
 const SUPABASE_URL  = Deno.env.get("SUPABASE_URL")!;
@@ -22,6 +23,8 @@ function cors(req: Request) {
 }
 const json = (req: Request, body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: cors(req) });
+
+const PLAN_OF: Record<string, { plan: string; interval?: "yearly" }> = PLAN_PRICE_MAP as any;
 
 function toParams(qs?: Record<string, string | number | string[]>) {
   const p = new URLSearchParams();
@@ -97,8 +100,11 @@ export default {
 
       // Subscription (if any)
       let plan: any = null;
+      let scheduled_change: any = null;
+      let sub_schedule_id: string | null = null;
       if (prof.stripe_subscription_id) {
         const sub = await stripeGet(`/v1/subscriptions/${prof.stripe_subscription_id}`);
+        sub_schedule_id = typeof sub?.schedule === "string" ? sub.schedule : sub?.schedule?.id ?? null;
         const item  = sub?.items?.data?.[0];
         const price = item?.price;
 
@@ -109,11 +115,22 @@ export default {
             currency: price.currency || "eur",
             interval: price.recurring?.interval || item?.plan?.interval || "month",
             price_id: price.id,
+            code: PLAN_OF[price.id]?.plan ?? null,                  // 'starter' | 'pro' | 'generative'
             // >>> fields your UI needs <<<
             status: sub.status,                                     // 'active', 'canceled', etc.
             cancel_at_period_end: Boolean(sub.cancel_at_period_end),// true if scheduled to cancel
             current_period_end: sub.current_period_end || null,     // unix seconds
           };
+        }
+      }
+
+      // A plan change waiting for the end of the period (never fails the summary).
+      if (plan && sub_schedule_id) {
+        try {
+          const schedule = await stripeGet(`/v1/subscription_schedules/${sub_schedule_id}`);
+          scheduled_change = scheduledPlanChange(schedule, plan.price_id, Math.floor(Date.now() / 1000));
+        } catch (e: any) {
+          console.warn("[billing-summary] schedule lookup failed:", e?.message);
         }
       }
 
@@ -128,7 +145,7 @@ export default {
         url: i.hosted_invoice_url || i.invoice_pdf || null,
       }));
 
-      return json(req, { plan, payment_method, invoices });
+      return json(req, { plan, scheduled_change, payment_method, invoices });
     } catch (e: any) {
       return json(req, { error: e?.message || String(e), raw: e?._stripe ?? null }, e?._status || 500);
     }

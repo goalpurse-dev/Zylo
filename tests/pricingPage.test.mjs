@@ -36,7 +36,7 @@ const LF_ROWS = [
 
 test("the webhook grants the page promise (750 / 1,600 / 3,200) to new subscriptions; earlier ones keep theirs", () => {
   const webhook = read("supabase/functions/stripe-webhook/index.ts");
-  assert.ok(webhook.includes('import { PLAN_PRICE_MAP, planCreditsFor } from "../_shared/stripePlanPrices.js"'));
+  assert.ok(webhook.includes('import { PLAN_PRICE_MAP, planCreditsFor, prorationCreditShare } from "../_shared/stripePlanPrices.js"'));
   assert.ok(webhook.includes("planCredits += planCreditsFor(map, subStart)"));
   assert.doesNotMatch(webhook, /"price_1Tm/, "no second copy of the price map in the webhook");
   assert.deepEqual(PLAN_CREDITS, { starter: 750, pro: 1600, generative: 3200 });

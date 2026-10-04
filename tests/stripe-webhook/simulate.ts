@@ -3,7 +3,8 @@
 // keys, no live data; the permissions below don't even allow network access.
 // Covers: signature, subscription, credit pack, failure + retry without double
 // credits, missing/duplicate user, subscription status, cancellation, failed
-// payment. Exits 1 if any check fails. From the repo root:
+// payment, plan changes in the billing portal (prorated upgrade credits,
+// scheduled downgrades). Exits 1 if any check fails. From the repo root:
 //   npx -y deno@2.9.6 run --allow-env --allow-read --no-check --no-lock --no-config --import-map=tests/stripe-webhook/import_map.json tests/stripe-webhook/simulate.ts
 // It does not prove the SQL of grant_credits_once (the fake copies its
 // contract) or real Stripe payloads: that is what the Stripe CLI test run is for.
@@ -183,6 +184,137 @@ stripe.subs.sub_9 = subscription("sub_9", "cus_9", "active", "price_test_starter
 check("test-mode price alias maps to Starter", [(await q(evt("invoice.payment_succeeded", invoice("in_9", "cus_9", "sub_9", "price_test_starter")))).status, P(9).plan_code, P(9).credit_balance], [200, "starter", 750]);
 check("unknown event type → 200 ignored", (await q(evt("charge.succeeded", { id: "ch_1" }))).body, { ignored: true, type: "charge.succeeded" });
 check("every Stripe request pinned to 2022-08-01", [...stripe.versions], ["2022-08-01"]);
+
+// ================= plan changes in the billing portal =================
+// Stripe invoices an upgrade as two proration lines: unused time on the old
+// price (negative) and remaining time on the new one (positive). Amounts below
+// are what Stripe would charge, in cents, for the stated share of the period.
+const PRO = "price_1TmVfXHtn4q5rInc9IaN1l3U";
+const PRO_YEARLY = "price_1TmVjnHtn4q5rInccPDBIVaX";
+const GENERATIVE = "price_1TmVg2Htn4q5rIncWL0b3HJr";
+const LEGACY_STARTER = "price_1TGKT6Htn4q5rIncI47V5Ein";
+const PRICE: Record<string, { unit: number; interval: "month" | "year" }> = {
+  [STARTER]: { unit: 1800, interval: "month" }, [PRO]: { unit: 3800, interval: "month" }, [GENERATIVE]: { unit: 7800, interval: "month" },
+  [STARTER_YEARLY]: { unit: 18000, interval: "year" }, [PRO_YEARLY]: { unit: 38400, interval: "year" }, [LEGACY_STARTER]: { unit: 1199, interval: "month" },
+};
+const DAY = 86400;
+/** One invoice line. share: the part of the price's period the line covers; proration lines are signed. */
+const line = (price: string, share: number, sign: 1 | -1 | 0, start = now, end = now + 30 * DAY) => ({
+  amount: (sign || 1) * Math.round(PRICE[price].unit * share), proration: sign !== 0, quantity: 1,
+  price: { id: price, unit_amount: PRICE[price].unit, recurring: { interval: PRICE[price].interval } }, period: { start, end },
+});
+const changeInvoice = (id: string, cus: string, sub: string, lines: any[], extra: any = {}) => ({
+  id, customer: cus, subscription: sub, status: "paid", billing_reason: "subscription_update", created: now, status_transitions: { paid_at: now }, lines: { data: lines }, ...extra,
+});
+const euros = (lines: any[]) => `€${(lines.reduce((s, l) => s + l.amount, 0) / 100).toFixed(2)}`;
+const iso = (unix: number) => new Date(unix * 1000).toISOString();
+const numbers: string[] = [];
+const note = (label: string, lines: any[], credits: number, extra = "") => numbers.push(`  ${label.padEnd(62)} pays ${euros(lines).padStart(8)}  →  ${String(credits).padStart(4)} credits${extra ? `   ${extra}` : ""}`);
+
+console.log("\n11. Upgrade on a monthly plan (credits in step with the money)");
+{
+  db.profiles.push(prof(10, { plan_code: "starter", credit_balance: 750, stripe_subscription_id: "sub_10", stripe_subscription_status: "paid" }));
+  stripe.subs.sub_10 = subscription("sub_10", "cus_10", "active", PRO);
+  const lines = [line(STARTER, 0.5, -1), line(PRO, 0.5, 1)];
+  const up = evt("invoice.payment_succeeded", changeInvoice("in_up_10", "cus_10", "sub_10", lines));
+  check("Starter → Pro with half the month left: 0.5 × (1,600 − 750) = 425", (await q(up)).body, { ok: true, plan_credits: 0, plan_change: true, credits: 425, granted: true });
+  check("plan is Pro, balance 750 + 425, grant keyed by the proration invoice", [P(10).plan_code, P(10).credit_balance, grantsFor(10)], ["pro", 1175, ["plan_upgrade:425:in_up_10"]]);
+  note("monthly Starter → Pro, 15 of 30 days left", lines, 425);
+  check("REPLAY of the same event → deduped", (await q(up)).body, { ok: true, deduped: true });
+  check("REPLAY as invoice.paid (another event id, same invoice) → no second grant", (await q(evt("invoice.paid", changeInvoice("in_up_10", "cus_10", "sub_10", lines)))).body, { ok: true, plan_credits: 0, plan_change: true, credits: 425, granted: false });
+  check("balance unchanged after both replays", [P(10).credit_balance, grantsFor(10).length], [1175, 1]);
+  check("the next renewal is a full Pro month", [(await q(evt("invoice.payment_succeeded", invoice("in_cycle_10", "cus_10", "sub_10", PRO, { billing_reason: "subscription_cycle" })))).body, P(10).credit_balance], [{ ok: true, plan_credits: 1600, granted: true }, 2775]);
+
+  db.profiles.push(prof(11, { plan_code: "starter", credit_balance: 750, stripe_subscription_id: "sub_11", stripe_subscription_status: "paid" }));
+  stripe.subs.sub_11 = subscription("sub_11", "cus_11", "active", PRO);
+  const last = [line(STARTER, 1 / 30, -1), line(PRO, 1 / 30, 1)];
+  check("on the LAST day (1 of 30): 28 credits, not 850", [(await q(evt("invoice.payment_succeeded", changeInvoice("in_up_11", "cus_11", "sub_11", last)))).body.credits, P(11).credit_balance, P(11).plan_code], [28, 778, "pro"]);
+  note("monthly Starter → Pro, last day (1 of 30)", last, 28);
+
+  db.profiles.push(prof(16, { plan_code: "starter", credit_balance: 900, stripe_subscription_id: "sub_16", stripe_subscription_status: "paid" }));
+  stripe.subs.sub_16 = subscription("sub_16", "cus_16", "active", PRO, { start_date: Math.floor(Date.parse("2026-09-01T00:00:00Z") / 1000) });
+  const early = [line(STARTER, 0.5, -1), line(PRO, 0.5, 1)];
+  check("subscription from before 30 Sep keeps its larger amounts: 0.5 × (1,900 − 900) = 500", (await q(evt("invoice.payment_succeeded", changeInvoice("in_up_16", "cus_16", "sub_16", early)))).body.credits, 500);
+  note("same, subscription started before 30 Sep (900 → 1,900)", early, 500);
+
+  db.profiles.push(prof(17, { plan_code: "starter", credit_balance: 600, stripe_subscription_id: "sub_17", stripe_subscription_status: "paid" }));
+  stripe.subs.sub_17 = subscription("sub_17", "cus_17", "active", PRO, { start_date: Math.floor(Date.parse("2026-05-01T00:00:00Z") / 1000) });
+  const legacy = [line(LEGACY_STARTER, 0.5, -1), line(PRO, 0.5, 1)];
+  check("legacy Starter (€11.99, 600) → today's Pro, half the month left: 0.5 × 1,900 − 0.5 × 600 = 650", (await q(evt("invoice.payment_succeeded", changeInvoice("in_up_17", "cus_17", "sub_17", legacy)))).body.credits, 650);
+  note("legacy Starter €11.99 → Pro, 15 of 30 days left", legacy, 650);
+}
+
+console.log("\n12. Upgrade on a yearly plan (credits come monthly; never worth more than the money)");
+{
+  // 9 months of the year left, 20 of 30 days of the credit month left.
+  db.profiles.push(prof(12, { plan_code: "starter", credit_balance: 750, stripe_subscription_id: "sub_12", stripe_subscription_status: "paid", billing_interval: "yearly", annual_credits_per_month: 750, annual_credits_last_topup: iso(now - 10 * DAY) }));
+  stripe.subs.sub_12 = subscription("sub_12", "cus_12", "active", PRO_YEARLY);
+  const mid = [line(STARTER_YEARLY, 0.75, -1, now, now + 274 * DAY), line(PRO_YEARLY, 0.75, 1, now, now + 274 * DAY)];
+  check("9 months left, 20 days of the credit month left: (20 ÷ 30) × 850 = 567", (await q(evt("invoice.payment_succeeded", changeInvoice("in_up_12", "cus_12", "sub_12", mid)))).body, { ok: true, plan_credits: 0, plan_change: true, credits: 567, granted: true });
+  check("monthly top-up is now 1,600; the top-up date did not move", [P(12).plan_code, P(12).annual_credits_per_month, P(12).annual_credits_last_topup, P(12).billing_interval, P(12).credit_balance], ["pro", 1600, iso(now - 10 * DAY), "yearly", 1317]);
+  note("yearly Starter → yearly Pro, 9 months left, 20 days left in month", mid, 567, "top-ups: 1,600 from the next one");
+
+  // Right after a top-up, half the year left: nearly the whole month's difference.
+  db.profiles.push(prof(14, { plan_code: "starter", credit_balance: 750, stripe_subscription_id: "sub_14", stripe_subscription_status: "paid", billing_interval: "yearly", annual_credits_per_month: 750, annual_credits_last_topup: iso(now - 3600) }));
+  stripe.subs.sub_14 = subscription("sub_14", "cus_14", "active", PRO_YEARLY);
+  const fresh = [line(STARTER_YEARLY, 0.5, -1, now, now + 183 * DAY), line(PRO_YEARLY, 0.5, 1, now, now + 183 * DAY)];
+  check("RIGHT AFTER A TOP-UP, 6 months left: 849 (the whole month is still ahead)", [(await q(evt("invoice.payment_succeeded", changeInvoice("in_up_14", "cus_14", "sub_14", fresh)))).body.credits, P(14).annual_credits_per_month], [849, 1600]);
+  note("yearly Starter → yearly Pro, right after a top-up, 6 months left", fresh, 849, "top-ups: 1,600 from the next one");
+
+  // LAST DAYS OF THE YEAR, right after a top-up: the exploit the cap closes.
+  db.profiles.push(prof(13, { plan_code: "starter", credit_balance: 750, stripe_subscription_id: "sub_13", stripe_subscription_status: "paid", billing_interval: "yearly", annual_credits_per_month: 750, annual_credits_last_topup: iso(now - 3600) }));
+  stripe.subs.sub_13 = subscription("sub_13", "cus_13", "active", PRO_YEARLY);
+  const lastDays = [line(STARTER_YEARLY, 3 / 365, -1, now, now + 3 * DAY), line(PRO_YEARLY, 3 / 365, 1, now, now + 3 * DAY)];
+  const uncapped = Math.round((1 - 3600 / (30 * DAY)) * 850);
+  const capped = (await q(evt("invoice.payment_succeeded", changeInvoice("in_up_13", "cus_13", "sub_13", lastDays)))).body.credits;
+  check(`LAST 3 DAYS OF THE YEAR, right after a top-up: 84 credits for €1.68 (it would be ${uncapped} without the cap)`, [capped, uncapped], [84, 849]);
+  check("…and the monthly top-up stays 750 until the renewal is paid", [P(13).plan_code, P(13).annual_credits_per_month, P(13).credit_balance], ["pro", 750, 834]);
+  note("yearly Starter → yearly Pro, 3 days of the year left, after top-up", lastDays, 84, `(${uncapped} without the cap) top-ups: still 750`);
+  check("the paid renewal at the Pro yearly price then gives 1,600 and sets the top-up to 1,600", [(await q(evt("invoice.payment_succeeded", invoice("in_renew_13", "cus_13", "sub_13", PRO_YEARLY, { billing_reason: "subscription_cycle" })))).body, P(13).annual_credits_per_month], [{ ok: true, plan_credits: 1600, granted: true }, 1600]);
+
+  // 20 days of the year left, top-up due in 3 days: exactly what the money pays for, now.
+  db.profiles.push(prof(18, { plan_code: "starter", credit_balance: 750, stripe_subscription_id: "sub_18", stripe_subscription_status: "paid", billing_interval: "yearly", annual_credits_per_month: 750, annual_credits_last_topup: iso(now - 27 * DAY) }));
+  stripe.subs.sub_18 = subscription("sub_18", "cus_18", "active", PRO_YEARLY);
+  const lastMonth = [line(STARTER_YEARLY, 20 / 365, -1, now, now + 20 * DAY), line(PRO_YEARLY, 20 / 365, 1, now, now + 20 * DAY)];
+  check("20 days of the year left: 20 ÷ 365 × 12 months × 850 = 559, top-up stays 750", [(await q(evt("invoice.payment_succeeded", changeInvoice("in_up_18", "cus_18", "sub_18", lastMonth)))).body.credits, P(18).annual_credits_per_month], [559, 750]);
+  note("yearly Starter → yearly Pro, 20 days of the year left", lastMonth, 559, "top-ups: still 750");
+}
+
+console.log("\n13. Monthly → yearly, and a switch to a smaller plan");
+{
+  db.profiles.push(prof(15, { plan_code: "pro", credit_balance: 1600, stripe_subscription_id: "sub_15", stripe_subscription_status: "paid", billing_interval: "monthly", annual_credits_per_month: 0, annual_credits_last_topup: null }));
+  stripe.subs.sub_15 = subscription("sub_15", "cus_15", "active", PRO_YEARLY);
+  const toYearly = [line(PRO, 0.5, -1), line(PRO_YEARLY, 1, 0, now, now + 365 * DAY)];
+  const ev = evt("invoice.payment_succeeded", changeInvoice("in_up_15", "cus_15", "sub_15", toYearly));
+  check("MONTHLY → YEARLY Pro with half the month left: 1,600 for the new month − 800 already given = 800", (await q(ev)).body, { ok: true, plan_credits: 1600, plan_change: true, credits: 800, granted: true });
+  check("the paid period on the profile is the new YEAR (not the old month's unused time on the first line)", P(15).current_period_end, iso(now + 365 * DAY));
+  check("yearly billing, 1,600 a month, top-up cycle starts at the payment", [P(15).billing_interval, P(15).annual_credits_per_month, P(15).annual_credits_last_topup, P(15).credit_balance, grantsFor(15)], ["yearly", 1600, iso(now), 2400, ["plan_upgrade:800:in_up_15"]]);
+  note("monthly Pro → yearly Pro, 15 of 30 days left", toYearly, 800, "top-ups: 1,600, cycle restarts");
+  check("REPLAY → deduped, balance unchanged", [(await q(ev)).body, P(15).credit_balance], [{ ok: true, deduped: true }, 2400]);
+
+  db.profiles.push(prof(19, { plan_code: "generative", credit_balance: 3200, stripe_subscription_id: "sub_19", stripe_subscription_status: "paid" }));
+  stripe.subs.sub_19 = subscription("sub_19", "cus_19", "active", STARTER_YEARLY);
+  const down = [line(GENERATIVE, 0.5, -1), line(STARTER_YEARLY, 1, 0, now, now + 365 * DAY)];
+  check("monthly Generative → yearly Starter (Stripe applies it at once): no credits taken back, none added", [(await q(evt("invoice.payment_succeeded", changeInvoice("in_up_19", "cus_19", "sub_19", down)))).body, P(19).plan_code, P(19).credit_balance, grantsFor(19).length], [{ ok: true, plan_credits: 750, plan_change: true, credits: 0, granted: false }, "starter", 3200, 0]);
+  note("monthly Generative → yearly Starter, 15 of 30 days left", down, 0, "750 − 1,600 is below zero: nothing granted");
+}
+
+console.log("\n14. Failed plan-change payment, and a scheduled downgrade");
+{
+  db.profiles.push(prof(20, { plan_code: "starter", credit_balance: 100, stripe_subscription_id: "sub_20", stripe_subscription_status: "active" }));
+  const failed20 = changeInvoice("in_fail_20", "cus_20", "sub_20", [line(STARTER, 0.5, -1), line(PRO, 0.5, 1)], { status: "open" });
+  check("payment for the upgrade fails → plan stays Starter, no credits, NOT marked past due", [(await q(evt("invoice.payment_failed", failed20))).body, P(20).plan_code, P(20).credit_balance, P(20).stripe_subscription_status], [{ ok: true, failed_invoice: "in_fail_20", marked_past_due: false }, "starter", 100, "active"]);
+  check("a failed RENEWAL still marks past due", [(await q(evt("invoice.payment_failed", invoice("in_fail_20b", "cus_20", "sub_20", STARTER, { status: "open", billing_reason: "subscription_cycle" })))).body.marked_past_due, P(20).stripe_subscription_status], [true, "past_due"]);
+
+  db.profiles.push(prof(21, { plan_code: "pro", credit_balance: 1600, stripe_subscription_id: "sub_21", stripe_subscription_status: "active" }));
+  stripe.subs.sub_21 = subscription("sub_21", "cus_21", "active", PRO);
+  check("downgrade booked in the portal (schedule attached, price unchanged) → still Pro", [(await q(evt("customer.subscription.updated", subscription("sub_21", "cus_21", "active", PRO, { schedule: "sub_sched_1" })))).status, P(21).plan_code], [200, "pro"]);
+  check("period ends, Stripe switches the price → now Starter", [(await q(evt("customer.subscription.updated", subscription("sub_21", "cus_21", "active", STARTER)))).status, P(21).plan_code], [200, "starter"]);
+  check("and the renewal at the Starter price gives 750", (await q(evt("invoice.payment_succeeded", invoice("in_cycle_21", "cus_21", "sub_21", STARTER, { billing_reason: "subscription_cycle" })))).body, { ok: true, plan_credits: 750, granted: true });
+}
+
+console.log("\nPlan-change numbers (new-subscriber amounts 750 / 1,600 / 3,200 unless noted):");
+for (const n of numbers) console.log(n);
 
 console.log(failed ? `\n${failed} CHECK(S) FAILED` : "\nall checks passed");
 Deno.exit(failed ? 1 : 0);

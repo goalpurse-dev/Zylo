@@ -189,6 +189,11 @@ async function resumeSubscription() {
             </div>
            <div className="text-sm text-[#B7BBC6]">{planLabel}</div>
 {planStatusBadge}
+{summary?.scheduled_change && (
+  <div className="mt-1 text-xs text-lime-200" data-testid="billing-scheduled-change">
+    Switches to {summary.scheduled_change.plan ? summary.scheduled_change.plan.charAt(0).toUpperCase() + summary.scheduled_change.plan.slice(1) : "your new plan"} ({summary.scheduled_change.interval === "year" ? "yearly" : "monthly"}) on {formatDate(summary.scheduled_change.date)}. Your current plan stays until then.
+  </div>
+)}
 
 {summary?.plan && (
   <div className="text-xs text-[#B7BBC6] mt-1">
