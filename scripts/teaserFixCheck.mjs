@@ -57,7 +57,7 @@ async function context({ session = null, plan = null, viewport = { width: 1366, 
     if (req.method() === "OPTIONS") return route.continue();
     if (req.method() !== "GET" && req.method() !== "HEAD") return json(route, [], 201);
     // The stand-in setup session (answered below) is read back on a reload, as a real one would be.
-    if (req.url().includes("/rest/v1/long_form_discovery_sessions")) return json(route, { id: "99999999-0000-4000-8000-000000000001", user_id: TEST_USER, ideas: [], selected_idea_id: null });
+    if (req.url().includes("/rest/v1/long_form_discovery_sessions") && /[?&]id=eq./.test(req.url())) return json(route, [{ id: "99999999-0000-4000-8000-000000000001", user_id: TEST_USER, ideas: [], selected_idea_id: null }]);
     if (!log.plan || !req.url().includes("/rest/v1/profiles")) return route.continue();
     const res = await route.fetch();
     const fix = (r) => (r && typeof r === "object" ? { ...r, ...("plan_code" in r ? { plan_code: log.plan } : {}), ...("stripe_subscription_id" in r ? { stripe_subscription_id: log.plan === "free" ? null : "sub_check" } : {}), ...("stripe_subscription_status" in r ? { stripe_subscription_status: log.plan === "free" ? null : "active" } : {}) } : r);
