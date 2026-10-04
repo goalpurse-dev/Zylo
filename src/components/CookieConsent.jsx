@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { COOKIE_CONSENT_EVENT } from "../lib/cookieConsent";
 
 function getCookie(name) {
   const value = `; ${document.cookie}`;
@@ -19,12 +20,14 @@ export default function CookieConsent() {
     document.cookie =
       "zyvo_cookie_consent=accepted; path=/; max-age=31536000; SameSite=Lax";
     setVisible(false);
+    window.dispatchEvent(new Event(COOKIE_CONSENT_EVENT));
   };
 
   const declineCookies = () => {
     document.cookie =
       "zyvo_cookie_consent=declined; path=/; max-age=31536000; SameSite=Lax";
     setVisible(false);
+    window.dispatchEvent(new Event(COOKIE_CONSENT_EVENT));
   };
 
   if (!visible) return null;

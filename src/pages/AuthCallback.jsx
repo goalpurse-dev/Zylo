@@ -2,10 +2,25 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { peekSeoDraft } from "../lib/seoDraft";
+import { POST_AUTH_RETURN_KEY } from "../components/AuthModal.jsx";
 
 const WORKSPACE_ROUTE_BY_TEMPLATE = { "two-am": "/workspace/two-am" };
 
+// A page that opened the sign-up dialog may ask to get the visitor back (an
+// in-app path, used once, at most an hour old).
+function savedReturnPath() {
+  try {
+    const raw = localStorage.getItem(POST_AUTH_RETURN_KEY);
+    if (!raw) return null;
+    localStorage.removeItem(POST_AUTH_RETURN_KEY);
+    const { path, at } = JSON.parse(raw);
+    return typeof path === "string" && path.startsWith("/") && !path.startsWith("//") && Date.now() - Number(at) < 3_600_000 ? path : null;
+  } catch { return null; }
+}
+let returnPath; // read once per page load (the callback effect can run twice)
 function postAuthDestination() {
+  if (returnPath === undefined) returnPath = savedReturnPath();
+  if (returnPath) return returnPath;
   const draft = peekSeoDraft();
   return (draft && WORKSPACE_ROUTE_BY_TEMPLATE[draft.templateId]) || "/";
 }
