@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as api from "../api/fruitStoryV2Api";
 import { errorText } from "../constants";
+import { clearStashedFruitStory, peekStashedFruitStory } from "../../../../lib/promptHandoff";
 import { animateAllPrice, clipPrice, clipSecondsFor, estimateStory, picturePrice, sceneCountForLength } from "../pricing/fruitV2Estimates";
 import useFruitV2Prices from "../pricing/useFruitV2Prices";
 import { storyStepBlocker, wizardBlocker } from "../rules";
@@ -35,6 +36,18 @@ const NEW_SERIES = {
   storyId: null,
 };
 
+/** A "Make this video" prompt from a public page opens on "Describe it", filled in. */
+function initialSingle() {
+  const handoff = peekStashedFruitStory();
+  if (!handoff) return NEW_SINGLE;
+  return {
+    ...NEW_SINGLE,
+    method: "prompt",
+    prompt: handoff.prompt.slice(0, api.LIMITS.maxPromptChars),
+    castIds: handoff.castIds.slice(0, api.LIMITS.maxCastSingle),
+  };
+}
+
 function scrollPageTop() {
   document.getElementById("workspace-scroll")?.scrollTo({ top: 0, behavior: "instant" });
 }
@@ -65,7 +78,10 @@ export default function useFruitV2Flow(account, characters = []) {
   const [mode, setMode] = useState("single");
   const [tab, setTabState] = useState("build");
   const [recentTab, setRecentTab] = useState("single");
-  const [single, setSingle] = useState(NEW_SINGLE);
+  const [single, setSingle] = useState(initialSingle);
+  // Kept for a guest, so the prompt is still there after they sign up and come back.
+  const signedIn = Boolean(account?.user);
+  useEffect(() => { if (signedIn) clearStashedFruitStory(); }, [signedIn]);
   const [series, setSeries] = useState(NEW_SERIES);
   const [ideaSeed, setIdeaSeed] = useState(0);
   const [library, setLibrary] = useState(null); // "single" | "series" | null

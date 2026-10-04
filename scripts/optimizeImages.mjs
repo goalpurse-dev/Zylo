@@ -1,9 +1,12 @@
-// Responsive WebP variants for every image Home and the nav menus show.
+// Responsive WebP variants for every image Home, the nav menus and the AI
+// Fruit Story public pages show.
 // Reads image paths from the listed source files (+ whole folders), writes
 // public/opt/<path>.w<width>.webp at a few widths (never upscaled) and
 // src/data/optImages.json (original path -> available widths). Masters over
 // 1 MB are copied to the private "asset-masters" storage bucket; the files in
 // public/ stay where they are for pages that still use them directly.
+// A variant that already exists and is newer than its master is kept as it is
+// (pass --force to make every variant again).
 //   FFMPEG=... node --env-file=.env.local scripts/optimizeImages.mjs [--no-upload]
 import fs from "node:fs";
 import path from "node:path";
@@ -17,12 +20,19 @@ const SOURCES = [
   "src/components/workspace/Glow.jsx", "src/components/home-v2/HomeV2Sections.jsx", "src/components/public-gallery/gallery.jsx",
   "src/components/launch/LaunchUI.jsx", "src/pages/workspace/long-form/index.jsx", "src/data/homeContent.js",
 ];
-const FOLDERS = ["public/images/niches", "public/community-posters", "public/home/v2"];
+const FOLDERS = [
+  "public/images/niches", "public/community-posters", "public/home/v2",
+  "public/lp/fruit", "public/lp/fruit/characters", "public/viral-builder/ai-fruit/presets", "public/viral-builder/ai-fruit/characters",
+];
+// Folders where only matching file names are taken.
+const FILTERED_FOLDERS = [["public/blog-assets", /fruit/i]];
+const FORCE = process.argv.includes("--force");
 const ICON = /\/icons\/|click\.png|Logo/i;
 
 const found = new Set();
 for (const f of SOURCES) for (const m of fs.readFileSync(f, "utf8").matchAll(/["'`](\/[^"'`\s]+?\.(?:png|jpe?g|webp))["'`]/gi)) found.add(m[1]);
 for (const d of FOLDERS) for (const n of fs.readdirSync(d)) if (/\.(png|jpe?g|webp)$/i.test(n)) found.add("/" + path.posix.join(d.replace(/^public\//, ""), n));
+for (const [d, only] of FILTERED_FOLDERS) for (const n of fs.readdirSync(d)) if (/\.(png|jpe?g|webp)$/i.test(n) && only.test(n)) found.add("/" + path.posix.join(d.replace(/^public\//, ""), n));
 found.add("/icons/credits.png");
 const list = [...found].filter((p) => fs.existsSync(path.join("public", p)) && !p.startsWith("/opt/")).sort();
 
@@ -37,7 +47,7 @@ for (const p of list) {
   for (const W of widths) {
     const out = path.join("public/opt", `${p}.w${W}.webp`);
     fs.mkdirSync(path.dirname(out), { recursive: true });
-    execFileSync(FFMPEG, ["-hide_banner", "-loglevel", "error", "-y", "-i", src, "-vf", `scale=${W}:-2:flags=lanczos`, "-frames:v", "1", "-c:v", "libwebp", "-quality", ICON.test(p) ? "85" : "74", "-compression_level", "6", out]);
+    if (FORCE || !fs.existsSync(out) || fs.statSync(out).mtimeMs < fs.statSync(src).mtimeMs) execFileSync(FFMPEG, ["-hide_banner", "-loglevel", "error", "-y", "-i", src, "-vf", `scale=${W}:-2:flags=lanczos`, "-frames:v", "1", "-c:v", "libwebp", "-quality", ICON.test(p) ? "85" : "74", "-compression_level", "6", out]);
     outBytes += fs.statSync(out).size;
   }
   inBytes += fs.statSync(src).size;

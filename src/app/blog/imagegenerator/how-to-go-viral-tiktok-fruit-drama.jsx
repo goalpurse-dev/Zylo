@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
+import { optImg } from "../../../lib/optImage.js";
 
 const related = [
   {
@@ -58,7 +59,7 @@ export default function HowToGoViralTikTokFruitDrama() {
 
         <figure className="mb-16 max-w-4xl overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
           <img
-            src="/blog-assets/ai-fruit-story-tiktok-strategy-hero.png"
+            {...optImg("/blog-assets/ai-fruit-story-tiktok-strategy-hero.png", "(min-width: 1024px) 896px, 100vw", 960)}
             alt="A cute stylized 3D cartoon orange character reacting to a viral video with heart and view-count icons floating around"
             width={1024}
             height={576}
@@ -77,7 +78,7 @@ export default function HowToGoViralTikTokFruitDrama() {
             { src: "/viral-builder/ai-fruit/presets/cheats-back.webp", label: "Revenge Comeback", badge: "#4" },
           ].map((p, i) => (
             <div key={i} className="relative overflow-hidden rounded-xl border border-[#ECE8F2]" style={{ aspectRatio: "9/14" }}>
-              <img src={p.src} alt={`${p.label} AI fruit drama TikTok`} className="w-full h-full object-cover" loading="lazy" />
+              <img {...optImg(p.src, "(min-width: 768px) 180px, 45vw", 480)} alt={`${p.label} AI fruit drama TikTok`} className="w-full h-full object-cover" loading="lazy" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-2">
                 <span className="text-[10px] font-black text-purple-300">{p.badge}</span>

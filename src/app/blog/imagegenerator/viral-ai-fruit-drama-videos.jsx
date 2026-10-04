@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
+import { optImg } from "../../../lib/optImage.js";
 
 const related = [
   {
@@ -64,7 +65,7 @@ export default function ViralAIFruitDramaVideos() {
 
         <figure className="mb-16 max-w-4xl overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
           <img
-            src="/blog-assets/ai-fruit-story-drama-hero.png"
+            {...optImg("/blog-assets/ai-fruit-story-drama-hero.png", "(min-width: 1024px) 896px, 100vw", 960)}
             alt="Two stylized 3D cartoon fruit characters in a dramatic confrontation over evidence on a smartphone"
             width={1024}
             height={576}
@@ -86,7 +87,7 @@ export default function ViralAIFruitDramaVideos() {
           ].map((c, i) => (
             <div key={i} className="flex-shrink-0 flex flex-col items-center gap-2">
               <div className="h-[80px] w-[64px] overflow-hidden rounded-[16px] border border-[#ECE8F2] bg-white">
-                <img src={c.src} alt={`${c.name} fruit drama character`} className="h-full w-full object-cover object-top" loading="lazy" />
+                <img {...optImg(c.src, "58px", 240)} alt={`${c.name} fruit drama character`} className="h-full w-full object-cover object-top" loading="lazy" />
               </div>
               <span className="text-[11px] text-[#9ca3af] whitespace-nowrap">{c.name}</span>
             </div>

@@ -20,3 +20,28 @@ export function takeStashedPrompt() {
     return "";
   }
 }
+
+// AI Fruit Story "Make this video": the prompt plus the library character ids
+// it names, read by the tool (ai-fruit-story-v2/hooks/useFruitV2Flow.js). Peek
+// and clear are separate so the tool's state initializer stays pure.
+const FRUIT_STORY_KEY = "zyvo_prefill_fruit_story";
+
+export function stashFruitStory({ prompt, castIds = [] }) {
+  try { sessionStorage.setItem(FRUIT_STORY_KEY, JSON.stringify({ prompt: String(prompt ?? ""), castIds })); } catch { /* storage unavailable — safe to no-op */ }
+}
+
+/** { prompt, castIds } or null. */
+export function peekStashedFruitStory() {
+  if (typeof window === "undefined") return null;
+  try {
+    const value = JSON.parse(sessionStorage.getItem(FRUIT_STORY_KEY) || "null");
+    if (!value || typeof value.prompt !== "string" || !value.prompt.trim()) return null;
+    return { prompt: value.prompt, castIds: Array.isArray(value.castIds) ? value.castIds.filter((id) => typeof id === "string") : [] };
+  } catch {
+    return null;
+  }
+}
+
+export function clearStashedFruitStory() {
+  try { sessionStorage.removeItem(FRUIT_STORY_KEY); } catch { /* storage unavailable */ }
+}

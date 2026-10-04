@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
+import { optImg } from "../../../lib/optImage.js";
 
 const related = [
   {
@@ -60,7 +61,7 @@ export default function AIFruitStoryFinaleIdeas() {
         <div className="mb-16 grid gap-4 sm:grid-cols-2">
           <figure className="overflow-hidden rounded-[24px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)]">
             <img
-              src="/blog-assets/fruit-story-finale-hero.png"
+              {...optImg("/blog-assets/fruit-story-finale-hero.png", "(min-width: 768px) 448px, 100vw", 480)}
               alt="A stylized 3D cartoon strawberry character waving goodbye with a bittersweet expression under a warm sunset spotlight"
               width={640}
               height={480}
@@ -71,13 +72,12 @@ export default function AIFruitStoryFinaleIdeas() {
           </figure>
           <figure className="overflow-hidden rounded-[24px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)]">
             <img
-              src="/blog-assets/fruit-story-finale-sunset.png"
+              {...optImg("/blog-assets/fruit-story-finale-sunset.png", "(min-width: 768px) 448px, 100vw", 480)}
               alt="A group of stylized 3D cartoon fruit characters standing together silhouetted against a warm emotional sunset"
               width={640}
               height={480}
               className="aspect-[4/3] w-full rounded-[18px] object-cover"
-              loading="eager"
-              fetchPriority="high"
+              loading="lazy"
             />
           </figure>
         </div>

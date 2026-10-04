@@ -35,7 +35,7 @@ const related = [
     slug: "/blog/ai-fruit-story-fan-theories",
   },
   {
-    title: "Is AI Fruit Story Free? Pricing, Credits, and What You Actually Get",
+    title: "Is AI Fruit Story Free? Pricing and Credits",
     description: "Character portraits, scene images, and scene video — what a story actually costs.",
     date: "19.08.2026",
     slug: "/blog/ai-fruit-story-pricing",

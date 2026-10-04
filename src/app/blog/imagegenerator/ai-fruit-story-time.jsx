@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
+import { optImg } from "../../../lib/optImage.js";
 
 const related = [
   {
-    title: "Is AI Fruit Story Free? Pricing, Credits, and What You Actually Get",
+    title: "Is AI Fruit Story Free? Pricing and Credits",
     description: "Character portraits, scene images, and scene video — what a story actually costs.",
     date: "19.08.2026",
     slug: "/blog/ai-fruit-story-pricing",
@@ -58,7 +59,7 @@ export default function AIFruitStoryTime() {
 
         <figure className="mb-16 max-w-4xl overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
           <img
-            src="/blog-assets/ai-fruit-story-time-hero.png"
+            {...optImg("/blog-assets/ai-fruit-story-time-hero.png", "(min-width: 1024px) 896px, 100vw", 960)}
             alt="A stylized 3D cartoon banana character looking impatiently at a glowing pocket watch"
             width={1024}
             height={576}

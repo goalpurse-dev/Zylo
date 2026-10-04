@@ -16,7 +16,7 @@ const related = [
     slug: "/blog/how-to-get-started-with-zyvo",
   },
   {
-    title: "Is AI Fruit Story Free? Pricing, Credits, and What You Actually Get",
+    title: "Is AI Fruit Story Free? Pricing and Credits",
     description: "Character portraits, scene images, and scene video — what a story actually costs.",
     date: "19.08.2026",
     slug: "/blog/ai-fruit-story-pricing",
@@ -122,7 +122,7 @@ export default function IsZyvoFree() {
           <section>
             <h2 className="text-[28px] font-bold text-[#110829] mb-4">Getting the most from a free account</h2>
             <p className="text-[17px] leading-relaxed">
-              Start with shorter generations — fewer scenes, images instead of full animation — to test a tool and an idea before committing more credits to a longer, fully animated version. This is the same approach that works across every individual Zyvo tool, whether you're testing an AI Fruit Story premise or a Clay Rescue scenario.
+              Start with shorter generations — fewer scenes, images instead of full animation — to test a tool and an idea before committing more credits to a longer, fully animated version. This is the same approach that works across the tools you can use on a free account. AI Fruit Story is not one of them: it needs a paid plan.
             </p>
           </section>
 

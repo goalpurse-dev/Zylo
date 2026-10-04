@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
+import { optImg } from "../../../lib/optImage.js";
 
 const related = [
   {
@@ -85,7 +86,7 @@ export default function AIFruitStoryTalkingDialogueTips() {
 
         <figure className="mb-16 max-w-4xl overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
           <img
-            src="/blog-assets/ai-fruit-story-dialogue-hero.png"
+            {...optImg("/blog-assets/ai-fruit-story-dialogue-hero.png", "(min-width: 1024px) 896px, 100vw", 960)}
             alt="A stylized 3D cartoon fruit character mid-speech with a speech bubble and sound wave icons"
             width={1024}
             height={576}
@@ -107,7 +108,7 @@ export default function AIFruitStoryTalkingDialogueTips() {
           ].map((c, i) => (
             <div key={i} className="flex flex-col items-center gap-1.5">
               <div className="h-[68px] w-[54px] overflow-hidden rounded-[14px] border border-[#ECE8F2] bg-white shadow-sm">
-                <img src={c.src} alt={`${c.name} AI fruit story character`} className="h-full w-full object-cover object-top" loading="lazy" />
+                <img {...optImg(c.src, "58px", 240)} alt={`${c.name} AI fruit story character`} className="h-full w-full object-cover object-top" loading="lazy" />
               </div>
               <span className="text-[10px] text-[#9ca3af]">{c.name}</span>
             </div>

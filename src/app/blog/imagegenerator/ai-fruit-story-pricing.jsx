@@ -1,19 +1,25 @@
 import { Link } from "react-router-dom";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
+import { FRUIT_PRICING_FAQ, FRUIT_QUALITY } from "../../../data/fruitStoryPages.js";
+import { optImg } from "../../../lib/optImage.js";
+
+// The copy must match the tool: a paid plan is required, pictures have a flat
+// price, video is priced per second by quality (pricing/fruitV2Estimates.js).
+// No credit numbers here: they are live prices, shown in the tool and on /pricing.
 
 const related = [
   {
-    title: "What Is AI Fruit Story? The Complete Guide to TikTok's Viral Cartoon Drama Trend",
-    description: "What it is, how it's made, why it's going viral, and how to make your own.",
+    title: "What Is AI Fruit Story? The Viral Fruit Drama Trend",
+    description: "What it is, why it went viral, and how one idea becomes a talking video or a series.",
     date: "18.08.2026",
     slug: "/blog/what-is-ai-fruit-story",
   },
   {
-    title: "6 Real AI Fruit Story Examples You Can Recreate in Minutes",
-    description: "Real preset screenshots from the generator, with the exact opening lines used in each.",
-    date: "18.08.2026",
-    slug: "/blog/ai-fruit-story-examples",
+    title: "AI Fruit Story Prompts: 50 Copy-Paste Video Ideas",
+    description: "Fifty fruit-drama prompts to copy or open straight in the generator.",
+    date: "15.05.2026",
+    slug: "/blog/best-ai-fruit-story-ideas",
   },
   {
     title: "AI Fruit Story vs Traditional Animation",
@@ -25,39 +31,20 @@ const related = [
 
 const COST_BREAKDOWN = [
   {
-    title: "Character portraits",
-    desc: "Each fruit character in your story gets a consistent portrait generated once, then reused across every scene — this is a flat cost regardless of story length.",
+    title: "Scene pictures",
+    desc: "Every scene gets one picture, and each picture has a fixed price in credits. A video has about one scene for every 5 seconds, so a 30-second video has about 6 pictures. The pictures are paid when the story is made.",
   },
   {
-    title: "Scene images",
-    desc: "Every scene in the story generates its own image, built around your premise and characters. More scenes means more images means more credits.",
+    title: "Video",
+    desc: "Animating is priced per second at the quality you pick. V2 costs the least per second; V3 and V4 cost more. Video is paid only when you press animate, after you have checked the pictures.",
   },
   {
-    title: "Scene video / animation",
-    desc: "Turning a scene into animated, mouth-synced video costs additional credits per scene, on top of the image cost — this is the most expensive part of a longer story.",
-  },
-];
-
-const FAQS = [
-  {
-    q: "Is AI Fruit Story actually free?",
-    a: "Zyvo's AI Fruit Story maker has a free entry point — you can generate stories using your account's credit balance. Longer stories with more scenes and full video animation cost more credits than a short one, so \"free\" in practice means starting small and scaling up as you use more credits.",
+    title: "Edits and regenerations",
+    desc: "Editing or regenerating a scene picture costs one more picture. Regenerating a clip costs that clip again.",
   },
   {
-    q: "How is the cost calculated?",
-    a: "Cost is credit-based, not a flat subscription fee per video. Three things add up: a one-time character portrait cost per character, an image cost per scene, and a video cost per scene if you animate it. Shorter stories with fewer characters and scenes cost fewer credits.",
-  },
-  {
-    q: "What happens if I run out of credits mid-story?",
-    a: "The generator checks your credit balance before starting a generation and lets you know if you don't have enough to complete the story you've configured, so you're never charged partway through and left with an incomplete result.",
-  },
-  {
-    q: "Does adding more characters cost more?",
-    a: "Yes — each additional character needs its own consistent portrait generated once, which adds to the total cost before scene generation even starts.",
-  },
-  {
-    q: "Can I generate a cheaper version to test a premise?",
-    a: "Yes — using fewer scenes and fewer characters is the most direct way to lower the cost of a single generation while you're testing an idea before committing to a full story.",
+    title: "What uses no credits",
+    desc: "Characters come from the library, so there is nothing to pay for creating them. Writing a series plan (a title, summary and cliffhanger for every episode) uses no credits. The post text that comes with a finished video is included.",
   },
 ];
 
@@ -69,7 +56,7 @@ export default function AIFruitStoryPricing() {
         <nav className="mb-8 text-[13px] text-[#888]">
           <Link to="/blog" className="hover:text-[#7A3BFF]">Blog</Link>
           <span className="mx-2">/</span>
-          <Link to="/blog" className="hover:text-[#7A3BFF]">Go Viral</Link>
+          <Link to="/blog/category/fruit-stories" className="hover:text-[#7A3BFF]">Fruit Stories</Link>
           <span className="mx-2">/</span>
           <span>AI Fruit Story Pricing</span>
         </nav>
@@ -79,17 +66,17 @@ export default function AIFruitStoryPricing() {
             Pricing Explained
           </span>
           <h1 className="text-[42px] font-bold text-[#110829] leading-tight mb-6">
-            Is AI Fruit Story Free? Pricing, Credits, and What You Actually Get
+            Is AI Fruit Story Free? Pricing and Credits Explained
           </h1>
           <p className="text-[19px] text-[#4A4A55] leading-relaxed">
-            AI Fruit Story runs on credits, not a flat per-video price. Here's exactly what you're paying for — character portraits, scene images, and scene video — so you know what a story actually costs before you generate one.
+            No. AI Fruit Story needs a paid Zyvo plan and uses credits. Here is what the credits are spent on, which plan gives which video quality, and how to keep a video cheap while you test an idea.
           </p>
-          <p className="text-[13px] text-[#999] mt-5">Aug 19, 2026 · 6 min read · Pricing Explained</p>
+          <p className="text-[13px] text-[#999] mt-5">Updated October 5, 2026 · 5 min read · Pricing Explained</p>
         </header>
 
         <figure className="mb-16 max-w-4xl overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
           <img
-            src="/blog-assets/ai-fruit-story-pricing-hero.png"
+            {...optImg("/blog-assets/ai-fruit-story-pricing-hero.png", "(min-width: 1024px) 896px, 100vw", 960)}
             alt="A stylized 3D cartoon orange character holding a glowing gold coin with a curious expression"
             width={1024}
             height={576}
@@ -104,12 +91,12 @@ export default function AIFruitStoryPricing() {
           <section>
             <h2 className="text-[28px] font-bold text-[#110829] mb-4">The short answer</h2>
             <p className="text-[17px] leading-relaxed">
-              AI Fruit Story is credit-based. There's a free entry point using your account's credit balance, and the actual cost of any single generation depends on how many characters you use and how many scenes your story has — not a flat price per video. A short, two-character story with a few scenes costs meaningfully less than a long one with full video animation on every scene.
+              AI Fruit Story is not free. Making a video needs a paid Zyvo plan (Starter, Pro or Generative) and uses the credits that come with that plan. There is no flat price per video: the cost depends on the length and the video quality you choose, and the tool shows it in credits before you start. Without a plan you can open the tool and watch an example video, but you can&apos;t make one.
             </p>
           </section>
 
           <section>
-            <h2 className="text-[28px] font-bold text-[#110829] mb-5">What you're actually paying for</h2>
+            <h2 className="text-[28px] font-bold text-[#110829] mb-5">What the credits are spent on</h2>
             <div className="space-y-3">
               {COST_BREAKDOWN.map((c) => (
                 <div key={c.title} className="rounded-xl border border-[#E5E0F5] bg-white p-5">
@@ -121,30 +108,46 @@ export default function AIFruitStoryPricing() {
           </section>
 
           <section>
-            <h2 className="text-[28px] font-bold text-[#110829] mb-4">How to keep costs down while testing an idea</h2>
+            <h2 className="text-[28px] font-bold text-[#110829] mb-5">Which plan gives which quality</h2>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {FRUIT_QUALITY.map((q) => (
+                <div key={q.id} className="rounded-xl border border-[#E5E0F5] bg-white p-5">
+                  <p className="text-[20px] font-black text-[#110829]">{q.id}</p>
+                  <p className="text-[12px] font-bold text-[#7A3BFF] mb-1.5">{q.plan} plan{q.id === "V4" ? "" : " and up"}</p>
+                  <p className="text-[13px] text-[#6b7280] leading-relaxed">{q.note}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-[16px] leading-relaxed mt-5">
+              The <Link to="/pricing" className="text-[#7A3BFF] hover:underline font-semibold">pricing page</Link> shows the current plan prices and how many AI Fruit Story videos each plan makes in a month.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-[28px] font-bold text-[#110829] mb-4">How to keep the cost down while testing an idea</h2>
             <p className="text-[17px] leading-relaxed">
-              Start with two characters and a short scene count to test whether a premise actually works before committing more credits to a full, animated version. Since character portraits are a one-time cost per character, reusing the same cast across multiple story ideas is more efficient than starting fresh with new characters every time.
+              Test a new idea short and on V2. Look closely at the scene pictures before you animate: fixing a picture costs one picture, while animating again costs video. For a series, read the whole episode plan before you make episode 1, because the plan itself uses no credits.
             </p>
           </section>
 
           <section className="pt-4">
-            <h2 className="text-[26px] font-bold text-[#110829] mb-4">Try It With Your Free Credits</h2>
+            <h2 className="text-[26px] font-bold text-[#110829] mb-4">See the cost before you start</h2>
             <p className="text-[16px] leading-relaxed mb-6">
-              Start with a short, two-character story to see the full workflow before scaling up. For premise ideas, see{" "}
-              <Link to="/blog/best-ai-fruit-story-ideas" className="text-[#7A3BFF] hover:underline font-semibold">50 fruit story prompts</Link>.
+              The settings step shows the full price for the length and quality you pick, and how many credits you would have left. For story ideas, see the{" "}
+              <Link to="/blog/best-ai-fruit-story-ideas" className="text-[#7A3BFF] hover:underline font-semibold">AI fruit story prompts</Link>.
             </p>
             <Link
               to="/ai-fruit-story-maker"
               className="inline-block bg-gradient-to-r from-[#7A3BFF] to-[#A855F7] text-white font-bold text-[15px] px-8 py-4 rounded-[14px] hover:opacity-90 transition"
             >
-              Open the AI Fruit Story Tool →
+              See the AI Fruit Story Generator →
             </Link>
           </section>
 
           <section>
             <h2 className="text-[28px] font-bold text-[#110829] mb-5">Frequently asked questions</h2>
             <div className="space-y-3">
-              {FAQS.map((f) => (
+              {FRUIT_PRICING_FAQ.map((f) => (
                 <div key={f.q} className="rounded-xl border border-[#E5E0F5] bg-white p-5">
                   <p className="text-[15px] font-bold text-[#110829] mb-2">{f.q}</p>
                   <p className="text-[14px] text-[#6b7280] leading-relaxed">{f.a}</p>

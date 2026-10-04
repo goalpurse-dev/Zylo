@@ -174,8 +174,8 @@ export const PUBLIC_SEO_METADATA = {
   ),
   "/blog/best-ai-fruit-story-ideas": {
     ...blog(
-      "50 AI Fruit Story Prompts and Viral Drama Ideas",
-      "50 fruit story AI prompts across reveal, family, friendship, comeback, workplace, and wedding-drama plots — copy and paste straight into the generator.",
+      "AI Fruit Story Prompts: 50 Copy-Paste Video Ideas",
+      "50 AI fruit story prompts to copy or open straight in the generator: cheating reveals, family secrets, office drama, weddings and more, with real characters.",
     ),
     image: `${SITE_URL}/blog-assets/ai-fruit-story-ideas-hero.png`,
   },
@@ -195,7 +195,7 @@ export const PUBLIC_SEO_METADATA = {
   },
   "/blog/ai-fruit-story-talking-dialogue-tips": {
     ...blog(
-      "How to Write Talking Dialogue for AI Fruit Story Videos",
+      "AI Fruit Story Script: How to Write the Dialogue",
       "Learn how Zyvo's mouth-synced talking characters work and five dialogue-writing techniques that make AI fruit drama videos hit harder.",
     ),
     image: `${SITE_URL}/blog-assets/ai-fruit-story-dialogue-hero.png`,
@@ -216,14 +216,14 @@ export const PUBLIC_SEO_METADATA = {
   },
   "/blog/ai-fruit-story-instagram-youtube-shorts": {
     ...blog(
-      "How to Post AI Fruit Story Videos on Instagram and YouTube Shorts",
+      "Post AI Fruit Story Videos on YouTube Shorts & Reels",
       "Platform-by-platform differences and a repeatable cross-posting workflow for AI Fruit Story videos on TikTok, Reels, and Shorts.",
     ),
     image: `${SITE_URL}/blog-assets/ai-fruit-story-shorts-reels-thumb.png`,
   },
   "/blog/ai-fruit-story-plot-twists": {
     ...blog(
-      "The Wildest AI Fruit Story Plot Twists (And How to Write Your Own)",
+      "AI Fruit Story Plot Twists (and How to Write Them)",
       "Five twist structures that outperform a straightforward reveal, with real examples and a repeatable method for building your own shocking twist.",
     ),
     image: `${SITE_URL}/blog-assets/ai-fruit-story-plot-twist-hero.png`,
@@ -307,14 +307,14 @@ export const PUBLIC_SEO_METADATA = {
   },
   "/blog/what-is-ai-fruit-story": {
     ...blog(
-      "What Is AI Fruit Story? The Complete Guide to TikTok's Viral Cartoon Drama Trend",
-      "What AI Fruit Story is, how the generator actually builds a story from one prompt, why the format is going viral, and how to make your own — with a full FAQ.",
+      "What Is AI Fruit Story? The Viral Fruit Drama Trend",
+      "What AI Fruit Story is, why fruit drama videos went viral, and how the generator turns one idea into a talking video or a series of up to 10 episodes.",
     ),
     image: `${SITE_URL}/blog-assets/what-is-ai-fruit-story-hero.png`,
   },
   "/blog/ai-fruit-story-examples": {
     ...blog(
-      "6 Real AI Fruit Story Examples You Can Recreate in Minutes",
+      "6 Real AI Fruit Story Examples You Can Recreate",
       "Real preset screenshots from Zyvo's AI Fruit Story generator, with the exact opening dialogue used in each and what makes every preset work.",
     ),
     image: `${SITE_URL}/viral-builder/ai-fruit/presets/cheating.webp`,
@@ -335,8 +335,8 @@ export const PUBLIC_SEO_METADATA = {
   },
   "/blog/ai-fruit-story-pricing": {
     ...blog(
-      "Is AI Fruit Story Free? Pricing, Credits, and What You Actually Get",
-      "AI Fruit Story runs on credits, not a flat per-video price — character portraits, scene images, and scene video, explained.",
+      "Is AI Fruit Story Free? Pricing and Credits",
+      "No. AI Fruit Story needs a paid Zyvo plan and uses credits. What scene pictures and video cost, which plan gives V2, V3 or V4, and how to keep costs down.",
     ),
     image: `${SITE_URL}/blog-assets/ai-fruit-story-pricing-hero.png`,
   },
@@ -349,7 +349,7 @@ export const PUBLIC_SEO_METADATA = {
   },
   "/blog/ai-fruit-story-cliffhangers": {
     ...blog(
-      "AI Fruit Story Cliffhanger Endings: How to Make Viewers Come Back for Part 2",
+      "AI Fruit Story Cliffhangers: Endings for Part 2",
       "Four cliffhanger structures that consistently drive part-2 demand, and the one rule that decides whether a cliffhanger feels earned or cheap.",
     ),
     image: `${SITE_URL}/blog-assets/ai-fruit-story-cliffhanger-hero.png`,
@@ -618,10 +618,12 @@ export const PUBLIC_SEO_METADATA = {
     viewport: STICKMAN_VIEWPORT,
   }])),
   "/ai-fruit-story-maker": {
-    title: "AI Fruit Story Generator – Create Fruit Drama Videos | Zyvo",
-    description: "Create a multi-scene AI fruit story from one idea. Build consistent characters, generate scenes, and animate a vertical fruit drama video with Zyvo.",
+    title: "AI Fruit Story Generator & Maker – Videos and Series | Zyvo",
+    description: "Make talking fruit drama videos from one idea, or a series of up to 10 episodes with the same cast. 150 characters, 15 seconds to 2 minutes. Paid plan required.",
     type: "website",
-    image: `${SITE_URL}/og-image.png`,
+    image: `${SITE_URL}/lp/fruit/og-ai-fruit-story.jpg`,
+    imageSize: [1200, 630],
+    modified: "2026-10-05", // bump when the page changes: it becomes the sitemap's lastmod
   },
   "/cartoon-drive-by-video-maker": {
     title: "Cartoon Drive-By Video Maker – Create Nostalgic AI Videos | Zyvo",
@@ -886,7 +888,7 @@ export const PUBLIC_SEO_METADATA = {
   },
   "/blog/ai-fruit-story-halloween": {
     ...blog(
-      "AI Fruit Story Halloween Special: 10 Spooky Drama Ideas",
+      "AI Fruit Story Halloween Ideas: 10 Spooky Dramas",
       "Ten Halloween-themed premises that layer costumes, candy, and haunted-house tension onto proven fruit-drama structure.",
     ),
     image: `${SITE_URL}/blog-assets/fruit-story-halloween-hero.png`,

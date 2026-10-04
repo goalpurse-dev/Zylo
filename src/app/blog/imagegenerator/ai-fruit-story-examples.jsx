@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
+import { optImg } from "../../../lib/optImage.js";
 
 const related = [
   {
@@ -104,7 +105,7 @@ export default function AIFruitStoryExamples() {
             <section key={ex.preset} className="grid gap-6 sm:grid-cols-[220px_1fr] items-start">
               <figure className="overflow-hidden rounded-[20px] border border-[#241b38] bg-[#090a0d] p-1 shadow-[0_16px_40px_rgba(35,20,72,.14)]">
                 <img
-                  src={ex.img}
+                  {...optImg(ex.img, "220px", 480)}
                   alt={`Real screenshot of the ${ex.preset} preset in Zyvo's AI Fruit Story generator`}
                   width={220}
                   height={390}

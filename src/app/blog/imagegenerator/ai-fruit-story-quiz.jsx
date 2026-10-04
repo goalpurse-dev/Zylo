@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
+import { optImg } from "../../../lib/optImage.js";
 
 const related = [
   {
@@ -163,7 +164,7 @@ export default function AIFruitStoryQuiz() {
 
         <figure className="mb-16 max-w-4xl overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
           <img
-            src="/blog-assets/ai-fruit-story-quiz-hero.png"
+            {...optImg("/blog-assets/ai-fruit-story-quiz-hero.png", "(min-width: 1024px) 896px, 100vw", 960)}
             alt="Five stylized 3D cartoon fruit characters lined up under colorful spotlights, each showing a different exaggerated expression"
             width={1024}
             height={576}
