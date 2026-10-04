@@ -29,7 +29,7 @@ test("app: Home is the root route inside the app layout; the old path redirects 
 });
 
 test("no internal link still points at /workspace/home", () => {
-  const allowed = new Set(["src/App.jsx", "src/components/AuthModal.jsx"]); // the redirect route; the allowed Supabase return URL
+  const allowed = new Set(["src/App.jsx"]); // the redirect route
   const walk = (dir) => readdirSync(join(root, dir), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(`${dir}/${e.name}`) : /\.(jsx?|tsx?)$/.test(e.name) ? [`${dir}/${e.name}`] : []));
   const left = [...walk("src"), ...walk("api")].filter((f) => !allowed.has(f) && /["'`/]workspace\/home["'`?#]/.test(read(f)));
   assert.deepEqual(left, []);

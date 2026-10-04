@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import OAuthButton from "../components/auth/OAuthButton";
 import { signUpWithEmailPassword, signInWithGoogle } from "../lib/auth";
+import { authError, formatCountdown } from "../lib/authErrors";
+import { useCooldown } from "../hooks/useCooldown";
 
  import v32 from "../assets/symbols/bg.mp4"
 
@@ -20,6 +22,7 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
+  const cooldown = useCooldown(); // Supabase said "slow down": the button counts down instead of a red error
 
 async function handleSubmit(e) {
   e.preventDefault();
@@ -48,12 +51,9 @@ async function handleSubmit(e) {
     }
 
   } catch (e2) {
-    const msg = String(e2?.message || "");
-    if (msg.toLowerCase().includes("already registered")) {
-      setErr("That email is already registered. Try logging in.");
-    } else {
-      setErr(msg || "Signup failed.");
-    }
+    const problem = authError(e2, "Signup failed.");
+    if (problem.rateLimited) cooldown.start(problem.waitSeconds);
+    else setErr(problem.message);
   } finally {
     setLoading(false);
   }
@@ -62,7 +62,7 @@ async function handleSubmit(e) {
   async function handleGoogle() {
     setErr(""); setMsg("");
     try { await signInWithGoogle(); } 
-    catch (e2) { setErr(e2.message || "Google sign-in failed."); }
+    catch (e2) { setErr(authError(e2, "Google sign-in failed.").message); }
   }
 
   return (
@@ -98,11 +98,13 @@ async function handleSubmit(e) {
                   className="w-full h-12 rounded-full border border-gray-300 px-4 text-[15px] outline-none focus:ring-2 focus:ring-[#007BFF]/30"
                 />
                 <button
-                  type="submit" disabled={loading}
+                  type="submit" disabled={loading || cooldown.secondsLeft > 0}
                   className="w-full h-12 rounded-full bg-[#7A3BFF] text-white text-[15px] font-semibold hover:opacity-95 disabled:opacity-60"
                 >
-                  {loading ? "Creating..." : "Continue"}
+                  {loading ? "Creating..." : cooldown.secondsLeft > 0 ? `Try again in ${formatCountdown(cooldown.secondsLeft)}` : "Continue"}
                 </button>
+
+                {cooldown.secondsLeft > 0 && <p role="status" className="text-sm text-black/60">Too many tries in a short time. It's nothing you did.</p>}
 
                 {err && <p className="text-sm text-red-600">{err}</p>}
                 {msg && <p className="text-sm text-green-600">{msg}</p>}

@@ -20,6 +20,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import { Toaster } from "sonner";
 import ResumeCheckout from "./components/billing/ResumeCheckout.jsx";
+import PasswordRecoveryRedirect from "./components/auth/PasswordRecoveryRedirect.jsx";
 import LongFormScriptReadyNotifier from "./components/LongFormScriptReadyNotifier";
 import AIFruitStory from "./pages/workspace/AIFruitStory";
 import SkeletonShorts from "./pages/workspace/SkeletonShorts";
@@ -42,6 +43,7 @@ const Signup = lazy(() => import("./pages/Signup"));
 const Login = lazy(() => import("./pages/Login"));
 const Forgot = lazy(() => import("./pages/tools/Forgot"));
 const Reset = lazy(() => import("./pages/tools/Reset"));
+const AuthConfirm = lazy(() => import("./pages/auth/Confirm.jsx"));
 
 const AuthCallback = lazy(() => import("./pages/auth/AuthCallback"));
 
@@ -568,6 +570,8 @@ return (
   <Toaster theme="dark" position="bottom-right" richColors />
   {/* A plan picked while logged out continues to checkout right after sign-up. */}
   <ResumeCheckout />
+  {/* A reset-password link that lands anywhere in the app goes on to "set a new password". */}
+  <PasswordRecoveryRedirect />
   <LongFormScriptReadyNotifier />
 
 {/* WelcomeModal disabled — WelcomeScreen in layout.jsx handles new user welcome */}
@@ -978,6 +982,8 @@ return (
               </GuestOnly>
             }
           />
+          {/* The link in the reset email: /auth/confirm checks it, /auth/reset sets the new password. */}
+          <Route path="/auth/confirm" element={<AuthConfirm />} />
           <Route
             path="/auth/reset"
             element={<Reset />}

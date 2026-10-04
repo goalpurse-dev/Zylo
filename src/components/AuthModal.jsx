@@ -3,6 +3,9 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { readFirstTouch } from "../lib/firstTouch";
+import { authError, formatCountdown } from "../lib/authErrors";
+import { useCooldown } from "../hooks/useCooldown";
+import ForgotPassword from "./auth/ForgotPassword.jsx";
 import Logo from "../assets/Logo.png";
 
 function GoogleIcon() {
@@ -27,13 +30,20 @@ export const POST_AUTH_RETURN_KEY = "zyvo:post-auth-return";
 // signed in at once, or the moment the browser leaves for Google).
 export default function AuthModal({ mode: initialMode, onClose, title, subtitle, returnTo, onSignUp }) {
   const [mode, setMode] = useState(initialMode);
+  const [view, setView] = useState("form"); // form | forgot ("Forgot password?" has its own view)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const cooldown = useCooldown(); // Supabase said "slow down": the button counts down instead of a red error
 
   const isSignup = mode === "signup";
+  const fail = (failed) => {
+    const problem = authError(failed);
+    if (problem.rateLimited) cooldown.start(problem.waitSeconds);
+    else setError(problem.message);
+  };
 
   const switchMode = () => {
     setMode(isSignup ? "login" : "signup");
@@ -74,26 +84,15 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
             }
           : returnTo ? { emailRedirectTo: `${window.location.origin}/auth/callback` } : undefined,
       });
-      if (error) setError(error.message);
+      if (error) fail(error);
       else if (data.session) { onSignUp?.(); onClose(true); } // confirmations off — signed in immediately
       else setSuccess("Check your email to confirm your account.");
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setError(error.message);
+      if (error) fail(error);
       else onClose(true);
     }
     setLoading(false);
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email) { setError("Enter your email above first."); return; }
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      // Still the old Home address on purpose: it is the return URL allowed in
-      // Supabase Auth. The server 301s it to "/" and the token in the URL survives.
-      redirectTo: `${window.location.origin}/workspace/home`,
-    });
-    if (error) setError(error.message);
-    else setSuccess("Password reset link sent — check your email.");
   };
 
   return createPortal(
@@ -140,6 +139,11 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
             <X className="w-4 h-4" />
           </button>
 
+          {view === "forgot" ? (
+            <div className="lg:min-h-[444px] flex flex-col justify-center">
+              <ForgotPassword initialEmail={email} onBack={() => setView("form")} />
+            </div>
+          ) : (<>
           {/* header */}
           <h2 className="text-white text-[20px] font-bold mb-1">
             {isSignup ? title ?? "Welcome to Zyvo" : "Welcome back"}
@@ -188,7 +192,7 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
                 {!isSignup && (
                   <button
                     type="button"
-                    onClick={handleForgotPassword}
+                    onClick={() => { setError(""); setSuccess(""); setView("forgot"); }}
                     className="text-[#9F5CFF] text-xs hover:text-purple-300 transition"
                   >
                     Forgot password?
@@ -209,13 +213,14 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
 
             {error && <p className="text-red-400 text-xs">{error}</p>}
             {success && <p className="text-emerald-400 text-xs">{success}</p>}
+            {cooldown.secondsLeft > 0 && <p role="status" className="text-white/55 text-xs">Too many tries in a short time. It's nothing you did.</p>}
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || cooldown.secondsLeft > 0}
               className="w-full py-[11px] rounded-xl bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white font-semibold text-sm hover:opacity-90 transition mt-1 disabled:opacity-50"
             >
-              {loading ? "Please wait…" : isSignup ? "Continue" : "Sign in"}
+              {loading ? "Please wait…" : cooldown.secondsLeft > 0 ? `Try again in ${formatCountdown(cooldown.secondsLeft)}` : isSignup ? "Continue" : "Sign in"}
             </button>
           </form>
 
@@ -229,6 +234,7 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
               {isSignup ? "Sign in" : "Sign up for free"}
             </button>
           </p>
+          </>)}
         </div>
       </div>
     </div>,
