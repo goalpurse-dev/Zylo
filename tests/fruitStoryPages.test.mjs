@@ -179,3 +179,41 @@ test("the tool opens pre-filled from a handed-over prompt, never from the URL", 
   assert.match(button, /stashFruitStory\(/);
   assert.doesNotMatch(button, /\?prompt=|searchParams/);
 });
+
+test("merged fruit posts: 301 on the server, redirect in the app, gone from the sitemap, no links left", () => {
+  const merges = {
+    "/blog/ai-fruit-story-series-universe": "/ai-fruit-story-maker",
+    "/blog/ai-fruit-story-unhinged-plots": "/blog/best-ai-fruit-story-ideas",
+    "/blog/ai-fruit-story-time": "/blog/ai-fruit-story-pricing",
+    "/blog/ai-fruit-story-quiz": "/blog/ai-fruit-story-character-ideas",
+    "/blog/ai-fruit-story-group-chat": "/blog/ai-fruit-story-character-ideas",
+    "/blog/ai-fruit-story-fan-theories": "/blog/ai-fruit-story-character-ideas",
+    "/blog/ai-fruit-story-couples": "/blog/ai-fruit-story-character-ideas",
+    "/blog/ai-fruit-story-best-lines": "/blog/ai-fruit-story-talking-dialogue-tips",
+    "/blog/ai-fruit-story-duets-stitches": "/blog/how-to-go-viral-tiktok-fruit-drama",
+  };
+  const redirects = JSON.parse(read("vercel.json")).redirects;
+  const app = read("src/App.jsx");
+  const sitemap = read("public/sitemap.xml");
+  const linked = ["src/pages/landing/AIFruitStoryLanding.jsx", "src/data/blogArticles.js", "src/data/publicSeoMetadata.js", "src/data/structuredData.js"].map(read).join("\n");
+  for (const [from, to] of Object.entries(merges)) {
+    assert.deepEqual(redirects.filter((r) => r.source === from), [{ source: from, destination: to, statusCode: 301 }], from);
+    assert.ok(app.includes(`<Route path="${from}" element={<Navigate to="${to}" replace />} />`), `${from}: app redirect`);
+    assert.ok(!sitemap.includes(`${from}<`), `${from} is still in the sitemap`);
+    assert.ok(sitemap.includes(`https://www.tryzyvo.com${to}<`), `${to} must be in the sitemap`);
+    assert.ok(!existsSync(new URL(`../src/app/blog/imagegenerator/${from.replace("/blog/", "")}.jsx`, import.meta.url)), `${from}: the post file is gone`);
+    assert.ok(!linked.includes(`${from}"`), `${from} is still linked or registered`);
+  }
+});
+
+test("free wording on video tool pages: no template or script tool is called free; free images are 5", () => {
+  const landing = (name) => read(`src/pages/landing/${name}.jsx`);
+  for (const name of ["FaceAsmrLanding", "MicroCameraAnimalLanding", "ClayRescueLanding"]) {
+    assert.doesNotMatch(landing(name).split("\n").filter((line) => !/^\s*(\/\/|\*|\/\*)/.test(line)).join("\n"), /free to start|it's free|free plan available|→ free| free →|video free|rescue free/i, name);
+  }
+  for (const name of ["AIProductPhotoGenerator", "ZyvoVsMidjourneyProductPhotos"]) {
+    assert.doesNotMatch(read(`src/app/blog/productphotos/${name}.jsx`), /10 (free|images|product images|AI image)|✓ 10\/mo|watermark-free downloads/i, name);
+  }
+  const image = graphFor("/image-generator").find((node) => node["@type"] === "FAQPage").mainEntity.find((q) => /free/i.test(q.name));
+  assert.match(image.acceptedAnswer.text, /5 image generations/);
+});

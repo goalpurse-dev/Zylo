@@ -112,7 +112,7 @@ export default function WhyGiantHandRescueVideosGoViral() {
               <p className="mb-2 text-[15px] font-bold text-[#7A3BFF]">Make a Giant Hand Rescue Video</p>
               <p className="mb-4 text-[14px] text-[#4A4A55]">Use Clay Rescue to generate a vertical miniature rescue clip with a visible fix and final reaction.</p>
               <Link to="/workspace/clay-rescue" className="inline-block rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold text-white transition hover:opacity-90">
-                Try Clay Rescue Free
+                Try Clay Rescue
               </Link>
             </div>
 

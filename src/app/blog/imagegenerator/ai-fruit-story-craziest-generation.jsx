@@ -5,28 +5,10 @@ import { optImg } from "../../../lib/optImage.js";
 
 const related = [
   {
-    title: "The Most Unhinged AI Fruit Story Plots We've Ever Generated",
-    description: "Ten genuinely deranged fruit-drama premises, ranked by chaos level, free to steal.",
-    date: "17.08.2026",
-    slug: "/blog/ai-fruit-story-unhinged-plots",
-  },
-  {
     title: "How to Write the Perfect AI Fruit Story Prompt (Formula + Examples)",
     description: "A repeatable 6-part prompt formula, weak-vs-strong examples, and a formula variant for each drama type.",
     date: "09.08.2026",
     slug: "/blog/ai-fruit-story-prompt-formula",
-  },
-  {
-    title: "8 AI Fruit Story Fan Theories That Are Probably True",
-    description: "Playful lore theories connecting the recurring cast into one shared universe.",
-    date: "17.08.2026",
-    slug: "/blog/ai-fruit-story-fan-theories",
-  },
-  {
-    title: "The Most Iconic AI Fruit Story Lines Ever Written (Ranked)",
-    description: "Eight lines the format lives and dies on, and why each one works.",
-    date: "17.08.2026",
-    slug: "/blog/ai-fruit-story-best-lines",
   },
 ];
 

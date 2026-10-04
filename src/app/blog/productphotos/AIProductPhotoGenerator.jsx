@@ -252,7 +252,7 @@ export default function AIProductPhotoGenerator() {
               Social media content is a volume game. Brands posting daily on Instagram, TikTok, and Pinterest need a constant stream of high-quality visuals — but most can't afford a photoshoot every week.
             </p>
             <p className="text-[15px] text-[#4A4A55] leading-relaxed mb-6">
-              Zyvo's <strong className="text-[#110829]">free AI image creator</strong> lets you generate up to 10 product and lifestyle images per month at no cost. No credit card required. Outputs are formatted for every major social platform and ready to post in seconds.
+              Zyvo's <strong className="text-[#110829]">free AI image creator</strong> lets you generate 5 product and lifestyle images every 30 days at no cost. No credit card required. Outputs are formatted for every major social platform and ready to post in seconds.
             </p>
 
             <div className="grid grid-cols-2 gap-3 mb-6">
@@ -265,9 +265,9 @@ export default function AIProductPhotoGenerator() {
               <p className="text-[12px] font-bold uppercase tracking-widest text-[#7A3BFF] mb-4">Zyvo free plan — what you get</p>
               <div className="flex flex-col gap-3">
                 {[
-                  ["10 AI image generations / month", "Resets monthly — no card needed"],
+                  ["5 AI image generations", "Every 30 days — no card needed"],
                   ["All image styles & models", "Access every background and scene preset"],
-                  ["Watermark-free downloads", "Own and publish every image you create"],
+                  ["Paid plans for more", "Monthly credits, video tools and watermark-free exports"],
                   ["Product & lifestyle modes", "Clean studio shots and real-world scenes"],
                 ].map(([title, sub]) => (
                   <div key={title} className="flex items-start gap-3">
@@ -306,7 +306,7 @@ export default function AIProductPhotoGenerator() {
                     ["Product-trained AI model", "✓", "✗", "N/A"],
                     ["Background removal", "✓ Auto", "Manual", "Requires editing"],
                     ["Platform-optimised outputs", "✓", "✗", "Manual resize"],
-                    ["Free tier available", "✓ 10/mo", "Limited", "✗"],
+                    ["Free tier available", "✓ 5 images", "Limited", "✗"],
                     ["Time to first image", "< 10 sec", "< 30 sec", "Days"],
                     ["Ecommerce-ready quality", "✓", "Inconsistent", "✓"],
                     ["Social media formats", "✓", "Partial", "Manual"],
@@ -332,7 +332,7 @@ export default function AIProductPhotoGenerator() {
                 {
                   n: "01",
                   title: "Sign up free — no card required",
-                  body: "Create a Zyvo account in 30 seconds. You start with 10 free generations that reset monthly.",
+                  body: "Create a Zyvo account in 30 seconds. You start with 5 free image generations, renewed every 30 days.",
                 },
                 {
                   n: "02",
@@ -376,7 +376,7 @@ export default function AIProductPhotoGenerator() {
               {[
                 {
                   q: "Is Zyvo's AI product photo generator really free?",
-                  a: "Yes. Zyvo offers 10 free AI image generations per month with no credit card required. Free plan outputs are watermark-free and commercially usable. Paid plans start at €12/month for higher volume.",
+                  a: "Yes, to start. Zyvo offers 5 free AI image generations every 30 days with no credit card required. Paid plans start at €18/month for higher volume.",
                 },
                 {
                   q: "How good is the AI background removal for ecommerce products?",
@@ -406,7 +406,7 @@ export default function AIProductPhotoGenerator() {
               <div className="bg-gradient-to-br from-[#0E0C15] via-[#1a0d38] to-[#0E0C15] px-8 py-10 text-center">
                 <p className="text-[12px] font-bold uppercase tracking-widest text-[#9B6FFF] mb-3">Start for free</p>
                 <h3 className="text-white text-2xl font-extrabold mb-3">Generate your first product photo in 10 seconds</h3>
-                <p className="text-white/50 text-[14px] mb-7 max-w-sm mx-auto">10 free images every month. No credit card. No photoshoot. Just results.</p>
+                <p className="text-white/50 text-[14px] mb-7 max-w-sm mx-auto">5 free image generations. No credit card. No photoshoot. Just results.</p>
                 <Link
                   to="/workspace/image-generator"
                   className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-white font-bold text-[15px] transition hover:opacity-90 active:scale-[0.98]"

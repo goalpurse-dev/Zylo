@@ -24,7 +24,7 @@ const related = [
 ];
 
 const STEPS = [
-  { n: "1", title: "Create your account", desc: "Sign up with your email — no payment required to start generating with your free credit balance." },
+  { n: "1", title: "Create your account", desc: "Sign up with your email. No payment is needed: a free account gets 5 image generations. Video tools need a paid plan." },
   { n: "2", title: "Pick a tool that matches your idea", desc: "Zyvo is organized around specific formats — AI Fruit Story, 2AM Worlds, Clay Rescue, Micro Camera Animal, Face ASMR, the general image generator, and more. Pick the one that fits what you want to make." },
   { n: "3", title: "Describe your idea in plain language", desc: "No prompt-engineering knowledge required — describe the premise, world, or scene, and the tool handles the format-specific structure." },
   { n: "4", title: "Review and generate", desc: "Preview your setup, then generate. Progress shows in your workspace while the content is created." },
@@ -135,7 +135,7 @@ export default function HowToGetStartedWithZyvo() {
           <section className="pt-4">
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Create Your Account</h2>
             <p className="text-[16px] leading-relaxed mb-6">
-              Sign up free and generate your first piece of content today.
+              Sign up free and make your first 5 images today.
             </p>
             <Link
               to="/signup"

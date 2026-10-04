@@ -91,7 +91,7 @@ export default function FreeViralAITool() {
           <p className="text-[17px] text-[#4A4A55] leading-relaxed">
             This guide breaks down exactly how it works, what the creators currently
             going viral are doing differently, and how to replicate their results
-            starting today — for free.
+            starting today. You can start free with 5 image generations; video tools need a paid plan.
           </p>
         </section>
 
@@ -151,7 +151,7 @@ export default function FreeViralAITool() {
               {
                 step: "05",
                 title: "Stitch clips together for long-form",
-                body: "Generate 5–10 short AI video clips and stitch them in CapCut. You get a longer video with consistent visuals, better watch time, and a professional look — all from a free viral AI tool.",
+                body: "Generate 5–10 short AI video clips and stitch them in CapCut. You get a longer video with consistent visuals, better watch time, and a professional look — all from one tool. Video generation needs a paid plan.",
               },
               {
                 step: "06",
@@ -219,12 +219,12 @@ export default function FreeViralAITool() {
             </p>
             <div className="space-y-3">
               {[
-                "Free to start — generate without a credit card",
+                "Free to start with 5 image generations, no credit card",
                 "AI image generator + video generator in one workspace",
                 "Reference image support for consistent characters",
                 "Multiple viral-optimized visual styles built in",
                 "Outputs in formats ready for TikTok, Reels, and Pinterest",
-                "No watermarks on free generations",
+                "Video tools on paid plans, in the same workspace",
               ].map((item) => (
                 <div key={item} className="flex gap-3 items-start">
                   <span className="text-[#7A3BFF] font-bold text-[18px] leading-none mt-0.5">✓</span>
@@ -307,7 +307,7 @@ export default function FreeViralAITool() {
               to="/workspace/video-generator"
               className="inline-block rounded-xl bg-white border border-[#7A3BFF] px-12 py-5 text-[#7A3BFF] font-semibold hover:bg-[#F3EEFF] transition text-[16px]"
             >
-              Try Video Generator Free →
+              Try Video Generator →
             </Link>
           </div>
         </div>

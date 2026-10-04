@@ -110,7 +110,7 @@ export default function BestAIToolsFacelessTikTokVideos() {
               link: "/workspace/viral-script",
               why: "The script is the most important part of any TikTok video — including faceless ones. The hook determines whether the algorithm pushes it. Zyvo's Script Builder generates a full TikTok script in 60 seconds: hook, scene breakdown, CTA, and 3 alternate hooks for A/B testing. It has 8 creator style presets built specifically for short-form — including TikTok Viral, Viral Skeleton (for faceless/cinematic content), and Story Arc.",
               bestFor: "All faceless niches. The Viral Skeleton style is specifically designed for faceless AI-visual content — it generates 1 main scene + 5 B-roll prompts, all structured as video generation prompts.",
-              free: true,
+              free: false,
             },
             {
               num: "02",
@@ -212,7 +212,7 @@ export default function BestAIToolsFacelessTikTokVideos() {
         <section className="mb-32 bg-[#110829] rounded-3xl p-12 text-center">
           <h2 className="text-[32px] font-bold text-white mb-4">Start your faceless TikTok channel today</h2>
           <p className="text-[17px] text-white/60 mb-8 max-w-xl mx-auto">
-            Everything in this stack — script builder, video generator, image generator — is in one platform. Free to start.
+            Everything in this stack — script builder, video generator, image generator — is in one platform. Start free with 5 image generations; the script builder and the video generator need a paid plan.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/workspace/video-generator" className="inline-block bg-[#7A3BFF] text-white font-semibold text-[16px] px-8 py-4 rounded-xl hover:bg-[#6930e8] transition">

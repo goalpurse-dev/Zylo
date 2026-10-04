@@ -385,8 +385,8 @@ export default function ZyvoVsMidjourneyProductPhotos() {
                 </thead>
                 <tbody>
                   {[
-                    ["Free tier", "✓ 10 images/month, no card", "✗ No free tier"],
-                    ["Entry paid plan", "€12/month — 200 images", "$10/month — 200 images"],
+                    ["Free tier", "✓ 5 image generations, no card", "✗ No free tier"],
+                    ["Entry paid plan", "€18/month — 750 credits", "$10/month — 200 images"],
                     ["Background removal", "Included in all plans", "Not available"],
                     ["Ecommerce presets", "Included", "Not available"],
                     ["Web app (no Discord)", "✓", "✗"],
@@ -402,7 +402,7 @@ export default function ZyvoVsMidjourneyProductPhotos() {
               </table>
             </div>
             <p className="text-[14px] text-[#4A4A55] leading-relaxed mb-12">
-              Zyvo's free plan is genuinely useful for small brands — 10 product images per month with no watermark, no credit card, and commercial usage rights included.
+              Zyvo is free to start: 5 image generations every 30 days with no credit card.
               Midjourney has no free tier in 2026 and requires a paid subscription from day one.
             </p>
 
@@ -514,7 +514,7 @@ export default function ZyvoVsMidjourneyProductPhotos() {
                 },
                 {
                   q: "Does Zyvo have a free plan? Does Midjourney?",
-                  a: "Zyvo offers 10 free AI image generations per month with no credit card required. Midjourney removed its free tier in 2024 and requires a paid subscription starting at $10/month.",
+                  a: "Zyvo offers 5 free AI image generations every 30 days with no credit card required. Midjourney removed its free tier in 2024 and requires a paid subscription starting at $10/month.",
                 },
                 {
                   q: "Which AI tool is better for Shopify product photos?",
@@ -536,7 +536,7 @@ export default function ZyvoVsMidjourneyProductPhotos() {
               <div className="bg-gradient-to-br from-[#0E0C15] via-[#1a0d38] to-[#0E0C15] px-8 py-10 text-center">
                 <p className="text-[12px] font-bold uppercase tracking-widest text-[#9B6FFF] mb-3">Try for free</p>
                 <h3 className="text-white text-2xl font-extrabold mb-3">See why Zyvo beats Midjourney for product photos</h3>
-                <p className="text-white/50 text-[14px] mb-7 max-w-sm mx-auto">10 free generations every month. Background removal included. No Discord required.</p>
+                <p className="text-white/50 text-[14px] mb-7 max-w-sm mx-auto">5 free image generations. Background removal included. No Discord required.</p>
                 <Link
                   to="/workspace/image-generator"
                   className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-white font-bold text-[15px] transition hover:opacity-90 active:scale-[0.98]"

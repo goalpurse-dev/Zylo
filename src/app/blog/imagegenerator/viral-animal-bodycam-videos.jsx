@@ -91,7 +91,7 @@ export default function ViralAnimalBodycamVideos() {
 
             <div className="my-10 rounded-2xl border border-purple-200 bg-purple-50 p-6">
               <p className="text-[15px] font-bold text-[#7A3BFF] mb-2">Generate Animal Bodycam Videos in Minutes</p>
-              <p className="text-[14px] text-[#4A4A55] mb-4">Type any animal, choose a length, and Zyvo generates cinematic micro-camera POV scenes. Free to start.</p>
+              <p className="text-[14px] text-[#4A4A55] mb-4">Type any animal, choose a length, and Zyvo generates cinematic micro-camera POV scenes. Needs a paid plan.</p>
               <Link to="/workspace/micro-camera-animal" className="inline-block rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold text-white hover:opacity-90 transition">
                 Try Micro Camera Animal →
               </Link>
@@ -154,10 +154,10 @@ export default function ViralAnimalBodycamVideos() {
             </p>
 
             <div className="my-8 rounded-2xl border border-purple-200 bg-purple-50 p-6">
-              <p className="text-[16px] font-bold text-[#7A3BFF] mb-2">Generate Your First Animal Bodycam Video Free</p>
+              <p className="text-[16px] font-bold text-[#7A3BFF] mb-2">Generate Your First Animal Bodycam Video</p>
               <p className="text-[14px] text-[#4A4A55] mb-4">Type any animal, pick a length, and Zyvo generates cinematic underground POV scenes. Under 5 minutes from start to download.</p>
               <Link to="/workspace/micro-camera-animal" className="inline-block rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold text-white hover:opacity-90 transition">
-                Try Micro Camera Animal Free →
+                Try Micro Camera Animal →
               </Link>
             </div>
 
@@ -189,7 +189,7 @@ export default function ViralAnimalBodycamVideos() {
             <Link to="/workspace/micro-camera-animal"
               className="block rounded-2xl p-5 text-white text-center font-bold text-[14px] hover:opacity-90 transition shadow-[0_4px_20px_rgba(122,59,255,0.35)]"
               style={{ background: "linear-gradient(135deg,#7A3BFF,#A855F7)" }}>
-              Create Bodycam Video Free →
+              Create Bodycam Video →
             </Link>
           </aside>
         </div>

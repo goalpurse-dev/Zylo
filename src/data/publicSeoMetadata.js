@@ -228,47 +228,12 @@ export const PUBLIC_SEO_METADATA = {
     ),
     image: `${SITE_URL}/blog-assets/ai-fruit-story-plot-twist-hero.png`,
   },
-  "/blog/ai-fruit-story-couples": {
-    ...blog(
-      "The Most Iconic AI Fruit Story Couples (And How to Ship Your Own)",
-      "Four pairing dynamics worth building a series around, and a practical method for designing your own AI Fruit Story pairing.",
-    ),
-    image: `${SITE_URL}/blog-assets/ai-fruit-story-couples-hero.png`,
-  },
-  "/blog/ai-fruit-story-duets-stitches": {
-    ...blog(
-      "How to Use TikTok Duets and Stitches to Make Your AI Fruit Story Go Viral",
-      "How to structure an AI Fruit Story video so it's built to get duetted and stitched, plus what makes a clip reaction-friendly.",
-    ),
-    image: `${SITE_URL}/blog-assets/ai-fruit-story-duets-hero.png`,
-  },
-  "/blog/ai-fruit-story-series-universe": {
-    ...blog(
-      "How to Build an AI Fruit Story Series (Turn One Video Into a Cinematic Universe)",
-      "Four pillars of a fruit story universe — recurring cast, consistent world, cross-video threads — and a simple way to start your first series.",
-    ),
-    image: `${SITE_URL}/blog-assets/ai-fruit-story-universe-hero.png`,
-  },
   "/blog/ai-fruit-story-mistakes": {
     ...blog(
       "10 Mistakes Killing Your AI Fruit Story Views (And How to Fix Each One)",
       "The ten most common structural mistakes in AI Fruit Story videos, with a specific fix for each one.",
     ),
     image: `${SITE_URL}/blog-assets/ai-fruit-story-mistakes-hero.png`,
-  },
-  "/blog/ai-fruit-story-unhinged-plots": {
-    ...blog(
-      "The Most Unhinged AI Fruit Story Plots We've Ever Generated",
-      "Ten genuinely deranged AI fruit-drama premises, ranked by chaos level, that you're fully welcome to steal word for word.",
-    ),
-    image: `${SITE_URL}/blog-assets/ai-fruit-story-unhinged-plots-hero.png`,
-  },
-  "/blog/ai-fruit-story-quiz": {
-    ...blog(
-      "Which AI Fruit Story Character Are You? Take the Quiz",
-      "A five-question quiz matching you to one of five recurring AI Fruit Story characters, with story ideas for your result.",
-    ),
-    image: `${SITE_URL}/blog-assets/ai-fruit-story-quiz-hero.png`,
   },
   "/blog/ai-fruit-story-drama-tier-list": {
     ...blog(
@@ -283,27 +248,6 @@ export const PUBLIC_SEO_METADATA = {
       "A scene-by-scene breakdown of one deliberately chaotic AI Fruit Story prompt, and why it still landed cleanly.",
     ),
     image: `${SITE_URL}/blog-assets/ai-fruit-story-craziest-generation-hero.png`,
-  },
-  "/blog/ai-fruit-story-fan-theories": {
-    ...blog(
-      "8 AI Fruit Story Fan Theories That Are Probably True",
-      "Playful lore theories connecting the recurring AI Fruit Story cast into one shared cinematic universe.",
-    ),
-    image: `${SITE_URL}/blog-assets/ai-fruit-story-fan-theories-hero.png`,
-  },
-  "/blog/ai-fruit-story-best-lines": {
-    ...blog(
-      "The Most Iconic AI Fruit Story Lines Ever Written (Ranked)",
-      "Eight of the format's most quotable lines, who said them, and the structural reason each one works.",
-    ),
-    image: `${SITE_URL}/blog-assets/ai-fruit-story-best-lines-hero.png`,
-  },
-  "/blog/ai-fruit-story-group-chat": {
-    ...blog(
-      "If AI Fruit Story Characters Had a Group Chat",
-      "A comedic look at what the cast's messages would look like between episodes, plus why the bit works as a bonus content format.",
-    ),
-    image: `${SITE_URL}/blog-assets/ai-fruit-story-group-chat-hero.png`,
   },
   "/blog/what-is-ai-fruit-story": {
     ...blog(
@@ -339,13 +283,6 @@ export const PUBLIC_SEO_METADATA = {
       "No. AI Fruit Story needs a paid Zyvo plan and uses credits. What scene pictures and video cost, which plan gives V2, V3 or V4, and how to keep costs down.",
     ),
     image: `${SITE_URL}/blog-assets/ai-fruit-story-pricing-hero.png`,
-  },
-  "/blog/ai-fruit-story-time": {
-    ...blog(
-      "How Long Does It Take to Make an AI Fruit Story Video?",
-      "The honest breakdown of what actually takes time in AI Fruit Story — writing the premise, character generation, scenes, and animated dialogue.",
-    ),
-    image: `${SITE_URL}/blog-assets/ai-fruit-story-time-hero.png`,
   },
   "/blog/ai-fruit-story-cliffhangers": {
     ...blog(

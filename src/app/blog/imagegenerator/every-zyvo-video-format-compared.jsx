@@ -125,7 +125,10 @@ export default function EveryZyvoVideoFormatCompared() {
           </section>
 
           <section className="pt-4">
-            <h2 className="text-[26px] font-bold text-[#110829] mb-4">Try Any Format Free</h2>
+            <h2 className="text-[26px] font-bold text-[#110829] mb-4">Start Free</h2>
+            <p className="text-[16px] leading-relaxed mb-6">
+              Start free with 5 image generations. Video tools like AI Fruit Story need a paid plan.
+            </p>
             <Link
               to="/signup"
               className="inline-block bg-gradient-to-r from-[#7A3BFF] to-[#A855F7] text-white font-bold text-[15px] px-8 py-4 rounded-[14px] hover:opacity-90 transition"

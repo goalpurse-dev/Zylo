@@ -5,12 +5,6 @@ import { optImg } from "../../../lib/optImage.js";
 
 const related = [
   {
-    title: "How to Build an AI Fruit Story Series (Turn One Video Into a Cinematic Universe)",
-    description: "Four pillars of a fruit story universe and a simple way to start your first series.",
-    date: "11.08.2026",
-    slug: "/blog/ai-fruit-story-series-universe",
-  },
-  {
     title: "AI Fruit Story Cliffhanger Endings: How to Make Viewers Come Back for Part 2",
     description: "Four cliffhanger structures that consistently drive part-2 demand.",
     date: "21.08.2026",
@@ -115,7 +109,7 @@ export default function AIFruitStoryFinaleIdeas() {
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Write Your Finale</h2>
             <p className="text-[16px] leading-relaxed mb-6">
               Pick an ending structure above and build your final scene around it. For the series structure leading up to it, see{" "}
-              <Link to="/blog/ai-fruit-story-series-universe" className="text-[#7A3BFF] hover:underline font-semibold">the series-building guide</Link>.
+              <Link to="/ai-fruit-story-maker#series" className="text-[#7A3BFF] hover:underline font-semibold">how AI fruit story series work</Link>.
             </p>
             <Link
               to="/ai-fruit-story-maker"

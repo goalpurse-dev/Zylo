@@ -11,12 +11,6 @@ const related = [
     slug: "/blog/ai-fruit-story-plot-twists",
   },
   {
-    title: "How to Build an AI Fruit Story Series (Turn One Video Into a Cinematic Universe)",
-    description: "Four pillars of a fruit story universe, and a simple way to start your first series.",
-    date: "11.08.2026",
-    slug: "/blog/ai-fruit-story-series-universe",
-  },
-  {
     title: "10 Mistakes Killing Your AI Fruit Story Views (And How to Fix Each One)",
     description: "The ten most common structural mistakes, with a specific fix for each one.",
     date: "11.08.2026",
@@ -131,7 +125,7 @@ export default function AIFruitStoryCliffhangers() {
             <h2 className="text-[28px] font-bold text-[#110829] mb-4">Turning a cliffhanger into a series</h2>
             <p className="text-[17px] leading-relaxed">
               A single cliffhanger gets you one sequel. A pattern of them, resolved-then-reset each episode, is what turns a story into a series people follow. See{" "}
-              <Link to="/blog/ai-fruit-story-series-universe" className="text-[#7A3BFF] hover:underline font-semibold">the series-building guide</Link>{" "}
+              <Link to="/ai-fruit-story-maker#series" className="text-[#7A3BFF] hover:underline font-semibold">how AI fruit story series work</Link>{" "}
               for the full structure.
             </p>
           </section>

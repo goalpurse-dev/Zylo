@@ -215,7 +215,7 @@ export default function FreeAIImageGenerator() {
             <ul className="space-y-3 text-[#4A4A55]">
               <li className="flex gap-3 items-start">
                 <span className="text-green-500 font-bold">✓</span>
-                <span>Free to start — no credit card required</span>
+                <span>5 free image generations — no credit card required</span>
               </li>
               <li className="flex gap-3 items-start">
                 <span className="text-green-500 font-bold">✓</span>
@@ -279,7 +279,7 @@ export default function FreeAIImageGenerator() {
             <Link to="/workspace/image-generator" className="text-[#7A3BFF] font-medium hover:underline">
               free AI image generator
             </Link>{" "}
-            is where to start. Free to use, built for creators, and optimized for
+            is where to start. Free to start with 5 image generations, built for creators, and optimized for
             the formats that actually perform in 2026.
           </p>
         </section>

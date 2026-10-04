@@ -128,9 +128,9 @@ export default function MicroCameraAnimalLanding() {
                   className="w-full sm:w-auto rounded-[16px] px-8 py-4 text-[16px] font-black text-white shadow-[0_8px_32px_rgba(124,58,237,0.5)] transition hover:opacity-90 active:scale-[0.98]"
                   style={{ background: "linear-gradient(135deg,#7C3AED,#A855F7)" }}
                 >
-                  Create Free Bodycam Video →
+                  Create Bodycam Video →
                 </button>
-                <span className="text-[13px] text-white/30">No credit card · Free to start</span>
+                <span className="text-[13px] text-white/30">Account and paid plan required</span>
               </div>
 
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2">
@@ -328,7 +328,7 @@ export default function MicroCameraAnimalLanding() {
         <div className="mx-auto max-w-2xl px-4 md:px-6 text-center">
           <h2 className="mb-4 text-[28px] font-black tracking-tight sm:text-[38px]">
             Generate Your First Animal Bodycam<br />
-            <span className="bg-gradient-to-r from-[#A855F7] to-[#7C3AED] bg-clip-text text-transparent">Video Right Now — It's Free</span>
+            <span className="bg-gradient-to-r from-[#A855F7] to-[#7C3AED] bg-clip-text text-transparent">Video Right Now</span>
           </h2>
           <p className="mb-8 text-[15px] text-white/45">
             Type any animal. Zyvo mounts a micro-camera and generates the underground scenes. Post-ready in minutes.
@@ -340,7 +340,7 @@ export default function MicroCameraAnimalLanding() {
           >
             Create My Bodycam Video →
           </button>
-          <p className="mt-4 text-[12px] text-white/25">No credit card required · Free plan available</p>
+          <p className="mt-4 text-[12px] text-white/25">Account and paid plan required</p>
         </div>
       </section>
 

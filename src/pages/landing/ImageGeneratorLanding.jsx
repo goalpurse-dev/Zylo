@@ -31,7 +31,7 @@ const FAQS = [
   },
   {
     q: "Is it free to start?",
-    a: "Yes, Zyvo's image generator has a free entry point, with paid tiers for higher volume and resolution.",
+    a: "Yes. A free account gets 5 image generations every 30 days, with no card needed. Paid plans add monthly credits for higher volume.",
   },
   {
     q: "What sizes and platforms is this built for?",

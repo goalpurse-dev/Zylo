@@ -5,12 +5,6 @@ import { optImg } from "../../../lib/optImage.js";
 
 const related = [
   {
-    title: "The Most Unhinged AI Fruit Story Plots We've Ever Generated",
-    description: "Ten genuinely deranged fruit-drama premises, ranked by chaos level, free to steal.",
-    date: "17.08.2026",
-    slug: "/blog/ai-fruit-story-unhinged-plots",
-  },
-  {
     title: "The Wildest AI Fruit Story Plot Twists (And How to Write Your Own)",
     description: "Five twist structures that outperform a straightforward reveal, with real examples.",
     date: "10.08.2026",
