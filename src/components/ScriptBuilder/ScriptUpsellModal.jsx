@@ -105,7 +105,7 @@ export default function ScriptUpsellModal({ open, mode, onClose }) {
 
             {/* Primary CTA */}
             <button
-              onClick={() => navigate(isGuest ? "/signup" : "/workspace/pricing")}
+              onClick={() => navigate(isGuest ? "/signup" : "/pricing")}
               className="w-full py-4 rounded-2xl text-white font-bold text-[15px] transition-all hover:opacity-90 active:scale-[0.98] mb-3"
               style={{
                 background: "linear-gradient(135deg, #7A3BFF, #9D6BFF)",

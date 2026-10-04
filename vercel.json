@@ -11,6 +11,11 @@
       "statusCode": 301
     },
     {
+      "source": "/workspace/pricing",
+      "destination": "/pricing",
+      "statusCode": 301
+    },
+    {
       "source": "/blog/ai-visual-styles-most-engagementd",
       "destination": "/blog/ai-visual-styles-most-engagement",
       "permanent": true

@@ -5,7 +5,7 @@ export default function UpgradeToast({ onClose }) {
 
   const handleUpgrade = () => {
     onClose();
-    navigate("/workspace/pricing");
+    navigate("/pricing");
   };
 
   return (

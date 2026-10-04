@@ -9,6 +9,7 @@ import CreatorRewardsModal from "../../components/CreatorRewardsModal";
 import WorkspaceRouteSeo from "../../components/seo/WorkspaceRouteSeo.jsx";
 import { WhatsNewModal } from "../../components/launch/LaunchUI.jsx";
 import AnnouncementBar from "../../components/launch/AnnouncementBar.jsx";
+import PastDueNotice from "../../components/billing/PastDueNotice.jsx";
 import { LONG_FORM_ANNOUNCEMENT, trackLaunch } from "../../components/launch/launch";
 
 // ── Promo banner ──────────────────────────────────────────────
@@ -133,7 +134,7 @@ useEffect(() => {
     "/": "Home",
     "/workspace/creations": "Creations",
     "/workspace/creations/viral-videos": "Viral Videos",
-    "/workspace/pricing": "Pricing",
+    "/pricing": "Pricing",
     "/workspace/image-generator": "Image Generator",
     "/workspace/video-generator": "Video Generator",
     "/workspace/viral-script": "Video Generator",
@@ -218,6 +219,7 @@ useEffect(() => {
       <WorkspaceRouteSeo />
       <div ref={noticeRef} className="relative z-[70] w-full shrink-0">
         {!hidePromo && <AnnouncementBar />}
+        <PastDueNotice />
       </div>
 
       <div className="flex min-h-0 flex-1 overflow-hidden">

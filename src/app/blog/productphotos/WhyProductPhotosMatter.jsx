@@ -286,7 +286,7 @@ export default function BlogPost() {
               Generate my product photos →
             </Link>
             <Link
-             to="/workspace/pricing"
+             to="/pricing"
               className=" bg-white text-[#110829]   inline-flex items-center justify-center rounded-2xl border border-black px-6 py-3 text-base font-semibold hover:bg-white/10"
             >
               View pricing

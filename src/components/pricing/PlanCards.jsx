@@ -1,6 +1,5 @@
 import { Check } from "lucide-react";
 import { startCheckout, openBillingPortal } from "../../lib/payments";
-import { supabase } from "../../lib/supabaseClient";
 import { PLAN_PRICE_IDS } from "../../../supabase/functions/_shared/stripePlanPrices.js";
 import { PLAN_ORDER, PRICING_PLANS, LONG_FORM_HEADLINE_MINUTES, outputsForPlan, longFormOutputs } from "../../lib/pricingOutputs";
 import { formatMoney, planPriceView } from "../../lib/planPrices";
@@ -22,14 +21,27 @@ const PLAN_FEATURES = {
   generative: [{ text: "First in the queue on busy days" }, { text: "Priority support" }, { text: "8 social posts published / day", soon: true }, { text: "5 connected accounts per platform", soon: true }],
 };
 
+/**
+ * Buys a plan, or opens the plan change in the billing portal for someone who
+ * already has a subscription. A logged-out visitor goes to sign-up and continues
+ * to checkout afterwards with the same plan and billing (lib/payments).
+ * Run it through pay.run (usePricingData): resolves true when the browser is
+ * leaving the page, and throws for pay.run to show.
+ */
 export async function subscribe({ planId, billing, account, onAskDowngrade }) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) { window.location.href = "/signup"; return; }
-  const priceId = PLAN_PRICE_IDS[planId]?.[billing];
-  if (!priceId) return;
-  if (account.hasSub) { openBillingPortal({ flow: "change_plan", returnPath: "/pricing" }); return; }
-  if (PLAN_ORDER.indexOf(planId) < PLAN_ORDER.indexOf(account.plan)) { onAskDowngrade?.(planId); return; }
-  await startCheckout({ type: "subscription", priceId, userId: user.id, email: user.email, metadata: { email: user.email, plan: planId } });
+  if (!PLAN_PRICE_IDS[planId]?.[billing]) return false;
+  if (account.hasSub) return openBillingPortal({ flow: "change_plan", returnPath: "/pricing" });
+  if (!account.lapsed && PLAN_ORDER.indexOf(planId) < PLAN_ORDER.indexOf(account.plan)) { onAskDowngrade?.(planId); return false; }
+  return startCheckout({ type: "subscription", planId, billing });
+}
+
+/** True when this is the plan the viewer has now (a lapsed subscription's plan can be bought again). */
+export const isCurrentPlan = (account, planId) => account.signedIn && !account.lapsed && account.plan === planId;
+
+/** "€180 billed yearly" for the yearly choice, null for monthly or while prices load. */
+export function yearlyTotalLabel(prices, planId, billing) {
+  if (billing !== "yearly" || prices.status !== "ready") return null;
+  return `${formatMoney(planPriceView(prices.prices, planId, "yearly").billedYearly, prices.prices.currency)} billed yearly`;
 }
 
 /** The credits box: credits first, then what they make at V2, in plain words. */
@@ -100,10 +112,14 @@ function PriceBlock({ planId }) {
         </span>
         <span className="mb-1.5 text-[13px] font-semibold text-white/45">/month</span>
       </div>
+      {/* Yearly: the amount checkout will charge, as plain as the monthly figure above. */}
+      {billing === "yearly" && (
+        <p className="mt-1.5 text-[14px] font-bold text-white/90" data-testid="yearly-total">
+          <Num status={prices.status} value={view?.billedYearly} format={(v) => money(v)} /> billed yearly
+        </p>
+      )}
       <p className="mt-1 text-[12px] text-white/40">
-        {billing === "yearly"
-          ? <>billed yearly (<Num status={prices.status} value={view?.billedYearly} format={(v) => money(v)} />) · ≈ <Num status={prices.status} value={view?.perDay} format={(v) => money(v, { cents: true })} /> a day</>
-          : <>billed monthly · ≈ <Num status={prices.status} value={view?.perDay} format={(v) => money(v, { cents: true })} /> a day</>}
+        {billing === "yearly" ? "one payment a year" : "billed monthly"} · ≈ <Num status={prices.status} value={view?.perDay} format={(v) => money(v, { cents: true })} /> a day
       </p>
     </div>
   );
@@ -122,10 +138,11 @@ function SavingLine({ planId }) {
 }
 
 export function PlanCard({ planId, onAskDowngrade }) {
-  const { account, billing } = usePricingData();
+  const { account, billing, prices, pay } = usePricingData();
   const copy = PLAN_COPY[planId];
   const recommended = Boolean(copy.badge);
-  const isCurrent = account.signedIn && account.plan === planId;
+  const isCurrent = isCurrentPlan(account, planId);
+  const yearlyTotal = yearlyTotalLabel(prices, planId, billing);
   return (
     <article
       aria-labelledby={`plan-${planId}`}
@@ -148,8 +165,16 @@ export function PlanCard({ planId, onAskDowngrade }) {
       {isCurrent ? (
         <KeyButton variant="outline" disabled>Current plan</KeyButton>
       ) : (
-        <KeyButton variant={recommended ? "lime" : "white"} onClick={() => subscribe({ planId, billing, account, onAskDowngrade })}>
-          {account.hasSub ? `Switch to ${PRICING_PLANS[planId].name}` : `Get ${PRICING_PLANS[planId].name}`}
+        <KeyButton
+          variant={recommended ? "lime" : "white"}
+          busy={pay.busy === `plan:${planId}`}
+          disabled={pay.busy != null}
+          onClick={() => pay.run(`plan:${planId}`, () => subscribe({ planId, billing, account, onAskDowngrade }))}
+        >
+          <span className="flex flex-col items-center leading-tight">
+            <span>{account.hasSub ? `Switch to ${PRICING_PLANS[planId].name}` : `Get ${PRICING_PLANS[planId].name}`}</span>
+            {yearlyTotal && !account.hasSub && <span className="text-[11px] font-semibold opacity-70">{yearlyTotal}</span>}
+          </span>
         </KeyButton>
       )}
       <SavingLine planId={planId} />

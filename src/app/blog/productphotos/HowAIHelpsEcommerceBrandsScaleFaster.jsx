@@ -298,7 +298,7 @@ export default function HowAIHelpsEcommerceBrandsScaleFaster() {
               Try Product Photos
             </a>
             <a
-              href="/workspace/pricing"
+              href="/pricing"
               className="rounded-xl border border-[#ECE8F2] px-6 py-3 font-semibold text-[#110829] hover:bg-[#F7F5FA] transition"
             >
               View Pricing

@@ -99,7 +99,7 @@ export default function Navbar() {
               )}
             </div>
 
-            <Link to="/workspace/pricing" className="text-[15px] font-semibold text-white/75 hover:text-white transition">Pricing</Link>
+            <Link to="/pricing" className="text-[15px] font-semibold text-white/75 hover:text-white transition">Pricing</Link>
             <Link to="/support"           className="text-[15px] font-semibold text-white/75 hover:text-white transition">Help</Link>
             <Link to="/login"             className="text-[15px] font-semibold text-white/75 hover:text-white transition">Login</Link>
           </nav>
@@ -204,7 +204,7 @@ export default function Navbar() {
             )}
 
             {[
-              { label: "Pricing", to: "/workspace/pricing" },
+              { label: "Pricing", to: "/pricing" },
               { label: "Help",    to: "/support" },
               { label: "Login",   to: "/login" },
             ].map((item) => (

@@ -33,12 +33,13 @@ export const WORKSPACE_ROUTE_SEO_POLICIES = [
   { path: "/workspace/stats", seoVisibility: "noindex", routeType: "private-app", publicLanding: "/stats", title: "Zyvo Stats" },
   { path: "/workspace/connections", seoVisibility: "noindex", routeType: "private-app", publicLanding: "/connections", title: "Zyvo Connections" },
   { path: "/workspace/image-gen-test", seoVisibility: "noindex", routeType: "test", title: "Zyvo Image Generator Test" },
+  // The public pricing page (was /workspace/pricing: 301 in vercel.json).
   {
-    path: "/workspace/pricing",
+    path: "/pricing",
     seoVisibility: "public",
     routeType: "public-marketing",
-    title: "Zyvo Pricing – Plans for AI Content Creation",
-    description: "Compare Zyvo plans and credits for AI image, video, and short-form content creation tools.",
+    title: "Zyvo AI Pricing – Plans and Credits for AI Video Creation",
+    description: "Compare Zyvo plans: Starter, Pro and Generative. Monthly credits for Long Form YouTube videos and viral short videos. Pay monthly or yearly, cancel anytime.",
   },
 ];
 

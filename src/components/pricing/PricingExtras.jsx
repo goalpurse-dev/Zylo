@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Check, ChevronDown } from "lucide-react";
 import { startCheckout } from "../../lib/payments";
-import { supabase } from "../../lib/supabaseClient";
 import { formatMoney } from "../../lib/planPrices";
 import KeyButton from "../ui/zyvo/KeyButton";
 import { FOCUS, cx } from "../ui/zyvo/styles";
@@ -118,7 +117,7 @@ export function EveryPlanIncludes() {
 }
 
 export function Topups() {
-  const { prices } = usePricingData();
+  const { prices, pay } = usePricingData();
   const packs = prices.status === "ready" ? Object.entries(prices.prices.topups) : [];
   const best = packs.length ? packs.reduce((a, b) => (b[1].credits / b[1].price > a[1].credits / a[1].price ? b : a))[0] : null;
   return (
@@ -134,12 +133,8 @@ export function Topups() {
             </div>
             <p className="text-[26px] font-black leading-none text-white"><Num status={prices.status} value={pack?.price} format={(v) => formatMoney(v, prices.prices.currency)} /></p>
             <p className="text-[12.5px] text-white/50"><Num status={prices.status} value={pack?.credits} /> credits</p>
-            <KeyButton size="md" variant={id === best ? "lime" : "white"} disabled={!pack}
-              onClick={async () => {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) { window.location.href = "/signup"; return; }
-                await startCheckout({ type: "topup", pack: id, userId: user.id, email: user.email });
-              }}>Buy pack</KeyButton>
+            <KeyButton size="md" variant={id === best ? "lime" : "white"} busy={pay.busy === `pack:${id}`} disabled={!pack || pay.busy != null}
+              onClick={() => pay.run(`pack:${id}`, () => startCheckout({ type: "topup", pack: id }))}>Buy pack</KeyButton>
           </div>
         ))}
       </div>

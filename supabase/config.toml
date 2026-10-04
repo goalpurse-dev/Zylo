@@ -170,6 +170,17 @@ verify_jwt = false
 [functions.email-unsubscribe]
 verify_jwt = false
 
+# Billing functions called by the signed-in app: the gateway checks the user's
+# JWT before the function runs (and the function reads the user from it again).
+[functions.create-checkout-session]
+verify_jwt = true
+
+[functions.create-portal-session]
+verify_jwt = true
+
+[functions.billing-summary]
+verify_jwt = true
+
 # Called by Stripe, which sends no Supabase JWT: the function verifies the
 # Stripe signature itself. Without this entry a CLI deploy turns JWT
 # verification on and every Stripe event is rejected with 401.

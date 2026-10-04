@@ -48,7 +48,7 @@ export default function Footer() {
                 <h3 className="text-[22px] font-extrabold mt-10 cursor-default">
                   Pricing
                 </h3>
-                <Link to="/workspace/pricing" className="text-[12px] mt-2 hover:underline">
+                <Link to="/pricing" className="text-[12px] mt-2 hover:underline">
                   Plans
                 </Link>
               </div>
@@ -119,7 +119,7 @@ export default function Footer() {
 
             <div className="flex flex-col gap-3">
               <h3 className="text-xl font-extrabold cursor-default">Pricing</h3>
-              <Link to="/workspace/pricing" className="hover:underline">
+              <Link to="/pricing" className="hover:underline">
                 Plans
               </Link>
             </div>

@@ -6,9 +6,9 @@ import { useNavigate } from "react-router-dom";
 import { CreditCard, RotateCcw } from "lucide-react";
 import { formatMoney } from "../../lib/pricingMath";
 import CancelFeedbackModal from "../../components/billing/CancelFeedbackModal";
+import { openBillingPortal, paymentErrorMessage } from "../../lib/payments";
 
 const card = "rounded-2xl border border-[#1F2230] bg-[#141622] p-5 text-white";
-const FUNCTION_PORTAL = "create-portal-session";  // your existing function
 const FUNCTION_SUMMARY = "billing-summary";       // your summary function
 
 function formatDate(unixSeconds) {
@@ -119,24 +119,19 @@ async function resumeSubscription() {
   }
 }
 
+  // flow: "payment_method" (update the card) or "home" (plan, cards, invoice history).
   async function openPortal(flow) {
+    if (loading) return;
+    let leaving = false;
     try {
       setLoading("portal");
-      const { data, error } = await supabase.functions.invoke(FUNCTION_PORTAL, {
-        method: "POST",
-        body: {
-          flow,
-          returnPath: "/settings/billing?from=portal",
-        },
-      });
-      if (error) throw error;
-      if (!data?.url) throw new Error("No portal URL returned.");
-      window.location.href = data.url;
+      leaving = await openBillingPortal({ flow, returnPath: "/settings?tab=billing&from=portal" });
     } catch (e) {
       console.error("Open portal failed:", e);
-    Toast.error(e.message || "Failed to open billing portal.");
+      Toast.error(paymentErrorMessage(e));
     } finally {
-      setLoading(null);
+      // On the way to Stripe the buttons stay disabled.
+      if (!leaving) setLoading(null);
     }
   }
 
@@ -208,13 +203,13 @@ async function resumeSubscription() {
 
   {/* PRIMARY ACTION */}
 <button
-  onClick={() => openPortal("update")}
+  onClick={() => openPortal("payment_method")}
   disabled={loading === "portal"}
   className="rounded-full bg-[#7A3BFF] px-4 py-2 text-sm font-semibold text-white hover:opacity-95 hover:shadow-lg hover:shadow-purple-500/20 disabled:opacity-60"
 >
   <span className="flex items-center gap-1">
     <CreditCard className={`w-4 h-4 ${loading === "portal" ? "animate-spin" : ""}`} />
-    {loading === "portal" ? "Opening…" : "Update"}
+    {loading === "portal" ? "Opening…" : "Update card"}
   </span>
 </button>
 
@@ -240,7 +235,7 @@ async function resumeSubscription() {
     </button>
   ) : (
     <button
-      onClick={() => navigate("/workspace/pricing")}
+      onClick={() => navigate("/pricing")}
       className="rounded-full border border-[#1F2230] bg-[#141622] px-4 py-2 text-sm font-semibold text-[#B7BBC6] hover:bg-[#1A1D2B]"
     >
       Get plan
@@ -261,7 +256,7 @@ async function resumeSubscription() {
               : "—"}
           </div>
         <button
-  onClick={() => openPortal("update")}
+  onClick={() => openPortal("payment_method")}
   disabled={loading === "portal"}
   className="rounded-lg border border-[#1F2230] text-[#B7BBC6] bg-[#141622] px-5 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-60"
 >
@@ -278,7 +273,7 @@ async function resumeSubscription() {
           <div className="flex items-center justify-between rounded-lg bg-[#1A1D2B] p-4 text-sm text-[#B7BBC6] ring-1 ring-white/10">
             <span>View and download your invoices in the billing portal.</span>
         <button
-  onClick={() => openPortal("invoices")}
+  onClick={() => openPortal("home")}
   disabled={loading === "portal"}
   className="rounded-full border border-[#1F2230] bg-[#141622] px-3 py-1.5 text-sm font-semibold text-[#B7BBC6] hover:bg-gray-50 disabled:opacity-60"
 >
@@ -296,8 +291,8 @@ async function resumeSubscription() {
                 className="flex items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-white/10"
               >
                 <span>
-                  {new Date(inv.created * 1000).toLocaleDateString()} — $
-                  {(inv.amount_paid / 100).toFixed(2)} ({inv.status})
+                  {new Date(inv.created * 1000).toLocaleDateString()} —{" "}
+                  {formatMoney(inv.amount_paid / 100, inv.currency || summary?.plan?.currency || "eur", { cents: true })} ({inv.status})
                 </span>
                 <span className="text-white">Open</span>
               </a>

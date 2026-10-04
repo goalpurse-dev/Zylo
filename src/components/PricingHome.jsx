@@ -219,7 +219,7 @@ export default function Pricing() {
   </div>
 
   <Link
-    to="/workspace/pricing"
+    to="/pricing"
     className="inline-flex items-center justify-center mt-4 h-11 px-6 rounded-xl font-semibold transition border"
     style={{ borderColor: "#1677FF", color: "#1677FF" }}
   >

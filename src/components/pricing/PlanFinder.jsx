@@ -6,7 +6,7 @@ import { formatMoney, planPriceView } from "../../lib/planPrices";
 import { PLAN_LABELS } from "../../lib/planGating";
 import KeyButton from "../ui/zyvo/KeyButton";
 import { FOCUS, cx } from "../ui/zyvo/styles";
-import { DISPLAY_FONT, subscribe } from "./PlanCards";
+import { DISPLAY_FONT, isCurrentPlan, subscribe } from "./PlanCards";
 import { LoadError, usePricingData } from "./PricingData";
 
 // What people make. "other" opens three more tools. Counts are per month.
@@ -62,7 +62,7 @@ function TierPick({ tiers, value, onChange, label }) {
 
 export default function PlanFinder() {
   const data = usePricingData();
-  const { costs, lf, prices, billing, fruit, account } = data;
+  const { costs, lf, prices, billing, fruit, account, pay } = data;
   const [picked, setPicked] = useState({ fruit: true, longForm: true });
   const [showOther, setShowOther] = useState(false);
   const [counts, setCounts] = useState(() => Object.fromEntries(ALL.map((i) => [i.id, i.start])));
@@ -180,12 +180,12 @@ export default function PlanFinder() {
                 </p>
               )}
               <p className="mt-4 text-[13px] text-white/55">
-                {view ? <><span className="text-[20px] font-black text-white">{formatMoney(view.perMonth, prices.prices.currency)}</span> /month{billing === "yearly" ? ", billed yearly" : ""}</> : prices.status === "error" ? "Prices unavailable" : "…"}
+                {view ? <><span className="text-[20px] font-black text-white">{formatMoney(view.perMonth, prices.prices.currency)}</span> /month{billing === "yearly" ? ` · ${formatMoney(view.billedYearly, prices.prices.currency)} billed yearly` : ""}</> : prices.status === "error" ? "Prices unavailable" : "…"}
               </p>
               <div className="mt-3">
-                {account.signedIn && account.plan === result.plan
+                {isCurrentPlan(account, result.plan)
                   ? <KeyButton variant="outline" disabled>You&apos;re on this plan</KeyButton>
-                  : <KeyButton onClick={() => subscribe({ planId: result.plan, billing, account })}>Get {PRICING_PLANS[result.plan].name}</KeyButton>}
+                  : <KeyButton busy={pay.busy === "finder"} disabled={pay.busy != null} onClick={() => pay.run("finder", () => subscribe({ planId: result.plan, billing, account }))}>Get {PRICING_PLANS[result.plan].name}</KeyButton>}
               </div>
             </>
           )}

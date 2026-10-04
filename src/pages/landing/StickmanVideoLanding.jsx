@@ -353,7 +353,7 @@ export default function StickmanVideoLanding({ page }) {
               ))}
             </ul>
             <p className="mt-4 max-w-[760px] text-[13px] leading-6 text-white/60">{page.pricing.note}</p>
-            <Link to="/workspace/pricing" className={`${SECONDARY} mt-6`}>See all plans and prices <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+            <Link to="/pricing" className={`${SECONDARY} mt-6`}>See all plans and prices <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
           </div>
         </section>
 

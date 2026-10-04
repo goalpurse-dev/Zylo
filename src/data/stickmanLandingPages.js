@@ -429,7 +429,7 @@ export function stickmanStructuredData(page, canonical, siteUrl) {
           name: `${plan.name} plan (monthly)`,
           price: plan.price.toFixed(2),
           priceCurrency: STICKMAN_PRICING.currency,
-          url: abs("/workspace/pricing"),
+          url: abs("/pricing"),
           availability: "https://schema.org/InStock",
         })),
       },

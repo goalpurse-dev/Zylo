@@ -11,7 +11,10 @@ import PlanFinder from "../components/pricing/PlanFinder";
 import { CompareTable, WhatCanYouCreate } from "../components/pricing/OutputTables";
 import { EveryPlanIncludes, Faq, FreePlan, MadeWithZyvo, Topups } from "../components/pricing/PricingExtras";
 
-// Pricing page (lime design, docs/zyvo-lime-tokens.md). Every number comes
+// Pricing page at /pricing: public, prerendered, in the sitemap (title,
+// description and canonical come from data/routeSeoPolicy.js). Logged-out
+// visitors see every plan; logged-in users also see their current plan.
+// Lime design, docs/zyvo-lime-tokens.md. Every number comes
 // from live data: plan and pack prices from Stripe (plan-prices), credits per
 // output from tool_prices quotes, Long Form from tool_prices longform:*, plan
 // credits from what the Stripe webhook grants. No counters, urgency or
@@ -50,6 +53,7 @@ function BillingToggle({ billing, setBilling }) {
 }
 
 function ConfirmDowngrade({ planId, onCancel }) {
+  const { pay } = usePricingData();
   if (!planId) return null;
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center px-4" role="dialog" aria-modal="true" aria-labelledby="downgrade-title">
@@ -59,7 +63,12 @@ function ConfirmDowngrade({ planId, onCancel }) {
         <p className="mt-2 text-sm leading-relaxed text-white/50">Switch to <span className="font-semibold text-white">{PRICING_PLANS[planId]?.name}</span>? You keep your current plan until the end of the billing period.</p>
         <div className="mt-5 flex gap-3">
           <button type="button" onClick={onCancel} className={cx("flex-1 rounded-xl bg-white/5 py-2.5 text-sm font-semibold text-white/60 hover:bg-white/10", FOCUS)}>Cancel</button>
-          <button type="button" onClick={() => { onCancel(); openBillingPortal({ flow: "change_plan", returnPath: "/pricing" }); }} className={cx("flex-1 rounded-xl bg-white py-2.5 text-sm font-semibold text-black hover:bg-gray-100", FOCUS)}>Confirm</button>
+          <button type="button" disabled={pay.busy != null} aria-busy={pay.busy === "downgrade" || undefined}
+            onClick={() => pay.run("downgrade", async () => { const leaving = await openBillingPortal({ flow: "change_plan", returnPath: "/pricing" }); if (!leaving) onCancel(); return leaving; })}
+            className={cx("flex flex-1 items-center justify-center gap-2 rounded-xl bg-white py-2.5 text-sm font-semibold text-black hover:bg-gray-100 disabled:opacity-60", FOCUS)}>
+            {pay.busy === "downgrade" && <span className="h-4 w-4 animate-spin rounded-full border-2 border-black/20 border-t-black motion-reduce:animate-none" aria-hidden="true" />}
+            Confirm
+          </button>
         </div>
       </div>
     </div>
@@ -113,9 +122,10 @@ function PricingBody({ billing, setBilling }) {
 }
 
 export default function Pricing() {
-  const [billing, setBilling] = useState("yearly");
+  // Monthly first: the price on the card is the amount checkout charges.
+  // Yearly is one click away and shows its full yearly total.
+  const [billing, setBilling] = useState("monthly");
   useDisplayFont();
-  useEffect(() => { document.title = "Pricing — Zyvo AI"; }, []);
   return (
     <PricingDataProvider billing={billing}>
       <section className="relative min-h-screen bg-[#0B0D0F] text-white">

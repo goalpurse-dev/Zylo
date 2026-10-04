@@ -122,6 +122,7 @@ export default {
       const invoices = (invs?.data || []).map((i: any) => ({
         id: i.id,
         amount_paid: i.amount_paid,
+        currency: i.currency,
         status: i.status,
         created: i.created,
         url: i.hosted_invoice_url || i.invoice_pdf || null,

@@ -55,8 +55,10 @@ test("the webhook grants the page promise (750 / 1,600 / 3,200) to new subscript
   for (const [pack, id] of Object.entries(TOPUP_PRICE_IDS)) {
     assert.ok(webhook.includes(`"${id}": ${TOPUP_CREDITS[pack]},`), `${pack} pack credits`);
   }
+  // Checkout sells from the same shared map (no second copy of the ids).
   const checkout = read("supabase/functions/create-checkout-session/index.ts");
-  for (const id of Object.values(TOPUP_PRICE_IDS)) assert.ok(checkout.includes(id), "checkout sells the same packs");
+  assert.ok(checkout.includes('import { PLAN_PRICE_IDS, TOPUP_PRICE_IDS } from "../_shared/stripePlanPrices.js"'), "checkout sells the same packs and plans");
+  assert.doesNotMatch(checkout, /price_1/, "no price id typed into checkout");
 });
 
 test("Stripe prices → € amounts, VAT included (EUR under inferred_by_currency), credits attached", () => {

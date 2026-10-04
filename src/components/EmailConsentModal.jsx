@@ -2,7 +2,8 @@ import { useState } from "react"
 import { createPortal } from "react-dom"
 import { supabase } from "../lib/supabaseClient"
 import { Check } from "lucide-react"
-import { startCheckout } from "../lib/payments"
+import { toast } from "sonner"
+import { paymentErrorMessage, startCheckout } from "../lib/payments"
 import useLivePlanPrices from "./pricing/useLivePlanPrices"
 import { PLAN_CREDITS } from "../../supabase/functions/_shared/stripePlanPrices.js"
 
@@ -53,12 +54,6 @@ const PLAN_TIERS = [
     ],
   },
 ]
-
-const PRICE_IDS = {
-  starter: "price_1TmVZZHtn4q5rIncOuf5aKP4",
-  pro: "price_1TmVfXHtn4q5rInc9IaN1l3U",
-  generative: "price_1TmVg2Htn4q5rIncWL0b3HJr",
-}
 
 /* ─── Reusable tick ──────────────────────────────────────────────── */
 const Tick = () => (
@@ -338,6 +333,8 @@ export default function OnboardingModal({ user, onComplete }) {
                         <button
                           disabled={loading}
                           onClick={async () => {
+                            if (loading) return
+                            let leaving = false
                             try {
                               setLoading(true)
 
@@ -350,18 +347,14 @@ export default function OnboardingModal({ user, onComplete }) {
 
                               localStorage.setItem("onboarding_completed", "true")
 
-                              const { data: { user: currentUser } } = await supabase.auth.getUser()
-
-                              await startCheckout({
-                                type: "subscription",
-                                priceId: PRICE_IDS[plan.id],
-                                userId: currentUser.id,
-                                email: currentUser.email,
-                              })
+                              // This modal sells the monthly plans; the price ids live in the shared map.
+                              leaving = await startCheckout({ type: "subscription", planId: plan.id, billing: "monthly" })
                             } catch (err) {
                               console.error("CHECKOUT ERROR:", err)
+                              toast.error(paymentErrorMessage(err))
                             } finally {
-                              setLoading(false)
+                              // On the way to Stripe the buttons stay disabled (no second checkout).
+                              if (!leaving) setLoading(false)
                             }
                           }}
                           className="w-full rounded-xl py-2.5 font-bold text-sm text-white mb-4 transition active:scale-[0.98] disabled:opacity-50"

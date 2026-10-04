@@ -50,7 +50,7 @@ export default function FaceAsmrUpgradeModal({ open, onClose, modelId, requiredP
         <p className="text-center text-sm text-white/50 mb-6 leading-relaxed">{copy.body}</p>
 
         <a
-          href="/workspace/pricing"
+          href="/pricing"
           className="flex items-center justify-center gap-2 w-full rounded-2xl bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] py-3 text-center text-[15px] font-bold text-white hover:opacity-90 transition"
         >
           <Sparkles className="h-4 w-4" />

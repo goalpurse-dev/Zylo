@@ -999,7 +999,7 @@ shadow-[0_10px_40px_rgba(0,0,0,0.32)]
     </span>
 
     <button
-      onClick={() => navigate("/workspace/pricing")}
+      onClick={() => navigate("/pricing")}
       className="
       px-3 py-1
       rounded-md
@@ -1363,7 +1363,7 @@ md:group-hover:brightness-110
                 key={key}
                 onClick={() => {
                   if (isLocked) {
-                    navigate("/workspace/pricing")
+                    navigate("/pricing")
                     return
                   }
 
@@ -1478,7 +1478,7 @@ md:group-hover:brightness-110
   </span>
 
   <button
-    onClick={() => navigate("/workspace/pricing")}
+    onClick={() => navigate("/pricing")}
     className="
       text-xs px-3 py-1.5 rounded-md
       bg-white/5 border border-white/10
