@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
+import { FREE_PLAN_LINE, IS_ZYVO_FREE_FAQ } from "../../../data/freePlan.js";
 
 const related = [
   {
@@ -17,7 +18,7 @@ const related = [
   },
   {
     title: "Is AI Fruit Story Free? Pricing and Credits",
-    description: "Character portraits, scene images, and scene video — what a story actually costs.",
+    description: "It needs a paid plan and uses credits. What scene pictures and video cost.",
     date: "19.08.2026",
     slug: "/blog/ai-fruit-story-pricing",
   },
@@ -28,25 +29,6 @@ const COST_FACTORS = [
   { title: "How many scenes or images", desc: "More scenes or images in one generation means more credits used for that generation." },
   { title: "Whether you animate", desc: "Turning a still image into an animated, sound-enabled video costs more than the image alone." },
   { title: "Resolution and quality settings", desc: "Higher-resolution or higher-quality output options use more credits per generation than standard settings." },
-];
-
-const FAQS = [
-  {
-    q: "Is Zyvo actually free?",
-    a: "Zyvo has a free entry point across its tools, using your account's credit balance. Free usage is generally best suited to trying tools and generating shorter, simpler content — paid plans and additional credits unlock higher volume and longer, more complex generations.",
-  },
-  {
-    q: "How does the credit system work?",
-    a: "Every generation costs credits based on the tool, the number of scenes or images, and whether the output is animated. Your account has a credit balance that's checked before each generation starts.",
-  },
-  {
-    q: "What happens if I don't have enough credits?",
-    a: "The generator lets you know before starting if your balance isn't enough to complete the generation you've configured — you won't be charged partway through and left with an incomplete result.",
-  },
-  {
-    q: "Do unused credits expire?",
-    a: "Check your account and plan details in Zyvo's workspace for the most current information on credit balances and any plan-specific terms.",
-  },
 ];
 
 export default function IsZyvoFree() {
@@ -68,9 +50,9 @@ export default function IsZyvoFree() {
             Is Zyvo Free? Pricing, Plans, and Credits Explained
           </h1>
           <p className="text-[19px] text-[#4A4A55] leading-relaxed">
-            Zyvo runs on a credit system across every tool, not a single flat subscription. Here's exactly what determines cost, and how to get the most out of a free account.
+            {FREE_PLAN_LINE} Here's what a free account includes, what a plan adds, and what decides how many credits a video costs.
           </p>
-          <p className="text-[13px] text-[#999] mt-5">Aug 21, 2026 · 6 min read · Pricing Explained</p>
+          <p className="text-[13px] text-[#999] mt-5">Updated October 5, 2026 · 5 min read · Pricing Explained</p>
         </header>
 
         <div className="mb-16 grid gap-4 sm:grid-cols-2">
@@ -103,12 +85,12 @@ export default function IsZyvoFree() {
           <section>
             <h2 className="text-[28px] font-bold text-[#110829] mb-4">The short answer</h2>
             <p className="text-[17px] leading-relaxed">
-              Yes — Zyvo has a free entry point across every tool, using your account's credit balance. There's no single flat price per video; cost is credit-based and scales with how much you generate, so "free" in practice means starting with shorter, simpler generations and scaling up as needed.
+              Zyvo is free to start. A free account costs nothing, needs no card and gives you 5 image generations in the AI image generator every 30 days. You can also open every tool and see how it works. Making videos is different: video tools like AI Fruit Story need a paid plan (Starter, Pro or Generative). Each plan adds credits to your balance every month, and every generation uses some of them.
             </p>
           </section>
 
           <section>
-            <h2 className="text-[28px] font-bold text-[#110829] mb-5">What actually determines cost</h2>
+            <h2 className="text-[28px] font-bold text-[#110829] mb-5">What decides the cost on a paid plan</h2>
             <div className="space-y-3">
               {COST_FACTORS.map((c) => (
                 <div key={c.title} className="rounded-xl border border-[#E5E0F5] bg-white p-5">
@@ -122,28 +104,29 @@ export default function IsZyvoFree() {
           <section>
             <h2 className="text-[28px] font-bold text-[#110829] mb-4">Getting the most from a free account</h2>
             <p className="text-[17px] leading-relaxed">
-              Start with shorter generations — fewer scenes, images instead of full animation — to test a tool and an idea before committing more credits to a longer, fully animated version. This is the same approach that works across the tools you can use on a free account. AI Fruit Story is not one of them: it needs a paid plan.
+              Use the 5 image generations to learn how prompting works, and open the tools you are interested in to see each step before you choose a plan. The{" "}
+              <Link to="/pricing" className="text-[#7A3BFF] hover:underline font-semibold">pricing page</Link> shows how many videos each plan makes in a month.
             </p>
           </section>
 
           <section className="pt-4">
-            <h2 className="text-[26px] font-bold text-[#110829] mb-4">Try Zyvo Free</h2>
+            <h2 className="text-[26px] font-bold text-[#110829] mb-4">Start Free</h2>
             <p className="text-[16px] leading-relaxed mb-6">
-              Create an account and try any tool with your free credit balance. New to Zyvo? Start with{" "}
+              Create an account and make your first 5 images. New to Zyvo? Start with{" "}
               <Link to="/blog/how-to-get-started-with-zyvo" className="text-[#7A3BFF] hover:underline font-semibold">the complete beginner's guide</Link>.
             </p>
             <Link
               to="/signup"
               className="inline-block bg-gradient-to-r from-[#7A3BFF] to-[#A855F7] text-white font-bold text-[15px] px-8 py-4 rounded-[14px] hover:opacity-90 transition"
             >
-              Start Creating Free →
+              Start Free With 5 Image Generations →
             </Link>
           </section>
 
           <section>
             <h2 className="text-[28px] font-bold text-[#110829] mb-5">Frequently asked questions</h2>
             <div className="space-y-3">
-              {FAQS.map((f) => (
+              {IS_ZYVO_FREE_FAQ.map((f) => (
                 <div key={f.q} className="rounded-xl border border-[#E5E0F5] bg-white p-5">
                   <p className="text-[15px] font-bold text-[#110829] mb-2">{f.q}</p>
                   <p className="text-[14px] text-[#6b7280] leading-relaxed">{f.a}</p>

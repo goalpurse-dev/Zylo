@@ -6,7 +6,7 @@ export const SITE_URL = "https://www.tryzyvo.com";
 // Home, at the site root. The title starts with the brand name.
 export const HOME_SEO = {
   title: "Zyvo AI – AI Video Generator for YouTube, TikTok & Reels",
-  description: "Zyvo turns one idea into finished videos: full 8–15 minute YouTube explainers with Long Form and viral 9:16 clips for TikTok, Reels and Shorts. Start for free.",
+  description: "Zyvo turns one idea into finished videos: 8–15 minute YouTube explainers and viral 9:16 clips for TikTok, Reels and Shorts. Start free with 5 image generations.",
 };
 
 export const WORKSPACE_ROUTE_SEO_POLICIES = [

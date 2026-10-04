@@ -22,7 +22,7 @@ const SOURCES = [
 ];
 const FOLDERS = [
   "public/images/niches", "public/community-posters", "public/home/v2",
-  "public/lp/fruit", "public/lp/fruit/characters", "public/viral-builder/ai-fruit/presets", "public/viral-builder/ai-fruit/characters",
+  "public/lp/fruit", "public/lp/fruit/characters", "public/lp/fruit/examples", "public/viral-builder/ai-fruit/presets", "public/viral-builder/ai-fruit/characters",
 ];
 // Folders where only matching file names are taken.
 const FILTERED_FOLDERS = [["public/blog-assets", /fruit/i]];

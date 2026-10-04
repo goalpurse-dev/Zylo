@@ -128,7 +128,7 @@ export default function BestFreeAiToolsCreators() {
           <section>
             <h2 className="text-[28px] font-bold text-[#110829] mb-4">Where Zyvo fits</h2>
             <p className="text-[17px] leading-relaxed">
-              Every Zyvo tool has a free entry point using your account's credit balance — including format-specific video templates, a general AI image generator, and publishing with basic analytics, all in one workspace instead of separate accounts across separate tools. See{" "}
+              Zyvo is free to start with 5 image generations in the AI image generator. Its video templates need a paid plan, and they sit in the same workspace as the image generator and publishing with basic analytics, instead of separate accounts across separate tools. See{" "}
               <Link to="/blog/zyvo-template-comparison" className="text-[#7A3BFF] hover:underline font-semibold">the full template comparison</Link>{" "}
               for exactly what each one outputs.
             </p>
@@ -146,7 +146,7 @@ export default function BestFreeAiToolsCreators() {
           <section className="pt-4">
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Try Zyvo Free</h2>
             <p className="text-[16px] leading-relaxed mb-6">
-              Every tool has a free entry point using your account's credit balance.
+              Start free with 5 image generations. Video tools like AI Fruit Story need a paid plan.
             </p>
             <Link
               to="/signup"

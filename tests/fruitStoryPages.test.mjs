@@ -1,11 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 import {
   FRUIT_CHARACTERS, FRUIT_EXAMPLE_SERIES, FRUIT_EXAMPLE_VIDEOS, FRUIT_FACTS, FRUIT_FAQ, FRUIT_PRICING_FAQ,
-  FRUIT_STARTER_PROMPTS, FRUIT_WHAT_IS_FAQ, filledVideos, fruitVideoObjects, videoLength, youtubeId,
+  FRUIT_POSTER_BASE, FRUIT_STARTER_PROMPTS, FRUIT_VIDEO_BASE, FRUIT_WHAT_IS_FAQ, filledVideos, fruitVideoObjects, videoLength,
 } from "../src/data/fruitStoryPages.js";
+import { FREE_PLAN_LINE, IS_ZYVO_FREE_FAQ } from "../src/data/freePlan.js";
+import { HOME_SEO } from "../src/data/routeSeoPolicy.js";
 import { getPublicSeoMetadata, canonicalFor } from "../src/data/publicSeoMetadata.js";
 import { structuredDataFor } from "../src/data/structuredData.js";
 import { BLOG_DATES } from "../src/data/blogDates.js";
@@ -96,28 +98,63 @@ test("blog posts carry an image, dates and an author in their JSON-LD", () => {
   assert.equal(posting.author.name, "Zyvo");
 });
 
-test("example video slots: empty until a YouTube link is added, then shown and in the schema", () => {
-  assert.equal(youtubeId("https://www.youtube.com/shorts/abcdEFGH_-1"), "abcdEFGH_-1");
-  assert.equal(youtubeId("https://youtu.be/abcdEFGH_-1?si=x"), "abcdEFGH_-1");
-  assert.equal(youtubeId("https://www.youtube.com/watch?v=abcdEFGH_-1"), "abcdEFGH_-1");
-  assert.equal(youtubeId("abcdEFGH_-1"), "abcdEFGH_-1");
-  assert.equal(youtubeId(""), "");
-  assert.equal(youtubeId("not a video"), "");
+test("example videos are files we host: shown and in the schema once a slot has a video and a poster", () => {
   assert.equal(videoLength("PT45S"), "0:45");
   assert.equal(videoLength("PT1M5S"), "1:05");
   assert.equal(videoLength(""), "");
 
-  const filled = filledVideos([{ youtube: "https://www.youtube.com/shorts/abcdEFGH_-1", title: "T", uploadDate: "2026-10-12", duration: "PT45S" }, { youtube: "" }]);
+  const filled = filledVideos([
+    { video: "office-affair.mp4", poster: "office-affair.jpg", title: "T", uploadDate: "2026-10-12", duration: "PT45S" },
+    { video: "no-poster.mp4", poster: "" },
+    { video: "", poster: "no-video.jpg" },
+  ]);
   assert.equal(filled.length, 1);
+  assert.equal(filled[0].url, `${FRUIT_VIDEO_BASE}/office-affair.mp4`);
+  assert.equal(filled[0].posterSrc, `${FRUIT_POSTER_BASE}/office-affair.jpg`);
   assert.equal(filled[0].length, "0:45");
+  assert.match(FRUIT_VIDEO_BASE, /^https:\/\/[a-z0-9]+\.supabase\.co\/storage\/v1\/object\/public\//);
 
-  // What ships today: every slot that has a video also has what the schema needs.
+  // What ships today: every slot that has a video has what the schema needs, and its poster is in the repo.
   const slots = [...FRUIT_EXAMPLE_VIDEOS, ...FRUIT_EXAMPLE_SERIES.episodes];
   assert.ok(FRUIT_EXAMPLE_SERIES.episodes.length <= LIMITS.maxEpisodes);
   for (const video of filledVideos(slots)) {
     assert.ok(video.title && /^\d{4}-\d{2}-\d{2}/.test(video.uploadDate), `${video.slot}: add the title and upload date`);
+    assert.match(video.url, /\.mp4$/, `${video.slot}: the video must be an MP4`);
+    if (video.posterSrc.startsWith("/")) assert.ok(existsSync(new URL(`../public${video.posterSrc}`, import.meta.url)), `${video.slot}: poster file missing`);
   }
-  assert.equal(fruitVideoObjects().length, filledVideos(slots).length);
+  const objects = fruitVideoObjects("https://www.tryzyvo.com");
+  assert.equal(objects.length, filledVideos(slots).length);
+  for (const object of objects) {
+    assert.match(object.contentUrl, /^https:\/\//);
+    assert.match(object.thumbnailUrl[0], /^https:\/\//);
+    assert.equal(object.embedUrl, undefined, "no YouTube: the schema points at our own file");
+  }
+
+  // The player fetches nothing before the click.
+  const page = read("src/pages/landing/AIFruitStoryLanding.jsx");
+  assert.doesNotMatch(page, /youtube(-nocookie)?\.com|ytimg\.com|<iframe/i);
+  for (const tag of page.match(/<video\b[^>]*>/g)) assert.match(tag, /preload="none"/);
+});
+
+test("free wording: free to start with 5 image generations, video tools need a paid plan", () => {
+  assert.equal(FREE_PLAN_LINE, "Start free with 5 image generations. Video tools like AI Fruit Story need a paid plan.");
+  assert.match(HOME_SEO.description, /Start free with 5 image generations\.$/);
+  assert.ok(HOME_SEO.description.length <= 160);
+  assert.match(read("src/pages/workspace/HomeV2.jsx"), /\{FREE_PLAN_LINE\}/);
+  assert.match(read("src/app/blog/imagegenerator/is-zyvo-free.jsx"), /\{FREE_PLAN_LINE\}/);
+  assert.match(IS_ZYVO_FREE_FAQ[0].a, /5 image generations/);
+  assert.match(IS_ZYVO_FREE_FAQ[0].a, /AI Fruit Story need a paid plan/);
+  const faq = graphFor("/blog/is-zyvo-free").find((node) => node["@type"] === "FAQPage");
+  assert.deepEqual(faq.mainEntity.map((q) => [q.name, q.acceptedAnswer.text]), IS_ZYVO_FREE_FAQ.map((f) => [f.q, f.a]));
+
+  // Nothing public says every tool is free.
+  for (const file of ["src/data/structuredData.js", "src/data/publicSeoMetadata.js", "src/data/blogArticles.js"]) {
+    assert.doesNotMatch(read(file), /free entry point across|every tool has a free|every zyvo tool has a free/i, file);
+  }
+  for (const name of ["is-zyvo-free", "what-is-zyvo", "how-to-get-started-with-zyvo", "best-free-ai-tools-creators", "best-ai-video-generators-tiktok", "zyvo-template-comparison"]) {
+    assert.doesNotMatch(read(`src/app/blog/imagegenerator/${name}.jsx`), /free entry point across|(every|any) (zyvo )?tool (above )?(has a )?free/i, name);
+  }
+  assert.match(getPublicSeoMetadata("/ai-fruit-story-maker").description, /Plans from €\d+\/month\.$/);
 });
 
 test("titles of the fruit pages that own a search fit in a result (60 characters)", () => {

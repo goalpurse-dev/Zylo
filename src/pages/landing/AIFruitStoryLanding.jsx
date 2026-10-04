@@ -100,7 +100,7 @@ function HeroExample() {
       <div className="overflow-hidden rounded-[38px] border-2 border-white/15 bg-black shadow-[0_32px_80px_rgba(0,0,0,0.8)]">
         <div className="relative aspect-[9/16] overflow-hidden">
           {on ? (
-            <video src={EXAMPLE_VIDEO.url} poster={EXAMPLE_VIDEO.poster} controls autoPlay playsInline className="h-full w-full object-cover" aria-label={`Example video: ${EXAMPLE_VIDEO.title}`} />
+            <video src={EXAMPLE_VIDEO.url} poster={EXAMPLE_VIDEO.poster} controls autoPlay playsInline preload="none" className="h-full w-full object-cover" aria-label={`Example video: ${EXAMPLE_VIDEO.title}`} />
           ) : (
             <button type="button" onClick={() => setOn(true)} aria-label={`Play the example video: ${EXAMPLE_VIDEO.title}`} className={`group absolute inset-0 h-full w-full ${FOCUS}`}>
               <img {...optImg(`${FRUIT_ASSETS}/ken-reads-everything.jpg`, "220px", 480)} alt="Scene from an AI fruit story video: a kiwi IT guy with a laptop leans into the office of an apple boss" width="720" height="1280" loading="eager" fetchPriority="high" decoding="async" className="h-full w-full object-cover" />
@@ -118,18 +118,17 @@ function HeroExample() {
   );
 }
 
-// A YouTube Short as a thumbnail button; the iframe exists only after the click.
-function LiteShort({ video }) {
+// An example video: the poster is a button, and the MP4 is fetched only after the click.
+function ExampleVideo({ video }) {
   const [on, setOn] = useState(false);
+  const name = video.title || "AI fruit story example video";
   return (
     <div className="relative aspect-[9/16] w-full overflow-hidden rounded-[18px] border border-white/10 bg-black">
       {on ? (
-        <iframe src={`https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`} title={video.title || "AI fruit story example video"} allowFullScreen
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" className="absolute inset-0 h-full w-full" />
+        <video src={video.url} poster={video.posterSrc} controls autoPlay playsInline preload="none" className="absolute inset-0 h-full w-full object-cover" aria-label={name} />
       ) : (
-        <button type="button" onClick={() => setOn(true)} aria-label={`Play the video: ${video.title || "AI fruit story example"}`} className={`group absolute inset-0 h-full w-full ${FOCUS}`}>
-          <img src={video.thumb} alt={video.title ? `Thumbnail of ${video.title}` : "AI fruit story example video thumbnail"} width="405" height="720" loading="lazy" decoding="async"
-            onError={(e) => { if (e.currentTarget.src !== video.thumbFallback) e.currentTarget.src = video.thumbFallback; }} className="h-full w-full object-cover" />
+        <button type="button" onClick={() => setOn(true)} aria-label={`Play the video: ${name}`} className={`group absolute inset-0 h-full w-full ${FOCUS}`}>
+          <img {...optImg(video.posterSrc, "(min-width: 640px) 280px, 45vw", 480)} alt={`Poster of ${name}`} width="405" height="720" loading="lazy" decoding="async" className="h-full w-full object-cover" />
           <span className="absolute inset-0 bg-black/20 transition group-hover:bg-black/10" />
           <span className="absolute left-1/2 top-1/2 grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-[#3b1a78] shadow-lg transition group-hover:scale-105">
             <Play className="h-6 w-6 translate-x-0.5 fill-current" aria-hidden="true" />
@@ -147,7 +146,7 @@ function EmptySlot({ label }) {
     <div className="grid aspect-[9/16] w-full place-items-center rounded-[18px] border border-dashed border-white/20 bg-white/[0.02] p-4 text-center">
       <p className="text-[11px] leading-relaxed text-white/40">
         <span className="block font-bold text-white/60">{label}</span>
-        Empty slot. Add the YouTube link in src/data/fruitStoryPages.js
+        Empty slot. Add the video and poster file names in src/data/fruitStoryPages.js
       </p>
     </div>
   );
@@ -155,13 +154,13 @@ function EmptySlot({ label }) {
 
 function VideoSlots({ slots, caption }) {
   const videos = filledVideos(slots);
-  const empty = import.meta.env.DEV ? slots.filter((s) => !s.youtube) : [];
+  const empty = import.meta.env.DEV ? slots.filter((s) => !s.video || !s.poster) : [];
   if (!videos.length && !empty.length) return null;
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
       {videos.map((video, i) => (
-        <figure key={video.id}>
-          <LiteShort video={video} />
+        <figure key={video.url}>
+          <ExampleVideo video={video} />
           <figcaption className="mt-2 text-[12px] leading-relaxed text-white/50">{caption ? caption(video, i) : video.title}</figcaption>
         </figure>
       ))}
@@ -346,7 +345,7 @@ export default function AIFruitStoryLanding() {
         <section className="py-14 md:py-16">
           <div className="mx-auto max-w-4xl px-4 md:px-6">
             <h2 className="text-center text-[26px] font-black tracking-tight sm:text-[34px]">AI Fruit Story Examples</h2>
-            <p className="mx-auto mb-8 mt-3 max-w-2xl text-center text-[14px] text-white/45">Videos made with the tool, as posted on YouTube Shorts.</p>
+            <p className="mx-auto mb-8 mt-3 max-w-2xl text-center text-[14px] text-white/45">Finished videos made with the tool. Press play to watch.</p>
             <VideoSlots slots={FRUIT_EXAMPLE_VIDEOS} />
           </div>
         </section>

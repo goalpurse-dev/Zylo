@@ -60,19 +60,34 @@ export const FRUIT_STARTER_PROMPTS = [
   { prompt: "Linda reads Rick's private messages out loud at the all-hands meeting. Margaret is in the front row.", castIds: ["linda", "rick", "marg"] },
 ];
 
-// ── Example videos (YouTube Shorts) ─────────────────────────────────────────
-// To add one, fill in a slot:
-//   youtube     the Shorts link or the video id (the part after /shorts/)
-//   title       the video's title on YouTube
+// ── Example videos (hosted by us) ───────────────────────────────────────────
+// The MP4s live in Supabase storage: the public bucket "generated", folder
+// fruit/examples/ (next to the tool's own example video). The posters live in
+// the repo, in public/lp/fruit/examples/.
+//
+// Compress a video before uploading it (720p, a few MB):
+//   ffmpeg -i in.mp4 -vf "scale=720:-2" -c:v libx264 -crf 30 -preset slow -pix_fmt yuv420p -c:a aac -b:a 96k -movflags +faststart out.mp4
+// and take its poster from the first second:
+//   ffmpeg -ss 1 -i out.mp4 -frames:v 1 -q:v 3 out.jpg
+//
+// To add a video, fill in a slot:
+//   video       the MP4's file name in storage, e.g. "office-affair.mp4"
+//   poster      the poster's file name in public/lp/fruit/examples/, e.g. "office-affair.jpg"
+//   title       the video's title
 //   description one sentence about the story (optional)
-//   uploadDate  the upload date, e.g. "2026-10-12"
+//   uploadDate  the day it was uploaded, e.g. "2026-10-12"
 //   duration    the length as ISO 8601, e.g. "PT45S" or "PT1M20S"
-// A slot with an empty `youtube` is not shown to visitors and is left out of
-// the schema. In local dev (npm run dev) it shows as a dashed "empty slot" box.
+// A slot without a video or a poster is not shown to visitors and is left out
+// of the schema. In local dev (npm run dev) it shows as a dashed "empty slot" box.
+export const FRUIT_VIDEO_BASE = "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/fruit/examples";
+export const FRUIT_POSTER_BASE = `${FRUIT_ASSETS}/examples`;
+
 export const FRUIT_EXAMPLE_VIDEOS = [
-  { slot: "Example video 1", youtube: "", title: "", description: "", uploadDate: "", duration: "" },
-  { slot: "Example video 2", youtube: "", title: "", description: "", uploadDate: "", duration: "" },
-  { slot: "Example video 3", youtube: "", title: "", description: "", uploadDate: "", duration: "" },
+  { slot: "Example video 1", video: "", poster: "", title: "", description: "", uploadDate: "", duration: "" },
+  { slot: "Example video 2", video: "", poster: "", title: "", description: "", uploadDate: "", duration: "" },
+  { slot: "Example video 3", video: "", poster: "", title: "", description: "", uploadDate: "", duration: "" },
+  { slot: "Example video 4", video: "", poster: "", title: "", description: "", uploadDate: "", duration: "" },
+  { slot: "Example video 5", video: "", poster: "", title: "", description: "", uploadDate: "", duration: "" },
 ];
 
 // One example series: its name and its episodes in order (up to 10). Same
@@ -80,20 +95,14 @@ export const FRUIT_EXAMPLE_VIDEOS = [
 export const FRUIT_EXAMPLE_SERIES = {
   title: "",
   episodes: [
-    { slot: "Series episode 1", youtube: "", title: "", cliffhanger: "", description: "", uploadDate: "", duration: "" },
-    { slot: "Series episode 2", youtube: "", title: "", cliffhanger: "", description: "", uploadDate: "", duration: "" },
-    { slot: "Series episode 3", youtube: "", title: "", cliffhanger: "", description: "", uploadDate: "", duration: "" },
+    { slot: "Series episode 1", video: "", poster: "", title: "", cliffhanger: "", description: "", uploadDate: "", duration: "" },
+    { slot: "Series episode 2", video: "", poster: "", title: "", cliffhanger: "", description: "", uploadDate: "", duration: "" },
+    { slot: "Series episode 3", video: "", poster: "", title: "", cliffhanger: "", description: "", uploadDate: "", duration: "" },
   ],
 };
 
-/** The YouTube id from a Shorts/watch/youtu.be link or a bare id; "" when there is none. */
-export function youtubeId(value) {
-  const text = String(value ?? "").trim();
-  if (!text) return "";
-  const fromUrl = text.match(/(?:shorts\/|watch\?v=|youtu\.be\/|embed\/)([\w-]{11})/)?.[1];
-  if (fromUrl) return fromUrl;
-  return /^[\w-]{11}$/.test(text) ? text : "";
-}
+// A file name is looked up in its folder; a full URL or a /path is used as it is.
+const located = (value, base) => (/^(https?:)?\//.test(value) ? value : `${base}/${value}`);
 
 /** "PT1M20S" → "1:20" ("" when the duration is missing or malformed). */
 export function videoLength(duration) {
@@ -102,33 +111,34 @@ export function videoLength(duration) {
   return `${Number(m[1] ?? 0)}:${String(Number(m[2] ?? 0)).padStart(2, "0")}`;
 }
 
-/** Slots that have a video, with the id, thumbnail and display length worked out. */
+/** Slots that have a video and a poster, with their addresses and display length worked out. */
 export function filledVideos(slots) {
   return slots
-    .map((slot) => ({ ...slot, id: youtubeId(slot.youtube) }))
-    .filter((video) => video.id)
-    .map((video) => ({
-      ...video,
-      // Shorts have a vertical thumbnail at oar2.jpg; hqdefault.jpg always exists (the page falls back to it).
-      thumb: `https://i.ytimg.com/vi/${video.id}/oar2.jpg`,
-      thumbFallback: `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`,
-      length: videoLength(video.duration),
+    .filter((slot) => String(slot.video ?? "").trim() && String(slot.poster ?? "").trim())
+    .map((slot) => ({
+      ...slot,
+      url: located(slot.video.trim(), FRUIT_VIDEO_BASE),
+      posterSrc: located(slot.poster.trim(), FRUIT_POSTER_BASE),
+      length: videoLength(slot.duration),
     }));
 }
 
-/** VideoObject entries for the slots that have a video, a title and an upload date (Google requires all three). */
-export function fruitVideoObjects() {
+/**
+ * VideoObject entries for the slots that have a video, a poster, a title and
+ * an upload date (Google requires a name, a thumbnail and an upload date).
+ * siteUrl makes the poster's address absolute.
+ */
+export function fruitVideoObjects(siteUrl) {
   return filledVideos([...FRUIT_EXAMPLE_VIDEOS, ...FRUIT_EXAMPLE_SERIES.episodes])
     .filter((video) => video.title && video.uploadDate)
     .map((video) => ({
       "@type": "VideoObject",
       name: video.title,
       description: video.description || `${video.title}: a fruit drama video made with Zyvo AI Fruit Story.`,
-      thumbnailUrl: [video.thumbFallback],
+      thumbnailUrl: [video.posterSrc.startsWith("/") ? `${siteUrl}${video.posterSrc}` : video.posterSrc],
       uploadDate: video.uploadDate,
       ...(video.duration ? { duration: video.duration } : {}),
-      embedUrl: `https://www.youtube.com/embed/${video.id}`,
-      url: `https://www.youtube.com/shorts/${video.id}`,
+      contentUrl: video.url,
     }));
 }
 

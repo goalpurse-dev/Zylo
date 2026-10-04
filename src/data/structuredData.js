@@ -2,6 +2,7 @@ import { SITE_URL } from "./publicSeoMetadata.js";
 import { getStickmanLandingPage, stickmanStructuredData } from "./stickmanLandingPages.js";
 import { BLOG_DATES } from "./blogDates.js";
 import { FRUIT_FAQ, FRUIT_PRICING_FAQ, FRUIT_WHAT_IS_FAQ, fruitVideoObjects } from "./fruitStoryPages.js";
+import { IS_ZYVO_FREE_FAQ } from "./freePlan.js";
 
 const faqPage = (faq) => ({
   "@type": "FAQPage",
@@ -98,7 +99,7 @@ export function structuredDataFor(pathname, metadata, canonical) {
       operatingSystem: "Web",
     };
     graph[0] = page;
-    graph.push(...fruitVideoObjects(), faqPage(FRUIT_FAQ));
+    graph.push(...fruitVideoObjects(SITE_URL), faqPage(FRUIT_FAQ));
   }
 
   if (pathname === "/cartoon-drive-by-video-maker") {
@@ -274,7 +275,7 @@ export function structuredDataFor(pathname, metadata, canonical) {
       "@type": "FAQPage",
       mainEntity: [
         ["What is Zyvo?", "Zyvo is an AI content creation platform for short-form video and image generation — a single workspace covering image generation, viral video templates, scripting, and publishing."],
-        ["Is Zyvo free to use?", "Zyvo has a free entry point across its tools, with paid plans and credits for higher-volume generation, longer videos, and premium templates."],
+        ["Is Zyvo free to use?", "Zyvo is free to start with 5 image generations in the AI image generator. Video tools like AI Fruit Story need a paid plan, which comes with monthly credits."],
         ["Do I need any design or editing skills?", "No — every tool is built around describing what you want in plain language. No timeline editing, animation, or design software is required."],
         ["What platforms is Zyvo's content built for?", "Every tool outputs vertical, short-form-ready content built for TikTok, Instagram Reels, and YouTube Shorts."],
       ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
@@ -282,15 +283,7 @@ export function structuredDataFor(pathname, metadata, canonical) {
   }
 
   if (pathname === "/blog/is-zyvo-free") {
-    graph.push({
-      "@type": "FAQPage",
-      mainEntity: [
-        ["Is Zyvo actually free?", "Zyvo has a free entry point across its tools, using your account's credit balance. Paid plans and additional credits unlock higher volume and longer, more complex generations."],
-        ["How does the credit system work?", "Every generation costs credits based on the tool, the number of scenes or images, and whether the output is animated."],
-        ["What happens if I don't have enough credits?", "The generator lets you know before starting if your balance isn't enough to complete the generation — you won't be charged partway through."],
-        ["Do unused credits expire?", "Check your account and plan details in Zyvo's workspace for the most current information on credit balances and plan-specific terms."],
-      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
-    });
+    graph.push(faqPage(IS_ZYVO_FREE_FAQ));
   }
 
   if (pathname === "/blog/how-to-get-started-with-zyvo") {
@@ -299,7 +292,7 @@ export function structuredDataFor(pathname, metadata, canonical) {
       mainEntity: [
         ["Do I need any design or video editing experience?", "No. Every Zyvo tool is built around describing what you want in plain language — no timeline editing, animation, or design software is required."],
         ["Which tool should I try first?", "Start with the general AI image generator to get a feel for prompting, or pick whichever format-specific tool matches content you already enjoy watching."],
-        ["Can I try Zyvo without paying?", "Yes — every tool has a free entry point using your account's credit balance."],
+        ["Can I try Zyvo without paying?", "Yes. A free account gets 5 image generations in the AI image generator. Video tools like AI Fruit Story need a paid plan."],
         ["How do I publish what I generate?", "Zyvo's workspace includes a publishing tool for scheduling and posting directly to TikTok, Instagram, and YouTube."],
       ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
     });

@@ -72,7 +72,7 @@ const FAQS = [
   },
   {
     q: "Is Zyvo free to use?",
-    a: "Zyvo has a free entry point across its tools, with paid plans and credits for higher-volume generation, longer videos, and premium templates.",
+    a: "Zyvo is free to start with 5 image generations in the AI image generator. Video tools like AI Fruit Story need a paid plan, which comes with monthly credits.",
   },
   {
     q: "Do I need any design or editing skills?",
