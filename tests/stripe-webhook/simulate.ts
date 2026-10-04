@@ -287,6 +287,7 @@ console.log("\n13. Monthly → yearly, and a switch to a smaller plan");
   const toYearly = [line(PRO, 0.5, -1), line(PRO_YEARLY, 1, 0, now, now + 365 * DAY)];
   const ev = evt("invoice.payment_succeeded", changeInvoice("in_up_15", "cus_15", "sub_15", toYearly));
   check("MONTHLY → YEARLY Pro with half the month left: 1,600 for the new month − 800 already given = 800", (await q(ev)).body, { ok: true, plan_credits: 1600, plan_change: true, credits: 800, granted: true });
+  check("the paid period on the profile is the new YEAR (not the old month's unused time on the first line)", P(15).current_period_end, iso(now + 365 * DAY));
   check("yearly billing, 1,600 a month, top-up cycle starts at the payment", [P(15).billing_interval, P(15).annual_credits_per_month, P(15).annual_credits_last_topup, P(15).credit_balance, grantsFor(15)], ["yearly", 1600, iso(now), 2400, ["plan_upgrade:800:in_up_15"]]);
   note("monthly Pro → yearly Pro, 15 of 30 days left", toYearly, 800, "top-ups: 1,600, cycle restarts");
   check("REPLAY → deduped, balance unchanged", [(await q(ev)).body, P(15).credit_balance], [{ ok: true, deduped: true }, 2400]);

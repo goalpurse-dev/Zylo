@@ -405,7 +405,11 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
     // One grant per invoice. A change to a smaller plan can't take credits back: never below 0.
     const credits = Math.max(0, Math.round(planCredits + changeCredits));
 
-    const periodEndIso = unixToIso(lines[0]?.period?.end);
+    // The end of the paid period: the latest period end among the plan lines.
+    // (On a monthly → yearly switch the first line is the unused time of the old
+    // month; the yearly top-up job counts its months back from this date.)
+    const planLineEnds = lines.filter((ln) => PRICE_MAP[ln?.price?.id]).map((ln) => Number(ln?.period?.end) || 0);
+    const periodEndIso = unixToIso(planLineEnds.length ? Math.max(...planLineEnds) : lines[0]?.period?.end);
     const patch: Record<string, unknown> = {
       stripe_subscription_status: inv?.status ?? "paid",
       cancel_at_period_end:       Boolean(inv?.subscription_details?.cancel_at_period_end),
