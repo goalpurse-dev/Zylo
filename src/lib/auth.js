@@ -24,17 +24,17 @@ export async function signUpWithEmailPassword(email, password) {
   if (error) throw error;
 
   // ✅ ONLY SEND HERE (not in Signup.jsx)
-  if (data?.user) {
+  // The endpoint emails the signed-in account's own address: it takes the
+  // session token, not an address. No session yet (email confirmation pending)
+  // means no call.
+  if (data?.user && data.session?.access_token) {
     try {
       await fetch("/api/send-welcome-email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${data.session.access_token}`,
         },
-        body: JSON.stringify({
-          email: data.user.email,
-          user_id: data.user.id, // 🔥 CRITICAL
-        }),
       });
     } catch (err) {
       console.error("Welcome email failed:", err);
