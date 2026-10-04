@@ -100,7 +100,7 @@ export default function ProgressToast({ remaining, onClose, duration = 5000 }) {
 
           {showUpgrade && (
             <button
-              onClick={() => { onClose?.(); navigate("/workspace/pricing"); }}
+              onClick={() => { onClose?.(); navigate("/pricing"); }}
               className="mt-2.5 text-xs px-3 py-1.5 rounded-full border text-white transition"
               style={{
                 borderColor: `${accentColor}40`,

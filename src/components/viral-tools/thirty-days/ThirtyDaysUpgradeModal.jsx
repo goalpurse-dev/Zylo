@@ -52,7 +52,7 @@ export default function ThirtyDaysUpgradeModal({ open, onClose, tier }) {
         </div>
         <h2 id="thirty-days-upgrade-title" className="text-center text-xl font-black text-white">{copy.title}</h2>
         <p className="mt-2 text-center text-sm leading-relaxed text-white/50">{copy.body}</p>
-        <a href="/workspace/pricing" className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-lime-300 py-3 text-sm font-black text-[#11150D] transition hover:bg-lime-200">
+        <a href="/pricing" className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-lime-300 py-3 text-sm font-black text-[#11150D] transition hover:bg-lime-200">
           <Sparkles className="h-4 w-4" />Upgrade to {planLabel}
         </a>
         <button type="button" onClick={onClose} className="mt-3 w-full py-1 text-sm text-white/35 transition hover:text-white/60">Not now</button>

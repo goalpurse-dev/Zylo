@@ -308,7 +308,7 @@ export default function BlogBestAIProductBackgrounds() {
               Try backgrounds now →
             </Link>
             <Link
-             to="/workspace/pricing"
+             to="/pricing"
               className="inline-flex items-center justify-center rounded-2xl border border-white/20 px-6 py-3 text-base font-semibold hover:bg-white/10"
             >
               View pricing

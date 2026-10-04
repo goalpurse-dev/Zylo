@@ -8,7 +8,7 @@ import { longFormVideoCredits } from "../../lib/longFormTiers";
 import { formatMoney, planPriceView } from "../../lib/planPrices";
 import KeyButton from "../ui/zyvo/KeyButton";
 import { FOCUS, cx } from "../ui/zyvo/styles";
-import { DISPLAY_FONT, subscribe } from "./PlanCards";
+import { DISPLAY_FONT, isCurrentPlan, subscribe } from "./PlanCards";
 import { LoadError, Num, usePricingData } from "./PricingData";
 
 const Dash = () => <span className="text-white/25" aria-label="Not included">—</span>;
@@ -179,7 +179,7 @@ function useCompareGroups() {
 }
 
 export function CompareTable({ onAskDowngrade }) {
-  const { account, billing } = usePricingData();
+  const { account, billing, pay } = usePricingData();
   const groups = useCompareGroups();
   const [open, setOpen] = useState(false);
   const [phonePlan, setPhonePlan] = useState("pro");
@@ -187,9 +187,9 @@ export function CompareTable({ onAskDowngrade }) {
   const planButton = (id, size = "md") => (
     id === "free"
       ? (account.signedIn ? null : <KeyButton size={size} variant="outline" onClick={() => { window.location.href = "/signup"; }}>Sign up</KeyButton>)
-      : account.signedIn && account.plan === id
+      : isCurrentPlan(account, id)
         ? <KeyButton size={size} variant="outline" disabled>Current</KeyButton>
-        : <KeyButton size={size} variant={id === "pro" ? "lime" : "white"} onClick={() => subscribe({ planId: id, billing, account, onAskDowngrade })}>Choose</KeyButton>
+        : <KeyButton size={size} variant={id === "pro" ? "lime" : "white"} busy={pay.busy === `compare:${id}`} disabled={pay.busy != null} onClick={() => pay.run(`compare:${id}`, () => subscribe({ planId: id, billing, account, onAskDowngrade }))}>Choose</KeyButton>
   );
   return (
     <section aria-labelledby="compare-title">

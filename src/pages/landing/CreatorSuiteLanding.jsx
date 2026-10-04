@@ -258,7 +258,7 @@ export default function CreatorSuiteLanding({ config }) {
             <Link to="/stats" className="hover:text-white">Stats</Link>
             <Link to="/connections" className="hover:text-white">Connections</Link>
             <Link to="/blog" className="hover:text-white">Blog</Link>
-            <Link to="/workspace/pricing" className="hover:text-white">Pricing</Link>
+            <Link to="/pricing" className="hover:text-white">Pricing</Link>
           </div>
         </div>
       </footer>

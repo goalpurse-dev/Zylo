@@ -4,11 +4,11 @@ import { formatMoney, maxSavingPercent, planPriceView, usePlanPrices } from "../
  * Live € plan prices for paywalls and upsells (Stripe via plan-prices), so no
  * paywall types a price. For one billing choice:
  *   main(planId)  "€15" (per month) — "…" while loading, "—" on error
- *   note(planId)  "Billed €180/yr" / "Billed monthly"
+ *   note(planId)  "€180 billed yearly" / "Billed monthly"
  *   saveUpTo      biggest yearly saving in whole % (null until loaded)
  *   from          "€15/mo" — the lowest monthly price for this billing (null until loaded)
  */
-export default function useLivePlanPrices(billing = "yearly") {
+export default function useLivePlanPrices(billing = "monthly") {
   const { status, prices, retry } = usePlanPrices();
   const ready = status === "ready";
   const view = (planId) => (ready ? planPriceView(prices, planId, billing) : null);
@@ -24,7 +24,7 @@ export default function useLivePlanPrices(billing = "yearly") {
     note: (planId) => {
       const v = view(planId);
       if (billing !== "yearly") return "Billed monthly";
-      return v ? `Billed ${money(v.billedYearly)}/yr` : "Billed yearly";
+      return v ? `${money(v.billedYearly)} billed yearly` : "Billed yearly";
     },
     /** "€0.60" a day for this billing, or null until loaded. */
     perDay: (planId) => {

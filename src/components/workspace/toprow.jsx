@@ -173,7 +173,7 @@ export default function TopRow({ onMenuClick, title }) {
 
               {/* Pricing */}
               <button
-                onClick={() => navigate("/workspace/pricing")}
+                onClick={() => navigate("/pricing")}
                 className="hidden lg:block text-white/45 text-sm hover:text-white/80 transition"
               >
                 Pricing
@@ -208,7 +208,7 @@ export default function TopRow({ onMenuClick, title }) {
               <div className="flex items-center gap-1.5">
                 <div className="relative">
                   <button
-                    onClick={() => navigate("/workspace/pricing")}
+                    onClick={() => navigate("/pricing")}
                     className="flex items-center gap-1.5 rounded-full border border-lime-400/20 bg-gradient-to-r from-lime-300/[0.10] to-lime-500/[0.07] px-3 py-1.5 shadow-[inset_0_1px_0_rgba(217,249,157,0.04)] transition hover:border-lime-400/35 hover:from-lime-300/[0.14] hover:to-lime-500/[0.10]"
                   >
                     <span
@@ -235,7 +235,7 @@ export default function TopRow({ onMenuClick, title }) {
                 {/* Upgrade right next to credits — free users only */}
                 {planCode === "free" && (
                   <button
-                    onClick={() => navigate("/workspace/pricing")}
+                    onClick={() => navigate("/pricing")}
                     className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#7A3BFF] to-[#9F5CFF] text-white text-sm font-semibold hover:opacity-90 transition"
                   >
                     Upgrade
@@ -246,7 +246,7 @@ export default function TopRow({ onMenuClick, title }) {
               {/* Add Credits (credit packs) — paid plans only; free accounts see Upgrade */}
               {credits > 1 && planCode !== "free" && (
                 <button
-                  onClick={() => navigate("/workspace/pricing")}
+                  onClick={() => navigate("/pricing")}
                   className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#14161C] border border-white/10 hover:border-[#7A3BFF]/50 hover:bg-[#181A22] text-white/70 hover:text-white text-sm font-medium transition"
                 >
                   Add Credits
@@ -307,7 +307,7 @@ export default function TopRow({ onMenuClick, title }) {
 
                       <div className="flex flex-col gap-0.5 text-[13px]">
                         <MenuItem icon={User} label="View Profile" onClick={() => { setProfileOpen(false); navigate("/settings"); }} />
-                        <MenuItem icon={CreditCard} label="Subscriptions" onClick={() => { setProfileOpen(false); navigate("/workspace/pricing"); }} />
+                        <MenuItem icon={CreditCard} label="Subscriptions" onClick={() => { setProfileOpen(false); navigate("/pricing"); }} />
                         <MenuItem icon={Settings} label="Manage Account" onClick={() => { setProfileOpen(false); navigate("/settings"); }} />
                         <div className="border-t border-white/8 my-1.5" />
 
@@ -355,7 +355,7 @@ export default function TopRow({ onMenuClick, title }) {
             emoji="🎁"
             title="Pro Plan — 25% Off"
             description="Limited time. Upgrade now and save."
-            onClick={() => { setGiftOpen(false); navigate("/workspace/pricing"); }}
+            onClick={() => { setGiftOpen(false); navigate("/pricing"); }}
           />
         </div>
 

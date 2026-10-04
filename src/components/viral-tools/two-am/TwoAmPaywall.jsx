@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { Check, X, Lock } from "lucide-react";
 import { startCheckout } from "../../../lib/payments";
-import { supabase } from "../../../lib/supabaseClient";
+import usePaymentAction from "../../../hooks/usePaymentAction";
 import useLivePlanPrices from "../../pricing/useLivePlanPrices";
 import { PLAN_CREDITS } from "../../../../supabase/functions/_shared/stripePlanPrices.js";
 
@@ -13,7 +13,6 @@ const TIERS = [
     name: "Starter",
     accent: "#8B5CF6", btnFrom: "#5B21B6", btnTo: "#7C3AED",
     features: [`${PLAN_CREDITS.starter.toLocaleString("en-US")} credits / month`, null, "2AM Worlds", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Watermark-free exports", "Standard speed"],
-    priceIds: { monthly: "price_1TmVZZHtn4q5rIncOuf5aKP4", yearly: "price_1TmVhxHtn4q5rIncS8sxm6UR" },
   },
   {
     id: "pro",
@@ -21,33 +20,23 @@ const TIERS = [
     accent: "#A855F7", btnFrom: "#7C3AED", btnTo: "#A855F7",
     popular: true,
     features: [`${PLAN_CREDITS.pro.toLocaleString("en-US")} credits / month`, null, "2AM Worlds", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "Watermark-free exports", "Faster queue on busy days"],
-    priceIds: { monthly: "price_1TmVfXHtn4q5rInc9IaN1l3U", yearly: "price_1TmVjnHtn4q5rInccPDBIVaX" },
   },
   {
     id: "generative",
     name: "Generative",
     accent: "#C084FC", btnFrom: "#9333EA", btnTo: "#C084FC",
     features: [`${PLAN_CREDITS.generative.toLocaleString("en-US")} credits / month`, null, "2AM Worlds", "Face ASMR", "AI Fruit Story", "Micro Camera Animal", "First in the queue on busy days"],
-    priceIds: { monthly: "price_1TmVg2Htn4q5rIncWL0b3HJr", yearly: "price_1TmVlUHtn4q5rIncbtWbGyof" },
   },
 ];
 
-async function handleSubscribe(tier, billing) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return (window.location.href = "/signup");
-  await startCheckout({
-    type: "subscription",
-    priceId: tier.priceIds[billing],
-    userId: user.id,
-    email: user.email,
-    metadata: { email: user.email, plan: tier.id },
-  });
-}
-
 export default function TwoAmPaywall({ open, onClose, isGuest, dismissable = true, toolName = "2AM Worlds", previewSrc = "/template/2am-world/seaside-creature-town (7).png" }) {
   const navigate = useNavigate();
-  const [billing, setBilling] = useState("yearly");
+  // One checkout at a time: spinner on the clicked plan, a toast if it fails.
+  const pay = usePaymentAction();
+  // Monthly first: the price shown is the amount checkout charges.
+  const [billing, setBilling] = useState("monthly");
   const live = useLivePlanPrices(billing);
+  const buy = (tier) => pay.run(tier.id, () => startCheckout({ type: "subscription", planId: tier.id, billing }));
 
   useEffect(() => {
     if (!open) return;
@@ -150,7 +139,7 @@ export default function TwoAmPaywall({ open, onClose, isGuest, dismissable = tru
                   className="inline-flex items-center rounded-full p-1 gap-0.5"
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
                 >
-                  {["yearly", "monthly"].map((opt) => (
+                  {["monthly", "yearly"].map((opt) => (
                     <button
                       key={opt}
                       onClick={() => setBilling(opt)}
@@ -207,19 +196,27 @@ export default function TwoAmPaywall({ open, onClose, isGuest, dismissable = tru
                             <span className="mb-1 text-[11px] text-white/30">/mo</span>
                           </div>
                           <button
-                            onClick={() => handleSubscribe(tier, billing)}
-                            className="flex-shrink-0 rounded-[10px] px-4 py-2 text-[12px] font-bold text-white transition hover:opacity-90 sm:hidden"
+                            onClick={() => buy(tier)}
+                            disabled={pay.busy != null}
+                            aria-busy={pay.busy === tier.id || undefined}
+                            className="flex-shrink-0 rounded-[10px] px-4 py-2 text-[12px] font-bold text-white transition hover:opacity-90 disabled:opacity-60 sm:hidden"
                             style={{ background: `linear-gradient(135deg,${tier.btnFrom},${tier.btnTo})` }}
-                          >Get {tier.name}</button>
+                          >{pay.busy === tier.id && <span className="mr-1.5 inline-block h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white align-[-2px] motion-reduce:animate-none" aria-hidden="true" />}Get {tier.name}</button>
                         </div>
 
-                        <div className="text-[10px] text-white/25">{note}</div>
+                        {/* Yearly: the full amount checkout will charge, easy to read. */}
+                        <div className={billing === "yearly" ? "text-[12px] font-semibold text-white/85" : "text-[10px] text-white/25"}>{note}</div>
 
                         <button
-                          onClick={() => handleSubscribe(tier, billing)}
-                          className="hidden w-full rounded-[10px] py-2.5 text-[12px] font-bold text-white transition hover:opacity-90 sm:block"
+                          onClick={() => buy(tier)}
+                          disabled={pay.busy != null}
+                          aria-busy={pay.busy === tier.id || undefined}
+                          className="hidden w-full rounded-[10px] py-2.5 text-[12px] font-bold leading-tight text-white transition hover:opacity-90 disabled:opacity-60 sm:block"
                           style={{ background: `linear-gradient(135deg,${tier.btnFrom},${tier.btnTo})` }}
-                        >Get {tier.name}</button>
+                        >
+                          {pay.busy === tier.id && <span className="mr-1.5 inline-block h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white align-[-2px] motion-reduce:animate-none" aria-hidden="true" />}Get {tier.name}
+                          {billing === "yearly" && <span className="block text-[10px] font-semibold text-white/75">{note}</span>}
+                        </button>
 
                         <ul className="space-y-1.5">
                           {tier.features.filter(Boolean).map((f, i) => (

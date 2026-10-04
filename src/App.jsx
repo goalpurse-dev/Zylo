@@ -19,6 +19,7 @@ const Router = import.meta.env.SSR ? StaticRouter : BrowserRouter;
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import { Toaster } from "sonner";
+import ResumeCheckout from "./components/billing/ResumeCheckout.jsx";
 import LongFormScriptReadyNotifier from "./components/LongFormScriptReadyNotifier";
 import AIFruitStory from "./pages/workspace/AIFruitStory";
 import SkeletonShorts from "./pages/workspace/SkeletonShorts";
@@ -386,6 +387,13 @@ function OldHomeRedirect() {
   return <Navigate to={{ pathname: "/", search, hash }} replace />;
 }
 
+// /workspace/pricing is the old address of /pricing (301 in vercel.json; this
+// client redirect covers in-app navigation to it). Keeps ?utm_… and #hash.
+function OldPricingRedirect() {
+  const { search, hash } = useLocation();
+  return <Navigate to={{ pathname: "/pricing", search, hash }} replace />;
+}
+
 function GuestOnly({ children }) {
   const { loading, user } = useAuth();
 
@@ -558,6 +566,8 @@ return (
   {!hideNav && <Navbar />}
   {/* Phase 6a: toasts + "your script is ready" notifications. */}
   <Toaster theme="dark" position="bottom-right" richColors />
+  {/* A plan picked while logged out continues to checkout right after sign-up. */}
+  <ResumeCheckout />
   <LongFormScriptReadyNotifier />
 
 {/* WelcomeModal disabled — WelcomeScreen in layout.jsx handles new user welcome */}
@@ -888,7 +898,10 @@ return (
   <Route path="/workspace/library" element={<Navigate to="/workspace/creations" replace />} />
   <Route path="/workspace/creations" element={<Creations />} />
   <Route path="/workspace/creations/viral-videos" element={<Creations />} />
-  <Route path="/workspace/pricing" element={<Pricing />} />
+  {/* PRICING: public and indexable at /pricing (prerendered, in the sitemap).
+      Logged-out visitors see every plan; logged-in users also their own. */}
+  <Route path="/pricing" element={<Pricing />} />
+  <Route path="/workspace/pricing" element={<OldPricingRedirect />} />
   <Route path="/workspace/image-generator" element={<Image />} />
   <Route path="/workspace/video-generator" element={<Video />} />
   <Route path="/workspace/viral-script" element={<Script />} />

@@ -276,7 +276,7 @@ export default function PublishLanding() {
             <a href="#faq" className="transition hover:text-white">FAQ</a>
           </nav>
           <div className="flex items-center gap-2">
-            <Link to="/workspace/pricing" className="hidden rounded-xl px-3.5 py-2 text-[12px] font-bold text-white/55 transition hover:bg-white/[0.05] hover:text-white sm:block">
+            <Link to="/pricing" className="hidden rounded-xl px-3.5 py-2 text-[12px] font-bold text-white/55 transition hover:bg-white/[0.05] hover:text-white sm:block">
               Pricing
             </Link>
             <Link
@@ -875,7 +875,7 @@ export default function PublishLanding() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  to="/workspace/pricing"
+                  to="/pricing"
                   className="inline-flex w-full items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] px-7 py-4 text-[14px] font-bold text-white/65 transition hover:bg-white/[0.07] hover:text-white sm:w-auto"
                 >
                   View plans
@@ -917,7 +917,7 @@ export default function PublishLanding() {
             <div className="mt-4 flex flex-col gap-3 text-[12px] text-white/45">
               <Link to="/blog" className="hover:text-white">Blog</Link>
               <Link to="/support" className="hover:text-white">Support</Link>
-              <Link to="/workspace/pricing" className="hover:text-white">Pricing</Link>
+              <Link to="/pricing" className="hover:text-white">Pricing</Link>
             </div>
           </div>
         </div>

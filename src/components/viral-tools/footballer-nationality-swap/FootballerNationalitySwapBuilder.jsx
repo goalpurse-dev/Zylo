@@ -499,7 +499,7 @@ export default function FootballerNationalitySwapBuilder({ onGenerate, onReset, 
         {!hasEnough && (
           <div className="flex items-center justify-between gap-2 mb-3 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20">
             <span className="text-red-300 text-[12px] font-semibold">Need {totalCredits} credits · you have {creditBalance}</span>
-            <a href="/workspace/pricing" className="text-red-200 text-[11px] font-bold underline shrink-0">Add Credits →</a>
+            <a href="/pricing" className="text-red-200 text-[11px] font-bold underline shrink-0">Add Credits →</a>
           </div>
         )}
         {validationError && (

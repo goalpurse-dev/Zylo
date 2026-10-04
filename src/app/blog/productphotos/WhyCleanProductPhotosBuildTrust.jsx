@@ -276,7 +276,7 @@ export default function WhyCleanProductPhotosBuildTrust() {
               Try Product Photos
             </a>
             <a
-              href="/workspace/pricing"
+              href="/pricing"
               className="rounded-xl border px-6 py-3 font-semibold hover:bg-[#F7F5FA] transition"
             >
               View Pricing

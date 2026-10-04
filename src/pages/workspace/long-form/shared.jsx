@@ -582,7 +582,7 @@ export function CreditsError({ message, className = "text-[12px] text-red-200" }
   const short = /^Not enough credits/i.test(message);
   return (
     <p className={className} data-testid={short ? "not-enough-credits" : undefined}>
-      {short ? <>Not enough credits — <a href="/workspace/pricing" className="font-semibold text-lime-200 underline underline-offset-2">Add credits</a></> : message}
+      {short ? <>Not enough credits — <a href="/pricing" className="font-semibold text-lime-200 underline underline-offset-2">Add credits</a></> : message}
     </p>
   );
 }

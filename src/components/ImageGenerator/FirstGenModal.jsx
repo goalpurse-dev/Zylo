@@ -13,7 +13,7 @@ export default function FirstGenModal({ imageUrl, onClose }) {
 
   const handlePlans = () => {
     onClose();
-    navigate("/workspace/pricing");
+    navigate("/pricing");
   };
 
   return createPortal(

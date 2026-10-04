@@ -159,7 +159,7 @@ export default function footer() {
           <div className="flex flex-col gap-3  ">
         <h3 className="text-xl font-inter font-extrabold mt-10 w-[110px] cursor-default ">Pricing</h3>
         <Link className="text-sm font-normal font-inter mt-2 cursor-pointer hover:underline"
-        to="/workspace/pricing"
+        to="/pricing"
         >Plans</Link> 
     
          </div>

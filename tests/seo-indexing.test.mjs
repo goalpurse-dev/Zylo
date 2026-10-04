@@ -15,7 +15,7 @@ test("paid and private workspace routes use one central noindex policy", () => {
   assert.ok(policies.length > 0);
   assert.equal(getWorkspaceRouteSeoPolicy("/workspace/ai-fruit-story")?.seoVisibility, "noindex");
   assert.equal(getWorkspaceRouteSeoPolicy("/workspace/ai-fruit-story")?.publicLanding, "/ai-fruit-story-maker");
-  assert.equal(getPublicWorkspaceRoutes().some(({ path }) => path === "/workspace/pricing"), true);
+  assert.equal(getPublicWorkspaceRoutes().some(({ path }) => path === "/pricing"), true);
   assert.match(read("src/components/seo/WorkspaceRouteSeo.jsx"), /noindex, follow/);
   assert.match(read("src/pages/workspace/layout.jsx"), /<WorkspaceRouteSeo \/>/);
 });

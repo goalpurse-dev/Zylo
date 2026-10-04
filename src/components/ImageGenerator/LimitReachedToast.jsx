@@ -14,7 +14,7 @@ export default function LimitReachedToast({ resetAt, onClose }) {
 
   const handleUpgrade = () => {
     onClose();
-    navigate("/workspace/pricing");
+    navigate("/pricing");
   };
 
   return (

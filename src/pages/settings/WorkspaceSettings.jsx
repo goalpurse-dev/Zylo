@@ -33,7 +33,8 @@ export default function Settings() {
 
 
 
-  const [active, setActive] = useState("account");
+  // ?tab=billing opens Billing & plans directly (the billing portal returns here).
+  const [active, setActive] = useState(() => (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("tab") === "billing" ? "billing" : "account"));
   const [loggingOut, setLoggingOut] = useState(false);
   const nav = useNavigate();
 

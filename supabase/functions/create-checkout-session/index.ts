@@ -1,6 +1,8 @@
 // deno-lint-ignore-file no-explicit-any
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { PLAN_PRICE_IDS, TOPUP_PRICE_IDS } from "../_shared/stripePlanPrices.js";
+import { allowedAppUrl, appOriginFor, originOf, withCheckoutSessionId } from "../_shared/appOrigins.js";
 
 /* ---------- CORS helpers ---------- */
 function cors(req: Request) {
@@ -24,52 +26,34 @@ const STRIPE_SECRET = Deno.env.get("STRIPE_SECRET_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+// Optional extra origin Stripe may return to (besides tryzyvo.com and localhost).
+const EXTRA_ORIGINS = [originOf(Deno.env.get("APP_ORIGIN") ?? "")].filter(Boolean) as string[];
 
-const TOPUP_PACK_MAP: Record<string, string> = {
-  mini: "price_1TGKjDHtn4q5rInczlym0Dcz",
-  standard: "price_1SpZczHtn4q5rInctZoF9rJV",
-  max: "price_1TGKjxHtn4q5rIncQzzCGyrR",
-};
+/** The plan prices checkout sells: today's six (monthly + yearly). Legacy prices
+ *  stay in PLAN_PRICE_MAP for existing subscribers and are not sold here. */
+const PLAN_PRICES_ON_SALE = new Set(Object.values(PLAN_PRICE_IDS as Record<string, { monthly: string; yearly: string }>).flatMap((p) => [p.monthly, p.yearly]));
+const TOPUP_PACKS: Record<string, string> = TOPUP_PRICE_IDS;
 
-/** Mirrors the plan side of stripe-webhook/index.ts's PRICE_MAP -- keep in
- *  sync if pricing changes. Used only to label abandoned_checkouts rows for
- *  recovery emails/analytics; never used for billing/credit decisions. */
-const PLAN_PRICE_MAP: Record<string, { plan: string; interval?: "yearly" }> = {
-  "price_1TmVZZHtn4q5rIncOuf5aKP4": { plan: "starter" },
-  "price_1TmVfXHtn4q5rInc9IaN1l3U": { plan: "pro" },
-  "price_1TmVg2Htn4q5rIncWL0b3HJr": { plan: "generative" },
-  "price_1TmVhxHtn4q5rIncS8sxm6UR": { plan: "starter",    interval: "yearly" },
-  "price_1TmVjnHtn4q5rInccPDBIVaX": { plan: "pro",        interval: "yearly" },
-  "price_1TmVlUHtn4q5rIncbtWbGyof": { plan: "generative", interval: "yearly" },
-  "price_1TGKT6Htn4q5rIncI47V5Ein": { plan: "starter" },
-  "price_1TGKSqHtn4q5rIncIf8RPa6e": { plan: "pro" },
-  "price_1TGKSSHtn4q5rIncSTurqkCN": { plan: "generative" },
-  "price_1T8gM3Htn4q5rInchn8CMEcO": { plan: "starter" },
-  "price_1T8gMVHtn4q5rIncWwcUi9mG": { plan: "pro" },
-  "price_1T8gMsHtn4q5rIncW0vy8d57": { plan: "generative" },
-  "price_1TYWNYHtn4q5rIncWMa3mmvI": { plan: "starter",    interval: "yearly" },
-  "price_1TYWOWHtn4q5rIncTmN3GXdy": { plan: "pro",        interval: "yearly" },
-  "price_1TYWP8Htn4q5rIncbugChVhS": { plan: "generative", interval: "yearly" },
-};
+/** A subscription in one of these states already pays (or owes) for a plan: a second one would double-bill. */
+const LIVE_SUBSCRIPTION = new Set(["active", "trialing", "past_due"]);
 
-async function stripePost(path: string, body: URLSearchParams) {
+async function stripe(method: "GET" | "POST", path: string, body?: URLSearchParams) {
   const res = await fetch(`https://api.stripe.com${path}`, {
-    method: "POST",
+    method,
     headers: {
       Authorization: `Bearer ${STRIPE_SECRET}`,
-      "Content-Type": "application/x-www-form-urlencoded",
+      ...(body ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
     },
     body,
   });
+  const data: any = await res.json().catch(() => null);
+  return { ok: res.ok, status: res.status, data };
+}
 
-  const json = await res.json();
-  if (!res.ok) {
-    const err = new Error(json?.error?.message || "Stripe error");
-    (err as any).status = res.status;
-    (err as any).details = json;
-    throw err;
-  }
-  return json;
+/** Stripe's answer when the stored customer id no longer exists (deleted, or from test mode). */
+function isMissingCustomer(data: any) {
+  const err = data?.error;
+  return err?.code === "resource_missing" && (err?.param === "customer" || /no such customer/i.test(String(err?.message ?? "")));
 }
 
 /* ---------- main ---------- */
@@ -81,30 +65,22 @@ export default {
     try {
       if (!STRIPE_SECRET) return json(req, { error: "Stripe key missing" }, 500);
 
-     const {
-  type,
-  priceId,
-  pack,
-  successUrl,
-  cancelUrl,
-  customer,
-  userId: bodyUserId,
-  email: bodyEmail
-} = await req.json();
+      // Only these fields are read. A customer id, user id or email sent by the
+      // browser is ignored: identity comes from the signed-in user alone.
+      const { type, priceId, pack, successUrl, cancelUrl } = await req.json().catch(() => ({}));
 
-     let finalPriceId = priceId;
+      const isSubscription = type === "subscription";
+      const isTopup = type === "topup"; // one-time payment
+      if (!isSubscription && !isTopup) return json(req, { error: "Missing required params" }, 400);
 
-if (type === "topup") {
-  finalPriceId = TOPUP_PACK_MAP[pack];
-}
-
-if (type === "topup" && !TOPUP_PACK_MAP[pack]) {
-  return json(req, { error: "Invalid pack" }, 400);
-}
-
-if (!finalPriceId || !successUrl || !cancelUrl || !type) {
-  return json(req, { error: "Missing required params" }, 400);
-}
+      let finalPriceId: string;
+      if (isTopup) {
+        finalPriceId = TOPUP_PACKS[pack];
+        if (!finalPriceId) return json(req, { error: "Invalid pack" }, 400);
+      } else {
+        if (!PLAN_PRICES_ON_SALE.has(priceId)) return json(req, { error: "Invalid plan", code: "INVALID_PLAN" }, 400);
+        finalPriceId = priceId;
+      }
 
       // get current user from the Authorization header sent by your frontend
       const authHeader = req.headers.get("Authorization") || "";
@@ -112,219 +88,129 @@ if (!finalPriceId || !successUrl || !cancelUrl || !type) {
         global: { headers: { Authorization: authHeader } },
       });
       const sbAdmin = createClient(SUPABASE_URL, SERVICE_ROLE);
- const {
-  data: { user },
-} = await sb.auth.getUser();
+      const { data: { user } } = await sb.auth.getUser();
 
-/* 🔒 Prevent checkout if not logged in */
-if (!user?.id) {
-  return json(req, { error: "User must be logged in to purchase." }, 401);
-}
-
-      // fetch email from profiles if missing
-      let email = user?.email ?? bodyEmail ?? "";
-      let stripeCustomerId = customer || "";
-      if (!email && user?.id) {
-        const { data: prof } = await sb
-          .from("profiles")
-          .select("email, stripe_customer_id")
-          .eq("id", user.id)
-          .single();
-        email = prof?.email ?? "";
-        stripeCustomerId = stripeCustomerId || prof?.stripe_customer_id || "";
-      } else if (user?.id) {
-        const { data: prof } = await sb
-          .from("profiles")
-          .select("stripe_customer_id")
-          .eq("id", user.id)
-          .single();
-        stripeCustomerId = stripeCustomerId || prof?.stripe_customer_id || "";
+      /* 🔒 Prevent checkout if not logged in */
+      if (!user?.id) {
+        return json(req, { error: "User must be logged in to purchase.", code: "NOT_SIGNED_IN" }, 401);
       }
 
-      if (!stripeCustomerId && user?.id) {
+      const { data: prof, error: profErr } = await sbAdmin
+        .from("profiles")
+        .select("email, stripe_customer_id")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (profErr || !prof) {
+        // No profile row = the webhook could not give this user what they pay for.
+        console.error("[create-checkout-session] profile lookup failed:", user.id, profErr?.message ?? "no profile row");
+        return json(req, { error: "Your account isn't ready yet. Please try again in a moment.", code: "PROFILE_UNAVAILABLE" }, 500);
+      }
+
+      const email = user.email ?? prof.email ?? "";
+      let stripeCustomerId: string = prof.stripe_customer_id || "";
+      let customerIsNew = false;
+
+      /** A new Stripe customer for this user, saved on the profile. */
+      const createCustomer = async () => {
         const customerBody = new URLSearchParams();
         if (email) customerBody.set("email", email);
         customerBody.set("metadata[supabase_user_id]", user.id);
-        const createdCustomer = await stripePost("/v1/customers", customerBody);
-        stripeCustomerId = createdCustomer.id;
-
-        await sbAdmin
+        const created = await stripe("POST", "/v1/customers", customerBody);
+        if (!created.ok) throw new Error(created.data?.error?.message || "could not create the Stripe customer");
+        const { error: saveErr } = await sbAdmin
           .from("profiles")
-          .update({ stripe_customer_id: stripeCustomerId })
+          .update({ stripe_customer_id: created.data.id })
           .eq("id", user.id);
+        if (saveErr) throw new Error(`could not save the Stripe customer: ${saveErr.message}`);
+        stripeCustomerId = created.data.id;
+        customerIsNew = true;
+      };
+
+      if (!stripeCustomerId) await createCustomer();
+
+      // One subscription per user: someone who already has one changes it in the
+      // billing portal. Asked from Stripe, not the profile, so it is never stale.
+      if (isSubscription && !customerIsNew) {
+        const subs = await stripe("GET", `/v1/subscriptions?customer=${encodeURIComponent(stripeCustomerId)}&limit=20`);
+        if (subs.ok) {
+          const live = (subs.data?.data ?? []).find((s: any) => LIVE_SUBSCRIPTION.has(s?.status));
+          if (live) {
+            return json(req, {
+              error: "You already have an active subscription. You can change it in billing.",
+              code: "ALREADY_SUBSCRIBED",
+            }, 409);
+          }
+        } else if (isMissingCustomer(subs.data)) {
+          console.warn("[create-checkout-session] stored customer is gone in Stripe, creating a new one:", stripeCustomerId, "user", user.id);
+          await createCustomer();
+        } else {
+          // Not worth blocking a purchase over: the webhook copes with a second subscription.
+          console.error("[create-checkout-session] subscription check failed:", subs.data?.error?.message);
+        }
       }
 
-      const isSubscription = type === "subscription";
-      const isTopup = type === "topup"; // one-time payment
+      // Stripe may only send the customer back to our own site. Anything else
+      // falls back to the standard pages on the caller's (or the main) origin.
+      const appOrigin = appOriginFor(req.headers.get("Origin") || "", EXTRA_ORIGINS);
+      const finalSuccessUrl = withCheckoutSessionId(allowedAppUrl(successUrl, EXTRA_ORIGINS) ?? `${appOrigin}/billing/success`);
+      const finalCancelUrl = allowedAppUrl(cancelUrl, EXTRA_ORIGINS) ?? `${appOrigin}/billing/cancel`;
 
       // Build Checkout Session request
-    const body = new URLSearchParams({
-  success_url: successUrl,
-  cancel_url: cancelUrl,
-  mode: isSubscription ? "subscription" : "payment",
-  "line_items[0][price]": finalPriceId,
-  "line_items[0][quantity]": "1",
-  allow_promotion_codes: "true",
-  // Automatic tax is off: not VAT-registered yet (turnover under the Finnish
-  // EUR 20,000 limit), so no VAT is charged and checkout doesn't ask for an address.
-  // Turn back on after VAT registration.
-  // "automatic_tax[enabled]": "true",
-  "customer_update[address]": "auto"
-});
+      const body = new URLSearchParams({
+        success_url: finalSuccessUrl,
+        cancel_url: finalCancelUrl,
+        mode: isSubscription ? "subscription" : "payment",
+        "line_items[0][price]": finalPriceId,
+        "line_items[0][quantity]": "1",
+        allow_promotion_codes: "true",
+        // Automatic tax is off: not VAT-registered yet (turnover under the Finnish
+        // EUR 20,000 limit), so no VAT is charged and checkout doesn't ask for an address.
+        // Turn back on after VAT registration.
+        // "automatic_tax[enabled]": "true",
+        "customer_update[address]": "auto",
+        customer: stripeCustomerId,
+      });
 
       // Attach identity & helpful metadata for webhook fulfillment
-      const userId = user?.id ?? bodyUserId ?? "";
-      if (userId) {
-        body.set("client_reference_id", userId);
-        body.set("metadata[user_id]", userId);
-      }
-      if (email && !stripeCustomerId) {
-        body.set("customer_email", email);
-        body.set("metadata[email]", email);
-      }
+      const userId = user.id;
+      body.set("client_reference_id", userId);
+      body.set("metadata[user_id]", userId);
       if (email) body.set("metadata[email]", email);
       // tag kind so webhook can branch
       body.set("metadata[kind]", isTopup ? "topup" : "subscription");
 
       // Also tag the created PaymentIntent (for mode=payment)
       if (!isSubscription) {
-        if (userId) body.set("payment_intent_data[metadata][user_id]", userId);
+        body.set("payment_intent_data[metadata][user_id]", userId);
         if (email) body.set("payment_intent_data[metadata][email]", email);
         body.set("payment_intent_data[metadata][kind]", "topup");
       }
 
       if (isSubscription) {
-        if (userId) body.set("subscription_data[metadata][user_id]", userId);
+        body.set("subscription_data[metadata][user_id]", userId);
         if (email) body.set("subscription_data[metadata][email]", email);
         body.set("subscription_data[metadata][kind]", "subscription");
       }
 
-      // Optional: pass a known Stripe customer if you store it
-      if (stripeCustomerId) body.set("customer", stripeCustomerId);
+      let session = await stripe("POST", "/v1/checkout/sessions", body);
 
-      // Lets Stripe generate a post-expiry recovery link (used by the
-      // recovery-email sender's Email 3 CTA once a session has expired).
-      // Not yet verified in Stripe test mode against every mode/config
-      // combination -- see the retry-without-it fallback below, which
-      // guarantees this can never break checkout creation itself.
-      body.set("after_expiration[recovery][enabled]", "true");
-
-      async function postCheckoutSession(b: URLSearchParams) {
-        const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${STRIPE_SECRET}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Idempotency-Key": crypto.randomUUID(),
-          },
-          body: b,
-        });
-        const j: any = await res.json();
-        return { res, j };
+      // "No such customer": the stored id is dead. Make a new customer and try once more.
+      if (!session.ok && isMissingCustomer(session.data) && !customerIsNew) {
+        console.warn("[create-checkout-session] stored customer is gone in Stripe, creating a new one:", stripeCustomerId, "user", user.id);
+        await createCustomer();
+        body.set("customer", stripeCustomerId);
+        session = await stripe("POST", "/v1/checkout/sessions", body);
       }
 
-      let { res: stripeRes, j: stripeJson } = await postCheckoutSession(body);
-
-      if (!stripeRes.ok && String(stripeJson?.error?.param || "").startsWith("after_expiration")) {
-        console.error(
-          "[create-checkout-session] after_expiration.recovery rejected by Stripe, retrying without it:",
-          stripeJson?.error?.message,
-        );
-        const retryBody = new URLSearchParams(body);
-        retryBody.delete("after_expiration[recovery][enabled]");
-        ({ res: stripeRes, j: stripeJson } = await postCheckoutSession(retryBody));
+      if (!session.ok) {
+        console.error("[create-checkout-session] Stripe refused the session:", session.status, JSON.stringify(session.data?.error ?? null), "user", user.id);
+        return json(req, { error: session.data?.error?.message || "Stripe error", code: "STRIPE_ERROR" }, session.status);
       }
 
-      if (!stripeRes.ok) {
-        const msg = stripeJson?.error?.message || "Stripe error";
-        return json(req, { error: msg, details: stripeJson }, stripeRes.status);
-      }
-
-      // ── Phase 2/3: server-side abandoned-checkout tracking ─────────────────
-      // Source of truth for recovery tracking as of this rebuild. Must NEVER
-      // block or fail the actual checkout -- Stripe already succeeded above,
-      // so the caller gets their URL regardless of what happens in here.
-      try {
-        const planInfo = isSubscription ? PLAN_PRICE_MAP[finalPriceId] : undefined;
-        const nowIso = new Date().toISOString();
-
-        const { data: newRow, error: insertErr } = await sbAdmin
-          .from("abandoned_checkouts")
-          .insert({
-            user_id: userId || null,
-            email,
-            stripe_customer_id: stripeCustomerId || null,
-            stripe_session_id: stripeJson.id,
-            checkout_url: stripeJson.url,
-            purchase_type: isTopup ? "topup" : "subscription",
-            plan_code: planInfo?.plan ?? null,
-            pack: isTopup ? pack : null,
-            billing_interval: planInfo?.interval ?? (isSubscription ? "monthly" : null),
-            price_id: finalPriceId,
-            amount: stripeJson.amount_total ?? null,
-            currency: stripeJson.currency ?? null,
-            expires_at: stripeJson.expires_at
-              ? new Date(stripeJson.expires_at * 1000).toISOString()
-              : null,
-            status: "pending",
-            paid: false,
-            recovered: false,
-            recovery_stage: 0,
-            recovery_system_version: "v2",
-            updated_at: nowIso,
-          })
-          .select("id")
-          .single();
-
-        if (insertErr) {
-          console.error(
-            "[create-checkout-session] abandoned_checkouts insert failed (non-fatal):",
-            insertErr.message,
-          );
-        } else if (newRow?.id) {
-          const { error: eventErr } = await sbAdmin.from("abandoned_checkout_events").insert({
-            checkout_id: newRow.id,
-            event_type: "checkout_started",
-            amount: stripeJson.amount_total ?? null,
-            currency: stripeJson.currency ?? null,
-          });
-          if (eventErr) {
-            console.error(
-              "[create-checkout-session] checkout_started event insert failed (non-fatal):",
-              eventErr.message,
-            );
-          }
-
-          // Phase 3: supersede this user's older unpaid v2 rows -- the
-          // newest session owns the active recovery sequence. Never touches
-          // converted/paid rows, and never touches legacy (v1) rows.
-          if (userId) {
-            const { error: supersedeErr } = await sbAdmin
-              .from("abandoned_checkouts")
-              .update({ status: "superseded", updated_at: nowIso })
-              .eq("user_id", userId)
-              .eq("recovery_system_version", "v2")
-              .neq("id", newRow.id)
-              .eq("paid", false)
-              .in("status", ["pending", "in_sequence", "expired"]);
-            if (supersedeErr) {
-              console.error(
-                "[create-checkout-session] supersede update failed (non-fatal):",
-                supersedeErr.message,
-              );
-            }
-          }
-        }
-      } catch (trackingErr) {
-        console.error(
-          "[create-checkout-session] abandoned-checkout tracking threw (non-fatal):",
-          trackingErr,
-        );
-      }
-
-      return json(req, { url: stripeJson.url });
+      return json(req, { url: session.data.url });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
+      console.error("[create-checkout-session] failed:", msg);
       return json(req, { error: `Failed to create session: ${msg}` }, 500);
     }
   },

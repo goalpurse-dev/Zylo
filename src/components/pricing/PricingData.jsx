@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo } from "react";
 import usePricingOutputCosts from "../../hooks/usePricingOutputCosts";
 import usePlanCode from "../../hooks/usePlanCode";
+import usePaymentAction from "../../hooks/usePaymentAction";
 import { useFeatureFlag } from "../../lib/featureFlags";
 import { useLongFormTiers } from "../../lib/longFormTiers";
 import { usePlanPrices } from "../../lib/planPrices";
@@ -12,6 +13,8 @@ import { fruitHeadline, fruitToolKey } from "../../lib/pricingOutputs";
  *   lf       Long Form tier prices + plans (tool_prices longform:*)
  *   prices   Stripe plan and top-up prices (plan-prices edge function)
  *   account  the viewer's plan; fruitV2 = the viewer has the fruit_v2 flag
+ *   pay      { busy, run }: one lock for every purchase button on the page
+ *            (hooks/usePaymentAction), so a second click can't open a second checkout
  */
 const PricingDataContext = createContext(null);
 
@@ -20,12 +23,14 @@ export function PricingDataProvider({ billing, children }) {
   const lf = useLongFormTiers();
   const prices = usePlanPrices();
   const account = usePlanCode();
+  const { busy: payBusy, run: payRun } = usePaymentAction();
   const flag = useFeatureFlag("fruit_v2", account.userId);
   const fruitV2 = flag.enabled;
   const value = useMemo(() => ({
     costs, lf, prices, account, billing, fruitV2,
     fruit: { key: fruitToolKey(fruitV2), headline: fruitHeadline(fruitV2) },
-  }), [costs, lf, prices, account, billing, fruitV2]);
+    pay: { busy: payBusy, run: payRun },
+  }), [costs, lf, prices, account, billing, fruitV2, payBusy, payRun]);
   return <PricingDataContext.Provider value={value}>{children}</PricingDataContext.Provider>;
 }
 

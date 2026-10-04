@@ -562,7 +562,7 @@ export default function FaceAsmrBuilder({ onGenerate, onBack, scenes, setScenes,
             <span className="text-red-300 text-[12px] font-semibold">
               Need {totalCost} credits · you have {creditBalance}
             </span>
-            <a href="/workspace/pricing" className="text-red-200 text-[11px] font-bold underline shrink-0">
+            <a href="/pricing" className="text-red-200 text-[11px] font-bold underline shrink-0">
               Add Credits →
             </a>
           </div>

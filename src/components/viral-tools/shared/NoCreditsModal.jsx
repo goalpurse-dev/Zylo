@@ -54,7 +54,7 @@ export default function NoCreditsModal({ open, onClose, creditsNeeded = 0, credi
         </p>
 
         <a
-          href="/workspace/pricing"
+          href="/pricing"
           className={look.cta}
         >
           Get Credits

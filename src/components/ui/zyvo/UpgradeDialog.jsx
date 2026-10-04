@@ -39,7 +39,7 @@ export default function UpgradeDialog({ open, onClose, title, body, requiredPlan
           <DialogTitle className="mb-2 text-center text-xl font-black text-white">{title}</DialogTitle>
           <Description className="mb-6 text-center text-sm leading-relaxed text-white/50">{body}</Description>
           <a
-            href="/workspace/pricing"
+            href="/pricing"
             className={cx("flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-lime-300 to-lime-500 py-3 text-center text-[15px] font-bold text-[#071006] transition hover:opacity-90", FOCUS)}
           >
             <Sparkles className="h-4 w-4" aria-hidden="true" />

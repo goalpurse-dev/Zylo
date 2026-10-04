@@ -50,7 +50,7 @@ export default function TwoAmUpgradeModal({ open, onClose, modelId, requiredPlan
         <p className="text-center text-sm text-white/50 mb-6 leading-relaxed">{copy.body}</p>
 
         <a
-          href="/workspace/pricing"
+          href="/pricing"
           className="flex items-center justify-center gap-2 w-full rounded-2xl bg-gradient-to-r from-lime-300 to-lime-500 py-3 text-center text-[15px] font-bold text-[#071006] hover:opacity-90 transition"
         >
           <Sparkles className="h-4 w-4" />
