@@ -197,6 +197,20 @@ async function grantCreditsOnce(userId: string, amount: number, reason: string, 
 }
 
 /**
+ * Queues an email in email_outbox; the email-sender function sends it later.
+ * Email must never fail a Stripe event: any error here is logged and that is
+ * all. The key makes it ONE email however often the event is delivered.
+ */
+async function queueEmail(dedupeKey: string, template: string, userId: string, payload: Record<string, unknown>) {
+  try {
+    const { error } = await sb.rpc("enqueue_email", { p_dedupe_key: dedupeKey, p_template: template, p_user_id: userId, p_payload: payload });
+    if (error) console.warn(`[stripe-webhook] email ${dedupeKey} not queued:`, error.message);
+  } catch (e) {
+    console.warn(`[stripe-webhook] email ${dedupeKey} not queued:`, e instanceof Error ? e.message : String(e));
+  }
+}
+
+/**
  * Event dedupe. An event is recorded only AFTER its handler succeeded, so a
  * failed one is run again when Stripe retries. Both calls fail open: every
  * handler is safe to run twice (credits are guarded by grantCreditsOnce).
@@ -325,6 +339,7 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
         throw new Error(`paid checkout ${s.id} maps to 0 credits (prices: ${items.map((it) => it?.price?.id).join(", ") || "none"})`);
       }
       const granted = await grantCreditsOnce(userId, totalCredits, "topup", s.id);
+      await queueEmail(`pack:${s.id}`, "pack_confirmation", userId, { credits: totalCredits });
       return { ok: true, topup_credits: totalCredits, granted };
     }
 
@@ -443,6 +458,13 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
       ? await grantCreditsOnce(userId, credits, hasProration ? "plan_upgrade" : "plan_renewal", inv.id)
       : false;
 
+    // The first payment of a subscription: "you're now a Zyvo partner".
+    if (inv?.billing_reason === "subscription_create" && plan) {
+      await queueEmail(`plan_welcome:${invoiceSubscriptionId(inv, lines) ?? inv.id}`, "plan_welcome", userId, {
+        plan, credits, interval: detectedInterval === "yearly" ? "yearly" : "monthly", period_end: periodEndIso,
+      });
+    }
+
     return hasProration
       ? { ok: true, plan_credits: planCredits, plan_change: true, credits, granted }
       : { ok: true, plan_credits: planCredits, granted };
@@ -530,6 +552,8 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
         cancel_at_period_end:       Boolean(sub?.cancel_at_period_end),
         current_period_end:         unixToIso(sub?.current_period_end),
       }, `set free: subscription ${sub.id} is ${status}`);
+      // The plan really ended (not a failed attempt that never started one).
+      if (status !== "incomplete_expired") await queueEmail(`plan_ended:${sub.id}`, "plan_ended", profile.id, { plan: profile.plan_code, reason: status });
       return { received: true, status, plan: "free" };
     }
 
@@ -572,6 +596,8 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
       annual_credits_per_month:   0,
       annual_credits_last_topup:  null,
     }, `set free: subscription ${sub.id} was deleted`);
+    // Same key as the "unpaid" case above: one email per ended subscription.
+    await queueEmail(`plan_ended:${sub.id}`, "plan_ended", profile.id, { plan: profile.plan_code, reason: "canceled" });
     return { received: true, plan: "free" };
   }
 
