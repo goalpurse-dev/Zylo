@@ -1,6 +1,6 @@
 // In-memory stand-in for supabase-js, just enough for stripe-webhook/index.ts.
 // deno-lint-ignore-file no-explicit-any
-export const db: Record<string, any[]> = { profiles: [], credit_grants: [], billing_events_processed: [] };
+export const db: Record<string, any[]> = { profiles: [], credit_grants: [], billing_events_processed: [], email_outbox: [] };
 /** Return an error message to make the matching call fail. */
 export const inject: { fail: ((call: { table?: string; op: string; payload?: any }) => string | null) | null } = { fail: null };
 const UNIQUE: Record<string, string> = { credit_grants: "external_id", billing_events_processed: "event_id" };
@@ -38,6 +38,12 @@ export function createClient(..._args: any[]): any {
     rpc: (name: string, args: any) => {
       const msg = inject.fail?.({ op: `rpc:${name}`, payload: args });
       if (msg) return Promise.resolve({ data: null, error: { message: msg } });
+      // enqueue_email: one row per dedupe key, true when the row is new.
+      if (name === "enqueue_email") {
+        if (db.email_outbox.some((e) => e.dedupe_key === args.p_dedupe_key)) return Promise.resolve({ data: false, error: null });
+        db.email_outbox.push({ dedupe_key: args.p_dedupe_key, template: args.p_template, user_id: args.p_user_id, payload: args.p_payload });
+        return Promise.resolve({ data: true, error: null });
+      }
       if (name !== "grant_credits_once") return Promise.resolve({ data: null, error: { message: `no function ${name}` } });
       // Same contract as the SQL function: ledger row + balance together, or neither.
       if (db.credit_grants.some((g) => g.external_id === args.p_external_id)) return Promise.resolve({ data: false, error: null });

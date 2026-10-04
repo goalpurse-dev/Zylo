@@ -313,6 +313,33 @@ console.log("\n14. Failed plan-change payment, and a scheduled downgrade");
   check("and the renewal at the Starter price gives 750", (await q(evt("invoice.payment_succeeded", invoice("in_cycle_21", "cus_21", "sub_21", STARTER, { billing_reason: "subscription_cycle" })))).body, { ok: true, plan_credits: 750, granted: true });
 }
 
+console.log("\n15. Emails are queued, never sent, and never fail an event");
+{
+  const outbox = (prefix: string) => db.email_outbox.filter((e) => e.dedupe_key.startsWith(prefix));
+  check("first subscription payment queued ONE plan welcome, although the invoice was delivered three times", outbox("plan_welcome:sub_1").map((e) => [e.template, e.user_id, e.payload.plan, e.payload.credits, e.payload.interval]), [["plan_welcome", U(1), "starter", 750, "monthly"]]);
+  check("renewals and plan changes queue no plan welcome", [outbox("plan_welcome:sub_10").length, outbox("plan_welcome:sub_3").length], [0, 1]);
+  check("the yearly subscriber's welcome says yearly", outbox("plan_welcome:sub_8")[0]?.payload.interval, "yearly");
+  check("credit pack queued one confirmation with the credits, keyed by the checkout session", outbox("pack:cs_pack").map((e) => [e.template, e.user_id, e.payload.credits]), [["pack_confirmation", U(3), 300]]);
+  check("a plan that ended queued one plan_ended (subscription deleted)", outbox("plan_ended:sub_1").map((e) => [e.template, e.user_id, e.payload.plan]), [["plan_ended", U(1), "starter"]]);
+  check("nothing queued when the plan moved to another live subscription", outbox("plan_ended:sub_2").length, 0);
+
+  db.profiles.push(prof(30));
+  stripe.subs.sub_30 = subscription("sub_30", "cus_30", "active");
+  stripe.lineItems.cs_pack30 = [{ price: { id: MINI }, quantity: 1 }];
+  inject.fail = (c) => (c.op === "rpc:enqueue_email" ? "outbox table is down" : null);
+  check("the outbox is down: the subscription still gets plan and credits, event answers 200", [(await q(evt("invoice.payment_succeeded", invoice("in_30", "cus_30", "sub_30")))).body, P(30).plan_code, P(30).credit_balance], [{ ok: true, plan_credits: 750, granted: true }, "starter", 750]);
+  check("…and so does a credit pack", [(await q(evt("checkout.session.completed", { id: "cs_pack30", mode: "payment", status: "complete", payment_status: "paid", customer: "cus_30", metadata: { user_id: U(30) } }))).body, P(30).credit_balance], [{ ok: true, topup_credits: 300, granted: true }, 1050]);
+  inject.fail = null;
+  check("no email was queued while it was down, and none is sent by the webhook itself", [outbox("plan_welcome:sub_30").length, outbox("pack:cs_pack30").length], [0, 0]);
+
+  db.profiles.push(prof(31, { plan_code: "pro", stripe_subscription_id: "sub_31", stripe_subscription_status: "past_due" }));
+  stripe.subs.sub_31 = subscription("sub_31", "cus_31", "unpaid", PRO);
+  await q(evt("customer.subscription.updated", subscription("sub_31", "cus_31", "unpaid", PRO)));
+  stripe.subs.sub_31.status = "canceled";
+  await q(evt("customer.subscription.deleted", subscription("sub_31", "cus_31", "canceled", PRO)));
+  check("unpaid, then deleted: ONE plan_ended email, with the reason it ended first", outbox("plan_ended:sub_31").map((e) => [e.payload.plan, e.payload.reason]), [["pro", "unpaid"]]);
+}
+
 console.log("\nPlan-change numbers (new-subscriber amounts 750 / 1,600 / 3,200 unless noted):");
 for (const n of numbers) console.log(n);
 
