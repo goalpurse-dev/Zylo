@@ -467,14 +467,14 @@ export const blogArticles = [
     "relatedTool": { "name": "Zyvo Image Generator", "href": "/image-generator" }
   },
   {
-    "title": "Is AI Fruit Story Free? Pricing, Credits, and What You Actually Get",
+    "title": "Is AI Fruit Story Free? Pricing and Credits",
     "slug": "/blog/ai-fruit-story-pricing",
-    "description": "AI Fruit Story runs on credits, not a flat per-video price — here's exactly what a story costs before you generate one.",
+    "description": "No: it needs a paid plan and uses credits. What scene pictures and video cost, and which plan gives V2, V3 or V4.",
     "image": "/blog-assets/ai-fruit-story-pricing-hero.png",
     "category": "Fruit Stories",
     "tags": ["ai", "fruit-story", "pricing", "credits", "fruit-stories"],
     "publishedAt": "2026-08-19T12:00:00.000Z",
-    "updatedAt": "2026-08-19T12:00:00.000Z",
+    "updatedAt": "2026-10-05T12:00:00.000Z",
     "featured": false,
     "popular": false,
     "relatedTool": { "name": "AI Fruit Story Maker", "href": "/ai-fruit-story-maker" }
@@ -1530,7 +1530,7 @@ export const blogArticles = [
   {
     "title": "AI Fruit Story Maker",
     "slug": "/ai-fruit-story-maker",
-    "description": "Generate a multi-scene cinematic fruit drama video from one idea, with talking characters and animated scenes.",
+    "description": "Talking fruit drama videos from one idea, or a series of up to 10 episodes with the same cast.",
     "image": "/viral-builder/ai-fruit/presets/custom.webp",
     "category": "Fruit Stories",
     "tags": [
@@ -1550,9 +1550,9 @@ export const blogArticles = [
     }
   },
   {
-    "title": "50 AI Fruit Story Prompts and Viral Drama Ideas",
+    "title": "AI Fruit Story Prompts: 50 Copy-Paste Video Ideas",
     "slug": "/blog/best-ai-fruit-story-ideas",
-    "description": "Fifty fruit-drama prompts across reveal, family, friendship, comeback, workplace, and wedding-drama plots.",
+    "description": "Fifty fruit-drama prompts to copy or open straight in the generator, with real library characters.",
     "image": "/blog-assets/ai-fruit-story-ideas-hero.png",
     "category": "Fruit Stories",
     "tags": [
@@ -1563,7 +1563,7 @@ export const blogArticles = [
       "fruit-stories"
     ],
     "publishedAt": "2026-05-14T21:00:00.000Z",
-    "updatedAt": "2026-05-14T21:00:00.000Z",
+    "updatedAt": "2026-10-05T12:00:00.000Z",
     "featured": false,
     "popular": false,
     "relatedTool": {
@@ -1962,9 +1962,9 @@ export const blogArticles = [
     }
   },
   {
-    "title": "What Is AI Fruit Story? The Complete Guide to TikTok's Viral Cartoon Drama Trend",
+    "title": "What Is AI Fruit Story? The Viral Fruit Drama Trend",
     "slug": "/blog/what-is-ai-fruit-story",
-    "description": "What it is, how it's made, why it's going viral, and how to make your own.",
+    "description": "What it is, why it went viral, and how one idea becomes a talking video or a series.",
     "image": "/blog-assets/what-is-ai-fruit-story-hero.png",
     "category": "Fruit Stories",
     "tags": [
@@ -1974,7 +1974,7 @@ export const blogArticles = [
       "fruit-stories"
     ],
     "publishedAt": "2026-08-17T21:00:00.000Z",
-    "updatedAt": "2026-08-17T21:00:00.000Z",
+    "updatedAt": "2026-10-05T12:00:00.000Z",
     "featured": true,
     "popular": false,
     "relatedTool": {

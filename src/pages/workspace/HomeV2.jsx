@@ -2,6 +2,7 @@
 // Home's pieces (gradient headline, zyvo suite coverflow). The previous Home is
 // home.jsx, behind USE_LEGACY_HOME (src/data/homeContent.js) for one release.
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Glow from "../../components/workspace/Glow.jsx";
 import ZyvoSuiteCarousel from "../../components/workspace/ZyvoSuiteCarousel.jsx";
 import PublicGallery from "../../components/public-gallery/gallery.jsx";
@@ -35,6 +36,9 @@ export default function HomeV2() {
       {/* Short Form: the "short form suite" coverflow is the templates section */}
       <div className="mt-12">
         <ZyvoSuiteCarousel title="short form suite" items={suiteTemplates()} subtitle="Short Form templates for TikTok, Reels & Shorts" />
+        <p className="mt-5 px-4 text-center text-[13px] text-white/55 md:px-[50px]" data-testid="home-fruit-link">
+          New: the <Link to="/ai-fruit-story-maker" className="font-bold text-lime-300 hover:text-lime-200">AI Fruit Story generator</Link> now makes series of up to 10 episodes with the same cast.
+        </p>
       </div>
 
       {/* Featured template (src/data/homeContent.js: FEATURED_TEMPLATE) */}

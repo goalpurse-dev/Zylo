@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Calendar } from "lucide-react";
+import { optImg } from "../../lib/optImage.js";
 
 const CAT_PILL = {
   "AI Video": "bg-blue-100 text-blue-700",
@@ -31,7 +32,7 @@ export default function ArticleCard({ article, size = "default", priority = fals
     >
       <div className={`relative overflow-hidden bg-gray-100 ${isLarge ? "h-56 md:h-auto md:w-1/2 shrink-0" : "h-44"}`}>
         <img
-          src={article.image}
+          {...optImg(article.image, isLarge ? "(min-width: 768px) 50vw, 100vw" : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw", isLarge ? 960 : 480)}
           alt={article.title}
           width={isLarge ? 640 : 400}
           height={isLarge ? 400 : 240}

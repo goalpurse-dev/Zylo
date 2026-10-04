@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
+import { optImg } from "../../../lib/optImage.js";
 
 const related = [
   {
@@ -71,7 +72,7 @@ export default function AIFruitStoryCharacterNames() {
         <div className="mb-16 grid gap-4 sm:grid-cols-2">
           <figure className="overflow-hidden rounded-[24px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)]">
             <img
-              src="/blog-assets/fruit-story-names-hero.png"
+              {...optImg("/blog-assets/fruit-story-names-hero.png", "(min-width: 768px) 448px, 100vw", 480)}
               alt="Five stylized 3D cartoon fruit characters standing together on a spotlit stage like a cast lineup"
               width={640}
               height={480}
@@ -82,13 +83,12 @@ export default function AIFruitStoryCharacterNames() {
           </figure>
           <figure className="overflow-hidden rounded-[24px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)]">
             <img
-              src="/blog-assets/fruit-story-names-scroll.png"
+              {...optImg("/blog-assets/fruit-story-names-scroll.png", "(min-width: 768px) 448px, 100vw", 480)}
               alt="An elegant glowing golden decorative scroll flourish"
               width={640}
               height={480}
               className="aspect-[4/3] w-full rounded-[18px] object-cover"
-              loading="eager"
-              fetchPriority="high"
+              loading="lazy"
             />
           </figure>
         </div>

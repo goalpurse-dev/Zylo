@@ -1,5 +1,12 @@
 import { SITE_URL } from "./publicSeoMetadata.js";
 import { getStickmanLandingPage, stickmanStructuredData } from "./stickmanLandingPages.js";
+import { BLOG_DATES } from "./blogDates.js";
+import { FRUIT_FAQ, FRUIT_PRICING_FAQ, FRUIT_WHAT_IS_FAQ, fruitVideoObjects } from "./fruitStoryPages.js";
+
+const faqPage = (faq) => ({
+  "@type": "FAQPage",
+  mainEntity: faq.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+});
 
 // The brand, as stated on the homepage (Organization + WebSite).
 export const BRAND = {
@@ -67,7 +74,17 @@ export function structuredDataFor(pathname, metadata, canonical) {
   let page = isCollectionPage
     ? { "@type": pathname === "/blog" ? "Blog" : "CollectionPage", name: metadata.title.replace(/ \| Zyvo$/, ""), description: metadata.description, url: canonical }
     : pathname.startsWith("/blog/")
-    ? { "@type": "BlogPosting", headline: metadata.title.replace(/ \| Zyvo$/, ""), description: metadata.description, mainEntityOfPage: canonical, publisher: { "@type": "Organization", name: "Zyvo", url: SITE_URL } }
+    ? {
+      "@type": "BlogPosting",
+      headline: metadata.title.replace(/ \| Zyvo$/, ""),
+      description: metadata.description,
+      mainEntityOfPage: canonical,
+      ...(metadata.image ? { image: [metadata.image] } : {}),
+      // Dates come from blogArticles.js (publishedAt, updatedAt) through the generated blogDates.js.
+      ...(BLOG_DATES[pathname] ? { datePublished: BLOG_DATES[pathname][0], dateModified: BLOG_DATES[pathname][1] } : {}),
+      author: { "@type": "Organization", name: "Zyvo", url: SITE_URL },
+      publisher: { "@type": "Organization", name: "Zyvo", url: SITE_URL },
+    }
     : { "@type": "WebPage", name: metadata.title, description: metadata.description, url: canonical };
   const graph = [page, breadcrumb];
 
@@ -81,17 +98,7 @@ export function structuredDataFor(pathname, metadata, canonical) {
       operatingSystem: "Web",
     };
     graph[0] = page;
-    graph.push({
-      "@type": "FAQPage",
-      mainEntity: [
-        ["What is an AI Fruit Story?", "An AI Fruit Story is a short-form fictional drama video created by Zyvo's fruit story AI, in which stylized 3D fruit characters act out a simple conflict, reveal, or surprise across multiple scenes."],
-        ["How long does it take to make a fruit drama video?", "Generation time varies with story length, scene count, selected models, and queue conditions. Zyvo shows progress in the workspace while the story is being created."],
-        ["Do I need editing or design skills?", "No timeline editing or design software is required for the core workflow. You provide the idea, choose characters and settings, then review the generated scenes and video."],
-        ["Can I make 1-minute long fruit videos?", "Yes. The tool supports a 60-second option with up to 10 scenes, subject to the settings available in the workspace."],
-        ["What drama styles can I create?", "You can start with cheating-reveal, baby-surprise, secret-twin, revenge, and kicked-out presets, or describe a custom fictional story."],
-        ["Do the characters speak in the videos?", "Yes. Animated scenes can include AI-generated English dialogue with mouth-synced character animation."],
-      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
-    });
+    graph.push(...fruitVideoObjects(), faqPage(FRUIT_FAQ));
   }
 
   if (pathname === "/cartoon-drive-by-video-maker") {
@@ -223,15 +230,7 @@ export function structuredDataFor(pathname, metadata, canonical) {
   }
 
   if (pathname === "/blog/ai-fruit-story-pricing") {
-    graph.push({
-      "@type": "FAQPage",
-      mainEntity: [
-        ["Is AI Fruit Story actually free?", "Zyvo's AI Fruit Story maker has a free entry point using your account's credit balance. Longer stories with more scenes and full video animation cost more credits than a short one."],
-        ["How is the cost calculated?", "Cost is credit-based: a one-time character portrait cost per character, an image cost per scene, and a video cost per scene if you animate it."],
-        ["What happens if I run out of credits mid-story?", "The generator checks your credit balance before starting and lets you know if you don't have enough to complete the story you've configured, so you're never charged partway through."],
-        ["Does adding more characters cost more?", "Yes — each additional character needs its own consistent portrait generated once, which adds to the total cost before scene generation starts."],
-      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
-    });
+    graph.push(faqPage(FRUIT_PRICING_FAQ));
   }
 
   if (pathname === "/blog/what-is-micro-camera-animal") {
@@ -389,17 +388,7 @@ export function structuredDataFor(pathname, metadata, canonical) {
   }
 
   if (pathname === "/blog/what-is-ai-fruit-story") {
-    graph.push({
-      "@type": "FAQPage",
-      mainEntity: [
-        ["What is an AI Fruit Story?", "An AI Fruit Story is a short-form fictional drama video made with AI, where stylized 3D cartoon fruit characters act out a conflict, reveal, or plot twist across multiple scenes — built entirely from a text prompt."],
-        ["Why is this format going viral right now?", "It combines the visual novelty of fruit characters delivering soap-opera drama with a low barrier to entry and recognizable story structures viewers already understand from short-form drama content."],
-        ["How is an AI Fruit Story actually made?", "You describe a premise or pick a preset, and the generator builds characters, scenes, dialogue, and mouth-synced animation from that single input — no manual rigging, scripting, or editing timeline required."],
-        ["Do the fruit characters actually talk?", "Yes. Generated scenes can include AI-written English dialogue with mouth-synced character animation."],
-        ["Is AI Fruit Story free to try?", "Zyvo's AI Fruit Story maker has a free entry point with paid tiers for longer videos and more scenes."],
-        ["What platforms is this content made for?", "The vertical, short-form format is built for TikTok, Instagram Reels, and YouTube Shorts."],
-      ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
-    });
+    graph.push(faqPage(FRUIT_WHAT_IS_FAQ));
   }
 
   if (pathname === "/blog/ai-fruit-story-examples") {

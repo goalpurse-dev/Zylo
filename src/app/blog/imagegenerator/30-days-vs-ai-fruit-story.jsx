@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
+import { optImg } from "../../../lib/optImage.js";
 
 const related = [
   {
@@ -58,7 +59,7 @@ export default function ThirtyDaysVsAiFruitStory() {
         <div className="mb-16 grid gap-4 sm:grid-cols-2">
           <figure className="overflow-hidden rounded-[24px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)]">
             <img
-              src="/blog-assets/30-days-vs-fruit-story-hero.png"
+              {...optImg("/blog-assets/30-days-vs-fruit-story-hero.png", "(min-width: 768px) 448px, 100vw", 480)}
               alt="A split image: a glowing purple portal into a fictional world on the left, a stylized 3D cartoon fruit character on the right"
               width={640}
               height={480}
@@ -69,13 +70,12 @@ export default function ThirtyDaysVsAiFruitStory() {
           </figure>
           <figure className="overflow-hidden rounded-[24px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)]">
             <img
-              src="/blog-assets/30-days-vs-fruit-story-detail.png"
+              {...optImg("/blog-assets/30-days-vs-fruit-story-detail.png", "(min-width: 768px) 448px, 100vw", 480)}
               alt="A split image: an abstract glowing purple film-strip sequence on the left, a stylized 3D cartoon fruit character waving on the right"
               width={640}
               height={480}
               className="aspect-[4/3] w-full rounded-[18px] object-cover"
-              loading="eager"
-              fetchPriority="high"
+              loading="lazy"
             />
           </figure>
         </div>

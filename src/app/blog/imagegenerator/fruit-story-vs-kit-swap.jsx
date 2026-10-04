@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
+import { optImg } from "../../../lib/optImage.js";
 
 const related = [
   {
@@ -58,7 +59,7 @@ export default function FruitStoryVsFootballerNationalitySwap() {
         <div className="mb-16 grid gap-4 sm:grid-cols-2">
           <figure className="overflow-hidden rounded-[24px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)]">
             <img
-              src="/blog-assets/fruit-story-vs-footballer-hero.png"
+              {...optImg("/blog-assets/fruit-story-vs-footballer-hero.png", "(min-width: 768px) 448px, 100vw", 480)}
               alt="A split image: a stylized 3D cartoon fruit character mid-speech on the left, a plain football jersey glowing under stadium floodlights on the right"
               width={640}
               height={480}

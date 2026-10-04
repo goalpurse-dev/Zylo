@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Footer from "../../../components/workspace/footer.jsx";
 import RelatedArticles from "../RelatedArticles";
+import { optImg } from "../../../lib/optImage.js";
 
 const related = [
   {
@@ -78,7 +79,7 @@ export default function AIFruitStoryCouples() {
 
         <figure className="mb-16 max-w-4xl overflow-hidden rounded-[28px] border border-[#241b38] bg-[#090a0d] p-1.5 shadow-[0_24px_70px_rgba(35,20,72,.16)] sm:p-2">
           <img
-            src="/blog-assets/ai-fruit-story-couples-hero.png"
+            {...optImg("/blog-assets/ai-fruit-story-couples-hero.png", "(min-width: 1024px) 896px, 100vw", 960)}
             alt="Two stylized 3D cartoon fruit characters standing close together with warm romantic lighting"
             width={1024}
             height={576}

@@ -1,4 +1,5 @@
 import { Fragment, useState } from "react";
+import { Link } from "react-router-dom";
 import { Check, ChevronDown, Minus } from "lucide-react";
 import {
   PLAN_ORDER, PRICING_PLANS, V2_OUTPUT_COSTS, LONG_FORM_LENGTHS, LONG_FORM_HEADLINE_MINUTES,
@@ -118,6 +119,12 @@ export function WhatCanYouCreate() {
 
 const COLUMNS = ["free", ...PLAN_ORDER];
 
+/** A compare-table group heading; a group with `href` links to that tool's public page. */
+function GroupTitle({ group }) {
+  if (!group.href) return group.title;
+  return <Link to={group.href} className={cx("underline decoration-white/20 underline-offset-4 transition hover:text-white", FOCUS)}>{group.title}</Link>;
+}
+
 function useCompareGroups() {
   const { costs, lf, fruit, prices, billing } = usePricingData();
   const count = (key, idx) => (id) => (id === "free" ? <Dash /> : <Num status={costs.status} value={outputsForPlan(costs.costs, id, key, idx)} />);
@@ -144,7 +151,7 @@ function useCompareGroups() {
       { label: "Credits / month", cell: (id) => (id === "free" ? "0" : PRICING_PLANS[id].credits.toLocaleString("en-US")), strong: true },
       { label: `Price / month (${billing === "yearly" ? "billed yearly" : "billed monthly"})`, cell: perMonth },
     ] },
-    { title: "AI Fruit Story", rows: [
+    { title: "AI Fruit Story", href: "/ai-fruit-story-maker", rows: [
       { label: `V2 · ${sec}-second videos / mo`, cell: count(fruit.headline.key, fruit.headline.idx) },
       { label: `V3 · ${sec}-second videos / mo`, cell: fruitTier("v3") },
       { label: `V4 · ${sec}-second videos / mo`, cell: fruitTier("v4") },
@@ -211,7 +218,7 @@ export function CompareTable({ onAskDowngrade }) {
             <tbody>
               {shown.map((g) => (
                 <Fragment key={g.title}>
-                  <tr className="bg-white/[0.02]"><td colSpan={2} className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white/40">{g.title}</td></tr>
+                  <tr className="bg-white/[0.02]"><td colSpan={2} className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white/40"><GroupTitle group={g} /></td></tr>
                   {g.rows.map((r) => (
                     <tr key={r.label} className="border-t border-white/[0.04]">
                       <td className="px-3 py-2.5 text-[12.5px] text-white/65">{r.label}</td>
@@ -242,7 +249,7 @@ export function CompareTable({ onAskDowngrade }) {
             {shown.map((g) => (
               <Fragment key={g.title}>
                 <tr className="border-t border-white/[0.06] bg-white/[0.02]">
-                  <td colSpan={COLUMNS.length + 1} className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white/40">{g.title}</td>
+                  <td colSpan={COLUMNS.length + 1} className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white/40"><GroupTitle group={g} /></td>
                 </tr>
                 {g.rows.map((r) => (
                   <tr key={r.label} className="border-t border-white/[0.04]">
