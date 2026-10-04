@@ -35,13 +35,17 @@ test("final-polish round 3, Section 2: exactly one Generate surface exists at a 
   assert.match(mainReturn, /\{!hasSidePanel && \(\s*<GenerateBar/);
   // The side-panel button is gated ON exactly when the bar is gated off.
   assert.match(mainReturn, /\{hasSidePanel && \(\s*<aside/);
-  assert.match(mainReturn, /<GenerateButton[\s\S]{0,200}onClick=\{handleGenerateVideo\}/);
-  // Exactly one CALL SITE wires handleGenerateVideo to each surface — one
-  // direct (the side-panel button), one via GenerateBar's onGenerate prop.
-  const directWiring = mainReturn.match(/onClick=\{handleGenerateVideo\}/g) ?? [];
+  // 2026-10-04: both surfaces call handleGenerate, the one Generate action
+  // (paid plans -> handleGenerateVideo, free accounts -> the free preview,
+  // logged-out visitors -> the sign-up dialog).
+  assert.match(mainReturn, /<GenerateButton[\s\S]{0,200}onClick=\{handleGenerate\}/);
+  // Exactly one CALL SITE wires it to each surface — one direct (the
+  // side-panel button), one via GenerateBar's onGenerate prop.
+  const directWiring = mainReturn.match(/onClick=\{handleGenerate\}/g) ?? [];
   assert.equal(directWiring.length, 1, "expected exactly one direct onClick wiring (the side-panel button)");
-  const barWiring = text.match(/onGenerate=\{handleGenerateVideo\}/g) ?? [];
+  const barWiring = text.match(/onGenerate=\{handleGenerate\}/g) ?? [];
   assert.equal(barWiring.length, 1, "expected exactly one onGenerate wiring (the bottom bar)");
+  assert.match(text, /if \(account\.isPaid\) \{ handleGenerateVideo\(\); return; \}/);
   const btnFn = text.slice(text.indexOf("function GenerateButton("), text.indexOf("function GenerateBar("));
   assert.match(btnFn, /onClick=\{onClick\}/);
 });
@@ -197,7 +201,9 @@ test("Generate is disabled until niche + topic are both set, and the exact reaso
   const text = await source(PAGE);
   assert.match(text, /"Pick a niche to continue"/);
   assert.match(text, /"Add a topic to continue"/);
-  assert.match(text, /canGenerate = Boolean\(discoverySessionId\) && Boolean\(nicheId\) && topic\.trim\(\)\.length > 0 && Boolean\(selectedStyle\)/);
+  // 2026-10-04: the free preview (free and logged-out accounts) needs no server session; the real video still does.
+  assert.match(text, /setupFilled = Boolean\(nicheId\) && topic\.trim\(\)\.length > 0 && Boolean\(selectedStyle\)/);
+  assert.match(text, /canGenerate = setupFilled && !account\.loading && \(teaserMode \|\| Boolean\(discoverySessionId\)\)/);
 });
 
 test("niches.js supplies a description, an example topic, and a stable machine-readable id for every niche, plus the 5 required category accent colors", async () => {
@@ -479,7 +485,8 @@ test("the price block shows the live credit quote and a live balance projection 
   assert.match(text, /import \{ useProfileCredits \} from "\.\.\/\.\.\/\.\.\/hooks\/useProfileCredits";/);
   assert.match(text, /const credits = useProfileCredits\(\);/);
   const barFn = text.slice(text.indexOf("function GenerateBar("), text.indexOf("const DEFAULT_STYLE_ID"));
-  assert.match(barFn, /const projectedBalance = quote && typeof credits === "number" \? Math\.max\(0, credits - quote\.totalCredits\) : null;/);
+  // 2026-10-04: only for a paid plan (showPrice); free and logged-out accounts see no price or balance.
+  assert.match(barFn, /const projectedBalance = showPrice && quote && typeof credits === "number" \? Math\.max\(0, credits - quote\.totalCredits\) : null;/);
   assert.match(barFn, /Balance \{credits\.toLocaleString\(\)\} → \{projectedBalance\.toLocaleString\(\)\}/);
 });
 

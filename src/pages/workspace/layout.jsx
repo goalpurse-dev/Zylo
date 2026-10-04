@@ -10,6 +10,10 @@ import WorkspaceRouteSeo from "../../components/seo/WorkspaceRouteSeo.jsx";
 import { WhatsNewModal } from "../../components/launch/LaunchUI.jsx";
 import AnnouncementBar from "../../components/launch/AnnouncementBar.jsx";
 import { LONG_FORM_ANNOUNCEMENT, trackLaunch } from "../../components/launch/launch";
+import { COOKIE_CONSENT_EVENT, hasCookieConsent } from "../../lib/cookieConsent";
+
+// A logged-out visitor has no profile to remember "seen" on: it is kept in this browser.
+const WHATS_NEW_GUEST_KEY = `zyvo:whats-new:seen:${LONG_FORM_ANNOUNCEMENT}`;
 
 // ── Promo banner ──────────────────────────────────────────────
 export default function WorkspaceLayout() {
@@ -44,7 +48,14 @@ export default function WorkspaceLayout() {
     const run = async () => {
       const { data } = await supabase.auth.getUser();
       const user = data?.user;
-      if (!user) return;
+      if (!user) {
+        // Logged-out visitors get "What's new" once per browser (it used to be
+        // skipped for them entirely, so it never showed in a fresh/incognito window).
+        let seen = false;
+        try { seen = !!localStorage.getItem(WHATS_NEW_GUEST_KEY); } catch { /* no storage: show once this load */ }
+        if (!seen) setWhatsNew({ guest: true });
+        return;
+      }
 
       setRewardsUserId(user.id);
       const rewardsKey = `zyvo_creator_rewards_seen:${user.id}`;
@@ -81,14 +92,34 @@ export default function WorkspaceLayout() {
     run();
   }, []);
 
-  // Show it when Home is reached in a session that hasn't shown it yet.
+  // Setting up a video or watching its free preview (a new account lands here
+  // straight after the sign-up): Welcome / Rewards wait for the next page.
+  const makingVideo = location.pathname === "/long-form/create" || location.pathname.startsWith("/long-form/teaser/");
+
+  // The cookie banner comes first: "What's new" waits until it has been answered.
+  const [cookieAnswered, setCookieAnswered] = useState(() => hasCookieConsent());
   useEffect(() => {
-    if (!whatsNew || location.pathname !== "/") return;
-    try { if (sessionStorage.getItem(whatsNew.sessionKey)) return; sessionStorage.setItem(whatsNew.sessionKey, "1"); } catch { /* no storage: show once this load */ }
-    setWhatsNew(null);
-    setShowWhatsNew(true);
-    trackLaunch("whats_new_shown", { placement: "whats_new" });
-  }, [whatsNew, location.pathname]);
+    const on = () => setCookieAnswered(true);
+    window.addEventListener(COOKIE_CONSENT_EVENT, on);
+    return () => window.removeEventListener(COOKIE_CONSENT_EVENT, on);
+  }, []);
+
+  // Show it when Home is reached in a session that hasn't shown it yet, after
+  // the cookie banner is closed, and never on top of another popup.
+  useEffect(() => {
+    if (!whatsNew || location.pathname !== "/" || !cookieAnswered || showWelcome || showRewards) return undefined;
+    const timer = setTimeout(() => {
+      if (document.querySelector("[data-zyvo-modal]")) return; // e.g. the sign-up dialog is open
+      try {
+        if (whatsNew.guest) localStorage.setItem(WHATS_NEW_GUEST_KEY, "1");
+        else { if (sessionStorage.getItem(whatsNew.sessionKey)) { setWhatsNew(null); return; } sessionStorage.setItem(whatsNew.sessionKey, "1"); }
+      } catch { /* no storage: show once this load */ }
+      setWhatsNew(null);
+      setShowWhatsNew(true);
+      trackLaunch("whats_new_shown", { placement: "whats_new", guest: !!whatsNew.guest });
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [whatsNew, location.pathname, cookieAnswered, showWelcome, showRewards]);
 
   /* ================= RESET HEADER ================= */
   useEffect(() => {
@@ -261,7 +292,7 @@ useEffect(() => {
         </div>
 
         {/* WELCOME SCREEN — only dismissed by user action, never by page reload */}
-        {showWelcome && (
+        {showWelcome && !makingVideo && (
           <WelcomeScreen onClose={async () => {
             const { data } = await supabase.auth.getUser();
             const uid = data?.user?.id;
@@ -276,7 +307,7 @@ useEffect(() => {
         )}
 
         {/* CREATOR REWARDS POPUP — shown once per user, ever */}
-        {showRewards && (
+        {showRewards && !makingVideo && (
           <CreatorRewardsModal onClose={() => {
             if (rewardsUserId) localStorage.setItem(`zyvo_creator_rewards_seen:${rewardsUserId}`, "1");
             setShowRewards(false);

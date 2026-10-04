@@ -369,6 +369,7 @@ const LongFormIdeaPage         = lazy(() => import("./pages/workspace/long-form/
 const LongFormPublishPage      = lazy(() => import("./pages/workspace/long-form/publish.jsx"));
 const LongFormScriptReviewPage = lazy(() => import("./pages/workspace/long-form/scriptReview.jsx"));
 const LongFormProductionSetupPage = lazy(() => import("./pages/workspace/long-form/ProductionSetup.jsx"));
+const LongFormTeaserPage = lazy(() => import("./pages/workspace/long-form/teaser.jsx"));
 const LongFormGeneratePage    = lazyRoute(() => import("./pages/workspace/long-form/generate.jsx"), "long-form-generate");
 
 import "./styles/sand.css";
@@ -917,6 +918,7 @@ return (
   <Route path="/long-form"                       element={<LongFormPage />} />
   <Route path="/long-form/new"                   element={<LongFormNewPage />} />
   <Route path="/long-form/create"                element={<LongFormProductionSetupPage />} />
+  <Route path="/long-form/teaser/:id"            element={<LongFormTeaserPage />} />
   <Route path="/long-form/project/:id/story"     element={<StickmanRouteGuard page="story"><LongFormStoryPage /></StickmanRouteGuard>} />
   <Route path="/long-form/project/:id/research"  element={<StickmanRouteGuard page="research"><LongFormResearchPage /></StickmanRouteGuard>} />
   <Route path="/long-form/project/:id/script"    element={<StickmanRouteGuard page="script"><LongFormScriptPage /></StickmanRouteGuard>} />

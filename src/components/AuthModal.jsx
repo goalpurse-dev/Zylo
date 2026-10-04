@@ -16,7 +16,14 @@ function GoogleIcon() {
   );
 }
 
-export default function AuthModal({ mode: initialMode, onClose }) {
+// Where to land after signing in when the browser leaves the page on the way
+// (Google, or the link in the confirmation email): pages/AuthCallback.jsx reads it once.
+export const POST_AUTH_RETURN_KEY = "zyvo:post-auth-return";
+
+// title / subtitle: a heading for a specific moment ("Create a free account to
+// start your video"). returnTo: an in-app path to come back to after sign-up.
+// onClose(signedIn): true when the dialog closed because the visitor is now signed in.
+export default function AuthModal({ mode: initialMode, onClose, title, subtitle, returnTo }) {
   const [mode, setMode] = useState(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,7 +39,9 @@ export default function AuthModal({ mode: initialMode, onClose }) {
     setSuccess("");
   };
 
+  const rememberReturn = () => { if (returnTo) { try { localStorage.setItem(POST_AUTH_RETURN_KEY, JSON.stringify({ path: returnTo, at: Date.now() })); } catch { /* no storage: lands on Home */ } } };
   const handleGoogle = async () => {
+    rememberReturn();
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
@@ -46,11 +55,13 @@ export default function AuthModal({ mode: initialMode, onClose }) {
     setSuccess("");
     if (isSignup) {
       const firstTouch = readFirstTouch();
+      rememberReturn();
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: firstTouch
           ? {
+              ...(returnTo ? { emailRedirectTo: `${window.location.origin}/auth/callback` } : {}),
               data: {
                 first_touch_landing_page: firstTouch.landingPage,
                 first_touch_utm_source: firstTouch.utm_source,
@@ -58,15 +69,15 @@ export default function AuthModal({ mode: initialMode, onClose }) {
                 first_touch_utm_campaign: firstTouch.utm_campaign,
               },
             }
-          : undefined,
+          : returnTo ? { emailRedirectTo: `${window.location.origin}/auth/callback` } : undefined,
       });
       if (error) setError(error.message);
-      else if (data.session) onClose(); // confirmations off — signed in immediately
+      else if (data.session) onClose(true); // confirmations off — signed in immediately
       else setSuccess("Check your email to confirm your account.");
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setError(error.message);
-      else onClose();
+      else onClose(true);
     }
     setLoading(false);
   };
@@ -83,9 +94,9 @@ export default function AuthModal({ mode: initialMode, onClose }) {
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4" data-zyvo-modal="auth">
       {/* backdrop */}
-      <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={() => onClose(false)} />
 
       {/* card — single col on mobile, two col on lg+ */}
       <div className="relative z-10 flex w-full max-w-[420px] lg:max-w-[760px] rounded-2xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.8)]">
@@ -119,7 +130,8 @@ export default function AuthModal({ mode: initialMode, onClose }) {
 
           {/* close */}
           <button
-            onClick={onClose}
+            onClick={() => onClose(false)}
+            aria-label="Close"
             className="absolute top-4 right-4 text-white/30 hover:text-white/70 transition"
           >
             <X className="w-4 h-4" />
@@ -127,10 +139,10 @@ export default function AuthModal({ mode: initialMode, onClose }) {
 
           {/* header */}
           <h2 className="text-white text-[20px] font-bold mb-1">
-            {isSignup ? "Welcome to Zyvo" : "Welcome back"}
+            {isSignup ? title ?? "Welcome to Zyvo" : "Welcome back"}
           </h2>
           <p className="text-white/45 text-sm mb-6">
-            {isSignup ? "Sign up and generate for free" : "Sign in and continue creating"}
+            {isSignup ? subtitle ?? "Sign up and generate for free" : "Sign in and continue creating"}
           </p>
 
           {/* Google */}
