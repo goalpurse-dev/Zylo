@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { PLAN_PRICE_MAP, planCreditsFor } from "../_shared/stripePlanPrices.js";
+import { PLAN_PRICE_MAP, planCreditsFor, prorationCreditShare } from "../_shared/stripePlanPrices.js";
 
 /* =================== CONFIG =================== */
 /** Recurring plan prices → plan + monthly credits (current and legacy), with the
@@ -116,8 +116,8 @@ function must<T>(res: { data: T; error: any }, what: string): T {
   return res.data;
 }
 
-type Profile = { id: string; plan_code: string | null; stripe_subscription_id: string | null };
-const PROFILE_COLUMNS = "id, plan_code, stripe_subscription_id";
+type Profile = { id: string; plan_code: string | null; stripe_subscription_id: string | null; annual_credits_last_topup: string | null };
+const PROFILE_COLUMNS = "id, plan_code, stripe_subscription_id, annual_credits_last_topup";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 async function profilesByCustomerId(customerId: string): Promise<Profile[]> {
@@ -362,23 +362,48 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
     if (!profile) throw noUserForPaidEvent(type, eventId, customerId);
     const userId = profile.id;
 
-    // Grant plan credits for non-proration recurring lines only
-    let planCredits = 0;
+    // Plan credits. A normal recurring line gives the plan's monthly credits.
+    // A proration line (a plan change in the billing portal: "unused time" on
+    // the old price, "remaining time" on the new one) takes back or gives its
+    // share of them, in step with the money (prorationCreditShare).
+    let planCredits = 0;   // from normal lines
+    let changeCredits = 0; // from proration lines; negative for unused time
+    let hasProration = false;
     let plan: "starter" | "pro" | "generative" | undefined;
     let detectedInterval: "yearly" | undefined;
+    // The price a plan change moved to (its positive proration line).
+    let changedTo: { plan: "starter" | "pro" | "generative"; perMonth: number; yearly: boolean; raiseTopupNow: boolean } | undefined;
+    const lastTopup = profile.annual_credits_last_topup ? Date.parse(profile.annual_credits_last_topup) / 1000 : NaN;
     const subStart = await subscriptionStartUnix(inv, lines);
     for (const ln of lines) {
       const priceId: string | undefined = ln?.price?.id;
       const isRecurring = ln?.plan || ln?.price?.recurring;
       const isProration = Boolean(ln?.proration);
-      if (!priceId || !isRecurring || isProration) continue;
+      if (!priceId || !isRecurring) continue;
       const map = PRICE_MAP[priceId];
       // A paid plan line we can't map would leave a paying user without plan or credits.
       if (!map) throw new Error(`invoice ${inv?.id} has a recurring price that is not in PLAN_PRICE_MAP: ${priceId}`);
-      planCredits += planCreditsFor(map, subStart);
-      plan = map.plan;
-      if (map.interval === "yearly") detectedInterval = "yearly";
+      if (!isProration) {
+        planCredits += planCreditsFor(map, subStart);
+        plan = map.plan;
+        if (map.interval === "yearly") detectedInterval = "yearly";
+        continue;
+      }
+      const amount = Number(ln?.amount) || 0;
+      if (!amount) continue;
+      hasProration = true;
+      const perMonth = planCreditsFor(map, subStart);
+      const { share, monthsPaid } = prorationCreditShare(ln, map, lastTopup);
+      changeCredits += Math.sign(amount) * share * perMonth;
+      if (amount > 0) {
+        // In the last month of a yearly plan the top-up amount waits for the paid renewal.
+        changedTo = { plan: map.plan, perMonth, yearly: map.interval === "yearly", raiseTopupNow: monthsPaid == null || monthsPaid >= 1 };
+      }
     }
+    // The payment succeeded, so the plan on the invoice is theirs (whichever event arrives first).
+    if (!plan && changedTo) plan = changedTo.plan;
+    // One grant per invoice. A change to a smaller plan can't take credits back: never below 0.
+    const credits = Math.max(0, Math.round(planCredits + changeCredits));
 
     const periodEndIso = unixToIso(lines[0]?.period?.end);
     const patch: Record<string, unknown> = {
@@ -402,14 +427,21 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
       patch.billing_interval          = "monthly";
       patch.annual_credits_per_month  = 0;
       patch.annual_credits_last_topup = null;
+    } else if (changedTo?.yearly && changedTo.raiseTopupNow) {
+      // A yearly plan changed mid-year: the monthly top-ups use the new amount
+      // from the next one on. The top-up date stays where it is.
+      patch.billing_interval         = "yearly";
+      patch.annual_credits_per_month = changedTo.perMonth;
     }
     await updateProfile(userId, patch, `apply paid invoice ${inv?.id}`);
 
-    const granted = planCredits > 0
-      ? await grantCreditsOnce(userId, planCredits, "plan_renewal", inv.id)
+    const granted = credits > 0
+      ? await grantCreditsOnce(userId, credits, hasProration ? "plan_upgrade" : "plan_renewal", inv.id)
       : false;
 
-    return { ok: true, plan_credits: planCredits, granted };
+    return hasProration
+      ? { ok: true, plan_credits: planCredits, plan_change: true, credits, granted }
+      : { ok: true, plan_credits: planCredits, granted };
   }
 
   /* ── invoice.payment_failed ───────────────────────────────────────── */
@@ -427,8 +459,12 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
 
     // Only the subscription that pays for the plan can make the account past due;
     // a declined first payment in checkout belongs to a subscription that never started.
+    // A failed payment for a plan change (billing portal) is not that either:
+    // Stripe leaves the subscription on its paid plan and voids the invoice, and
+    // the subscription's real status still arrives in customer.subscription.updated.
     const subId = invoiceSubscriptionId(inv, lines);
-    const isCurrent = Boolean(subId) && subId === profile.stripe_subscription_id;
+    const isPlanChange = inv?.billing_reason === "subscription_update";
+    const isCurrent = Boolean(subId) && subId === profile.stripe_subscription_id && !isPlanChange;
     if (isCurrent) {
       await updateProfile(profile.id, { stripe_subscription_status: "past_due" }, `mark past_due for invoice ${inv?.id}`);
     }

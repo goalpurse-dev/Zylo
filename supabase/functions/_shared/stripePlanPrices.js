@@ -63,6 +63,64 @@ export function planCreditsFor(entry, subscriptionStartUnix) {
   return entry.credits;
 }
 
+// Yearly plans get their credits monthly (topup_annual_credits): one month of
+// that cycle, counted from profiles.annual_credits_last_topup.
+export const CREDIT_MONTH_SECONDS = 30 * 24 * 60 * 60;
+
+/**
+ * A plan change in the billing portal is invoiced as proration lines: "unused
+ * time" on the old price (negative) and "remaining time" on the new one
+ * (positive). This is the share (0..1) of the price's MONTHLY credits such a
+ * line stands for, so credits follow the money:
+ *
+ *  - monthly price: the share of the price on the line, |amount| / unit amount.
+ *    Half the month's price → half the month's credits.
+ *  - yearly price: the line's money is for the rest of the YEAR, the credits
+ *    come monthly. monthsPaid = |amount| / (unit amount / 12) is how many months
+ *    of the plan the line pays for.
+ *      · a month or more: the share of the current credit month that is left
+ *        (lastTopupUnix + CREDIT_MONTH_SECONDS); later top-ups carry the rest.
+ *      · less than a month (a change in the last days of the plan year): exactly
+ *        monthsPaid, so the credits are never worth more than the money. The
+ *        caller then leaves the monthly top-up amount alone until the renewal.
+ *
+ * line: a Stripe invoice line ({ amount, quantity, price: { unit_amount },
+ * period: { start } }); entry: its PLAN_PRICE_MAP entry.
+ * Returns { share, monthsPaid } (monthsPaid is null for monthly prices).
+ */
+export function prorationCreditShare(line, entry, lastTopupUnix) {
+  const unit = Number(line?.price?.unit_amount) * (Number(line?.quantity) || 1);
+  const amount = Math.abs(Number(line?.amount));
+  if (!(unit > 0) || !Number.isFinite(amount)) return { share: 0, monthsPaid: entry?.interval === "yearly" ? 0 : null };
+  const moneyShare = amount / unit;
+  if (entry?.interval !== "yearly") return { share: Math.min(1, moneyShare), monthsPaid: null };
+  const monthsPaid = moneyShare * 12;
+  if (monthsPaid < 1) return { share: monthsPaid, monthsPaid };
+  const at = Number(line?.period?.start);
+  const monthLeft = Number.isFinite(lastTopupUnix) && Number.isFinite(at)
+    ? Math.min(1, Math.max(0, 1 - (at - lastTopupUnix) / CREDIT_MONTH_SECONDS))
+    : 0; // no top-up date on record: nothing now, the next top-up brings the new amount
+  return { share: monthLeft, monthsPaid };
+}
+
+/**
+ * A downgrade made in the billing portal does not happen at once: Stripe puts a
+ * schedule on the subscription that switches the price when the paid period
+ * ends. This is that pending switch, from the schedule object:
+ * { plan, interval: "month" | "year", price_id, date (unix seconds) }, or null
+ * when nothing is scheduled (or the next phase keeps the current price).
+ */
+export function scheduledPlanChange(schedule, currentPriceId, nowUnix) {
+  const next = (schedule?.phases ?? [])
+    .filter((p) => Number(p?.start_date) > nowUnix)
+    .sort((a, b) => a.start_date - b.start_date)[0];
+  const price = next?.items?.[0]?.price;
+  const priceId = typeof price === "string" ? price : price?.id;
+  if (!priceId || priceId === currentPriceId) return null;
+  const entry = PLAN_PRICE_MAP[priceId];
+  return { plan: entry?.plan ?? null, interval: entry?.interval === "yearly" ? "year" : "month", price_id: priceId, date: next.start_date };
+}
+
 // Stripe's "inferred_by_currency" default: USD and CAD prices are tax
 // exclusive, every other currency is tax inclusive.
 const EXCLUSIVE_BY_CURRENCY = new Set(["usd", "cad"]);

@@ -16,8 +16,9 @@ const GUEST = { loading: false, signedIn: false, userId: null, plan: "free", has
  *   hasSub   a live subscription: plan changes go through the billing portal
  *   pastDue  the last payment of that subscription failed
  *   lapsed   the last subscription ended or was never paid: plans are bought new
+ * refresh: change the number to read the profile again.
  */
-export default function usePlanCode() {
+export default function usePlanCode(refresh = 0) {
   const [state, setState] = useState({ ...GUEST, loading: true });
   useEffect(() => {
     let cancelled = false;
@@ -32,6 +33,6 @@ export default function usePlanCode() {
       if (!cancelled) setState({ loading: false, signedIn: true, userId: user.id, plan, hasSub, isPaid: hasSub || plan !== "free", pastDue: hasSub && status === "past_due", lapsed });
     })().catch(() => { if (!cancelled) setState((s) => ({ ...s, loading: false })); });
     return () => { cancelled = true; };
-  }, []);
+  }, [refresh]);
   return state;
 }

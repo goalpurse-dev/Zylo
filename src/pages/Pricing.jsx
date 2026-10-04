@@ -6,7 +6,7 @@ import { maxSavingPercent } from "../lib/planPrices";
 import { PRICING_PLANS } from "../lib/pricingOutputs";
 import { FOCUS, cx } from "../components/ui/zyvo/styles";
 import { PricingDataProvider, usePricingData } from "../components/pricing/PricingData";
-import PlanCards, { DISPLAY_FONT } from "../components/pricing/PlanCards";
+import PlanCards, { DISPLAY_FONT, formatPlanDate } from "../components/pricing/PlanCards";
 import PlanFinder from "../components/pricing/PlanFinder";
 import { CompareTable, WhatCanYouCreate } from "../components/pricing/OutputTables";
 import { EveryPlanIncludes, Faq, FreePlan, MadeWithZyvo, Topups } from "../components/pricing/PricingExtras";
@@ -64,13 +64,40 @@ function ConfirmDowngrade({ planId, onCancel }) {
         <div className="mt-5 flex gap-3">
           <button type="button" onClick={onCancel} className={cx("flex-1 rounded-xl bg-white/5 py-2.5 text-sm font-semibold text-white/60 hover:bg-white/10", FOCUS)}>Cancel</button>
           <button type="button" disabled={pay.busy != null} aria-busy={pay.busy === "downgrade" || undefined}
-            onClick={() => pay.run("downgrade", async () => { const leaving = await openBillingPortal({ flow: "change_plan", returnPath: "/pricing" }); if (!leaving) onCancel(); return leaving; })}
+            onClick={() => pay.run("downgrade", async () => { const leaving = await openBillingPortal({ flow: "change_plan", returnPath: "/pricing?from=portal" }); if (!leaving) onCancel(); return leaving; })}
             className={cx("flex flex-1 items-center justify-center gap-2 rounded-xl bg-white py-2.5 text-sm font-semibold text-black hover:bg-gray-100 disabled:opacity-60", FOCUS)}>
             {pay.busy === "downgrade" && <span className="h-4 w-4 animate-spin rounded-full border-2 border-black/20 border-t-black motion-reduce:animate-none" aria-hidden="true" />}
             Confirm
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * A downgrade is booked for the end of the paid period: say what happens and
+ * when, and that the current plan stays until then. "Change" opens the portal.
+ */
+function ScheduledChangeNotice() {
+  const { account, scheduled, pay } = usePricingData();
+  if (!scheduled) return null;
+  const date = formatPlanDate(scheduled.date);
+  const current = PRICING_PLANS[account.plan]?.name;
+  const next = PRICING_PLANS[scheduled.plan]?.name;
+  const billingWord = scheduled.interval === "year" ? "yearly" : "monthly";
+  return (
+    <div role="status" data-testid="scheduled-change" className="mx-auto flex w-full max-w-[760px] flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-2xl border border-lime-300/25 bg-lime-300/[0.06] px-4 py-3 text-center text-[13.5px] text-white/80">
+      <span>
+        {next && next !== current
+          ? <>Your plan switches to <span className="font-bold text-white">{next}</span> ({billingWord}) on <span className="font-bold text-white">{date}</span>.{current ? <> You keep {current} until then.</> : null}</>
+          : <>Your billing switches to <span className="font-bold text-white">{billingWord}</span> on <span className="font-bold text-white">{date}</span>. Your plan stays the same.</>}
+      </span>
+      <button type="button" disabled={pay.busy != null}
+        onClick={() => pay.run("scheduled", () => openBillingPortal({ flow: "home", returnPath: "/pricing?from=portal" }))}
+        className={cx("rounded-lg border border-white/15 px-3 py-1 text-[12.5px] font-bold text-white/80 hover:text-white disabled:opacity-60", FOCUS)}>
+        Change
+      </button>
     </div>
   );
 }
@@ -94,6 +121,7 @@ function PricingBody({ billing, setBilling }) {
       </header>
 
       <div className="flex flex-col gap-5">
+        <ScheduledChangeNotice />
         <PlanCards onAskDowngrade={setAskPlan} />
         <div className="flex flex-col items-center gap-2 text-center">
           <p className="inline-flex items-center gap-2 text-[12.5px] text-white/50">

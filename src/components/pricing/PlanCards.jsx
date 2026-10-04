@@ -5,7 +5,8 @@ import { PLAN_ORDER, PRICING_PLANS, LONG_FORM_HEADLINE_MINUTES, outputsForPlan, 
 import { formatMoney, planPriceView } from "../../lib/planPrices";
 import KeyButton from "../ui/zyvo/KeyButton";
 import { cx } from "../ui/zyvo/styles";
-import { LoadError, Num, PLAN_COPY, usePricingData } from "./PricingData";
+import { toast } from "sonner";
+import { LoadError, Num, PLAN_BEFORE_PORTAL_KEY, PLAN_COPY, usePricingData } from "./PricingData";
 
 export const DISPLAY_FONT = { fontFamily: "'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif", fontStretch: "condensed" };
 
@@ -30,13 +31,26 @@ const PLAN_FEATURES = {
  */
 export async function subscribe({ planId, billing, account, onAskDowngrade }) {
   if (!PLAN_PRICE_IDS[planId]?.[billing]) return false;
-  if (account.hasSub) return openBillingPortal({ flow: "change_plan", returnPath: "/pricing" });
+  // A failed payment comes first: Stripe would charge a plan change to the same card.
+  if (account.pastDue) {
+    toast.info("Your last payment didn't go through. Update your card first, then you can switch plans.");
+    return openBillingPortal({ flow: "payment_method", returnPath: "/pricing?from=portal" });
+  }
+  // Subscribers change plan in the portal's plan picker: an upgrade is charged
+  // (prorated) and applies at once, a downgrade waits for the end of the period.
+  if (account.hasSub) {
+    try { sessionStorage.setItem(PLAN_BEFORE_PORTAL_KEY, account.plan); } catch { /* no storage: no "you're on Pro now" toast */ }
+    return openBillingPortal({ flow: "change_plan", returnPath: "/pricing?from=portal" });
+  }
   if (!account.lapsed && PLAN_ORDER.indexOf(planId) < PLAN_ORDER.indexOf(account.plan)) { onAskDowngrade?.(planId); return false; }
   return startCheckout({ type: "subscription", planId, billing });
 }
 
 /** True when this is the plan the viewer has now (a lapsed subscription's plan can be bought again). */
 export const isCurrentPlan = (account, planId) => account.signedIn && !account.lapsed && account.plan === planId;
+
+/** "4 Nov 2026" from unix seconds. */
+export const formatPlanDate = (unixSeconds) => new Date(unixSeconds * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
 /** "€180 billed yearly" for the yearly choice, null for monthly or while prices load. */
 export function yearlyTotalLabel(prices, planId, billing) {
@@ -138,11 +152,17 @@ function SavingLine({ planId }) {
 }
 
 export function PlanCard({ planId, onAskDowngrade }) {
-  const { account, billing, prices, pay } = usePricingData();
+  const { account, billing, prices, pay, scheduled } = usePricingData();
   const copy = PLAN_COPY[planId];
   const recommended = Boolean(copy.badge);
   const isCurrent = isCurrentPlan(account, planId);
   const yearlyTotal = yearlyTotalLabel(prices, planId, billing);
+  // A downgrade to this plan is already booked for the end of the paid period.
+  const switchingHere = Boolean(scheduled) && scheduled.plan === planId && !isCurrent;
+  const name = PRICING_PLANS[planId].name;
+  const label = switchingHere ? `Switching here on ${formatPlanDate(scheduled.date)}`
+    : account.pastDue ? "Update card to switch"
+    : account.hasSub ? `Switch to ${name}` : `Get ${name}`;
   return (
     <article
       aria-labelledby={`plan-${planId}`}
@@ -163,16 +183,16 @@ export function PlanCard({ planId, onAskDowngrade }) {
       <PriceBlock planId={planId} />
 
       {isCurrent ? (
-        <KeyButton variant="outline" disabled>Current plan</KeyButton>
+        <KeyButton variant="outline" disabled>{scheduled ? `Current plan until ${formatPlanDate(scheduled.date)}` : "Current plan"}</KeyButton>
       ) : (
         <KeyButton
-          variant={recommended ? "lime" : "white"}
+          variant={switchingHere ? "outline" : recommended ? "lime" : "white"}
           busy={pay.busy === `plan:${planId}`}
           disabled={pay.busy != null}
           onClick={() => pay.run(`plan:${planId}`, () => subscribe({ planId, billing, account, onAskDowngrade }))}
         >
           <span className="flex flex-col items-center leading-tight">
-            <span>{account.hasSub ? `Switch to ${PRICING_PLANS[planId].name}` : `Get ${PRICING_PLANS[planId].name}`}</span>
+            <span>{label}</span>
             {yearlyTotal && !account.hasSub && <span className="text-[11px] font-semibold opacity-70">{yearlyTotal}</span>}
           </span>
         </KeyButton>
