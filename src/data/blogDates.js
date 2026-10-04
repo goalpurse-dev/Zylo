@@ -178,7 +178,7 @@ export const BLOG_DATES = {
   "/blog/is-30-days-worth-it": ["2026-08-25", "2026-08-25"],
   "/blog/is-ai-content-worth-it": ["2026-08-21", "2026-08-21"],
   "/blog/is-ai-image-generation-worth-it-for-creators": ["2026-03-01", "2026-03-01"],
-  "/blog/is-zyvo-free": ["2026-08-21", "2026-08-21"],
+  "/blog/is-zyvo-free": ["2026-08-21", "2026-10-05"],
   "/blog/kit-swap-explained": ["2026-08-12", "2026-08-12"],
   "/blog/kit-swap-ideas": ["2026-08-21", "2026-08-21"],
   "/blog/kit-swap-mistakes": ["2026-08-21", "2026-08-21"],

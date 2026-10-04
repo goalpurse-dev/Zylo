@@ -42,7 +42,7 @@ const FAQS = [
   },
   {
     q: "Can I try Zyvo without paying?",
-    a: "Yes — every tool has a free entry point using your account's credit balance. See the pricing guide for how credits work.",
+    a: "Yes. A free account gets 5 image generations in the AI image generator. Video tools like AI Fruit Story need a paid plan. See the pricing guide for how credits work.",
   },
   {
     q: "How do I publish what I generate?",

@@ -226,12 +226,12 @@ export const blogArticles = [
   {
     "title": "Is Zyvo Free? Pricing, Plans, and Credits Explained",
     "slug": "/blog/is-zyvo-free",
-    "description": "How Zyvo's credit system works across every tool, and how to get the most from a free account.",
+    "description": "Free to start with 5 image generations. Video tools like AI Fruit Story need a paid plan.",
     "image": "/blog-assets/is-zyvo-free-hero.png",
     "category": "Tutorials",
     "tags": ["zyvo", "pricing", "free", "credits", "tutorials"],
     "publishedAt": "2026-08-21T12:00:00.000Z",
-    "updatedAt": "2026-08-21T12:00:00.000Z",
+    "updatedAt": "2026-10-05T12:00:00.000Z",
     "featured": false,
     "popular": false
   },

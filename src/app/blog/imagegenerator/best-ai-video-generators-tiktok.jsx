@@ -129,7 +129,7 @@ export default function BestAiVideoGeneratorsTiktok() {
           <section className="pt-4">
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Try Zyvo Free</h2>
             <p className="text-[16px] leading-relaxed mb-6">
-              Every tool has a free entry point using your account's credit balance.
+              Start free with 5 image generations. Video tools like AI Fruit Story need a paid plan.
             </p>
             <Link
               to="/signup"

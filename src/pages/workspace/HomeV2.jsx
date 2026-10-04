@@ -9,6 +9,7 @@ import PublicGallery from "../../components/public-gallery/gallery.jsx";
 import { FeaturedTemplate, HOME_MAX_W, JumpBackInV2, LongFormSection, PathCards, SectionHeader, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
 import { fetchShowcase } from "../../components/launch/launch";
 import { HIDDEN_COMMUNITY_CATEGORIES } from "../../data/homeContent";
+import { FREE_PLAN_LINE } from "../../data/freePlan.js";
 
 export default function HomeV2() {
   const [longFormCreations, setLongFormCreations] = useState([]);
@@ -38,6 +39,7 @@ export default function HomeV2() {
         <ZyvoSuiteCarousel title="short form suite" items={suiteTemplates()} subtitle="Short Form templates for TikTok, Reels & Shorts" />
         <p className="mt-5 px-4 text-center text-[13px] text-white/55 md:px-[50px]" data-testid="home-fruit-link">
           New: the <Link to="/ai-fruit-story-maker" className="font-bold text-lime-300 hover:text-lime-200">AI Fruit Story generator</Link> now makes series of up to 10 episodes with the same cast.
+          <span className="mt-1 block text-white/45" data-testid="home-free-line">{FREE_PLAN_LINE}</span>
         </p>
       </div>
 

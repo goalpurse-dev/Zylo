@@ -399,7 +399,7 @@ export const PUBLIC_SEO_METADATA = {
   "/blog/is-zyvo-free": {
     ...blog(
       "Is Zyvo Free? Pricing, Plans, and Credits Explained",
-      "How Zyvo's credit system works across every tool, what determines generation cost, and how to get the most from a free account.",
+      "Zyvo is free to start with 5 image generations. Video tools like AI Fruit Story need a paid plan. What a plan adds and what decides the cost in credits.",
     ),
     image: `${SITE_URL}/blog-assets/is-zyvo-free-hero.png`,
   },
@@ -619,7 +619,7 @@ export const PUBLIC_SEO_METADATA = {
   }])),
   "/ai-fruit-story-maker": {
     title: "AI Fruit Story Generator & Maker – Videos and Series | Zyvo",
-    description: "Make talking fruit drama videos from one idea, or a series of up to 10 episodes with the same cast. 150 characters, 15 seconds to 2 minutes. Paid plan required.",
+    description: "Make talking fruit drama videos from one idea, or a series of up to 10 episodes with the same cast. 150 characters, 15 sec to 2 min. Plans from €18/month.", // €18 = Starter, monthly, as Stripe returns it (plan-prices, read 2026-10-05). Change it here if that price changes.
     type: "website",
     image: `${SITE_URL}/lp/fruit/og-ai-fruit-story.jpg`,
     imageSize: [1200, 630],
