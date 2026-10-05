@@ -2,7 +2,7 @@
 // (needs the service role + Resend keys in .env.local; run locally). Day 1 of
 // warming up the marketing domain: small, careful, once per person.
 //
-//   node emails/sendLongFormFeature.js [--subject 1|2|3] [--refresh]
+//   node emails/sendLongFormFeature.js [--subject 1|2|3] [--count N] [--refresh]
 //       DRY RUN (the default; an unknown option is refused, never guessed):
 //       sends nothing. Picks the 200, says how, freezes that list in
 //       emails/.sent/long-form-feature-audience.json, writes a preview to
@@ -19,7 +19,8 @@
 //       Reads each sent email's status from Resend: delivered, bounced,
 //       complained, clicked. Sends nothing.
 //
-// Who gets it (exactly 200):
+// Who gets it (exactly 200, or --count N for a later day of the warm-up; never
+// someone already in the send log, so a later day continues after the earlier ones):
 //   - profiles with email_updates = true (explicit marketing consent), one per address
 //   - never: an address that bounced, complained or is on Resend's suppression
 //     list; an address whose domain has no mail server; anyone who got the
@@ -48,7 +49,7 @@ dotenv.config({ path: ".env.local", quiet: true });
 const FROM = "Zyvo <updates@mail.tryzyvo.com>";
 const REPLY_TO = "support@tryzyvo.com";
 const CAMPAIGN = "long_form_feature";
-const TARGET = 200, RESERVE = 20;
+const DEFAULT_TARGET = 200, MAX_TARGET = 500, RESERVE = 20;
 const BATCH = 10, PAUSE_BETWEEN_BATCHES_MS = 20_000, PAUSE_BETWEEN_SENDS_MS = 1000;
 const LOG = "emails/.sent/long-form-feature.jsonl";
 const AUDIENCE = "emails/.sent/long-form-feature-audience.json";
@@ -74,7 +75,7 @@ const lines = (file) => (fs.existsSync(file) ? fs.readFileSync(file, "utf8").spl
 
 // ---- Mode. No flag = dry run. Anything unexpected stops here, before any key is read.
 const args = process.argv.slice(2);
-const VALUE_FLAGS = new Set(["--test", "--subject", "--confirm"]);
+const VALUE_FLAGS = new Set(["--test", "--subject", "--confirm", "--count"]);
 const FLAGS = new Set([...VALUE_FLAGS, "--send", "--report", "--refresh"]);
 const opt = {};
 for (let i = 0; i < args.length; i++) {
@@ -88,6 +89,10 @@ const mode = modes[0]?.slice(2) ?? "dry";
 if ("--confirm" in opt && mode !== "send") { console.error("--confirm only goes with --send."); process.exit(1); }
 const subjectIndex = "--subject" in opt ? Number(opt["--subject"]) : null;
 if (subjectIndex != null && ![1, 2, 3].includes(subjectIndex)) { console.error("--subject takes 1, 2 or 3."); process.exit(1); }
+// How many people the dry run picks. The real send takes the frozen list as it is.
+if ("--count" in opt && mode !== "dry") { console.error("--count goes with the dry run: it sets how many people are picked. --send sends the frozen list."); process.exit(1); }
+const TARGET = "--count" in opt ? Number(opt["--count"]) : DEFAULT_TARGET;
+if (!Number.isInteger(TARGET) || TARGET < 1 || TARGET > MAX_TARGET) { console.error(`--count takes a whole number from 1 to ${MAX_TARGET}.`); process.exit(1); }
 
 for (const [k, v] of Object.entries({ SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY, EMAIL_UNSUBSCRIBE_SECRET: SECRET, RESEND_API_KEY: process.env.RESEND_API_KEY })) {
   if (!v) { console.error(`Missing ${k} in .env.local`); process.exit(1); }
