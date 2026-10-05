@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import OAuthButton from "../components/auth/OAuthButton";
 import { signInWithEmailPassword, signInWithGoogle } from "../lib/auth";
+import { authError, formatCountdown } from "../lib/authErrors";
+import { useCooldown } from "../hooks/useCooldown";
 
 // Use your actual asset import (matches your pattern)
  import v32 from "../assets/symbols/bg.mp4"
@@ -21,6 +23,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
+  const cooldown = useCooldown(); // Supabase said "slow down": the button counts down instead of a red error
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,7 +33,9 @@ export default function Login() {
       await signInWithEmailPassword(email, password);
       navigate("/"); // go to home/dashboard after login
     } catch (e2) {
-      setErr(e2.message || "Login failed.");
+      const problem = authError(e2, "Login failed.");
+      if (problem.rateLimited) cooldown.start(problem.waitSeconds);
+      else setErr(problem.message);
     } finally {
       setLoading(false);
     }
@@ -41,7 +46,7 @@ export default function Login() {
     try {
       await signInWithGoogle(); // redirects
     } catch (e2) {
-      setErr(e2.message || "Google sign-in failed.");
+      setErr(authError(e2, "Google sign-in failed.").message);
     }
   };
 
@@ -86,18 +91,20 @@ export default function Login() {
 
                 {/* Forgot password */}
                 <div className="text-right -mt-2">
-                  <Link to="/auth/forgot" className="text-sm text-[#7A3BFF] hover:underline">
+                  <Link to="/auth/forgot" state={{ email }} className="text-sm text-[#7A3BFF] hover:underline">
                     Forgot password?
                   </Link>
                 </div>
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || cooldown.secondsLeft > 0}
                   className="w-full h-12 rounded-full bg-[#7A3BFF] text-white text-[15px] font-semibold hover:opacity-95 disabled:opacity-60"
                 >
-                  {loading ? "Signing in..." : "Log in"}
+                  {loading ? "Signing in..." : cooldown.secondsLeft > 0 ? `Try again in ${formatCountdown(cooldown.secondsLeft)}` : "Log in"}
                 </button>
+
+                {cooldown.secondsLeft > 0 && <p role="status" className="text-sm text-black/60">Too many tries in a short time. It's nothing you did.</p>}
 
                 {err && <p className="text-sm text-red-600">{err}</p>}
               </form>

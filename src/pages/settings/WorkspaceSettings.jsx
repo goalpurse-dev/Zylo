@@ -11,6 +11,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
+import { authError } from "../../lib/authErrors";
 import Billing from "./Billing";
 
 const tabs = [
@@ -193,7 +194,7 @@ function AccountPanel() {
       setPwMsg("Password updated.");
       setPw1(""); setPw2("");
     } catch (err) {
-      setPwErr(err.message || "Could not update password.");
+      setPwErr(authError(err, "Could not update password.").message);
     } finally {
       setSavingPw(false);
     }
