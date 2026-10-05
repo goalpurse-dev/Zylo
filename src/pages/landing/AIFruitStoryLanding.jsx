@@ -103,7 +103,7 @@ function HeroExample() {
             <video src={EXAMPLE_VIDEO.url} poster={EXAMPLE_VIDEO.poster} controls autoPlay playsInline preload="none" className="h-full w-full object-cover" aria-label={`Example video: ${EXAMPLE_VIDEO.title}`} />
           ) : (
             <button type="button" onClick={() => setOn(true)} aria-label={`Play the example video: ${EXAMPLE_VIDEO.title}`} className={`group absolute inset-0 h-full w-full ${FOCUS}`}>
-              <img {...optImg(`${FRUIT_ASSETS}/ken-reads-everything.jpg`, "220px", 480)} alt="Scene from an AI fruit story video: a kiwi IT guy with a laptop leans into the office of an apple boss" width="720" height="1280" loading="eager" fetchPriority="high" decoding="async" className="h-full w-full object-cover" />
+              <img {...optImg(EXAMPLE_VIDEO.poster, "220px", 480)} alt="Scene from an AI fruit story video: a kiwi points at a wedding cake at her engagement party while a banana looks on" width="720" height="1280" loading="eager" fetchPriority="high" decoding="async" className="h-full w-full object-cover" />
               <span className="absolute left-1/2 top-1/2 grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-[#3b1a78] shadow-lg transition group-hover:scale-105">
                 <Play className="h-6 w-6 translate-x-0.5 fill-current" aria-hidden="true" />
               </span>
@@ -157,14 +157,14 @@ function VideoSlots({ slots, caption }) {
   const empty = import.meta.env.DEV ? slots.filter((s) => !s.video || !s.poster) : [];
   if (!videos.length && !empty.length) return null;
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+    <div className="flex flex-wrap justify-center gap-4">
       {videos.map((video, i) => (
-        <figure key={video.url}>
+        <figure key={video.url} className="w-[46%] sm:w-[260px]">
           <ExampleVideo video={video} />
           <figcaption className="mt-2 text-[12px] leading-relaxed text-white/50">{caption ? caption(video, i) : video.title}</figcaption>
         </figure>
       ))}
-      {empty.map((slot) => <EmptySlot key={slot.slot} label={slot.slot} />)}
+      {empty.map((slot) => <div key={slot.slot} className="w-[46%] sm:w-[260px]"><EmptySlot label={slot.slot} /></div>)}
     </div>
   );
 }

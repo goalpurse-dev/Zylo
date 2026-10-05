@@ -76,13 +76,15 @@ export function errorText(error, fallback) {
 
 /**
  * The example video on the Recent panel (guests, no plan, no stories yet): a
- * real V2 story made end to end ("Ken Reads Everything", 26 s, captions on).
+ * real V2 story made end to end ("The Surprise Wedding Switch", 29 s, captions
+ * on). The MP4 is the compressed copy in storage (2.5 MB); the poster is in
+ * the repo, public/lp/fruit/examples/.
  */
 export const EXAMPLE_VIDEO = {
-  title: "Ken Reads Everything",
-  blurb: "The IT guy reads everyone's email. 6 scenes, made on V2 in under 4 minutes.",
-  url: "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/fruit/examples/ken-reads-everything.mp4",
-  poster: "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/fruit/examples/ken-reads-everything.jpg",
+  title: "The Surprise Wedding Switch",
+  blurb: "The engagement party is secretly the wedding. 6 scenes, made on V2.",
+  url: "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/generated/fruit/examples/the-surprise-wedding-switch.mp4",
+  poster: "/lp/fruit/examples/the-surprise-wedding-switch.jpg",
 };
 
 /** YouTube tutorial link for the Recent panel. Set it and a "Watch the tutorial" link appears. */

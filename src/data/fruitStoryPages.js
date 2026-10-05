@@ -83,7 +83,15 @@ export const FRUIT_VIDEO_BASE = "https://ilpiwoxubnevmxxikyvx.supabase.co/storag
 export const FRUIT_POSTER_BASE = `${FRUIT_ASSETS}/examples`;
 
 export const FRUIT_EXAMPLE_VIDEOS = [
-  { slot: "Example video 1", video: "", poster: "", title: "", description: "", uploadDate: "", duration: "" },
+  {
+    slot: "Example video 1",
+    video: "the-surprise-wedding-switch.mp4",
+    poster: "the-surprise-wedding-switch.jpg",
+    title: "The Surprise Wedding Switch",
+    description: "Kiki arrives at her engagement party and finds a wedding cake: Benny and the planner have turned it into their wedding. Six scenes, made with Zyvo AI Fruit Story on V2 quality.",
+    uploadDate: "2026-10-05",
+    duration: "PT29S",
+  },
   { slot: "Example video 2", video: "", poster: "", title: "", description: "", uploadDate: "", duration: "" },
   { slot: "Example video 3", video: "", poster: "", title: "", description: "", uploadDate: "", duration: "" },
   { slot: "Example video 4", video: "", poster: "", title: "", description: "", uploadDate: "", duration: "" },
