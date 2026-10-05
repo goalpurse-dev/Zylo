@@ -25,8 +25,8 @@ function Heading({ eyebrow, children, sub }) {
 const PUB = "https://ilpiwoxubnevmxxikyvx.supabase.co/storage/v1/object/public/";
 export const EXAMPLES = {
   fruit: {
-    title: "Ken Reads Everything", tool: "AI Fruit Story", tier: "V2", note: "9:16, 26 s",
-    src: `${PUB}generated/fruit/a8ad2f35-6ad4-4071-bdae-4555afd13f51/b102da41-abee-4e66-b4ff-c01e20bfc716/final-f1d897c2-4304-488a-80cc-f8165af5651b.mp4`,
+    title: "The Surprise Wedding Switch", tool: "AI Fruit Story", tier: "V2", note: "9:16, 29 s",
+    src: `${PUB}generated/fruit/examples/the-surprise-wedding-switch.mp4`, // the compressed copy (2.5 MB), also the tool example
   },
   longForm: [
     {
