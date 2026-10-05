@@ -41,6 +41,51 @@
       "permanent": true
     },
     {
+      "source": "/blog/ai-fruit-story-series-universe",
+      "destination": "/ai-fruit-story-maker",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-fruit-story-unhinged-plots",
+      "destination": "/blog/best-ai-fruit-story-ideas",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-fruit-story-time",
+      "destination": "/blog/ai-fruit-story-pricing",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-fruit-story-quiz",
+      "destination": "/blog/ai-fruit-story-character-ideas",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-fruit-story-group-chat",
+      "destination": "/blog/ai-fruit-story-character-ideas",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-fruit-story-fan-theories",
+      "destination": "/blog/ai-fruit-story-character-ideas",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-fruit-story-couples",
+      "destination": "/blog/ai-fruit-story-character-ideas",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-fruit-story-best-lines",
+      "destination": "/blog/ai-fruit-story-talking-dialogue-tips",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ai-fruit-story-duets-stitches",
+      "destination": "/blog/how-to-go-viral-tiktok-fruit-drama",
+      "statusCode": 301
+    },
+    {
       "source": "/2am-in-pokemon-ai-generator",
       "destination": "/2am-creature-town-ai-generator",
       "statusCode": 301

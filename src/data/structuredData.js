@@ -224,7 +224,7 @@ export function structuredDataFor(pathname, metadata, canonical) {
       mainEntity: [
         ["What styles can I generate?", "Cinematic, 3D, anime, realistic, and product-focused styles, all from a single text prompt."],
         ["Can I use this for product photos?", "Yes. The generator includes AI background removal and clean-background product presets built for ecommerce and Shopify listings."],
-        ["Is it free to start?", "Yes, Zyvo's image generator has a free entry point, with paid tiers for higher volume and resolution."],
+        ["Is it free to start?", "Yes. A free account gets 5 image generations every 30 days, with no card needed. Paid plans add monthly credits for higher volume."],
         ["What sizes and platforms is this built for?", "Output works for TikTok, Instagram Reels, and YouTube thumbnails and covers, as well as square and landscape formats for product listings and ads."],
       ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
     });

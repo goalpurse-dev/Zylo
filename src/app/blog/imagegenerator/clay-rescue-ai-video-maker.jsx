@@ -104,7 +104,7 @@ export default function ClayRescueAIVideoMakerBlog() {
               <p className="mb-2 text-[15px] font-bold text-[#7A3BFF]">Create Clay Rescue Videos in Zyvo</p>
               <p className="mb-4 text-[14px] text-[#4A4A55]">Pick the format, generate the crisis, and let Zyvo build the giant hand rescue sequence with a visible fix.</p>
               <Link to="/workspace/clay-rescue" className="inline-block rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold text-white transition hover:opacity-90">
-                Try Clay Rescue Free
+                Try Clay Rescue
               </Link>
             </div>
 

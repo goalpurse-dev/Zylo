@@ -241,7 +241,7 @@ export default function AIVideoGeneratorTikTokReels() {
             to="/workspace/video-generator"
             className="inline-block bg-[#7A3BFF] text-white font-semibold text-[16px] px-8 py-4 rounded-xl hover:bg-[#6930e8] transition"
           >
-            Try AI Video Generator Free →
+            Try AI Video Generator →
           </Link>
         </section>
 

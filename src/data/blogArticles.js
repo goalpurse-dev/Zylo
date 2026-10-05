@@ -376,19 +376,6 @@ export const blogArticles = [
     "relatedTool": { "name": "2AM Worlds AI Generator", "href": "/2am-worlds-ai-generator" }
   },
   {
-    "title": "How Long Does It Take to Make an AI Fruit Story Video?",
-    "slug": "/blog/ai-fruit-story-time",
-    "description": "The honest breakdown of what actually takes time in AI Fruit Story — writing, character generation, scenes, and animated dialogue.",
-    "image": "/blog-assets/ai-fruit-story-time-hero.png",
-    "category": "Fruit Stories",
-    "tags": ["ai", "fruit-story", "time", "getting-started", "fruit-stories"],
-    "publishedAt": "2026-08-19T14:00:00.000Z",
-    "updatedAt": "2026-08-19T14:00:00.000Z",
-    "featured": false,
-    "popular": false,
-    "relatedTool": { "name": "AI Fruit Story Maker", "href": "/ai-fruit-story-maker" }
-  },
-  {
     "title": "AI Fruit Story Cliffhanger Endings: How to Make Viewers Come Back for Part 2",
     "slug": "/blog/ai-fruit-story-cliffhangers",
     "description": "Four cliffhanger structures that consistently drive part-2 demand, and the one rule that decides whether a cliffhanger feels earned.",
@@ -1712,74 +1699,6 @@ export const blogArticles = [
     }
   },
   {
-    "title": "The Most Iconic AI Fruit Story Couples (And How to Ship Your Own)",
-    "slug": "/blog/ai-fruit-story-couples",
-    "description": "Four pairing dynamics worth building a series around, and how to design your own.",
-    "image": "/blog-assets/ai-fruit-story-couples-hero.png",
-    "category": "Fruit Stories",
-    "tags": [
-      "ai",
-      "fruit",
-      "story",
-      "couples",
-      "fruit-stories"
-    ],
-    "publishedAt": "2026-08-09T21:00:00.000Z",
-    "updatedAt": "2026-08-09T21:00:00.000Z",
-    "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "AI Fruit Story Maker",
-      "href": "/ai-fruit-story-maker"
-    }
-  },
-  {
-    "title": "How to Use TikTok Duets and Stitches to Make Your AI Fruit Story Go Viral",
-    "slug": "/blog/ai-fruit-story-duets-stitches",
-    "description": "How to structure a video so it's built to get duetted and stitched.",
-    "image": "/blog-assets/ai-fruit-story-duets-hero.png",
-    "category": "Fruit Stories",
-    "tags": [
-      "ai",
-      "fruit",
-      "story",
-      "duets",
-      "stitches",
-      "fruit-stories"
-    ],
-    "publishedAt": "2026-08-09T21:00:00.000Z",
-    "updatedAt": "2026-08-09T21:00:00.000Z",
-    "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "AI Fruit Story Maker",
-      "href": "/ai-fruit-story-maker"
-    }
-  },
-  {
-    "title": "How to Build an AI Fruit Story Series (Turn One Video Into a Cinematic Universe)",
-    "slug": "/blog/ai-fruit-story-series-universe",
-    "description": "Four pillars of a fruit story universe and a simple way to start your first series.",
-    "image": "/blog-assets/ai-fruit-story-universe-hero.png",
-    "category": "Fruit Stories",
-    "tags": [
-      "ai",
-      "fruit",
-      "story",
-      "series",
-      "universe",
-      "fruit-stories"
-    ],
-    "publishedAt": "2026-08-10T21:00:00.000Z",
-    "updatedAt": "2026-08-10T21:00:00.000Z",
-    "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "AI Fruit Story Maker",
-      "href": "/ai-fruit-story-maker"
-    }
-  },
-  {
     "title": "10 Mistakes Killing Your AI Fruit Story Views (And How to Fix Each One)",
     "slug": "/blog/ai-fruit-story-mistakes",
     "description": "The ten most common structural mistakes, with a specific fix for each one.",
@@ -1794,51 +1713,6 @@ export const blogArticles = [
     ],
     "publishedAt": "2026-08-10T21:00:00.000Z",
     "updatedAt": "2026-08-10T21:00:00.000Z",
-    "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "AI Fruit Story Maker",
-      "href": "/ai-fruit-story-maker"
-    }
-  },
-  {
-    "title": "The Most Unhinged AI Fruit Story Plots We've Ever Generated",
-    "slug": "/blog/ai-fruit-story-unhinged-plots",
-    "description": "Ten genuinely deranged fruit-drama premises, ranked by chaos level, free to steal.",
-    "image": "/blog-assets/ai-fruit-story-unhinged-plots-hero.png",
-    "category": "Fruit Stories",
-    "tags": [
-      "ai",
-      "fruit",
-      "story",
-      "unhinged",
-      "plots",
-      "fruit-stories"
-    ],
-    "publishedAt": "2026-08-16T21:00:00.000Z",
-    "updatedAt": "2026-08-16T21:00:00.000Z",
-    "featured": true,
-    "popular": false,
-    "relatedTool": {
-      "name": "AI Fruit Story Maker",
-      "href": "/ai-fruit-story-maker"
-    }
-  },
-  {
-    "title": "Which AI Fruit Story Character Are You? Take the Quiz",
-    "slug": "/blog/ai-fruit-story-quiz",
-    "description": "Five questions, one very specific fruit personality waiting on the other side.",
-    "image": "/blog-assets/ai-fruit-story-quiz-hero.png",
-    "category": "Fruit Stories",
-    "tags": [
-      "ai",
-      "fruit",
-      "story",
-      "quiz",
-      "fruit-stories"
-    ],
-    "publishedAt": "2026-08-16T21:00:00.000Z",
-    "updatedAt": "2026-08-16T21:00:00.000Z",
     "featured": false,
     "popular": false,
     "relatedTool": {
@@ -1882,74 +1756,6 @@ export const blogArticles = [
       "story",
       "craziest",
       "generation",
-      "fruit-stories"
-    ],
-    "publishedAt": "2026-08-16T21:00:00.000Z",
-    "updatedAt": "2026-08-16T21:00:00.000Z",
-    "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "AI Fruit Story Maker",
-      "href": "/ai-fruit-story-maker"
-    }
-  },
-  {
-    "title": "8 AI Fruit Story Fan Theories That Are Probably True",
-    "slug": "/blog/ai-fruit-story-fan-theories",
-    "description": "Playful lore theories connecting the recurring cast into one shared universe.",
-    "image": "/blog-assets/ai-fruit-story-fan-theories-hero.png",
-    "category": "Fruit Stories",
-    "tags": [
-      "ai",
-      "fruit",
-      "story",
-      "fan",
-      "theories",
-      "fruit-stories"
-    ],
-    "publishedAt": "2026-08-16T21:00:00.000Z",
-    "updatedAt": "2026-08-16T21:00:00.000Z",
-    "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "AI Fruit Story Maker",
-      "href": "/ai-fruit-story-maker"
-    }
-  },
-  {
-    "title": "The Most Iconic AI Fruit Story Lines Ever Written (Ranked)",
-    "slug": "/blog/ai-fruit-story-best-lines",
-    "description": "Eight lines the format lives and dies on, and why each one works.",
-    "image": "/blog-assets/ai-fruit-story-best-lines-hero.png",
-    "category": "Fruit Stories",
-    "tags": [
-      "ai",
-      "fruit",
-      "story",
-      "lines",
-      "fruit-stories"
-    ],
-    "publishedAt": "2026-08-16T21:00:00.000Z",
-    "updatedAt": "2026-08-16T21:00:00.000Z",
-    "featured": false,
-    "popular": false,
-    "relatedTool": {
-      "name": "AI Fruit Story Maker",
-      "href": "/ai-fruit-story-maker"
-    }
-  },
-  {
-    "title": "If AI Fruit Story Characters Had a Group Chat",
-    "slug": "/blog/ai-fruit-story-group-chat",
-    "description": "What the cast's messages would look like between episodes. Completely unofficial.",
-    "image": "/blog-assets/ai-fruit-story-group-chat-hero.png",
-    "category": "Fruit Stories",
-    "tags": [
-      "ai",
-      "fruit",
-      "story",
-      "group",
-      "chat",
       "fruit-stories"
     ],
     "publishedAt": "2026-08-16T21:00:00.000Z",

@@ -647,7 +647,7 @@ export default function BestAIImageGeneratorsSocialMedia2026() {
               },
               {
                 q: "What's the best free AI image generator for social media?",
-                a: "Zyvo offers the best free tier for social media creators — you can generate high-quality images and access the script builder without a credit card. DALL-E 3 via ChatGPT is also free at a limited level, but outputs less competitive for social media aesthetics.",
+                a: "Zyvo is free to start for social media creators: a free account gets 5 image generations without a credit card. DALL-E 3 via ChatGPT is also free at a limited level, but outputs less competitive for social media aesthetics.",
               },
               {
                 q: "Can AI-generated images go viral on social media?",
@@ -655,7 +655,7 @@ export default function BestAIImageGeneratorsSocialMedia2026() {
               },
               {
                 q: "How many images can I generate per day with Zyvo?",
-                a: "Zyvo's free tier includes a generous daily generation allowance. Paid plans remove limits for professional creators and agencies who need high-volume content production.",
+                a: "A free Zyvo account includes 5 image generations every 30 days. Paid plans add monthly credits for professional creators and agencies who need high-volume content production.",
               },
             ].map((item) => (
               <div key={item.q} className="bg-white rounded-2xl border border-[#ECE8F2] px-6 py-5">

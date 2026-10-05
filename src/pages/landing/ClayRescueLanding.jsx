@@ -119,7 +119,7 @@ export default function ClayRescueLanding() {
                 >
                   Create Clay Rescue Video
                 </button>
-                <span className="text-[13px] text-white/35">Free to start. No editing skills needed.</span>
+                <span className="text-[13px] text-white/35">Paid plan required. No editing skills needed.</span>
               </div>
 
               <div className="mt-8 grid gap-2 sm:grid-cols-2">
@@ -266,7 +266,7 @@ export default function ClayRescueLanding() {
             className="mt-8 rounded-[16px] px-10 py-4 text-[16px] font-black text-white shadow-[0_12px_40px_rgba(122,59,255,0.45)] transition hover:opacity-90 active:scale-[0.98]"
             style={{ background: "linear-gradient(135deg,#7A3BFF,#A855F7)" }}
           >
-            Try Clay Rescue Free
+            Try Clay Rescue
           </button>
         </div>
       </section>

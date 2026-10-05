@@ -17,12 +17,6 @@ const related = [
     slug: "/blog/ai-fruit-story-prompt-formula",
   },
   {
-    title: "How to Build an AI Fruit Story Series (Turn One Video Into a Cinematic Universe)",
-    description: "Four pillars of a fruit story universe, and a simple way to start your first series.",
-    date: "11.08.2026",
-    slug: "/blog/ai-fruit-story-series-universe",
-  },
-  {
     title: "AI Fruit Story Cliffhanger Endings: How to Make Viewers Come Back for Part 2",
     description: "Four cliffhanger structures that consistently drive part-2 demand.",
     date: "19.08.2026",

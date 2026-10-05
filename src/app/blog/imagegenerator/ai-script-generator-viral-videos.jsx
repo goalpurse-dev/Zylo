@@ -37,7 +37,7 @@ export default function AIScriptGeneratorViralVideos() {
     if (meta) {
       meta.setAttribute(
         "content",
-        "The best AI script generator for TikTok, YouTube Shorts, and Instagram Reels in 2026. Generate complete viral video scripts — with image and video prompts per scene — in under 60 seconds. Free to try."
+        "The best AI script generator for TikTok, YouTube Shorts, and Instagram Reels in 2026. Generate complete viral video scripts — with image and video prompts per scene — in under 60 seconds."
       );
     }
   }, []);
@@ -367,7 +367,7 @@ export default function AIScriptGeneratorViralVideos() {
           <div className="rounded-3xl p-10 md:p-14 text-center"
             style={{ background: "linear-gradient(135deg, #0E0821 0%, #1A0840 50%, #0E0821 100%)" }}>
             <span className="inline-block bg-[#7A3BFF]/20 text-[#C084FC] text-[12px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5">
-              Free to Start
+              Script Builder
             </span>
             <h2 className="text-white text-[32px] md:text-[38px] font-bold mb-4 leading-tight">
               The AI Script Generator Built for Viral Content
@@ -382,7 +382,7 @@ export default function AIScriptGeneratorViralVideos() {
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-white text-[15px] transition-all hover:opacity-90 active:scale-[0.98]"
                 style={{ background: "linear-gradient(135deg, #7A3BFF, #9D6BFF)", boxShadow: "0 8px 32px rgba(122,59,255,0.4)" }}
               >
-                ✍️ Try Script Builder Free →
+                ✍️ Try Script Builder →
               </Link>
               <Link
                 to="/blog/how-to-write-a-viral-script"

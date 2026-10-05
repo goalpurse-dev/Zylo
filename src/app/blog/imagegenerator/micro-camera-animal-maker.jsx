@@ -107,7 +107,7 @@ export default function MicroCameraAnimalMakerBlog() {
 
             <div className="my-10 rounded-2xl border border-purple-200 bg-purple-50 p-6">
               <p className="text-[15px] font-bold text-[#7A3BFF] mb-2">Ready to try it?</p>
-              <p className="text-[14px] text-[#4A4A55] mb-4">Generate your first animal bodycam video for free — no credit card, no editing skills required.</p>
+              <p className="text-[14px] text-[#4A4A55] mb-4">Generate your first animal bodycam video — no editing skills required. Needs a paid plan.</p>
               <Link to="/workspace/micro-camera-animal" className="inline-block rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold text-white hover:opacity-90 transition">
                 Create Bodycam Video →
               </Link>
@@ -158,11 +158,11 @@ export default function MicroCameraAnimalMakerBlog() {
 
             <h2 className="text-[28px] font-bold text-[#110829] mb-4 mt-10">Start Creating Animal Bodycam Videos Today</h2>
             <p className="text-[#4A4A55] leading-relaxed mb-6">
-              The Micro Camera Animal format is at the beginning of its growth curve. The creators posting now are establishing themselves as early authorities in the niche — exactly the position you want to be in before the format becomes oversaturated. <Link to="/micro-camera-animal-maker" className="text-[#7A3BFF] font-semibold hover:underline">Try Zyvo's Micro Camera Animal maker for free</Link> and generate your first underground bodycam video today.
+              The Micro Camera Animal format is at the beginning of its growth curve. The creators posting now are establishing themselves as early authorities in the niche — exactly the position you want to be in before the format becomes oversaturated. <Link to="/micro-camera-animal-maker" className="text-[#7A3BFF] font-semibold hover:underline">Try Zyvo's Micro Camera Animal maker</Link> and generate your first underground bodycam video today.
             </p>
 
             <div className="my-8 rounded-2xl border border-purple-200 bg-purple-50 p-6">
-              <p className="text-[16px] font-bold text-[#7A3BFF] mb-2">Generate Your First Bodycam Video Free</p>
+              <p className="text-[16px] font-bold text-[#7A3BFF] mb-2">Generate Your First Bodycam Video</p>
               <p className="text-[14px] text-[#4A4A55] mb-4">Type any animal. Zyvo mounts the camera and generates the scenes. Under 5 minutes, no editing required.</p>
               <Link to="/workspace/micro-camera-animal" className="inline-block rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold text-white hover:opacity-90 transition">
                 Try Micro Camera Animal →
@@ -197,7 +197,7 @@ export default function MicroCameraAnimalMakerBlog() {
             <Link to="/workspace/micro-camera-animal"
               className="block rounded-2xl p-5 text-white text-center font-bold text-[14px] hover:opacity-90 transition shadow-[0_4px_20px_rgba(122,59,255,0.35)]"
               style={{ background: "linear-gradient(135deg,#7A3BFF,#A855F7)" }}>
-              Create Bodycam Video Free →
+              Create Bodycam Video →
             </Link>
           </aside>
         </div>

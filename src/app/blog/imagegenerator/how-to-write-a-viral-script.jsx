@@ -37,7 +37,7 @@ export default function HowToWriteAViralScript() {
     if (meta) {
       meta.setAttribute(
         "content",
-        "Learn exactly how to write a viral script for TikTok, YouTube Shorts, and Instagram Reels. The proven AI-powered framework used by creators getting millions of views — with a free script builder included."
+        "Learn exactly how to write a viral script for TikTok, YouTube Shorts, and Instagram Reels. The proven AI-powered framework used by creators getting millions of views — with a script builder included."
       );
     }
   }, []);
@@ -340,7 +340,7 @@ export default function HowToWriteAViralScript() {
           <div className="rounded-3xl p-10 md:p-14 text-center"
             style={{ background: "linear-gradient(135deg, #0E0821 0%, #1A0840 50%, #0E0821 100%)" }}>
             <span className="inline-block bg-[#7A3BFF]/20 text-[#C084FC] text-[12px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-5">
-              Try It Free
+              Try the Script Builder
             </span>
             <h2 className="text-white text-[32px] md:text-[38px] font-bold mb-4 leading-tight">
               Write Your First Viral Script in 60 Seconds
@@ -389,7 +389,7 @@ export default function HowToWriteAViralScript() {
               <Link to="/workspace/viral-script" className="text-[#7A3BFF] font-semibold hover:underline">
                 Zyvo's Viral Script Builder
               </Link>{" "}
-              to close the gap — it's free to try, and the first script takes less than a minute.
+              to close the gap — the first script takes less than a minute.
             </p>
           </div>
           <div className="w-full h-[360px] rounded-2xl border border-[#ECE8F2] bg-white overflow-hidden">

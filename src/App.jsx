@@ -154,17 +154,9 @@ const AIFruitStoryVsTraditionalAnimation = lazy(() => import("./app/blog/imagege
 const AIFruitStoryPromptFormula = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-prompt-formula.jsx"));
 const AIFruitStoryInstagramYouTubeShorts = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-instagram-youtube-shorts.jsx"));
 const AIFruitStoryPlotTwists = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-plot-twists.jsx"));
-const AIFruitStoryCouples = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-couples.jsx"));
-const AIFruitStoryDuetsStitches = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-duets-stitches.jsx"));
-const AIFruitStorySeriesUniverse = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-series-universe.jsx"));
 const AIFruitStoryMistakes = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-mistakes.jsx"));
-const AIFruitStoryUnhingedPlots = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-unhinged-plots.jsx"));
-const AIFruitStoryQuiz = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-quiz.jsx"));
 const AIFruitStoryDramaTierList = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-drama-tier-list.jsx"));
 const AIFruitStoryCraziestGeneration = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-craziest-generation.jsx"));
-const AIFruitStoryFanTheories = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-fan-theories.jsx"));
-const AIFruitStoryBestLines = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-best-lines.jsx"));
-const AIFruitStoryGroupChat = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-group-chat.jsx"));
 const WhatIsAIFruitStory = lazy(() => import("./app/blog/imagegenerator/what-is-ai-fruit-story.jsx"));
 const AIFruitStoryExamples = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-examples.jsx"));
 const AIFruitStoryPricing = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-pricing.jsx"));
@@ -175,7 +167,6 @@ const HiddenAiImageStyles = lazy(() => import("./app/blog/imagegenerator/hidden-
 const MinecraftStyleAiImages = lazy(() => import("./app/blog/imagegenerator/voxel-style-ai-images.jsx"));
 const NoirVsCyberpunkAiImages = lazy(() => import("./app/blog/imagegenerator/noir-vs-cyberpunk-ai-images.jsx"));
 const DisneyVsGhibliAiImages = lazy(() => import("./app/blog/imagegenerator/classic-3d-vs-hand-painted-anime-images.jsx"));
-const AIFruitStoryTime = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-time.jsx"));
 const AIFruitStoryCliffhangers = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-cliffhangers.jsx"));
 const AIFruitStoryHalloween = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-halloween.jsx"));
 const AIFruitStoryFinaleIdeas = lazy(() => import("./app/blog/imagegenerator/ai-fruit-story-finale-ideas.jsx"));
@@ -695,17 +686,17 @@ return (
         <Route path="/blog/ai-fruit-story-prompt-formula" element={<AIFruitStoryPromptFormula/>} />
         <Route path="/blog/ai-fruit-story-instagram-youtube-shorts" element={<AIFruitStoryInstagramYouTubeShorts/>} />
         <Route path="/blog/ai-fruit-story-plot-twists" element={<AIFruitStoryPlotTwists/>} />
-        <Route path="/blog/ai-fruit-story-couples" element={<AIFruitStoryCouples/>} />
-        <Route path="/blog/ai-fruit-story-duets-stitches" element={<AIFruitStoryDuetsStitches/>} />
-        <Route path="/blog/ai-fruit-story-series-universe" element={<AIFruitStorySeriesUniverse/>} />
+        <Route path="/blog/ai-fruit-story-couples" element={<Navigate to="/blog/ai-fruit-story-character-ideas" replace />} />
+        <Route path="/blog/ai-fruit-story-duets-stitches" element={<Navigate to="/blog/how-to-go-viral-tiktok-fruit-drama" replace />} />
+        <Route path="/blog/ai-fruit-story-series-universe" element={<Navigate to="/ai-fruit-story-maker" replace />} />
         <Route path="/blog/ai-fruit-story-mistakes" element={<AIFruitStoryMistakes/>} />
-        <Route path="/blog/ai-fruit-story-unhinged-plots" element={<AIFruitStoryUnhingedPlots/>} />
-        <Route path="/blog/ai-fruit-story-quiz" element={<AIFruitStoryQuiz/>} />
+        <Route path="/blog/ai-fruit-story-unhinged-plots" element={<Navigate to="/blog/best-ai-fruit-story-ideas" replace />} />
+        <Route path="/blog/ai-fruit-story-quiz" element={<Navigate to="/blog/ai-fruit-story-character-ideas" replace />} />
         <Route path="/blog/ai-fruit-story-drama-tier-list" element={<AIFruitStoryDramaTierList/>} />
         <Route path="/blog/ai-fruit-story-craziest-generation" element={<AIFruitStoryCraziestGeneration/>} />
-        <Route path="/blog/ai-fruit-story-fan-theories" element={<AIFruitStoryFanTheories/>} />
-        <Route path="/blog/ai-fruit-story-best-lines" element={<AIFruitStoryBestLines/>} />
-        <Route path="/blog/ai-fruit-story-group-chat" element={<AIFruitStoryGroupChat/>} />
+        <Route path="/blog/ai-fruit-story-fan-theories" element={<Navigate to="/blog/ai-fruit-story-character-ideas" replace />} />
+        <Route path="/blog/ai-fruit-story-best-lines" element={<Navigate to="/blog/ai-fruit-story-talking-dialogue-tips" replace />} />
+        <Route path="/blog/ai-fruit-story-group-chat" element={<Navigate to="/blog/ai-fruit-story-character-ideas" replace />} />
         <Route path="/blog/what-is-ai-fruit-story" element={<WhatIsAIFruitStory/>} />
         <Route path="/blog/ai-fruit-story-examples" element={<AIFruitStoryExamples/>} />
         <Route path="/blog/ai-fruit-story-pricing" element={<AIFruitStoryPricing/>} />
@@ -716,7 +707,7 @@ return (
         <Route path="/blog/voxel-style-ai-images" element={<MinecraftStyleAiImages/>} />
         <Route path="/blog/noir-vs-cyberpunk-ai-images" element={<NoirVsCyberpunkAiImages/>} />
         <Route path="/blog/classic-3d-vs-hand-painted-anime-images" element={<DisneyVsGhibliAiImages/>} />
-        <Route path="/blog/ai-fruit-story-time" element={<AIFruitStoryTime/>} />
+        <Route path="/blog/ai-fruit-story-time" element={<Navigate to="/blog/ai-fruit-story-pricing" replace />} />
         <Route path="/blog/ai-fruit-story-cliffhangers" element={<AIFruitStoryCliffhangers/>} />
         <Route path="/blog/ai-fruit-story-halloween" element={<AIFruitStoryHalloween/>} />
         <Route path="/blog/ai-fruit-story-finale-ideas" element={<AIFruitStoryFinaleIdeas/>} />

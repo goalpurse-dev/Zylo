@@ -131,7 +131,7 @@ export default function WhichZyvoTemplate() {
           <section className="pt-4">
             <h2 className="text-[26px] font-bold text-[#110829] mb-4">Start Creating</h2>
             <p className="text-[16px] leading-relaxed mb-6">
-              Create your free account and generate your first piece of content today.
+              Start free with 5 image generations. Video tools like AI Fruit Story need a paid plan.
             </p>
             <Link
               to="/signup"

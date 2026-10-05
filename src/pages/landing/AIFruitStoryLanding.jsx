@@ -7,8 +7,8 @@
  * must match the tool as it works today; see the rules in that file.
  */
 
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Check, Copy, CopyCheck, Play } from "lucide-react";
 import Footer from "../../components/workspace/footer.jsx";
 import MakeFruitVideoButton from "../../components/seo/MakeFruitVideoButton.jsx";
@@ -75,7 +75,7 @@ const GUIDES = [
   ["Pricing and Credits", "/blog/ai-fruit-story-pricing"],
   ["Writing Dialogue and Scripts", "/blog/ai-fruit-story-talking-dialogue-tips"],
   ["Character Ideas", "/blog/ai-fruit-story-character-ideas"],
-  ["Plan a Series", "/blog/ai-fruit-story-series-universe"],
+  ["Series Finale Ideas", "/blog/ai-fruit-story-finale-ideas"],
   ["Cliffhanger Endings", "/blog/ai-fruit-story-cliffhangers"],
   ["Plot Twists", "/blog/ai-fruit-story-plot-twists"],
   ["Going Viral on TikTok", "/blog/how-to-go-viral-tiktok-fruit-drama"],
@@ -206,6 +206,15 @@ function StepCard({ step }) {
 }
 
 export default function AIFruitStoryLanding() {
+  // Links from other pages to /ai-fruit-story-maker#series: the app scrolls to the top on
+  // every route change, so the section is scrolled into view here, one frame later.
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (!hash) return undefined;
+    const frame = requestAnimationFrame(() => document.getElementById(hash.slice(1))?.scrollIntoView());
+    return () => cancelAnimationFrame(frame);
+  }, [hash]);
+
   const seriesVideos = filledVideos(FRUIT_EXAMPLE_SERIES.episodes);
   const showExamples = filledVideos(FRUIT_EXAMPLE_VIDEOS).length > 0 || import.meta.env.DEV;
   const showSeriesExample = seriesVideos.length > 0 || import.meta.env.DEV;

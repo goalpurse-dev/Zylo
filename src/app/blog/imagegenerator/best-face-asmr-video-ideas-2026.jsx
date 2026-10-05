@@ -137,7 +137,7 @@ export default function BestFaceAsmrVideoIdeas2026() {
 
             <div className="my-10 rounded-2xl border border-purple-200 bg-purple-50 p-6">
               <p className="text-[15px] font-bold text-[#7A3BFF] mb-2">Generate Any of These Ideas in Under 5 Minutes</p>
-              <p className="text-[14px] text-[#4A4A55] mb-4">Upload any face, pick the background, and Zyvo generates every scene automatically. Free to start.</p>
+              <p className="text-[14px] text-[#4A4A55] mb-4">Upload any face, pick the background, and Zyvo generates every scene automatically. Needs a paid plan.</p>
               <Link to="/workspace/face-asmr" className="inline-block rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold text-white hover:opacity-90 transition">
                 Create Face ASMR Video →
               </Link>
@@ -188,10 +188,10 @@ export default function BestFaceAsmrVideoIdeas2026() {
             </p>
 
             <div className="my-8 rounded-2xl border border-purple-200 bg-purple-50 p-6">
-              <p className="text-[16px] font-bold text-[#7A3BFF] mb-2">Generate Your Face ASMR Video Free</p>
+              <p className="text-[16px] font-bold text-[#7A3BFF] mb-2">Generate Your Face ASMR Video</p>
               <p className="text-[14px] text-[#4A4A55] mb-4">Upload any face, pick a premium texture background, and Zyvo generates every scene. Under 5 minutes, no editing required.</p>
               <Link to="/workspace/face-asmr" className="inline-block rounded-xl bg-[#7A3BFF] px-6 py-3 text-[14px] font-bold text-white hover:opacity-90 transition">
-                Try Face ASMR Maker Free →
+                Try Face ASMR Maker →
               </Link>
             </div>
 
@@ -223,7 +223,7 @@ export default function BestFaceAsmrVideoIdeas2026() {
             <Link to="/workspace/face-asmr"
               className="block rounded-2xl p-5 text-white text-center font-bold text-[14px] hover:opacity-90 transition shadow-[0_4px_20px_rgba(122,59,255,0.35)]"
               style={{ background: "linear-gradient(135deg,#7A3BFF,#A855F7)" }}>
-              Create Face ASMR Free →
+              Create Face ASMR →
             </Link>
           </aside>
         </div>

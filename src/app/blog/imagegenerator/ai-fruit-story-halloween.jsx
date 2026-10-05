@@ -16,12 +16,6 @@ const related = [
     date: "21.08.2026",
     slug: "/blog/ai-fruit-story-finale-ideas",
   },
-  {
-    title: "The Most Unhinged AI Fruit Story Plots We've Ever Generated",
-    description: "Ten genuinely deranged fruit-drama premises, ranked by chaos level, free to steal.",
-    date: "17.08.2026",
-    slug: "/blog/ai-fruit-story-unhinged-plots",
-  },
 ];
 
 const IDEAS = [
