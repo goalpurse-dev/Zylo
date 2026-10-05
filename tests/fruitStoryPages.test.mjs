@@ -217,3 +217,11 @@ test("free wording on video tool pages: no template or script tool is called fre
   const image = graphFor("/image-generator").find((node) => node["@type"] === "FAQPage").mainEntity.find((q) => /free/i.test(q.name));
   assert.match(image.acceptedAnswer.text, /5 image generations/);
 });
+
+test("the tool's example video is our compressed copy, with its poster in the repo", async () => {
+  const { EXAMPLE_VIDEO } = await import("../src/components/viral-tools/ai-fruit-story-v2/constants.js");
+  assert.ok(EXAMPLE_VIDEO.url.startsWith(`${FRUIT_VIDEO_BASE}/`) && EXAMPLE_VIDEO.url.endsWith(".mp4"));
+  assert.ok(EXAMPLE_VIDEO.poster.startsWith(`${FRUIT_POSTER_BASE}/`));
+  assert.ok(existsSync(new URL(`../public${EXAMPLE_VIDEO.poster}`, import.meta.url)), "poster file missing");
+  assert.doesNotMatch(EXAMPLE_VIDEO.blurb, /minutes/, "no made-in-N-minutes claim that isn't measured");
+});
