@@ -4,6 +4,21 @@ Date: 2026-10-06. Scope: [roblox-scope.md](roblox-scope.md). Read-only audit of 
 `laptop-transfer` (`56b2265`), and the plan for serving Fruit and Blocky Stories from one engine.
 Nothing was changed and no paid call was made. Line numbers are as of that commit.
 
+Since this plan was written:
+- Decisions are in [roblox-scope.md](roblox-scope.md) under "Decisions" and win where they
+  differ: test 3 no longer tries a blank shape in a picture, Blocky Stories is a separate
+  template with its own route and menu entries, and ideas are limited to 30 batches per user
+  per day.
+- `laptop-transfer` was reset to equal `main` on 2026-10-06. Blocky Stories commits are on the
+  branch `parked/blocky-stories` (built on main), not on `laptop-transfer` as section 1f says.
+- Test 1 (lip sync) ran on 2026-10-06 for $0.8539 (`scripts/blocky/test1LipSync.mjs`; results
+  page https://claude.ai/artifact/ThoHBEVZ7SRWRHcYSXZSqW). All 3 Wan clips animated the decal
+  mouth; "admin", "banned" and "hacked" passed the filter. Best face: a solid dark open-mouth
+  shape with oval eyes on a cube head. Problems found: "classic smile" + yellow head + red cap
+  drew a brick-toy minifigure; "studded bricks" drew that toy's baseplate floor in all three;
+  Wan drew its own subtitles in 1 clip; flat teeth appeared in 2 clips; the two-avatar picture
+  came out full body. 11-word lines fill a 5 s clip to the last frame.
+
 ## 1. Fruit v2 status
 
 - **a) Pushed and merged.** Fruit v2 is on `origin/main` (tip `c027734`, 2026-10-06), which is

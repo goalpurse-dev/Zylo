@@ -188,3 +188,27 @@ Write the result to docs/roblox-phase0-plan.md.
    anything you'd do differently from this scope.
 
 REPORT: a summary of 30 lines or fewer (Fruit status answers first) + the doc paths.
+
+═══════════════════════════════
+DECISIONS
+═══════════════════════════════
+Made on 2026-10-06, after Phase 0 (docs/roblox-phase0-plan.md). Where a decision differs
+from the text above, the decision wins.
+
+1. Lip-sync test first: yes. It runs before any building.
+2. Word budget: use Fruit's rule. Try 11-word lines in the 30 s story test later.
+3. Overlays: fixed screen spots only (name tag top centre, chat top left, countdown top right).
+   NO blank glowing shapes in pictures at all. That test is dropped.
+4. 9:16 only at first.
+5. Own price rows (image:blocky-story, video:blocky-story-v2/v3/v4) with Fruit's values.
+6. Ideas are free, with a rate limit of 30 batches per user per day.
+7. Voices are text descriptions, same as Fruit.
+8. SEPARATE TEMPLATES: Blocky Stories is its own template, not a mode inside AI Fruit Story.
+   Own route, own entry in the toolshell, CreateMenu, mobile nav and home carousel (hidden
+   behind the blocky_v1 flag until launch), own thumbnail, own landing/SEO page.
+   Users must never see Fruit characters, ideas, series or recent creations inside Blocky,
+   or the other way around: listCharacters, getIdeas, listSeries and listRecent always
+   filter by niche. Only the engine underneath is shared.
+
+EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
+avatar". The age column gets a neutral default for niche 'blocky'.
