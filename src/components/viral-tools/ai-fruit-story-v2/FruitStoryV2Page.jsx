@@ -7,8 +7,7 @@ import { ErrorBanner, FOCUS, PrimaryButton, SegmentedControl, StepBar, UpgradeDi
 import { isMockBackend, setFruitStoryV2Adapter } from "./api/fruitStoryV2Api";
 import { createMockAdapter } from "./api/mock/mockAdapter";
 import { createSupabaseAdapter } from "./api/supabaseAdapter";
-import { MODES, SINGLE_STEPS, UPGRADE_COPY, stepForStatus } from "./constants";
-import { FRUIT_NICHE, NicheContext, apiNiche } from "./niches";
+import { EXAMPLE_VIDEO, MODES, SINGLE_STEPS, UPGRADE_COPY, stepForStatus } from "./constants";
 import { PRICING_PLANS } from "../../../lib/pricingOutputs";
 import BuilderPanel, { FootNote, StepHeading } from "./builder/BuilderPanel";
 import { PipelineActions, PipelineSummary } from "./builder/Pipeline";
@@ -31,16 +30,12 @@ import StoryBoard, { WritingBoard } from "./workspace/StoryBoard";
  * AI Fruit Story v2 (lime). Rendered by /workspace/ai-fruit-story when the
  * fruit_v2 flag is on (see src/pages/workspace/AIFruitStory.jsx).
  *
- * niche: the template this page is (./niches.js). Blocky Stories renders the
- * same page from its own route (src/pages/workspace/BlockyStories.jsx) with
- * its own library, ideas, series, recent creations and price rows.
- *
  * Layout: one tree for every width. Below lg, #workspace-scroll is the only
  * scroller, a sticky tab bar switches between Build and the result view, and
  * each view has a footer fixed above the bottom nav. At lg+, the builder
  * (420/460px) and the result view sit side by side and scroll on their own.
  */
-export default function FruitStoryV2Page({ preview = null, niche = FRUIT_NICHE }) {
+export default function FruitStoryV2Page({ preview = null }) {
   // Real users get the real backend (the API's default). Only the dev preview
   // (?fruitV2Preview=1) runs on the mock; ?fail=… makes those steps fail once.
   // Runs during the first render, before any effect talks to the API.
@@ -49,8 +44,8 @@ export default function FruitStoryV2Page({ preview = null, niche = FRUIT_NICHE }
   });
   const navigate = useNavigate();
   const account = useAccount(preview);
-  const characters = useCharacters(apiNiche(niche));
-  const flow = useFruitV2Flow(account, characters.characters, niche);
+  const characters = useCharacters();
+  const flow = useFruitV2Flow(account, characters.characters);
   const { mode, single, series, story } = flow;
   const byId = characters.byId;
   // Keep the last "Who is …?" name so the dialog title doesn't blank while it closes.
@@ -126,7 +121,6 @@ export default function FruitStoryV2Page({ preview = null, niche = FRUIT_NICHE }
             balance={account.balance}
             scriptScenes={flow.scriptScenes}
             firstVideo={flow.firstVideo}
-            showAspect={niche.aspects.length > 1}
           />
         </>
       );
@@ -318,7 +312,7 @@ export default function FruitStoryV2Page({ preview = null, niche = FRUIT_NICHE }
   );
 
   return (
-    <NicheContext.Provider value={niche}>
+    <>
       <div className="flex min-h-full w-full flex-col bg-[#0B0D0F] lg:h-full lg:flex-row lg:gap-3 lg:overflow-hidden lg:p-3">
         {/* Mobile: banner, then the sticky Build / result tab bar. */}
         {banner && <div className="px-3 pt-3 lg:hidden">{banner}</div>}
@@ -411,12 +405,12 @@ export default function FruitStoryV2Page({ preview = null, niche = FRUIT_NICHE }
           onClose={account.paywall.close}
           isGuest={account.paywall.guest}
           dismissable
-          toolName={niche.name}
-          previewSrc={niche.example?.url ?? ""}
-          planLines={paywallLines(flow.quotes.prices, niche.name)}
+          toolName="AI Fruit Story"
+          previewSrc={EXAMPLE_VIDEO.url}
+          planLines={paywallLines(flow.quotes.prices)}
         />
       )}
-    </NicheContext.Provider>
+    </>
   );
 }
 
@@ -446,13 +440,13 @@ function LoadingOrError({ status, onRetry, what }) {
  * stories a month of credits makes, on each tier the plan includes.
  * null (line dropped) until prices load; nothing is guessed.
  */
-function paywallLines(prices, toolName) {
+function paywallLines(prices) {
   const n = (plan, tier) => videosPerMonth(PRICING_PLANS[plan].credits, 20, tier, prices);
   const line = (plan, tiers) => {
     const counts = tiers.map((t) => [t, n(plan, t)]);
     if (counts.some(([, c]) => c == null)) return null;
     const [[, first], ...rest] = counts;
-    return `About ${first} ${toolName} videos of 20 s / month on V2${rest.map(([t, c]) => `, or ${c} on ${t.toUpperCase()}`).join("")}`;
+    return `About ${first} AI Fruit Story videos of 20 s / month on V2${rest.map(([t, c]) => `, or ${c} on ${t.toUpperCase()}`).join("")}`;
   };
   return { starter: line("starter", ["v2"]), pro: line("pro", ["v2", "v3"]), generative: line("generative", ["v2", "v3", "v4"]) };
 }

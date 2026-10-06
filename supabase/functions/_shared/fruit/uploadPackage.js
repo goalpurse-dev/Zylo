@@ -4,7 +4,6 @@
 // made once per story and saved (fruit_stories.upload_package).
 import { callLlm } from "./llm.js";
 import { FRUIT_MODELS } from "./models.js";
-import { hooksOf } from "./niches/index.js";
 
 export const PACKAGE_PURPOSE = "upload_package";
 
@@ -52,15 +51,12 @@ export function cleanPackage(data) {
 }
 
 /** Writes the package; logs the call. Throws when the model can't produce a usable one. */
-export async function writeUploadPackage({ admin, apiKey, input, ids, niche, fetchLlm = callLlm }) {
-  // niche: the template (niches/); its own {system, schema?, clean?}, or nothing = Fruit's above.
-  const w = hooksOf(niche, "upload");
-  const system = w?.system ?? PACKAGE_SYSTEM;
+export async function writeUploadPackage({ admin, apiKey, input, ids, fetchLlm = callLlm }) {
   const model = FRUIT_MODELS.small;
   const t0 = Date.now();
   try {
-    const r = await fetchLlm({ provider: model.provider, model: model.model, apiKey, system, user: packagePrompt(input), schema: (w?.schema ?? packageSchema)(), name: "upload_package", maxOutputTokens: 3000, timeoutMs: 45_000 });
-    const { pkg, problems } = (w?.clean ?? cleanPackage)(r.data);
+    const r = await fetchLlm({ provider: model.provider, model: model.model, apiKey, system: PACKAGE_SYSTEM, user: packagePrompt(input), schema: packageSchema(), name: "upload_package", maxOutputTokens: 3000, timeoutMs: 45_000 });
+    const { pkg, problems } = cleanPackage(r.data);
     await admin.from("fruit_ai_calls").insert({
       ...ids, provider: model.provider, model: model.model, purpose: PACKAGE_PURPOSE, request: r.request, response: r.response,
       http_status: r.httpStatus, ok: problems.length === 0, error: problems.join("; ") || null, cost_usd: r.costUsd,

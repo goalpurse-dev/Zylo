@@ -2,19 +2,19 @@
 // 3 first-frame pictures (Nano Banana 2 Lite, 9:16), each with a different
 // face type, then one 5 s clip per picture on V2 = Wan2.6 Flash, then
 // speech-to-text on each clip.
-// Nobody is charged credits: pictures go through runware-bakeoff-proxy, clips
+// Nobody is charged credits: pictures and clips are test runs on blocky-worker
 // through the worker's raw_test / raw_poll (every clip call is logged with its
 // real cost). ONE attempt per item: anything already in results.json, sent,
 // succeeded or failed, is never sent again; a clip still at the provider is
 // only polled.
 //   node scripts/blocky/test1LipSync.mjs                      prints the prompts and the plan, sends nothing
-//   FRUIT_ALLOW_PAID=1 node scripts/blocky/test1LipSync.mjs   runs it (about $0.86; stage cap $1.00)
+//   BLOCKY_ALLOW_PAID=1 node scripts/blocky/test1LipSync.mjs   runs it (about $0.86; stage cap $1.00)
 import fs from "fs";
 import path from "path";
-import { openBlockyBudget, paidCallsAllowed } from "../fruit-story/paidGuard.mjs";
-import { ROOT, SUPABASE_URL, writeJson } from "../fruit-story/lib.mjs";
-import { NO_CUT } from "../../supabase/functions/_shared/fruit/clips.js";
-import { toneOf } from "../../supabase/functions/_shared/fruit/wording.js";
+import { openBlockyBudget, paidCallsAllowed } from "./paidGuard.mjs";
+import { ROOT, rawTest, worker, writeJson } from "./lib.mjs";
+import { NO_CUT } from "../../supabase/functions/_shared/blocky/clips.js";
+import { toneOf } from "../../supabase/functions/_shared/blocky/wording.js";
 
 const OUT = "data/blocky-tests/test1";
 const RESULTS = path.join(ROOT, OUT, "results.json");
@@ -78,7 +78,7 @@ export function buildPicturePrompt(it) {
 }
 
 /**
- * Fruit's clip builder (clips.js), sentence for sentence, with "the <fruit>
+ * The clip builder (clips.js), sentence for sentence, with "the <fruit>
  * woman/man" replaced by "the blocky toy avatar" and one added rule: the face
  * stays a flat decal. Same no-cut rule, same speaker-faces-camera wording.
  */
@@ -96,7 +96,7 @@ export function buildClipPrompt(it) {
   return parts.join(" ");
 }
 
-const pictureTask = (prompt) => ({ taskType: "imageInference", model: PICTURE.model, positivePrompt: prompt, width: PICTURE.width, height: PICTURE.height, numberResults: 1, outputType: "URL", outputFormat: "JPG", outputQuality: 90, deliveryMethod: "sync" });
+const pictureTask = (prompt) => ({ taskType: "imageInference", model: PICTURE.model, positivePrompt: prompt, width: PICTURE.width, height: PICTURE.height, numberResults: 1, outputType: "URL", outputFormat: "JPG", outputQuality: 90 });
 // The request shape production sends for Wan (clips.js#clipTask).
 const clipTask = (prompt, imageUrl) => ({ taskType: "videoInference", model: CLIP.model, positivePrompt: prompt, width: CLIP.width, height: CLIP.height, duration: CLIP.durationSec, numberResults: 1, outputType: "URL", outputFormat: "MP4", providerSettings: { alibaba: { audio: true } }, inputs: { frameImages: [imageUrl] } });
 
@@ -113,16 +113,12 @@ if (!paidCallsAllowed()) {
     console.log(`\n=== ${it.key}: ${it.face} ===\nLINE (${words(it.line)} words): ${it.line}\n\nPICTURE (${it.picturePrompt.length} chars):\n${it.picturePrompt}\n\nCLIP (${it.clipPrompt.length} chars):\n${it.clipPrompt}`);
   }
   const est = ITEMS.length * (0.035 + CLIP.durationSec * 0.0504) + 0.002;
-  console.log(`\nNothing was sent. Plan: ${ITEMS.length} pictures + ${ITEMS.length} × ${CLIP.durationSec} s clips + transcripts, about $${est.toFixed(2)}. Run with FRUIT_ALLOW_PAID=1 to send.`);
+  console.log(`\nNothing was sent. Plan: ${ITEMS.length} pictures + ${ITEMS.length} × ${CLIP.durationSec} s clips + transcripts, about $${est.toFixed(2)}. Run with BLOCKY_ALLOW_PAID=1 to send.`);
   process.exit(0);
 }
 
 const budget = openBlockyBudget("lipsync");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const post = async (fn, body) => (await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
-  method: "POST", headers: { Authorization: `Bearer ${SERVICE}`, "Content-Type": "application/json" }, body: JSON.stringify(body),
-})).json().catch(() => ({ ok: false, error: "bad response" }));
 const download = async (url, rel) => {
   const file = path.join(ROOT, OUT, rel);
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -142,13 +138,12 @@ for (const it of ITEMS) {
     budget.reserve(PICTURE.expectUsd, `picture ${it.key}`);
     row.picture = { state: "sent", prompt: it.picturePrompt, model: PICTURE.model, at: new Date().toISOString() };
     save();
-    const r = await post("runware-bakeoff-proxy", { task: pictureTask(it.picturePrompt) });
-    const res = r.result ?? {};
-    if (!r.ok || !res.imageURL) {
-      Object.assign(row.picture, { state: "failed", error: JSON.stringify(r.error ?? r).slice(0, 500), cost: Number(res.cost ?? 0) });
+    const r = await rawTest(pictureTask(it.picturePrompt), `blocky-lipsync-picture-${it.key}`);
+    if (r.state !== "success") {
+      Object.assign(row.picture, { state: "failed", error: String(r.error).slice(0, 500), cost: r.cost });
     } else {
-      Object.assign(row.picture, { state: "success", url: res.imageURL, cost: Number(res.cost ?? 0), seed: res.seed ?? null, latencyMs: r.latencyMs ?? null });
-      row.picture.file = await download(res.imageURL, `pic-${it.key}.jpg`);
+      Object.assign(row.picture, { state: "success", url: r.url, cost: r.cost, latencyMs: r.seconds * 1000 });
+      row.picture.file = await download(r.url, `pic-${it.key}.jpg`);
     }
     budget.record(row.picture.cost, `lipsync picture ${it.key}${row.picture.state === "failed" ? " (failed)" : ""}`, PICTURE.expectUsd);
     save();
@@ -161,7 +156,7 @@ for (const it of ITEMS) {
     budget.reserve(CLIP.expectUsd, `clip ${it.key}`);
     row.clip = { state: "sent", prompt: it.clipPrompt, model: CLIP.model, durationSec: CLIP.durationSec, at: new Date().toISOString() };
     save();
-    const sub = await post("fruit-worker", { action: "raw_test", task: clipTask(it.clipPrompt, row.picture.url), label: `blocky-lipsync-${it.key}` });
+    const sub = await worker({ action: "raw_test", task: clipTask(it.clipPrompt, row.picture.url), label: `blocky-lipsync-${it.key}` });
     if (!sub.ok || !sub.taskUUID) {
       Object.assign(row.clip, { state: "refused", error: String(sub.error ?? sub.message ?? sub.code ?? "refused").slice(0, 500), cost: 0, callId: sub.callId ?? null });
       budget.record(0, `lipsync clip ${it.key} refused`, CLIP.expectUsd);
@@ -177,7 +172,7 @@ for (const it of ITEMS) {
     let r = { state: "pending" };
     while (r.state === "pending" && Date.now() - t0 < 15 * 60_000) {
       await sleep(10_000);
-      r = await post("fruit-worker", { action: "raw_poll", taskUUID: row.clip.taskUUID, callId: row.clip.callId });
+      r = await worker({ action: "raw_poll", taskUUID: row.clip.taskUUID, callId: row.clip.callId });
       r.state ??= "pending";
     }
     if (r.state === "pending") { log(`clip ${it.key}: still at the provider after 15 min; run again to keep polling (nothing is re-sent)`); continue; }

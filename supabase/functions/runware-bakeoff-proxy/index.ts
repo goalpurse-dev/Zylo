@@ -12,7 +12,7 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RUNWARE_API_KEY = Deno.env.get("RUNWARE_API_KEY") ?? "";
 const RUNWARE_URL = `${(Deno.env.get("RUNWARE_BASE_URL") || "https://api.runware.ai").replace(/\/+$/, "")}/v1`;
 
-const ALLOWED_MODELS = new Set(["runware:400@6", "runware:400@3", "alibaba:qwen-image@2512", "google:nano-banana@2-lite", "google:4@3", "google:4@2", "recraft:v4@0", "runware:504@1"]);
+const ALLOWED_MODELS = new Set(["runware:400@6", "runware:400@3", "alibaba:qwen-image@2512", "google:nano-banana@2-lite", "google:4@3", "recraft:v4@0", "runware:504@1"]);
 const ALLOWED_TASKS = new Set(["imageInference", "upscale", "modelSearch"]);
 // Phase 5c: any Runware upscaler (runware:50x@y) may be tested; modelSearch is free and has no model.
 const UPSCALER = /^runware:(50\d|113)@\d+$/;

@@ -6,8 +6,8 @@
 //   node scripts/blocky/pageTest1.mjs <outDir>     writes <outDir>/index.html and copies the clips to <outDir>/clips/
 import fs from "fs";
 import path from "path";
-import { renderResultsPage, dataUri } from "../fruit-story/resultsPage.mjs";
-import { ROOT } from "../fruit-story/lib.mjs";
+import { renderResultsPage, dataUri } from "./resultsPage.mjs";
+import { ROOT } from "./lib.mjs";
 
 const [outDir] = process.argv.slice(2);
 const dir = path.join(ROOT, "data/blocky-tests/test1");
@@ -159,7 +159,7 @@ const html = await renderResultsPage({
   decisions: [
     "<b>Decided after test 1:</b> go on V2; face B is the library face; flat cartoon teeth are fine; the style block loses \"studded bricks\" and gains a no-studs, no-minifigure list; text on screen fails the clip check; two-avatar shots get Fruit's picture check and one free redraw (decisions 9 to 15 in docs/roblox-scope.md).",
     "<b>V3 vs V2 on blocky faces: about the same.</b> Seedance costs 1.6 times as much per second and did not animate the decal mouth more cleanly. Nothing here argues for steering Blocky users to V3 for lip sync.",
-    "<b>V4 (Veo 3.1 Fast, 6 s, about $0.90) has not run.</b> It needs fruit-worker deployed with Veo on the test allow-list; I was not permitted to deploy. Once it is deployed I run the one clip and add it here.",
+    "<b>V4 (Veo 3.1 Fast, 6 s, about $0.90) has not run.</b> It runs on blocky-worker (Blocky's own worker, with Veo on its test list), once that runs locally. Once it is deployed I run the one clip and add it here.",
   ],
 });
 fs.writeFileSync(path.join(outDir, "index.html"), html);

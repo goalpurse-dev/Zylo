@@ -2,11 +2,11 @@ import React, { Suspense, lazy } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useFeatureFlag } from "../../lib/featureFlags";
-import { BLOCKY_NICHE } from "../../components/viral-tools/ai-fruit-story-v2/niches";
+import { BLOCKY_STORIES_FLAG } from "../../data/blockyStories";
 
-// The same story builder as AI Fruit Story, as its own template: its own
-// library, ideas, series, recent creations and price rows (niches.js).
-const StoryBuilderPage = lazy(() => import("../../components/viral-tools/ai-fruit-story-v2/FruitStoryV2Page"));
+// Blocky Stories is its own product: its own page, backend (blocky-story-api),
+// tables and library (src/components/viral-tools/blocky-stories/).
+const BlockyStoriesPage = lazy(() => import("../../components/viral-tools/blocky-stories/BlockyStoriesPage"));
 
 /**
  * /workspace/blocky-stories — Blocky Stories. Hidden until launch: it opens
@@ -16,12 +16,12 @@ const StoryBuilderPage = lazy(() => import("../../components/viral-tools/ai-frui
  */
 export default function BlockyStories() {
   const { user, loading: authLoading } = useAuth();
-  const flag = useFeatureFlag(BLOCKY_NICHE.flag, user?.id);
+  const flag = useFeatureFlag(BLOCKY_STORIES_FLAG, user?.id);
 
   if (flag.enabled) {
     return (
       <Suspense fallback={<div className="min-h-full w-full bg-[#0B0D0F]" />}>
-        <StoryBuilderPage niche={BLOCKY_NICHE} />
+        <BlockyStoriesPage />
       </Suspense>
     );
   }

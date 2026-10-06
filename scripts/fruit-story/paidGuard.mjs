@@ -30,23 +30,23 @@ export function paidCallsAllowed() {
   return process.env.FRUIT_ALLOW_PAID === "1";
 }
 
-function load(file) {
+function load() {
   try {
-    return JSON.parse(fs.readFileSync(file, "utf8"));
+    return JSON.parse(fs.readFileSync(LEDGER, "utf8"));
   } catch {
     return { entries: [] };
   }
 }
 
-function budgetOn({ file, caps, total, totalName, outside }, stage) {
-  if (!(stage in caps)) throw new Error(`unknown stage ${stage}`);
-  const ledger = load(file);
-  const spent = (s) => ledger.entries.filter((e) => (s ? e.stage === s : !outside.has(e.stage))).reduce((sum, e) => sum + e.usd, 0);
-  const inTotal = !outside.has(stage);
+export function openBudget(stage) {
+  if (!(stage in STAGE_CAPS_USD)) throw new Error(`unknown stage ${stage}`);
+  const ledger = load();
+  const spent = (s) => ledger.entries.filter((e) => (s ? e.stage === s : !OUTSIDE_TOTAL.has(e.stage))).reduce((sum, e) => sum + e.usd, 0);
+  const inTotal = !OUTSIDE_TOTAL.has(stage);
   let reserved = 0;
   const save = () => {
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, JSON.stringify(ledger, null, 1));
+    fs.mkdirSync(path.dirname(LEDGER), { recursive: true });
+    fs.writeFileSync(LEDGER, JSON.stringify(ledger, null, 1));
   };
   return {
     stage,
@@ -57,8 +57,8 @@ function budgetOn({ file, caps, total, totalName, outside }, stage) {
       if (!paidCallsAllowed()) throw new PaidCallBlocked(`Paid calls are blocked (set FRUIT_ALLOW_PAID=1 for this run): ${label}`);
       const stageAfter = spent(stage) + reserved + expectedUsd;
       const totalAfter = spent(null) + reserved + expectedUsd;
-      if (stageAfter > caps[stage] + 1e-9) throw new PaidCallBlocked(`Stage ${stage} cap $${caps[stage]} would be passed ($${stageAfter.toFixed(4)}): ${label}`);
-      if (inTotal && totalAfter > total + 1e-9) throw new PaidCallBlocked(`${totalName} total $${total} would be passed ($${totalAfter.toFixed(4)}): ${label}`);
+      if (stageAfter > STAGE_CAPS_USD[stage] + 1e-9) throw new PaidCallBlocked(`Stage ${stage} cap $${STAGE_CAPS_USD[stage]} would be passed ($${stageAfter.toFixed(4)}): ${label}`);
+      if (inTotal && totalAfter > PHASE3_TOTAL_USD + 1e-9) throw new PaidCallBlocked(`Phase 3 total $${PHASE3_TOTAL_USD} would be passed ($${totalAfter.toFixed(4)}): ${label}`);
       reserved += expectedUsd;
       return () => { reserved -= expectedUsd; };
     },
@@ -69,25 +69,7 @@ function budgetOn({ file, caps, total, totalName, outside }, stage) {
       save();
     },
     summary() {
-      return `stage ${stage}: $${spent(stage).toFixed(4)} of $${caps[stage]}${inTotal ? "" : ` (outside the ${totalName} total)`} · ${totalName} total: $${spent(null).toFixed(4)} of $${total}`;
+      return `stage ${stage}: $${spent(stage).toFixed(4)} of $${STAGE_CAPS_USD[stage]}${inTotal ? "" : " (outside the Phase 3 total)"} · Phase 3 total: $${spent(null).toFixed(4)} of $${PHASE3_TOTAL_USD}`;
     },
   };
-}
-
-export function openBudget(stage) {
-  return budgetOn({ file: LEDGER, caps: STAGE_CAPS_USD, total: PHASE3_TOTAL_USD, totalName: "Phase 3", outside: OUTSIDE_TOTAL }, stage);
-}
-
-// Blocky Stories tests have their own ledger and their own total: nothing here
-// reads or writes Fruit's ledger above. Same kill switch (FRUIT_ALLOW_PAID=1).
-const BLOCKY_LEDGER = path.join(ROOT, "data/blocky-tests/spend.json");
-export const BLOCKY_TOTAL_USD = 5.0;
-// lipsync: test 1, 3 pictures + 3 × 5 s Wan2.6 Flash clips (approved 2026-10-06).
-// tiers: test 1b, picture C again on V3 (Seedance 2.0 Mini, 5 s) and V4 (Veo 3.1 Fast, 6 s) (approved 2026-10-06).
-// thumb: 2 menu thumbnail options. looks: tests 2 and 3 (avatars on Lite vs Pro, one location plate + 4 scene pictures) (approved 2026-10-06).
-// looks was $0.80; lifted to $1.00 for the 4-picture re-test and the 3 Pro pictures on the corrected prompt (approved 2026-10-06).
-export const BLOCKY_STAGE_CAPS_USD = Object.freeze({ lipsync: 1.0, tiers: 1.4, thumb: 0.15, looks: 1.0 });
-
-export function openBlockyBudget(stage) {
-  return budgetOn({ file: BLOCKY_LEDGER, caps: BLOCKY_STAGE_CAPS_USD, total: BLOCKY_TOTAL_USD, totalName: "Blocky", outside: new Set() }, stage);
 }

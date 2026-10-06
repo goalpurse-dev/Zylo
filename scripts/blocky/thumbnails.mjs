@@ -1,16 +1,16 @@
 // Blocky Stories menu thumbnail: two options on Nano Banana 2 Lite (9:16),
-// through the no-charge picture proxy. One attempt each, never re-sent.
+// as test pictures on blocky-worker (no user charge). One attempt each, never re-sent.
 // The chosen one is cropped to the size of the other template thumbnails
 // (880×1168 PNG, like AI Cooking Matic's) by --pick.
 //   node scripts/blocky/thumbnails.mjs                         prints the prompts, sends nothing
-//   FRUIT_ALLOW_PAID=1 node scripts/blocky/thumbnails.mjs      makes the two options (about $0.07; stage cap $0.15)
+//   BLOCKY_ALLOW_PAID=1 node scripts/blocky/thumbnails.mjs      makes the two options (about $0.07; stage cap $0.15)
 //   node scripts/blocky/thumbnails.mjs --pick 1 <ffmpegPath>   writes public/templates/BLOCKY/thumbnail.png from option 1
 import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
-import { openBlockyBudget, paidCallsAllowed } from "../fruit-story/paidGuard.mjs";
-import { ROOT, SUPABASE_URL, writeJson } from "../fruit-story/lib.mjs";
-import { BLOCKY } from "../../supabase/functions/_shared/fruit/niches/blocky.js";
+import { openBlockyBudget, paidCallsAllowed } from "./paidGuard.mjs";
+import { ROOT, rawTest, writeJson } from "./lib.mjs";
+import { PICTURE } from "../../supabase/functions/_shared/blocky/look.js";
 
 const OUT = "data/blocky-tests/thumb";
 const RESULTS = path.join(ROOT, OUT, "results.json");
@@ -29,7 +29,7 @@ const OPTIONS = [
   },
 ];
 for (const o of OPTIONS) {
-  o.prompt = [FRAME, o.scene, `Each avatar's face is ${FACE_B}.`, `Setting: ${o.setting}.`, "Only these 2 characters in the frame.", BLOCKY.picture.style, BLOCKY.picture.negative].join(" ");
+  o.prompt = [FRAME, o.scene, `Each avatar's face is ${FACE_B}.`, `Setting: ${o.setting}.`, "Only these 2 characters in the frame.", PICTURE.style, PICTURE.negative].join(" ");
 }
 
 const args = process.argv.slice(2);
@@ -46,7 +46,7 @@ if (args[0] === "--pick") {
 
 if (!paidCallsAllowed()) {
   for (const o of OPTIONS) console.log(`\n=== option ${o.key}: ${o.name} (${o.prompt.length} chars) ===\n${o.prompt}`);
-  console.log("\nNothing was sent. 2 pictures, about $0.07. Run with FRUIT_ALLOW_PAID=1 to send.");
+  console.log("\nNothing was sent. 2 pictures, about $0.07. Run with BLOCKY_ALLOW_PAID=1 to send.");
   process.exit(0);
 }
 
@@ -58,15 +58,11 @@ for (const o of OPTIONS) {
   budget.reserve(0.04, `thumbnail ${o.key}`);
   const row = (out.items[o.key] = { key: o.key, name: o.name, prompt: o.prompt, state: "sent", at: new Date().toISOString() });
   save();
-  const r = await (await fetch(`${SUPABASE_URL}/functions/v1/runware-bakeoff-proxy`, {
-    method: "POST", headers: { Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ task: { taskType: "imageInference", model: "google:nano-banana@2-lite", positivePrompt: o.prompt, width: 768, height: 1376, numberResults: 1, outputType: "URL", outputFormat: "JPG", outputQuality: 95, deliveryMethod: "sync" } }),
-  })).json().catch(() => ({ ok: false, error: "bad response" }));
-  const res = r.result ?? {};
-  if (!r.ok || !res.imageURL) Object.assign(row, { state: "failed", error: JSON.stringify(r.error ?? r).slice(0, 400), cost: Number(res.cost ?? 0) });
+  const r = await rawTest({ taskType: "imageInference", model: "google:nano-banana@2-lite", positivePrompt: o.prompt, width: 768, height: 1376, numberResults: 1, outputType: "URL", outputFormat: "JPG", outputQuality: 95 }, `blocky-thumb-${o.key}`);
+  if (r.state !== "success") Object.assign(row, { state: "failed", error: String(r.error).slice(0, 400), cost: r.cost });
   else {
-    Object.assign(row, { state: "success", url: res.imageURL, cost: Number(res.cost ?? 0), file: `option-${o.key}.jpg` });
-    fs.writeFileSync(path.join(ROOT, OUT, row.file), Buffer.from(await (await fetch(res.imageURL)).arrayBuffer()));
+    Object.assign(row, { state: "success", url: r.url, cost: r.cost, file: `option-${o.key}.jpg` });
+    fs.writeFileSync(path.join(ROOT, OUT, row.file), Buffer.from(await (await fetch(r.url)).arrayBuffer()));
   }
   budget.record(row.cost, `thumbnail ${o.key}${row.state === "failed" ? " (failed)" : ""}`, 0.04);
   save();

@@ -1,38 +1,35 @@
-// Blocky Stories' own rules (niches/blockyRules.js, blockySafety.js) and the
-// 24-avatar roster (scripts/blocky/roster.mjs). Offline: prompts are built and
-// answers are checked, nothing is sent.
+// Blocky Stories' own rules (supabase/functions/_shared/blocky/: rules.js,
+// safety.js, look.js) and the 24-avatar roster (scripts/blocky/roster.mjs).
+// Offline: prompts are built and answers are checked, nothing is sent.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { NICHES, hooksOf } from "../supabase/functions/_shared/fruit/niches/index.js";
-import { UPLOAD_LIMITS } from "../supabase/functions/_shared/fruit/niches/blockyRules.js";
-import { bannedNamesIn, bannedNamesMessage } from "../supabase/functions/_shared/fruit/niches/blockySafety.js";
-import { BANNED, SYSTEM, buildPlannerPrompt, validatePlan } from "../supabase/functions/_shared/fruit/planner.js";
-import { SPEAKING_SHOTS } from "../supabase/functions/_shared/fruit/shots.js";
-import { SERIES_SYSTEM, buildSeriesPrompt } from "../supabase/functions/_shared/fruit/series.js";
-import { REVIEW_RULES, REVIEW_SYSTEM, buildReviewPrompt, reviewSchema } from "../supabase/functions/_shared/fruit/scriptReview.js";
-import { checkPicture, CLIP_FRAME_PURPOSE } from "../supabase/functions/_shared/fruit/pictureCheck.js";
-import { writeUploadPackage } from "../supabase/functions/_shared/fruit/uploadPackage.js";
-import { validateCreateStory, validateSeriesPlan } from "../supabase/functions/_shared/fruit/validation.js";
-import { LIBRARY } from "../src/components/viral-tools/ai-fruit-story-v2/api/mock/libraryData.js";
+import { UPLOAD_LIMITS } from "../supabase/functions/_shared/blocky/rules.js";
+import { bannedNamesIn, bannedNamesMessage } from "../supabase/functions/_shared/blocky/safety.js";
+import { BANNED, SYSTEM, buildPlannerPrompt, validatePlan } from "../supabase/functions/_shared/blocky/planner.js";
+import { SPEAKING_SHOTS } from "../supabase/functions/_shared/blocky/shots.js";
+import { SERIES_SYSTEM, buildSeriesPrompt } from "../supabase/functions/_shared/blocky/series.js";
+import { REVIEW_RULES, REVIEW_SYSTEM, buildReviewPrompt, reviewSchema } from "../supabase/functions/_shared/blocky/scriptReview.js";
+import { CHECK_SYSTEM, CLIP_FRAME_PURPOSE, checkPicture, checkPrompt, checkSchema, verdictOf } from "../supabase/functions/_shared/blocky/pictureCheck.js";
+import { PACKAGE_SYSTEM, cleanPackage, packageSchema, writeUploadPackage } from "../supabase/functions/_shared/blocky/uploadPackage.js";
+import { validateCreateStory, validateSeriesPlan } from "../supabase/functions/_shared/blocky/validation.js";
+import { buildScenePrompt, PICTURE_PROMPT_MAX, scenePromptLengths } from "../supabase/functions/_shared/blocky/pictures.js";
+import { buildClipPrompt, CLIP_PROMPT_MAX } from "../supabase/functions/_shared/blocky/clips.js";
 import { ROSTER, BODY_TEMPLATE_LINE, REF_DEFAULTS, avatarPrompt } from "../scripts/blocky/roster.mjs";
-import { BLOCKY_BODY } from "../supabase/functions/_shared/fruit/niches/blocky.js";
+import { BLOCKY_BODY } from "../supabase/functions/_shared/blocky/look.js";
+import * as I from "./helpers/blockyPromptInputs.mjs";
 
-const B = NICHES.blocky;
-// Library rows as the database will hold them: no age, no gender.
-const rows = ROSTER.map((a) => ({ id: a.id, name: a.name, niche: "blocky", fruit: "avatar", gender: null, age: null, tag: a.tag, role: a.role, build: a.face, outfit: a.look, voice_style: a.voice, ref_image_url: `https://example.test/${a.id}.jpg` }));
+// Library rows as blocky_characters holds them: no age, no gender.
+const rows = ROSTER.map((a) => ({ id: a.id, name: a.name, tag: a.tag, role: a.role, face: a.face, look: a.look, voice_style: a.voice, ref_image_url: `https://example.test/${a.id}.jpg` }));
 const LIB = new Map(rows.map((c) => [c.id, c]));
 const cast = (...ids) => ids.map((id) => LIB.get(id));
 // Nothing a model reads about a character may give an age or a gender.
 const PERSON_WORDS = /\b(\d+-year-old|years? old|aged \d+|woman|women|man|men|boys?|girls?|kids?|child|children|teen(ager)?s?|his|her|he|she)\b/i;
 
-test("the roster: 24 one-word avatars, all different, none with an age or a gender, none named like a Fruit character", () => {
+test("the roster: 24 one-word avatars, all different, none with an age or a gender", () => {
   assert.equal(ROSTER.length, 24);
-  const fruitIds = new Set(LIBRARY.map((c) => c.id));
-  const fruitFirst = new Set(LIBRARY.map((c) => c.name.split(" ")[0].toLowerCase()));
   for (const a of ROSTER) {
     assert.match(a.name, /^[A-Z][a-z]+$/, `${a.name} is one word`);
     assert.equal(a.id, a.name.toLowerCase());
-    assert.ok(!fruitIds.has(a.id) && !fruitFirst.has(a.id), `${a.id} is free: character ids are shared by every template`);
     assert.doesNotMatch(`${a.look} ${a.face} ${a.voice} ${a.role} ${a.tag} ${a.tags.join(" ")}`, PERSON_WORDS, a.id);
     assert.equal(bannedNamesIn(`${a.name} ${a.look} ${a.role} ${a.tag}`).length, 0, `${a.id} names nothing real`);
     assert.match(a.face, /^two .*solid black .*eyes.* and one .*solid dark .*open mouth/, `${a.id}: face B (oval eyes, one solid dark open mouth)`);
@@ -85,9 +82,9 @@ test("an avatar's reference prompt: full body on white, the locked look, the bod
   assert.doesNotMatch(plain, /claw hands|brick-toy|minifigure|neck studs/);
 });
 
-test("the writer: Blocky's own rules on the engine's mechanics, never Fruit's drama rules", () => {
-  const p = buildPlannerPrompt({ source: "prompt", cast: cast("noob", "vex", "taz"), lengthSec: 30, quality: "v2", prompt: "A fake admin bans the wrong player.", niche: "blocky" });
-  assert.notEqual(p.system, SYSTEM);
+test("the writer: Blocky's own rules (scope C2)", () => {
+  const p = buildPlannerPrompt({ source: "prompt", cast: cast("noob", "vex", "taz"), lengthSec: 30, quality: "v2", prompt: "A fake admin bans the wrong player." });
+  assert.equal(p.system, SYSTEM);
   assert.doesNotMatch(p.system, /fruit|TikTok, Reels and Shorts\. The viewer must be hooked in the first second/i);
   // Scope C2, rule by rule.
   for (const must of [
@@ -115,13 +112,13 @@ test("the writer: Blocky's own rules on the engine's mechanics, never Fruit's dr
   // The cast, as the writer sees it: a blocky game avatar, its tags, its look, how it sounds.
   assert.match(p.user, /- noob: Noob, a blocky game avatar\. New player: Lost, honest and luckier than they look\. Look \(locked\): a bright yellow cube head .* Voice \(how they sound\): bright, small, slightly wobbly./);
   assert.doesNotMatch(p.user.split("THE USER'S STORY")[0], PERSON_WORDS);
-  // Fruit's word budget (decision 2): 6 scenes of at most 9 words for 30 s.
+  // The word budget (decision 2): 6 scenes of at most 9 words for 30 s.
   assert.match(p.user, /Write exactly 6 scenes for a video of 30 seconds\..* every line AT MOST 9 words/);
 });
 
-test("the series planner and the script editor have Blocky's wording and the engine's answer format", () => {
-  const s = buildSeriesPrompt({ concept: "A fake admin takes over an obby server.", cast: cast("vex", "noob", "zip"), opener: "Banned in front of everyone", tone: "tense and funny", episodeCount: 5, niche: "blocky" });
-  assert.notEqual(s.system, SERIES_SYSTEM);
+test("the series planner and the script editor: Blocky's wording, eight editor rules, one answer each", () => {
+  const s = buildSeriesPrompt({ concept: "A fake admin takes over an obby server.", cast: cast("vex", "noob", "zip"), opener: "Banned in front of everyone", tone: "tense and funny", episodeCount: 5 });
+  assert.equal(s.system, SERIES_SYSTEM);
   assert.match(s.system, /blocky game avatars act out a story inside a blocky online game world/);
   assert.match(s.system, /episodes: exactly the requested number/);
   assert.match(s.system, /Never name the real platform, a real game, a real brand, a real creator or a real username/);
@@ -130,10 +127,10 @@ test("the series planner and the script editor have Blocky's wording and the eng
   assert.doesNotMatch(s.user, PERSON_WORDS);
 
   const plan = { title: "The Admin Who Wasn't", roles: { vex: "the fake admin" }, outfits: {}, locations: [{ id: "loc1", description: "An admin room with a long console desk" }], scenes: [{ speakerId: "vex", presentIds: ["vex", "noob"], locationId: "loc1", line: "Break this server rule and you're banned." }] };
-  const r = buildReviewPrompt({ plan, cast: cast("vex", "noob"), source: "idea", niche: "blocky" });
-  assert.notEqual(r.system, REVIEW_SYSTEM);
+  const r = buildReviewPrompt({ plan, cast: cast("vex", "noob"), source: "idea" });
+  assert.equal(r.system, REVIEW_SYSTEM);
   for (const id of Object.keys(REVIEW_RULES)) assert.match(r.system, new RegExp(`^${id}: `, "m"), `the editor checks ${id}`);
-  assert.deepEqual(Object.keys(reviewSchema().properties), Object.keys(REVIEW_RULES), "the same answer format as Fruit's editor");
+  assert.deepEqual(Object.keys(reviewSchema().properties), Object.keys(REVIEW_RULES), "one answer per rule");
   assert.match(r.system, /a greeting or a setup \("hi guys", "so today"\) fails/);
   assert.match(r.system, /names a real game, brand, creator or username/);
   assert.doesNotMatch(r.system, /fruit|Roblox/i);
@@ -152,15 +149,12 @@ test("banned names: real platform, games, brands and creators; everyday words ar
   assert.equal(bannedNamesMessage("An admin prank on an obby server"), null);
 });
 
-test("the user's own words are refused with a plain message in Blocky, and never checked in Fruit", () => {
+test("the user's own words are refused with a plain message when they name something real", () => {
   const base = { quality: "v2", aspect: "9:16", lengthSec: 30, castIds: ["noob", "vex"] };
-  assert.throws(() => validateCreateStory({ ...base, source: "prompt", prompt: "Noob gets banned in Brookhaven for no reason." }, LIB, undefined, "blocky"), /Leave out "Brookhaven" \(a real game\)/);
-  assert.throws(() => validateCreateStory({ ...base, source: "script", script: [{ speakerId: "noob", line: "Give me my Robux back." }, { speakerId: "vex", line: "No." }] }, LIB, undefined, "blocky"), /Leave out "Robux"/);
-  assert.throws(() => validateSeriesPlan({ concept: "A Minecraft server war.", castIds: ["noob", "vex"], episodeCount: 5 }, LIB, "blocky"), /Leave out "Minecraft"/);
-  assert.equal(validateCreateStory({ ...base, source: "prompt", prompt: "Noob gets banned on an obby server for no reason." }, LIB, undefined, "blocky").source, "prompt");
-  // Fruit has no such rule (and its own tests pin that nothing changed).
-  const fruit = new Map(LIBRARY.filter((c) => ["mia", "rick"].includes(c.id)).map((c) => [c.id, c]));
-  assert.equal(validateCreateStory({ quality: "v2", aspect: "9:16", lengthSec: 30, castIds: ["mia", "rick"], source: "prompt", prompt: "Mia finds Rick playing Roblox at work." }, fruit).source, "prompt");
+  assert.throws(() => validateCreateStory({ ...base, source: "prompt", prompt: "Noob gets banned in Brookhaven for no reason." }, LIB), /Leave out "Brookhaven" \(a real game\)/);
+  assert.throws(() => validateCreateStory({ ...base, source: "script", script: [{ speakerId: "noob", line: "Give me my Robux back." }, { speakerId: "vex", line: "No." }] }, LIB), /Leave out "Robux"/);
+  assert.throws(() => validateSeriesPlan({ concept: "A Minecraft server war.", castIds: ["noob", "vex"], episodeCount: 5 }, LIB), /Leave out "Minecraft"/);
+  assert.equal(validateCreateStory({ ...base, source: "prompt", prompt: "Noob gets banned on an obby server for no reason." }, LIB).source, "prompt");
 });
 
 test("the writer's own output is sent back when it names something real (title, location or line)", () => {
@@ -171,11 +165,12 @@ test("the writer's own output is sent back when it names something real (title, 
     scenes: [scene("vex", "Break this server rule and you're banned for good."), scene("noob", "I only wanted my Robux back, nothing else."), scene("vex", "Then you should have read the rules first.")],
   };
   const ctx = { source: "prompt", cast: cast("noob", "vex"), sceneCount: 3, quality: "v2", lengthSec: 15 };
-  const blocky = validatePlan(out, { ...ctx, niche: "blocky" }).errors;
+  const blocky = validatePlan(out, ctx).errors;
   assert.ok(blocky.some((e) => /^title: don't name "Brookhaven" \(a real game\)/.test(e)));
   assert.ok(blocky.some((e) => /^location loc1: don't name "LEGO"/.test(e)));
   assert.ok(blocky.some((e) => /^scene 2: don't name "Robux"/.test(e)));
-  assert.ok(!validatePlan(out, ctx).errors.some((e) => /don't name/.test(e)), "Fruit has no such check");
+  const clean = { ...out, title: "Banned for Nothing", locations: [{ ...out.locations[0], description: "An admin room with a long console desk and a plain shelf" }], scenes: out.scenes.map((s) => ({ ...s, line: s.line.replace("Robux", "coins") })) };
+  assert.ok(!validatePlan(clean, ctx).errors.some((e) => /don't name/.test(e)), "nothing real, nothing sent back");
 });
 
 /** A model answer for the picture check, all fine unless overridden. */
@@ -187,7 +182,7 @@ const answer = (over = {}) => ({
 const expected = [{ name: "Vex", look: "a white cube head and a tall black top hat" }, { name: "Noob", look: "a bright yellow cube head" }];
 
 test("the picture check: what fails a Blocky picture, and what doesn't", () => {
-  const { prompt, verdict, schema, system } = hooksOf("blocky", "check");
+  const [prompt, verdict, schema, system] = [checkPrompt, verdictOf, checkSchema, CHECK_SYSTEM];
   const v = (over, opts = { speaker: "Vex" }) => verdict(answer(over), expected, opts);
   assert.equal(v({}).ok, true, "two blocky avatars, chest-up, no text");
   assert.match(v({ brickToyLook: true }).problems[0], /brick-toy look/);
@@ -205,7 +200,7 @@ test("the picture check: what fails a Blocky picture, and what doesn't", () => {
   assert.equal(thighs.ok, false);
   assert.match(thighs.problems[0], /Vex is too small in the frame \(head about 15% of the height\)/);
   assert.equal(v({ speakerHeadPercent: 19, speakerShownTo: "chest" }).ok, false, "19% fails");
-  assert.equal(v({ speakerHeadPercent: 21, speakerShownTo: "chest" }).ok, false, "the line is a little above a fifth (22%), as for Fruit");
+  assert.equal(v({ speakerHeadPercent: 21, speakerShownTo: "chest" }).ok, false, "the line is a little above a fifth (22%)");
   assert.equal(v({ speakerHeadPercent: 22, speakerShownTo: "waist" }).ok, true);
   assert.equal(verdict(answer({ speakerHeadPercent: 12, speakerShownTo: "feet" }), expected, { speaker: "Vex", framing: false }).ok, true, "a clip's last frame is not judged on framing");
   // The questions ask about flat teeth the way decision 11 puts it: flat is fine, 3D is not.
@@ -221,7 +216,7 @@ test("decision 14: text, subtitles or captions on a clip's last frame fail the c
   const logged = [];
   const admin = { from: () => ({ insert: async (row) => { logged.push(row); return {}; } }) };
   const run = (data, purpose) => checkPicture({
-    admin, apiKey: "k", imageUrl: "https://example.test/frame.jpg", expected, purpose, niche: "blocky", ids: {},
+    admin, apiKey: "k", imageUrl: "https://example.test/frame.jpg", expected, purpose, ids: {},
     fetchLlm: async (req) => { assert.match(req.system, /BLOCKY GAME AVATAR/); return { data, costUsd: 0.001, httpStatus: 200, usage: {} }; },
   });
   const subtitled = await run(answer({ readableText: "why is everyone?", characters: [{ name: "Vex", visible: true, isBlockyAvatar: true }] }), CLIP_FRAME_PURPOSE);
@@ -235,7 +230,7 @@ test("decision 14: text, subtitles or captions on a clip's last frame fail the c
 });
 
 test("the upload pack: Part E's five texts, every cap enforced in code, real names refused", async () => {
-  const { clean, system, schema } = hooksOf("blocky", "upload");
+  const [clean, system, schema] = [cleanPackage, PACKAGE_SYSTEM, packageSchema];
   assert.deepEqual(schema().required, ["title", "description", "tags", "pinnedComment", "caption", "hashtags"]);
   assert.match(system, /AT MOST 100 characters in total, hashtags included\. The strongest hook is in the first 40 characters/);
   assert.match(system, /UNDER 500 characters/);
@@ -270,19 +265,34 @@ test("the upload pack: Part E's five texts, every cap enforced in code, real nam
   assert.match(clean({ ...good, tags: "roblox story, brookhaven roleplay" }).problems.join("; "), /names "Brookhaven": no real games, brands or creators/);
   assert.match(clean({ ...good, caption: "Better than MrBeast." }).problems.join("; "), /"MrBeast"/);
 
-  // Through the engine: Blocky's system, schema and cleaning; a bad answer is logged and refused.
+  // Through the engine: the system, schema and cleaning above; a bad answer is logged and refused.
   const logged = [];
   const admin = { from: () => ({ insert: async (row) => { logged.push(row); return {}; } }) };
   const input = { title: "The Admin Who Wasn't", lines: [{ speaker: "Vex", line: "Break this server rule and you're banned." }] };
-  const pkg = await writeUploadPackage({ admin, apiKey: "k", input, ids: {}, niche: "blocky", fetchLlm: async (req) => { assert.equal(req.system, system); assert.deepEqual(req.schema, schema()); return { data: good, costUsd: 0.001, httpStatus: 200, usage: {} }; } });
+  const pkg = await writeUploadPackage({ admin, apiKey: "k", input, ids: {}, fetchLlm: async (req) => { assert.equal(req.system, system); assert.deepEqual(req.schema, schema()); return { data: good, costUsd: 0.001, httpStatus: 200, usage: {} }; } });
   assert.equal(pkg.title, good.title);
   assert.equal(pkg.description, good.description);
-  await assert.rejects(writeUploadPackage({ admin, apiKey: "k", input, ids: {}, niche: "blocky", fetchLlm: async () => ({ data: { ...good, title: "x".repeat(140) }, costUsd: 0.001, httpStatus: 200, usage: {} }) }), /title is 140 characters/);
+  await assert.rejects(writeUploadPackage({ admin, apiKey: "k", input, ids: {}, fetchLlm: async () => ({ data: { ...good, title: "x".repeat(140) }, costUsd: 0.001, httpStatus: 200, usage: {} }) }), /title is 140 characters/);
   assert.equal(logged.filter((r) => r.ok === false).length, 1);
 });
 
-test("Blocky has every rule set now, and still can't write a story until its library is approved", () => {
-  for (const part of ["picture", "clip", "writer", "series", "review", "check", "upload", "plate", "cast"]) assert.ok(hooksOf("blocky", part), part);
-  assert.equal(typeof B.safety.userText, "function");
-  assert.equal(B.ready, false);
+test("scene pictures and clips: every wording fits its limit, carries the body text, and never says toy, an age or a gender", () => {
+  const LIBRARY = new Map(rows.map((c) => [c.id, c]));
+  for (const [scene, story] of [[I.solo, I.story], [I.duo, I.story], [I.trio, I.story], [I.long, I.longStory]]) {
+    const p = buildScenePrompt({ story, scene, library: LIBRARY });
+    assert.ok(p.length <= PICTURE_PROMPT_MAX);
+    assert.match(p, /blocky game avatar/);
+    assert.doesNotMatch(p.replace(/no brick-toy minifigures/, ""), /toy/i, "decision 18: never 'toy'");
+    assert.doesNotMatch(p.replace(/no studs, no studded baseplates/, "").replace(/no neck studs/, "").replace(/no studs, no minifigures/, ""), /\bstud(s|ded)?\b/i, "studs only as something to leave out");
+    assert.doesNotMatch(p.split("Setting:")[0], PERSON_WORDS);
+    for (const quality of ["v2", "v3", "v4"]) {
+      const c = buildClipPrompt({ scene, library: LIBRARY, quality });
+      assert.ok(c.length <= CLIP_PROMPT_MAX);
+      assert.match(c, /the blocky game avatar facing the camera/);
+      assert.match(c, /flat mouth decal/);
+    }
+  }
+  // A two- and a three-avatar scene still carry the whole body-construction text (decision 19).
+  for (const scene of [I.duo, I.trio]) assert.ok(buildScenePrompt({ story: I.story, scene, library: LIBRARY }).includes(BLOCKY_BODY));
+  assert.ok(scenePromptLengths({ story: I.longStory, scene: I.long, library: LIBRARY })[2] <= PICTURE_PROMPT_MAX, "the shortest wording always fits");
 });

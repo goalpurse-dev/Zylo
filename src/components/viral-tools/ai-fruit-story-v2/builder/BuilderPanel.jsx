@@ -1,7 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { AnimatePresence, motion as Motion, useReducedMotion } from "framer-motion";
 import { Sparkles } from "lucide-react";
-import { useNiche } from "../niches";
 
 /**
  * Left builder panel (Cartoon Drive By shell).
@@ -11,7 +10,6 @@ import { useNiche } from "../niches";
  */
 export default function BuilderPanel({ top, children, footer, bodyKey }) {
   const reduce = useReducedMotion();
-  const niche = useNiche();
   const panelRef = useRef(null);
   const footRef = useRef(null);
 
@@ -40,8 +38,8 @@ export default function BuilderPanel({ top, children, footer, bodyKey }) {
             <Sparkles className="h-4 w-4 text-lime-300" aria-hidden="true" />
           </span>
           <div>
-            <h1 className="text-[18px] font-black tracking-[-0.03em] text-white">{niche.name}</h1>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-lime-300/65">{niche.tagline}</p>
+            <h1 className="text-[18px] font-black tracking-[-0.03em] text-white">AI Fruit Story</h1>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-lime-300/65">Messy fruit drama, made in minutes</p>
           </div>
         </div>
         {top && <div className="mt-3 flex flex-col gap-3">{top}</div>}

@@ -16,3 +16,9 @@ art-review/
 # Long Form launch email: local send log + preview
 emails/.sent/
 emails/.preview/
+
+# Blocky Stories local stack: local-only keys, never committed (docs/blocky-local.md)
+.env.blocky.local
+.env.*.local
+supabase/.temp/
+supabase/.branches/

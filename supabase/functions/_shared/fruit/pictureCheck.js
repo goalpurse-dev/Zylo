@@ -19,7 +19,6 @@
 import { callLlm } from "./llm.js";
 import { FRUIT_MODELS } from "./models.js";
 import { FRUIT_LOOKS, headLook } from "./fruitLooks.js";
-import { hooksOf } from "./niches/index.js";
 
 export const CHECK_PURPOSE = "picture_check";
 export const CLIP_FRAME_PURPOSE = "clip_frame_check";
@@ -121,18 +120,15 @@ export function verdictOf(data, expected, { speaker = null, framing = Boolean(sp
  * ids: {user_id, story_id, scene_id, job_id} for the log row.
  * @param {object} o  speaker: the speaking character's name; purpose: CHECK_PURPOSE or CLIP_FRAME_PURPOSE
  *   (a clip's last frame is not judged on framing: the camera has moved by then)
- *   niche: the template (niches/). Its own {system, prompt, schema, verdict}, with the signatures of
- *   CHECK_SYSTEM, checkPrompt, checkSchema and verdictOf here, or nothing = Fruit's.
  */
-export async function checkPicture({ admin, apiKey, imageUrl, expected, speaker = null, purpose = CHECK_PURPOSE, ids, niche, fetchLlm = callLlm }) {
-  const w = hooksOf(niche, "check") ?? { system: CHECK_SYSTEM, prompt: checkPrompt, schema: checkSchema, verdict: verdictOf };
+export async function checkPicture({ admin, apiKey, imageUrl, expected, speaker = null, purpose = CHECK_PURPOSE, ids, fetchLlm = callLlm }) {
   const model = FRUIT_MODELS.small;
   const t0 = Date.now();
   const framing = purpose === CHECK_PURPOSE && Boolean(speaker);
-  const user = [{ type: "input_text", text: w.prompt(expected, { speaker: framing ? speaker : null }) }, { type: "input_image", image_url: imageUrl, detail: "high" }];
+  const user = [{ type: "input_text", text: checkPrompt(expected, { speaker: framing ? speaker : null }) }, { type: "input_image", image_url: imageUrl, detail: "high" }];
   try {
-    const r = await fetchLlm({ provider: model.provider, model: model.model, apiKey, system: w.system, user, schema: w.schema(), name: "picture_check", maxOutputTokens: 2500, timeoutMs: 45_000 });
-    const verdict = w.verdict(r.data, expected, { speaker, framing, missingOk: purpose === CLIP_FRAME_PURPOSE });
+    const r = await fetchLlm({ provider: model.provider, model: model.model, apiKey, system: CHECK_SYSTEM, user, schema: checkSchema(), name: "picture_check", maxOutputTokens: 2500, timeoutMs: 45_000 });
+    const verdict = verdictOf(r.data, expected, { speaker, framing, missingOk: purpose === CLIP_FRAME_PURPOSE });
     await admin.from("fruit_ai_calls").insert({
       ...ids, provider: model.provider, model: model.model, purpose, request: { imageUrl, expected, speaker },
       response: { answer: r.data, verdict }, http_status: r.httpStatus, ok: true, cost_usd: r.costUsd,

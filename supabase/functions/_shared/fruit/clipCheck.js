@@ -56,8 +56,8 @@ export async function checkClipWords({ admin, apiKey, paidOff = false, userId, s
 }
 
 /** Looks at a clip's last frame: fruit heads, no humans, nobody new, no writing. Framing is not judged (the camera has moved). */
-export async function checkClipFrame({ admin, apiKey, frameUrl, expected, ids, niche, fetchLlm }) {
-  const v = await checkPicture({ admin, apiKey, imageUrl: frameUrl, expected, purpose: CLIP_FRAME_PURPOSE, ids, niche, ...(fetchLlm ? { fetchLlm } : {}) });
+export async function checkClipFrame({ admin, apiKey, frameUrl, expected, ids, fetchLlm }) {
+  const v = await checkPicture({ admin, apiKey, imageUrl: frameUrl, expected, purpose: CLIP_FRAME_PURPOSE, ids, ...(fetchLlm ? { fetchLlm } : {}) });
   return { ok: v.ok, problems: v.problems.map((p) => `last frame: ${p}`) };
 }
 

@@ -1,7 +1,6 @@
 import { Film, PlayCircle, Sparkles } from "lucide-react";
 import { ErrorBanner, PrimaryButton, ProgressBar, SegmentedControl } from "../../../ui/zyvo";
-import { TUTORIAL_URL, formatLength, timeAgo } from "../constants";
-import { useNiche } from "../niches";
+import { EXAMPLE_VIDEO, TUTORIAL_URL, formatLength, timeAgo } from "../constants";
 
 const RECENT_TABS = [
   { value: "single", label: "Single videos" },
@@ -16,18 +15,17 @@ const RECENT_TABS = [
  */
 export default function IdleView({ recentTab, onRecentTab, recent, byId, onOpenSingle, onOpenSeries, showHero = true, viewer = "paid", onSignUp, onGetPlan, onStart }) {
   const paid = viewer === "paid";
-  const niche = useNiche();
   return (
     <div className="flex flex-col gap-6">
       {showHero && (
         <div>
           <div className="flex items-center gap-2 text-lime-300">
             <Sparkles className="h-4 w-4" aria-hidden="true" />
-            <span className="text-[10px] font-black uppercase tracking-[0.18em]">{niche.name}</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.18em]">AI Fruit Story</span>
           </div>
           <h2 className="mt-2 text-[27px] font-black leading-[1.03] tracking-[-0.045em] text-white sm:text-[34px]">
-            {niche.hero[0]}<br />
-            <span className="text-lime-300">{niche.hero[1]}</span>
+            Messy fruit drama.<br />
+            <span className="text-lime-300">Made in minutes.</span>
           </h2>
           <p className="mt-2 max-w-[620px] text-[12px] font-medium leading-relaxed text-white/45">
             Pick a ready idea or bring your own story. You check every scene picture before anything is animated, and you only pay for video once you&apos;re happy.
@@ -37,8 +35,7 @@ export default function IdleView({ recentTab, onRecentTab, recent, byId, onOpenS
 
       {!paid && (
         <ExampleVideo
-          example={niche.example}
-          heading={viewer === "guest" ? "See what you can make" : `Made with ${niche.name}`}
+          heading={viewer === "guest" ? "See what you can make" : "Made with AI Fruit Story"}
           action={viewer === "guest" ? "Sign up to make your own" : "Get a plan to make videos like this"}
           onAction={viewer === "guest" ? onSignUp : onGetPlan}
         />
@@ -68,7 +65,7 @@ export default function IdleView({ recentTab, onRecentTab, recent, byId, onOpenS
               </div>
             </div>
           ) : (
-            <ExampleVideo example={niche.example} heading="Make your first story" sub={niche.example ? "Here's one we made. Yours shows up here when it's done." : "Yours shows up here when it's done."} action="Make your first story" onAction={onStart} />
+            <ExampleVideo heading="Make your first story" sub="Here's one we made. Yours shows up here when it's done." action="Make your first story" onAction={onStart} />
           )
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -89,23 +86,23 @@ export default function IdleView({ recentTab, onRecentTab, recent, byId, onOpenS
   );
 }
 
-/** The example video card with one call to action. A template without an example video yet shows the text and the button only. */
-function ExampleVideo({ example, heading, sub, action, onAction }) {
+/** The example video card with one call to action. */
+function ExampleVideo({ heading, sub, action, onAction }) {
   return (
     <section aria-label={heading} className="flex flex-col gap-4 rounded-2xl border border-white/[0.08] bg-[#111315]/95 p-3 sm:flex-row sm:items-center sm:p-4">
-      {example && <video
-        src={example.url}
-        poster={example.poster}
+      <video
+        src={EXAMPLE_VIDEO.url}
+        poster={EXAMPLE_VIDEO.poster}
         controls
         playsInline
         preload="none"
         className="order-2 aspect-[9/16] w-full max-w-[220px] self-center rounded-xl bg-black object-cover sm:order-1 sm:max-w-[240px] sm:self-auto"
-        aria-label={`Example video: ${example.title}`}
-      />}
+        aria-label={`Example video: ${EXAMPLE_VIDEO.title}`}
+      />
       <div className="order-1 flex min-w-0 flex-col gap-2 sm:order-2">
         <h3 className="text-[16px] font-black text-white">{heading}</h3>
         <p className="text-[12px] font-semibold leading-relaxed text-white/45">
-          {sub ?? (example ? <>&ldquo;{example.title}&rdquo;: {example.blurb}</> : "Pick an idea or bring your own story.")}
+          {sub ?? <>&ldquo;{EXAMPLE_VIDEO.title}&rdquo;: {EXAMPLE_VIDEO.blurb}</>}
         </p>
         {onAction && <div className="pt-1"><PrimaryButton onClick={onAction}>{action}</PrimaryButton></div>}
       </div>

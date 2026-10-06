@@ -4,17 +4,14 @@
 // place looks the same across episodes. Our cost (≈ $0.035 each), logged.
 import { FRUIT_MODELS } from "./models.js";
 import { parseRunware } from "./runware.js";
-import { hooksOf } from "./niches/index.js";
 
 export const PLATE_PURPOSE = "location_plate";
 
-/** niche: the template (niches/); its own {style} sentence, or nothing = Fruit's. */
-export function platePrompt(description, aspect, niche) {
-  const style = hooksOf(niche, "plate")?.style ?? "Style: premium 3D animated feature-film look, soft even light, sharp focus, rich color.";
+export function platePrompt(description, aspect) {
   return [
     `${aspect === "16:9" ? "Wide 16:9" : "Vertical 9:16"} empty background plate for an animated series: ${String(description).replace(/\.+$/, "")}.`,
     "Nobody in it: no people, no characters, no animals, no text, no logos.",
-    `Eye-level view with room in the foreground for characters to stand. ${style}`,
+    "Eye-level view with room in the foreground for characters to stand. Style: premium 3D animated feature-film look, soft even light, sharp focus, rich color.",
   ].join(" ");
 }
 
@@ -27,13 +24,13 @@ export const plateOf = (location, aspect) => location?.plates?.[aspect] ?? null;
  * A plate that fails is skipped: pictures then work without it.
  * deps: {post(tasks) -> {httpStatus, body}, store({url, path, contentType}) -> url, log(row)}
  */
-export async function ensurePlates({ locations, usedIds, aspect, userId, seriesId, deps, niche, uuid = () => crypto.randomUUID() }) {
+export async function ensurePlates({ locations, usedIds, aspect, userId, seriesId, deps, uuid = () => crypto.randomUUID() }) {
   const model = FRUIT_MODELS.image;
   const [width, height] = model.sizes[aspect] ?? model.sizes["9:16"];
   const todo = (locations ?? []).filter((l) => usedIds.includes(l.id) && !plateOf(l, aspect));
   const made = await Promise.all(todo.map(async (l) => {
     const taskUUID = uuid();
-    const request = { taskType: "imageInference", taskUUID, model: model.air, positivePrompt: platePrompt(l.description, aspect, niche), width, height, numberResults: 1, outputType: "URL", outputFormat: model.outputFormat ?? "JPG", includeCost: true };
+    const request = { taskType: "imageInference", taskUUID, model: model.air, positivePrompt: platePrompt(l.description, aspect), width, height, numberResults: 1, outputType: "URL", outputFormat: model.outputFormat ?? "JPG", includeCost: true };
     const t0 = Date.now();
     try {
       const res = await deps.post([request]);

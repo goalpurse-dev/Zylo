@@ -7,7 +7,6 @@ import { SERVER_LIMITS } from "./limits.js";
 import { withSubject } from "./wording.js";
 import { shotOf } from "./shots.js";
 import { FRUIT_LOOKS } from "./fruitLooks.js";
-import { hooksOf } from "./niches/index.js";
 
 export const PICTURE_PROMPT_MAX = SERVER_LIMITS.maxScenePromptChars;   // 2,500 (Nano Banana accepts 45,000)
 
@@ -80,23 +79,6 @@ const NEGATIVE_SHORT = "No text or readable writing, no logos, no watermark, no 
 
 const who = (c) => `${c.name} (the ${c.fruit} ${c.gender === "female" ? "woman" : "man"})`;
 
-/**
- * Everything in a picture prompt that depends on the template. These are
- * Fruit's; another niche overrides what differs (niches/<id>.js#picture):
- *   style, styleShort, negative, negativeShort, face, faceShort, editKeep: sentences (the Short ones are for the shortest wording)
- *   who(c): the character named with what it is
- *   heads(cast, short): the rule about every character's head
- *   referenceLine(c, i, tier, outfits): which reference image is who, and what to keep
- *   speaking(scene): how the speaker looks while saying the line
- */
-const FRUIT_PICTURE = {
-  style: STYLE, styleShort: "Same look as the references.", negative: NEGATIVE, negativeShort: NEGATIVE_SHORT, face: FACE, faceShort: FACE_SHORT,
-  who, heads: fruitHeads, referenceLine,
-  speaking: (scene) => `looking ${scene.emotion}, mouth open mid-sentence, speaking toward the camera.`,
-  editKeep: "the same characters, fruit heads, faces, outfits, poses, background, lighting and framing",
-};
-const lookOf = (story) => ({ ...FRUIT_PICTURE, ...(hooksOf(story, "picture") ?? {}) });
-
 /** Characters in frame, speaker first (image 1). */
 export function frameCharacters(scene, library) {
   const ids = [scene.speakerId, ...scene.presentIds.filter((id) => id !== scene.speakerId)];
@@ -109,26 +91,25 @@ export function frameCharacters(scene, library) {
 
 function build(tier, { story, scene, cast, location }) {
   const [speaker, ...others] = cast;
-  const look = lookOf(story);
-  const listeners = others.map(look.who).join(" and ");
+  const listeners = others.map(who).join(" and ");
   const aspect = story.aspect === "16:9" ? "Wide 16:9 frame" : "Vertical 9:16 frame";
   const time = location.timeOfDay
     ? `Time of day: ${location.timeOfDay}${location.lighting ? `; lighting: ${location.lighting}` : ""}.${tier === 2 ? "" : " Keep exactly this time of day and lighting."}`
     : "";
   const parts = [
-    `${aspect}. ${shotText(scene.shot)}. ${tier === 2 ? look.faceShort : look.face}`,
-    `${withSubject(look.who(speaker), speaker, scene.action)}, ${look.speaking(scene)}`,
+    `${aspect}. ${shotText(scene.shot)}. ${tier === 2 ? FACE_SHORT : FACE}`,
+    `${withSubject(who(speaker), speaker, scene.action)}, looking ${scene.emotion}, mouth open mid-sentence, speaking toward the camera.`,
     stage(speaker, others, tier === 2),
-    look.heads(cast, tier === 2),
+    fruitHeads(cast, tier === 2),
     others.length ? `${tier === 2 ? others.map((c) => c.name.split(" ")[0]).join(" and ") : listeners} ${others.length > 1 ? "listen and react" : "listens and reacts"} silently, mouth${others.length > 1 ? "s" : ""} closed.` : "",
     scene.placement ? `Positions: ${scene.placement.replace(/\.$/, "")}.` : "",
     `Setting: ${String(location.description).replace(/\.+$/, "")}.`,
     time,
-    cast.map((c, i) => look.referenceLine(c, i, tier, story.outfits)).join(" "),
+    cast.map((c, i) => referenceLine(c, i, tier, story.outfits)).join(" "),
     location.plateUrl ? (tier === 2 ? `Image ${cast.length + 1} is the empty set: keep its layout.` : `Image ${cast.length + 1} is the empty set of this place: keep its layout, furniture and colors; the characters stand in it.`) : "",
     `Only these ${cast.length} character${cast.length > 1 ? "s" : ""} in the frame.`,
-    tier <= 1 ? look.style : look.styleShort,
-    tier === 2 ? look.negativeShort : look.negative,
+    tier <= 1 ? STYLE : "Same look as the references.",
+    tier === 2 ? NEGATIVE_SHORT : NEGATIVE,
   ];
   return parts.filter(Boolean).join(" ");
 }
@@ -151,10 +132,9 @@ export function buildScenePrompt({ story, scene, library }) {
   throw new Error(`scene prompt over ${PICTURE_PROMPT_MAX} chars even at the shortest tier`);
 }
 
-/** Edit keeps everything and changes only what the user asked (image 1 = current picture). story picks the niche's wording. */
-export function buildEditPrompt(instruction, story) {
-  const look = lookOf(story);
-  const prompt = `Edit image 1. Change only this: ${instruction} Keep everything else exactly the same: ${look.editKeep}. The other images are the character references; keep them consistent. ${look.negative}`;
+/** Edit keeps everything and changes only what the user asked (image 1 = current picture). */
+export function buildEditPrompt(instruction) {
+  const prompt = `Edit image 1. Change only this: ${instruction} Keep everything else exactly the same: the same characters, fruit heads, faces, outfits, poses, background, lighting and framing. The other images are the character references; keep them consistent. ${NEGATIVE}`;
   if (prompt.length > PICTURE_PROMPT_MAX) throw new Error("edit prompt over limit");   // validation caps the instruction at 500 chars
   return prompt;
 }
@@ -176,7 +156,7 @@ export function buildPictureRequest({ story, scene, library, mode, instruction, 
   let referenceImages = refs;
   if (mode === "edit") {
     if (!scene.imageUrl) throw new Error("edit needs a current picture");
-    sent = buildEditPrompt(instruction, story);
+    sent = buildEditPrompt(instruction);
     saved = null;                                   // the scene keeps its description
     referenceImages = [scene.imageUrl, ...refs];
   } else if (mode === "regenerate") {

@@ -6,18 +6,12 @@ import { LIMITS, SERVER_LIMITS } from "./limits.js";
 import { videoModel } from "./models.js";
 import { clipDurationSec, maxWordsFor, wordCount } from "./duration.js";
 import { lookAlikeMessage } from "./castRules.js";
-import { hooksOf, nicheOf } from "./niches/index.js";
 
 const bad = (message) => new FruitError("VALIDATION", message, 400);
-/** The template's own check of the user's words (niches/<id>.js#safety.userText), e.g. real names in Blocky Stories. Fruit has none. */
-function safeText(text, niche) {
-  const message = nicheOf(niche).safety?.userText?.(text);
-  if (message) throw bad(message);
-}
 const QUALITIES = ["v2", "v3", "v4"];
 const ASPECTS = ["9:16", "16:9"];
 
-function castFrom(ids, library, min, max, { lookAlikes = true, niche } = {}) {
+function castFrom(ids, library, min, max, { lookAlikes = true } = {}) {
   if (!Array.isArray(ids) || ids.length < min || ids.length > max || new Set(ids).size !== ids.length) {
     throw bad(min === max ? `Pick ${min} characters.` : `Pick ${min} to ${max} characters.`);
   }
@@ -26,8 +20,7 @@ function castFrom(ids, library, min, max, { lookAlikes = true, niche } = {}) {
   }
   // Two of the same fruit look the same in a close-up, unless they're relatives dressed differently.
   // (An idea's cast is fixed by the library, which its own build checks: the user can't swap it.)
-  // The rule is the template's: Fruit's is castRules.js, another niche brings its own (niches/<id>.js#cast).
-  const alike = lookAlikes ? (hooksOf(niche, "cast")?.lookAlikeMessage ?? lookAlikeMessage)(ids.map((id) => library.get(id))) : null;
+  const alike = lookAlikes ? lookAlikeMessage(ids.map((id) => library.get(id))) : null;
   if (alike) throw bad(alike);
   return [...ids];
 }
@@ -52,9 +45,8 @@ function lengthOf(value) {
  * @param {object} input CreateStoryInput from the contract
  * @param {Map<string, object>} library character id → character
  * @param {(ideaId: string) => ({castIds: string[]}|null)} [findIdea]
- * @param {string|object} [niche] the template (niches/); nothing = Fruit
  */
-export function validateCreateStory(input, library, findIdea, niche) {
+export function validateCreateStory(input, library, findIdea) {
   if (!input || typeof input !== "object") throw bad("Pick an idea, describe a story, or write a script.");
   const { quality, aspect } = common(input);
   const series = input.seriesId != null
@@ -77,11 +69,10 @@ export function validateCreateStory(input, library, findIdea, niche) {
   }
 
   if (input.source === "prompt") {
-    const castIds = castFrom(input.castIds, library, 1, LIMITS.maxCastSingle, { niche });
+    const castIds = castFrom(input.castIds, library, 1, LIMITS.maxCastSingle);
     const prompt = typeof input.prompt === "string" ? input.prompt.trim() : "";
     if (prompt.length < 10) throw bad("Describe the story in a sentence or two.");
     if (prompt.length > LIMITS.maxPromptChars) throw bad(`Keep the story under ${LIMITS.maxPromptChars} characters.`);
-    safeText(prompt, niche);
     return { source: "prompt", prompt, castIds, quality, aspect, lengthSec: lengthOf(input.lengthSec) };
   }
 
@@ -97,14 +88,13 @@ export function validateCreateStory(input, library, findIdea, niche) {
       if (line.length > SERVER_LIMITS.maxLineChars) throw bad(`Line ${i + 1} is too long. Keep each line under ${SERVER_LIMITS.maxLineChars} characters.`);
       if (typeof r.speakerId !== "string" || !library.has(r.speakerId)) throw bad("Every line needs a speaker from the character library.");
       if (wordCount(line) > maxWords) throw bad(`Line ${i + 1} is too long for one ${quality.toUpperCase()} clip. Keep it under ${maxWords} words.`);
-      safeText(line, niche);
       return { speakerId: r.speakerId, line };   // exactly as written
     });
     const speakers = [...new Set(script.map((r) => r.speakerId))];
     if (speakers.length > LIMITS.maxCharactersPerScene) {
       throw bad(`Use at most ${LIMITS.maxCharactersPerScene} different speakers. This script has ${speakers.length}.`);
     }
-    const castIds = Array.isArray(input.castIds) && input.castIds.length ? castFrom(input.castIds, library, 1, LIMITS.maxCastSingle, { niche }) : speakers;
+    const castIds = Array.isArray(input.castIds) && input.castIds.length ? castFrom(input.castIds, library, 1, LIMITS.maxCastSingle) : speakers;
     if (speakers.some((id) => !castIds.includes(id))) throw bad("Every speaker must be in the cast.");
     const lengthSec = script.reduce((sum, r) => sum + clipDurationSec(r.line, allowed), 0);
     return { source: "script", script, castIds, quality, aspect, lengthSec };
@@ -113,18 +103,16 @@ export function validateCreateStory(input, library, findIdea, niche) {
   throw bad("Pick an idea, describe a story, or write a script.");
 }
 
-export function validateSeriesPlan(input, library, niche) {
+export function validateSeriesPlan(input, library) {
   const concept = typeof input?.concept === "string" ? input.concept.trim() : "";
   if (concept.length < 6) throw bad("Describe the series in a sentence or two.");
   if (concept.length > LIMITS.maxPromptChars) throw bad(`Keep it under ${LIMITS.maxPromptChars} characters.`);
-  safeText(concept, niche);
-  const castIds = castFrom(input?.castIds, library, LIMITS.minCastSeries, LIMITS.maxCastSeries, { niche });
+  const castIds = castFrom(input?.castIds, library, LIMITS.minCastSeries, LIMITS.maxCastSeries);
   const episodeCount = Number(input?.episodeCount);
   if (!Number.isInteger(episodeCount) || episodeCount < LIMITS.minEpisodes || episodeCount > LIMITS.maxEpisodes) {
     throw bad(`Choose ${LIMITS.minEpisodes} to ${LIMITS.maxEpisodes} episodes.`);
   }
   const opener = typeof input?.opener === "string" ? input.opener.trim().slice(0, 300) : "";
-  safeText(opener, niche);
   const tone = typeof input?.tone === "string" ? input.tone.trim().slice(0, 60) : "";
   return { concept, castIds, episodeCount, opener, tone };
 }

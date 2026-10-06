@@ -13,7 +13,7 @@
 //  - the classic noob (decision 13): yellow cube head and arms, blue torso,
 //    green legs, face B, no cap and no accessory.
 // Reference pictures are made from avatarPrompt() below (tests 2 and the library run).
-import { BLOCKY_BODY, noBrickToy } from "../../supabase/functions/_shared/fruit/niches/blocky.js";
+import { BLOCKY_BODY, noBrickToy } from "../../supabase/functions/_shared/blocky/look.js";
 
 const EYES = {
   oval: "two solid black upright oval eyes",

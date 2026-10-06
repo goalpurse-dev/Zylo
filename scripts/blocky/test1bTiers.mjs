@@ -6,13 +6,13 @@
 // Nobody is charged credits (worker raw_test / raw_poll). ONE attempt per
 // tier: a tier already in results.json is never sent again, only polled.
 //   node scripts/blocky/test1bTiers.mjs [v3|v4]                      prints the plan, sends nothing
-//   FRUIT_ALLOW_PAID=1 node scripts/blocky/test1bTiers.mjs [v3|v4]   runs it (about $1.31; stage cap $1.40)
+//   BLOCKY_ALLOW_PAID=1 node scripts/blocky/test1bTiers.mjs [v3|v4]   runs it (about $1.31; stage cap $1.40)
 import fs from "fs";
 import path from "path";
-import { openBlockyBudget, paidCallsAllowed } from "../fruit-story/paidGuard.mjs";
-import { ROOT, SUPABASE_URL, writeJson } from "../fruit-story/lib.mjs";
-import { clipTask } from "../../supabase/functions/_shared/fruit/clips.js";
-import { videoModel } from "../../supabase/functions/_shared/fruit/models.js";
+import { openBlockyBudget, paidCallsAllowed } from "./paidGuard.mjs";
+import { ROOT, worker, writeJson } from "./lib.mjs";
+import { clipTask } from "../../supabase/functions/_shared/blocky/clips.js";
+import { videoModel } from "../../supabase/functions/_shared/blocky/models.js";
 
 const OUT = "data/blocky-tests/test1b";
 const RESULTS = path.join(ROOT, OUT, "results.json");
@@ -31,15 +31,12 @@ for (const t of TIERS) {
 if (!paidCallsAllowed()) {
   console.log(`LINE: ${c.line}\nPICTURE: test 1 picture C (${c.picture.file})\nPROMPT (${c.clip.prompt.length} chars, same as the V2 clip):\n${c.clip.prompt}\n`);
   for (const t of TIERS) console.log(`${t.label}: ${t.model}, ${t.durationSec} s, about $${(t.durationSec * t.perSec).toFixed(2)}`);
-  console.log("\nNothing was sent. Run with FRUIT_ALLOW_PAID=1 to send.");
+  console.log("\nNothing was sent. Run with BLOCKY_ALLOW_PAID=1 to send.");
   process.exit(0);
 }
 
 const budget = openBlockyBudget("tiers");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const worker = async (body) => (await fetch(`${SUPABASE_URL}/functions/v1/fruit-worker`, {
-  method: "POST", headers: { Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(body),
-})).json().catch(() => ({ ok: false, error: "bad response" }));
 const out = fs.existsSync(RESULTS) ? JSON.parse(fs.readFileSync(RESULTS, "utf8")) : { line: c.line, words: c.words, picture: c.picture.file, prompt: c.clip.prompt, items: {}, notes: [] };
 const save = () => writeJson(`${OUT}/results.json`, out);
 const log = (m) => { console.log(m); out.notes.push(m); };

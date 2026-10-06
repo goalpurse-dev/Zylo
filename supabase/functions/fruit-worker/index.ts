@@ -26,7 +26,6 @@ import { checkPicture } from "../_shared/fruit/pictureCheck.js";
 import { FRAME_USD_PER_SECOND, checkClipFrame, checkClipWords, frameMachineConfig, framePath } from "../_shared/fruit/clipCheck.js";
 import { buildClipRequest, fallbackClipTask } from "../_shared/fruit/clips.js";
 import { buildPictureRequest, withRedrawHint } from "../_shared/fruit/pictures.js";
-import { DEFAULT_NICHE, hasHooks, nicheOf } from "../_shared/fruit/niches/index.js";
 import { rewriteClipPrompt } from "../_shared/fruit/smallTasks.js";
 import { buildEnvelope, parseRunware } from "../_shared/fruit/runware.js";
 import { videoModel } from "../_shared/fruit/models.js";
@@ -75,10 +74,10 @@ const engine = createEngine({
   // speaker chest-up (gpt-5-mini vision, logged; ours to pay).
   checkPicture: async (job: any, storedUrl: string) => {
     if (paidOff()) return null;
-    const { expected, speaker, niche } = await sceneCast(job.scene_id);
-    if (!expected.length || !checkable(niche)) return null;
+    const { expected, speaker } = await sceneCast(job.scene_id);
+    if (!expected.length) return null;
     return checkPicture({
-      admin, apiKey: OPENAI_API_KEY, imageUrl: storedUrl, expected, speaker, niche,
+      admin, apiKey: OPENAI_API_KEY, imageUrl: storedUrl, expected, speaker,
       ids: { user_id: job.user_id, story_id: job.story_id, scene_id: job.scene_id, job_id: job.id },
     });
   },
@@ -118,12 +117,12 @@ const engine = createEngine({
     return { path, callId: call?.id ?? null };
   },
   checkClipFrame: async (job: any, frame: any) => {
-    const { expected, niche } = await sceneCast(job.scene_id);
+    const { expected } = await sceneCast(job.scene_id);
     const startedAt = new Date(frame.at).getTime();
     if (frame.callId) await admin.from("fruit_ai_calls").update({ ok: true, cost_usd: ((Date.now() - startedAt) / 1000) * FRAME_USD_PER_SECOND, latency_ms: Date.now() - startedAt, completed_at: new Date().toISOString() }).eq("id", frame.callId);
-    if (!expected.length || !checkable(niche)) return null;
+    if (!expected.length) return null;
     return checkClipFrame({
-      admin, apiKey: OPENAI_API_KEY, frameUrl: admin.storage.from("generated").getPublicUrl(frame.path).data.publicUrl, expected, niche,
+      admin, apiKey: OPENAI_API_KEY, frameUrl: admin.storage.from("generated").getPublicUrl(frame.path).data.publicUrl, expected,
       ids: { user_id: job.user_id, story_id: job.story_id, scene_id: job.scene_id, job_id: job.id },
     });
   },
@@ -157,21 +156,13 @@ const engine = createEngine({
 
 const paidOff = () => PAID_CALLS.toLowerCase() === "off";
 
-/** A template's pictures are checked with its own rules (niches/); one that has none yet is not checked with Fruit's. */
-const checkable = (niche: string) => nicheOf(niche).id === DEFAULT_NICHE || hasHooks(niche, "check");
-
-/** Who should be in a scene's picture ({name, fruit}, in frame order), who speaks, and the story's template. */
+/** Who should be in a scene's picture ({name, fruit}, in frame order) and who speaks. */
 async function sceneCast(sceneId: string) {
-  const { data: sc } = await admin.from("fruit_story_scenes").select("present_ids, speaker_id, story_id").eq("id", sceneId).single();
-  // Its own query: a story without a niche (or a database from before the column) is fruit.
-  const { data: st } = sc?.story_id ? await admin.from("fruit_stories").select("niche").eq("id", sc.story_id).maybeSingle() : { data: null };
-  const { data: chars } = await admin.from("fruit_characters").select("id, name, fruit, build, outfit").in("id", sc?.present_ids ?? []);
+  const { data: sc } = await admin.from("fruit_story_scenes").select("present_ids, speaker_id").eq("id", sceneId).single();
+  const { data: chars } = await admin.from("fruit_characters").select("id, name, fruit").in("id", sc?.present_ids ?? []);
   const byId = new Map((chars ?? []).map((c: any) => [c.id, c]));
-  const fruit = nicheOf(st).id === DEFAULT_NICHE;
-  // Fruit's check knows each fruit's look from its name; another template's check is told the look.
-  const expected = (sc?.present_ids ?? []).map((id: string) => byId.get(id)).filter(Boolean)
-    .map((c: any) => (fruit ? { name: c.name, fruit: c.fruit } : { name: c.name, fruit: c.fruit, look: [c.build, c.outfit].filter(Boolean).join(", ") }));
-  return { expected, speaker: (byId.get(sc?.speaker_id) as any)?.name ?? null, niche: nicheOf(st).id };
+  const expected = (sc?.present_ids ?? []).map((id: string) => byId.get(id)).filter(Boolean).map((c: any) => ({ name: c.name, fruit: c.fruit }));
+  return { expected, speaker: (byId.get(sc?.speaker_id) as any)?.name ?? null };
 }
 
 /**
@@ -201,7 +192,7 @@ async function clipTest(body: any) {
 }
 
 /** Bake-off: models that aren't products yet. Submitted directly (no user charge), every call logged with its real cost. */
-const BAKEOFF_MODELS = new Set(["bytedance:seedance@2.0-mini", "lightricks:ltx@2.3", "alibaba:wan@2.6-flash", "google:3@3"]);
+const BAKEOFF_MODELS = new Set(["bytedance:seedance@2.0-mini", "lightricks:ltx@2.3", "alibaba:wan@2.6-flash"]);
 async function rawTest(body: any) {
   if (paidOff()) throw new FruitError("PAID_CALLS_DISABLED", "paid calls are off");
   const task = body?.task;

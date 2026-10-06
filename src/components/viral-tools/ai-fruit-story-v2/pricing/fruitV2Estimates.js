@@ -23,18 +23,15 @@ export const TIER_IDS = ["v2", "v3", "v4"];
 export const PICTURE_TOOL_KEY = "image:fruit-story";
 const IMAGE_DIMS = { "9:16": [768, 1376], "16:9": [1376, 768] };
 
-/** A template's price row for one of the keys above: image:<priceKey>, video:<priceKey>-v2... (niches.js#priceKey). */
-const rowFor = (toolKey, priceKey) => (priceKey && priceKey !== "fruit-story" ? toolKey.replace("fruit-story", priceKey) : toolKey);
-
-/** Quote items (useToolPriceQuotes) for one aspect: the scene picture + each tier's clip. priceKey: the template's rows (default Fruit's). */
-export function priceItems(aspect = "9:16", priceKey = "fruit-story") {
+/** Quote items (useToolPriceQuotes) for one aspect: the scene picture + each tier's clip. */
+export function priceItems(aspect = "9:16") {
   const [iw, ih] = IMAGE_DIMS[aspect] ?? IMAGE_DIMS["9:16"];
   return [
-    { id: "image", tool_key: rowFor(PICTURE_TOOL_KEY, priceKey), input: { width: iw, height: ih } },
+    { id: "image", tool_key: PICTURE_TOOL_KEY, input: { width: iw, height: ih } },
     ...TIER_IDS.map((id) => {
       const tier = TIERS[id];
       const [width, height] = tier.dims[aspect] ?? tier.dims["9:16"];
-      return { id: `clip:${id}`, tool_key: rowFor(tier.toolKey, priceKey), input: { durationSec: tier.quoteSec, withSound: true, width, height } };
+      return { id: `clip:${id}`, tool_key: tier.toolKey, input: { durationSec: tier.quoteSec, withSound: true, width, height } };
     }),
   ];
 }

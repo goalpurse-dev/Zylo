@@ -2,14 +2,15 @@
 // exactly as render-long-form-scene sends it for a V2 scene: the render on
 // FLUX.2 klein 9B KV (_shared/stickman/renderTiers.ts#renderTask), then the 2x
 // upscale. About $0.003. No Long Form project, row or credit is touched.
-//   node scripts/blocky/smokeLongFormProxy.mjs <outFile.jpg>
+//   BLOCKY_TARGET=live node scripts/blocky/smokeLongFormProxy.mjs <outFile.jpg>
 import fs from "fs";
-import { SUPABASE_URL } from "../fruit-story/lib.mjs";
+import { SUPABASE_URL, TARGET, serviceKey } from "./lib.mjs";
 
+if (TARGET !== "live") { console.error("This checks the live picture proxy: run it with BLOCKY_TARGET=live."); process.exit(2); }
 const [outFile] = process.argv.slice(2);
 const proxy = async (task) => {
   const t0 = Date.now();
-  const r = await fetch(`${SUPABASE_URL}/functions/v1/runware-bakeoff-proxy`, { method: "POST", headers: { Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ task }) });
+  const r = await fetch(`${SUPABASE_URL}/functions/v1/runware-bakeoff-proxy`, { method: "POST", headers: { Authorization: `Bearer ${serviceKey()}`, "Content-Type": "application/json" }, body: JSON.stringify({ task }) });
   const j = await r.json().catch(() => null);
   return { http: r.status, ok: j?.ok === true, result: j?.result ?? null, error: j?.ok ? null : JSON.stringify(j?.error ?? j).slice(0, 200), ms: Date.now() - t0 };
 };

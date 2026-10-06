@@ -6,8 +6,8 @@
 //   node scripts/blocky/pageLooks.mjs <outDir>     writes <outDir>/index.html
 import fs from "fs";
 import path from "path";
-import { renderResultsPage } from "../fruit-story/resultsPage.mjs";
-import { ROOT } from "../fruit-story/lib.mjs";
+import { renderResultsPage } from "./resultsPage.mjs";
+import { ROOT } from "./lib.mjs";
 import { ROSTER } from "./roster.mjs";
 
 const [outDir] = process.argv.slice(2);
@@ -120,7 +120,7 @@ const html = await renderResultsPage({
     "<b>Lite or Pro for the 24 references.</b> Pro held the whole look in all three: clean body and right colours. Lite with the same prompt got the body right on Vex but painted the arms and legs the wrong colour, and kept a leg notch on Pixi. Pro costs $0.1380 a picture against $0.0337: about $3.31 for the library instead of $0.81, once. I'd choose Pro for the references and keep Lite for scene pictures.",
     "<b>Not yet clean on Pro:</b> Vex's head came out as a rounded cylinder (1 of 3), two mouths gained a small pink tongue, and Lux stands at a slight angle. If you choose Pro I'd add \"the head is a cube with flat faces and straight edges\" and \"seen straight from the front\" to the reference prompt, and treat a rounded head as a redo when the library sheet is reviewed.",
     "<b>Scene pictures:</b> the scene style block now carries the same body-construction text. It has not been tested in a scene yet: test 3's scenes were made before it and from the old references. The first real check is the next scene test with approved references.",
-    "<b>Veo clip (test 1b):</b> still waiting. The live fruit-worker does not have the Veo line yet; the temporary copy is still in place for your deploy.",
+    "<b>Veo clip (test 1b):</b> still waiting. It runs on blocky-worker (Blocky's own worker, with Veo on its test list), once that runs locally.",
   ],
 });
 fs.mkdirSync(outDir, { recursive: true });

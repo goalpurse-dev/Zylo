@@ -5,7 +5,6 @@ import { clearStashedFruitStory, peekStashedFruitStory } from "../../../../lib/p
 import { animateAllPrice, clipPrice, clipSecondsFor, estimateStory, picturePrice, sceneCountForLength } from "../pricing/fruitV2Estimates";
 import useFruitV2Prices from "../pricing/useFruitV2Prices";
 import { storyStepBlocker, wizardBlocker } from "../rules";
-import { FRUIT_NICHE, apiNiche } from "../niches";
 import { parseScript } from "../script/parseScript";
 import useStory from "./useStory";
 
@@ -38,7 +37,7 @@ const NEW_SERIES = {
 };
 
 /** A "Make this video" prompt from a public page opens on "Describe it", filled in. */
-function handedOverSingle() {
+function initialSingle() {
   const handoff = peekStashedFruitStory();
   if (!handoff) return NEW_SINGLE;
   return {
@@ -74,23 +73,15 @@ function useAsyncList(loader, deps, enabled = true) {
 
 /**
  * All v2 state and actions. The page renders from this; components stay dumb.
- * niche: the template the page is for (niches.js); every list it loads and
- * every story or series it starts is that template's.
  */
-export default function useFruitV2Flow(account, characters = [], niche = FRUIT_NICHE) {
-  const template = apiNiche(niche);   // undefined for Fruit: nothing is added to its requests
-  // Only a template with "Make this video" pages can open pre-filled.
-  const initialSingle = niche.promptHandoff ? handedOverSingle : NEW_SINGLE;
+export default function useFruitV2Flow(account, characters = []) {
   const [mode, setMode] = useState("single");
   const [tab, setTabState] = useState("build");
   const [recentTab, setRecentTab] = useState("single");
   const [single, setSingle] = useState(initialSingle);
   // Kept for a guest, so the prompt is still there after they sign up and come back.
   const signedIn = Boolean(account?.user);
-  useEffect(() => {
-    if (!niche.promptHandoff) return;
-    if (signedIn) clearStashedFruitStory();
-  }, [signedIn, niche.promptHandoff]);
+  useEffect(() => { if (signedIn) clearStashedFruitStory(); }, [signedIn]);
   const [series, setSeries] = useState(NEW_SERIES);
   const [ideaSeed, setIdeaSeed] = useState(0);
   const [library, setLibrary] = useState(null); // "single" | "series" | null
@@ -106,14 +97,14 @@ export default function useFruitV2Flow(account, characters = [], niche = FRUIT_N
   const activeStoryId = mode === "single" ? single.storyId : series.view === "episode" ? series.storyId : null;
   const live = useStory(activeStoryId);
   const story = live.story;
-  const quotes = useFruitV2Prices(story?.aspect ?? (mode === "single" ? single.aspect : "9:16"), niche.priceKey);
+  const quotes = useFruitV2Prices(story?.aspect ?? (mode === "single" ? single.aspect : "9:16"));
 
-  const ideas = useAsyncList(() => api.getIdeas({ seed: ideaSeed, niche: template }), [ideaSeed]);
+  const ideas = useAsyncList(() => api.getIdeas({ seed: ideaSeed }), [ideaSeed]);
   // Only real, signed-in history: guests see the example video instead.
-  const recent = useAsyncList(() => api.listRecent({ type: recentTab, niche: template }), [recentTab, refreshKey], !activeStoryId && (Boolean(account.user) || account.isPreview));
-  const seriesList = useAsyncList(() => api.listSeries({ niche: template }), [refreshKey], mode === "series");
+  const recent = useAsyncList(() => api.listRecent({ type: recentTab }), [recentTab, refreshKey], !activeStoryId && (Boolean(account.user) || account.isPreview));
+  const seriesList = useAsyncList(() => api.listSeries(), [refreshKey], mode === "series");
   const activeSeries = useAsyncList(
-    () => (series.seriesId ? api.getSeries(series.seriesId, { niche: template }).then((s) => [s]) : Promise.resolve([])),
+    () => (series.seriesId ? api.getSeries(series.seriesId).then((s) => [s]) : Promise.resolve([])),
     [series.seriesId, refreshKey],
     Boolean(series.seriesId),
   );
@@ -183,7 +174,6 @@ export default function useFruitV2Flow(account, characters = [], niche = FRUIT_N
         ...(single.method === "idea" ? { ideaId: single.ideaId } : {}),
         ...(single.method === "prompt" ? { prompt: single.prompt.trim() } : {}),
         ...(single.method === "script" ? { script: scriptLines } : {}),
-        ...(template ? { niche: template } : {}),
       };
       const draft = await api.createStory(input);
       live.replace(draft);
@@ -237,7 +227,7 @@ export default function useFruitV2Flow(account, characters = [], niche = FRUIT_N
   const downloadCover = async () => {
     if (!story?.final?.coverUrl) return;
     const { saveMediaToDevice } = await import("../../../../lib/downloadMedia");
-    const name = story.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || niche.fileName;
+    const name = story.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "fruit-story";
     await saveMediaToDevice({ url: story.final.coverUrl, filename: `${name}-cover.jpg`, title: story.title }).catch(() => setActionError("We couldn't download the cover. Try again."));
   };
 
@@ -269,7 +259,7 @@ export default function useFruitV2Flow(account, characters = [], niche = FRUIT_N
   const download = async () => {
     if (!story?.final?.url) return;
     const { saveMediaToDevice } = await import("../../../../lib/downloadMedia");
-    const name = story.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || niche.fileName;
+    const name = story.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "fruit-story";
     await saveMediaToDevice({ url: story.final.url, filename: `${name}.mp4`, title: story.title }).catch(() => {
       setActionError("We couldn't download the video. Try again.");
     });
@@ -313,7 +303,6 @@ export default function useFruitV2Flow(account, characters = [], niche = FRUIT_N
         opener: d.opener === "Something else" ? d.openerCustom.trim() : d.opener,
         tone: d.tone,
         episodeCount: d.episodeCount,
-        ...(template ? { niche: template } : {}),
       });
       setRefreshKey((k) => k + 1);
       setSeries((s) => ({ ...s, writing: false, view: "plan", seriesId: created.id, draft: NEW_DRAFT, wizardStep: 0 }));
@@ -345,7 +334,6 @@ export default function useFruitV2Flow(account, characters = [], niche = FRUIT_N
         quality: series.episode.tierId,
         lengthSec: series.episode.lengthSec,
         aspect: "9:16",
-        ...(template ? { niche: template } : {}),
       });
       live.replace(draft);
       setSeries((s) => ({ ...s, storyId: draft.id }));

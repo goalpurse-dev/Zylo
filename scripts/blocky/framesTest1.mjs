@@ -6,7 +6,7 @@
 import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
-import { ROOT } from "../fruit-story/lib.mjs";
+import { ROOT } from "./lib.mjs";
 
 const [ffmpeg] = process.argv.slice(2);
 for (const test of ["test1", "test1b"]) {

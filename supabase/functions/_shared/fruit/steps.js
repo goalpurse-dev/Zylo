@@ -10,7 +10,6 @@
 import { FruitError } from "./errors.js";
 import { STEPS, stepBlocker } from "./storyState.js";
 import { FRUIT_MODELS, videoModel } from "./models.js";
-import { toolKeyOf } from "./niches/index.js";
 
 const blocked = (message) => new FruitError("VALIDATION", message, 409);
 
@@ -30,11 +29,11 @@ export function planStep(step, { story, scenes, sceneId, instruction, prompt, li
   const full = (s) => ({ ...s, ...(staging?.get(s.id) ?? {}) });
   const pictureItem = (s, mode) => {
     const built = builders.picture({ story, scene: full(s), scenes, library, mode, instruction, prompt });
-    return { scene_id: s.id, kind: "image", tool_key: toolKeyOf(story, "image", FRUIT_MODELS.image.toolKey), price_input: built.priceInput, request: built.request, prompt: built.prompt, sent: built.sent ?? built.prompt };
+    return { scene_id: s.id, kind: "image", tool_key: FRUIT_MODELS.image.toolKey, price_input: built.priceInput, request: built.request, prompt: built.prompt, sent: built.sent ?? built.prompt };
   };
   const clipItem = (s) => {
     const built = builders.clip({ story, scene: full(s), library });
-    return { scene_id: s.id, kind: "clip", tool_key: toolKeyOf(story, story.quality, videoModel(story.quality).toolKey), price_input: built.priceInput, request: built.request, prompt: built.prompt, sent: built.sent ?? built.prompt };
+    return { scene_id: s.id, kind: "clip", tool_key: videoModel(story.quality).toolKey, price_input: built.priceInput, request: built.request, prompt: built.prompt, sent: built.sent ?? built.prompt };
   };
 
   let items;

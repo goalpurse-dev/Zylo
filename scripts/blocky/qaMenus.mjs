@@ -7,8 +7,8 @@
 import fs from "fs";
 import path from "path";
 import { createRequire } from "module";
-import { ROOT, userSession } from "../fruit-story/lib.mjs";
-import { BLOCKY_STORIES_NAME } from "../../supabase/functions/_shared/fruit/niches/names.js";
+import { ROOT, userSession } from "./lib.mjs";
+import { BLOCKY_STORIES_NAME } from "../../supabase/functions/_shared/blocky/names.js";
 
 const require = createRequire(path.join(ROOT, "package.json"));
 const { chromium } = require("playwright");

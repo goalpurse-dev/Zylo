@@ -10,15 +10,15 @@
 //     see whether naming them primes them.
 //   Pro (pro): Noob, Vex and Lux on Nano Banana Pro with the prompt the re-test
 //     picked (roster.mjs#REF_DEFAULTS).
-// Nobody is charged credits (runware-bakeoff-proxy). ONE attempt per item: an
+// Nobody is charged credits (test pictures on blocky-worker). ONE attempt per item: an
 // item already in results.json is never sent again.
 //   node scripts/blocky/test2Looks.mjs                               prints the plan, sends nothing
-//   FRUIT_ALLOW_PAID=1 node scripts/blocky/test2Looks.mjs retest     4 pictures on Lite (about $0.14)
-//   FRUIT_ALLOW_PAID=1 node scripts/blocky/test2Looks.mjs pro        3 pictures on Pro (about $0.44)
+//   BLOCKY_ALLOW_PAID=1 node scripts/blocky/test2Looks.mjs retest     4 pictures on Lite (about $0.14)
+//   BLOCKY_ALLOW_PAID=1 node scripts/blocky/test2Looks.mjs pro        3 pictures on Pro (about $0.44)
 import fs from "fs";
 import path from "path";
-import { openBlockyBudget, paidCallsAllowed } from "../fruit-story/paidGuard.mjs";
-import { ROOT, SUPABASE_URL, writeJson } from "../fruit-story/lib.mjs";
+import { openBlockyBudget, paidCallsAllowed } from "./paidGuard.mjs";
+import { ROOT, rawTest, writeJson } from "./lib.mjs";
 import { ROSTER, REF_DEFAULTS, avatarPrompt } from "./roster.mjs";
 
 const OUT = "data/blocky-tests/test2";
@@ -48,7 +48,7 @@ const plan = { retest: RETEST, pro: PRO_RUN }[mode];
 if (!paidCallsAllowed() || !plan) {
   for (const x of [...RETEST, ...PRO_RUN]) console.log(`${x.key.padEnd(16)} ${x.engine.label.padEnd(20)} ${x.variant}  (${avatarPrompt(byId(x.id), x).length} chars${x.template ? ", + 1 reference picture" : ""})`);
   console.log(`\nExample (retest-pixi-B):\n${avatarPrompt(byId("pixi"), { template: true, minifigure: true })}`);
-  console.log('\nNothing was sent. Run with FRUIT_ALLOW_PAID=1 and "retest" or "pro".');
+  console.log('\nNothing was sent. Run with BLOCKY_ALLOW_PAID=1 and "retest" or "pro".');
   process.exit(0);
 }
 if (plan.some((x) => x.template) && !TEMPLATE_URL) throw new Error("the body template (noob-roblox-lite from test 2) is missing");
@@ -63,24 +63,21 @@ for (const x of plan) {
   budget.reserve(x.engine.expectUsd, x.key);
   const row = (out.items[x.key] = { key: x.key, kind: "avatar", id: x.id, variant: x.variant, template: x.template, minifigure: x.minifigure, model: x.engine.model, engine: x.engine.key, prompt, references: x.template ? 1 : 0, state: "sent", at: new Date().toISOString() });
   save();
-  const task = { taskType: "imageInference", model: x.engine.model, positivePrompt: prompt, width: 768, height: 1376, numberResults: 1, outputType: "URL", outputFormat: "JPG", outputQuality: 95, deliveryMethod: "sync", ...(x.template ? { inputs: { referenceImages: [TEMPLATE_URL] } } : {}) };
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/runware-bakeoff-proxy`, {
-    method: "POST", headers: { Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ task }),
-  });
-  const r = await res.json().catch(() => ({ ok: false, error: "bad response" }));
-  if (res.status === 400 && /not allowed/.test(JSON.stringify(r))) {
-    // The proxy refused the model before anything was sent: not an attempt.
+  const task = { taskType: "imageInference", model: x.engine.model, positivePrompt: prompt, width: 768, height: 1376, numberResults: 1, outputType: "URL", outputFormat: "JPG", outputQuality: 95, ...(x.template ? { inputs: { referenceImages: [TEMPLATE_URL] } } : {}) };
+  // A test picture on blocky-worker: no user charge, logged with its real cost.
+  const r = await rawTest(task, `blocky-looks-${x.key}`);
+  if (r.state === "refused") {
+    // The worker refused before anything was sent: not an attempt.
     delete out.items[x.key];
-    budget.record(0, `${x.key}: proxy doesn't accept ${x.engine.model} yet`, x.engine.expectUsd);
+    budget.record(0, `${x.key}: ${r.error}`, x.engine.expectUsd);
     save();
-    log(`${x.key}: waiting, the picture proxy doesn't accept ${x.engine.label} yet (nothing sent, $0)`);
+    log(`${x.key}: nothing sent ($0): ${r.error}`);
     continue;
   }
-  const got = r.result ?? {};
-  if (!r.ok || !got.imageURL) Object.assign(row, { state: "failed", error: JSON.stringify(r.error ?? r).slice(0, 400), cost: Number(got.cost ?? 0) });
+  if (r.state !== "success") Object.assign(row, { state: "failed", error: String(r.error).slice(0, 400), cost: r.cost });
   else {
-    Object.assign(row, { state: "success", url: got.imageURL, cost: Number(got.cost ?? 0), seconds: Math.round((r.latencyMs ?? 0) / 1000), file: `${x.key}.jpg` });
-    fs.writeFileSync(path.join(ROOT, OUT, row.file), Buffer.from(await (await fetch(got.imageURL)).arrayBuffer()));
+    Object.assign(row, { state: "success", url: r.url, cost: r.cost, seconds: r.seconds, file: `${x.key}.jpg` });
+    fs.writeFileSync(path.join(ROOT, OUT, row.file), Buffer.from(await (await fetch(r.url)).arrayBuffer()));
   }
   budget.record(row.cost, `looks ${x.key}${row.state === "failed" ? " (failed)" : ""}`, x.engine.expectUsd);
   save();
