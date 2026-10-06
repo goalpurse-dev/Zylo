@@ -55,8 +55,9 @@ const NEGATIVE = "No text, no captions, no subtitles, no speech bubbles, no read
 function referenceLine(c, i, tier, outfits) {
   const kind = `the ${c.fruit} ${c.gender === "female" ? "woman" : "man"}`;
   const alt = outfits?.[c.id];
-  if (alt && tier === 2) return `Image ${i + 1} is ${c.name}: same head and face; wears ${alt} instead.`;
-  if (alt) return `Image ${i + 1} is ${c.name}${tier === 0 ? `, ${kind}` : ""}: keep the fruit head and face exactly as in the reference, but in this story ${c.name} wears ${alt} (not the outfit in the reference).`;
+  // Only the clothes change: the fruit head, the face and the character's colours stay as in the reference.
+  if (alt && tier === 2) return `Image ${i + 1} is ${c.name}: same head, face and colours; wears ${alt}.`;
+  if (alt) return `Image ${i + 1} is ${c.name}${tier === 0 ? `, ${kind}` : ""}: keep the fruit head, face and body colours exactly as in the reference, but in this story ${c.name} wears ${alt} (not the outfit in the reference).`;
   return tier === 0
     ? `Image ${i + 1} is ${c.name}, ${kind}: keep the fruit head, face and outfit (${c.outfit}) exactly as in the reference.`
     : `Image ${i + 1} is ${c.name}: keep the fruit head, face and outfit exactly as in the reference.`;

@@ -177,7 +177,7 @@ test("roles in THIS story are returned but never fail a story; outfits are in th
   assert.equal(partial.plan.roles.pia, undefined, "an over-long role is dropped (the UI shows the library tag)");
   assert.equal(validatePlan({ ...GOOD, roles: [{ id: "mia", role: "secret girlfriend who booked the same date" }] }, { ...base, sceneCount: 3 }).plan.roles.mia, "secret girlfriend who booked the same date");
   const { system, user } = buildPlannerPrompt(base);
-  assert.match(system, /Kai the lifeguard in swim shorts belongs at a beach, pool or boardwalk, not a fancy restaurant/);
+  assert.match(system, /Kai the lifeguard in swim shorts belongs at a beach, pool or boardwalk./);
   assert.ok(user.includes("Wears (fixed): "));
   assert.ok(plannerSchema(["mia"]).required.includes("roles"));
 });

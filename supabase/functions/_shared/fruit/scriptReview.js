@@ -19,6 +19,7 @@ export const REVIEW_RULES = Object.freeze({
   title: "the title must not give away the twist",
   heardOnce: "every line must land when heard once, out loud",
   premise: "nothing said may contradict what the pictures show",
+  retell: "a viewer must be able to retell the story in one sentence after watching once",
 });
 
 export const REVIEW_SYSTEM = `You are the script editor for AI Fruit Story: short vertical drama videos with fruit characters, made for TikTok. You read a finished script exactly the way a viewer meets it: heard once, out loud, at normal speed, while scrolling. Each scene is ONE picture and ONE spoken line. The viewer sees only the characters listed as "in the picture" for that scene, wearing the outfit listed for them, and knows nothing you are not told in the lines.
@@ -38,6 +39,8 @@ title: The title must not give away the twist or the ending.
 heardOnce: Every line must be understood when heard once: no chain of relationships, no pronoun whose owner is unclear, no joke that only works written down, no line that needs an earlier line re-read.
 
 premise: Nothing said may contradict what the pictures show. A character said to be undercover, disguised or hiding who they are must not be wearing the outfit that gives them away. A place or object a line depends on must fit the setting. Fruit characters have no hair, beards, skin or tattoos: a line that depends on one fails.
+
+retell: A viewer must be able to retell the story in one sentence after watching once. Try it: write the whole story as one plain sentence, using only what the lines and pictures give (who wanted what, and how it turned). It fails if you can't, if the sentence needs a fact the video never gives, or if it needs "and also" for a second plot. When it fails, the problem says what a viewer would be left asking.
 
 For each rule answer pass true or false. When false: scene is the scene number (0 for the title), problem says what is wrong in one plain sentence, and fix says what to change in one plain sentence. When true: scene 0 and empty strings.
 Return only the JSON object.`;
