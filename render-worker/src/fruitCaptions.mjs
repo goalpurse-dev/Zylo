@@ -1,9 +1,11 @@
 // AI Fruit Story v2 captions: one short line at a time, timed to the speech.
 //
-// The caption TEXT is always the exact line from the story (never the
-// transcript). The TIMING comes from word timestamps (speech-to-text on the
-// clip) aligned to the line's words; if there are none, or they don't match,
-// the line is spread over the detected speech (weighted by word length).
+// The caption TEXT is the line from the story, unless the voice really changed
+// it (a dropped name, another word): then it is what was said, so the screen
+// never shows a word nobody spoke (fruit-story-api decides, spoken.js). The
+// TIMING is the transcript's own word times, aligned to the caption's words;
+// with no transcript the line is spread over the detected speech (weighted by
+// word length).
 // Chunks of 2–4 words, each shown from its first word's start, so nothing
 // appears before it's said; the word being said can be highlighted lime.
 // Rendered as an ASS subtitle file (libass), centered in the lower third.
@@ -67,30 +69,33 @@ export function alignWords(line, transcript) {
 }
 
 /**
- * Whisper's word times keep the right ORDER and spacing but drift at the ends:
- * the first word usually "starts" at 0.00 and the last one ends early (in
- * "The Surprise Wedding Switch" the speech ran to 4.57 s while Whisper said
- * 3.72 s, so the caption vanished while Benny was still talking). Stretch the
- * words linearly onto the speech span measured from the audio (silencedetect).
+ * The transcript's own word times, kept as they are, with two repairs at the
+ * ends. Whisper puts the first word's START at 0.00 even when the voice comes
+ * in later (its END and every later word sit on the audio: checked on 48
+ * clips), so no word starts before the first sound. And nothing runs past the
+ * end of the speech.
+ *
+ * The words used to be stretched linearly across the whole span of SOUND. With
+ * room noise after a line that made every caption late, by two to four words
+ * in the worst clips ("The Kingpin of Cellblock C").
  */
-export function fitToSpan(words, speech) {
-  const w0 = words[0].start, w1 = words[words.length - 1].end;
-  if (!(speech.end - speech.start > 0.3) || !(w1 - w0 > 0.3)) return words;
-  const k = (speech.end - speech.start) / (w1 - w0);
-  const at = (t) => speech.start + (t - w0) * k;
-  return words.map((w) => ({ ...w, start: at(w.start), end: at(w.end) }));
+export function clampToSpeech(words, speech) {
+  return words.map((w) => {
+    const start = Math.min(Math.max(w.start, speech.start), speech.end);
+    return { ...w, start, end: Math.min(Math.max(w.end, start), Math.max(speech.end, start)) };
+  });
 }
 
 /**
  * Timed words for one clip, in the clip's own time.
- * @param {string} line
+ * @param {string} line  the caption text: the story's line, or what was said when the voice changed it
  * @param {object[]|null} transcript  [{word,start,end}] from speech-to-text, or null
- * @param {{start:number,end:number}|null} speech  detected speech span (silencedetect)
+ * @param {{start:number,end:number}|null} speech  detected speech span (fruitFinalPlan.mjs#trimWindow)
  * @param {number} durationSec
  */
 export function timedWords(line, transcript, speech, durationSec) {
   const aligned = alignWords(line, transcript);
-  if (aligned) return { words: speech ? fitToSpan(aligned, speech) : aligned, source: "speech-to-text" };
+  if (aligned) return { words: speech ? clampToSpeech(aligned, speech) : aligned, source: "speech-to-text" };
   const T = (transcript ?? []).filter((w) => Number.isFinite(w?.start));
   const span = T.length >= 2 ? { start: T[0].start, end: T[T.length - 1].end } : speech ?? { start: 0, end: durationSec };
   return { words: evenWords(lineWords(line), span.start, Math.max(span.start + 0.5, span.end)), source: T.length >= 2 ? "speech-span" : "silence" };

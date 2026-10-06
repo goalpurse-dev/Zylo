@@ -103,12 +103,38 @@ export function createSupabaseStore(admin) {
 
     // A picture that failed the automatic check is drawn again ONCE on the same
     // job (same charge; the extra provider cost is ours). note marks it redrawn.
-    async redrawPicture(id, note) {
+    // request (optional): the same request with what to fix added to the prompt; the
+    // scene's image_prompt follows, so what is saved stays what is sent.
+    async redrawPicture(id, note, request = null) {
       const rows = must(await admin.from("fruit_jobs")
-        .update({ status: "queued", next_attempt_at: new Date().toISOString(), output_url: null, lease_until: null, submitted_at: null, provider_done_at: null, error: note })
+        .update({ status: "queued", next_attempt_at: new Date().toISOString(), output_url: null, lease_until: null, submitted_at: null, provider_done_at: null, error: note, ...(request ? { request } : {}) })
         .eq("id", id).eq("status", "provider_done").select("*"), "redraw picture");
       if (rows.length) await setSceneStatus(rows[0], "queued");
+      if (rows.length && request) must(await admin.from("fruit_story_scenes").update({ image_prompt: request.positivePrompt }).eq("id", rows[0].scene_id).eq("image_job_id", id), "scene prompt");
       return rows.length > 0;
+    },
+
+    // A clip that failed its check is made again ONCE on the same job (same
+    // charge; the extra provider cost is ours). note marks it remade.
+    async remakeClip(id, note) {
+      const rows = must(await admin.from("fruit_jobs")
+        .update({ status: "queued", next_attempt_at: new Date().toISOString(), output_url: null, lease_until: null, submitted_at: null, provider_done_at: null, error: note })
+        .eq("id", id).eq("status", "provider_done").eq("kind", "clip").select("*"), "remake clip");
+      if (rows.length) await setSceneStatus(rows[0], "queued");
+      return rows.length > 0;
+    },
+
+    // The clip's last frame has been asked for: remember where it will land and
+    // the clip's stored URL (kept on the job result until the frame arrives).
+    async noteClipFrame(id, frame) {
+      const job = must(await admin.from("fruit_jobs").select("result, status").eq("id", id).maybeSingle(), "read job");
+      if (!job || job.status !== "provider_done") return false;
+      const rows = must(await admin.from("fruit_jobs").update({ result: { ...(job.result ?? {}), _frame: frame } }).eq("id", id).eq("status", "provider_done").select("id"), "note clip frame");
+      return rows.length > 0;
+    },
+
+    async jobById(id) {
+      return must(await admin.from("fruit_jobs").select("*").eq("id", id).maybeSingle(), "job by id");
     },
 
     async setImageCheck(sceneId, status, notes) {

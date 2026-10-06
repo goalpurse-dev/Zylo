@@ -7,7 +7,7 @@ The intern's secret | Bella isn't a normal intern. She's the founder's daughter,
 Glass office, loud call | Rick takes a "private" call in the glass office. Lip readers are everywhere. | rick, gloria, kay
 Stolen lunch | Someone keeps eating Gail's labeled yogurt. She installs a camera. | gail, stan, ken
 The IT guy reads everything | Ken reads everyone's emails. He's finally found something worth sharing. | ken, rick, linda
-Promotion goes to the intern | The VP job goes to the intern. The VP candidate goes to HR. | vic, lucy, linda
+Promotion goes to the intern | The VP job goes to the intern. The VP candidate goes to HR. | vic, arlo, linda
 Rival VP's plan | Vic plans to take the CEO job during the board meeting. The CEO planned first. | vic, rick, ron
 The board meeting ambush | The chairman calls a vote to fire the CEO. The CEO brought his own votes. | ron, rick, marg
 Founder shows up unannounced | Martin retired five years ago. He just walked in with a box of his old things. | martin, rick, kay
@@ -17,14 +17,14 @@ Mailroom reads the memos | Stan reads the layoff memo before the managers do. | 
 Office party photos | The office party photos go up on the intranet. Someone forgot to check them. | gail, rick, bella
 Marketing lead steals ideas | Lila presents Anya's idea at the meeting. Anya brought her notes. | lila, anya, rick
 Sales numbers are fake | Bruno is the top salesman. His biggest client doesn't exist. | bruno, perry, greg
-The middle manager takes credit | Perry takes credit for the project. The project turns out to be a disaster. | perry, anya, rick
+The middle manager takes credit | Perry takes credit for the project. The project turns out to be a disaster. | perry, bella, rick
 Assistant runs the company | Anya has been signing the CEO's name for a year. Nobody noticed. | anya, rick, kay
 Cleaner reads the desks | Dolly the night cleaner reads everyone's desk. She's writing a book. | dolly, rick, linda
 Office manager controls snacks | Gail cuts the snack budget. Mutiny follows. | gail, bruno, stan
 The new intern is overconfident | Arlo presents his five-year plan to replace the CEO on day one. | arlo, rick, gloria
 Secret office romance | Two managers are dating in secret. The whole office has a betting pool. | perry, lila, gloria
 Performance review | Linda's performance review of Rick goes very differently than planned. | linda, rick, marg
-Layoff list leaked | The layoff list leaks. Everyone's name is on it except the intern. | stan, bella, perry
+Layoff list leaked | The layoff list leaks. Everyone's name is on it except the intern. | stan, arlo, perry
 Birthday cake politics | Gail orders a cake for the wrong birthday. The right birthday person is the CEO. | gail, rick, gloria
 Security guard's cameras | Hank watches the cameras at night. He saw who took the money. | hank, philip, greg
 The anonymous complaint | An anonymous HR complaint describes Rick's habits in exact detail. | linda, rick, kay
@@ -47,7 +47,7 @@ Parking spot war | The chairman takes the intern's parking spot. The intern does
 The merger | The company merges with a competitor. Both CEOs want the corner office. | rick, vic, ron
 The founder's diary | Martin's old diary is found in the storage room. It explains everything. | martin, kay, stan
 Payroll mistake | Everyone gets paid double by mistake. HR wants it back. | greg, linda, bruno
-Lunch meeting at the wrong restaurant | Rick takes a client to lunch where his wife is having lunch with his rival. | rick, marg, vic
+Lunch meeting at the wrong restaurant | Rick takes a client to lunch where his wife is having lunch with his rival. | rick, marg, philip
 Anonymous company review | Someone posts a brutal review of the company online. The details are too specific. | lila, ken, rick
 The whistleblower | Greg decides to blow the whistle. Philip offers him a promotion. | greg, philip, hector
 The corner office | Two managers fight over a corner office that's being turned into a storage room. | perry, vic, gail
@@ -68,12 +68,12 @@ Coworker's wedding | Everyone is invited to the coworker's wedding except the bo
 Fire drill chaos | The fire drill reveals who was hiding in the supply closet together. | hank, bella, arlo
 Job interview with the ex | Anya interviews for her dream job. The interviewer is her ex-boyfriend. | anya, felix, rick
 Leaked holiday bonuses | The holiday bonus list leaks. The intern got more than everyone. | greg, bella, perry
-Boss's kid visits | Rick brings his son to work. He fires two people by lunch. | rick, andy, gloria
+Boss's kid visits | Rick brings his son to work. He fires two people by lunch. | rick, jimmy, gloria
 Office crush on the IT guy | Ken fixes everyone's computers. Suddenly everyone's computer is broken. | ken, lucy, gloria
 Chairman's last day | Ron's farewell speech names the person who should never replace him. | ron, vic, rick
 Lawyer on retainer | Hector's legal advice saves the company and sinks the CFO. | hector, philip, marg
 Cleaner finds the evidence | Dolly empties a shredder bin and finds the one page nobody wanted found. | dolly, philip, greg
-Performance improvement plan | Perry is put on a plan by his own assistant. | perry, anya, linda
+Performance improvement plan | Perry is put on a plan by his own assistant. | perry, kay, linda
 The office fridge war | A war over fridge space escalates to HR. | gail, bruno, linda
 Signed the wrong contract | Rick signs a contract without reading it. He just sold his own office. | rick, hector, kay
 Social media manager's slip | The company account posts a personal rant from Lila. | lila, rick, jade
@@ -91,7 +91,7 @@ Reunion with the founder | Martin comes back to see what they did to his company
 Out-of-office reply | Kay's out-of-office reply is brutally honest. | kay, rick, linda
 Expense report poetry | Bruno expenses a jet ski as "client relations." | bruno, greg, philip
 Coffee order spy | Lola remembers every order, including who orders for two. | lola, rick, bella
-Two bosses, one assistant | Anya works for two rival managers who ask her to spy on each other. | anya, perry, vic
+Two bosses, one assistant | Anya works for two rival managers who ask her to spy on each other. | anya, rick, vic
 The printer knows | The printer tray holds an abandoned document that changes everything. | stan, gail, philip
 Interoffice love letters | Someone slides anonymous love letters under Gloria's keyboard. | gloria, hank, stan
 Bonus for silence | The CFO offers Greg a bonus for forgetting what he saw. | philip, greg, hector
@@ -100,5 +100,5 @@ Security badge swap | Two employees swap security badges. The logs tell a story.
 Office pet | Someone brings a dog to the office. It picks favorites. | gail, perry, lucy
 Employee of the month | The employee of the month plaque has one name on it for 5 years. | gloria, linda, stan
 Farewell card | The farewell card is passed around. The messages say too much. | gloria, bruno, kay
-Meeting that should've been an email | The two-hour meeting ends with a surprise resignation. | perry, lila, anya
+Meeting that should've been an email | The two-hour meeting ends with a surprise resignation. | perry, lila, greg
 The new CEO | The board picks a new CEO. It's the secretary. | kay, ron, rick

@@ -16,12 +16,13 @@ import { cors } from "../shared/cors.ts";
 import { FruitError, MESSAGES, errorBody, fromDbError, fruitError } from "../_shared/fruit/errors.js";
 import { episodeStatuses, spentFromLedger, stepBlocker, toRecentSingle, toStory } from "../_shared/fruit/storyState.js";
 import { FINAL_MACHINE, buildFinalJob, coverScene, finalMachineConfig, finalPath, overlayTexts, storyUpdateForReport } from "../_shared/fruit/final.js";
-import { webhookToken } from "../_shared/fruit/runware.js";
+import { sameToken, webhookToken } from "../_shared/fruit/runware.js";
 import { providerOnHold } from "../_shared/fruit/alerts.js";
 import { ensurePlates, lastEndOf, plateOf } from "../_shared/fruit/plates.js";
 import { setupsFor } from "../_shared/fruit/series.js";
 import { createSupabaseMedia } from "../_shared/fruit/supabaseStore.js";
-import { captionWordsForClips } from "../_shared/fruit/captionWords.js";
+import { transcriptsForClips } from "../_shared/fruit/captionWords.js";
+import { spokenDiff } from "../_shared/fruit/spoken.js";
 import { writeUploadPackage } from "../_shared/fruit/uploadPackage.js";
 import { FRUIT_MODELS } from "../_shared/fruit/models.js";
 import { validateCreateStory, validateEditInstruction, validateId, validateScenePrompt, validateSeriesPlan } from "../_shared/fruit/validation.js";
@@ -143,7 +144,8 @@ async function runStep(ctx: Ctx, step: string, storyId: string, extra: Record<st
   // Out-of-credit guard: while Runware just refused us for balance, don't charge for work that can't run.
   if (await providerOnHold(admin, "runware")) throw fruitError("PROVIDER_UNAVAILABLE");
   const { row, scenes } = await loadStory(ctx.userId, storyId);
-  const story: any = { ...toStory(row, scenes), locations: row.locations };   // locations: builder only, not the contract
+  // locations and outfits (an alternate outfit for a role, e.g. undercover): builder only, not the contract
+  const story: any = { ...toStory(row, scenes), locations: row.locations, outfits: row.planner?.outfits ?? {} };
   const staging = new Map(scenes.map((s: any) => [s.id, { locationId: s.location_id, action: s.action, emotion: s.emotion, shot: s.shot, placement: s.placement }]));
   const plan = planStep(step as any, { story, scenes: story.scenes, library: await libraryMap(), builders: BUILDERS, staging, ...extra });
   must(await admin.rpc("fruit_charge_step", {
@@ -217,7 +219,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     }
 
     const cast = input.castIds.map((id: string) => lib.get(id));
-    const { plan, attempts, callIds, costUsd, model } = await planStory({
+    const { plan, attempts, review, callIds, costUsd, model } = await planStory({
       admin, env: LLM_ENV, userId: ctx.userId, seriesId: series?.id ?? null,
       plannerInput: {
         source: input.source, cast, lengthSec: input.lengthSec, quality: input.quality,
@@ -225,6 +227,15 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
         prompt: input.prompt, script: input.script, series,
       },
     });
+    // An episode's cast is the characters it uses (a series of five often plays an
+    // episode with two); every one of them gets a role: the planner's, else the
+    // series bible's, else their library tag. Never an empty one.
+    const used = new Set(plan.scenes.flatMap((sc: any) => sc.presentIds));
+    const storyCast = series ? input.castIds.filter((id: string) => used.has(id)) : input.castIds;
+    const roles: Record<string, string> = {};
+    for (const id of storyCast) {
+      roles[id] = plan.roles?.[id] || (series?.characters ?? []).find((c: any) => c.id === id)?.role || lib.get(id)?.tag || "";
+    }
     // Series locations: make any missing plate (empty background, our cost) and
     // give each story location its plate so every scene there matches the series.
     let locations = plan.locations;
@@ -251,9 +262,10 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
       p_story: {
         source: input.source,
         input: { source: input.source, ideaId: input.ideaId ?? null, prompt: input.prompt ?? null, script: input.script ?? null },
-        title: plan.title, cast_ids: input.castIds, quality: input.quality, aspect: input.aspect,
+        title: plan.title, cast_ids: storyCast, quality: input.quality, aspect: input.aspect,
         length_sec: Math.min(180, Math.max(5, plan.lengthSec)), locations,
-        planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd },
+        // review: what the script editor found and whether the script was rewritten; outfits: alternate outfits for this story
+        planner: { provider: model.provider, model: model.model, attempts, callIds, costUsd, review: review ?? null, outfits: plan.outfits ?? {} },
         series_id: series?.id ?? null, episode_number: series ? input.episodeNumber : null,
       },
       p_scenes: plan.scenes.map((sc: any) => ({
@@ -263,7 +275,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
       p_call_ids: callIds,
     }));
     // Each character's role in THIS story, and (for series continuity) where it ends.
-    must(await admin.from("fruit_stories").update({ cast_roles: plan.roles ?? {}, end_state: plan.endState ?? null }).eq("id", storyId).select("id"));
+    must(await admin.from("fruit_stories").update({ cast_roles: roles, end_state: plan.endState ?? null }).eq("id", storyId).select("id"));
     const { row, scenes, spent } = await loadStory(ctx.userId, storyId);
     return toStory(row, scenes, spent);
   },
@@ -345,10 +357,22 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
   async buildFinal(ctx) {
     requirePaid(ctx);
     const storyId = validateId(ctx.body?.storyId);
-    const captions = ctx.body?.captions !== false;
     await rateLimit(ctx.userId, "step");
-    const { row, scenes } = await loadStory(ctx.userId, storyId);
+    return startFinal(ctx.userId, storyId, { captions: ctx.body?.captions !== false, partLabel: ctx.body?.partLabel, endCard: ctx.body?.endCard });
+  },
+};
+
+/**
+ * Starts a final build. Called by the user's button (buildFinal) and by
+ * fruit-worker the moment a story's last clip is ready (autoFinal), so a
+ * video is finished even when the user has closed the tab. Free either way.
+ */
+async function startFinal(userId: string, storyId: string, opts: { captions?: boolean; partLabel?: unknown; endCard?: unknown; auto?: boolean }) {
+    const captions = opts.captions !== false;
+    const { row, scenes } = await loadStory(userId, storyId);
     const story = toStory(row, scenes);
+    // Already building (the automatic build beat the button): nothing to start, just show it.
+    if (row.status === "building") return story;
     const blocker = stepBlocker("final", story, story.scenes);
     if (blocker) throw new FruitError("WRONG_STATUS", blocker, 409);
     if (!FLY_API_TOKEN) throw fruitError("FINAL_FAILED");
@@ -357,8 +381,8 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     // for singles the first time; after that, whatever the user last chose.
     const first = row.final_status === "none";
     const pick = (value: unknown, current: boolean) => (typeof value === "boolean" ? value : first ? Boolean(row.series_id) : current);
-    const partLabel = pick(ctx.body?.partLabel, row.final_part_label);
-    const endCard = pick(ctx.body?.endCard, row.final_end_card);
+    const partLabel = pick(opts.partLabel, row.final_part_label);
+    const endCard = pick(opts.endCard, row.final_end_card);
     let nextTitle: string | null = null;
     if (row.series_id && endCard) {
       const next = must(await admin.from("fruit_series_episodes").select("title").eq("series_id", row.series_id).eq("number", (row.episode_number ?? 0) + 1).maybeSingle());
@@ -366,7 +390,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     }
 
     const callId = crypto.randomUUID();
-    const path = finalPath(ctx.userId, storyId, callId);
+    const path = finalPath(userId, storyId, callId);
     const coverPath = path.replace(/final-([^/]+)\.mp4$/, "cover-$1.jpg");
     const [{ data: signed, error: signErr }, { data: coverSigned }] = await Promise.all([
       admin.storage.from("generated").createSignedUploadUrl(path, { upsert: true }),
@@ -385,22 +409,29 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
         ? { imageUrl: coverFrom.image_url, label: row.episode_number ? `Episode ${row.episode_number}` : "", title: row.title, uploadUrl: coverSigned.signedUrl, sceneIndex: coverFrom.idx }
         : null,
     });
-    // Captions are timed to the speech: word timestamps per clip (cached per clip URL).
-    if (captions) {
+    // Each clip's transcript (made by the clip check, cached per clip URL): the
+    // builder trims to the last spoken word and times the captions to the words.
+    // When the voice really changed the line, the caption shows what was said.
+    {
       const ordered = [...scenes].sort((a: any, b: any) => a.idx - b.idx);
-      const words = await captionWordsForClips({
-        admin, apiKey: LLM_ENV.OPENAI_API_KEY, paidOff: PAID_CALLS_OFF, userId: ctx.userId, storyId,
+      const transcripts = await transcriptsForClips({
+        admin, apiKey: LLM_ENV.OPENAI_API_KEY, paidOff: PAID_CALLS_OFF, userId, storyId,
         clips: ordered.map((s: any) => ({ sceneId: s.id, url: s.clip_url, durationSec: Number(s.duration_sec) })),
       });
-      job.clips.forEach((c: any, i: number) => { c.words = words[i]; });
+      job.clips.forEach((c: any, i: number) => {
+        const t = transcripts[i];
+        if (!t?.words?.length) return;
+        c.words = t.words;
+        if (!spokenDiff(c.line, t.text).same) c.caption = String(t.text).trim();
+      });
     }
     const moved = must(await admin.from("fruit_stories")
       .update({ status: "building", final_status: "building", final_captions: captions, final_part_label: partLabel, final_end_card: endCard, final_requested_at: new Date().toISOString(), final_error: null, final_call_id: callId })
       .eq("id", storyId).in("status", ["clips_ready", "final_ready"]).select("id"));
     if (!moved.length) throw fruitError("WRONG_STATUS");
     must(await admin.from("fruit_ai_calls").insert({
-      id: callId, user_id: ctx.userId, story_id: storyId, provider: "fly", model: `${FINAL_MACHINE.cpu_kind}-${FINAL_MACHINE.cpus}x`, purpose: "final",
-      request: { ...job, clips: job.clips.map((c: any) => ({ url: c.url, line: c.line, words: c.words ? c.words.length : null })), uploadUrl: "(signed, one-time)", token: "(hmac)", path, coverPath, cover: job.cover ? { ...job.cover, uploadUrl: "(signed, one-time)" } : null },
+      id: callId, user_id: userId, story_id: storyId, provider: "fly", model: `${FINAL_MACHINE.cpu_kind}-${FINAL_MACHINE.cpus}x`, purpose: "final",
+      request: { ...job, auto: Boolean(opts.auto), clips: job.clips.map((c: any) => ({ url: c.url, line: c.line, words: c.words ? c.words.length : null, ...(c.caption ? { caption: c.caption } : {}) })), uploadUrl: "(signed, one-time)", token: "(hmac)", path, coverPath, cover: job.cover ? { ...job.cover, uploadUrl: "(signed, one-time)" } : null },
     }));
 
     const t0 = Date.now();
@@ -418,10 +449,11 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     }
     const machine = await res.json().catch(() => ({}));
     await admin.from("fruit_ai_calls").update({ http_status: res.status, response: { machineId: machine?.id ?? null, region: machine?.region ?? null } }).eq("id", callId);
-    const fresh = await loadStory(ctx.userId, storyId);
+    const fresh = await loadStory(userId, storyId);
     return toStory(fresh.row, fresh.scenes, fresh.spent);
-  },
+}
 
+Object.assign(ACTIONS, {
   /** Free: the series outline (title, logline, bible with fixed roles, episodes with cliffhangers). */
   async createSeriesPlan(ctx) {
     requirePaid(ctx);
@@ -474,7 +506,27 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const scenes = must(await admin.from("fruit_story_scenes").select("story_id, idx, image_url").in("story_id", rows.map((r: any) => r.id)).lt("idx", 3));
     return rows.map((r: any) => toRecentSingle(r, scenes.filter((s: any) => s.story_id === r.id)));
   },
-};
+});
+
+/**
+ * fruit-worker, when a story's last clip is ready: build the final video
+ * without waiting for the button. Only the first time (a story that was never
+ * built), only when every clip is there, and never for a user who is no
+ * longer on a paid plan. Returns what happened; never throws to the worker.
+ */
+async function autoFinal(storyId: string) {
+  const row = must(await admin.from("fruit_stories").select("id, user_id, status, final_status").eq("id", storyId).is("deleted_at", null).maybeSingle());
+  if (!row) return { started: false, reason: "no story" };
+  if (row.status !== "clips_ready" || (row.final_status && row.final_status !== "none")) return { started: false, reason: `status ${row.status}/${row.final_status}` };
+  const { data: profile } = await admin.from("profiles").select("plan_code").eq("id", row.user_id).maybeSingle();
+  if (!PAID_PLANS.has(String(profile?.plan_code ?? "free").toLowerCase().trim())) return { started: false, reason: "no paid plan" };
+  try {
+    await startFinal(row.user_id, storyId, { captions: true, auto: true });
+    return { started: true };
+  } catch (e) {
+    return { started: false, reason: String((e as any)?.code ?? (e as Error)?.message ?? e).slice(0, 120) };
+  }
+}
 
 async function seriesView(userId: string, seriesId: string) {
   const s = must(await admin.from("fruit_series").select("*").eq("id", seriesId).eq("user_id", userId).is("deleted_at", null).maybeSingle());
@@ -526,10 +578,15 @@ Deno.serve(async (req) => {
   try {
     const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
     if (!token) throw fruitError("UNAUTHORIZED");
+    const body = await req.json().catch(() => ({}));
+    // Service call from fruit-worker (its secret, not a user session): the automatic final build.
+    if (body?.action === "autoFinal") {
+      if (!WORKER_SECRET || !sameToken(req.headers.get("x-fruit-worker-secret") ?? "", WORKER_SECRET)) throw fruitError("UNAUTHORIZED");
+      return reply({ ok: true, data: await autoFinal(validateId(body?.storyId)) });
+    }
     const { data: { user }, error } = await admin.auth.getUser(token);
     if (error || !user) throw fruitError("UNAUTHORIZED");
 
-    const body = await req.json().catch(() => ({}));
     const handler = ACTIONS[body?.action];
     if (!handler) throw new FruitError("VALIDATION", "Unknown action.", 400);
 

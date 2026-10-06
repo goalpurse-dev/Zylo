@@ -1,12 +1,12 @@
 # Marriage & cheating. One idea per line: title | one-line summary | cast ids (2-3)
 The perfect revenge dinner | She finds the photos, stays calm, and invites his lover to their anniversary dinner. | mia, marco, pia
 Two anniversary gifts | She finds two identical jewelry boxes. Only one has her name on it. | mia, marco, pia
-The fake business trip | He's supposedly in Tokyo. His car is parked outside her favorite restaurant. | walt, wanda, mel
+The fake business trip | He's supposedly in Tokyo. His car is parked outside her favorite restaurant. | walt, wanda, kai
 Wrong phone, right name | Marco grabs the wrong phone at breakfast and reads a text meant for his wife. | marco, mia, carmen
 The second dinner reservation | The restaurant calls to confirm two tables for tonight. Mia only booked one. | mia, marco, percy
-Lipstick on the collar | Fiona finds a shade of lipstick she would never wear. Her husband says it's ketchup. | fiona, charlie, carmen
+Lipstick on the collar | Fiona finds a shade of lipstick she would never wear. Her husband says it's ketchup. | fiona, charlie, pia
 The gym membership | Rhonda notices her husband's gym has no reviews and no address. | rhonda, brad, adam
-Double-booked Valentine's | Charlie planned Valentine's Day twice, in the same restaurant, one table apart. | charlie, fiona, carmen
+Double-booked Valentine's | Charlie planned Valentine's Day twice, in the same restaurant, one table apart. | charlie, fiona, pia
 The shared playlist | His new playlist is called "for her." She's never heard any of these songs. | mia, marco, pia
 The wrong name in bed | Walt says "goodnight, Pia." His wife has never met a Pia. | walt, wanda, pia
 Receipts in the laundry | Wanda empties his pockets and finds a receipt for two lobster dinners on her birthday. | wanda, walt, georgia
@@ -14,12 +14,12 @@ The private investigator | Mia hires a PI. The PI's first photo is of her own si
 Caught on the doorbell camera | The doorbell camera caught everything. Including the neighbor. | paula, brad, chuck
 Same perfume | The new intern wears the exact perfume her husband gave her for Christmas. | marg, rick, bella
 The honeymoon photos | Andre finds his wife's honeymoon photos. He isn't in any of them. | bianca, andre, lionel
-Two wedding rings | The jeweler calls about the engraving on the second ring. | charlie, fiona, carmen
+Two wedding rings | The jeweler calls about the engraving on the second ring. | charlie, fiona, pia
 The Airbnb review | A five-star Airbnb review mentions "a lovely couple." Rhonda was home that weekend. | rhonda, brad, paula
 Marriage counseling, week one | Nora asks them to say one nice thing about each other. The silence lasts four minutes. | nora, dusty, rhonda
 The counselor takes sides | Halfway through the session, Nora admits she's on the wife's side. | nora, charlie, fiona
 Separate bank accounts | Dusty wants separate accounts. Rhonda finds out why when the statements arrive. | dusty, rhonda, greg
-The pool guy knows | Mel cleans three pools on one street and every wife has a secret. | mel, wanda, walt
+The pool guy knows | Mel cleans three pools on one street and every wife has a secret. | mel, marg, fiona
 Anniversary speech | At their 25th anniversary party, Walt thanks the wrong woman. | walt, wanda, georgia
 The ex at the barbecue | Andre shows up at his ex-wife's barbecue with a potato salad and a plan. | andre, bianca, chuck
 Divorce papers at breakfast | Bianca slides the papers across the table between the toast and the orange juice. | bianca, andre, penny
@@ -32,7 +32,7 @@ Mother-in-law sees everything | Doris saw him leave at midnight. She's been wait
 The toast that ended it | The best friend's wedding toast reveals more than anyone wanted. | jojo, charlie, fiona
 Retirement surprise | Chuck retires and finally notices his wife has a whole second life. | chuck, paula, pete
 The tennis instructor | Every Tuesday, Connie has tennis. She doesn't own a racket. | connie, pete, adam
-Personal trainer, private sessions | The trainer the wife keeps booking has started texting at 2 a.m. | adam, marg, rick
+Personal trainer, private sessions | The trainer the wife keeps booking has started texting at 2 a.m. | adam, mia, marco
 Lifeguard on duty | Kai is dating a married woman. Her husband just joined his swim class. | kai, wanda, walt
 The young lover | Leo thought she was divorced. Her husband is buying him a drink. | leo, wanda, walt
 The athlete and the coach's wife | Wes gets traded. The coach says it's about stats. It isn't. | wes, bianca, hal
@@ -40,19 +40,19 @@ Firefighter with a second phone | Brad's second phone rings during dinner. It's 
 The hidden credit card | A credit card statement arrives for a card nobody in the house owns. | fiona, charlie, greg
 The politician's hidden family | Grant has a campaign rally. His other family shows up in the front row. | grant, carmen, violet
 Taxi driver knows | Buddy has driven the husband to the same hotel every Thursday for a year. | buddy, marco, mia
-Hotel manager covers it up | Tara hides a guest's affair, until the wife books the room next door. | tara, charlie, fiona
+Hotel manager covers it up | Tara hides a guest's affair, until the wife books the room next door. | tara, marco, mia
 The mistress wants a ring | Carmen gives him an ultimatum. He gives her his wife's old ring. | carmen, marco, mia
 The other woman is her friend | Kiki has been Mia's best friend for ten years. And Marco's for two. | kiki, mia, marco
 Renewing the vows | They renew their vows. The officiant is his ex. | pete, connie, betty
-The dating app notification | His phone lights up: "You have a new match!" He's been married for twelve years. | charlie, fiona, chloe
-Couples cooking class | The cooking class pairs them with his ex and her new husband. | fiona, charlie, carmen
+The dating app notification | His phone lights up: "You have a new match!" He's been married for twelve years. | charlie, fiona, kiki
+Couples cooking class | The cooking class pairs them with his ex and her new husband. | fiona, charlie, pia
 Twin beds | After thirty years, Walt suggests twin beds. Wanda suggests twin houses. | walt, wanda, nora
 The anniversary cruise | They book an anniversary cruise. The mistress is on the same ship. | marco, mia, pia
 Surprise party backfire | Mia throws Marco a surprise party. He brings a surprise of his own. | mia, marco, pia
 Inheritance and infidelity | The will reveals Grandpa had a second wife, and she's at the funeral. | georgia, gus, sally
-The widow's five husbands | Georgia's fifth husband wants to know what happened to the other four. | georgia, lionel, penny
+The widow's five husbands | Georgia's fifth husband wants to know what happened to the other four. | georgia, lionel, hector
 Couples' therapy role-play | Nora asks them to role-play their first date. Neither remembers it the same way. | nora, pete, connie
-Fake work dinner | Charlie says he has a work dinner. His boss is at the next table. | charlie, rick, fiona
+Fake work dinner | Charlie says he has a work dinner. His boss is at the next table. | charlie, ron, fiona
 Mom finds out first | Olivia sees her son-in-law kissing someone at the mall. Does she tell her daughter? | olive, marco, mia
 The neighbor's husband | Paula keeps borrowing sugar from the house next door. She bakes nothing. | paula, brad, rhonda
 The divorce party | Bianca throws a divorce party. Andre wasn't invited but he RSVP'd yes. | bianca, andre, piper
@@ -62,7 +62,7 @@ Cologne she didn't buy | He smells like a cologne she didn't buy. He says it's t
 Couples yoga | Addie's couples yoga retreat exposes three marriages in one weekend. | addie, charlie, fiona
 The honeymoon suite | The honeymoon suite is double-booked. The other couple is his ex and her fiancé. | chip, rosa, carmen
 Voicemail left on speaker | A voicemail plays on speaker in the car with both kids in the back. | pete, connie, clara
-The ring in the glovebox | Fiona finds a ring box in the glovebox. It's not her size. | fiona, charlie, carmen
+The ring in the glovebox | Fiona finds a ring box in the glovebox. It's not her size. | fiona, charlie, pia
 Karaoke confession | Drunk karaoke night. He dedicates a love song to the wrong table. | charlie, fiona, gabe
 He forgot the anniversary | Marco forgot the anniversary. He remembered someone else's birthday. | marco, mia, pia
 Neighbors hear everything | The walls are thin. Chuck and Paula have been taking notes for months. | chuck, paula, dusty
@@ -72,7 +72,7 @@ Weekend fishing trip | Pete goes on a fishing trip every month. He's never broug
 Midlife crisis car | Oscar buys a red convertible and a leather jacket. His wife books a lawyer. | oscar, penny, olive
 The second family's Christmas card | A Christmas card arrives signed "Love, your other kids." | grant, georgia, violet
 Ex-husband wants her back | Andre wants Bianca back. He brings the dog as leverage. | andre, bianca, kiki
-The couples' vacation | Two couples take a vacation. They come back as different couples. | charlie, fiona, carmen
+The couples' vacation | Two couples take a vacation. They come back as different couples. | charlie, fiona, pia
 Wedding album surprise | The wedding album has a stranger in every photo standing close to the groom. | rosa, chip, greta
 Married to the job | Rick sleeps at the office. His wife sends HR to check. | rick, marg, linda
 The anonymous letter | An anonymous letter says "Ask him about Friday." Every Friday is suspicious. | mia, marco, lionel
@@ -80,16 +80,16 @@ Budget meeting at home | Rhonda calls a household budget meeting with slides. Du
 The spa gift card | He gives her a spa gift card. It's already been used, by someone else. | wanda, walt, lulu
 Joint therapy, separate secrets | Both spouses secretly hired the same private eye. | lionel, charlie, fiona
 Staying for the kids | They stay together for the kids. The kids hold a family meeting to vote on it. | pete, connie, clara
-Remarried to the same man | Georgia marries her first husband again, for the third time. | georgia, gus, penny
-Guest room | Walt moves into the guest room. Then the guest arrives. | walt, wanda, mel
+Remarried to the same man | Georgia marries her first husband again, for the third time. | georgia, gus, hector
+Guest room | Walt moves into the guest room. Then the guest arrives. | walt, wanda, kai
 The engagement ring appraisal | The appraiser says the diamond is glass. The marriage might be too. | rosa, chip, candy
 Proposal gone public | He proposes at the stadium. The kiss cam finds his wife instead. | wes, bianca, piper
 Husband's online persona | Rhonda finds her husband's influencer account. He has a fake wife. | rhonda, dusty, ana
 The secret twin | Mia sees Marco across the street while he's sitting next to her. | mia, marco, lionel
 Late-night grocery runs | He goes for milk every night at 11. The fridge is full of milk. | charlie, fiona, tanya
-Double date disaster | The double date goes fine until the other couple compares notes about the husband. | chloe, benny, carmen
+Double date disaster | The double date goes fine until the other couple compares notes about the husband. | chloe, benny, pia
 She married her boss | Marg married the CEO. Now the new intern is sitting in her old seat. | marg, rick, bella
-The long engagement | Engaged for eight years. She finds out why when his wife calls. | rosa, charlie, carmen
+The long engagement | Engaged for eight years. She finds out why when his wife calls. | rosa, charlie, pia
 Ask the butler | The butler has worked for the family for forty years. He knows about every affair. | otto, georgia, walt
 Heiress marries the pool guy | Priscilla marries Mel. The family lawyer starts packing. | priscilla, mel, hector
 The fortune teller warns her | Hazel reads her palm and says "He's lying about the boat." | hazel, rhonda, dusty
@@ -125,20 +125,19 @@ The ex returns | Bianca's ex-husband moves in next door with his new wife. | bia
 Wedding planner remembers | Dina planned his first two weddings. She's planning his third. | dina, charlie, rosa
 Separate vacations | They take separate vacations and end up at the same resort. | tony, walt, wanda
 The yacht party | The billionaire's yacht party exposes a guest list of mistresses. | bart, carmen, georgia
-Husband comes home early | For the first time in years, he comes home early. Nobody is happy about it. | walt, wanda, mel
+Husband comes home early | For the first time in years, he comes home early. Nobody is happy about it. | walt, wanda, kai
 The ex-wife's wedding | Andre is invited to his ex-wife's wedding. He brings his mother. | andre, bianca, doris
 Counselor's own marriage | The marriage counselor's husband shows up at her client's session. | nora, pete, oscar
 Truth serum dinner | The friends play "never have I ever." The marriage doesn't survive round three. | kiki, mia, marco
-Bank alert | A bank alert for a jewelry store. She hasn't seen any jewelry. | fiona, charlie, carmen
+Bank alert | A bank alert for a jewelry store. She hasn't seen any jewelry. | fiona, charlie, pia
 New neighbor, old flame | The new neighbor is her husband's first love. | paula, brad, rhonda
 Couples' spa weekend | The spa owner knows every couple's secret from the massage room. | lulu, charlie, fiona
 She kept the ring | She kept the engagement ring from her first marriage in his sock drawer. | bianca, andre, penny
 Grandpa's love letters | The family finds love letters Grandpa wrote. None of them are to Grandma. | gus, grace, sally
 Pregnancy announcement | She announces a pregnancy. Two men start calculating dates. | pia, marco, charlie
-Revenge makeover | After the breakup, Bianca gets a revenge makeover and shows up to his office party. | bianca, andre, april
 The lie detector | Wanda buys a lie detector online. Walt fails the calibration question. | wanda, walt, lionel
 Ask the daughter | Their daughter knew about the affair for a year and was charging him for silence. | clara, oscar, olive
 Marriage by the numbers | Greg the accountant audits his own marriage and finds a deficit. | greg, rhonda, dusty
-Moving out on moving day | She's moving out, the same day he's moving his girlfriend in. | fiona, charlie, carmen
+Moving out on moving day | She's moving out, the same day he's moving his girlfriend in. | fiona, charlie, pia
 The wrong kids' pickup | He picks up the wrong kids from school. They call him Dad. | charlie, fiona, rhonda
 The will reading | The will names "my true love." It's not his wife. | gus, grace, penny

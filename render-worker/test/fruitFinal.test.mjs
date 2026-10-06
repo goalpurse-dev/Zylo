@@ -18,14 +18,14 @@ test("silences parse, and one still open at the end closes at the clip length", 
 
 test("only leading and trailing silence is cut, keeping 0.25 s each side; pauses inside stay", () => {
   const w = trimWindow(parseSilences(STDERR, 5), 5);
-  assert.deepEqual(w, { start: 0.59, end: 4.15, trimmedSec: 1.44, speech: { start: 0.84, end: 3.9 } });
+  assert.deepEqual(w, { start: 0.59, end: 4.15, trimmedSec: 1.44, speech: { start: 0.84, end: 3.9 }, holdSec: 0 });
   assert.equal(KEEP_SEC, 0.25);
   assert.ok(w.start < 2.1 && w.end > 2.4, "the pause inside the line is kept");
 });
 
 test("no speech, or no silence, keeps the whole clip; a tiny line keeps at least 1.2 s", () => {
-  assert.deepEqual(trimWindow([{ start: 0, end: 5 }], 5), { start: 0, end: 5, trimmedSec: 0, speech: null });
-  assert.deepEqual(trimWindow([], 4), { start: 0, end: 4, trimmedSec: 0, speech: { start: 0, end: 4 } });
+  assert.deepEqual(trimWindow([{ start: 0, end: 5 }], 5), { start: 0, end: 5, trimmedSec: 0, speech: null, holdSec: 0 });
+  assert.deepEqual(trimWindow([], 4), { start: 0, end: 4, trimmedSec: 0, speech: { start: 0, end: 4 }, holdSec: 0 });
   const tiny = trimWindow([{ start: 0, end: 2.2 }, { start: 2.5, end: 5 }], 5);
   assert.ok(Math.abs(tiny.end - tiny.start - MIN_CLIP_SEC) < 0.002, JSON.stringify(tiny));
 });
@@ -94,14 +94,16 @@ test("ASS: one line at a time, each chunk from its first word, current word lime
 const BENNY = "Okay, don't freak out, but this might actually be our wedding.";
 const BENNY_WORDS = [["Okay", 0, 0.48], ["don't", 0.58, 0.86], ["freak", 0.86, 1.1], ["out", 1.1, 1.44], ["but", 1.68, 1.86], ["this", 1.86, 2.18], ["might", 2.18, 2.42], ["actually", 2.42, 2.96], ["be", 2.96, 3.18], ["our", 3.18, 3.5], ["wedding", 3.5, 3.72]].map(([word, start, end]) => ({ word, start, end }));
 
-test("Whisper's words are stretched onto the measured speech span (Benny talked to 4.57 s, Whisper said 3.72 s)", async () => {
-  const { fitToSpan } = await import("../src/fruitCaptions.mjs");
+test("Whisper's word times are kept as they are; only the first word's start moves to the first sound (Benny talked to 4.57 s, Whisper said 3.72 s)", () => {
   const { words } = timedWords(BENNY, BENNY_WORDS, { start: 0, end: 4.57 }, 6.04);
-  assert.ok(Math.abs(words.at(-1).end - 4.57) < 1e-6, "the last word ends when the audio does");
-  assert.equal(words[0].start, 0);
+  // The words are not stretched to 4.57 s any more. The caption still can't vanish while Benny talks:
+  // the last chunk holds to the end of the caption window (next test), and the clip is cut where the
+  // VOICE stops, which the audio decides (fruitFinalPlan.mjs#voiceEndFrom), not Whisper's last word.
+  assert.equal(words.at(-1).end, BENNY_WORDS.at(-1).end);
+  assert.deepEqual(words.map((w) => w.start), BENNY_WORDS.map((w) => w.start));
   const late = timedWords(BENNY, BENNY_WORDS, { start: 0.56, end: 4.59 }, 6.04).words;
   assert.ok(Math.abs(late[0].start - 0.56) < 1e-6, "Whisper's 0.00 first word moves to where speech starts");
-  assert.deepEqual(fitToSpan(BENNY_WORDS.map((w) => ({ ...w, text: w.word })), { start: 0, end: 0.1 }).length, 11, "a tiny span leaves words as they are");
+  assert.deepEqual(late.slice(2).map((w) => w.start), BENNY_WORDS.slice(2).map((w) => w.start), "the rest stays on the transcript's times");
 });
 
 test("no blank while talking: every chunk stays until the next, the last until the clip ends", () => {

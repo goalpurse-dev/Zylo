@@ -86,12 +86,29 @@ export function createMemoryDb({ balance = 1000 } = {}) {
       Object.assign(j, { status: "provider_done", provider_done_at: now.toISOString(), result, output_url: outputUrl, cost_usd: j.cost_usd + (cost || 0), lease_until: null });
       return true;
     },
-    async redrawPicture(jobId, note) {
+    async redrawPicture(jobId, note, request = null) {
       const j = db.jobs.get(jobId);
       if (!j || j.status !== "provider_done") return false;
-      Object.assign(j, { status: "queued", next_attempt_at: db.clock().toISOString(), output_url: null, lease_until: null, submitted_at: null, provider_done_at: null, error: note });
-      setScene(j, { image_status: "queued" });
+      Object.assign(j, { status: "queued", next_attempt_at: db.clock().toISOString(), output_url: null, lease_until: null, submitted_at: null, provider_done_at: null, error: note, ...(request ? { request } : {}) });
+      setScene(j, { image_status: "queued", ...(request ? { image_prompt: request.positivePrompt } : {}) });
       return true;
+    },
+    async remakeClip(jobId, note) {
+      const j = db.jobs.get(jobId);
+      if (!j || j.status !== "provider_done" || j.kind !== "clip") return false;
+      Object.assign(j, { status: "queued", next_attempt_at: db.clock().toISOString(), output_url: null, lease_until: null, submitted_at: null, provider_done_at: null, error: note });
+      setScene(j, { clip_status: "queued" });
+      return true;
+    },
+    async noteClipFrame(jobId, frame) {
+      const j = db.jobs.get(jobId);
+      if (!j || j.status !== "provider_done") return false;
+      j.result = { ...(j.result ?? {}), _frame: frame };
+      return true;
+    },
+    async jobById(jobId) {
+      const j = db.jobs.get(jobId);
+      return j ? { ...j } : null;
     },
     async setImageCheck(sceneId, status, notes) {
       const s = db.scenes.get(sceneId);

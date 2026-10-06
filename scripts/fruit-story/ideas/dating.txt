@@ -1,7 +1,7 @@
 # Dating & friends
 Two best friends, one boyfriend | Kiki and Chloe find out they're dating the same man. | kiki, chloe, benny
 The wrong delivery | Flowers arrive with a love note addressed to someone else. | kiki, benny, bella
-Blind date with fake photos | Bing's dating profile is ten years and three haircuts old. | bing, chloe, gabe
+Blind date with fake photos | Bing's dating profile is ten years and three jobs old. | bing, lola, gabe
 Jealous girlfriend checks the phone | Chloe checks Benny's phone. She finds a note about her birthday surprise. | chloe, benny, kiki
 Best friend's ex | Kiki starts dating her best friend's ex. The best friend finds out at brunch. | kiki, andre, bianca
 The bartender hears confessions | Gabe hears two confessions in one night from people dating each other. | gabe, chloe, benny
@@ -14,13 +14,12 @@ Influencer couple breakup | The influencer couple announces a breakup live. Only
 The wingman steals the date | Gabe was supposed to help. Now he's the one getting the number. | gabe, benny, lola
 Dating app mixup | Two friends match with each other on a dating app. By accident. | kiki, felix, lola
 Barber gives life advice | Felix gives his client dating advice. The client is dating Felix's ex. | felix, benny, rae
-Tattoo cover-up | Rae has to cover up her client's ex's name. The ex is in the waiting room. | rae, andre, bianca
 Grandma is dating | Polly has three boyfriends at once at the community center. | polly, pappy, fran
 Widow with eyes on the neighbor | Fran bakes a pie for the new neighbor every day. He's married. | fran, chuck, paula
 Speed dating | Five minutes each. One of them is her ex-husband. | betty, andre, bing
 Proposal gone wrong | Benny proposes. Kiki says "wait, you're serious?" | benny, kiki, chloe
 The ex's wedding invite | Chloe is invited to her ex's wedding. She brings a date who's better looking. | chloe, felix, rosa
-Flight attendant's boyfriends | Bea's two boyfriends end up on the same flight. | bea, felix, benny
+Flight attendant's boyfriends | Bea's two boyfriends end up on the same flight. | bea, felix, andre
 Pilot romance | Aria and the co-pilot keep their romance secret. The flight attendant does not. | aria, bea, jay
 Double date | The double date gets tense when the guys realize they went to school together. | chloe, benny, kiki
 Friend zone escape | Hugh has been in the friend zone for three years. He finally makes a move. | hugh, kiki, abby
@@ -31,30 +30,28 @@ Dating two sisters | Leo is dating two sisters without knowing they're sisters. 
 Crush on the boss | Bella has a crush on her boss. Her boss has a crush on the barista. | bella, rick, lola
 Ex returns with a ring | Andre shows up at Kiki's door with a ring. It's been three years. | andre, kiki, chloe
 First date, parent interruption | Clara's first date is interrupted by her father, repeatedly. | clara, oscar, bing
-Makeover before the date | April does a makeover before the big date. It goes too far. | april, chloe, ruby
 The love letter | Someone leaves love letters for Lola at the coffee shop. | lola, gabe, stan
 Best man falls for the maid of honor | At the rehearsal dinner, the best man and maid of honor fall for each other. | jojo, greta, chip
 Maid of honor loves the groom | Greta is in love with the groom. The bride suspects it. | greta, chip, rosa
 Online dating grandma | Ruth joins a dating app. She matches with her granddaughter's boss. | ruth, rick, betty
-Chef's date night | Ali cooks for his date. He critiques the dessert she brought. | ali, maya, remy
+Chef's date night | Ali cooks for his date. He critiques the dessert she brought. | ali, chloe, remy
 Revenge date | Chloe brings a date to make her ex jealous. The date falls for her ex. | chloe, benny, felix
 Gym crush | Adam spots his crush at the gym. She's his client's wife. | adam, wanda, lila
 Lifeguard's three girlfriends | Kai dates three girls on the same beach. They find each other. | kai, bonnie, piper
 Sister's boyfriend | Maya's new boyfriend used to date Clara. | maya, clara, leo
-Friends to lovers | Two roommates slowly realize they're in love. Everyone else knew. | lucy, gabe, lola
+Friends to lovers | Two roommates slowly realize they're in love. Everyone else knew. | lucy, gabe, kiki
 The perfect match | The matchmaker sets them up. They hate each other at first sight. | kiki, felix, polly
 Love triangle at the salon | Stella's salon becomes a war zone when two exes book the same hour. | stella, andre, bianca
 The makeup artist's secret | April has been dating a pop star in secret for a year. | april, bonnie, ty
-The single mom and the dentist | Betty's dentist asks her out mid-appointment. | betty, lily, bree
+The single mom and the dentist | Betty's dentist asks her out mid-appointment. | betty, lily, clara
 Valentine's cancellation | Benny cancels Valentine's for work. Chloe sees him at the bar. | benny, chloe, gabe
 The kiss cam | The stadium kiss cam lands on two people who shouldn't be together. | wes, piper, kiki
 Old flame at the reunion | At the high school reunion, Betty's old flame is still single. | betty, hal, rhonda
 Rapper's love song | Ty writes a love song. Three girls think it's about them. | ty, bonnie, ana
-The tattoo | Benny gets Chloe's name tattooed. She breaks up with him the next day. | benny, chloe, rae
 Rock star's comeback | Daria comes back to town and her ex is the headliner's manager. | daria, felix, jimmy
-Pool guy's secret | Mel dates the pool owners' daughter. The owners don't know. | mel, clara, walt
-Taxi confessions | Buddy's passenger confesses her feelings to him. For the wrong person. | buddy, bella, benny
-Roommate's girlfriend | Lucy keeps eating Gabe's food. Gabe's girlfriend keeps noticing. | lucy, gabe, lola
+Pool guy's secret | Mel dates the pool owners' daughter. The owners don't know. | mel, clara, oscar
+Taxi confessions | Buddy's passenger confesses her feelings to him. For the wrong person. | buddy, bella, andre
+Roommate's girlfriend | Lucy keeps eating Gabe's food. Gabe's girlfriend keeps noticing. | lucy, gabe, kiki
 The friend who's always there | Kiki is always there for Benny. His girlfriend is suspicious. | kiki, benny, chloe
 Ex's new partner | Andre's new girlfriend looks exactly like Bianca. | andre, bianca, carmen
 Coffee shop proposal | Gabe plans a proposal at Lola's café. Lola is the wrong person. | gabe, lola, bella
@@ -66,7 +63,7 @@ Best friend's brother | Kiki falls for her best friend's brother. The best frien
 Anniversary surprise | Benny plans a surprise for Chloe. Chloe was planning to break up. | benny, chloe, kiki
 The ex's cooking | Ali's ex opens a restaurant across the street. | ali, pia, remy
 Sparks at the wedding | Two wedding guests hit it off. They're both there with dates. | jojo, greta, bing
-Coffee date disaster | Bing spills coffee on his date. It's the start of something. | bing, lola, chloe
+Coffee date disaster | Bing spills coffee on his date. It's the start of something. | bing, lola, gabe
 Revenge playlist | Bonnie releases a song about her ex. Her ex responds with a song. | bonnie, ty, jimmy
 Secret admirer | A secret admirer leaves gifts for Kiki. It's someone surprising. | kiki, hugh, benny
 Engagement party guest | An ex shows up to the engagement party uninvited. | chloe, andre, rosa
@@ -75,11 +72,9 @@ Lost ring | The engagement ring gets lost at the restaurant. The waiter found it
 The favorite ex | Everyone likes her ex more than her new boyfriend. | chloe, benny, andre
 Cheating on the diet | Chloe catches Benny eating fries after swearing off fast food. It escalates. | chloe, benny, paco
 Blind date is the boss | Bella's blind date turns out to be her new boss. | bella, vic, kiki
-Dating the tattoo artist | Rae's new boyfriend wants a matching tattoo on date two. | rae, felix, bing
 Friends' trip | Four friends go on a trip. Two come back as a couple. | kiki, felix, lola
 The love bet | Two friends bet on who'll find a date first. | benny, gabe, lola
-First date nerves | Bing practices his first date lines on his barber. | bing, felix, chloe
+First date nerves | Bing practices his first date lines on his barber. | bing, felix, lola
 Mistaken identity | Kiki goes on a date with the wrong twin. | kiki, maya, milo
-The heartbreak haircut | After the breakup, Stella gives Chloe a dramatic haircut. | stella, chloe, benny
 Cheap date | Benny takes Chloe to a free sample tour of the supermarket. | benny, chloe, tanya
 Friend's wedding date | Kiki needs a wedding date. She asks her ex. | kiki, andre, rosa

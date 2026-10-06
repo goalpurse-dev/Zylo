@@ -5,18 +5,23 @@ import { FruitError } from "./errors.js";
 import { LIMITS, SERVER_LIMITS } from "./limits.js";
 import { videoModel } from "./models.js";
 import { clipDurationSec, maxWordsFor, wordCount } from "./duration.js";
+import { lookAlikeMessage } from "./castRules.js";
 
 const bad = (message) => new FruitError("VALIDATION", message, 400);
 const QUALITIES = ["v2", "v3", "v4"];
 const ASPECTS = ["9:16", "16:9"];
 
-function castFrom(ids, library, min, max) {
+function castFrom(ids, library, min, max, { lookAlikes = true } = {}) {
   if (!Array.isArray(ids) || ids.length < min || ids.length > max || new Set(ids).size !== ids.length) {
     throw bad(min === max ? `Pick ${min} characters.` : `Pick ${min} to ${max} characters.`);
   }
   for (const id of ids) {
     if (typeof id !== "string" || !library.has(id)) throw bad("One of those characters isn't in the library.");
   }
+  // Two of the same fruit look the same in a close-up, unless they're relatives dressed differently.
+  // (An idea's cast is fixed by the library, which its own build checks: the user can't swap it.)
+  const alike = lookAlikes ? lookAlikeMessage(ids.map((id) => library.get(id))) : null;
+  if (alike) throw bad(alike);
   return [...ids];
 }
 
@@ -60,7 +65,7 @@ export function validateCreateStory(input, library, findIdea) {
     if (typeof input.ideaId !== "string" || !input.ideaId) throw bad("Pick an idea to continue.");
     const idea = findIdea?.(input.ideaId);
     if (!idea) throw bad("That idea isn't available anymore. Pick another one.");
-    return { source: "idea", ideaId: input.ideaId, castIds: castFrom(idea.castIds, library, 2, LIMITS.maxCastSingle), quality, aspect, lengthSec: lengthOf(input.lengthSec) };
+    return { source: "idea", ideaId: input.ideaId, castIds: castFrom(idea.castIds, library, 2, LIMITS.maxCastSingle, { lookAlikes: false }), quality, aspect, lengthSec: lengthOf(input.lengthSec) };
   }
 
   if (input.source === "prompt") {

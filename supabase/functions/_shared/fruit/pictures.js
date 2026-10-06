@@ -49,7 +49,32 @@ function stage(speaker, others, short = false) {
   return `Staging: ${speaker.name} stands closest to the camera, body and face turned toward the camera (at most a slight three-quarter turn), large in the frame. ${names} ${others.length > 1 ? "are" : "is"} further back beside or behind ${speaker.name}, smaller and slightly softer, looking at ${speaker.name}.`;
 }
 const STYLE = "Style: premium 3D animated feature-film look, the same character design as the reference images, soft cinematic lighting, sharp focus, rich color.";
-const NEGATIVE = "No text, no captions, no subtitles, no speech bubbles, no logos or brand marks (plain unbranded props), no watermark, no extra characters, no human skin, no human heads.";
+const NEGATIVE = "No text, no captions, no subtitles, no speech bubbles, no readable writing on signs, mugs, screens or clothes, no logos or brand marks (plain unbranded props), no watermark, no extra characters, no human skin, no human heads, no hair.";
+
+/** One sentence per character: which reference image it is and what to keep (or, with an alternate outfit for this story, what to wear instead). */
+function referenceLine(c, i, tier, outfits) {
+  const kind = `the ${c.fruit} ${c.gender === "female" ? "woman" : "man"}`;
+  const alt = outfits?.[c.id];
+  if (alt && tier === 2) return `Image ${i + 1} is ${c.name}: same head and face; wears ${alt} instead.`;
+  if (alt) return `Image ${i + 1} is ${c.name}${tier === 0 ? `, ${kind}` : ""}: keep the fruit head and face exactly as in the reference, but in this story ${c.name} wears ${alt} (not the outfit in the reference).`;
+  return tier === 0
+    ? `Image ${i + 1} is ${c.name}, ${kind}: keep the fruit head, face and outfit (${c.outfit}) exactly as in the reference.`
+    : `Image ${i + 1} is ${c.name}: keep the fruit head, face and outfit exactly as in the reference.`;
+}
+
+/**
+ * The prompt for the ONE automatic redraw after a failed picture check: the
+ * same prompt plus what to fix (pictureCheck.js#verdictOf's fixes). Returns the
+ * prompt unchanged when the extra sentences wouldn't fit.
+ */
+export function withRedrawHint(prompt, fixes) {
+  const hint = (fixes ?? []).filter(Boolean).join(" ");
+  if (!hint || prompt.includes(hint)) return prompt;
+  const next = `${prompt} Fix from the last attempt: ${hint}`;
+  return next.length <= PICTURE_PROMPT_MAX ? next : prompt;
+}
+
+const NEGATIVE_SHORT = "No text or readable writing, no logos, no watermark, no extra characters, no humans, no hair.";
 
 const who = (c) => `${c.name} (the ${c.fruit} ${c.gender === "female" ? "woman" : "man"})`;
 
@@ -68,7 +93,7 @@ function build(tier, { story, scene, cast, location }) {
   const listeners = others.map(who).join(" and ");
   const aspect = story.aspect === "16:9" ? "Wide 16:9 frame" : "Vertical 9:16 frame";
   const time = location.timeOfDay
-    ? `Time of day: ${location.timeOfDay}${location.lighting ? `; lighting: ${location.lighting}` : ""}. Keep exactly this time of day and lighting.`
+    ? `Time of day: ${location.timeOfDay}${location.lighting ? `; lighting: ${location.lighting}` : ""}.${tier === 2 ? "" : " Keep exactly this time of day and lighting."}`
     : "";
   const parts = [
     `${aspect}. ${shotText(scene.shot)}. ${tier === 2 ? FACE_SHORT : FACE}`,
@@ -79,13 +104,11 @@ function build(tier, { story, scene, cast, location }) {
     scene.placement ? `Positions: ${scene.placement.replace(/\.$/, "")}.` : "",
     `Setting: ${String(location.description).replace(/\.+$/, "")}.`,
     time,
-    cast.map((c, i) => tier === 0
-      ? `Image ${i + 1} is ${c.name}, the ${c.fruit} ${c.gender === "female" ? "woman" : "man"}: keep the fruit head, face and outfit (${c.outfit}) exactly as in the reference.`
-      : `Image ${i + 1} is ${c.name}: keep the fruit head, face and outfit exactly as in the reference.`).join(" "),
-    location.plateUrl ? `Image ${cast.length + 1} is the empty set of this place: keep its layout, furniture and colors; the characters stand in it.` : "",
+    cast.map((c, i) => referenceLine(c, i, tier, story.outfits)).join(" "),
+    location.plateUrl ? (tier === 2 ? `Image ${cast.length + 1} is the empty set: keep its layout.` : `Image ${cast.length + 1} is the empty set of this place: keep its layout, furniture and colors; the characters stand in it.`) : "",
     `Only these ${cast.length} character${cast.length > 1 ? "s" : ""} in the frame.`,
     tier <= 1 ? STYLE : "Same look as the references.",
-    NEGATIVE,
+    tier === 2 ? NEGATIVE_SHORT : NEGATIVE,
   ];
   return parts.filter(Boolean).join(" ");
 }

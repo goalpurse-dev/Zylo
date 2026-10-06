@@ -25,6 +25,10 @@ export const TIMING = Object.freeze({
   stallCheckSec: { image: 120, clip: 240 },
   giveUpAfterSec: { image: 8 * 60, clip: 12 * 60 },
   storeGiveUpSec: 15 * 60,              // provider result we can't store (URL expires)
+  // A provider_done job the first finalize didn't finish is picked up again after
+  // this long. Clips take longer: their check listens to the clip first.
+  finalizeAfterSec: { image: 20, clip: 75 },
+  frameWaitSec: 90,                     // a clip's last frame that never arrives: the clip is kept unchecked
 });
 
 const failCode = (kind, cls) => cls.providerBalance ? "PROVIDER_UNAVAILABLE" : cls.contentPolicy
@@ -33,14 +37,21 @@ const failCode = (kind, cls) => cls.providerBalance ? "PROVIDER_UNAVAILABLE" : c
 
 /** Job note that marks a picture already redrawn after a failed check. */
 export const REDRAW_NOTE = "picture check, redrawn at our cost:";
+/** Job note that marks a clip already remade after a failed check (the wrong words, a human in the last frame). */
+export const REMAKE_NOTE = "clip check, remade at our cost:";
 
 const ageSec = (now, iso) => (iso ? (now.getTime() - new Date(iso).getTime()) / 1000 : Infinity);
 
 //   rewriteClip (optional) async (job) -> new request | null   one content-policy rewrite for clips
 //   fallbackClip (optional) (request) -> fallback request | null   e.g. clips.js#fallbackClipTask
 //   onProviderBalance (optional) async ({job, code, message}) -> void   admin alert (alerts.js)
-//   checkPicture (optional) async (job, storedUrl) -> {ok, problems[]} | null   picture check (pictureCheck.js)
-export function createEngine({ store, runware, media, env, rewriteClip = null, fallbackClip = null, onProviderBalance = null, checkPicture = null, now = () => new Date(), uuid = () => crypto.randomUUID(), log = console }) {
+//   checkPicture (optional) async (job, storedUrl) -> {ok, problems[], fixes[]} | null   picture check (pictureCheck.js)
+//   redrawRequest (optional) (job, verdict) -> request | null   the redraw's request, with what to fix added (pictures.js#withRedrawHint)
+//   checkClipWords (optional) async (job, storedUrl) -> {ok, problems[]} | null   did the voice say the line (clipCheck.js)
+//   requestClipFrame (optional) async (job, storedUrl) -> {path, ...} | null   asks for the clip's last frame; the answer arrives at onClipFrame
+//   checkClipFrame (optional) async (job, frame) -> {ok, problems[]} | null   picture check on that frame
+//   onCompleted (optional) async (job) -> void   after a scene's picture or clip is ready
+export function createEngine({ store, runware, media, env, rewriteClip = null, fallbackClip = null, onProviderBalance = null, checkPicture = null, redrawRequest = null, checkClipWords = null, requestClipFrame = null, checkClipFrame = null, onCompleted = null, now = () => new Date(), uuid = () => crypto.randomUUID(), log = console }) {
   const paidOff = String(env.FRUIT_PAID_CALLS ?? "").toLowerCase() === "off";
 
   async function webhookFor(taskUUID) {
@@ -144,11 +155,47 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
     const moved = await store.markProviderDone(job.id, taskUUID, { result: { ...body, _via: via }, outputUrl: parsed.url, cost: parsed.cost, now: now() });
     if (!moved) return "ignored";
     await store.finishCall(job.id, job.attempt, { ok: true, http_status: httpStatus, response: body, cost_usd: parsed.cost });
-    return finalize({ ...job, status: "provider_done", output_url: parsed.url, provider_done_at: now().toISOString() });
+    // result: the new attempt's (a remade clip must not inherit the first attempt's frame wait)
+    return finalize({ ...job, status: "provider_done", output_url: parsed.url, provider_done_at: now().toISOString(), result: { ...body, _via: via } });
+  }
+
+  /** The scene is done: mark it ready and start the story's next queued job. */
+  async function complete(job, storedUrl, verdict = null) {
+    const ok = await store.completeJob(job.id, storedUrl, 0, null);   // cost was added at provider_done
+    if (ok && verdict) await store.setImageCheck(job.scene_id, verdict.ok ? "passed" : "failed", verdict.ok ? null : (verdict.problems ?? []).join("; ").slice(0, 500));
+    if (ok) await kick({ storyId: job.story_id });
+    if (ok && onCompleted) await onCompleted(job).catch((e) => log.error?.("[fruit] onCompleted failed:", e?.message ?? e));
+    return ok ? "completed" : "ignored";
+  }
+
+  const remadeBefore = (job) => String(job.error ?? "").startsWith(REMAKE_NOTE);
+  async function remake(job, problems) {
+    if (!(await store.remakeClip(job.id, `${REMAKE_NOTE} ${(problems ?? []).join("; ")}`.slice(0, 500)))) return false;
+    await kick({ storyId: job.story_id });
+    return true;
+  }
+
+  /**
+   * A clip's last frame arrived (or couldn't be made: ok false). A failed
+   * frame check remakes the clip once; anything else keeps it.
+   */
+  async function onClipFrame(jobId, ok) {
+    const job = await store.jobById(jobId);
+    const frame = job?.result?._frame;
+    if (!job || job.status !== "provider_done" || !frame) return "ignored";
+    let verdict = null;
+    if (ok && checkClipFrame) {
+      try { verdict = await checkClipFrame(job, frame); } catch (err) { log.error?.(`[fruit] clip frame check failed to run for ${job.id}: ${String(err?.message ?? err)}`); }
+    }
+    if (verdict && !verdict.ok && !remadeBefore(job) && (await remake(job, verdict.problems))) return "remade";
+    return complete(job, frame.storedUrl);
   }
 
   /** Copies the provider media into permanent storage and completes the scene. */
   async function finalize(job) {
+    // A clip waiting for its last frame: keep waiting, or give up on the check and keep the clip.
+    const waiting = job.kind === "clip" ? job.result?._frame : null;
+    if (waiting) return ageSec(now(), waiting.at) < TIMING.frameWaitSec ? "frame_pending" : complete(job, waiting.storedUrl);
     const ext = job.kind === "clip" ? "mp4" : "jpg";
     const path = `fruit/${job.user_id}/${job.story_id}/${job.id}-a${job.attempt}.${ext}`;
     let storedUrl;
@@ -172,16 +219,31 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
       try { verdict = await checkPicture(job, storedUrl); } catch (err) { log.error?.(`[fruit] picture check failed to run for ${job.id}: ${String(err?.message ?? err)}`); }
       const redrawnBefore = String(job.error ?? "").startsWith(REDRAW_NOTE);
       if (verdict && !verdict.ok && !redrawnBefore) {
-        if (await store.redrawPicture(job.id, `${REDRAW_NOTE} ${(verdict.problems ?? []).join("; ")}`.slice(0, 500))) {
+        // The redraw is told what to fix (a tighter frame, no writing...), so it isn't the same roll of the dice.
+        const next = redrawRequest ? redrawRequest(job, verdict) : null;
+        if (await store.redrawPicture(job.id, `${REDRAW_NOTE} ${(verdict.problems ?? []).join("; ")}`.slice(0, 500), next)) {
           await kick({ storyId: job.story_id });
           return "redrawn";
         }
       }
     }
-    const ok = await store.completeJob(job.id, storedUrl, 0, null);   // cost was added at provider_done
-    if (ok && verdict) await store.setImageCheck(job.scene_id, verdict.ok ? "passed" : "failed", verdict.ok ? null : (verdict.problems ?? []).join("; ").slice(0, 500));
-    if (ok) await kick({ storyId: job.story_id });   // start the next queued job of this story
-    return ok ? "completed" : "ignored";
+    // Clip check, once per clip: did the voice say the line, and is the last
+    // frame still clean (no human, no new character, no writing)? A clip that
+    // fails is made again ONCE on the same job (our cost); a remade clip is
+    // kept as it is. A check that can't run never blocks the clip.
+    if (job.kind === "clip" && !remadeBefore(job)) {
+      let words = null;
+      if (checkClipWords) {
+        try { words = await checkClipWords(job, storedUrl); } catch (err) { log.error?.(`[fruit] clip word check failed to run for ${job.id}: ${String(err?.message ?? err)}`); }
+      }
+      if (words && !words.ok && (await remake(job, words.problems))) return "remade";
+      if (requestClipFrame && !(words && !words.ok)) {
+        let frame = null;
+        try { frame = await requestClipFrame(job, storedUrl); } catch (err) { log.error?.(`[fruit] clip frame request failed for ${job.id}: ${String(err?.message ?? err)}`); }
+        if (frame && (await store.noteClipFrame(job.id, { ...frame, storedUrl, at: now().toISOString() }))) return "frame_pending";
+      }
+    }
+    return complete(job, storedUrl, verdict);
   }
 
   /** Cron (every minute): find lost, stuck or unstored work and move it on. */
@@ -190,7 +252,7 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
     const report = { polled: 0, requeued: 0, refunded: 0, finalized: 0, started: 0 };
     for (const job of await store.openJobs()) {
       if (job.status === "provider_done") {
-        if (ageSec(t, job.provider_done_at) > 20) {
+        if (ageSec(t, job.provider_done_at) > TIMING.finalizeAfterSec[job.kind]) {
           const r = await finalize(job);
           if (r === "completed") report.finalized += 1;
           if (r === "refunded") report.refunded += 1;
@@ -240,5 +302,5 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
     return report;
   }
 
-  return { kick, submit, onResult, finalize, reconcile };
+  return { kick, submit, onResult, onClipFrame, finalize, reconcile };
 }

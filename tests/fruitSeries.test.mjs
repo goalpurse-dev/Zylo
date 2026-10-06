@@ -34,7 +34,7 @@ test("series prompt: cast, the user's idea fenced as data, opener, tone and epis
   assert.match(system, /Roles never change between episodes/);
   assert.match(user, /- gloria: Gloria Grape, the grape woman/);
   assert.match(user, /<<<\nAn office where/);
-  assert.match(user, /EPISODE 1 OPENS ON: Caught at the office/);
+  assert.match(user, /EPISODE 1 OPENS ON \(stage this moment inside the world of the series idea above; never leave that world to fit it\): Caught at the office/);
   assert.match(user, /Write exactly 3 episodes\./);
   assert.deepEqual(seriesSchema().required, ["title", "logline", "bible", "locations", "characters", "setups", "episodes"]);
   assert.ok(user.includes("Wears (fixed): a leopard-print cardigan"));

@@ -17,7 +17,7 @@ import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { FRAME, parseSilences, segmentArgs, trimWindow } from "./fruitFinalPlan.mjs";
+import { FRAME, parseSilences, segmentArgs, trimWindow, voiceEndFrom, voiceThresholdDb } from "./fruitFinalPlan.mjs";
 import { buildAss, coverAss, timedWords } from "./fruitCaptions.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -44,6 +44,20 @@ async function probe(file) {
   return { durationSec: Number(j.format?.duration ?? 0), hasAudio: (j.streams ?? []).some((s) => s.codec_type === "audio") };
 }
 
+/**
+ * Where the voice stops in a clip (seconds): the voice's own loudness is
+ * measured while the transcript's words are spoken, then silence is detected
+ * again at a threshold that follows it, so room tone after the line reads as
+ * quiet (at the fixed -35 dB it reads as sound).
+ */
+async function voiceEnd(input, spoken, lastWordEnd, durationSec) {
+  const from = Math.max(0, spoken[0].start), span = Math.max(0.2, lastWordEnd - from);
+  const { err: vol } = await run(FFMPEG, ["-hide_banner", "-nostats", "-ss", from.toFixed(3), "-t", span.toFixed(3), "-i", input, "-af", "volumedetect", "-vn", "-f", "null", "-"]);
+  const mean = Number(vol.match(/mean_volume: ([\d.-]+)/)?.[1]);
+  const { err } = await run(FFMPEG, ["-hide_banner", "-nostats", "-i", input, "-af", `silencedetect=noise=${voiceThresholdDb(mean)}dB:d=0.15`, "-vn", "-f", "null", "-"]);
+  return voiceEndFrom(parseSilences(err, durationSec), lastWordEnd, durationSec);
+}
+
 async function download(url, file) {
   const res = await fetch(url, { signal: AbortSignal.timeout(120_000) });
   if (!res.ok) throw new Error(`download ${res.status} for clip`);
@@ -66,34 +80,49 @@ export async function buildFinal(job, dir) {
     const input = path.join(dir, `in-${i}.mp4`);
     await download(clip.url, input);
     const { durationSec, hasAudio } = await probe(input);
-    let win = { start: 0, end: durationSec, trimmedSec: 0 };
+    const last = i === job.clips.length - 1;
+    // The closing beat: the last clip holds a moment after its final word (and the end card shows there).
+    const closingBeatSec = last ? Math.max(0, Number(job.closingBeatSec) || 0) : 0;
+    let win = { start: 0, end: durationSec, trimmedSec: 0, speech: null, holdSec: 0 };
     if (hasAudio) {
       const { err } = await run(FFMPEG, ["-hide_banner", "-nostats", "-i", input, "-af", "silencedetect=noise=-35dB:d=0.15", "-vn", "-f", "null", "-"]);
-      win = trimWindow(parseSilences(err, durationSec), durationSec);
+      // With a transcript the clip ends just after the last SPOKEN word; the audio
+      // has the last say on where the voice stops (see fruitFinalPlan.mjs).
+      const spoken = (clip.words ?? []).filter((x) => Number.isFinite(x?.start) && Number.isFinite(x?.end));
+      let ends = {};
+      if (spoken.length) {
+        const lastWordEnd = spoken[spoken.length - 1].end;
+        ends = { lastWordEnd, voiceEnd: await voiceEnd(input, spoken, lastWordEnd, durationSec).catch(() => null) };
+      }
+      win = trimWindow(parseSilences(err, durationSec), durationSec, { ...ends, closingBeatSec });
     }
-    // Captions: the exact line, timed by the clip's word timestamps (or spread
-    // over the detected speech), shifted into the trimmed segment's time.
-    // Series overlays: "Part N" on the first ~1.5 s, the end card on the last ~2 s.
+    // Captions: the line (or what was said, when the voice changed it), on the
+    // transcript's own word times, shifted into the trimmed segment's time.
+    // Series overlays: "Part N" on the first ~1.5 s; the end card during the closing beat.
     const [w, h] = FRAME[job.aspect] ?? FRAME["9:16"];
-    const segSec = win.end - win.start;
+    const holdSec = win.holdSec ?? 0;
+    const segSec = win.end - win.start + holdSec;
+    const speechEndInSeg = win.speech ? Math.min(segSec, win.speech.end - win.start) : segSec;
     const overlays = [];
     if (i === 0 && job.overlays?.part) overlays.push({ kind: "part", text: job.overlays.part, start: 0, end: Math.min(1.5, segSec) });
-    if (i === job.clips.length - 1 && job.overlays?.end) overlays.push({ kind: "end", text: job.overlays.end, start: Math.max(0, segSec - 2), end: segSec });
+    if (last && job.overlays?.end) overlays.push({ kind: "end", text: job.overlays.end, start: closingBeatSec > 0 ? Math.min(Math.max(0, segSec - 0.8), speechEndInSeg + 0.2) : Math.max(0, segSec - 2), end: segSec });
     let assFile = null;
     let captionSource = null;
     let words = [];
-    if (job.captions && clip.line) {
-      const timed = timedWords(clip.line, clip.words ?? null, win.speech ?? null, durationSec);
+    const captionText = clip.caption ?? clip.line;
+    if (job.captions && captionText) {
+      const timed = timedWords(captionText, clip.words ?? null, win.speech ?? null, durationSec);
       words = timed.words.map((x) => ({ ...x, start: Math.max(0, x.start - win.start), end: Math.min(segSec, Math.max(0, x.end - win.start)) }));
-      captionSource = timed.source;
+      captionSource = clip.caption ? "said" : timed.source;
     }
     if (words.length || overlays.length) {
       assFile = path.join(dir, `cap-${i}.ass`);
-      await writeFile(assFile, buildAss({ words, width: w, height: h, durationSec: segSec, highlight: job.highlight !== false, overlays }), "utf8");
+      // The last caption leaves with the voice (plus a breath), not at the end of the closing beat.
+      await writeFile(assFile, buildAss({ words, width: w, height: h, durationSec: Math.min(segSec, speechEndInSeg + 0.3), highlight: job.highlight !== false, overlays }), "utf8");
     }
     const output = path.join(dir, `seg-${i}.mp4`);
-    await run(FFMPEG, segmentArgs({ input, output, start: win.start, end: win.end, aspect: job.aspect, assFile, fontsDir: path.dirname(FONT), hasAudio, threads }));
-    return { output, trimmedSec: win.trimmedSec, keptSec: win.end - win.start, captionSource };
+    await run(FFMPEG, segmentArgs({ input, output, start: win.start, end: win.end, aspect: job.aspect, assFile, fontsDir: path.dirname(FONT), hasAudio, threads, holdSec }));
+    return { output, trimmedSec: win.trimmedSec, keptSec: segSec, captionSource };
   });
   const list = path.join(dir, "list.txt");
   await writeFile(list, segments.map((s) => `file '${s.output.replace(/\\/g, "/")}'`).join("\n"));

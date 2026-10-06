@@ -5,24 +5,26 @@ import { checkPicture, checkPrompt, checkSchema, verdictOf } from "../supabase/f
 
 const expected = [{ name: "Maya Mango", fruit: "mango" }, { name: "Piper Pine", fruit: "pineapple" }, { name: "Kai Coconut", fruit: "coconut" }];
 const good = () => [{ name: "Maya Mango", visible: true, hasFruitHead: true }, { name: "Piper Pine", visible: true, hasFruitHead: true }, { name: "Kai Coconut", visible: true, hasFruitHead: true }];
-const answer = (over = {}) => ({ characters: good(), figuresInPicture: 3, humanHeads: 0, notes: "", ...over });
+const answer = (over = {}) => ({ characters: good(), mainFigures: 3, backgroundFigures: 0, humanHeads: 0, humanHair: false, duplicates: [], readableText: "", speakerHeadPercent: 34, speakerShownTo: "chest", notes: "", ...over });
 
 test("the check asks for each fruit head by name and counts every figure", () => {
   const p = checkPrompt(expected);
   assert.match(p, /exactly 3 characters/);
   assert.match(p, /- Piper Pine: a pineapple head/);
-  assert.deepEqual(checkSchema().required, ["characters", "figuresInPicture", "humanHeads", "notes"]);
+  assert.deepEqual(checkSchema().required, ["characters", "mainFigures", "backgroundFigures", "humanHeads", "humanHair", "duplicates", "readableText", "speakerHeadPercent", "speakerShownTo", "notes"]);
+  assert.match(checkPrompt(expected, { speaker: "Maya Mango" }), /speakerHeadPercent: Maya Mango is the speaker/);
+  assert.match(p, /speakerShownTo: unknown\./, "no speaker, no framing question");
 });
 
 test("verdicts: all fruit heads passes; a human head, a missing character or an extra figure fails", () => {
-  assert.deepEqual(verdictOf(answer(), expected), { ok: true, problems: [] });
+  assert.deepEqual(verdictOf(answer(), expected), { ok: true, problems: [], fixes: [] });
   const chars = good();
   chars[1].hasFruitHead = false;
   const human = verdictOf(answer({ humanHeads: 1, characters: chars }), expected);
   assert.equal(human.ok, false);
   assert.deepEqual(human.problems, ["Piper Pine is drawn without their pineapple head", "1 human head in the picture"]);
-  assert.deepEqual(verdictOf(answer({ characters: good().slice(0, 2), figuresInPicture: 2 }), expected).problems, ["Kai Coconut is missing"]);
-  assert.deepEqual(verdictOf(answer({ figuresInPicture: 4 }), expected).problems, ["4 figures instead of 3"]);
+  assert.deepEqual(verdictOf(answer({ characters: good().slice(0, 2), mainFigures: 2 }), expected).problems, ["Kai Coconut is missing"]);
+  assert.deepEqual(verdictOf(answer({ mainFigures: 4 }), expected).problems, ["4 characters up front instead of 3"]);
   const first = good();
   first[0].name = "Maya";
   assert.equal(verdictOf(answer({ characters: first }), expected).ok, true, "first names match");
@@ -55,5 +57,5 @@ test("fruit looks come from the character library (Kai is a GREEN young coconut;
   assert.equal(headLook("coconut"), "a green young coconut head");
   assert.match(checkPrompt([{ name: "Kai Coconut", fruit: "coconut" }, { name: "Piper Pine", fruit: "pineapple" }]), /- Kai Coconut: a green young coconut head\n- Piper Pine: a pineapple head with a crown of green leaves \(part of the fruit, not hair\)/);
   const chars = [{ name: "Kai Coconut", visible: true, hasFruitHead: false }];
-  assert.deepEqual(verdictOf({ characters: chars, figuresInPicture: 1, humanHeads: 0 }, [{ name: "Kai Coconut", fruit: "coconut" }]).problems, ["Kai Coconut is drawn without their green young coconut head"]);
+  assert.deepEqual(verdictOf({ characters: chars, mainFigures: 1, humanHeads: 0 }, [{ name: "Kai Coconut", fruit: "coconut" }]).problems, ["Kai Coconut is drawn without their green young coconut head"]);
 });
