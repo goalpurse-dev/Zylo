@@ -23,7 +23,10 @@ export const getResponseTask = (taskUUID) => ({ taskType: "getResponse", taskUUI
 
 import { OUT_OF_BALANCE } from "./alerts.js";
 
-const CONTENT_POLICY = /moderat|safety|policy|nsfw|inappropriate|prohibited|violat|content.?filter|sensitive|blocked/i;
+// Alibaba's filter on Wan answers "responded with HTTP DataInspectionFailed" ("Green net check
+// failed"): it matched nothing here at launch, so four blocked clips skipped the softer rewrite
+// and went straight to the Seedance fallback.
+const CONTENT_POLICY = /moderat|safety|policy|nsfw|inappropriate|prohibited|violat|content.?filter|sensitive|blocked|data.?inspection|green.?net/i;
 const RETRYABLE = /insufficient.?credits|rate.?limit|concurren|too many|timeout|timed out|temporar|unavailable|overloaded|busy|try again|internal|server error|capacity/i;
 
 function classify(code, message, httpStatus) {

@@ -34,10 +34,10 @@ Flower girl's secret | The flower girl reveals a secret about the groom. | bree,
 Surprise wedding | A couple turns their engagement party into a surprise wedding. | benny, kiki, dina
 Wedding guest list | The bride invites the groom's ex to prove a point. | rosa, carmen, chip
 The runaway bride | Rosa runs from the altar. The groom follows. | rosa, chip, jojo
-Double wedding | Two sisters share a wedding. It doesn't go well. | maya, clara, dina
+Double wedding | Two sisters share a wedding. It doesn't go well. | maya, clara, greta
 Wedding gift | The groom's ex sends an expensive gift. With a note. | carmen, chip, rosa
 Wedding caterer | The caterer is the groom's secret twin. | paco, chip, rosa
-Wedding officiant | The officiant forgets the couple's names. | sid, rosa, chip
+Wedding officiant | The officiant forgets the couple's names. | gordon, rosa, chip
 Reception fight | The reception fight starts over the last slice of cake. | edna, manny, archie
 Groom's friends | The groom's friends plan a prank that goes wrong. | jojo, bing, chip
 Veil mishap | The veil catches fire. The bride keeps going. | rosa, dina, brad

@@ -1,10 +1,10 @@
 # Prison & crime (no weapons or graphic violence; drama and humor)
 Snitches get spots | The kingpin puts a bruised banana on trial, until his own crown starts beeping. | pina, benny, coco
-Cellblock kingpin | Big Pina runs the cellblock. The new inmate doesn't know that yet. | pina, pablo, coco
+Cellblock kingpin | Big Pina runs the cellblock. The new inmate doesn't know that yet. | pina, benny, coco
 The silent witness | Coco hasn't spoken in six years. Today he has one thing to say. | coco, pina, benny
-New inmate talks too much | Pablo tells everyone his escape plan on day one. | pablo, pina, carl
-Warden with a soft spot | Pam the warden secretly helps an inmate write letters to his daughter. | pam, pablo, rita
-Prison guard taking bribes | Carl takes bribes in snacks. The warden finds the vending machine empty. | carl, pam, pina
+New inmate talks too much | Pablo tells everyone his escape plan on day one. | pablo, rita, carl
+Warden with a soft spot | Pam the warden secretly helps an inmate write letters to his daughter. | pam, coco, rita
+Prison guard taking bribes | Carl takes bribes in snacks. The warden finds the vending machine empty. | carl, pam, rita
 Cellblock queen | Rita runs the women's block. A new inmate challenges her for the TV remote. | rita, pam, bonnie
 The heist planner | Boris plans the perfect heist. His team is the worst team ever. | boris, vinny, pablo
 Con artist's last job | Vinny's last con is on the wrong family. | vinny, priscilla, otto
@@ -14,20 +14,20 @@ Mob accountant turns witness | Al agrees to testify. Mac invites him to dinner. 
 Club owner's secret | Dex runs a nightclub with a secret back room. It's a knitting club. | dex, moe, lee
 Bouncer never lets anyone in | Moe won't let the club owner into his own club. | moe, dex, bonnie
 Casino owner's rule | Lee has one rule: never cheat in my casino. His brother just did. | lee, vinny, moe
-Loan shark's collection day | Duke collects from three people who all owe money to each other. | duke, milo, dusty
+Loan shark's collection day | Duke collects from three people who all owe money to each other. | duke, milo, benny
 The getaway driver | The getaway driver is late because he stopped for coffee. | boris, buddy, pablo
-Prison wedding | Two inmates get married in the prison chapel. The warden officiates. | pina, rita, pam
+Prison wedding | Two inmates get married in the prison chapel. The guard officiates. | pina, rita, carl
 Prison cooking contest | The prison cooking contest turns into a riot over the last onion. | pina, ali, carl
 Prison talent show | The prison talent show exposes who's been stealing the guard's lunch. | pablo, carl, rita
-Escape attempt | Pablo digs a tunnel for two years. It opens into the warden's office. | pablo, pam, pina
+Escape attempt | Pablo digs a tunnel for two years. It opens into the guards' break room. | pablo, carl, rita
 The informant | Someone in the cellblock is talking. Everyone suspects the quiet one. | pina, coco, benny
 Visiting day | On visiting day, two women show up for the same inmate. | pina, carmen, rita
 The lawyer's deal | Hector offers the kingpin a deal. The kingpin counter-offers. | hector, pina, pedro
 The heist gone wrong | Boris's team robs the wrong bank. It's closed on Sundays. | boris, vinny, pablo
 Undercover cop | Larry goes undercover. He's terrible at it. | larry, dex, moe
 Rookie cop's first day | Kurt's first arrest is his own uncle. | kurt, milo, larry
-The stolen painting | A painting goes missing at the gala. Everyone has a motive. | pedro, priscilla, vinny
-Parole hearing | Pina's parole hearing turns into a comedy special. | pina, sid, pam
+The stolen painting | A painting goes missing at the gala. Everyone has a motive. | lionel, priscilla, vinny
+Parole hearing | Pina's parole hearing turns into a comedy special. | pina, sid, carl
 The detective's hunch | Pedro knows who did it. He just can't prove it. | pedro, vinny, lionel
 Restaurant in debt to the mob | Omar owes Mac. He pays in lasagna. | omar, mac, al
 Casino heist | Boris plans to rob Lee's casino. Lee is already watching. | boris, lee, moe
@@ -35,9 +35,9 @@ The fake alibi | Vinny's alibi is a woman who's never met him. | vinny, pedro, c
 Prison guard's crush | Carl has a crush on an inmate's visitor. | carl, rita, bea
 The confession | A suspect confesses to a crime that didn't happen. | pedro, pablo, larry
 Missing ring | Georgia's ring is missing. The butler is the obvious suspect. | georgia, otto, pedro
-The snitch list | A list of snitches goes missing from the kingpin's cell. | pina, coco, carl
+The snitch list | A list of snitches goes missing from the kingpin's cell. | pina, coco, rita
 Laundry room deals | Everything in the prison is traded in the laundry room. | rita, pina, carl
-The warden's inspection | The warden inspects the cells. Everyone hides something ridiculous. | pam, pablo, pina
+The warden's inspection | The warden inspects the cells. Everyone hides something ridiculous. | pam, rita, coco
 Stolen trophy | The town's bowling trophy is stolen. The whole league is a suspect. | larry, chuck, gordon
 The security guard's night | Hank sees a thief on camera. It's the CEO. | hank, rick, pedro
 The pickpocket | Vinny picks a pocket. He picked the detective's. | vinny, pedro, kurt
@@ -45,7 +45,7 @@ Stakeout snacks | Two cops on a stakeout fight about snacks and miss the suspect
 Prison book club | The prison book club reads a mystery and solves a real one. | pina, rita, harriet
 The mob wedding | The mob boss's daughter's wedding gets raided. | mac, rosa, larry
 Fake FBI agent | Vinny poses as an FBI agent. The real FBI shows up. | vinny, pedro, larry
-The kingpin's birthday | The cellblock throws Pina a surprise party. Pina hates surprises. | pina, coco, pablo
+The kingpin's birthday | The cellblock throws Pina a surprise party. Pina hates surprises. | pina, coco, rita
 Club raid | The police raid Dex's club. It's a charity bingo night. | dex, larry, moe
 Evidence locker | Something is missing from the evidence locker. The rookie had the key. | kurt, larry, sid
 Jewelry store job | Boris's crew breaks into a jewelry store. The owner is waiting with tea. | boris, candy, pablo
@@ -53,19 +53,18 @@ The inside man | Boris needs an inside man. He recruits a cleaner with a grudge.
 The prison chef | The new prison chef poisons nobody, but everyone is suspicious. | ali, pina, carl
 Loan shark's lesson | Duke teaches his nephew the family business. The nephew is too nice. | duke, zesty, milo
 The getaway taxi | Buddy's passengers are two robbers who don't tip. | buddy, boris, vinny
-Prison letters | An inmate's love letters end up in the wrong cell. | pina, rita, pablo
-Card game in the yard | A card game in the prison yard decides who gets the good bunk. | pina, pablo, coco
+Prison letters | An inmate's love letters end up in the wrong cell. | pina, rita, coco
+Card game in the yard | A card game in the prison yard decides who gets the good bunk. | pina, benny, coco
 The guard's secret | Carl is secretly studying to be a lawyer. | carl, pam, hector
 Pawn shop sting | Larry sets up a sting at a pawn shop. The owner's his cousin. | larry, barry, kurt
-The kingpin's lawyer | Pina's lawyer is his ex-cellmate. | pina, hector, pablo
+The kingpin's lawyer | Pina's lawyer is his ex-cellmate. | pina, hector, coco
 Mob boss's therapy | Mac goes to therapy. His therapist is terrified. | mac, nora, al
 Bank robber's grandma | The bank robber's grandma shows up at the bank. | pablo, polly, larry
 The prison radio | Rita runs the prison radio. She broadcasts everyone's secrets. | rita, pam, carl
-The fake kidnapping | Andy fakes his own kidnapping to get his allowance. | andy, pedro, priscilla
+The fake kidnapping | Andy fakes his own kidnapping to get his allowance. | andy, pedro, georgia
 Casino card counter | Vinny counts cards at Lee's casino. Lee counts faster. | vinny, lee, moe
-Club owner's revenge | Dex gets revenge on a rival club by booking their DJ. | dex, ty, moe
-Prison haircut | Felix cuts hair in prison. He hears everything. | felix, pina, coco
-The warden's retirement | Pam retires. The inmates throw her a party. | pam, pina, rita
+Club owner's revenge | Dex gets revenge on a rival club by booking their DJ. | dex, pinesy, moe
+The warden's retirement | Pam retires. The inmates throw her a party. | pam, coco, rita
 The bail money | Nobody wants to pay Milo's bail. | milo, maya, olive
 The cold case | Pedro reopens a cold case. The suspect is his mentor. | pedro, larry, sid
 The detective's partner | Pedro's new partner is his ex-wife. | pedro, penny, larry

@@ -1,17 +1,17 @@
 # Neighbors & roommates
-Landlord raises rent every scene | Lenny raises the rent every time the tenant says something. | lenny, ava, lucy
+Landlord raises rent every scene | Lenny raises the rent every time the tenant says something. | lenny, ava, kiki
 Nosy neighbor with binoculars | Chuck has been watching the street for years. He finally sees something real. | chuck, paula, brad
 Perfect neighbor's dark secret | Paula's garden is perfect. What's under the roses isn't. | paula, chuck, pedro
 The HOA meeting | The HOA meeting turns into a trial about a pink mailbox. | gordon, paula, chuck
-Roommate eats your food | Lucy labels everything. Gabe eats it anyway. | lucy, gabe, lola
+Roommate eats your food | Lucy labels everything. Gabe eats it anyway. | lucy, gabe, kiki
 Roommate who never showers | Dusty's roommates hold an intervention. | dusty, gabe, lucy
 Package thief | Someone steals packages on the street. The camera shows the mayor. | chuck, gordon, stella
-Loud party next door | The neighbors' party is too loud. Chuck calls the cops. The cop is at the party. | chuck, larry, lucy
+Loud party next door | The neighbors' party is too loud. Chuck calls the cops. The cop is at the party. | chuck, larry, kiki
 Fence war | Two neighbors fight over a fence line. The fence moves every night. | chuck, fran, paula
 Widow bakes for the neighbor | Fran bakes for her new neighbor every day. His wife starts baking back. | fran, brad, rhonda
 Salon owner knows every secret | Stella's salon is where the whole neighborhood confesses. | stella, paula, fran
 The spa gossip ring | Lulu runs a gossip ring from her spa. | lulu, stella, paula
-Landlord's surprise inspection | Lenny inspects the apartment. The tenant is hiding three cats and a roommate. | lenny, ava, lucy
+Landlord's surprise inspection | Lenny inspects the apartment. The tenant is hiding three cats and a roommate. | lenny, ava, kiki
 Parking spot feud | Chuck saves his parking spot with a lawn chair. The new neighbor moves it. | chuck, brad, paula
 Mayor's lawn | The mayor's lawn is always greener. Chuck investigates. | gordon, chuck, fran
 Neighborhood watch | The neighborhood watch catches a burglar. It's the watch leader. | chuck, paula, larry
@@ -20,7 +20,7 @@ The shared wall | Ava hears everything through the wall. Her neighbor is plannin
 Block party | The block party exposes three feuds and one affair. | gordon, chuck, paula
 Borrowed lawn mower | Chuck borrowed the mower five years ago. The neighbor wants it back. | chuck, fran, brad
 Barking dog | The neighbor's dog barks all night. The owner claims he has no dog. | chuck, ava, lenny
-Tenant's revenge | Ava gets revenge on the landlord by starting a tenants' union. | ava, lenny, lucy
+Tenant's revenge | Ava gets revenge on the landlord by starting a tenants' union. | ava, lenny, kiki
 Trash day | Two neighbors fight over whose turn it is to take out the shared bins. | chuck, paula, brad
 Holiday lights war | Two neighbors compete over holiday lights. The power goes out. | chuck, gordon, fran
 Neighbor's new car | Paula's new car sparks jealousy on the whole street. | paula, rhonda, chuck
@@ -28,30 +28,30 @@ Roommate's new partner | Lucy's new boyfriend moves in without asking. | lucy, g
 The shared Wi-Fi | Someone's using the neighbor's Wi-Fi. The bill is huge. | ken, chuck, ava
 Tree dispute | The neighbor's tree drops fruit on Chuck's car. | chuck, fran, paula
 Front yard art | Fran puts a statue in her yard. The HOA declares war. | fran, gordon, paula
-Apartment noise complaint | The downstairs neighbor complains about noise. The upstairs apartment is empty. | ava, lenny, lucy
+Apartment noise complaint | The downstairs neighbor complains about noise. The upstairs apartment is empty. | ava, lenny, kiki
 Lost cat | A lost cat poster leads to a neighborhood mystery. | fran, chuck, bree
 The new family | A new family moves in. They're a little too perfect. | paula, chuck, fran
 Mayor's garage sale | The mayor's garage sale is full of city property. | gordon, chuck, violet
 Stolen gnome | Someone steals Fran's garden gnome. It sends postcards. | fran, chuck, paula
-Roommate agreement | Three roommates sign a 20-page roommate agreement. | lucy, gabe, lola
+Roommate agreement | Three roommates sign a 20-page roommate agreement. | lucy, gabe, kiki
 Nosy neighbor's diary | Chuck's diary about the neighbors is found. | chuck, paula, fran
 The snow shovel | Two neighbors fight over who shovels the shared driveway. | chuck, brad, rhonda
 Hot tub party | The neighbor's hot tub party gets crashed by the HOA. | mel, gordon, paula
 Estate gossip | Chatty hears it first. The whole estate hears it second. | chatty, auntie, lemz
-Corner shop credit | Auntie Rubes keeps a notebook of who owes her money. | auntie, zesty, jito
+Corner shop credit | Auntie Rubes keeps a notebook of who owes her money. | auntie, zesty, tomzy
 Barbeque smoke | The neighbor's barbecue smoke sets off everyone's alarm. | chuck, brad, fran
 Pool party invitation | Everyone is invited to the pool party except Chuck. | paula, chuck, mel
 Welcome basket | Fran's welcome basket for the new neighbors includes a list of rules. | fran, ava, chuck
 Mayor's dog | The mayor's dog keeps digging in Fran's garden. | gordon, fran, chuck
 Landlord's daughter | The landlord's daughter moves into the building to spy. | lenny, clara, ava
-Roommate's cooking | Gabe's cooking sets off the smoke alarm every night. | gabe, lucy, lola
+Roommate's cooking | Gabe's cooking sets off the smoke alarm every night. | gabe, lucy, kiki
 Salon rumor | A rumor starts at the salon and ends at the police station. | stella, larry, paula
 Elevator stuck | Four neighbors get stuck in the elevator. Secrets come out. | ava, lenny, fran
 The noisy renovation | Paula's renovation has lasted two years. | paula, chuck, dan
 Door-to-door salesman | Barry sells the whole street the same broken vacuum. | barry, chuck, fran
 The anonymous note | An anonymous note appears on every door. | chuck, paula, fran
 Holiday decorations | The HOA bans inflatable decorations. Chuck buys the biggest one. | chuck, gordon, paula
-Neighbor's delivery | Wedge delivers to the wrong door. The neighbor opens it. | wedge, chatty, auntie
+Neighbor's delivery | Wedge delivers to the wrong door. The neighbor opens it. | wedge, nessa, auntie
 Estate lift broken | The estate lift is broken again. The whole block has an opinion. | chatty, zesty, auntie
 Late-night noise on the estate | The mandem's music is too loud. Auntie Rubes has had enough. | auntie, tomzy, lemz
 Firefighter next door | Brad the firefighter becomes the street's hero. Twice a week. | brad, paula, fran

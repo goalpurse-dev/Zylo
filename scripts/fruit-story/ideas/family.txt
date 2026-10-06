@@ -15,11 +15,11 @@ Butler knows the family | Otto has served the family for 40 years. The kids just
 Spoiled only child | Andy wants a car for his 22nd birthday. He gets a job instead. | andy, pete, connie
 Father-in-law hates the groom | Manny gives the groom a test. The groom passes too well. | manny, chip, rosa
 The inheritance fight | Dot controls the family money and makes everyone audition for it. | dot, milo, maya
-Babysitter knows too much | Bree babysits the neighbors' kids and knows every family secret on the street. | bree, betty, pete
+Babysitter knows too much | Bree babysits the neighbors' kids and knows every family secret on the street. | bree, olive, pete
 Housekeeper sees everything | Pilar cleans the mansion. She's seen the will, the safe, and the second phone. | pilar, priscilla, otto
 Family reunion reveal | At the reunion, Grandpa introduces a new cousin nobody knew existed. | gus, sally, manny
-Mom's dating profile | The kids find their mom's dating profile. It's very detailed. | betty, clara, bree
-Dad's midlife crisis | Oscar dyes his hair and starts a band. His kids are horrified. | oscar, clara, olive
+Mom's dating profile | The kids find their mom's dating profile. It's very detailed. | betty, clara, andy
+Dad's midlife crisis | Oscar buys a leather jacket and starts a band. His kids are horrified. | oscar, clara, olive
 Sibling rivalry at the funeral | Two siblings fight over Grandma's teapot at the funeral. | maya, milo, grace
 The adopted secret | Milo finds adoption papers in the attic. They aren't his. | milo, maya, olive
 Grandpa says the quiet part | Pappy says exactly what everyone was thinking at dinner. | pappy, olive, pete
@@ -39,11 +39,11 @@ The fortune teller aunt | Aunt Hazel predicts a family scandal. It happens by de
 Sister's new husband | Maya marries a man she met a week ago. The family investigates. | maya, lionel, olive
 Moving back home | Clara moves back home. Her parents turned her room into a gym. | clara, oscar, olive
 Dad's secret savings | Pete has been saving for a boat for 20 years. The family finds out on the same day the roof leaks. | pete, olive, greg
-Single mom's first date | Betty's first date in 10 years. Her kids crash it. | betty, bree, felix
+Single mom's first date | Betty's first date in 10 years. Her kids crash it. | betty, clara, felix
 Grandma's new phone | Polly gets a smartphone. The whole family regrets it. | polly, andy, maya
 In-laws on vacation | The two sets of in-laws go on vacation together. Nobody comes back friends. | sally, manny, doris
 Family portrait day | The family portrait takes six hours and three breakups. | olive, pete, clara
-Grandpa's girlfriend | Gus brings his new girlfriend to Sunday lunch. She's the realtor selling his house. | gus, candy, sally
+Grandpa's girlfriend | Pappy brings his new girlfriend to Sunday lunch. She's the realtor selling his house. | pappy, candy, sally
 Heiress disowns the son | Priscilla cuts off her son on live TV. | priscilla, andy, mandy
 The family lawyer | Hector reads the will. Every sibling gets one dollar and one secret. | hector, maya, milo
 Stepsiblings | Two stepsiblings hate each other until they discover a shared enemy: the stepmom. | clara, andy, connie
@@ -57,18 +57,18 @@ The father of the bride's speech | Manny's speech turns into a roast of the groo
 Retirement home romance | Polly and Pappy are dating at the retirement home. Their families are horrified. | polly, pappy, ruth
 The family recipe contest | Two grandmothers compete for the best family recipe. | grace, ruth, olive
 Dad's joke | Pete's dad joke at the wedding ruins the whole evening. | pete, rosa, chip
-Grandma moves in | Ruth moves in and starts grading her daughter's cooking. | ruth, betty, bree
+Grandma moves in | Ruth moves in and starts grading her daughter's cooking. | ruth, betty, clara
 The will video | Grandpa left a video will. It's three hours long. | gus, sally, andy
 Sister's secret wedding | Maya got married in secret. The family finds out from the photos online. | maya, olive, ana
 Son brings a girlfriend | Andy brings his first girlfriend home. His grandmother interrogates her. | andy, ruth, chloe
 Family therapy | The family goes to therapy. The therapist quits. | nora, pete, clara
 The family secret recipe | A food company offers millions for Grandma's recipe. Grandma says no. | grace, milo, bart
 Father-daughter dance | Oscar practices his father-daughter dance for months. It doesn't go to plan. | oscar, clara, patty
-Babysitter vs. grandma | Bree and Grandma Polly battle over who's in charge of the kids. | bree, polly, betty
+Babysitter vs. grandma | Bree and Grandma Polly battle over who's in charge of the kids. | bree, polly, olive
 Mom's new boyfriend | Olivia's new boyfriend is her son's gym teacher. | olive, hal, andy
 Housekeeper's revenge | Pilar quits and tells the family what they said about each other. | pilar, priscilla, dot
-Uncle Tay's family dinner | Uncle Tay feeds the whole family at the shop. Someone brings drama with dessert. | uncle, nessa, zesty
-The perfect family photo | The family influencer's perfect photo hides a very imperfect morning. | paige, pete, clara
+Uncle Tay's family dinner | Uncle Tay feeds the whole family at the shop. Someone brings drama with dessert. | uncle, nessa, grapz
+The perfect family photo | The family influencer's perfect photo hides a very imperfect morning. | paige, oscar, clara
 Family road trip | Eight hours in a car. Three secrets come out. | pete, olive, andy
 Twin mix-up | Maya's twin shows up and everyone thinks she's Maya. | maya, milo, olive
 Grandma's lottery ticket | Polly wins the lottery. Suddenly everyone visits. | polly, milo, andy
@@ -86,7 +86,7 @@ The family lawyer's secret | The family lawyer is secretly the grandson of the r
 Grandma's matchmaking disaster | Ruth sets up her grandson with every woman at church. | ruth, andy, fran
 Brother's wedding speech | Milo's best man speech exposes his brother's past. | milo, jojo, chip
 Christmas tree fight | Two siblings fight over real or fake tree. It gets real. | maya, milo, pete
-Nessa's no-nonsense morning | Young mum Nessa wrangles the school run while the estate gossip watches. | nessa, chatty, zesty
+Nessa's no-nonsense morning | Young mum Nessa wrangles the school run while the estate gossip watches. | nessa, chatty, pez
 Family game night | Monopoly night ends with an actual lawsuit. | pete, olive, andy
 Mother-in-law's birthday | Doris's birthday party is planned by her daughter-in-law. Nothing is right. | doris, rhonda, dusty
 The family dog's will | The rich aunt leaves everything to her dog. The family is furious. | dot, milo, hector
@@ -98,5 +98,5 @@ Big sister is the boss | Maya becomes her brother's boss at work. | maya, milo, 
 Inheritance hunt | The will says the treasure is hidden in the house. The family tears it apart. | dot, milo, otto
 The housewarming | Everyone brings gifts to the housewarming. Grandma brings a list of complaints. | ruth, clara, andy
 Estranged brother | Milo shows up after 10 years. He wants his old room back. | milo, olive, pete
-Son's secret band | Andy's secret band plays at his dad's work party. | andy, pete, rick
+Son's secret band | Andy's secret band plays at his dad's work party. | andy, pete, linda
 Family business sale | Manny sells the family business without telling the kids. | manny, maya, milo

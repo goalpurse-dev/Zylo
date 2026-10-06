@@ -31,7 +31,7 @@ export async function cleanEditInstruction({ admin, env, userId, storyId, sceneI
   }
 }
 
-const REWRITE_SYSTEM = `A video model refused this prompt with a content-policy error. Rewrite the prompt so it passes a strict safety filter while describing the same scene: soften anything that could read as violent, sexual, hateful or dangerous, and keep it cartoon-friendly.
+const REWRITE_SYSTEM = `A video model refused this prompt with a content-policy error. Rewrite the prompt so it passes a strict safety filter while describing the same scene: soften anything that could read as violent, sexual, hateful or dangerous (anger becomes "stern", a threat becomes "firm", police, prison, crime and weapons words in the DESCRIPTION become neutral ones), and keep it cartoon-friendly.
 The spoken line in double quotes MUST stay exactly the same, character for character, in double quotes. Keep who speaks, the voice description, "only X speaks", and "No music. No subtitles, captions or on-screen text."
 Return the full rewritten prompt, at most 1500 characters.`;
 const REWRITE_SCHEMA = { type: "object", additionalProperties: false, required: ["prompt"], properties: { prompt: { type: "string" } } };

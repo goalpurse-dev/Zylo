@@ -17,7 +17,7 @@ Rich aunt's test | Dot pretends to be broke to see which relative helps her. | d
 Stepmom's shopping | Connie spends the kids' college fund on a handbag. | connie, pete, clara
 The poker game | Four friends play poker for real estate. | vinny, lee, bart
 Butler's secret fortune | Otto has been secretly investing for 40 years. He's richer than the family. | otto, priscilla, bart
-The rich neighbor | Chuck finds out his quiet neighbor is a billionaire. | chuck, bart, paula
+The rich neighbor | Chuck finds out his quiet neighbor is a billionaire. | chuck, bart, grace
 Pool guy's inheritance | Mel inherits a mansion from a client. Her family sues. | mel, georgia, hector
 Divorce settlement | Bianca got the house, the car, and the dog. Andre gets the goldfish. | bianca, andre, penny
 The accountant's mistake | Greg moves a decimal point. The company is suddenly rich. | greg, philip, rick
@@ -31,7 +31,7 @@ Pawn shop | Milo pawns Grandma's ring. Grandma walks into the pawn shop. | milo,
 The family business sale | Manny sells the business. The buyer is his rival. | manny, bart, maya
 Bank error | A bank error gives Dusty a million dollars. He spends it in one day. | dusty, rhonda, greg
 Heiress marries for love | Priscilla marries a broke musician. The family lawyer panics. | priscilla, jimmy, hector
-Rich widow's new boyfriend | Georgia's new boyfriend is her late husband's accountant. | georgia, greg, penny
+Rich widow's new boyfriend | Georgia's new boyfriend is her late husband's accountant. | georgia, greg, hector
 Casino security | Lee's security catches a cheater. It's his own son. | lee, andy, moe
 Investment scam | Vinny sells a fake fruit farm investment to the whole neighborhood. | vinny, chuck, paula
 The contest winner | Ava wins a dream house. It's a nightmare. | ava, candy, lenny
@@ -43,12 +43,12 @@ Resort owner's promise | Tony promises a free vacation. The fine print is brutal
 Billionaire's dinner | Bart invites his kids to dinner and makes them pay. | bart, andy, clara
 Chairman's retirement | Ron retires with a golden parachute. The company has no gold left. | ron, philip, greg
 Lemonade stand empire | A kid's lemonade stand becomes a business rivalry with the neighbor. | bree, chuck, paula
-Tenant vs. landlord | Ava finds out Lenny has been charging everyone double. | ava, lenny, hector
+Tenant vs. landlord | Ava finds out Lenny has been charging everyone double. | ava, lenny, penny
 Shared lottery ticket | The office shares a lottery ticket. It wins. The ticket is missing. | gloria, stan, bruno
 The prenup | Wanda signs the prenup without reading. Twenty years later, she reads it. | wanda, walt, penny
 The allowance increase | Andy asks for a raise in allowance. He brings a slideshow. | andy, pete, olive
 Stolen identity | Vinny steals Walt's identity. Walt's wife likes the new Walt better. | vinny, walt, wanda
-The debt collector | Duke comes to collect. Dusty offers his mother-in-law instead. | duke, dusty, doris
+The debt collector | Mac comes to collect. Dusty offers his mother-in-law instead. | mac, dusty, doris
 The rich aunt's funeral | Dot fakes her funeral to see who shows up. | dot, maya, hector
 Gold-digger test | Priscilla hires an actor to test her new fiancé. | priscilla, percy, leo
 Crypto crash | Andy invested everything in crypto. It crashed on his birthday. | andy, pete, greg
@@ -59,13 +59,13 @@ Real estate trick | Candy sells the same house to two families. | candy, ava, pe
 The inheritance hunt | The will says the money is hidden somewhere in the mansion. | otto, andy, dot
 Butler's revenge | Otto quits and takes the family secrets to a tabloid. | otto, violet, priscilla
 Birthday check | Grandma's birthday check bounces. | ruth, andy, greg
-The garage sale | Chuck sells a painting for $5. It's worth millions. | chuck, bart, paula
-The bank loan | Ava applies for a loan. The loan officer is her ex. | ava, andre, greg
+The garage sale | Chuck sells a painting for $5. It's worth millions. | chuck, bart, grace
+The bank loan | Kiki applies for a loan. The loan officer is her ex. | kiki, andre, greg
 Tip jar war | Two coffee shop workers fight over the tip jar. | lola, gabe, tanya
 The rich uncle's visit | A rich uncle visits and everyone suddenly loves him. | bart, milo, maya
 Silent auction | A silent auction gets loud when two exes bid on the same item. | bianca, andre, priscilla
 Divorce for money | A couple fakes a divorce to save on taxes. It becomes real. | pete, connie, greg
-Loan shark's birthday | Duke invites everyone who owes him to his birthday party. | duke, milo, dusty
+Loan shark's birthday | Duke invites everyone who owes him to his birthday party. | duke, milo, benny
 Fake designer bag | Connie's designer bag is fake. Her rival notices. | connie, farrah, candy
 Wedding costs | Edna's wedding budget for her daughter doubles every day. | edna, rosa, dina
 The investment club | A neighborhood investment club goes rogue. | chuck, paula, vinny

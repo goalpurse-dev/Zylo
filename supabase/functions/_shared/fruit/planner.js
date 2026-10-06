@@ -10,9 +10,12 @@ import { BUFFER_SEC, WORDS_PER_SECOND, clipDurationSec, maxWordsFor, wordCount }
 import { videoModel } from "./models.js";
 
 import { LEGACY_SHOTS, SPEAKING_SHOTS } from "./shots.js";
+import { problemLines, reviewScript } from "./scriptReview.js";
 export { SPEAKING_SHOTS };
 export const SHOTS = [...SPEAKING_SHOTS, ...LEGACY_SHOTS];
 export const LINE_WORDS = { min: 3, targetMin: 6, targetMax: 14, max: 16 };
+/** An alternate outfit for one story is short: the picture prompt has to carry it at every wording tier. */
+export const OUTFIT_MAX_CHARS = 100;
 
 /**
  * Most words per line so the clips fit the chosen length: each clip is the
@@ -50,6 +53,27 @@ export const WRITTEN_ONLY = [
   /\b(note|text|message|sign|caption|card|letter|email|post)s? (?:said|says|reads|read|spelled)\b/i,
 ];
 
+/**
+ * Full-body moves in a scene's action. The picture model follows the action
+ * over the framing: "strolls up", "stands tall" and "rips off his jacket" all
+ * came back as wide shots with a small face (launch review, Oct 2026).
+ */
+export const FULL_BODY = /\b(?:walk(?:s|ing)?|stroll(?:s|ing)?|strid(?:es|ing)|storm(?:s|ing)?|march(?:es|ing)?|pac(?:es|ing)|jump(?:s|ing)?|leap(?:s|ing)?|kneel(?:s|ing)?|crouch(?:es|ing)?|danc(?:es|ing)|climb(?:s|ing)?|kick(?:s|ing)?|stomp(?:s|ing)?|(?:run|rush|burst|barg|step|back|head)(?:s|es|ing)? (?:in|into|out|off|away|over|up to|forward|back|closer|toward|towards|through)|stand(?:s|ing)? (?:up|tall)|sit(?:s|ting)? down|get(?:s|ting)? up|ris(?:es|ing) (?:from|to)|enter(?:s|ing)?|exit(?:s|ing)?|turn(?:s|ing)? to (?:leave|go)|rip(?:s|ping)? off|spin(?:s|ning)? around)\b/i;
+
+/** Name words a line can use to talk to a character ("Big Pina" → "Pina"). */
+const callNames = (c) => [...new Set(String(c.name).split(/\s+/).filter((w, i, all) => w.length >= 3 && !/^(big|uncle|auntie|aunt|mr|mrs|miss)$/i.test(w) && (i === 0 || i === all.length - 1 || all.length === 2)))];
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * Cast members a line talks TO: their name set off by punctuation ("Blu, that
+ * geezer...", "...my whole bag, Kai."). A name inside the sentence ("Does Big
+ * Pina know?") is talking about them, which is fine when they're elsewhere.
+ */
+export function addressedIds(line, cast) {
+  const text = String(line ?? "");
+  return cast.filter((c) => callNames(c).some((n) => new RegExp(`(?:^|[,.!?;:]\\s+)${escapeRe(n)}(?=\\s*[,.!?]|\\s*$)`, "i").test(text))).map((c) => c.id);
+}
+
 export const sceneCountFor = (lengthSec) => Math.min(24, Math.max(3, Math.round(lengthSec / 5)));
 
 export const SYSTEM = `You write scripts for AI Fruit Story: short vertical drama videos with anthropomorphic fruit characters, made for TikTok, Reels and Shorts. The viewer must be hooked in the first second and want the next line.
@@ -72,16 +96,26 @@ HEARD ONCE
 - No jokes that only work in writing: nothing that depends on punctuation, spelling, capital letters, emoji, or on reading a note, text, sign or caption word for word.
 - Prefer reveals the viewer can instantly SEE in the frame (a matching dress, a second plate, a receipt held up, who walks in) and clear escalation from line to line.
 
+- A text message, note or email read aloud is a line by itself: only the words read. The reaction comes in the next scene.
+- One relationship per line. Never a chain like "my niece's husband's mistress": the viewer can't untangle it by ear.
+
 STRUCTURE
-- Scene 1 is the hook: open in the middle of the drama with the most arresting line.
+- Scene 1 is the hook: open in the middle of the drama with the most arresting line. It names at most two people.
 - Every scene escalates. A turn or reveal near the end.
-- The last scene lands a punchline or a cliffhanger that makes people want the next video.
+- The LAST line must TURN something: a reveal, a reversal, or a price being named. Never end on someone agreeing, obeying, greeting, leaving or planning what happens next ("Okay, boss. I'll be there tonight." is a setup, not an ending).
+- An episode ends on its cliffhanger instead: a question or threat a brand-new viewer fully understands, so who everyone is must be clear from this episode's own lines.
+- With 3 or 4 scenes: hook, pushback, proof, turn.
 - Every cast member appears in at least one scene. Speakers can repeat.
+
+IN THE PICTURE
+- The viewer sees only the characters in presentIds. Everyone a line talks to, points at or describes as being here ("baby", "you two", "that guy", "look at her") MUST be in presentIds for that scene.
+- Talking ABOUT someone who is somewhere else is fine. Never address or point at someone outside the frame, and never someone who isn't in the cast.
+- Fruit characters have no hair, beards, human skin or tattoos. Never write about a haircut, a hairstyle, a shave, a tattoo, make-up or anything else that needs a human feature. A barber or hairdresser gossips at the counter; nobody's hair is cut.
 
 STAGING (for each scene)
 - presentIds: who is in the frame, speaker included, 1 to 3 characters, cast only. Usually the speaker plus the person they're talking to.
 - locationId: one of the story's locations. Use 1 to 3 locations per story and reuse them; don't jump around.
-- action: one small physical action for the speaker that fits a 4 to 8 second clip (up to 12 words). Start with the verb and don't name the speaker (e.g. "raises her phone to film them").
+- action: one small UPPER-BODY action for the speaker that fits a 4 to 8 second clip (up to 12 words): a look, a hand, a prop held up. Start with the verb and don't name the speaker (e.g. "raises her phone to film them"). The picture is chest-up, so never walking, running, striding, standing up, sitting down, kneeling, entering, leaving or any other full-body move: that forces a wide shot and the face gets small.
 - emotion: one or two words (e.g. "icy calm", "smug", "panicked"). This alone decides how the line is delivered; the voice notes only say how the character sounds.
 - shot: one of ${SPEAKING_SHOTS.join(", ")}. Every scene has a spoken line, so the speaker's face must be large and facing the camera for lip sync. Never wide, never over-the-shoulder.
 - placement: WHERE each character in the frame is relative to the setting, whenever it matters to the line or the reveal (inside or outside, behind the glass, at the door, across the table), e.g. "Gloria stands outside the glass wall looking in; Rick and Bella are inside the office". Required whenever the line mentions glass, windows, walls, a door, a lock, inside or outside. Leave it empty only when position doesn't matter.
@@ -95,6 +129,9 @@ Each location has:
 Ids are "loc1", "loc2", "loc3".
 Outfits never change (each character wears the same clothes in every video). Pick locations that suit what the cast wears: Kai the lifeguard in swim shorts belongs at a beach, pool or boardwalk, not a fancy restaurant. If the idea's setting clashes with someone's outfit, move the scene somewhere that fits, or make the clash part of the joke.
 
+OUTFITS
+outfits: normally an empty list. Add an entry ONLY when a character's role in this story can't work in their fixed outfit: someone undercover, in disguise, in costume, or newly locked up. Give that character ONE alternate outfit for the whole story (4 to 14 words, plain clothes and colours, no logos or writing), e.g. an undercover cop: "a plain grey hoodie, dark jeans and white trainers". At most one entry per story. Never write a character who is hiding who they are while wearing the uniform that gives them away. Two characters in the same scene must never be dressed alike.
+
 ROLES
 roles: for each cast member, their role in THIS story in 2 to 5 words (e.g. "the jealous sister", "the boss hiding an affair"), not their library tag.
 
@@ -103,7 +140,7 @@ endState: where the story ends. characters: for each character in the last scene
 seriesLocationId (on each location): "" unless you are told the series locations; then the id of the one it is.
 
 TITLE
-2 to 6 words, catchy, no clickbait punctuation.
+2 to 6 words, catchy, no clickbait punctuation. It must not give away the twist or the ending: name the situation, not the outcome ("Twenty Pairs, Cash Only", not "The Deal Was a Setup").
 
 SAFETY
 Keep it suitable for a general audience: no slurs, no explicit sexual content, no graphic violence, no weapons, no drugs. Drama and humor come from secrets, lies, pettiness and reveals.
@@ -182,9 +219,13 @@ export function plannerSchema(castIds, { script = false } = {}) {
   return {
     type: "object",
     additionalProperties: false,
-    required: ["title", "locations", "roles", "scenes", "endState"],
+    required: ["title", "locations", "roles", "outfits", "scenes", "endState"],
     properties: {
       title: { type: "string" },
+      outfits: {
+        type: "array",
+        items: { type: "object", additionalProperties: false, required: ["id", "outfit"], properties: { id: { type: "string", enum: castIds }, outfit: { type: "string" } } },
+      },
       endState: {
         type: "object",
         additionalProperties: false,
@@ -265,6 +306,12 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     const emotion = String(s?.emotion ?? "").trim();
     const beat = String(s?.beat ?? "").trim();
     if (!action || words(action) > 14) errors.push(`scene ${n}: action must be 1 to 12 words`);
+    const move = action.match(FULL_BODY);
+    if (move) errors.push(`scene ${n}: the action "${action}" is a full-body move ("${move[0]}"); the picture is chest-up, so give an upper-body action instead (a look, a hand, a prop held up)`);
+    // Whoever the line talks to must be in the picture ("Relax, baby" was said to an empty chair).
+    for (const id of addressedIds(line, cast)) {
+      if (id !== speakerId && !present.includes(id)) errors.push(`scene ${n}: the line talks to ${cast.find((c) => c.id === id).name}, so ${id} must be in presentIds for this scene (or don't address them)`);
+    }
     if (!emotion || words(emotion) > 3) errors.push(`scene ${n}: emotion must be 1 or 2 words`);
     if (!beat || words(beat) > 5) errors.push(`scene ${n}: beat must be 2 to 4 words`);
     if (source !== "script") {
@@ -277,6 +324,11 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     }
     return { speakerId, line, presentIds: present, locationId: s?.locationId, action, emotion, shot: s?.shot, placement, title: beat };
   });
+  // The hook names at most two people besides the speaker.
+  if (source !== "script" && normalized[0]) {
+    const named = cast.filter((c) => c.id !== normalized[0].speakerId && callNames(c).some((nm) => new RegExp(`\\b${escapeRe(nm)}\\b`, "i").test(normalized[0].line)));
+    if (named.length > 2) errors.push(`scene 1: the first line names ${named.length} people (${named.map((c) => c.name).join(", ")}); name at most two`);
+  }
   // An episode uses the series characters it needs; a single story uses its whole cast.
   for (const id of castIds) if (source !== "script" && source !== "episode" && !seen.has(id)) errors.push(`cast member ${id} must appear in at least one scene`);
 
@@ -298,8 +350,15 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     const role = String(r?.role ?? "").trim().replace(/\.$/, "");
     if (castIds.includes(r?.id) && role && words(role) <= 10) roles[r.id] = role;
   }
+  // One alternate outfit, for one character whose role the fixed outfit can't play (undercover, disguise). Cosmetic: never fails a story.
+  const outfits = {};
+  for (const o of Array.isArray(out?.outfits) ? out.outfits : []) {
+    const text = String(o?.outfit ?? "").trim().replace(/\.$/, "");
+    if (castIds.includes(o?.id) && words(text) >= 2 && words(text) <= 20 && text.length <= OUTFIT_MAX_CHARS && Object.keys(outfits).length < 1) outfits[o.id] = text;
+  }
   const plan = {
     roles,
+    outfits,
     title,
     locations: locations.map((l) => ({ id: l.id, description: String(l.description ?? "").trim(), timeOfDay: String(l.timeOfDay ?? "").trim(), lighting: String(l.lighting ?? "").trim(), seriesLocationId: String(l.seriesLocationId ?? "").trim() })),
     // Where the story ends: who is where, how they feel, props in play (the next episode starts here).
@@ -314,28 +373,59 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
 }
 
 /**
- * Plans a story with one repair attempt.
- * @param {object} p  same as buildPlannerPrompt + {llm, provider, model}
- *   llm({system, user, schema, name}) -> {data, costUsd, ...}  (logs its own call)
- * @returns {{plan, calls: object[], attempts: number}}
+ * Plans a story: one repair attempt for the format, then (when reviewLlm is
+ * given) one script review and at most one rewrite.
+ * @param {object} p  same as buildPlannerPrompt + {llm, reviewLlm?}
+ *   llm({system, user, schema, name, purpose}) -> {data, costUsd, ...}  (logs its own call)
+ *   reviewLlm: the same shape, on the review model
+ * @returns {{plan, calls: object[], attempts: number, review: object|null}}
+ *   review: {ok, problems:[{rule, scene, problem, fix}], rewritten, before?, note?, skipped?}
  */
 export async function runPlanner(p) {
   const { system, user, sceneCount } = buildPlannerPrompt(p);
   const schema = plannerSchema(p.cast.map((c) => c.id), { script: p.source === "script" });
   const ctx = { source: p.source, cast: p.cast, script: p.script, sceneCount, quality: p.quality, lengthSec: p.lengthSec, seriesLocationIds: (p.series?.locations ?? []).map((l) => l.id) };
   const calls = [];
+  const repairPrompt = (data, errors) => `${user}\n\nYOUR PREVIOUS ANSWER:\n${JSON.stringify(data)}\n\nIT HAS THESE PROBLEMS. Fix every one and return the full corrected JSON:\n- ${errors.join("\n- ")}`;
   const first = await p.llm({ system, user, schema, name: "story_plan", purpose: "planner" });
   calls.push(first);
-  let result = validatePlan(first.data, ctx);
-  if (!result.errors.length) return { plan: result.plan, calls, attempts: 1 };
+  let data = first.data;
+  let result = validatePlan(data, ctx);
+  if (result.errors.length) {
+    const second = await p.llm({ system, user: repairPrompt(data, result.errors), schema, name: "story_plan", purpose: "planner_repair" });
+    calls.push(second);
+    data = second.data;
+    result = validatePlan(data, ctx);
+    if (result.errors.length) {
+      const err = new FruitError("PLANNER_FAILED", "We couldn't write this story. Nothing was charged. Try again.", 502);
+      err.details = result.errors;
+      err.calls = calls;
+      throw err;
+    }
+  }
+  const done = (plan, review) => ({ plan, calls, attempts: calls.length, review });
+  if (!p.reviewLlm) return done(result.plan, null);
 
-  const repairUser = `${user}\n\nYOUR PREVIOUS ANSWER:\n${JSON.stringify(first.data)}\n\nIT HAS THESE PROBLEMS. Fix every one and return the full corrected JSON:\n- ${result.errors.join("\n- ")}`;
-  const second = await p.llm({ system, user: repairUser, schema, name: "story_plan", purpose: "planner_repair" });
-  calls.push(second);
-  result = validatePlan(second.data, ctx);
-  if (!result.errors.length) return { plan: result.plan, calls, attempts: 2 };
-  const err = new FruitError("PLANNER_FAILED", "We couldn't write this story. Nothing was charged. Try again.", 502);
-  err.details = result.errors;
-  err.calls = calls;
-  throw err;
+  // The script editor reads it once, the way a viewer hears it (scriptReview.js).
+  // A failed review gets ONE rewrite; a rewrite that breaks the format gets one
+  // repair, and if that fails too the first (valid) script is kept. A story
+  // never fails because of the review.
+  const review = await reviewScript({ plan: result.plan, cast: p.cast, source: p.source, series: p.series, llm: p.reviewLlm });
+  if (review.ok) return done(result.plan, { ok: true, problems: [], rewritten: false, ...(review.skipped ? { skipped: review.skipped } : {}) });
+  const outcome = { ok: false, problems: review.problems, rewritten: false, before: { title: result.plan.title, lines: result.plan.scenes.map((s) => s.line) } };
+  try {
+    const rewriteUser = `${user}\n\nYOUR PREVIOUS ANSWER:\n${JSON.stringify(data)}\n\nA SCRIPT EDITOR READ IT THE WAY A VIEWER HEARS IT (once, out loud, one picture per line) AND FOUND THESE PROBLEMS:\n- ${problemLines(review.problems).join("\n- ")}\n\nRewrite the script so every problem is fixed: change lines, who is in the picture, the outfits, the title or the ending as needed. Keep what already works, keep every rule above, and return the full corrected JSON.`;
+    const third = await p.llm({ system, user: rewriteUser, schema, name: "story_plan", purpose: "planner_rewrite" });
+    calls.push(third);
+    let rewritten = validatePlan(third.data, ctx);
+    if (rewritten.errors.length) {
+      const fourth = await p.llm({ system, user: repairPrompt(third.data, rewritten.errors), schema, name: "story_plan", purpose: "planner_rewrite_repair" });
+      calls.push(fourth);
+      rewritten = validatePlan(fourth.data, ctx);
+    }
+    if (!rewritten.errors.length) return done(rewritten.plan, { ...outcome, rewritten: true });
+    return done(result.plan, { ...outcome, note: "the rewrite broke the format; the first script was kept" });
+  } catch (e) {
+    return done(result.plan, { ...outcome, note: `the rewrite could not run (${String(e?.message ?? e).slice(0, 80)}); the first script was kept` });
+  }
 }

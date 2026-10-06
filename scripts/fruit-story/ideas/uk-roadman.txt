@@ -2,8 +2,8 @@
 Two wings, one secret | Uncle Tay sees Roxy's man order for two. She isn't the second box. | uncle, roxy, lemz | dating
 Wrong side of the estate | Razz turns up at Trims' barbershop the same hour as Lemz. | razz, trims, lemz | neighbors
 The youngest's first link | Zesty has his first date. The whole crew gives terrible advice. | zesty, lemz, tomzy | dating
-Chicken shop confession | Chez finally tells Tizzy he likes her, over the counter, with a queue behind. | chez, tizzy, uncle | dating
-Ex at the chicken shop | Tia walks into the chicken shop while Roxy is ordering. | tia, roxy, chez | dating
+Chicken shop confession | Chez finally tells Tizzy he likes her, over the counter, with a queue behind. | chez, tizzy, lemz | dating
+Ex at the chicken shop | Tia walks into the chicken shop while Roxy is ordering. | tia, roxy, uncle | dating
 Barber knows everything | Trims hears about Jito's secret girlfriend before Jito does. | trims, jito, chatty | neighbors
 Estate gossip spreads | Chatty tells one person. By dinner, the whole estate knows. | chatty, auntie, nessa | neighbors
 Corner shop tab | Auntie Rubes presents Zesty with his tab. It's longer than a receipt roll. | auntie, zesty, lemz | service
@@ -11,13 +11,13 @@ Always late | Jito is late to his own birthday. He has an excuse ready. | jito, 
 The rapper's first show | Pinesy's first show has twelve people. Eleven are his cousins. | pinesy, pez, tizzy | social
 Beat thief | Pez's beat appears on a rival rapper's track. | pez, pinesy, razz | social
 Trainer reseller's rare pair | Blu has one pair of rare trainers. Three people want them. | blu, lemz, razz | money
-Delivery rider's night | Wedge delivers to the same flat three times. A different person answers each time. | wedge, chatty, jito | service
+Delivery rider's night | Wedge delivers to the same flat three times. A different person answers each time. | wedge, tizzy, jito | service
 Gym bro's protein | Rasco's protein shake disappears from the fridge. He suspects the youngest. | rasco, zesty, tomzy | neighbors
 Crew leader's plan | Lemz plans a surprise birthday for Roxy. Nobody keeps it secret. | lemz, roxy, chatty | dating
 Rival's girlfriend | Razz's girlfriend used to date Lemz. | razz, tia, lemz | dating
-Young mum's school run | Nessa does the school run while fielding three calls about estate drama. | nessa, chatty, zesty | family
+Young mum's school run | Nessa does the school run while fielding three calls about estate drama. | nessa, chatty, auntie | family
 Auntie's advice | Auntie Rubes tells Roxy exactly what she thinks of her boyfriend. | auntie, roxy, lemz | family
-Tomzy's joke goes too far | Tomzy's prank on Rasco ends up on Tizzy's page. | tomzy, rasco, tizzy | social
+Tomzy's joke goes too far | Tomzy's prank on Rasco ends up on Chatty's page. | tomzy, rasco, chatty | social
 The quiet one speaks | Grapz says one sentence at the chicken shop. Everyone goes silent. | grapz, lemz, chez | neighbors
 Night bus drama | The night bus home turns into a relationship argument. | roxy, lemz, tia | dating
 Rainy street argument | Roxy and Lemz argue in the rain about who forgot the anniversary. | roxy, lemz, chatty | dating
@@ -26,20 +26,19 @@ Barbershop debate | The barbershop debates the best chicken shop. It gets heated
 Rapper's mum | Pinesy's mum comes to his video shoot and takes over. | pinesy, nessa, pez | social
 Youngest wants respect | Zesty wants to be taken seriously. He buys a gilet. | zesty, lemz, blu | family
 Roadgyal's viral video | Tizzy's video of the estate goes viral. Everyone's in it. | tizzy, chatty, grapz | social
-Chicken shop birthday | Uncle Tay throws a birthday party in the shop. The oven breaks. | uncle, chez, tomzy | service
+Chicken shop birthday | Uncle Tay throws a birthday party in the shop. The oven breaks. | uncle, chez, rasco | service
 Trainers mix-up | Blu sells Jito the wrong size. Jito wears them anyway. | blu, jito, lemz | money
-The group chat leak | The crew's group chat gets screenshotted and shared. | tomzy, lemz, tizzy | social
+The group chat leak | The crew's group chat gets screenshotted and shared. | tomzy, lemz, chatty | social
 Auntie's lottery | Auntie Rubes wins a small lottery. Suddenly everyone buys milk. | auntie, zesty, chatty | money
-Barber's first haircut | Trims gives Zesty his first proper haircut. Zesty cries. | trims, zesty, lemz | family
-Delivery rider's crush | Wedge keeps delivering to Nessa's flat. She doesn't order that much. | wedge, nessa, chatty | dating
+Delivery rider's crush | Wedge keeps delivering to Nessa's flat. She doesn't order that much. | wedge, nessa, tizzy | dating
 Studio session | Pez's studio session is ruined by Tomzy's jokes. | pez, tomzy, pinesy | social
-Rival crew's challenge | Razz challenges Lemz to a football match. Loser buys chicken. | razz, lemz, rasco | sports
+Rival crew's challenge | Razz challenges Lemz to a football match. Loser buys chicken. | razz, lemz, tomzy | sports
 The borrowed jacket | Jito borrowed Lemz's jacket. Roxy recognizes it on someone else. | jito, lemz, roxy | dating
 Chatty's secret | Chatty knows everyone's secrets. Nobody knows hers. | chatty, auntie, tia | neighbors
 Mum's cooking | Nessa's cooking brings the whole crew to her door. | nessa, tomzy, grapz | family
 The rapper's lyrics | Pinesy's lyrics are about Roxy. Lemz hears them. | pinesy, roxy, lemz | social
 Youngest's big mistake | Zesty accidentally tells Roxy about Lemz's plan. | zesty, roxy, lemz | dating
-The chicken shop feud | Two customers fight over the last box of wings. | chez, rasco, razz | service
+The chicken shop feud | Two customers fight over the last box of wings. | chez, rasco, jito | service
 Trims' advice | Trims tells Lemz to propose. Lemz isn't ready. | trims, lemz, roxy | dating
 Auntie's rules | Auntie Rubes bans the whole crew from her shop for a week. | auntie, tomzy, zesty | service
 Night out plans | The crew plans a night out. Everyone brings a different plan. | lemz, jito, tomzy | dating
@@ -53,27 +52,26 @@ Roxy's birthday | Roxy's birthday dinner turns into a debate about who's paying.
 The blocked number | Lemz blocks Tia. She calls from Auntie's shop phone. | lemz, tia, auntie | dating
 Tizzy's podcast | Tizzy starts a podcast about the estate. The estate isn't happy. | tizzy, chatty, auntie | social
 Blu's new business | Blu starts a trainer cleaning business. It floods his flat. | blu, wedge, grapz | money
-Fake designer | Tomzy's new designer jacket is fake. Tizzy notices. | tomzy, tizzy, blu | money
+Fake designer | Tomzy's new designer jacket is fake. Roxy notices. | tomzy, roxy, blu | money
 The crew photo | The crew's photo shoot for Pinesy's cover goes wrong. | pinesy, pez, tizzy | social
 Nessa's new man | Nessa's new boyfriend is Trims. The barbershop is shocked. | nessa, trims, chatty | dating
 Wedge's rating | Wedge's delivery rating drops. He blames the rain. | wedge, uncle, chez | service
 Grapz's secret talent | Grapz can sing. Nobody knew. | grapz, pez, tizzy | social
 Lemz's ex returns | Lemz's ex moves back to the estate. Roxy is watching. | lemz, tia, roxy | dating
 Auntie's gossip | Auntie Rubes and Chatty compete over who has the best gossip. | auntie, chatty, nessa | neighbors
-The haircut disaster | Trims messes up Rasco's haircut before a date. | trims, rasco, tizzy | service
 The crew's fallout | A fallout over a missing charger splits the crew. | lemz, jito, tomzy | neighbors
 Zesty's first job | Zesty gets his first job at the chicken shop. Chaos follows. | zesty, uncle, chez | family
 Pinesy's diss track | Pinesy drops a diss track about Razz. Razz replies with a better one. | pinesy, razz, pez | social
-Chicken shop romance | Chez and Tizzy's romance develops over a year of chip orders. | chez, tizzy, uncle | dating
+Chicken shop romance | Chez and Tizzy's romance develops over a year of chip orders. | chez, tizzy, auntie | dating
 Rain delay | The crew is stuck in Auntie's shop during a storm. | auntie, lemz, grapz | neighbors
 The favor | Lemz asks Blu for a favor. Blu asks for three. | lemz, blu, jito | money
 Roxy's new job | Roxy gets a job. Lemz feels left behind. | roxy, lemz, nessa | dating
 Tia and Roxy team up | The ex and the girlfriend team up against Lemz. | tia, roxy, lemz | dating
-Estate party | The estate party gets shut down by Auntie Rubes. | auntie, tomzy, tizzy | neighbors
+Estate party | The estate party gets shut down by Auntie Rubes. | auntie, tomzy, chatty | neighbors
 Rasco's diet | Rasco goes on a diet. The chicken shop feels the loss. | rasco, uncle, chez | sports
 Pez's quiet studio | Pez needs quiet. His flat is next to Tomzy. | pez, tomzy, grapz | neighbors
 Barbershop bet | Trims bets Lemz he'll propose by summer. | trims, lemz, jito | dating
-Wedge's delivery mix-up | Wedge delivers Nessa's shopping to Chatty. Chatty reads the list aloud. | wedge, chatty, nessa | service
+Delivery mix-up | Pez drops Nessa's shopping at Chatty's door. Chatty reads the list aloud. | pez, chatty, nessa | service
 Uncle Tay's advice | Uncle Tay gives Zesty dating advice from 1995. | uncle, zesty, chez | family
 Zesty's gilet | Zesty wears a gilet in summer. The crew roasts him. | zesty, tomzy, rasco | neighbors
 Tizzy's collab | Tizzy wants to collab with Pinesy. Pinesy's ex is Tizzy's cousin. | tizzy, pinesy, tia | social
@@ -86,16 +84,16 @@ Nessa vs. Chatty | Nessa confronts Chatty about spreading rumors. | nessa, chatt
 The shop CCTV | Auntie's shop camera shows who's been taking the good crisps. | auntie, zesty, tomzy | service
 Grapz's silence | Grapz stops talking to the crew. Nobody knows why. | grapz, lemz, pez | neighbors
 Pinesy's award | Pinesy wins a local music award. He thanks the wrong people. | pinesy, pez, nessa | social
-Chez's promotion | Uncle Tay promotes Chez to manager. Chez's first rule starts a riot. | chez, uncle, tomzy | service
+Chez's promotion | Uncle Tay promotes Chez to manager. Chez's first rule starts a riot. | chez, uncle, grapz | service
 Tomzy's girlfriend | Tomzy's new girlfriend is Tia. The crew is split. | tomzy, tia, roxy | dating
 Night bus confession | Grapz confesses his feelings to Tizzy on the night bus. | grapz, tizzy, jito | dating
-Barbershop fight | Two customers argue over who was next. Trims settles it. | trims, razz, rasco | service
+Barbershop fight | Two customers argue over who was next. Trims settles it. | trims, razz, tomzy | service
 Wedge's scooter | Wedge's scooter is stolen. He finds it outside the chicken shop. | wedge, chez, grapz | neighbors
 The mandem's trip | The crew's day trip to the seaside ends in the rain. | lemz, tomzy, rasco | dating
 The estate election | The estate residents' committee election gets personal. | auntie, chatty, nessa | neighbors
 Rasco's rematch | Rasco loses an arm wrestle to Nessa. He wants a rematch. | rasco, nessa, tomzy | sports
 Lemz meets Roxy's mum | Lemz meets Roxy's mum. It's Auntie Rubes. | lemz, roxy, auntie | family
-Blu's secret stash | Blu's trainer collection is found under his mum's bed. | blu, nessa, zesty | family
+Blu's secret stash | Blu's trainer collection is found under his mum's bed. | blu, nessa, lemz | family
 Pez's heartbreak beat | Pez makes a sad beat after a breakup. It goes viral. | pez, tizzy, pinesy | social
 Uncle Tay retires | Uncle Tay announces his retirement. The whole estate protests. | uncle, chez, auntie | service
 Chatty's wedding plans | Chatty plans a wedding. She's not engaged. | chatty, nessa, trims | dating
@@ -104,6 +102,5 @@ Jito's new phone | Jito's new phone is his old phone with a new case. | jito, bl
 Tia's comeback | Tia comes back with a new look and a new man. | tia, razz, roxy | dating
 The chip shop truce | Razz and Lemz call a truce over a shared portion of chips. | razz, lemz, chez | neighbors
 Rain on the photoshoot | Pinesy's cover shoot is ruined by rain. Tizzy makes it better. | pinesy, tizzy, pez | social
-Grapz's new job | Grapz starts at the barbershop. He doesn't talk to customers. | grapz, trims, lemz | service
 Tomzy's roast | Tomzy roasts everyone at Roxy's birthday. Roxy is not amused. | tomzy, roxy, lemz | dating
 Auntie's secret admirer | Someone leaves flowers at Auntie's shop every morning. | auntie, uncle, chatty | dating

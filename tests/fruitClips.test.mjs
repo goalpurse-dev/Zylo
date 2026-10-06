@@ -108,12 +108,17 @@ test("animate all: one clip per scene through planStep, saved == sent", () => {
   for (const it of plan.items) { assert.equal(it.tool_key, "video:fruit-story-v2"); assert.equal(it.request.positivePrompt, it.prompt); }
 });
 
-test("a failed Wan clip falls back once to Seedance 2.0 Mini with the same prompt, frame and length", async () => {
-  const { fallbackClipTask } = await import("../supabase/functions/_shared/fruit/clips.js");
+test("a failed Wan clip falls back once to Seedance 2.0 Mini: same line, frame and length, an almost still camera", async () => {
+  const { fallbackClipTask, stillCamera, STILL_CAMERA } = await import("../supabase/functions/_shared/fruit/clips.js");
   const wan = buildClipRequest({ story, scene, library: LIB }).request;
   const fb = fallbackClipTask(wan);
   assert.equal(fb.model, "bytedance:seedance@2.0-mini");
-  assert.equal(fb.positivePrompt, wan.positivePrompt);
+  // Seedance pushes in until the face is cropped: only the camera sentence changes.
+  assert.match(wan.positivePrompt, /Camera: a slow push-in toward the speaker\./);
+  assert.equal(fb.positivePrompt, stillCamera(wan.positivePrompt));
+  assert.equal(fb.positivePrompt, wan.positivePrompt.replace("Camera: a slow push-in toward the speaker.", `Camera: ${STILL_CAMERA}.`));
+  assert.ok(buildClipRequest({ story, scene, library: LIB, quality: "v3" }).request.positivePrompt.includes(`Camera: ${STILL_CAMERA}.`), "V3 is Seedance: still camera from the start");
+  assert.ok(buildClipRequest({ story, scene, library: LIB, quality: "v4" }).request.positivePrompt.includes("Camera: a slow push-in toward the speaker."), "Veo keeps the push-in");
   assert.deepEqual(fb.inputs.frameImages, wan.inputs.frameImages);
   assert.equal(fb.duration, wan.duration);
   assert.deepEqual([fb.width, fb.height], [wan.width, wan.height]);

@@ -11,6 +11,9 @@ export const FRUIT_MODELS = Object.freeze({
     { provider: "anthropic", model: "claude-sonnet-5" },
     { provider: "openai", model: "gpt-5.6-sol" },
   ]),
+  // Script editor: reads every finished script once before pictures are paid for
+  // (scriptReview.js). A different, cheaper model than the writer: about $0.003 per review.
+  review: { provider: "anthropic", model: "claude-haiku-4-5-20251001" },
   // Small tasks: edit-instruction cleanup, content-policy rewrite.
   small: { provider: "openai", model: "gpt-5-mini" },
 

@@ -1,10 +1,13 @@
-// Word timestamps for the final video's captions (stage 3f+). One
-// speech-to-text call per clip (OpenAI whisper-1, the cheapest option that
-// returns word times: $0.006 per audio minute, ≈ $0.0005 per 5 s clip).
-// Every call is logged to fruit_ai_calls with its cost and reused for the
-// same clip URL, so toggling captions or rebuilding never pays twice.
-// Any failure returns null for that clip; the machine then spreads the line
-// over the detected speech instead. Captions always show the exact line.
+// Transcripts of the clips, with word timestamps. One speech-to-text call per
+// clip (OpenAI whisper-1, the cheapest option that returns word times: $0.006
+// per audio minute, ≈ $0.0005 per 5 s clip). Every call is logged to
+// fruit_ai_calls with its cost and reused for the same clip URL, so the clip
+// check, toggling captions and rebuilding never pay twice.
+// Used for: the clip check (did the voice say the line: clipCheck.js) and the
+// final video (where each clip is trimmed, when each caption word shows, and
+// what the caption says when the voice changed the line).
+// Any failure returns null for that clip; the final then times the line over
+// the detected speech instead.
 
 export const WHISPER_MODEL = "whisper-1";
 export const WHISPER_USD_PER_MIN = 0.006;
@@ -27,13 +30,15 @@ export function wordsFrom(json) {
  * @param {string} o.userId
  * @param {string} o.storyId
  * @param {{sceneId:string, url:string, durationSec:number}[]} o.clips
- * @returns {Promise<(object[]|null)[]>} words per clip, same order
+ * @returns {Promise<({words:object[], text:string}|null)[]>} transcript per clip, same order
+ *   (heard: false marks a call that worked but found no words: the clip is silent)
  */
-export async function captionWordsForClips({ admin, apiKey, paidOff, userId, storyId, clips, fetchImpl = fetch }) {
+export async function transcriptsForClips({ admin, apiKey, paidOff, userId, storyId, clips, fetchImpl = fetch }) {
   const { data: cached } = await admin.from("fruit_ai_calls").select("request, response").eq("story_id", storyId).eq("purpose", CAPTION_PURPOSE).eq("ok", true);
-  const byUrl = new Map((cached ?? []).map((c) => [c.request?.clipUrl, c.response?.words ?? null]));
+  const byUrl = new Map((cached ?? []).map((c) => [c.request?.clipUrl, c.response ?? null]));
   return Promise.all(clips.map(async (clip) => {
-    if (byUrl.get(clip.url)?.length) return byUrl.get(clip.url);
+    const hit = byUrl.get(clip.url);
+    if (hit?.words?.length) return { words: hit.words, text: String(hit.text ?? hit.words.map((w) => w.word).join(" ")) };
     if (paidOff || !apiKey) return null;
     const t0 = Date.now();
     const request = { model: WHISPER_MODEL, clipUrl: clip.url, response_format: "verbose_json", timestamp_granularities: ["word"], language: "en" };
@@ -56,7 +61,9 @@ export async function captionWordsForClips({ admin, apiKey, paidOff, userId, sto
         error: words ? null : String(json?.error?.message ?? "no words").slice(0, 300),
         cost_usd: res.ok ? (seconds / 60) * WHISPER_USD_PER_MIN : 0, latency_ms: Date.now() - t0, completed_at: new Date().toISOString(),
       });
-      return words;
+      if (words) return { words, text: String(json?.text ?? words.map((w) => w.word).join(" ")) };
+      // The call worked and heard nothing: the clip has no speech (the clip check remakes it).
+      return res.ok ? { words: [], text: "", heard: false } : null;
     } catch (e) {
       await admin.from("fruit_ai_calls").insert({
         user_id: userId, story_id: storyId, scene_id: clip.sceneId, provider: "openai", model: WHISPER_MODEL, purpose: CAPTION_PURPOSE,
@@ -65,4 +72,9 @@ export async function captionWordsForClips({ admin, apiKey, paidOff, userId, sto
       return null;
     }
   }));
+}
+
+/** Word timestamps only (the shape the final video job has always carried). */
+export async function captionWordsForClips(o) {
+  return (await transcriptsForClips(o)).map((t) => (t?.words?.length ? t.words : null));
 }

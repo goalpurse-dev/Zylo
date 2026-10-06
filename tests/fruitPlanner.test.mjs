@@ -78,7 +78,7 @@ test("script mode: lines stay byte-identical even if the model tries to change t
   const script = [{ speakerId: "mia", line: "Tonight has to be perfect.  " }, { speakerId: "marco", line: "Work was crazy — sorry I'm late!" }];
   const llm = async () => ({ data: { title: "My Script", locations, roles: ROLES, scenes: [
     { presentIds: ["mia", "marco"], locationId: "loc1", action: "lights a candle", emotion: "hopeful", shot: "chest-up", beat: "Big night", line: "HACKED LINE", speakerId: "pia" },
-    { presentIds: ["marco", "mia"], locationId: "loc1", action: "rushes in with flowers", emotion: "flustered", shot: "medium close-up", placement: "", beat: "Late again" },
+    { presentIds: ["marco", "mia"], locationId: "loc1", action: "holds up a bunch of flowers", emotion: "flustered", shot: "medium close-up", placement: "", beat: "Late again" },
   ] }, costUsd: 0.01 });
   const { plan } = await runPlanner({ ...base, source: "script", script, llm });
   assert.deepEqual(plan.scenes.map((s) => [s.speakerId, s.line]), script.map((r) => [r.speakerId, r.line]));

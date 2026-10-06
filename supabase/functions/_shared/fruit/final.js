@@ -11,8 +11,17 @@ export const FINAL_TIMEOUT_MIN = 10;
 export const finalPath = (userId, storyId, callId) => `fruit/${userId}/${storyId}/final-${callId}.mp4`;
 
 /**
- * The machine's job: every clip in scene order with its exact line (the
- * caption is the line in the DB, never a transcription).
+ * Seconds the video holds on the last picture after the final word: a short
+ * closing beat so it doesn't cut off dead on the last syllable, long enough
+ * to read the end card when there is one (which now shows during the beat,
+ * not over the last line).
+ */
+export const CLOSING_BEAT_SEC = { plain: 1.0, endCard: 1.8 };
+
+/**
+ * The machine's job: every clip in scene order with its line. The API adds
+ * each clip's transcript (words: where to trim and when each caption word
+ * shows) and, when the voice really changed the line, caption: what was said.
  */
 export function buildFinalJob({ story, scenes, callId, captions, uploadUrl, callbackUrl, token, overlays = null, cover = null }) {
   const ordered = [...scenes].sort((a, b) => a.idx - b.idx);
@@ -21,6 +30,7 @@ export function buildFinalJob({ story, scenes, callId, captions, uploadUrl, call
   return {
     callId, storyId: story.id, aspect: story.aspect, captions: Boolean(captions),
     ...(overlays && (overlays.part || overlays.end) ? { overlays } : {}),
+    closingBeatSec: overlays?.end ? CLOSING_BEAT_SEC.endCard : CLOSING_BEAT_SEC.plain,
     ...(cover ? { cover } : {}),
     clips: ordered.map((s) => ({ url: s.clip_url, line: s.line })),
     uploadUrl, callbackUrl, token,
