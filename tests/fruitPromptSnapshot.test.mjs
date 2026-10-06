@@ -51,6 +51,8 @@ const long = {
   placement: "Pia stands outside the glass wall looking in with her hand flat on the pane and her phone raised to film; Marco and Rick are inside the office behind the long desk, one by each monitor, both half turned to the door.",
   action: "raises her phone high above her head to film the two of them through the glass wall while smiling",
 };
+// Over the limit at the full wording, under it once the outfits are left out: the middle wording.
+const mid = { ...trio, id: "s5", placement: `${long.placement} The door behind them is open and a cleaning trolley is parked in the corridor outside.` };
 const longStory = {
   ...story,
   locations: [{ ...locations[1], description: "Glass-walled corner office on the fortieth floor with a long walnut desk, two curved monitors, a leather chair, a brass lamp, framed awards, a drinks trolley, a tall fern, stacked folders, a model yacht, a whiteboard, a coat stand, a low sofa, a rug, blinds half drawn and a wide view of the city skyline at dusk beyond the glass, plus a second glass meeting room behind it with eight chairs" }],
@@ -66,6 +68,8 @@ function snapshot() {
   s["picture/trio+plate/16:9"] = buildScenePrompt({ story: { ...story, aspect: "16:9" }, scene: trio, library: LIB });
   s["picture/outfits"] = buildScenePrompt({ story: { ...story, outfits: { marco: "an orange prison jumpsuit and black boots" } }, scene: duo, library: LIB });
   s["picture/long (shorter wording)"] = buildScenePrompt({ story: longStory, scene: long, library: LIB });
+  s["picture/mid (middle wording)"] = buildScenePrompt({ story, scene: mid, library: LIB });
+  s["picture/mid lengths"] = scenePromptLengths({ story, scene: mid, library: LIB });
   s["picture/lengths"] = [solo, duo, trio].map((scene) => scenePromptLengths({ story, scene, library: LIB }));
   s["picture/long lengths"] = scenePromptLengths({ story: longStory, scene: long, library: LIB });
   s["picture/edit"] = buildEditPrompt("Make the roses white.");
@@ -154,6 +158,10 @@ test("the snapshot covers every wording tier and every tier's camera", () => {
   const lengths = recorded["picture/long lengths"];
   assert.ok(lengths[0] > 2500, "the long scene is over the limit at the full wording, so a shorter tier is recorded");
   assert.ok(recorded["picture/long (shorter wording)"].length <= 2500);
+  const midLengths = recorded["picture/mid lengths"];
+  assert.ok(midLengths[0] > 2500 && midLengths[1] <= 2500, "the mid scene is recorded at the middle wording");
+  assert.equal(recorded["picture/mid (middle wording)"].length, midLengths[1]);
+  assert.equal(recorded["picture/long (shorter wording)"].length, lengths[2], "the long scene is recorded at the shortest wording");
   assert.match(recorded["clip/v3/solo"], /almost still, locked off/);
   assert.match(recorded["clip/v2/solo"], /push-in/);
   assert.match(recorded["picture/trio+plate"], /Image 4 is the empty set of this place/);
