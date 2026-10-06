@@ -1,5 +1,13 @@
 // AI Fruit Story v2 series (stage 3g): outline planner and episode prompts, offline.
 import test from "node:test";
+import { mentions } from "../supabase/functions/_shared/fruit/series.js";
+
+test("a character counts as named by first name, id or a short form of the first name", () => {
+  const marg = { id: "marg", name: "Margaret Crisp" };
+  for (const t of ["Marg shoves a note into her coat.", "Margaret Crisp, his wife.", "marg's coat"]) assert.ok(mentions(t, marg), t);
+  for (const t of ["Marco and the margin call", "Ma is here", "Rick's wife"]) assert.ok(!mentions(t, marg), t);
+  assert.ok(mentions("Big Pina runs the block.", { id: "pina", name: "Big Pina" }));
+});
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { buildSeriesPrompt, runSeriesPlanner, seriesSchema, validateSeriesOutline } from "../supabase/functions/_shared/fruit/series.js";
