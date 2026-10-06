@@ -210,5 +210,23 @@ from the text above, the decision wins.
    or the other way around: listCharacters, getIdeas, listSeries and listRecent always
    filter by niche. Only the engine underneath is shared.
 
+Made on 2026-10-06, after the lip-sync test (Phase 1 passed: GO ON V2):
+
+9.  Video tiers come from Fruit: V2 Wan 2.6 Flash, V3 Seedance 2.0 Mini, V4 Veo 3.1 Fast,
+    same per-second prices, own price rows.
+10. Library face = B: solid dark open-mouth shape that changes shape when speaking,
+    oval eyes, flat decal on a cube head. Eyes and mouth shape are locked per avatar.
+    Flat eyebrow lines MAY be added per scene for emotion (angry, worried, shocked).
+11. Teeth: flat cartoon teeth are OK. Realistic 3D teeth, lips, tongue or nose = fail.
+12. STYLE LOCK FIX (LEGO look must never appear): remove "studded bricks" and "studs" from
+    every prompt. Use "smooth matte plastic blocks and simple geometric parts". Add to the
+    negative list: no studs, no studded baseplates, no round minifigure heads, no neck
+    studs, no claw hands, no brick-toy minifigures.
+13. Noob avatar: classic noob colours (yellow cube head and arms, blue torso, green legs),
+    face B, no cap. If it still comes out as a minifigure, change its colours.
+14. Clip check: add "text, subtitles or captions on screen" as a fail with one free remake.
+15. Two-avatar shots: carry over Fruit's picture check + one free redraw for full-body
+    shots with small faces.
+
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.
