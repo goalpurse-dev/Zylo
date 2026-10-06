@@ -35,6 +35,24 @@ export const SERIES_QUESTIONS = [
 
 export const CONCEPT_SUGGESTIONS = ["A CEO and his intern", "A mother-in-law who never leaves", "Prison kingpin beef", "Two best friends, one boyfriend"];
 export const OPENERS = ["Caught at a fancy dinner", "Walked in on at the office", "A reply-all email", "A credit card bill read out loud", "Something else"];
+/**
+ * The concept sets the world of a series, so each suggested concept offers
+ * openers that happen in that world ("Prison kingpin beef" used to be offered
+ * "Caught at a fancy dinner", and the script never joined the two). A typed
+ * concept gets the general list; the planner then moves the opener into the
+ * concept's world.
+ */
+export const OPENERS_BY_CONCEPT = {
+  "A CEO and his intern": ["Walked in on at the office", "A reply-all email", "A credit card bill read out loud", "Caught at a fancy dinner"],
+  "A mother-in-law who never leaves": ["She lets herself in with her own key", "A credit card bill read out loud", "Caught reading the family group chat", "Dinner for two, set for three"],
+  "Prison kingpin beef": ["A new inmate sits at the wrong table", "A note passed in the yard", "A visitor nobody expected", "The warden reads a letter out loud"],
+  "Two best friends, one boyfriend": ["Caught at a fancy dinner", "A text sent to the wrong chat", "The same necklace on both of them", "A credit card bill read out loud"],
+};
+export const openersFor = (concept) => [...(OPENERS_BY_CONCEPT[String(concept ?? "").trim()] ?? OPENERS.filter((o) => o !== "Something else")), "Something else"];
+
+/** Lengths offered as one-tap choices, each with its price; the slider still sets anything in between. */
+export const QUICK_LENGTHS = [20, 30, 45, 60];
+
 export const TONES = ["Loud and dramatic", "Petty and sarcastic", "Funny and chaotic", "Cold and quiet"];
 
 export const UPGRADE_COPY = {

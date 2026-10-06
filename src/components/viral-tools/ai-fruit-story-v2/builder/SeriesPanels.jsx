@@ -1,7 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import { ErrorBanner, FOCUS, OptionChip, SectionLabel, cx } from "../../../ui/zyvo";
 import { LIMITS } from "../api/fruitStoryV2Api";
-import { CONCEPT_SUGGESTIONS, OPENERS, SERIES_QUESTIONS, TONES } from "../constants";
+import { CONCEPT_SUGGESTIONS, SERIES_QUESTIONS, TONES, openersFor } from "../constants";
 import { AvatarStack, CastChip } from "../shared/Avatar";
 import { StepHeading } from "./BuilderPanel";
 import { CastPicker } from "./StoryStep";
@@ -105,7 +105,7 @@ export function SeriesWizard({ step, draft, byId, onChange, onOpenLibrary }) {
       {step === 2 && (
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-1.5" role="group" aria-label="Episode 1 opener">
-            {OPENERS.map((o) => (
+            {openersFor(draft.concept).map((o) => (
               <OptionChip key={o} shape="pill" selected={draft.opener === o} onClick={() => onChange({ opener: o })}>{o}</OptionChip>
             ))}
           </div>

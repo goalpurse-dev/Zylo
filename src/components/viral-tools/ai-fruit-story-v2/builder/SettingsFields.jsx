@@ -1,7 +1,7 @@
 import QuotedCredits from "../../../pricing/QuotedCredits";
 import { CreditIcon, QualityCards, SectionLabel, SegmentedControl } from "../../../ui/zyvo";
 import { LIMITS } from "../api/fruitStoryV2Api";
-import { ASPECTS, formatLength } from "../constants";
+import { ASPECTS, QUICK_LENGTHS, formatLength } from "../constants";
 import { TIERS, TIER_IDS, estimateStory } from "../pricing/fruitV2Estimates";
 
 const TIER_LIST = TIER_IDS.map((id) => TIERS[id]);
@@ -10,8 +10,9 @@ const TIER_LIST = TIER_IDS.map((id) => TIERS[id]);
  * Quality, length, shape and the cost card. Shared by single videos and
  * series episodes (episodes are always 9:16, so showAspect is off there).
  *   scriptScenes: when set (script mode), length comes from the script.
+ *   firstVideo: the user hasn't made a video yet, so the short lengths are suggested.
  */
-export default function SettingsFields({ value, onChange, allowedTiers, onLockedTier, quotes, balance, showAspect = true, scriptScenes = null }) {
+export default function SettingsFields({ value, onChange, allowedTiers, onLockedTier, quotes, balance, showAspect = true, scriptScenes = null, firstVideo = false }) {
   const est = scriptScenes
     ? estimateStory({ lengthSec: scriptScenes.lengthSec, tierId: value.tierId, prices: quotes.prices, sceneCount: scriptScenes.count })
     : estimateStory({ lengthSec: value.lengthSec, tierId: value.tierId, prices: quotes.prices });
@@ -47,6 +48,33 @@ export default function SettingsFields({ value, onChange, allowedTiers, onLocked
         <div className="mt-1.5 flex justify-between text-[9px] font-medium text-white/25" aria-hidden="true">
           <span>15 sec</span><span>1 min</span><span>2 min</span>
         </div>
+        {!scriptScenes && (
+          <div className="mt-3 grid grid-cols-4 gap-1.5" role="group" aria-label="Common lengths and what each costs">
+            {QUICK_LENGTHS.map((sec) => {
+              const price = estimateStory({ lengthSec: sec, tierId: value.tierId, prices: quotes.prices }).total;
+              const selected = lengthSec === sec;
+              return (
+                <button
+                  key={sec}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => onChange({ lengthSec: sec })}
+                  className={`flex flex-col items-center gap-0.5 rounded-xl border px-1 py-2 transition ${selected ? "border-lime-300/50 bg-lime-300/10 text-lime-200" : "border-white/[0.07] bg-white/[0.035] text-white/70 hover:border-white/20"}`}
+                >
+                  <span className="text-[11px] font-black">{formatLength(sec)}</span>
+                  <span className="flex items-center gap-0.5 text-[10px] font-bold tabular-nums opacity-80">
+                    <CreditIcon className="h-3 w-3" />{price == null ? "…" : `about ${price}`}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {firstVideo && !scriptScenes && (
+          <p className="mt-2 rounded-lg border border-lime-300/15 bg-lime-300/[0.06] px-2.5 py-2 text-[11px] font-semibold leading-relaxed text-lime-100/80">
+            For a first video, 20 to 30 seconds is best: it's finished in about 3 minutes and costs the least. You can always make a longer one next.
+          </p>
+        )}
         <p className="mt-2 text-[10px] leading-relaxed text-white/30">
           {scriptScenes
             ? `Set by your script: ${scriptScenes.count} lines, about ${formatLength(lengthSec)}.`

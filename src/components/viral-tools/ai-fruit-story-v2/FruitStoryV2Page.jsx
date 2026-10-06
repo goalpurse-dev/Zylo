@@ -120,6 +120,7 @@ export default function FruitStoryV2Page({ preview = null }) {
             quotes={flow.quotes}
             balance={account.balance}
             scriptScenes={flow.scriptScenes}
+            firstVideo={flow.firstVideo}
           />
         </>
       );
