@@ -76,6 +76,17 @@ export function seriesSchema(castIds) {
 
 const clean = (s) => String(s ?? "").replace(/\s+/g, " ").trim();
 
+/**
+ * Is a character named in a text? By first name, by their id, or by a short
+ * form of the first name. A whole series plan was refused twice because it
+ * called Margaret Crisp "Marg" in every episode.
+ */
+export function mentions(text, c) {
+  const first = String(c.name).split(/\s+/)[0].toLowerCase();
+  const id = String(c.id).toLowerCase();
+  return String(text).toLowerCase().split(/[^a-z]+/).some((w) => w.length >= 3 && (w === first || w === id || first.startsWith(w) || w.startsWith(first)));
+}
+
 /** Returns {outline, errors}; the outline is trimmed and bounded for the DB. */
 export function validateSeriesOutline(out, { episodeCount, cast }) {
   const errors = [];
@@ -85,8 +96,7 @@ export function validateSeriesOutline(out, { episodeCount, cast }) {
   if (wordCount(title) < 2 || wordCount(title) > 6 || title.length > 60) errors.push(`title must be 2 to 6 words (got "${title}")`);
   if (wordCount(logline) < 8 || wordCount(logline) > 35) errors.push(`logline must be one sentence of 12 to 30 words (got ${wordCount(logline)})`);
   if (wordCount(bible) < 25 || wordCount(bible) > 150) errors.push(`bible must be 40 to 120 words (got ${wordCount(bible)})`);
-  const firstNames = cast.map((c) => c.name.split(/\s+/)[0].toLowerCase());
-  const missing = cast.filter((c, i) => !bible.toLowerCase().includes(firstNames[i]));
+  const missing = cast.filter((c) => !mentions(bible, c));
   if (missing.length) errors.push(`the bible must give every cast member a fixed role (missing: ${missing.map((c) => c.name).join(", ")})`);
 
   const locations = (Array.isArray(out?.locations) ? out.locations : []).map((l) => ({ id: clean(l?.id), description: clean(l?.description) }));
@@ -128,7 +138,7 @@ export function validateSeriesOutline(out, { episodeCount, cast }) {
     return { number: n, title: t, summary: s, cliffhanger: c };
   });
   const all = episodes.map((e) => `${e.summary} ${e.cliffhanger}`.toLowerCase()).join(" ");
-  const unused = cast.filter((c, i) => !all.includes(firstNames[i]));
+  const unused = cast.filter((c) => !mentions(all, c));
   if (unused.length) errors.push(`every cast member must appear in at least one episode (missing: ${unused.map((c) => c.name).join(", ")})`);
   return { outline: { title, logline, bible, locations, characters, setups, episodes }, errors: [...new Set(errors)] };
 }
