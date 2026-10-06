@@ -209,7 +209,9 @@ const FootballerNationalitySwapTips = lazy(() => import("./app/blog/imagegenerat
 const FootballerNationalitySwapMistakes = lazy(() => import("./app/blog/imagegenerator/kit-swap-mistakes.jsx"));
 const FootballerNationalitySwapSeries = lazy(() => import("./app/blog/imagegenerator/kit-swap-series.jsx"));
 const ViralScore = lazy(() => import("./pages/viral/ViralScore.jsx"));
-const LipSync    = lazy(() => import("./pages/viral/LipSync.jsx"));
+// Lip Sync is hidden for now: it runs on fal, that account is locked, and the tool has never had a job.
+// To bring it back, restore this import and the /workspace/lip-sync route below.
+// const LipSync = lazy(() => import("./pages/viral/LipSync.jsx"));
 
 
 import ScrollToTop from "./components/ScrollToTop";
@@ -901,7 +903,7 @@ return (
   <Route path="/workspace/video-generator" element={<Video />} />
   <Route path="/workspace/viral-script" element={<Script />} />
   <Route path="/workspace/viral-score" element={<ViralScore />} />
-  <Route path="/workspace/lip-sync"    element={<LipSync />} />
+  <Route path="/workspace/lip-sync"    element={<Navigate to="/workspace" replace />} />
   <Route path="/workspace/ai-fruit-story" element={<AIFruitStory />} />
   <Route path="/workspace/face-asmr" element={<FaceAsmrPage />} />
   <Route path="/workspace/skeleton-shorts" element={<SkeletonShorts />} />
