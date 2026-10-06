@@ -214,9 +214,11 @@ export function isMockBackend() {
   return current().isMock === true;
 }
 
-/** @returns {Promise<Character[]>} */
-export const listCharacters = () => current().listCharacters();
-/** @param {{seed?: number}} [opts] @returns {Promise<Idea[]>} */
+// Every list is one template's (niches.js). opts.niche: what apiNiche() gives,
+// i.e. nothing for AI Fruit Story. A new story or series carries its template as input.niche.
+/** @param {{niche?: string}} [opts] @returns {Promise<Character[]>} */
+export const listCharacters = (opts = {}) => current().listCharacters(opts);
+/** @param {{seed?: number, niche?: string}} [opts] @returns {Promise<Idea[]>} */
 export const getIdeas = (opts = {}) => current().getIdeas(opts);
 /** @param {CreateStoryInput} input @returns {Promise<Story>} */
 export const createStory = (input) => current().createStory(input);
@@ -240,11 +242,11 @@ export const uploadPackage = (storyId) => current().uploadPackage(storyId);
 export const getStory = (storyId) => current().getStory(storyId);
 /** Synchronous. @param {string} storyId @param {(story: Story) => void} onChange @returns {() => void} unsubscribe */
 export const subscribeStory = (storyId, onChange) => current().subscribeStory(storyId, onChange);
-/** @returns {Promise<RecentSeries[]>} */
-export const listSeries = () => current().listSeries();
+/** @param {{niche?: string}} [opts] @returns {Promise<RecentSeries[]>} */
+export const listSeries = (opts = {}) => current().listSeries(opts);
 /** @param {SeriesPlanInput} input @returns {Promise<Series>} */
 export const createSeriesPlan = (input) => current().createSeriesPlan(input);
-/** @param {string} seriesId @returns {Promise<Series>} */
-export const getSeries = (seriesId) => current().getSeries(seriesId);
-/** @param {{type: "single"|"series"}} opts */
+/** @param {string} seriesId @param {{niche?: string}} [opts] @returns {Promise<Series>} */
+export const getSeries = (seriesId, opts = {}) => current().getSeries(seriesId, opts);
+/** @param {{type: "single"|"series", niche?: string}} opts */
 export const listRecent = (opts) => current().listRecent(opts);

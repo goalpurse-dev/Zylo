@@ -39,6 +39,9 @@ async function call(action, body = {}) {
   return json.data;
 }
 
+/** Names the template in a request. AI Fruit Story sends nothing: its requests are the same as before there were templates. */
+const template = (niche) => (niche && niche !== "fruit" ? { niche } : {});
+
 async function getLegacy(id) {
   const { data, error } = await supabase.from("fruit_story_generations").select("*").eq("id", legacyRowId(id)).maybeSingle();
   if (error || !data) throw new FruitApiError("NOT_FOUND", "This video doesn't exist anymore.");
@@ -57,9 +60,9 @@ export function createSupabaseAdapter() {
   return {
     isMock: false,
 
-    listCharacters: () => call("listCharacters"),
-    getIdeas: ({ seed } = {}) => call("getIdeas", { seed }),
-    createStory: (input) => call("createStory", { input }),
+    listCharacters: ({ niche } = {}) => call("listCharacters", template(niche)),
+    getIdeas: ({ seed, niche } = {}) => call("getIdeas", { seed, ...template(niche) }),
+    createStory: (input) => call("createStory", { input }),   // input.niche: the template, when it isn't Fruit
     generateScenePictures: (storyId) => call("generateScenePictures", { storyId }),
     editScene: (sceneId, instruction) => call("editScene", { sceneId, instruction }),
     regenerateScene: (sceneId, prompt) => call("regenerateScene", { sceneId, prompt }),
@@ -101,13 +104,14 @@ export function createSupabaseAdapter() {
       };
     },
 
-    listSeries: () => call("listSeries"),
+    listSeries: ({ niche } = {}) => call("listSeries", template(niche)),
     createSeriesPlan: (input) => call("createSeriesPlan", { input }),
-    getSeries: (seriesId) => call("getSeries", { seriesId }),
+    getSeries: (seriesId, { niche } = {}) => call("getSeries", { seriesId, ...template(niche) }),
 
-    async listRecent({ type } = {}) {
-      if (type === "series") return call("listRecent", { type: "series" });
-      const [mine, old] = await Promise.all([call("listRecent", { type: "single" }), legacyRecents()]);
+    async listRecent({ type, niche } = {}) {
+      if (type === "series") return call("listRecent", { type: "series", ...template(niche) });
+      // Stories from the first AI Fruit Story are Fruit's history only.
+      const [mine, old] = await Promise.all([call("listRecent", { type: "single", ...template(niche) }), template(niche).niche ? [] : legacyRecents()]);
       return [...mine, ...old].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
     },
   };

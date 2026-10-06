@@ -23,6 +23,7 @@ import ResumeCheckout from "./components/billing/ResumeCheckout.jsx";
 import PasswordRecoveryRedirect from "./components/auth/PasswordRecoveryRedirect.jsx";
 import LongFormScriptReadyNotifier from "./components/LongFormScriptReadyNotifier";
 import AIFruitStory from "./pages/workspace/AIFruitStory";
+import BlockyStories from "./pages/workspace/BlockyStories";
 import SkeletonShorts from "./pages/workspace/SkeletonShorts";
 
 // pages…
@@ -905,6 +906,7 @@ return (
   <Route path="/workspace/viral-score" element={<ViralScore />} />
   <Route path="/workspace/lip-sync"    element={<Navigate to="/workspace" replace />} />
   <Route path="/workspace/ai-fruit-story" element={<AIFruitStory />} />
+  <Route path="/workspace/blocky-stories" element={<BlockyStories />} />
   <Route path="/workspace/face-asmr" element={<FaceAsmrPage />} />
   <Route path="/workspace/skeleton-shorts" element={<SkeletonShorts />} />
   <Route path="/workspace/micro-camera-animal" element={<MicroCameraAnimalPage />} />

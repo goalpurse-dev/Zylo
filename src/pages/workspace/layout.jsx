@@ -162,6 +162,7 @@ useEffect(() => {
     "/workspace/viral-script": "Video Generator",
     "/workspace/skeleton-shorts": "Skeleton Shorts",
     "/workspace/ai-fruit-story": "AI Fruit Story",
+    "/workspace/blocky-stories": "Blocky Stories",
     "/workspace/face-asmr": "Face ASMR",
     "/workspace/micro-camera-animal": "Micro Camera",
     "/workspace/clay-rescue":        "Clay Rescue",

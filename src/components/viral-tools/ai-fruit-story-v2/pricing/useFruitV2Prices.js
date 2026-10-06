@@ -3,12 +3,12 @@ import useToolPriceQuotes from "../../../../hooks/useToolPriceQuotes";
 import { priceItems } from "./fruitV2Estimates";
 
 /**
- * Server quotes for AI Fruit Story v2 at one aspect.
+ * Server quotes for one template (niches.js#priceKey; default AI Fruit Story) at one aspect.
  *   status/retry come straight from useToolPriceQuotes;
  *   prices is { image, "clip:v2", "clip:v3", "clip:v4" } for fruitV2Estimates.
  */
-export default function useFruitV2Prices(aspect = "9:16") {
-  const items = useMemo(() => priceItems(aspect), [aspect]);
+export default function useFruitV2Prices(aspect = "9:16", priceKey = "fruit-story") {
+  const items = useMemo(() => priceItems(aspect, priceKey), [aspect, priceKey]);
   return useToolPriceQuotes(items);
 }
 
