@@ -358,3 +358,31 @@ test("picture check: a passing picture completes normally; a check that can't ru
     assert.equal(sent.length, 1);
   }
 });
+
+test("the paid switch is read for every job: switched off (or the daily cap reached) between two sweeps, the next jobs are refunded, not sent", async () => {
+  const db = createMemoryDb({ balance: 1000 });
+  const sent = [];
+  let n = 0;
+  let off = false;
+  const engine = createEngine({
+    store: db.store,
+    runware: { submit: async (env) => { sent.push(env); return { httpStatus: 200, body: ACK(env.taskUUID) }; }, poll: async () => ({ httpStatus: 200, body: { data: [] } }) },
+    media: { store: async ({ path }) => `https://cdn.test/${path}` },
+    // What blocky-worker passes: a value read fresh each time, not a fixed one.
+    env: { get BLOCKY_PAID_CALLS() { return off ? "off" : ""; }, webhookBase: "https://fn.test/blocky-worker", webhookSecret: "s3cret" },
+    now: () => db.clock(),
+    uuid: () => `00000000-0000-4000-8000-${String(++n).padStart(12, "0")}`,
+    log: { error() {} },
+  });
+  const first = db.addStory({ sceneCount: 1 });
+  pictures(db, first);
+  await engine.kick({ storyId: first });
+  assert.equal(sent.length, 1, "on: the job is sent");
+  off = true;
+  const second = db.addStory({ sceneCount: 2 });
+  pictures(db, second);
+  await engine.kick({ storyId: second });
+  assert.equal(sent.length, 1, "off: nothing more is sent");
+  assert.deepEqual([...db.jobs.values()].filter((j) => j.story_id === second).map((j) => j.error_code), ["PAID_CALLS_DISABLED", "PAID_CALLS_DISABLED"]);
+  assert.equal(db.balance, 1000 - 3, "only the job that was sent stays charged");
+});

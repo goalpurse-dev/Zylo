@@ -176,17 +176,26 @@ test("the envelope adds only transport fields; logs never contain the webhook to
   assert.ok(sameToken(t1, t1) && !sameToken(t1, t1.slice(1) + "0"));
 });
 
-test("the public address: nothing changes on the real project; on the local stack every outgoing URL is the outside one", async () => {
-  const { publicAddress } = await import("../supabase/functions/_shared/blocky/publicUrl.js");
-  const real = publicAddress("https://abc.supabase.co", "");
-  assert.equal(real.base, "https://abc.supabase.co");
-  assert.equal(real.toPublic("https://abc.supabase.co/storage/v1/object/public/generated/blocky/a.jpg"), "https://abc.supabase.co/storage/v1/object/public/generated/blocky/a.jpg");
-  assert.equal(publicAddress("https://abc.supabase.co/", "https://abc.supabase.co").toPublic("https://abc.supabase.co/x"), "https://abc.supabase.co/x");
-  const local = publicAddress("http://kong:8000", "https://tunnel.example.test/");
-  assert.equal(local.base, "https://tunnel.example.test");
-  assert.equal(local.toPublic("http://kong:8000/storage/v1/object/public/generated/blocky/a.jpg"), "https://tunnel.example.test/storage/v1/object/public/generated/blocky/a.jpg");
-  assert.equal(local.toPublic("http://kong:8000/storage/v1/object/upload/sign/generated/x?token=t"), "https://tunnel.example.test/storage/v1/object/upload/sign/generated/x?token=t");
-  // Someone else's URL (a provider's, an avatar reference) is left alone.
-  assert.equal(local.toPublic("https://im.runware.ai/image/x.jpg"), "https://im.runware.ai/image/x.jpg");
-  assert.equal(local.toPublic(null), null);
+test("paid calls: off unless the switch says on; a step's cost is estimated before it is charged; unreadable = off", async () => {
+  const { COST_USD, estimateUsd, readPaidState } = await import("../supabase/functions/_shared/blocky/spendGuard.js");
+  // Four pictures, then four 5-second clips on each tier.
+  const picture = { kind: "image", tool_key: "image:blocky-story", price_input: { width: 768, height: 1376 } };
+  const clip = (tier) => ({ kind: "clip", tool_key: `video:blocky-story-${tier}`, price_input: { durationSec: 5 } });
+  assert.equal(estimateUsd([picture, picture, picture, picture]), 0.16);
+  assert.equal(estimateUsd(Array.from({ length: 4 }, () => clip("v2"))), 1.008);
+  assert.equal(estimateUsd([clip("v3")]), 0.4085);
+  assert.equal(estimateUsd([clip("v4")]), 0.75);
+  assert.equal(estimateUsd([{ kind: "clip", tool_key: "video:something-new", price_input: {} }]), 15 * COST_USD.clipPerSec.v4, "an unknown clip is assumed to be the dearest and the longest");
+  assert.equal(estimateUsd([]), 0);
+
+  const rpc = (answer) => ({ rpc: async (name, args) => { assert.equal(name, "blocky_paid_state"); return typeof answer === "function" ? answer(args) : answer; } });
+  const on = await readPaidState(rpc((args) => ({ data: { on: true, reason: null, spent_usd: 0.5, in_flight_usd: 0.25, cap_usd: 3, add: args.p_add_usd }, error: null })), "", 0.16);
+  assert.deepEqual(on, { on: true, reason: null, spentUsd: 0.5, inFlightUsd: 0.25, capUsd: 3 });
+  assert.equal((await readPaidState(rpc({ data: { on: false, reason: "switch_off", spent_usd: 0, in_flight_usd: 0, cap_usd: 3 }, error: null }), "")).reason, "switch_off");
+  assert.equal((await readPaidState(rpc({ data: { on: false, reason: "cap_reached", spent_usd: 3.01, in_flight_usd: 0, cap_usd: 3 }, error: null }), "")).reason, "cap_reached");
+  // The function secret BLOCKY_PAID_CALLS=off wins over the database, without even asking it.
+  assert.deepEqual(await readPaidState({ rpc: async () => { throw new Error("must not be called"); } }, "OFF"), { on: false, reason: "switch_off", spentUsd: null, inFlightUsd: null, capUsd: null });
+  // Fails closed: an error, an empty answer or a thrown request all mean OFF.
+  for (const bad of [{ data: null, error: { message: "boom" } }, { data: null, error: null }, { data: { on: "yes" }, error: null }]) assert.equal((await readPaidState(rpc(bad), "")).on, false);
+  assert.deepEqual(await readPaidState({ rpc: async () => { throw new Error("network"); } }, ""), { on: false, reason: "unreadable", spentUsd: null, inFlightUsd: null, capUsd: null });
 });

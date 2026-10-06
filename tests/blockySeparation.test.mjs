@@ -5,7 +5,7 @@
 //   2. Nothing of Fruit's imports from Blocky's folders.
 //   3. Fruit's files are exactly main's: Blocky's branch changes none of them
 //      (one allowed file: the README note about the duplicated provider files).
-//   4. The local env file with keys can't be committed.
+//   4. An env file with keys can't be committed.
 //
 // So Blocky can be changed and deployed with no way of breaking Fruit, and
 // deploying Blocky never needs a Fruit function to be redeployed.
@@ -119,11 +119,11 @@ test("Fruit's files are exactly main's: an empty diff, and nothing added", (t) =
   for (const f of ALLOWED_IN_FRUIT) assert.match(f, /\.md$/);
 });
 
-test("the local env file with keys can't be committed", () => {
-  for (const f of [".env", ".env.local", ".env.blocky.local", "supabase/.env", "supabase/functions/.env"]) assert.ok(isSecretEnvFile(f), f);
-  for (const f of [".env.blocky.local.example", "src/env.js", "docs/blocky-local.md"]) assert.ok(!isSecretEnvFile(f), f);
-  // git ignores it …
-  assert.equal(git("check-ignore", ".env.blocky.local")[0], ".env.blocky.local");
+test("an env file with keys can't be committed", () => {
+  for (const f of [".env", ".env.local", ".env.production", ".env.anything.local", "supabase/.env", "supabase/functions/.env"]) assert.ok(isSecretEnvFile(f), f);
+  for (const f of [".env.example", "src/env.js", "docs/roblox-scope.md"]) assert.ok(!isSecretEnvFile(f), f);
+  // git ignores the one that holds the keys …
+  assert.equal(git("check-ignore", ".env.local")[0], ".env.local");
   // … and no env file is tracked or staged right now (the pre-commit hook runs the same check).
   assert.deepEqual(envFilesInGit(), { tracked: [], staged: [] });
   assert.match(read(".githooks/pre-commit"), /checkEnvNotStaged\.mjs/);

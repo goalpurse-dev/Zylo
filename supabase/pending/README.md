@@ -9,4 +9,4 @@ checked, and only then moved to `supabase/migrations/` (same name).
 |---|---|---|
 | `20261026090000_story_niches_undo.sql` | AI Fruit Story's tables go back to what they were before Blocky Stories was built inside them (drops the template columns) | no |
 | `20261026090000_story_niches_undo_rollback.sql` | Puts the template columns back | (only if the undo has to be taken back) |
-| `20261026100000_blocky_stories_backend.sql` | Blocky Stories' own tables, functions, rules and checks | no (local stack only: `docs/blocky-local.md`) |
+| `20261026100000_blocky_stories_backend.sql` | Blocky Stories' own tables, functions, rules, checks, the paid-calls switch and the daily cap | see `docs/roblox-phase0-plan.md` |

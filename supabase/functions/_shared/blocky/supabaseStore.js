@@ -165,11 +165,8 @@ export function createSupabaseStore(admin) {
   };
 }
 
-/**
- * Copies provider media into the public `generated` bucket.
- * toPublic: the stored URL as the outside world must see it (publicUrl.js); nothing changes on the real project.
- */
-export function createSupabaseMedia(admin, { bucket = "generated", toPublic = (url) => url } = {}) {
+/** Copies provider media into the public `generated` bucket. */
+export function createSupabaseMedia(admin, { bucket = "generated" } = {}) {
   return {
     async store({ url, path, contentType }) {
       const res = await fetch(url, { signal: AbortSignal.timeout(60_000) });
@@ -177,7 +174,7 @@ export function createSupabaseMedia(admin, { bucket = "generated", toPublic = (u
       const bytes = new Uint8Array(await res.arrayBuffer());
       const { error } = await admin.storage.from(bucket).upload(path, bytes, { contentType, upsert: true, cacheControl: "31536000" });
       if (error) throw new Error(`upload: ${error.message}`);
-      return toPublic(admin.storage.from(bucket).getPublicUrl(path).data.publicUrl);
+      return admin.storage.from(bucket).getPublicUrl(path).data.publicUrl;
     },
   };
 }

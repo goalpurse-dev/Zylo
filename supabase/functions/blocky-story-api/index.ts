@@ -37,12 +37,13 @@ import { planSeries, planStory } from "../_shared/blocky/plannerService.js";
 import { buildPictureRequest } from "../_shared/blocky/pictures.js";
 import { buildClipRequest } from "../_shared/blocky/clips.js";
 import { cleanEditInstruction } from "../_shared/blocky/smallTasks.js";
-import { publicAddress } from "../_shared/blocky/publicUrl.js";
+import { COST_USD, SMALL_USD, WRITER_USD, estimateUsd, readPaidState } from "../_shared/blocky/spendGuard.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const WORKER_SECRET = Deno.env.get("BLOCKY_WORKER_SECRET") ?? "";
-const PAID_CALLS_OFF = (Deno.env.get("BLOCKY_PAID_CALLS") ?? "").toLowerCase() === "off";
+// A hard off switch as a function secret; the everyday switch and the daily cap are in the database (spendGuard.js).
+const ENV_PAID_CALLS = Deno.env.get("BLOCKY_PAID_CALLS") ?? "";
 const LLM_ENV = {
   ANTHROPIC_API_KEY: Deno.env.get("ANTHROPIC_API_KEY") ?? "",
   OPENAI_API_KEY: Deno.env.get("OPENAI_API_KEY") ?? "",
@@ -58,8 +59,6 @@ const PLAN_RANK: Record<string, number> = { starter: 1, affiliate: 1, pro: 2, ge
 const QUALITY_PLAN: Record<string, [number, string]> = { v2: [1, "Starter"], v3: [2, "Pro"], v4: [3, "Generative"] };
 
 const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
-// Where the outside world reaches us (the real project: SUPABASE_URL itself; the local stack: BLOCKY_PUBLIC_URL).
-const PUBLIC = publicAddress(SUPABASE_URL, Deno.env.get("BLOCKY_PUBLIC_URL") ?? "");
 const RUNWARE_API_KEY = Deno.env.get("RUNWARE_API_KEY") ?? "";
 const RUNWARE_URL = `${(Deno.env.get("RUNWARE_BASE_URL") || "https://api.runware.ai").replace(/\/+$/, "")}/v1`;
 /** Synchronous Runware call (location plates only; scene pictures and clips go through blocky-worker). */
@@ -82,6 +81,18 @@ const RATE = {
 } as const;
 
 type Ctx = { userId: string; plan: string; body: any };
+
+/**
+ * Paid calls are OFF unless the switch is on and today's spend, with what this
+ * step is expected to cost us, stays under the daily cap. Read fresh every
+ * time, so turning the switch off works at once. Nothing is charged on a refusal.
+ */
+async function requirePaidCalls(addUsd: number) {
+  const state = await readPaidState(admin, ENV_PAID_CALLS, addUsd);
+  if (state.on) return;
+  console.log(`[blocky-story-api] paid call refused: ${state.reason} (spent $${state.spentUsd}, running $${state.inFlightUsd}, next $${addUsd}, cap $${state.capUsd})`);
+  throw blockyError(state.reason === "cap_reached" ? "DAILY_CAP_REACHED" : "PAID_CALLS_DISABLED");
+}
 
 /* ─── helpers ─────────────────────────────────────────────────────────── */
 
@@ -159,7 +170,6 @@ function kickWorker(storyId: string) {
 /** One paid step: plan → atomic charge → start the worker → fresh story. */
 async function runStep(ctx: Ctx, step: string, storyId: string, extra: Record<string, unknown> = {}) {
   requirePaid(ctx);
-  if (PAID_CALLS_OFF) throw blockyError("PAID_CALLS_DISABLED");
   await rateLimit(ctx.userId, "step");
   // Out-of-credit guard: while Runware just refused us for balance, don't charge for work that can't run.
   if (await providerOnHold(admin, "runware")) throw blockyError("PROVIDER_UNAVAILABLE");
@@ -168,6 +178,8 @@ async function runStep(ctx: Ctx, step: string, storyId: string, extra: Record<st
   const story: any = { ...toStory(row, scenes), locations: row.locations };
   const staging = new Map(scenes.map((s: any) => [s.id, { locationId: s.location_id, action: s.action, emotion: s.emotion, shot: s.shot, placement: s.placement }]));
   const plan = planStep(step as any, { story, scenes: story.scenes, library: await libraryMap(), builders: BUILDERS, staging, ...extra });
+  // The switch and the daily cap, with what this step will cost us, before anything is charged.
+  await requirePaidCalls(estimateUsd(plan.items));
   must(await admin.rpc("blocky_charge_step", {
     p_user_id: ctx.userId, p_story_id: storyId, p_step: plan.step, p_from_statuses: plan.from, p_to_status: plan.to, p_items: plan.items,
   }));
@@ -200,6 +212,8 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const [need, planName] = QUALITY_PLAN[input.quality];
     if ((PLAN_RANK[ctx.plan] ?? 0) < need) throw blockyError("PLAN_UPGRADE_REQUIRED", `${input.quality.toUpperCase()} needs the ${planName} plan.`);
     await rateLimit(ctx.userId, "story");
+    // The script, and for an episode up to three location plates (pictures made at our cost).
+    await requirePaidCalls(WRITER_USD + (input.source === "episode" ? 3 * COST_USD.image : 0));
     if (await providerOnHold(admin, BLOCKY_MODELS.planner.provider)) throw blockyError("PROVIDER_UNAVAILABLE");
 
     // An episode: the series cast, its bible, the earlier episodes, and this one's plan.
@@ -260,7 +274,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
         locations: series.bibleRow.locations ?? [], usedIds, aspect: input.aspect, userId: ctx.userId, seriesId: series.id,
         deps: {
           post: runwarePost,
-          store: (o: any) => createSupabaseMedia(admin, { toPublic: PUBLIC.toPublic }).store(o),
+          store: (o: any) => createSupabaseMedia(admin).store(o),
           log: async (row: any) => { await admin.from("blocky_ai_calls").insert(row); },
         },
       });
@@ -307,7 +321,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const sceneId = validateId(ctx.body?.sceneId, "scene");
     const raw = validateEditInstruction(ctx.body?.instruction);
     requirePaid(ctx);
-    if (PAID_CALLS_OFF) throw blockyError("PAID_CALLS_DISABLED");
+    await requirePaidCalls(SMALL_USD);
     const { row } = await loadSceneStory(ctx.userId, sceneId);
     const instruction = await cleanEditInstruction({ admin, env: LLM_ENV, userId: ctx.userId, storyId: row.id, sceneId, instruction: raw });
     return runStep(ctx, "edit", row.id, { sceneId, instruction });
@@ -345,7 +359,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const { row, scenes } = await loadStory(ctx.userId, storyId);
     if (row.upload_package && !ctx.body?.refresh) return row.upload_package;
     if (row.status !== "final_ready") throw new BlockyError("WRONG_STATUS", "Make the final video first.", 409);
-    if (PAID_CALLS_OFF) throw blockyError("PAID_CALLS_DISABLED");
+    await requirePaidCalls(SMALL_USD);
     const lib = await libraryMap();
     const nameOf = (id: string) => lib.get(id)?.name ?? id;
     let episode: any = null;
@@ -416,12 +430,12 @@ async function startFinal(userId: string, storyId: string, opts: { captions?: bo
     const coverFrom = coverScene(scenes);
     const job = buildFinalJob({
       story: row, scenes, callId, captions,
-      uploadUrl: PUBLIC.toPublic(signed.signedUrl),
-      callbackUrl: `${PUBLIC.base}/functions/v1/blocky-worker`,
+      uploadUrl: signed.signedUrl,
+      callbackUrl: `${SUPABASE_URL}/functions/v1/blocky-worker`,
       token: await webhookToken(WORKER_SECRET, `final:${callId}`),
       overlays: overlayTexts({ partLabel, endCard, episodeNumber: row.episode_number ?? null, nextTitle }),
       cover: coverFrom && coverSigned?.signedUrl
-        ? { imageUrl: coverFrom.image_url, label: row.episode_number ? `Episode ${row.episode_number}` : "", title: row.title, uploadUrl: PUBLIC.toPublic(coverSigned.signedUrl), sceneIndex: coverFrom.idx }
+        ? { imageUrl: coverFrom.image_url, label: row.episode_number ? `Episode ${row.episode_number}` : "", title: row.title, uploadUrl: coverSigned.signedUrl, sceneIndex: coverFrom.idx }
         : null,
     });
     // Each clip's transcript (made by the clip check, cached per clip URL): the
@@ -430,7 +444,7 @@ async function startFinal(userId: string, storyId: string, opts: { captions?: bo
     {
       const ordered = [...scenes].sort((a: any, b: any) => a.idx - b.idx);
       const transcripts = await transcriptsForClips({
-        admin, apiKey: LLM_ENV.OPENAI_API_KEY, paidOff: PAID_CALLS_OFF, userId, storyId,
+        admin, apiKey: LLM_ENV.OPENAI_API_KEY, paidOff: !(await readPaidState(admin, ENV_PAID_CALLS)).on, userId, storyId,
         clips: ordered.map((s: any) => ({ sceneId: s.id, url: s.clip_url, durationSec: Number(s.duration_sec) })),
       });
       job.clips.forEach((c: any, i: number) => {
@@ -486,7 +500,7 @@ Object.assign(ACTIONS, {
     const lib = await libraryMap();
     const input = validateSeriesPlan(ctx.body?.input, lib);
     await rateLimit(ctx.userId, "series");
-    if (PAID_CALLS_OFF) throw blockyError("PAID_CALLS_DISABLED");
+    await requirePaidCalls(WRITER_USD);
     if (await providerOnHold(admin, BLOCKY_MODELS.planner.provider)) throw blockyError("PROVIDER_UNAVAILABLE");
     const row = must(await admin.from("blocky_series").insert({
       user_id: ctx.userId, concept: input.concept, cast_ids: input.castIds, tone: input.tone, opener: input.opener, episode_count: input.episodeCount,

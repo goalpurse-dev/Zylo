@@ -72,8 +72,9 @@ Since this plan was written:
   definitions under Blocky's names). Both pass `scripts/blocky/sql/dryRun.mjs` (36 checks in a
   throwaway Postgres). Until the undo is applied, Fruit's live tables still carry the template
   columns; the live Fruit functions (main's code) never read them.
-- Local stack: `docs/blocky-local.md` and `scripts/blocky/local.mjs`. Not started yet: Docker
-  is not installed on this computer.
+- 2026-10-07: the Docker / local-stack plan is dropped (decision 32). Blocky runs the way
+  Fruit does: the site on localhost, Blocky's own functions and tables on the real project.
+  Paid calls are off by default with a $3.00 daily cap (decision 33).
 - Phase 3 (the look) stopped at the review of 2026-10-06 and continues after the separation:
   the Pro reference pilot with the head / tongue / front-view / blocky-hair fixes, the 24
   references, the scene re-test, 5 real stories from the writer. The Veo clip of test 1b runs

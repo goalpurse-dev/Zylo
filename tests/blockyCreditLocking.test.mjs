@@ -12,7 +12,7 @@
 //     or in code.
 //
 // Two real connections racing each other is scripts/blocky/chargeLocking.mjs
-// (it needs a real Postgres: the local stack). The single-connection run of
+// (a throwaway account on the real database). The single-connection run of
 // every charge, refund and refusal is scripts/blocky/sql/dryRun.mjs.
 import test from "node:test";
 import assert from "node:assert/strict";

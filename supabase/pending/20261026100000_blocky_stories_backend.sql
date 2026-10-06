@@ -29,6 +29,8 @@
 --   - the library is not readable from the browser (no policy): the API serves
 --     it, behind the blocky_v1 switch.
 --   - no ideas table yet (the idea engine is its own phase).
+--   - blocky_settings: paid calls are OFF until the owner switches them on, and
+--     stop for the day at a spending cap ($3.00 to start with).
 --
 -- Rollback: supabase/pending/20261026100000_blocky_stories_backend_rollback.sql
 
@@ -115,11 +117,13 @@ CREATE TABLE public.blocky_characters (
   ref_prompt     text NOT NULL,
   ref_cost_usd   numeric(10,6),
   active         boolean NOT NULL DEFAULT true,
+  temporary      boolean NOT NULL DEFAULT false,
   sort_order     integer NOT NULL DEFAULT 0,
   created_at     timestamptz NOT NULL DEFAULT now(),
   updated_at     timestamptz NOT NULL DEFAULT now()
 );
 COMMENT ON TABLE public.blocky_characters IS 'Blocky Stories avatar library. No age, no gender. Written by the service role only; the API serves it.';
+COMMENT ON COLUMN public.blocky_characters.temporary IS 'true = a stand-in made from a test picture, to be replaced when the real library is made. Find them: SELECT id FROM blocky_characters WHERE temporary;';
 -- Script-name matching uses the first word of the name, so it is unique.
 CREATE UNIQUE INDEX blocky_characters_first_name_key ON public.blocky_characters (first_name);
 CREATE INDEX blocky_characters_list_idx ON public.blocky_characters (sort_order) WHERE active;
@@ -756,6 +760,59 @@ REVOKE ALL ON FUNCTION public.blocky_refund_job(uuid, text, text, numeric) FROM 
 GRANT EXECUTE ON FUNCTION public.blocky_refund_job(uuid, text, text, numeric) TO service_role;
 REVOKE ALL ON FUNCTION public.blocky_raise_provider_alert(text, text, text, jsonb) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.blocky_raise_provider_alert(text, text, text, jsonb) TO service_role;
+
+/* ─── Paid calls: off by default, and a daily spending cap ────────────── */
+
+-- ONE row. paid_calls = false (the default): no Blocky call that costs money
+-- at a provider is made. daily_cap_usd: when today's spend reaches it, paid
+-- calls stop until 00:00 UTC. The owner changes the row (the table editor, or
+-- node scripts/blocky/paid.mjs on | off | cap 3); nobody else can read or write it.
+CREATE TABLE public.blocky_settings (
+  id            boolean PRIMARY KEY DEFAULT true CHECK (id),
+  paid_calls    boolean NOT NULL DEFAULT false,
+  daily_cap_usd numeric(8,2) NOT NULL DEFAULT 3.00 CHECK (daily_cap_usd >= 0),
+  updated_at    timestamptz NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE public.blocky_settings IS 'Blocky Stories: the paid-calls switch (off by default) and the daily spending cap in USD. One row.';
+INSERT INTO public.blocky_settings (id) VALUES (true);
+ALTER TABLE public.blocky_settings ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.blocky_settings FROM PUBLIC, anon, authenticated;
+GRANT ALL ON public.blocky_settings TO service_role;
+CREATE TRIGGER zzz_blocky_settings_guard BEFORE INSERT OR DELETE OR UPDATE ON public.blocky_settings FOR EACH ROW EXECUTE FUNCTION public.blocky_block_client_writes('touch');
+
+-- The switch and the cap, as the functions read them before every paid step.
+--   spent_usd      what blocky_ai_calls has logged since 00:00 UTC (every paid call is logged with its real cost)
+--   in_flight_usd  jobs charged and still running: their cost is not known yet, so it is estimated from their
+--                  credits (a credit costs us at most $0.0101 at a provider; never under one picture, $0.04)
+--   p_add_usd      what the step being asked for is expected to cost
+-- on = the switch is on AND spent + in flight + this step stays within the cap.
+CREATE OR REPLACE FUNCTION public.blocky_paid_state(p_add_usd numeric DEFAULT 0)
+ RETURNS jsonb
+ LANGUAGE sql
+ STABLE
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+  WITH s AS (
+    SELECT COALESCE((SELECT paid_calls FROM public.blocky_settings), false) AS paid_calls,
+           COALESCE((SELECT daily_cap_usd FROM public.blocky_settings), 0) AS cap_usd,
+           (SELECT COALESCE(sum(cost_usd), 0) FROM public.blocky_ai_calls
+             WHERE created_at >= (date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')) AS spent_usd,
+           (SELECT COALESCE(sum(GREATEST(credits * 0.0101, 0.04)), 0) FROM public.blocky_jobs
+             WHERE status IN ('queued', 'submitting', 'submitted', 'provider_done')) AS in_flight_usd
+  )
+  SELECT jsonb_build_object(
+    'on', paid_calls AND spent_usd + in_flight_usd + GREATEST(COALESCE(p_add_usd, 0), 0) <= cap_usd,
+    'reason', CASE WHEN NOT paid_calls THEN 'switch_off'
+                   WHEN spent_usd + in_flight_usd + GREATEST(COALESCE(p_add_usd, 0), 0) > cap_usd THEN 'cap_reached' END,
+    'paid_calls', paid_calls,
+    'cap_usd', cap_usd,
+    'spent_usd', round(spent_usd, 4),
+    'in_flight_usd', round(in_flight_usd, 4)
+  ) FROM s
+$function$;
+REVOKE ALL ON FUNCTION public.blocky_paid_state(numeric) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.blocky_paid_state(numeric) TO service_role;
 
 /* ─── Live updates ────────────────────────────────────────────────────── */
 

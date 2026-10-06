@@ -276,21 +276,42 @@ underneath is shared" and decision 17's deploy order:
     20261006190000) are undone, in one transaction, shown before it is applied, at a quiet
     time, with the smoke check and the rolled-back dry run before and after. The Blocky price
     rows and the `blocky_v1` switch stay.
-27. LOCAL FIRST: Blocky's tables, functions and migrations are built and tested on a local
-    stack (Docker: `supabase start` and `supabase functions serve`, `docs/blocky-local.md`) and
-    reach the real project only with the owner's go. SQL waiting for that go lives in
-    `supabase/pending/`, not in `supabase/migrations/`.
-28. LOCAL KEYS: the local stack never uses the production keys. Separate keys with low limits
-    in `.env.blocky.local` (git-ignored); a commit that contains an env file is refused.
+27. (replaced by 32) SQL that waits for the owner's go lives in `supabase/pending/`, not in
+    `supabase/migrations/`.
+28. (replaced by 32) A commit that contains an env file with keys is refused (pre-commit hook).
 29. ONE BALANCE: Blocky charges the same credit balance as Fruit, through the same
     `deduct_credits`, with the same row locking, so two charges at the same moment can never
     spend the same credits. Pinned by `tests/blockyCreditLocking.test.mjs`; the two-connection
-    race is `scripts/blocky/chargeLocking.mjs` on the local stack.
+    race is `scripts/blocky/chargeLocking.mjs` on a throwaway account (decision 35).
 30. AN AVATAR HAS NO AGE AND NO GENDER COLUMN at all (`blocky_characters`): the extra rule
     below is now a property of the table, not a default.
 31. VEO AND NANO BANANA PRO TESTS run on `blocky-worker`'s own test list. The Veo line in
     `fruit-worker` and the Pro line in the picture proxy are reverted on the branch (the live
     picture proxy v44 keeps its Pro line: it was deployed by the owner and is left as is).
+
+Decisions of 2026-10-07 (how Blocky runs):
+
+32. BLOCKY RUNS THE WAY FRUIT DOES. No Docker, no local database, no tunnel, no separate
+    keys. The site runs on localhost (`npm run dev`) and calls Blocky's own functions on the real
+    project, behind `blocky_v1` (on for the owner's account only). Every provider key, the Fly
+    token and the Fly app are the ones Fruit already uses (Supabase secrets are project-wide).
+    The one new secret is `BLOCKY_WORKER_SECRET`, a random string (not a provider key), in
+    Supabase secrets and in the database vault. The final video uses the same Fly app with its
+    own image tag, `blocky-final`; the `fruit-final` image is never rebuilt for Blocky.
+33. PAID CALLS OFF BY DEFAULT, AND A DAILY CAP. A Blocky bug could spend real provider money,
+    so Blocky makes no paid call unless `blocky_settings.paid_calls` is true, and stops for the
+    day when today's spend reaches `blocky_settings.daily_cap_usd` ($3.00 to start with; the day
+    runs from 00:00 UTC). A step that would pass the cap is refused before it is charged; jobs
+    still waiting when the switch goes off are refunded. The owner turns it on and off:
+    `node scripts/blocky/paid.mjs on | off | status | cap 3`, or the row in the Supabase table
+    editor. If the state can't be read, paid calls are off.
+34. TEMPORARY AVATARS: Noob, Vex and Lux from the Nano Banana Pro test pictures are loaded so a
+    first story can be made (`scripts/blocky/seedTemporaryAvatars.mjs`). They are marked
+    `temporary = true` in `blocky_characters` and stored under `blocky/library/temporary/`; the
+    real library replaces them in place.
+35. THE RACE TEST runs on the real database on a throwaway account
+    (`scripts/blocky/chargeLocking.mjs`): it calls no provider, compares every other balance
+    before and after, and deletes the account and its rows.
 
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

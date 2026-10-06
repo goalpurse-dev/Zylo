@@ -9,7 +9,7 @@ import { fileURLToPath } from "url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const git = (...args) => execFileSync("git", args, { cwd: ROOT, encoding: "utf8" }).split("\n").map((l) => l.trim()).filter(Boolean);
 
-/** An env file that may hold keys: .env, .env.local, .env.blocky.local, supabase/.env… Never the *.example files. */
+/** An env file that may hold keys: .env, .env.local, .env.production, supabase/.env… Never the *.example files. */
 export const isSecretEnvFile = (file) => /(^|\/)\.env(\.[^/]*)?$/.test(file) && !/\.example$/.test(file);
 
 /** {tracked, staged}: env files git already holds, and env files added to the next commit. */

@@ -32,14 +32,19 @@ import { buildPictureRequest, withRedrawHint } from "../_shared/blocky/pictures.
 import { rewriteClipPrompt } from "../_shared/blocky/smallTasks.js";
 import { buildEnvelope, parseRunware } from "../_shared/blocky/runware.js";
 import { videoModel } from "../_shared/blocky/models.js";
-import { publicAddress } from "../_shared/blocky/publicUrl.js";
+import { readPaidState } from "../_shared/blocky/spendGuard.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RUNWARE_API_KEY = Deno.env.get("RUNWARE_API_KEY") ?? "";
 const RUNWARE_URL = `${(Deno.env.get("RUNWARE_BASE_URL") || "https://api.runware.ai").replace(/\/+$/, "")}/v1`;
 const WORKER_SECRET = Deno.env.get("BLOCKY_WORKER_SECRET") ?? "";
-const PAID_CALLS = Deno.env.get("BLOCKY_PAID_CALLS") ?? "";
+// Paid calls: OFF unless the switch in the database is on and today's spend is under the daily cap (spendGuard.js).
+// Read again at the start of every request, so the switch works at once; off until it has been read.
+const ENV_PAID_CALLS = Deno.env.get("BLOCKY_PAID_CALLS") ?? "";
+let PAID_OFF = true;
+const paidOff = () => PAID_OFF;
+const paidEnv = () => (PAID_OFF ? "off" : "");
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
 // Switches (all on unless set to "off"): the clip word check, the clip last-frame check, the automatic final build.
 const off = (name: string) => (Deno.env.get(name) ?? "").toLowerCase() === "off";
@@ -52,12 +57,6 @@ const FLY_APP = Deno.env.get("FLY_RENDER_APP") ?? "zyvo-render";
 const BLOCKY_FINAL_IMAGE = Deno.env.get("BLOCKY_FINAL_IMAGE") ?? `registry.fly.io/${FLY_APP}:blocky-final`;
 
 const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
-// Where the outside world reaches us (the real project: SUPABASE_URL itself; the local stack: BLOCKY_PUBLIC_URL).
-const PUBLIC = publicAddress(SUPABASE_URL, Deno.env.get("BLOCKY_PUBLIC_URL") ?? "");
-const media = createSupabaseMedia(admin, { toPublic: PUBLIC.toPublic });
-const WORKER_URL = `${PUBLIC.base}/functions/v1/blocky-worker`;
-// Runware's webhooks need an address it can reach. BLOCKY_WEBHOOKS=off: results are picked up by the sweep instead.
-const WEBHOOKS_OFF = (Deno.env.get("BLOCKY_WEBHOOKS") ?? "").toLowerCase() === "off";
 const ALERT_ENV = { RESEND_API_KEY: Deno.env.get("RESEND_API_KEY") ?? "", ALERT_EMAIL: Deno.env.get("BLOCKY_ALERT_EMAIL") || Deno.env.get("CONTACT_TO_EMAIL") || "" };
 
 async function runwarePost(tasks: unknown[]) {
@@ -72,12 +71,12 @@ async function runwarePost(tasks: unknown[]) {
 
 const engine = createEngine({
   store: createSupabaseStore(admin),
-  media,
+  media: createSupabaseMedia(admin),
   runware: {
     submit: (envelope: unknown) => runwarePost([envelope]),
     poll: (taskUUID: string) => runwarePost([getResponseTask(taskUUID)]),
   },
-  env: { BLOCKY_PAID_CALLS: PAID_CALLS, webhookBase: WEBHOOKS_OFF ? "" : WORKER_URL, webhookSecret: WORKER_SECRET },
+  env: { get BLOCKY_PAID_CALLS() { return paidEnv(); }, webhookBase: `${SUPABASE_URL}/functions/v1/blocky-worker`, webhookSecret: WORKER_SECRET },
   // A clip that finally fails on Wan2.6 Flash is re-sent once on Seedance 2.0 Mini.
   fallbackClip: fallbackClipTask,
   // Every scene picture: blocky avatars only, nobody extra up front, no brick-toy look, no text,
@@ -109,7 +108,7 @@ const engine = createEngine({
     const path = framePath(job.user_id, job.story_id, job.id, job.attempt);
     const { data: signed, error } = await admin.storage.from("generated").createSignedUploadUrl(path, { upsert: true });
     if (error || !signed?.signedUrl) return null;
-    const frameJob = { jobId: job.id, clipUrl: storedUrl, uploadUrl: PUBLIC.toPublic(signed.signedUrl), callbackUrl: WORKER_URL, token: await webhookToken(WORKER_SECRET, `frame:${job.id}`) };
+    const frameJob = { jobId: job.id, clipUrl: storedUrl, uploadUrl: signed.signedUrl, callbackUrl: `${SUPABASE_URL}/functions/v1/blocky-worker`, token: await webhookToken(WORKER_SECRET, `frame:${job.id}`) };
     const { data: call } = await admin.from("blocky_ai_calls").insert({
       user_id: job.user_id, story_id: job.story_id, scene_id: job.scene_id, job_id: job.id, provider: "fly", model: "shared-cpu-2x", purpose: "clip_frame",
       attempt: job.attempt, request: { clipUrl: storedUrl, path },
@@ -132,7 +131,7 @@ const engine = createEngine({
     if (frame.callId) await admin.from("blocky_ai_calls").update({ ok: true, cost_usd: ((Date.now() - startedAt) / 1000) * FRAME_USD_PER_SECOND, latency_ms: Date.now() - startedAt, completed_at: new Date().toISOString() }).eq("id", frame.callId);
     if (!expected.length) return null;
     return checkClipFrame({
-      admin, apiKey: OPENAI_API_KEY, frameUrl: PUBLIC.toPublic(admin.storage.from("generated").getPublicUrl(frame.path).data.publicUrl), expected,
+      admin, apiKey: OPENAI_API_KEY, frameUrl: admin.storage.from("generated").getPublicUrl(frame.path).data.publicUrl, expected,
       ids: { user_id: job.user_id, story_id: job.story_id, scene_id: job.scene_id, job_id: job.id },
     });
   },
@@ -154,6 +153,7 @@ const engine = createEngine({
   }),
   // One content-policy rewrite per clip (gpt-5-mini), keeping the exact line.
   rewriteClip: async (job: any) => {
+    if (paidOff()) return null;
     const { data: scene } = await admin.from("blocky_story_scenes").select("line").eq("id", job.scene_id).single();
     if (!scene) return null;
     const prompt = await rewriteClipPrompt({
@@ -164,7 +164,6 @@ const engine = createEngine({
   },
 });
 
-const paidOff = () => PAID_CALLS.toLowerCase() === "off";
 
 /** Who should be in a scene's picture ({name, look}, in frame order) and who speaks. */
 async function sceneCast(sceneId: string) {
@@ -266,20 +265,20 @@ async function pictureTest(body: any) {
  */
 async function frameTest(body: any) {
   if (!FLY_API_TOKEN) throw new BlockyError("VALIDATION", "FLY_API_TOKEN not set");
-  if (typeof body?.clipUrl !== "string" || !body.clipUrl.startsWith(`${PUBLIC.base}/storage/`)) throw new BlockyError("VALIDATION", "clipUrl must be a stored clip");
+  if (typeof body?.clipUrl !== "string" || !body.clipUrl.startsWith(`${SUPABASE_URL}/storage/`)) throw new BlockyError("VALIDATION", "clipUrl must be a stored clip");
   const id = crypto.randomUUID();
   const jobId = `test-${id}`;
   const path = `blocky/tests/frames/${id}.jpg`;
   const { data: signed, error } = await admin.storage.from("generated").createSignedUploadUrl(path, { upsert: true });
   if (error || !signed?.signedUrl) throw new BlockyError("SERVER_FAILED", "signed upload");
-  const frameJob = { jobId, clipUrl: body.clipUrl, uploadUrl: PUBLIC.toPublic(signed.signedUrl), callbackUrl: WORKER_URL, token: await webhookToken(WORKER_SECRET, `frame:${jobId}`) };
+  const frameJob = { jobId, clipUrl: body.clipUrl, uploadUrl: signed.signedUrl, callbackUrl: `${SUPABASE_URL}/functions/v1/blocky-worker`, token: await webhookToken(WORKER_SECRET, `frame:${jobId}`) };
   const t0 = Date.now();
   const res = await fetch(`https://api.machines.dev/v1/apps/${FLY_APP}/machines`, {
     method: "POST", headers: { Authorization: `Bearer ${FLY_API_TOKEN}`, "Content-Type": "application/json" },
     body: JSON.stringify(frameMachineConfig({ image: BLOCKY_FINAL_IMAGE, job: frameJob })), signal: AbortSignal.timeout(20_000),
   });
   const machine = await res.json().catch(() => null);
-  return { started: res.ok, status: res.status, ms: Date.now() - t0, jobId, url: PUBLIC.toPublic(admin.storage.from("generated").getPublicUrl(path).data.publicUrl), machineId: machine?.id ?? null, error: res.ok ? null : JSON.stringify(machine).slice(0, 300) };
+  return { started: res.ok, status: res.status, ms: Date.now() - t0, jobId, url: admin.storage.from("generated").getPublicUrl(path).data.publicUrl, machineId: machine?.id ?? null, error: res.ok ? null : JSON.stringify(machine).slice(0, 300) };
 }
 
 async function rawPoll(body: any) {
@@ -287,7 +286,7 @@ async function rawPoll(body: any) {
   const parsed = parseRunware(res.body, body.taskUUID, res.httpStatus);
   if (parsed.state === "success") {
     const image = body?.kind === "image";
-    const url = await media.store({ url: parsed.url, path: `blocky/tests/${body.taskUUID}.${image ? "jpg" : "mp4"}`, contentType: image ? "image/jpeg" : "video/mp4" });
+    const url = await createSupabaseMedia(admin).store({ url: parsed.url, path: `blocky/tests/${body.taskUUID}.${image ? "jpg" : "mp4"}`, contentType: image ? "image/jpeg" : "video/mp4" });
     await admin.from("blocky_ai_calls").update({ ok: true, http_status: res.httpStatus, response: res.body, cost_usd: parsed.cost, completed_at: new Date().toISOString() }).eq("id", body.callId);
     return { state: "success", url, cost: parsed.cost };
   }
@@ -319,7 +318,7 @@ async function plannerTest(body: any) {
   return out;
 }
 
-const TEST_ENV = () => ({ ANTHROPIC_API_KEY: Deno.env.get("ANTHROPIC_API_KEY") ?? "", OPENAI_API_KEY, BLOCKY_PAID_CALLS: PAID_CALLS });
+const TEST_ENV = () => ({ ANTHROPIC_API_KEY: Deno.env.get("ANTHROPIC_API_KEY") ?? "", OPENAI_API_KEY, BLOCKY_PAID_CALLS: paidEnv() });
 
 /**
  * Admin test: plan a series and write its first episode with today's planners.
@@ -384,8 +383,8 @@ async function finalDone(callId: string, report: any) {
       latency_ms: Date.now() - new Date(call.created_at).getTime(), completed_at: new Date().toISOString(),
     }).eq("id", callId);
   }
-  const publicUrl = report?.ok ? PUBLIC.toPublic(admin.storage.from("generated").getPublicUrl(call.request.path).data.publicUrl) : null;
-  const coverUrl = report?.ok && report?.cover && call.request?.coverPath ? PUBLIC.toPublic(admin.storage.from("generated").getPublicUrl(call.request.coverPath).data.publicUrl) : null;
+  const publicUrl = report?.ok ? admin.storage.from("generated").getPublicUrl(call.request.path).data.publicUrl : null;
+  const coverUrl = report?.ok && report?.cover && call.request?.coverPath ? admin.storage.from("generated").getPublicUrl(call.request.coverPath).data.publicUrl : null;
   const { data: moved } = await admin.from("blocky_stories")
     .update(storyUpdateForReport(report, publicUrl, MESSAGES.FINAL_FAILED, coverUrl))
     .eq("id", call.story_id).eq("final_call_id", callId).eq("status", "building").select("id");
@@ -422,6 +421,8 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   const body = await req.json().catch(() => ({}));
   const action = url.searchParams.get("action") ?? body?.action;
+  // The switch and the cap, fresh for this request. A result that is already paid for is still stored when they are off.
+  PAID_OFF = !(await readPaidState(admin, ENV_PAID_CALLS)).on;
 
   if (action === "webhook") {
     const taskUUID = taskUUIDOf(body);

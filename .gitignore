@@ -17,9 +17,5 @@ art-review/
 emails/.sent/
 emails/.preview/
 
-# Blocky Stories local stack: local-only keys, never committed (docs/blocky-local.md)
-.env.blocky.local
+# Any other local env file with keys
 .env.*.local
-supabase/.temp/
-supabase/.branches/
-.blocky-local/

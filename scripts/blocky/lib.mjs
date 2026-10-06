@@ -1,11 +1,7 @@
 // Helpers for the Blocky Stories scripts. Never prints keys or tokens.
-//
-// Where a script runs:
-//   BLOCKY_TARGET=local   the local stack from `supabase start` (docs/blocky-local.md),
-//                         with the keys in .env.blocky.local (git-ignored, never the
-//                         production keys). The default for everything that spends.
-//   BLOCKY_TARGET=live    the real project, with .env.local. Only when a script
-//                         says so and the owner asked for it.
+// Like AI Fruit Story's scripts they talk to the real project with the keys in
+// .env.local; every provider call is made by Blocky's functions there, with
+// the keys in Supabase secrets.
 import fs from "fs";
 import path from "path";
 import { createRequire } from "module";
@@ -13,29 +9,21 @@ import { fileURLToPath } from "url";
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const require = createRequire(path.join(ROOT, "package.json"));
-export const TARGET = process.env.BLOCKY_TARGET === "live" ? "live" : "local";
-const dotenv = require("dotenv");
-if (TARGET === "live") {
-  for (const f of [".env", ".env.local"]) dotenv.config({ path: path.join(ROOT, f), quiet: true, override: f === ".env.local" });
-} else {
-  // Only the local file: a production key never reaches a local run.
-  dotenv.config({ path: path.join(ROOT, ".env.blocky.local"), quiet: true, override: true });
-}
+for (const f of [".env", ".env.local"]) require("dotenv").config({ path: path.join(ROOT, f), quiet: true, override: f === ".env.local" });
 const { createClient } = require("@supabase/supabase-js");
 
-const need = (name, value) => {
-  if (!value) throw new Error(`${name} is not set for BLOCKY_TARGET=${TARGET} (${TARGET === "local" ? ".env.blocky.local, see docs/blocky-local.md" : ".env.local"})`);
-  return value;
+const need = (name) => {
+  if (!process.env[name]) throw new Error(`${name} is not set in .env.local`);
+  return process.env[name];
 };
-export const SUPABASE_URL = need("VITE_SUPABASE_URL", process.env.VITE_SUPABASE_URL).replace(/\/+$/, "");
-/** The service-role key of the target. Locally it is the fixed key `supabase status` prints (BLOCKY_LOCAL_SERVICE_ROLE_KEY). */
-export const serviceKey = () => need(TARGET === "local" ? "BLOCKY_LOCAL_SERVICE_ROLE_KEY" : "SUPABASE_SERVICE_ROLE_KEY", TARGET === "local" ? process.env.BLOCKY_LOCAL_SERVICE_ROLE_KEY : process.env.SUPABASE_SERVICE_ROLE_KEY);
-const anonKey = () => need("VITE_SUPABASE_ANON_KEY", process.env.VITE_SUPABASE_ANON_KEY);
-export const TEST_EMAIL = process.env.BLOCKY_TEST_EMAIL || "upwardlift6@gmail.com";
+export const SUPABASE_URL = need("VITE_SUPABASE_URL").replace(/\/+$/, "");
+export const serviceKey = () => need("SUPABASE_SERVICE_ROLE_KEY");
+export const anonKey = () => need("VITE_SUPABASE_ANON_KEY");
+export const TEST_EMAIL = "upwardlift6@gmail.com";
 
 export const admin = () => createClient(SUPABASE_URL, serviceKey(), { auth: { persistSession: false } });
 
-/** A real session for the test account, via an admin magic-link token (no email is sent). */
+/** A real session for an account, via an admin magic-link token (no email is sent). */
 export async function userSession(email = TEST_EMAIL) {
   const { data, error } = await admin().auth.admin.generateLink({ type: "magiclink", email });
   if (error) throw new Error(`generateLink: ${error.message}`);
@@ -67,7 +55,8 @@ export async function worker(body) {
 
 /**
  * One test picture or clip on blocky-worker (raw_test, then raw_poll until it
- * is done): no user charge, logged in blocky_ai_calls with its real cost.
+ * is done): no user charge, logged in blocky_ai_calls with its real cost, and
+ * refused while Blocky's paid-calls switch is off or the daily cap is reached.
  * ONE attempt: a failure is returned, never retried.
  * @returns {{state: "success"|"error"|"refused"|"timeout", url?: string, cost: number, error?: string, seconds: number}}
  */

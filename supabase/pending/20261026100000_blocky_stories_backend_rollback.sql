@@ -27,6 +27,8 @@ DROP TABLE IF EXISTS public.blocky_story_scenes CASCADE;
 DROP TABLE IF EXISTS public.blocky_stories CASCADE;
 DROP TABLE IF EXISTS public.blocky_series CASCADE;
 DROP TABLE IF EXISTS public.blocky_characters CASCADE;
+DROP FUNCTION IF EXISTS public.blocky_paid_state(numeric);
+DROP TABLE IF EXISTS public.blocky_settings CASCADE;
 DROP FUNCTION IF EXISTS public.blocky_characters_block_client_writes();
 DROP FUNCTION IF EXISTS public.blocky_block_client_writes();
 DROP FUNCTION IF EXISTS public.blocky_plan_rank(text);

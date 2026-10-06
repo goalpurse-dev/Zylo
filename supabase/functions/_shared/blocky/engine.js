@@ -52,7 +52,8 @@ const ageSec = (now, iso) => (iso ? (now.getTime() - new Date(iso).getTime()) / 
 //   checkClipFrame (optional) async (job, frame) -> {ok, problems[]} | null   picture check on that frame
 //   onCompleted (optional) async (job) -> void   after a scene's picture or clip is ready
 export function createEngine({ store, runware, media, env, rewriteClip = null, fallbackClip = null, onProviderBalance = null, checkPicture = null, redrawRequest = null, checkClipWords = null, requestClipFrame = null, checkClipFrame = null, onCompleted = null, now = () => new Date(), uuid = () => crypto.randomUUID(), log = console }) {
-  const paidOff = String(env.BLOCKY_PAID_CALLS ?? "").toLowerCase() === "off";
+  // Read each time it is asked: the switch and the daily cap can change between two jobs (spendGuard.js).
+  const paidOff = () => String(env.BLOCKY_PAID_CALLS ?? "").toLowerCase() === "off";
 
   async function webhookFor(taskUUID) {
     if (!env.webhookBase || !env.webhookSecret) return null;
@@ -124,7 +125,7 @@ export function createEngine({ store, runware, media, env, rewriteClip = null, f
       const key = `${job.story_id}:${job.kind}`;
       const cap = job.kind === "image" ? SERVER_LIMITS.picturesInFlightPerStory : SERVER_LIMITS.clipsInFlightPerStory;
       if (global >= SERVER_LIMITS.jobsInFlightGlobal || (perStory.get(key) ?? 0) >= cap) continue;
-      if (paidOff) {
+      if (paidOff()) {
         await store.refundJob(job.id, "PAID_CALLS_DISABLED", MESSAGES.PAID_CALLS_DISABLED, 0);
         continue;
       }

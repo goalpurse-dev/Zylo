@@ -7,7 +7,7 @@
 //      the calls the live API makes work before and after, no row is lost,
 //      the two restored functions are the originals word for word.
 // One connection only, so this can't test two charges at the same moment:
-// that is scripts/blocky/chargeLocking.mjs, on the local stack.
+// that is scripts/blocky/chargeLocking.mjs, on a throwaway account.
 //
 //   npm i --no-save @electric-sql/pglite      (once; not a dependency of the app)
 //   node scripts/blocky/sql/dryRun.mjs
@@ -50,7 +50,11 @@ const USER = "11111111-1111-1111-1111-111111111111";
   await db.exec(sql("supabase/pending/20261026100000_blocky_stories_backend.sql"));
   ok("the backend SQL runs from start to finish", true);
   ok("no Fruit object exists in this database", (await one(db, "select count(*)::int n from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname like 'fruit%'")).n === 0 && (await one(db, "select count(*)::int n from pg_proc where proname like 'fruit%'")).n === 0);
-  ok("11 Blocky tables, every one with row-level security on", (await one(db, "select count(*)::int n, bool_and(relrowsecurity) rls from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relname like 'blocky%'")).n === 11);
+  const tables = await one(db, "select count(*)::int n, bool_and(relrowsecurity) rls from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relname like 'blocky%'");
+  ok("12 Blocky tables, every one with row-level security on", tables.n === 12 && tables.rls === true);
+  // Paid calls: off until the owner switches them on.
+  const paid = async (add = 0) => (await one(db, "select public.blocky_paid_state($1) s", [add])).s;
+  ok("paid calls are OFF on a fresh install, with a $3.00 daily cap", (await paid()).on === false && (await paid()).reason === "switch_off" && Number((await paid()).cap_usd) === 3);
   const cols = (await db.query("select column_name from information_schema.columns where table_name='blocky_characters'")).rows.map((r) => r.column_name);
   ok("the avatar library has no age and no gender column", !cols.includes("age") && !cols.includes("gender") && cols.includes("look"));
 
@@ -96,9 +100,26 @@ const USER = "11111111-1111-1111-1111-111111111111";
   ok("the browser can't write a story", (await fails(db, `UPDATE public.blocky_stories SET title = 'x'`, /permission denied|BLOCKY_READ_ONLY/)) === true);
   ok("the browser can't read the avatar library, the jobs or the ledger directly", (await fails(db, "select * from public.blocky_characters", /permission denied/)) === true && (await fails(db, "select * from public.blocky_jobs", /permission denied/)) === true && (await fails(db, "select * from public.blocky_credit_ledger", /permission denied/)) === true);
   ok("the browser can't call the charge function", (await fails(db, `select public.blocky_charge_step('${USER}', '${storyId}', 'pictures', ARRAY['draft'], 'pictures', '${one4}'::jsonb)`, /permission denied/)) === true);
+  ok("the browser can't read or flip the paid switch", (await fails(db, "select * from public.blocky_settings", /permission denied/)) === true && (await fails(db, "update public.blocky_settings set paid_calls = true", /permission denied/)) === true && (await fails(db, "select public.blocky_paid_state(0)", /permission denied/)) === true);
   await db.exec(`SELECT set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', false);`);
   ok("another user sees nothing", (await one(db, "select count(*)::int n from public.blocky_stories")).n === 0);
   await db.exec("RESET ROLE");
+
+  // The switch and the daily cap. One clip job is still queued here: 25 credits, counted as about $0.25 in flight.
+  await db.exec("UPDATE public.blocky_settings SET paid_calls = true");
+  const open = await paid();
+  ok("switched on: paid calls are allowed, and the running job is counted", open.on === true && Number(open.spent_usd) === 0 && Math.abs(Number(open.in_flight_usd) - 0.2525) < 1e-6, JSON.stringify(open));
+  await db.exec(`INSERT INTO public.blocky_ai_calls (user_id, provider, model, purpose, request, cost_usd) VALUES ('${USER}', 'runware', 'm', 'clip', '{}', 2.60)`);
+  ok("under the cap: a small step is still allowed ($2.60 spent + $0.25 running + $0.10)", (await paid(0.10)).on === true);
+  const over = await paid(0.20);
+  ok("a step that would pass the cap is refused before it is charged ($2.60 + $0.25 + $0.20 > $3.00)", over.on === false && over.reason === "cap_reached", JSON.stringify(over));
+  await db.exec(`INSERT INTO public.blocky_ai_calls (user_id, provider, model, purpose, request, cost_usd, created_at) VALUES ('${USER}', 'runware', 'm', 'clip', '{}', 50, now() - interval '2 days')`);
+  ok("yesterday's spend doesn't count toward today", (await paid(0.10)).on === true);
+  await db.exec("UPDATE public.blocky_settings SET daily_cap_usd = 2.5");
+  ok("lowering the cap below today's spend stops paid calls at once", (await paid()).on === false && (await paid()).reason === "cap_reached");
+  await db.exec("UPDATE public.blocky_settings SET paid_calls = false, daily_cap_usd = 3");
+  ok("switched off again: nothing is allowed, whatever the cap", (await paid()).on === false && (await paid()).reason === "switch_off");
+  ok("the switch is one row and can't become two", (await fails(db, "INSERT INTO public.blocky_settings (id) VALUES (true)", /duplicate key/)) === true && (await fails(db, "INSERT INTO public.blocky_settings (id) VALUES (false)", /check constraint/)) === true);
 
   await db.exec(sql("supabase/pending/20261026100000_blocky_stories_backend_rollback.sql"));
   ok("the rollback removes every Blocky object and keeps the price rows", (await one(db, "select count(*)::int n from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname like 'blocky%'")).n === 0 && (await one(db, "select count(*)::int n from pg_proc where proname like 'blocky%' or proname = 'trigger_blocky_reconcile'")).n === 0 && (await one(db, "select count(*)::int n from public.tool_prices where tool_key like '%blocky%'")).n === 4);

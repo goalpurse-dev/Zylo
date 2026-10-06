@@ -2,10 +2,9 @@
 // the owner's account: the library, a batch of ideas, recent stories, series.
 // Run before and after anything that touches Fruit's database (the undo of the
 // template columns). It only reads.
-//   BLOCKY_TARGET=live node scripts/blocky/smokeFruitLive.mjs
-import { SUPABASE_URL, TARGET, userSession } from "./lib.mjs";
+//   node scripts/blocky/smokeFruitLive.mjs
+import { SUPABASE_URL, userSession } from "./lib.mjs";
 
-if (TARGET !== "live") { console.error("This checks the live Fruit API: run it with BLOCKY_TARGET=live."); process.exit(2); }
 const { accessToken } = await userSession();
 const api = async (action, payload = {}) => {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/fruit-story-api`, {

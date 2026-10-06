@@ -2,11 +2,10 @@
 // exactly as render-long-form-scene sends it for a V2 scene: the render on
 // FLUX.2 klein 9B KV (_shared/stickman/renderTiers.ts#renderTask), then the 2x
 // upscale. About $0.003. No Long Form project, row or credit is touched.
-//   BLOCKY_TARGET=live node scripts/blocky/smokeLongFormProxy.mjs <outFile.jpg>
+//   node scripts/blocky/smokeLongFormProxy.mjs <outFile.jpg>
 import fs from "fs";
-import { SUPABASE_URL, TARGET, serviceKey } from "./lib.mjs";
+import { SUPABASE_URL, serviceKey } from "./lib.mjs";
 
-if (TARGET !== "live") { console.error("This checks the live picture proxy: run it with BLOCKY_TARGET=live."); process.exit(2); }
 const [outFile] = process.argv.slice(2);
 const proxy = async (task) => {
   const t0 = Date.now();

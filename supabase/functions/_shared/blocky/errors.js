@@ -20,7 +20,8 @@ export const MESSAGES = Object.freeze({
   NOT_FOUND: "This video doesn't exist anymore.",
   WRONG_STATUS: "This step isn't available right now. Refresh and try again.",
   STAGE_NOT_READY: "This part isn't switched on yet.",
-  PAID_CALLS_DISABLED: "Paid generation is switched off on this server. Nothing was charged.",
+  PAID_CALLS_DISABLED: "Blocky Stories is switched off for making new things right now. Nothing was charged.",
+  DAILY_CAP_REACHED: "Blocky Stories has reached today's limit. Nothing was charged. It opens again tomorrow.",
   PLANNER_FAILED: "We couldn't write this story. Nothing was charged. Try again.",
   IMAGE_FAILED: "The picture couldn't be made. Your credits were refunded. Tap Retry.",
   CLIP_FAILED: "The clip couldn't be animated. Your credits were refunded. Tap Retry.",
@@ -37,7 +38,7 @@ export const blockyError = (code, message = MESSAGES[code] ?? MESSAGES.SERVER_FA
 
 const STATUS = {
   UNAUTHORIZED: 401, PLAN_UPGRADE_REQUIRED: 403, INSUFFICIENT_CREDITS: 402, RATE_LIMITED: 429,
-  NOT_FOUND: 404, WRONG_STATUS: 409, STAGE_NOT_READY: 501, PAID_CALLS_DISABLED: 503,
+  NOT_FOUND: 404, WRONG_STATUS: 409, STAGE_NOT_READY: 501, PAID_CALLS_DISABLED: 503, DAILY_CAP_REACHED: 503,
   PLANNER_FAILED: 502, FINAL_FAILED: 502, PROVIDER_UNAVAILABLE: 503, SERVER_FAILED: 500,
 };
 
