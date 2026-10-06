@@ -28,6 +28,23 @@ Since this plan was written:
   needs the columns). Fruit's prompts are pinned by `tests/fruitPromptSnapshot.test.mjs`.
   Blocky is not `ready` yet: its writer, series, editor, picture-check and upload rules are
   Phase 3, and until then the API refuses to write a Blocky story.
+- 2026-10-06, later: migration `20261006190000_story_niches.sql` is APPLIED (Fruit's live API
+  checked after it with `scripts/blocky/smokeFruitLive.mjs`). `blocky_v1` is on for the owner's
+  account only. The new `fruit-story-api` and `fruit-worker` are NOT deployed (decision 17).
+  Blocky Stories is in the Short Form menus behind the flag, with a thumbnail
+  (`public/templates/BLOCKY/thumbnail.png`); its name lives in one constant
+  (`supabase/functions/_shared/fruit/niches/names.js`).
+- Blocky's writer, series, editor, picture-check and upload-pack rules are written
+  (`niches/blockyRules.js`), with the banned real-names check (`niches/blockySafety.js`) and the
+  24-avatar roster as text (`scripts/blocky/roster.mjs`). Blocky stays `ready: false` until its
+  library is approved.
+- Tests 2 and 3 ran for $0.3748 (`scripts/blocky/test2Looks.mjs`; review sheet
+  https://claude.ai/artifact/YCL5nwSzzcicTgAhMpFyh6). "Roblox-style" wording beats "blocky toy
+  figure" (which drew a brick-toy minifigure 3 times out of 3), and the classic noob came out
+  right. OPEN: 5 of 6 references have claw hands and the scenes copy them; the reference prompt
+  must say what the arms are, then be re-tested. The location plate keeps 3 of 4 scenes in the
+  same place with no studs. Nano Banana Pro (3 pictures) and the V4 Veo clip have NOT run: each
+  waits for one small deploy the owner runs (`runware-bakeoff-proxy`, `fruit-worker` from `e1428a9`).
 - Still Fruit-worded inside the shared UI (for the UI skin phase): the story step's heading and
   placeholders, the script examples, the series questions, openers and tones, the upgrade copy,
   and the server messages in `errors.js`. Menu entries, thumbnail and landing page: not built.
