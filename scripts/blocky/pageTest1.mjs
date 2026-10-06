@@ -1,7 +1,8 @@
 // Results page for Blocky Stories test 1 (lip sync on flat decal faces): the
 // 3 first-frame pictures, the 3 Wan2.6 Flash clips, every exact prompt, what
 // the speech-to-text heard, and the scores. Same page builder as the Fruit
-// checkpoints. Run framesTest1.mjs first.
+// checkpoints. Also test 1b: the same clip C on V3 and V4, side by side with
+// the V2 clip. Run framesTest1.mjs first.
 //   node scripts/blocky/pageTest1.mjs <outDir>     writes <outDir>/index.html and copies the clips to <outDir>/clips/
 import fs from "fs";
 import path from "path";
@@ -14,6 +15,9 @@ const r = JSON.parse(fs.readFileSync(path.join(dir, "results.json"), "utf8"));
 const spend = JSON.parse(fs.readFileSync(path.join(ROOT, "data/blocky-tests/spend.json"), "utf8")).entries;
 const stage = spend.filter((e) => e.stage === "lipsync").reduce((s, e) => s + e.usd, 0);
 const total = spend.reduce((s, e) => s + e.usd, 0);
+const dirB = path.join(ROOT, "data/blocky-tests/test1b");
+const tiers = fs.existsSync(path.join(dirB, "results.json")) ? JSON.parse(fs.readFileSync(path.join(dirB, "results.json"), "utf8")).items : {};
+const tiersSpend = spend.filter((e) => e.stage === "tiers").reduce((s, e) => s + e.usd, 0);
 const dots = (n) => `${"●".repeat(n)}${"○".repeat(5 - n)} ${n}/5`;
 
 // Judged from one frame every 0.2 s plus the speech-to-text word times; for clip B
@@ -41,6 +45,19 @@ const RATINGS = {
     scores: [["Transcript exact", "yes, all 12 words (heard \"!\" for \"?\")"], ["Lip sync", 3], ["Face stays a flat decal", 3], ["Body stays blocky", 5], ["Right speaker, listener silent", 5], ["Cuts", "none"], ["Text or logos", "none"], ["Filter block", "none (\"hacked\")"]],
     clipNote: "Only the left avatar talks; the listener's mouth stays closed and its smile turns into a frown. But the speaker's mouth gains white teeth and a pink tongue, and it stays open with gritted teeth through the pause at 2.1–2.6 s, so the timing reads less clearly. The face is small because of the full-body picture.",
   },
+};
+
+// Test 1b: clip C again, same picture, line and prompt, on the other two tiers.
+const TIER_RATINGS = {
+  v3: {
+    tone: "warn",
+    scores: [["Transcript exact", "yes, all 12 words"], ["Lip sync", 3], ["Face stays a flat decal", 3], ["Body stays blocky", 4], ["Right speaker, listener silent", 5], ["Cuts", "none"], ["Text or logos", "none"], ["Filter block", "none"]],
+    note: "About the same as V2, not clearly better. The mouth shapes are a little richer (a clear \"o\" on \"whole\"), but the same flat teeth appear and the mouth again stays gritted through the pause. Seedance pushes the camera in harder: by the end the speaker's head touches the left edge. One small glitch: the arm that jabs toward the listener shows a hollow end for a few frames. Production gives Seedance an almost-still camera; this test kept the V2 camera sentence so that only the model differs.",
+  },
+};
+const TIER_ROWS = {
+  v2: ["V2 · Wan2.6 Flash, 5 s", "exact", "3/5", "3/5: teeth, tongue", "5/5", "5/5", "none", "none", "$0.2504"],
+  v3: ["V3 · Seedance 2.0 Mini, 5 s", "exact", "3/5", "3/5: teeth", "4/5: hollow arm end", "5/5", "none", "none", "$0.4084"],
 };
 
 const TABLE = {
@@ -86,6 +103,34 @@ for (const row of Object.values(r.items)) {
   faces.push({ image: path.join(dir, "frames", `${row.key}-faces.jpg`), title: `Clip ${row.key}: top of the frame, one frame every 0.2 s (left to right, top to bottom)` });
 }
 
+// Clip C on each tier, side by side.
+const c = r.items.C;
+const tierCards = [{
+  video: "clips/C.mp4", stripUri: await dataUri(path.join(dir, "frames", "C-strip.jpg")), title: "V2 · Wan2.6 Flash, 5 s", tone: "warn",
+  meta: [["Real cost", `${c.clip.cost.toFixed(4)} = ${(c.clip.cost / 5).toFixed(4)}/s`], ["Heard", c.heard.text], ["Lip sync", dots(3)], ["Face stays a flat decal", dots(3)], ["Body stays blocky", dots(5)]],
+  note: "The clip from test 1, for comparison.",
+}];
+const tierFaces = [];
+for (const [key, label] of [["v3", "V3 · Seedance 2.0 Mini, 5 s"], ["v4", "V4 · Veo 3.1 Fast, 6 s"]]) {
+  const row = tiers[key];
+  const g = TIER_RATINGS[key];
+  if (!row?.file) {
+    tierCards.push({ title: label, tone: "warn", meta: [["Status", row ? `${row.state}${row.error ? `: ${row.error}` : ""}` : "not run yet"]], note: key === "v4" ? "Waiting: the worker's no-charge test action has to accept Veo first, which needs a deploy of fruit-worker (one line, already committed). Nothing was sent or spent for V4." : undefined });
+    continue;
+  }
+  fs.copyFileSync(path.join(dirB, row.file), path.join(outDir, "clips", `C-${key}.mp4`));
+  tierCards.push({
+    video: `clips/C-${key}.mp4`, stripUri: await dataUri(path.join(dirB, "frames", `C-${key}-strip.jpg`)), title: label, tone: g?.tone,
+    meta: [["Real cost", `${row.cost.toFixed(4)} = ${(row.cost / row.durationSec).toFixed(4)}/s`], ["Heard", row.heard?.text ?? "(none)"], ...(g?.scores ?? []).map(([k, v]) => [k, typeof v === "number" ? dots(v) : v])],
+    note: g?.note,
+  });
+  tierFaces.push({ image: path.join(dirB, "frames", `C-${key}-faces.jpg`), title: `Clip C on ${label}: top of the frame, one frame every 0.2 s` });
+}
+const tierHeads = ["Tier", "Transcript", "Lip sync", "Flat decal", "Body blocky", "Speaker / listener", "Cuts", "Text or logos", "Real cost"];
+const tierRows = ["v2", ...Object.keys(tiers).filter((k) => tiers[k].file)].map((k) => TIER_ROWS[k]).filter(Boolean);
+const esc2 = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const tierTable = `<table><thead><tr>${tierHeads.map((h) => `<th>${esc2(h)}</th>`).join("")}</tr></thead><tbody>${tierRows.map((cells) => `<tr>${cells.map((x) => `<td>${esc2(x)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+
 const cell = (c) => (Array.isArray(c) ? `<td class="bad">${esc(c[0])}</td>` : `<td>${esc(c)}</td>`);
 const table = `<table><thead><tr>${TABLE.columns.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${TABLE.rows.map((cells) => `<tr>${cells.map(cell).join("")}</tr>`).join("")}</tbody></table>`;
 
@@ -100,23 +145,21 @@ const html = await renderResultsPage({
     { value: "1 / 3", label: "clips with subtitles drawn on screen", tone: "bad" },
     { value: "1 / 3", label: "pictures drawn as a brick-toy figure", tone: "bad" },
     { value: "B", label: "winning face: open-mouth decal on a cube head", tone: "good" },
-    { value: `$${stage.toFixed(4)}`, label: "this test, of the $1.00 stage cap" },
+    { value: `${stage.toFixed(4)}`, label: "test 1, of the $1.00 stage cap" },
+    { value: `${tiersSpend.toFixed(4)}`, label: "test 1b (V3, V4), of the $1.40 stage cap" },
     { value: `$${total.toFixed(4)}`, label: "Blocky total, of the $5.00 cap" },
   ],
   sections: [
     { heading: "Scores", text: "1 to 5 where a score fits. Red cells are the problems.", html: table },
-    { heading: "The 3 clips (Wan2.6 Flash, 5 s each, 720p, with sound)", cards: clips },
+    { heading: "Test 1b: clip C on V2, V3 and V4", text: "The same picture, the same line and the same clip prompt on each tier, so the only difference is the model. The prompt is the one under clip C below.", html: tierTable, cards: tierCards },
+    { heading: "The 3 clips of test 1 (Wan2.6 Flash, 5 s each, 720p, with sound)", cards: clips },
     { heading: "The 3 first-frame pictures (Nano Banana 2 Lite, 9:16)", cards: pictures },
-    { heading: "Faces, frame by frame", text: "What I judged the mouths from: the top of each clip, one frame every 0.2 s.", layout: "list", cards: faces },
+    { heading: "Faces, frame by frame", text: "What I judged the mouths from: the top of each clip, one frame every 0.2 s.", layout: "list", cards: [...faces, ...tierFaces] },
   ],
   decisions: [
-    "<b>Go or no-go on V2.</b> My recommendation is go: the big risk, a decal mouth that won't animate or turns realistic, did not happen in any of the 3 clips, and clip B is clean. The V3/V4 backup clips (test 1b, $1.01) are not needed.",
-    "<b>Face type for the library: B.</b> A solid dark open-mouth shape with oval eyes on a cube head, no eyebrows. The thin line mouth (A) gives the model nothing to animate, so it invents shapes and teeth.",
-    "<b>Style wording.</b> \"Classic smile\" with a yellow head and red cap drew a brick-toy minifigure, and \"studded bricks\" drew that toy's baseplate under all three. I'd change the style block to smooth plastic blocks with no studs, and give the default \"noob\" avatar the B face and different colours. Test 2 (avatars) can check the new wording at no extra cost.",
-    "<b>Subtitles drawn by Wan (1 of 3).</b> The prompt already forbids them. I'd add \"text on screen\" to the automatic clip check that Fruit already runs, so such a clip is remade for free instead of reaching the user.",
-    "<b>Teeth (2 of 3).</b> Flat cartoon teeth appeared on the angry and the stunned face, not on the calm one. Acceptable, or a fail to fix in the picture and clip prompts?",
-    "<b>11-word lines.</b> They fit in 5 s with almost nothing to spare (the last word ends at 4.8–5.0 s). Fruit's rule would give these lines 6 s. I'd keep Fruit's rule as decided and not push line length.",
-    "<b>Two avatars in one shot</b> came out full body with small faces, the same problem Fruit had. Fruit's fix (picture check plus one free redraw) carries over.",
+    "<b>Decided after test 1:</b> go on V2; face B is the library face; flat cartoon teeth are fine; the style block loses \"studded bricks\" and gains a no-studs, no-minifigure list; text on screen fails the clip check; two-avatar shots get Fruit's picture check and one free redraw (decisions 9 to 15 in docs/roblox-scope.md).",
+    "<b>V3 vs V2 on blocky faces: about the same.</b> Seedance costs 1.6 times as much per second and did not animate the decal mouth more cleanly. Nothing here argues for steering Blocky users to V3 for lip sync.",
+    "<b>V4 (Veo 3.1 Fast, 6 s, about $0.90) has not run.</b> It needs fruit-worker deployed with Veo on the test allow-list; I was not permitted to deploy. Once it is deployed I run the one clip and add it here.",
   ],
 });
 fs.writeFileSync(path.join(outDir, "index.html"), html);
