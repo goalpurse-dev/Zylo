@@ -12,6 +12,8 @@
 //    eyes, a flat decal on a cube head. Flat cartoon teeth are fine; realistic
 //    3D teeth, lips, tongue or nose are not (decision 11).
 import { BLOCKY_STORIES_NAME } from "./names.js";
+import { BLOCKY_RULES } from "./blockyRules.js";
+import { bannedNamesMessage, bannedNamesProblem } from "./blockySafety.js";
 
 const KIND = "a blocky toy avatar";
 const voiceOf = (c) => c.voice_style ?? c.voiceStyle;
@@ -31,7 +33,7 @@ export const BLOCKY = Object.freeze({
   flag: "blocky_v1",
   /** Ideas are written per batch from the 10 story engines (scope C1). Not built yet. */
   ideas: "engine",
-  /** False until the writer, the series planner and the script editor have their Blocky rules: no story can be made before that. */
+  /** False until the avatar library exists and its look is approved: no story can be made before that. */
   ready: false,
 
   toolKeys: Object.freeze({ image: "image:blocky-story", v2: "video:blocky-story-v2", v3: "video:blocky-story-v3", v4: "video:blocky-story-v4" }),
@@ -73,10 +75,12 @@ export const BLOCKY = Object.freeze({
   // castRules.js: avatars are told apart by colour and silhouette in the library itself.
   cast: Object.freeze({ lookAlikeMessage: () => null }),
 
-  // Not written yet (they need their own rules, not Fruit's drama rules):
-  writer: null,   // planner.js: {system, characterBlock}
-  series: null,   // series.js: {system, characterLine}
-  review: null,   // scriptReview.js: {system, kind}
-  check: null,    // pictureCheck.js: {system, prompt, schema, verdict}
-  upload: null,   // uploadPackage.js: {system}
+  // blockyRules.js: the writer (planner.js), the series planner (series.js), the script
+  // editor (scriptReview.js), the picture check (pictureCheck.js) and the upload pack (uploadPackage.js).
+  ...BLOCKY_RULES,
+
+  // blockySafety.js: no real platform, game, brand or creator names.
+  //   userText(text) -> a plain message for the user about their own prompt, script or series idea, or null
+  //   writerText(text, where) -> what the writer is told to fix in its own output, or null
+  safety: Object.freeze({ userText: bannedNamesMessage, writerText: bannedNamesProblem }),
 });

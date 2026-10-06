@@ -11,7 +11,7 @@ import { videoModel } from "./models.js";
 
 import { LEGACY_SHOTS, SPEAKING_SHOTS } from "./shots.js";
 import { problemLines, reviewScript } from "./scriptReview.js";
-import { hooksOf } from "./niches/index.js";
+import { hooksOf, nicheOf } from "./niches/index.js";
 export { SPEAKING_SHOTS };
 export const SHOTS = [...SPEAKING_SHOTS, ...LEGACY_SHOTS];
 export const LINE_WORDS = { min: 3, targetMin: 6, targetMax: 14, max: 16 };
@@ -208,7 +208,9 @@ export function buildPlannerPrompt(p) {
     const words = wordBudget(p.lengthSec, count);
     parts.push(`Write exactly ${count} scenes for a video of ${p.lengthSec} seconds. The clips must add up to AT MOST ${p.lengthSec} seconds, never more (the user pays per second and was quoted for ${p.lengthSec}). That leaves ${Math.floor(p.lengthSec / count)} seconds per scene: every line AT MOST ${words} words, with at most one comma.`);
   }
-  return { system: w?.system ?? SYSTEM, user: parts.join("\n\n"), sceneCount: count };
+  // A niche's system prompt can be built from the lists this file owns (the overused phrases, the speaking shots).
+  const system = typeof w?.system === "function" ? w.system({ banned: BANNED, shots: SPEAKING_SHOTS }) : w?.system ?? SYSTEM;
+  return { system, user: parts.join("\n\n"), sceneCount: count };
 }
 
 /** JSON schema (strict-mode compatible: every property required, no extra keys). */
@@ -266,19 +268,24 @@ const words = (s) => wordCount(s);
  * Validates planner output. Returns {plan, errors}; plan is normalized and, in
  * script mode, carries the user's lines unchanged.
  */
-export function validatePlan(out, { source, cast, script, sceneCount, quality, lengthSec, seriesLocationIds = [] }) {
+export function validatePlan(out, { source, cast, script, sceneCount, quality, lengthSec, seriesLocationIds = [], niche }) {
   const errors = [];
+  // The template's own check of what was written (niches/<id>.js#safety.writerText), e.g. real names in Blocky Stories. Fruit has none.
+  const unsafe = nicheOf(niche).safety?.writerText;
+  const safe = (text, where) => { const problem = unsafe?.(text, where); if (problem) errors.push(problem); };
   const castIds = cast.map((c) => c.id);
   const allowed = videoModel(quality).durations;
   const maxWords = Math.min(LINE_WORDS.max, maxWordsFor(allowed));
   const title = String(out?.title ?? "").trim();
   if (title.length < 2 || title.length > 60 || words(title) > 8) errors.push(`title must be 2 to 6 words (got "${title}")`);
+  safe(title, "title");
 
   const locations = Array.isArray(out?.locations) ? out.locations : [];
   const locIds = new Set();
   if (locations.length < 1 || locations.length > 3) errors.push(`use 1 to 3 locations (got ${locations.length})`);
   for (const l of locations) {
     const d = String(l?.description ?? "").trim();
+    safe(d, `location ${l?.id}`);
     if (!/^loc[1-3]$/.test(l?.id ?? "") || locIds.has(l.id)) errors.push(`location ids must be loc1, loc2, loc3 (got "${l?.id}")`);
     locIds.add(l?.id);
     const sid = String(l?.seriesLocationId ?? "").trim();
@@ -324,6 +331,7 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     if (!emotion || words(emotion) > 3) errors.push(`scene ${n}: emotion must be 1 or 2 words`);
     if (!beat || words(beat) > 5) errors.push(`scene ${n}: beat must be 2 to 4 words`);
     if (source !== "script") {
+      safe(line, `scene ${n}`);
       const w = words(line);
       if (w < LINE_WORDS.min || w > maxWords) errors.push(`scene ${n}: line must be ${LINE_WORDS.targetMin} to ${LINE_WORDS.targetMax} words (got ${w}): "${line}"`);
       if (/["“”]|^\s*\w+\s*:|[#@]|\(|\)|\*/.test(line)) errors.push(`scene ${n}: the line must be plain spoken words (no quotes, names, hashtags or directions)`);
@@ -394,7 +402,7 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
 export async function runPlanner(p) {
   const { system, user, sceneCount } = buildPlannerPrompt(p);
   const schema = plannerSchema(p.cast.map((c) => c.id), { script: p.source === "script" });
-  const ctx = { source: p.source, cast: p.cast, script: p.script, sceneCount, quality: p.quality, lengthSec: p.lengthSec, seriesLocationIds: (p.series?.locations ?? []).map((l) => l.id) };
+  const ctx = { source: p.source, cast: p.cast, script: p.script, sceneCount, quality: p.quality, lengthSec: p.lengthSec, seriesLocationIds: (p.series?.locations ?? []).map((l) => l.id), niche: p.niche };
   const calls = [];
   const repairPrompt = (data, errors) => `${user}\n\nYOUR PREVIOUS ANSWER:\n${JSON.stringify(data)}\n\nIT HAS THESE PROBLEMS. Fix every one and return the full corrected JSON:\n- ${errors.join("\n- ")}`;
   const first = await p.llm({ system, user, schema, name: "story_plan", purpose: "planner" });

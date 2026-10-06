@@ -8,9 +8,6 @@ import fs from "node:fs";
 import { NICHES, DEFAULT_NICHE, nicheOf, nicheIdFrom, hooksOf, hasHooks, toolKeyOf } from "../supabase/functions/_shared/fruit/niches/index.js";
 import { buildScenePrompt, buildPictureRequest, buildEditPrompt, PICTURE_PROMPT_MAX, scenePromptLengths } from "../supabase/functions/_shared/fruit/pictures.js";
 import { buildClipPrompt, buildClipRequest, CLIP_PROMPT_MAX, NO_CUT } from "../supabase/functions/_shared/fruit/clips.js";
-import { buildPlannerPrompt } from "../supabase/functions/_shared/fruit/planner.js";
-import { buildSeriesPrompt } from "../supabase/functions/_shared/fruit/series.js";
-import { buildReviewPrompt } from "../supabase/functions/_shared/fruit/scriptReview.js";
 import { platePrompt } from "../supabase/functions/_shared/fruit/plates.js";
 import { planStep } from "../supabase/functions/_shared/fruit/steps.js";
 import { validateCreateStory } from "../supabase/functions/_shared/fruit/validation.js";
@@ -49,16 +46,9 @@ test("Fruit overrides nothing: it is the engine's built-in wording and price row
   assert.equal(NICHES.fruit.ready, true);
 });
 
-test("another niche never gets Fruit's wording by accident: a missing rule set throws", () => {
-  for (const part of ["writer", "series", "review", "check", "upload"]) {
-    assert.equal(NICHES.blocky[part], null, `${part} is not written yet`);
-    assert.throws(() => hooksOf("blocky", part), new RegExp(`${NICHES.blocky.name} has no ${part} rules yet`));
-  }
-  const cast = [AVATARS[0], AVATARS[1]];
-  assert.throws(() => buildPlannerPrompt({ source: "prompt", cast, lengthSec: 15, quality: "v2", prompt: "A trade goes wrong.", niche: "blocky" }), /no writer rules yet/);
-  assert.throws(() => buildSeriesPrompt({ concept: "x", cast, episodeCount: 3, niche: "blocky" }), /no series rules yet/);
-  assert.throws(() => buildReviewPrompt({ plan: { title: "t", scenes: [], locations: [] }, cast, source: "idea", niche: "blocky" }), /no review rules yet/);
-  assert.equal(NICHES.blocky.ready, false, "so the API refuses to write a Blocky story until they exist");
+test("another niche never gets Fruit's wording by accident: a rule set it doesn't have throws", () => {
+  assert.throws(() => hooksOf("blocky", "somethingNew"), new RegExp(`${NICHES.blocky.name} has no somethingNew rules yet`));
+  assert.equal(hooksOf("fruit", "somethingNew"), null, "Fruit is the built-in wording");
   assert.equal(NICHES.blocky.flag, "blocky_v1");
 });
 
@@ -77,7 +67,7 @@ test("a Blocky picture: the style lock, 'a blocky toy avatar', no fruit, no age,
   assert.doesNotMatch(p, /fruit|mango|hair/i);
   assert.doesNotMatch(p, /\b(woman|man|boy|girl|kid|child|year-old|years? old)\b/i);
   // "studs" may only appear as something to leave out (decision 12).
-  assert.doesNotMatch(p.replace(/no studs, no studded baseplates/g, "").replace(/no neck studs/g, ""), /stud/i);
+  assert.doesNotMatch(p.replace(/no studs, no studded baseplates/g, "").replace(/no neck studs/g, ""), /\bstud(s|ded)?\b/i);
   assert.ok(p.length <= PICTURE_PROMPT_MAX);
 });
 
@@ -139,7 +129,7 @@ test("Blocky charges under its own price rows; Fruit under Fruit's", () => {
 test("Blocky plates and casts: its own background style, and no same-fruit rule", () => {
   const plate = platePrompt("A trading plaza with plain market stalls", "9:16", "blocky");
   assert.match(plate, /smooth matte plastic blocks and simple geometric parts/);
-  assert.doesNotMatch(plate.replace(/No studs, no studded baseplates\./, ""), /stud|feature-film/i);
+  assert.doesNotMatch(plate.replace(/No studs, no studded baseplates\./, ""), /\bstud(s|ded)?\b|feature-film/i);
   // All three avatars share fruit = "avatar": Fruit's rule would refuse them as look-alikes.
   const input = { source: "prompt", prompt: "A trade goes badly wrong.", castIds: ["taz", "lux", "vex"], quality: "v2", aspect: "9:16", lengthSec: 30 };
   assert.throws(() => validateCreateStory(input, LIB), /would look the same on screen/, "Fruit's rule, when no niche is given");

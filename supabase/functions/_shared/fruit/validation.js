@@ -6,9 +6,14 @@ import { LIMITS, SERVER_LIMITS } from "./limits.js";
 import { videoModel } from "./models.js";
 import { clipDurationSec, maxWordsFor, wordCount } from "./duration.js";
 import { lookAlikeMessage } from "./castRules.js";
-import { hooksOf } from "./niches/index.js";
+import { hooksOf, nicheOf } from "./niches/index.js";
 
 const bad = (message) => new FruitError("VALIDATION", message, 400);
+/** The template's own check of the user's words (niches/<id>.js#safety.userText), e.g. real names in Blocky Stories. Fruit has none. */
+function safeText(text, niche) {
+  const message = nicheOf(niche).safety?.userText?.(text);
+  if (message) throw bad(message);
+}
 const QUALITIES = ["v2", "v3", "v4"];
 const ASPECTS = ["9:16", "16:9"];
 
@@ -76,6 +81,7 @@ export function validateCreateStory(input, library, findIdea, niche) {
     const prompt = typeof input.prompt === "string" ? input.prompt.trim() : "";
     if (prompt.length < 10) throw bad("Describe the story in a sentence or two.");
     if (prompt.length > LIMITS.maxPromptChars) throw bad(`Keep the story under ${LIMITS.maxPromptChars} characters.`);
+    safeText(prompt, niche);
     return { source: "prompt", prompt, castIds, quality, aspect, lengthSec: lengthOf(input.lengthSec) };
   }
 
@@ -91,6 +97,7 @@ export function validateCreateStory(input, library, findIdea, niche) {
       if (line.length > SERVER_LIMITS.maxLineChars) throw bad(`Line ${i + 1} is too long. Keep each line under ${SERVER_LIMITS.maxLineChars} characters.`);
       if (typeof r.speakerId !== "string" || !library.has(r.speakerId)) throw bad("Every line needs a speaker from the character library.");
       if (wordCount(line) > maxWords) throw bad(`Line ${i + 1} is too long for one ${quality.toUpperCase()} clip. Keep it under ${maxWords} words.`);
+      safeText(line, niche);
       return { speakerId: r.speakerId, line };   // exactly as written
     });
     const speakers = [...new Set(script.map((r) => r.speakerId))];
@@ -110,12 +117,14 @@ export function validateSeriesPlan(input, library, niche) {
   const concept = typeof input?.concept === "string" ? input.concept.trim() : "";
   if (concept.length < 6) throw bad("Describe the series in a sentence or two.");
   if (concept.length > LIMITS.maxPromptChars) throw bad(`Keep it under ${LIMITS.maxPromptChars} characters.`);
+  safeText(concept, niche);
   const castIds = castFrom(input?.castIds, library, LIMITS.minCastSeries, LIMITS.maxCastSeries, { niche });
   const episodeCount = Number(input?.episodeCount);
   if (!Number.isInteger(episodeCount) || episodeCount < LIMITS.minEpisodes || episodeCount > LIMITS.maxEpisodes) {
     throw bad(`Choose ${LIMITS.minEpisodes} to ${LIMITS.maxEpisodes} episodes.`);
   }
   const opener = typeof input?.opener === "string" ? input.opener.trim().slice(0, 300) : "";
+  safeText(opener, niche);
   const tone = typeof input?.tone === "string" ? input.tone.trim().slice(0, 60) : "";
   return { concept, castIds, episodeCount, opener, tone };
 }

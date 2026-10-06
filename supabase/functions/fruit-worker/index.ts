@@ -165,9 +165,12 @@ async function sceneCast(sceneId: string) {
   const { data: sc } = await admin.from("fruit_story_scenes").select("present_ids, speaker_id, story_id").eq("id", sceneId).single();
   // Its own query: a story without a niche (or a database from before the column) is fruit.
   const { data: st } = sc?.story_id ? await admin.from("fruit_stories").select("niche").eq("id", sc.story_id).maybeSingle() : { data: null };
-  const { data: chars } = await admin.from("fruit_characters").select("id, name, fruit").in("id", sc?.present_ids ?? []);
+  const { data: chars } = await admin.from("fruit_characters").select("id, name, fruit, build, outfit").in("id", sc?.present_ids ?? []);
   const byId = new Map((chars ?? []).map((c: any) => [c.id, c]));
-  const expected = (sc?.present_ids ?? []).map((id: string) => byId.get(id)).filter(Boolean).map((c: any) => ({ name: c.name, fruit: c.fruit }));
+  const fruit = nicheOf(st).id === DEFAULT_NICHE;
+  // Fruit's check knows each fruit's look from its name; another template's check is told the look.
+  const expected = (sc?.present_ids ?? []).map((id: string) => byId.get(id)).filter(Boolean)
+    .map((c: any) => (fruit ? { name: c.name, fruit: c.fruit } : { name: c.name, fruit: c.fruit, look: [c.build, c.outfit].filter(Boolean).join(", ") }));
   return { expected, speaker: (byId.get(sc?.speaker_id) as any)?.name ?? null, niche: nicheOf(st).id };
 }
 
