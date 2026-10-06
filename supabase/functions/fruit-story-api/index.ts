@@ -32,6 +32,7 @@ import { planSeries, planStory } from "../_shared/fruit/plannerService.js";
 import { buildPictureRequest } from "../_shared/fruit/pictures.js";
 import { buildClipRequest } from "../_shared/fruit/clips.js";
 import { cleanEditInstruction } from "../_shared/fruit/smallTasks.js";
+import { DEFAULT_NICHE, nicheIdFrom, nicheOf } from "../_shared/fruit/niches/index.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -86,15 +87,48 @@ const must = ({ data, error }: { data: any; error: any }) => {
   return data;
 };
 
-let libraryCache: { at: number; rows: any[] } | null = null;
-async function library() {
-  if (!libraryCache || Date.now() - libraryCache.at > 5 * 60_000) {
-    const rows = must(await admin.from("fruit_characters").select("*").eq("active", true).order("sort_order"));
-    libraryCache = { at: Date.now(), rows };
+// One library per template: a template never sees another one's characters.
+const libraryCache = new Map<string, { at: number; rows: any[] }>();
+async function library(niche: string = DEFAULT_NICHE) {
+  let hit = libraryCache.get(niche);
+  if (!hit || Date.now() - hit.at > 5 * 60_000) {
+    const rows = must(await admin.from("fruit_characters").select("*").eq("active", true).eq("niche", niche).order("sort_order"));
+    hit = { at: Date.now(), rows };
+    libraryCache.set(niche, hit);
   }
-  return libraryCache.rows;
+  return hit.rows;
 }
-const libraryMap = async () => new Map((await library()).map((c: any) => [c.id, c]));
+const libraryMap = async (niche: string = DEFAULT_NICHE) => new Map((await library(niche)).map((c: any) => [c.id, c]));
+
+/** A hidden template (niches/<id>.js#flag) exists only for accounts that have its flag, or once it is on for everyone. */
+async function requireNicheAccess(userId: string, niche: string) {
+  const flag = nicheOf(niche).flag;
+  if (!flag) return;
+  const [g, u] = await Promise.all([
+    admin.from("global_feature_flags").select("enabled").eq("key", flag).maybeSingle(),
+    admin.from("user_feature_flags").select("flags").eq("user_id", userId).maybeSingle(),
+  ]);
+  if (g.data?.enabled === true || u.data?.flags?.[flag] === true) return;
+  throw fruitError("NOT_FOUND");
+}
+
+/** The template a request is for: body.niche, and nothing = AI Fruit Story (every browser before templates). */
+async function requestNiche(ctx: Ctx, value: unknown = ctx.body?.niche): Promise<string> {
+  const niche = nicheIdFrom(value);
+  if (!niche) throw fruitError("VALIDATION", "That template doesn't exist.");
+  await requireNicheAccess(ctx.userId, niche);
+  return niche;
+}
+
+/** A row's template. A request that names another one doesn't get the row. */
+function sameNiche(row: any, asked: unknown) {
+  if (asked != null && asked !== "" && nicheIdFrom(asked) !== nicheOf(row).id) throw fruitError("NOT_FOUND");
+}
+
+/** A template whose writer isn't finished can't make a story yet. */
+function requireReady(niche: string) {
+  if (!nicheOf(niche).ready) throw fruitError("STAGE_NOT_READY", `${nicheOf(niche).name} isn't open yet.`);
+}
 
 const toCharacter = (c: any) => ({
   id: c.id, name: c.name, collection: c.collection, fruit: c.fruit, emoji: c.emoji, hue: c.hue,
@@ -116,6 +150,7 @@ function requirePaid(ctx: Ctx) {
 async function loadStory(userId: string, storyId: string) {
   const story = must(await admin.from("fruit_stories").select("*").eq("id", storyId).eq("user_id", userId).is("deleted_at", null).maybeSingle());
   if (!story) throw fruitError("NOT_FOUND");
+  await requireNicheAccess(userId, nicheOf(story).id);
   const scenes = must(await admin.from("fruit_story_scenes").select("*").eq("story_id", storyId).order("idx"));
   const ledger = must(await admin.from("fruit_credit_ledger").select("operation, credits").eq("story_id", storyId));
   return { row: story, scenes, spent: spentFromLedger(ledger) };
@@ -146,9 +181,10 @@ async function runStep(ctx: Ctx, step: string, storyId: string, extra: Record<st
   if (await providerOnHold(admin, "runware")) throw fruitError("PROVIDER_UNAVAILABLE");
   const { row, scenes } = await loadStory(ctx.userId, storyId);
   // locations and outfits (an alternate outfit for a role, e.g. undercover): builder only, not the contract
-  const story: any = { ...toStory(row, scenes), locations: row.locations, outfits: row.planner?.outfits ?? {} };
+  // niche: the story's template (niches/), which picks the wording and the price rows
+  const story: any = { ...toStory(row, scenes), locations: row.locations, outfits: row.planner?.outfits ?? {}, niche: nicheOf(row).id };
   const staging = new Map(scenes.map((s: any) => [s.id, { locationId: s.location_id, action: s.action, emotion: s.emotion, shot: s.shot, placement: s.placement }]));
-  const plan = planStep(step as any, { story, scenes: story.scenes, library: await libraryMap(), builders: BUILDERS, staging, ...extra });
+  const plan = planStep(step as any, { story, scenes: story.scenes, library: await libraryMap(story.niche), builders: BUILDERS, staging, ...extra });
   must(await admin.rpc("fruit_charge_step", {
     p_user_id: ctx.userId, p_story_id: storyId, p_step: plan.step, p_from_statuses: plan.from, p_to_status: plan.to, p_items: plan.items,
   }));
@@ -162,26 +198,32 @@ async function runStep(ctx: Ctx, step: string, storyId: string, extra: Record<st
 const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
   async listCharacters(ctx) {
     await rateLimit(ctx.userId, "read");
-    return (await library()).map(toCharacter);
+    return (await library(await requestNiche(ctx))).map(toCharacter);
   },
 
   async getIdeas(ctx) {
     await rateLimit(ctx.userId, "read");
+    const niche = await requestNiche(ctx);
+    // A template whose ideas are written per batch (niches/<id>.js#ideas = "engine") has no library to pick from.
+    if (nicheOf(niche).ideas !== "library") throw fruitError("STAGE_NOT_READY", "Ideas aren't switched on here yet.");
     const seed = Number.isFinite(Number(ctx.body?.seed)) ? Number(ctx.body.seed) : 0;
-    const rows = must(await admin.rpc("fruit_pick_ideas", { p_seed: `${ctx.userId}:${seed}`, p_count: 5 }));
+    const rows = must(await admin.rpc("fruit_pick_ideas", { p_seed: `${ctx.userId}:${seed}`, p_count: 5, ...(niche === DEFAULT_NICHE ? {} : { p_niche: niche }) }));
     if (!rows?.length) throw fruitError("IDEAS_FAILED", "We couldn't load new ideas.");
     return rows.map((i: any) => ({ id: i.id, title: i.title, summary: i.summary, castIds: i.cast_ids }));
   },
 
   async createStory(ctx) {
     requirePaid(ctx);
-    const rows = await library();
-    const lib = new Map(rows.map((c: any) => [c.id, c]));
     const raw = ctx.body?.input;
+    // The template: the request's (body.niche or input.niche); an episode's is its series'.
+    const niche = await requestNiche(ctx, ctx.body?.niche ?? raw?.niche);
+    requireReady(niche);
+    const rows = await library(niche);
+    const lib = new Map(rows.map((c: any) => [c.id, c]));
     const idea = raw?.source === "idea" && typeof raw?.ideaId === "string"
-      ? must(await admin.from("fruit_ideas").select("*").eq("id", raw.ideaId).eq("active", true).maybeSingle())
+      ? must(await admin.from("fruit_ideas").select("*").eq("id", raw.ideaId).eq("active", true).eq("niche", niche).maybeSingle())
       : null;
-    const input = validateCreateStory(raw, lib, (id: string) => (idea && idea.id === id ? { castIds: idea.cast_ids } : null));
+    const input = validateCreateStory(raw, lib, (id: string) => (idea && idea.id === id ? { castIds: idea.cast_ids } : null), niche);
     const [need, planName] = QUALITY_PLAN[input.quality];
     if ((PLAN_RANK[ctx.plan] ?? 0) < need) throw fruitError("PLAN_UPGRADE_REQUIRED", `${input.quality.toUpperCase()} needs the ${planName} plan.`);
     await rateLimit(ctx.userId, "story");
@@ -191,7 +233,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     let series: any;
     if (input.source === "episode") {
       const s = must(await admin.from("fruit_series").select("*").eq("id", input.seriesId).eq("user_id", ctx.userId).is("deleted_at", null).maybeSingle());
-      if (!s) throw new FruitError("NOT_FOUND", "This series doesn't exist anymore.", 404);
+      if (!s || nicheOf(s).id !== niche) throw new FruitError("NOT_FOUND", "This series doesn't exist anymore.", 404);
       const episodes = must(await admin.from("fruit_series_episodes").select("*").eq("series_id", s.id).order("number"));
       const storyIds = episodes.map((e: any) => e.story_id).filter(Boolean);
       const stories = storyIds.length ? must(await admin.from("fruit_stories").select("id, status").in("id", storyIds)) : [];
@@ -225,7 +267,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
       plannerInput: {
         source: input.source, cast, lengthSec: input.lengthSec, quality: input.quality,
         idea: idea ? { title: idea.title, summary: idea.summary } : undefined,
-        prompt: input.prompt, script: input.script, series,
+        prompt: input.prompt, script: input.script, series, niche,
       },
     });
     // An episode's cast is the characters it uses (a series of five often plays an
@@ -243,7 +285,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     if (series && series.locations.length) {
       const usedIds = [...new Set(plan.locations.map((l: any) => l.seriesLocationId).filter(Boolean))];
       const bibleLocations = await ensurePlates({
-        locations: series.bibleRow.locations ?? [], usedIds, aspect: input.aspect, userId: ctx.userId, seriesId: series.id,
+        locations: series.bibleRow.locations ?? [], usedIds, aspect: input.aspect, userId: ctx.userId, seriesId: series.id, niche,
         deps: {
           post: runwarePost,
           store: (o: any) => createSupabaseMedia(admin).store(o),
@@ -261,7 +303,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     const storyId = must(await admin.rpc("fruit_create_story", {
       p_user_id: ctx.userId,
       p_story: {
-        source: input.source,
+        source: input.source, niche,
         input: { source: input.source, ideaId: input.ideaId ?? null, prompt: input.prompt ?? null, script: input.script ?? null },
         title: plan.title, cast_ids: storyCast, quality: input.quality, aspect: input.aspect,
         length_sec: Math.min(180, Math.max(5, plan.lengthSec)), locations,
@@ -284,6 +326,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
   async getStory(ctx) {
     await rateLimit(ctx.userId, "read");
     const { row, scenes, spent } = await loadStory(ctx.userId, validateId(ctx.body?.storyId));
+    sameNiche(row, ctx.body?.niche);
     return toStory(row, scenes, spent);
   },
 
@@ -332,7 +375,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
     if (row.upload_package && !ctx.body?.refresh) return row.upload_package;
     if (row.status !== "final_ready") throw new FruitError("WRONG_STATUS", "Make the final video first.", 409);
     if (PAID_CALLS_OFF) throw fruitError("PAID_CALLS_DISABLED");
-    const lib = await libraryMap();
+    const lib = await libraryMap(nicheOf(row).id);
     const nameOf = (id: string) => lib.get(id)?.name ?? id;
     let episode: any = null;
     if (row.series_id) {
@@ -347,7 +390,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
         lines: [...scenes].sort((a: any, b: any) => a.idx - b.idx).map((s: any) => ({ speaker: nameOf(s.speaker_id), line: s.line })),
         roles: Object.fromEntries(Object.entries(row.cast_roles ?? {}).map(([id, role]) => [nameOf(id), role])),
       },
-      ids: { user_id: ctx.userId, story_id: storyId },
+      ids: { user_id: ctx.userId, story_id: storyId }, niche: nicheOf(row).id,
     }).catch((e: any) => { console.error("[fruit-story-api] upload package:", e?.message ?? e); throw new FruitError("PACKAGE_FAILED", "We couldn't write the post text. Try again.", 502); });
     const { costUsd, ...saved } = pkg;
     await admin.from("fruit_stories").update({ upload_package: saved }).eq("id", storyId);
@@ -469,18 +512,20 @@ Object.assign(ACTIONS, {
   /** Free: the series outline (title, logline, bible with fixed roles, episodes with cliffhangers). */
   async createSeriesPlan(ctx) {
     requirePaid(ctx);
-    const lib = await libraryMap();
-    const input = validateSeriesPlan(ctx.body?.input, lib);
+    const niche = await requestNiche(ctx, ctx.body?.niche ?? ctx.body?.input?.niche);
+    requireReady(niche);
+    const lib = await libraryMap(niche);
+    const input = validateSeriesPlan(ctx.body?.input, lib, niche);
     await rateLimit(ctx.userId, "series");
     if (PAID_CALLS_OFF) throw fruitError("PAID_CALLS_DISABLED");
     if (await providerOnHold(admin, FRUIT_MODELS.planner.provider)) throw fruitError("PROVIDER_UNAVAILABLE");
     const row = must(await admin.from("fruit_series").insert({
-      user_id: ctx.userId, concept: input.concept, cast_ids: input.castIds, tone: input.tone, opener: input.opener, episode_count: input.episodeCount,
+      user_id: ctx.userId, concept: input.concept, cast_ids: input.castIds, tone: input.tone, opener: input.opener, episode_count: input.episodeCount, niche,
     }).select("id").single());
     try {
       const { outline, attempts, callIds, costUsd, model } = await planSeries({
         admin, env: LLM_ENV, userId: ctx.userId, seriesId: row.id,
-        input: { concept: input.concept, cast: input.castIds.map((id: string) => lib.get(id)), opener: input.opener, tone: input.tone, episodeCount: input.episodeCount },
+        input: { concept: input.concept, cast: input.castIds.map((id: string) => lib.get(id)), opener: input.opener, tone: input.tone, episodeCount: input.episodeCount, niche },
       });
       must(await admin.from("fruit_series").update({
         title: outline.title, logline: outline.logline,
@@ -501,18 +546,19 @@ Object.assign(ACTIONS, {
 
   async getSeries(ctx) {
     await rateLimit(ctx.userId, "read");
-    return seriesView(ctx.userId, validateId(ctx.body?.seriesId, "series"));
+    return seriesView(ctx.userId, validateId(ctx.body?.seriesId, "series"), ctx.body?.niche);
   },
 
   async listSeries(ctx) {
     await rateLimit(ctx.userId, "read");
-    return listSeriesCards(ctx.userId);
+    return listSeriesCards(ctx.userId, await requestNiche(ctx));
   },
 
   async listRecent(ctx) {
     await rateLimit(ctx.userId, "read");
-    if (ctx.body?.type === "series") return listSeriesCards(ctx.userId);
-    const rows = must(await admin.from("fruit_stories").select("*").eq("user_id", ctx.userId).is("series_id", null).is("deleted_at", null)
+    const niche = await requestNiche(ctx);
+    if (ctx.body?.type === "series") return listSeriesCards(ctx.userId, niche);
+    const rows = must(await admin.from("fruit_stories").select("*").eq("user_id", ctx.userId).eq("niche", niche).is("series_id", null).is("deleted_at", null)
       .neq("status", "draft").order("created_at", { ascending: false }).limit(30));
     if (!rows.length) return [];
     const scenes = must(await admin.from("fruit_story_scenes").select("story_id, idx, image_url").in("story_id", rows.map((r: any) => r.id)).lt("idx", 3));
@@ -540,9 +586,11 @@ async function autoFinal(storyId: string) {
   }
 }
 
-async function seriesView(userId: string, seriesId: string) {
+async function seriesView(userId: string, seriesId: string, askedNiche?: unknown) {
   const s = must(await admin.from("fruit_series").select("*").eq("id", seriesId).eq("user_id", userId).is("deleted_at", null).maybeSingle());
   if (!s) throw new FruitError("NOT_FOUND", "This series doesn't exist anymore.", 404);
+  sameNiche(s, askedNiche);
+  await requireNicheAccess(userId, nicheOf(s).id);
   const episodes = must(await admin.from("fruit_series_episodes").select("*").eq("series_id", seriesId).order("number"));
   const storyIds = episodes.map((e: any) => e.story_id).filter(Boolean);
   const stories = storyIds.length ? must(await admin.from("fruit_stories").select("id, status").in("id", storyIds)) : [];
@@ -560,8 +608,8 @@ async function seriesView(userId: string, seriesId: string) {
   };
 }
 
-async function listSeriesCards(userId: string) {
-  const list = must(await admin.from("fruit_series").select("*").eq("user_id", userId).is("deleted_at", null).order("created_at", { ascending: false }).limit(30));
+async function listSeriesCards(userId: string, niche: string) {
+  const list = must(await admin.from("fruit_series").select("*").eq("user_id", userId).eq("niche", niche).is("deleted_at", null).order("created_at", { ascending: false }).limit(30));
   if (!list.length) return [];
   const eps = must(await admin.from("fruit_series_episodes").select("series_id, number, story_id").in("series_id", list.map((s: any) => s.id)));
   const storyIds = eps.map((e: any) => e.story_id).filter(Boolean);

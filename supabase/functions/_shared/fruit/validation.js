@@ -6,12 +6,13 @@ import { LIMITS, SERVER_LIMITS } from "./limits.js";
 import { videoModel } from "./models.js";
 import { clipDurationSec, maxWordsFor, wordCount } from "./duration.js";
 import { lookAlikeMessage } from "./castRules.js";
+import { hooksOf } from "./niches/index.js";
 
 const bad = (message) => new FruitError("VALIDATION", message, 400);
 const QUALITIES = ["v2", "v3", "v4"];
 const ASPECTS = ["9:16", "16:9"];
 
-function castFrom(ids, library, min, max, { lookAlikes = true } = {}) {
+function castFrom(ids, library, min, max, { lookAlikes = true, niche } = {}) {
   if (!Array.isArray(ids) || ids.length < min || ids.length > max || new Set(ids).size !== ids.length) {
     throw bad(min === max ? `Pick ${min} characters.` : `Pick ${min} to ${max} characters.`);
   }
@@ -20,7 +21,8 @@ function castFrom(ids, library, min, max, { lookAlikes = true } = {}) {
   }
   // Two of the same fruit look the same in a close-up, unless they're relatives dressed differently.
   // (An idea's cast is fixed by the library, which its own build checks: the user can't swap it.)
-  const alike = lookAlikes ? lookAlikeMessage(ids.map((id) => library.get(id))) : null;
+  // The rule is the template's: Fruit's is castRules.js, another niche brings its own (niches/<id>.js#cast).
+  const alike = lookAlikes ? (hooksOf(niche, "cast")?.lookAlikeMessage ?? lookAlikeMessage)(ids.map((id) => library.get(id))) : null;
   if (alike) throw bad(alike);
   return [...ids];
 }
@@ -45,8 +47,9 @@ function lengthOf(value) {
  * @param {object} input CreateStoryInput from the contract
  * @param {Map<string, object>} library character id → character
  * @param {(ideaId: string) => ({castIds: string[]}|null)} [findIdea]
+ * @param {string|object} [niche] the template (niches/); nothing = Fruit
  */
-export function validateCreateStory(input, library, findIdea) {
+export function validateCreateStory(input, library, findIdea, niche) {
   if (!input || typeof input !== "object") throw bad("Pick an idea, describe a story, or write a script.");
   const { quality, aspect } = common(input);
   const series = input.seriesId != null
@@ -69,7 +72,7 @@ export function validateCreateStory(input, library, findIdea) {
   }
 
   if (input.source === "prompt") {
-    const castIds = castFrom(input.castIds, library, 1, LIMITS.maxCastSingle);
+    const castIds = castFrom(input.castIds, library, 1, LIMITS.maxCastSingle, { niche });
     const prompt = typeof input.prompt === "string" ? input.prompt.trim() : "";
     if (prompt.length < 10) throw bad("Describe the story in a sentence or two.");
     if (prompt.length > LIMITS.maxPromptChars) throw bad(`Keep the story under ${LIMITS.maxPromptChars} characters.`);
@@ -94,7 +97,7 @@ export function validateCreateStory(input, library, findIdea) {
     if (speakers.length > LIMITS.maxCharactersPerScene) {
       throw bad(`Use at most ${LIMITS.maxCharactersPerScene} different speakers. This script has ${speakers.length}.`);
     }
-    const castIds = Array.isArray(input.castIds) && input.castIds.length ? castFrom(input.castIds, library, 1, LIMITS.maxCastSingle) : speakers;
+    const castIds = Array.isArray(input.castIds) && input.castIds.length ? castFrom(input.castIds, library, 1, LIMITS.maxCastSingle, { niche }) : speakers;
     if (speakers.some((id) => !castIds.includes(id))) throw bad("Every speaker must be in the cast.");
     const lengthSec = script.reduce((sum, r) => sum + clipDurationSec(r.line, allowed), 0);
     return { source: "script", script, castIds, quality, aspect, lengthSec };
@@ -103,11 +106,11 @@ export function validateCreateStory(input, library, findIdea) {
   throw bad("Pick an idea, describe a story, or write a script.");
 }
 
-export function validateSeriesPlan(input, library) {
+export function validateSeriesPlan(input, library, niche) {
   const concept = typeof input?.concept === "string" ? input.concept.trim() : "";
   if (concept.length < 6) throw bad("Describe the series in a sentence or two.");
   if (concept.length > LIMITS.maxPromptChars) throw bad(`Keep it under ${LIMITS.maxPromptChars} characters.`);
-  const castIds = castFrom(input?.castIds, library, LIMITS.minCastSeries, LIMITS.maxCastSeries);
+  const castIds = castFrom(input?.castIds, library, LIMITS.minCastSeries, LIMITS.maxCastSeries, { niche });
   const episodeCount = Number(input?.episodeCount);
   if (!Number.isInteger(episodeCount) || episodeCount < LIMITS.minEpisodes || episodeCount > LIMITS.maxEpisodes) {
     throw bad(`Choose ${LIMITS.minEpisodes} to ${LIMITS.maxEpisodes} episodes.`);

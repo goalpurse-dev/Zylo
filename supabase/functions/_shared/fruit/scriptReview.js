@@ -8,6 +8,8 @@
 // "undercover" cop in full uniform. The planner was asked for a hook and a
 // punchline, but nothing read the result.
 
+import { hooksOf } from "./niches/index.js";
+
 export const REVIEW_PURPOSE = "script_review";
 
 /** The rules, in the order the editor checks them. id → what the planner is told when it fails. */
@@ -55,7 +57,10 @@ export function reviewSchema() {
  * The script as the editor reads it.
  * @param {object} p  {plan, cast, source, series?}  plan = validatePlan's plan
  */
-export function buildReviewPrompt({ plan, cast, source, series }) {
+export function buildReviewPrompt({ plan, cast, source, series, niche }) {
+  // niche: the template (niches/). Its own {system, kind(c)}, or nothing = Fruit's.
+  const w = hooksOf(niche, "review");
+  const kind = w?.kind ?? ((c) => `${c.fruit} ${c.gender === "female" ? "woman" : "man"}`);
   const byId = new Map(cast.map((c) => [c.id, c]));
   const name = (id) => byId.get(id)?.name ?? id;
   const outfits = plan.outfits ?? {};
@@ -66,10 +71,10 @@ export function buildReviewPrompt({ plan, cast, source, series }) {
     source === "episode"
       ? `KIND: episode ${series?.episode?.number ?? ""} of a series. The last line must deliver this cliffhanger so that a new viewer understands it: ${series?.episode?.cliffhanger ?? "(the planned cliffhanger)"}`
       : "KIND: a single complete video (not an episode).",
-    `CHARACTERS:\n${cast.filter((c) => used.has(c.id)).map((c) => `- ${c.name}, ${c.fruit} ${c.gender === "female" ? "woman" : "man"}; role here: ${plan.roles?.[c.id] ?? c.tag}; wears in every scene: ${outfits[c.id] ?? c.outfit ?? "their usual outfit"}`).join("\n")}`,
+    `CHARACTERS:\n${cast.filter((c) => used.has(c.id)).map((c) => `- ${c.name}, ${kind(c)}; role here: ${plan.roles?.[c.id] ?? c.tag}; wears in every scene: ${outfits[c.id] ?? c.outfit ?? "their usual outfit"}`).join("\n")}`,
     `SCRIPT:\n${plan.scenes.map((s, i) => `${i + 1}. [in the picture: ${s.presentIds.map(name).join(", ")}; place: ${loc.get(s.locationId) ?? "?"}] ${name(s.speakerId)}: ${s.line}`).join("\n")}`,
   ];
-  return { system: REVIEW_SYSTEM, user: parts.join("\n\n") };
+  return { system: w?.system ?? REVIEW_SYSTEM, user: parts.join("\n\n") };
 }
 
 /** The model's answer → the problems to fix (empty = passed). Unknown or malformed rules count as passed. */
@@ -91,10 +96,10 @@ export const problemLines = (problems) => problems.map((p) => `${p.scene ? `scen
  * Runs the review. Never throws: {ok:true, problems:[], skipped:"..."} when it can't run.
  * @param {object} p  {plan, cast, source, series, llm}  llm({system,user,schema,name,purpose,review:true}) -> {data}
  */
-export async function reviewScript({ plan, cast, source, series, llm }) {
+export async function reviewScript({ plan, cast, source, series, llm, niche }) {
   if (source === "script") return { ok: true, problems: [], skipped: "the user's own lines are never rewritten" };
   try {
-    const { system, user } = buildReviewPrompt({ plan, cast, source, series });
+    const { system, user } = buildReviewPrompt({ plan, cast, source, series, niche });
     const r = await llm({ system, user, schema: reviewSchema(), name: "script_review", purpose: REVIEW_PURPOSE, review: true });
     const problems = reviewProblems(r.data);
     return { ok: problems.length === 0, problems };

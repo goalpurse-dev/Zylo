@@ -7,6 +7,7 @@ import { SERVER_LIMITS } from "./limits.js";
 import { clipDurationSec } from "./duration.js";
 import { pronounOf, toneOf, withSubject } from "./wording.js";
 import { shotOf } from "./shots.js";
+import { hooksOf } from "./niches/index.js";
 
 export const CLIP_PROMPT_MAX = SERVER_LIMITS.maxClipPromptChars;   // 1,500 (Veo accepts 3,000)
 
@@ -31,28 +32,50 @@ export const stillCamera = (prompt) => String(prompt).replace(/Camera: [^.]*\./,
 const sex = (c) => (c.gender === "female" ? "woman" : "man");
 const voiceOf = (c) => c.voice_style ?? c.voiceStyle;
 
-function build(tier, { scene, speaker, others, quality }) {
-  const listeners = others.map((c) => `${c.name} (the ${c.fruit} ${sex(c)})`).join(" and ");
+/**
+ * Everything in a clip prompt that depends on the template. These are Fruit's;
+ * another niche overrides what differs (niches/<id>.js#clip):
+ *   kind(c): what the character is ("the mango woman")
+ *   says(c, scene): the voice and the delivery
+ *   speaking(c): only the speaker's mouth moves
+ *   silent(others, listeners): the listeners stay quiet (starts with a space)
+ *   keep, keepShort: what must not change from the first frame
+ */
+const FRUIT_CLIP = {
+  kind: (c) => `the ${c.fruit} ${sex(c)}`,
+  says: (c, scene) => `says in ${pronounOf(c)} ${voiceOf(c)} voice, delivered in ${toneOf(scene.emotion)}`,
+  speaking: (c) => `Only ${c.name} speaks, lips moving in sync with every word.`,
+  silent: (others, listeners) => ` ${listeners} ${others.length > 1 ? "stay" : "stays"} silent with ${others.length > 1 ? "mouths" : "mouth"} closed, reacting only with small expressions.`,
+  keep: "Keep every character, outfit and the setting exactly as in the first frame. Smooth, natural motion; no warping or melting.",
+  keepShort: "Keep everything exactly as in the first frame.",
+};
+
+function build(tier, { scene, speaker, others, quality, niche }) {
+  const w = { ...FRUIT_CLIP, ...(hooksOf(niche, "clip") ?? {}) };
+  const listeners = others.map((c) => `${c.name} (${w.kind(c)})`).join(" and ");
   const where = scene.placement && tier === 0 ? ` Positions: ${scene.placement.replace(/\.$/, "")}.` : "";
   const parts = [
-    `${speaker.name}, the ${speaker.fruit} ${sex(speaker)} facing the camera, says in ${pronounOf(speaker)} ${voiceOf(speaker)} voice, delivered in ${toneOf(scene.emotion)}: "${scene.line}"`,
-    `Only ${speaker.name} speaks, lips moving in sync with every word.${others.length ? ` ${listeners} ${others.length > 1 ? "stay" : "stays"} silent with ${others.length > 1 ? "mouths" : "mouth"} closed, reacting only with small expressions.` : ""}${where}`,
+    `${speaker.name}, ${w.kind(speaker)} facing the camera, ${w.says(speaker, scene)}: "${scene.line}"`,
+    `${w.speaking(speaker)}${others.length ? w.silent(others, listeners) : ""}${where}`,
     `${withSubject(speaker.name, speaker, scene.action)}.`,
     `Camera: ${cameraFor(quality, scene.shot)}.`,
     NO_CUT,
-    tier <= 1 ? "Keep every character, outfit and the setting exactly as in the first frame. Smooth, natural motion; no warping or melting." : "Keep everything exactly as in the first frame.",
+    tier <= 1 ? w.keep : w.keepShort,
     `Audio: only ${speaker.name}'s voice saying the line, with quiet room tone. No music. No subtitles, captions or on-screen text. Plain unbranded props, no logos.`,
   ];
   return parts.join(" ");
 }
 
-/** The clip prompt (tiers: full, no placement, minimal). Never cut. quality picks the camera wording (Seedance: almost still). */
-export function buildClipPrompt({ scene, library, quality = "v2" }) {
+/**
+ * The clip prompt (tiers: full, no placement, minimal). Never cut. quality picks the camera wording
+ * (Seedance: almost still); niche (a story, a niche id, or nothing = Fruit) picks the template's wording.
+ */
+export function buildClipPrompt({ scene, library, quality = "v2", niche }) {
   const speaker = library.get(scene.speakerId);
   if (!speaker) throw new Error(`unknown character ${scene.speakerId}`);
   const others = scene.presentIds.filter((id) => id !== scene.speakerId).map((id) => library.get(id)).filter(Boolean);
   for (const tier of [0, 1, 2]) {
-    const prompt = build(tier, { scene, speaker, others, quality });
+    const prompt = build(tier, { scene, speaker, others, quality, niche });
     if (prompt.length <= CLIP_PROMPT_MAX) return prompt;
   }
   throw new Error(`clip prompt over ${CLIP_PROMPT_MAX} chars even at the shortest tier`);
@@ -110,7 +133,7 @@ export function buildClipRequest({ story, scene, library, quality = story.qualit
   const m = videoModel(quality);
   const duration = durationSec ?? clipDurationSec(scene.line, m.durations);
   if (!m.durations.includes(duration)) throw new Error(`duration ${duration}s not allowed for ${quality}`);
-  const prompt = buildClipPrompt({ scene, library, quality });
+  const prompt = buildClipPrompt({ scene, library, quality, niche: story });
   const request = clipTask({ quality, prompt, imageUrl: scene.imageUrl, aspect: story.aspect, durationSec: duration });
   return { prompt, sent: prompt, request, priceInput: { durationSec: duration, width: request.width, height: request.height, withSound: true } };
 }
