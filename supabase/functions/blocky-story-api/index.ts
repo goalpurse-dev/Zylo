@@ -37,6 +37,7 @@ import { planSeries, planStory } from "../_shared/blocky/plannerService.js";
 import { buildPictureRequest } from "../_shared/blocky/pictures.js";
 import { buildClipRequest } from "../_shared/blocky/clips.js";
 import { cleanEditInstruction } from "../_shared/blocky/smallTasks.js";
+import { publicAddress } from "../_shared/blocky/publicUrl.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -57,6 +58,8 @@ const PLAN_RANK: Record<string, number> = { starter: 1, affiliate: 1, pro: 2, ge
 const QUALITY_PLAN: Record<string, [number, string]> = { v2: [1, "Starter"], v3: [2, "Pro"], v4: [3, "Generative"] };
 
 const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+// Where the outside world reaches us (the real project: SUPABASE_URL itself; the local stack: BLOCKY_PUBLIC_URL).
+const PUBLIC = publicAddress(SUPABASE_URL, Deno.env.get("BLOCKY_PUBLIC_URL") ?? "");
 const RUNWARE_API_KEY = Deno.env.get("RUNWARE_API_KEY") ?? "";
 const RUNWARE_URL = `${(Deno.env.get("RUNWARE_BASE_URL") || "https://api.runware.ai").replace(/\/+$/, "")}/v1`;
 /** Synchronous Runware call (location plates only; scene pictures and clips go through blocky-worker). */
@@ -257,7 +260,7 @@ const ACTIONS: Record<string, (ctx: Ctx) => Promise<unknown>> = {
         locations: series.bibleRow.locations ?? [], usedIds, aspect: input.aspect, userId: ctx.userId, seriesId: series.id,
         deps: {
           post: runwarePost,
-          store: (o: any) => createSupabaseMedia(admin).store(o),
+          store: (o: any) => createSupabaseMedia(admin, { toPublic: PUBLIC.toPublic }).store(o),
           log: async (row: any) => { await admin.from("blocky_ai_calls").insert(row); },
         },
       });
@@ -413,12 +416,12 @@ async function startFinal(userId: string, storyId: string, opts: { captions?: bo
     const coverFrom = coverScene(scenes);
     const job = buildFinalJob({
       story: row, scenes, callId, captions,
-      uploadUrl: signed.signedUrl,
-      callbackUrl: `${SUPABASE_URL}/functions/v1/blocky-worker`,
+      uploadUrl: PUBLIC.toPublic(signed.signedUrl),
+      callbackUrl: `${PUBLIC.base}/functions/v1/blocky-worker`,
       token: await webhookToken(WORKER_SECRET, `final:${callId}`),
       overlays: overlayTexts({ partLabel, endCard, episodeNumber: row.episode_number ?? null, nextTitle }),
       cover: coverFrom && coverSigned?.signedUrl
-        ? { imageUrl: coverFrom.image_url, label: row.episode_number ? `Episode ${row.episode_number}` : "", title: row.title, uploadUrl: coverSigned.signedUrl, sceneIndex: coverFrom.idx }
+        ? { imageUrl: coverFrom.image_url, label: row.episode_number ? `Episode ${row.episode_number}` : "", title: row.title, uploadUrl: PUBLIC.toPublic(coverSigned.signedUrl), sceneIndex: coverFrom.idx }
         : null,
     });
     // Each clip's transcript (made by the clip check, cached per clip URL): the

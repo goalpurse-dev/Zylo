@@ -262,5 +262,35 @@ Made on 2026-10-06, after the look checkpoint (tests 2 and 3):
     minifigure heads, neck studs). The one re-test picture without them still had the hip
     notch; the four with them did not.
 
+Decisions of 2026-10-06 (the separation). These replace decision 8's "only the engine
+underneath is shared" and decision 17's deploy order:
+
+25. SEPARATE PRODUCT: Blocky Stories shares NO code with AI Fruit Story. Its own engine
+    (`supabase/functions/_shared/blocky/`), its own functions (`blocky-story-api`,
+    `blocky-worker`), its own tables and functions in the database (`blocky_*`), its own page
+    folder, its own final-video builder. Deploying Blocky never needs a Fruit function to be
+    redeployed. A test fails if Blocky ever imports from Fruit or Fruit from Blocky, and if any
+    Fruit file differs from main. The duplicated provider files are listed in a README in
+    both engine folders: a provider or model change is made in both.
+26. FRUIT'S DATABASE GOES BACK: the template columns added to Fruit's tables (migration
+    20261006190000) are undone, in one transaction, shown before it is applied, at a quiet
+    time, with the smoke check and the rolled-back dry run before and after. The Blocky price
+    rows and the `blocky_v1` switch stay.
+27. LOCAL FIRST: Blocky's tables, functions and migrations are built and tested on a local
+    stack (Docker: `supabase start` and `supabase functions serve`, `docs/blocky-local.md`) and
+    reach the real project only with the owner's go. SQL waiting for that go lives in
+    `supabase/pending/`, not in `supabase/migrations/`.
+28. LOCAL KEYS: the local stack never uses the production keys. Separate keys with low limits
+    in `.env.blocky.local` (git-ignored); a commit that contains an env file is refused.
+29. ONE BALANCE: Blocky charges the same credit balance as Fruit, through the same
+    `deduct_credits`, with the same row locking, so two charges at the same moment can never
+    spend the same credits. Pinned by `tests/blockyCreditLocking.test.mjs`; the two-connection
+    race is `scripts/blocky/chargeLocking.mjs` on the local stack.
+30. AN AVATAR HAS NO AGE AND NO GENDER COLUMN at all (`blocky_characters`): the extra rule
+    below is now a property of the table, not a default.
+31. VEO AND NANO BANANA PRO TESTS run on `blocky-worker`'s own test list. The Veo line in
+    `fruit-worker` and the Pro line in the picture proxy are reverted on the branch (the live
+    picture proxy v44 keeps its Pro line: it was deployed by the owner and is left as is).
+
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

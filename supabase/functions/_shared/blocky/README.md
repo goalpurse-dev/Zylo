@@ -43,7 +43,8 @@ Also duplicated outside this folder: `render-worker/src/blockyFinal.mjs`,
 
 `look.js` (what an avatar is and how the world looks), `rules.js` (writer,
 series planner, script editor, picture check, upload pack), `safety.js` (real
-names that are never allowed), `names.js`, and the Blocky wording in
+names that are never allowed), `names.js`, `publicUrl.js` (the outside address of
+the backend on the local stack), and the Blocky wording in
 `pictures.js`, `clips.js`, `planner.js`, `series.js`, `scriptReview.js`,
 `uploadPackage.js`, `pictureCheck.js`, `plates.js`, `validation.js`.
 

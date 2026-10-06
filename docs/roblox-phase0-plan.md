@@ -57,6 +57,27 @@ Since this plan was written:
 - Still Fruit-worded inside the shared UI (for the UI skin phase): the story step's heading and
   placeholders, the script examples, the series questions, openers and tones, the upgrade copy,
   and the server messages in `errors.js`. Menu entries, thumbnail and landing page: not built.
+- 2026-10-06, the separation (decisions 25 to 31 win over everything above about a shared
+  engine, the niche seam, `niches/` and the deploy order). Blocky Stories is its own product:
+  `supabase/functions/_shared/blocky/` (a full copy of the engine under Blocky's names, with
+  its own wording in `look.js`, `rules.js`, `safety.js`), `blocky-story-api`, `blocky-worker`,
+  `render-worker/src/blocky*.mjs`, `src/components/viral-tools/blocky-stories/`,
+  `scripts/blocky/` (own helpers and budget guard, `BLOCKY_ALLOW_PAID=1`). The niche seam is
+  removed and every Fruit file is main's again (`tests/blockySeparation.test.mjs`). All 76
+  Blocky prompts are byte-identical to the ones recorded before the move
+  (`tests/blockyPromptSnapshot.test.mjs`).
+- Database: nothing new is applied. Waiting in `supabase/pending/`: the undo of
+  `20261006190000_story_niches.sql` (Fruit's tables back to what they were) and Blocky's own
+  backend (11 tables, the charge / refund / complete functions, copied from Fruit's LIVE
+  definitions under Blocky's names). Both pass `scripts/blocky/sql/dryRun.mjs` (36 checks in a
+  throwaway Postgres). Until the undo is applied, Fruit's live tables still carry the template
+  columns; the live Fruit functions (main's code) never read them.
+- Local stack: `docs/blocky-local.md` and `scripts/blocky/local.mjs`. Not started yet: Docker
+  is not installed on this computer.
+- Phase 3 (the look) stopped at the review of 2026-10-06 and continues after the separation:
+  the Pro reference pilot with the head / tongue / front-view / blocky-hair fixes, the 24
+  references, the scene re-test, 5 real stories from the writer. The Veo clip of test 1b runs
+  on `blocky-worker`.
 
 ## 1. Fruit v2 status
 

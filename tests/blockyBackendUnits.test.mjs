@@ -175,3 +175,18 @@ test("the envelope adds only transport fields; logs never contain the webhook to
   assert.notEqual(t1, await webhookToken("s3cret", "v"));
   assert.ok(sameToken(t1, t1) && !sameToken(t1, t1.slice(1) + "0"));
 });
+
+test("the public address: nothing changes on the real project; on the local stack every outgoing URL is the outside one", async () => {
+  const { publicAddress } = await import("../supabase/functions/_shared/blocky/publicUrl.js");
+  const real = publicAddress("https://abc.supabase.co", "");
+  assert.equal(real.base, "https://abc.supabase.co");
+  assert.equal(real.toPublic("https://abc.supabase.co/storage/v1/object/public/generated/blocky/a.jpg"), "https://abc.supabase.co/storage/v1/object/public/generated/blocky/a.jpg");
+  assert.equal(publicAddress("https://abc.supabase.co/", "https://abc.supabase.co").toPublic("https://abc.supabase.co/x"), "https://abc.supabase.co/x");
+  const local = publicAddress("http://kong:8000", "https://tunnel.example.test/");
+  assert.equal(local.base, "https://tunnel.example.test");
+  assert.equal(local.toPublic("http://kong:8000/storage/v1/object/public/generated/blocky/a.jpg"), "https://tunnel.example.test/storage/v1/object/public/generated/blocky/a.jpg");
+  assert.equal(local.toPublic("http://kong:8000/storage/v1/object/upload/sign/generated/x?token=t"), "https://tunnel.example.test/storage/v1/object/upload/sign/generated/x?token=t");
+  // Someone else's URL (a provider's, an avatar reference) is left alone.
+  assert.equal(local.toPublic("https://im.runware.ai/image/x.jpg"), "https://im.runware.ai/image/x.jpg");
+  assert.equal(local.toPublic(null), null);
+});
