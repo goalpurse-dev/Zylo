@@ -5,7 +5,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { FULL_BODY, addressedIds, runPlanner, validatePlan } from "../supabase/functions/_shared/fruit/planner.js";
+import { FULL_BODY, OUTFITS_MAX, OUTFIT_MAX_CHARS, SYSTEM, addressedIds, runPlanner, validatePlan } from "../supabase/functions/_shared/fruit/planner.js";
 import { REVIEW_RULES, buildReviewPrompt, problemLines, reviewProblems, reviewSchema } from "../supabase/functions/_shared/fruit/scriptReview.js";
 import { areFamily, lookAlikeMessage, lookAlikePairs, mainColor } from "../supabase/functions/_shared/fruit/castRules.js";
 import { validateCreateStory, validateSeriesPlan } from "../supabase/functions/_shared/fruit/validation.js";
@@ -95,17 +95,41 @@ test("whoever a line talks to must be in the picture; talking about someone else
   assert.deepEqual(validatePlan(GOOD(), ctx).errors, []);
 });
 
-test("one alternate outfit per story, short, for a cast member; anything else is dropped without failing the story", () => {
+test("one alternate outfit per character (a role or a setting the fixed outfit can't play), short; anything else is dropped without failing the story", () => {
   const out = GOOD();
-  out.outfits = [{ id: "marco", outfit: "a plain grey hoodie, dark jeans and white trainers." }, { id: "mia", outfit: "a second one that is ignored" }, { id: "nobody", outfit: "x y z" }];
+  out.outfits = [
+    { id: "marco", outfit: "a plain grey hoodie, dark jeans and white trainers." },
+    { id: "mia", outfit: "an orange prison jumpsuit and black boots" },
+    { id: "marco", outfit: "a second outfit for the same character" },
+    { id: "pia", outfit: "an outfit that goes on and on for far too many words to fit in any picture prompt at all" },
+    { id: "nobody", outfit: "x y z" },
+  ];
   const { plan, errors } = validatePlan(out, ctx);
   assert.deepEqual(errors, []);
-  assert.deepEqual(plan.outfits, { marco: "a plain grey hoodie, dark jeans and white trainers" });
+  assert.deepEqual(plan.outfits, { marco: "a plain grey hoodie, dark jeans and white trainers", mia: "an orange prison jumpsuit and black boots" });
   assert.deepEqual(validatePlan(GOOD(), ctx).plan.outfits, {});
+  assert.match(SYSTEM, /CLASHES WITH THE SETTING/);
+  assert.match(SYSTEM, /Only the clothes change: the fruit head, the face and the character's colours stay exactly as they are\./);
+  assert.match(SYSTEM, /retell it in one sentence/);
   const story = { aspect: "9:16", outfits: plan.outfits, locations: [{ id: "loc1", description: "a car park" }] };
   const prompt = buildScenePrompt({ story, scene: { speakerId: "marco", presentIds: ["marco", "mia"], locationId: "loc1", action: "holds up a shoe box", emotion: "nervous", shot: "chest-up", placement: "" }, library: byId });
-  assert.match(prompt, /Image 1 is Marco Mango, the mango man: keep the fruit head and face exactly as in the reference, but in this story Marco Mango wears a plain grey hoodie, dark jeans and white trainers \(not the outfit in the reference\)\./);
-  assert.match(prompt, /Image 2 is Mia Mango, the mango woman: keep the fruit head, face and outfit \(an elegant emerald wrap dress/);
+  assert.match(prompt, /Image 1 is Marco Mango, the mango man: keep the fruit head, face and body colours exactly as in the reference, but in this story Marco Mango wears a plain grey hoodie, dark jeans and white trainers \(not the outfit in the reference\)\./);
+  assert.match(prompt, /Image 2 is Mia Mango, the mango woman: keep the fruit head, face and body colours exactly as in the reference, but in this story Mia Mango wears an orange prison jumpsuit and black boots/);
+  const plain = buildScenePrompt({ story: { ...story, outfits: {} }, scene: { speakerId: "marco", presentIds: ["marco", "mia"], locationId: "loc1", action: "holds up a shoe box", emotion: "nervous", shot: "chest-up", placement: "" }, library: byId });
+  assert.match(plain, /Image 2 is Mia Mango, the mango woman: keep the fruit head, face and outfit \(an elegant emerald wrap dress/);
+});
+
+test("the picture prompt still fits with three alternate outfits and a series location plate (the worst case)", () => {
+  const longest = [...CHARACTERS].sort((a, b) => (b.outfit.length + b.name.length) - (a.outfit.length + a.name.length)).slice(0, 3);
+  const outfit = "x".repeat(OUTFIT_MAX_CHARS);
+  const prompt = buildScenePrompt({
+    story: { aspect: "9:16", outfits: Object.fromEntries(longest.map((c) => [c.id, outfit])), locations: [{ id: "loc1", description: Array(30).fill("extraordinarily").join(" "), timeOfDay: "extraordinarily late afternoon", lighting: Array(15).fill("magnificently").join(" "), plateUrl: "https://x/plate.jpg" }] },
+    scene: { speakerId: longest[0].id, presentIds: longest.map((c) => c.id), locationId: "loc1", action: Array(14).fill("magnificently").join(" "), emotion: "absolutely utterly furious", shot: "chest-up", placement: Array(30).fill("extraordinarily").join(" ") },
+    library: byId,
+  });
+  assert.ok(prompt.length <= PICTURE_PROMPT_MAX, `${prompt.length} chars`);
+  assert.equal(OUTFITS_MAX, 3);
+  for (const c of longest) assert.ok(prompt.includes(`wears ${outfit}`), c.id);
 });
 
 /* ─── the script review and its one rewrite ───────────────────────────── */
@@ -130,6 +154,8 @@ test("the review reads the script as a viewer meets it: who is in each picture, 
   const ep = buildReviewPrompt({ plan, cast, source: "episode", series: { episode: { number: 2, cliffhanger: "Mia holds up the receipt." } } });
   assert.match(ep.user, /KIND: episode 2 of a series\. The last line must deliver this cliffhanger so that a new viewer understands it: Mia holds up the receipt\./);
   assert.deepEqual(reviewSchema().required, Object.keys(REVIEW_RULES));
+  assert.deepEqual(Object.keys(REVIEW_RULES), ["ending", "inPicture", "firstLine", "textMessage", "title", "heardOnce", "premise", "retell"]);
+  assert.match(system, /retell: A viewer must be able to retell the story in one sentence after watching once\./);
   assert.deepEqual(reviewProblems(passAll()), []);
   const problems = reviewProblems(failEnding());
   assert.deepEqual(problems, [{ rule: "ending", scene: 3, problem: "The last line only agrees to come along.", fix: "End on what the necklace reveals." }]);

@@ -15,7 +15,9 @@ export { SPEAKING_SHOTS };
 export const SHOTS = [...SPEAKING_SHOTS, ...LEGACY_SHOTS];
 export const LINE_WORDS = { min: 3, targetMin: 6, targetMax: 14, max: 16 };
 /** An alternate outfit for one story is short: the picture prompt has to carry it at every wording tier. */
-export const OUTFIT_MAX_CHARS = 100;
+export const OUTFIT_MAX_CHARS = 56;
+/** A scene shows at most three characters, so three alternate outfits is the most a picture prompt has to carry. */
+export const OUTFITS_MAX = 3;
 
 /**
  * Most words per line so the clips fit the chosen length: each clip is the
@@ -105,6 +107,7 @@ STRUCTURE
 - The LAST line must TURN something: a reveal, a reversal, or a price being named. Never end on someone agreeing, obeying, greeting, leaving or planning what happens next ("Okay, boss. I'll be there tonight." is a setup, not an ending).
 - An episode ends on its cliffhanger instead: a question or threat a brand-new viewer fully understands, so who everyone is must be clear from this episode's own lines.
 - With 3 or 4 scenes: hook, pushback, proof, turn.
+- ONE story: after watching once a viewer must be able to retell it in one sentence ("she caught him because the ring was engraved"). One secret, one turn. No second plot, no backstory the lines don't give.
 - Every cast member appears in at least one scene. Speakers can repeat.
 
 IN THE PICTURE
@@ -127,10 +130,13 @@ Each location has:
 - timeOfDay: when it is (e.g. "late afternoon", "night"). Every scene at that location happens at this time of day.
 - lighting: the light (e.g. "warm sunlight through the tall windows"), the same in every scene there.
 Ids are "loc1", "loc2", "loc3".
-Outfits never change (each character wears the same clothes in every video). Pick locations that suit what the cast wears: Kai the lifeguard in swim shorts belongs at a beach, pool or boardwalk, not a fancy restaurant. If the idea's setting clashes with someone's outfit, move the scene somewhere that fits, or make the clash part of the joke.
+Each character has a fixed outfit. Prefer locations that suit what the cast wears: Kai the lifeguard in swim shorts belongs at a beach, pool or boardwalk. When the story has to happen somewhere an outfit doesn't fit, dress that character for the place (see OUTFITS) or make the clash part of the joke. Never leave someone in swim shorts in a casino by accident.
 
 OUTFITS
-outfits: normally an empty list. Add an entry ONLY when a character's role in this story can't work in their fixed outfit: someone undercover, in disguise, in costume, or newly locked up. Give that character ONE alternate outfit for the whole story (4 to 14 words, plain clothes and colours, no logos or writing), e.g. an undercover cop: "a plain grey hoodie, dark jeans and white trainers". At most one entry per story. Never write a character who is hiding who they are while wearing the uniform that gives them away. Two characters in the same scene must never be dressed alike.
+outfits: normally an empty list. Give a character ONE alternate outfit for the whole story, worn in every scene, in two cases only:
+- their ROLE can't work in the fixed outfit: undercover, in disguise, in costume. E.g. an undercover cop: "a plain grey hoodie, dark jeans and white trainers".
+- their fixed outfit CLASHES WITH THE SETTING: an inmate in a prison wears "an orange prison jumpsuit and black boots", a guest in a casino wears "a black tuxedo with a bow tie", someone on a beach wears "red swim shorts and a white tank top". A character whose fixed outfit already fits the place gets no entry.
+Only the clothes change: the fruit head, the face and the character's colours stay exactly as they are. 3 to 8 words (at most 56 characters), plain clothes and colours, no logos or writing. At most one entry per character, at most three in a story. Never write a character who is hiding who they are while wearing the uniform that gives them away. Two characters of the SAME fruit must never be dressed alike; characters of different fruit may share a uniform.
 
 ROLES
 roles: for each cast member, their role in THIS story in 2 to 5 words (e.g. "the jealous sister", "the boss hiding an affair"), not their library tag.
@@ -350,11 +356,12 @@ export function validatePlan(out, { source, cast, script, sceneCount, quality, l
     const role = String(r?.role ?? "").trim().replace(/\.$/, "");
     if (castIds.includes(r?.id) && role && words(role) <= 10) roles[r.id] = role;
   }
-  // One alternate outfit, for one character whose role the fixed outfit can't play (undercover, disguise). Cosmetic: never fails a story.
+  // One alternate outfit per character, for a role the fixed outfit can't play (undercover, disguise) or a
+  // setting it clashes with (a suit in a prison). Cosmetic: never fails a story.
   const outfits = {};
   for (const o of Array.isArray(out?.outfits) ? out.outfits : []) {
     const text = String(o?.outfit ?? "").trim().replace(/\.$/, "");
-    if (castIds.includes(o?.id) && words(text) >= 2 && words(text) <= 20 && text.length <= OUTFIT_MAX_CHARS && Object.keys(outfits).length < 1) outfits[o.id] = text;
+    if (castIds.includes(o?.id) && words(text) >= 2 && words(text) <= 20 && text.length <= OUTFIT_MAX_CHARS && !outfits[o.id] && Object.keys(outfits).length < OUTFITS_MAX) outfits[o.id] = text;
   }
   const plan = {
     roles,
