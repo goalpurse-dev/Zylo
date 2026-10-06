@@ -213,10 +213,38 @@ test("a real change to the line is told apart from what speech-to-text does to s
     ["Blu, you're nicked, this deal just cost you everything", "Blue, you're nacked! This deal just cost you everything!"],
   ];
   for (const [line, heard] of same) assert.equal(spokenProblem(line, heard), "", `${line} / ${heard}`);
-  assert.deepEqual(spokenDiff("Eleven thousand dollars at the jeweler, Marco.", "$11,000 at the jeweler."), { same: false, missing: ["marco"], added: [] });
-  assert.equal(spokenProblem("I can explain everything, baby, it was for Rick.", "Ike, I can explain everything baby. It was for Rick."), "the voice changed the line (added: ike)");
-  assert.equal(spokenProblem("I already know, darling.", "I already knowed, darling."), "the voice changed the line (not said: know; added: knowed)");
-  assert.equal(spokenDiff("Okay, boss. I'll be there tonight.", "Okay boss, I'll be there.").missing.join(), "tonight");
+  // What MATTERS (worth a remake, and the caption shows what was said): a name, a missing or swapped word.
+  assert.deepEqual(spokenDiff("Eleven thousand dollars at the jeweler, Marco.", "$11,000 at the jeweler."), { same: false, missing: ["marco"], added: [], matters: true, why: "not said: marco" });
+  assert.equal(spokenProblem("Eleven thousand dollars at the jeweler, Marco.", "$11,000 at the jeweler."), "the voice changed the line (not said: marco)");
+  assert.equal(spokenProblem("Okay, boss. I'll be there tonight.", "Okay boss, I'll be there."), "the voice changed the line (not said: tonight)");
+  assert.equal(spokenProblem("I know everything that walks this block.", "I know everyone that walks this block."), "the voice changed the line (not said: everything; said instead: everyone)");
+  assert.equal(spokenProblem("Run the bag, Blu.", "Run the bag, Blu, before the feds get here tonight."), "the voice changed the line (added: before, feds, tonight)");
+  // What does not: a slur, a lost filler, one stray sound. Heard, logged, never remade.
+  const slur = spokenDiff("I already know, darling.", "I already knowed, darling.");
+  assert.deepEqual([slur.same, slur.matters, slur.missing, slur.added], [false, false, ["know"], ["knowed"]]);
+  assert.equal(spokenProblem("I can explain everything, baby, it was for Rick.", "Ike, I can explain everything baby. It was for Rick."), "", "one stray sound");
+  assert.equal(spokenProblem("How'd you know the exact pair number, bruv", "How'd you know the exact pair number?"), "", "a lost filler");
+  assert.equal(spokenProblem("Lucky guess, mate, I'm just a sneakerhead", "Lucky guess, mate! I'm just a sneakerhead! Ha-ha-ha-ha!"), "", "a laugh");
+});
+
+test("the remake log: how many clips of a story were made again, what the thrown-away clips cost, and what the checks cost", async () => {
+  const { remakeStats } = await import("../supabase/functions/_shared/fruit/clipCheck.js");
+  const jobs = [
+    { id: "j1", kind: "clip", error: null },
+    { id: "j2", kind: "clip", error: `${REMAKE_NOTE} the voice changed the line (not said: marco)` },
+    { id: "j3", kind: "clip", error: "fallback after providerError" },
+    { id: "j4", kind: "clip", error: null },
+    { id: "p1", kind: "image", error: null },
+  ];
+  const calls = [
+    { job_id: "j1", purpose: "clip", ok: true, cost_usd: 0.25, attempt: 1 },
+    { job_id: "j2", purpose: "clip", ok: true, cost_usd: 0.41, attempt: 1 }, { job_id: "j2", purpose: "clip", ok: true, cost_usd: 0.4, attempt: 2 },
+    { job_id: "j3", purpose: "clip", ok: false, cost_usd: 0, attempt: 1 }, { job_id: "j3", purpose: "clip", ok: true, cost_usd: 0.41, attempt: 2 },
+    { job_id: "j4", purpose: "clip", ok: true, cost_usd: 0.25, attempt: 1 },
+    { purpose: "caption_words", ok: true, cost_usd: 0.0005 }, { purpose: "clip_frame", ok: true, cost_usd: 0.00006 }, { purpose: "clip_frame_check", ok: true, cost_usd: 0.0013 },
+  ];
+  assert.deepEqual(remakeStats(jobs, calls), { clips: 4, remade: 1, remakeRate: 0.25, remakeCostUsd: 0.41, checkCostUsd: 0.00186, reasons: ["the voice changed the line (not said: marco)"] });
+  assert.deepEqual(remakeStats([], []), { clips: 0, remade: 0, remakeRate: 0, remakeCostUsd: 0, checkCostUsd: 0, reasons: [] });
 });
 
 test("the clip word check: the transcript is logged once, a changed line fails, a silent clip fails, no transcript means no verdict", async () => {
@@ -226,14 +254,15 @@ test("the clip word check: the transcript is logged once, a changed line fails, 
     ? { ok: true, status: 200, json: async () => ({ text, duration: 5, words: text ? text.split(" ").map((w, i) => ({ word: w, start: i * 0.3, end: i * 0.3 + 0.25 })) : [] }) }
     : { ok: true, arrayBuffer: async () => new ArrayBuffer(8) });
   const args = { admin, apiKey: "k", userId: "u", storyId: "s", sceneId: "c", line: "I already know, darling.", durationSec: 5 };
-  const bad = await checkClipWords({ ...args, clipUrl: "https://cdn/1.mp4", fetchImpl: heard("I already knowed, darling.") });
-  assert.deepEqual(bad, { ok: false, problems: ["the voice changed the line (not said: know; added: knowed)"], heard: "I already knowed, darling." });
+  const bad = await checkClipWords({ ...args, clipUrl: "https://cdn/1.mp4", fetchImpl: heard("I already told you, darling.") });
+  assert.deepEqual(bad, { ok: false, problems: ["the voice changed the line (not said: know; said instead: told)"], heard: "I already told you, darling." });
   assert.equal(rows.length, 1);
   assert.equal(rows[0].purpose, "caption_words", "the final video finds this transcript by the clip URL and doesn't pay again");
   const again = await checkClipWords({ ...args, clipUrl: "https://cdn/1.mp4", fetchImpl: async () => { throw new Error("must not be called"); } });
   assert.equal(again.ok, false);
   assert.equal(rows.length, 1, "cached");
   assert.equal((await checkClipWords({ ...args, clipUrl: "https://cdn/2.mp4", fetchImpl: heard("I already know, darling.") })).ok, true);
+  assert.equal((await checkClipWords({ ...args, clipUrl: "https://cdn/5.mp4", fetchImpl: heard("I already knowed, darling.") })).ok, true, "a slur is not worth a remake");
   assert.deepEqual((await checkClipWords({ ...args, clipUrl: "https://cdn/3.mp4", fetchImpl: heard("") })).problems, ["nobody speaks in the clip"]);
   assert.equal(await checkClipWords({ ...args, clipUrl: "https://cdn/4.mp4", fetchImpl: async () => { throw new Error("network"); } }), null);
 });

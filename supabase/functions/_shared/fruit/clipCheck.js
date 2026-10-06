@@ -5,7 +5,9 @@
 //   1. Words: the clip is transcribed (captionWords.js, about $0.0005; the
 //      final video reuses the transcript) and compared with the line
 //      (spoken.js). Seedance changed the words in 5 of its first 8 clips:
-//      a dropped name, "knowed" for "know".
+//      a dropped name, "knowed" for "know". Only a difference that MATTERS
+//      remakes the clip (a name, a missing or swapped word), never a slur or
+//      a lost filler, and never more than once.
 //   2. Last frame: a small Fly machine grabs the clip's last frame with ffmpeg
 //      (edge functions can't decode video) and the picture check looks at it
 //      (pictureCheck.js, about $0.001). One Wan clip grew a human man in the
@@ -14,6 +16,35 @@
 import { transcriptsForClips } from "./captionWords.js";
 import { spokenProblem } from "./spoken.js";
 import { CLIP_FRAME_PURPOSE, checkPicture } from "./pictureCheck.js";
+import { REMAKE_NOTE } from "./engine.js";
+
+/**
+ * What the clip check did to one story, for the log: how many clips were made
+ * again and what that cost us (the discarded clips), plus what the checks
+ * themselves cost. Saved with every final build (fruit-story-api).
+ * @param {{id:string, kind:string, error?:string}[]} jobs   the story's fruit_jobs
+ * @param {{job_id?:string, purpose:string, ok?:boolean, cost_usd?:number, attempt?:number}[]} calls  its fruit_ai_calls
+ */
+export function remakeStats(jobs, calls) {
+  const clipJobs = (jobs ?? []).filter((j) => j.kind === "clip");
+  const remade = clipJobs.filter((j) => String(j.error ?? "").startsWith(REMAKE_NOTE));
+  const usd = (n) => Math.round(n * 1e6) / 1e6;
+  let remakeCostUsd = 0;
+  for (const j of remade) {
+    // Every clip the provider delivered for this job except the last one (the kept one) was thrown away.
+    const made = (calls ?? []).filter((c) => c.job_id === j.id && c.purpose === "clip" && c.ok).sort((a, b) => (a.attempt ?? 0) - (b.attempt ?? 0));
+    remakeCostUsd += made.slice(0, -1).reduce((sum, c) => sum + (Number(c.cost_usd) || 0), 0);
+  }
+  const checkCostUsd = (calls ?? []).filter((c) => ["caption_words", "clip_frame", CLIP_FRAME_PURPOSE].includes(c.purpose)).reduce((sum, c) => sum + (Number(c.cost_usd) || 0), 0);
+  return {
+    clips: clipJobs.length,
+    remade: remade.length,
+    remakeRate: clipJobs.length ? Math.round((remade.length / clipJobs.length) * 100) / 100 : 0,
+    remakeCostUsd: usd(remakeCostUsd),
+    checkCostUsd: usd(checkCostUsd),
+    reasons: remade.map((j) => String(j.error).slice(REMAKE_NOTE.length).trim()),
+  };
+}
 
 /** Did the voice say the line? Returns {ok, problems, heard} or null when the clip couldn't be transcribed. */
 export async function checkClipWords({ admin, apiKey, paidOff = false, userId, storyId, sceneId, clipUrl, line, durationSec, fetchImpl = fetch }) {

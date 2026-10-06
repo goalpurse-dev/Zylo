@@ -1,8 +1,10 @@
 // Did the voice say the line? Compares a clip's transcript with the written
-// line and tells a REAL difference (a dropped name, an added word, "knowed"
-// for "know") from the noise speech-to-text adds (20 for twenty, Blue for
-// Blu, gray for grey, Perrie for Perry). Pure; used by the clip check
-// (clipCheck.js) and to decide what a caption shows (final.js).
+// line in two steps. First it drops the noise speech-to-text adds (20 for
+// twenty, Blue for Blu, gray for grey, Perrie for Perry). Then it weighs what
+// is left: a dropped name or a swapped word MATTERS (the clip is made again,
+// and the caption shows what was said); a slur ("knowed" for "know"), a lost
+// filler or one stray sound does not. Pure; used by the clip check
+// (clipCheck.js) and to decide what a caption shows (fruit-story-api).
 
 const clean = (w) => String(w ?? "").toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]/g, "");
 /** Words: lower-case, hyphens split ("whisper-fighting", "Anti-Dot"), punctuation gone. */
@@ -37,8 +39,9 @@ export function sameWord(a, b) {
 /**
  * @param {string} line        the written line
  * @param {string} transcript  what speech-to-text heard
- * @returns {{same:boolean, missing:string[], added:string[]}}
- *   missing: content words of the line the voice never said; added: content words it said that aren't in the line.
+ * @returns {{same:boolean, missing:string[], added:string[], matters:boolean, why:string}}
+ *   missing: content words of the line the voice never said; added: content words it said that aren't in the line;
+ *   matters: the difference changes what a viewer hears (see weigh); why: that difference in words.
  */
 export function spokenDiff(line, transcript) {
   const content = (text) => spokenTokens(text).filter((w) => !isNumberish(w) && !SMALL.has(w));
@@ -56,15 +59,46 @@ export function spokenDiff(line, transcript) {
   let added = T.filter((_, j) => !usedT.has(j));
   // One heard word for two written ones or the reverse ("Auntie Dot" → "antidot"): compare them joined.
   if (missing.length && added.length && sameWord(missing.join(""), added.join(""))) { missing = []; added = []; }
-  return { same: missing.length === 0 && added.length === 0, missing, added };
+  const { matters, why } = weigh(missing, added);
+  return { same: missing.length === 0 && added.length === 0, missing, added, matters, why };
 }
 
-/** Short reason for logs and job notes, or "" when the line was spoken as written. */
+// Words a line can lose without losing its meaning ("Okay, fine" / "you get me, bruv").
+const FILLER = new Set(["okay", "ok", "well", "like", "really", "right", "hey", "man", "bro", "bruv", "fam", "mate", "innit", "nah", "look", "listen", "wait", "please", "actually", "literally", "honestly", "basically", "fine", "sure", "now", "then", "there", "here"]);
+
+/** One word bent into another form of itself: know/knowed, ask/asking. A slur, not a different word. */
+const sameStem = (a, b) => {
+  const [short, long] = a.length <= b.length ? [a, b] : [b, a];
+  return short.length >= 3 && long.startsWith(short) && long.length - short.length <= 3;
+};
+
+/**
+ * Does the difference MATTER: would a viewer hear a different line? Only that
+ * is worth making the clip again for.
+ *   matters:        a name or another content word the voice never said, or a
+ *                   word swapped for a different one ("everything" → "everyone"),
+ *                   or a whole extra phrase (two or more added words).
+ *   doesn't matter: a word bent into another form of itself ("know" → "knowed"),
+ *                   a dropped filler ("bruv", "okay"), one stray added sound
+ *                   ("Ike,", a laugh). Seedance did these in 2 of its first 8
+ *                   clips; remaking them would cost more than they hurt.
+ */
+function weigh(missing, added) {
+  const extra = [...added];
+  const lost = [];
+  for (const w of missing) {
+    const bent = extra.findIndex((x) => sameStem(w, x));
+    if (bent >= 0) { extra.splice(bent, 1); continue; }   // the same word, slurred
+    if (!FILLER.has(w)) lost.push(w);
+  }
+  const phrase = extra.filter((w) => w.length >= 4 && !FILLER.has(w));
+  if (lost.length) return { matters: true, why: `not said: ${lost.join(", ")}${extra.length ? `; said instead: ${extra.join(", ")}` : ""}` };
+  if (phrase.length >= 2) return { matters: true, why: `added: ${phrase.join(", ")}` };
+  return { matters: false, why: "" };
+}
+
+/** Short reason for logs and job notes, or "" when the line was spoken as written (or near enough not to matter). */
 export function spokenProblem(line, transcript) {
   const d = spokenDiff(line, transcript);
-  if (d.same) return "";
-  const parts = [];
-  if (d.missing.length) parts.push(`not said: ${d.missing.join(", ")}`);
-  if (d.added.length) parts.push(`added: ${d.added.join(", ")}`);
-  return `the voice changed the line (${parts.join("; ")})`;
+  return d.matters ? `the voice changed the line (${d.why})` : "";
 }
