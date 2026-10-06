@@ -181,12 +181,6 @@ verify_jwt = true
 [functions.billing-summary]
 verify_jwt = true
 
-# Called by pg_cron (private.trigger_email_sender) with the
-# x-email-sender-secret header and no user JWT: the function checks that secret
-# itself before it sends anything.
-[functions.email-sender]
-verify_jwt = false
-
 # Called by Stripe, which sends no Supabase JWT: the function verifies the
 # Stripe signature itself. Without this entry a CLI deploy turns JWT
 # verification on and every Stripe event is rejected with 401.
