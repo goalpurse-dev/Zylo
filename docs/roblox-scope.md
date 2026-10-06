@@ -236,5 +236,31 @@ Made on 2026-10-06, with Phase 2 approved:
     followed by a Fruit check. Until then the live API does not know templates, and the
     Blocky page shows nothing rather than Fruit data.
 
+Made on 2026-10-06, after the look checkpoint (tests 2 and 3):
+
+18. WORDING: "a blocky game avatar", never "a blocky toy avatar", everywhere: reference
+    prompts, scene prompts, clip prompts, thumbnail prompts and the "(a blocky game avatar)"
+    tag after each name. "Toy" pulled in brick-toy minifigures. (This replaces "toy" in the
+    EXTRA RULE below.) The style line says "Roblox-style"; "blocky toy figure" lost test 2.
+19. BODY CONSTRUCTION, as a positive description, word for word in every reference prompt and
+    in the scene style block:
+    "Body construction: the torso is one plain rectangular box. Each arm is one straight
+    rectangular block with a flat square end — no hands, no fingers, no grip. The two legs are
+    two separate straight rectangular blocks side by side, each half the torso's width,
+    attached flat to the bottom of the torso — no hip piece, no notch between them, no
+    separate feet. The cube head sits directly on top of the torso — no neck."
+20. BODY TEMPLATE (the Lite Noob as "Image 1 shows the body construction to copy exactly;
+    ignore its colours, face and outfit"): TESTED AND NOT USED. It copied the Noob's own
+    flaws (rounded head, small hand blocks, the notch between the legs).
+21. PICTURE CHECK: besides full-body shots, a shot whose speaker's cube head is under about
+    1/5 of the frame height fails, with one free redraw (the line in code is 22%, as for Fruit).
+22. KEEP AS BUILT: the location lock, thumbnail option 2, the "couldn't load" guard on the
+    Blocky page.
+23. UPLOAD PACK: "Roblox" is allowed as a search keyword in titles, tags and hashtags. Real
+    game names, logos and creators stay banned.
+24. LEAVE-OUT LIST: keep naming the minifigure parts (claw hands, brick-toy minifigures, round
+    minifigure heads, neck studs). The one re-test picture without them still had the hip
+    notch; the four with them did not.
+
 EXTRA RULE: never describe a Blocky avatar's age or call it a kid/child. Always "a blocky toy
 avatar". The age column gets a neutral default for niche 'blocky'.

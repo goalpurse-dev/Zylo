@@ -45,6 +45,15 @@ Since this plan was written:
   must say what the arms are, then be re-tested. The location plate keeps 3 of 4 scenes in the
   same place with no studs. Nano Banana Pro (3 pictures) and the V4 Veo clip have NOT run: each
   waits for one small deploy the owner runs (`runware-bakeoff-proxy`, `fruit-worker` from `e1428a9`).
+- Second look checkpoint (2026-10-06, decisions 18 to 24): every prompt now says "blocky game
+  avatar" and carries the body-construction text (`BLOCKY_BODY` in `niches/blocky.js`). Re-test
+  of the reference prompt ($0.1355, 4 Lite pictures): the text fix alone gives clean hands and
+  neck; the Noob body template copies the Noob's flaws and is not used. Nano Banana Pro with the
+  corrected prompt ($0.4140, 3 pictures at $0.1380): clean body and right colours on all three,
+  one rounded head. Lite with the same prompt painted Vex's arms and legs the wrong colour.
+  OPEN: the owner approves the look and chooses Lite or Pro for the 24 references. The scene
+  style block with the body text has not been tested in a scene yet. The V4 Veo clip still
+  waits for `fruit-worker` from `e1428a9` to be deployed (temp copy at `%TEMP%\zyvo-veo-deploy`).
 - Still Fruit-worded inside the shared UI (for the UI skin phase): the story step's heading and
   placeholders, the script examples, the series questions, openers and tones, the upgrade copy,
   and the server messages in `errors.js`. Menu entries, thumbnail and landing page: not built.

@@ -19,12 +19,12 @@ const FRAME = "Vertical 9:16 frame. Both characters fill the middle of the frame
 const OPTIONS = [
   {
     key: "1", name: "Shock and smug",
-    scene: "Two blocky toy avatars side by side, reacting to each other. The left one throws both block arms up in shock, flat eyebrow lines raised high. The right one leans in with a smug look, one block arm pointing at the left one, flat eyebrow lines tilted. The left avatar has a lime green cube head and arms, a white torso with one plain black lightning-bolt shape and black legs. The right avatar has a bright orange cube head and arms, a navy blue torso with one plain white star shape and grey legs, and wears a small gold crown.",
+    scene: "Two blocky game avatars side by side, reacting to each other. The left one throws both block arms up in shock, flat eyebrow lines raised high. The right one leans in with a smug look, one block arm pointing at the left one, flat eyebrow lines tilted. The left avatar has a lime green cube head and arms, a white torso with one plain black lightning-bolt shape and black legs. The right avatar has a bright orange cube head and arms, a navy blue torso with one plain white star shape and grey legs, and wears a small gold crown.",
     setting: "a bright trading plaza built from smooth matte plastic blocks and simple geometric parts, plain market stalls and stacked plain crates soft in the background, clear daytime sky",
   },
   {
     key: "2", name: "The reveal",
-    scene: "Two blocky toy avatars close together, reacting to each other. The one in front holds up a plain glowing golden cube in one block hand and grins. The one just behind looks over its shoulder, both block arms raised, flat eyebrow lines slanted in panic. The front avatar has a sky blue cube head and arms, a hot pink torso with one plain white diamond shape and white legs. The back avatar has a bright yellow cube head and arms, a royal blue torso with one plain white circle shape and green legs.",
+    scene: "Two blocky game avatars close together, reacting to each other. The one in front holds up a plain glowing golden cube in one block hand and grins. The one just behind looks over its shoulder, both block arms raised, flat eyebrow lines slanted in panic. The front avatar has a sky blue cube head and arms, a hot pink torso with one plain white diamond shape and white legs. The back avatar has a bright yellow cube head and arms, a royal blue torso with one plain white circle shape and green legs.",
     setting: "a bright obby course built from smooth matte plastic blocks and simple geometric parts, floating coloured platforms and a soft glowing lava floor far below, clear daytime sky",
   },
 ];

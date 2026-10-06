@@ -6,6 +6,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { NICHES, DEFAULT_NICHE, nicheOf, nicheIdFrom, hooksOf, hasHooks, toolKeyOf } from "../supabase/functions/_shared/fruit/niches/index.js";
+import { BLOCKY_BODY } from "../supabase/functions/_shared/fruit/niches/blocky.js";
 import { buildScenePrompt, buildPictureRequest, buildEditPrompt, PICTURE_PROMPT_MAX, scenePromptLengths } from "../supabase/functions/_shared/fruit/pictures.js";
 import { buildClipPrompt, buildClipRequest, CLIP_PROMPT_MAX, NO_CUT } from "../supabase/functions/_shared/fruit/clips.js";
 import { platePrompt } from "../supabase/functions/_shared/fruit/plates.js";
@@ -52,17 +53,22 @@ test("another niche never gets Fruit's wording by accident: a rule set it doesn'
   assert.equal(NICHES.blocky.flag, "blocky_v1");
 });
 
-test("a Blocky picture: the style lock, 'a blocky toy avatar', no fruit, no age, no man or woman", () => {
+test("a Blocky picture: the style lock, 'a blocky game avatar', no fruit, no age, no man or woman", () => {
   const p = buildScenePrompt({ story, scene, library: LIB });
   assert.match(p, /^Vertical 9:16 frame\. Chest-up shot on the speaker in the foreground, never full body\./);
-  assert.match(p, /Taz \(a blocky toy avatar\) throws both block arms up, looking furious \(flat eyebrow lines on the decal may show it\), the mouth decal open mid-sentence, speaking toward the camera\./);
+  assert.match(p, /Taz \(a blocky game avatar\) throws both block arms up, looking furious \(flat eyebrow lines may show it\), mouth decal open mid-sentence, speaking toward the camera\./);
   assert.match(p, /Staging: Taz stands closest to the camera/, "Fruit's staging is the engine's and stays");
-  assert.match(p, /Every character is a blocky toy avatar with a cube head and a flat 2D face decal/);
-  assert.match(p, /Image 1 is Taz, a blocky toy avatar: keep the cube head, the face decal \(eyes and mouth shape\), the colours and the outfit exactly as in the reference\./);
+  assert.match(p, /Everyone, in the background too, is a blocky game avatar with a cube head and a flat face decal\./);
+  assert.match(p, /Image 1 is Taz: keep its cube head, face decal \(eyes and mouth shape\), colours and outfit exactly\./);
   assert.match(p, /Image 3 is the empty set of this place/, "the location picture is the last reference");
-  assert.match(p, /Style: 3D classic blocky Roblox-style avatars: cube heads, rectangular torsos, block arms and legs, smooth matte plastic, simple flat 2D face decals\. A chunky low-poly world built from smooth matte plastic blocks and simple geometric parts\./);
+  assert.match(p, /Style: 3D classic blocky Roblox-style avatars in smooth matte plastic with flat 2D face decals, in a low-poly world of smooth matte plastic blocks and simple geometric parts\./);
+  // Decision 19: the body is described by what it IS, word for word.
+  assert.ok(p.includes(BLOCKY_BODY));
+  assert.match(BLOCKY_BODY, /^Body construction: the torso is one plain rectangular box\. Each arm is one straight rectangular block with a flat square end — no hands, no fingers, no grip\. The two legs are two separate straight rectangular blocks side by side, each half the torso's width, attached flat to the bottom of the torso — no hip piece, no notch between them, no separate feet\. The cube head sits directly on top of the torso — no neck\.$/);
+  // Decision 18: never "toy" (it drew brick-toy minifigures), except in naming what to leave out.
+  assert.doesNotMatch(p.replace(/no brick-toy minifigures/g, ""), /toy/i);
   assert.match(p, /no studs, no studded baseplates, no round minifigure heads, no neck studs, no claw hands, no brick-toy minifigures/);
-  assert.match(p, /No text, no letters, no numbers/);
+  assert.match(p, /No text, letters or numbers, no captions, name tags or game interface/);
   assert.match(p, /no logos or brand marks/);
   assert.doesNotMatch(p, /fruit|mango|hair/i);
   assert.doesNotMatch(p, /\b(woman|man|boy|girl|kid|child|year-old|years? old)\b/i);
@@ -74,6 +80,10 @@ test("a Blocky picture: the style lock, 'a blocky toy avatar', no fruit, no age,
 test("a Blocky picture fits the limit at every wording, and the request carries the avatar and location references", () => {
   // The ordinary case, two avatars and a location picture, fits at the full wording.
   assert.ok(scenePromptLengths({ story, scene, library: LIB })[0] <= PICTURE_PROMPT_MAX, "a two-avatar scene uses the full wording");
+  // Three avatars with a location picture: still a wording that carries the whole body-construction text.
+  const trio = { ...scene, presentIds: ["taz", "lux", "vex"] };
+  assert.ok(scenePromptLengths({ story, scene: trio, library: LIB })[1] <= PICTURE_PROMPT_MAX, "a three-avatar scene fits the middle wording");
+  assert.ok(buildScenePrompt({ story, scene: trio, library: LIB }).includes(BLOCKY_BODY));
   // The largest a scene can be (the writer's limits: 3 in frame, 30-word placement, 30-word location, 12-word action).
   const words = (n, w) => Array.from({ length: n }, () => w).join(" ");
   const three = { ...scene, presentIds: ["taz", "lux", "vex"], placement: `${words(30, "placement")}.`, action: words(12, "action") };
@@ -86,7 +96,7 @@ test("a Blocky picture fits the limit at every wording, and the request carries 
   assert.ok(short.length <= PICTURE_PROMPT_MAX);
   // Whatever the wording, the style lock and the no-brick-toy rule are in the prompt.
   assert.match(short, /Style: (3D classic )?blocky Roblox-style avatars/);
-  assert.match(short, /cube heads/);
+  assert.match(short, /Bodies: a cube head directly on a plain box torso \(no neck\), straight block arms with flat square ends \(no hands\), two separate straight block legs \(no hip piece, no feet\)\./, "the shortest wording still says how the body is built");
   assert.match(short, /smooth matte plastic blocks/);
   assert.match(short, /no studs/);
   assert.doesNotMatch(short, /Same look as the references/, "Blocky never leaves the look to the references alone");
@@ -101,17 +111,18 @@ test("a Blocky picture fits the limit at every wording, and the request carries 
 test("a Blocky clip: Fruit's clip rules with the avatar wording and the decal rule", () => {
   for (const quality of ["v2", "v3", "v4"]) {
     const p = buildClipPrompt({ scene, library: LIB, quality, niche: story });
-    assert.match(p, /^Taz, the blocky toy avatar facing the camera, says in a raspy, loud, fast voice, delivered in a furious tone: "You traded me a hacked pet\? It just ate my whole base!"/);
-    assert.match(p, /Only Taz speaks, the flat mouth decal on Taz's face changing shape in sync with every word\. Lux \(the blocky toy avatar\) stays silent with the mouth decal closed and still/);
+    assert.match(p, /^Taz, the blocky game avatar facing the camera, says in a raspy, loud, fast voice, delivered in a furious tone: "You traded me a hacked pet\? It just ate my whole base!"/);
+    assert.match(p, /Only Taz speaks, the flat mouth decal on Taz's face changing shape in sync with every word\. Lux \(the blocky game avatar\) stays silent with the mouth decal closed and still/);
     assert.ok(p.includes(NO_CUT), "the no-cut rule and 'the speaker keeps facing the camera'");
-    assert.match(p, /The faces stay flat 2D decals on cube heads: no realistic 3D mouth, teeth, lips, tongue or nose\./);
+    assert.match(p, /The faces stay flat 2D decals on cube heads: no realistic 3D mouth, teeth, lips, tongue or nose\. The bodies stay rigid blocky game avatars/);
+    assert.doesNotMatch(p, /toy/i, "decision 18: never 'toy'");
     assert.match(p, /No subtitles, captions or on-screen text\. Plain unbranded props, no logos\./);
     assert.doesNotMatch(p, /fruit|\bhis\b|\bher\b|\bwoman\b|\bman\b|undefined|null/i);
     assert.ok(p.length <= CLIP_PROMPT_MAX);
   }
   assert.match(buildClipPrompt({ scene, library: LIB, quality: "v3", niche: "blocky" }), /Camera: almost still, locked off/, "Seedance keeps its still camera");
   const req = buildClipRequest({ story, scene, library: LIB });
-  assert.match(req.prompt, /the blocky toy avatar/, "the request builder takes the niche from the story");
+  assert.match(req.prompt, /the blocky game avatar/, "the request builder takes the niche from the story");
 });
 
 test("Blocky charges under its own price rows; Fruit under Fruit's", () => {

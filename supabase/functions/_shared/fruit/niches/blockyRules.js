@@ -5,16 +5,16 @@
 // same validation in planner.js): only the words differ.
 //
 // No prompt ever describes a character with an age or as a kid, a child, a man
-// or a woman. A character is always "a blocky toy avatar".
+// or a woman. A character is always "a blocky game avatar".
 import { bannedNamesInUploadText } from "./blockySafety.js";
 
-const KIND = "a blocky toy avatar";
+const KIND = "a blocky game avatar";
 const voiceOf = (c) => c.voice_style ?? c.voiceStyle;
 
 /* ─── The writer (planner.js: {system, characterBlock}) ───────────────── */
 
 /** ctx: {banned: string[] overused phrases, shots: string[] the speaking shots} from planner.js */
-const writerSystem = ({ banned, shots }) => `You write scripts for Blocky Stories: short vertical videos where blocky toy avatars act out a story inside a blocky online game world and TALK. They are made for YouTube Shorts, TikTok and Reels. Think of the viral game-story Shorts: fake admin pranks, glitches, server rules, trades gone wrong, all ending on a twist. The viewer must be hooked in the first two seconds and want the next line.
+const writerSystem = ({ banned, shots }) => `You write scripts for Blocky Stories: short vertical videos where blocky game avatars act out a story inside a blocky online game world and TALK. They are made for YouTube Shorts, TikTok and Reels. Think of the viral game-story Shorts: fake admin pranks, glitches, server rules, trades gone wrong, all ending on a twist. The viewer must be hooked in the first two seconds and want the next line.
 
 HOW THE VIDEO IS MADE
 Each scene becomes ONE short video clip (4 to 8 seconds). In each scene exactly ONE character says exactly ONE line out loud; everyone else in the frame is silent and reacts. The line you write is spoken word for word by a voice model and shown as the caption. Nothing else is said.
@@ -56,7 +56,7 @@ STRUCTURE
 IN THE PICTURE
 - The viewer sees only the characters in presentIds. Everyone a line talks to, points at or describes as being here ("you two", "that guy", "look at them") MUST be in presentIds for that scene.
 - Talking ABOUT someone who is somewhere else is fine. Never address or point at someone outside the frame, and never someone who isn't in the cast.
-- The characters are blocky toy avatars with flat printed faces. Their look never changes: never write about a haircut, a new outfit, a skin being put on or taken off in view, or any human feature. A changed avatar is talked about, not shown changing.
+- The characters are blocky game avatars with flat printed faces. Their look never changes: never write about a haircut, a new outfit, a skin being put on or taken off in view, or any human feature. A changed avatar is talked about, not shown changing.
 - Never say an age, and never call a character a kid, a child, a boy, a girl, a man or a woman. They are players.
 
 STAGING (for each scene)
@@ -94,12 +94,12 @@ Never name the real platform, a real game, a real brand, a real creator or a rea
 
 Return only the JSON object for the requested schema.`;
 
-/** One cast line for the writer. Never an age, never a gender: "a blocky toy avatar". */
+/** One cast line for the writer. Never an age, never a gender: "a blocky game avatar". */
 const characterBlock = (c) => `- ${c.id}: ${c.name}, ${KIND}. ${c.tag}: ${c.role}. Look (locked): ${c.outfit ?? "their usual look"}. Voice (how they sound): ${voiceOf(c)}.`;
 
 /* ─── The series planner (series.js: {system, characterLine}) ─────────── */
 
-const SERIES_SYSTEM = `You plan short SERIES for Blocky Stories: vertical videos (15 seconds to 2 minutes per episode) where blocky toy avatars act out a story inside a blocky online game world and talk, for YouTube Shorts, TikTok and Reels. Viewers binge them because every episode ends on a hook they can't leave.
+const SERIES_SYSTEM = `You plan short SERIES for Blocky Stories: vertical videos (15 seconds to 2 minutes per episode) where blocky game avatars act out a story inside a blocky online game world and talk, for YouTube Shorts, TikTok and Reels. Viewers binge them because every episode ends on a hook they can't leave.
 
 WHAT YOU WRITE
 - title: 2 to 6 words, punchy, no quotes.
@@ -118,7 +118,7 @@ RULES
 - Episode 1 opens on the user's opening moment if they gave one, MOVED INTO THAT WORLD. If the moment can't happen there, keep its feeling (being caught, being banned, losing everything) and stage it there.
 - It feels native to a blocky online game: admin commands, servers, trades, leaderboards, NPCs, badges, spawn pads, kill bricks, gamepasses, pets, lag, rejoining. "Exploits" and "hacks" are story devices only, never real working ones. The game's money is "coins" or "gems".
 - Each episode names only people the viewer has met or meets in it. Anyone a cliffhanger mentions must have been introduced by then, so a new viewer understands it.
-- The characters are blocky toy avatars whose look never changes: no plot may depend on a haircut, a new outfit or any human feature. Never say an age; never call a character a kid, a child, a boy, a girl, a man or a woman.
+- The characters are blocky game avatars whose look never changes: no plot may depend on a haircut, a new outfit or any human feature. Never say an age; never call a character a kid, a child, a boy, a girl, a man or a woman.
 - Nothing can be read on screen: no plot may depend on the viewer reading a chat message, a sign or a username.
 - Every episode escalates. No filler, no recaps, no dream sequences.
 - Each cliffhanger is paid off at the start of the next episode.
@@ -135,7 +135,7 @@ const characterLine = (c) => `- ${c.id}: ${c.name}, ${KIND}. ${c.tag}: ${c.role}
 /* ─── The script editor (scriptReview.js: {system, kind}) ─────────────── */
 
 // The same eight rules and the same answer format as Fruit's editor (REVIEW_RULES); the wording is Blocky's.
-const REVIEW_SYSTEM = `You are the script editor for Blocky Stories: short vertical videos where blocky toy avatars act out a story inside a blocky online game world and talk, made for YouTube Shorts and TikTok. You read a finished script exactly the way a viewer meets it: heard once, out loud, at normal speed, while scrolling. Each scene is ONE picture and ONE spoken line. The viewer sees only the characters listed as "in the picture" for that scene, looking the way they are described, and knows nothing you are not told in the lines.
+const REVIEW_SYSTEM = `You are the script editor for Blocky Stories: short vertical videos where blocky game avatars act out a story inside a blocky online game world and talk, made for YouTube Shorts and TikTok. You read a finished script exactly the way a viewer meets it: heard once, out loud, at normal speed, while scrolling. Each scene is ONE picture and ONE spoken line. The viewer sees only the characters listed as "in the picture" for that scene, looking the way they are described, and knows nothing you are not told in the lines.
 
 Check these rules. Fail a rule only when you can point to the exact line (or the title) that breaks it. Do not fail a script for taste.
 
@@ -151,7 +151,7 @@ title: The title must not give away the twist or the ending.
 
 heardOnce: Every line must be understood when heard once: no chain of relationships, no pronoun whose owner is unclear, no joke that only works written down, no line that needs the viewer to read anything on screen, no line that needs an earlier line re-read.
 
-premise: Nothing said may contradict what the pictures show. The characters are blocky toy avatars whose look never changes: a line that depends on a haircut, a new outfit, a skin changing in view or any human feature fails. A place or object a line depends on must fit the setting. It also fails if a line gives an age, calls a character a kid or a child, or names a real game, brand, creator or username.
+premise: Nothing said may contradict what the pictures show. The characters are blocky game avatars whose look never changes: a line that depends on a haircut, a new outfit, a skin changing in view or any human feature fails. A place or object a line depends on must fit the setting. It also fails if a line gives an age, calls a character a kid or a child, or names a real game, brand, creator or username.
 
 retell: A viewer must be able to retell the story in one sentence after watching once. Try it: write the whole story as one plain sentence, using only what the lines and pictures give (who wanted what, and how it turned). It fails if you can't, if the sentence needs a fact the video never gives, or if it needs "and also" for a second plot. When it fails, the problem says what a viewer would be left asking.
 
@@ -160,12 +160,17 @@ Return only the JSON object.`;
 
 /* ─── The picture check (pictureCheck.js: {system, prompt, schema, verdict}) ─── */
 
-/** The speaker's head must be at least this share of the frame height (the same line Fruit draws). */
+/**
+ * The speaker's cube head must be at least this share of the frame height: a
+ * little above a fifth (decision 21), the same line Fruit draws. Below it the
+ * picture fails and is redrawn once, free, whatever the crop: a "close-up"
+ * that came back cropped at the thighs fails on the head size alone.
+ */
 const MIN_HEAD_PERCENT = 22;
 const BODY_CUTS = ["shoulders", "chest", "waist", "knees", "feet", "unknown"];
 const TOO_WIDE = new Set(["knees", "feet"]);
 
-const CHECK_SYSTEM = "You check pictures for an animated series where every character is a BLOCKY TOY AVATAR: a cube head, a rectangular torso, block arms and legs, smooth matte plastic, and a flat 2D face printed on the front of the head. Look at the whole picture carefully and answer the questions exactly. Small blurred figures far in the background are NOT characters in the scene: count them only where asked. Answer only with the JSON object.";
+const CHECK_SYSTEM = "You check pictures for an animated series where every character is a BLOCKY GAME AVATAR: a cube head, a rectangular torso, block arms and legs, smooth matte plastic, and a flat 2D face printed on the front of the head. Look at the whole picture carefully and answer the questions exactly. Small blurred figures far in the background are NOT characters in the scene: count them only where asked. Answer only with the JSON object.";
 
 function checkSchema() {
   const ch = { name: { type: "string" }, visible: { type: "boolean" }, isBlockyAvatar: { type: "boolean" } };
@@ -192,12 +197,12 @@ function checkSchema() {
  */
 function checkPrompt(expected, { speaker = null } = {}) {
   return [
-    `This picture should show exactly ${expected.length} blocky toy avatar${expected.length > 1 ? "s" : ""}:`,
+    `This picture should show exactly ${expected.length} blocky game avatar${expected.length > 1 ? "s" : ""}:`,
     ...expected.map((c) => `- ${c.name}: ${c.look ?? KIND}`),
-    "characters: for each one listed, is it visible, and is it a blocky toy avatar (a cube head with a flat printed face, block body)?",
+    "characters: for each one listed, is it visible, and is it a blocky game avatar (a cube head with a flat printed face, block body)?",
     "mainFigures: how many figures are really in the scene (foreground or middle ground, in focus, large enough to see a face). Count every one, listed or not.",
     "backgroundFigures: how many small or blurred figures are far in the background.",
-    "humanFigures: how many figures ANYWHERE in the picture are human or have a human head, face, skin or hair instead of a blocky toy body.",
+    "humanFigures: how many figures ANYWHERE in the picture are human or have a human head, face, skin or hair instead of a blocky game-avatar body.",
     "brickToyLook: true if anything looks like a brick-toy construction set: round studs on bricks or on the floor, a studded baseplate, a round or cylinder minifigure head, a stud on top of a head or a neck, or C-shaped claw hands. Flat smooth blocks are fine.",
     "realisticFace: true if any face has realistic 3D teeth, lips, a tongue or a nose modelled into the head. A flat printed mouth is fine, also with flat cartoon teeth; flat eyebrow lines are fine.",
     "duplicates: names of listed characters that are drawn more than once as main figures (an empty list if none).",
@@ -227,10 +232,10 @@ function verdictOf(data, expected, { speaker = null, framing = Boolean(speaker),
   for (const c of expected) {
     const seen = byName.get(c.name.toLowerCase());
     if (!seen || !seen.visible) { if (!missingOk) { problems.push(`${c.name} is missing`); fixes.push(`${c.name} must be clearly visible.`); } }
-    else if (!seen.isBlockyAvatar) { problems.push(`${c.name} is not drawn as a blocky toy avatar`); fixes.push(`${c.name} is a blocky toy avatar: a cube head with a flat printed face, a rectangular torso, block arms and legs.`); }
+    else if (!seen.isBlockyAvatar) { problems.push(`${c.name} is not drawn as a blocky game avatar`); fixes.push(`${c.name} is a blocky game avatar: a cube head with a flat printed face, a rectangular torso, block arms and legs.`); }
   }
   const humans = Number(data?.humanFigures) || 0;
-  if (humans > 0) { problems.push(`${humans} human figure${humans > 1 ? "s" : ""} in the picture`); fixes.push("No humans anywhere: every figure is a blocky toy avatar."); }
+  if (humans > 0) { problems.push(`${humans} human figure${humans > 1 ? "s" : ""} in the picture`); fixes.push("No humans anywhere: every figure is a blocky game avatar."); }
   if (data?.brickToyLook === true) { problems.push("a brick-toy look (studs, a studded floor, a round minifigure head or claw hands)"); fixes.push("Smooth matte plastic blocks only: no studs, no studded baseplate, cube heads (never round), plain block hands (never claws)."); }
   if (data?.realisticFace === true) { problems.push("a realistic 3D mouth, teeth, lips, tongue or nose on a face"); fixes.push("Faces are flat 2D decals printed on the cube head: no 3D teeth, lips, tongue or nose."); }
   const main = Number.isFinite(data?.mainFigures) ? data.mainFigures : null;
@@ -253,7 +258,7 @@ function verdictOf(data, expected, { speaker = null, framing = Boolean(speaker),
 
 export const UPLOAD_LIMITS = Object.freeze({ title: 100, hookChars: 40, description: 500, tags: 500, caption: 150, hashtagsMin: 3, hashtagsMax: 5 });
 
-const UPLOAD_SYSTEM = `You write the upload text for a short vertical video (YouTube Shorts, TikTok, Reels) where blocky toy avatars act out a story inside a blocky online game world and talk.
+const UPLOAD_SYSTEM = `You write the upload text for a short vertical video (YouTube Shorts, TikTok, Reels) where blocky game avatars act out a story inside a blocky online game world and talk.
 - title: the YouTube title. AT MOST ${UPLOAD_LIMITS.title} characters in total, hashtags included. The strongest hook is in the first ${UPLOAD_LIMITS.hookChars} characters. Weave in 2 to 4 search keywords naturally (e.g. roblox story, admin prank, obby, trade, glitch: whichever fit this video). Tease the twist without spoiling it. Never the video title as given. No emojis.
 - description: UNDER ${UPLOAD_LIMITS.description} characters in total: the hook and the keywords in one or two sentences, then one question that makes viewers comment, then 3 to 5 hashtags at the end.
 - tags: YouTube tags as ONE string, comma-separated, most important first, AT MOST ${UPLOAD_LIMITS.tags} characters in total. Lowercase, no # signs.
@@ -306,7 +311,7 @@ function cleanUpload(data) {
 export const BLOCKY_RULES = Object.freeze({
   writer: Object.freeze({ system: writerSystem, characterBlock }),
   series: Object.freeze({ system: SERIES_SYSTEM, characterLine }),
-  review: Object.freeze({ system: REVIEW_SYSTEM, kind: () => "blocky toy avatar" }),
+  review: Object.freeze({ system: REVIEW_SYSTEM, kind: () => "blocky game avatar" }),
   check: Object.freeze({ system: CHECK_SYSTEM, prompt: checkPrompt, schema: checkSchema, verdict: verdictOf }),
   upload: Object.freeze({ system: UPLOAD_SYSTEM, schema: uploadSchema, clean: cleanUpload }),
 });

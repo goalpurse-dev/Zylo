@@ -13,7 +13,7 @@
 //  - the classic noob (decision 13): yellow cube head and arms, blue torso,
 //    green legs, face B, no cap and no accessory.
 // Reference pictures are made from avatarPrompt() below (tests 2 and the library run).
-import { BLOCKY } from "../../supabase/functions/_shared/fruit/niches/blocky.js";
+import { BLOCKY_BODY, noBrickToy } from "../../supabase/functions/_shared/fruit/niches/blocky.js";
 
 const EYES = {
   oval: "two solid black upright oval eyes",
@@ -65,23 +65,35 @@ export const ROSTER = ROWS.map(([id, name, head, torso, legs, accessory, eyes, m
   return { id, name, head, torso, legs, accessory, eyes, mouth, face, look, voice, tag, role, tags };
 });
 
-/** The two wordings test 2 compares for the reference pictures. */
-export const REF_STYLES = {
-  roblox: "Style: a 3D classic blocky Roblox-style avatar: cube head, rectangular torso, block arms and legs, smooth matte plastic, a simple flat 2D face decal.",
-  toy: "Style: a 3D blocky toy figure: cube head, rectangular torso, block arms and legs, smooth matte plastic, a simple flat 2D face decal.",
-};
-
-/** The reference picture of one avatar: full body, plain white background, like the Fruit library's references. */
-export function avatarPrompt(a, style = "roblox") {
+/**
+ * The reference picture of one avatar: full body on plain white, like the Fruit
+ * library's references. The wording is the one test 2 and its re-test settled
+ * (decisions 18 to 20): "blocky game avatar" (never "toy"), the "Roblox-style"
+ * style line, and the body described by what it IS (BLOCKY_BODY).
+ *   template: Image 1 is a body to copy (the Lite Noob reference); the caller sends that picture first.
+ *   minifigure: also name the minifigure parts in the leave-out list.
+ */
+export function avatarPrompt(a, { template = REF_DEFAULTS.template, minifigure = REF_DEFAULTS.minifigure } = {}) {
   return [
-    `Full-body 3D character reference of ${a.name}, a blocky toy avatar. Centered on a pure white background, entire body visible from head to feet, standing straight facing the camera, block arms relaxed at the sides.`,
+    `Full-body 3D character reference of ${a.name}, a blocky game avatar. Centered on a pure white background, entire body visible from head to feet, standing straight facing the camera, block arms relaxed at the sides.`,
+    template ? BODY_TEMPLATE_LINE : "",
     `${a.name} has ${a.look}.`,
     `The face is a flat decal printed on the front of the cube head: ${a.face}. No nose, no eyebrows, no ears.`,
     "The torso shape is a plain flat print, no words.",
-    REF_STYLES[style],
+    BLOCKY_BODY,
+    REF_STYLE,
     "Soft even studio lighting, a subtle contact shadow under the feet, a clean readable silhouette, 9:16 vertical framing.",
-    `No text, no letters, no numbers, no logos, no background, no props, no extra characters, no extra limbs, ${BLOCKY_NO_BRICK_TOY}, no human face or skin, no realistic 3D teeth, lips, tongue or nose.`,
-  ].join(" ");
+    `No text, no letters, no numbers, no logos, no background, no props, no extra characters, no extra limbs, ${noBrickToy({ minifigure })}, no human face or skin, no realistic 3D teeth, lips, tongue or nose.`,
+  ].filter(Boolean).join(" ");
 }
-// The same "leave out" list every Blocky picture carries (decision 12), read from the niche so there is one wording.
-const BLOCKY_NO_BRICK_TOY = BLOCKY.picture.negative.match(/no studs.*?minifigures/)[0];
+export const REF_STYLE = "Style: a 3D classic blocky Roblox-style avatar in smooth matte plastic with a simple flat 2D face decal.";
+/** How the body template is labelled when it is sent as the first reference image (decision 20). */
+export const BODY_TEMPLATE_LINE = "Image 1 shows the body construction to copy exactly; ignore its colours, face and outfit.";
+/**
+ * The combination the library is drawn with, from the re-test (2026-10-06):
+ *   template false: with the Lite Noob as a body template the picture copied the Noob's own
+ *     flaws (a rounded head, small hand blocks, the notch between the legs);
+ *   minifigure true: the one picture that left the minifigure parts unnamed still had the hip
+ *     notch, and the four that named them did not, so naming them does not prime them.
+ */
+export const REF_DEFAULTS = { template: false, minifigure: true };

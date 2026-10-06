@@ -14,7 +14,8 @@ import { checkPicture, CLIP_FRAME_PURPOSE } from "../supabase/functions/_shared/
 import { writeUploadPackage } from "../supabase/functions/_shared/fruit/uploadPackage.js";
 import { validateCreateStory, validateSeriesPlan } from "../supabase/functions/_shared/fruit/validation.js";
 import { LIBRARY } from "../src/components/viral-tools/ai-fruit-story-v2/api/mock/libraryData.js";
-import { ROSTER, REF_STYLES, avatarPrompt } from "../scripts/blocky/roster.mjs";
+import { ROSTER, BODY_TEMPLATE_LINE, REF_DEFAULTS, avatarPrompt } from "../scripts/blocky/roster.mjs";
+import { BLOCKY_BODY } from "../supabase/functions/_shared/fruit/niches/blocky.js";
 
 const B = NICHES.blocky;
 // Library rows as the database will hold them: no age, no gender.
@@ -59,20 +60,29 @@ test("the classic noob (decision 13): yellow head and arms, blue torso, green le
   assert.match(noob.face, /half-circle open mouth/);
 });
 
-test("an avatar's reference prompt: full body on white, the locked look, no studs, and the two wordings test 2 compares", () => {
+test("an avatar's reference prompt: full body on white, the locked look, the body-construction text, never 'toy'", () => {
   for (const a of ROSTER) {
-    const p = avatarPrompt(a, "roblox");
+    const p = avatarPrompt(a);
     assert.ok(p.includes(`${a.name} has ${a.look}.`) && p.includes(a.face));
-    assert.match(p, /Full-body 3D character reference of \w+, a blocky toy avatar\. Centered on a pure white background/);
+    assert.ok(p.includes(BLOCKY_BODY), "decision 19: the body is described by what it IS");
+    assert.match(p, /Style: a 3D classic blocky Roblox-style avatar/, "the wording test 2 picked");
+    assert.doesNotMatch(p.replace(/no brick-toy minifigures/, ""), /toy/i, "decision 18: never 'toy'");
+    assert.match(p, /Full-body 3D character reference of \w+, a blocky game avatar\. Centered on a pure white background/);
     assert.match(p, /no studs, no studded baseplates, no round minifigure heads, no neck studs, no claw hands, no brick-toy minifigures/);
     assert.doesNotMatch(p.replace(/no studs, no studded baseplates/, "").replace(/no neck studs/, ""), /\bstud(s|ded)?\b/i, "studs only as something to leave out");
     assert.doesNotMatch(p, PERSON_WORDS);
     assert.ok(p.length < 2000);
   }
-  assert.match(avatarPrompt(ROSTER[0], "roblox"), /Roblox-style avatar/);
-  assert.doesNotMatch(avatarPrompt(ROSTER[0], "toy"), /Roblox/i);
-  assert.match(avatarPrompt(ROSTER[0], "toy"), /blocky toy figure/);
-  assert.equal(avatarPrompt(ROSTER[0], "roblox").replace(REF_STYLES.roblox, ""), avatarPrompt(ROSTER[0], "toy").replace(REF_STYLES.toy, ""), "the wording is the only difference");
+  // The re-test's result is the default: no body template, the minifigure parts named in the leave-out list.
+  assert.deepEqual(REF_DEFAULTS, { template: false, minifigure: true });
+  const vex = ROSTER.find((a) => a.id === "vex");
+  assert.ok(!avatarPrompt(vex).includes(BODY_TEMPLATE_LINE));
+  // The two switches the re-test compared change exactly one thing each.
+  assert.equal(avatarPrompt(vex, { template: true }).replace(`${BODY_TEMPLATE_LINE} `, ""), avatarPrompt(vex));
+  assert.equal(BODY_TEMPLATE_LINE, "Image 1 shows the body construction to copy exactly; ignore its colours, face and outfit.");
+  const plain = avatarPrompt(vex, { minifigure: false });
+  assert.match(plain, /no extra limbs, no studs, no studded baseplates, no human face or skin/);
+  assert.doesNotMatch(plain, /claw hands|brick-toy|minifigure|neck studs/);
 });
 
 test("the writer: Blocky's own rules on the engine's mechanics, never Fruit's drama rules", () => {
@@ -102,8 +112,8 @@ test("the writer: Blocky's own rules on the engine's mechanics, never Fruit's dr
   assert.ok(p.system.includes(BANNED.join("; ")), "the engine's overused phrases");
   assert.ok(p.system.includes(`shot: one of ${SPEAKING_SHOTS.join(", ")}`), "the engine's speaking shots");
   assert.doesNotMatch(p.system, /Roblox/i, "the writer is never given the real platform's name");
-  // The cast, as the writer sees it: a blocky toy avatar, its tags, its look, how it sounds.
-  assert.match(p.user, /- noob: Noob, a blocky toy avatar\. New player: Lost, honest and luckier than they look\. Look \(locked\): a bright yellow cube head .* Voice \(how they sound\): bright, small, slightly wobbly./);
+  // The cast, as the writer sees it: a blocky game avatar, its tags, its look, how it sounds.
+  assert.match(p.user, /- noob: Noob, a blocky game avatar\. New player: Lost, honest and luckier than they look\. Look \(locked\): a bright yellow cube head .* Voice \(how they sound\): bright, small, slightly wobbly./);
   assert.doesNotMatch(p.user.split("THE USER'S STORY")[0], PERSON_WORDS);
   // Fruit's word budget (decision 2): 6 scenes of at most 9 words for 30 s.
   assert.match(p.user, /Write exactly 6 scenes for a video of 30 seconds\..* every line AT MOST 9 words/);
@@ -112,11 +122,11 @@ test("the writer: Blocky's own rules on the engine's mechanics, never Fruit's dr
 test("the series planner and the script editor have Blocky's wording and the engine's answer format", () => {
   const s = buildSeriesPrompt({ concept: "A fake admin takes over an obby server.", cast: cast("vex", "noob", "zip"), opener: "Banned in front of everyone", tone: "tense and funny", episodeCount: 5, niche: "blocky" });
   assert.notEqual(s.system, SERIES_SYSTEM);
-  assert.match(s.system, /blocky toy avatars act out a story inside a blocky online game world/);
+  assert.match(s.system, /blocky game avatars act out a story inside a blocky online game world/);
   assert.match(s.system, /episodes: exactly the requested number/);
   assert.match(s.system, /Never name the real platform, a real game, a real brand, a real creator or a real username/);
   assert.doesNotMatch(s.system, /fruit|Roblox/i);
-  assert.match(s.user, /- vex: Vex, a blocky toy avatar\. Admin: Cold rule keeper who enjoys the power\. Look \(locked\): a white cube head/);
+  assert.match(s.user, /- vex: Vex, a blocky game avatar\. Admin: Cold rule keeper who enjoys the power\. Look \(locked\): a white cube head/);
   assert.doesNotMatch(s.user, PERSON_WORDS);
 
   const plan = { title: "The Admin Who Wasn't", roles: { vex: "the fake admin" }, outfits: {}, locations: [{ id: "loc1", description: "An admin room with a long console desk" }], scenes: [{ speakerId: "vex", presentIds: ["vex", "noob"], locationId: "loc1", line: "Break this server rule and you're banned." }] };
@@ -127,7 +137,7 @@ test("the series planner and the script editor have Blocky's wording and the eng
   assert.match(r.system, /a greeting or a setup \("hi guys", "so today"\) fails/);
   assert.match(r.system, /names a real game, brand, creator or username/);
   assert.doesNotMatch(r.system, /fruit|Roblox/i);
-  assert.match(r.user, /- Vex, blocky toy avatar; role here: the fake admin; wears in every scene: a white cube head/);
+  assert.match(r.user, /- Vex, blocky game avatar; role here: the fake admin; wears in every scene: a white cube head/);
   assert.doesNotMatch(r.user, PERSON_WORDS);
 });
 
@@ -185,11 +195,19 @@ test("the picture check: what fails a Blocky picture, and what doesn't", () => {
   assert.match(v({ realisticFace: true }).problems[0], /realistic 3D mouth, teeth, lips, tongue or nose/);
   assert.match(v({ humanFigures: 1 }).problems[0], /1 human figure/);
   assert.match(v({ logos: true }).problems[0], /logo/);
-  assert.match(v({ characters: [{ name: "Vex", visible: true, isBlockyAvatar: false }, { name: "Noob", visible: true, isBlockyAvatar: true }] }).problems[0], /Vex is not drawn as a blocky toy avatar/);
+  assert.match(v({ characters: [{ name: "Vex", visible: true, isBlockyAvatar: false }, { name: "Noob", visible: true, isBlockyAvatar: true }] }).problems[0], /Vex is not drawn as a blocky game avatar/);
   // Decision 15: a full-body two-avatar shot with small faces is redrawn once.
   assert.match(v({ speakerHeadPercent: 14, speakerShownTo: "feet" }).problems[0], /Vex is too small in the frame \(head about 14% of the height\)/);
   assert.match(v({ speakerHeadPercent: 30, speakerShownTo: "feet" }).problems[0], /shown full body/);
   assert.match(v({ speakerHeadPercent: 14, speakerShownTo: "feet" }).fixes[0], /tight chest-up shot of Vex, the cube head filling a third of the frame height/);
+  // Decision 21: a head under about a fifth of the frame height fails, whatever the crop says (a "close-up" cropped at the thighs).
+  const thighs = v({ speakerHeadPercent: 15, speakerShownTo: "waist" });
+  assert.equal(thighs.ok, false);
+  assert.match(thighs.problems[0], /Vex is too small in the frame \(head about 15% of the height\)/);
+  assert.equal(v({ speakerHeadPercent: 19, speakerShownTo: "chest" }).ok, false, "19% fails");
+  assert.equal(v({ speakerHeadPercent: 21, speakerShownTo: "chest" }).ok, false, "the line is a little above a fifth (22%), as for Fruit");
+  assert.equal(v({ speakerHeadPercent: 22, speakerShownTo: "waist" }).ok, true);
+  assert.equal(verdict(answer({ speakerHeadPercent: 12, speakerShownTo: "feet" }), expected, { speaker: "Vex", framing: false }).ok, true, "a clip's last frame is not judged on framing");
   // The questions ask about flat teeth the way decision 11 puts it: flat is fine, 3D is not.
   const text = prompt(expected, { speaker: "Vex" });
   assert.match(text, /A flat printed mouth is fine, also with flat cartoon teeth; flat eyebrow lines are fine/);
@@ -204,7 +222,7 @@ test("decision 14: text, subtitles or captions on a clip's last frame fail the c
   const admin = { from: () => ({ insert: async (row) => { logged.push(row); return {}; } }) };
   const run = (data, purpose) => checkPicture({
     admin, apiKey: "k", imageUrl: "https://example.test/frame.jpg", expected, purpose, niche: "blocky", ids: {},
-    fetchLlm: async (req) => { assert.match(req.system, /BLOCKY TOY AVATAR/); return { data, costUsd: 0.001, httpStatus: 200, usage: {} }; },
+    fetchLlm: async (req) => { assert.match(req.system, /BLOCKY GAME AVATAR/); return { data, costUsd: 0.001, httpStatus: 200, usage: {} }; },
   });
   const subtitled = await run(answer({ readableText: "why is everyone?", characters: [{ name: "Vex", visible: true, isBlockyAvatar: true }] }), CLIP_FRAME_PURPOSE);
   assert.equal(subtitled.ok, false);
