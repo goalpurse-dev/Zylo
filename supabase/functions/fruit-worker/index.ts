@@ -192,7 +192,7 @@ async function clipTest(body: any) {
 }
 
 /** Bake-off: models that aren't products yet. Submitted directly (no user charge), every call logged with its real cost. */
-const BAKEOFF_MODELS = new Set(["bytedance:seedance@2.0-mini", "lightricks:ltx@2.3", "alibaba:wan@2.6-flash"]);
+const BAKEOFF_MODELS = new Set(["bytedance:seedance@2.0-mini", "lightricks:ltx@2.3", "alibaba:wan@2.6-flash", "google:3@3"]);
 async function rawTest(body: any) {
   if (paidOff()) throw new FruitError("PAID_CALLS_DISABLED", "paid calls are off");
   const task = body?.task;
